@@ -20,7 +20,7 @@
  */
 
 import type { UploadedDocument } from "@/lib/document-vault/types";
-import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
+import { mapDocumentNameToId, isDocUploadedInVault } from "@/lib/document-vault/journey-mapping";
 
 export interface CivilDocItem {
   id: string;
@@ -58,7 +58,7 @@ export interface CivilDocsContext {
 function isCivilDocDone(item: CivilDocItem, ctx: CivilDocsContext): boolean {
   if (ctx.civilDocsStatus?.[item.id] === "reviewed") return true;
   const vaultId = mapDocumentNameToId(item.title);
-  if (vaultId && ctx.uploadedDocuments.some((u) => u.documentDefId === vaultId)) return true;
+  if (vaultId && isDocUploadedInVault(item.title, vaultId, ctx.uploadedDocuments)) return true;
   return false;
 }
 
@@ -103,8 +103,7 @@ export function analyzeCivilDocs(
           issues.push({
             level: "critical",
             title: `Required for your case: ${item.title}`,
-            hint:
-              "You indicated a prior marriage during eligibility. NVC requires proof every prior marriage legally ended (final divorce decree, annulment, or death certificate) — with a certified English translation.",
+            hint: "You indicated a prior marriage during eligibility. NVC requires proof every prior marriage legally ended (final divorce decree, annulment, or death certificate) — with a certified English translation.",
             docId: item.id,
           });
         }

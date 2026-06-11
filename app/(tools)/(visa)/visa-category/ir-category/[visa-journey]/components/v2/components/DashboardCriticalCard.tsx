@@ -2,7 +2,14 @@
 
 import React, { useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { ChevronRight, AlertTriangle, CircleAlert, Info, ShieldCheck } from "lucide-react";
+import {
+  ChevronRight,
+  AlertTriangle,
+  CircleAlert,
+  Info,
+  ShieldCheck,
+  CheckCircle2,
+} from "lucide-react";
 import type { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import type { UploadedDocument } from "@/lib/document-vault/types";
 import {
@@ -99,18 +106,24 @@ function IssueRow({
       onClick={onToggle}
     >
       <div className="flex items-center gap-3 px-3 py-2.5">
-        {/* Severity circle indicator */}
+        {/* Severity circle indicator — checkmark when resolved */}
         <div
           className="flex items-center justify-center rounded-lg shrink-0 text-xs font-bold"
           style={{
             width: 32,
             height: 32,
-            background: s.circleBg,
+            background: issue.resolved
+              ? "linear-gradient(135deg, #059669 0%, #10b981 100%)"
+              : s.circleBg,
             color: s.circleFg,
-            boxShadow: expanded ? `0 4px 10px -2px ${s.accentColor}40` : "none",
+            boxShadow: expanded
+              ? `0 4px 10px -2px ${issue.resolved ? "#059669" : s.accentColor}40`
+              : "none",
           }}
         >
-          {issue.level === "critical" ? (
+          {issue.resolved ? (
+            <CheckCircle2 className="w-4 h-4" />
+          ) : issue.level === "critical" ? (
             <CircleAlert className="w-4 h-4" />
           ) : issue.level === "warning" ? (
             <AlertTriangle className="w-4 h-4" />
@@ -123,14 +136,19 @@ function IssueRow({
         <div className="flex-1 min-w-0">
           <p
             className="text-[12.5px] font-semibold truncate"
-            style={{ color: expanded ? s.accentColor : "#374151" }}
+            style={{
+              color: issue.resolved ? "#059669" : expanded ? s.accentColor : "#374151",
+            }}
           >
             {issue.title}
           </p>
           <p className="text-[11px] truncate">
             <span
               className="font-medium px-1 py-0.5 rounded text-[9.5px]"
-              style={{ background: s.chipBg, color: s.chipFg }}
+              style={{
+                background: issue.resolved ? "#d1fae5" : s.chipBg,
+                color: issue.resolved ? "#065f46" : s.chipFg,
+              }}
             >
               {stepLabel}
             </span>
@@ -144,7 +162,7 @@ function IssueRow({
             onToggle();
           }}
           className="shrink-0 p-1 rounded transition-colors hover:opacity-80"
-          style={{ color: s.accentColor }}
+          style={{ color: issue.resolved ? "#059669" : s.accentColor }}
         >
           <ChevronRight
             className="w-4 h-4 transition-transform duration-200"
@@ -157,7 +175,10 @@ function IssueRow({
       {expanded && (
         <div
           className="px-3 py-2.5 space-y-2 border-t"
-          style={{ background: s.expandBg, borderColor: s.expandBorder }}
+          style={{
+            background: issue.resolved ? "#ecfdf5" : s.expandBg,
+            borderColor: issue.resolved ? "#a7f3d0" : s.expandBorder,
+          }}
         >
           {issue.hint && (
             <p className="text-[11.5px] text-slate-600 leading-relaxed">{issue.hint}</p>
@@ -168,14 +189,15 @@ function IssueRow({
                 e.stopPropagation();
                 onOpenStep();
               }}
-              className="inline-flex items-center gap-1.5 text-[11px] font-bold rounded-lg px-3 py-1.5 transition-all hover:brightness-110"
+              disabled={issue.resolved}
+              className="inline-flex items-center gap-1.5 text-[11px] font-bold rounded-lg px-3 py-1.5 transition-all hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:brightness-100"
               style={{
-                background: s.chipBg,
-                color: s.chipFg,
+                background: issue.resolved ? "#d1fae5" : s.chipBg,
+                color: issue.resolved ? "#065f46" : s.chipFg,
               }}
             >
-              Go to {stepLabel}
-              <ChevronRight className="w-3 h-3" />
+              {issue.resolved ? "Already addressed" : `Go to ${stepLabel}`}
+              {!issue.resolved && <ChevronRight className="w-3 h-3" />}
             </button>
           )}
         </div>
@@ -197,6 +219,8 @@ export function DashboardCriticalCard({
     const order = { critical: 0, warning: 1, info: 2 };
     return [...ch1, ...ch2, ...ch3].sort((a, b) => {
       if (order[a.level] !== order[b.level]) return order[a.level] - order[b.level];
+      // Resolved items appear after unresolved ones within the same level
+      if (!!a.resolved !== !!b.resolved) return a.resolved ? 1 : -1;
       return a.chapterIdx - b.chapterIdx;
     });
   }, [chapters, state, uploadedDocuments]);
@@ -220,7 +244,7 @@ export function DashboardCriticalCard({
 
   const critCount = issues.filter((i) => i.level === "critical").length;
   const warnCount = issues.filter((i) => i.level === "warning").length;
-  const infoCount = issues.filter((i) => i.level === "info").length;
+  const infoCount = issues.filter((i) => i.level === "info" && !i.resolved).length;
 
   return (
     <div className="relative">
@@ -281,7 +305,7 @@ export function DashboardCriticalCard({
                     </h3>
                     {/* Row 2: total summary (moved here for clarity) */}
                     <p className="text-[10px] text-slate-500 font-bold mt-0.5">
-                      {issues.length} items to review
+                      {issues.filter((i) => !i.resolved).length} items to review
                     </p>
                   </div>
                 </div>

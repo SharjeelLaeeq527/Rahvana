@@ -231,6 +231,48 @@ const STEP_CITATIONS: Record<string, { text: string; link: string }[]> = {
   ],
 };
 
+/**
+ * Find a vault document that matches an item, considering dynamic categories.
+ * When a parent doc (e.g. "Proof of U.S. Citizenship") has `isDynamicCategory: true`,
+ * the MultipleDocumentUploadModal stores uploads under the sub-type's mapped ID
+ * (e.g. "passport-petitioner" for "U.S. passport") or a dynamic slot ID.
+ * This function checks all those possibilities so the status badge shows "Uploaded".
+ */
+function findVaultDocForItem<T extends { documentDefId: string }>(
+  itemTitle: string,
+  mappedId: string,
+  uploadedDocs: T[]
+): T | undefined {
+  // 1. Direct exact match
+  const direct = uploadedDocs.find((d) => d.documentDefId === mappedId);
+  if (direct) return direct;
+
+  // 2. Check if the mapped ID is a dynamic-category parent
+  const parentDef = ALL_DOCUMENTS.find((d) => d.id === mappedId);
+  if (!parentDef?.isDynamicCategory) return undefined;
+
+  const parentCategory = (parentDef as any).category as string;
+
+  // 3. Check sub-type mapped IDs from suggestions
+  if (parentDef.suggestions) {
+    for (const opt of parentDef.suggestions) {
+      const subId = mapDocumentNameToId(opt);
+      if (subId !== mappedId && subId !== "misc-document") {
+        const m = uploadedDocs.find((d) => d.documentDefId === subId);
+        if (m) return m;
+      }
+    }
+  }
+
+  // 4. Check dynamic slot IDs – return any doc under this parent's category
+  if (parentCategory) {
+    const m = uploadedDocs.find((d) => d.documentDefId.startsWith(`dynamic-${parentCategory}-`));
+    if (m) return m;
+  }
+
+  return undefined;
+}
+
 interface StepViewProps {
   data: RoadmapData;
   state: WizardState;
@@ -1526,6 +1568,9 @@ export const StepView: React.FC<StepViewProps> = ({
               isDeletingIds={isDeletingIds}
               isReloadingDocs={isReloadingDocs}
               getVaultId={(item) => mapDocumentNameToId(item.title)}
+              findVaultDoc={(item, docs) =>
+                findVaultDocForItem(item.title, mapDocumentNameToId(item.title), docs)
+              }
               progressLabel="packed"
               onItemClick={(item) => {
                 setDocActionModal({
@@ -1546,6 +1591,10 @@ export const StepView: React.FC<StepViewProps> = ({
                   onUpload: () => {
                     if (!stepEntitlement.guard()) return;
                     const defId = mapDocumentNameToId(item.title);
+                    if (!ALL_DOCUMENTS.find((d) => d.id === defId)) {
+                      console.warn("[upload] Unknown documentDefId:", defId, "for:", item.title);
+                      return;
+                    }
                     setActiveUploadId(item.id);
                     setActiveUploadType("doc");
                     openUploadModal(defId);
@@ -1665,6 +1714,9 @@ export const StepView: React.FC<StepViewProps> = ({
               isDeletingIds={isDeletingIds}
               isReloadingDocs={isReloadingDocs}
               getVaultId={(item) => mapDocumentNameToId(item.title)}
+              findVaultDoc={(item, docs) =>
+                findVaultDocForItem(item.title, mapDocumentNameToId(item.title), docs)
+              }
               showTags={true}
               onItemClick={(item) => {
                 setDocActionModal({
@@ -1681,6 +1733,10 @@ export const StepView: React.FC<StepViewProps> = ({
                   onUpload: () => {
                     if (!stepEntitlement.guard()) return;
                     const defId = mapDocumentNameToId(item.title);
+                    if (!ALL_DOCUMENTS.find((d) => d.id === defId)) {
+                      console.warn("[upload] Unknown documentDefId:", defId, "for:", item.title);
+                      return;
+                    }
                     setActiveUploadId(item.id);
                     setActiveUploadType("doc");
                     openUploadModal(defId);
@@ -3132,8 +3188,26 @@ export const StepView: React.FC<StepViewProps> = ({
                                                       documentName: doc.name,
                                                       options: documentDef.suggestions || [],
                                                     });
-                                                  } else {
+                                                  } else if (documentDef) {
                                                     openUploadModal(defId);
+                                                  } else {
+                                                    // Def not in ALL_DOCUMENTS – find parent dynamic category
+                                                    const parentCat = ALL_DOCUMENTS.find(
+                                                      (d) =>
+                                                        d.isDynamicCategory &&
+                                                        d.suggestions?.some(
+                                                          (opt: string) =>
+                                                            mapDocumentNameToId(opt) === defId
+                                                        )
+                                                    );
+                                                    if (parentCat) {
+                                                      setMultipleUploadModalState({
+                                                        isOpen: true,
+                                                        categoryId: parentCat.id,
+                                                        documentName: doc.name,
+                                                        options: parentCat.suggestions || [],
+                                                      });
+                                                    }
                                                   }
                                                 },
                                               });
@@ -3239,12 +3313,13 @@ export const StepView: React.FC<StepViewProps> = ({
                                               {/* Status Badge */}
                                               {(() => {
                                                 const defId = mapDocumentNameToId(doc.name);
-                                                const isUploadedInVault = uploadedDocuments.some(
-                                                  (ud) => ud.documentDefId === defId
+                                                const vaultMatch = findVaultDocForItem(
+                                                  doc.name,
+                                                  defId,
+                                                  uploadedDocuments
                                                 );
-                                                const uploadedDoc = uploadedDocuments.find(
-                                                  (ud) => ud.documentDefId === defId
-                                                );
+                                                const isUploadedInVault = !!vaultMatch;
+                                                const uploadedDoc = vaultMatch;
                                                 const isDeleting = uploadedDoc
                                                   ? isDeletingIds.includes(uploadedDoc.id)
                                                   : false;
@@ -3283,8 +3358,10 @@ export const StepView: React.FC<StepViewProps> = ({
                                               {/* Upload State / Dropdown */}
                                               {(() => {
                                                 const defId = mapDocumentNameToId(doc.name);
-                                                const uploadedDoc = uploadedDocuments.find(
-                                                  (ud) => ud.documentDefId === defId
+                                                const uploadedDoc = findVaultDocForItem(
+                                                  doc.name,
+                                                  defId,
+                                                  uploadedDocuments
                                                 );
                                                 const isDeleting = uploadedDoc
                                                   ? isDeletingIds.includes(uploadedDoc.id)
@@ -3478,6 +3555,9 @@ export const StepView: React.FC<StepViewProps> = ({
                           isDeletingIds={isDeletingIds}
                           isReloadingDocs={isReloadingDocs}
                           getVaultId={(item) => mapDocumentNameToId(item.title)}
+                          findVaultDoc={(item, docs) =>
+                            findVaultDocForItem(item.title, mapDocumentNameToId(item.title), docs)
+                          }
                           showTags
                           onItemClick={(item) => {
                             setDocActionModal({
@@ -3510,8 +3590,25 @@ export const StepView: React.FC<StepViewProps> = ({
                                     documentName: item.title,
                                     options: documentDef.suggestions || [],
                                   });
-                                } else {
+                                } else if (documentDef) {
                                   openUploadModal(defId);
+                                } else {
+                                  // Def not in ALL_DOCUMENTS – find parent dynamic category
+                                  const parentCat = ALL_DOCUMENTS.find(
+                                    (d) =>
+                                      d.isDynamicCategory &&
+                                      d.suggestions?.some(
+                                        (opt: string) => mapDocumentNameToId(opt) === defId
+                                      )
+                                  );
+                                  if (parentCat) {
+                                    setMultipleUploadModalState({
+                                      isOpen: true,
+                                      categoryId: parentCat.id,
+                                      documentName: item.title,
+                                      options: parentCat.suggestions || [],
+                                    });
+                                  }
                                 }
                               },
                             });
@@ -5059,41 +5156,43 @@ export const StepView: React.FC<StepViewProps> = ({
       )}
 
       {/* Document Vault Integration */}
-      {uploadModalOpen && selectedDocumentDefId && (
-        <DocumentUploadModal
-          open={uploadModalOpen}
-          onClose={closeUploadModal}
-          documentDef={ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId)!}
-          onUploadComplete={async () => {
-            await reloadDocuments();
+      {uploadModalOpen &&
+        selectedDocumentDefId &&
+        ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId) && (
+          <DocumentUploadModal
+            open={uploadModalOpen}
+            onClose={closeUploadModal}
+            documentDef={ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId)!}
+            onUploadComplete={async () => {
+              await reloadDocuments();
 
-            if (activeUploadId && activeUploadType) {
-              const currentHhStatus = (state.metadata.hhDocsStatus as any) || {};
-              const currentFinStatus = (state.metadata.financialDocsStatus as any) || {};
+              if (activeUploadId && activeUploadType) {
+                const currentHhStatus = (state.metadata.hhDocsStatus as any) || {};
+                const currentFinStatus = (state.metadata.financialDocsStatus as any) || {};
 
-              if (activeUploadType === "doc") {
-                actions.updateDocumentStatus?.(activeUploadId, "reviewed");
-              } else if (activeUploadType === "hh") {
-                const nextHhStatus = {
-                  ...currentHhStatus,
-                  [activeUploadId]: "reviewed",
-                };
-                setHhDocsStatus(nextHhStatus);
-                actions.updateMetadata({
-                  hhDocsStatus: nextHhStatus,
-                });
-              } else if (activeUploadType === "financial") {
-                actions.updateMetadata({
-                  financialDocsStatus: {
-                    ...currentFinStatus,
+                if (activeUploadType === "doc") {
+                  actions.updateDocumentStatus?.(activeUploadId, "reviewed");
+                } else if (activeUploadType === "hh") {
+                  const nextHhStatus = {
+                    ...currentHhStatus,
                     [activeUploadId]: "reviewed",
-                  },
-                });
+                  };
+                  setHhDocsStatus(nextHhStatus);
+                  actions.updateMetadata({
+                    hhDocsStatus: nextHhStatus,
+                  });
+                } else if (activeUploadType === "financial") {
+                  actions.updateMetadata({
+                    financialDocsStatus: {
+                      ...currentFinStatus,
+                      [activeUploadId]: "reviewed",
+                    },
+                  });
+                }
               }
-            }
-          }}
-        />
-      )}
+            }}
+          />
+        )}
     </div>
   );
 };

@@ -118,7 +118,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
                   <Icons.Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
                 )}
 
-                <span className="text-sm leading-relaxed">
+                <span className="text-sm leading-relaxed whitespace-pre-line">
                   {toast.message}
                 </span>
               </motion.div>

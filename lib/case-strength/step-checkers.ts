@@ -17,6 +17,8 @@ export interface StepCheck {
   level: "info" | "warning" | "critical";
   title: string;
   hint?: string;
+  /** When true, the item stays visible but shows as resolved (checkmark + disabled action) */
+  resolved?: boolean;
 }
 
 export interface StepCheckContext {
@@ -130,11 +132,20 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   step_1_6: ({ state }) => {
     const checks: StepCheck[] = [];
     const fm = state.metadata?.filingMethod as string | undefined;
-    if (fm === "online" && !state.metadata?.uscisAccountReady) {
+    const done = (key: string) => state.completedSteps?.has?.(key);
+    const uscisSaved = done("step_1_6") || state.metadata?.uscisPortalSaved === "true";
+    if (fm === "online" && !uscisSaved) {
       checks.push({
         level: "warning",
         title: "USCIS online account not confirmed",
         hint: "Create a myUSCIS account before submitting online",
+      });
+    } else if (fm === "online" && uscisSaved) {
+      checks.push({
+        level: "info",
+        title: "USCIS online account confirmed",
+        hint: "Your myUSCIS credentials are saved",
+        resolved: true,
       });
     }
     if (fm === "paper" && !state.metadata?.mailingAddressConfirmed) {
@@ -150,11 +161,21 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   // Step 1.7 — Fee preparation
   step_1_7: ({ state }) => {
     const checks: StepCheck[] = [];
-    if (!state.metadata?.feePaymentReady) {
+    const done = (key: string) => state.completedSteps?.has?.(key);
+    const feeReady =
+      done("step_1_7") || !!state.metadata?.filingFeeDate || !!state.metadata?.feePaymentReady;
+    if (!feeReady) {
       checks.push({
         level: "info",
         title: "Payment method ready?",
         hint: "USCIS accepts credit/debit card (online) or check/money order (paper)",
+      });
+    } else {
+      checks.push({
+        level: "info",
+        title: "Payment method ready",
+        hint: "Filing fee payment has been addressed",
+        resolved: true,
       });
     }
     return checks;
@@ -231,6 +252,27 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     return checks;
   },
 
+  // Step 1.12 — Prepare Filing Fee (paper path payment method)
+  step_1_12: ({ state }) => {
+    const checks: StepCheck[] = [];
+    const savedMethod = state.metadata?.paper_payment_method as string | undefined;
+    if (!savedMethod) {
+      checks.push({
+        level: "info",
+        title: "Save payment method",
+        hint: "Store the payment method you plan to use for the USCIS filing fee",
+      });
+    } else {
+      checks.push({
+        level: "info",
+        title: `Payment method saved: ${savedMethod}`,
+        hint: "Your chosen payment method is recorded",
+        resolved: true,
+      });
+    }
+    return checks;
+  },
+
   // Step 1.13 — Mailing (packet checklist)
   step_1_13: ({ state }) => {
     const checks: StepCheck[] = [];
@@ -245,15 +287,25 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     return checks;
   },
 
-  // Step 1.14 — Tracking & receipt
+  // Step 1.14 — Tracking & mailing details
   step_1_14: ({ state }) => {
     const checks: StepCheck[] = [];
     const fm = state.metadata?.filingMethod as string | undefined;
-    if (fm === "paper" && !state.metadata?.mailingTrackingNumber) {
+    const savedCarrier = state.metadata?.paper_mailing_carrier as string | undefined;
+    const savedTracking = state.metadata?.paper_mailing_tracking as string | undefined;
+    const mailingSaved = !!(savedCarrier && savedTracking);
+    if (fm === "paper" && !mailingSaved && !state.metadata?.mailingTrackingNumber) {
       checks.push({
         level: "info",
-        title: "Save USPS tracking number",
-        hint: "You'll use it to confirm USCIS received your packet",
+        title: "Save mailing details & tracking number",
+        hint: "Record the carrier and tracking number after mailing your packet to USCIS",
+      });
+    } else if (fm === "paper" && mailingSaved) {
+      checks.push({
+        level: "info",
+        title: `Mailing details saved: ${savedCarrier}`,
+        hint: `Carrier and tracking number (${savedTracking}) are recorded`,
+        resolved: true,
       });
     }
     return checks;
@@ -296,10 +348,8 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       // I-130 baseline exists but the DS-260 values haven't been confirmed here.
       const parts: string[] = [];
       if (i130.marriageDate) parts.push(`marriage date ${i130.marriageDate}`);
-      if (i130.petitionerDateOfBirth)
-        parts.push(`petitioner DOB ${i130.petitionerDateOfBirth}`);
-      if (i130.beneficiaryDateOfBirth)
-        parts.push(`beneficiary DOB ${i130.beneficiaryDateOfBirth}`);
+      if (i130.petitionerDateOfBirth) parts.push(`petitioner DOB ${i130.petitionerDateOfBirth}`);
+      if (i130.beneficiaryDateOfBirth) parts.push(`beneficiary DOB ${i130.beneficiaryDateOfBirth}`);
       checks.push({
         level: "info",
         title: "Match these on your DS-260",
@@ -339,7 +389,11 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       uploadedDocuments,
       eligibilityAnswers,
     });
-    const checks: StepCheck[] = issues.map((i) => ({ level: i.level, title: i.title, hint: i.hint }));
+    const checks: StepCheck[] = issues.map((i) => ({
+      level: i.level,
+      title: i.title,
+      hint: i.hint,
+    }));
 
     // While civil-doc work is still pending, surface the foreign-document
     // guidance that applies to every overseas case (the #1 here being a
@@ -372,7 +426,9 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
 
     if (result.isEligible === false) {
       const shortfall =
-        typeof result.shortfall === "number" ? `$${result.shortfall.toLocaleString()}` : "an amount";
+        typeof result.shortfall === "number"
+          ? `$${result.shortfall.toLocaleString()}`
+          : "an amount";
       const required =
         typeof result.requiredIncome === "number"
           ? `$${result.requiredIncome.toLocaleString()}`
@@ -479,8 +535,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   // Step 3.1 — Schedule Medical Examination (completeness + timeline)
   step_3_1: ({ state }) => {
     const checks: StepCheck[] = [];
-    const scheduled =
-      state.metadata?.med_appt_saved === "true" || !!state.metadata?.med_date;
+    const scheduled = state.metadata?.med_appt_saved === "true" || !!state.metadata?.med_date;
     const interviewDate = state.metadata?.interviewDate as string | undefined;
     if (!scheduled) {
       checks.push({
@@ -498,9 +553,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   step_3_2: ({ state }) => {
     const checks: StepCheck[] = [];
     const launched = state.metadata?.polio_launched === "true";
-    const polioChecks = state.metadata?.polio_checks as
-      | Record<string, boolean>
-      | undefined;
+    const polioChecks = state.metadata?.polio_checks as Record<string, boolean> | undefined;
     const anyChecked = polioChecks && Object.values(polioChecks).some(Boolean);
     if (!launched && !anyChecked) {
       checks.push({
@@ -556,11 +609,13 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     const requiredGroups = Array.isArray(groups)
       ? groups
           .filter(
-            (g) =>
-              typeof g?.badge === "string" &&
-              g.badge.toLowerCase().startsWith("required")
+            (g) => typeof g?.badge === "string" && g.badge.toLowerCase().startsWith("required")
           )
-          .map((g) => String(g?.label || "").replace(/^Bring\s*[—-]\s*/i, "").trim())
+          .map((g) =>
+            String(g?.label || "")
+              .replace(/^Bring\s*[—-]\s*/i, "")
+              .trim()
+          )
           .filter(Boolean)
       : [];
     if (requiredGroups.length > 0) {
@@ -659,10 +714,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
  * common cause of trouble than the underlying issue itself.
  */
 function ds260Disclosures(
-  answers:
-    | Record<string, Record<string, string | string[]> | undefined>
-    | null
-    | undefined
+  answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined
 ): StepCheck[] {
   if (!answers) return [];
   const checks: StepCheck[] = [];
@@ -712,10 +764,7 @@ function ds260Disclosures(
  * `ds260Disclosures`. Consistency with the filed DS-260 is the goal.
  */
 function interviewDisclosureReminders(
-  answers:
-    | Record<string, Record<string, string | string[]> | undefined>
-    | null
-    | undefined
+  answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined
 ): StepCheck[] {
   if (!answers) return [];
   const checks: StepCheck[] = [];
@@ -770,11 +819,10 @@ function receiptChecks(state: WizardState): StepCheck[] {
   if (receiptStepDone) return [];
 
   // Also check any metadata paths that some flows may write
-  const num = (
+  const num =
     (state.metadata?.receiptNum as string) ||
     (state.metadata?.receiptNumber as string) ||
-    (state.metadata?.uscis_receipt_number as string)
-  );
+    (state.metadata?.uscis_receipt_number as string);
   if (num) return [];
 
   return [

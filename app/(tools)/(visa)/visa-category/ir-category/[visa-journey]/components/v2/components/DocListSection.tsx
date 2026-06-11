@@ -39,6 +39,8 @@ interface DocListSectionProps {
   isDeletingIds: string[];
   isReloadingDocs: boolean;
   getVaultId: (item: DocItem) => string;
+  /** Optional custom vault-document finder (for dynamic-category matching) */
+  findVaultDoc?: (item: DocItem, docs: UploadedDoc[]) => UploadedDoc | undefined;
   onItemClick: (item: DocItem) => void;
   onPreview: (uploadedDocId: string) => void;
   onDelete: (id: string, name: string) => void;
@@ -73,6 +75,7 @@ export function DocListSection({
   isDeletingIds,
   isReloadingDocs,
   getVaultId,
+  findVaultDoc,
   onItemClick,
   onPreview,
   onDelete,
@@ -131,7 +134,9 @@ export function DocListSection({
               {group.items.map((item) => {
                 const st = docsStatus[item.id] || "not-started";
                 const vaultId = getVaultId(item);
-                const uploadedDoc = uploadedDocuments.find((ud) => ud.documentDefId === vaultId);
+                const uploadedDoc = findVaultDoc
+                  ? findVaultDoc(item, uploadedDocuments)
+                  : uploadedDocuments.find((ud) => ud.documentDefId === vaultId);
                 const isUploadedInVault = !!uploadedDoc;
                 const isDeleting = uploadedDoc ? isDeletingIds.includes(uploadedDoc.id) : false;
 

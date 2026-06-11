@@ -23,6 +23,8 @@ export interface AggregatedIssue {
   chapterIdx: number;
   /** Array index within chapter.steps — used for navigation */
   stepIdx: number;
+  /** When true, the item has been addressed — shows checkmark and disables navigation */
+  resolved?: boolean;
 }
 
 /** Extract step number from JSON or fall back to parsing the step_key */
@@ -133,6 +135,7 @@ export function aggregateChapter1Issues({
         stepNumber: getStepNumber(step, i),
         chapterIdx: 0,
         stepIdx: i,
+        resolved: c.resolved,
       });
     }
   }
@@ -186,6 +189,7 @@ export function aggregateChapter2Issues({
         stepNumber: getStepNumber(step, i),
         chapterIdx: 1,
         stepIdx: i,
+        resolved: c.resolved,
       });
     }
   }
@@ -247,6 +251,7 @@ export function aggregateChapter3Issues({
         stepNumber: getStepNumber(step, i),
         chapterIdx: 2,
         stepIdx: i,
+        resolved: c.resolved,
       });
     }
   }
