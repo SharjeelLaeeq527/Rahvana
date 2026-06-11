@@ -31,6 +31,7 @@ export async function POST(request: NextRequest) {
       productTier,
       userId,
       consultationId,
+      consultationDetails,
       appointmentId,
       policeVerificationId,
       documentTranslationId,
@@ -288,10 +289,65 @@ export async function POST(request: NextRequest) {
         visa_category: effectiveVisaCategory,
       };
     }
-    // ================================================
-    // CONSULTATION — One-time Payment
-    // ================================================
-    else if (consultationId) {
+    else if (consultationDetails) {
+      const referenceId = `REQ-${Math.floor(100000 + Math.random() * 900000)}`;
+      const consultationPrice = 99; // $99 per consultation
+
+      sessionParams.mode = "payment";
+      sessionParams.line_items = [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Consultation Booking",
+              description: `${consultationDetails.issue_category} - ${consultationDetails.visa_category || "IR-1 / CR-1"}`,
+            },
+            unit_amount: consultationPrice * 100,
+          },
+          quantity: 1,
+        },
+      ];
+
+      // Helper to split a long string into chunks of max 450 chars for Stripe metadata
+      const splitMetadataString = (str: string, prefix: string) => {
+        const chunkLimit = 450;
+        const meta: Record<string, string> = {};
+        if (!str) return meta;
+        let index = 1;
+        for (let i = 0; i < str.length; i += chunkLimit) {
+          meta[`${prefix}_${index}`] = str.substring(i, i + chunkLimit);
+          index++;
+        }
+        return meta;
+      };
+
+      const summaryMeta = splitMetadataString(consultationDetails.case_summary || "", "c_summary");
+
+      sessionParams.metadata = {
+        ...sessionParams.metadata,
+        product_type: "consultation",
+        product_id: referenceId, // store referenceId as product_id in payment
+        consultation_reference: referenceId,
+        c_reference_id: referenceId,
+        c_issue_category: consultationDetails.issue_category || "",
+        c_visa_category: consultationDetails.visa_category || "",
+        c_case_stage: consultationDetails.case_stage || "",
+        c_urgency: consultationDetails.urgency || "normal",
+        c_preferred_language: consultationDetails.preferred_language || "English",
+        c_full_name: consultationDetails.full_name || "",
+        c_email: consultationDetails.email || "",
+        c_whatsapp_phone: consultationDetails.whatsapp_phone || "",
+        c_embassy_consulate: consultationDetails.embassy_consulate || "",
+        c_selected_slot: consultationDetails.selected_slot || "",
+        c_alternate_slots: Array.isArray(consultationDetails.alternate_slots) 
+          ? consultationDetails.alternate_slots.join(",") 
+          : "",
+        c_attachments: Array.isArray(consultationDetails.attachments) 
+          ? consultationDetails.attachments.join(",") 
+          : "",
+        ...summaryMeta,
+      };
+    } else if (consultationId) {
       const { data: consultation, error: consultationError } = await supabase
         .from("consultation_bookings")
         .select("*")

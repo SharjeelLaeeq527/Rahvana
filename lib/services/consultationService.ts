@@ -91,10 +91,12 @@ export const consultationService = {
   async createBooking(
     bookingData: Omit<
       ConsultationBooking,
-      "id" | "reference_id" | "created_at" | "updated_at" | "expires_at"
+      "id" | "created_at" | "updated_at" | "expires_at"
     > & {
+      reference_id?: string;
       status?: ConsultationBooking["status"];
       payment_status?: ConsultationBooking["payment_status"];
+      payment_id?: string | null;
     }
   ) {
     if (!supabase) {
@@ -102,8 +104,8 @@ export const consultationService = {
       throw new Error(Errors.msg(Errors.E.CONSULTATION_SUPABASE_NOT_INITIALIZED));
     }
 
-    // Generate reference ID
-    const referenceId = `REQ-${Math.floor(100000 + Math.random() * 900000)}`;
+    // Generate reference ID if not provided
+    const referenceId = bookingData.reference_id || `REQ-${Math.floor(100000 + Math.random() * 900000)}`;
 
     // Normalize urgency for database check constraint (must be 'normal' or 'urgent')
     const normalizedUrgency =
@@ -131,6 +133,7 @@ export const consultationService = {
       reference_id: referenceId,
       status: bookingStatus,
       payment_status: bookingPaymentStatus,
+      payment_id: bookingData.payment_id || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Expires in 24 hours if not approved
@@ -186,6 +189,8 @@ export const consultationService = {
         ? result.alternate_slots.map((slot: string) => new Date(slot))
         : undefined,
       admin_notes: result.admin_notes,
+      payment_status: result.payment_status ?? null,
+      payment_id: result.payment_id ?? null,
       created_at: new Date(result.created_at),
       updated_at: new Date(result.updated_at),
       expires_at: result.expires_at ? new Date(result.expires_at) : undefined,

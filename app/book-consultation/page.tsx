@@ -791,28 +791,28 @@ const ConsultationBookingPage = () => {
           ""
         );
 
-      const payload = {
-        ...formData,
-        whatsapp_phone: finalPhoneStr,
-        attachments: uploadedPaths,
-        selected_slot: formData.selected_slot?.toISOString(),
-        alternate_slots: formData.alternate_slots?.map((slot) => slot.toISOString()),
-        payment_status: shouldConsumeCredit ? "paid" : "pending",
-      };
+      if (shouldConsumeCredit) {
+        const payload = {
+          ...formData,
+          whatsapp_phone: finalPhoneStr,
+          attachments: uploadedPaths,
+          selected_slot: formData.selected_slot?.toISOString(),
+          alternate_slots: formData.alternate_slots?.map((slot) => slot.toISOString()),
+          payment_status: "paid",
+        };
 
-      console.log("Final Payload:", payload);
+        console.log("Final Free Payload:", payload);
 
-      const response = await fetch("/api/consultation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+        const response = await fetch("/api/consultation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
 
-      if (response.ok) {
-        const result = await response.json();
+        if (response.ok) {
+          const result = await response.json();
 
-        // Consume credit ONLY after successful booking creation!
-        if (shouldConsumeCredit) {
+          // Consume credit ONLY after successful booking creation!
           try {
             const reservation = await consumeAccess("expert_consultation");
             if (reservation.allowed && reservation.data?.remaining !== undefined) {
@@ -821,47 +821,66 @@ const ConsultationBookingPage = () => {
           } catch (consumeErr) {
             console.error("Failed to consume credit after booking:", consumeErr);
           }
-        }
 
-        // If not using credit, redirect to Stripe checkout!
-        if (!shouldConsumeCredit && user?.id) {
-          try {
-            const stripeRes = await fetch("/api/stripe/checkout", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                consultationId: result.id,
-                userId: user.id,
-              }),
-            });
-
-            const stripeData = await stripeRes.json();
-
-            if (!stripeRes.ok) {
-              throw new Error(stripeData.error || "Failed to create checkout session");
-            }
-
-            if (stripeData.url) {
-              window.location.href = stripeData.url;
-              return; // Do not show confirmation screen yet since they are redirecting to pay
-            } else {
-              throw new Error("No checkout URL returned");
-            }
-          } catch (stripeErr: any) {
-            console.error("Checkout redirection failed:", stripeErr);
-            showToast(`Redirection failed: ${stripeErr.message || stripeErr}`, "error");
-          }
-        } else {
           // Free booking -> show confirmation directly!
           setReferenceId(result.reference_id);
           setShowConfirmation(true);
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Submission failed:", errorData);
+          showToast(`Failed to submit: ${errorData.error || "Check console for details"}`, "error");
         }
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Submission failed:", errorData);
-        showToast(`Failed to submit: ${errorData.error || "Check console for details"}`, "error");
+        // Direct checkout for paid bookings (decoupling reservation from API hit before checkout)
+        if (!user?.id) {
+          showToast("User session not found. Please log in again.", "error");
+          return;
+        }
+
+        const consultationDetails = {
+          issue_category: formData.issue_category,
+          visa_category: formData.visa_category,
+          case_stage: formData.case_stage,
+          urgency: formData.urgency || "normal",
+          preferred_language: formData.preferred_language || "English",
+          full_name: formData.full_name,
+          email: formData.email,
+          whatsapp_phone: finalPhoneStr,
+          embassy_consulate: formData.embassy_consulate || "",
+          case_summary: formData.case_summary,
+          attachments: uploadedPaths,
+          selected_slot: formData.selected_slot?.toISOString(),
+          alternate_slots: formData.alternate_slots?.map((slot) => slot.toISOString()) || [],
+        };
+
+        try {
+          const stripeRes = await fetch("/api/stripe/checkout", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              consultationDetails,
+              userId: user.id,
+            }),
+          });
+
+          const stripeData = await stripeRes.json();
+
+          if (!stripeRes.ok) {
+            throw new Error(stripeData.error || "Failed to create checkout session");
+          }
+
+          if (stripeData.url) {
+            window.location.href = stripeData.url;
+            return; // Redirecting to Stripe
+          } else {
+            throw new Error("No checkout URL returned");
+          }
+        } catch (stripeErr: any) {
+          console.error("Checkout redirection failed:", stripeErr);
+          showToast(`Redirection failed: ${stripeErr.message || stripeErr}`, "error");
+        }
       }
     } catch (error) {
       console.error("Submission error:", error);

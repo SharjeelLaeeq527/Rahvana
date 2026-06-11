@@ -22,6 +22,7 @@ export interface ConsultationBooking {
     | "completed"
     | "canceled";
   payment_status?: "pending" | "paid" | "free" | "failed" | null;
+  payment_id?: string | null;
   admin_notes?: string;
   created_at: Date;
   updated_at: Date;
