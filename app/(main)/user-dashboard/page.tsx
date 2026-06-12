@@ -257,7 +257,7 @@ const UserDashboard = () => {
 
       {/* Dialog modal to show requests and statuses */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-        <DialogContent className="max-w-2xl bg-white rounded-2xl p-0 shadow-xl max-h-[85vh] overflow-hidden border border-gray-100 flex flex-col">
+        <DialogContent className="w-[calc(100%-2rem)] md:w-full max-w-2xl bg-white rounded-2xl p-0 shadow-xl max-h-[85vh] overflow-hidden border border-gray-100 flex flex-col">
           {/* Close button in top-right */}
           <button
             onClick={() => setIsModalOpen(false)}
