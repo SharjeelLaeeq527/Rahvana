@@ -1197,6 +1197,12 @@ export function TwoWaysSection() {
   const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [signpostStyle, setSignpostStyle] = useState<"A" | "B">("A");
 
+  const handleSetHoveredSide = (side: "left" | "right" | null) => {
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+      setHoveredSide(side);
+    }
+  };
+
   const journeyHref = "/visa-category/ir-category/ir1-journey";
   const toolsHref = "/tools";
 
@@ -1230,13 +1236,13 @@ export function TwoWaysSection() {
               <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 lg:gap-8 items-center w-full max-w-7xl">
                 {/* Left Side Option: Follow Roadmap */}
                 <motion.div
-                  className={`flex flex-col items-center text-center lg:items-end lg:text-right transition-all duration-300 p-4 rounded-2xl border ${
+                  className={`flex flex-col items-center text-center lg:items-end lg:text-right transition-all duration-300 p-2 sm:p-4 rounded-2xl border ${
                     hoveredSide === "left"
                       ? "border-teal-500/30 bg-teal-50/20 shadow-md shadow-teal-500/5"
                       : "border-transparent bg-transparent"
                   }`}
-                  onMouseEnter={() => setHoveredSide("left")}
-                  onMouseLeave={() => setHoveredSide(null)}
+                  onMouseEnter={() => handleSetHoveredSide("left")}
+                  onMouseLeave={() => handleSetHoveredSide(null)}
                   animate={
                     hoveredSide === "right"
                       ? { opacity: 0.5, scale: 0.98 }
@@ -1287,8 +1293,8 @@ export function TwoWaysSection() {
                     <motion.div
                       className="relative w-[230px] h-[52px] cursor-pointer drop-shadow-md select-none"
                       onClick={() => (window.location.href = journeyHref)}
-                      onMouseEnter={() => setHoveredSide("left")}
-                      onMouseLeave={() => setHoveredSide(null)}
+                      onMouseEnter={() => handleSetHoveredSide("left")}
+                      onMouseLeave={() => handleSetHoveredSide(null)}
                       animate={
                         hoveredSide === "left"
                           ? { x: -8, scale: 1.02 }
@@ -1342,8 +1348,8 @@ export function TwoWaysSection() {
                     <motion.div
                       className="relative w-[230px] h-[52px] cursor-pointer drop-shadow-md select-none"
                       onClick={() => (window.location.href = toolsHref)}
-                      onMouseEnter={() => setHoveredSide("right")}
-                      onMouseLeave={() => setHoveredSide(null)}
+                      onMouseEnter={() => handleSetHoveredSide("right")}
+                      onMouseLeave={() => handleSetHoveredSide(null)}
                       animate={
                         hoveredSide === "right"
                           ? { x: 8, scale: 1.02 }
@@ -1418,13 +1424,13 @@ export function TwoWaysSection() {
 
                 {/* Right Side Option: Use Tools */}
                 <motion.div
-                  className={`flex flex-col items-center text-center lg:items-start lg:text-left transition-all duration-300 p-4 rounded-2xl border ${
+                  className={`flex flex-col items-center text-center lg:items-start lg:text-left transition-all duration-300 p-2 sm:p-4 rounded-2xl border ${
                     hoveredSide === "right"
                       ? "border-orange-500/30 bg-orange-50/10 shadow-md shadow-orange-500/5"
                       : "border-transparent bg-transparent"
                   }`}
-                  onMouseEnter={() => setHoveredSide("right")}
-                  onMouseLeave={() => setHoveredSide(null)}
+                  onMouseEnter={() => handleSetHoveredSide("right")}
+                  onMouseLeave={() => handleSetHoveredSide(null)}
                   animate={
                     hoveredSide === "left"
                       ? { opacity: 0.5, scale: 0.98 }
