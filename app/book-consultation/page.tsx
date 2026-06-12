@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Calendar,
   Clock,
@@ -159,8 +159,17 @@ const ConsultationBookingPage = () => {
     return summary.trim().length >= 20;
   };
 
+  const searchParams = useSearchParams();
+
   // View state
   const [activeView, setActiveView] = useState<"booking" | "requests">("booking");
+
+  useEffect(() => {
+    const tab = searchParams?.get("tab");
+    if (tab === "requests" || tab === "my-requests") {
+      setActiveView("requests");
+    }
+  }, [searchParams]);
   const [userBookings, setUserBookings] = useState<Booking[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
