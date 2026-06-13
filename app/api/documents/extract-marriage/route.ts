@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 import { parseMarriageText } from "@/lib/document-ocr/marriageParser";
+import { callVisionFallback } from "@/lib/document-ocr/visionFallback";
 
 // Mirrors app/api/documents/extract-passport — same proven OCR.space (free) pattern.
 // Reads a marriage document (NADRA MRC / Nikah Nama English translation) and
@@ -88,21 +89,31 @@ export async function POST(request: NextRequest) {
       .join("\n")
       .trim();
 
-    if (!rawText && responseJson.IsErroredOnProcessing) {
-      return NextResponse.json(
-        {
-          error:
-            responseJson.ErrorMessage ||
-            responseJson.ErrorDetails ||
-            "OCR could not read this marriage document.",
-        },
-        { status: 422 }
-      );
-    }
-
+    // NOTE: we no longer hard-fail (422) when OCR.space reads nothing — that is
+    // exactly the Urdu Nikah Nama case the vision fallback below is meant to catch.
     const parsed = parseMarriageText(rawText);
 
+    const fields: Record<string, string | undefined> = { ...parsed.fields };
+    const confidence: Record<string, number> = { ...parsed.confidence };
+    let source: string = parsed.source;
     const warnings = [...parsed.warnings];
+
+    // Vision fallback: the free English OCR can't read an Urdu Nikah Nama or a
+    // handwritten cert, so when no marriage date was found we ask the backend
+    // vision model to read the image directly. Only fires when needed (cost).
+    if (!fields["relationship.marriageDate"]) {
+      const vision = await callVisionFallback(file, "marriage");
+      if (vision?.ok) {
+        Object.assign(fields, vision.fields);
+        Object.assign(confidence, vision.confidence);
+        source = "gemini-vision";
+        // The text parser's "not detected" hint is no longer true.
+        const idx = warnings.findIndex((w) => /not confidently detected/i.test(w));
+        if (idx !== -1) warnings.splice(idx, 1);
+      }
+      if (vision?.warnings?.length) warnings.push(...vision.warnings);
+    }
+
     if (responseJson.IsErroredOnProcessing) {
       warnings.push(
         responseJson.ErrorMessage ||
@@ -112,16 +123,16 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("[extract-marriage] parsed", {
-      source: parsed.source,
-      keys: Object.keys(parsed.fields),
-      warnings: parsed.warnings.length,
+      source,
+      keys: Object.keys(fields),
+      warnings: warnings.length,
     });
 
     return NextResponse.json({
       docType: "marriage",
-      fields: parsed.fields,
-      confidence: parsed.confidence,
-      source: parsed.source,
+      fields,
+      confidence,
+      source,
       warnings,
     });
   } catch (error) {

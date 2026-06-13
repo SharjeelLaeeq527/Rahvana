@@ -19,39 +19,65 @@
 // as lib/formConfig getFormConfig).
 
 export const FORM_FIELD_OVERRIDES: Record<string, Record<string, string[]>> = {
+  // ── Form I-130 — Part 1 "Information About You" = the SPONSOR (US petitioner) ──
+  // The account holder is the BENEFICIARY, so the top-level profile is the WRONG
+  // person for these fields. They read only from the sponsor.* section.
+  i130: {
+    family_name: ["sponsor.name.last"],
+    given_name: ["sponsor.name.first"],
+    middle_name: ["sponsor.name.middle"],
+    date_of_birth: ["sponsor.dateOfBirth"],
+    city_of_birth: ["sponsor.placeOfBirth.city"],
+    country_of_birth: ["sponsor.placeOfBirth.country"],
+    sex: ["sponsor.sex"],
+    ssn: ["sponsor.ssn"],
+    a_number: ["sponsor.alienNumber"],
+    uscis_account: ["sponsor.uscisAccountNumber"],
+    current_street: ["sponsor.address.street"],
+    current_city: ["sponsor.address.city"],
+    current_state: ["sponsor.address.state"],
+    current_zip: ["sponsor.address.zipCode"],
+    current_country: ["sponsor.address.country"],
+  },
+
   // ── Form I-130A — "Information About You" = the spouse BENEFICIARY ──
+  // The account holder IS the beneficiary (visa applicant) — see
+  // project_account_holder_is_beneficiary. Their own data (incl. parents from the
+  // birth-cert OCR) lives on the TOP-LEVEL profile, so each field falls back to the
+  // top-level path when beneficiary.* is empty.
   i130a: {
-    p1_family_name: ["beneficiary.name.last"],
-    p1_given_name: ["beneficiary.name.first"],
-    p1_middle_name: ["beneficiary.name.middle"],
+    p1_family_name: ["beneficiary.name.last", "name.last"],
+    p1_given_name: ["beneficiary.name.first", "name.first"],
+    p1_middle_name: ["beneficiary.name.middle", "name.middle"],
     // Current country of residence; fall back to nationality when residence unknown.
     p1_addr1_country: ["beneficiary.countryOfResidence", "beneficiary.nationality"],
-    // The parents on I-130A are the BENEFICIARY's parents. We don't capture those
-    // yet, so map them to (currently empty) beneficiary parent paths — this stops the
-    // global mapper from leaking the PETITIONER's parents into these fields.
-    p1_parent1_family_name: ["beneficiary.father.name.last"],
-    p1_parent1_given_name: ["beneficiary.father.name.first"],
-    p1_parent1_dob: ["beneficiary.father.dateOfBirth"],
-    p1_parent2_family_name: ["beneficiary.mother.name.last"],
-    p1_parent2_given_name: ["beneficiary.mother.name.first"],
-    p1_parent2_dob: ["beneficiary.mother.dateOfBirth"],
+    // The parents on I-130A are the BENEFICIARY's parents = the account holder's
+    // parents (top-level father.*/mother.*, filled by the birth-certificate OCR).
+    p1_parent1_family_name: ["beneficiary.father.name.last", "father.name.last"],
+    p1_parent1_given_name: ["beneficiary.father.name.first", "father.name.first"],
+    p1_parent1_dob: ["beneficiary.father.dateOfBirth", "father.dateOfBirth"],
+    p1_parent2_family_name: ["beneficiary.mother.name.last", "mother.name.last"],
+    p1_parent2_given_name: ["beneficiary.mother.name.first", "mother.name.first"],
+    p1_parent2_dob: ["beneficiary.mother.dateOfBirth", "mother.dateOfBirth"],
   },
 
   // ── Form DS-260 — Section 1 is about the BENEFICIARY (visa applicant) ──
+  // The visa applicant is the account holder, so fall back to the top-level
+  // profile (where the passport/CNIC/birth-cert OCR saves) when beneficiary.* is empty.
   ds260: {
-    "S01-Q001_FamilyName": ["beneficiary.name.last"],
-    "S01-Q001_GivenName": ["beneficiary.name.first"],
-    "S01-Q001_MiddleName": ["beneficiary.name.middle"],
-    "S01-Q004": ["beneficiary.sex"], // Sex
-    "S01-Q006": ["beneficiary.dateOfBirth"], // Date of birth
-    "S01-Q007": ["beneficiary.placeOfBirth.city"], // City of birth
-    "S01-Q008": ["beneficiary.placeOfBirth.state"], // State/province of birth
-    "S01-Q009": ["beneficiary.placeOfBirth.country"], // Country of birth
-    "S01-Q010": ["beneficiary.nationality"], // Nationality
-    "S01-Q012": ["beneficiary.passportNumber"], // Passport number
-    "S01-Q013": ["beneficiary.passportCountry", "beneficiary.nationality"], // Issuing country
-    "S01-Q014": ["beneficiary.passportIssueDate"], // Issue date
-    "S01-Q015": ["beneficiary.passportExpiry"], // Expiry date
+    "S01-Q001_FamilyName": ["beneficiary.name.last", "name.last"],
+    "S01-Q001_GivenName": ["beneficiary.name.first", "name.first"],
+    "S01-Q001_MiddleName": ["beneficiary.name.middle", "name.middle"],
+    "S01-Q004": ["beneficiary.sex", "sex"], // Sex
+    "S01-Q006": ["beneficiary.dateOfBirth", "dateOfBirth"], // Date of birth
+    "S01-Q007": ["beneficiary.placeOfBirth.city", "placeOfBirth.city"], // City of birth
+    "S01-Q008": ["beneficiary.placeOfBirth.state", "placeOfBirth.state"], // State/province of birth
+    "S01-Q009": ["beneficiary.placeOfBirth.country", "placeOfBirth.country"], // Country of birth
+    "S01-Q010": ["beneficiary.nationality", "nationality"], // Nationality
+    "S01-Q012": ["beneficiary.passportNumber", "passportNumber"], // Passport number
+    "S01-Q013": ["beneficiary.passportCountry", "beneficiary.nationality", "passportCountry", "nationality"], // Issuing country
+    "S01-Q014": ["beneficiary.passportIssueDate", "passportIssueDate"], // Issue date
+    "S01-Q015": ["beneficiary.passportExpiry", "passportExpiry"], // Expiry date
   },
 };
 

@@ -105,8 +105,9 @@ export function DocumentUploadModal({
     if (ocrPhase !== "confirm" || !profile) return null;
     const stored: Record<string, string> = {};
     for (const { key } of OCR_FIELD_ORDER) {
-      // Beneficiary docs store under beneficiary.* (relationship.* is self-only).
-      const path = ocrConfig?.target === "beneficiary" ? `beneficiary.${key}` : key;
+      // Non-self docs store under that person's subsection (sponsor.* / beneficiary.*).
+      const path =
+        ocrConfig && ocrConfig.target !== "self" ? `${ocrConfig.target}.${key}` : key;
       const v = readProfilePath(profile, path);
       if (v) stored[key] = v;
     }

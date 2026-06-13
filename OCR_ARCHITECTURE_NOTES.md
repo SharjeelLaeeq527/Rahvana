@@ -89,6 +89,15 @@
 
 ---
 
+## Module 8 — Gemini Vision fallback (Urdu / handwritten docs)
+
+**Purpose:** When the free English OCR (OCR.space) reads nothing useful — Urdu Nikah Nama, handwritten cert — read the image directly with a vision model. Built on the **OpenAI Agents SDK driving Gemini** via its OpenAI-compatible endpoint (NOT `@google/generative-ai`).
+
+- `backend/app/services/document_ocr/vision_extractor.py` — `extract_fields(image_bytes, mime, doc_type)`. `AsyncOpenAI(base_url=gemini-openai-compat, api_key=GEMINI_API_KEY)` + `OpenAIChatCompletionsModel("gemini-2.5-flash")` + an `Agent` per docType. Returns canonical dot-path fields (same shape as the text parsers); validates dates to YYYY-MM-DD; never raises (graceful `ok:false`).
+- `backend/app/api/v1/document_vision.py` — `POST /api/v1/documents/vision-extract` (multipart `file` + `doc_type`). Registered in `backend/main.py`.
+- `lib/document-ocr/visionFallback.ts` — server-side `callVisionFallback(file, docType)`; calls the backend (`PYTHON_API_URL` → `COMPRESSION_API_URL` → localhost), 30s timeout, returns null on any failure.
+- Wired in `extract-passport/route.ts` (fires when `source === "none"`) and `extract-marriage/route.ts` (fires when no `relationship.marriageDate`). On success `source` becomes `"gemini-vision"`. **Only fires when OCR.space found nothing → keeps cost down.** Same pattern as `whatsapp_assistant/main.py`.
+
 ## End-to-end data flow
 
 ```

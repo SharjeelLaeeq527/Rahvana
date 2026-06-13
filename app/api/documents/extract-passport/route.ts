@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 import { parsePassportText } from "@/lib/document-ocr/passportParser";
+import { callVisionFallback } from "@/lib/document-ocr/visionFallback";
 
 // Mirrors app/api/receipt/ocr/route.ts — same proven OCR.space (free) pattern.
 const OCR_SPACE_ENDPOINT = "https://api.ocr.space/parse/image";
@@ -86,21 +87,26 @@ export async function POST(request: NextRequest) {
       .join("\n")
       .trim();
 
-    if (!rawText && responseJson.IsErroredOnProcessing) {
-      return NextResponse.json(
-        {
-          error:
-            responseJson.ErrorMessage ||
-            responseJson.ErrorDetails ||
-            "OCR could not read this passport.",
-        },
-        { status: 422 }
-      );
-    }
-
     const parsed = parsePassportText(rawText);
 
+    const fields: Record<string, string | undefined> = { ...parsed.fields };
+    const confidence: Record<string, number> = { ...parsed.confidence };
+    let source: string = parsed.source;
     const warnings = [...parsed.warnings];
+
+    // Vision fallback: the free English OCR can fail on a glare-heavy or
+    // unusual scan. When nothing was read, ask the backend vision model to read
+    // the image directly. Only fires when the text OCR found nothing (cost).
+    if (parsed.source === "none") {
+      const vision = await callVisionFallback(file, "passport");
+      if (vision?.ok) {
+        Object.assign(fields, vision.fields);
+        Object.assign(confidence, vision.confidence);
+        source = "gemini-vision";
+      }
+      if (vision?.warnings?.length) warnings.push(...vision.warnings);
+    }
+
     if (responseJson.IsErroredOnProcessing) {
       warnings.push(
         responseJson.ErrorMessage ||
@@ -110,16 +116,16 @@ export async function POST(request: NextRequest) {
     }
 
     console.log("[extract-passport] parsed", {
-      source: parsed.source,
-      keys: Object.keys(parsed.fields),
-      warnings: parsed.warnings.length,
+      source,
+      keys: Object.keys(fields),
+      warnings: warnings.length,
     });
 
     return NextResponse.json({
       docType: "passport",
-      fields: parsed.fields,
-      confidence: parsed.confidence,
-      source: parsed.source,
+      fields,
+      confidence,
+      source,
       warnings,
     });
   } catch (error) {

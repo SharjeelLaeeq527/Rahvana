@@ -43,6 +43,7 @@ export interface MasterProfile {
   dateOfBirth: string;
   placeOfBirth: {
     city: string;
+    state?: string; // Province/state — DS-260 S01-Q008 asks it; mapper already maps it
     country: string;
   };
   sex: "Male" | "Female";
@@ -111,10 +112,23 @@ export interface MasterProfile {
     meetingProof?: boolean;
   };
 
-  // Sponsor Information (when user is the beneficiary applying for visa)
+  // Sponsor / Petitioner Information — the US spouse. The account holder is the
+  // BENEFICIARY (top-level fields are theirs), so the sponsor's own biographic
+  // data lives here. Feeds I-130 Part 1 (petitioner) autofill and the sponsor's
+  // document OCR (US passport / citizenship proof).
   sponsor?: {
     name: PersonName;
     dateOfBirth: string;
+    placeOfBirth?: { city?: string; state?: string; country?: string };
+    sex?: "Male" | "Female";
+    nationality?: string;
+    passportNumber?: string;
+    passportIssueDate?: string;
+    passportExpiry?: string;
+    passportCountry?: string;
+    ssn?: string;
+    alienNumber?: string;
+    uscisAccountNumber?: string;
     phone?: string;
     email?: string;
     address?: Address;
@@ -130,6 +144,7 @@ export interface MasterProfile {
     nationality?: string; // Country of citizenship (e.g. from passport OCR)
     sex?: "Male" | "Female";
     placeOfBirth?: { city?: string; state?: string; country?: string };
+    cnic?: string; // National ID (from CNIC OCR)
     passportNumber?: string;
     passportIssueDate?: string;
     passportExpiry?: string;

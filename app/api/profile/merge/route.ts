@@ -17,6 +17,9 @@ const SENSITIVE_KEYS = new Set([
   "passportExpiry",
   "passportCountry",
   "passportIssueDate",
+  // GET /api/profile lists cnic in SENSITIVE_TOP_LEVEL — keep the write side in sync
+  // so the OCR'd CNIC is encrypted at rest like the passport identifiers.
+  "cnic",
 ]);
 
 // Only these canonical paths may be written through this route (allow-list).
@@ -34,20 +37,44 @@ const ALLOWED_PATHS = new Set([
   "relationship.marriageDate",
   "relationship.marriagePlace.city",
   "relationship.marriagePlace.country",
+  // Civil identity docs (CNIC, birth certificate) for the applicant (self).
+  "cnic",
+  "placeOfBirth.city",
+  "placeOfBirth.country",
+  // Parents — from the birth certificate. Feed DS-260 Section 2 + I-130A.
+  "father.name.first",
+  "father.name.last",
+  "mother.name.first",
+  "mother.name.last",
 ]);
 
-// When the document belongs to the beneficiary (foreign spouse) rather than the
-// account holder, the same canonical OCR keys map onto MasterProfile.beneficiary.*
-// (see types/profile.ts — beneficiary only carries name + dateOfBirth).
-const BENEFICIARY_PATH_MAP: Record<string, string> = {
-  "name.first": "beneficiary.name.first",
-  "name.last": "beneficiary.name.last",
-  dateOfBirth: "beneficiary.dateOfBirth",
-  nationality: "beneficiary.nationality",
-  sex: "beneficiary.sex",
-  passportNumber: "beneficiary.passportNumber",
-  passportExpiry: "beneficiary.passportExpiry",
-  passportCountry: "beneficiary.passportCountry",
+// When the document belongs to someone other than the account holder, the same
+// canonical OCR keys remap onto that person's MasterProfile subsection
+// (see types/profile.ts). "beneficiary" is a legacy subsection kept as a form
+// fallback; "sponsor" is the US petitioner spouse.
+const PERSON_KEYS = [
+  "name.first",
+  "name.last",
+  "dateOfBirth",
+  "nationality",
+  "sex",
+  "passportNumber",
+  "passportExpiry",
+  "passportCountry",
+  "cnic",
+  "placeOfBirth.city",
+  "placeOfBirth.country",
+] as const;
+
+function buildPathMap(prefix: "beneficiary" | "sponsor"): Record<string, string> {
+  const map: Record<string, string> = {};
+  for (const key of PERSON_KEYS) map[key] = `${prefix}.${key}`;
+  return map;
+}
+
+const TARGET_PATH_MAPS: Record<string, Record<string, string>> = {
+  beneficiary: buildPathMap("beneficiary"),
+  sponsor: buildPathMap("sponsor"),
 };
 
 function isObject(val: unknown): val is Record<string, unknown> {
@@ -101,9 +128,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // "self" (default) writes to the top-level profile (the account holder /
-    // petitioner). "beneficiary" remaps the same canonical keys onto beneficiary.*.
-    const target = body?.target === "beneficiary" ? "beneficiary" : "self";
+    // "self" (default) writes to the top-level profile (the account holder =
+    // the beneficiary). "beneficiary" / "sponsor" remap the same canonical keys
+    // onto that person's subsection.
+    const target =
+      body?.target === "beneficiary" || body?.target === "sponsor" ? body.target : "self";
 
     // Build the delta from allow-listed, non-empty fields (encrypt sensitive ones).
     const delta: Record<string, unknown> = {};
@@ -112,13 +141,14 @@ export async function POST(request: NextRequest) {
       if (!ALLOWED_PATHS.has(path)) continue;
       if (raw === undefined || raw === null || String(raw).trim() === "") continue;
 
-      // Beneficiary only carries name + dateOfBirth; skip keys that don't map.
-      const targetPath = target === "beneficiary" ? BENEFICIARY_PATH_MAP[path] : path;
+      // Subsections only carry biographic keys; skip keys that don't map.
+      const targetPath = target === "self" ? path : TARGET_PATH_MAPS[target][path];
       if (!targetPath) continue;
 
       const value = String(raw).trim();
-      // Sensitive encryption only applies to the account holder's own identifiers.
-      const stored = target === "self" && SENSITIVE_KEYS.has(path) ? encrypt(value) : value;
+      // Sensitive identifiers are encrypted for every person — GET /api/profile
+      // decrypts the matching subsection keys (SENSITIVE_NESTED).
+      const stored = SENSITIVE_KEYS.has(path) ? encrypt(value) : value;
       setNestedProperty(delta, targetPath, stored);
       written.push(targetPath);
     }

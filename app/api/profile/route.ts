@@ -30,7 +30,18 @@ const SENSITIVE_NESTED: Record<string, string[]> = {
   mailingAddress: ["street", "city", "state", "zipCode", "country"],
   father: ["dateOfBirth"],
   mother: ["dateOfBirth"],
-  sponsor: ["phone", "email"],
+  sponsor: [
+    "phone",
+    "email",
+    "passportNumber",
+    "passportIssueDate",
+    "passportExpiry",
+    "passportCountry",
+    "ssn",
+    "alienNumber",
+    "uscisAccountNumber",
+  ],
+  beneficiary: ["passportNumber", "passportIssueDate", "passportExpiry", "passportCountry", "cnic"],
   naturalizationInfo: ["certificateNumber", "placeOfIssuance", "dateOfIssuance"],
 };
 
