@@ -84,6 +84,7 @@ export const consultationService = {
       updated_at: new Date(booking.updated_at),
       expires_at: booking.expires_at ? new Date(booking.expires_at) : undefined,
       payment_status: booking.payment_status ?? null,
+      user_id: booking.user_id ?? null,
     })) as ConsultationBooking[];
   },
 
@@ -134,6 +135,7 @@ export const consultationService = {
       status: bookingStatus,
       payment_status: bookingPaymentStatus,
       payment_id: bookingData.payment_id || null,
+      user_id: bookingData.user_id || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Expires in 24 hours if not approved
@@ -191,6 +193,7 @@ export const consultationService = {
       admin_notes: result.admin_notes,
       payment_status: result.payment_status ?? null,
       payment_id: result.payment_id ?? null,
+      user_id: result.user_id ?? null,
       created_at: new Date(result.created_at),
       updated_at: new Date(result.updated_at),
       expires_at: result.expires_at ? new Date(result.expires_at) : undefined,
@@ -261,6 +264,7 @@ export const consultationService = {
         : undefined,
       admin_notes: result.admin_notes,
       payment_status: result.payment_status ?? null,
+      user_id: result.user_id ?? null,
       created_at: new Date(result.created_at),
       updated_at: new Date(result.updated_at),
       expires_at: result.expires_at ? new Date(result.expires_at) : undefined,
@@ -304,6 +308,7 @@ export const consultationService = {
         : undefined,
       admin_notes: data.admin_notes,
       payment_status: data.payment_status ?? null,
+      user_id: data.user_id ?? null,
       created_at: new Date(data.created_at),
       updated_at: new Date(data.updated_at),
       expires_at: data.expires_at ? new Date(data.expires_at) : undefined,

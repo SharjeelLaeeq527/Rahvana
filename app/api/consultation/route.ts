@@ -3,6 +3,7 @@ import { ConsultationRequest } from "@/types/consultation";
 import { consultationService } from "@/lib/services/consultationService";
 import { E, msg } from "@/lib/errors";
 import { triggerConsultationNotification } from "@/lib/notifications";
+import { createClient } from "@/lib/supabase/server";
 
 // Helper function to handle service errors (returns localized messages)
 const handleServiceError = (error: unknown, defaultMessage: string) => {
@@ -64,6 +65,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Retrieve authenticated user from session if any
+    let userId: string | null = null;
+    try {
+      const authClient = await createClient();
+      const { data: { user } } = await authClient.auth.getUser();
+      if (user) {
+        userId = user.id;
+      }
+    } catch (authError) {
+      console.warn("Could not retrieve session for consultation booking:", authError);
+    }
+
     // Create new booking
     const newBooking = await consultationService.createBooking({
       issue_category: data.issue_category,
@@ -82,6 +95,7 @@ export async function POST(request: NextRequest) {
         : undefined,
       payment_status: data.payment_status || "paid",
       status: data.status || "pending_approval",
+      user_id: userId,
     });
 
     // In a real app, you would send an email/SMS notification here

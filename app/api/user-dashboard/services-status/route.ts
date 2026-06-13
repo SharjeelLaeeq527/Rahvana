@@ -48,6 +48,28 @@ export async function GET() {
       console.error("Error fetching medical appointments:", appointmentsError);
     }
 
+    // Fetch Consultation Bookings matching user_id strictly
+    const { data: consultationData, error: consultationError } = await supabase
+      .from("consultation_bookings")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (consultationError) {
+      console.error("Error fetching consultation bookings:", consultationError);
+    }
+
+    // Fetch Translation Documents matching user_id strictly
+    const { data: translationsData, error: translationsError } = await supabase
+      .from("translation_documents")
+      .select("*")
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false });
+
+    if (translationsError) {
+      console.error("Error fetching translation documents:", translationsError);
+    }
+
     // Filter PCC requests for Sindh specifically (allowing empty/Unknown for test data)
     const sindhPccRequests = (pccData || []).filter(
       (req: any) =>
@@ -59,6 +81,8 @@ export async function GET() {
     return NextResponse.json({
       pccRequests: sindhPccRequests,
       medicalAppointments: appointmentsData || [],
+      consultationBookings: consultationData || [],
+      translationDocuments: translationsData || [],
     });
   } catch (error) {
     console.error("Services status fetch error:", error);

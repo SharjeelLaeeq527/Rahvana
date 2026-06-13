@@ -27,6 +27,7 @@ export interface ConsultationBooking {
   created_at: Date;
   updated_at: Date;
   expires_at?: Date;
+  user_id?: string | null;
 }
 
 export interface TimeSlot {
