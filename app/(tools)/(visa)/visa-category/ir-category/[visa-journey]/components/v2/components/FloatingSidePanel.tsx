@@ -47,22 +47,29 @@ export function FloatingSidePanel({
 
   return (
     <aside
-      className={`hidden xl:flex flex-col ${className ?? ""}`}
+      className={`hidden xl:block ${className ?? ""}`}
       style={{
         position: "fixed",
         top,
         right,
         width,
-        // Stop before the bottom step-nav bar (58px) + safe gap (16px)
-        maxHeight: `calc(100vh - ${top}px - 74px)`,
+        height: `calc(100vh - ${top}px - 74px)`,
         zIndex,
         opacity: hideForFooter ? 0 : 1,
         pointerEvents: hideForFooter ? "none" : "auto",
         transition: "opacity 0.25s ease",
       }}
     >
-      <div className="panel-scrollbar overflow-y-auto overscroll-contain flex-1 min-h-0 flex flex-col gap-2.5 pr-1.5">
-        {children}
+      <div
+        className="panel-scrollbar"
+        style={{
+          height: "100%",
+          overflowY: "auto",
+          overscrollBehavior: "contain",
+          paddingRight: 6,
+        }}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>{children}</div>
       </div>
     </aside>
   );

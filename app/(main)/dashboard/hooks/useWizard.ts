@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { E, msg } from "@/lib/errors";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
@@ -63,6 +63,8 @@ export function useWizard(options: UseWizardOptions = {}) {
   const [hasExistingProgress, setHasExistingProgress] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+
+  const {showToast} = useToast();
 
   // Keep a ref to the latest state to use in stable memoized actions
   const stateRef = useRef(state);
@@ -230,7 +232,7 @@ export function useWizard(options: UseWizardOptions = {}) {
         if (cancelled) return;
         console.error("[useWizard] Initialize error:", err);
         setError(err instanceof Error ? err : new Error(String(err)));
-        toast.error(msg(E.DASH_CLOUD_SYNC_FAILED));
+        showToast(msg(E.DASH_CLOUD_SYNC_FAILED), "error");
         setIsLoaded(true);
       }
     }
@@ -326,11 +328,11 @@ export function useWizard(options: UseWizardOptions = {}) {
         const currentState = stateRef.current;
         const { isLocked } = getJourneyLockStatus(currentState.metadata);
         if (isLocked) {
-          toast.error(msg(E.DASH_JOURNEY_STEP_LOCKED), {
-            description:
-              "This journey is in read-only mode. The 14-day window following your interview outcome has ended.",
-            duration: 4000,
-          });
+          showToast(
+            `${msg(E.DASH_JOURNEY_STEP_LOCKED)}.\nThis journey is in read-only mode. The 14-day window following your interview outcome has ended.`,
+            "error",
+            { duration: 4000 }
+          );
           return;
         }
 
@@ -389,10 +391,11 @@ export function useWizard(options: UseWizardOptions = {}) {
               .find((s) => !currentState.completedSteps.has(s.key));
 
             if (firstIncomplete) {
-              toast.error(`Required step pending: "${firstIncomplete.name}"`, {
-                description: "Please complete the required preceding step first.",
-                duration: 4000,
-              });
+              showToast(
+                `Required step pending: "${firstIncomplete.name}"\n Please complete the required preceding step first.`,
+                "error",
+                { duration: 4000 }
+              );
               return;
             }
           }
@@ -408,7 +411,7 @@ export function useWizard(options: UseWizardOptions = {}) {
             "[useWizard] toggleComplete: stepKey not found in stepMap, attempting sync..."
           );
           // (Rest of the sync logic skipped for brevity, but would use functional updates)
-          toast.error(msg(E.DASH_JOURNEY_STEP_LOCKED));
+          showToast(msg(E.DASH_JOURNEY_STEP_LOCKED), "error");
           return;
         }
 
@@ -548,7 +551,7 @@ export function useWizard(options: UseWizardOptions = {}) {
       uploadDocument: async (doc: string, file: File) => {
         setState((prev) => {
           if (userId && journeyId) {
-            toast.loading(`Saving ${file.name} to vault...`, { id: "vault-upload" });
+            showToast(`Saving ${file.name} to vault...`, "loading", { id: "vault-upload" });
             const documentDefId = mapDocumentNameToId(doc);
             const formData = new FormData();
             formData.append("file", file);
@@ -559,9 +562,9 @@ export function useWizard(options: UseWizardOptions = {}) {
               .then((res) => {
                 if (!res.ok) throw new Error();
                 useDocumentVaultStore.getState().reloadDocuments();
-                toast.success("Saved to vault", { id: "vault-upload" });
+                showToast("Saved to vault", "success", { id: "vault-upload" });
               })
-              .catch(() => toast.error(msg(E.DASH_VAULT_SAVE_FAILED), { id: "vault-upload" }));
+              .catch(() => showToast(msg(E.DASH_VAULT_SAVE_FAILED), "error", { id: "vault-upload" }));
           }
           return {
             ...prev,

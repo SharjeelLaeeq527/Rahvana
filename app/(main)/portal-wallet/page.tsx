@@ -9,7 +9,7 @@ import PortalCard from "./components/PortalCard";
 import CredentialFormModal from "./components/CredentialFormModal";
 import ViewCredentialModal from "./components/ViewCredentialModal";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 type PortalType = "USCIS" | "NVC" | "COURIER";
 
@@ -88,6 +88,8 @@ const PortalWallet: React.FC = () => {
   const [deletePortal, setDeletePortal] = useState<PortalType | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { showToast } = useToast();
+
   const fetchCredentials = useCallback(async () => {
     try {
       const res = await fetch(API_BASE);
@@ -116,11 +118,11 @@ const PortalWallet: React.FC = () => {
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error("Failed to save");
-      toast.success("Credentials saved successfully!");
+      showToast("Credentials saved successfully!", "success");
       setFormModal((prev) => ({ ...prev, open: false }));
       await fetchCredentials();
     } catch {
-      toast.error(msg(E.VAULT_CREDENTIAL_SAVE_FAILED));
+      showToast(msg(E.VAULT_CREDENTIAL_SAVE_FAILED), "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -140,14 +142,14 @@ const PortalWallet: React.FC = () => {
 
       if (!res.ok) throw new Error("Failed to delete");
 
-      toast.success("Credentials deleted successfully!");
+      showToast("Credentials deleted successfully!", "success");
 
       setShowConfirmation(false);
       setDeletePortal(null);
 
       await fetchCredentials();
     } catch {
-      toast.error(msg(E.VAULT_CREDENTIAL_DELETE_FAILED));
+      showToast(msg(E.VAULT_CREDENTIAL_DELETE_FAILED), "error");
     } finally {
       setIsSubmitting(false);
     }

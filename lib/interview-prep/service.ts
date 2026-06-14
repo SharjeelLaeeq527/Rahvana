@@ -10,12 +10,17 @@ import {
   saveInterviewResultsDB,
   getInterviewResultsDB,
   getInterviewSessionByCategory,
+  getInterviewSessionByJourneyId,
+  createJourneyInterviewSessionDB,
+  isJourneyActive,
+  getActiveJourneySession,
 } from "./data-access";
 import {
   InterviewSession,
   InterviewSessionInput,
   InterviewPrepOutput,
   GeneratedQuestion,
+  InterviewSessionSource,
 } from "./types";
 import { categoryLoader } from "./category-loader";
 import { loadRulesForCategory, getAppliedRules } from "./rules-loader";
@@ -61,12 +66,10 @@ class DynamicQuestionSelectionEngine {
         // Use highest priority from applied rules
         const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
         const maxPriority = Math.max(
-          ...appliedRules.map(
-            (r) => {
-              const boostedPriority = r.actions.priorityBoost?.[0] || "low";
-              return priorityOrder[boostedPriority];
-            },
-          ),
+          ...appliedRules.map((r) => {
+            const boostedPriority = r.actions.priorityBoost?.[0] || "low";
+            return priorityOrder[boostedPriority];
+          })
         );
         priority = maxPriority >= 3 ? "high" : maxPriority === 2 ? "medium" : "low";
         reason = appliedRules.map((r) => r.actions.reason).join("; ");
@@ -222,18 +225,53 @@ class AnswerGenerationEngine {
 
 // Service Functions for managing interview prep sessions and generating output
 
-//  Create a new interview session
+//  Create a new interview session (tool-based)
+//  With the (user_id, category_slug, source) unique constraint,
+//  tool sessions and journey sessions can coexist independently.
 export async function createInterviewSession(
-  sessionData: Omit<InterviewSessionInput, "user_id">,
+  sessionData: Omit<InterviewSessionInput, "user_id">
+): Promise<{
+  session: InterviewSession;
+  alreadyExists: boolean;
+  source?: "journey" | "tool";
+}> {
+  // Check for existing tool-based session for this category
+  const existingSession = await getInterviewSessionByCategory(sessionData.category_slug);
+
+  if (existingSession) {
+    return {
+      session: existingSession,
+      alreadyExists: true,
+      source: "tool",
+    };
+  }
+
+  // No existing tool session - create a new one
+  // Journey sessions are not checked here; they coexist independently
+  const session = await createInterviewSessionDB({
+    ...sessionData,
+    source: "tool",
+    status: "ready",
+  });
+
+  return {
+    session,
+    alreadyExists: false,
+    source: "tool",
+  };
+}
+
+// Create or get journey-based interview session
+// Called automatically when a journey is initialized
+export async function createJourneyInterviewSession(
+  journey_id: string,
+  category_slug: string = "ir-1-spouse" // Default to IR-1 spouse for now
 ): Promise<{
   session: InterviewSession;
   alreadyExists: boolean;
 }> {
-
-  // First check existing session
-  const existingSession = await getInterviewSessionByCategory(
-    sessionData.category_slug
-  );
+  // Check if journey session already exists
+  const existingSession = await getInterviewSessionByJourneyId(journey_id);
 
   if (existingSession) {
     return {
@@ -242,13 +280,80 @@ export async function createInterviewSession(
     };
   }
 
-  // Otherwise create new
-  const session = await createInterviewSessionDB(sessionData);
+  // Create new journey-based session
+  const session = await createJourneyInterviewSessionDB(journey_id, category_slug);
 
   return {
     session,
     alreadyExists: false,
   };
+}
+
+// Get interview session by journey ID (for journey-based access)
+export async function getInterviewSessionByJourney(
+  journey_id: string
+): Promise<InterviewSession | null> {
+  const session = await getInterviewSessionByJourneyId(journey_id);
+  if (!session) return null;
+
+  // Check if journey is still active
+  const journeyIsActive = await isJourneyActive(journey_id);
+  if (!journeyIsActive) {
+    // Journey is completed/inactive - block access
+    return null;
+  }
+
+  const answers = await getSessionAnswersDB(session.id);
+  const results = await getInterviewResultsDB(session.id);
+
+  return {
+    ...session,
+    answers,
+    output: results?.generated_questions || null,
+  } as InterviewSession;
+}
+
+// Get active journey session for interview prep tool
+// Returns session if user has an active IR-1 journey with an interview session
+export async function getActiveJourneyInterviewSession(
+  journey_type: string = "IR1"
+): Promise<{ session: InterviewSession; journey_status: string } | null> {
+  const result = await getActiveJourneySession(journey_type);
+  if (!result) return null;
+
+  // Enrich with answers and results
+  const answers = await getSessionAnswersDB(result.session.id);
+  const resultsDB = await getInterviewResultsDB(result.session.id);
+
+  return {
+    session: {
+      ...result.session,
+      answers,
+      output: resultsDB?.generated_questions || null,
+    } as InterviewSession,
+    journey_status: result.journey_status,
+  };
+}
+
+// Validate session access - checks journey status for journey-based sessions
+export async function validateSessionAccess(sessionId: string): Promise<{
+  valid: boolean;
+  reason?: string;
+}> {
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) {
+    return { valid: false, reason: "Session not found" };
+  }
+
+  // For journey-based sessions, check journey status
+  if (session.source === "journey" && session.journey_id) {
+    const journeyIsActive = await isJourneyActive(session.journey_id);
+    if (!journeyIsActive) {
+      return { valid: false, reason: "Journey is no longer active" };
+    }
+  }
+
+  return { valid: true };
 }
 
 //  Get an interview session with answers and results

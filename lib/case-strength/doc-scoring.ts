@@ -13,7 +13,7 @@
  */
 
 import type { UploadedDocument } from "@/lib/document-vault/types";
-import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
+import { mapDocumentNameToId, isDocUploadedInVault } from "@/lib/document-vault/journey-mapping";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -87,7 +87,7 @@ function isDocDone(
   if (docUploads?.[doc.name] !== undefined && docUploads?.[doc.name] !== null) return true;
   if (notes?.[doc.name]) return true;
   const vaultId = mapDocumentNameToId(doc.name);
-  if (vaultId && uploadedDocuments.some((u) => u.documentDefId === vaultId)) return true;
+  if (vaultId && isDocUploadedInVault(doc.name, vaultId, uploadedDocuments)) return true;
   return false;
 }
 
@@ -99,7 +99,7 @@ function getEvidenceLevel(
   notes: Record<string, string> | undefined
 ): "none" | "partial" | "full" {
   const vaultId = mapDocumentNameToId(doc.name);
-  const hasUpload = !!(vaultId && uploadedDocuments.some((u) => u.documentDefId === vaultId));
+  const hasUpload = !!(vaultId && isDocUploadedInVault(doc.name, vaultId, uploadedDocuments));
   const hasReview = docReviewStatus?.[doc.id] === "reviewed";
   const hasNotes = !!notes?.[doc.name];
   const hasCheck = documentChecklist?.[doc.name] === true;
