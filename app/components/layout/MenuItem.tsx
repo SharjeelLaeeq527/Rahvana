@@ -43,7 +43,7 @@ const NAVBAR_ICON_BY_TITLE: Record<string, string> = {
   "Marriage Registration": "/icons/marriage-registration.svg",
   "Police Character Certificate": "/icons/police-certificate.svg",
   "Polio Vaccination": "/icons/polio-vaccination-guide.svg",
-  "Book a Consultation": "/icons/book-consultation.svg",
+  "Expert Consultation": "/icons/book-consultation.svg",
   "Expert Case Review": "/icons/expert-case-review.svg",
   "PCC Filing Service — Sindh": "/icons/pcc-filling-service-sindh.svg",
   "PCC Filing Service — Punjab (Coming Soon)": "/icons/pcc-filling-service-punjab.svg",

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Calendar,
   Clock,
@@ -37,11 +37,7 @@ interface Booking {
   email: string;
   visa_category: string;
   issue_category: string;
-  status:
-  | "confirmed"
-  | "pending_approval"
-  | "alternatives_proposed"
-  | "cancelled";
+  status: "confirmed" | "pending_approval" | "alternatives_proposed" | "cancelled";
   selected_slot: string;
   alternate_slots?: string[];
   admin_notes?: string;
@@ -74,7 +70,7 @@ interface FormData {
   consent: boolean;
 }
 
-const ConsultationBookingPage = () => {
+const ConsultationBookingPageContent = () => {
   const router = useRouter();
 
   // Function to get phone number placeholder based on country code
@@ -163,8 +159,17 @@ const ConsultationBookingPage = () => {
     return summary.trim().length >= 20;
   };
 
+  const searchParams = useSearchParams();
+
   // View state
   const [activeView, setActiveView] = useState<"booking" | "requests">("booking");
+
+  useEffect(() => {
+    const tab = searchParams?.get("tab");
+    if (tab === "requests" || tab === "my-requests") {
+      setActiveView("requests");
+    }
+  }, [searchParams]);
   const [userBookings, setUserBookings] = useState<Booking[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -618,7 +623,10 @@ const ConsultationBookingPage = () => {
     }
   };
 
-  const handleInputChange = (field: keyof FormData, value: string | boolean | Date | Date[] | null) => {
+  const handleInputChange = (
+    field: keyof FormData,
+    value: string | boolean | Date | Date[] | null
+  ) => {
     // Validate phone number field to prevent alphabetic characters
     if (field === "phone_number" && typeof value === "string") {
       // Allow only digits, spaces, hyphens, parentheses, plus signs, and periods
@@ -740,7 +748,8 @@ const ConsultationBookingPage = () => {
       return;
     }
 
-    const hasCredit = tier === "executive" && remainingConsultations !== null && remainingConsultations > 0;
+    const hasCredit =
+      tier === "executive" && remainingConsultations !== null && remainingConsultations > 0;
     const shouldConsumeCredit = hasCredit && useCreditIfAvailable;
 
     setLoading(true);
@@ -750,7 +759,10 @@ const ConsultationBookingPage = () => {
       const check = await checkAccess("expert_consultation");
       const remaining = check.data?.data?.usage?.remaining;
       if (!check.allowed || (remaining !== undefined && remaining <= 0)) {
-        showToast("You have run out of consultation credits. Please select card payment or upgrade your plan.", "error");
+        showToast(
+          "You have run out of consultation credits. Please select card payment or upgrade your plan.",
+          "error"
+        );
         setLoading(false);
         return;
       }
@@ -788,27 +800,28 @@ const ConsultationBookingPage = () => {
           ""
         );
 
-      const payload = {
-        ...formData,
-        whatsapp_phone: finalPhoneStr,
-        attachments: uploadedPaths,
-        selected_slot: formData.selected_slot?.toISOString(),
-        alternate_slots: formData.alternate_slots?.map((slot) => slot.toISOString()),
-      };
+      if (shouldConsumeCredit) {
+        const payload = {
+          ...formData,
+          whatsapp_phone: finalPhoneStr,
+          attachments: uploadedPaths,
+          selected_slot: formData.selected_slot?.toISOString(),
+          alternate_slots: formData.alternate_slots?.map((slot) => slot.toISOString()),
+          payment_status: "paid",
+        };
 
-      console.log("Final Payload:", payload);
+        console.log("Final Free Payload:", payload);
 
-      const response = await fetch("/api/consultation", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
+        const response = await fetch("/api/consultation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
 
-      if (response.ok) {
-        const result = await response.json();
+        if (response.ok) {
+          const result = await response.json();
 
-        // Consume credit ONLY after successful booking creation!
-        if (shouldConsumeCredit) {
+          // Consume credit ONLY after successful booking creation!
           try {
             const reservation = await consumeAccess("expert_consultation");
             if (reservation.allowed && reservation.data?.remaining !== undefined) {
@@ -817,47 +830,66 @@ const ConsultationBookingPage = () => {
           } catch (consumeErr) {
             console.error("Failed to consume credit after booking:", consumeErr);
           }
-        }
 
-        // If not using credit, redirect to Stripe checkout!
-        if (!shouldConsumeCredit && user?.id) {
-          try {
-            const stripeRes = await fetch("/api/stripe/checkout", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-              },
-              body: JSON.stringify({
-                consultationId: result.id,
-                userId: user.id,
-              }),
-            });
-
-            const stripeData = await stripeRes.json();
-
-            if (!stripeRes.ok) {
-              throw new Error(stripeData.error || "Failed to create checkout session");
-            }
-
-            if (stripeData.url) {
-              window.location.href = stripeData.url;
-              return; // Do not show confirmation screen yet since they are redirecting to pay
-            } else {
-              throw new Error("No checkout URL returned");
-            }
-          } catch (stripeErr: any) {
-            console.error("Checkout redirection failed:", stripeErr);
-            showToast(`Redirection failed: ${stripeErr.message || stripeErr}`, "error");
-          }
-        } else {
           // Free booking -> show confirmation directly!
           setReferenceId(result.reference_id);
           setShowConfirmation(true);
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          console.error("Submission failed:", errorData);
+          showToast(`Failed to submit: ${errorData.error || "Check console for details"}`, "error");
         }
       } else {
-        const errorData = await response.json().catch(() => ({}));
-        console.error("Submission failed:", errorData);
-        showToast(`Failed to submit: ${errorData.error || "Check console for details"}`, "error");
+        // Direct checkout for paid bookings (decoupling reservation from API hit before checkout)
+        if (!user?.id) {
+          showToast("User session not found. Please log in again.", "error");
+          return;
+        }
+
+        const consultationDetails = {
+          issue_category: formData.issue_category,
+          visa_category: formData.visa_category,
+          case_stage: formData.case_stage,
+          urgency: formData.urgency || "normal",
+          preferred_language: formData.preferred_language || "English",
+          full_name: formData.full_name,
+          email: formData.email,
+          whatsapp_phone: finalPhoneStr,
+          embassy_consulate: formData.embassy_consulate || "",
+          case_summary: formData.case_summary,
+          attachments: uploadedPaths,
+          selected_slot: formData.selected_slot?.toISOString(),
+          alternate_slots: formData.alternate_slots?.map((slot) => slot.toISOString()) || [],
+        };
+
+        try {
+          const stripeRes = await fetch("/api/stripe/checkout", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              consultationDetails,
+              userId: user.id,
+            }),
+          });
+
+          const stripeData = await stripeRes.json();
+
+          if (!stripeRes.ok) {
+            throw new Error(stripeData.error || "Failed to create checkout session");
+          }
+
+          if (stripeData.url) {
+            window.location.href = stripeData.url;
+            return; // Redirecting to Stripe
+          } else {
+            throw new Error("No checkout URL returned");
+          }
+        } catch (stripeErr: any) {
+          console.error("Checkout redirection failed:", stripeErr);
+          showToast(`Redirection failed: ${stripeErr.message || stripeErr}`, "error");
+        }
       }
     } catch (error) {
       console.error("Submission error:", error);
@@ -963,7 +995,7 @@ const ConsultationBookingPage = () => {
     const current = new Date(date);
     const day = current.getDay(); // 0 is Sun, 6 is Sat
     const diff = current.getDate() - day; // Go back to Sunday
-    
+
     const week: Date[] = [];
     for (let i = 0; i < 7; i++) {
       const d = new Date(current);
@@ -978,39 +1010,48 @@ const ConsultationBookingPage = () => {
     const week = getWeekDates(date);
     const start = week[0];
     const end = week[6];
-    
-    const optionsStart: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
-    const optionsEnd: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
-    
+
+    const optionsStart: Intl.DateTimeFormatOptions = { month: "short", day: "numeric" };
+    const optionsEnd: Intl.DateTimeFormatOptions = {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    };
+
     if (start.getFullYear() !== end.getFullYear()) {
-      return `${start.toLocaleDateString(undefined, { ...optionsStart, year: 'numeric' })} – ${end.toLocaleDateString(undefined, optionsEnd)}`;
+      return `${start.toLocaleDateString(undefined, { ...optionsStart, year: "numeric" })} – ${end.toLocaleDateString(undefined, optionsEnd)}`;
     } else if (start.getMonth() !== end.getMonth()) {
       return `${start.toLocaleDateString(undefined, optionsStart)} – ${end.toLocaleDateString(undefined, optionsEnd)}`;
     } else {
-      return `${start.toLocaleDateString(undefined, { month: 'long' })} ${start.getDate()} – ${end.getDate()}, ${start.getFullYear()}`;
+      return `${start.toLocaleDateString(undefined, { month: "long" })} ${start.getDate()} – ${end.getDate()}, ${start.getFullYear()}`;
     }
   };
 
   const getDayLabel = (date: Date): string => {
-    return date.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' });
+    return date.toLocaleDateString(undefined, {
+      weekday: "long",
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    });
   };
 
   const getMonthLabel = (date: Date): string => {
-    return date.toLocaleDateString(undefined, { month: 'long', year: 'numeric' });
+    return date.toLocaleDateString(undefined, { month: "long", year: "numeric" });
   };
 
   const getMonthGridDates = (date: Date): Date[] => {
     const current = new Date(date);
     const year = current.getFullYear();
     const month = current.getMonth();
-    
+
     // Get first day of month
     const firstDayOfMonth = new Date(year, month, 1);
     // Get Sunday before the first day of the month
     const startDay = firstDayOfMonth.getDay(); // 0 is Sun, 1 is Mon...
     const startDate = new Date(firstDayOfMonth);
     startDate.setDate(firstDayOfMonth.getDate() - startDay);
-    
+
     const grid: Date[] = [];
     const totalDays = 42; // standard 6 rows of 7 days
     for (let i = 0; i < totalDays; i++) {
@@ -1023,7 +1064,7 @@ const ConsultationBookingPage = () => {
   };
 
   const formatHour = (hour: number): string => {
-    const period = hour >= 12 ? 'PM' : 'AM';
+    const period = hour >= 12 ? "PM" : "AM";
     const displayHour = hour % 12 === 0 ? 12 : hour % 12;
     return `${displayHour} ${period}`;
   };
@@ -1031,8 +1072,8 @@ const ConsultationBookingPage = () => {
   const getGMTOffset = (): string => {
     const offset = -new Date().getTimezoneOffset();
     const hours = Math.floor(Math.abs(offset) / 60);
-    const sign = offset >= 0 ? '+' : '-';
-    return `GMT${sign}${String(hours).padStart(2, '0')}`;
+    const sign = offset >= 0 ? "+" : "-";
+    return `GMT${sign}${String(hours).padStart(2, "0")}`;
   };
 
   const getDecimalHour = (date: Date): number => {
@@ -1045,17 +1086,17 @@ const ConsultationBookingPage = () => {
 
   const getSlotPosition = (slot: TimeSlot, startHour: number, endHour: number) => {
     const totalHours = endHour - startHour; // dynamic total span
-    
+
     const startDecimal = getDecimalHour(slot.date);
     const endDecimal = getDecimalHour(slot.endDate);
-    
+
     const duration = Math.max(0.5, endDecimal - startDecimal); // min duration 30 mins
-    
+
     const relativeStart = Math.max(0, startDecimal - startHour);
-    
+
     const top = (relativeStart / totalHours) * 100;
     const height = (duration / totalHours) * 100;
-    
+
     return {
       top: `${top}%`,
       height: `${height}%`,
@@ -1067,7 +1108,7 @@ const ConsultationBookingPage = () => {
     const startDay = firstDay.getDay(); // Sunday-Saturday padding
     const startDate = new Date(firstDay);
     startDate.setDate(firstDay.getDate() - startDay);
-    
+
     const days: Date[] = [];
     const totalDays = 42; // standard 6 weeks to match monthly grids
     for (let i = 0; i < totalDays; i++) {
@@ -1205,9 +1246,7 @@ const ConsultationBookingPage = () => {
                   placeholder="Select urgency level..."
                   className={errors.urgency ? "border-red-500" : ""}
                 />
-                {errors.urgency && (
-                  <p className="mt-1 text-sm text-red-600">{errors.urgency}</p>
-                )}
+                {errors.urgency && <p className="mt-1 text-sm text-red-600">{errors.urgency}</p>}
               </div>
             </div>
           </div>
@@ -1240,8 +1279,9 @@ const ConsultationBookingPage = () => {
                         });
                       }
                     }}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${errors.full_name ? "border-red-500" : "border-gray-300"
-                      }`}
+                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
+                      errors.full_name ? "border-red-500" : "border-gray-300"
+                    }`}
                     placeholder="John Doe"
                     required
                   />
@@ -1276,8 +1316,9 @@ const ConsultationBookingPage = () => {
                         });
                       }
                     }}
-                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${errors.email ? "border-red-500" : "border-gray-300"
-                      }`}
+                    className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
+                      errors.email ? "border-red-500" : "border-gray-300"
+                    }`}
                     placeholder="john@example.com"
                     required
                   />
@@ -1326,10 +1367,9 @@ const ConsultationBookingPage = () => {
                           });
                         }
                       }}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${errors.phone_number
-                        ? "border-red-500"
-                        : "border-gray-300"
-                        }`}
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
+                        errors.phone_number ? "border-red-500" : "border-gray-300"
+                      }`}
                       placeholder={getPhonePlaceholder(formData.country_code)}
                       required
                     />
@@ -1371,10 +1411,11 @@ const ConsultationBookingPage = () => {
                 onDragOver={handleDropZoneDragOver}
                 onDragLeave={handleDropZoneDragLeave}
                 onDrop={handleDropZoneDrop}
-                className={`border-2 border-dashed rounded-2xl p-8 transition-all group cursor-pointer text-center block ${isDraggingFiles
-                  ? "border-teal-500 bg-teal-50/60"
-                  : "border-gray-200 hover:border-teal-400 hover:bg-teal-50/30"
-                  }`}
+                className={`border-2 border-dashed rounded-2xl p-8 transition-all group cursor-pointer text-center block ${
+                  isDraggingFiles
+                    ? "border-teal-500 bg-teal-50/60"
+                    : "border-gray-200 hover:border-teal-400 hover:bg-teal-50/30"
+                }`}
               >
                 <input
                   id="consultation-file-input"
@@ -1436,8 +1477,9 @@ const ConsultationBookingPage = () => {
                   }
                 }}
                 rows={5}
-                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition min-h-30 ${errors.case_summary ? "border-red-500" : "border-gray-300"
-                  }`}
+                className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition min-h-30 ${
+                  errors.case_summary ? "border-red-500" : "border-gray-300"
+                }`}
                 placeholder="Tell us about your visa status, any RFE/221g received, and specific questions you have..."
                 required
               />
@@ -1463,8 +1505,9 @@ const ConsultationBookingPage = () => {
                         });
                       }
                     }}
-                    className={`w-4 h-4 text-teal-600 rounded focus:ring-teal-500 cursor-pointer ${errors.consent ? "border-red-500" : "border-gray-300"
-                      }`}
+                    className={`w-4 h-4 text-teal-600 rounded focus:ring-teal-500 cursor-pointer ${
+                      errors.consent ? "border-red-500" : "border-gray-300"
+                    }`}
                   />
                 </div>
                 <span className="text-xs text-gray-600 leading-relaxed font-medium group-hover:text-teal-900 transition-colors">
@@ -1482,11 +1525,12 @@ const ConsultationBookingPage = () => {
         const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
         const { startHour, endHour, hoursRange } = getHourBoundaries();
 
-        const visibleSlots = availableSlots.filter(slot => {
+        const visibleSlots = availableSlots.filter((slot) => {
           const isPast = slot.date.getTime() < Date.now();
-          const hasUserBooking = userBookings.some(booking => 
-            booking.email === user?.email &&
-            new Date(booking.selected_slot).getTime() === slot.date.getTime()
+          const hasUserBooking = userBookings.some(
+            (booking) =>
+              booking.email === user?.email &&
+              new Date(booking.selected_slot).getTime() === slot.date.getTime()
           );
 
           if (isPast) {
@@ -1615,22 +1659,27 @@ const ConsultationBookingPage = () => {
                       <div className="flex border-b border-gray-200 bg-gray-50/70 py-1">
                         {/* Spacing for Left Hour Labels column */}
                         <div className="w-18 border-r border-gray-100 flex-shrink-0" />
-                        
+
                         {/* 7 columns */}
                         <div className="flex-1 grid grid-cols-7">
                           {weekDates.map((date, idx) => {
                             const active = isToday(date);
                             return (
-                              <div key={idx} className="py-2.5 text-center border-r border-gray-100 last:border-r-0 flex flex-col items-center justify-center">
+                              <div
+                                key={idx}
+                                className="py-2.5 text-center border-r border-gray-100 last:border-r-0 flex flex-col items-center justify-center"
+                              >
                                 <span className="text-[10px] font-extrabold text-gray-400 uppercase tracking-widest">
-                                  {date.toLocaleDateString(undefined, { weekday: 'short' })}
+                                  {date.toLocaleDateString(undefined, { weekday: "short" })}
                                 </span>
-                                <span className={cn(
-                                  "text-sm font-black mt-1.5 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300",
-                                  active 
-                                    ? "bg-teal-600 text-white shadow-md shadow-teal-100" 
-                                    : "text-gray-700"
-                                )}>
+                                <span
+                                  className={cn(
+                                    "text-sm font-black mt-1.5 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300",
+                                    active
+                                      ? "bg-teal-600 text-white shadow-md shadow-teal-100"
+                                      : "text-gray-700"
+                                  )}
+                                >
                                   {date.getDate()}
                                 </span>
                               </div>
@@ -1638,19 +1687,25 @@ const ConsultationBookingPage = () => {
                           })}
                         </div>
                       </div>
-                      
+
                       {/* Scrollable Timeline Grid Container */}
-                      <div 
+                      <div
                         ref={scrollContainerRef}
-                        className="flex relative overflow-y-auto border-t border-gray-100 scrollbar-thin scrollbar-thumb-gray-200 rounded-b-[22px]" 
-                        style={{ height: '500px' }}
+                        className="flex relative overflow-y-auto border-t border-gray-100 scrollbar-thin scrollbar-thumb-gray-200 rounded-b-[22px]"
+                        style={{ height: "500px" }}
                       >
                         {/* 24 hours * 80px height = 1920px vertical height */}
-                        <div className="flex flex-1 relative min-w-[800px]" style={{ height: '1920px' }}>
+                        <div
+                          className="flex flex-1 relative min-w-[800px]"
+                          style={{ height: "1920px" }}
+                        >
                           {/* Side Hour Labels Column */}
                           <div className="w-18 border-r border-gray-100 flex flex-col select-none relative z-10 bg-white/95 backdrop-blur-xs">
                             {hoursRange.map((hour) => (
-                              <div key={hour} className="relative h-20 flex items-center justify-end pr-3 select-none">
+                              <div
+                                key={hour}
+                                className="relative h-20 flex items-center justify-end pr-3 select-none"
+                              >
                                 {hour === 0 && (
                                   <span className="absolute top-0 right-3 text-[9px] font-bold text-gray-400">
                                     {getGMTOffset()}
@@ -1664,44 +1719,60 @@ const ConsultationBookingPage = () => {
                               </div>
                             ))}
                           </div>
-                          
+
                           {/* Days Grid Columns */}
                           <div className="flex-1 grid grid-cols-7 relative">
                             {/* Horizontal background hour gridlines */}
                             <div className="absolute inset-0 flex flex-col pointer-events-none">
                               {hoursRange.map((hour) => (
-                                <div key={hour} className="flex-1 border-b border-gray-100/60 last:border-b-0" />
+                                <div
+                                  key={hour}
+                                  className="flex-1 border-b border-gray-100/60 last:border-b-0"
+                                />
                               ))}
                             </div>
-                            
+
                             {/* Vertical daily slot containers */}
                             {weekDates.map((colDate, colIdx) => {
-                              const daySlots = visibleSlots.filter(slot => isSameDay(slot.date, colDate));
-                              
+                              const daySlots = visibleSlots.filter((slot) =>
+                                isSameDay(slot.date, colDate)
+                              );
+
                               return (
-                                <div key={colIdx} className="relative h-full border-r border-gray-100 last:border-r-0">
+                                <div
+                                  key={colIdx}
+                                  className="relative h-full border-r border-gray-100 last:border-r-0"
+                                >
                                   {isToday(colDate) && (
                                     <div className="absolute inset-0 bg-teal-500/3 pointer-events-none" />
                                   )}
-                                  
+
                                   {daySlots.map((slot) => {
-                                    const isSelectedPrimary = formData.selected_slot?.getTime() === slot.date.getTime();
+                                    const isSelectedPrimary =
+                                      formData.selected_slot?.getTime() === slot.date.getTime();
                                     const pos = getSlotPosition(slot, startHour, endHour);
                                     const isPast = slot.date.getTime() < Date.now();
                                     const isSelectable = slot.available && !isPast;
-                                    
-                                    const matchingBooking = userBookings.find(booking => 
-                                      booking.email === user?.email &&
-                                      new Date(booking.selected_slot).getTime() === slot.date.getTime()
+
+                                    const matchingBooking = userBookings.find(
+                                      (booking) =>
+                                        booking.email === user?.email &&
+                                        new Date(booking.selected_slot).getTime() ===
+                                          slot.date.getTime()
                                     );
-                                    const isCancelled = matchingBooking?.status === "cancelled" || matchingBooking?.status === "canceled";
-                                    
+                                    const isCancelled =
+                                      matchingBooking?.status === "cancelled" ||
+                                      matchingBooking?.status === "canceled";
+
                                     return (
                                       <div
                                         key={slot.id}
                                         onClick={() => {
                                           if (!isSelectable) return;
-                                          if (formData.selected_slot?.getTime() === slot.date.getTime()) {
+                                          if (
+                                            formData.selected_slot?.getTime() ===
+                                            slot.date.getTime()
+                                          ) {
                                             handleInputChange("selected_slot", null);
                                           } else {
                                             handleSlotSelect(slot);
@@ -1710,7 +1781,9 @@ const ConsultationBookingPage = () => {
                                         style={{ top: pos.top, height: pos.height }}
                                         className={cn(
                                           "absolute left-1 right-1 rounded-2xl border px-3 py-0.5 transition-all duration-300 shadow-xs flex flex-col justify-center overflow-hidden select-none z-20 min-h-[36px]",
-                                          isSelectable ? "cursor-pointer hover:scale-102 hover:shadow-md" : "pointer-events-none opacity-60 grayscale",
+                                          isSelectable
+                                            ? "cursor-pointer hover:scale-102 hover:shadow-md"
+                                            : "pointer-events-none opacity-60 grayscale",
                                           isSelectedPrimary
                                             ? "bg-teal-600 border-teal-700 text-white z-30 ring-2 ring-teal-200"
                                             : isSelectable
@@ -1718,31 +1791,47 @@ const ConsultationBookingPage = () => {
                                               : isCancelled
                                                 ? "bg-red-50 border-red-200 text-red-800 z-30 animate-pulse"
                                                 : !slot.available
-                                                  ? (isPast 
-                                                      ? "bg-purple-50/60 border-purple-150 text-purple-500" 
-                                                      : "bg-purple-50 border-purple-200 text-purple-800"
-                                                    )
+                                                  ? isPast
+                                                    ? "bg-purple-50/60 border-purple-150 text-purple-500"
+                                                    : "bg-purple-50 border-purple-200 text-purple-800"
                                                   : "bg-gray-100/40 border-gray-150 text-gray-400"
                                         )}
-                                        title={`${slot.formattedTime} - ${isSelectedPrimary ? 'Selected' : isCancelled ? 'Canceled' : !slot.available ? (isPast ? 'Completed' : 'Booked') : isPast ? 'Passed' : 'Click to Select'}`}
+                                        title={`${slot.formattedTime} - ${isSelectedPrimary ? "Selected" : isCancelled ? "Canceled" : !slot.available ? (isPast ? "Completed" : "Booked") : isPast ? "Passed" : "Click to Select"}`}
                                       >
                                         <div className="flex flex-col justify-center">
-                                          <span className={cn(
-                                            "text-[9px] font-black uppercase tracking-wider block leading-tight",
-                                            isSelectedPrimary 
-                                              ? "text-white/90" 
-                                              : isSelectable 
-                                                ? "text-teal-700" 
-                                                : isCancelled
-                                                  ? "text-red-700 font-extrabold"
-                                                  : !slot.available
-                                                    ? (isPast ? "text-purple-500/80" : "text-purple-800")
-                                                    : "text-gray-400"
-                                          )}>
-                                            {isSelectedPrimary ? "Selected" : isCancelled ? "Canceled" : !slot.available ? (isPast ? "Completed" : "Booked") : isPast ? "Passed" : "Available"}
+                                          <span
+                                            className={cn(
+                                              "text-[9px] font-black uppercase tracking-wider block leading-tight",
+                                              isSelectedPrimary
+                                                ? "text-white/90"
+                                                : isSelectable
+                                                  ? "text-teal-700"
+                                                  : isCancelled
+                                                    ? "text-red-700 font-extrabold"
+                                                    : !slot.available
+                                                      ? isPast
+                                                        ? "text-purple-500/80"
+                                                        : "text-purple-800"
+                                                      : "text-gray-400"
+                                            )}
+                                          >
+                                            {isSelectedPrimary
+                                              ? "Selected"
+                                              : isCancelled
+                                                ? "Canceled"
+                                                : !slot.available
+                                                  ? isPast
+                                                    ? "Completed"
+                                                    : "Booked"
+                                                  : isPast
+                                                    ? "Passed"
+                                                    : "Available"}
                                           </span>
                                           <span className="text-[10px] font-black block mt-0.5 leading-tight">
-                                            {slot.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {slot.date.toLocaleTimeString([], {
+                                              hour: "2-digit",
+                                              minute: "2-digit",
+                                            })}
                                           </span>
                                         </div>
                                       </div>
@@ -1763,36 +1852,44 @@ const ConsultationBookingPage = () => {
                   <div className="relative border border-gray-200 rounded-3xl bg-white shadow-xs overflow-hidden select-none">
                     {/* Day View Header */}
                     <div className="flex border-b border-gray-200 bg-gray-50/70 py-4 px-6 items-center gap-4">
-                      <span className={cn(
-                        "text-xl font-black w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300",
-                        isToday(currentCalendarDate) 
-                          ? "bg-teal-600 text-white shadow-md shadow-teal-100" 
-                          : "bg-gray-200 text-gray-800"
-                      )}>
+                      <span
+                        className={cn(
+                          "text-xl font-black w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300",
+                          isToday(currentCalendarDate)
+                            ? "bg-teal-600 text-white shadow-md shadow-teal-100"
+                            : "bg-gray-200 text-gray-800"
+                        )}
+                      >
                         {currentCalendarDate.getDate()}
                       </span>
                       <div>
                         <h4 className="font-black text-gray-800 text-lg uppercase tracking-wide">
-                          {currentCalendarDate.toLocaleDateString(undefined, { weekday: 'long' })}
+                          {currentCalendarDate.toLocaleDateString(undefined, { weekday: "long" })}
                         </h4>
                         <p className="text-xs text-gray-500 font-extrabold">
-                          {currentCalendarDate.toLocaleDateString(undefined, { month: 'long', year: 'numeric' })}
+                          {currentCalendarDate.toLocaleDateString(undefined, {
+                            month: "long",
+                            year: "numeric",
+                          })}
                         </p>
                       </div>
                     </div>
 
                     {/* Day view timeline body */}
-                    <div 
+                    <div
                       ref={scrollContainerRef}
-                      className="flex relative overflow-y-auto border-t border-gray-100 scrollbar-thin scrollbar-thumb-gray-200 rounded-b-[22px]" 
-                      style={{ height: '500px' }}
+                      className="flex relative overflow-y-auto border-t border-gray-100 scrollbar-thin scrollbar-thumb-gray-200 rounded-b-[22px]"
+                      style={{ height: "500px" }}
                     >
                       {/* 24 hours * 80px height = 1920px vertical height */}
-                      <div className="flex flex-1 relative w-full" style={{ height: '1920px' }}>
+                      <div className="flex flex-1 relative w-full" style={{ height: "1920px" }}>
                         {/* Hours column */}
                         <div className="w-18 border-r border-gray-100 flex flex-col select-none relative z-10 bg-white/95 backdrop-blur-xs">
                           {hoursRange.map((hour) => (
-                            <div key={hour} className="relative h-20 flex items-center justify-end pr-3 select-none">
+                            <div
+                              key={hour}
+                              className="relative h-20 flex items-center justify-end pr-3 select-none"
+                            >
                               {hour === 0 && (
                                 <span className="absolute top-0 right-3 text-[9px] font-semibold text-gray-400">
                                   {getGMTOffset()}
@@ -1812,32 +1909,42 @@ const ConsultationBookingPage = () => {
                           {/* Horizontal background hour gridlines */}
                           <div className="absolute inset-0 flex flex-col pointer-events-none">
                             {hoursRange.map((hour) => (
-                              <div key={hour} className="flex-1 border-b border-gray-100/60 last:border-b-0" />
+                              <div
+                                key={hour}
+                                className="flex-1 border-b border-gray-100/60 last:border-b-0"
+                              />
                             ))}
                           </div>
 
                           {/* Slots list absolute representation */}
                           <div className="relative h-full w-full">
                             {visibleSlots
-                              .filter(slot => isSameDay(slot.date, currentCalendarDate))
+                              .filter((slot) => isSameDay(slot.date, currentCalendarDate))
                               .map((slot) => {
-                                const isSelectedPrimary = formData.selected_slot?.getTime() === slot.date.getTime();
+                                const isSelectedPrimary =
+                                  formData.selected_slot?.getTime() === slot.date.getTime();
                                 const pos = getSlotPosition(slot, startHour, endHour);
                                 const isPast = slot.date.getTime() < Date.now();
                                 const isSelectable = slot.available && !isPast;
 
-                                const matchingBooking = userBookings.find(booking => 
-                                  booking.email === user?.email &&
-                                  new Date(booking.selected_slot).getTime() === slot.date.getTime()
+                                const matchingBooking = userBookings.find(
+                                  (booking) =>
+                                    booking.email === user?.email &&
+                                    new Date(booking.selected_slot).getTime() ===
+                                      slot.date.getTime()
                                 );
-                                const isCancelled = matchingBooking?.status === "cancelled" || matchingBooking?.status === "canceled";
+                                const isCancelled =
+                                  matchingBooking?.status === "cancelled" ||
+                                  matchingBooking?.status === "canceled";
 
                                 return (
                                   <div
                                     key={slot.id}
                                     onClick={() => {
                                       if (!isSelectable) return;
-                                      if (formData.selected_slot?.getTime() === slot.date.getTime()) {
+                                      if (
+                                        formData.selected_slot?.getTime() === slot.date.getTime()
+                                      ) {
                                         handleInputChange("selected_slot", null);
                                       } else {
                                         handleSlotSelect(slot);
@@ -1846,7 +1953,9 @@ const ConsultationBookingPage = () => {
                                     style={{ top: pos.top, height: pos.height }}
                                     className={cn(
                                       "absolute left-4 right-4 rounded-2xl border px-4 py-0.5 transition-all duration-300 shadow-xs flex items-center justify-between z-20 select-none min-h-[36px]",
-                                      isSelectable ? "cursor-pointer hover:scale-101 hover:shadow-md" : "pointer-events-none opacity-60 grayscale",
+                                      isSelectable
+                                        ? "cursor-pointer hover:scale-101 hover:shadow-md"
+                                        : "pointer-events-none opacity-60 grayscale",
                                       isSelectedPrimary
                                         ? "bg-teal-600 border-teal-700 text-white z-30 ring-2 ring-teal-200"
                                         : isSelectable
@@ -1854,44 +1963,70 @@ const ConsultationBookingPage = () => {
                                           : isCancelled
                                             ? "bg-red-50 border-red-200 text-red-800 z-30 animate-pulse"
                                             : !slot.available
-                                              ? (isPast 
-                                                  ? "bg-purple-50/60 border-purple-150 text-purple-500" 
-                                                  : "bg-purple-50 border-purple-200 text-purple-800"
-                                                )
+                                              ? isPast
+                                                ? "bg-purple-50/60 border-purple-150 text-purple-500"
+                                                : "bg-purple-50 border-purple-200 text-purple-800"
                                               : "bg-gray-100/40 border-gray-150 text-gray-400"
                                     )}
                                   >
                                     <div className="flex items-center gap-2">
-                                      <div className={cn(
-                                        "text-[9px] font-black uppercase tracking-wider",
-                                        isSelectedPrimary 
-                                          ? "text-white/90" 
-                                          : isSelectable 
-                                            ? "text-teal-700" 
-                                            : isCancelled
-                                              ? "text-red-700 font-extrabold"
-                                              : !slot.available
-                                                ? (isPast ? "text-purple-500/80" : "text-purple-800")
-                                                : "text-gray-400"
-                                      )}>
-                                        {isSelectedPrimary ? "Selected" : isCancelled ? "Canceled" : !slot.available ? (isPast ? "Completed" : "Booked") : isPast ? "Passed" : "Available"}
+                                      <div
+                                        className={cn(
+                                          "text-[9px] font-black uppercase tracking-wider",
+                                          isSelectedPrimary
+                                            ? "text-white/90"
+                                            : isSelectable
+                                              ? "text-teal-700"
+                                              : isCancelled
+                                                ? "text-red-700 font-extrabold"
+                                                : !slot.available
+                                                  ? isPast
+                                                    ? "text-purple-500/80"
+                                                    : "text-purple-800"
+                                                  : "text-gray-400"
+                                        )}
+                                      >
+                                        {isSelectedPrimary
+                                          ? "Selected"
+                                          : isCancelled
+                                            ? "Canceled"
+                                            : !slot.available
+                                              ? isPast
+                                                ? "Completed"
+                                                : "Booked"
+                                              : isPast
+                                                ? "Passed"
+                                                : "Available"}
                                       </div>
                                       <span className="text-[10px] font-black">
-                                        {slot.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                        {slot.date.toLocaleTimeString([], {
+                                          hour: "2-digit",
+                                          minute: "2-digit",
+                                        })}
                                       </span>
                                     </div>
-                                    
-                                    <span className={cn(
-                                      "text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full select-none border transition-all duration-300",
-                                      isSelectedPrimary
-                                        ? "bg-white/20 border-white/30 text-white"
-                                        : isSelectable
-                                          ? "bg-white border-teal-200/60 text-teal-700 hover:border-teal-400 hover:bg-teal-50"
-                                          : isCancelled
-                                            ? "bg-red-100 border-red-200 text-red-700 font-extrabold"
-                                            : "bg-gray-50 border-gray-200 text-gray-400 opacity-60 pointer-events-none"
-                                    )}>
-                                      {isPast && slot.available ? "Passed" : isCancelled ? "Canceled" : !slot.available ? (isPast ? "Booked" : "Booked") : "Select"}
+
+                                    <span
+                                      className={cn(
+                                        "text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full select-none border transition-all duration-300",
+                                        isSelectedPrimary
+                                          ? "bg-white/20 border-white/30 text-white"
+                                          : isSelectable
+                                            ? "bg-white border-teal-200/60 text-teal-700 hover:border-teal-400 hover:bg-teal-50"
+                                            : isCancelled
+                                              ? "bg-red-100 border-red-200 text-red-700 font-extrabold"
+                                              : "bg-gray-50 border-gray-200 text-gray-400 opacity-60 pointer-events-none"
+                                      )}
+                                    >
+                                      {isPast && slot.available
+                                        ? "Passed"
+                                        : isCancelled
+                                          ? "Canceled"
+                                          : !slot.available
+                                            ? isPast
+                                              ? "Booked"
+                                              : "Booked"
+                                            : "Select"}
                                     </span>
                                   </div>
                                 );
@@ -1909,19 +2044,22 @@ const ConsultationBookingPage = () => {
                     {/* Days of week labels */}
                     <div className="grid grid-cols-7 border-b border-gray-200 bg-gray-50/70">
                       {daysOfWeek.map((day) => (
-                        <div key={day} className="py-3 text-center text-xs font-extrabold text-gray-400 uppercase tracking-widest">
+                        <div
+                          key={day}
+                          className="py-3 text-center text-xs font-extrabold text-gray-400 uppercase tracking-widest"
+                        >
                           {day}
                         </div>
                       ))}
                     </div>
-                    
+
                     {/* Month grid days cells (6 weeks) */}
                     <div className="grid grid-cols-7 divide-x divide-y divide-gray-100 bg-gray-50/10">
                       {monthDates.map((date, idx) => {
                         const isCurrentMonth = date.getMonth() === currentCalendarDate.getMonth();
                         const active = isToday(date);
-                        const daySlots = visibleSlots.filter(slot => isSameDay(slot.date, date));
-                        
+                        const daySlots = visibleSlots.filter((slot) => isSameDay(slot.date, date));
+
                         return (
                           <div
                             key={idx}
@@ -1938,30 +2076,40 @@ const ConsultationBookingPage = () => {
                                   {date.getDate()}
                                 </span>
                               ) : (
-                                <span className={cn("text-xs font-extrabold", isCurrentMonth ? "text-gray-700" : "text-gray-400")}>
+                                <span
+                                  className={cn(
+                                    "text-xs font-extrabold",
+                                    isCurrentMonth ? "text-gray-700" : "text-gray-400"
+                                  )}
+                                >
                                   {date.getDate()}
                                 </span>
                               )}
-                              
+
                               {daySlots.length > 0 && (
                                 <span className="text-[9px] font-black uppercase bg-teal-50 text-teal-800 border border-teal-100 px-1.5 py-0.5 rounded-md">
-                                  {daySlots.length} slot{daySlots.length > 1 ? 's' : ''}
+                                  {daySlots.length} slot{daySlots.length > 1 ? "s" : ""}
                                 </span>
                               )}
                             </div>
-                            
+
                             {/* Inner Day Slots badge items list */}
                             <div className="flex-1 flex flex-col gap-1 overflow-y-auto mt-1 max-h-16 scrollbar-none">
                               {daySlots.map((slot) => {
-                                const isSelectedPrimary = formData.selected_slot?.getTime() === slot.date.getTime();
+                                const isSelectedPrimary =
+                                  formData.selected_slot?.getTime() === slot.date.getTime();
                                 const isPast = slot.date.getTime() < Date.now();
                                 const isSelectable = slot.available && !isPast;
-                                 
-                                const matchingBooking = userBookings.find(booking => 
-                                  booking.email === user?.email &&
-                                  new Date(booking.selected_slot).getTime() === slot.date.getTime()
+
+                                const matchingBooking = userBookings.find(
+                                  (booking) =>
+                                    booking.email === user?.email &&
+                                    new Date(booking.selected_slot).getTime() ===
+                                      slot.date.getTime()
                                 );
-                                const isCancelled = matchingBooking?.status === "cancelled" || matchingBooking?.status === "canceled";
+                                const isCancelled =
+                                  matchingBooking?.status === "cancelled" ||
+                                  matchingBooking?.status === "canceled";
 
                                 return (
                                   <div
@@ -1969,7 +2117,9 @@ const ConsultationBookingPage = () => {
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       if (!isSelectable) return;
-                                      if (formData.selected_slot?.getTime() === slot.date.getTime()) {
+                                      if (
+                                        formData.selected_slot?.getTime() === slot.date.getTime()
+                                      ) {
                                         handleInputChange("selected_slot", null);
                                       } else {
                                         handleSlotSelect(slot);
@@ -1977,7 +2127,9 @@ const ConsultationBookingPage = () => {
                                     }}
                                     className={cn(
                                       "text-[9px] px-2 py-1 rounded-md font-bold truncate transition border flex items-center justify-between shadow-xs select-none",
-                                      isSelectable ? "cursor-pointer" : "pointer-events-none opacity-60 grayscale",
+                                      isSelectable
+                                        ? "cursor-pointer"
+                                        : "pointer-events-none opacity-60 grayscale",
                                       isSelectedPrimary
                                         ? "bg-teal-600 border-teal-700 text-white font-black"
                                         : isSelectable
@@ -1985,17 +2137,22 @@ const ConsultationBookingPage = () => {
                                           : isCancelled
                                             ? "bg-red-50 border-red-200 text-red-800"
                                             : !slot.available
-                                              ? (isPast 
-                                                  ? "bg-purple-50/60 border-purple-150 text-purple-500" 
-                                                  : "bg-purple-50 border-purple-200 text-purple-800"
-                                                )
+                                              ? isPast
+                                                ? "bg-purple-50/60 border-purple-150 text-purple-500"
+                                                : "bg-purple-50 border-purple-200 text-purple-800"
                                               : "bg-gray-100/40 border-gray-150 text-gray-400"
                                     )}
-                                    title={`${slot.formattedTime} - ${isSelectedPrimary ? 'Selected' : isCancelled ? 'Canceled' : !slot.available ? (isPast ? 'Completed' : 'Booked') : isPast ? 'Passed' : 'Click to Select'}`}
+                                    title={`${slot.formattedTime} - ${isSelectedPrimary ? "Selected" : isCancelled ? "Canceled" : !slot.available ? (isPast ? "Completed" : "Booked") : isPast ? "Passed" : "Click to Select"}`}
                                   >
                                     <span className="truncate">
-                                      {slot.date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                                      {isCancelled ? " (Canceled)" : !slot.available && (isPast ? " (Booked)" : " (Booked)")}
+                                      {slot.date.toLocaleTimeString([], {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                        hour12: true,
+                                      })}
+                                      {isCancelled
+                                        ? " (Canceled)"
+                                        : !slot.available && (isPast ? " (Booked)" : " (Booked)")}
                                     </span>
                                   </div>
                                 );
@@ -2013,34 +2170,42 @@ const ConsultationBookingPage = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 select-none bg-gray-50/30 p-4 border border-gray-200 rounded-3xl">
                     {Array.from({ length: 12 }).map((_, monthIdx) => {
                       const monthDate = new Date(currentCalendarDate.getFullYear(), monthIdx, 1);
-                      const days = getDaysInMonthForYearView(currentCalendarDate.getFullYear(), monthIdx);
-                      
+                      const days = getDaysInMonthForYearView(
+                        currentCalendarDate.getFullYear(),
+                        monthIdx
+                      );
+
                       return (
-                        <div key={monthIdx} className="bg-white border border-gray-200 rounded-2xl p-4 shadow-2xs flex flex-col hover:shadow-md transition-all duration-300 hover:border-teal-100">
-                          <h4 
+                        <div
+                          key={monthIdx}
+                          className="bg-white border border-gray-200 rounded-2xl p-4 shadow-2xs flex flex-col hover:shadow-md transition-all duration-300 hover:border-teal-100"
+                        >
+                          <h4
                             onClick={() => {
                               setCurrentCalendarDate(monthDate);
                               setCalendarView("month");
                             }}
                             className="text-xs font-black text-gray-800 uppercase tracking-widest mb-3 cursor-pointer hover:text-teal-600 transition text-center pb-1.5 border-b border-gray-100"
                           >
-                            {monthDate.toLocaleDateString(undefined, { month: 'long' })}
+                            {monthDate.toLocaleDateString(undefined, { month: "long" })}
                           </h4>
-                          
+
                           {/* Days of week mini labels */}
                           <div className="grid grid-cols-7 text-[8px] font-extrabold text-gray-400 text-center mb-1">
                             {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
                               <div key={i}>{d}</div>
                             ))}
                           </div>
-                          
+
                           {/* Days grid layout */}
                           <div className="grid grid-cols-7 gap-y-1 gap-x-0.5 text-center flex-1">
                             {days.map((date, idx) => {
                               const isCurrentMonth = date.getMonth() === monthIdx;
-                              const hasSlots = visibleSlots.some(slot => isSameDay(slot.date, date));
+                              const hasSlots = visibleSlots.some((slot) =>
+                                isSameDay(slot.date, date)
+                              );
                               const active = isToday(date);
-                              
+
                               return (
                                 <div
                                   key={idx}
@@ -2051,15 +2216,19 @@ const ConsultationBookingPage = () => {
                                   }}
                                   className={cn(
                                     "text-[9px] font-black h-4.5 w-4.5 rounded-full flex items-center justify-center mx-auto cursor-pointer transition select-none",
-                                    !isCurrentMonth 
-                                      ? "text-gray-200 pointer-events-none bg-transparent" 
+                                    !isCurrentMonth
+                                      ? "text-gray-200 pointer-events-none bg-transparent"
                                       : active
                                         ? "bg-teal-600 text-white shadow-xs"
                                         : hasSlots
                                           ? "bg-teal-50 text-teal-800 border border-teal-200/50 hover:bg-teal-100 font-black"
                                           : "text-gray-500 hover:bg-gray-100"
                                   )}
-                                  title={hasSlots ? `${visibleSlots.filter(s => isSameDay(s.date, date)).length} available slots` : ""}
+                                  title={
+                                    hasSlots
+                                      ? `${visibleSlots.filter((s) => isSameDay(s.date, date)).length} available slots`
+                                      : ""
+                                  }
                                 >
                                   {date.getDate()}
                                 </div>
@@ -2075,9 +2244,12 @@ const ConsultationBookingPage = () => {
             ) : (
               <div className="text-center py-20 border-2 border-dashed border-gray-200 rounded-3xl bg-white select-none">
                 <Calendar className="h-14 w-14 text-gray-300 mx-auto mb-4 animate-bounce duration-1000" />
-                <h4 className="text-base font-black text-gray-800">No consultation slots are currently available.</h4>
+                <h4 className="text-base font-black text-gray-800">
+                  No consultation slots are currently available.
+                </h4>
                 <p className="text-xs text-gray-400 mt-1 max-w-sm mx-auto leading-relaxed">
-                  Please check back later or contact support if you need assistance scheduling your session.
+                  Please check back later or contact support if you need assistance scheduling your
+                  session.
                 </p>
               </div>
             )}
@@ -2088,22 +2260,32 @@ const ConsultationBookingPage = () => {
                 {errors.selected_slot}
               </p>
             )}
-            
+
             {/* Visual Selected Summary cards below the calendar */}
             {formData.selected_slot && (
               <div className="bg-slate-50 border border-slate-200/80 p-5 rounded-3xl space-y-4 shadow-2xs">
-                <h4 className="text-xs font-black uppercase text-slate-500 tracking-wider">Your Booking Selection</h4>
-                
+                <h4 className="text-xs font-black uppercase text-slate-500 tracking-wider">
+                  Your Booking Selection
+                </h4>
+
                 <div className="max-w-md">
                   {/* Primary Selection Summary Card */}
                   <div className="bg-white rounded-xl p-4 shadow-sm flex items-center justify-between gap-2 border-l-4 border-teal-500">
                     <div>
-                      <span className="text-[10px] font-black uppercase tracking-wider text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">Selected Slot</span>
+                      <span className="text-[10px] font-black uppercase tracking-wider text-teal-600 bg-teal-50 px-2 py-0.5 rounded-full border border-teal-100">
+                        Selected Slot
+                      </span>
                       <h5 className="font-extrabold text-sm text-gray-800 mt-1.5">
-                        {formData.selected_slot.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })}
+                        {formData.selected_slot.toLocaleDateString(undefined, {
+                          weekday: "short",
+                          month: "short",
+                          day: "numeric",
+                        })}
                       </h5>
                       <p className="text-xs text-gray-500 font-bold mt-0.5">
-                        {visibleSlots.find(s => s.date.getTime() === formData.selected_slot?.getTime())?.formattedTime || ""}
+                        {visibleSlots.find(
+                          (s) => s.date.getTime() === formData.selected_slot?.getTime()
+                        )?.formattedTime || ""}
                       </p>
                     </div>
                     <button
@@ -2122,21 +2304,37 @@ const ConsultationBookingPage = () => {
         );
       }
       case 4: {
-        const selectedIssue = issueCategories.find(c => c.value === formData.issue_category)?.label || formData.issue_category || "General Inquiry";
-        const selectedStage = caseStages.find(s => s.value === formData.case_stage)?.label || formData.case_stage || "Not Specified";
-        const selectedUrgency = urgencyOptions.find(u => u.value === formData.urgency)?.label || formData.urgency || "Normal";
-        const selectedEmbassy = embassyOptions.find(e => e.value === formData.embassy_consulate)?.label || formData.embassy_consulate || "Not Specified";
+        const selectedIssue =
+          issueCategories.find((c) => c.value === formData.issue_category)?.label ||
+          formData.issue_category ||
+          "General Inquiry";
+        const selectedStage =
+          caseStages.find((s) => s.value === formData.case_stage)?.label ||
+          formData.case_stage ||
+          "Not Specified";
+        const selectedUrgency =
+          urgencyOptions.find((u) => u.value === formData.urgency)?.label ||
+          formData.urgency ||
+          "Normal";
+        const selectedEmbassy =
+          embassyOptions.find((e) => e.value === formData.embassy_consulate)?.label ||
+          formData.embassy_consulate ||
+          "Not Specified";
 
-        const formattedDate = formData.selected_slot?.toLocaleDateString(undefined, {
-          weekday: "long",
-          month: "long",
-          day: "numeric",
-          year: "numeric"
-        }) || "No slot selected";
+        const formattedDate =
+          formData.selected_slot?.toLocaleDateString(undefined, {
+            weekday: "long",
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          }) || "No slot selected";
 
-        const slotTime = availableSlots.find(s => s.date.getTime() === formData.selected_slot?.getTime())?.formattedTime || "";
+        const slotTime =
+          availableSlots.find((s) => s.date.getTime() === formData.selected_slot?.getTime())
+            ?.formattedTime || "";
 
-        const hasCredit = tier === "executive" && remainingConsultations !== null && remainingConsultations > 0;
+        const hasCredit =
+          tier === "executive" && remainingConsultations !== null && remainingConsultations > 0;
 
         return (
           <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-300">
@@ -2148,7 +2346,9 @@ const ConsultationBookingPage = () => {
                   Order Review
                 </span>
                 <h3 className="text-xl font-bold">Review your Consultation Details</h3>
-                <p className="text-slate-400 text-xs mt-1 font-light">Confirm details and complete booking.</p>
+                <p className="text-slate-400 text-xs mt-1 font-light">
+                  Confirm details and complete booking.
+                </p>
               </div>
               <div className="flex items-center gap-2 bg-white/10 px-4 py-2 rounded-xl backdrop-blur-md border border-white/10">
                 {tier !== "free" ? (
@@ -2174,38 +2374,54 @@ const ConsultationBookingPage = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Issue / Subject</p>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
+                        Issue / Subject
+                      </p>
                       <p className="text-sm font-bold text-slate-800 mt-1">{selectedIssue}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Visa Stage</p>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
+                        Visa Stage
+                      </p>
                       <p className="text-sm font-bold text-slate-800 mt-1">{selectedStage}</p>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Urgency Priority</p>
-                      <span className={cn(
-                        "inline-block text-[11px] font-bold px-2 py-0.5 rounded mt-1.5",
-                        formData.urgency.startsWith("urgent")
-                          ? "bg-red-50 text-red-600 border border-red-100"
-                          : "bg-slate-50 text-slate-600 border border-slate-100"
-                      )}>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
+                        Urgency Priority
+                      </p>
+                      <span
+                        className={cn(
+                          "inline-block text-[11px] font-bold px-2 py-0.5 rounded mt-1.5",
+                          formData.urgency.startsWith("urgent")
+                            ? "bg-red-50 text-red-600 border border-red-100"
+                            : "bg-slate-50 text-slate-600 border border-slate-100"
+                        )}
+                      >
                         {selectedUrgency}
                       </span>
                     </div>
                     <div>
-                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Language Preference</p>
-                      <p className="text-sm font-bold text-slate-800 mt-1">{formData.preferred_language}</p>
+                      <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
+                        Language Preference
+                      </p>
+                      <p className="text-sm font-bold text-slate-800 mt-1">
+                        {formData.preferred_language}
+                      </p>
                     </div>
                     {formData.embassy_consulate && (
                       <div>
-                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Embassy / Consulate</p>
+                        <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
+                          Embassy / Consulate
+                        </p>
                         <p className="text-sm font-bold text-slate-800 mt-1">{selectedEmbassy}</p>
                       </div>
                     )}
                   </div>
 
                   <div className="mt-6 pt-5 border-t border-slate-100">
-                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">Selected Slot</p>
+                    <p className="text-xs font-semibold text-slate-400 uppercase tracking-tight">
+                      Selected Slot
+                    </p>
                     <div className="mt-2 flex items-center gap-3 bg-teal-50/50 border border-teal-100/50 p-4 rounded-xl">
                       <div className="bg-teal-600 text-white rounded-lg p-2 flex items-center justify-center">
                         <Calendar className="h-5 w-5" />
@@ -2270,17 +2486,13 @@ const ConsultationBookingPage = () => {
                       <div className="mt-5 p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-center gap-2">
                         <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />
                         <span className="text-[11px] font-bold text-amber-800">
-                          {remainingConsultations !== null ? (
-                            useCreditIfAvailable ? (
-                              remainingConsultations === 1
+                          {remainingConsultations !== null
+                            ? useCreditIfAvailable
+                              ? remainingConsultations === 1
                                 ? "0 Executive Consultation credits left"
                                 : `${remainingConsultations - 1} Executive Consultation credits left`
-                            ) : (
-                              `${remainingConsultations} Executive Consultation credits left`
-                            )
-                          ) : (
-                            "Executive credits active."
-                          )}
+                              : `${remainingConsultations} Executive Consultation credits left`
+                            : "Executive credits active."}
                         </span>
                       </div>
                     )}
@@ -2289,10 +2501,12 @@ const ConsultationBookingPage = () => {
                   {/* Credit Choice Selection if credits are available */}
                   {hasCredit && (
                     <div className="mt-6 pt-5 border-t border-slate-200">
-                      <p className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">Redemption Method</p>
-                      
+                      <p className="text-xs font-bold text-slate-900 uppercase tracking-wide mb-3">
+                        Redemption Method
+                      </p>
+
                       <div className="space-y-3">
-                        <div 
+                        <div
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -2306,27 +2520,40 @@ const ConsultationBookingPage = () => {
                           )}
                         >
                           <div className="flex items-center gap-3">
-                            <div className={cn(
-                              "h-4 w-4 rounded-full border flex items-center justify-center",
-                              useCreditIfAvailable ? "border-teal-600 bg-teal-600" : "border-slate-300"
-                            )}>
-                              {useCreditIfAvailable && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                            <div
+                              className={cn(
+                                "h-4 w-4 rounded-full border flex items-center justify-center",
+                                useCreditIfAvailable
+                                  ? "border-teal-600 bg-teal-600"
+                                  : "border-slate-300"
+                              )}
+                            >
+                              {useCreditIfAvailable && (
+                                <div className="h-1.5 w-1.5 rounded-full bg-white" />
+                              )}
                             </div>
                             <div>
-                              <p className="text-xs font-bold text-slate-900">Use Plan Credit (Free)</p>
+                              <p className="text-xs font-bold text-slate-900">
+                                Use Plan Credit (Free)
+                              </p>
                               <p className="text-[10px] text-teal-700 font-medium mt-0.5">
-                                Consume 1 credit ({
-                                  useCreditIfAvailable 
-                                    ? `${remainingConsultations - 1} left after booking` 
-                                    : `${remainingConsultations} available`
-                                })
+                                Consume 1 credit (
+                                {useCreditIfAvailable
+                                  ? `${remainingConsultations - 1} left after booking`
+                                  : `${remainingConsultations} available`}
+                                )
                               </p>
                             </div>
                           </div>
-                          <Crown className={cn("h-5 w-5", useCreditIfAvailable ? "text-amber-500" : "text-slate-400")} />
+                          <Crown
+                            className={cn(
+                              "h-5 w-5",
+                              useCreditIfAvailable ? "text-amber-500" : "text-slate-400"
+                            )}
+                          />
                         </div>
 
-                        <div 
+                        <div
                           onClick={(e) => {
                             e.preventDefault();
                             e.stopPropagation();
@@ -2340,18 +2567,33 @@ const ConsultationBookingPage = () => {
                           )}
                         >
                           <div className="flex items-center gap-3">
-                            <div className={cn(
-                              "h-4 w-4 rounded-full border flex items-center justify-center",
-                              !useCreditIfAvailable ? "border-teal-600 bg-teal-600" : "border-slate-300"
-                            )}>
-                              {!useCreditIfAvailable && <div className="h-1.5 w-1.5 rounded-full bg-white" />}
+                            <div
+                              className={cn(
+                                "h-4 w-4 rounded-full border flex items-center justify-center",
+                                !useCreditIfAvailable
+                                  ? "border-teal-600 bg-teal-600"
+                                  : "border-slate-300"
+                              )}
+                            >
+                              {!useCreditIfAvailable && (
+                                <div className="h-1.5 w-1.5 rounded-full bg-white" />
+                              )}
                             </div>
                             <div>
-                              <p className="text-xs font-bold text-slate-900">Pay with Card ($99)</p>
-                              <p className="text-[10px] text-slate-500 mt-0.5">Save your credits for future use</p>
+                              <p className="text-xs font-bold text-slate-900">
+                                Pay with Card ($99)
+                              </p>
+                              <p className="text-[10px] text-slate-500 mt-0.5">
+                                Save your credits for future use
+                              </p>
                             </div>
                           </div>
-                          <CreditCard className={cn("h-5 w-5", !useCreditIfAvailable ? "text-teal-600" : "text-slate-400")} />
+                          <CreditCard
+                            className={cn(
+                              "h-5 w-5",
+                              !useCreditIfAvailable ? "text-teal-600" : "text-slate-400"
+                            )}
+                          />
                         </div>
                       </div>
                     </div>
@@ -2364,7 +2606,8 @@ const ConsultationBookingPage = () => {
                       <div>
                         <p className="text-xs font-bold text-teal-800">Secure Card Checkout</p>
                         <p className="text-[11px] text-teal-700/80 mt-0.5 leading-relaxed">
-                          Payment is processed securely via Stripe. All major credit and debit cards accepted.
+                          Payment is processed securely via Stripe. All major credit and debit cards
+                          accepted.
                         </p>
                       </div>
                     </div>
@@ -2382,7 +2625,7 @@ const ConsultationBookingPage = () => {
 
   if (activeView === ("requests" as "booking" | "requests")) {
     return (
-      <div className="bg-gray-50 pb-12">
+      <div className="bg-gray-50 pb-12 pt-[55px]">
         <div className="bg-linear-to-r from-teal-800 to-teal-600 text-white py-12 mb-10 shadow-lg relative overflow-hidden">
           <div className="w-full px-4 relative z-10">
             <div className="flex justify-between items-center mb-4">
@@ -2582,13 +2825,13 @@ const ConsultationBookingPage = () => {
   }
 
   return (
-    <div className="bg-gray-50 pb-12">
+    <div className="bg-gray-50 pb-12 pt-[55px]">
       <div className="bg-linear-to-r from-teal-800 to-teal-600 text-white py-16 mb-10 relative overflow-hidden">
         <div className="w-full px-4 relative z-10">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div>
               <h1 className="text-4xl md:text-5xl font-black mb-4">
-                Book <span className="text-teal-200">Consultation</span>
+                Book <span className="text-teal-200">Expert Consultation</span>
               </h1>
               <p className="text-xl text-teal-50 max-w-2xl font-light">
                 Personalized guidance for your U.S. immigration journey.
@@ -2600,11 +2843,11 @@ const ConsultationBookingPage = () => {
                     <span>Loading consultation credits...</span>
                   ) : remainingConsultations !== null ? (
                     <span>
-                      Remaining consultation credits: {
-                        (currentStep === 4 && useCreditIfAvailable) 
-                          ? remainingConsultations - 1 
-                          : remainingConsultations
-                      }/2
+                      Remaining consultation credits:{" "}
+                      {currentStep === 4 && useCreditIfAvailable
+                        ? remainingConsultations - 1
+                        : remainingConsultations}
+                      /2
                     </span>
                   ) : (
                     <span>Consultation credits unavailable</span>
@@ -2621,7 +2864,7 @@ const ConsultationBookingPage = () => {
                   "px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2",
                   activeView === ("booking" as "booking" | "requests")
                     ? "bg-white text-teal-800 shadow-lg"
-                    : "bg-white/10 text-white hover:bg-white/20 border border-white/20",
+                    : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
                 )}
               >
                 Book New
@@ -2699,7 +2942,7 @@ const ConsultationBookingPage = () => {
                   type="button"
                   variant="ghost"
                   onClick={prevStep}
-                  disabled={currentStep === 1 || loading}
+                  disabled={currentStep === 1}
                   className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-4 text-white"
                 >
                   <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" /> Previous
@@ -2720,13 +2963,14 @@ const ConsultationBookingPage = () => {
                     disabled={!formData.selected_slot || loading}
                     className="bg-teal-600 hover:bg-teal-700 text-xs sm:text-sm gap-1 sm:gap-2 px-2 sm:px-8"
                   >
-                    {loading ? (
-                      "Processing..."
-                    ) : tier === "executive" && remainingConsultations !== null && remainingConsultations > 0 && useCreditIfAvailable ? (
-                      "Confirm & Book (Free)"
-                    ) : (
-                      "Proceed to Payment ($99)"
-                    )}
+                    {loading
+                      ? "Processing..."
+                      : tier === "executive" &&
+                          remainingConsultations !== null &&
+                          remainingConsultations > 0 &&
+                          useCreditIfAvailable
+                        ? "Confirm & Book (Free)"
+                        : "Proceed to Payment ($99)"}
                   </Button>
                 )}
               </div>
@@ -2751,7 +2995,20 @@ const ConsultationBookingPage = () => {
   );
 };
 
-export default ConsultationBookingPage;
+export default function ConsultationBookingPage() {
+  return (
+    <React.Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-500 font-medium">Loading Booking System...</p>
+        </div>
+      </div>
+    }>
+      <ConsultationBookingPageContent />
+    </React.Suspense>
+  );
+}
 
 // Helper components for consistency
 const Info = ({ className }: { className?: string }) => <AlertCircle className={className} />;

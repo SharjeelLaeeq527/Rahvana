@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { E, msg } from "@/lib/errors";
+import { triggerPoliceVerificationNotification } from "@/lib/notifications";
 
 export const dynamic = "force-dynamic";
 
@@ -25,6 +26,7 @@ export async function GET(req: NextRequest) {
     let query = supabase
       .from("police_verification_requests")
       .select("*")
+      .or("payment_status.eq.paid,payment_id.is.null")
       .order("created_at", { ascending: false });
 
     if (status && status !== "all") {
@@ -77,6 +79,9 @@ export async function PUT(req: NextRequest) {
     if (error) {
       return Response.json({ error: error.message }, { status: 500 });
     }
+
+    // Trigger status update notifications (email and in-app)
+    await triggerPoliceVerificationNotification(id);
 
     return Response.json({ data });
   } catch (error) {

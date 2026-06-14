@@ -23,7 +23,7 @@ if (!supabase) {
 
 export const consultationService = {
   // Get all consultation bookings with optional filtering
-  async getAllBookings(filters: { status?: string; search?: string } = {}) {
+  async getAllBookings(filters: { status?: string; search?: string; paidOnly?: boolean } = {}) {
     if (!supabase) {
       console.error("Supabase client not initialized");
       return [];
@@ -36,6 +36,10 @@ export const consultationService = {
 
     if (filters.status) {
       query = query.eq("status", filters.status);
+    }
+
+    if (filters.paidOnly) {
+      query = query.or("payment_status.eq.paid,payment_status.eq.free");
     }
 
     if (filters.search) {
@@ -79,6 +83,7 @@ export const consultationService = {
       created_at: new Date(booking.created_at),
       updated_at: new Date(booking.updated_at),
       expires_at: booking.expires_at ? new Date(booking.expires_at) : undefined,
+      payment_status: booking.payment_status ?? null,
     })) as ConsultationBooking[];
   },
 
@@ -86,19 +91,27 @@ export const consultationService = {
   async createBooking(
     bookingData: Omit<
       ConsultationBooking,
-      "id" | "reference_id" | "status" | "created_at" | "updated_at" | "expires_at"
-    >
+      "id" | "created_at" | "updated_at" | "expires_at"
+    > & {
+      reference_id?: string;
+      status?: ConsultationBooking["status"];
+      payment_status?: ConsultationBooking["payment_status"];
+      payment_id?: string | null;
+    }
   ) {
     if (!supabase) {
       console.error("Supabase client not initialized");
       throw new Error(Errors.msg(Errors.E.CONSULTATION_SUPABASE_NOT_INITIALIZED));
     }
 
-    // Generate reference ID
-    const referenceId = `REQ-${Math.floor(100000 + Math.random() * 900000)}`;
+    // Generate reference ID if not provided
+    const referenceId = bookingData.reference_id || `REQ-${Math.floor(100000 + Math.random() * 900000)}`;
 
     // Normalize urgency for database check constraint (must be 'normal' or 'urgent')
-    const normalizedUrgency = (bookingData.urgency && bookingData.urgency.startsWith("urgent")) ? "urgent" : "normal";
+    const normalizedUrgency =
+      bookingData.urgency && bookingData.urgency.startsWith("urgent") ? "urgent" : "normal";
+    const bookingStatus = bookingData.status || "pending_approval";
+    const bookingPaymentStatus = bookingData.payment_status ?? "paid";
 
     // Map camelCase to snake_case for Supabase
     const newBooking = {
@@ -118,7 +131,9 @@ export const consultationService = {
         ? bookingData.alternate_slots.map((slot) => slot.toISOString())
         : [],
       reference_id: referenceId,
-      status: "pending_approval",
+      status: bookingStatus,
+      payment_status: bookingPaymentStatus,
+      payment_id: bookingData.payment_id || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Expires in 24 hours if not approved
@@ -139,13 +154,13 @@ export const consultationService = {
     try {
       const slotDateStr = bookingData.selected_slot.toISOString().split("T")[0];
       const slotTimeStr = bookingData.selected_slot.toISOString().split("T")[1].substring(0, 8);
-      
+
       const { error: slotUpdateError } = await supabase
         .from("time_slots")
         .update({ status: "confirmed" })
         .eq("date", slotDateStr)
         .eq("start_time", slotTimeStr);
-        
+
       if (slotUpdateError) {
         console.error("Error updating slot status:", slotUpdateError);
       } else {
@@ -174,6 +189,8 @@ export const consultationService = {
         ? result.alternate_slots.map((slot: string) => new Date(slot))
         : undefined,
       admin_notes: result.admin_notes,
+      payment_status: result.payment_status ?? null,
+      payment_id: result.payment_id ?? null,
       created_at: new Date(result.created_at),
       updated_at: new Date(result.updated_at),
       expires_at: result.expires_at ? new Date(result.expires_at) : undefined,
@@ -243,6 +260,7 @@ export const consultationService = {
         ? result.alternate_slots.map((slot: string) => new Date(slot))
         : undefined,
       admin_notes: result.admin_notes,
+      payment_status: result.payment_status ?? null,
       created_at: new Date(result.created_at),
       updated_at: new Date(result.updated_at),
       expires_at: result.expires_at ? new Date(result.expires_at) : undefined,
@@ -285,6 +303,7 @@ export const consultationService = {
         ? data.alternate_slots.map((slot: string) => new Date(slot))
         : undefined,
       admin_notes: data.admin_notes,
+      payment_status: data.payment_status ?? null,
       created_at: new Date(data.created_at),
       updated_at: new Date(data.updated_at),
       expires_at: data.expires_at ? new Date(data.expires_at) : undefined,

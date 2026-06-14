@@ -821,6 +821,10 @@
   background-clip: padding-box;
 }
 
+.scrollbar-premium::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 .scrollbar-premium {
   scrollbar-width: thin;
   scrollbar-color: #0d7377 transparent;
