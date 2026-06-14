@@ -359,7 +359,7 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
     let htmlContent = "";
 
     const headerHtml = `
-      <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
+      <div style="background-color: #0d7377; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
         <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Rahvana Consultation</h1>
         <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: white;">Appointment Status Update</p>
       </div>
@@ -387,7 +387,7 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
             <div style="${cardStyles}">
               <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Booking Summary</h3>
               <p style="margin: 8px 0;"><strong>Reference ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${referenceId}</span></p>
-              <p style="margin: 8px 0;"><strong>Confirmed Date & Time:</strong> <span style="color: #4f46e5; font-weight: 600;">${formatSlotDate(selectedSlot)}</span></p>
+              <p style="margin: 8px 0;"><strong>Confirmed Date & Time:</strong> <span style="color: #0d7377; font-weight: 600;">${formatSlotDate(selectedSlot)}</span></p>
               <p style="margin: 8px 0;"><strong>Issue Category:</strong> ${issueCategory}</p>
             </div>
             
@@ -396,7 +396,7 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
             ${
               adminNotes
                 ? `
-            <div style="background-color: #f3f4f6; border-left: 4px solid #4f46e5; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+            <div style="background-color: #f3f4f6; border-left: 4px solid #0d7377; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
               <strong style="display: block; color: #374151; font-size: 14px; margin-bottom: 5px;">Important Notes:</strong>
               <p style="margin: 0; font-style: italic; color: #4b5563;">${adminNotes}</p>
             </div>
@@ -417,7 +417,7 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
           ? alternateSlots
               .map(
                 (slot) =>
-                  `<li style="margin: 8px 0; font-weight: 600; color: #4f46e5;">${formatSlotDate(slot)}</li>`
+                  `<li style="margin: 8px 0; font-weight: 600; color: #0d7377;">${formatSlotDate(slot)}</li>`
               )
               .join("")
           : `<li style="margin: 8px 0; font-style: italic; color: #6b7280;">No explicit alternative slots proposed</li>`;
@@ -477,7 +477,7 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
       subject = `Consultation Request Cancelled - Ref: ${referenceId}`;
       htmlContent = `
         <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
-          <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
+          <div style="background-color: #0d7377; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
             <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Consultation Cancelled</h1>
             <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: white;">Appointment Status Update</p>
           </div>
@@ -752,7 +752,7 @@ export async function sendTranslationNotification(data: TranslationNotificationD
     let htmlContent = "";
 
     const headerHtml = `
-      <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
+      <div style="background-color: #0d7377; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
         <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Rahvana Translation</h1>
         <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: white;">Document Translation Status Update</p>
       </div>
@@ -785,14 +785,14 @@ export async function sendTranslationNotification(data: TranslationNotificationD
               <p style="margin: 8px 0;"><strong>Request ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${documentId}</span></p>
               <p style="margin: 8px 0;"><strong>Document Type:</strong> ${docTypeLabel}</p>
               <p style="margin: 8px 0;"><strong>Original File:</strong> ${originalFilename || "Urdu PDF"}</p>
-              <p style="margin: 8px 0;"><strong>Translated Proof:</strong> <span style="color: #4f46e5; font-weight: 600;">${translatedFilename || `Proof_V${version}.pdf`}</span></p>
+              <p style="margin: 8px 0;"><strong>Translated Proof:</strong> <span style="color: #0d7377; font-weight: 600;">${translatedFilename || `Proof_V${version}.pdf`}</span></p>
               <p style="margin: 8px 0;"><strong>Version:</strong> V${version}</p>
             </div>
             
             ${
               adminNotes
                 ? `
-            <div style="background-color: #f3f4f6; border-left: 4px solid #4f46e5; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+            <div style="background-color: #f3f4f6; border-left: 4px solid #0d7377; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
               <strong style="display: block; color: #374151; font-size: 14px; margin-bottom: 5px;">Admin Notes:</strong>
               <p style="margin: 0; font-style: italic; color: #4b5563;">${adminNotes}</p>
             </div>
@@ -804,7 +804,7 @@ export async function sendTranslationNotification(data: TranslationNotificationD
             
             <div style="text-align: center; margin: 30px 0;">
               <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/document-translation/request/${documentId}" 
-                 style="background-color: #4f46e5; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
+                 style="background-color: #0d7377; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
                 Review Translation Proof
               </a>
             </div>
@@ -1120,7 +1120,7 @@ export async function sendPoliceVerificationNotification(data: PoliceVerificatio
     let htmlContent = "";
 
     const headerHtml = `
-      <div style="background: linear-gradient(135deg, #0f766e 0%, #115e59 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
+      <div style="background-color: #0d7377; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
         <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Sindh Police Character Certificate</h1>
         <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: white;">Request Status Update</p>
       </div>
@@ -1141,7 +1141,7 @@ export async function sendPoliceVerificationNotification(data: PoliceVerificatio
         <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
           ${headerHtml}
           <div style="padding: 30px 20px;">
-            <h2 style="color: #111827; margin-top: 0; font-size: 20px; color: #0f766e;">Character Certificate Ready!</h2>
+            <h2 style="color: #111827; margin-top: 0; font-size: 20px; color: #0d7377;">Character Certificate Ready!</h2>
             <p>Dear ${fullName},</p>
             <p>We are pleased to inform you that your Sindh Police Character Certificate (PCC) request has been successfully processed and completed.</p>
             
@@ -1150,14 +1150,14 @@ export async function sendPoliceVerificationNotification(data: PoliceVerificatio
               <p style="margin: 8px 0;"><strong>Tracking ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${requestId || "N/A"}</span></p>
               <p style="margin: 8px 0;"><strong>Province:</strong> ${province || "Sindh"}</p>
               <p style="margin: 8px 0;"><strong>District:</strong> ${district || "N/A"}</p>
-              <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #0f766e; font-weight: 600;">COMPLETED</span></p>
+              <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #0d7377; font-weight: 600;">COMPLETED</span></p>
             </div>
             
             <p>You can retrieve and download your official Police Character Certificate from your user dashboard by clicking the button below.</p>
             
             <div style="text-align: center; margin: 30px 0;">
               <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://arachnie.com"}/user-dashboard" 
-                 style="background-color: #0f766e; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
+                 style="background-color: #0d7377; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
                 Go to Dashboard
               </a>
             </div>
@@ -1190,7 +1190,7 @@ export async function sendPoliceVerificationNotification(data: PoliceVerificatio
             
             <div style="text-align: center; margin: 30px 0;">
               <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://arachnie.com"}/user-dashboard" 
-                 style="background-color: #0f766e; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
+                 style="background-color: #0d7377; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
                 Track Request
               </a>
             </div>
@@ -1203,7 +1203,7 @@ export async function sendPoliceVerificationNotification(data: PoliceVerificatio
       subject = `Action Required: Sindh PCC Request Issue`;
       htmlContent = `
         <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
-          <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
+          <div style="background-color: #0d7377; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
             <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Sindh Police Character Certificate</h1>
             <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: white;">Action Required</p>
           </div>
