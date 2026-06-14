@@ -253,7 +253,7 @@ async function createInAppNotification(appointmentId: string, appointment: Recor
       console.error("[InAppNotif] Error inserting notification:", error);
     } else {
       console.log(
-        `[InAppNotif] ✅ Created in-app notification for user ${userId} (status: ${appointment.status})`
+        `[InAppNotif] Created in-app notification for user ${userId} (status: ${appointment.status})`
       );
     }
   } catch (err) {
@@ -658,7 +658,7 @@ async function createConsultationInAppNotification(
       console.error("[ConsultationInAppNotif] Error inserting notification:", error);
     } else {
       console.log(
-        `[ConsultationInAppNotif] ✅ Created in-app notification for user ${userId} (status: ${booking.status})`
+        `[ConsultationInAppNotif] Created in-app notification for user ${userId} (status: ${booking.status})`
       );
     }
   } catch (err) {
@@ -1005,7 +1005,7 @@ async function createTranslationInAppNotification(
       console.error("[TranslationInAppNotif] Error inserting notification:", error);
     } else {
       console.log(
-        `[TranslationInAppNotif] ✅ Created in-app notification for user ${userId} (status: ${document.status})`
+        `[TranslationInAppNotif] Created in-app notification for user ${userId} (status: ${document.status})`
       );
     }
   } catch (err) {
@@ -1106,15 +1106,7 @@ interface PoliceVerificationNotificationData {
 
 export async function sendPoliceVerificationNotification(data: PoliceVerificationNotificationData) {
   try {
-    const {
-      email,
-      fullName,
-      id,
-      requestId,
-      status,
-      province,
-      district,
-    } = data;
+    const { email, fullName, id, requestId, status, province, district } = data;
 
     let subject = "";
     let htmlContent = "";
@@ -1304,10 +1296,7 @@ function getPoliceVerificationNotificationContent(
   }
 }
 
-async function createPoliceVerificationInAppNotification(
-  id: string,
-  request: Record<string, any>
-) {
+async function createPoliceVerificationInAppNotification(id: string, request: Record<string, any>) {
   try {
     const { createServerClient } = await import("@supabase/ssr");
 
@@ -1369,7 +1358,7 @@ async function createPoliceVerificationInAppNotification(
       console.error("[PCCInAppNotif] Error inserting notification:", error);
     } else {
       console.log(
-        `[PCCInAppNotif] ✅ Created in-app notification for user ${userId} (status: ${request.status})`
+        `[PCCInAppNotif] Created in-app notification for user ${userId} (status: ${request.status})`
       );
     }
   } catch (err) {
@@ -1433,4 +1422,3 @@ export async function triggerPoliceVerificationNotification(id: string) {
     return { error: Errors.msg(Errors.E.POLICE_VERIFICATION_TRIGGER_FAILED) };
   }
 }
-

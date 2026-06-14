@@ -30,45 +30,47 @@ export async function GET(request: NextRequest) {
     const date = searchParams.get("date");
     const status = searchParams.get("status");
 
-    const filters = {
-      date: date || undefined,
-      status: status || undefined,
-    };
-
-    const slots = await consultationService.getTimeSlots(filters);
+    // Fetch slots matching the date, but not status, so we can filter/override dynamically in memory
+    const slots = await consultationService.getTimeSlots({ date: date || undefined });
     const bookings = await consultationService.getAllBookings();
 
-    // Return slots with proper timezone info
-    // Database stores in UTC, so we'll send back the raw data
-    // and let the frontend handle the display timezone conversion
-    return NextResponse.json(
-      slots.map((slot) => {
-        // Find if there is a booking matching this slot
-        const dateStr = slot.date instanceof Date 
-          ? slot.date.toISOString().split("T")[0] 
-          : String(slot.date);
-        
-        // start_time is a string like "09:00:00" or "09:00"
-        const timeStr = String(slot.start_time).substring(0, 8);
-        const slotDate = new Date(`${dateStr}T${timeStr}Z`);
-        
-        const matchingBooking = bookings.find((b) => {
-          return new Date(b.selected_slot).getTime() === slotDate.getTime();
-        });
+    const mappedSlots = slots.map((slot) => {
+      // Find if there is a booking matching this slot
+      const dateStr = slot.date instanceof Date 
+        ? slot.date.toISOString().split("T")[0] 
+        : String(slot.date);
+      
+      // start_time is a string like "09:00:00" or "09:00"
+      const timeStr = String(slot.start_time).substring(0, 8);
+      const slotDate = new Date(`${dateStr}T${timeStr}Z`);
+      
+      const matchingBooking = bookings.find((b) => {
+        return new Date(b.selected_slot).getTime() === slotDate.getTime();
+      });
 
-        let displayStatus = slot.status;
-        if (slot.status === "confirmed" && matchingBooking && (matchingBooking.status === "canceled" || matchingBooking.status === "cancelled")) {
-          displayStatus = "canceled";
+      let displayStatus = slot.status;
+      if (matchingBooking) {
+        if (matchingBooking.status === "canceled" || matchingBooking.status === "cancelled") {
+          displayStatus = "available";
+        } else {
+          displayStatus = "confirmed";
         }
+      }
 
-        return {
-          ...slot,
-          status: displayStatus,
-          // Add a flag to indicate this is stored in UTC
-          timezone: "UTC",
-        };
-      })
-    );
+      return {
+        ...slot,
+        status: displayStatus,
+        // Add a flag to indicate this is stored in UTC
+        timezone: "UTC",
+      };
+    });
+
+    // If a status filter was requested, perform filtering in memory
+    const filteredSlots = status 
+      ? mappedSlots.filter((slot) => slot.status === status)
+      : mappedSlots;
+
+    return NextResponse.json(filteredSlots);
   } catch (error) {
     return handleServiceError(error, "Error fetching time slots");
   }

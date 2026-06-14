@@ -482,61 +482,61 @@ const ConsultationBookingPageContent = () => {
   }));
 
   // Load time slots from API
-  useEffect(() => {
-    const fetchTimeSlots = async () => {
-      try {
-        const response = await fetch("/api/consultation/slots");
-        if (response.ok) {
-          const slots = await response.json();
-          interface ApiTimeSlot {
-            id: string;
-            date: string;
-            start_time: string;
-            end_time: string;
-            status: string;
-          }
-
-          const formattedSlots = slots.map((slot: ApiTimeSlot) => {
-            // slot.date is "YYYY-MM-DD", slot.start_time is "HH:mm:ss"
-
-            // Create a combined datetime string in business timezone
-            const slotDateTimeStr = `${slot.date}T${slot.start_time}`;
-            const slotEndDateStr = `${slot.date}T${slot.end_time}`;
-
-            // Convert to user's timezone
-            const slotDate = new Date(slotDateTimeStr + "Z"); // Treat as UTC then convert to user's timezone
-            const slotEndDate = new Date(slotEndDateStr + "Z"); // Treat as UTC then convert to user's timezone
-
-            // Format for user's detected timezone (browser's local TZ by default)
-            const formatOptions: Intl.DateTimeFormatOptions = {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true,
-              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            };
-
-            const displayTime = slotDate.toLocaleTimeString([], formatOptions);
-            const displayEndTime = slotEndDate.toLocaleTimeString([], formatOptions);
-
-            return {
-              id: slot.id,
-              date: slotDate,
-              endDate: slotEndDate,
-              time: slot.start_time,
-              formattedTime: `${displayTime} - ${displayEndTime}`,
-              available: slot.status === "available",
-            };
-          });
-          setAvailableSlots(formattedSlots);
-        } else {
-          setAvailableSlots([]);
+  const fetchTimeSlots = async () => {
+    try {
+      const response = await fetch("/api/consultation/slots");
+      if (response.ok) {
+        const slots = await response.json();
+        interface ApiTimeSlot {
+          id: string;
+          date: string;
+          start_time: string;
+          end_time: string;
+          status: string;
         }
-      } catch (error) {
-        console.error("Slot fetch error:", error);
+
+        const formattedSlots = slots.map((slot: ApiTimeSlot) => {
+          // slot.date is "YYYY-MM-DD", slot.start_time is "HH:mm:ss"
+
+          // Create a combined datetime string in business timezone
+          const slotDateTimeStr = `${slot.date}T${slot.start_time}`;
+          const slotEndDateStr = `${slot.date}T${slot.end_time}`;
+
+          // Convert to user's timezone
+          const slotDate = new Date(slotDateTimeStr + "Z"); // Treat as UTC then convert to user's timezone
+          const slotEndDate = new Date(slotEndDateStr + "Z"); // Treat as UTC then convert to user's timezone
+
+          // Format for user's detected timezone (browser's local TZ by default)
+          const formatOptions: Intl.DateTimeFormatOptions = {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          };
+
+          const displayTime = slotDate.toLocaleTimeString([], formatOptions);
+          const displayEndTime = slotEndDate.toLocaleTimeString([], formatOptions);
+
+          return {
+            id: slot.id,
+            date: slotDate,
+            endDate: slotEndDate,
+            time: slot.start_time,
+            formattedTime: `${displayTime} - ${displayEndTime}`,
+            available: slot.status === "available",
+          };
+        });
+        setAvailableSlots(formattedSlots);
+      } else {
         setAvailableSlots([]);
       }
-    };
+    } catch (error) {
+      console.error("Slot fetch error:", error);
+      setAvailableSlots([]);
+    }
+  };
 
+  useEffect(() => {
     fetchTimeSlots();
   }, []); // Only fetch once, uses browser's local TZ by default via toLocaleTimeString
 
@@ -834,6 +834,7 @@ const ConsultationBookingPageContent = () => {
           // Free booking -> show confirmation directly!
           setReferenceId(result.reference_id);
           setShowConfirmation(true);
+          fetchTimeSlots();
         } else {
           const errorData = await response.json().catch(() => ({}));
           console.error("Submission failed:", errorData);
@@ -976,6 +977,7 @@ const ConsultationBookingPageContent = () => {
     setAttachments([]);
     setCurrentStep(1);
     setShowConfirmation(false);
+    fetchTimeSlots();
   };
 
   // Google Calendar Grid & Navigation Helper Functions
