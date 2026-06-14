@@ -41,6 +41,8 @@ export interface CivilDocIssue {
   title: string;
   hint?: string;
   docId: string;
+  /** When true, the item is addressed — shows checkmark in sidebar */
+  resolved?: boolean;
 }
 
 export interface CivilDocsContext {
@@ -71,6 +73,10 @@ function hadPriorMarriage(ctx: CivilDocsContext): boolean {
 /**
  * Analyzes the civil-document checklist and returns advisory issues.
  * `groups` comes straight from step_2_4.tool_data.doc_list.groups.
+ *
+ * Regular docs that are uploaded/reviewed are skipped (not shown in sidebar).
+ * Prior marriage conditional docs are always shown but marked as resolved
+ * when uploaded, so users can confirm they've addressed them.
  */
 export function analyzeCivilDocs(
   groups: CivilDocGroup[] | undefined | null,
@@ -83,10 +89,11 @@ export function analyzeCivilDocs(
     const items = group.items ?? [];
     for (const item of items) {
       const done = isCivilDocDone(item, ctx);
-      if (done) continue;
 
       // ── Required group / explicitly required items → completeness gap ──
       if (group.id === "required" || item.required === true) {
+        // Skip docs that are already uploaded/reviewed
+        if (done) continue;
         issues.push({
           level: "critical",
           title: `Missing: ${item.title}`,
@@ -100,12 +107,25 @@ export function analyzeCivilDocs(
       if (group.id === "conditional") {
         const isPriorMarriageDoc = item.id === "prior-marriage" || item.id === "death-cert";
         if (isPriorMarriageDoc && hadPriorMarriage(ctx)) {
-          issues.push({
-            level: "critical",
-            title: `Required for your case: ${item.title}`,
-            hint: "You indicated a prior marriage during eligibility. NVC requires proof every prior marriage legally ended (final divorce decree, annulment, or death certificate) — with a certified English translation.",
-            docId: item.id,
-          });
+          // Check if any prior marriage termination doc is uploaded (combines both doc types)
+          const anyPriorMarriageDocDone = items.some(
+            (i) => (i.id === "prior-marriage" || i.id === "death-cert") && isCivilDocDone(i, ctx)
+          );
+
+          // Only push one finding for the first prior marriage doc item
+          // to avoid showing "Required for your case" twice for the same requirement
+          if (item.id === "prior-marriage") {
+            issues.push({
+              level: "critical",
+              title: `Required for your case: Prior Marriage Termination Documents`,
+              hint: anyPriorMarriageDocDone
+                ? "Document uploaded — prior marriage termination proof is on file."
+                : "You indicated a prior marriage during eligibility. NVC requires proof every prior marriage legally ended (final divorce decree, annulment, or death certificate) — with a certified English translation.",
+              docId: item.id,
+              resolved: anyPriorMarriageDocDone,
+            });
+          }
+          // Skip death-cert as it's combined with prior-marriage above
         }
         // Other conditional docs (name change, missing-record evidence) have no
         // automatic trigger signal — left to the user, not flagged.
@@ -114,6 +134,8 @@ export function analyzeCivilDocs(
 
       // ── Recommended group → evidence-quality strengthener (advisory) ──
       if (group.id === "recommended") {
+        // Skip recommended docs that are already uploaded
+        if (done) continue;
         issues.push({
           level: "info",
           title: `Recommended: ${item.title}`,

@@ -1,7 +1,8 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { motion } from "framer-motion";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight,
   AlertTriangle,
@@ -9,6 +10,8 @@ import {
   Info,
   ShieldCheck,
   CheckCircle2,
+  X,
+  ClipboardList,
 } from "lucide-react";
 import type { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import type { UploadedDocument } from "@/lib/document-vault/types";
@@ -18,12 +21,20 @@ import {
   aggregateChapter3Issues,
   type AggregatedIssue,
 } from "@/lib/case-strength/aggregate-issues";
+import {
+  runFullConsistencyAnalysis,
+  PHASE2_QUESTIONS,
+  type ConsistencyFinding,
+  type Phase2Responses,
+} from "@/lib/case-strength";
 
 interface DashboardCriticalCardProps {
   chapters: any[];
   state: WizardState;
   uploadedDocuments: UploadedDocument[];
   onOpenStep?: (chapterIdx: number, stepIdx: number) => void;
+  phase2Responses?: Record<string, boolean>;
+  onPhase2Save?: (responses: Record<string, boolean>) => void;
 }
 
 const LEVEL: Record<
@@ -206,24 +217,243 @@ function IssueRow({
   );
 }
 
+// ─── Phase 2 Questionnaire Modal ──────────────────────────────────────────────
+
+function Phase2Modal({
+  isOpen,
+  onClose,
+  responses,
+  onSave,
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  responses: Record<string, boolean>;
+  onSave: (responses: Record<string, boolean>) => void;
+}) {
+  const [local, setLocal] = useState<Record<string, boolean>>(responses);
+
+  const grouped: Record<string, (typeof PHASE2_QUESTIONS)[number][]> = {};
+  for (const q of PHASE2_QUESTIONS) {
+    if (!grouped[q.group]) grouped[q.group] = [];
+    grouped[q.group].push(q);
+  }
+
+  const isVisible = (q: (typeof PHASE2_QUESTIONS)[number]): boolean => {
+    if (!("dependsOn" in q) || !q.dependsOn) return true;
+    return !!local[q.dependsOn as string];
+  };
+
+  const toggle = (id: string) => {
+    setLocal((prev) => {
+      const next = { ...prev, [id]: !prev[id] };
+      const question = PHASE2_QUESTIONS.find((q) => q.id === id);
+      if (question && !next[id]) {
+        for (const child of PHASE2_QUESTIONS) {
+          if ("dependsOn" in child && child.dependsOn === id) next[child.id] = false;
+        }
+      }
+      return next;
+    });
+  };
+
+  if (!isOpen) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[80vh] overflow-hidden"
+      >
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
+          <div className="flex items-center gap-2">
+            <ClipboardList className="w-5 h-5" style={{ color: "#0d7377" }} />
+            <h3 className="text-sm font-bold text-slate-800">Improve Case Analysis</h3>
+          </div>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-100 transition-colors">
+            <X className="w-4 h-4 text-slate-500" />
+          </button>
+        </div>
+        <div className="overflow-y-auto max-h-[60vh] px-5 py-4 space-y-5">
+          <p className="text-xs text-slate-500">
+            Answer these optional questions to unlock deeper consistency checks. Your answers are
+            only used for analysis.
+          </p>
+          {Object.entries(grouped).map(([group, questions]) => {
+            const visible = questions.filter(isVisible);
+            if (visible.length === 0) return null;
+            return (
+              <div key={group}>
+                <h4 className="text-xs font-bold uppercase tracking-wide text-slate-600 mb-2">
+                  {group}
+                </h4>
+                <div className="space-y-2">
+                  {visible.map((q) => (
+                    <div
+                      key={q.id}
+                      className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
+                    >
+                      <div className="flex-1 min-w-0 mr-3">
+                        <p className="text-[12px] font-medium text-slate-700">{q.question}</p>
+                        <p className="text-[10px] text-slate-500 mt-0.5">{q.description}</p>
+                      </div>
+                      <button
+                        onClick={() => toggle(q.id)}
+                        className={`shrink-0 w-12 h-6 rounded-full transition-colors ${local[q.id] ? "bg-emerald-500" : "bg-slate-200"}`}
+                      >
+                        <div
+                          className={`w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${local[q.id] ? "translate-x-6" : "translate-x-0.5"}`}
+                        />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+        <div className="px-5 py-4 border-t border-slate-200 flex gap-3">
+          <button
+            onClick={onClose}
+            className="flex-1 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={() => {
+              onSave(local);
+              onClose();
+            }}
+            className="flex-1 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"
+            style={{ backgroundColor: "#0d7377" }}
+          >
+            Save & Analyze
+          </button>
+        </div>
+      </motion.div>
+    </div>,
+    document.body
+  );
+}
+
+// ─── Helper: Convert ConsistencyFinding → AggregatedIssue ─────────────────────
+
+function findingToIssue(finding: ConsistencyFinding, chapters: any[]): AggregatedIssue {
+  const levelMap: Record<string, AggregatedIssue["level"]> = {
+    critical: "critical",
+    warning: "warning",
+    informational: "info",
+  };
+
+  // Parse actionableStepKey "step_X_Y" → chapterIdx/stepIdx
+  let chapterIdx = 0;
+  let stepIdx = 0;
+  let stepName = finding.category.replace(/_/g, " ");
+  let stepNumber = 0;
+
+  if (finding.actionableStepKey) {
+    const match = finding.actionableStepKey.match(/step_(\d+)_(\d+)/);
+    if (match) {
+      const chapNum = parseInt(match[1], 10) - 1; // 0-indexed
+      const stepNum = parseInt(match[2], 10);
+
+      // Look up in chapters array
+      if (chapters[chapNum]?.steps) {
+        chapterIdx = chapNum;
+        const foundIdx = chapters[chapNum].steps.findIndex(
+          (s: any) => s.step_key === finding.actionableStepKey
+        );
+        stepIdx = foundIdx >= 0 ? foundIdx : stepNum - 1;
+        stepName = chapters[chapNum].steps[stepIdx]?.step_name ?? stepName;
+        stepNumber = chapters[chapNum].steps[stepIdx]?.step_number ?? stepNum;
+      }
+    }
+  }
+
+  return {
+    level: levelMap[finding.severity] ?? "info",
+    title: finding.title,
+    hint: `${finding.description}\n\nHow to resolve: ${finding.resolution}`,
+    stepKey: finding.actionableStepKey ?? "unknown",
+    stepName,
+    stepNumber,
+    chapterIdx,
+    stepIdx,
+    resolved: finding.resolved ?? false,
+  };
+}
+
 export function DashboardCriticalCard({
   chapters,
   state,
   uploadedDocuments,
   onOpenStep,
+  phase2Responses,
+  onPhase2Save,
 }: DashboardCriticalCardProps) {
+  const [showPhase2Modal, setShowPhase2Modal] = useState(false);
+
   const issues = useMemo(() => {
+    // Existing chapter-based issues
     const ch1 = aggregateChapter1Issues({ chapters, state, uploadedDocuments });
     const ch2 = aggregateChapter2Issues({ chapters, state, uploadedDocuments });
     const ch3 = aggregateChapter3Issues({ chapters, state, uploadedDocuments });
+
+    // Consistency intelligence findings (Phase 1 + Phase 2)
+    const eligibilityAnswers =
+      (state.answers?.["eligibility-suite"] as any) ??
+      (state.metadata?.["questAnswers_eligibility-suite"] as any);
+
+    const consistencyFindings = runFullConsistencyAnalysis(
+      { state, eligibilityAnswers },
+      (phase2Responses as Phase2Responses) ?? null,
+      uploadedDocuments
+    );
+
+    // Convert findings to AggregatedIssue format, deduplicating by stepKey+title
+    // and by semantic overlap (same step + similar topic)
+    const existingKeys = new Set([...ch1, ...ch2, ...ch3].map((i) => `${i.stepKey}:${i.title}`));
+
+    // Also track step keys that have prior marriage doc findings (civil docs checker)
+    const priorMarriageStepKeys = new Set(
+      [...ch1, ...ch2, ...ch3]
+        .filter(
+          (i) =>
+            i.title.toLowerCase().includes("prior marriage") ||
+            i.title.toLowerCase().includes("termination")
+        )
+        .map((i) => i.stepKey)
+    );
+
+    const consistencyIssues = consistencyFindings
+      .map((f) => findingToIssue(f, chapters))
+      .filter((issue) => {
+        // Skip if exact match exists
+        if (existingKeys.has(`${issue.stepKey}:${issue.title}`)) return false;
+        // Skip Phase 2 prior marriage termination finding if civil docs already covers it
+        if (
+          issue.stepKey === "step_2_4" &&
+          (issue.title.toLowerCase().includes("termination") ||
+            issue.title.toLowerCase().includes("prior marriage")) &&
+          priorMarriageStepKeys.has("step_2_4")
+        ) {
+          return false;
+        }
+        return true;
+      });
+
+    const all = [...ch1, ...ch2, ...ch3, ...consistencyIssues];
     const order = { critical: 0, warning: 1, info: 2 };
-    return [...ch1, ...ch2, ...ch3].sort((a, b) => {
-      if (order[a.level] !== order[b.level]) return order[a.level] - order[b.level];
-      // Resolved items appear after unresolved ones within the same level
+    return all.sort((a, b) => {
+      // Resolved items always at the bottom, regardless of level
       if (!!a.resolved !== !!b.resolved) return a.resolved ? 1 : -1;
+      // Then sort by severity level
+      if (order[a.level] !== order[b.level]) return order[a.level] - order[b.level];
+      // Then by chapter
       return a.chapterIdx - b.chapterIdx;
     });
-  }, [chapters, state, uploadedDocuments]);
+  }, [chapters, state, uploadedDocuments, phase2Responses]);
 
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
   const [collapsed, setCollapsed] = useState(false); // open by default
@@ -242,9 +472,11 @@ export function DashboardCriticalCard({
     );
   }
 
-  const critCount = issues.filter((i) => i.level === "critical").length;
-  const warnCount = issues.filter((i) => i.level === "warning").length;
+  // Exclude resolved items from severity counts
+  const critCount = issues.filter((i) => i.level === "critical" && !i.resolved).length;
+  const warnCount = issues.filter((i) => i.level === "warning" && !i.resolved).length;
   const infoCount = issues.filter((i) => i.level === "info" && !i.resolved).length;
+  const resolvedCount = issues.filter((i) => i.resolved).length;
 
   return (
     <div className="relative">
@@ -347,6 +579,18 @@ export function DashboardCriticalCard({
                       {infoCount} info{infoCount !== 1 ? "s" : ""}
                     </span>
                   )}
+
+                  {resolvedCount > 0 && (
+                    <span
+                      className="text-[9.5px] font-bold px-2 py-0.5 rounded-full whitespace-nowrap"
+                      style={{
+                        background: "#d1fae5",
+                        color: "#065f46",
+                      }}
+                    >
+                      {resolvedCount} addressed
+                    </span>
+                  )}
                 </div>
               </div>
 
@@ -364,6 +608,24 @@ export function DashboardCriticalCard({
                   />
                 ))}
               </div>
+
+              {/* Improve Analysis button — Phase 2 questionnaire */}
+              {onPhase2Save && (
+                <div className="px-2 pb-2">
+                  <button
+                    onClick={() => setShowPhase2Modal(true)}
+                    className="w-full flex items-center justify-center gap-2 py-2 rounded-xl border-2 border-dashed transition-colors hover:border-solid"
+                    style={{ borderColor: "#0d737740", color: "#0d7377" }}
+                  >
+                    <ClipboardList size={13} />
+                    <span className="text-[10.5px] font-semibold">
+                      {phase2Responses && Object.values(phase2Responses).some(Boolean)
+                        ? "Update Analysis"
+                        : "Improve Analysis"}
+                    </span>
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -392,6 +654,14 @@ export function DashboardCriticalCard({
           <ChevronRight className="w-4 h-4 mx-auto rotate-180" />
         )}
       </motion.button>
+
+      {/* Phase 2 Questionnaire Modal */}
+      <Phase2Modal
+        isOpen={showPhase2Modal}
+        onClose={() => setShowPhase2Modal(false)}
+        responses={phase2Responses ?? {}}
+        onSave={(responses) => onPhase2Save?.(responses)}
+      />
     </div>
   );
 }

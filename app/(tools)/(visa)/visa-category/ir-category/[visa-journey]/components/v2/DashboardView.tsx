@@ -87,6 +87,23 @@ export function DashboardView({
     }
   };
 
+  // ── Consistency Analysis Phase 2 Questionnaire ──
+  const [phase2Responses, setPhase2Responses] = useState<Record<string, boolean>>(() => {
+    const saved = state.metadata?.consistency_questionnaire;
+    if (saved && typeof saved === "object") return saved as Record<string, boolean>;
+    return {};
+  });
+
+  const handlePhase2Save = (responses: Record<string, boolean>) => {
+    setPhase2Responses(responses);
+    if (actions?.updateMetadata) {
+      actions.updateMetadata({
+        ...state.metadata,
+        consistency_questionnaire: responses,
+      });
+    }
+  };
+
   // Run evidence gap analysis when documents change
   useEffect(() => {
     const runAnalysis = async () => {
@@ -616,6 +633,8 @@ export function DashboardView({
                   actions.setCurrentStep(sIdx);
                 }
               }}
+              phase2Responses={phase2Responses}
+              onPhase2Save={handlePhase2Save}
             />
             {/* Evidence Gap Analysis Card */}
             <EvidenceGapCard

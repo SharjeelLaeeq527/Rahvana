@@ -393,6 +393,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       level: i.level,
       title: i.title,
       hint: i.hint,
+      resolved: i.resolved,
     }));
 
     // While civil-doc work is still pending, surface the foreign-document
