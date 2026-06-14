@@ -1233,7 +1233,7 @@ export function TwoWaysSection() {
 
             {/* Arrow Split Layout */}
             <div className="w-full bg-white/70 backdrop-blur-md border border-slate-200/60 rounded-3xl p-6 sm:px-55 sm:py-6 lg:px-5 shadow-xl shadow-slate-100/40 flex flex-col items-center justify-center relative">
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 lg:gap-8 items-center w-full max-w-7xl">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 lg:gap-8 items-center lg:items-stretch w-full max-w-7xl">
                 {/* Left Side Option: Follow Roadmap */}
                 <motion.div
                   className={`flex flex-col items-center text-center lg:items-end lg:text-right transition-all duration-300 p-2 sm:p-4 rounded-2xl border ${
@@ -1268,8 +1268,8 @@ export function TwoWaysSection() {
                   </Link>
 
                   {/* Image Preview Block with Cycle controls */}
-                  <div className="w-full max-w-[300px] flex flex-col items-center lg:items-end">
-                    <div className="relative w-full aspect-video flex items-center justify-center">
+                  <div className="w-full max-w-[480px] flex flex-col items-center lg:items-end">
+                    <div className="relative w-full h-[220px] sm:h-[280px] lg:h-[340px] flex items-center justify-center">
                       <Image
                         src={roadmapImages[roadmapImageIdx]}
                         alt="Guided Roadmap Preview"
@@ -1283,7 +1283,7 @@ export function TwoWaysSection() {
 
                 {/* Center Split SVG Graphic */}
                 {/* Center Split Signpost Graphic */}
-                <div className="relative flex justify-center items-center w-full max-w-[320px] lg:max-w-none mx-auto py-2 h-[180px]">
+                <div className="relative flex justify-center items-center w-full max-w-[320px] lg:max-w-none mx-auto py-2 h-[180px] lg:self-center">
                   {/* Vertical Pole */}
                   {/* <div className="absolute top-0 bottom-0 w-2.5 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-300 border-x border-slate-400/20 rounded-full left-1/2 -translate-x-1/2 z-0" /> */}
 
@@ -4384,7 +4384,9 @@ function OrbitToolCard({
     }
     return 5;
   });
-  const pointerEvents = useTransform(opacity, (op) => (op > 0.15 ? ("auto" as const) : ("none" as const)));
+  const pointerEvents = useTransform(opacity, (op) =>
+    op > 0.15 ? ("auto" as const) : ("none" as const)
+  );
 
   const iconNode = isValidElement(tool.icon)
     ? cloneElement(tool.icon as React.ReactElement<any>, {
@@ -4412,9 +4414,7 @@ function OrbitToolCard({
     >
       {/* Badge */}
       <div className="relative w-14 h-14 flex items-center justify-center">
-        <div
-          className="absolute inset-0 rounded-full bg-white border border-white/60 shadow-sm"
-        />
+        <div className="absolute inset-0 rounded-full bg-white border border-white/60 shadow-sm" />
         <div
           className={`z-10 flex size-10 items-center justify-center rounded-full ${tool.accentClass ?? "bg-slate-700"} shadow-md text-white`}
         >
@@ -4429,7 +4429,9 @@ function OrbitToolCard({
         className="mt-3 w-[135px] bg-white border border-slate-100 rounded-xl p-2.5 flex flex-col items-center text-center shadow-[0_4px_10px_rgba(0,0,0,0.04)]"
       >
         <h4 className="text-[11px] font-black leading-tight text-slate-800">{tool.title}</h4>
-        <p className="text-[9.5px] text-slate-500 mt-1 leading-snug h-[32px] overflow-hidden line-clamp-2">{tool.desc}</p>
+        <p className="text-[9.5px] text-slate-500 mt-1 leading-snug h-[32px] overflow-hidden line-clamp-2">
+          {tool.desc}
+        </p>
         <Link
           href={tool.href}
           className="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-[9px] font-black text-slate-700 no-underline hover:bg-slate-50"
