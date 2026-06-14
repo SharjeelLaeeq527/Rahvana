@@ -4308,16 +4308,86 @@ function LeftArrowSvg({ color }: { color: string }) {
   );
 }
 
-function ToolCard({ tool, position }: any) {
-  const positionClasses =
-    position === "left"
-      ? "left-[35px] top-[90px]"
-      : position === "right"
-        ? "left-[405px] top-[90px]"
-        : "left-[220px] top-[255px]";
+function OrbitToolCard({
+  tool,
+  indexMV,
+  cardIndex,
+  totalTools,
+}: {
+  tool: any;
+  indexMV: any;
+  cardIndex: number;
+  totalTools: number;
+}) {
+  const offset = useTransform(indexMV, (val) => {
+    const mod = (n: number, m: number) => ((n % m) + m) % m;
+    let diff = mod(cardIndex - (val as number), totalTools);
+    if (diff > totalTools / 2) {
+      diff -= totalTools;
+    }
+    return diff;
+  });
+
+  // Interpolate properties based on offset
+  const getCardProperties = (off: number) => {
+    const lerp = (start: number, end: number, amt: number) => (1 - amt) * start + amt * end;
+
+    let angle = 0;
+    let opacity = 0;
+    let scale = 0;
+
+    if (off >= 0 && off <= 1) {
+      // Between Right (0) and Bottom (1)
+      const t = off;
+      angle = lerp(0, 0.5 * Math.PI, t);
+      opacity = 1;
+      scale = 1;
+    } else if (off >= 1 && off <= 2) {
+      // Between Bottom (1) and Left (2)
+      const t = off - 1;
+      angle = lerp(0.5 * Math.PI, Math.PI, t);
+      opacity = 1;
+      scale = 1;
+    } else if (off >= 2 && off <= 3) {
+      // Between Left (2) and Entry (3)
+      const t = off - 2;
+      angle = lerp(Math.PI, 1.3 * Math.PI, t);
+      opacity = lerp(1, 0, t);
+      scale = lerp(1, 0.8, t);
+    } else if (off >= -1 && off <= 0) {
+      // Between Exit (-1) and Right (0)
+      const t = off + 1;
+      angle = lerp(-0.3 * Math.PI, 0, t);
+      opacity = lerp(0, 1, t);
+      scale = lerp(0.8, 1, t);
+    } else {
+      // Offscreen
+      opacity = 0;
+      scale = 0.8;
+      angle = off > 3 ? 1.3 * Math.PI : -0.3 * Math.PI;
+    }
+
+    const x = 220 + 185 * Math.cos(angle);
+    const y = 121.25 + 102.5 * Math.sin(angle) - 31.25 * Math.cos(2 * angle);
+
+    return { x, y, opacity, scale };
+  };
+
+  const x = useTransform(offset, (off) => getCardProperties(off).x);
+  const y = useTransform(offset, (off) => getCardProperties(off).y);
+  const opacity = useTransform(offset, (off) => getCardProperties(off).opacity);
+  const scale = useTransform(offset, (off) => getCardProperties(off).scale);
+  const zIndex = useTransform(offset, (off) => {
+    // Front half of orbit: between -0.2 and 2.2
+    if (off >= -0.2 && off <= 2.2) {
+      return 20;
+    }
+    return 5;
+  });
+  const pointerEvents = useTransform(opacity, (op) => (op > 0.15 ? ("auto" as const) : ("none" as const)));
 
   const iconNode = isValidElement(tool.icon)
-    ? cloneElement(tool.icon as React.ReactElement, {
+    ? cloneElement(tool.icon as React.ReactElement<any>, {
         className: "h-5 w-5 text-white",
         style: { color: "#fff" },
       })
@@ -4325,30 +4395,41 @@ function ToolCard({ tool, position }: any) {
 
   return (
     <motion.div
-      layout
-      layoutId={tool.id}
-      initial={{ opacity: 0, scale: 0.96, y: 6 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.92, y: -6 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className={`absolute ${positionClasses} -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20`}
+      style={{
+        position: "absolute",
+        left: 0,
+        top: 0,
+        x,
+        y,
+        opacity,
+        scale,
+        zIndex,
+        pointerEvents,
+        translateX: "-50%",
+        translateY: "-50%",
+      }}
+      className="flex flex-col items-center select-none"
     >
       {/* Badge */}
       <div className="relative w-14 h-14 flex items-center justify-center">
         <div
-          className={`absolute inset-0 rounded-full bg-white border border-white/60 shadow-sm`}
+          className="absolute inset-0 rounded-full bg-white border border-white/60 shadow-sm"
         />
-        <motion.div
+        <div
           className={`z-10 flex size-10 items-center justify-center rounded-full ${tool.accentClass ?? "bg-slate-700"} shadow-md text-white`}
         >
           {iconNode}
-        </motion.div>
+        </div>
       </div>
 
       {/* Card */}
-      <motion.div className="mt-3 w-[135px] bg-white border border-slate-100 rounded-xl p-2.5 flex flex-col items-center text-center">
-        <h4 className="text-[11px] font-black leading-tight">{tool.title}</h4>
-        <p className="text-[9.5px] text-slate-500 mt-1 leading-snug">{tool.desc}</p>
+      <motion.div
+        whileHover={{ y: -3, scale: 1.03, boxShadow: "0 10px 20px rgba(0,0,0,0.06)" }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        className="mt-3 w-[135px] bg-white border border-slate-100 rounded-xl p-2.5 flex flex-col items-center text-center shadow-[0_4px_10px_rgba(0,0,0,0.04)]"
+      >
+        <h4 className="text-[11px] font-black leading-tight text-slate-800">{tool.title}</h4>
+        <p className="text-[9.5px] text-slate-500 mt-1 leading-snug h-[32px] overflow-hidden line-clamp-2">{tool.desc}</p>
         <Link
           href={tool.href}
           className="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-[9px] font-black text-slate-700 no-underline hover:bg-slate-50"
@@ -4364,6 +4445,7 @@ export function ToolsBucketDiagram() {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [isHovered, setIsHovered] = useState(false);
 
   const tools = useMemo(
     () =>
@@ -4385,16 +4467,29 @@ export function ToolsBucketDiagram() {
   );
 
   const [startIndex, setStartIndex] = useState(0);
+  const indexMV = useMotionValue(0);
 
+  // Stepped rotation timer - pauses when user hovers over the container
   useEffect(() => {
-    if (!tools.length) return;
+    if (!tools.length || isHovered) return;
 
     const interval = setInterval(() => {
-      setStartIndex((prev) => (prev + 1) % tools.length);
-    }, 3500);
+      setStartIndex((prev) => prev + 1);
+    }, 4500); // 4.5 seconds rest on each tool card
 
     return () => clearInterval(interval);
-  }, [tools.length]);
+  }, [tools.length, isHovered]);
+
+  // Spring animation to transition between steps smoothly
+  useEffect(() => {
+    const controls = animate(indexMV, startIndex, {
+      type: "spring",
+      stiffness: 85,
+      damping: 18,
+      mass: 0.8,
+    });
+    return () => controls.stop();
+  }, [startIndex, indexMV]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -4419,13 +4514,11 @@ export function ToolsBucketDiagram() {
     return () => observer.disconnect();
   }, []);
 
-  const rightTool = tools[startIndex % tools.length];
-  const bottomTool = tools[(startIndex + 1) % tools.length];
-  const leftTool = tools[(startIndex + 2) % tools.length];
-
   return (
     <div
       ref={containerRef}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className="relative w-full max-w-[510px] mx-auto select-none mt-6 overflow-hidden"
       style={{
         height: `${Math.round(450 * scale)}px`,
@@ -4513,7 +4606,8 @@ export function ToolsBucketDiagram() {
         <div className="absolute left-[220px] top-[40px] -translate-x-1/2 -translate-y-1/2 w-[130px] h-[130px] rounded-full bg-gradient-to-tr from-blue-50/50 via-indigo-50/30 to-white/10 border border-blue-100/40 z-0 shadow-inner pointer-events-none" />
 
         <div
-          className="absolute left-[220px] top-[60px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10"
+          style={{ zIndex: 15 }}
+          className="absolute left-[220px] top-[60px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
           onMouseEnter={() => setHoveredNode("center")}
           onMouseLeave={() => setHoveredNode(null)}
         >
@@ -4554,24 +4648,16 @@ export function ToolsBucketDiagram() {
           </motion.div>
         </div>
 
-        {/* 2. Left Tool: Photo Booth */}
-        <AnimatePresence mode="popLayout">
-          <ToolCard key={`left-${leftTool?.id ?? "left"}`} tool={leftTool} position="left" />
-        </AnimatePresence>
-
-        {/* 3. Right Tool: PDF Tool Kit */}
-        <AnimatePresence mode="popLayout">
-          <ToolCard key={`right-${rightTool?.id ?? "right"}`} tool={rightTool} position="right" />
-        </AnimatePresence>
-
-        {/* 4. Bottom Tool: 221(g) Action Planner */}
-        <AnimatePresence mode="popLayout">
-          <ToolCard
-            key={`bottom-${bottomTool?.id ?? "bottom"}`}
-            tool={bottomTool}
-            position="bottom"
+        {/* 2. Rotating Tool Cards */}
+        {tools.map((tool, idx) => (
+          <OrbitToolCard
+            key={tool.id}
+            tool={tool}
+            indexMV={indexMV}
+            cardIndex={idx}
+            totalTools={tools.length}
           />
-        </AnimatePresence>
+        ))}
       </div>
     </div>
   );
