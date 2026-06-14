@@ -11,6 +11,12 @@ import { runStepChecks, IR1_STEP_CHECKERS, type StepChecker } from "./step-check
 import { detectRiskFlagsFromEligibilityQuest } from "./eligibility-quest-detector";
 import { computeCaseStrength } from "./doc-scoring";
 import { getActiveStepsForStage } from "@/app/(tools)/(visa)/visa-category/ir-category/[visa-journey]/components/v2/journeyHelpers";
+import {
+  runConsistencyIntelligence,
+  runFullConsistencyAnalysis,
+  type ConsistencyFinding,
+  type Phase2Responses,
+} from "./consistency-intelligence";
 
 export interface AggregatedIssue {
   level: "critical" | "warning" | "info";
@@ -23,6 +29,8 @@ export interface AggregatedIssue {
   chapterIdx: number;
   /** Array index within chapter.steps — used for navigation */
   stepIdx: number;
+  /** When true, the item has been addressed — shows checkmark and disables navigation */
+  resolved?: boolean;
 }
 
 /** Extract step number from JSON or fall back to parsing the step_key */
@@ -133,6 +141,7 @@ export function aggregateChapter1Issues({
         stepNumber: getStepNumber(step, i),
         chapterIdx: 0,
         stepIdx: i,
+        resolved: c.resolved,
       });
     }
   }
@@ -186,6 +195,7 @@ export function aggregateChapter2Issues({
         stepNumber: getStepNumber(step, i),
         chapterIdx: 1,
         stepIdx: i,
+        resolved: c.resolved,
       });
     }
   }
@@ -247,10 +257,104 @@ export function aggregateChapter3Issues({
         stepNumber: getStepNumber(step, i),
         chapterIdx: 2,
         stepIdx: i,
+        resolved: c.resolved,
       });
     }
   }
 
   const order = { critical: 0, warning: 1, info: 2 };
   return issues.sort((a, b) => order[a.level] - order[b.level]);
+}
+
+// ─── Consistency Intelligence Aggregation ──────────────────────────────────────
+
+/** Map ConsistencyFinding severity to AggregatedIssue level */
+function findingSeverityToLevel(severity: string): "critical" | "warning" | "info" {
+  if (severity === "critical") return "critical";
+  if (severity === "warning") return "warning";
+  return "info";
+}
+
+/**
+ * Aggregate Consistency Intelligence findings across the entire journey.
+ *
+ * Unlike chapter-specific aggregations, consistency intelligence findings are
+ * cross-journey — they compare data across chapters and forms. These findings
+ * are tagged to the step where the user can address them.
+ *
+ * This function is designed to be called from the dashboard alongside the
+ * chapter-specific aggregations.
+ */
+export function aggregateConsistencyFindings({
+  chapters,
+  state,
+  uploadedDocuments,
+  registry = IR1_STEP_CHECKERS,
+  phase2Responses,
+}: AggregateContext & { phase2Responses?: Phase2Responses | null }): AggregatedIssue[] {
+  const issues: AggregatedIssue[] = [];
+
+  const eligibilityAnswers =
+    (state.answers?.["eligibility-suite"] as any) ??
+    (state.metadata?.["questAnswers_eligibility-suite"] as any);
+
+  // Run full consistency intelligence (Phase 1 + Phase 2)
+  const findings = runFullConsistencyAnalysis(
+    { state, eligibilityAnswers },
+    phase2Responses,
+    uploadedDocuments
+  );
+
+  // Build a quick lookup for step info from chapters
+  const stepLookup = new Map<string, { step: any; chapterIdx: number; stepIdx: number }>();
+  for (let ci = 0; ci < (chapters?.length ?? 0); ci++) {
+    const steps = chapters[ci]?.steps || [];
+    for (let si = 0; si < steps.length; si++) {
+      const key = steps[si]?.step_key;
+      if (key && !stepLookup.has(key)) {
+        stepLookup.set(key, { step: steps[si], chapterIdx: ci, stepIdx: si });
+      }
+    }
+  }
+
+  for (const finding of findings) {
+    const targetKey = finding.actionableStepKey || "step_2_3"; // Default to DS-260 step
+    const lookup = stepLookup.get(targetKey);
+
+    issues.push({
+      level: findingSeverityToLevel(finding.severity),
+      title: finding.title,
+      hint: `${finding.description}\n\n→ ${finding.resolution}`,
+      stepKey: targetKey,
+      stepName: lookup?.step?.step_name ?? targetKey,
+      stepNumber: lookup ? getStepNumber(lookup.step, lookup.stepIdx) : 0,
+      chapterIdx: lookup?.chapterIdx ?? 0,
+      stepIdx: lookup?.stepIdx ?? 0,
+      resolved: finding.resolved ?? false,
+    });
+  }
+
+  const order = { critical: 0, warning: 1, info: 2 };
+  return issues.sort((a, b) => order[a.level] - order[b.level]);
+}
+
+/**
+ * Get raw ConsistencyFinding objects (for use in dedicated Consistency Analysis UI).
+ */
+export function getConsistencyFindings(
+  state: WizardState,
+  eligibilityAnswers?: Record<string, Record<string, string | string[]> | undefined> | null,
+  phase2Responses?: Phase2Responses | null,
+  uploadedDocuments?: UploadedDocument[]
+): ConsistencyFinding[] {
+  const answers =
+    eligibilityAnswers ??
+    (state.answers?.["eligibility-suite"] as any) ??
+    (state.metadata?.["questAnswers_eligibility-suite"] as any);
+
+  return runFullConsistencyAnalysis(
+    { state, eligibilityAnswers: answers },
+    phase2Responses,
+    uploadedDocuments
+  );
 }

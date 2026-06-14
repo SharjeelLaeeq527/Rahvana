@@ -34,5 +34,23 @@ export {
   aggregateChapter1Issues,
   aggregateChapter2Issues,
   aggregateChapter3Issues,
+  aggregateConsistencyFindings,
+  getConsistencyFindings,
   type AggregatedIssue,
 } from "./aggregate-issues";
+
+// Advanced Consistency Intelligence (Phase 1 + Phase 2)
+export {
+  runConsistencyIntelligence,
+  runPhase2Checks,
+  runFullConsistencyAnalysis,
+  groupFindingsBySeverity,
+  getConsistencySummary,
+  PHASE2_QUESTIONS,
+  type ConsistencyFinding,
+  type FindingSeverity,
+  type FindingCategory,
+  type ConsistencyIntelligenceInput,
+  type Phase2QuestionId,
+  type Phase2Responses,
+} from "./consistency-intelligence";

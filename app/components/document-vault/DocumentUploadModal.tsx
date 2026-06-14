@@ -9,8 +9,8 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { Upload, X, Lock, ScanLine } from "lucide-react";
-import { toast } from "sonner";
 import { getOcrConfig, getOcrDocTypeMeta } from "@/lib/document-ocr/registry";
 import { resizeImageIfNeeded } from "@/lib/document-ocr/clientImage";
 import { crossCheckFields } from "@/lib/document-ocr/crossCheck";
@@ -78,7 +78,7 @@ export function DocumentUploadModal({
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json) {
-        toast.info("Uploaded. We couldn't auto-read this document — you can fill details manually.");
+        showToast("Uploaded. We couldn't auto-read this document — you can fill details manually.", "info");
         handleClose();
         return;
       }
@@ -87,7 +87,7 @@ export function DocumentUploadModal({
       setOcrWarnings(json.warnings || []);
       setOcrPhase("confirm");
     } catch {
-      toast.info("Uploaded. We couldn't auto-read this document — you can fill details manually.");
+      showToast("Uploaded. We couldn't auto-read this document — you can fill details manually.", "info");
       handleClose();
     }
   };
@@ -130,32 +130,34 @@ export function DocumentUploadModal({
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json?.success) {
-        toast.error(json?.error || "Could not save details to your profile.");
+        showToast(json?.error || "Could not save details to your profile.", "error");
         return;
       }
       await refreshProfile();
-      toast.success("Details saved to your profile.");
+      showToast("Details saved to your profile.", "success");
       handleClose();
     } catch {
-      toast.error("Something went wrong while saving.");
+      showToast("Something went wrong while saving.", "error");
     } finally {
       setOcrSaving(false);
     }
   };
+
+  const { showToast } = useToast();
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       // Validate file size (10MB)
       if (file.size > 10 * 1024 * 1024) {
-        toast.error(t("documentVaultPage.components.uploadModal.fileSizeError"));
+        showToast(t("documentVaultPage.components.uploadModal.fileSizeError"), "error");
         return;
       }
 
       // Validate file type
       const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/gif"];
       if (!allowedTypes.includes(file.type)) {
-        toast.error(t("documentVaultPage.components.uploadModal.fileTypeError"));
+        showToast(t("documentVaultPage.components.uploadModal.fileTypeError"), "error");
         return;
       }
 
@@ -184,14 +186,14 @@ export function DocumentUploadModal({
     if (file) {
       // Validate file size (10MB)
       if (file.size > 10 * 1024 * 1024) {
-        toast.error(t("documentVaultPage.components.uploadModal.fileSizeError"));
+        showToast(t("documentVaultPage.components.uploadModal.fileSizeError"), "error");
         return;
       }
 
       // Validate file type
       const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/gif"];
       if (!allowedTypes.includes(file.type)) {
-        toast.error(t("documentVaultPage.components.uploadModal.fileTypeError"));
+        showToast(t("documentVaultPage.components.uploadModal.fileTypeError"), "error");
         return;
       }
 
@@ -202,7 +204,7 @@ export function DocumentUploadModal({
   const handleUpload = async () => {
     if (!selectedFile) return;
     if (!config) {
-      toast.error("Document Vault is not configured. Please refresh the page and try again.");
+      showToast("Document Vault is not configured. Please refresh the page and try again.", "error");
       console.error("[DocumentUploadModal] Upload blocked: config is null");
       return;
     }
@@ -215,7 +217,7 @@ export function DocumentUploadModal({
     });
 
     setUploading(true);
-    toast.loading(t("documentVaultPage.components.uploadModal.uploading"), {
+    showToast(t("documentVaultPage.components.uploadModal.uploading"), "loading", {
       id: "upload-progress",
     });
 
@@ -255,10 +257,11 @@ export function DocumentUploadModal({
         throw new Error(data.error || t("documentVaultPage.components.uploadModal.uploadFailed"));
       }
 
-      toast.success(
+      showToast(
         replaceDocumentId
           ? "Document replaced successfully"
           : t("documentVaultPage.components.uploadModal.uploadSuccess"),
+        "success",
         {
           id: "upload-progress",
         }
@@ -288,10 +291,11 @@ export function DocumentUploadModal({
       }
     } catch (error) {
       console.error("Upload error:", error);
-      toast.error(
+      showToast(
         error instanceof Error
           ? error.message
           : t("documentVaultPage.components.uploadModal.uploadFailed"),
+        "error",
         {
           id: "upload-progress",
         }
