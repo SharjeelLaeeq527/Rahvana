@@ -17,6 +17,9 @@ export interface PassportFields {
   sex?: string; // "Male" | "Female"
   nationality?: string;
   passportNumber?: string;
+  passportIssueDate?: string; // YYYY-MM-DD — from the visible photo page (not the MRZ)
+  passportPlaceOfIssue?: string; // City / issuing authority — DS-260
+  passportBookNumber?: string; // Booklet / tracking number — DS-260
   passportExpiry?: string; // YYYY-MM-DD
   passportCountry?: string;
 }
@@ -424,6 +427,33 @@ function parseLabels(rawText: string, rawLines: string[]): {
     confidence.passportExpiry = 0.55;
   }
 
+  // Issue date — "Date of Issue" / "Issued on". Distinct label from expiry.
+  const issue = dateNearLabel(rawLines, /date\s*of\s*issue|issued?\s*(?:on|date)/i);
+  if (issue) {
+    fields.passportIssueDate = issue;
+    confidence.passportIssueDate = 0.5;
+  }
+
+  // Place of issue / issuing authority (e.g. "Islamabad"). Best-effort.
+  const placeOfIssue = valueNearLabel(
+    rawLines,
+    /place\s*of\s*issue|issuing\s*authority|authority/i
+  );
+  if (placeOfIssue && /^[A-Za-z ,'-]{2,40}$/.test(placeOfIssue)) {
+    fields.passportPlaceOfIssue = cleanMrzName(placeOfIssue);
+    confidence.passportPlaceOfIssue = 0.4;
+  }
+
+  // Booklet / tracking number — labelled separately from the passport number.
+  const bookNo = valueNearLabel(rawLines, /book(?:let)?\s*(?:no|number)|tracking\s*(?:no|number)/i);
+  if (bookNo) {
+    const m = bookNo.match(/[A-Z0-9]{6,}/i);
+    if (m) {
+      fields.passportBookNumber = m[0].toUpperCase();
+      confidence.passportBookNumber = 0.4;
+    }
+  }
+
   const nationality = valueNearLabel(rawLines, /nationality|citizenship/i);
   if (nationality && /^[A-Za-z ]{3,}$/.test(nationality)) {
     fields.nationality = cleanMrzName(nationality);
@@ -450,9 +480,20 @@ const FIELD_LABELS: Record<keyof PassportFields, string> = {
   sex: "Sex",
   nationality: "Nationality",
   passportNumber: "Passport number",
+  passportIssueDate: "Passport issue date",
+  passportPlaceOfIssue: "Place of issue",
+  passportBookNumber: "Passport book number",
   passportExpiry: "Passport expiry",
   passportCountry: "Issuing country",
 };
+
+// Optional fields we never warn about when missing (bonus reads, not always printed).
+const OPTIONAL_FIELDS: ReadonlySet<keyof PassportFields> = new Set([
+  "passportCountry",
+  "passportIssueDate",
+  "passportPlaceOfIssue",
+  "passportBookNumber",
+]);
 
 export function parsePassportText(rawText: string): PassportParseResult {
   const cleaned = (rawText || "").replace(/ /g, "").trim();
@@ -486,7 +527,7 @@ export function parsePassportText(rawText: string): PassportParseResult {
 
   const warnings: string[] = [];
   (Object.keys(FIELD_LABELS) as (keyof PassportFields)[]).forEach((key) => {
-    if (key === "passportCountry") return; // optional, not warned
+    if (OPTIONAL_FIELDS.has(key)) return; // optional, not warned
     if (!fields[key]) {
       warnings.push(`${FIELD_LABELS[key]} was not confidently detected — please fill it in.`);
     }

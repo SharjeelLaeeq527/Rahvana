@@ -70,3 +70,34 @@ export async function callVisionFallback(
     clearTimeout(timer);
   }
 }
+
+/**
+ * Merge a vision result into the (text-parse) fields/confidence in place.
+ *
+ * Vision is the more reliable reader for messy / bilingual / template / PDF docs, so
+ * by default it OVERWRITES the text-parse value for every key it returns (it is
+ * instructed to omit anything it cannot read, so a key it skips keeps the text value).
+ *
+ * `trustedTextKeys` are fields where the text parse is MORE reliable than vision —
+ * a passport's MRZ-derived fields, a CNIC's 13-digit number — so an existing text
+ * value for those is kept and vision only fills them when the text parse was empty.
+ *
+ * @returns true if any field was written from the vision result.
+ */
+export function applyVisionResult(
+  fields: Record<string, string | undefined>,
+  confidence: Record<string, number>,
+  vision: VisionFallbackResult | null,
+  trustedTextKeys?: ReadonlySet<string>
+): boolean {
+  if (!vision?.ok) return false;
+  let changed = false;
+  for (const [key, value] of Object.entries(vision.fields)) {
+    if (!value) continue;
+    if (trustedTextKeys?.has(key) && fields[key]) continue; // keep the reliable text value
+    fields[key] = value;
+    confidence[key] = vision.confidence[key] ?? 0.7;
+    changed = true;
+  }
+  return changed;
+}

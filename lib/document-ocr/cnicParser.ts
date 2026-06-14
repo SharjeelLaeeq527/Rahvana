@@ -15,6 +15,9 @@
 export interface CnicFields {
   "name.first"?: string;
   "name.last"?: string;
+  // Full name in Urdu (native alphabet) — DS-260 S01-Q003. The free English OCR
+  // can't read the Urdu side, so this is filled by the Gemini Vision fallback.
+  nativeFullName?: string;
   dateOfBirth?: string; // YYYY-MM-DD
   cnic?: string; // 00000-0000000-0
 }

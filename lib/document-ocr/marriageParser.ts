@@ -17,8 +17,20 @@
 
 export interface MarriageFields {
   "relationship.marriageDate"?: string; // YYYY-MM-DD
+  "relationship.dateOfRegistration"?: string; // YYYY-MM-DD
   "relationship.marriagePlace.city"?: string;
+  "relationship.marriagePlace.state"?: string;
   "relationship.marriagePlace.country"?: string;
+  "relationship.marriageRegistrationNumber"?: string;
+  // Both parties as printed on the certificate. We do NOT decide which one is the
+  // visa applicant vs the US sponsor here (the certificate doesn't say), so these
+  // are stored faithfully for display + cross-check. The free English OCR rarely
+  // reads them cleanly off a two-column bilingual cert — the Gemini Vision fallback
+  // fills them reliably.
+  "relationship.husbandName"?: string;
+  "relationship.husbandFatherName"?: string;
+  "relationship.wifeName"?: string;
+  "relationship.wifeFatherName"?: string;
 }
 
 export interface MarriageParseResult {
@@ -103,6 +115,12 @@ const MARRIAGE_DATE_LABEL =
   /(date\s*of\s*(?:marriage|nikah|wedding)|(?:marriage|nikah|wedding)\s*date|married\s*on|solemniz)/i;
 
 const PLACE_LABEL = /place\s*of\s*(?:marriage|nikah|wedding)/i;
+// NADRA MRC carries a "Registration No" / "MRC No" / "Certificate No".
+const REG_NO_LABEL = /(?:registration|reg|mrc|certificate)\s*(?:no|number|#)/i;
+// The "Date of Registration" — distinct from the marriage date, near the top of a MRC.
+const REG_DATE_LABEL = /(?:date\s*of\s*registration|registration\s*date|registered\s*on)/i;
+// A trailing town/province on the place line, or a "Province" / "District" label.
+const PROVINCE_LABEL = /province|district|state\b/i;
 
 /** Pull the value text written on/after a label line (label stripped). */
 function valueNearLabel(lines: string[], labelPattern: RegExp): string | null {
@@ -195,6 +213,36 @@ export function parseMarriageText(rawText: string): MarriageParseResult {
     fields["relationship.marriagePlace.city"] = place.replace(/\s+/g, " ").trim();
     confidence["relationship.marriagePlace.city"] = 0.45;
     if (source === "none") source = "labels";
+  }
+
+  // 3b) Province/state of marriage (e.g. "Punjab", "Sindh") — best-effort.
+  const province = valueNearLabel(lines, PROVINCE_LABEL);
+  if (province && /^[A-Za-z .,'-]{2,40}$/.test(province)) {
+    fields["relationship.marriagePlace.state"] = province.replace(/\s+/g, " ").trim();
+    confidence["relationship.marriagePlace.state"] = 0.4;
+    if (source === "none") source = "labels";
+  }
+
+  // 3c) Date of registration (distinct from the marriage date) — best-effort.
+  const regDate = dateNearLabel(lines, REG_DATE_LABEL, 3);
+  if (regDate) {
+    fields["relationship.dateOfRegistration"] = regDate;
+    confidence["relationship.dateOfRegistration"] = 0.5;
+    if (source === "none") source = "labels";
+  }
+
+  // 4) Registration / MRC / certificate number — structured on a NADRA MRC.
+  // The value MUST look like an ID (contain digits): a NADRA reg no is like
+  // "22102-9876543-2". Requiring a digit stops the parser grabbing a heading word
+  // such as "GOVERNMENT" off a noisy two-column OCR read.
+  const regRaw = valueNearLabel(lines, REG_NO_LABEL);
+  if (regRaw) {
+    const m = regRaw.match(/\b\d[\dA-Za-z]*(?:[\-\/][\dA-Za-z]+)+\b|\b\d{6,}\b/);
+    if (m) {
+      fields["relationship.marriageRegistrationNumber"] = m[0].toUpperCase();
+      confidence["relationship.marriageRegistrationNumber"] = 0.5;
+      if (source === "none") source = "labels";
+    }
   }
 
   return { fields, confidence, warnings, source };

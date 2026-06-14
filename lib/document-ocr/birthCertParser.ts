@@ -17,14 +17,18 @@ export interface BirthCertFields {
   "name.last"?: string;
   dateOfBirth?: string; // YYYY-MM-DD
   "placeOfBirth.city"?: string;
+  "placeOfBirth.state"?: string;
   "placeOfBirth.country"?: string;
-  // Parents — a NADRA birth certificate / Form-B lists both parents' names. These
-  // feed DS-260 Section 2 ("Father's/Mother's Information") and the I-130A parent
-  // section, so capturing them here saves the applicant re-typing them later.
+  // Parents — a NADRA birth certificate / Form-B lists both parents' names (and
+  // sometimes dates of birth). These feed DS-260 Section 2 ("Father's/Mother's
+  // Information"), I-130 Items 24-35 and the I-130A parent section, so capturing
+  // them here saves the applicant re-typing them later.
   "father.name.first"?: string;
   "father.name.last"?: string;
+  "father.dateOfBirth"?: string; // YYYY-MM-DD
   "mother.name.first"?: string;
   "mother.name.last"?: string;
+  "mother.dateOfBirth"?: string; // YYYY-MM-DD
 }
 
 export interface BirthCertParseResult {
@@ -92,6 +96,10 @@ const PLACE_LABEL = /place\s*of\s*birth/i;
 const NAME_LABEL = /(?<!father\s)(?<!mother\s)(?<!parent\s)\b(?:name|child(?:'s)?\s*name)\b/i;
 const FATHER_LABEL = /father(?:'s)?\s*name/i;
 const MOTHER_LABEL = /mother(?:'s)?\s*name/i;
+const PROVINCE_LABEL = /province|district|state\b/i;
+// Parents' DOB labels. Only matched WITH the parent word so we never grab the child's.
+const FATHER_DOB_LABEL = /father.*(?:date\s*of\s*birth|d\.?o\.?b)|(?:date\s*of\s*birth|d\.?o\.?b).*father/i;
+const MOTHER_DOB_LABEL = /mother.*(?:date\s*of\s*birth|d\.?o\.?b)|(?:date\s*of\s*birth|d\.?o\.?b).*mother/i;
 
 function dateNearLabel(lines: string[], labelPattern: RegExp, forwardLines = 4): string | null {
   for (let i = 0; i < lines.length; i += 1) {
@@ -127,6 +135,25 @@ function splitName(full: string): { first?: string; last?: string } {
   return { first: parts.slice(0, -1).join(" "), last: parts[parts.length - 1] };
 }
 
+// Words that are document boilerplate / headings — never a person's actual name.
+// The free OCR often slides a heading like "GOVERNMENT OF THE PUNJAB / PROVINCE OF…"
+// into the name slot when the layout confuses it; this stop-list rejects that.
+const BOILERPLATE_WORDS = new Set([
+  "PROVINCE", "GOVERNMENT", "GOVT", "REPUBLIC", "ISLAMIC", "CERTIFICATE", "REGISTRATION",
+  "NADRA", "FORM", "UNION", "COUNCIL", "DISTRICT", "TEHSIL", "NATIONAL", "IDENTITY",
+  "BIRTH", "DEATH", "MARRIAGE", "COMPUTERIZED", "SECRETARY", "DIRECTOR", "GENERAL",
+  "OFFICE", "DEPARTMENT", "CHAIRMAN", "REGISTRAR", "SERIAL", "RECORD",
+]);
+
+/** True for a template placeholder ("[City Name]") or a value that is document
+ *  boilerplate rather than real data. `extra` adds context-specific stop words. */
+function isBoilerplate(value: string, extra: ReadonlySet<string> = new Set()): boolean {
+  if (/[[\]<>{}]/.test(value)) return true; // template placeholder, e.g. "[City Name]"
+  const tokens = value.toUpperCase().split(/[^A-Z]+/).filter(Boolean);
+  if (tokens.length === 0) return true;
+  return tokens.some((t) => BOILERPLATE_WORDS.has(t) || extra.has(t));
+}
+
 export function parseBirthCertText(rawText: string): BirthCertParseResult {
   const lines = normalizeLines(rawText || "");
   const fields: BirthCertFields = {};
@@ -144,7 +171,7 @@ export function parseBirthCertText(rawText: string): BirthCertParseResult {
 
   // 2) Child's name.
   const nameRaw = valueNearLabel(lines, NAME_LABEL);
-  if (nameRaw && /[A-Za-z]{2,}/.test(nameRaw) && nameRaw.length <= 60) {
+  if (nameRaw && /[A-Za-z]{2,}/.test(nameRaw) && nameRaw.length <= 60 && !isBoilerplate(nameRaw)) {
     const { first, last } = splitName(nameRaw);
     if (first) {
       fields["name.first"] = first;
@@ -157,17 +184,26 @@ export function parseBirthCertText(rawText: string): BirthCertParseResult {
     if (source === "none") source = "partial";
   }
 
-  // 3) Place of birth (city). Best-effort.
+  // 3) Place of birth (city). Best-effort. (Hospital names are legitimate here, so
+  // only the generic boilerplate / placeholder guard applies — not a name stop-list.)
   const place = valueNearLabel(lines, PLACE_LABEL);
-  if (place && /[A-Za-z]{2,}/.test(place) && place.length <= 60) {
+  if (place && /[A-Za-z]{2,}/.test(place) && place.length <= 60 && !isBoilerplate(place)) {
     fields["placeOfBirth.city"] = place.replace(/\s+/g, " ").trim();
     confidence["placeOfBirth.city"] = 0.45;
     if (source === "none") source = "partial";
   }
 
+  // 3b) Province/state of birth (DS-260 S01-Q008). Best-effort.
+  const province = valueNearLabel(lines, PROVINCE_LABEL);
+  if (province && /^[A-Za-z .,'-]{2,40}$/.test(province)) {
+    fields["placeOfBirth.state"] = province.replace(/\s+/g, " ").trim();
+    confidence["placeOfBirth.state"] = 0.4;
+    if (source === "none") source = "partial";
+  }
+
   // 4) Parents' names → DS-260 Section 2 + I-130A parent section.
   const fatherRaw = valueNearLabel(lines, FATHER_LABEL);
-  if (fatherRaw && /[A-Za-z]{2,}/.test(fatherRaw) && fatherRaw.length <= 60) {
+  if (fatherRaw && /[A-Za-z]{2,}/.test(fatherRaw) && fatherRaw.length <= 60 && !isBoilerplate(fatherRaw)) {
     const { first, last } = splitName(fatherRaw);
     if (first) {
       fields["father.name.first"] = first;
@@ -180,8 +216,15 @@ export function parseBirthCertText(rawText: string): BirthCertParseResult {
     if (source === "none") source = "partial";
   }
 
+  // Father's DOB — only when a "father … date of birth" label is present (FRC).
+  const fatherDob = dateNearLabel(lines, FATHER_DOB_LABEL, 1);
+  if (fatherDob) {
+    fields["father.dateOfBirth"] = fatherDob;
+    confidence["father.dateOfBirth"] = 0.45;
+  }
+
   const motherRaw = valueNearLabel(lines, MOTHER_LABEL);
-  if (motherRaw && /[A-Za-z]{2,}/.test(motherRaw) && motherRaw.length <= 60) {
+  if (motherRaw && /[A-Za-z]{2,}/.test(motherRaw) && motherRaw.length <= 60 && !isBoilerplate(motherRaw)) {
     const { first, last } = splitName(motherRaw);
     if (first) {
       fields["mother.name.first"] = first;
@@ -192,6 +235,13 @@ export function parseBirthCertText(rawText: string): BirthCertParseResult {
       confidence["mother.name.last"] = 0.5;
     }
     if (source === "none") source = "partial";
+  }
+
+  // Mother's DOB — only when a "mother … date of birth" label is present (FRC).
+  const motherDob = dateNearLabel(lines, MOTHER_DOB_LABEL, 1);
+  if (motherDob) {
+    fields["mother.dateOfBirth"] = motherDob;
+    confidence["mother.dateOfBirth"] = 0.45;
   }
 
   if (!fields.dateOfBirth && !fields["name.first"]) {

@@ -12,6 +12,7 @@ const SENSITIVE_TOP_LEVEL = [
   "cnic", // Pakistani National ID
   "passportNumber",
   "passportIssueDate",
+  "passportBookNumber",
   "passportExpiry",
   "passportCountry",
   "alienNumber", // A-Number
@@ -35,13 +36,21 @@ const SENSITIVE_NESTED: Record<string, string[]> = {
     "email",
     "passportNumber",
     "passportIssueDate",
+    "passportBookNumber",
     "passportExpiry",
     "passportCountry",
     "ssn",
     "alienNumber",
     "uscisAccountNumber",
   ],
-  beneficiary: ["passportNumber", "passportIssueDate", "passportExpiry", "passportCountry", "cnic"],
+  beneficiary: [
+    "passportNumber",
+    "passportIssueDate",
+    "passportBookNumber",
+    "passportExpiry",
+    "passportCountry",
+    "cnic",
+  ],
   naturalizationInfo: ["certificateNumber", "placeOfIssuance", "dateOfIssuance"],
 };
 

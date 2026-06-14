@@ -87,7 +87,13 @@ export const FIELD_MAPPINGS: Record<string, string[]> = {
   "placeOfBirth.state": ["S01-Q008", "state_of_birth", "province_of_birth", "birth_state"],
   "placeOfBirth.country": ["S01-Q009", "country_of_birth", "birth_country"],
   sex: ["S01-Q004", "sex", "gender", "applicant_sex", "sponsor_sex", "applicant_gender", "Gender"],
-  nationality: ["nationality", "country_of_citizenship", "citizenship_country", "citizen_of"],
+  nationality: [
+    "S01-Q010", // DS-260 "current nationality or citizenship"
+    "nationality",
+    "country_of_citizenship",
+    "citizenship_country",
+    "citizen_of",
+  ],
   maritalStatus: ["S01-Q005", "marital_status", "civil_status", "current_marital_status"],
 
   // --- Contact ---
@@ -169,25 +175,48 @@ export const FIELD_MAPPINGS: Record<string, string[]> = {
   ],
 
   // --- Identifiers ---
-  passportNumber: ["passport_number", "passportNumber", "passport"],
+  // S01-Q012/13/14/15 are the DS-260 "Passport and Citizenship" fields.
+  passportNumber: ["S01-Q012", "passport_number", "passportNumber", "passport"],
   passportIssueDate: [
+    "S01-Q014",
     "passport_issue_date",
     "passportIssueDate",
     "passportIssue",
     "passport_issue",
     "date_of_issue",
   ],
+  passportPlaceOfIssue: [
+    "passport_place_of_issue",
+    "passportPlaceOfIssue",
+    "place_of_issue",
+    "passport_issue_city",
+  ],
+  passportBookNumber: [
+    "passport_book_number",
+    "passportBookNumber",
+    "book_number",
+    "passport_booklet_number",
+  ],
   passportExpiry: [
+    "S01-Q015",
     "passport_expiry",
     "passportExpiryDate",
     "passport_expiration_date",
     "passport_expiry_date",
   ],
   passportCountry: [
+    "S01-Q013",
     "passport_country",
     "passportCountry",
     "country_of_passport",
     "issuing_country",
+  ],
+  nativeFullName: [
+    "S01-Q003", // DS-260 full name in native alphabet (Urdu)
+    "native_name",
+    "full_name_native",
+    "nativeFullName",
+    "name_native_alphabet",
   ],
   ssn: ["ssn", "social_security_number"],
   alienNumber: ["p1_alien_number", "a_number", "alien_registration_number", "alien_number"],
@@ -202,7 +231,52 @@ export const FIELD_MAPPINGS: Record<string, string[]> = {
   // --- Relationship ---
   "relationship.type": ["relationship_type", "spousal_relationship_type", "relationshipType"],
   "relationship.startDate": ["relationship_start_date", "relationshipStartDate"],
-  "relationship.marriageDate": ["marriage_date", "date_of_marriage", "wedding_date"],
+  // The beneficiary's current spouse IS the petitioner, so the marriage date/place
+  // is the SAME marriage I-130 Part 2 (spouse1_*) records — one OCR'd value fills both.
+  "relationship.marriageDate": [
+    "marriage_date",
+    "date_of_marriage",
+    "wedding_date",
+    "spouse1_date_marriage",
+  ],
+  "relationship.marriagePlace.city": [
+    "spouse1_place_city",
+    "marriage_place_city",
+    "place_of_marriage_city",
+  ],
+  "relationship.marriagePlace.state": [
+    "spouse1_place_state",
+    "spouse1_place_province",
+    "marriage_place_state",
+    "marriage_place_province",
+  ],
+  "relationship.marriagePlace.country": [
+    "spouse1_place_country",
+    "marriage_place_country",
+    "place_of_marriage_country",
+  ],
+  "relationship.marriageRegistrationNumber": [
+    "marriage_registration_number",
+    "mrc_number",
+    "registration_number",
+  ],
+  // Prior marriage (from a divorce decree / death cert) → I-130 "Spouse 2" section.
+  "relationship.priorMarriage.spouseName": [
+    "prior_spouse_name",
+    "previous_spouse_name",
+  ],
+  "relationship.priorMarriage.dateMarriageEnded": [
+    // The prior-marriage proof belongs to the account holder = the BENEFICIARY, so on
+    // the I-130 it is the beneficiary's prior spouse (Part 4 "Names of Prior Spouses"),
+    // not the petitioner's (Part 2 spouse2_*). Keep spouse2_* too for forms that only
+    // model one prior spouse.
+    "priorMarriageEndDate",
+    "spouse2_marriage_end_date",
+    "prior_marriage_end_date",
+    "date_marriage_ended",
+  ],
+  "relationship.priorMarriage.howEnded": ["prior_marriage_end_reason", "how_marriage_ended"],
+  "relationship.priorMarriage.country": ["prior_marriage_country"],
   "relationship.howDidYouMeet": ["how_did_you_meet", "meeting_story"],
   "relationship.numberOfInPersonVisits": ["number_of_in_person_visits", "visit_count"],
 

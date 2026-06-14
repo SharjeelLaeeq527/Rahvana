@@ -17,35 +17,60 @@ const SENSITIVE_KEYS = new Set([
   "passportExpiry",
   "passportCountry",
   "passportIssueDate",
+  "passportBookNumber",
   // GET /api/profile lists cnic in SENSITIVE_TOP_LEVEL — keep the write side in sync
   // so the OCR'd CNIC is encrypted at rest like the passport identifiers.
   "cnic",
+  // GET /api/profile decrypts father.dateOfBirth / mother.dateOfBirth (SENSITIVE_NESTED).
+  "father.dateOfBirth",
+  "mother.dateOfBirth",
 ]);
 
 // Only these canonical paths may be written through this route (allow-list).
 const ALLOWED_PATHS = new Set([
   "name.first",
   "name.last",
+  "nativeFullName",
   "dateOfBirth",
   "sex",
   "nationality",
   "passportNumber",
+  "passportIssueDate",
+  "passportPlaceOfIssue",
+  "passportBookNumber",
   "passportExpiry",
   "passportCountry",
   // Marriage proof (NADRA MRC / Nikah Nama) → relationship.* on the top-level
   // profile. Feeds the I-130 (step 1.4) and DS-260 (step 2.3) consistency widgets.
   "relationship.marriageDate",
+  "relationship.dateOfRegistration",
   "relationship.marriagePlace.city",
+  "relationship.marriagePlace.state",
   "relationship.marriagePlace.country",
+  "relationship.marriageRegistrationNumber",
+  // Both parties as printed on the certificate (display/verification only).
+  "relationship.husbandName",
+  "relationship.husbandFatherName",
+  "relationship.wifeName",
+  "relationship.wifeFatherName",
+  // Prior-marriage proof (divorce decree / death cert) → I-130 prior-spouse section
+  // + powers the first-marriage warning.
+  "relationship.priorMarriage.spouseName",
+  "relationship.priorMarriage.dateMarriageEnded",
+  "relationship.priorMarriage.howEnded",
+  "relationship.priorMarriage.country",
   // Civil identity docs (CNIC, birth certificate) for the applicant (self).
   "cnic",
   "placeOfBirth.city",
+  "placeOfBirth.state",
   "placeOfBirth.country",
-  // Parents — from the birth certificate. Feed DS-260 Section 2 + I-130A.
+  // Parents — from the birth certificate / FRC. Feed DS-260 Section 2 + I-130 + I-130A.
   "father.name.first",
   "father.name.last",
+  "father.dateOfBirth",
   "mother.name.first",
   "mother.name.last",
+  "mother.dateOfBirth",
 ]);
 
 // When the document belongs to someone other than the account holder, the same
@@ -55,14 +80,19 @@ const ALLOWED_PATHS = new Set([
 const PERSON_KEYS = [
   "name.first",
   "name.last",
+  "nativeFullName",
   "dateOfBirth",
   "nationality",
   "sex",
   "passportNumber",
+  "passportIssueDate",
+  "passportPlaceOfIssue",
+  "passportBookNumber",
   "passportExpiry",
   "passportCountry",
   "cnic",
   "placeOfBirth.city",
+  "placeOfBirth.state",
   "placeOfBirth.country",
 ] as const;
 

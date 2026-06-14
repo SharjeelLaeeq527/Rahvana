@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { DocumentDefinition, DocumentRole } from "@/lib/document-vault/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
@@ -61,9 +61,46 @@ export function DocumentUploadModal({
   const OCR_FIELD_ORDER = ocrMeta?.fields ?? [];
   const [ocrPhase, setOcrPhase] = useState<"idle" | "reading" | "confirm">("idle");
   const [ocrFields, setOcrFields] = useState<Record<string, string>>({});
-  const [ocrConfidence, setOcrConfidence] = useState<Record<string, number>>({});
   const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
   const [ocrSaving, setOcrSaving] = useState(false);
+
+  // ── Two-source check (journey step answer) ──
+  // For a prior-marriage proof (divorce decree / death cert), the journey earlier
+  // asked the beneficiary whether they were previously married. We fetch that answer
+  // so we can flag a clash ("you said this is your first marriage, but this document
+  // shows a previous one") and, on save, overwrite that earlier answer.
+  // null = not yet known / not applicable; "yes" | "no" | "" once fetched.
+  const [journeyPriorMarriage, setJourneyPriorMarriage] = useState<string | null>(null);
+  const isDivorceDoc = ocrConfig?.docType === "divorce";
+
+  useEffect(() => {
+    if (ocrPhase !== "confirm" || !isDivorceDoc) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/journey/marriage-check");
+        const json = await res.json().catch(() => null);
+        if (!cancelled) setJourneyPriorMarriage(json?.priorMarriageBeneficiary ?? "");
+      } catch {
+        if (!cancelled) setJourneyPriorMarriage("");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [ocrPhase, isDivorceDoc]);
+
+  // A clash exists when this document shows a previous marriage but the journey step
+  // explicitly recorded "no" prior marriage. (Empty = unanswered → we don't nag.)
+  const hasPriorMarriageData =
+    isDivorceDoc &&
+    Boolean(
+      ocrFields["relationship.priorMarriage.spouseName"] ||
+        ocrFields["relationship.priorMarriage.dateMarriageEnded"] ||
+        ocrFields["relationship.priorMarriage.howEnded"]
+    );
+  const journeyMarriageClash =
+    isDivorceDoc && hasPriorMarriageData && journeyPriorMarriage === "no";
 
   const runOcr = async (file: File) => {
     if (!ocrConfig) return;
@@ -83,7 +120,6 @@ export function DocumentUploadModal({
         return;
       }
       setOcrFields(json.fields || {});
-      setOcrConfidence(json.confidence || {});
       setOcrWarnings(json.warnings || []);
       setOcrPhase("confirm");
     } catch {
@@ -134,6 +170,23 @@ export function DocumentUploadModal({
         toast.error(json?.error || "Could not save details to your profile.");
         return;
       }
+      // For a prior-marriage proof, also OVERWRITE the earlier journey step answer
+      // ("first marriage?") so the two sources stay in sync. Best-effort — never
+      // blocks the save.
+      if (isDivorceDoc && hasPriorMarriageData) {
+        try {
+          await fetch("/api/journey/marriage-check", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              howEnded: ocrFields["relationship.priorMarriage.howEnded"] || "divorce",
+            }),
+          });
+        } catch {
+          // Non-fatal: the profile save already succeeded.
+        }
+      }
+
       await refreshProfile();
       toast.success("Details saved to your profile.");
       handleClose();
@@ -309,8 +362,8 @@ export function DocumentUploadModal({
     setNotes("");
     setOcrPhase("idle");
     setOcrFields({});
-    setOcrConfidence({});
     setOcrWarnings([]);
+    setJourneyPriorMarriage(null);
     onClose();
   };
 
@@ -319,7 +372,11 @@ export function DocumentUploadModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl w-[95vw] sm:w-full p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
+      <DialogContent
+        className={`${
+          ocrPhase === "confirm" ? "max-w-4xl" : "max-w-2xl"
+        } w-[95vw] sm:w-full p-0 overflow-hidden rounded-2xl border-none shadow-2xl`}
+      >
         <div className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader className="relative pb-4">
             <DialogTitle className="text-lg sm:text-xl pr-8 font-bold text-[#0c1b33]">
@@ -391,6 +448,19 @@ export function DocumentUploadModal({
                     </div>
                   )}
 
+                  {journeyMarriageClash && (
+                    <div className="bg-red-50 border border-red-300 rounded-xl p-4 text-sm text-red-800">
+                      <p className="font-semibold mb-1">⚠️ Please review — this may not match an earlier answer</p>
+                      <p>
+                        This document suggests a <strong>previous marriage</strong>, but earlier in
+                        your journey you indicated this is your <strong>first marriage</strong>. If
+                        the document is correct, click <strong>Confirm &amp; Save</strong> and
+                        we&apos;ll update that earlier answer for you. If not, edit the fields below
+                        or skip.
+                      </p>
+                    </div>
+                  )}
+
                   {crossCheck && crossCheck.mismatches.length > 0 && (
                     <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-800">
                       <p className="font-semibold mb-1">
@@ -408,20 +478,18 @@ export function DocumentUploadModal({
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 items-start">
                     {OCR_FIELD_ORDER.map(({ key, label }) => {
-                      const conf = ocrConfidence[key];
                       const isMismatch = mismatchKeys.has(key);
                       return (
-                        <div key={key} className="space-y-1">
-                          <Label htmlFor={`ocr-${key}`} className="flex items-center gap-2">
+                        <div key={key} className="flex flex-col">
+                          {/* Reserve two lines for every label so single- and two-line
+                              labels keep all the input boxes aligned across the row. */}
+                          <Label
+                            htmlFor={`ocr-${key}`}
+                            className="flex min-h-[2.5rem] items-start text-sm leading-snug"
+                          >
                             {label}
-                            {typeof conf === "number" && conf < 0.6 && (
-                              <span className="text-xs text-amber-600">(low confidence)</span>
-                            )}
-                            {isMismatch && (
-                              <span className="text-xs text-red-600">(doesn&apos;t match saved)</span>
-                            )}
                           </Label>
                           <Input
                             id={`ocr-${key}`}
@@ -432,6 +500,13 @@ export function DocumentUploadModal({
                               isMismatch ? "border-red-400 focus-visible:ring-red-400" : undefined
                             }
                           />
+                          {/* Mismatch note sits BELOW the input so it never pushes the
+                              box out of alignment with its neighbours. */}
+                          {isMismatch && (
+                            <span className="mt-1 text-xs text-red-600">
+                              Doesn&apos;t match your saved value
+                            </span>
+                          )}
                         </div>
                       );
                     })}
