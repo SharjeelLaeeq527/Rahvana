@@ -48,7 +48,15 @@ import {
 import Image from "next/image";
 import { FormStep } from "@/app/components/forms/auto-visaform-filling/FormStep";
 // import { ProgressBar } from "@/app/components/forms/auto-visaform-filling/ProgressBar";
-import { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  useCallback,
+  cloneElement,
+  isValidElement,
+} from "react";
 import Link from "next/link";
 import { PlatformChoiceModal } from "@/app/components/shared/PlatformChoiceModal";
 import {
@@ -60,9 +68,33 @@ import {
 } from "@/data/home-page-data";
 import ir1Data from "@/data/visa-category/ir-1.json";
 import { StepQuestDemo } from "./StepQuestDemo";
+import { NAV_DATA } from "@/app/components/layout/navigationData";
 
 export const journeyHref = "/visa-category/ir-category/ir1-journey";
 export const toolsHref = "/tools";
+
+function getToolAccentClass(icon: React.ReactNode) {
+  if (!isValidElement(icon)) return "bg-slate-700";
+
+  const className =
+    typeof icon.props === "object" && icon.props && "className" in icon.props
+      ? String(icon.props.className ?? "")
+      : "";
+
+  const toneMatch = className.match(/text-(violet|emerald|amber|rose|cyan)-(\d{2,3})/);
+
+  if (!toneMatch) return "bg-slate-700";
+
+  const toneMap = {
+    violet: "bg-violet-600",
+    emerald: "bg-emerald-600",
+    amber: "bg-amber-600",
+    rose: "bg-rose-600",
+    cyan: "bg-cyan-600",
+  } as const;
+
+  return toneMap[toneMatch[1] as keyof typeof toneMap] ?? "bg-slate-700";
+}
 
 export function ProductFrame({
   children,
@@ -1093,7 +1125,8 @@ export const twoWaysPaths = [
     href: journeyHref,
     supportEyebrow: "GUIDED ROADMAP",
     supportLead: "A structured path from start to finish.",
-    supportText: "Move step by step through the IR-1 process with clear milestones, built-in guidance, and the right next action always surfaced. It is designed to reduce uncertainty and keep your case moving with confidence.",
+    supportText:
+      "Move step by step through the IR-1 process with clear milestones, built-in guidance, and the right next action always surfaced. It is designed to reduce uncertainty and keep your case moving with confidence.",
   },
   {
     title: "Tools & Resources",
@@ -1113,7 +1146,8 @@ export const twoWaysPaths = [
     href: toolsHref,
     supportEyebrow: "TOOLS & RESOURCES",
     supportLead: "Get focused help exactly where you need it.",
-    supportText: "Jump directly into calculators, checklists, and support tools when you have a specific task to complete. Use them independently or alongside the roadmap whenever you need targeted help.",
+    supportText:
+      "Jump directly into calculators, checklists, and support tools when you have a specific task to complete. Use them independently or alongside the roadmap whenever you need targeted help.",
   },
 ] as const;
 
@@ -1138,9 +1172,9 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
   const visualHeight = index === 0 ? 550 : 460;
 
   return (
-    <div 
-      ref={wrapRef} 
-      className="w-full overflow-hidden" 
+    <div
+      ref={wrapRef}
+      className="w-full overflow-hidden"
       style={{ height: Math.round(visualHeight * scale) }}
     >
       <div
@@ -1163,6 +1197,12 @@ export function TwoWaysSection() {
   const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [signpostStyle, setSignpostStyle] = useState<"A" | "B">("A");
 
+  const handleSetHoveredSide = (side: "left" | "right" | null) => {
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+      setHoveredSide(side);
+    }
+  };
+
   const journeyHref = "/visa-category/ir-category/ir1-journey";
   const toolsHref = "/tools";
 
@@ -1174,156 +1214,248 @@ export function TwoWaysSection() {
   return (
     <>
       <section id="path" className="block">
-      <div className="w-full px-6 py-8 md:py-12">
-        
-        {/* Main Content Card Wrapper */}
-        <div className="relative z-10 w-full mx-auto flex flex-col items-center justify-start max-w-6xl">
-          
-          {/* Header Block */}
-          <div className="text-center max-w-2xl mb-6">
-            <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#0d7377] mb-1">
-              Two Ways to Move Forward
-            </p>
-            <h2 className="text-xl sm:text-3xl font-extrabold text-[#162126] tracking-tight leading-tight mb-2">
-              How should I use Rahvana?
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-xl mx-auto font-medium">
-              Select the support style that matches your visa experience. Follow our step-by-step roadmap or access advanced tools directly.
-            </p>
-          </div>
+        <div className="w-full px-6 py-8 md:py-12">
+          {/* Main Content Card Wrapper */}
+          <div className="relative z-10 w-full mx-auto flex flex-col items-center justify-start max-w-[1360px]">
+            {/* Header Block */}
+            <div className="text-center max-w-2xl mb-6">
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#0d7377] mb-1">
+                Two Ways to Move Forward
+              </p>
+              <h2 className="text-xl sm:text-3xl font-extrabold text-[#162126] tracking-tight leading-tight mb-2">
+                How should I use Rahvana?
+              </h2>
+              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-xl mx-auto font-medium">
+                Select the support style that matches your visa experience. Follow our step-by-step
+                roadmap or access advanced tools directly.
+              </p>
+            </div>
 
-          {/* Arrow Split Layout */}
-          <div className="w-full bg-white/70 backdrop-blur-md border border-slate-200/60 rounded-3xl p-6 sm:px-8 sm:py-6 lg:px-10 shadow-xl shadow-slate-100/40 flex flex-col items-center justify-center relative">
-            
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 lg:gap-8 items-center w-full max-w-5xl">
-              
-              {/* Left Side Option: Follow Roadmap */}
-              <motion.div
-                className={`flex flex-col items-center text-center lg:items-end lg:text-right transition-all duration-300 p-4 rounded-2xl border ${
-                  hoveredSide === "left"
-                    ? "border-teal-500/30 bg-teal-50/20 shadow-md shadow-teal-500/5"
-                    : "border-transparent bg-transparent"
-                }`}
-                onMouseEnter={() => setHoveredSide("left")}
-                onMouseLeave={() => setHoveredSide(null)}
-                animate={hoveredSide === "right" ? { opacity: 0.5, scale: 0.98 } : { opacity: 1, scale: 1 }}
-              >
-                <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#0d7377] mb-1.5 px-2 py-0.5 bg-teal-50 border border-teal-100 rounded-full">
-                  Beginners
-                </span>
-                <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug mb-2">
-                  Follow IR-1 Roadmap
-                </h3>
-                <p className="text-xs text-slate-500 leading-relaxed mb-4 max-w-[280px]">
-                  Ideal for beginners seeking structured, step-by-step guidance and progress tracking.
-                </p>
-                <Link
-                  href={journeyHref}
-                  className="inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-600/10 hover:shadow-lg hover:shadow-teal-600/20 text-white transition-all duration-200 no-underline mb-5"
+            {/* Arrow Split Layout */}
+            <div className="w-full bg-white/70 backdrop-blur-md border border-slate-200/60 rounded-3xl p-6 sm:px-55 sm:py-6 lg:px-5 shadow-xl shadow-slate-100/40 flex flex-col items-center justify-center relative">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 lg:gap-8 items-center lg:items-stretch w-full max-w-7xl">
+                {/* Left Side Option: Follow Roadmap */}
+                <motion.div
+                  className={`flex flex-col items-center text-center lg:items-end lg:text-right transition-all duration-300 p-2 sm:p-4 rounded-2xl border ${
+                    hoveredSide === "left"
+                      ? "border-teal-500/30 bg-teal-50/20 shadow-md shadow-teal-500/5"
+                      : "border-transparent bg-transparent"
+                  }`}
+                  onMouseEnter={() => handleSetHoveredSide("left")}
+                  onMouseLeave={() => handleSetHoveredSide(null)}
+                  animate={
+                    hoveredSide === "right"
+                      ? { opacity: 0.5, scale: 0.98 }
+                      : { opacity: 1, scale: 1 }
+                  }
                 >
-                  Start Roadmap
-                  <ArrowRight size={14} />
-                </Link>
+                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#0d7377] mb-1.5 px-2 py-0.5 bg-teal-50 border border-teal-100 rounded-full">
+                    Beginners
+                  </span>
+                  <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug mb-2">
+                    Follow IR-1 Roadmap
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-4 max-w-[280px]">
+                    Ideal for beginners seeking structured, step-by-step guidance and progress
+                    tracking.
+                  </p>
+                  <Link
+                    href={journeyHref}
+                    className="inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-600/10 hover:shadow-lg hover:shadow-teal-600/20 text-white transition-all duration-200 no-underline mb-5"
+                  >
+                    Start Roadmap
+                    <ArrowRight size={14} />
+                  </Link>
 
-                {/* Image Preview Block with Cycle controls */}
-                <div className="w-full max-w-[300px] flex flex-col items-center lg:items-end">
-                  <div className="relative w-full aspect-video flex items-center justify-center">
-                    <img
-                      src={roadmapImages[roadmapImageIdx]}
-                      alt="Guided Roadmap Preview"
-                      className="w-full h-full object-contain transition-all duration-300"
-                    />
+                  {/* Image Preview Block with Cycle controls */}
+                  <div className="w-full max-w-[480px] flex flex-col items-center lg:items-end">
+                    <div className="relative w-full h-[220px] sm:h-[280px] lg:h-[340px] flex items-center justify-center">
+                      <Image
+                        src={roadmapImages[roadmapImageIdx]}
+                        alt="Guided Roadmap Preview"
+                        fill
+                        unoptimized
+                        className="object-contain transition-all duration-300"
+                      />
+                    </div>
                   </div>
-                  
+                </motion.div>
+
+                {/* Center Split SVG Graphic */}
+                {/* Center Split Signpost Graphic */}
+                <div className="relative flex justify-center items-center w-full max-w-[320px] lg:max-w-none mx-auto py-2 h-[180px] lg:self-center">
+                  {/* Vertical Pole */}
+                  {/* <div className="absolute top-0 bottom-0 w-2.5 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-300 border-x border-slate-400/20 rounded-full left-1/2 -translate-x-1/2 z-0" /> */}
+
+                  {/* Signpost Stack */}
+                  <div className="relative flex flex-col justify-between items-center w-[250px] h-full z-10 py-1">
+                    {/* Top Arrow: Points Left (Roadmap) */}
+                    <motion.div
+                      className="relative w-[230px] h-[52px] cursor-pointer drop-shadow-md select-none"
+                      onClick={() => (window.location.href = journeyHref)}
+                      onMouseEnter={() => handleSetHoveredSide("left")}
+                      onMouseLeave={() => handleSetHoveredSide(null)}
+                      animate={
+                        hoveredSide === "left"
+                          ? { x: -8, scale: 1.02 }
+                          : hoveredSide === "right"
+                            ? { x: 4, scale: 0.98, opacity: 0.6 }
+                            : { x: 0, scale: 1, opacity: 1 }
+                      }
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    >
+                      <svg
+                        className="absolute inset-0 w-full h-full"
+                        viewBox="0 0 240 48"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <defs>
+                          <linearGradient id="tealArrowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#0d7377" />
+                            <stop offset="100%" stopColor="#14a0a6" />
+                          </linearGradient>
+                        </defs>
+                        <path
+                          d="M 40,4 L 228,4 A 4,4 0 0 1 232,8 L 232,40 A 4,4 0 0 1 228,44 L 40,44 L 16,24 Z"
+                          fill={hoveredSide === "left" ? "url(#tealArrowGrad)" : "#f0faf9"}
+                          stroke={hoveredSide === "left" ? "#0d7377" : "#b2dedb"}
+                          strokeWidth="2"
+                          className="transition-all duration-300"
+                        />
+                      </svg>
+
+                      <div className="absolute inset-0 flex items-center justify-center pl-7 pr-3 gap-2">
+                        <Compass
+                          size={16}
+                          className={`transition-colors duration-300 ${
+                            hoveredSide === "left"
+                              ? "text-white animate-spin-slow"
+                              : "text-[#0d7377]"
+                          }`}
+                        />
+                        <span
+                          className={`text-[12px] font-black tracking-widest transition-colors duration-300 ${
+                            hoveredSide === "left" ? "text-white" : "text-[#0d7377]"
+                          }`}
+                        >
+                          ROADMAP
+                        </span>
+                      </div>
+                    </motion.div>
+
+                    {/* Bottom Arrow: Points Right (Tools) */}
+                    <motion.div
+                      className="relative w-[230px] h-[52px] cursor-pointer drop-shadow-md select-none"
+                      onClick={() => (window.location.href = toolsHref)}
+                      onMouseEnter={() => handleSetHoveredSide("right")}
+                      onMouseLeave={() => handleSetHoveredSide(null)}
+                      animate={
+                        hoveredSide === "right"
+                          ? { x: 8, scale: 1.02 }
+                          : hoveredSide === "left"
+                            ? { x: -4, scale: 0.98, opacity: 0.6 }
+                            : { x: 0, scale: 1, opacity: 1 }
+                      }
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
+                    >
+                      <svg
+                        className="absolute inset-0 w-full h-full"
+                        viewBox="0 0 240 48"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <defs>
+                          <linearGradient id="orangeArrowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#b5451b" />
+                            <stop offset="100%" stopColor="#d96b43" />
+                          </linearGradient>
+                        </defs>
+                        <path
+                          d="M 200,4 L 12,4 A 4,4 0 0 0 8,8 L 8,40 A 4,4 0 0 0 12,44 L 200,44 L 224,24 Z"
+                          fill={hoveredSide === "right" ? "url(#orangeArrowGrad)" : "#fdf6f3"}
+                          stroke={hoveredSide === "right" ? "#b5451b" : "#f5d5c9"}
+                          strokeWidth="2"
+                          className="transition-all duration-300"
+                        />
+                      </svg>
+
+                      <div className="absolute inset-0 flex items-center justify-center pl-3 pr-7 gap-2">
+                        <span
+                          className={`text-[12px] font-black tracking-widest transition-colors duration-300 ${
+                            hoveredSide === "right" ? "text-white" : "text-[#b5451b]"
+                          }`}
+                        >
+                          TOOLS
+                        </span>
+                        <PenTool
+                          size={16}
+                          className={`transition-colors duration-300 ${
+                            hoveredSide === "right" ? "text-white" : "text-[#b5451b]"
+                          }`}
+                        />
+                      </div>
+                    </motion.div>
+                  </div>
+
+                  {/* Symmetrical OR Center Badge */}
+                  <div
+                    className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-10 h-10 rounded-full bg-white border-2 shadow-md transition-all duration-300 pointer-events-none select-none ${
+                      hoveredSide === "left"
+                        ? "border-[#0d7377] scale-110 shadow-teal-500/10"
+                        : hoveredSide === "right"
+                          ? "border-[#b5451b] scale-110 shadow-orange-500/10"
+                          : "border-slate-200"
+                    }`}
+                  >
+                    <span
+                      className={`text-[11px] font-extrabold tracking-wider transition-colors duration-300 ${
+                        hoveredSide === "left"
+                          ? "text-[#0d7377]"
+                          : hoveredSide === "right"
+                            ? "text-[#b5451b]"
+                            : "text-slate-400"
+                      }`}
+                    >
+                      OR
+                    </span>
+                  </div>
                 </div>
-              </motion.div>
 
-              {/* Center Split SVG Graphic */}
-              <div className="relative flex justify-center items-center w-full max-w-[320px] lg:max-w-none mx-auto py-1">
-                
-                {/* Symmetrical Curved SVG Split Arrows */}
-                <svg
-                  width="320"
-                  height="160"
-                  viewBox="0 0 320 160"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="drop-shadow-[0_8px_16px_rgba(22,33,38,0.06)]"
-                >
-                  {/* Left Arrow Path */}
-                  <motion.path
-                    d="M 152,160 C 152,100 135,60 60,60 L 60,75 L 25,50 L 60,25 L 60,40 C 145,40 168,90 168,160 Z"
-                    fill={hoveredSide === "left" ? "#0d7377" : "#1e293b"}
-                    className="transition-colors duration-300"
-                    whileHover={{ scale: 1.01 }}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => window.location.href = journeyHref}
-                    onMouseEnter={() => setHoveredSide("left")}
-                    onMouseLeave={() => setHoveredSide(null)}
-                  />
-                  
-                  {/* Right Arrow Path */}
-                  <motion.path
-                    d="M 168,160 C 168,100 185,60 260,60 L 260,75 L 295,50 L 260,25 L 260,40 C 175,40 152,90 152,160 Z"
-                    fill={hoveredSide === "right" ? "#b5451b" : "#4a5c62"}
-                    className="transition-colors duration-300"
-                    whileHover={{ scale: 1.01 }}
-                    style={{ cursor: "pointer" }}
-                    onClick={() => window.location.href = toolsHref}
-                    onMouseEnter={() => setHoveredSide("right")}
-                    onMouseLeave={() => setHoveredSide(null)}
-                  />
-                </svg>
-
-                {/* Icon Overlay inside Left Arrow Curve */}
-                <div 
-                  className={`absolute left-[54px] top-[40px] flex items-center justify-center w-8 h-8 rounded-full pointer-events-none transition-all duration-300 ${
-                    hoveredSide === "left" ? "bg-white text-teal-600 scale-110 shadow-md" : "text-white/80"
+                {/* Right Side Option: Use Tools */}
+                <motion.div
+                  className={`flex flex-col items-center text-center lg:items-start lg:text-left transition-all duration-300 p-2 sm:p-4 rounded-2xl border ${
+                    hoveredSide === "right"
+                      ? "border-orange-500/30 bg-orange-50/10 shadow-md shadow-orange-500/5"
+                      : "border-transparent bg-transparent"
                   }`}
+                  onMouseEnter={() => handleSetHoveredSide("right")}
+                  onMouseLeave={() => handleSetHoveredSide(null)}
+                  animate={
+                    hoveredSide === "left"
+                      ? { opacity: 0.5, scale: 0.98 }
+                      : { opacity: 1, scale: 1 }
+                  }
                 >
-                  <Compass size={16} className={hoveredSide === "left" ? "animate-spin-slow" : ""} />
-                </div>
+                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#b5451b] mb-1.5 px-2 py-0.5 bg-orange-50 border border-orange-100 rounded-full">
+                    Experienced
+                  </span>
+                  <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug mb-2">
+                    Use Independent Tools
+                  </h3>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-4 max-w-[280px]">
+                    Suitable for experienced users who prefer flexibility and focused
+                    self-direction.
+                  </p>
+                  <Link
+                    href={toolsHref}
+                    className="inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 shadow-md shadow-slate-800/10 hover:shadow-lg hover:shadow-slate-800/20 text-white transition-all duration-200 no-underline mb-5"
+                  >
+                    Browse Resources
+                    <ArrowRight size={14} />
+                  </Link>
 
-                {/* Icon Overlay inside Right Arrow Curve */}
-                <div 
-                  className={`absolute right-[54px] top-[40px] flex items-center justify-center w-8 h-8 rounded-full pointer-events-none transition-all duration-300 ${
-                    hoveredSide === "right" ? "bg-white text-orange-600 scale-110 shadow-md" : "text-white/80"
-                  }`}
-                >
-                  <PenTool size={16} />
-                </div>
-
-              </div>
-
-              {/* Right Side Option: Use Tools */}
-              <motion.div
-                className={`flex flex-col items-center text-center lg:items-start lg:text-left transition-all duration-300 p-4 rounded-2xl border ${
-                  hoveredSide === "right"
-                    ? "border-orange-500/30 bg-orange-50/10 shadow-md shadow-orange-500/5"
-                    : "border-transparent bg-transparent"
-                }`}
-                onMouseEnter={() => setHoveredSide("right")}
-                onMouseLeave={() => setHoveredSide(null)}
-                animate={hoveredSide === "left" ? { opacity: 0.5, scale: 0.98 } : { opacity: 1, scale: 1 }}
-              >
-                <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#b5451b] mb-1.5 px-2 py-0.5 bg-orange-50 border border-orange-100 rounded-full">
-                  Experienced
-                </span>
-                <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug mb-2">
-                  Use Independent Tools
-                </h3>
-                <p className="text-xs text-slate-500 leading-relaxed mb-4 max-w-[280px]">
-                  Suitable for experienced users who prefer flexibility and focused self-direction.
-                </p>
-                <Link
-                  href={toolsHref}
-                  className="inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 shadow-md shadow-slate-800/10 hover:shadow-lg hover:shadow-slate-800/20 text-white transition-all duration-200 no-underline mb-5"
-                >
-                  Browse Resources
-                  <ArrowRight size={14} />
-                </Link>
-
-                {/* Style Toggle Pills
+                  {/* Style Toggle Pills
                 <div className="flex items-center gap-1.5 mb-4 p-0.5 bg-slate-100 rounded-full border border-slate-200/60 shadow-inner">
                   <button
                     onClick={() => setSignpostStyle("A")}
@@ -1347,26 +1479,23 @@ export function TwoWaysSection() {
                   </button>
                 </div> */}
 
-                {/* Animated Vector Tools Signpost */}
-                <div className="w-full max-w-[380px] flex flex-col items-center lg:items-start">
-                  {/* {signpostStyle === "A" ? <AnimatedToolsSignpost /> : <SpinningToolsSignpost />} */}
-                  <SpinningToolsSignpost />
-                </div>
-              </motion.div>
+                  {/* Animated Vector Tools Signpost (Commented out) */}
+                  {/* <div className="w-full max-w-[380px] flex flex-col items-center lg:items-start">
+                    <SpinningToolsSignpost />
+                  </div> */}
 
+                  {/* New Tools Bucket Diagram UI */}
+                  <div className="w-full max-w-[510px] flex flex-col items-center lg:items-start">
+                    <ToolsBucketDiagram />
+                  </div>
+                </motion.div>
+              </div>
             </div>
-
           </div>
-
         </div>
+      </section>
 
-      </div>
-    </section>
-
-      <PlatformChoiceModal
-        isOpen={showChoiceModal}
-        onClose={() => setShowChoiceModal(false)}
-      />
+      <PlatformChoiceModal isOpen={showChoiceModal} onClose={() => setShowChoiceModal(false)} />
     </>
   );
 }
@@ -1543,10 +1672,7 @@ export function TwoWaysMobile({
         </button>
       </div>
 
-      <PlatformChoiceModal
-        isOpen={showChoiceModal}
-        onClose={() => setShowChoiceModal(false)}
-      />
+      <PlatformChoiceModal isOpen={showChoiceModal} onClose={() => setShowChoiceModal(false)} />
     </div>
   );
 }
@@ -3973,15 +4099,16 @@ export function AnimatedToolsSignpost() {
 
       {/* Center Pole (Centered precisely at 50%) */}
       <div className="absolute left-[calc(50%-3px)] top-[2px] bottom-[2px] w-[6px] bg-gradient-to-b from-slate-300 via-slate-400 to-slate-300 border-x border-slate-500/20 z-10 shadow-[inset_0.5px_0_0.5px_rgba(255,255,255,0.45)]" />
-      
+
       {/* Cylindrical Top Cap Ellipse (Centered precisely at 50%) */}
       <div className="absolute left-[calc(50%-6px)] top-0 w-[12px] h-[5px] rounded-full bg-white border-2 border-slate-500 z-20 shadow-[inset_0_0.5px_1px_rgba(0,0,0,0.15)]" />
-      
+
       {/* Cylindrical Bottom Cap Ellipse (Centered precisely at 50%) */}
       <div className="absolute left-[calc(50%-6px)] bottom-0 w-[12px] h-[5px] rounded-full bg-slate-300 border-2 border-slate-500 z-20 shadow-[inset_0_-0.5px_1px_rgba(0,0,0,0.15)]" />
 
       {visibleRange.map((k) => {
-        const toolIndex = ((k % signpostTools.length) + signpostTools.length) % signpostTools.length;
+        const toolIndex =
+          ((k % signpostTools.length) + signpostTools.length) % signpostTools.length;
         const tool = signpostTools[toolIndex];
         const slot = k - index;
 
@@ -4030,7 +4157,11 @@ export function AnimatedToolsSignpost() {
             {isLeftIcon ? (
               <>
                 {/* Left Icon */}
-                <Link href={tool.href} className="no-underline z-20" style={{ left: "calc(18% - 18px)", top: "14px", position: "absolute" }}>
+                <Link
+                  href={tool.href}
+                  className="no-underline z-20"
+                  style={{ left: "calc(18% - 18px)", top: "14px", position: "absolute" }}
+                >
                   <motion.div
                     variants={iconVariants}
                     animate="animate"
@@ -4053,7 +4184,11 @@ export function AnimatedToolsSignpost() {
                 <div className="absolute left-[18%] w-[32%] h-[2px] bg-slate-200/80 z-0 top-[31px]" />
 
                 {/* Right Description Card */}
-                <Link href={tool.href} className="no-underline z-20" style={{ left: "52%", right: "3%", position: "absolute", height: "64px" }}>
+                <Link
+                  href={tool.href}
+                  className="no-underline z-20"
+                  style={{ left: "52%", right: "3%", position: "absolute", height: "64px" }}
+                >
                   <motion.div
                     variants={cardVariants}
                     animate="animate"
@@ -4070,9 +4205,10 @@ export function AnimatedToolsSignpost() {
                     <span className="text-[10px] font-black text-slate-800 leading-snug tracking-tight truncate">
                       {tool.title}
                     </span>
-                    <span 
-                     title={tool.description}
-                    className="text-[8.5px] font-semibold text-slate-500 leading-normal mt-0.5 line-clamp-2">
+                    <span
+                      title={tool.description}
+                      className="text-[8.5px] font-semibold text-slate-500 leading-normal mt-0.5 line-clamp-2"
+                    >
                       {tool.description}
                     </span>
                   </motion.div>
@@ -4081,7 +4217,11 @@ export function AnimatedToolsSignpost() {
             ) : (
               <>
                 {/* Left Description Card */}
-                <Link href={tool.href} className="no-underline z-20" style={{ left: "3%", right: "52%", position: "absolute", height: "64px" }}>
+                <Link
+                  href={tool.href}
+                  className="no-underline z-20"
+                  style={{ left: "3%", right: "52%", position: "absolute", height: "64px" }}
+                >
                   <motion.div
                     variants={cardVariants}
                     animate="animate"
@@ -4108,7 +4248,11 @@ export function AnimatedToolsSignpost() {
                 <div className="absolute left-[50%] w-[32%] h-[2px] bg-slate-200/80 z-0 top-[31px]" />
 
                 {/* Right Icon */}
-                <Link href={tool.href} className="no-underline z-20" style={{ right: "calc(18% - 18px)", top: "14px", position: "absolute" }}>
+                <Link
+                  href={tool.href}
+                  className="no-underline z-20"
+                  style={{ right: "calc(18% - 18px)", top: "14px", position: "absolute" }}
+                >
                   <motion.div
                     variants={iconVariants}
                     animate="animate"
@@ -4161,6 +4305,363 @@ function LeftArrowSvg({ color }: { color: string }) {
         strokeLinejoin="round"
       />
     </svg>
+  );
+}
+
+function OrbitToolCard({
+  tool,
+  indexMV,
+  cardIndex,
+  totalTools,
+}: {
+  tool: any;
+  indexMV: any;
+  cardIndex: number;
+  totalTools: number;
+}) {
+  const offset = useTransform(indexMV, (val) => {
+    const mod = (n: number, m: number) => ((n % m) + m) % m;
+    let diff = mod(cardIndex - (val as number), totalTools);
+    if (diff > totalTools / 2) {
+      diff -= totalTools;
+    }
+    return diff;
+  });
+
+  // Interpolate properties based on offset
+  const getCardProperties = (off: number) => {
+    const lerp = (start: number, end: number, amt: number) => (1 - amt) * start + amt * end;
+
+    let angle = 0;
+    let opacity = 0;
+    let scale = 0;
+
+    if (off >= 0 && off <= 1) {
+      // Between Right (0) and Bottom (1)
+      const t = off;
+      angle = lerp(0, 0.5 * Math.PI, t);
+      opacity = 1;
+      scale = 1;
+    } else if (off >= 1 && off <= 2) {
+      // Between Bottom (1) and Left (2)
+      const t = off - 1;
+      angle = lerp(0.5 * Math.PI, Math.PI, t);
+      opacity = 1;
+      scale = 1;
+    } else if (off >= 2 && off <= 3) {
+      // Between Left (2) and Entry (3)
+      const t = off - 2;
+      angle = lerp(Math.PI, 1.3 * Math.PI, t);
+      opacity = lerp(1, 0, t);
+      scale = lerp(1, 0.8, t);
+    } else if (off >= -1 && off <= 0) {
+      // Between Exit (-1) and Right (0)
+      const t = off + 1;
+      angle = lerp(-0.3 * Math.PI, 0, t);
+      opacity = lerp(0, 1, t);
+      scale = lerp(0.8, 1, t);
+    } else {
+      // Offscreen
+      opacity = 0;
+      scale = 0.8;
+      angle = off > 3 ? 1.3 * Math.PI : -0.3 * Math.PI;
+    }
+
+    const x = 220 + 185 * Math.cos(angle);
+    const y = 121.25 + 102.5 * Math.sin(angle) - 31.25 * Math.cos(2 * angle);
+
+    return { x, y, opacity, scale };
+  };
+
+  const x = useTransform(offset, (off) => getCardProperties(off).x);
+  const y = useTransform(offset, (off) => getCardProperties(off).y);
+  const opacity = useTransform(offset, (off) => getCardProperties(off).opacity);
+  const scale = useTransform(offset, (off) => getCardProperties(off).scale);
+  const zIndex = useTransform(offset, (off) => {
+    // Front half of orbit: between -0.2 and 2.2
+    if (off >= -0.2 && off <= 2.2) {
+      return 20;
+    }
+    return 5;
+  });
+  const pointerEvents = useTransform(opacity, (op) =>
+    op > 0.15 ? ("auto" as const) : ("none" as const)
+  );
+
+  const iconNode = isValidElement(tool.icon)
+    ? cloneElement(tool.icon as React.ReactElement<any>, {
+        className: "h-5 w-5 text-white",
+        style: { color: "#fff" },
+      })
+    : tool.icon;
+
+  return (
+    <motion.div
+      style={{
+        position: "absolute",
+        left: 0,
+        top: 0,
+        x,
+        y,
+        opacity,
+        scale,
+        zIndex,
+        pointerEvents,
+        translateX: "-50%",
+        translateY: "-50%",
+      }}
+      className="flex flex-col items-center select-none"
+    >
+      {/* Badge */}
+      <div className="relative w-14 h-14 flex items-center justify-center">
+        <div className="absolute inset-0 rounded-full bg-white border border-white/60 shadow-sm" />
+        <div
+          className={`z-10 flex size-10 items-center justify-center rounded-full ${tool.accentClass ?? "bg-slate-700"} shadow-md text-white`}
+        >
+          {iconNode}
+        </div>
+      </div>
+
+      {/* Card */}
+      <motion.div
+        whileHover={{ y: -3, scale: 1.03, boxShadow: "0 10px 20px rgba(0,0,0,0.06)" }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        className="mt-3 w-[135px] bg-white border border-slate-100 rounded-xl p-2.5 flex flex-col items-center text-center shadow-[0_4px_10px_rgba(0,0,0,0.04)]"
+      >
+        <h4 className="text-[11px] font-black leading-tight text-slate-800">{tool.title}</h4>
+        <p className="text-[9.5px] text-slate-500 mt-1 leading-snug h-[32px] overflow-hidden line-clamp-2">
+          {tool.desc}
+        </p>
+        <Link
+          href={tool.href}
+          className="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-[9px] font-black text-slate-700 no-underline hover:bg-slate-50"
+        >
+          Use Tool <ArrowRight size={8} strokeWidth={3} />
+        </Link>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+export function ToolsBucketDiagram() {
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const tools = useMemo(
+    () =>
+      (NAV_DATA.tools.tabs ?? [])
+        .flatMap((tab) =>
+          (tab?.items ?? [])
+            .filter((item) => !item.disabled)
+            .map((item) => ({
+              id: item.href ?? item.title,
+              title: item.title,
+              desc: item.description,
+              href: item.href ?? "/resources?tab=toolbox",
+              icon: item.icon,
+              accentClass: getToolAccentClass(item.icon),
+            }))
+        )
+        .filter(Boolean),
+    []
+  );
+
+  const [startIndex, setStartIndex] = useState(0);
+  const indexMV = useMotionValue(0);
+
+  // Stepped rotation timer - pauses when user hovers over the container
+  useEffect(() => {
+    if (!tools.length || isHovered) return;
+
+    const interval = setInterval(() => {
+      setStartIndex((prev) => prev + 1);
+    }, 4500); // 4.5 seconds rest on each tool card
+
+    return () => clearInterval(interval);
+  }, [tools.length, isHovered]);
+
+  // Spring animation to transition between steps smoothly
+  useEffect(() => {
+    const controls = animate(indexMV, startIndex, {
+      type: "spring",
+      stiffness: 85,
+      damping: 18,
+      mass: 0.8,
+    });
+    return () => controls.stop();
+  }, [startIndex, indexMV]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const updateScale = () => {
+      const parentWidth = el.parentElement ? el.parentElement.clientWidth : el.clientWidth;
+      if (parentWidth > 0) {
+        // Target content layout width is 505px (left card left edge is 35 - 67.5 = -32.5px,
+        // right card right edge is 405 + 67.5 = 472.5px. Total width = 505px).
+        // Leaving 12px of margin total (6px on each side) to maximize size on mobile screens
+        setScale(Math.min(1, (parentWidth - 12) / 505));
+      }
+    };
+
+    updateScale();
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(el);
+    if (el.parentElement) {
+      observer.observe(el.parentElement);
+    }
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="relative w-full max-w-[510px] mx-auto select-none mt-6 overflow-hidden"
+      style={{
+        height: `${Math.round(450 * scale)}px`,
+      }}
+    >
+      <div
+        style={{
+          width: "440px",
+          height: "420px",
+          transformOrigin: "top center",
+          transform: `scale(${scale})`,
+          position: "absolute",
+          left: "50%",
+          marginLeft: "-220px",
+          top: "28px",
+        }}
+      >
+        {/* Background SVG for Dotted Connections */}
+        <svg
+          className="absolute left-0 top-0 w-[440px] h-[420px] pointer-events-none z-0"
+          viewBox="0 0 440 420"
+          fill="none"
+        >
+          {/* Dotted Ellipses under Tool Bases */}
+          <ellipse
+            cx="35"
+            cy="118"
+            rx="30"
+            ry="10"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+          />
+          <ellipse
+            cx="405"
+            cy="118"
+            rx="30"
+            ry="10"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+          />
+          <ellipse
+            cx="220"
+            cy="283"
+            rx="35"
+            ry="12"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+          />
+          <ellipse
+            cx="220"
+            cy="95"
+            rx="55"
+            ry="18"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+          />
+
+          {/* Dotted Arcs connecting Left/Right to Bottom (Smooth continuous lines, no arrows) */}
+          <path
+            d="M 50,110 C 50,200 100,290 155,290"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 390,110 C 390,200 340,290 285,290"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+            strokeLinecap="round"
+          />
+
+          {/* Green Checkpoint Dots on Paths */}
+          <circle cx="81.9" cy="233.8" r="3.5" fill="#22c55e" />
+          <circle cx="358.1" cy="233.8" r="3.5" fill="#22c55e" />
+        </svg>
+
+        {/* 1. Center Bucket & Everything You Need Card */}
+        {/* Circular Backdrop Sphere for Bucket */}
+        <div className="absolute left-[220px] top-[40px] -translate-x-1/2 -translate-y-1/2 w-[130px] h-[130px] rounded-full bg-gradient-to-tr from-blue-50/50 via-indigo-50/30 to-white/10 border border-blue-100/40 z-0 shadow-inner pointer-events-none" />
+
+        <div
+          style={{ zIndex: 15 }}
+          className="absolute left-[220px] top-[60px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
+          onMouseEnter={() => setHoveredNode("center")}
+          onMouseLeave={() => setHoveredNode(null)}
+        >
+          <motion.div
+            animate={hoveredNode === "center" ? { scale: 1.05 } : { scale: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="relative w-[120px] h-[90px] flex items-center justify-center filter drop-shadow-lg z-10"
+          >
+            <Image
+              src="/assets/images/blue-tools-bucket.png"
+              alt="Blue Tools Bucket"
+              fill
+              unoptimized
+              className="object-contain"
+            />
+          </motion.div>
+
+          {/* Card: Everything you need */}
+          <motion.div
+            animate={
+              hoveredNode === "center"
+                ? { scale: 1.02, y: -2, boxShadow: "0 12px 24px rgba(0,0,0,0.08)" }
+                : { scale: 1, y: 0, boxShadow: "0 4px 10px rgba(0,0,0,0.04)" }
+            }
+            className="mt-1 w-[220px] bg-white border border-slate-100 rounded-[20px] p-3 flex items-center gap-3 text-left transition-all duration-300 z-20"
+          >
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#e8f1fe] text-[#1a73e8] border border-blue-100/30">
+              <FolderOpen size={16} strokeWidth={2.2} />
+            </div>
+            <div className="min-w-0">
+              <h4 className="text-[12px] font-black text-slate-850 leading-none">
+                Everything you need
+              </h4>
+              <p className="text-[9.5px] text-slate-500 font-semibold leading-normal mt-1">
+                All tools and resources in one place.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* 2. Rotating Tool Cards */}
+        {tools.map((tool, idx) => (
+          <OrbitToolCard
+            key={tool.id}
+            tool={tool}
+            indexMV={indexMV}
+            cardIndex={idx}
+            totalTools={tools.length}
+          />
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -4237,7 +4738,7 @@ export function SpinningToolsSignpost() {
         }}
       >
         {/* Center Pole (Solid deep-blue cylinder pole) */}
-        <div 
+        <div
           className="absolute left-[calc(50%-5px)] top-[3px] bottom-[6px] w-[10px] z-10 shadow-[inset_1px_0_1.5px_rgba(255,255,255,0.35),0_2px_4px_rgba(0,0,0,0.15)]"
           style={{
             background: "linear-gradient(90deg, #091a2f 0%, #16365f 50%, #091a2f 100%)",
@@ -4245,18 +4746,18 @@ export function SpinningToolsSignpost() {
             borderRight: "1px solid #071424",
           }}
         />
-        
+
         {/* Cylindrical Top Cap Ellipse/Collar */}
-        <div 
+        <div
           className="absolute left-[calc(50%-9px)] top-0 w-[18px] h-[10px] rounded-[3px] z-20 shadow-[0_1.5px_3px_rgba(0,0,0,0.3)]"
           style={{
             background: "linear-gradient(180deg, #224d80 0%, #0f2747 100%)",
             border: "1.5px solid #071424",
           }}
         />
-        
+
         {/* Cylindrical Bottom Cap Ellipse/Collar */}
-        <div 
+        <div
           className="absolute left-[calc(50%-9px)] bottom-[6px] w-[18px] h-[10px] rounded-[3px] z-20 shadow-[0_1.5px_3px_rgba(0,0,0,0.3)]"
           style={{
             background: "linear-gradient(180deg, #224d80 0%, #0f2747 100%)",
@@ -4271,7 +4772,7 @@ export function SpinningToolsSignpost() {
           const k = startIndex + idx;
           const y = slotYCoordinates[idx];
           const slotColor = slotColors[idx];
-          
+
           // Row 0 and Row 2 have Left Icon. Row 1 has Right Icon.
           const isLeftIcon = idx % 2 === 0;
           const IconComponent = tool.icon;
@@ -4301,7 +4802,7 @@ export function SpinningToolsSignpost() {
                         borderColor: slotColor,
                       }}
                     >
-                      <div 
+                      <div
                         className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-white"
                         style={{ backgroundColor: slotColor }}
                       >
@@ -4311,7 +4812,7 @@ export function SpinningToolsSignpost() {
                   </Link>
 
                   {/* Left Bracket (Circle to Pole) */}
-                  <div 
+                  <div
                     className="absolute h-[6px] z-0 top-[19px] rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_1.5px_2px_rgba(0,0,0,0.1)]"
                     style={{
                       backgroundColor: slotColor,
@@ -4321,7 +4822,7 @@ export function SpinningToolsSignpost() {
                   />
 
                   {/* Right Bracket (Pole to Card) */}
-                  <div 
+                  <div
                     className="absolute h-[6px] z-0 top-[19px] rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_1.5px_2px_rgba(0,0,0,0.1)]"
                     style={{
                       backgroundColor: slotColor,
@@ -4349,7 +4850,7 @@ export function SpinningToolsSignpost() {
                       }}
                     >
                       <RightArrowSvg color={slotColor} />
-                      <div 
+                      <div
                         className="absolute left-[20px] right-[20px] top-0 bottom-0 flex items-center justify-center font-extrabold text-[10px] text-[#0f294a] tracking-tight leading-tight text-center"
                         style={{ WebkitFontSmoothing: "subpixel-antialiased" }}
                       >
@@ -4379,7 +4880,7 @@ export function SpinningToolsSignpost() {
                       }}
                     >
                       <LeftArrowSvg color={slotColor} />
-                      <div 
+                      <div
                         className="absolute left-[20px] right-[20px] top-0 bottom-0 flex items-center justify-center font-extrabold text-[10px] text-[#0f294a] tracking-tight leading-tight text-center"
                         style={{ WebkitFontSmoothing: "subpixel-antialiased" }}
                       >
@@ -4389,7 +4890,7 @@ export function SpinningToolsSignpost() {
                   </Link>
 
                   {/* Left Bracket (Card to Pole) */}
-                  <div 
+                  <div
                     className="absolute h-[6px] z-0 top-[19px] rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_1.5px_2px_rgba(0,0,0,0.1)]"
                     style={{
                       backgroundColor: slotColor,
@@ -4399,7 +4900,7 @@ export function SpinningToolsSignpost() {
                   />
 
                   {/* Right Bracket (Pole to Circle) */}
-                  <div 
+                  <div
                     className="absolute h-[6px] z-0 top-[19px] rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_1.5px_2px_rgba(0,0,0,0.1)]"
                     style={{
                       backgroundColor: slotColor,
@@ -4420,7 +4921,7 @@ export function SpinningToolsSignpost() {
                         borderColor: slotColor,
                       }}
                     >
-                      <div 
+                      <div
                         className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-white"
                         style={{ backgroundColor: slotColor }}
                       >
@@ -4437,6 +4938,3 @@ export function SpinningToolsSignpost() {
     </div>
   );
 }
-
-
-

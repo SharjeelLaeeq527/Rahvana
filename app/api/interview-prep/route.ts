@@ -55,6 +55,7 @@ export async function POST(request: NextRequest) {
         success: true,
         alreadyExists: result.alreadyExists,
         session: result.session,
+        source: result.source || "tool",
       },
       {
         status: result.alreadyExists ? 200 : 201,

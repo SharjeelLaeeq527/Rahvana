@@ -18,6 +18,8 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
+import { usePlan } from "@/app/context/PlanContext";
+import { Crown, CreditCard, ShoppingBag, Sparkles } from "lucide-react";
 
 type Location = "karachi" | "lahore" | "islamabad";
 type IslamabadProvider = "amc" | "iom";
@@ -1951,6 +1953,154 @@ const ReviewStep = ({
   );
 };
 
+interface CheckoutStepProps {
+  formData: FormData;
+  error: string | null;
+  loading: boolean;
+  tier: string;
+  onBack: () => void;
+  onSubmit: (e: React.FormEvent) => void;
+  formatDate: (dateString: string) => string;
+}
+
+const CheckoutStep = ({
+  formData,
+  error,
+  loading,
+  tier,
+  onBack,
+  onSubmit,
+  formatDate,
+}: CheckoutStepProps) => {
+  const { t } = useLanguage();
+  const isExecutive = tier === "executive";
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center gap-2 mb-6">
+        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
+          Checkout
+        </div>
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+          Payment &amp; Confirmation
+        </h2>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        {/* Left column: Booking summary */}
+        <div className="md:col-span-3 space-y-4">
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5">
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-tight">Booking Summary</h4>
+            <div className="mt-3 space-y-2">
+              <p className="text-sm font-semibold text-slate-800">
+                {formData.surname}, {formData.givenName}
+              </p>
+              <p className="text-xs text-slate-500">
+                Center: <span className="capitalize font-medium text-slate-700">{formData.location}</span>
+                {formData.location === "islamabad" && formData.islamabadProvider && (
+                  <> - <span className="uppercase font-medium text-slate-700">{formData.islamabadProvider}</span></>
+                )}
+              </p>
+              {formData.preferredAppointmentDate && (
+                <p className="text-xs text-slate-500">
+                  Preferred Date: <span className="font-medium text-slate-700">{formatDate(formData.preferredAppointmentDate)}</span>
+                </p>
+              )}
+              {formData.preferredTime && (
+                <p className="text-xs text-slate-500">
+                  Preferred Time: <span className="font-medium text-slate-700">{formData.preferredTime}</span>
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200/60 flex items-start gap-3">
+            <CreditCard className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
+            <div>
+              <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Secure Transaction</h5>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                Your details are handled securely. One-time card payments are processed securely via Stripe.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right column: Cart breakdown */}
+        <div className="md:col-span-2">
+          <div className="bg-slate-50/55 border border-slate-200 rounded-2xl p-6 flex flex-col justify-between h-full">
+            <div>
+              <h4 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-2">
+                <ShoppingBag className="h-4 w-4 text-teal-600" />
+                Price Breakdown
+              </h4>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-600 font-medium">1x Medical Exam Booking</span>
+                  <span className="text-slate-800 font-bold">$5.00</span>
+                </div>
+
+                {isExecutive && (
+                  <div className="flex justify-between items-center text-sm text-green-600">
+                    <span className="font-semibold flex items-center gap-1">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Executive Tier Discount
+                    </span>
+                    <span className="font-bold">-$5.00</span>
+                  </div>
+                )}
+
+                <div className="border-t border-slate-200 pt-4 mt-2 flex justify-between items-center">
+                  <span className="text-base font-bold text-slate-900">Total Due</span>
+                  <span className="text-xl font-black text-slate-900">
+                    {isExecutive ? "$0.00" : "$5.00"}
+                  </span>
+                </div>
+              </div>
+
+              {isExecutive && (
+                <div className="mt-5 p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-center gap-2">
+                  <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                  <span className="text-[11px] font-bold text-amber-800">
+                    Free booking included with Executive plan.
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className="p-3 mt-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="flex justify-between pt-6 mt-6 border-t border-slate-200">
+              <Button
+                onClick={onBack}
+                variant="outline"
+                className="bg-teal-600 hover:bg-teal-700 text-white"
+              >
+                Back
+              </Button>
+              <Button
+                onClick={onSubmit}
+                disabled={loading}
+                className="bg-teal-600 hover:bg-teal-700 text-white"
+              >
+                {loading
+                  ? "Processing..."
+                  : isExecutive
+                    ? "Confirm Booking (Free)"
+                    : "Proceed to Payment ($5)"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 interface SuccessStepProps {
   onReset: () => void;
 }
@@ -2030,6 +2180,7 @@ export default function WilcareAppointmentForm() {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
+  const { tier } = usePlan();
 
   const saveProgressToProfile = (currentFormData = formData) => {
     if (!user) return;
@@ -2308,7 +2459,8 @@ export default function WilcareAppointmentForm() {
     }
 
     if (step === 7) {
-      handleFinalSubmit();
+      setError(null);
+      setStep(8);
       return;
     }
 
@@ -2423,7 +2575,42 @@ export default function WilcareAppointmentForm() {
         }
       }
 
-      setStep(8);
+      // If user is not Executive tier, redirect them to Stripe checkout!
+      const isExecutive = tier === "executive";
+      if (!isExecutive && user?.id) {
+        try {
+          const stripeRes = await fetch("/api/stripe/checkout", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              appointmentId: appointmentId,
+              userId: user.id,
+            }),
+          });
+
+          const stripeData = await stripeRes.json();
+
+          if (!stripeRes.ok) {
+            throw new Error(stripeData.error || "Failed to create checkout session");
+          }
+
+          if (stripeData.url) {
+            window.location.href = stripeData.url;
+            return; // Redirecting to Stripe
+          } else {
+            throw new Error("No checkout URL returned");
+          }
+        } catch (stripeErr: any) {
+          console.error("Checkout redirection failed:", stripeErr);
+          setError(stripeErr.message || "Checkout redirection failed");
+          setLoading(false);
+          return;
+        }
+      }
+
+      setStep(10);
     } catch (err: unknown) {
       console.error("Error submitting appointment:", err);
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
@@ -2445,6 +2632,9 @@ export default function WilcareAppointmentForm() {
         } else {
           setStep(6);
         }
+      } else if (step === 8) {
+        // Going back from checkout step to review step
+        setStep(7);
       } else if (step === 6) {
         // Going back from schedule step to document upload step
         setStep(5);
@@ -2568,20 +2758,33 @@ export default function WilcareAppointmentForm() {
         );
       case 7:
         return (
-          <ResultGate feature="medical_booking">
-            <ReviewStep
-              formData={formData}
-              error={error}
-              loading={loading}
-              isAMC={isAMC}
-              isIOM={isIOM}
-              onSubmit={handleNextStep}
-              onBack={handleGoBack}
-              formatDate={formatDate}
-            />
-          </ResultGate>
+          <ReviewStep
+            formData={formData}
+            error={error}
+            loading={loading}
+            isAMC={isAMC}
+            isIOM={isIOM}
+            onSubmit={handleNextStep}
+            onBack={handleGoBack}
+            formatDate={formatDate}
+          />
         );
       case 8:
+        return (
+          <CheckoutStep
+            formData={formData}
+            error={error}
+            loading={loading}
+            tier={tier}
+            onBack={handleGoBack}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleFinalSubmit();
+            }}
+            formatDate={formatDate}
+          />
+        );
+      case 10:
         return <SuccessStep onReset={handleReset} />;
       case 9:
         return (
@@ -2610,7 +2813,7 @@ export default function WilcareAppointmentForm() {
           </h1>
           <p className="text-slate-600 text-sm sm:text-base">{t("bookAppointment.description")}</p>
 
-          {step > 1 && step < 8 && step !== 9 && !isIOM && (
+          {step > 1 && step < 10 && step !== 9 && !isIOM && (
             <div className="mt-6">
               <div className="flex justify-between text-[10px] sm:text-xs text-slate-600 mb-2 px-1 sm:px-0">
                 <span>{t("bookAppointment.progressSteps.location")}</span>
@@ -2623,6 +2826,7 @@ export default function WilcareAppointmentForm() {
                 <span>{t("bookAppointment.progressSteps.passport")}</span>
                 <span>{t("bookAppointment.progressSteps.docs")}</span>
                 <span>{t("bookAppointment.progressSteps.when")}</span>
+                <span>{step === 8 ? "Checkout" : "Review"}</span>
               </div>
               <div className="w-full h-2 bg-slate-200 rounded-full">
                 <div
@@ -2632,17 +2836,26 @@ export default function WilcareAppointmentForm() {
               </div>
             </div>
           )}
-          {isIOM && step === 9 && (
+          {isIOM && (step === 9 || step === 7 || step === 8) && (
             <div className="mt-6">
               <div className="flex justify-between text-xs text-slate-600 mb-2">
                 <span>{t("bookAppointment.progressSteps.location")}</span>
                 <span>{t("bookAppointment.progressSteps.iomInfo")}</span>
                 <span>{t("bookAppointment.progressSteps.review")}</span>
+                <span>Checkout</span>
               </div>
               <div className="w-full h-2 bg-slate-200 rounded-full">
                 <div
                   className="h-full bg-teal-600 rounded-full transition-all duration-300"
-                  style={{ width: `${((step - 8) / 2) * 100}%` }}
+                  style={{
+                    width: `${
+                      step === 9
+                        ? 33
+                        : step === 7
+                          ? 66
+                          : 100
+                    }%`
+                  }}
                 ></div>
               </div>
             </div>

@@ -1,6 +1,52 @@
 import { ALL_DOCUMENTS } from "./document-definitions";
 
 /**
+ * Check whether any vault document matches a journey doc item,
+ * considering dynamic-category parents.
+ *
+ * When a parent doc (e.g. "Proof of U.S. Citizenship") has `isDynamicCategory: true`,
+ * the MultipleDocumentUploadModal stores uploads under the sub-type's mapped ID
+ * (e.g. "passport-petitioner" for "U.S. passport") or a dynamic slot ID.
+ * A simple `documentDefId === vaultId` check would miss those.
+ */
+export function isDocUploadedInVault(
+  docName: string,
+  mappedId: string,
+  uploadedDocs: { documentDefId: string }[]
+): boolean {
+  // 1. Direct exact match
+  if (uploadedDocs.some((d) => d.documentDefId === mappedId)) return true;
+
+  // 2. Check if the mapped ID is a dynamic-category parent
+  const parentDef = ALL_DOCUMENTS.find((d) => d.id === mappedId);
+  if (!parentDef?.isDynamicCategory) return false;
+
+  const parentCategory = (parentDef as any).category as string | undefined;
+
+  // 3. Check sub-type mapped IDs from suggestions
+  if (parentDef.suggestions) {
+    for (const opt of parentDef.suggestions) {
+      const subId = mapDocumentNameToId(opt);
+      if (subId !== mappedId && subId !== "misc-document") {
+        if (uploadedDocs.some((d) => d.documentDefId === subId)) return true;
+      }
+    }
+  }
+
+  // 4. Check dynamic slot IDs (pattern: dynamic-{CATEGORY}-{slug})
+  // If ANY doc exists under this parent's category, it counts as uploaded.
+  // The parent name (e.g. "Relationship Evidence") won't match individual
+  // slot slugs (e.g. "communication-history"), so we match by category alone.
+  if (parentCategory) {
+    if (uploadedDocs.some((d) => d.documentDefId.startsWith(`dynamic-${parentCategory}-`))) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
+/**
  * Maps common document names from journey JSONs to document tool definition IDs
  */
 export function mapDocumentNameToId(name: string): string {

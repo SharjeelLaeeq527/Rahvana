@@ -22,6 +22,27 @@ export async function POST(req: NextRequest) {
       }
     );
 
+    // Try to get the authenticated user's ID (optional — booking can work without auth)
+    let currentUserId: string | null = null;
+    try {
+      const authClient = createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+        {
+          cookies: {
+            getAll() {
+              return req.cookies.getAll();
+            },
+            setAll() {},
+          },
+        }
+      );
+      const { data: { user } } = await authClient.auth.getUser();
+      currentUserId = user?.id ?? null;
+    } catch {
+      // Auth is optional for appointment booking
+    }
+
     // Get form data from request
     const formData = await req.json();
     console.log("Received form data:", {
@@ -64,6 +85,7 @@ export async function POST(req: NextRequest) {
       original_passport: string | null;
       status: string;
       case_number?: string;
+      user_id?: string | null;
     }
 
     // Prepare appointment data for database insertion
@@ -110,6 +132,7 @@ export async function POST(req: NextRequest) {
         : null,
       original_passport: formData.originalPassport || null,
       status: "pending",
+      user_id: currentUserId,
     };
 
     // Only add case_number if it exists

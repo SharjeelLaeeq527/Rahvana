@@ -21,6 +21,9 @@ import {
   Upload,
   X,
   Lock,
+  ShoppingBag,
+  Sparkles,
+  Crown,
 } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { Loader } from "@/components/ui/spinner";
@@ -28,6 +31,149 @@ import { useToast } from "@/app/components/shared/ToastProvider";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { E, msg } from "@/lib/errors";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+
+interface CheckoutStepProps {
+  formData: any;
+  error: string | null;
+  loading: boolean;
+  canUsePccFiling: boolean;
+  onBack: () => void;
+  onSubmit: (e: React.FormEvent) => void;
+}
+
+const CheckoutStep = ({
+  formData,
+  error,
+  loading,
+  canUsePccFiling,
+  onBack,
+  onSubmit,
+}: CheckoutStepProps) => {
+  return (
+    <div className="space-y-6 md:space-y-8">
+      <div className="flex items-center gap-2 mb-6">
+        <div className="bg-primary text-white px-3 py-1 rounded font-semibold">Checkout</div>
+        <h2 className="text-xl sm:text-2xl font-bold text-gray-900">Payment & Confirmation</h2>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
+        {/* Left column: Request summary */}
+        <div className="md:col-span-3 space-y-4">
+          <div className="bg-gray-50 border border-gray-200 rounded-2xl p-5">
+            <h4 className="text-xs font-bold text-gray-400 uppercase tracking-tight">
+              Request Summary
+            </h4>
+            <div className="mt-3 space-y-2">
+              <p className="text-sm font-semibold text-gray-800">{formData.fullName}</p>
+              <p className="text-xs text-gray-500">
+                CNIC: <span className="font-medium text-gray-700">{formData.cnic}</span>
+              </p>
+              <p className="text-xs text-gray-500">
+                District: <span className="font-medium text-gray-700">{formData.district}</span>
+              </p>
+              <p className="text-xs text-gray-500">
+                Purpose: <span className="font-medium text-gray-700">{formData.purpose}</span>
+              </p>
+              <p className="text-xs text-gray-500">
+                Delivery: <span className="font-medium text-gray-700">{formData.deliveryType}</span>
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-gray-50 rounded-2xl p-5 border border-gray-200/60 flex items-start gap-3">
+            <CreditCard className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+            <div>
+              <h5 className="text-xs font-bold text-gray-900 uppercase tracking-wide">
+                Secure Transaction
+              </h5>
+              <p className="text-xs text-gray-500 mt-1 leading-relaxed">
+                Your details are handled securely. One-time card payments are processed securely via
+                Stripe.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Right column: Cart breakdown */}
+        <div className="md:col-span-2">
+          <div className="bg-gray-50/55 border border-gray-200 rounded-2xl p-6 flex flex-col justify-between h-full">
+            <div>
+              <h4 className="text-sm font-bold text-gray-900 uppercase tracking-wider mb-4 border-b pb-2 flex items-center gap-2">
+                <ShoppingBag className="h-4 w-4 text-primary" />
+                Price Breakdown
+              </h4>
+
+              <div className="space-y-4">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-gray-600 font-medium">1x PCC Filing (Sindh)</span>
+                  <span className="text-gray-800 font-bold">$25.00</span>
+                </div>
+
+                {canUsePccFiling && (
+                  <div className="flex justify-between items-center text-sm text-green-600">
+                    <span className="font-semibold flex items-center gap-1">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      Plan Benefit
+                    </span>
+                    <span className="font-bold">-$25.00</span>
+                  </div>
+                )}
+
+                <div className="border-t border-gray-200 pt-4 mt-2 flex justify-between items-center">
+                  <span className="text-base font-bold text-gray-900">Total Due</span>
+                  <span className="text-xl font-black text-gray-900">
+                    {canUsePccFiling ? "$0.00" : "$25.00"}
+                  </span>
+                </div>
+              </div>
+
+              {canUsePccFiling && (
+                <div className="mt-5 p-3 rounded-xl bg-amber-50 border border-amber-100 flex items-center gap-2">
+                  <Crown className="h-4 w-4 text-amber-500 flex-shrink-0" />
+                  <span className="text-[11px] font-bold text-amber-800">
+                    PCC filing included with your plan.
+                  </span>
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className="p-3 mt-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                {error}
+              </div>
+            )}
+
+            <div className="flex justify-between pt-6 mt-6 border-t border-gray-200">
+              <button
+                onClick={onBack}
+                className="px-6 py-3 rounded-2xl bg-gray-100 text-gray-700 font-bold hover:bg-gray-200 transition-all"
+              >
+                Back
+              </button>
+              <button
+                onClick={onSubmit}
+                disabled={loading}
+                className="px-8 py-3 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+              >
+                {loading
+                  ? "Processing..."
+                  : canUsePccFiling
+                    ? "Confirm Request (Free)"
+                    : "Proceed to Payment ($25)"}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// interface SuccessStepProps {
+//   onReset: () => void;
+// }
 
 function PoliceApplyContent() {
   // const searchParams = useSearchParams();
@@ -37,9 +183,12 @@ function PoliceApplyContent() {
   // const province = searchParams.get("province") || "";
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const plan = usePlan();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const isLocked = !plan.isLoading && !plan.canUse("pcc_filing");
+  const [referenceId, setReferenceId] = useState("");
 
   const [formData, setFormData] = useState({
     purpose: "Immigration",
@@ -80,6 +229,46 @@ function PoliceApplyContent() {
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const SuccessStep = () => {
+    // const { t } = useLanguage();
+    return (
+      <div className="text-center py-12">
+        <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg
+            className="w-10 h-10 text-green-600"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="2"
+              d="M5 13l4 4L19 7"
+            ></path>
+          </svg>
+        </div>
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-4">
+          Request Submitted Successfully!
+        </h2>
+        <p className="text-slate-600 mb-3">
+          Your request Id is <span className="text-slate-900 text-sm font-bold">{referenceId}</span>
+        </p>
+        <p className="text-slate-600 mb-8">
+          Your PCC request has been received. Our team will process your request and you will
+          receive a confirmation once the process is completed.
+        </p>
+        <div className="flex justify-center gap-4">
+          <Link href={"/user-dashboard"}>
+            <Button onClick={() => {}} className="bg-teal-600 hover:bg-teal-700 text-white">
+              Check Status
+            </Button>
+          </Link>
+        </div>
+      </div>
+    );
+  };
 
   const formatCNIC = (value: string) => {
     const digits = value.replace(/\D/g, "");
@@ -278,7 +467,93 @@ function PoliceApplyContent() {
 
   const handleNext = () => {
     if (validateStep(currentStep)) {
-      if (currentStep < 3) setCurrentStep(currentStep + 1);
+      if (currentStep < 4) setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handleCheckoutSubmit = async () => {
+    try {
+      setCheckoutLoading(true);
+      setCheckoutError(null);
+
+      // 1. Save application
+      const payload = {
+        ...formData,
+        userId: user?.id,
+      };
+
+      const response = await fetch("/api/police-verification/apply", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Submission failed");
+      }
+
+      const { id, requestId } = result;
+      setReferenceId(requestId);
+
+      // 2. Upload files
+      const uploadPromises = Object.entries(files).map(async ([key, file]) => {
+        if (!file) return;
+
+        const fd = new FormData();
+        fd.append("file", file);
+        fd.append("requestId", id);
+        fd.append("fileType", key);
+
+        await fetch("/api/police-verification/upload", {
+          method: "POST",
+          body: fd,
+        });
+      });
+
+      await Promise.all(uploadPromises);
+
+      const canUsePccFiling = plan.canUse("pcc_filing");
+      // 3. Check entitlement
+      if (!canUsePccFiling && user?.id) {
+        const stripeRes = await fetch("/api/stripe/checkout", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            policeVerificationId: id,
+            userId: user.id,
+          }),
+        });
+
+        const stripeData = await stripeRes.json();
+
+        if (!stripeRes.ok) {
+          throw new Error(stripeData.error || "Failed to create checkout session");
+        }
+
+        if (stripeData.url) {
+          window.location.href = stripeData.url;
+          return;
+        }
+
+        throw new Error("No checkout URL returned");
+      }
+
+      // Free entitlement flow
+      // showToast(`Application submitted successfully (${requestId})`, "success", 10000);
+
+      setCurrentStep(5); // Success Step
+    } catch (err) {
+      console.error(err);
+
+      setCheckoutError(err instanceof Error ? err.message : "Submission failed");
+    } finally {
+      setCheckoutLoading(false);
     }
   };
 
@@ -324,8 +599,44 @@ function PoliceApplyContent() {
 
         await Promise.all(fileUploadPromises);
 
+        // 3. If user doesn't have pcc_filing entitlement, redirect to Stripe checkout
+        const canUsePccFiling = plan.canUse("pcc_filing");
+        if (!canUsePccFiling && user?.id) {
+          try {
+            const stripeRes = await fetch("/api/stripe/checkout", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                policeVerificationId: id,
+                userId: user.id,
+              }),
+            });
+
+            const stripeData = await stripeRes.json();
+
+            if (!stripeRes.ok) {
+              throw new Error(stripeData.error || "Failed to create checkout session");
+            }
+
+            if (stripeData.url) {
+              window.location.href = stripeData.url;
+              return; // Redirecting to Stripe
+            } else {
+              throw new Error("No checkout URL returned");
+            }
+          } catch (stripeErr: any) {
+            console.error("Checkout redirection failed:", stripeErr);
+            showToast(stripeErr.message || "Checkout redirection failed", "error");
+            setIsSubmitting(false);
+            return;
+          }
+        }
+
+        // If user has pcc_filing entitlement, show success directly
         showToast(msg(E.POLICE_SUBMIT_SUCCESS, { requestId }), "success");
-        // router.push("/user-dashboard");
+        setCurrentStep(4); // Move to success step
       } catch (error) {
         console.error(error);
         showToast(
@@ -365,7 +676,7 @@ function PoliceApplyContent() {
               Sindh Police Verification Form
             </h1>
             <div className="flex items-center gap-2 shrink-0">
-              {[1, 2, 3].map((s) => (
+              {[1, 2, 3, 4].map((s) => (
                 <div
                   key={s}
                   className={`h-2 rounded-full transition-all duration-500 ${
@@ -419,6 +730,20 @@ function PoliceApplyContent() {
               </span>
               <span className={currentStep >= 3 ? "text-gray-900 font-semibold" : "text-gray-400"}>
                 Documents Required
+              </span>
+            </div>
+
+            <div className="w-4 md:w-8 h-px bg-gray-200 shrink-0" />
+            <div className="flex items-center gap-2 text-sm shrink-0">
+              <span
+                className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs ${
+                  currentStep >= 4 ? "bg-primary text-white" : "bg-gray-100 text-gray-500"
+                }`}
+              >
+                4
+              </span>
+              <span className={currentStep >= 4 ? "text-gray-900 font-semibold" : "text-gray-400"}>
+                Payment & Confirmation
               </span>
             </div>
           </div>
@@ -1470,60 +1795,87 @@ function PoliceApplyContent() {
                 </div>
               </motion.div>
             )}
+
+            {currentStep === 4 && (
+              <motion.div key="step4" {...fadeIn}>
+                <CheckoutStep
+                  formData={formData}
+                  error={checkoutError}
+                  loading={checkoutLoading}
+                  canUsePccFiling={plan.canUse("pcc_filing")}
+                  onBack={() => setCurrentStep(3)}
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    handleCheckoutSubmit();
+                  }}
+                />
+              </motion.div>
+            )}
+
+            {currentStep === 5 && (
+              <motion.div key="step5" {...fadeIn}>
+                <SuccessStep />
+              </motion.div>
+            )}
           </AnimatePresence>
         </div>
 
         {/* Footer */}
-        <div className="p-6 md:p-8 bg-white border-t border-gray-100 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
-          <button
-            onClick={handleBack}
-            className="w-full sm:w-auto justify-center px-8 py-4 rounded-2xl bg-gray-50 text-gray-600 font-bold hover:bg-gray-100 transition-all flex items-center gap-2 group"
-          >
-            <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />{" "}
-            Back
-          </button>
-          {currentStep < 3 ? (
+        {currentStep < 4 && (
+          <div className="p-6 md:p-8 bg-white border-t border-gray-100 flex flex-col-reverse sm:flex-row items-center justify-between gap-4">
             <button
-              onClick={handleNext}
-              disabled={Object.keys(errors).length > 0}
-              className="w-full sm:w-auto justify-center px-10 py-4 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 group shadow-xl shadow-primary/25"
+              onClick={handleBack}
+              className="w-full sm:w-auto justify-center px-8 py-4 rounded-2xl bg-gray-50 text-gray-600 font-bold hover:bg-gray-100 transition-all flex items-center gap-2 group"
             >
-              Continue{" "}
-              <ChevronRight size={20} className="group-hover:translate-x-1 transition-transform" />
+              <ChevronLeft size={20} className="group-hover:-translate-x-1 transition-transform" />{" "}
+              Back
             </button>
-          ) : (
-            <>
+            {currentStep < 4 ? (
               <button
-                onClick={isLocked ? () => setShowUpgradeModal(true) : handleSubmit}
-                disabled={!isLocked && (Object.keys(errors).length > 0 || isSubmitting)}
-                className={`w-full sm:w-auto justify-center px-10 py-4 rounded-2xl bg-primary text-white font-bold transition-all flex items-center gap-2 group shadow-xl ${
-                  isLocked
-                    ? "blur-[1.5px] opacity-80 cursor-pointer hover:scale-[0.99] shadow-none"
-                    : "hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed shadow-green-600/25"
-                }`}
+                onClick={handleNext}
+                disabled={Object.keys(errors).length > 0}
+                className="w-full sm:w-auto justify-center px-10 py-4 rounded-2xl bg-primary text-white font-bold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2 group shadow-xl shadow-primary/25"
               >
-                {isSubmitting ? (
-                  "Submitting..."
-                ) : (
-                  <>
-                    Submit Application{" "}
-                    {isLocked ? (
-                      <Lock size={20} />
-                    ) : (
-                      <Send
-                        size={20}
-                        className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
-                      />
-                    )}
-                  </>
-                )}
+                Continue{" "}
+                <ChevronRight
+                  size={20}
+                  className="group-hover:translate-x-1 transition-transform"
+                />
               </button>
-              {showUpgradeModal && (
-                <UpgradeModal feature="pcc_filing" onClose={() => setShowUpgradeModal(false)} />
-              )}
-            </>
-          )}
-        </div>
+            ) : (
+              <>
+                <button
+                  onClick={isLocked ? () => setShowUpgradeModal(true) : handleSubmit}
+                  disabled={!isLocked && (Object.keys(errors).length > 0 || isSubmitting)}
+                  className={`w-full sm:w-auto justify-center px-10 py-4 rounded-2xl bg-primary text-white font-bold transition-all flex items-center gap-2 group shadow-xl ${
+                    isLocked
+                      ? "blur-[1.5px] opacity-80 cursor-pointer hover:scale-[0.99] shadow-none"
+                      : "hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed shadow-green-600/25"
+                  }`}
+                >
+                  {isSubmitting ? (
+                    "Submitting..."
+                  ) : (
+                    <>
+                      Submit Application{" "}
+                      {isLocked ? (
+                        <Lock size={20} />
+                      ) : (
+                        <Send
+                          size={20}
+                          className="group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform"
+                        />
+                      )}
+                    </>
+                  )}
+                </button>
+                {showUpgradeModal && (
+                  <UpgradeModal feature="pcc_filing" onClose={() => setShowUpgradeModal(false)} />
+                )}
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

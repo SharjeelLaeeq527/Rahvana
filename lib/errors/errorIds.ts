@@ -755,6 +755,26 @@ export const E = {
   /** Generic email send failure */
   EMAIL_SEND_FAILED: 2010,
 
+  /** Translation notifications — invalid data */
+  TRANSLATION_NOTIFICATION_INVALID: 2011,
+  /** Translation notifications — email send failed */
+  TRANSLATION_NOTIFICATION_SEND_FAILED: 2012,
+  /** Translation notifications — translation not found */
+  TRANSLATION_NOT_FOUND: 2013,
+  /** Translation notifications — trigger failed */
+  TRANSLATION_TRIGGER_FAILED: 2014,
+
+  /** Police verification notifications — invalid data */
+  POLICE_VERIFICATION_NOTIFICATION_INVALID: 2015,
+  /** Police verification notifications — email send failed */
+  POLICE_VERIFICATION_NOTIFICATION_SEND_FAILED: 2016,
+  /** Police verification notifications — request not found */
+  POLICE_VERIFICATION_NOT_FOUND: 2017,
+  /** Police verification notifications — trigger failed */
+  POLICE_VERIFICATION_TRIGGER_FAILED: 2018,
+
+
+
 
   // ─── FEEDBACK & MISC (2100–2149) ──────────────────────────────────────────
 

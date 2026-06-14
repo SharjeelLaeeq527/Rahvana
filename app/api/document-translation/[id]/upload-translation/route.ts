@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { E, msg } from "@/lib/errors";
+import { triggerTranslationNotification } from "@/lib/notifications";
 function getStorageSupabase() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -115,10 +116,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: "Failed to update database" }, { status: 500 });
     }
 
+    // Trigger user notification (email and in-app)
+    await triggerTranslationNotification(id);
+
     return NextResponse.json({
       success: true,
       status: updated.status,
-      message: "Translated document uploaded successfully. User can now review it.",
       message: msg(E.UPLOAD_TRANSLATION_SUCCESS),
     });
   } catch (error) {
