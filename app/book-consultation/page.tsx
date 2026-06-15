@@ -2715,6 +2715,11 @@ const ConsultationBookingPageContent = () => {
                         <p className="text-sm text-gray-500">
                           {booking.visa_category} • {booking.issue_category}
                         </p>
+                        {booking.admin_notes && (
+                          <div className="mt-3 text-xs text-teal-800 bg-teal-50/50 border border-teal-100/70 p-2.5 rounded-lg max-w-md">
+                            <span className="font-bold text-teal-900">Admin Note:</span> {booking.admin_notes}
+                          </div>
+                        )}
                       </div>
                       <div className="text-right flex flex-col items-end gap-2">
                         <div>
@@ -2758,11 +2763,6 @@ const ConsultationBookingPageContent = () => {
                                   </Button>
                                 ))}
                               </div>
-                              {booking.admin_notes && (
-                                <p className="mt-2 text-[10px] text-teal-800 italic">
-                                  <strong>Note:</strong> {booking.admin_notes}
-                                </p>
-                              )}
                             </div>
                           )}
                       </div>
