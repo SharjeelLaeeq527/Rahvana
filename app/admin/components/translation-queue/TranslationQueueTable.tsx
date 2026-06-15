@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { msg, E, errorCode } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -64,6 +64,7 @@ interface TranslationRequest {
 // }
 
 export default function TranslationQueueTable() {
+  const { showToast } = useToast();
   const [translationRequests, setTranslationRequests] = useState<TranslationRequest[]>([]);
   const [filteredTranslationRequests, setFilteredTranslationRequests] = useState<
     TranslationRequest[]
@@ -340,15 +341,13 @@ export default function TranslationQueueTable() {
                                   window.open(data.originalFileUrl, "_blank");
                                 } else {
                                   console.error("Error getting document URL:", data.error);
-                                  toast.error(`${msg(E.VAULT_DOWNLOAD_FAILED)}`, {
-                                    position: "top-right",
+                                  showToast(`${msg(E.VAULT_DOWNLOAD_FAILED)}`, "error", {
                                     duration: 3000,
                                   });
                                 }
                               } catch (error) {
                                 console.error("Error downloading document:", error);
-                                toast.error(`${msg(E.VAULT_DOWNLOAD_FAILED)}`, {
-                                  position: "top-right",
+                                showToast(`${msg(E.VAULT_DOWNLOAD_FAILED)}`, "error", {
                                   duration: 3000,
                                 });
                               }
@@ -455,31 +454,34 @@ export default function TranslationQueueTable() {
                                             );
                                           }
 
-                                          toast.success(
+                                          showToast(
                                             "Translation verified and certified successfully!",
+                                            "success",
                                             {
-                                              position: "top-right",
                                               duration: 3000,
                                             }
                                           );
                                         } else {
                                           console.error("Error verifying translation:", data.error);
-                                          toast.error(
+                                          showToast(
                                             `Error verifying translation: ${
                                               data.error || "Unknown error"
                                             }`,
+                                            "error",
                                             {
-                                              position: "top-right",
                                               duration: 3000,
                                             }
                                           );
                                         }
                                       } catch (error) {
                                         console.error("Error verifying translation:", error);
-                                        toast.error("Error verifying translation: Network error", {
-                                          position: "top-right",
-                                          duration: 3000,
-                                        });
+                                        showToast(
+                                          "Error verifying translation: Network error",
+                                          "error",
+                                          {
+                                            duration: 3000,
+                                          }
+                                        );
                                       } finally {
                                         setVerifying(false);
                                       }

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { E, msg } from "@/lib/errors";
 import { APPOINTMENT_RECEIVED_DATA } from "../AppointmentReceivedData";
 
@@ -26,6 +26,7 @@ export const AppointmentReceivedTool: React.FC<AppointmentReceivedToolProps> = (
   interviewState,
   guard,
 }) => {
+  const { showToast } = useToast();
   const {
     interviewSaved,
     setInterviewSaved,
@@ -139,7 +140,7 @@ export const AppointmentReceivedTool: React.FC<AppointmentReceivedToolProps> = (
               const validationErrors = validateAppointmentFields();
               if (Object.keys(validationErrors).length > 0) {
                 setErrors(validationErrors);
-                toast.error(msg(E.APPOINTMENT_FIX_ERRORS));
+                showToast(msg(E.APPOINTMENT_FIX_ERRORS), "error");
                 return;
               }
               setIsSaving(true);
@@ -151,7 +152,7 @@ export const AppointmentReceivedTool: React.FC<AppointmentReceivedToolProps> = (
                   consulateLocation,
                   letterDate,
                 });
-                toast.success(msg(E.APPOINTMENT_SAVED_SUCCESS));
+                showToast(msg(E.APPOINTMENT_SAVED_SUCCESS), "success");
               } finally {
                 setIsSaving(false);
               }

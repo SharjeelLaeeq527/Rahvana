@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { E, msg } from "@/lib/errors";
 
 export interface SecurityQuestion {
@@ -28,6 +28,7 @@ interface UsePortalWalletProps {
 }
 
 export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletProps) => {
+  const { showToast } = useToast();
   const [uscisCredentials, setUscisCredentials] = useState<PortalCredential | null>(null);
   const [ceacCredentials, setCeacCredentials] = useState<PortalCredential | null>(null);
   const [courierCredentials, setCourierCredentials] = useState<PortalCredential | null>(null);
@@ -83,7 +84,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error("Failed to save");
-      toast.success(msg(E.CREDENTIAL_SAVE_SUCCESS));
+      showToast(msg(E.CREDENTIAL_SAVE_SUCCESS), "success");
       setIsWalletFormOpen(false);
       await fetchCredentials();
 
@@ -113,7 +114,7 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
         if (!isCompleted) actions.toggleComplete("step_1_6");
       }
     } catch {
-      toast.error(msg(E.VAULT_CREDENTIAL_SAVE_FAILED));
+      showToast(msg(E.VAULT_CREDENTIAL_SAVE_FAILED), "error");
     } finally {
       setIsSubmittingCreds(false);
     }
@@ -155,13 +156,13 @@ export const usePortalWallet = ({ sId, isCompleted, actions }: UsePortalWalletPr
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Failed to delete");
-      toast.success(msg(E.CREDENTIAL_DELETE_SUCCESS));
+      showToast(msg(E.CREDENTIAL_DELETE_SUCCESS), "success");
       if (portalType === "USCIS") setUscisCredentials(null);
       if (portalType === "NVC") setCeacCredentials(null);
       if (portalType === "COURIER") setCourierCredentials(null);
       setIsWalletViewOpen(false);
     } catch {
-      toast.error(msg(E.VAULT_CREDENTIAL_DELETE_FAILED));
+      showToast(msg(E.VAULT_CREDENTIAL_DELETE_FAILED), "error");
     } finally {
       setIsSubmittingCreds(false);
     }
