@@ -137,6 +137,7 @@ export async function PUT(request: NextRequest) {
           status: "confirmed",
           selected_slot: data.selected_slot ? new Date(data.selected_slot) : undefined,
           expires_at: undefined, // Remove expiration since it's confirmed
+          admin_notes: adminNotes || "",
         });
         break;
 
@@ -156,7 +157,7 @@ export async function PUT(request: NextRequest) {
                 return new Date(`${s.replace(" ", "T")}-05:00`);
               })
             : undefined,
-          admin_notes: adminNotes,
+          admin_notes: adminNotes || "",
         });
         break;
 
@@ -169,13 +170,14 @@ export async function PUT(request: NextRequest) {
         }
         await consultationService.updateBooking(id, {
           status: "needs_more_info",
-          admin_notes: adminNotes,
+          admin_notes: adminNotes || "",
         });
         break;
 
       case "cancel":
         await consultationService.updateBooking(id, {
           status: "canceled",
+          admin_notes: adminNotes || "",
         });
         break;
 

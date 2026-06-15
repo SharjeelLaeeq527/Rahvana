@@ -9,12 +9,13 @@ interface AppointmentNotificationData {
   email: string;
   fullName: string;
   medicalWebsite: string;
-  appointmentType: string;
+  appointmentLocation: string;
   bookingReference?: string;
   appointmentDate?: string;
   appointmentTime?: string;
   status: string;
   message?: string;
+  adminNotes?: string;
 }
 
 export async function sendAppointmentNotification(data: AppointmentNotificationData) {
@@ -23,18 +24,19 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
       email,
       fullName,
       medicalWebsite,
-      appointmentType,
+      appointmentLocation,
       bookingReference,
       appointmentDate,
       appointmentTime,
       status,
       message,
+      adminNotes,
     } = data;
 
     let subject = "";
     let htmlContent = "";
 
-    if (status === "confirmed") {
+    if (status === "completed") {
       subject = "Your Appointment Has Been Confirmed!";
       htmlContent = `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
@@ -45,11 +47,22 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
           <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
             <h2 style="color: #374151; margin-top: 0;">Appointment Details</h2>
             <p><strong>Medical Website:</strong> ${medicalWebsite}</p>
-            <p><strong>Appointment Type:</strong> ${appointmentType}</p>
+            <p><strong>Appointment Location:</strong> ${appointmentLocation}</p>
             <p><strong>Booking Reference:</strong> ${bookingReference || "N/A"}</p>
             <p><strong>Date:</strong> ${appointmentDate || "To be scheduled"}</p>
             <p><strong>Time:</strong> ${appointmentTime || "To be scheduled"}</p>
           </div>
+          
+          ${
+            adminNotes
+              ? `
+          <div style="background-color: #f3f4f6; border-left: 4px solid #0d7377; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+            <strong style="display: block; color: #374151; font-size: 14px; margin-bottom: 5px;">Admin Notes:</strong>
+            <p style="margin: 0; font-style: italic; color: #4b5563;">${adminNotes}</p>
+          </div>
+          `
+              : ""
+          }
           
           <p>Our team has successfully booked your appointment. Please make sure to arrive on time with all required documents.</p>
           
@@ -69,8 +82,19 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
           <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
             <h2 style="color: #374151; margin-top: 0;">Request Details</h2>
             <p><strong>Medical Website:</strong> ${medicalWebsite}</p>
-            <p><strong>Appointment Type:</strong> ${appointmentType}</p>
+            <p><strong>Appointment Location:</strong> ${appointmentLocation}</p>
           </div>
+          
+          ${
+            adminNotes
+              ? `
+          <div style="background-color: #f3f4f6; border-left: 4px solid #0d7377; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+            <strong style="display: block; color: #374151; font-size: 14px; margin-bottom: 5px;">Admin Notes:</strong>
+            <p style="margin: 0; font-style: italic; color: #4b5563;">${adminNotes}</p>
+          </div>
+          `
+              : ""
+          }
           
           <p>You will receive another email once your appointment is confirmed with the exact date and time.</p>
           
@@ -90,10 +114,19 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
           <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
             <h2 style="color: #374151; margin-top: 0;">Request Details</h2>
             <p><strong>Medical Website:</strong> ${medicalWebsite}</p>
-            <p><strong>Appointment Type:</strong> ${appointmentType}</p>
+            <p><strong>Appointment Location:</strong> ${appointmentLocation}</p>
           </div>
           
-          <p>${message || "If you believe this was done in error, please contact our support team."}</p>
+          ${
+            adminNotes
+              ? `
+          <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0; color: #991b1b;">
+            <strong style="display: block; font-size: 14px; margin-bottom: 5px;">Cancellation Note:</strong>
+            <p style="margin: 0; font-style: italic;">${adminNotes}</p>
+          </div>
+          `
+              : `<p>${message || "If you believe this was done in error, please contact our support team."}</p>`
+          }
           
           <p>Best regards,<br/>The Rahvana Team</p>
         </div>
@@ -144,10 +177,12 @@ interface InAppNotificationContent {
  */
 function getAppointmentNotificationContent(
   status: string,
-  appointmentType: string,
+  appointmentLocation: string,
   medicalWebsite: string
 ): InAppNotificationContent | null {
-  const service = appointmentType ? `${appointmentType} (${medicalWebsite})` : medicalWebsite;
+  const service = appointmentLocation
+    ? `${appointmentLocation} (${medicalWebsite})`
+    : medicalWebsite;
 
   switch (status) {
     case "in_progress":
@@ -155,8 +190,8 @@ function getAppointmentNotificationContent(
         title: "Appointment In Progress",
         body: `Your ${service} appointment request is now being processed by our team. You'll be notified once it's confirmed.`,
         priority: "normal",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "confirmed":
     case "completed":
@@ -164,8 +199,8 @@ function getAppointmentNotificationContent(
         title: "Appointment Confirmed",
         body: `Great news! Your ${service} appointment has been confirmed. Please check your email for full details and make sure to arrive on time with all required documents.`,
         priority: "high",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "cancelled":
       return {
@@ -295,11 +330,12 @@ export async function triggerAppointmentNotification(appointmentId: string) {
       email: appointment.email,
       fullName: appointment.full_name,
       medicalWebsite: appointment.medical_website,
-      appointmentType: appointment.appointment_type,
+      appointmentLocation: appointment.location,
       bookingReference: appointment.booking_reference,
       appointmentDate: appointment.preferred_date,
       appointmentTime: appointment.preferred_time,
       status: appointment.status,
+      adminNotes: appointment.admin_notes,
     };
 
     // Create in-app notification (non-blocking — don't let it fail the email)
@@ -549,24 +585,24 @@ function getConsultationNotificationContent(
         title: "Consultation Confirmed",
         body: `Your consultation for "${category}" has been confirmed! Please check your email for full details and schedule.`,
         priority: "high",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "alternatives_proposed":
       return {
         title: "New Slots Proposed",
         body: `Alternative slots have been proposed for your "${category}" consultation. Please check your email to review and select a slot.`,
         priority: "normal",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "needs_more_info":
       return {
         title: "Consultation Info Required",
         body: `More information is needed for your "${category}" consultation. Details: ${adminNotes || "Please check your email or contact support."}`,
         priority: "high",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "canceled":
       return {
@@ -1102,11 +1138,12 @@ interface PoliceVerificationNotificationData {
   status: string;
   province?: string;
   district?: string;
+  adminNotes?: string;
 }
 
 export async function sendPoliceVerificationNotification(data: PoliceVerificationNotificationData) {
   try {
-    const { email, fullName, id, requestId, status, province, district } = data;
+    const { email, fullName, id, requestId, status, province, district, adminNotes } = data;
 
     let subject = "";
     let htmlContent = "";
@@ -1140,10 +1177,21 @@ export async function sendPoliceVerificationNotification(data: PoliceVerificatio
             <div style="${cardStyles}">
               <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Request Summary</h3>
               <p style="margin: 8px 0;"><strong>Tracking ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${requestId || "N/A"}</span></p>
-              <p style="margin: 8px 0;"><strong>Province:</strong> ${province || "Sindh"}</p>
+              <p style="margin: 8px 0;"><strong>Province:</strong> Sindh</p>
               <p style="margin: 8px 0;"><strong>District:</strong> ${district || "N/A"}</p>
               <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #0d7377; font-weight: 600;">COMPLETED</span></p>
             </div>
+            
+            ${
+              adminNotes
+                ? `
+            <div style="background-color: #f3f4f6; border-left: 4px solid #0d7377; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+              <strong style="display: block; color: #374151; font-size: 14px; margin-bottom: 5px;">Admin Notes:</strong>
+              <p style="margin: 0; font-style: italic; color: #4b5563;">${adminNotes}</p>
+            </div>
+            `
+                : ""
+            }
             
             <p>You can retrieve and download your official Police Character Certificate from your user dashboard by clicking the button below.</p>
             
@@ -1171,10 +1219,21 @@ export async function sendPoliceVerificationNotification(data: PoliceVerificatio
             <div style="${cardStyles}">
               <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Request Summary</h3>
               <p style="margin: 8px 0;"><strong>Tracking ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${requestId || "N/A"}</span></p>
-              <p style="margin: 8px 0;"><strong>Province:</strong> ${province || "Sindh"}</p>
+              <p style="margin: 8px 0;"><strong>Province:</strong> Sindh</p>
               <p style="margin: 8px 0;"><strong>District:</strong> ${district || "N/A"}</p>
               <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #0284c7; font-weight: 600;">IN PROGRESS</span></p>
             </div>
+            
+            ${
+              adminNotes
+                ? `
+            <div style="background-color: #f3f4f6; border-left: 4px solid #0d7377; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
+              <strong style="display: block; color: #374151; font-size: 14px; margin-bottom: 5px;">Admin Notes:</strong>
+              <p style="margin: 0; font-style: italic; color: #4b5563;">${adminNotes}</p>
+            </div>
+            `
+                : ""
+            }
             
             <p>Our team is handling the documentation and coordinating with the relevant department. We will notify you as soon as the certificate is finalized or if any further details are required.</p>
             
@@ -1209,6 +1268,17 @@ export async function sendPoliceVerificationNotification(data: PoliceVerificatio
               <p style="margin: 8px 0;"><strong>Tracking ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${requestId || "N/A"}</span></p>
               <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #dc2626; font-weight: 600;">ACTION REQUIRED / CANCELLED</span></p>
             </div>
+            
+            ${
+              adminNotes
+                ? `
+            <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0; color: #991b1b;">
+              <strong style="display: block; font-size: 14px; margin-bottom: 5px;">Discrepancy Notes:</strong>
+              <p style="margin: 0; font-style: italic;">${adminNotes}</p>
+            </div>
+            `
+                : ""
+            }
             
             <p>Please log in to your user dashboard to review the specific notes from the admin, update any incorrect details or uploads, and re-submit the request for filing.</p>
             
@@ -1264,32 +1334,32 @@ function getPoliceVerificationNotificationContent(
         title: "PCC Sindh Request Received",
         body: `Your Sindh Police Character Certificate request (${displayId}) has been received and is pending admin review.`,
         priority: "normal",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "in_progress":
       return {
         title: "PCC Sindh In Progress",
         body: `Your Sindh Police Character Certificate request (${displayId}) is now in progress.`,
         priority: "high",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "completed":
       return {
         title: "PCC Sindh Completed",
         body: `Your Sindh Police Character Certificate request (${displayId}) has been successfully completed.`,
         priority: "high",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "cancelled":
       return {
         title: "PCC Sindh Action Required",
         body: `Action required: There is an issue with your Sindh Police Character Certificate request (${displayId}). Please review admin notes.`,
         priority: "critical",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     default:
       return null;
@@ -1405,6 +1475,7 @@ export async function triggerPoliceVerificationNotification(id: string) {
         status: request.status,
         province: request.province,
         district: request.district,
+        adminNotes: request.admin_notes,
       };
 
       sendPoliceVerificationNotification(notificationData).catch((err) => {

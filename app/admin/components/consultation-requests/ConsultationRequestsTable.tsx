@@ -254,7 +254,7 @@ const ConsultationRequestsTable = () => {
 
       switch (actionType) {
         case "approve":
-          actionPayload = { action: "approve" };
+          actionPayload = { action: "approve", adminNotes: adminNote };
           break;
         case "propose":
           actionPayload = {
@@ -270,7 +270,7 @@ const ConsultationRequestsTable = () => {
           };
           break;
         case "cancel":
-          actionPayload = { action: "cancel" };
+          actionPayload = { action: "cancel", adminNotes: adminNote };
           break;
         default:
           actionPayload = { action: "" };
@@ -718,19 +718,20 @@ const ConsultationRequestsTable = () => {
           </DialogHeader>
 
           <div className="py-4">
-            {(actionType === "more-info" || actionType === "propose") && (
-              <textarea
-                className="w-full min-h-25 p-3 border rounded-md text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none"
-                placeholder={
-                  actionType === "more-info"
-                    ? "What info do you need? (User will see this)"
-                    : "Notes for the user regarding alternatives..."
-                }
-                value={adminNote}
-                onChange={(e) => setAdminNote(e.target.value)}
-              />
-            )}
-
+            <textarea
+              className="w-full min-h-25 p-3 border rounded-md text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none"
+              placeholder={
+                actionType === "more-info"
+                  ? "What info do you need? (Optional - User will see this)"
+                  : actionType === "propose"
+                    ? "Notes for the user regarding alternatives... (Optional)"
+                    : actionType === "approve"
+                      ? "Notes for the user regarding confirmation... (Optional)"
+                      : "Notes for the user regarding cancellation... (Optional)"
+              }
+              value={adminNote}
+              onChange={(e) => setAdminNote(e.target.value)}
+            />
             {actionType === "approve" && selectedRequest && (
               <div className="bg-muted p-4 rounded-lg flex items-center gap-4">
                 <Calendar className="h-10 w-10 text-muted-foreground" />

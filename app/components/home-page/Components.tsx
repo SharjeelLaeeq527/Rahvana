@@ -4429,7 +4429,10 @@ function OrbitToolCard({
         className="mt-3 w-[135px] bg-white border border-slate-100 rounded-xl p-2.5 flex flex-col items-center text-center shadow-[0_4px_10px_rgba(0,0,0,0.04)]"
       >
         <h4 className="text-[11px] font-black leading-tight text-slate-800">{tool.title}</h4>
-        <p className="text-[9.5px] text-slate-500 mt-1 leading-snug h-[32px] overflow-hidden line-clamp-2">
+        <p
+          className="text-[9.5px] text-slate-500 mt-1 leading-snug overflow-hidden line-clamp-3"
+          title={tool.desc}
+        >
           {tool.desc}
         </p>
         <Link

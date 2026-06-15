@@ -96,6 +96,11 @@ export default function BookAppointmentTable() {
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [currentAppointment, setCurrentAppointment] = useState<Appointment | null>(null);
 
+  // Status update confirmation modal states
+  const [statusUpdateConfirmOpen, setStatusUpdateConfirmOpen] = useState(false);
+  const [pendingUpdate, setPendingUpdate] = useState<{ id: string; status: AppointmentStatus } | null>(null);
+  const [adminNotes, setAdminNotes] = useState("");
+
   const fetchAppointments = useCallback(async () => {
     try {
       setLoading(true);
@@ -150,12 +155,12 @@ export default function BookAppointmentTable() {
     setFilteredAppointments(filtered);
   }, [appointments, selectedStatus, searchTerm, sortOrder]);
 
-  const updateAppointmentStatus = async (id: string, newStatus: AppointmentStatus) => {
+  const updateAppointmentStatus = async (id: string, newStatus: AppointmentStatus, notes?: string) => {
     try {
       const response = await fetch("/api/admin/appointments", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status: newStatus }),
+        body: JSON.stringify({ id, status: newStatus, adminNotes: notes }),
       });
 
       const result = await response.json();
@@ -170,6 +175,12 @@ export default function BookAppointmentTable() {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       showToast(`Failed to update appointment status: ${errorMessage}`, "error");
     }
+  };
+
+  const initiateStatusUpdate = (id: string, newStatus: AppointmentStatus) => {
+    setPendingUpdate({ id, status: newStatus });
+    setAdminNotes("");
+    setStatusUpdateConfirmOpen(true);
   };
 
   const getStatusBadgeVariant = (status: AppointmentStatus) => {
@@ -866,7 +877,7 @@ export default function BookAppointmentTable() {
                           <Select
                             value={appointment.status}
                             onValueChange={(value: AppointmentStatus) =>
-                              updateAppointmentStatus(appointment.id, value)
+                              initiateStatusUpdate(appointment.id, value)
                             }
                           >
                             <SelectTrigger className="w-32">
@@ -889,6 +900,54 @@ export default function BookAppointmentTable() {
           )}
         </CardContent>
       </Card>
+
+      {/* Status Update Confirmation Modal */}
+      <Dialog open={statusUpdateConfirmOpen} onOpenChange={setStatusUpdateConfirmOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Update Status</DialogTitle>
+            <div className="text-sm text-muted-foreground mt-1">
+              Are you sure you want to update the status to <span className="font-semibold uppercase text-primary">{pendingUpdate?.status}</span>?
+            </div>
+          </DialogHeader>
+          <div className="py-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Admin Notes (Optional)
+            </label>
+            <textarea
+              value={adminNotes}
+              onChange={(e) => setAdminNotes(e.target.value)}
+              placeholder="Add any notes about this status update..."
+              className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+              maxLength={500}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setStatusUpdateConfirmOpen(false);
+                setPendingUpdate(null);
+                setAdminNotes("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (pendingUpdate) {
+                  await updateAppointmentStatus(pendingUpdate.id, pendingUpdate.status, adminNotes);
+                }
+                setStatusUpdateConfirmOpen(false);
+                setPendingUpdate(null);
+                setAdminNotes("");
+              }}
+            >
+              Confirm
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 mt-8 max-w-6xl mx-auto">

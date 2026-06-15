@@ -107,6 +107,11 @@ export default function PoliceVerificationTable() {
   const [selectedRequest, setSelectedRequest] = useState<PoliceVerificationRequest | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
+  // Status update confirmation modal states
+  const [statusUpdateConfirmOpen, setStatusUpdateConfirmOpen] = useState(false);
+  const [pendingUpdate, setPendingUpdate] = useState<{ id: string; status: VerificationStatus } | null>(null);
+  const [adminNotes, setAdminNotes] = useState("");
+
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
   const ITEMS_PER_PAGE = 10;
@@ -174,12 +179,12 @@ export default function PoliceVerificationTable() {
     currentPage * ITEMS_PER_PAGE
   );
 
-  const updateStatus = async (id: string, newStatus: VerificationStatus) => {
+  const updateStatus = async (id: string, newStatus: VerificationStatus, notes?: string) => {
     try {
       const response = await fetch("/api/admin/police-verifications", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status: newStatus }),
+        body: JSON.stringify({ id, status: newStatus, adminNotes: notes }),
       });
 
       const result = await response.json();
@@ -196,6 +201,12 @@ export default function PoliceVerificationTable() {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       alert(`Failed to update status: ${errorMessage}`);
     }
+  };
+
+  const initiateStatusUpdate = (id: string, newStatus: VerificationStatus) => {
+    setPendingUpdate({ id, status: newStatus });
+    setAdminNotes("");
+    setStatusUpdateConfirmOpen(true);
   };
 
   const getStatusBadgeVariant = (status: VerificationStatus) => {
@@ -402,7 +413,7 @@ export default function PoliceVerificationTable() {
                             <Select
                               value={pv.status}
                               onValueChange={(value: VerificationStatus) =>
-                                updateStatus(pv.id, value)
+                                initiateStatusUpdate(pv.id, value)
                               }
                             >
                               <SelectTrigger className="w-32 h-8 text-xs">
@@ -438,6 +449,54 @@ export default function PoliceVerificationTable() {
           )}
         </CardContent>
       </Card>
+
+      {/* Status Update Confirmation Modal */}
+      <Dialog open={statusUpdateConfirmOpen} onOpenChange={setStatusUpdateConfirmOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Update Status</DialogTitle>
+            <div className="text-sm text-muted-foreground mt-1">
+              Are you sure you want to update the status to <span className="font-semibold uppercase text-primary">{pendingUpdate?.status}</span>?
+            </div>
+          </DialogHeader>
+          <div className="py-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Admin Notes (Optional)
+            </label>
+            <textarea
+              value={adminNotes}
+              onChange={(e) => setAdminNotes(e.target.value)}
+              placeholder="Add any notes about this status update..."
+              className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+              maxLength={500}
+            />
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setStatusUpdateConfirmOpen(false);
+                setPendingUpdate(null);
+                setAdminNotes("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (pendingUpdate) {
+                  await updateStatus(pendingUpdate.id, pendingUpdate.status, adminNotes);
+                }
+                setStatusUpdateConfirmOpen(false);
+                setPendingUpdate(null);
+                setAdminNotes("");
+              }}
+            >
+              Confirm
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Detail Modal */}
       <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
@@ -753,7 +812,7 @@ export default function PoliceVerificationTable() {
                   <Select
                     value={selectedRequest.status}
                     onValueChange={(value: VerificationStatus) =>
-                      updateStatus(selectedRequest.id, value)
+                      initiateStatusUpdate(selectedRequest.id, value)
                     }
                   >
                     <SelectTrigger className="w-48 bg-white border-gray-200">
