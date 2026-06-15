@@ -54,3 +54,12 @@ export {
   type Phase2QuestionId,
   type Phase2Responses,
 } from "./consistency-intelligence";
+
+// Case Narrative Generation (presentation layer over CSA outputs)
+export {
+  generateCaseNarrative,
+  getCaseHealthStatus,
+  type CaseNarrative,
+  type NarrativeBullet,
+  type NarrativeInput,
+} from "./case-narrative";
