@@ -19,10 +19,17 @@ import WaitingStateCard from "./WaitingStateCard";
 import { JourneyRiskCard } from "./components/JourneyRiskCard";
 import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
 import { DashboardCriticalCard } from "./components/DashboardCriticalCard";
+import { CaseSummaryCard } from "./components/CaseSummaryCard";
 import { EvidenceGapCard } from "@/lib/journey/evidence-gap";
 import { EvidenceGapEngine } from "@/lib/journey/evidence-gap";
 import type { EvidenceGapAnalysis } from "@/lib/journey/evidence-gap";
 import { DOCUMENTS_BY_ID } from "@/lib/document-vault/document-definitions";
+import {
+  generateCaseNarrative,
+  getCaseHealthStatus,
+  runFullConsistencyAnalysis,
+  type Phase2Responses,
+} from "@/lib/case-strength";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
@@ -252,6 +259,44 @@ export function DashboardView({
       }
     }, 100);
   };
+
+  // ── Case Narrative Generation ─────────────────────────────────────────────
+  // Consumes existing CSA outputs (Evidence Gap + Consistency Intelligence)
+  // to generate a human-readable case summary. No new analysis performed.
+  const caseNarrative = useMemo(() => {
+    const eligibilityAnswers =
+      (state.answers?.["eligibility-suite"] as any) ??
+      (state.metadata?.["questAnswers_eligibility-suite"] as any);
+
+    const consistencyFindings = runFullConsistencyAnalysis(
+      { state, eligibilityAnswers },
+      (phase2Responses as Phase2Responses) ?? null,
+      uploadedDocuments
+    );
+
+    return generateCaseNarrative({
+      evidenceAnalysis,
+      consistencyFindings,
+    });
+  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
+
+  // Health status badge for the CaseSummaryCard header
+  const caseHealthStatus = useMemo(() => {
+    const eligibilityAnswers =
+      (state.answers?.["eligibility-suite"] as any) ??
+      (state.metadata?.["questAnswers_eligibility-suite"] as any);
+
+    const consistencyFindings = runFullConsistencyAnalysis(
+      { state, eligibilityAnswers },
+      (phase2Responses as Phase2Responses) ?? null,
+      uploadedDocuments
+    );
+
+    return getCaseHealthStatus({
+      evidenceAnalysis,
+      consistencyFindings,
+    });
+  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
 
   // Extract step_1_2 document_items from roadmap data
   const step1_2DocItems = useMemo(() => {
@@ -620,7 +665,7 @@ export function DashboardView({
 
         {/* 3-column layout — LEFT: risk card | CENTER: chapters | RIGHT: doc strength */}
         <div className="grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)_280px] gap-5 items-start">
-          {/* ── LEFT COLUMN — Dashboard Critical Items + Evidence Gap Analysis ─── */}
+          {/* ── LEFT COLUMN — Critical Items + Evidence Gap Analysis ─── */}
           <div className="hidden xl:flex flex-col gap-3">
             <DashboardCriticalCard
               chapters={(data as any).chapters || (data as any).stages || []}
@@ -647,12 +692,19 @@ export function DashboardView({
             />
           </div>
 
-          {/* ── CENTER — Hero + Chapters + Accordions ─── */}
+          {/* ── CENTER — Case Summary + Hero + Chapters + Accordions ─── */}
           <div className="flex flex-col xl:flex-col lg:flex-row gap-8 xl:gap-6 items-start">
             {/* Main Content Column */}
             <div
               className={`flex flex-col gap-6 order-1 w-full xl:max-w-none ${showSidebar ? "flex-1" : "lg:max-w-4xl"}`}
             >
+              {/* Case Summary — Dynamic Narrative (top-level overview) */}
+              <CaseSummaryCard
+                narrative={caseNarrative}
+                healthStatus={caseHealthStatus}
+                loading={evidenceLoading}
+              />
+
               {/* Journey Complete — highest priority status card */}
               {isJourneyComplete && (
                 <WaitingStateCard

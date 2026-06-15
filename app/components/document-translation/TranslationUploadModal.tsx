@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { msg, E, errorCode } from "@/lib/errors";
 
 interface UploadModalProps {
@@ -18,6 +18,7 @@ export default function TranslationUploadModal({
   requestId,
   onSuccess,
 }: UploadModalProps) {
+  const { showToast } = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [notes, setNotes] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -43,7 +44,7 @@ export default function TranslationUploadModal({
     if (!selected) return;
 
     if (selected.type !== "application/pdf") {
-      toast.error(msg(E.UPLOAD_INVALID_PDF));
+      showToast(msg(E.UPLOAD_INVALID_PDF), "error");
       return;
     }
 
@@ -71,7 +72,7 @@ export default function TranslationUploadModal({
     if (!droppedFile) return;
 
     if (droppedFile.type !== "application/pdf") {
-      toast.error(msg(E.UPLOAD_INVALID_PDF));
+      showToast(msg(E.UPLOAD_INVALID_PDF), "error");
       return;
     }
 
@@ -94,7 +95,7 @@ export default function TranslationUploadModal({
       });
 
       if (!response.ok) {
-        toast.error(`${msg(E.UPLOAD_FAILED)}`);
+        showToast(`${msg(E.UPLOAD_FAILED)}`, "error");
         return;
       }
 
@@ -103,10 +104,10 @@ export default function TranslationUploadModal({
       onClose();
       onSuccess();
 
-      toast.success("Translated document uploaded successfully!");
+      showToast("Translated document uploaded successfully!", "success");
     } catch (error) {
       console.error("Translation upload failed:", error);
-      toast.error(`${msg(E.UPLOAD_NETWORK_ERROR)}`);
+      showToast(`${msg(E.UPLOAD_NETWORK_ERROR)}`, "error");
     } finally {
       setUploading(false);
     }

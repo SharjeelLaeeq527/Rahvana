@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ChevronDown, ChevronUp, Settings, Save } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { Loader } from "@/components/ui/spinner";
 
 const VISA_CATEGORIES: VisaCategory[] = [
@@ -31,6 +31,7 @@ const VISA_CATEGORIES: VisaCategory[] = [
 ];
 
 export function LiveConfigPanel() {
+  const { showToast } = useToast();
   const { config, setConfig, updateScenarioFlags, setVisaCategory } = useDocumentVaultStore();
   const { t } = useLanguage();
   const [isExpanded, setIsExpanded] = useState(true);
@@ -68,7 +69,7 @@ export function LiveConfigPanel() {
     if (config) {
       // Validate required fields
       if (!caseId.trim() || !petitionerName.trim() || !beneficiaryName.trim()) {
-        toast.error(t("documentVaultPage.components.liveConfigPanel.requiredFieldsError"), {
+        showToast(t("documentVaultPage.components.liveConfigPanel.requiredFieldsError"), "error", {
           duration: 3000,
         });
         return;
@@ -102,26 +103,10 @@ export function LiveConfigPanel() {
         .toUpperCase()
         .substring(0, 30);
 
-      toast.success(
-        <div className="space-y-1">
-          <p className="font-bold text-sm">
-            {t("documentVaultPage.components.liveConfigPanel.saveSuccess")}
-          </p>
-          <p className="text-xs opacity-90">
-            {t("documentVaultPage.components.liveConfigPanel.saveSuccessDesc")}
-          </p>
-          <code className="text-xs block bg-green-800 bg-opacity-20 p-1 rounded mt-1">
-            {normalizedCaseId}_PETITIONER_{normalizedName}
-            _PASSPORT_2024-12-24_v1.pdf
-          </code>
-        </div>,
-        {
-          duration: 6000,
-          style: {
-            background: "#10b981",
-            color: "white",
-          },
-        }
+      showToast(
+        `${t("documentVaultPage.components.liveConfigPanel.saveSuccess")}\n${t("documentVaultPage.components.liveConfigPanel.saveSuccessDesc")}`,
+        "success",
+        { duration: 6000 }
       );
 
       setIsSaving(false);
