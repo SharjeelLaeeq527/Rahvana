@@ -2,7 +2,7 @@
 
 import React from "react";
 import { X, ExternalLink } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { MEDICAL_EXAM_DATA } from "../MedicalExamData";
 import Link from "next/link";
 import { E, msg } from "@/lib/errors";
@@ -30,6 +30,7 @@ interface MedicalExamToolProps {
 }
 
 export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({ actions, medState, guard }) => {
+  const { showToast } = useToast();
   const {
     medSaved,
     setMedSaved,
@@ -296,7 +297,7 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({ actions, medSt
 
                       if (Object.keys(saveErrors).length > 0) {
                         setMedErrors(saveErrors);
-                        toast.error(msg(E.JOURNEY_MEDICAL_FIX_ERRORS));
+                        showToast(msg(E.JOURNEY_MEDICAL_FIX_ERRORS), "error");
                         return;
                       }
                       setIsSaving(true);
@@ -309,7 +310,7 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({ actions, medSt
                           med_clinic: medClinic,
                         });
                         setIsMedWizardOpen(false);
-                        toast.success("Medical appointment saved!");
+                        showToast("Medical appointment saved!", "success");
                       } finally {
                         setIsSaving(false);
                       }

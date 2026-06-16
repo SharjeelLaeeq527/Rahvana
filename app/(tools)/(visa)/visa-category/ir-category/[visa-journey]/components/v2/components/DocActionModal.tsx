@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 interface DocActionModalProps {
   isOpen: boolean;
@@ -46,6 +46,8 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
   setDocActionUpgradeFeature,
   sId,
 }) => {
+  const { showToast } = useToast();
+
   if (!docActionModal.doc) return null;
   const { doc, title, subtitle, onReadGuide, onUpload } = docActionModal;
 
@@ -228,13 +230,15 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
                     if (!canUpload) {
                       setDocActionModal({ ...docActionModal, isOpen: false });
                       if (sId === "step_1_15") {
-                        toast.info(
+                        showToast(
                           "Registering your receipt manually is included, but uploading the notice for automated tracking requires Premium.",
+                          "info",
                           { duration: 6000 }
                         );
                       } else if (sId === "step_1_17") {
-                        toast.info(
+                        showToast(
                           "Saving approval details manually is included, but uploading the notice for permanent vault storage requires Premium.",
+                          "info",
                           { duration: 6000 }
                         );
                       }

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Search, X, CheckCircle2, Upload, Lock } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { POLICE_CLEARANCE_DATA } from "../PoliceClearanceData";
 import { usePlan } from "@/app/context/PlanContext";
 import { E, msg } from "@/lib/errors";
@@ -45,6 +45,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
   uploadedDocuments,
   guard,
 }) => {
+  const { showToast } = useToast();
   const {
     pccSaved,
     setPccSaved,
@@ -190,19 +191,19 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
 
             if (receiptErr || trackErr) {
               setErrors({ receipt: receiptErr, track: trackErr });
-              toast.error(msg(E.PCC_FIELD_FORMAT_INVALID));
+              showToast(msg(E.PCC_FIELD_FORMAT_INVALID), "error");
               return;
             }
 
             if (!pccData.date) {
-              toast.error(msg(E.POLICE_STEP1_INCOMPLETE));
+              showToast(msg(E.POLICE_STEP1_INCOMPLETE), "error");
               return;
             }
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             if (new Date(pccData.date) > today) {
-              toast.error(msg(E.POLICE_APPLICATION_DATE_FUTURE));
+              showToast(msg(E.POLICE_APPLICATION_DATE_FUTURE), "error");
               return;
             }
 
@@ -215,7 +216,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
                 pcc_track: pccData.track,
                 pcc_date: pccData.date,
               });
-              toast.success(msg(E.PCC_TRACKING_SAVED));
+              showToast(msg(E.PCC_TRACKING_SAVED), "success");
             } finally {
               setIsSaving(false);
             }
@@ -240,7 +241,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
               try {
                 setPccReceived(true);
                 await actions.updateMetadata({ pcc_received: "true" });
-                toast.success(msg(E.PCC_MARKED_RECEIVED));
+                showToast(msg(E.PCC_MARKED_RECEIVED), "success");
               } finally {
                 setIsSaving(false);
               }
@@ -274,8 +275,8 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
                     setActiveUploadId("pcc_upload");
                     setActiveUploadType("doc");
                     openUploadModal("police-certificate-pakistan");
-                    } else {
-                    toast.error(msg(E.VAULT_NOT_CONFIGURED));
+                  } else {
+                    showToast(msg(E.VAULT_NOT_CONFIGURED), "error");
                   }
                 }}
                 className="w-full bg-emerald-600/10 text-emerald-700 py-3 rounded-xl font-bold flex items-center justify-center gap-2 border border-emerald-200 transition-all hover:bg-emerald-600/20 active:scale-[0.98]"
@@ -292,7 +293,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
                   setActiveUploadType("doc");
                   openUploadModal("police-certificate-pakistan");
                 } else {
-                  toast.error(msg(E.VAULT_NOT_CONFIGURED));
+                  showToast(msg(E.VAULT_NOT_CONFIGURED), "error");
                 }
               }}
               className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all hover:bg-emerald-700 active:scale-[0.98]"

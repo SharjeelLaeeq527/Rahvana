@@ -25,7 +25,7 @@ import {
   ActionStage,
 } from "../utils/actionPlanGenerator";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider"; 
 import { msg, E, errorCode } from '@/lib/errors';
 
 interface ActionPlanResultsProps {
@@ -248,6 +248,8 @@ export default function ActionPlanResults({
   const [currentStageIdx, setCurrentStageIdx] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
 
+  const { showToast } = useToast();
+
   const { uploadedDocuments, isReloadingDocs } = useDocumentVaultStore();
 
   const data = useMemo(() => {
@@ -357,9 +359,9 @@ export default function ActionPlanResults({
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
-      toast.success("Documents downloaded!");
+      showToast("Documents downloaded!", "success" );
     } catch {
-      toast.error(`${msg(E.VAULT_DOWNLOAD_FAILED)}`);
+      showToast(`${msg(E.VAULT_DOWNLOAD_FAILED)}`, "error");
     } finally {
       setIsDownloading(false);
     }
