@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-import { encrypt } from "@/lib/encryption";
+import { encrypt, decrypt } from "@/lib/encryption";
+import { E, msg } from "@/lib/errors";
 
 export async function GET() {
   try {
@@ -12,7 +13,8 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("portal-wallet GET unauthorized:", userError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { data, error } = await supabase
@@ -30,17 +32,14 @@ export async function GET() {
           id,
           question
         )
-      `,
+      `
       )
       .eq("user_id", user.id)
       .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching credentials:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch portal credentials" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
     }
 
     const response =
@@ -49,8 +48,14 @@ export async function GET() {
         portal_type: cred.portal_type,
 
         username: cred.username,
-        nvc_case_number: cred.nvc_case_number,
-        nvc_invoice_id: cred.nvc_invoice_id,
+        nvc_case_number:
+          cred.nvc_case_number && cred.nvc_case_number.startsWith("gcm:")
+            ? decrypt(cred.nvc_case_number)
+            : cred.nvc_case_number,
+        nvc_invoice_id:
+          cred.nvc_invoice_id && cred.nvc_invoice_id.startsWith("gcm:")
+            ? decrypt(cred.nvc_invoice_id)
+            : cred.nvc_invoice_id,
 
         password: cred.portal_type === "NVC" ? null : "••••••••",
 
@@ -67,10 +72,7 @@ export async function GET() {
     return NextResponse.json({ credentials: response });
   } catch (error) {
     console.error("Unexpected error in GET portal-wallet:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
   }
 }
 
@@ -84,46 +86,46 @@ export async function POST(req: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("portal-wallet POST unauthorized:", userError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const body = await req.json();
 
-    const {
-      portalType,
-      username,
-      password,
-      securityQuestions,
-      nvcCaseNumber,
-      nvcInvoiceId,
-    } = body;
+    const { portalType, username, password, securityQuestions, nvcCaseNumber, nvcInvoiceId } = body;
 
     if (!portalType) {
-      return NextResponse.json(
-        { error: "Portal type required" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Portal type required" }, { status: 400 });
+      return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 400 });
     }
+
+    const { data: existingCred } = await supabase
+      .from("portal_wallet_credentials")
+      .select("encrypted_password")
+      .eq("user_id", user.id)
+      .eq("portal_type", portalType)
+      .single();
 
     if (portalType === "NVC") {
       if (!nvcCaseNumber || !nvcInvoiceId) {
         return NextResponse.json(
           { error: "NVC Case Number and Invoice ID required" },
-          { status: 400 },
+          { status: 400 }
         );
+        return NextResponse.json({ error: msg(E.ADMIN_INVALID_INPUT) }, { status: 400 });
       }
     } else {
-      if (!username || !password) {
-        return NextResponse.json(
-          { error: "Username and password required" },
-          { status: 400 },
-        );
+      // For USCIS/COURIER, username is required. Password is required for ADD, optional for EDIT.
+      if (!username || (!password && !existingCred)) {
+        return NextResponse.json({ error: "Username and password required" }, { status: 400 });
+        return NextResponse.json({ error: msg(E.ADMIN_INVALID_INPUT) }, { status: 400 });
       }
     }
 
-    const encryptedPassword = password ? encrypt(password) : null;
+    const encryptedPassword = password
+      ? encrypt(password)
+      : existingCred?.encrypted_password || null;
     const encryptedCaseNumber = nvcCaseNumber ? encrypt(nvcCaseNumber) : null;
-
     const encryptedInvoiceId = nvcInvoiceId ? encrypt(nvcInvoiceId) : null;
 
     const { data: credential, error } = await supabase
@@ -132,24 +134,20 @@ export async function POST(req: Request) {
         {
           user_id: user.id,
           portal_type: portalType,
-
           username: username || null,
           encrypted_password: encryptedPassword,
-
           nvc_case_number: encryptedCaseNumber,
           nvc_invoice_id: encryptedInvoiceId,
         },
-        { onConflict: "user_id,portal_type" },
+        { onConflict: "user_id,portal_type" }
       )
       .select()
       .single();
 
     if (error) {
       console.error("Error saving credentials:", error);
-      return NextResponse.json(
-        { error: "Failed to save credentials" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to save credentials" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
     }
 
     if (portalType !== "NVC" && securityQuestions?.length) {
@@ -173,15 +171,10 @@ export async function POST(req: Request) {
       }
     }
 
-    return NextResponse.json({
-      success: true,
-      message: "Credentials saved successfully",
-    });
+    return NextResponse.json({ success: true, credentialId: credential.id });
   } catch (error) {
     console.error("Unexpected error in POST portal-wallet:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
   }
 }

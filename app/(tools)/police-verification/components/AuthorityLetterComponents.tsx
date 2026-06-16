@@ -2,8 +2,10 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { motion } from "framer-motion";
 import { X, Eye, Download } from "lucide-react";
+import { E, msg } from "@/lib/errors";
 
 interface AuthorityFormData {
   fullName: string;
@@ -41,6 +43,7 @@ export function AuthorityLetterModal({
   province,
 }: AuthorityLetterModalProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { showToast } = useToast();
 
   const formatCNIC = (value: string) => {
     const cleaned = value.replace(/\D/g, "");
@@ -48,10 +51,7 @@ export function AuthorityLetterModal({
     if (cleaned.length > 5 && cleaned.length <= 12) {
       formatted = `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
     } else if (cleaned.length > 12) {
-      formatted = `${cleaned.slice(0, 5)}-${cleaned.slice(
-        5,
-        12
-      )}-${cleaned.slice(12, 13)}`;
+      formatted = `${cleaned.slice(0, 5)}-${cleaned.slice(5, 12)}-${cleaned.slice(12, 13)}`;
     }
     return formatted;
   };
@@ -61,9 +61,7 @@ export function AuthorityLetterModal({
   };
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     let newValue = value;
@@ -81,8 +79,7 @@ export function AuthorityLetterModal({
   };
 
   const downloadPDF = async () => {
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
     try {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
@@ -99,14 +96,12 @@ export function AuthorityLetterModal({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Authority_Letter_${
-        formData.fullName.replace(/\s+/g, "_") || "unnamed"
-      }.pdf`;
+      a.download = `Authority_Letter_${formData.fullName.replace(/\s+/g, "_") || "unnamed"}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      alert(msg(E.PDF_CONVERTER_FAILED));
     }
   };
 
@@ -122,9 +117,7 @@ export function AuthorityLetterModal({
       >
         <div className="p-6 md:p-8 overflow-y-auto bg-white">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-gray-800">
-              Generate Authority Letter
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-800">Generate Authority Letter</h2>
             <button
               onClick={onClose}
               className="p-2 hover:bg-primary/30 rounded-full transition-colors bg-primary/10"
@@ -134,9 +127,8 @@ export function AuthorityLetterModal({
           </div>
 
           <div className="pb-4">
-            Note: The authority letter must be stamped by the relevant Embassy,
-            otherwise it should be attested by two respectable persons who are
-            known to the applicant.
+            Note: The authority letter must be stamped by the relevant Embassy, otherwise it should
+            be attested by two respectable persons who are known to the applicant.
           </div>
 
           <form className="space-y-6 text-left">
@@ -147,9 +139,7 @@ export function AuthorityLetterModal({
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Full Name
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Full Name</label>
                   <input
                     type="text"
                     name="fullName"
@@ -159,9 +149,7 @@ export function AuthorityLetterModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    CNIC
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">CNIC</label>
                   <input
                     type="text"
                     name="cnic"
@@ -175,9 +163,7 @@ export function AuthorityLetterModal({
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Relation Type
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Relation Type</label>
                   <select
                     name="relationType"
                     value={formData.relationType}
@@ -204,9 +190,7 @@ export function AuthorityLetterModal({
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Passport No
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Passport No</label>
                   <input
                     type="text"
                     name="passportNo"
@@ -216,9 +200,7 @@ export function AuthorityLetterModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Address Abroad
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Address Abroad</label>
                   <input
                     type="text"
                     name="abroadAddress"
@@ -231,9 +213,7 @@ export function AuthorityLetterModal({
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Stay Duration From
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Stay Duration From</label>
                   <input
                     type="date"
                     name="stayFrom"
@@ -243,9 +223,7 @@ export function AuthorityLetterModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Stay Duration To
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Stay Duration To</label>
                   <input
                     type="date"
                     name="stayTo"
@@ -264,9 +242,7 @@ export function AuthorityLetterModal({
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Full Name
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Full Name</label>
                   <input
                     type="text"
                     name="authFullName"
@@ -276,9 +252,7 @@ export function AuthorityLetterModal({
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    CNIC
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">CNIC</label>
                   <input
                     type="text"
                     name="authCnic"
@@ -292,9 +266,7 @@ export function AuthorityLetterModal({
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-600">
-                    Relation Type
-                  </label>
+                  <label className="text-sm font-semibold text-gray-600">Relation Type</label>
                   <select
                     name="authRelationType"
                     value={formData.authRelationType}
@@ -402,8 +374,7 @@ export function AuthorityLetterPreviewModal({
   province: string;
 }) {
   const downloadPDF = async () => {
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
     try {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
@@ -420,14 +391,12 @@ export function AuthorityLetterPreviewModal({
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `Authority_Letter_${
-        formData.fullName.replace(/\s+/g, "_") || "unnamed"
-      }.pdf`;
+      a.download = `Authority_Letter_${formData.fullName.replace(/\s+/g, "_") || "unnamed"}.pdf`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
       console.error("PDF generation failed:", error);
-      alert("Failed to generate PDF. Please try again.");
+      alert(msg(E.PDF_CONVERTER_FAILED));
     }
   };
 
@@ -451,10 +420,7 @@ export function AuthorityLetterPreviewModal({
               <Download size={16} /> Download
             </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-gray-100 rounded-full"
-          >
+          <button onClick={onClose} className="p-2 hover:bg-gray-100 rounded-full">
             <X size={24} className="text-gray-500" />
           </button>
         </div>
@@ -477,13 +443,8 @@ export function AuthorityLetterContent({
   province: string;
 }) {
   return (
-    <div
-      className="space-y-8 text-black"
-      style={{ fontSize: "12pt", lineHeight: "1.8" }}
-    >
-      <div className="text-right italic underline text-sm">
-        Specimen Authority Letter
-      </div>
+    <div className="space-y-8 text-black" style={{ fontSize: "12pt", lineHeight: "1.8" }}>
+      <div className="text-right italic underline text-sm">Specimen Authority Letter</div>
 
       <div className="text-center font-bold text-xl underline uppercase tracking-wider">
         Authority Letter
@@ -494,16 +455,13 @@ export function AuthorityLetterContent({
           I, Mr./Mrs. <b>{formData.fullName || "________________________"}</b>
         </div>
         <div>
-          {formData.relationType},{" "}
-          <b>{formData.relationName || "________________________"}</b>
+          {formData.relationType}, <b>{formData.relationName || "________________________"}</b>
         </div>
         <div>
           CNIC No. <b>{formData.cnic || "________________________"}</b>
         </div>
 
-        <div className="">
-          Hereby authorized my real {formData.authRelationship || "relative"}
-        </div>
+        <div className="">Hereby authorized my real {formData.authRelationship || "relative"}</div>
 
         <div>
           Mr./Mrs. <b>{formData.authFullName || "________________________"}</b>
@@ -516,14 +474,12 @@ export function AuthorityLetterContent({
           CNIC No. <b>{formData.authCnic || "________________________"}</b>
         </div>
         <div>
-          Resident of{" "}
-          <b>{formData.authAddress || "________________________"}</b>
+          Resident of <b>{formData.authAddress || "________________________"}</b>
         </div>
 
         <div className="">
-          to process and signed my behalf and collect my Police Clearance
-          Certificate from SSP Office,{" "}
-          {formData.officeLocation || province || "Islamabad"}.
+          to process and signed my behalf and collect my Police Clearance Certificate from SSP
+          Office, {formData.officeLocation || province || "Islamabad"}.
         </div>
       </div>
 
@@ -533,16 +489,13 @@ export function AuthorityLetterContent({
           Name: <b>{formData.fullName || "________________________"}</b>
         </div>
         <div>
-          Fathers Name{" "}
-          <b>{formData.relationName || "________________________"}</b>
+          Fathers Name <b>{formData.relationName || "________________________"}</b>
         </div>
         <div>
-          Passport No.{" "}
-          <b>{formData.passportNo || "________________________"}</b>
+          Passport No. <b>{formData.passportNo || "________________________"}</b>
         </div>
         <div>
-          Address in Abroad{" "}
-          <b>{formData.abroadAddress || "________________________"}</b>
+          Address in Abroad <b>{formData.abroadAddress || "________________________"}</b>
         </div>
         <div>
           Stay Duration:{" "}

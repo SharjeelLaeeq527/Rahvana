@@ -20,7 +20,7 @@ export default function CountrySelectionModal({
   isLoading = false,
   noDataMessage,
 }: CountrySelectionModalProps) {
-  const [selectedCountry, setSelectedCountry] = useState<string>("");
+  const [selectedCountry, setSelectedCountry] = useState<string>("United States");
 
   if (!isOpen) return null;
 
@@ -46,8 +46,7 @@ export default function CountrySelectionModal({
             </h3>
           </div>
           <p className="text-sm text-muted-foreground">
-            Choose the country for which you want to prepare your visa
-            interview.
+            Choose the country for which you want to prepare your visa interview.
           </p>
         </div>
 
@@ -81,9 +80,7 @@ export default function CountrySelectionModal({
             <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 rounded-lg p-4 flex gap-3">
               <AlertCircle className="w-5 h-5 text-amber-600 dark:text-amber-400 shrink-0 mt-0.5" />
               <div>
-                <p className="text-sm text-amber-900 dark:text-amber-200">
-                  {noDataMessage}
-                </p>
+                <p className="text-sm text-amber-900 dark:text-amber-200">{noDataMessage}</p>
               </div>
             </div>
           )}

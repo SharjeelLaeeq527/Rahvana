@@ -5,6 +5,7 @@ import { AlertCircle } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import dynamic from "next/dynamic";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 // Dynamically import components that use browser APIs - disable SSR
 const SignatureUploader = dynamic(
@@ -16,7 +17,7 @@ const SignatureUploader = dynamic(
         <Loader size="md" />
       </div>
     ),
-  },
+  }
 );
 const SignaturePreview = dynamic(
   () => import("@/app/components/pdf-editor/signature/SignaturePreview"),
@@ -27,7 +28,7 @@ const SignaturePreview = dynamic(
         <Loader size="md" />
       </div>
     ),
-  },
+  }
 );
 
 // Dynamic import to avoid SSR issues with browser-only APIs
@@ -99,10 +100,7 @@ export default function SignatureRemoverPage() {
   const handleDownload = () => {
     if (processedImage && imageProcessorModule) {
       const timestamp = new Date().getTime();
-      imageProcessorModule.downloadImage(
-        processedImage,
-        `signature-transparent-${timestamp}.png`,
-      );
+      imageProcessorModule.downloadImage(processedImage, `signature-transparent-${timestamp}.png`);
     }
   };
 
@@ -114,7 +112,7 @@ export default function SignatureRemoverPage() {
 
   return (
     <div className="bg-white">
-      <div className="site-main-px site-main-py">
+      <div className="site-main-px site-main-py mt-[55px]">
         <header className="text-center mb-12">
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-3">
             {t("signatureProcessing.title")}
@@ -144,12 +142,8 @@ export default function SignatureRemoverPage() {
               },
             ].map((item, idx) => (
               <div key={idx} className="border-l-2 border-slate-300 pl-4">
-                <h3 className="font-medium text-slate-900 mb-1 text-sm">
-                  {item.title}
-                </h3>
-                <p className="text-slate-600 text-xs sm:text-sm">
-                  {item.description}
-                </p>
+                <h3 className="font-medium text-slate-900 mb-1 text-sm">{item.title}</h3>
+                <p className="text-slate-600 text-xs sm:text-sm">{item.description}</p>
               </div>
             ))}
           </div>
@@ -170,19 +164,18 @@ export default function SignatureRemoverPage() {
         {/* Main Content */}
         <div className="max-w-3xl mx-auto">
           {!originalImage && !isProcessing && (
-            <SignatureUploader
-              onFileSelect={handleFileSelect}
-              disabled={isProcessing}
-            />
+            <SignatureUploader onFileSelect={handleFileSelect} disabled={isProcessing} />
           )}
 
           {processedImage && originalImage && !isProcessing && (
-            <SignaturePreview
-              originalImage={originalImage}
-              processedImage={processedImage}
-              onDownload={handleDownload}
-              onReset={handleReset}
-            />
+            <ResultGate feature="snap_sign">
+              <SignaturePreview
+                originalImage={originalImage}
+                processedImage={processedImage}
+                onDownload={handleDownload}
+                onReset={handleReset}
+              />
+            </ResultGate>
           )}
         </div>
       </div>

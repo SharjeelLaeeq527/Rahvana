@@ -177,9 +177,7 @@ export default function ContextPanel() {
                   <div className="shrink-0 w-6 h-6 bg-primary/10 text-primary rounded-full flex items-center justify-center text-xs font-bold mt-0.5">
                     {index + 1}
                   </div>
-                  <p className="text-sm text-slate-700 leading-relaxed">
-                    {tip}
-                  </p>
+                  <p className="text-sm text-slate-700 leading-relaxed">{tip}</p>
                 </div>
               ))
             ) : (
@@ -199,9 +197,7 @@ export default function ContextPanel() {
                   className="flex gap-3 p-3 rounded-xl bg-rose-50 border border-rose-100/50"
                 >
                   <AlertTriangle className="shrink-0 w-5 h-5 mt-0.5 text-rose-500" />
-                  <p className="text-sm text-slate-800 leading-relaxed font-medium">
-                    {pitfall}
-                  </p>
+                  <p className="text-sm text-slate-800 leading-relaxed font-medium">{pitfall}</p>
                 </div>
               ))
             ) : (
@@ -240,9 +236,7 @@ export default function ContextPanel() {
         {/* Fee Structure Section */}
         <div className="mt-8 pb-4 border-t border-slate-200 pt-8">
           <div className="mb-6">
-            <h2 className="text-xl font-bold text-slate-900 mb-2 tracking-tight">
-              Fee Structure
-            </h2>
+            <h2 className="text-xl font-bold text-slate-900 mb-2 tracking-tight">Fee Structure</h2>
           </div>
 
           <div className="mb-8">

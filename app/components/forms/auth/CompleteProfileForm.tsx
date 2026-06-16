@@ -4,16 +4,12 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
+import { E, msg } from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
 import { MasterProfile } from "@/types/profile";
 import { ChevronRight, ChevronLeft, Save } from "lucide-react";
 // import { Loader } from "@/components/ui/spinner";
-import {
-  FormField,
-  FormSelect,
-  FormSection,
-  FormCheckbox,
-} from "@/app/(main)/profile/form-field";
+import { FormField, FormSelect, FormSection, FormCheckbox } from "@/app/(main)/profile/form-field";
 import { mapProfileToGenericForm } from "@/lib/autoFill/mapper";
 
 export default function CompleteProfileForm() {
@@ -131,7 +127,7 @@ export default function CompleteProfileForm() {
 
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
   // Auto-fill profile data
@@ -192,7 +188,7 @@ export default function CompleteProfileForm() {
 
   const handleChange = <T extends keyof MasterProfile>(
     field: T,
-    value: MasterProfile[T] | string,
+    value: MasterProfile[T] | string
   ) => {
     setFormData((prev) => ({ ...prev, [field]: value as MasterProfile[T] }));
   };
@@ -200,7 +196,7 @@ export default function CompleteProfileForm() {
   const handleNestedChange = <T extends keyof MasterProfile>(
     parent: T,
     field: string,
-    value: unknown,
+    value: unknown
   ) => {
     setFormData((prev) => ({
       ...prev,
@@ -341,10 +337,7 @@ export default function CompleteProfileForm() {
             </div>
           </FormSection>
 
-          <FormSection
-            title="Passport Details"
-            description="As shown on your travel document"
-          >
+          <FormSection title="Passport Details" description="As shown on your travel document">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 label="Passport Number"
@@ -401,21 +394,14 @@ export default function CompleteProfileForm() {
               placeholder="+1 (555) 000-0000"
               required
             />
-            <FormField
-              label="Email"
-              value={formData.email || ""}
-              onChange={() => {}}
-              disabled
-            />
+            <FormField label="Email" value={formData.email || ""} onChange={() => {}} disabled />
           </div>
 
           <FormSection title="Current Physical Address">
             <FormField
               label="Street Address"
               value={formData.currentAddress?.street || ""}
-              onChange={(v) =>
-                handleNestedChange("currentAddress", "street", v)
-              }
+              onChange={(v) => handleNestedChange("currentAddress", "street", v)}
               placeholder="123 Main Street, Apt 4B"
               required
             />
@@ -424,18 +410,14 @@ export default function CompleteProfileForm() {
               <FormField
                 label="City"
                 value={formData.currentAddress?.city || ""}
-                onChange={(v) =>
-                  handleNestedChange("currentAddress", "city", v)
-                }
+                onChange={(v) => handleNestedChange("currentAddress", "city", v)}
                 placeholder="New York"
                 required
               />
               <FormField
                 label="State / Province"
                 value={formData.currentAddress?.state || ""}
-                onChange={(v) =>
-                  handleNestedChange("currentAddress", "state", v)
-                }
+                onChange={(v) => handleNestedChange("currentAddress", "state", v)}
                 placeholder="NY"
               />
             </div>
@@ -444,17 +426,13 @@ export default function CompleteProfileForm() {
               <FormField
                 label="Zip / Postal Code"
                 value={formData.currentAddress?.zipCode || ""}
-                onChange={(v) =>
-                  handleNestedChange("currentAddress", "zipCode", v)
-                }
+                onChange={(v) => handleNestedChange("currentAddress", "zipCode", v)}
                 placeholder="10001"
               />
               <FormField
                 label="Country"
                 value={formData.currentAddress?.country || ""}
-                onChange={(v) =>
-                  handleNestedChange("currentAddress", "country", v)
-                }
+                onChange={(v) => handleNestedChange("currentAddress", "country", v)}
                 placeholder="United States"
                 required
               />
@@ -478,9 +456,7 @@ export default function CompleteProfileForm() {
                 setFormData((prev) => ({
                   ...prev,
                   sameAsCurrentAddress: checked,
-                  mailingAddress: checked
-                    ? prev.currentAddress
-                    : prev.mailingAddress,
+                  mailingAddress: checked ? prev.currentAddress : prev.mailingAddress,
                 }));
               }}
             />
@@ -490,26 +466,20 @@ export default function CompleteProfileForm() {
                 <FormField
                   label="Street Address"
                   value={formData.mailingAddress?.street || ""}
-                  onChange={(v) =>
-                    handleNestedChange("mailingAddress", "street", v)
-                  }
+                  onChange={(v) => handleNestedChange("mailingAddress", "street", v)}
                   placeholder="PO Box 123"
                 />
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <FormField
                     label="City"
                     value={formData.mailingAddress?.city || ""}
-                    onChange={(v) =>
-                      handleNestedChange("mailingAddress", "city", v)
-                    }
+                    onChange={(v) => handleNestedChange("mailingAddress", "city", v)}
                     placeholder="New York"
                   />
                   <FormField
                     label="State / Province"
                     value={formData.mailingAddress?.state || ""}
-                    onChange={(v) =>
-                      handleNestedChange("mailingAddress", "state", v)
-                    }
+                    onChange={(v) => handleNestedChange("mailingAddress", "state", v)}
                     placeholder="NY"
                   />
                 </div>
@@ -517,17 +487,13 @@ export default function CompleteProfileForm() {
                   <FormField
                     label="Zip / Postal Code"
                     value={formData.mailingAddress?.zipCode || ""}
-                    onChange={(v) =>
-                      handleNestedChange("mailingAddress", "zipCode", v)
-                    }
+                    onChange={(v) => handleNestedChange("mailingAddress", "zipCode", v)}
                     placeholder="10001"
                   />
                   <FormField
                     label="Country"
                     value={formData.mailingAddress?.country || ""}
-                    onChange={(v) =>
-                      handleNestedChange("mailingAddress", "country", v)
-                    }
+                    onChange={(v) => handleNestedChange("mailingAddress", "country", v)}
                     placeholder="United States"
                   />
                 </div>
@@ -544,8 +510,8 @@ export default function CompleteProfileForm() {
         <div className="space-y-5">
           <div className="bg-slate-50 border border-slate-200 rounded-md px-3 py-2.5">
             <p className="text-xs text-slate-600">
-              This information helps us auto-fill spousal visa forms (I-130).
-              Skip if not applicable.
+              This information helps us auto-fill spousal visa forms (I-130). Skip if not
+              applicable.
             </p>
           </div>
 
@@ -563,9 +529,7 @@ export default function CompleteProfileForm() {
             <FormField
               label="Marriage Date"
               value={formData.relationship?.marriageDate || ""}
-              onChange={(v) =>
-                handleNestedChange("relationship", "marriageDate", v)
-              }
+              onChange={(v) => handleNestedChange("relationship", "marriageDate", v)}
               type="date"
             />
           </div>
@@ -574,22 +538,14 @@ export default function CompleteProfileForm() {
             <FormField
               label="Relationship Start Date"
               value={formData.relationship?.startDate || ""}
-              onChange={(v) =>
-                handleNestedChange("relationship", "startDate", v)
-              }
+              onChange={(v) => handleNestedChange("relationship", "startDate", v)}
               type="date"
             />
             <FormField
               label="Number of In-Person Visits"
-              value={
-                formData.relationship?.numberOfInPersonVisits?.toString() || ""
-              }
+              value={formData.relationship?.numberOfInPersonVisits?.toString() || ""}
               onChange={(v) =>
-                handleNestedChange(
-                  "relationship",
-                  "numberOfInPersonVisits",
-                  v ? Number(v) : null,
-                )
+                handleNestedChange("relationship", "numberOfInPersonVisits", v ? Number(v) : null)
               }
               type="number"
               placeholder="0"
@@ -599,9 +555,7 @@ export default function CompleteProfileForm() {
           <FormField
             label="How did you meet?"
             value={formData.relationship?.howDidYouMeet || ""}
-            onChange={(v) =>
-              handleNestedChange("relationship", "howDidYouMeet", v)
-            }
+            onChange={(v) => handleNestedChange("relationship", "howDidYouMeet", v)}
             placeholder="e.g. at university, online, through family..."
           />
         </div>
@@ -750,9 +704,7 @@ export default function CompleteProfileForm() {
                   id="fatherDeceased"
                   label="Person is deceased"
                   checked={formData.father?.isDeceased || false}
-                  onCheckedChange={(v) =>
-                    handleNestedChange("father", "isDeceased", v)
-                  }
+                  onCheckedChange={(v) => handleNestedChange("father", "isDeceased", v)}
                 />
               </div>
             </div>
@@ -785,17 +737,13 @@ export default function CompleteProfileForm() {
                 <FormField
                   label="Current City of Residence"
                   value={formData.father?.cityOfResidence || ""}
-                  onChange={(v) =>
-                    handleNestedChange("father", "cityOfResidence", v)
-                  }
+                  onChange={(v) => handleNestedChange("father", "cityOfResidence", v)}
                   placeholder="City"
                 />
                 <FormField
                   label="Current Country of Residence"
                   value={formData.father?.countryOfResidence || ""}
-                  onChange={(v) =>
-                    handleNestedChange("father", "countryOfResidence", v)
-                  }
+                  onChange={(v) => handleNestedChange("father", "countryOfResidence", v)}
                   placeholder="Country"
                 />
               </div>
@@ -850,9 +798,7 @@ export default function CompleteProfileForm() {
                   id="motherDeceased"
                   label="Person is deceased"
                   checked={formData.mother?.isDeceased || false}
-                  onCheckedChange={(v) =>
-                    handleNestedChange("mother", "isDeceased", v)
-                  }
+                  onCheckedChange={(v) => handleNestedChange("mother", "isDeceased", v)}
                 />
               </div>
             </div>
@@ -885,17 +831,13 @@ export default function CompleteProfileForm() {
                 <FormField
                   label="Current City of Residence"
                   value={formData.mother?.cityOfResidence || ""}
-                  onChange={(v) =>
-                    handleNestedChange("mother", "cityOfResidence", v)
-                  }
+                  onChange={(v) => handleNestedChange("mother", "cityOfResidence", v)}
                   placeholder="City"
                 />
                 <FormField
                   label="Current Country of Residence"
                   value={formData.mother?.countryOfResidence || ""}
-                  onChange={(v) =>
-                    handleNestedChange("mother", "countryOfResidence", v)
-                  }
+                  onChange={(v) => handleNestedChange("mother", "countryOfResidence", v)}
                   placeholder="Country"
                 />
               </div>
@@ -911,8 +853,8 @@ export default function CompleteProfileForm() {
         <div className="space-y-5">
           <div className="bg-slate-50 border border-slate-200 rounded-md px-3 py-2.5 mb-4">
             <p className="text-xs text-slate-600">
-              This information is optional but helps us auto-fill visa forms.
-              Skip if you&apos;re not currently applying for a visa.
+              This information is optional but helps us auto-fill visa forms. Skip if you&apos;re
+              not currently applying for a visa.
             </p>
           </div>
 
@@ -924,13 +866,11 @@ export default function CompleteProfileForm() {
               options={[
                 {
                   value: "IR-1",
-                  label:
-                    "IR-1 - Immediate Relative (Spouse of US Citizen, married 2+ years)",
+                  label: "IR-1 - Immediate Relative (Spouse of US Citizen, married 2+ years)",
                 },
                 {
                   value: "CR-1",
-                  label:
-                    "CR-1 - Conditional Resident (Spouse of US Citizen, married <2 years)",
+                  label: "CR-1 - Conditional Resident (Spouse of US Citizen, married <2 years)",
                 },
                 { value: "K-1", label: "K-1 - Fiancé(e) Visa" },
                 { value: "IR-5", label: "IR-5 - Parent of US Citizen" },
@@ -990,9 +930,7 @@ export default function CompleteProfileForm() {
               <FormField
                 label="Sponsor's Date of Birth"
                 value={formData.sponsor?.dateOfBirth || ""}
-                onChange={(v) =>
-                  handleNestedChange("sponsor", "dateOfBirth", v)
-                }
+                onChange={(v) => handleNestedChange("sponsor", "dateOfBirth", v)}
                 type="date"
               />
               <FormField
@@ -1047,17 +985,13 @@ export default function CompleteProfileForm() {
               <FormField
                 label="Beneficiary's Date of Birth"
                 value={formData.beneficiary?.dateOfBirth || ""}
-                onChange={(v) =>
-                  handleNestedChange("beneficiary", "dateOfBirth", v)
-                }
+                onChange={(v) => handleNestedChange("beneficiary", "dateOfBirth", v)}
                 type="date"
               />
               <FormField
                 label="Beneficiary's Country of Residence"
                 value={formData.beneficiary?.countryOfResidence || ""}
-                onChange={(v) =>
-                  handleNestedChange("beneficiary", "countryOfResidence", v)
-                }
+                onChange={(v) => handleNestedChange("beneficiary", "countryOfResidence", v)}
                 placeholder="Country"
               />
             </div>
@@ -1095,37 +1029,21 @@ export default function CompleteProfileForm() {
                     label="Certificate Number"
                     value={formData.naturalizationInfo?.certificateNumber || ""}
                     onChange={(v) =>
-                      handleNestedChange(
-                        "naturalizationInfo",
-                        "certificateNumber",
-                        v,
-                      )
+                      handleNestedChange("naturalizationInfo", "certificateNumber", v)
                     }
                     placeholder="Naturalization Certificate #"
                   />
                   <FormField
                     label="Date of Issuance"
                     value={formData.naturalizationInfo?.dateOfIssuance || ""}
-                    onChange={(v) =>
-                      handleNestedChange(
-                        "naturalizationInfo",
-                        "dateOfIssuance",
-                        v,
-                      )
-                    }
+                    onChange={(v) => handleNestedChange("naturalizationInfo", "dateOfIssuance", v)}
                     type="date"
                   />
                 </div>
                 <FormField
                   label="Place of Issuance"
                   value={formData.naturalizationInfo?.placeOfIssuance || ""}
-                  onChange={(v) =>
-                    handleNestedChange(
-                      "naturalizationInfo",
-                      "placeOfIssuance",
-                      v,
-                    )
-                  }
+                  onChange={(v) => handleNestedChange("naturalizationInfo", "placeOfIssuance", v)}
                   placeholder="City, State"
                 />
               </div>
@@ -1137,44 +1055,26 @@ export default function CompleteProfileForm() {
               <FormCheckbox
                 id="prevVisa"
                 label="I have applied for a US visa before"
-                checked={
-                  formData.immigrationHistory?.previousVisaApplications || false
-                }
+                checked={formData.immigrationHistory?.previousVisaApplications || false}
                 onCheckedChange={(checked) =>
-                  handleNestedChange(
-                    "immigrationHistory",
-                    "previousVisaApplications",
-                    checked,
-                  )
+                  handleNestedChange("immigrationHistory", "previousVisaApplications", checked)
                 }
               />
               <FormCheckbox
                 id="prevDenial"
                 label="I have been denied a visa before"
-                checked={
-                  formData.immigrationHistory?.previousVisaDenial || false
-                }
+                checked={formData.immigrationHistory?.previousVisaDenial || false}
                 onCheckedChange={(checked) =>
-                  handleNestedChange(
-                    "immigrationHistory",
-                    "previousVisaDenial",
-                    checked,
-                  )
+                  handleNestedChange("immigrationHistory", "previousVisaDenial", checked)
                 }
                 variant="warning"
               />
               <FormCheckbox
                 id="overstay"
                 label="I have overstayed a visa or violated terms"
-                checked={
-                  formData.immigrationHistory?.overstayOrViolation || false
-                }
+                checked={formData.immigrationHistory?.overstayOrViolation || false}
                 onCheckedChange={(checked) =>
-                  handleNestedChange(
-                    "immigrationHistory",
-                    "overstayOrViolation",
-                    checked,
-                  )
+                  handleNestedChange("immigrationHistory", "overstayOrViolation", checked)
                 }
                 variant="warning"
               />
@@ -1183,26 +1083,16 @@ export default function CompleteProfileForm() {
                 label="I have a criminal record (anywhere in world)"
                 checked={formData.immigrationHistory?.criminalRecord || false}
                 onCheckedChange={(checked) =>
-                  handleNestedChange(
-                    "immigrationHistory",
-                    "criminalRecord",
-                    checked,
-                  )
+                  handleNestedChange("immigrationHistory", "criminalRecord", checked)
                 }
                 variant="warning"
               />
               <FormCheckbox
                 id="military"
                 label="I have served in the military"
-                checked={
-                  formData.immigrationHistory?.priorMilitaryService || false
-                }
+                checked={formData.immigrationHistory?.priorMilitaryService || false}
                 onCheckedChange={(checked) =>
-                  handleNestedChange(
-                    "immigrationHistory",
-                    "priorMilitaryService",
-                    checked,
-                  )
+                  handleNestedChange("immigrationHistory", "priorMilitaryService", checked)
                 }
               />
             </div>
@@ -1218,25 +1108,15 @@ export default function CompleteProfileForm() {
                 label="Proof of living together (Lease/Deed)"
                 checked={formData.relationship?.cohabitationProof || false}
                 onCheckedChange={(checked) =>
-                  handleNestedChange(
-                    "relationship",
-                    "cohabitationProof",
-                    checked,
-                  )
+                  handleNestedChange("relationship", "cohabitationProof", checked)
                 }
               />
               <FormCheckbox
                 id="financial"
                 label="Joint Financial Accounts"
-                checked={
-                  formData.relationship?.sharedFinancialAccounts || false
-                }
+                checked={formData.relationship?.sharedFinancialAccounts || false}
                 onCheckedChange={(checked) =>
-                  handleNestedChange(
-                    "relationship",
-                    "sharedFinancialAccounts",
-                    checked,
-                  )
+                  handleNestedChange("relationship", "sharedFinancialAccounts", checked)
                 }
               />
               <FormCheckbox
@@ -1252,11 +1132,7 @@ export default function CompleteProfileForm() {
                 label="Communication Logs (Chats/Calls)"
                 checked={formData.relationship?.communicationLogs || false}
                 onCheckedChange={(checked) =>
-                  handleNestedChange(
-                    "relationship",
-                    "communicationLogs",
-                    checked,
-                  )
+                  handleNestedChange("relationship", "communicationLogs", checked)
                 }
               />
             </div>
@@ -1280,11 +1156,7 @@ export default function CompleteProfileForm() {
                 label="Birth Certificate"
                 checked={formData.documents?.hasBirthCertificate || false}
                 onCheckedChange={(checked) =>
-                  handleNestedChange(
-                    "documents",
-                    "hasBirthCertificate",
-                    checked,
-                  )
+                  handleNestedChange("documents", "hasBirthCertificate", checked)
                 }
               />
               <FormCheckbox
@@ -1292,11 +1164,7 @@ export default function CompleteProfileForm() {
                 label="Marriage Certificate"
                 checked={formData.documents?.hasMarriageCertificate || false}
                 onCheckedChange={(checked) =>
-                  handleNestedChange(
-                    "documents",
-                    "hasMarriageCertificate",
-                    checked,
-                  )
+                  handleNestedChange("documents", "hasMarriageCertificate", checked)
                 }
               />
               <FormCheckbox
@@ -1304,11 +1172,7 @@ export default function CompleteProfileForm() {
                 label="Police Certificate"
                 checked={formData.documents?.hasPoliceCertificate || false}
                 onCheckedChange={(checked) =>
-                  handleNestedChange(
-                    "documents",
-                    "hasPoliceCertificate",
-                    checked,
-                  )
+                  handleNestedChange("documents", "hasPoliceCertificate", checked)
                 }
               />
               <FormCheckbox
@@ -1316,11 +1180,7 @@ export default function CompleteProfileForm() {
                 label="Tax Returns (Last 3 Years)"
                 checked={formData.financialProfile?.hasTaxReturns || false}
                 onCheckedChange={(checked) =>
-                  handleNestedChange(
-                    "financialProfile",
-                    "hasTaxReturns",
-                    checked,
-                  )
+                  handleNestedChange("financialProfile", "hasTaxReturns", checked)
                 }
               />
               <FormCheckbox
@@ -1346,9 +1206,7 @@ export default function CompleteProfileForm() {
               <FormSelect
                 label="How did you obtain your status?"
                 value={formData.visaEligibility?.statusOrigin || ""}
-                onChange={(v) =>
-                  handleNestedChange("visaEligibility", "statusOrigin", v)
-                }
+                onChange={(v) => handleNestedChange("visaEligibility", "statusOrigin", v)}
                 options={[
                   { value: "BIRTH", label: "By Birth" },
                   { value: "NATURALIZED", label: "Naturalized" },
@@ -1359,9 +1217,7 @@ export default function CompleteProfileForm() {
               <FormSelect
                 label="Intent of Stay"
                 value={formData.visaEligibility?.intent || ""}
-                onChange={(v) =>
-                  handleNestedChange("visaEligibility", "intent", v)
-                }
+                onChange={(v) => handleNestedChange("visaEligibility", "intent", v)}
                 options={[
                   { value: "PERMANENT", label: "Permanent (Immigrant)" },
                   { value: "TEMPORARY", label: "Temporary (Non-Immigrant)" },
@@ -1373,9 +1229,7 @@ export default function CompleteProfileForm() {
               <FormSelect
                 label="Sponsorship Base"
                 value={formData.visaEligibility?.sponsorBase || ""}
-                onChange={(v) =>
-                  handleNestedChange("visaEligibility", "sponsorBase", v)
-                }
+                onChange={(v) => handleNestedChange("visaEligibility", "sponsorBase", v)}
                 options={[
                   { value: "FAMILY", label: "Family-Based" },
                   { value: "EMPLOYMENT", label: "Employment-Based" },
@@ -1387,9 +1241,7 @@ export default function CompleteProfileForm() {
               <FormSelect
                 label="Legal Relationship Status"
                 value={formData.visaEligibility?.legalStatus || ""}
-                onChange={(v) =>
-                  handleNestedChange("visaEligibility", "legalStatus", v)
-                }
+                onChange={(v) => handleNestedChange("visaEligibility", "legalStatus", v)}
                 options={[
                   {
                     value: "MARRIAGE_REGISTERED",
@@ -1409,9 +1261,7 @@ export default function CompleteProfileForm() {
               <FormSelect
                 label="Any history of visa violations?"
                 value={formData.visaEligibility?.violationHistory || ""}
-                onChange={(v) =>
-                  handleNestedChange("visaEligibility", "violationHistory", v)
-                }
+                onChange={(v) => handleNestedChange("visaEligibility", "violationHistory", v)}
                 options={[
                   { value: "NO", label: "No" },
                   { value: "YES", label: "Yes" },
@@ -1440,17 +1290,16 @@ export default function CompleteProfileForm() {
       });
 
       if (!response.ok) {
-        const data = await response.json().catch(() => ({}));
-        throw new Error(data.error || "Failed to save profile");
+        throw new Error(msg(E.PROFILE_SAVE_FAILED));
       }
 
       router.push("/user-dashboard");
     } catch (err) {
       console.error("Error saving profile:", err);
       if (err instanceof Error) {
-        setError(err.message || "Failed to save profile");
+        setError(err.message || msg(E.PROFILE_SAVE_FAILED));
       } else {
-        setError("Failed to save profile");
+        setError(msg(E.PROFILE_SAVE_FAILED));
       }
     } finally {
       setLoading(false);
@@ -1478,13 +1327,9 @@ export default function CompleteProfileForm() {
       {/* Header with step indicator */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 border-b border-slate-100 px-4 sm:px-5 py-3 sm:py-4 bg-slate-50/50">
         <div>
-          <h2 className="text-base font-semibold text-slate-900">
-            {steps[currentStep].title}
-          </h2>
+          <h2 className="text-base font-semibold text-slate-900">{steps[currentStep].title}</h2>
           {steps[currentStep].description && (
-            <p className="text-xs text-slate-500 mt-0.5">
-              {steps[currentStep].description}
-            </p>
+            <p className="text-xs text-slate-500 mt-0.5">{steps[currentStep].description}</p>
           )}
         </div>
         <div className="flex items-center gap-2 text-xs text-slate-500 self-start sm:self-auto">
@@ -1524,11 +1369,7 @@ export default function CompleteProfileForm() {
             Back
           </Button>
 
-          <Button
-            onClick={nextStep}
-            disabled={loading}
-            className="h-9 px-4 text-sm min-w-30"
-          >
+          <Button onClick={nextStep} disabled={loading} className="h-9 px-4 text-sm min-w-30">
             {loading ? (
               "Saving..."
             ) : currentStep === steps.length - 1 ? (

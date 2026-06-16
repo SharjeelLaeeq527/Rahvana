@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { msg, E } from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -9,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
-
 
 export default function SignupPage() {
   const [email, setEmail] = useState("");
@@ -95,13 +95,13 @@ export default function SignupPage() {
 
     // Validation
     if (!email.includes("@") || !email.includes(".")) {
-      return setError("Please enter a valid email address.");
+      return setError(msg(E.AUTH_EMAIL_FORMAT_INVALID));
     }
     if (password.length < 6) {
-      return setError("Password must be at least 6 characters long.");
+      return setError(msg(E.AUTH_PASSWORD_TOO_WEAK));
     }
     if (password !== confirmPassword) {
-      return setError("Passwords do not match.");
+      return setError(msg(E.AUTH_CLIENT_PASSWORD_MISMATCH));
     }
 
     setIsSubmitting(true);
@@ -109,21 +109,25 @@ export default function SignupPage() {
     try {
       const result = await signUp(email, password);
       if (result.error) {
-        if (result.error.message.includes("already exists")) {
-          setError(
-            "An account with this email already exists. Please sign in.",
-          );
-        } else if (result.error.message.includes("password")) {
-          setError("Password is too weak. Please use a stronger password.");
+        const errorCode = String(result.error.code || "");
+
+        if (errorCode === String(E.AUTH_SIGNUP_EMAIL_EXISTS)) {
+          setError(msg(E.AUTH_SIGNUP_EMAIL_EXISTS));
+        } else if (errorCode === String(E.AUTH_PASSWORD_TOO_WEAK)) {
+          setError(msg(E.AUTH_PASSWORD_TOO_WEAK));
+        } else if (errorCode === String(E.AUTH_SIGNUP_DISPOSABLE_EMAIL)) {
+          setError(result.error.message || msg(E.AUTH_SIGNUP_DISPOSABLE_EMAIL, { domain: "" }));
+        } else if (errorCode === String(E.AUTH_EMAIL_FORMAT_INVALID)) {
+          setError(result.error.message || msg(E.AUTH_EMAIL_FORMAT_INVALID));
         } else {
-          setError(result.error.message);
+          setError(result.error.message || msg(E.AUTH_UNEXPECTED_ERROR));
         }
       } else {
         // Email sent successfully
         setEmailSent(true);
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(msg(E.AUTH_UNEXPECTED_ERROR));
     } finally {
       setIsSubmitting(false);
     }
@@ -135,11 +139,11 @@ export default function SignupPage() {
     try {
       const { error: googleError } = await signInWithGoogle();
       if (googleError) {
-        setError("Failed to sign up with Google. Please try again.");
+        setError(msg(E.AUTH_GOOGLE_SIGNUP_FAILED));
         setIsSubmitting(false);
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(msg(E.AUTH_UNEXPECTED_ERROR));
       setIsSubmitting(false);
     }
   };
@@ -175,18 +179,14 @@ export default function SignupPage() {
               </svg>
             </div>
 
-            <h1 className="text-2xl font-bold text-foreground mb-2">
-              Check your email
-            </h1>
-            <p className="text-muted-foreground mb-2">
-              We sent a confirmation link to:
-            </p>
+            <h1 className="text-2xl font-bold text-foreground mb-2">Check your email</h1>
+            <p className="text-muted-foreground mb-2">We sent a confirmation link to:</p>
             <p className="text-primary font-semibold mb-6">{email}</p>
 
             <div className="bg-muted/20 rounded-xl p-4 mb-6">
               <p className="text-sm text-muted-foreground">
-                Click the link in your email to confirm your account. The link
-                will expire in 24 hours.
+                Click the link in your email to confirm your account. The link will expire in 24
+                hours.
               </p>
             </div>
 
@@ -235,9 +235,7 @@ export default function SignupPage() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-foreground">Create Account</h1>
-          <p className="text-muted-foreground mt-2">
-            Get started with Rahvana today
-          </p>
+          <p className="text-muted-foreground mt-2">Get started with Rahvana today</p>
         </div>
 
         {/* Google Sign Up Button */}
@@ -273,9 +271,7 @@ export default function SignupPage() {
             <div className="w-full border-t border-border"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-background text-muted-foreground">
-              or sign up with email
-            </span>
+            <span className="px-4 bg-background text-muted-foreground">or sign up with email</span>
           </div>
         </div>
 
@@ -283,9 +279,7 @@ export default function SignupPage() {
         <Card className="p-6 bg-card shadow-lg border-border rounded-2xl">
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
-                Email Address
-              </label>
+              <label className="block text-sm font-medium text-foreground">Email Address</label>
               <Input
                 type="email"
                 value={email}
@@ -298,9 +292,7 @@ export default function SignupPage() {
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
-                Password
-              </label>
+              <label className="block text-sm font-medium text-foreground">Password</label>
               <div className="relative">
                 <Input
                   type={showPassword ? "text" : "password"}
@@ -317,12 +309,7 @@ export default function SignupPage() {
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showPassword ? (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -337,12 +324,7 @@ export default function SignupPage() {
                       />
                     </svg>
                   ) : (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -361,25 +343,20 @@ export default function SignupPage() {
                       <div
                         key={level}
                         className={`h-1 flex-1 rounded-full transition-colors ${
-                          level <= passwordStrength
-                            ? getStrengthColor()
-                            : "bg-muted"
+                          level <= passwordStrength ? getStrengthColor() : "bg-muted"
                         }`}
                       />
                     ))}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    Password strength:{" "}
-                    <span className="font-medium">{getStrengthText()}</span>
+                    Password strength: <span className="font-medium">{getStrengthText()}</span>
                   </p>
                 </div>
               )}
             </div>
 
             <div className="space-y-2">
-              <label className="block text-sm font-medium text-foreground">
-                Confirm Password
-              </label>
+              <label className="block text-sm font-medium text-foreground">Confirm Password</label>
               <div className="relative">
                 <Input
                   type={showConfirmPassword ? "text" : "password"}
@@ -402,12 +379,7 @@ export default function SignupPage() {
                   className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showConfirmPassword ? (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -422,12 +394,7 @@ export default function SignupPage() {
                       />
                     </svg>
                   ) : (
-                    <svg
-                      className="w-5 h-5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -439,7 +406,7 @@ export default function SignupPage() {
                 </button>
               </div>
               {confirmPassword && password !== confirmPassword && (
-                <p className="text-xs text-red-500">Passwords do not match</p>
+                <p className="text-xs text-red-500">{msg(E.AUTH_CLIENT_PASSWORD_MISMATCH)}</p>
               )}
               {confirmPassword && password === confirmPassword && (
                 <p className="text-xs text-green-500">Passwords match</p>
@@ -469,10 +436,7 @@ export default function SignupPage() {
             {/* Submit Button */}
             <Button
               type="submit"
-              disabled={
-                isSubmitting ||
-                (confirmPassword !== "" && password !== confirmPassword)
-              }
+              disabled={isSubmitting || (confirmPassword !== "" && password !== confirmPassword)}
               className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50"
             >
               {isSubmitting ? "Creating account..." : "Create Account"}
@@ -483,10 +447,7 @@ export default function SignupPage() {
         {/* Sign In Link */}
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}
-          <Link
-            href="/login"
-            className="font-semibold text-primary hover:underline"
-          >
+          <Link href="/login" className="font-semibold text-primary hover:underline">
             Sign in
           </Link>
         </p>
@@ -494,11 +455,11 @@ export default function SignupPage() {
 
       {/* Full-screen Loading Overlay */}
       {isSubmitting && (
-        <Loader 
-          fullScreen 
-          size="xl" 
-          text="Creating Account..." 
-          subText="Setting up your secure workspace" 
+        <Loader
+          fullScreen
+          size="xl"
+          text="Creating Account..."
+          subText="Setting up your secure workspace"
         />
       )}
     </div>

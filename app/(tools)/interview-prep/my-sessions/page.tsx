@@ -1,22 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import {
-  BookOpen,
-  Plus,
-  AlertTriangle,
-  CheckCircle,
-  BarChart3,
-  Heart,
-} from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { E, msg } from "@/lib/errors";
+import { BookOpen, Plus, AlertTriangle, CheckCircle, BarChart3, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/ui/pagination";
 import { Loader } from "@/components/ui/spinner";
 import { ElementType } from "react";
-import ActionMenu from "@/app/components/shared/ActionMenu";
-import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { DataTable, Column } from "@/app/components/shared/table";
-import { FilterPanel, FilterField } from "@/app/components/shared/FilterPanel";
+import { FilterPanel } from "@/app/components/shared/FilterPanel";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 type SessionStatus = "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
 type TimeFilter = "all" | "today" | "week" | "month";
@@ -71,15 +64,8 @@ const formatCreatedDate = (dateString: string): string => {
   });
 };
 
-const CompletionBadge = ({
-  status,
-}: {
-  status: SessionStatus;
-}) => {
-  const statusConfig: Record<
-    SessionStatus,
-    { color: string; icon: ElementType; label: string }
-  > = {
+const CompletionBadge = ({ status }: { status: SessionStatus }) => {
+  const statusConfig: Record<SessionStatus, { color: string; icon: ElementType; label: string }> = {
     COMPLETED: {
       color: "bg-green-100 text-green-800",
       icon: CheckCircle,
@@ -116,16 +102,11 @@ const CompletionBadge = ({
 
 export default function MyInterviewSessions() {
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
-  const [filteredSessions, setFilteredSessions] = useState<SessionWithDetails[]>(
-    []
-  );
+  const [filteredSessions, setFilteredSessions] = useState<SessionWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(
-    null
-  );
-  const [modalOpen, setModalOpen] = useState(false);
-  const [loadingDelete, setLoadingDelete] = useState(false);
+  
+  const { showToast } = useToast();
 
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -148,12 +129,13 @@ export default function MyInterviewSessions() {
         if (response.ok) {
           setSessions(data.sessions);
         } else {
-          setError(data.error || "Failed to fetch sessions");
+          console.error("Failed to fetch user sessions:", data.error ?? data);
+          setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
           setSessions([]);
         }
       } catch (error) {
         console.error("Error fetching user sessions:", error);
-        setError("Failed to load sessions");
+        setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
         setSessions([]);
       } finally {
         setLoading(false);
@@ -174,9 +156,7 @@ export default function MyInterviewSessions() {
 
     // Status filter
     if (selectedStatus !== "all") {
-      filtered = filtered.filter(
-        (s) => getSessionStatus(s) === selectedStatus
-      );
+      filtered = filtered.filter((s) => getSessionStatus(s) === selectedStatus);
     }
 
     // Time filter
@@ -204,50 +184,26 @@ export default function MyInterviewSessions() {
     setCurrentPage(1);
   }, [sessions, selectedCategory, selectedStatus, selectedTime]);
 
-  // open modal when session is selected
+  const hasShownToast = useRef(false);
+
   useEffect(() => {
-    if (selectedSessionId) setModalOpen(true);
-  }, [selectedSessionId]);
+    if (hasShownToast.current) return;
 
-  const handleDelete = async (sessionId: string) => {
-    if (!selectedSessionId) return;
-    setLoadingDelete(true);
+    const params = new URLSearchParams(window.location.search);
+    const message = params.get("message");
 
-    try {
-      const res = await fetch(
-        `/api/interview-prep/sessions/${sessionId}/delete`,
-        {
-          method: "DELETE",
-        }
+    if (message === "session-exists") {
+      showToast(
+        "You already have a session for this visa category. Only one session per category is allowed.",
+        "info"
       );
 
-      let data;
-      try {
-        data = await res.json();
-      } catch {
-        data = null;
-      }
-
-      if (!res.ok) {
-        throw new Error(data?.error || "Failed to delete session");
-      }
-
-      setSessions((prev) => prev.filter((s) => s.id !== selectedSessionId));
-      setModalOpen(false);
-      setSelectedSessionId(null);
-    } catch (err) {
-      console.error(err);
-      alert(err instanceof Error ? err.message : "Failed to delete session");
-    } finally {
-      setLoadingDelete(false);
+      window.history.replaceState({}, "", "/interview-prep/my-sessions");
     }
-  };
+  }, []);
 
   // pagination calculations
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredSessions.length / ITEMS_PER_PAGE)
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredSessions.length / ITEMS_PER_PAGE));
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentSessions = filteredSessions.slice(startIndex, endIndex);
@@ -262,9 +218,7 @@ export default function MyInterviewSessions() {
     }
   };
 
-  const uniqueCategories = Array.from(
-    new Set(sessions.map((s) => s.category_slug))
-  );
+  const uniqueCategories = Array.from(new Set(sessions.map((s) => s.category_slug)));
 
   const getCategoryIcon = (categorySlug: string) => {
     if (categorySlug.includes("spouse") || categorySlug.includes("ir-1")) {
@@ -311,11 +265,7 @@ export default function MyInterviewSessions() {
       key: "status",
       label: "Status",
       width: "25%",
-      render: (session) => (
-        <CompletionBadge
-          status={getSessionStatus(session)}
-        />
-      ),
+      render: (session) => <CompletionBadge status={getSessionStatus(session)} />,
     },
     {
       key: "actions",
@@ -323,12 +273,15 @@ export default function MyInterviewSessions() {
       width: "25%",
       className: "text-right",
       render: (session) => (
-        <ActionMenu
-          onView={() =>
+        <Button
+          size="sm"
+          onClick={() =>
             (window.location.href = `/interview-prep/result?sessionId=${session.id}`)
           }
-          onDelete={() => setSelectedSessionId(session.id)}
-        />
+          className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white"
+        >
+          View Session
+        </Button>
       ),
     },
   ];
@@ -336,9 +289,7 @@ export default function MyInterviewSessions() {
   const emptyState = (
     <div className="bg-white rounded-xl shadow-lg overflow-hidden text-center py-16">
       <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-6" />
-      <h3 className="text-2xl font-bold text-gray-900 mb-2">
-        No sessions found
-      </h3>
+      <h3 className="text-2xl font-bold text-gray-900 mb-2">No sessions found</h3>
       <p className="text-lg text-gray-500 mb-8">
         You haven&apos;t created any interview preparation sessions yet.
       </p>
@@ -356,7 +307,7 @@ export default function MyInterviewSessions() {
 
   return (
     <div className="bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-py site-main-px">
-      <div className="">
+      <div className="mt-12">
         <header className="mb-12 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">
             My Interview Sessions
@@ -418,7 +369,7 @@ export default function MyInterviewSessions() {
             )}
             <Button
               onClick={() => (window.location.href = "/interview-prep")}
-              className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white py-5 px-6 text-lg"
+              className={`bg-[#0d7377] hover:bg-[#0a5a5d] text-white py-5 px-6 text-lg ${sessions.length === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
             >
               <Plus className="w-5 h-5 mr-2" />
               New Session
@@ -435,9 +386,7 @@ export default function MyInterviewSessions() {
         ) : error ? (
           <div className="bg-white rounded-xl shadow-lg overflow-hidden text-center py-16">
             <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-6" />
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">
-              Error Loading Sessions
-            </h3>
+            <h3 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Sessions</h3>
             <p className="text-lg text-gray-500 mb-6">{error}</p>
             <Button
               onClick={() => window.location.reload()}
@@ -471,22 +420,6 @@ export default function MyInterviewSessions() {
           </>
         )}
       </div>
-
-      <ConfirmationModal
-        open={modalOpen}
-        onOpenChange={(open) => {
-          setModalOpen(open);
-          if (!open) setSelectedSessionId(null);
-        }}
-        title="Confirm Delete"
-        description="Are you sure you want to delete this session? This action cannot be undone and all your answers will be lost."
-        confirmText="Delete"
-        confirmVariant="danger"
-        onConfirm={() => {
-          if (selectedSessionId) handleDelete(selectedSessionId);
-        }}
-        loading={loadingDelete}
-      />
     </div>
   );
 }

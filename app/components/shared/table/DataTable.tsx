@@ -50,44 +50,44 @@ export function DataTable<T>({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden border border-slate-200">
+    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-visible">
       <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow className="border-b-2 border-slate-200">
-              {columns.map((column) => (
-                <TableHead
-                  key={column.key}
-                  className={`text-lg font-bold text-slate-800 py-4 ${
-                    column.className || ""
-                  }`}
-                  style={column.width ? { width: column.width } : {}}
-                >
-                  {column.label}
-                </TableHead>
-              ))}
-            </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {data.map((item, index) => (
-              <TableRow
-                key={rowKey(item, index)}
-                className={rowClassName}
-                onClick={() => onRowClick?.(item, index)}
-              >
+        <div className="min-w-full overflow-visible">
+          <Table>
+            <TableHeader>
+              <TableRow className="border-b-2 border-slate-200">
                 {columns.map((column) => (
-                  <TableCell
-                    key={`${rowKey(item, index)}-${column.key}`}
-                    className={`py-5 ${column.className || ""}`}
+                  <TableHead
+                    key={column.key}
+                    className={`text-lg font-bold text-slate-800 py-4 ${column.className || ""}`}
+                    style={column.width ? { width: column.width } : {}}
                   >
-                    {column.render(item, index)}
-                  </TableCell>
+                    {column.label}
+                  </TableHead>
                 ))}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+
+            <TableBody>
+              {data.map((item, index) => (
+                <TableRow
+                  key={rowKey(item, index)}
+                  className={rowClassName}
+                  onClick={() => onRowClick?.(item, index)}
+                >
+                  {columns.map((column) => (
+                    <TableCell
+                      key={`${rowKey(item, index)}-${column.key}`}
+                      className={`py-5 ${column.className || ""}`}
+                    >
+                      {column.render(item, index)}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   );

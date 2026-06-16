@@ -1,6 +1,7 @@
 "use client";
 
 import Tesseract from "tesseract.js";
+import { E, msg } from "@/lib/errors";
 import * as pdfjsLib from "pdfjs-dist/legacy/build/pdf";
 import { type PDFPageProxy } from "pdfjs-dist/types/src/display/api";
 
@@ -17,7 +18,7 @@ async function pdfPageToImageData(pdfPage: PDFPageProxy): Promise<string> {
   const context = canvas.getContext("2d");
 
   if (!context) {
-    throw new Error("Could not get canvas context");
+    throw new Error(msg(E.TOOL_OCR_CANVAS_FAILED));
   }
 
   canvas.width = viewport.width;
@@ -36,11 +37,7 @@ async function pdfPageToImageData(pdfPage: PDFPageProxy): Promise<string> {
  */
 async function extractTextFromPDF(
   file: File,
-  onProgress?: (progress: {
-    page: number;
-    totalPages: number;
-    ocrProgress: number;
-  }) => void
+  onProgress?: (progress: { page: number; totalPages: number; ocrProgress: number }) => void
 ): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
 
@@ -105,18 +102,12 @@ async function extractTextFromImage(
  */
 export async function processDocumentOCR(
   file: File,
-  onProgress?: (progress: {
-    current: number;
-    total: number;
-    status: string;
-  }) => void
+  onProgress?: (progress: { current: number; total: number; status: string }) => void
 ): Promise<string> {
   const fileType = file.type;
 
   if (!fileType.startsWith("image/") && fileType !== "application/pdf") {
-    throw new Error(
-      `Unsupported file type: ${fileType}. Please upload an image or PDF.`
-    );
+    throw new Error(msg(E.TOOL_FILE_TYPE_UNSUPPORTED));
   }
 
   try {
@@ -158,11 +149,9 @@ export async function processDocumentOCR(
     console.error("OCR processing failed:", error);
 
     if (error instanceof Error && error.message?.includes("PDF")) {
-      throw new Error(
-        "Failed to process PDF. File may be corrupted or password-protected."
-      );
+      throw new Error(msg(E.TOOL_OCR_PROCESS_FAILED));
     }
 
-    throw new Error(error instanceof Error ? error.message : "OCR processing failed.");
+    throw new Error(error instanceof Error ? error.message : msg(E.TOOL_OCR_PROCESS_FAILED));
   }
 }

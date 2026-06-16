@@ -1,12 +1,5 @@
 import { motion } from "framer-motion";
-import {
-  ClipboardList,
-  MapPin,
-  Map,
-  Search,
-  Star,
-  Bookmark,
-} from "lucide-react";
+import { ClipboardList, MapPin, Map, Search, Star, Bookmark } from "lucide-react";
 import { type WizardStepId } from "@/types/guide-wizard";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
 import { AuthRequiredModal } from "../shared/AuthRequiredModal";
@@ -91,7 +84,7 @@ const WizardSidebar = ({
 
   return (
     <>
-      <aside className="flex shrink-0 flex-col bg-white border-b xl:border-b-0 xl:border-r border-slate-200 rounded-xl mx-4 my-3 xl:w-[320px] xl:h-[660px]">
+      <aside className="flex w-full shrink-0 flex-col bg-white border-b xl:border-b-0 xl:border-r border-slate-200 rounded-xl my-3 xl:h-137.5">
         {/* Add to Active Wizards Button */}
         {(!session || !session.saved) && (
           <div className="p-4 border-b border-slate-200 rounded-t-xl">
@@ -105,9 +98,7 @@ const WizardSidebar = ({
                  bg-primary text-white hover:bg-primary/80 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <Bookmark className="w-5 h-5" />
-              {saving
-                ? t("wizard.common.saving")
-                : t("wizard.common.addToMyGuides")}
+              {saving ? t("wizard.common.saving") : t("wizard.common.addToMyGuides")}
             </motion.button>
           </div>
         )}
@@ -137,12 +128,7 @@ const WizardSidebar = ({
                   <div className="shrink-0 mt-0.5">
                     {status === "completed" ? (
                       <div className="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                        >
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                           <path
                             d="M6.5 10.5L9 13L14.5 7.5"
                             stroke="currentColor"
@@ -155,19 +141,11 @@ const WizardSidebar = ({
                     ) : (
                       <div
                         className={`w-8 h-8 rounded-full flex items-center justify-center
-                          ${
-                            status === "active"
-                              ? "bg-primary shadow-md"
-                              : "bg-slate-100"
-                          }`}
+                          ${status === "active" ? "bg-primary shadow-md" : "bg-slate-100"}`}
                       >
                         <Icon
                           className={`w-4 h-4
-                            ${
-                              status === "active"
-                                ? "text-white"
-                                : "text-slate-400"
-                            }`}
+                            ${status === "active" ? "text-white" : "text-slate-400"}`}
                         />
                       </div>
                     )}

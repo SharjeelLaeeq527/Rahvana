@@ -18,7 +18,7 @@ export default function SettingsPage() {
   const router = useRouter();
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
   const [notifications, setNotifications] = useState({
@@ -57,7 +57,7 @@ export default function SettingsPage() {
       if (error) {
         console.error("Error fetching profile:", error.message);
         return;
-      }
+              }
 
       if (data) {
         setProfile(data);
@@ -91,10 +91,7 @@ export default function SettingsPage() {
       if (error) {
         // If no settings exist yet, use defaults
         // Check if it's a "Row not found" error (which is normal for new users)
-        if (
-          error.message &&
-          !error.message.toLowerCase().includes("not found")
-        ) {
+        if (error.message && !error.message.toLowerCase().includes("not found")) {
           console.warn("Error fetching settings:", error);
         }
       } else if (data) {
@@ -122,7 +119,7 @@ export default function SettingsPage() {
   useEffect(() => {
     if (!isLoading && !user) {
       router.push(
-        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`
       );
       return;
     }
@@ -167,7 +164,7 @@ export default function SettingsPage() {
             updated_at: new Date().toISOString(),
           },
         ],
-        { onConflict: "user_id" },
+        { onConflict: "user_id" }
       );
 
       if (error) {
@@ -186,7 +183,7 @@ export default function SettingsPage() {
   const handleSignOut = async () => {
     await signOut();
     router.push(
-      `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+      `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`
     );
   };
 
@@ -234,7 +231,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 pb-2">
+    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 pb-2 mt-14">
       <div className="pb-2">
         <div className="mb-6 sm:mb-8">
           <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
@@ -268,10 +265,7 @@ export default function SettingsPage() {
             <CardContent className="pt-2 sm:pt-6 space-y-6">
               <div className="flex items-center justify-between gap-4">
                 <div className="space-y-0.5">
-                  <Label
-                    htmlFor="email-notifications"
-                    className="text-base font-medium"
-                  >
+                  <Label htmlFor="email-notifications" className="text-base font-medium">
                     {t("pages.settings.notifications.emailLabel")}
                   </Label>
                   <p className="text-sm text-slate-500">
@@ -287,10 +281,7 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between gap-4">
                 <div className="space-y-0.5">
-                  <Label
-                    htmlFor="sms-notifications"
-                    className="text-base font-medium"
-                  >
+                  <Label htmlFor="sms-notifications" className="text-base font-medium">
                     {t("pages.settings.notifications.smsLabel")}
                   </Label>
                   <p className="text-sm text-slate-500">
@@ -306,10 +297,7 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between gap-4">
                 <div className="space-y-0.5">
-                  <Label
-                    htmlFor="push-notifications"
-                    className="text-base font-medium"
-                  >
+                  <Label htmlFor="push-notifications" className="text-base font-medium">
                     {t("pages.settings.notifications.pushLabel")}
                   </Label>
                   <p className="text-sm text-slate-500">
@@ -336,15 +324,10 @@ export default function SettingsPage() {
               <div className="flex flex-col gap-4 sm:gap-2">
                 <div className="flex items-center justify-between gap-4">
                   <div className="space-y-0.5">
-                    <Label
-                      htmlFor="two-factor"
-                      className="text-base font-medium"
-                    >
+                    <Label htmlFor="two-factor" className="text-base font-medium">
                       {t("pages.settings.account.mfaLabel")}
                     </Label>
-                    <p className="text-sm text-slate-500">
-                      {t("pages.settings.account.mfaDesc")}
-                    </p>
+                    <p className="text-sm text-slate-500">{t("pages.settings.account.mfaDesc")}</p>
                   </div>
                   <Switch
                     className="cursor-not-allowed"
@@ -373,10 +356,7 @@ export default function SettingsPage() {
 
               <div className="flex items-center justify-between gap-4">
                 <div className="space-y-0.5">
-                  <Label
-                    htmlFor="auto-backup"
-                    className="text-base font-medium"
-                  >
+                  <Label htmlFor="auto-backup" className="text-base font-medium">
                     {t("pages.settings.account.autoBackupLabel")}
                   </Label>
                   <p className="text-sm text-slate-500">
@@ -386,9 +366,7 @@ export default function SettingsPage() {
                 <Switch
                   id="auto-backup"
                   checked={accountSettings.autoBackup}
-                  onCheckedChange={() =>
-                    handleAccountSettingChange("autoBackup")
-                  }
+                  onCheckedChange={() => handleAccountSettingChange("autoBackup")}
                 />
               </div>
             </CardContent>
@@ -410,10 +388,7 @@ export default function SettingsPage() {
                   <p className="text-sm text-slate-500 mb-3 sm:mb-4">
                     {t("pages.settings.security.changePasswordDesc")}
                   </p>
-                  <Button
-                    variant="outline"
-                    className="w-full sm:w-auto border-slate-300"
-                  >
+                  <Button variant="outline" className="w-full sm:w-auto border-slate-300">
                     {t("pages.settings.security.changePasswordLabel")}
                   </Button>
                 </div>

@@ -50,17 +50,19 @@ export async function appendFeedbackToSheet(row: {
 
   await ensureSheetHeaders(sheets);
 
-  const values = [[
-    row.userEmail,
-    row.pageName,
-    row.pageUrl,
-    row.feedbackType,
-    row.description,
-    row.attachmentUrls,
-    "Not Started",   // Default status
-    row.priority || "Medium",
-    row.timestamp,
-  ]];
+  const values = [
+    [
+      row.userEmail,
+      row.pageName,
+      row.pageUrl,
+      row.feedbackType,
+      row.description,
+      row.attachmentUrls,
+      "Not Started", // Default status
+      row.priority || "Medium",
+      row.timestamp,
+    ],
+  ];
 
   const appendRes = await sheets.spreadsheets.values.append({
     spreadsheetId: SPREADSHEET_ID,
@@ -78,9 +80,7 @@ export async function appendFeedbackToSheet(row: {
   }
 }
 
-async function ensureSheetHeaders(
-  sheets?: ReturnType<typeof google.sheets>,
-) {
+async function ensureSheetHeaders(sheets?: ReturnType<typeof google.sheets>) {
   if (!SPREADSHEET_ID) return;
 
   if (!sheets) {
@@ -100,17 +100,19 @@ async function ensureSheetHeaders(
     range: `${SHEET_NAME}!A1:I1`,
     valueInputOption: "USER_ENTERED",
     requestBody: {
-      values: [[
-        "Originator",
-        "Page / Section",
-        "Page URL",
-        "Type",
-        "Description",
-        "Attachments",
-        "Status",
-        "Priority",
-        "Submitted At (PKT)",
-      ]],
+      values: [
+        [
+          "Originator",
+          "Page / Section",
+          "Page URL",
+          "Type",
+          "Description",
+          "Attachments",
+          "Status",
+          "Priority",
+          "Submitted At (PKT)",
+        ],
+      ],
     },
   });
 
@@ -123,16 +125,27 @@ async function ensureSheetHeaders(
         // Header Formatting: Bold, centered, light gray background (no more teal)
         {
           repeatCell: {
-            range: { sheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: 9 },
+            range: {
+              sheetId,
+              startRowIndex: 0,
+              endRowIndex: 1,
+              startColumnIndex: 0,
+              endColumnIndex: 9,
+            },
             cell: {
               userEnteredFormat: {
-                textFormat: { bold: true, fontSize: 11, foregroundColor: { red: 0.2, green: 0.2, blue: 0.2 } },
+                textFormat: {
+                  bold: true,
+                  fontSize: 11,
+                  foregroundColor: { red: 0.2, green: 0.2, blue: 0.2 },
+                },
                 backgroundColor: { red: 0.95, green: 0.95, blue: 0.95 },
                 horizontalAlignment: "CENTER",
                 verticalAlignment: "MIDDLE",
               },
             },
-            fields: "userEnteredFormat(textFormat,backgroundColor,horizontalAlignment,verticalAlignment)",
+            fields:
+              "userEnteredFormat(textFormat,backgroundColor,horizontalAlignment,verticalAlignment)",
           },
         },
         {
@@ -152,7 +165,13 @@ async function ensureSheetHeaders(
         // Status Dropdown
         {
           setDataValidation: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 5000, startColumnIndex: 6, endColumnIndex: 7 },
+            range: {
+              sheetId,
+              startRowIndex: 1,
+              endRowIndex: 5000,
+              startColumnIndex: 6,
+              endColumnIndex: 7,
+            },
             rule: {
               condition: {
                 type: "ONE_OF_LIST",
@@ -170,7 +189,13 @@ async function ensureSheetHeaders(
         // Priority Dropdown
         {
           setDataValidation: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 5000, startColumnIndex: 7, endColumnIndex: 8 },
+            range: {
+              sheetId,
+              startRowIndex: 1,
+              endRowIndex: 5000,
+              startColumnIndex: 7,
+              endColumnIndex: 8,
+            },
             rule: {
               condition: {
                 type: "ONE_OF_LIST",
@@ -189,7 +214,13 @@ async function ensureSheetHeaders(
         // Wrapping for description
         {
           repeatCell: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 5000, startColumnIndex: 4, endColumnIndex: 5 },
+            range: {
+              sheetId,
+              startRowIndex: 1,
+              endRowIndex: 5000,
+              startColumnIndex: 4,
+              endColumnIndex: 5,
+            },
             cell: { userEnteredFormat: { wrapStrategy: "WRAP", verticalAlignment: "TOP" } },
             fields: "userEnteredFormat(wrapStrategy,verticalAlignment)",
           },
@@ -199,10 +230,7 @@ async function ensureSheetHeaders(
   });
 }
 
-async function applyRowFormatting(
-  sheets: ReturnType<typeof google.sheets>,
-  rowIndex: number,
-) {
+async function applyRowFormatting(sheets: ReturnType<typeof google.sheets>, rowIndex: number) {
   const sheetId = await getSheetTabId(sheets);
   await sheets.spreadsheets.batchUpdate({
     spreadsheetId: SPREADSHEET_ID,
@@ -210,8 +238,16 @@ async function applyRowFormatting(
       requests: [
         {
           repeatCell: {
-            range: { sheetId, startRowIndex: rowIndex, endRowIndex: rowIndex + 1, startColumnIndex: 6, endColumnIndex: 8 },
-            cell: { userEnteredFormat: { horizontalAlignment: "CENTER", textFormat: { bold: true } } },
+            range: {
+              sheetId,
+              startRowIndex: rowIndex,
+              endRowIndex: rowIndex + 1,
+              startColumnIndex: 6,
+              endColumnIndex: 8,
+            },
+            cell: {
+              userEnteredFormat: { horizontalAlignment: "CENTER", textFormat: { bold: true } },
+            },
             fields: "userEnteredFormat(horizontalAlignment,textFormat)",
           },
         },
@@ -222,6 +258,6 @@ async function applyRowFormatting(
 
 async function getSheetTabId(sheets: ReturnType<typeof google.sheets>): Promise<number> {
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
-  const tab = meta.data.sheets?.find(s => s.properties?.title === SHEET_NAME);
+  const tab = meta.data.sheets?.find((s) => s.properties?.title === SHEET_NAME);
   return tab?.properties?.sheetId ?? 0;
 }

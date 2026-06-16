@@ -29,7 +29,8 @@
           "Basic Case Information",
           "Relationship Origin",
           "Security",
-          "Travel"
+          "Travel",
+          "Spouse Information"
         ],
         "priorityBoost": ["critical"],
         "relevanceScore": 100,
@@ -52,10 +53,7 @@
         ]
       },
       "actions": {
-        "includeCategories": [
-          "Relationship Timeline",
-          "Marriage Decision"
-        ],
+        "includeCategories": ["Relationship Timeline", "Marriage Decision"],
         "priorityBoost": ["high"],
         "relevanceScore": 85,
         "reason": "Natural origin relationships need timeline proof to show organic development. Not needed for arranged marriages which are formalized differently."
@@ -77,11 +75,7 @@
         ]
       },
       "actions": {
-        "includeCategories": [
-          "Family",
-          "Spouse Information",
-          "Marriage Decision"
-        ],
+        "includeCategories": ["Family", "Spouse Information", "Marriage Decision"],
         "priorityBoost": ["critical"],
         "relevanceScore": 105,
         "reason": "Arranged marriages derive legitimacy from family involvement. Family approval IS the proof. Must emphasize family decision-making process."
@@ -103,10 +97,7 @@
         ]
       },
       "actions": {
-        "includeCategories": [
-          "Proposal",
-          "Wedding"
-        ],
+        "includeCategories": ["Proposal", "Wedding"],
         "priorityBoost": ["high"],
         "relevanceScore": 90,
         "reason": "Natural meet (online, in-person, work/school) relationships prove authenticity through proposal and wedding commitment. Core evidence for non-arranged."
@@ -128,10 +119,7 @@
         ]
       },
       "actions": {
-        "includeCategories": [
-          "Daily Life",
-          "Household Life"
-        ],
+        "includeCategories": ["Daily Life", "Household Life", "Spouse Information"],
         "priorityBoost": ["high"],
         "relevanceScore": 88,
         "reason": "Living together couples provide authentic daily routine evidence. Specific household details validate relationship integration and legitimacy."
@@ -153,9 +141,7 @@
         ]
       },
       "actions": {
-        "includeCategories": [
-          "Relationship"
-        ],
+        "includeCategories": ["Relationship", "Communication", "Visits"],
         "priorityBoost": ["high"],
         "relevanceScore": 85,
         "reason": "Long-distance couples prove relationship maintenance through consistent communication. Communication frequency and methods become critical proof element."
@@ -177,10 +163,7 @@
         ]
       },
       "actions": {
-        "includeCategories": [
-          "Employment",
-          "Finances"
-        ],
+        "includeCategories": ["Employment", "Finances"],
         "priorityBoost": ["high"],
         "relevanceScore": 88,
         "reason": "Petitioner employment and financial capacity required for visa approval and Affidavit of Support. Non-negotiable evidence of support ability."
@@ -202,9 +185,7 @@
         ]
       },
       "actions": {
-        "includeCategories": [
-          "Intent"
-        ],
+        "includeCategories": ["Intent"],
         "priorityBoost": ["critical"],
         "relevanceScore": 95,
         "reason": "Visa officers must confirm marriage is motive, not immigration is motive. Petitioner status (USC) makes this intent verification critical."
@@ -226,9 +207,7 @@
         ]
       },
       "actions": {
-        "includeCategories": [
-          "Spouse Information"
-        ],
+        "includeCategories": ["Spouse Information"],
         "priorityBoost": ["critical"],
         "relevanceScore": 110,
         "reason": "Previous marriages require dissolution proof (divorce decree, annulment, death cert). Questions establish legal validity of current marriage."
@@ -250,9 +229,7 @@
         ]
       },
       "actions": {
-        "includeCategories": [
-          "Ties"
-        ],
+        "includeCategories": ["Ties"],
         "priorityBoost": ["critical"],
         "relevanceScore": 105,
         "reason": "Visa refusal history requires demonstrable ties to home country, proof of changed circumstances, and commitment to temporary visit status."
@@ -279,9 +256,7 @@
         ]
       },
       "actions": {
-        "includeCategories": [
-          "Security"
-        ],
+        "includeCategories": ["Security"],
         "priorityBoost": ["critical"],
         "relevanceScore": 115,
         "reason": "Overstay/criminal history = near-disqualifying. Must show comprehensive security background review and rehabilitation commitment."
@@ -303,9 +278,7 @@
         ]
       },
       "actions": {
-        "includeCategories": [
-          "Relationship"
-        ],
+        "includeCategories": ["Relationship", "Communication"],
         "priorityBoost": ["medium"],
         "relevanceScore": 70,
         "reason": "Daily communication frequency is strong indicator of active relationship. Supports authenticity claims across all case types."

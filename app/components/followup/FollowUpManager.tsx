@@ -1,11 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import * as Errors from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
-import {
-  getUser221gCase,
-  update221gStatus,
-} from "@/lib/supabase/twentyTwoOneG";
+import { useToast } from "@/app/components/shared/ToastProvider";
+import { getUser221gCase, update221gStatus } from "@/lib/supabase/twentyTwoOneG";
 import { FollowUpDialog } from "./FollowUpDialog";
 
 interface CaseData {
@@ -21,6 +20,7 @@ export function FollowUpManager() {
   const [caseData, setCaseData] = useState<CaseData | null>(null);
   const [showDialog, setShowDialog] = useState(false);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
   useEffect(() => {
     async function checkFollowUp() {
@@ -31,35 +31,18 @@ export function FollowUpManager() {
 
       try {
         const data = await getUser221gCase(user.id);
-        console.log("FollowUpManager check:", data);
         if (data) {
           setCaseData(data);
-
-          // Check if follow-up is due
           if (data.next_follow_up_at) {
             const now = new Date();
             const nextFollowUp = new Date(data.next_follow_up_at);
-            console.log(
-              "Timing check - Now:",
-              now.toISOString(),
-              "Next:",
-              nextFollowUp.toISOString(),
-            );
-
             if (now >= nextFollowUp) {
-              console.log("Follow-up is due! Showing dialog.");
               setShowDialog(true);
-            } else {
-              console.log("Follow-up not yet due.");
             }
-          } else {
-            console.log("Follow-ups are permanently disabled for this case.");
           }
-        } else {
-          console.log("No 221g case found for this user.");
         }
-      } catch (err) {
-        console.error("Error checking follow-up", err);
+      } catch {
+        // 221g is an optional feature — never break the main journey
       } finally {
         setLoading(false);
       }
@@ -86,9 +69,9 @@ export function FollowUpManager() {
     if (hasUploaded) newStatus = "submitted";
 
     // DB Constraint validation
-    const allowedStatuses = ['received', 'gathering', 'submitted', 'not_uploaded', 'stuck'];
+    const allowedStatuses = ["received", "gathering", "submitted", "not_uploaded", "stuck"];
     if (!allowedStatuses.includes(newStatus)) {
-      newStatus = 'received'; // fallback to standard allowed value
+      newStatus = "received"; // fallback to standard allowed value
     }
 
     let nextDate: Date | null = new Date();
@@ -125,18 +108,14 @@ export function FollowUpManager() {
     }
 
     try {
-      await update221gStatus(
-        caseData.id,
-        newStatus,
-        nextDate,
-        response.answers,
-        newDismissCount,
-      );
+      await update221gStatus(caseData.id, newStatus, nextDate, response.answers, newDismissCount);
       setShowDialog(false);
-    } catch (err) {
+      } catch (err) {
       console.error("Error updating follow-up status", err);
-      const msg = err instanceof Error ? err.message : String(err);
-      alert("Failed to update status in Database. Error: " + msg);
+      const msgText = err instanceof Error ? err.message : String(err);
+      // Show user-friendly message
+      // eslint-disable-next-line no-alert
+      alert(Errors.msg(Errors.E.FOLLOWUP_UPDATE_FAILED) + (msgText ? ` (${msgText})` : ""));
     }
   };
 

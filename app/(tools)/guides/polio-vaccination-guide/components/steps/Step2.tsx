@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 export default function Step2() {
   const { state, setCurrentStep, completeStep } = usePolioWizard();
   const [selectedProv, setSelectedProv] = useState<string | null>(
-    state.location?.province || "punjab",
+    state.location?.province || "punjab"
   );
 
   const PROVINCES = ["Punjab", "Sindh", "KP", "Balochistan", "Islamabad"];
@@ -23,12 +23,9 @@ export default function Step2() {
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="mb-8">
-        <h2 className="text-3xl font-extrabold text-slate-900 mb-3">
-          Where to Go?
-        </h2>
+        <h2 className="text-3xl font-extrabold text-slate-900 mb-3">Where to Go?</h2>
         <p className="text-slate-600 text-lg">
-          Select your region to see where you can get vaccinated and registered
-          on NIMS.
+          Select your region to see where you can get vaccinated and registered on NIMS.
         </p>
       </div>
 
@@ -113,9 +110,8 @@ export default function Step2() {
         <div>
           <h4 className="font-bold text-amber-900 mb-1">Important Note</h4>
           <p className="text-amber-800 text-sm leading-relaxed">
-            Private hospitals can give polio vaccines, but ONLY government or
-            recognized EPI teams can record it in NIMS. Ensure the center you
-            visit has NIMS access to record your data.
+            Private hospitals can give polio vaccines, but ONLY government or recognized EPI teams
+            can record it in NIMS. Ensure the center you visit has NIMS access to record your data.
           </p>
         </div>
       </div>

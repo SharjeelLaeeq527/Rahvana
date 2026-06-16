@@ -21,7 +21,7 @@ export default function CookiePolicy() {
           if (entry.isIntersecting) setActiveSection(entry.target.id);
         });
       },
-      { rootMargin: "-20% 0px -70% 0px" },
+      { rootMargin: "-20% 0px -70% 0px" }
     );
     sections.forEach(({ id }) => {
       const el = document.getElementById(id);
@@ -31,9 +31,7 @@ export default function CookiePolicy() {
   }, []);
 
   const scrollTo = (id: string) => {
-    document
-      .getElementById(id)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   return (
@@ -52,22 +50,16 @@ export default function CookiePolicy() {
             <div className="inline-flex items-center gap-2 bg-teal-50 border border-teal-200 rounded-full px-4 py-1.5 text-teal-700 text-xs font-medium mb-5">
               Legal Document
             </div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Cookie Policy
-            </h1>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">Cookie Policy</h1>
             <p className="text-gray-500 text-lg leading-relaxed">
               How we use cookies on rahvana.com.
             </p>
             <div className="flex flex-wrap gap-6 mt-5 text-sm text-gray-400">
               <span>
-                Effective Date:{" "}
-                <span className="text-gray-700 font-medium">
-                  March 17, 2026
-                </span>
+                Effective Date: <span className="text-gray-700 font-medium">March 17, 2026</span>
               </span>
               <span>
-                Applies to:{" "}
-                <span className="text-gray-700 font-medium">rahvana.com</span>
+                Applies to: <span className="text-gray-700 font-medium">rahvana.com</span>
               </span>
             </div>
           </div>
@@ -111,38 +103,35 @@ export default function CookiePolicy() {
             >
               <Section id="what" title="1. What Are Cookies?">
                 <p>
-                  Cookies are small files stored in your browser that help
-                  websites remember you and work properly.
+                  Cookies are small files stored in your browser that help websites remember you and
+                  work properly.
                 </p>
               </Section>
 
               <Section id="types" title="2. Cookies We Use">
                 <ul>
                   <li>
-                    <strong>Essential:</strong> Keep you logged in and secure.
-                    Cannot be disabled.
+                    <strong>Essential:</strong> Keep you logged in and secure. Cannot be disabled.
                   </li>
                   <li>
-                    <strong>Payment (Stripe):</strong> Fraud prevention during
-                    checkout. Required for payments.
+                    <strong>Payment (Stripe):</strong> Fraud prevention during checkout. Required
+                    for payments.
                   </li>
                   <li>
-                    <strong>Functional:</strong> Remember your preferences and
-                    save your progress.
+                    <strong>Functional:</strong> Remember your preferences and save your progress.
                   </li>
                   <li>
-                    <strong>Analytics:</strong> Understand how visitors use
-                    Rahvana (anonymous data).
+                    <strong>Analytics:</strong> Understand how visitors use Rahvana (anonymous
+                    data).
                   </li>
                 </ul>
               </Section>
 
               <Section id="managing" title="3. Managing Cookies">
                 <p>
-                  You can control or disable cookies through your browser
-                  settings. Disabling essential cookies may prevent login and
-                  core features from working. To opt out of Google Analytics,
-                  visit{" "}
+                  You can control or disable cookies through your browser settings. Disabling
+                  essential cookies may prevent login and core features from working. To opt out of
+                  Google Analytics, visit{" "}
                   <a
                     href="https://tools.google.com/dlpage/gaoptout"
                     target="_blank"
@@ -156,9 +145,8 @@ export default function CookiePolicy() {
 
               <Section id="consent" title="4. Your Consent">
                 <p>
-                  By using Rahvana, you consent to our use of essential and
-                  payment cookies. You may opt out of analytics cookies at any
-                  time via your browser settings.
+                  By using Rahvana, you consent to our use of essential and payment cookies. You may
+                  opt out of analytics cookies at any time via your browser settings.
                 </p>
               </Section>
 
@@ -186,9 +174,7 @@ function Section({
   return (
     <section id={id} className="mb-12 scroll-mt-8">
       <div className="flex items-center gap-3 mb-5">
-        <h2 className="text-xl font-semibold text-gray-900 whitespace-nowrap">
-          {title}
-        </h2>
+        <h2 className="text-xl font-semibold text-gray-900 whitespace-nowrap">{title}</h2>
         <div className="h-px flex-1 bg-gray-200" />
       </div>
       {children}
@@ -199,26 +185,18 @@ function Section({
 function ContactCard() {
   return (
     <div className="bg-teal-50 border border-teal-100 rounded-xl p-6 not-prose">
-      <p className="text-sm font-semibold text-gray-800 mb-3">
-        Rahvana Legal Team
-      </p>
+      <p className="text-sm font-semibold text-gray-800 mb-3">Rahvana Legal Team</p>
       <div className="space-y-1.5">
         {/* <p className="text-sm text-gray-500">Email: <a href="mailto:legal@rahvana.com" className="text-teal-600 hover:underline">legal@rahvana.com</a></p> */}
         <p className="text-sm text-gray-500">
           Email:{" "}
-          <a
-            href="mailto:support@rahvana.com"
-            className="text-teal-600 hover:underline"
-          >
+          <a href="mailto:support@rahvana.com" className="text-teal-600 hover:underline">
             support@rahvana.com
           </a>
         </p>
         <p className="text-sm text-gray-500">
           Website:{" "}
-          <a
-            href="https://rahvana.com"
-            className="text-teal-600 hover:underline"
-          >
+          <a href="https://rahvana.com" className="text-teal-600 hover:underline">
             rahvana.com
           </a>
         </p>
@@ -235,9 +213,7 @@ function LegalNav({ current }: { current: string }) {
   ];
   return (
     <div className="mt-16 pt-8 border-t border-gray-200">
-      <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">
-        Other Legal Documents
-      </p>
+      <p className="text-xs text-gray-400 uppercase tracking-widest mb-4">Other Legal Documents</p>
       <div className="flex flex-wrap gap-3">
         {pages
           .filter((p) => !p.href.includes(current))

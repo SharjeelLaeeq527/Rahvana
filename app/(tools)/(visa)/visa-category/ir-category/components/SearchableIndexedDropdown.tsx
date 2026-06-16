@@ -34,10 +34,7 @@ export default function SearchableIndexedDropdown({
   // Close dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (
-        dropdownRef.current &&
-        !dropdownRef.current.contains(event.target as Node)
-      ) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
@@ -47,9 +44,7 @@ export default function SearchableIndexedDropdown({
 
   // Filter options based on search query
   const filteredOptions = useMemo(() => {
-    return options.filter((option) =>
-      option.toLowerCase().includes(searchQuery.toLowerCase()),
-    );
+    return options.filter((option) => option.toLowerCase().includes(searchQuery.toLowerCase()));
   }, [options, searchQuery]);
 
   // Group options by first letter for the index
@@ -88,14 +83,8 @@ export default function SearchableIndexedDropdown({
   };
 
   return (
-    <div
-      className={`relative w-full ${isOpen ? "z-50" : "z-0"}`}
-      ref={dropdownRef}
-    >
-      <label
-        htmlFor={id}
-        className="block text-sm font-medium text-gray-700 mb-2"
-      >
+    <div className={`relative w-full ${isOpen ? "z-50" : "z-0"}`} ref={dropdownRef}>
+      <label htmlFor={id} className="block text-sm font-medium text-gray-700 mb-2">
         {label}
       </label>
 
@@ -107,16 +96,12 @@ export default function SearchableIndexedDropdown({
           if (!isOpen) setTimeout(() => inputRef.current?.focus(), 100);
         }}
         className={`w-full flex items-center justify-between px-4 py-3 border rounded-lg bg-white text-left transition-all duration-200 ${
-          isOpen
-            ? "border-primary ring-2 ring-primary/20"
-            : "border-gray-300 hover:border-gray-400"
+          isOpen ? "border-primary ring-2 ring-primary/20" : "border-gray-300 hover:border-gray-400"
         }`}
       >
         <div className="flex items-center gap-3 overflow-hidden">
           <Globe className="w-5 h-5 text-gray-400 shrink-0" />
-          <span
-            className={`truncate ${value ? "text-gray-900" : "text-gray-500"}`}
-          >
+          <span className={`truncate ${value ? "text-gray-900" : "text-gray-500"}`}>
             {value || placeholder}
           </span>
         </div>
@@ -133,7 +118,7 @@ export default function SearchableIndexedDropdown({
               initial={{ opacity: 0, y: 10, scale: 0.98 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: 10, scale: 0.98 }}
-              className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col max-h-[450px]"
+              className="bg-white rounded-xl shadow-2xl border border-gray-200 overflow-hidden flex flex-col max-h-[250px]"
             >
               {/* Search Header */}
               <div className="p-3 border-b border-gray-100 flex items-center gap-2 bg-white sticky top-0 z-10 font-sans">

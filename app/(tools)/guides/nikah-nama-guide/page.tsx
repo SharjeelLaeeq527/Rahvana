@@ -4,13 +4,11 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
-import WizardInfoPanel, {
-  InfoPanelData,
-} from "../../../components/guides/WizardInfoPanel";
+import WizardInfoPanel, { InfoPanelData } from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
-import WhatsThisModal from "../../../components/guides/WhatsThisModal";
+import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/nikah-nama-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -40,6 +38,7 @@ const INFO_PANEL_KEYS: Record<string, string> = {
 const NikahNamaGuidePage = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [navigationHandled, setNavigationHandled] = useState(false);
   const [state, setState] = useState<WizardState>({
@@ -66,11 +65,10 @@ const NikahNamaGuidePage = () => {
     (prev, stepsData) => ({
       ...prev,
       documentNeed: stepsData.document_need || prev.documentNeed,
-      checkedDocuments:
-        stepsData.roadmap?.checkedDocuments || prev.checkedDocuments,
+      checkedDocuments: stepsData.roadmap?.checkedDocuments || prev.checkedDocuments,
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
-    }),
+    })
   );
 
   const { uploadFile: uploadFileHook } = useGuideUpload();
@@ -91,14 +89,14 @@ const NikahNamaGuidePage = () => {
   const handleSubmitFeedback = async (
     feedbackType: string,
     description: string,
-    attachment?: File,
+    attachment?: File
   ) => {
     await submitFeedbackHook(
       "nikah-nama-guide",
       currentStepId,
       feedbackType,
       description,
-      attachment,
+      attachment
     );
   };
 
@@ -120,12 +118,23 @@ const NikahNamaGuidePage = () => {
 
     hasInitializedModal.current = true;
 
-    if (!session.hide_intro_modal) {
+    const localHide =
+      typeof window !== "undefined" &&
+      localStorage.getItem("dont_show_marriage_registration_welcome") === "true";
+
+    if (!session.hide_intro_modal && !localHide) {
       setShowWhatsThis(true);
     } else {
       setShowWhatsThis(false);
     }
   }, [session]);
+
+  const handleCloseIntro = () => {
+    if (dontShowAgain && typeof window !== "undefined") {
+      localStorage.setItem("dont_show_marriage_registration_welcome", "true");
+    }
+    setShowWhatsThis(false);
+  };
 
   useEffect(() => {
     if (session?.saved) {
@@ -140,7 +149,7 @@ const NikahNamaGuidePage = () => {
       setIsSaved(true); // mark as saved
     },
     navigationHandled,
-    setNavigationHandled,
+    setNavigationHandled
   );
 
   // Before unload confirmation
@@ -185,8 +194,7 @@ const NikahNamaGuidePage = () => {
   };
 
   const goNext = () => {
-    if (currentStep < STEP_IDS.length - 1 && canGoNext())
-      setCurrentStep(currentStep + 1);
+    if (currentStep < STEP_IDS.length - 1 && canGoNext()) setCurrentStep(currentStep + 1);
   };
 
   const goBack = () => {
@@ -198,16 +206,13 @@ const NikahNamaGuidePage = () => {
       setState((s) => ({
         ...s,
         documentNeed: {
-          ...(typeof s.documentNeed === "object" && s.documentNeed !== null
-            ? s.documentNeed
-            : {}),
+          ...(typeof s.documentNeed === "object" && s.documentNeed !== null ? s.documentNeed : {}),
           [questionId]: id,
         },
       }));
       // Save progress to backend
       saveWizardStep("document_need", {
-        ...(typeof state.documentNeed === "object" &&
-        state.documentNeed !== null
+        ...(typeof state.documentNeed === "object" && state.documentNeed !== null
           ? state.documentNeed
           : {}),
         [questionId]: id,
@@ -261,10 +266,7 @@ const NikahNamaGuidePage = () => {
           />
         );
       case "roadmap":
-        const docNeedRaw = state.documentNeed as
-          | string
-          | Record<string, string>
-          | null;
+        const docNeedRaw = state.documentNeed as string | Record<string, string> | null;
         let selectedCategory: string | undefined;
 
         if (typeof docNeedRaw === "string") {
@@ -277,14 +279,15 @@ const NikahNamaGuidePage = () => {
           selectedCategory = Object.values(docNeedRaw).join(","); // or match specific question
         }
 
-        const filteredChecklist =
-          guideData.wizard.roadmap.documents_checklist.filter((doc: any) => {
+        const filteredChecklist = guideData.wizard.roadmap.documents_checklist.filter(
+          (doc: any) => {
             if (!doc.category) return true;
             if (selectedCategory) {
               return selectedCategory.includes(doc.category);
             }
             return false;
-          });
+          }
+        );
 
         const roadmapWithFilteredDocs = {
           ...guideData.wizard.roadmap,
@@ -322,13 +325,10 @@ const NikahNamaGuidePage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-14">
-      <WizardHeader
-        onWhatsThis={() => setShowWhatsThis(true)}
-        title={guideData.wizard.title}
-      />
+    <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-26">
+      <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
 
-      <div className="flex flex-1 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] flex-col xl:flex-row">
+      <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
         <WizardSidebar
           currentStep={STEP_IDS.indexOf(currentStepId)}
           steps={STEP_IDS}
@@ -341,7 +341,7 @@ const NikahNamaGuidePage = () => {
           session={session}
         />
 
-        <main className="flex-1 xl:overflow-y-auto p-4 sm:p-8 relative min-h-min">
+        <main className="min-w-0 xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
           <div
             className="fixed inset-0 pointer-events-none z-0"
             style={{
@@ -351,56 +351,58 @@ const NikahNamaGuidePage = () => {
             }}
           />
 
-          <div className="relative z-10 max-w-full md:max-w-3xl mx-auto">
-            <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-8 shadow-sm min-h-100">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentStepId}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  {renderStep()}
-                </motion.div>
-              </AnimatePresence>
-            </div>
+          <div className="w-full flex flex-col xl:items-start items-center min-h-137.5 xl:min-h-137.5 justify-center">
+            <div className="relative z-10 w-full max-w-full md:max-w-3xl">
+              <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-8 shadow-sm min-h-100">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentStepId}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    {renderStep()}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
-            <div className="flex flex-col justify-between items-center gap-4 mt-5 pb-6 w-full sm:flex-row">
-              {currentStep > 0 ? (
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={goBack}
-                  className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
-                >
-                  <ArrowLeft className="w-4 h-4" /> Back
-                </motion.button>
-              ) : (
-                <div className="hidden sm:block w-20" />
-              )}
+              <div className="flex flex-col justify-between items-center gap-4 mt-5 pb-6 w-full sm:flex-row">
+                {currentStep > 0 ? (
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={goBack}
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" /> Back
+                  </motion.button>
+                ) : (
+                  <div className="hidden sm:block w-20" />
+                )}
 
-              <span className="text-sm text-gray-500 font-medium">
-                Step {currentStep + 1} of {STEP_IDS.length}
-              </span>
+                <span className="text-sm text-gray-500 font-medium">
+                  Step {currentStep + 1} of {STEP_IDS.length}
+                </span>
 
-              {currentStep < STEP_IDS.length - 1 && (
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={goNext}
-                  disabled={!canGoNext()}
-                  className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer
+                {currentStep < STEP_IDS.length - 1 && (
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={goNext}
+                    disabled={!canGoNext()}
+                    className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer
                     ${
                       canGoNext()
                         ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md"
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     }
                   `}
-                >
-                  Continue <ArrowRight className="w-4 h-4" />
-                </motion.button>
-              )}
+                  >
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </motion.button>
+                )}
+              </div>
             </div>
           </div>
         </main>
@@ -413,12 +415,13 @@ const NikahNamaGuidePage = () => {
         />
       </div>
 
-      <WhatsThisModal
-        open={showWhatsThis}
-        onClose={() => setShowWhatsThis(false)}
-        data={guideData.wizard.whats_this}
-        documentLabel="Nikah Nama & MRC"
-        guideSlug="nikah-nama-guide"
+      <NarrativeModal
+        isOpen={showWhatsThis}
+        onClose={handleCloseIntro}
+        onComplete={handleCloseIntro}
+        dontShowAgain={dontShowAgain}
+        onDontShowAgainChange={setDontShowAgain}
+        variant="marriage-registration"
       />
       <FeedbackButton
         steps={Object.values(STEP_LABELS)}

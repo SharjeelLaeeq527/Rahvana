@@ -2,7 +2,8 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import React, { useState, useEffect, useRef } from "react";
+import Image from "next/image";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
   Bell,
   BellOff,
@@ -21,7 +22,10 @@ import {
   FolderLock,
   Wand2,
   Sparkles,
-  HelpCircleIcon
+  HelpCircleIcon,
+  ToolCase,
+  Wrench,
+  Info,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import MegaMenu from "./MegaMenu";
@@ -48,30 +52,20 @@ const HydrationSafeButton = (
   props: React.ButtonHTMLAttributes<HTMLButtonElement> & {
     variant?: string;
     size?: string;
-  },
+  }
 ) => {
   const { className, ...rest } = props;
 
   // Filter out problematic attributes that might be added by extensions
   const filteredRest = { ...rest };
-  const extensionAttributes = [
-    "fdprocessedid",
-    "data-extension",
-    "data-extension-id",
-  ];
+  const extensionAttributes = ["fdprocessedid", "data-extension", "data-extension-id"];
   extensionAttributes.forEach((attr) => {
     if (filteredRest[attr as keyof typeof filteredRest]) {
       delete filteredRest[attr as keyof typeof filteredRest];
     }
   });
 
-  return (
-    <button
-      {...filteredRest}
-      className={className}
-      suppressHydrationWarning={true}
-    />
-  );
+  return <button {...filteredRest} className={className} suppressHydrationWarning={true} />;
 };
 
 // --------------------------------------------------------------------------
@@ -90,9 +84,7 @@ const useExtensionCleanup = () => {
       ];
 
       extensionAttrs.forEach((attr) => {
-        document
-          .querySelectorAll(`[${attr}]`)
-          .forEach((el) => el.removeAttribute(attr));
+        document.querySelectorAll(`[${attr}]`).forEach((el) => el.removeAttribute(attr));
       });
     }, 0);
     return () => clearTimeout(timer);
@@ -113,11 +105,49 @@ export function SiteHeader({
 
   const MOBILE_ICONS: Record<string, React.ReactNode> = {
     journeys: (
-      <Briefcase className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+      <div className="w-[55px] h-[55px] rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-xs">
+        <Image
+          src="/icons/visa-journeys.svg"
+          alt="Journeys icon"
+          width={55}
+          height={55}
+          className="h-[55px] w-[55px]"
+        />
+      </div>
     ),
-    tools: <Wand2 className="w-5 h-5 text-violet-600 dark:text-violet-400" />,
-    guides: <BookOpen className="w-5 h-5 text-amber-600 dark:text-amber-400" />,
-    services: <Zap className="w-5 h-5 text-rose-600 dark:text-rose-400" />,
+    tools: (
+      <div className="w-[55px] h-[55px] rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-xs">
+        <Image
+          src="/icons/visa-application-tools-guides.svg"
+          alt="Tools icon"
+          width={55}
+          height={55}
+          className="h-[55px] w-[55px]"
+        />
+      </div>
+    ),
+    guides: (
+      <div className="w-[55px] h-[55px] rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-xs">
+        <Image
+          src="/icons/passport-guide.svg"
+          alt="Guides icon"
+          width={55}
+          height={55}
+          className="h-[55px] w-[55px]"
+        />
+      </div>
+    ),
+    services: (
+      <div className="w-[55px] h-[55px] rounded-2xl bg-white border border-slate-200 flex items-center justify-center shadow-xs">
+        <Image
+          src="/icons/book-consultation.svg"
+          alt="Services icon"
+          width={55}
+          height={55}
+          className="h-[55px] w-[55px]"
+        />
+      </div>
+    ),
   };
 
   const pathname = usePathname();
@@ -125,7 +155,26 @@ export function SiteHeader({
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [readIds, setReadIds] = useState<Set<string>>(() => {
+    try {
+      const saved = localStorage.getItem("rahvana_notif_read");
+      return saved ? new Set(JSON.parse(saved)) : new Set<string>();
+    } catch {
+      return new Set<string>();
+    }
+  });
   const notifRef = useRef<HTMLDivElement>(null);
+
+  // Real notification data
+  const [notifList, setNotifList] = useState<any[]>([]);
+  const [notifJourneyId, setNotifJourneyId] = useState<string | null>(null);
+  const [expandedNotifs, setExpandedNotifs] = useState<Set<string>>(new Set());
+  const toggleExpand = (id: string) =>
+    setExpandedNotifs((prev) => {
+      const n = new Set(prev);
+      n.has(id) ? n.delete(id) : n.add(id);
+      return n;
+    });
   const profileRef = useRef<HTMLDivElement>(null);
 
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
@@ -140,6 +189,19 @@ export function SiteHeader({
     services: null,
   });
   const megaMenuContainerRef = useRef<HTMLDivElement | null>(null);
+
+  const handleLinkClick = (e: React.MouseEvent) => {
+    if (
+      e.metaKey || // CMD (Mac)
+      e.ctrlKey || // CTRL (Windows)
+      e.shiftKey ||
+      e.button === 1 // Middle click
+    ) {
+      return; // browser ko handle karne do
+    }
+
+    setIsMenuOpen(false);
+  };
 
   // Close dropdowns on outside click
   useEffect(() => {
@@ -186,6 +248,143 @@ export function SiteHeader({
 
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      // 1. Fetch journey reminders (existing logic)
+      let journeyReminders: any[] = [];
+      let jId = notifJourneyId;
+      if (!jId) {
+        const res = await fetch("/api/journeys");
+        if (res.ok) {
+          const data = await res.json();
+          const active =
+            data?.data?.find((j: any) => j.journey?.status === "in_progress") || data?.data?.[0];
+          jId = active?.journey?.id ?? null;
+          if (jId) setNotifJourneyId(jId);
+        }
+      }
+      if (jId) {
+        const r = await fetch(`/api/v1/journeys/${jId}/reminders`);
+        if (r.ok) {
+          const d = await r.json();
+          journeyReminders = (d.reminders ?? []).map((n: any) => ({
+            ...n,
+            _source: "journey" as const,
+          }));
+        }
+      }
+
+      // 2. Fetch in-app notifications (appointment status updates, etc.)
+      let appNotifications: any[] = [];
+      try {
+        const appRes = await fetch("/api/notifications");
+        if (appRes.ok) {
+          const appData = await appRes.json();
+          appNotifications = (appData.notifications ?? []).map((n: any) => ({
+            ...n,
+            _source: "app" as const,
+          }));
+        }
+      } catch {}
+
+      // 3. Merge and sort by created_at descending
+      const merged = [...journeyReminders, ...appNotifications].sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setNotifList(merged);
+    } catch {}
+  }, [notifJourneyId]);
+
+  // Fetch on mount — so bell badge and data are ready before user clicks
+  useEffect(() => {
+    if (resolvedUser) fetchNotifications();
+  }, [resolvedUser]);
+
+  // Re-fetch every 2 minutes in background to keep count fresh
+  useEffect(() => {
+    if (!resolvedUser) return;
+    const interval = setInterval(fetchNotifications, 2 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, [resolvedUser, fetchNotifications]);
+
+  // Re-fetch immediately when any data save triggers refresh-reminders
+  useEffect(() => {
+    if (!resolvedUser) return;
+    window.addEventListener("refresh-reminders", fetchNotifications);
+    return () => window.removeEventListener("refresh-reminders", fetchNotifications);
+  }, [resolvedUser, fetchNotifications]);
+
+  const markAllRead = (ids: string[]) => {
+    setReadIds((prev) => {
+      const next = new Set([...prev, ...ids]);
+      try {
+        localStorage.setItem("rahvana_notif_read", JSON.stringify([...next]));
+      } catch {}
+      return next;
+    });
+  };
+
+  const markOneRead = (id: string) => {
+    // Find the notification to determine its source
+    const notif = notifList.find((n: any) => n.id === id);
+
+    if (notif?._source === "app") {
+      // Server-side: mark as read via API
+      fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action: "read" }),
+      }).catch(() => {});
+      // Update local state immediately
+      setNotifList((prev) =>
+        prev.map((n: any) => (n.id === id ? { ...n, is_read: true } : n))
+      );
+    } else {
+      // Journey reminders: use localStorage-based tracking
+      setReadIds((prev) => {
+        const next = new Set([...prev, id]);
+        try {
+          localStorage.setItem("rahvana_notif_read", JSON.stringify([...next]));
+        } catch {}
+        return next;
+      });
+    }
+  };
+
+  const handleBellClick = () => {
+    setNotificationsOpen((prev) => !prev);
+  };
+
+  const dismissNotif = async (id: string) => {
+    const notif = notifList.find((n: any) => n.id === id);
+    setNotifList((prev) => prev.filter((n) => n.id !== id));
+
+    if (notif?._source === "app") {
+      // Dismiss via notifications API
+      await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action: "dismiss" }),
+      }).catch(() => {});
+    } else if (notifJourneyId) {
+      // Dismiss via journey reminders API
+      await fetch(`/api/v1/journeys/${notifJourneyId}/reminders/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "dismiss" }),
+      }).catch(() => {});
+    }
+  };
+
+  // Unread count: journey reminders use localStorage readIds, app notifications use server is_read
+  const unreadCount = notifList.filter((n: any) => {
+    if (n._source === "app") return !n.is_read;
+    return !readIds.has(n.id);
+  }).length;
+
   // const { language, setLanguage } = useLanguage();
 
   const handleMenuEnter = (menu: string) => {
@@ -208,6 +407,10 @@ export function SiteHeader({
   };
 
   const handleNav = (id: string, e?: React.MouseEvent) => {
+    if (e && (e.metaKey || e.ctrlKey || e.shiftKey || e.button === 1)) {
+      return;
+    }
+
     setIsMenuOpen(false);
     setActiveMenu(null);
 
@@ -215,6 +418,8 @@ export function SiteHeader({
       if (e) e.preventDefault();
       onNavigate(id);
     } else {
+      if (e) e.preventDefault();
+
       const routes: Record<string, string> = {
         home: "/",
         journeys: "/visa-category/ir-category",
@@ -223,8 +428,9 @@ export function SiteHeader({
         "ir1-journey": "/visa-category/ir-category/ir1-journey",
         "ir5-journey": "/visa-category/ir-category/ir5-journey",
         "k1-journey": "/visa-category/ir-category/k1-journey",
-        services: "/services",
-        tools: "/tools",
+        services: "/resources?tab=services",
+        tools: "/resources?tab=toolbox",
+        guides: "/resources?tab=guides",
         pricing: "/pricing",
         dashboard: "/user-dashboard",
         mfa: "/mfa-setup",
@@ -254,6 +460,7 @@ export function SiteHeader({
         profile: "/profile",
         settings: "/settings",
         "portal-wallet": "/portal-wallet",
+        about: "/about",
       };
 
       const targetRoute = routes[id] || "/";
@@ -269,38 +476,57 @@ export function SiteHeader({
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [scrolled, setScrolled] = useState(false);
+  const [heroTransitioned, setHeroTransitioned] = useState(false);
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  useEffect(() => {
+    const handleHeroTransition = (event: Event) => {
+      const customEvent = event as CustomEvent<{ transitioned?: boolean }>;
+      setHeroTransitioned(Boolean(customEvent.detail?.transitioned));
+    };
+
+    window.addEventListener("home-hero-transition", handleHeroTransition);
+    return () => {
+      window.removeEventListener("home-hero-transition", handleHeroTransition);
+    };
+  }, []);
+
+  const isHomeHeroState = pathname === "/" && !scrolled && !heroTransitioned;
+  const isHomeHeroP2State = pathname === "/" && !scrolled && heroTransitioned;
   return (
     <header
-      className={`sticky top-0 left-0 right-0 z-50 transition-all duration-300 bg-background/80 backdrop-blur-md shadow-lg py-2`}
-      //   scrolled
-      //     ? "bg-background/80 backdrop-blur-md shadow-lg py-2"
-      //     : "bg-background py-4"
-      // } border-b border-border`}
+      className={`fixed top-0 left-0 right-0 z-100 w-full transition-all duration-300 ${
+        isHomeHeroState || isHomeHeroP2State
+          ? "bg-transparent border-none shadow-none py-4"
+          : "bg-background shadow-lg py-2"
+      }`}
+      style={
+        isHomeHeroState || isHomeHeroP2State
+          ? { background: "rgba(0,0,0,0)", boxShadow: "none", border: "none" }
+          : {}
+      }
     >
       {/* ------------------------------------------------------------------ */}
       {/* Desktop navigation */}
       {/* ------------------------------------------------------------------ */}
-      <div className="w-full site-main-px flex items-center justify-between">
+      <div
+        className={`w-full flex items-center justify-between px-8 ${isHomeHeroState ? "text-white" : ""}`}
+      >
         {/* Left side */}
         <div className="flex items-center gap-4">
           {/* Mobile Menu Trigger */}
           <HydrationSafeButton
-            className="lg:hidden text-foreground p-1 hover:bg-muted rounded-md transition-colors"
+            className={`lg:hidden p-1 rounded-md transition-colors ${
+              isHomeHeroState ? "text-TEAL hover:bg-white/15" : "text-foreground hover:bg-muted"
+            }`}
             onClick={() => setIsMenuOpen(true)}
             aria-label="Open menu"
           >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -319,7 +545,14 @@ export function SiteHeader({
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="152 220 710 215"
-              className="h-8 w-auto text-rahvana-primary fill-current"
+              className={`h-8 w-auto fill-current ${
+                isHomeHeroState
+                  ? "text-white drop-shadow-sm"
+                  : isHomeHeroP2State
+                    ? "!text-[#0d7377]"
+                    : "text-rahvana-primary"
+              }`}
+              style={isHomeHeroP2State ? { color: "#0d7377", fill: "#0d7377" } : {}}
             >
               <path d="M194.478302,411.482117C188.648972,398.666321 181.184067,387.211884 174.078979,375.556946C161.946335,355.654999 154.218430,334.429535 152.466766,310.927032C150.965759,290.787415 151.490814,271.069061 158.657028,251.953415C161.906097,243.286591 167.372574,236.333282 175.068100,231.098938C187.972153,222.321823 212.377777,222.515015 222.031631,242.165817C226.003326,250.250381 232.154404,254.994858 241.386230,255.103607C240.874603,257.700470 239.210571,257.303253 238.057617,257.539734C214.604111,262.350281 200.098267,276.975067 192.363480,299.065857C184.921768,320.319672 187.555267,352.132874 198.628662,372.172211C195.346085,360.736084 194.548477,349.072571 194.585556,337.231354C194.686203,305.091156 209.071442,282.030487 237.587112,267.388245C252.463837,259.749298 268.363953,254.738281 283.791870,248.515182C300.024750,241.967392 315.867065,234.607849 330.889893,225.571030C331.848022,224.994675 332.727417,224.133804 334.330139,224.642090C334.086884,229.016586 332.356110,232.995224 331.110291,237.029678C325.877838,253.974487 319.356995,270.258270 307.731262,284.109070C295.584656,298.580475 279.797791,306.307983 261.751282,310.259583C255.743668,311.575104 249.729248,312.898682 243.795959,314.506500C229.390137,318.410126 220.388382,329.212219 218.286926,343.947327C216.575470,355.947906 217.905655,367.798737 218.737152,379.737518C219.623474,392.463135 221.756760,405.206818 219.303925,418.003387C217.963852,424.994537 214.710114,430.344635 207.688766,433.006439C204.303909,434.289673 202.544754,433.679260 201.368622,430.074707C199.358749,423.914886 196.908096,417.898895 194.478302,411.482117z"></path>
               <path d="M347.022308,320.000671C347.016052,314.839264 347.105347,310.174835 346.965759,305.517273C346.865234,302.162506 348.128204,300.629364 351.628418,300.734467C356.786560,300.889313 361.960175,300.922363 367.113922,300.699646C370.973633,300.532806 372.427643,301.928192 372.368347,305.879303C372.186157,318.023376 372.301971,330.171936 372.301971,342.083649C373.283447,342.867767 373.819183,342.426117 374.318726,342.006836C383.782745,334.063324 394.575775,332.615875 406.196838,335.633057C415.899536,338.152130 422.744904,346.587646 423.310516,356.622040C424.267090,373.593201 423.737030,390.584991 423.953217,407.566589C423.995270,410.868988 423.022247,412.495087 419.405853,412.347473C414.084778,412.130249 408.740967,412.096069 403.421997,412.329346C399.633331,412.495514 398.561127,410.970825 398.606415,407.354187C398.766998,394.531891 398.675171,381.706299 398.663269,368.881958C398.653717,358.575378 395.399567,354.366302 387.286011,354.116821C377.843262,353.826508 372.628845,358.719452 372.391693,368.828339C372.122253,380.313904 372.349670,391.810638 372.318054,403.302399C372.289795,413.578827 373.113983,412.175079 363.109467,412.274994C359.445770,412.311584 355.772827,412.113037 352.119568,412.309662C348.129639,412.524414 346.894379,410.660309 346.908722,406.924530C346.998840,383.444702 346.970551,359.964386 346.985443,336.484253C346.988831,331.156372 347.007996,325.828522 347.022308,320.000671z"></path>
@@ -332,33 +565,97 @@ export function SiteHeader({
           </Link>
 
           <nav className="hidden lg:flex items-center gap-1">
+            <div className="relative pt-2 pb-0">
+              <Link
+                href="/visa-category/ir-category/ir1-journey"
+                onClick={(e) => handleNav("ir1-journey", e)}
+                className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  isHomeHeroState
+                    ? isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
+                      ? "bg-white/20 text-white"
+                      : "text-white/90 hover:bg-white/15 hover:text-white"
+                    : isHomeHeroP2State
+                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                      : isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                }`}
+              >
+                IR-1 Journey
+              </Link>
+            </div>
+
+            {/* 
+<div
+  ref={(el) => { navRefs.current["journeys"] = el; }}
+  className="relative pt-2 pb-0"
+  onMouseEnter={() => handleMenuEnter("journeys")}
+  onMouseLeave={handleMenuLeave}
+>
+  <HydrationSafeButton
+    className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
+      isActive("journeys") || activeMenu === "journeys"
+        ? isHomeHeroState
+          ? "bg-white/20 text-white"
+          : "bg-muted text-[#0d7377]"
+        : isHomeHeroState
+          ? "text-white/90 hover:bg-white/15 hover:text-white"
+          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+    }`}
+  >
+    Explore Journeys
+    <ChevronDown
+      className={`h-4 w-4 transition-transform duration-300 ${
+        activeMenu === "journeys" ? "rotate-180" : ""
+      }`}
+    />
+  </HydrationSafeButton>
+
+  {activeMenu === "journeys" && (
+    <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
+  )}
+</div>
+*/}
+
+            {/* Resources */}
             <div
-              ref={(el) => { navRefs.current["journeys"] = el; }}
+              ref={(el) => {
+                navRefs.current["resources"] = el;
+              }}
               className="relative pt-2 pb-0"
-              onMouseEnter={() => handleMenuEnter("journeys")}
+              onMouseEnter={() => handleMenuEnter("resources")}
               onMouseLeave={handleMenuLeave}
             >
               <HydrationSafeButton
                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
-                  isActive("journeys") || activeMenu === "journeys"
-                    ? "bg-muted text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                  isHomeHeroState
+                    ? isActive("resources") || activeMenu === "resources"
+                      ? "bg-white/20 text-white"
+                      : "text-white/90 hover:bg-white/15 hover:text-white"
+                    : isHomeHeroP2State
+                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                      : isActive("resources") || activeMenu === "resources"
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
-                Explore Journeys
+                My Resources
                 <ChevronDown
-                  className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "journeys" ? "rotate-180" : ""}`}
+                  className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "resources" ? "rotate-180" : ""}`}
                 />
               </HydrationSafeButton>
               {/* Active indicator bar */}
-              {activeMenu === "journeys" && (
+              {activeMenu === "resources" && (
                 <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
               )}
             </div>
 
-            {/* Toolbox */}
+            {/* Commented out - Tools, Guides, Services - Now under Resources */}
+            {/*
             <div
-              ref={(el) => { navRefs.current["tools"] = el; }}
+              ref={(el) => {
+                navRefs.current["tools"] = el;
+              }}
               className="relative pt-2 pb-0"
               onMouseEnter={() => handleMenuEnter("tools")}
               onMouseLeave={handleMenuLeave}
@@ -366,8 +663,12 @@ export function SiteHeader({
               <HydrationSafeButton
                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
                   isActive("tools", "/tools") || activeMenu === "tools"
-                    ? "bg-muted text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                    ? isHomeHeroState
+                      ? "bg-white/20 text-white"
+                      : "bg-muted text-[#0d7377]"
+                    : isHomeHeroState
+                      ? "text-white/90 hover:bg-white/15 hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Toolbox
@@ -375,15 +676,15 @@ export function SiteHeader({
                   className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "tools" ? "rotate-180" : ""}`}
                 />
               </HydrationSafeButton>
-              {/* Active indicator bar */}
               {activeMenu === "tools" && (
                 <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
               )}
             </div>
 
-            {/* Guides */}
             <div
-              ref={(el) => { navRefs.current["guides"] = el; }}
+              ref={(el) => {
+                navRefs.current["guides"] = el;
+              }}
               className="relative pt-2 pb-0"
               onMouseEnter={() => handleMenuEnter("guides")}
               onMouseLeave={handleMenuLeave}
@@ -391,8 +692,12 @@ export function SiteHeader({
               <HydrationSafeButton
                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
                   isActive("guides") || activeMenu === "guides"
-                    ? "bg-muted text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                    ? isHomeHeroState
+                      ? "bg-white/20 text-white"
+                      : "bg-muted text-[#0d7377]"
+                    : isHomeHeroState
+                      ? "text-white/90 hover:bg-white/15 hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Guides
@@ -400,15 +705,15 @@ export function SiteHeader({
                   className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "guides" ? "rotate-180" : ""}`}
                 />
               </HydrationSafeButton>
-              {/* Active indicator bar */}
               {activeMenu === "guides" && (
                 <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
               )}
             </div>
 
-            {/* Services */}
             <div
-              ref={(el) => { navRefs.current["services"] = el; }}
+              ref={(el) => {
+                navRefs.current["services"] = el;
+              }}
               className="relative pt-2 pb-0"
               onMouseEnter={() => handleMenuEnter("services")}
               onMouseLeave={handleMenuLeave}
@@ -416,8 +721,12 @@ export function SiteHeader({
               <HydrationSafeButton
                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
                   isActive("services", "/services") || activeMenu === "services"
-                    ? "bg-muted text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                    ? isHomeHeroState
+                      ? "bg-white/20 text-white"
+                      : "bg-muted text-[#0d7377]"
+                    : isHomeHeroState
+                      ? "text-white/90 hover:bg-white/15 hover:text-white"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Services
@@ -425,10 +734,29 @@ export function SiteHeader({
                   className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "services" ? "rotate-180" : ""}`}
                 />
               </HydrationSafeButton>
-              {/* Active indicator bar */}
               {activeMenu === "services" && (
                 <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full bg-primary" />
               )}
+            </div>
+            */}
+            <div className="relative pt-2 pb-0">
+              <Link
+                href="/about"
+                onClick={(e) => handleNav("about", e)}
+                className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  isHomeHeroState
+                    ? isActive("about", "/about")
+                      ? "bg-white/20 text-white"
+                      : "text-white/90 hover:bg-white/15 hover:text-white"
+                    : isHomeHeroP2State
+                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                      : isActive("about", "/about")
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                }`}
+              >
+                About
+              </Link>
             </div>
 
             <div className="relative pt-2 pb-0">
@@ -436,35 +764,55 @@ export function SiteHeader({
                 href="/pricing"
                 onClick={(e) => handleNav("pricing", e)}
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                  isActive("pricing", "/pricing")
-                    ? "bg-muted text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                  isHomeHeroState
+                    ? isActive("pricing", "/pricing")
+                      ? "bg-white/20 text-white"
+                      : "text-white/90 hover:bg-white/15 hover:text-white"
+                    : isHomeHeroP2State
+                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                      : isActive("pricing", "/pricing")
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Pricing
               </Link>
             </div>
-            <div className="relative pt-2 pb-0">
-              <Link
-                href="/#faq"
-                onClick={(e) => handleNav("faq", e)}
-                className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                  isActive("faq")
-                    ? "bg-muted text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary"
-                }`}
-              >
-                FAQ
-              </Link>
-            </div>
+            {pathname === "/" && (
+              <div className="relative pt-2 pb-0">
+                <Link
+                  href="/#faq"
+                  onClick={(e) => handleNav("faq", e)}
+                  className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                    isHomeHeroState
+                      ? isActive("faq")
+                        ? "bg-white/20 text-white"
+                        : "text-white/90 hover:bg-white/15 hover:text-white"
+                      : isHomeHeroP2State
+                        ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                        : isActive("faq")
+                          ? "bg-muted text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                  }`}
+                >
+                  FAQ
+                </Link>
+              </div>
+            )}
             <div className="relative pt-2 pb-0">
               <Link
                 href="/#contact"
                 onClick={(e) => handleNav("contact", e)}
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
-                  isActive("contact")
-                    ? "bg-muted text-primary"
-                    : "text-muted-foreground hover:bg-muted hover:text-primary"
+                  isHomeHeroState
+                    ? isActive("contact")
+                      ? "bg-white/20 text-white"
+                      : "text-white/90 hover:bg-white/15 hover:text-white"
+                    : isHomeHeroP2State
+                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                      : isActive("contact")
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Contact
@@ -476,7 +824,7 @@ export function SiteHeader({
         {/* --- GLOBAL MEGAMENU PLACEMENT --- */}
         <div
           ref={megaMenuContainerRef}
-          className="absolute top-[calc(100%-14px)] left-0 right-0 w-full px-6 pointer-events-auto z-50"
+          className="absolute top-[calc(100%-14px)] left-0 right-0 w-full px-6 pointer-events-auto z-[9999]"
           onMouseEnter={() => {
             if (activeMenu && activeMenu !== "profile") {
               if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
@@ -484,18 +832,78 @@ export function SiteHeader({
           }}
           onMouseLeave={handleMenuLeave}
         >
-            {activeMenu === "journeys" && (
-              <MegaMenu key="journeys" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.journeys} />
-            )}
-            {activeMenu === "tools" && (
-              <MegaMenu key="tools" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.tools} />
-            )}
-            {activeMenu === "guides" && (
-              <MegaMenu key="guides" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.guides} />
-            )}
-            {activeMenu === "services" && (
-              <MegaMenu key="services" isOpen={true} arrowOffset={arrowOffset} {...NAV_DATA.services} />
-            )}
+          {activeMenu === "journeys" && (
+            <MegaMenu
+              key="journeys"
+              isOpen={true}
+              arrowOffset={arrowOffset}
+              {...NAV_DATA.journeys}
+            />
+          )}
+          {activeMenu === "resources" && (
+            <motion.div
+              initial={{ opacity: 0, y: -8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.15 }}
+              className="absolute top-full border border-slate-200 bg-white shadow-xl rounded-xl p-4 mt-2"
+              style={{ width: "200px", left: `${arrowOffset - 90}px` }}
+            >
+              <div>
+                <Link
+                  href="/resources?tab=toolbox"
+                  onClick={handleLinkClick}
+                  className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
+                >
+                  <Wrench className="h-4 w-4 text-[#0d7377] dark:text-teal-400" />
+                  My Tools
+                </Link>
+                <Link
+                  href="/resources?tab=services"
+                  onClick={handleLinkClick}
+                  className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
+                >
+                  <Briefcase className="h-4 w-4 text-amber-500 dark:text-amber-400" />
+                  My Services
+                </Link>
+                <Link
+                  href="/resources?tab=guides"
+                  onClick={handleLinkClick}
+                  className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
+                >
+                  <BookOpen className="h-4 w-4 text-cyan-500 dark:text-cyan-400" />
+                  My Guides
+                </Link>
+              </div>
+            </motion.div>
+          )}
+          {/* Commented out - Tools, Guides, Services now under Resources */}
+          {/*
+          {activeMenu === "tools" && (
+            <MegaMenu
+              key="tools"
+              isOpen={true}
+              arrowOffset={arrowOffset}
+              {...NAV_DATA.tools}
+            />
+          )}
+          {activeMenu === "guides" && (
+            <MegaMenu
+              key="guides"
+              isOpen={true}
+              arrowOffset={arrowOffset}
+              {...NAV_DATA.guides}
+            />
+          )}
+          {activeMenu === "services" && (
+            <MegaMenu
+              key="services"
+              isOpen={true}
+              arrowOffset={arrowOffset}
+              {...NAV_DATA.services}
+            />
+          )}
+          */}
         </div>
 
         {/* Right side – Search + Login */}
@@ -518,13 +926,45 @@ export function SiteHeader({
             : isSignedIn && (
                 <div className="relative" ref={notifRef}>
                   <HydrationSafeButton
-                    variant="outline"
+                    variant="ghost"
                     size="icon"
                     aria-label="Notifications"
-                    onClick={() => setNotificationsOpen((prev) => !prev)}
-                    className="relative bg-transparent hover:bg-primary/10 p-2 rounded-md text-muted-foreground hover:text-primary transition-colors"
+                    onClick={handleBellClick}
+                    className={`relative rounded-md transition-colors shadow-none border-0 ${
+                      isHomeHeroState
+                        ? "text-white"
+                        : isHomeHeroP2State
+                          ? "text-white"
+                          : "text-rahvana-primary"
+                    }`}
+                    style={{
+                      padding: 0,
+                      width: 40,
+                      height: 40,
+                      background: "none",
+                      boxShadow: "none",
+                      border: "none",
+                      borderRadius: "50%",
+                    }}
                   >
-                    <Bell className="h-5 w-5" aria-hidden="true" />
+                    <div className="relative inline-flex">
+                      <Bell
+                        className="h-5 w-5"
+                        aria-hidden="true"
+                        style={
+                          isHomeHeroP2State
+                            ? { color: "#fff" }
+                            : isHomeHeroState
+                              ? { color: "#fff" }
+                              : { color: "var(--rahvana-primary, #0d7377)" }
+                        }
+                      />
+                      {unreadCount > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center border border-white/50">
+                          {unreadCount > 9 ? "9+" : unreadCount}
+                        </span>
+                      )}
+                    </div>
                   </HydrationSafeButton>
 
                   <AnimatePresence>
@@ -534,45 +974,122 @@ export function SiteHeader({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 8 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute right-0 top-full mt-1 w-80 rounded-xl shadow-xl border border-border bg-card z-9999 overflow-hidden origin-top-right"
+                        className="absolute right-0 top-full mt-1 w-80 rounded-xl shadow-xl border border-slate-200 bg-white z-9999 overflow-hidden origin-top-right"
                       >
                         {/* Header */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
                           <div className="flex items-center gap-2">
-                            <Bell className="w-4 h-4 text-primary" />
+                            <Bell className="w-4 h-4 text-[#0d7377]" />
                             <span className="text-sm font-bold text-foreground">Notifications</span>
                           </div>
                           <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
-                            0 New
+                            {unreadCount > 0 ? `${unreadCount} New` : "0 New"}
                           </span>
                         </div>
 
-                        {/* Empty state body */}
-                        <div className="flex flex-col items-center justify-center px-6 py-10 gap-4">
-                          <div className="relative">
-                            <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center shadow-inner">
-                              <BellOff className="w-7 h-7 text-muted-foreground/50" />
+                        {/* Body */}
+                        <div className="max-h-[340px] overflow-y-auto">
+                          {notifList.length === 0 ? (
+                            <div className="flex flex-col items-center justify-center px-6 py-10 gap-4">
+                              <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center">
+                                <BellOff className="w-6 h-6 text-muted-foreground/50" />
+                              </div>
+                              <div className="text-center space-y-1">
+                                <p className="text-sm font-semibold text-foreground">
+                                  All caught up!
+                                </p>
+                                <p className="text-xs text-muted-foreground max-w-[180px] mx-auto leading-relaxed">
+                                  No pending notifications right now.
+                                </p>
+                              </div>
                             </div>
-                            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center">
-                              <Sparkles className="w-3 h-3 text-primary" />
-                            </span>
-                          </div>
-                          <div className="text-center space-y-1">
-                            <p className="text-sm font-semibold text-foreground">You&apos;re all caught up!</p>
-                            <p className="text-xs text-muted-foreground leading-relaxed max-w-50 mx-auto">
-                              No new notifications right now. We&apos;ll let you know when something needs your attention.
-                            </p>
-                          </div>
+                          ) : (
+                            <div className="divide-y divide-border">
+                              {notifList.slice(0, 8).map((n: any) => {
+                                const isExpanded = expandedNotifs.has(n.id);
+                                const bodyLong = n.body && n.body.length > 80;
+                                const isRead = n._source === "app" ? !!n.is_read : readIds.has(n.id);
+                                return (
+                                  <div
+                                    key={n.id}
+                                    className={`px-4 py-3 flex gap-3 items-start transition-colors ${
+                                      !isRead
+                                        ? n.priority === "critical" || n.priority === "high"
+                                          ? "bg-orange-50 hover:bg-orange-100/60"
+                                          : "bg-[#f0f7ff] hover:bg-[#e8f2fb]"
+                                        : "bg-white hover:bg-muted/30"
+                                    }`}
+                                  >
+                                    {/* Unread dot — only when unread */}
+                                    <div className="mt-1.5 shrink-0 w-1.5 h-1.5">
+                                      {!isRead && (
+                                        <div
+                                          className={`w-1.5 h-1.5 rounded-full ${n.priority === "critical" ? "bg-red-500" : n.priority === "high" ? "bg-orange-400" : "bg-[#0d7377]"}`}
+                                        />
+                                      )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p
+                                        className={`text-[12px] text-foreground ${isRead ? "font-medium opacity-70" : "font-bold"}`}
+                                      >
+                                        {n.title}
+                                      </p>
+                                      <p
+                                        className={`text-[11px] mt-0.5 leading-relaxed ${isRead ? "text-muted-foreground/60" : "text-muted-foreground"} ${isExpanded ? "" : "line-clamp-2"}`}
+                                      >
+                                        {n.body}
+                                      </p>
+                                      {bodyLong && (
+                                        <button
+                                          onClick={() => toggleExpand(n.id)}
+                                          className="text-[10px] font-bold text-[#0d7377] hover:underline mt-0.5"
+                                        >
+                                          {isExpanded ? "Show less ↑" : "Read more ↓"}
+                                        </button>
+                                      )}
+                                      {!isRead && (
+                                        <button
+                                          onClick={() => markOneRead(n.id)}
+                                          className="text-[10px] font-semibold text-[#0d7377] hover:underline flex items-center gap-1 mt-1"
+                                        >
+                                          <span className="w-3 h-3 rounded-full border border-[#0d7377] flex items-center justify-center text-[7px]">
+                                            ✓
+                                          </span>
+                                          Mark as read
+                                        </button>
+                                      )}
+                                      {n.action_label && n.action_url && (
+                                        <a
+                                          href={n.action_url}
+                                          className="text-[10px] font-black text-[#0d7377] hover:underline mt-1 inline-block uppercase tracking-wide"
+                                        >
+                                          {n.action_label} →
+                                        </a>
+                                      )}
+                                    </div>
+                                    <button
+                                      onClick={() => dismissNotif(n.id)}
+                                      className="text-muted-foreground hover:text-red-400 text-[10px] shrink-0 mt-0.5"
+                                    >
+                                      ✕
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          )}
                         </div>
 
                         {/* Footer */}
-                        <div className="px-4 py-3 border-t border-border bg-muted/20 flex items-center justify-center">
-                          <button
-                            className="text-xs text-muted-foreground hover:text-primary font-medium transition-colors"
-                            onClick={() => setNotificationsOpen(false)}
-                          >
-                            Dismiss
-                          </button>
+                        <div className="px-4 py-3 border-t border-border bg-muted/20 flex items-center justify-between">
+                          {notifList.length > 0 && (
+                            <button
+                              className="text-xs text-muted-foreground hover:text-red-400 font-medium transition-colors"
+                              onClick={() => notifList.forEach((n: any) => dismissNotif(n.id))}
+                            >
+                              Delete all
+                            </button>
+                          )}
                         </div>
                       </motion.div>
                     )}
@@ -582,7 +1099,7 @@ export function SiteHeader({
 
           {/* LOGIN / PROFILE toggle */}
           {isLoading && !resolvedUser ? (
-            <div className="w-22 h-10 rounded-lg bg-primary/10 animate-pulse" />
+            <div className="w-22 h-10 rounded-lg bg-[#0d7377]/10 animate-pulse" />
           ) : user ? (
             <div
               className="relative"
@@ -594,22 +1111,52 @@ export function SiteHeader({
               }}
               onMouseLeave={handleMenuLeave}
             >
-              <HydrationSafeButton 
+              <HydrationSafeButton
                 onClick={(e) => {
                   e.stopPropagation();
                   if (menuTimeoutRef.current) clearTimeout(menuTimeoutRef.current);
                   setActiveMenu(activeMenu === "profile" ? null : "profile");
                 }}
-                className="flex items-center justify-center w-10 h-10 rounded-full bg-primary/10 border-2 border-primary/20 text-primary hover:bg-primary/20 transition-all shadow-sm font-semibold text-lg"
+                className={`flex items-center justify-center transition-all shadow-none font-semibold text-lg rounded-none w-auto h-auto p-0 mb-2 ${
+                  isHomeHeroState
+                    ? "text-white"
+                    : isHomeHeroP2State
+                      ? "text-white"
+                      : "text-rahvana-primary"
+                }`}
+                style={{
+                  background: "none",
+                  boxShadow: "none",
+                  border: "none",
+                  width: "auto",
+                  height: "auto",
+                  padding: 0,
+                  borderRadius: 0,
+                }}
               >
-                {(
-                  profile?.full_name ||
-                  user?.user_metadata?.full_name ||
-                  user?.user_metadata?.name ||
-                  "U"
-                )
-                  .charAt(0)
-                  .toUpperCase()}
+                <span
+                  style={
+                    isHomeHeroP2State
+                      ? { color: "#fff" }
+                      : isHomeHeroState
+                        ? { color: "#fff" }
+                        : { color: "var(--rahvana-primary, #0d7377)" }
+                  }
+                  // className={`flex items-center justify-center w-[34px] h-[34px] rounded-full border-[1.5px] text-[15px] font-bold transition-colors ${
+                  //   isHomeHeroState || isHomeHeroP2State
+                  //     ? "bg-white/20 border-white/40 text-white"
+                  //     : "bg-[#0d7377]/10 border-[#0d7377]/30 text-[#0d7377]"
+                  // }`}
+                >
+                  {(
+                    profile?.full_name ||
+                    user?.user_metadata?.full_name ||
+                    user?.user_metadata?.name ||
+                    "U"
+                  )
+                    .charAt(0)
+                    .toUpperCase()}
+                </span>
               </HydrationSafeButton>
 
               <AnimatePresence>
@@ -618,7 +1165,7 @@ export function SiteHeader({
                     initial={{ opacity: 0, scale: 0.95, y: 10 }}
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 10 }}
-                    className="absolute right-0 top-full mt-1 w-72 max-h-[80vh] overflow-y-auto rounded-xl shadow-xl border border-border bg-card z-9999 transform origin-top-right"
+                    className="absolute right-0 top-full mt-1 w-72 max-h-[80vh] overflow-y-auto rounded-xl shadow-xl border border-slate-200 bg-white z-9999 transform origin-top-right"
                   >
                     {/* Header */}
                     <div className="px-5 py-4 border-b border-border bg-muted/30">
@@ -638,28 +1185,28 @@ export function SiteHeader({
                       <button
                         id="my-dashboard-menu-item"
                         onClick={() => handleNav("dashboard")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <Layout className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                         My Dashboard
                       </button>
                       <button
                         onClick={() => handleNav("profile")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <UserIcon className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                         My Profile
                       </button>
                       <button
                         onClick={() => handleNav("document-vault")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <FolderLock className="w-4 h-4 text-indigo-600 dark:text-indigo-400" />
                         Document Vault
                       </button>
                       <button
                         onClick={() => handleNav("portal-wallet")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <LockIcon className="w-4 h-4 text-indigo-500 dark:text-indigo-400" />
                         Portal Wallet
@@ -669,7 +1216,7 @@ export function SiteHeader({
                         onClick={() =>
                           setTheme(theme === "dark" ? "light" : "dark")
                         }
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <div className="relative w-4 h-4">
                           <Sun className="absolute w-4 h-4 rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
@@ -683,21 +1230,21 @@ export function SiteHeader({
                     <div className="py-2 border-b border-border">
                       <button
                         onClick={() => handleNav("settings")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <Settings className="w-4 h-4 text-slate-500 dark:text-slate-400" />
                         Account Settings
                       </button>
                       {/* <button
                         onClick={() => handleNav("view-security-questions")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <Shield className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                         My Credentials
                       </button> */}
                       <button
                         onClick={() => {}} // Placeholder
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-sm font-medium"
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <HelpCircle className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
                         Help Center
@@ -721,7 +1268,11 @@ export function SiteHeader({
           ) : (
             <HydrationSafeButton
               onClick={() => onToggleAuth?.()}
-              className="font-semibold text-white bg-primary hover:bg-primary/90 shadow-md px-6 py-2 rounded-lg transition-all"
+              className={`font-semibold px-6 py-2 rounded-lg transition-all shadow-md ${
+                isHomeHeroState
+                  ? "text-[#6d9a9b] bg-white/50 hover:bg-white/65"
+                  : "text-white bg-primary hover:bg-primary/90"
+              }`}
             >
               LOGIN
             </HydrationSafeButton>
@@ -734,9 +1285,7 @@ export function SiteHeader({
       {/* ------------------------------------------------------------------ */}
       <div
         className={`fixed inset-0 z-100 h-dvh lg:hidden transition-all duration-300 ${
-          isMenuOpen
-            ? "opacity-100 visible"
-            : "opacity-0 invisible pointer-events-none"
+          isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible pointer-events-none"
         }`}
       >
         {/* Backdrop */}
@@ -788,12 +1337,7 @@ export function SiteHeader({
               onClick={() => setIsMenuOpen(false)}
               aria-label="Close menu"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -806,84 +1350,177 @@ export function SiteHeader({
 
           <div className="flex-1 overflow-y-auto py-4">
             <nav className="flex flex-col px-4 gap-1">
+              {/* IR-1 Journey Link */}
+              <HydrationSafeButton
+                onClick={() => handleNav("ir1-journey")}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                  isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
+                    ? "bg-[#0d7377]/10 text-[#0d7377]"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <Briefcase className="w-5 h-5 text-teal-600 dark:text-teal-400" />
+                <span className="font-bold">IR-1 Journey</span>
+              </HydrationSafeButton>
+
+              {/* Commented out - Explore Journeys - Now using IR-1 Journey */}
               {/* <HydrationSafeButton
-                  onClick={() => handleNav("home")}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                    isActive("home", "/")
-                      ? "bg-primary/10 text-primary"
-                      : "text-muted-foreground hover:bg-muted"
+                onClick={() => {
+                  setExpandedSections((prev) =>
+                    prev.includes("journeys")
+                      ? prev.filter((s) => s !== "journeys")
+                      : [...prev, "journeys"],
+                  );
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted transition-all cursor-pointer"
+              >
+                <div className="flex items-center gap-3">
+                  <Briefcase className="w-5 h-5 text-[#0d7377]" />
+                  <span className="font-bold">Explore Journeys</span>
+                </div>
+                <ChevronDown
+                  className={`h-4 w-4 transition-transform duration-400 ${
+                    expandedSections.includes("journeys") ? "rotate-180" : ""
                   }`}
+                />
+              </HydrationSafeButton>
+              */}
+
+              {/* Resources Section - Mobile */}
+              <div className="mt-2">
+                <HydrationSafeButton
+                  onClick={() => {
+                    setExpandedSections((prev) =>
+                      prev.includes("resources")
+                        ? prev.filter((s) => s !== "resources")
+                        : [...prev, "resources"]
+                    );
+                  }}
+                  className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted transition-all cursor-pointer"
                 >
-                  <span className="font-bold">Home</span>
-                </HydrationSafeButton> */}
+                  <div className="flex items-center gap-3">
+                    <ToolCase className="w-5 h-5 text-[#db8090] dark:text-[#db8090]" />
+                    <span className="font-bold">My Resources</span>
+                  </div>
+                  <ChevronDown
+                    className={`h-4 w-4 transition-transform duration-400 ${
+                      expandedSections.includes("resources") ? "rotate-180" : ""
+                    }`}
+                  />
+                </HydrationSafeButton>
+
+                <AnimatePresence initial={false}>
+                  {expandedSections.includes("resources") && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className="overflow-hidden"
+                    >
+                      <div className="ml-9 mt-1 flex flex-col gap-2 border-l-2 border-slate-100 pl-4 py-2">
+                        <Link
+                          href="/resources?tab=toolbox"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
+                        >
+                          My Tools
+                        </Link>
+                        <Link
+                          href="/resources?tab=services"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
+                        >
+                          My Services
+                        </Link>
+                        <Link
+                          href="/resources?tab=guides"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
+                        >
+                          My Guides
+                        </Link>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
 
               {/* Dynamic Mobile Menu Sections */}
-              {Object.values(NAV_DATA).map((section) => (
-                <div key={section.id} className="mt-2">
-                  <HydrationSafeButton
-                    onClick={() => {
-                      setExpandedSections((prev) =>
-                        prev.includes(section.id)
-                          ? prev.filter((s) => s !== section.id)
-                          : [...prev, section.id],
-                      );
-                    }}
-                    className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted transition-all cursor-pointer"
-                  >
-                    <div className="flex items-center gap-3">
-                      {MOBILE_ICONS[section.id] || (
-                        <Briefcase className="w-5 h-5 text-primary" />
-                      )}
-                      <span className="font-bold">{section.label}</span>
-                    </div>
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform duration-400 ${
-                        expandedSections.includes(section.id)
-                          ? "rotate-180"
-                          : ""
-                      }`}
-                    />
-                  </HydrationSafeButton>
+              {Object.values(NAV_DATA).map((section) => {
+                // Skip journeys and tools, guides, services sections
+                if (
+                  section.id === "journeys" ||
+                  section.id === "tools" ||
+                  section.id === "guides" ||
+                  section.id === "services"
+                ) {
+                  return null;
+                }
+                return (
+                  <div key={section.id} className="mt-2">
+                    <HydrationSafeButton
+                      onClick={() => {
+                        setExpandedSections((prev) =>
+                          prev.includes(section.id)
+                            ? prev.filter((s) => s !== section.id)
+                            : [...prev, section.id]
+                        );
+                      }}
+                      className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted transition-all cursor-pointer"
+                    >
+                      <div className="flex items-center gap-3">
+                        {MOBILE_ICONS[section.id] || (
+                          <Briefcase className="w-5 h-5 text-[#0d7377]" />
+                        )}
+                        <span className="font-bold">{section.label}</span>
+                      </div>
+                      <ChevronDown
+                        className={`h-4 w-4 transition-transform duration-400 ${
+                          expandedSections.includes(section.id) ? "rotate-180" : ""
+                        }`}
+                      />
+                    </HydrationSafeButton>
 
-                  <AnimatePresence initial={false}>
-                    {expandedSections.includes(section.id) && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
-                        className="overflow-hidden"
-                      >
-                        <div className="ml-9 mt-1 flex flex-col gap-4 border-l-2 border-slate-100 pl-4 py-2">
-                          {section.tabs.map((tab) => (
-                            <div key={tab.id} className="flex flex-col gap-2">
-                              {/* Tab Label */}
-                              <div className="text-sm font-semibold text-slate-900">
-                                {tab.label}
-                              </div>
+                    <AnimatePresence initial={false}>
+                      {expandedSections.includes(section.id) && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2, ease: "easeInOut" }}
+                          className="overflow-hidden"
+                        >
+                          <div className="ml-9 mt-1 flex flex-col gap-4 border-l-2 border-slate-100 pl-4 py-2">
+                            {section.tabs.map((tab) => (
+                              <div key={tab.id} className="flex flex-col gap-2">
+                                {/* Tab Label */}
+                                <div className="text-sm font-semibold text-slate-900">
+                                  {tab.label}
+                                </div>
 
-                              {/* Render Categories if present */}
-                              {tab.categories?.map((cat, idx) => (
-                                <div key={idx} className="flex flex-col gap-1">
-                                  <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
-                                    {cat.label}
-                                  </div>
-                                  {cat.items.map((item, i) => (
-                                    <Link
-                                      key={i}
-                                      href={item.href}
-                                      onClick={() => setIsMenuOpen(false)}
-                                      className={`block py-2 text-sm transition-all rounded-md px-2 ${
-                                        item.disabled
-                                          ? "text-slate-400 cursor-not-allowed"
-                                          : isActive(item.title, item.href)
-                                            ? "text-primary font-semibold bg-primary/10"
-                                            : "text-slate-600 hover:text-primary hover:bg-slate-50"
-                                      }`}
-                                    >
-                                      <span className="flex items-center gap-2">
-                                        {item.title}
-                                        {/* {item.badge && (
+                                {/* Render Categories if present */}
+                                {tab.categories?.map((cat, idx) => (
+                                  <div key={idx} className="flex flex-col gap-1">
+                                    <div className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">
+                                      {cat.label}
+                                    </div>
+                                    {cat.items.map((item, i) => (
+                                      <Link
+                                        key={i}
+                                        href={item.href}
+                                        onClick={handleLinkClick}
+                                        className={`block py-2 text-sm transition-all rounded-md px-2 ${
+                                          item.disabled
+                                            ? "text-slate-400 cursor-not-allowed"
+                                            : isActive(item.title, item.href)
+                                              ? "text-[#0d7377] font-semibold bg-[#0d7377]/10"
+                                              : "text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
+                                        }`}
+                                      >
+                                        <span className="flex items-center gap-2">
+                                          {item.title}
+                                          {/* {item.badge && (
                                         <span
                                           className={`text-[10px] px-1.5 py-0.5 rounded-full ${
                                             item.badge === "Live"
@@ -894,29 +1531,29 @@ export function SiteHeader({
                                           {item.badge}
                                         </span>
                                       )} */}
-                                      </span>
-                                    </Link>
-                                  ))}
-                                </div>
-                              ))}
+                                        </span>
+                                      </Link>
+                                    ))}
+                                  </div>
+                                ))}
 
-                              {/* Render Direct Items if present */}
-                              {tab.items?.map((item, i) => (
-                                <Link
-                                  key={i}
-                                  href={item.href}
-                                  onClick={() => setIsMenuOpen(false)}
-                                  className={`block py-2 text-sm transition-all rounded-md px-2 ${
-                                    item.disabled
-                                      ? "text-slate-400 cursor-not-allowed"
-                                      : isActive(item.title, item.href)
-                                        ? "text-primary font-semibold bg-primary/10"
-                                        : "text-slate-600 hover:text-primary hover:bg-slate-50"
-                                  }`}
-                                >
-                                  <span className="flex items-center gap-2">
-                                    {item.title}
-                                    {/* {item.badge && (
+                                {/* Render Direct Items if present */}
+                                {tab.items?.map((item, i) => (
+                                  <Link
+                                    key={i}
+                                    href={item.href}
+                                    onClick={handleLinkClick}
+                                    className={`block py-2 text-sm transition-all rounded-md px-2 ${
+                                      item.disabled
+                                        ? "text-slate-400 cursor-not-allowed"
+                                        : isActive(item.title, item.href)
+                                          ? "text-[#0d7377] font-semibold bg-[#0d7377]/10"
+                                          : "text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
+                                    }`}
+                                  >
+                                    <span className="flex items-center gap-2">
+                                      {item.title}
+                                      {/* {item.badge && (
                                     <span
                                       className={`text-[10px] px-1.5 py-0.5 rounded-full ${
                                         item.badge === "Live"
@@ -927,52 +1564,66 @@ export function SiteHeader({
                                       {item.badge}
                                     </span>
                                   )} */}
-                                  </span>
-                                </Link>
-                              ))}
-                            </div>
-                          ))}
+                                    </span>
+                                  </Link>
+                                ))}
+                              </div>
+                            ))}
 
-                          {/* Footer Link */}
-                          {section.footerLink && (
-                            <Link
-                              href={section.footerLink.href}
-                              onClick={() => setIsMenuOpen(false)}
-                              className="text-sm font-semibold text-primary hover:underline mt-2 flex items-center gap-1 px-2"
-                            >
-                              {section.footerLink.label} &rarr;
-                            </Link>
-                          )}
-                        </div>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              ))}
+                            {/* Footer Link */}
+                            {section.footerLink && (
+                              <Link
+                                href={section.footerLink.href}
+                                onClick={handleLinkClick}
+                                className="text-sm font-semibold text-[#0d7377] hover:underline mt-2 flex items-center gap-1 px-2"
+                              >
+                                {section.footerLink.label} &rarr;
+                              </Link>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
 
               {/* <div className="mt-4 px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400">General</div> */}
+              <HydrationSafeButton
+                onClick={() => handleNav("about")}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                  isActive("about")
+                    ? "bg-[#0d7377]/10 text-[#0d7377]"
+                    : "text-muted-foreground hover:bg-muted"
+                }`}
+              >
+                <Info className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
+                <span className="font-bold">About</span>
+              </HydrationSafeButton>
               <HydrationSafeButton
                 onClick={() => handleNav("pricing")}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
                   isActive("pricing")
-                    ? "bg-primary/10 text-primary"
+                    ? "bg-[#0d7377]/10 text-[#0d7377]"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
               >
                 <CreditCard className="w-5 h-5 text-amber-500 dark:text-amber-400" />
                 <span className="font-bold">Pricing</span>
               </HydrationSafeButton>
-              <HydrationSafeButton
-                onClick={() => handleNav("faq")}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                  isActive("faq")
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-muted"
-                }`}
-              >
-                <HelpCircleIcon className="w-5 h-5 text-cyan-500 dark:text-cyan-400 text-" />
-                <span className="font-bold">FAQ</span>
-              </HydrationSafeButton>
+              {pathname === "/" && (
+                <HydrationSafeButton
+                  onClick={() => handleNav("faq")}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
+                    isActive("faq")
+                      ? "bg-[#0d7377]/10 text-[#0d7377]"
+                      : "text-muted-foreground hover:bg-muted"
+                  }`}
+                >
+                  <HelpCircleIcon className="w-5 h-5 text-cyan-500 dark:text-cyan-400 text-" />
+                  <span className="font-bold">FAQ</span>
+                </HydrationSafeButton>
+              )}
               {/* {isSignedIn && (
                   <>
                     <HydrationSafeButton
@@ -1040,7 +1691,7 @@ export function SiteHeader({
                     : "text-muted-foreground hover:bg-muted"
                 }`}
               >
-                <Mail className="w-5 h-5 text-rose-500 dark:text-rose-400" />
+                <Mail className="w-5 h-5 text-[#0d7377]" />
                 <span className="font-bold">Contact</span>
               </HydrationSafeButton>
             </nav>

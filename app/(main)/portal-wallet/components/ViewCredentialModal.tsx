@@ -44,32 +44,28 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
   onDelete,
 }) => {
   const [revealedPassword, setRevealedPassword] = useState<string | null>(null);
-  const [revealedAnswers, setRevealedAnswers] = useState<
-    Record<string, string>
-  >({});
-  const [revealedCaseNumber, setRevealedCaseNumber] = useState<string | null>(
-    null,
-  );
-  const [revealedInvoiceId, setRevealedInvoiceId] = useState<string | null>(
-    null,
-  );
+  const [revealedAnswers, setRevealedAnswers] = useState<Record<string, string>>({});
+  const [revealedCaseNumber, setRevealedCaseNumber] = useState<string | null>(null);
+  const [revealedInvoiceId, setRevealedInvoiceId] = useState<string | null>(null);
 
   const [loadingPassword, setLoadingPassword] = useState(false);
   const [loadingCaseNumber, setLoadingCaseNumber] = useState(false);
   const [loadingInvoiceId, setLoadingInvoiceId] = useState(false);
-  const [loadingAnswers, setLoadingAnswers] = useState<Record<string, boolean>>(
-    {},
-  );
+  const [loadingAnswers, setLoadingAnswers] = useState<Record<string, boolean>>({});
 
   const [copiedField, setCopiedField] = useState<string | null>(null);
 
   useEffect(() => {
     if (isOpen) {
+      document.body.style.overflow = "hidden";
       setRevealedPassword(null);
       setRevealedAnswers({});
       setRevealedCaseNumber(null);
       setRevealedInvoiceId(null);
     }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
   }, [credential?.id, isOpen]);
 
   const copyToClipboard = (text: string, field: string) => {
@@ -128,15 +124,12 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
   if (!isOpen || !credential) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       {/* Overlay */}
-      <div
-        className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-        onClick={handleClose}
-      />
+      <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" />
 
-      {/* Modal */}
-      <div className="relative bg-white rounded-2xl w-full max-w-xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col">
+      {/* Modal Container */}
+      <div className="relative bg-white rounded-2xl w-full max-w-xl max-h-[85vh] overflow-hidden shadow-2xl flex flex-col z-[101]">
         {/* Header */}
         <div className="flex items-center justify-between border-b border-[#e0f0f0] px-6 py-4">
           <div className="flex items-center gap-3">
@@ -145,13 +138,9 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
             </div>
 
             <div>
-              <h2 className="text-[16px] font-bold text-[#0a1128]">
-                {portalType} Credentials
-              </h2>
+              <h2 className="text-[16px] font-bold text-[#0a1128]">{portalType} Credentials</h2>
 
-              <p className="text-[11px] text-[#9ca3af]">
-                Click eye icon to reveal sensitive data
-              </p>
+              <p className="text-[11px] text-[#9ca3af]">Click eye icon to reveal sensitive data</p>
             </div>
           </div>
 
@@ -175,17 +164,13 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
 
                 <div className="flex items-center justify-between">
                   <span className="text-[14px] font-medium text-[#0a1128] font-mono">
-                    {loadingCaseNumber
-                      ? "Decrypting..."
-                      : revealedCaseNumber || "••••••••"}
+                    {loadingCaseNumber ? "Decrypting..." : revealedCaseNumber || "••••••••"}
                   </span>
 
                   <div className="flex items-center gap-2">
                     {revealedCaseNumber && (
                       <button
-                        onClick={() =>
-                          copyToClipboard(revealedCaseNumber, "case_number")
-                        }
+                        onClick={() => copyToClipboard(revealedCaseNumber, "case_number")}
                         className="text-[#9ca3af] hover:text-[#0d7377]"
                       >
                         {copiedField === "case_number" ? (
@@ -201,11 +186,7 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
                       disabled={loadingCaseNumber}
                       className="text-[#9ca3af] hover:text-[#0d7377]"
                     >
-                      {revealedCaseNumber ? (
-                        <Eye size={16} />
-                      ) : (
-                        <EyeOff size={16} />
-                      )}
+                      {revealedCaseNumber ? <Eye size={16} /> : <EyeOff size={16} />}
                     </button>
                   </div>
                 </div>
@@ -219,17 +200,13 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
 
                 <div className="flex items-center justify-between">
                   <span className="text-[14px] font-medium text-[#0a1128] font-mono">
-                    {loadingInvoiceId
-                      ? "Decrypting..."
-                      : revealedInvoiceId || "••••••••"}
+                    {loadingInvoiceId ? "Decrypting..." : revealedInvoiceId || "••••••••"}
                   </span>
 
                   <div className="flex items-center gap-2">
                     {revealedInvoiceId && (
                       <button
-                        onClick={() =>
-                          copyToClipboard(revealedInvoiceId, "invoice_id")
-                        }
+                        onClick={() => copyToClipboard(revealedInvoiceId, "invoice_id")}
                         className="text-[#9ca3af] hover:text-[#0d7377]"
                       >
                         {copiedField === "invoice_id" ? (
@@ -245,11 +222,7 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
                       disabled={loadingInvoiceId}
                       className="text-[#9ca3af] hover:text-[#0d7377]"
                     >
-                      {revealedInvoiceId ? (
-                        <Eye size={16} />
-                      ) : (
-                        <EyeOff size={16} />
-                      )}
+                      {revealedInvoiceId ? <Eye size={16} /> : <EyeOff size={16} />}
                     </button>
                   </div>
                 </div>
@@ -271,9 +244,7 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
                   </span>
 
                   <button
-                    onClick={() =>
-                      copyToClipboard(credential.username ?? "", "username")
-                    }
+                    onClick={() => copyToClipboard(credential.username ?? "", "username")}
                     className="text-[#9ca3af] hover:text-[#0d7377] transition-colors"
                   >
                     {copiedField === "username" ? (
@@ -293,17 +264,13 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
 
                 <div className="flex items-center justify-between">
                   <span className="text-[14px] font-medium text-[#0a1128] font-mono">
-                    {loadingPassword
-                      ? "Decrypting..."
-                      : revealedPassword || "••••••••••"}
+                    {loadingPassword ? "Decrypting..." : revealedPassword || "••••••••••"}
                   </span>
 
                   <div className="flex items-center gap-2">
                     {revealedPassword && (
                       <button
-                        onClick={() =>
-                          copyToClipboard(revealedPassword, "password")
-                        }
+                        onClick={() => copyToClipboard(revealedPassword, "password")}
                         className="text-[#9ca3af] hover:text-[#0d7377]"
                       >
                         {copiedField === "password" ? (
@@ -319,11 +286,7 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
                       disabled={loadingPassword}
                       className="text-[#9ca3af] hover:text-[#0d7377] disabled:opacity-50"
                     >
-                      {revealedPassword ? (
-                        <Eye size={16} />
-                      ) : (
-                        <EyeOff size={16} />
-                      )}
+                      {revealedPassword ? <Eye size={16} /> : <EyeOff size={16} />}
                     </button>
                   </div>
                 </div>
@@ -349,9 +312,7 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
                         Question {index + 1}
                       </label>
 
-                      <p className="text-[13px] text-[#0a1128] mb-2">
-                        {sq.question}
-                      </p>
+                      <p className="text-[13px] text-[#0a1128] mb-2">{sq.question}</p>
 
                       <div className="flex items-center justify-between">
                         <span className="text-[13px] font-medium text-[#0d7377] font-mono">
@@ -363,9 +324,7 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
                         <div className="flex items-center gap-2">
                           {revealedAnswers[sq.id] && (
                             <button
-                              onClick={() =>
-                                copyToClipboard(revealedAnswers[sq.id], sq.id)
-                              }
+                              onClick={() => copyToClipboard(revealedAnswers[sq.id], sq.id)}
                               className="text-[#9ca3af] hover:text-[#0d7377]"
                             >
                               {copiedField === sq.id ? (
@@ -381,11 +340,7 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
                             disabled={loadingAnswers[sq.id]}
                             className="text-[#9ca3af] hover:text-[#0d7377] disabled:opacity-50"
                           >
-                            {revealedAnswers[sq.id] ? (
-                              <Eye size={14} />
-                            ) : (
-                              <EyeOff size={14} />
-                            )}
+                            {revealedAnswers[sq.id] ? <Eye size={14} /> : <EyeOff size={14} />}
                           </button>
                         </div>
                       </div>

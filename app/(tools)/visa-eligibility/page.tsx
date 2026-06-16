@@ -8,14 +8,13 @@ export default function VisaSuggestionPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
   return (
-    <div className="w-full bg-slate-50 flex flex-col items-center justify-center overflow-hidden site-main-px site-main-py">
+    <div className="w-full bg-slate-50 flex flex-col items-center justify-center overflow-hidden site-main-px site-main-py mt-10">
       <header className="mb-12 text-center">
         <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">
           Visa Eligibility Checker
         </h1>
         <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-          Check your eligibility for visa based on your profile and
-          circumstances
+          Check your eligibility for visa based on your profile and circumstances
         </p>
       </header>
 

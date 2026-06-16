@@ -2,7 +2,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Trophy, CheckCircle2 } from 'lucide-react';
+import { Trophy, CheckCircle2 } from "lucide-react";
 
 interface CompletionDialogProps {
   open: boolean;
@@ -10,11 +10,7 @@ interface CompletionDialogProps {
   progress: number;
 }
 
-export default function CompletionDialog({
-  open,
-  onOpenChange,
-  progress,
-}: CompletionDialogProps) {
+export default function CompletionDialog({ open, onOpenChange, progress }: CompletionDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-md text-center animate-scale-in">
@@ -28,9 +24,7 @@ export default function CompletionDialog({
             </div>
 
             <div className="space-y-3">
-              <DialogTitle className="text-3xl font-bold">
-                Congratulations! 🎉
-              </DialogTitle>
+              <DialogTitle className="text-3xl font-bold">Congratulations!</DialogTitle>
               <p className="text-muted-foreground text-base">
                 You&apos;ve completed all steps of the Pakistan to USA spousal immigration journey!
               </p>

@@ -4,7 +4,20 @@ import { ReactNode } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
-import { User, Mail, Phone, MapPin, Building2, Calendar, Briefcase, GraduationCap, FileText, Globe } from "lucide-react";
+import {
+  User,
+  Mail,
+  Phone,
+  MapPin,
+  Building2,
+  Calendar,
+  Briefcase,
+  GraduationCap,
+  FileText,
+  Globe,
+  ChevronDown,
+  AlertCircle,
+} from "lucide-react";
 
 // Icon mapping for different field types
 const iconMap: Record<string, ReactNode> = {
@@ -32,6 +45,8 @@ interface FormFieldProps {
   icon?: keyof typeof iconMap;
   className?: string;
   helpText?: string;
+  /** Validation message — when set, the field shows a red border + the message. */
+  error?: string;
 }
 
 export function FormField({
@@ -46,7 +61,9 @@ export function FormField({
   icon,
   className,
   helpText,
+  error,
 }: FormFieldProps) {
+  const hasError = Boolean(error);
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       <Label className="text-xs font-medium text-slate-600">
@@ -66,19 +83,26 @@ export function FormField({
           placeholder={placeholder}
           disabled={disabled}
           readOnly={readOnly}
+          aria-invalid={hasError}
           className={cn(
-            "h-10 text-sm bg-white border border-slate-200 rounded-md",
+            "h-10 text-sm bg-white border rounded-md",
             "placeholder:text-slate-400",
-            "hover:border-slate-300",
-            "focus:border-slate-400 focus:ring-1 focus:ring-slate-200",
             "disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed",
             "read-only:bg-slate-50 read-only:text-slate-600",
+            hasError
+              ? "border-red-400 focus:border-red-500 focus:ring-1 focus:ring-red-200"
+              : "border-slate-200 hover:border-slate-300 focus:border-slate-400 focus:ring-1 focus:ring-slate-200",
             icon ? "pl-9" : "px-3"
           )}
         />
       </div>
-      {helpText && (
-        <p className="text-xs text-slate-400">{helpText}</p>
+      {hasError ? (
+        <p className="flex items-center gap-1 text-xs text-red-600">
+          <AlertCircle className="h-3 w-3 shrink-0" />
+          {error}
+        </p>
+      ) : (
+        helpText && <p className="text-xs text-slate-400">{helpText}</p>
       )}
     </div>
   );
@@ -133,9 +157,92 @@ export function FormSelect({
           </option>
         ))}
       </select>
-      {helpText && (
-        <p className="text-xs text-slate-400">{helpText}</p>
-      )}
+      {helpText && <p className="text-xs text-slate-400">{helpText}</p>}
+    </div>
+  );
+}
+
+// ── Section header (used inside each collapsible profile Card) ──────────────────
+// A coloured icon badge + title + optional sub-line makes every section instantly
+// scannable and gives the page a clear visual rhythm.
+export type SectionAccent =
+  | "slate"
+  | "emerald"
+  | "sky"
+  | "violet"
+  | "amber"
+  | "rose"
+  | "pink"
+  | "indigo"
+  | "green"
+  | "cyan"
+  | "teal";
+
+const accentStyles: Record<SectionAccent, string> = {
+  slate: "bg-slate-100 text-slate-600",
+  emerald: "bg-emerald-100 text-emerald-600",
+  sky: "bg-sky-100 text-sky-600",
+  violet: "bg-violet-100 text-violet-600",
+  amber: "bg-amber-100 text-amber-600",
+  rose: "bg-rose-100 text-rose-600",
+  pink: "bg-pink-100 text-pink-600",
+  indigo: "bg-indigo-100 text-indigo-600",
+  green: "bg-green-100 text-green-600",
+  cyan: "bg-cyan-100 text-cyan-600",
+  teal: "bg-teal-100 text-teal-600",
+};
+
+interface SectionHeaderProps {
+  icon: ReactNode;
+  title: string;
+  description?: string;
+  accent?: SectionAccent;
+  isOpen: boolean;
+  badge?: string;
+}
+
+export function SectionHeader({
+  icon,
+  title,
+  description,
+  accent = "slate",
+  isOpen,
+  badge,
+}: SectionHeaderProps) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <div className="flex items-center gap-3 min-w-0">
+        <div
+          className={cn(
+            "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+            accentStyles[accent]
+          )}
+        >
+          {icon}
+        </div>
+        <div className="min-w-0">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm font-semibold text-slate-800 truncate">{title}</h3>
+            {badge && (
+              <span
+                className={cn(
+                  "text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap",
+                  accentStyles[accent]
+                )}
+              >
+                {badge}
+              </span>
+            )}
+          </div>
+          {description && <p className="text-xs text-slate-500 mt-0.5 truncate">{description}</p>}
+        </div>
+      </div>
+      <ChevronDown
+        className={cn(
+          "h-4 w-4 shrink-0 text-slate-400 transition-transform",
+          isOpen && "rotate-180"
+        )}
+      />
     </div>
   );
 }
@@ -152,13 +259,9 @@ export function FormSection({ title, description, children, className }: FormSec
     <div className={cn("space-y-4", className)}>
       <div className="pb-2">
         <h3 className="text-sm font-semibold text-slate-800">{title}</h3>
-        {description && (
-          <p className="text-xs text-slate-500 mt-0.5">{description}</p>
-        )}
+        {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
       </div>
-      <div className="space-y-4">
-        {children}
-      </div>
+      <div className="space-y-4">{children}</div>
     </div>
   );
 }
@@ -183,10 +286,10 @@ export function FormCheckbox({
   disabled = false,
 }: FormCheckboxProps) {
   return (
-    <label 
-      htmlFor={id} 
+    <label
+      htmlFor={id}
       className={cn(
-        "flex items-center gap-2.5 cursor-pointer group", 
+        "flex items-center gap-2.5 cursor-pointer group",
         disabled && "opacity-60 cursor-not-allowed pointer-events-none",
         className
       )}

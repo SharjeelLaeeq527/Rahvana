@@ -15,9 +15,7 @@ const FAMILY_VISAS: VisaCategory[] = [
   // "F4",
 ];
 const USA_STUDENT_VISAS: VisaCategory[] = ["F-1 Student Visa"];
-const AUSTRALIA_STUDENT_VISAS: VisaCategory[] = [
-  "Australia Student Visa (Subclass 500)",
-];
+const AUSTRALIA_STUDENT_VISAS: VisaCategory[] = ["Australia Student Visa (Subclass 500)"];
 const CHINA_STUDENT_VISAS: VisaCategory[] = ["China Student Visa (X1 & X2)"];
 
 const ALL_STUDENT_VISAS: VisaCategory[] = [
@@ -68,8 +66,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 2,
         title: "Get English Translation",
-        description:
-          "If certificate is in Urdu, get it translated by a certified translator.",
+        description: "If certificate is in Urdu, get it translated by a certified translator.",
         tips: [
           "Translator must certify that translation is accurate",
           "Include translator credentials and stamp",
@@ -99,8 +96,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Locate Original Nikah Nama",
-        description:
-          "Find your original Nikah Nama document issued at the time of marriage.",
+        description: "Find your original Nikah Nama document issued at the time of marriage.",
         tips: [
           "Must be signed by Nikah Registrar",
           "Should have serial number and registration details",
@@ -124,9 +120,9 @@ const CIVIL_DOCS: DocumentDefinition[] = [
   },
   {
     id: "passport-beneficiary",
-    key: "PASSPORT_COPY",
-    name: "Passport Copy",
-    description: "Valid passport copy (biographical page)",
+    key: "PASSPORT",
+    name: "Beneficiary Passport Biographic Page",
+    description: "Scan of the biographical page of your current passport",
     category: "CIVIL",
     applicableVisas: UNIVERSAL_VISAS,
 
@@ -151,8 +147,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 2,
         title: "Scan Biographical Page",
-        description:
-          "Scan or take a clear photo of the biographical page of your passport.",
+        description: "Scan or take a clear photo of the biographical page of your passport.",
         tips: [
           "Ensure all text is readable",
           "No shadows or reflections",
@@ -160,6 +155,22 @@ const CIVIL_DOCS: DocumentDefinition[] = [
         ],
       },
     ],
+  },
+  {
+    id: "nadra-mrc",
+    key: "NADRA_MRC",
+    name: "Marriage Certificate / Marriage Registration Record",
+    description: "Official civil proof of the marriage — Nikah Nama and NADRA MRC",
+    category: "CIVIL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    requiredWhen: {
+      visaCategories: ["IR-1", "CR-1"],
+    },
   },
   {
     id: "cnic-beneficiary",
@@ -179,8 +190,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Scan Both Sides of CNIC",
-        description:
-          "Make clear scans or photos of both front and back of your CNIC.",
+        description: "Make clear scans or photos of both front and back of your CNIC.",
         tips: [
           "Ensure CNIC is not expired",
           "If expired, renew at NADRA office",
@@ -192,8 +202,8 @@ const CIVIL_DOCS: DocumentDefinition[] = [
   {
     id: "divorce-decree-beneficiary",
     key: "DIVORCE_DECREE",
-    name: "Divorce Decree / Talaq Nama",
-    description: "Official divorce decree with translation if prior marriage",
+    name: "Prior Marriage Termination Documents",
+    description: "Official divorce decree or death certificate with translation",
     category: "CIVIL",
     applicableVisas: FAMILY_VISAS,
 
@@ -209,8 +219,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Obtain Divorce Certificate",
-        description:
-          "Get certified copy of divorce decree from Family Court or Union Council.",
+        description: "Get certified copy of divorce decree from Family Court or Union Council.",
         resources: [
           {
             name: "Union Council Divorce Certificate Guide",
@@ -223,32 +232,49 @@ const CIVIL_DOCS: DocumentDefinition[] = [
           "Union Council certificates should have registration number",
         ],
       },
-      {
-        stepNumber: 2,
-        title: "Get English Translation",
-        description:
-          "If document is in Urdu, get certified English translation.",
-        estimatedTime: "2-3 days",
-        cost: "PKR 2,000-4,000",
-      },
     ],
+  },
+  {
+    id: "name-change-proof",
+    key: "NAME_CHANGE",
+    name: "Name Change Documents",
+    description: "Legal proof of any name change used in the case",
+    category: "CIVIL",
+    applicableVisas: UNIVERSAL_VISAS,
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
   },
   {
     id: "death-cert-prior-spouse",
     key: "DEATH_CERT_SPOUSE",
     name: "Death Certificate of Former Spouse",
-    description: "Death certificate if prior spouse is deceased",
+    description: "Required if a prior marriage ended because of the death of a spouse.",
     category: "CIVIL",
     applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
+    roles: ["BENEFICIARY", "PETITIONER"],
     stages: ["NVC", "INTERVIEW"],
-    required: true,
-    multipleFilesAllowed: false,
+    required: false,
+    multipleFilesAllowed: true,
     validityType: "none",
     requiredWhen: {
       scenarioFlags: { prior_marriage_beneficiary: true },
     },
+  },
+  {
+    id: "receipt-notice-uscis",
+    key: "RECEIPT_NOTICE",
+    name: "USCIS Receipt Notice (I-797C)",
+    description: "Receipt notice issued by USCIS confirming a petition was received",
+    category: "MISC",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER", "BENEFICIARY"],
+    stages: ["USCIS", "NVC"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
   },
 ];
 
@@ -275,8 +301,7 @@ const FINANCIAL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Download Form I-864",
-        description:
-          "Download the latest version of Form I-864 from USCIS website.",
+        description: "Download the latest version of Form I-864 from USCIS website.",
         resources: [
           {
             name: "USCIS Form I-864",
@@ -355,8 +380,7 @@ const FINANCIAL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Request Letter from Employer",
-        description:
-          "Contact your HR department to request an employment verification letter.",
+        description: "Contact your HR department to request an employment verification letter.",
         tips: [
           "Letter must be on company letterhead",
           "Include: job title, salary, start date, employment type (full-time/part-time)",
@@ -505,14 +529,79 @@ const FINANCIAL_DOCS: DocumentDefinition[] = [
 // ============================================================================
 
 const RELATIONSHIP_DOCS: DocumentDefinition[] = [
+  // {
+  //   id: "wedding-photos",
+  //   key: "WEDDING_PHOTOS",
+  //   name: "Wedding Photos",
+  //   description: "Photos from wedding ceremony",
+  //   category: "RELATIONSHIP",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY", "PETITIONER"],
+  //   stages: ["USCIS", "NVC", "INTERVIEW"],
+  //   required: true,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  //   requiredWhen: {
+  //     visaCategories: ["IR-1", "CR-1"],
+  //   },
+  // },
+  // {
+  //   id: "relationship-photos",
+  //   key: "RELATIONSHIP_PHOTOS",
+  //   name: "Relationship Photos",
+  //   description: "Photos together throughout relationship",
+  //   category: "RELATIONSHIP",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY", "PETITIONER"],
+  //   stages: ["USCIS", "NVC", "INTERVIEW"],
+  //   required: true,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  //   requiredWhen: {
+  //     visaCategories: ["IR-1", "CR-1"],
+  //   },
+  // },
+  // {
+  //   id: "communication-evidence",
+  //   key: "COMMUNICATION_EVIDENCE",
+  //   name: "Communication Evidence",
+  //   description:
+  //     "Chat logs, call records, emails demonstrating ongoing relationship",
+  //   category: "RELATIONSHIP",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY", "PETITIONER"],
+  //   stages: ["USCIS", "NVC", "INTERVIEW"],
+  //   required: true,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  //   requiredWhen: {
+  //     visaCategories: ["IR-1", "CR-1"],
+  //   },
+  // },
+  // {
+  //   id: "joint-financial-docs",
+  //   key: "JOINT_FINANCIAL",
+  //   name: "Joint Financial Documents",
+  //   description: "Joint bank accounts, property, insurance, etc.",
+  //   category: "RELATIONSHIP",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY", "PETITIONER"],
+  //   stages: ["NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "fixed_days",
+  //   validityDays: 180,
+  //   requiredWhen: {
+  //     visaCategories: ["IR-1", "CR-1"],
+  //   },
+  // },
   {
-    id: "wedding-photos",
-    key: "WEDDING_PHOTOS",
-    name: "Wedding Photos",
-    description: "Photos from wedding ceremony",
+    id: "relationship-evidence-general",
+    key: "RELATIONSHIP_EVIDENCE",
+    name: "Relationship Evidence",
+    description: "General evidence of bona fide relationship",
     category: "RELATIONSHIP",
     applicableVisas: FAMILY_VISAS,
-
     roles: ["BENEFICIARY", "PETITIONER"],
     stages: ["USCIS", "NVC", "INTERVIEW"],
     required: true,
@@ -521,60 +610,30 @@ const RELATIONSHIP_DOCS: DocumentDefinition[] = [
     requiredWhen: {
       visaCategories: ["IR-1", "CR-1"],
     },
+    isDynamicCategory: true,
+    suggestions: [
+      "Communication history",
+      "Photos together",
+      "Travel history",
+      "Shared finances",
+      "Shared residence",
+      "Family evidence",
+      "Affidavits",
+    ],
   },
-  {
-    id: "relationship-photos",
-    key: "RELATIONSHIP_PHOTOS",
-    name: "Relationship Photos",
-    description: "Photos together throughout relationship",
-    category: "RELATIONSHIP",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY", "PETITIONER"],
-    stages: ["USCIS", "NVC", "INTERVIEW"],
-    required: true,
-    multipleFilesAllowed: true,
-    validityType: "none",
-    requiredWhen: {
-      visaCategories: ["IR-1", "CR-1"],
-    },
-  },
-  {
-    id: "communication-evidence",
-    key: "COMMUNICATION_EVIDENCE",
-    name: "Communication Evidence",
-    description:
-      "Chat logs, call records, emails demonstrating ongoing relationship",
-    category: "RELATIONSHIP",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY", "PETITIONER"],
-    stages: ["USCIS", "NVC", "INTERVIEW"],
-    required: true,
-    multipleFilesAllowed: true,
-    validityType: "none",
-    requiredWhen: {
-      visaCategories: ["IR-1", "CR-1"],
-    },
-  },
-  {
-    id: "joint-financial-docs",
-    key: "JOINT_FINANCIAL",
-    name: "Joint Financial Documents",
-    description: "Joint bank accounts, property, insurance, etc.",
-    category: "RELATIONSHIP",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY", "PETITIONER"],
-    stages: ["NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "fixed_days",
-    validityDays: 180,
-    requiredWhen: {
-      visaCategories: ["IR-1", "CR-1"],
-    },
-  },
+  // {
+  //   id: "relationship-evidence-backup",
+  //   key: "RELATIONSHIP_BACKUP",
+  //   name: "Relationship Evidence Backup Set",
+  //   description: "Supporting bona fide marriage evidence for later use",
+  //   category: "RELATIONSHIP",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY", "PETITIONER"],
+  //   stages: ["NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  // },
 ];
 
 // ============================================================================
@@ -585,8 +644,8 @@ const POLICE_DOCS: DocumentDefinition[] = [
   {
     id: "police-certificate-pakistan",
     key: "POLICE_CERT_PK",
-    name: "Police Certificate (Pakistan)",
-    description: "Police clearance certificate from Pakistan",
+    name: "Police Certificate",
+    description: "Pakistan Police Character Certificate (PCC) for the beneficiary",
     category: "POLICE",
     applicableVisas: UNIVERSAL_VISAS,
 
@@ -687,8 +746,7 @@ const MEDICAL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Schedule Medical Exam",
-        description:
-          "Book appointment with panel physician approved by U.S. Embassy Islamabad.",
+        description: "Book appointment with panel physician approved by U.S. Embassy Islamabad.",
         resources: [
           {
             name: "Panel Physicians in Pakistan",
@@ -734,8 +792,7 @@ const MEDICAL_DOCS: DocumentDefinition[] = [
     id: "polio-vaccine-cert",
     key: "POLIO_CERT",
     name: "Polio Vaccination Certificate",
-    description:
-      "Official International Certificate of Vaccination (issued within last 12 months)",
+    description: "Official International Certificate of Vaccination (issued within last 12 months)",
     category: "MEDICAL",
     applicableVisas: FAMILY_VISAS,
 
@@ -819,8 +876,7 @@ const PHOTO_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Get Compliant Photos",
-        description:
-          "Get 2x2 inch photos that meet U.S. visa photo requirements.",
+        description: "Get 2x2 inch photos that meet U.S. visa photo requirements.",
         resources: [
           {
             name: "U.S. Visa Photo Requirements",
@@ -864,8 +920,7 @@ const TRANSLATION_DOCS: DocumentDefinition[] = [
     id: "translator-certification",
     key: "TRANSLATOR_CERT",
     name: "Translator Certification",
-    description:
-      "Certification statement from translator for all translated documents",
+    description: "Certification statement from translator for all translated documents",
     category: "TRANSLATIONS",
     applicableVisas: FAMILY_VISAS,
 
@@ -875,6 +930,111 @@ const TRANSLATION_DOCS: DocumentDefinition[] = [
     multipleFilesAllowed: true,
     validityType: "none",
   },
+  {
+    id: "certified-translations",
+    key: "CERTIFIED_TRANSLATIONS",
+    name: "Certified English Translations",
+    description: "Certified translations for any documents not in English",
+    category: "TRANSLATIONS",
+    applicableVisas: UNIVERSAL_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    isDynamicCategory: true,
+    suggestions: [
+      "Translated Nikah Nama",
+      "Translated NADRA MRC",
+      "Translated Birth Certificate",
+      "Translated Divorce Decree",
+    ],
+  },
+  {
+    id: "organized-translation-set",
+    key: "ORGANIZED_TRANSLATION_SET",
+    name: "Organized Translation Set",
+    description: "All translations paired and labeled with their originals",
+    category: "TRANSLATIONS",
+    applicableVisas: UNIVERSAL_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["NVC"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+  },
+];
+
+const SPECIFIC_TRANSLATION_DOCS: DocumentDefinition[] = [
+  {
+    id: "nikah-nama-translation",
+    key: "NIKAH_NAMA_TRANSLATION",
+    name: "Translated Nikah Nama",
+    description: "Certified English translation of the Nikah Nama",
+    category: "CIVIL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    translationOf: "nikah-nama",
+    requiredWhen: {
+      visaCategories: ["IR-1", "CR-1"],
+    },
+  },
+  {
+    id: "nadra-mrc-translation",
+    key: "NADRA_MRC_TRANSLATION",
+    name: "Translated NADRA MRC",
+    description: "Certified English translation of the NADRA Marriage Certificate",
+    category: "CIVIL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    translationOf: "nadra-mrc",
+    requiredWhen: {
+      visaCategories: ["IR-1", "CR-1"],
+    },
+  },
+  {
+    id: "birth-cert-translation",
+    key: "BIRTH_CERT_TRANSLATION",
+    name: "Translated Birth Certificate",
+    description: "Certified English translation of the beneficiary's birth certificate",
+    category: "CIVIL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    translationOf: "birth-cert-beneficiary",
+    requiredWhen: {
+      visaCategories: FAMILY_VISAS,
+    },
+  },
+  {
+    id: "divorce-decree-translation",
+    key: "DIVORCE_DECREE_TRANSLATION",
+    name: "Translated Divorce Decree",
+    description: "Certified English translation of the prior marriage termination documents",
+    category: "CIVIL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    translationOf: "divorce-decree-beneficiary",
+    requiredWhen: {
+      scenarioFlags: { prior_marriage_beneficiary: true },
+    },
+  },
+  // },
 ];
 
 // ============================================================================
@@ -882,6 +1042,56 @@ const TRANSLATION_DOCS: DocumentDefinition[] = [
 // ============================================================================
 
 const MISC_DOCS: DocumentDefinition[] = [
+  {
+    id: "passport-petitioner",
+    key: "PASSPORT_PETITIONER",
+    name: "U.S. Passport (Petitioner)",
+    description: "Scan of the biographical page of the petitioner's U.S. passport",
+    category: "CITIZENSHIP_PROOF",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "fixed_days",
+    validityDays: 180,
+    defaultWarnDays: 60,
+  },
+  {
+    id: "citizenship-proof-petitioner",
+    key: "CITIZENSHIP_PROOF",
+    name: "Proof of U.S. Citizenship",
+    description:
+      "Proof of U.S. citizenship (Birth Certificate, Naturalization Certificate, or Citizenship Certificate)",
+    category: "CITIZENSHIP_PROOF",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    isDynamicCategory: true,
+    suggestions: [
+      "U.S. passport",
+      "U.S. birth certificate",
+      "Certificate of Naturalization (Form N-550)",
+      "Certificate of Citizenship (Form N-560)",
+      "Consular Report of Birth Abroad (Form FS-240 / DS-1350)",
+    ],
+  },
+  {
+    id: "misc-document",
+    key: "MISC_DOCUMENT",
+    name: "Miscellaneous Document",
+    description: "Any other relevant document for the case",
+    category: "MISC",
+    applicableVisas: UNIVERSAL_VISAS,
+    roles: ["PETITIONER", "BENEFICIARY"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+  },
   {
     id: "ds-260",
     key: "DS260",
@@ -892,6 +1102,71 @@ const MISC_DOCS: DocumentDefinition[] = [
 
     roles: ["BENEFICIARY"],
     stages: ["NVC"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+  },
+  {
+    id: "i797-approval-notice",
+    key: "I797_APPROVAL_NOTICE",
+    name: "Notice of Approval (I-797)",
+    description: "The official approval notice received from USCIS",
+    category: "MISC",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER", "BENEFICIARY"],
+    stages: ["NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+  },
+  {
+    id: "missing-document-evidence",
+    key: "MISSING_DOCUMENT_EVIDENCE",
+    name: "Missing Document / Record Unavailability Evidence",
+    description: "Evidence when a required record genuinely does not exist",
+    category: "MISC",
+    applicableVisas: UNIVERSAL_VISAS,
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+  },
+  {
+    id: "upload-ready-copies",
+    key: "UPLOAD_READY_COPIES",
+    name: "Upload-Ready File Copies",
+    description: "Clean, legible, properly formatted scan set",
+    category: "MISC",
+    applicableVisas: UNIVERSAL_VISAS,
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["NVC"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+  },
+  {
+    id: "interview-letter",
+    key: "INTERVIEW_LETTER",
+    name: "Interview Appointment Letter",
+    description: "The official interview schedule letter from NVC or Embassy",
+    category: "MISC",
+    applicableVisas: UNIVERSAL_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+  },
+  {
+    id: "medical-results-envelope",
+    key: "MEDICAL_ENVELOPE",
+    name: "Sealed Medical Results",
+    description: "Sealed medical exam results from IOM (Do not open!)",
+    category: "MISC",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["INTERVIEW"],
     required: true,
     multipleFilesAllowed: false,
     validityType: "none",
@@ -981,6 +1256,40 @@ const MISC_DOCS: DocumentDefinition[] = [
     multipleFilesAllowed: true,
     validityType: "none",
   },
+  {
+    id: "courier-registration-certificate",
+    key: "COURIER_REGISTRATION",
+    name: "Courier Registration Certificate",
+    description: "Proof of registration with courier service for passport return",
+    category: "MISC",
+    applicableVisas: UNIVERSAL_VISAS,
+
+    roles: ["BENEFICIARY"],
+    stages: ["INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    wizardSteps: [
+      {
+        stepNumber: 1,
+        title: "Register with Courier Service",
+        description:
+          "Register online with the designated courier service (e.g., Gerry's for Pakistan) for passport delivery and interview preparation.",
+        resources: [
+          {
+            name: "Register at ustraveldocs.com",
+            url: "https://www.ustraveldocs.com/pk/",
+            type: "link",
+          },
+        ],
+        tips: [
+          "Create a profile on the ustraveldocs website",
+          "Ensure the delivery address is correct",
+          "Print and save the registration confirmation / certificate",
+        ],
+      },
+    ],
+  },
 ];
 
 // ============================================================================
@@ -988,235 +1297,224 @@ const MISC_DOCS: DocumentDefinition[] = [
 // ============================================================================
 
 const EDUCATION_DOCS: DocumentDefinition[] = [
-  {
-    id: "matric-certificate",
-    key: "MATRIC_CERT",
-    name: "Matriculation Certificate",
-    description: "SSC/Matriculation certificate from Pakistan",
-    category: "EDUCATION",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["USCIS", "NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: false,
-    validityType: "none",
-    wizardSteps: [
-      {
-        stepNumber: 1,
-        title: "Obtain Matric Certificate",
-        description:
-          "Get your original Matriculation certificate from respective board.",
-        tips: [
-          "Must be original or certified copy",
-          "Get English translation if in Urdu",
-        ],
-      },
-    ],
-  },
-  {
-    id: "intermediate-certificate",
-    key: "INTER_CERT",
-    name: "Intermediate Certificate",
-    description: "HSSC/Intermediate certificate from Pakistan",
-    category: "EDUCATION",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["USCIS", "NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: false,
-    validityType: "none",
-  },
-  {
-    id: "bachelor-degree",
-    key: "BACHELOR_DEGREE",
-    name: "Bachelor's Degree",
-    description: "Bachelor's degree certificate and transcripts",
-    category: "EDUCATION",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["USCIS", "NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "none",
-    wizardSteps: [
-      {
-        stepNumber: 1,
-        title: "Collect Degree and Transcripts",
-        description:
-          "Get both the degree certificate and detailed transcripts.",
-        tips: [
-          "HEC attestation recommended for foreign use",
-          "English translation required if in Urdu",
-        ],
-      },
-    ],
-  },
-  {
-    id: "master-degree",
-    key: "MASTER_DEGREE",
-    name: "Master's Degree",
-    description: "Master's degree certificate and transcripts",
-    category: "EDUCATION",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["USCIS", "NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "none",
-  },
-  {
-    id: "professional-certificate",
-    key: "PROFESSIONAL_CERT",
-    name: "Professional Certifications",
-    description:
-      "Professional certifications and licenses (e.g., ACCA, CA, PMP)",
-    category: "EDUCATION",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["USCIS", "NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "none",
-  },
-  {
-    id: "hec-attestation",
-    key: "HEC_ATTESTATION",
-    name: "HEC Attestation",
-    description: "HEC attested educational documents",
-    category: "EDUCATION",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["USCIS", "NVC"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "none",
-    wizardSteps: [
-      {
-        stepNumber: 1,
-        title: "Get HEC Attestation",
-        description: "Apply for HEC attestation through HEC website or office.",
-        resources: [
-          {
-            name: "HEC Attestation Portal",
-            url: "https://hec.gov.pk/",
-            type: "link",
-          },
-        ],
-        tips: [
-          "Required for foreign use of Pakistani degrees",
-          "Apply online first, then visit HEC office",
-        ],
-        estimatedTime: "1-2 weeks",
-        cost: "PKR 2,000-5,000",
-      },
-    ],
-  },
-  {
-    id: "university-admission-letter",
-    key: "UNIVERSITY_ADMISSION_LETTER",
-    name: "University Admission Letter",
-    description: "Official acceptance letter from the U.S. university",
-    category: "EDUCATION",
-    applicableVisas: [...USA_STUDENT_VISAS, ...CHINA_STUDENT_VISAS],
-
-    roles: ["BENEFICIARY"],
-    stages: ["INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: false,
-    validityType: "none",
-    requiredWhen: {
-      visaCategories: ["F-1 Student Visa"],
-    },
-  },
-  {
-    id: "academic-transcripts",
-    key: "ACADEMIC_TRANSCRIPTS",
-    name: "Academic Transcripts",
-    description: "Official academic transcripts from previous institutions",
-    category: "EDUCATION",
-    applicableVisas: UNIVERSAL_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "none",
-  },
-  {
-    id: "degree-certificates",
-    key: "DEGREE_CERTIFICATES",
-    name: "Degree Certificates",
-    description: "Official degree certificates from previous institutions",
-    category: "EDUCATION",
-    applicableVisas: UNIVERSAL_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "none",
-  },
-  {
-    id: "standardized-test-scores",
-    key: "STANDARDIZED_TEST_SCORES",
-    name: "Standardized Test Scores (GRE/GMAT/SAT)",
-    description: "Official scores for GRE, GMAT, SAT, or other required tests",
-    category: "EDUCATION",
-    applicableVisas: USA_STUDENT_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "none",
-  },
-  {
-    id: "english-proficiency-test",
-    key: "ENGLISH_PROFICIENCY_TEST",
-    name: "English Proficiency Test Result (IELTS/TOEFL)",
-    description: "Official scores for IELTS, TOEFL, Duolingo, etc.",
-    category: "EDUCATION",
-    applicableVisas: ALL_STUDENT_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "fixed_days",
-    validityDays: 730,
-  },
-  {
-    id: "coe-australia",
-    key: "COE_AUSTRALIA",
-    name: "Confirmation of Enrolment (CoE)",
-    description: "Official CoE issued by the Australian education provider",
-    category: "EDUCATION",
-    applicableVisas: AUSTRALIA_STUDENT_VISAS,
-    roles: ["BENEFICIARY"],
-    stages: ["INTERVIEW"],
-    required: true,
-    multipleFilesAllowed: false,
-    validityType: "none",
-  },
-  {
-    id: "gs-statement-australia",
-    key: "GS_STATEMENT",
-    name: "Genuine Student (GS) Statement",
-    description: "Statement explaining your intentions for study in Australia",
-    category: "EDUCATION",
-    applicableVisas: AUSTRALIA_STUDENT_VISAS,
-    roles: ["BENEFICIARY"],
-    stages: ["INTERVIEW"],
-    required: true,
-    multipleFilesAllowed: false,
-    validityType: "none",
-  },
+  // {
+  //   id: "matric-certificate",
+  //   key: "MATRIC_CERT",
+  //   name: "Matriculation Certificate",
+  //   description: "SSC/Matriculation certificate from Pakistan",
+  //   category: "EDUCATION",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["USCIS", "NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: false,
+  //   validityType: "none",
+  //   wizardSteps: [
+  //     {
+  //       stepNumber: 1,
+  //       title: "Obtain Matric Certificate",
+  //       description:
+  //         "Get your original Matriculation certificate from respective board.",
+  //       tips: [
+  //         "Must be original or certified copy",
+  //         "Get English translation if in Urdu",
+  //       ],
+  //     },
+  //   ],
+  // },
+  // {
+  //   id: "intermediate-certificate",
+  //   key: "INTER_CERT",
+  //   name: "Intermediate Certificate",
+  //   description: "HSSC/Intermediate certificate from Pakistan",
+  //   category: "EDUCATION",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["USCIS", "NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: false,
+  //   validityType: "none",
+  // },
+  // {
+  //   id: "bachelor-degree",
+  //   key: "BACHELOR_DEGREE",
+  //   name: "Bachelor's Degree",
+  //   description: "Bachelor's degree certificate and transcripts",
+  //   category: "EDUCATION",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["USCIS", "NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  //   wizardSteps: [
+  //     {
+  //       stepNumber: 1,
+  //       title: "Collect Degree and Transcripts",
+  //       description:
+  //         "Get both the degree certificate and detailed transcripts.",
+  //       tips: [
+  //         "HEC attestation recommended for foreign use",
+  //         "English translation required if in Urdu",
+  //       ],
+  //     },
+  //   ],
+  // },
+  // {
+  //   id: "master-degree",
+  //   key: "MASTER_DEGREE",
+  //   name: "Master's Degree",
+  //   description: "Master's degree certificate and transcripts",
+  //   category: "EDUCATION",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["USCIS", "NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  // },
+  // {
+  //   id: "professional-certificate",
+  //   key: "PROFESSIONAL_CERT",
+  //   name: "Professional Certifications",
+  //   description:
+  //     "Professional certifications and licenses (e.g., ACCA, CA, PMP)",
+  //   category: "EDUCATION",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["USCIS", "NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  // },
+  // {
+  //   id: "hec-attestation",
+  //   key: "HEC_ATTESTATION",
+  //   name: "HEC Attestation",
+  //   description: "HEC attested educational documents",
+  //   category: "EDUCATION",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["USCIS", "NVC"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  //   wizardSteps: [
+  //     {
+  //       stepNumber: 1,
+  //       title: "Get HEC Attestation",
+  //       description: "Apply for HEC attestation through HEC website or office.",
+  //       resources: [
+  //         {
+  //           name: "HEC Attestation Portal",
+  //           url: "https://hec.gov.pk/",
+  //           type: "link",
+  //         },
+  //       ],
+  //       tips: [
+  //         "Required for foreign use of Pakistani degrees",
+  //         "Apply online first, then visit HEC office",
+  //       ],
+  //       estimatedTime: "1-2 weeks",
+  //       cost: "PKR 2,000-5,000",
+  //     },
+  //   ],
+  // },
+  // {
+  //   id: "university-admission-letter",
+  //   key: "UNIVERSITY_ADMISSION_LETTER",
+  //   name: "University Admission Letter",
+  //   description: "Official acceptance letter from the U.S. university",
+  //   category: "EDUCATION",
+  //   applicableVisas: [...USA_STUDENT_VISAS, ...CHINA_STUDENT_VISAS],
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: false,
+  //   validityType: "none",
+  //   requiredWhen: {
+  //     visaCategories: ["F-1 Student Visa"],
+  //   },
+  // },
+  // {
+  //   id: "academic-transcripts",
+  //   key: "ACADEMIC_TRANSCRIPTS",
+  //   name: "Academic Transcripts",
+  //   description: "Official academic transcripts from previous institutions",
+  //   category: "EDUCATION",
+  //   applicableVisas: UNIVERSAL_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  // },
+  // {
+  //   id: "degree-certificates",
+  //   key: "DEGREE_CERTIFICATES",
+  //   name: "Degree Certificates",
+  //   description: "Official degree certificates from previous institutions",
+  //   category: "EDUCATION",
+  //   applicableVisas: UNIVERSAL_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  // },
+  // {
+  //   id: "standardized-test-scores",
+  //   key: "STANDARDIZED_TEST_SCORES",
+  //   name: "Standardized Test Scores (GRE/GMAT/SAT)",
+  //   description: "Official scores for GRE, GMAT, SAT, or other required tests",
+  //   category: "EDUCATION",
+  //   applicableVisas: USA_STUDENT_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  // },
+  // {
+  //   id: "english-proficiency-test",
+  //   key: "ENGLISH_PROFICIENCY_TEST",
+  //   name: "English Proficiency Test Result (IELTS/TOEFL)",
+  //   description: "Official scores for IELTS, TOEFL, Duolingo, etc.",
+  //   category: "EDUCATION",
+  //   applicableVisas: ALL_STUDENT_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "fixed_days",
+  //   validityDays: 730,
+  // },
+  // {
+  //   id: "coe-australia",
+  //   key: "COE_AUSTRALIA",
+  //   name: "Confirmation of Enrolment (CoE)",
+  //   description: "Official CoE issued by the Australian education provider",
+  //   category: "EDUCATION",
+  //   applicableVisas: AUSTRALIA_STUDENT_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["INTERVIEW"],
+  //   required: true,
+  //   multipleFilesAllowed: false,
+  //   validityType: "none",
+  // },
+  // {
+  //   id: "gs-statement-australia",
+  //   key: "GS_STATEMENT",
+  //   name: "Genuine Student (GS) Statement",
+  //   description: "Statement explaining your intentions for study in Australia",
+  //   category: "EDUCATION",
+  //   applicableVisas: AUSTRALIA_STUDENT_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["INTERVIEW"],
+  //   required: true,
+  //   multipleFilesAllowed: false,
+  //   validityType: "none",
+  // },
 ];
 
 // ============================================================================
@@ -1224,133 +1522,127 @@ const EDUCATION_DOCS: DocumentDefinition[] = [
 // ============================================================================
 
 const WORK_DOCS: DocumentDefinition[] = [
-  {
-    id: "experience-letter-pakistan",
-    key: "EXPERIENCE_LETTER_PK",
-    name: "Work Experience Letter (Pakistan)",
-    description: "Experience letter from Pakistani employers",
-    category: "WORK",
-    applicableVisas: UNIVERSAL_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["USCIS", "NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "none",
-    wizardSteps: [
-      {
-        stepNumber: 1,
-        title: "Request Experience Letter",
-        description: "Get a formal experience letter from each employer.",
-        tips: [
-          "Must be on company letterhead",
-          "Include job title, duration, responsibilities",
-          "Include salary information",
-          "English translation required if in Urdu",
-        ],
-      },
-    ],
-  },
-  {
-    id: "employment-contract-pakistan",
-    key: "EMPLOYMENT_CONTRACT_PK",
-    name: "Employment Contract (Pakistan)",
-    description: "Employment contracts from Pakistani employers",
-    category: "WORK",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["USCIS", "NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "none",
-  },
-  {
-    id: "salary-slips-pakistan",
-    key: "SALARY_SLIPS_PK",
-    name: "Salary Slips (Pakistan)",
-    description: "Recent salary slips from Pakistani employment",
-    category: "WORK",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["USCIS", "NVC"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "none",
-  },
-  {
-    id: "noc-pakistan",
-    key: "NOC_PK",
-    name: "No Objection Certificate (NOC)",
-    description: "NOC from current Pakistani employer",
-    category: "WORK",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: false,
-    validityType: "fixed_days",
-    validityDays: 180,
-    wizardSteps: [
-      {
-        stepNumber: 1,
-        title: "Request NOC from Employer",
-        description: "Get No Objection Certificate from current employer.",
-        tips: [
-          "Required for some government or sensitive positions",
-          "Should state no objection to visa issuance",
-        ],
-      },
-    ],
-  },
-  {
-    id: "eobi-certificate",
-    key: "EOBI_CERT",
-    name: "EOBI Certificate",
-    description: "Employees' Old-Age Benefits Institution certificate",
-    category: "WORK",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: false,
-    validityType: "none",
-    wizardSteps: [
-      {
-        stepNumber: 1,
-        title: "Get EOBI Certificate",
-        description: "Obtain EOBI certificate if you have EOBI registration.",
-        resources: [
-          {
-            name: "EOBI Official Website",
-            url: "https://www.eobi.gov.pk/",
-            type: "link",
-          },
-        ],
-        tips: [
-          "Shows employment history in Pakistan",
-          "Useful for proving work experience",
-        ],
-      },
-    ],
-  },
-  {
-    id: "cv-resume",
-    key: "CV_RESUME",
-    name: "CV/Resume",
-    description: "Current Curriculum Vitae or Resume",
-    category: "WORK",
-    applicableVisas: UNIVERSAL_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: false,
-    validityType: "none",
-  },
+  // {
+  //   id: "experience-letter-pakistan",
+  //   key: "EXPERIENCE_LETTER_PK",
+  //   name: "Work Experience Letter (Pakistan)",
+  //   description: "Experience letter from Pakistani employers",
+  //   category: "WORK",
+  //   applicableVisas: UNIVERSAL_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["USCIS", "NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  //   wizardSteps: [
+  //     {
+  //       stepNumber: 1,
+  //       title: "Request Experience Letter",
+  //       description: "Get a formal experience letter from each employer.",
+  //       tips: [
+  //         "Must be on company letterhead",
+  //         "Include job title, duration, responsibilities",
+  //         "Include salary information",
+  //         "English translation required if in Urdu",
+  //       ],
+  //     },
+  //   ],
+  // },
+  // {
+  //   id: "employment-contract-pakistan",
+  //   key: "EMPLOYMENT_CONTRACT_PK",
+  //   name: "Employment Contract (Pakistan)",
+  //   description: "Employment contracts from Pakistani employers",
+  //   category: "WORK",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["USCIS", "NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  // },
+  // {
+  //   id: "salary-slips-pakistan",
+  //   key: "SALARY_SLIPS_PK",
+  //   name: "Salary Slips (Pakistan)",
+  //   description: "Recent salary slips from Pakistani employment",
+  //   category: "WORK",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["USCIS", "NVC"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  // },
+  // {
+  //   id: "noc-pakistan",
+  //   key: "NOC_PK",
+  //   name: "No Objection Certificate (NOC)",
+  //   description: "NOC from current Pakistani employer",
+  //   category: "WORK",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: false,
+  //   validityType: "fixed_days",
+  //   validityDays: 180,
+  //   wizardSteps: [
+  //     {
+  //       stepNumber: 1,
+  //       title: "Request NOC from Employer",
+  //       description: "Get No Objection Certificate from current employer.",
+  //       tips: [
+  //         "Required for some government or sensitive positions",
+  //         "Should state no objection to visa issuance",
+  //       ],
+  //     },
+  //   ],
+  // },
+  // {
+  //   id: "eobi-certificate",
+  //   key: "EOBI_CERT",
+  //   name: "EOBI Certificate",
+  //   description: "Employees' Old-Age Benefits Institution certificate",
+  //   category: "WORK",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: false,
+  //   validityType: "none",
+  //   wizardSteps: [
+  //     {
+  //       stepNumber: 1,
+  //       title: "Get EOBI Certificate",
+  //       description: "Obtain EOBI certificate if you have EOBI registration.",
+  //       resources: [
+  //         {
+  //           name: "EOBI Official Website",
+  //           url: "https://www.eobi.gov.pk/",
+  //           type: "link",
+  //         },
+  //       ],
+  //       tips: [
+  //         "Shows employment history in Pakistan",
+  //         "Useful for proving work experience",
+  //       ],
+  //     },
+  //   ],
+  // },
+  // {
+  //   id: "cv-resume",
+  //   key: "CV_RESUME",
+  //   name: "CV/Resume",
+  //   description: "Current Curriculum Vitae or Resume",
+  //   category: "WORK",
+  //   applicableVisas: UNIVERSAL_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: false,
+  //   validityType: "none",
+  // },
 ];
 
 // ============================================================================
@@ -1404,11 +1696,7 @@ const TRAVEL_DOCS: DocumentDefinition[] = [
         stepNumber: 1,
         title: "Collect Old Passports",
         description: "Gather all previous passports showing travel history.",
-        tips: [
-          "Scan biographical pages",
-          "Scan all visa stamps",
-          "Scan entry/exit stamps",
-        ],
+        tips: ["Scan biographical pages", "Scan all visa stamps", "Scan entry/exit stamps"],
       },
     ],
   },
@@ -1490,8 +1778,7 @@ const IDENTITY_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Obtain Domicile Certificate",
-        description:
-          "Get your domicile certificate from the district administration.",
+        description: "Get your domicile certificate from the district administration.",
         resources: [
           {
             name: "Punjab Domicile Guide",
@@ -1544,91 +1831,86 @@ const IDENTITY_DOCS: DocumentDefinition[] = [
 // ============================================================================
 
 const PROPERTY_DOCS: DocumentDefinition[] = [
-  {
-    id: "property-ownership-docs",
-    key: "PROPERTY_OWNERSHIP",
-    name: "Property Ownership Documents",
-    description: "Property deeds, registry papers, fard documents",
-    category: "PROPERTY",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY", "PETITIONER"],
-    stages: ["USCIS", "NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "none",
-    wizardSteps: [
-      {
-        stepNumber: 1,
-        title: "Collect Property Documents",
-        description: "Gather all property ownership documents.",
-        tips: [
-          "Fard/registry from Patwari office",
-          "Property deed/registry",
-          "English translation if in Urdu",
-          "Valuation certificate helpful",
-        ],
-      },
-    ],
-  },
-  {
-    id: "vehicle-registration",
-    key: "VEHICLE_REGISTRATION",
-    name: "Vehicle Registration Papers",
-    description: "Vehicle registration documents in Pakistan",
-    category: "PROPERTY",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY", "PETITIONER"],
-    stages: ["NVC"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "none",
-  },
-  {
-    id: "bank-assets-pakistan",
-    key: "BANK_ASSETS_PK",
-    name: "Bank Assets in Pakistan",
-    description: "Bank account statements, fixed deposit certificates",
-    category: "PROPERTY",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY", "PETITIONER"],
-    stages: ["NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "fixed_days",
-    validityDays: 180,
-    defaultWarnDays: 60,
-  },
-  {
-    id: "nra-certificate",
-    key: "NRA_CERT",
-    name: "NRA (Non-Resident Alien) Certificate",
-    description: "NRA certificate from Pakistan",
-    category: "PROPERTY",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["NVC"],
-    required: false,
-    multipleFilesAllowed: false,
-    validityType: "none",
-  },
-  {
-    id: "investment-certificates",
-    key: "INVESTMENT_CERT",
-    name: "Investment Certificates",
-    description: "Stocks, bonds, mutual fund certificates",
-    category: "PROPERTY",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY", "PETITIONER"],
-    stages: ["NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "none",
-  },
+  // {
+  //   id: "property-ownership-docs",
+  //   key: "PROPERTY_OWNERSHIP",
+  //   name: "Property Ownership Documents",
+  //   description: "Property deeds, registry papers, fard documents",
+  //   category: "PROPERTY",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY", "PETITIONER"],
+  //   stages: ["USCIS", "NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  //   wizardSteps: [
+  //     {
+  //       stepNumber: 1,
+  //       title: "Collect Property Documents",
+  //       description: "Gather all property ownership documents.",
+  //       tips: [
+  //         "Fard/registry from Patwari office",
+  //         "Property deed/registry",
+  //         "English translation if in Urdu",
+  //         "Valuation certificate helpful",
+  //       ],
+  //     },
+  //   ],
+  // },
+  // {
+  //   id: "vehicle-registration",
+  //   key: "VEHICLE_REGISTRATION",
+  //   name: "Vehicle Registration Papers",
+  //   description: "Vehicle registration documents in Pakistan",
+  //   category: "PROPERTY",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY", "PETITIONER"],
+  //   stages: ["NVC"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  // },
+  // {
+  //   id: "bank-assets-pakistan",
+  //   key: "BANK_ASSETS_PK",
+  //   name: "Bank Assets in Pakistan",
+  //   description: "Bank account statements, fixed deposit certificates",
+  //   category: "PROPERTY",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY", "PETITIONER"],
+  //   stages: ["NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "fixed_days",
+  //   validityDays: 180,
+  //   defaultWarnDays: 60,
+  // },
+  // {
+  //   id: "nra-certificate",
+  //   key: "NRA_CERT",
+  //   name: "NRA (Non-Resident Alien) Certificate",
+  //   description: "NRA certificate from Pakistan",
+  //   category: "PROPERTY",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["NVC"],
+  //   required: false,
+  //   multipleFilesAllowed: false,
+  //   validityType: "none",
+  // },
+  // {
+  //   id: "investment-certificates",
+  //   key: "INVESTMENT_CERT",
+  //   name: "Investment Certificates",
+  //   description: "Stocks, bonds, mutual fund certificates",
+  //   category: "PROPERTY",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY", "PETITIONER"],
+  //   stages: ["NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  // },
 ];
 
 // ============================================================================
@@ -1835,8 +2117,7 @@ const LEGAL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Get Affidavits from Witnesses",
-        description:
-          "Request affidavits from friends/family who can attest to your marriage.",
+        description: "Request affidavits from friends/family who can attest to your marriage.",
         tips: [
           "Notarized by oath commissioner",
           "Include witness contact details",
@@ -1949,8 +2230,7 @@ const HEALTH_INSURANCE_DOCS: DocumentDefinition[] = [
     id: "oshc-australia",
     key: "OSHC_AUSTRALIA",
     name: "Overseas Student Health Cover (OSHC)",
-    description:
-      "Proof of health insurance for the entire duration of stay in Australia",
+    description: "Proof of health insurance for the entire duration of stay in Australia",
     category: "HEALTH_INSURANCE",
     applicableVisas: AUSTRALIA_STUDENT_VISAS,
     roles: ["BENEFICIARY"],
@@ -2014,91 +2294,87 @@ const SOCIAL_MEDIA_DOCS: DocumentDefinition[] = [
 // ============================================================================
 
 const ADDRESS_PROOF_DOCS: DocumentDefinition[] = [
-  {
-    id: "utility-bills-pakistan",
-    key: "UTILITY_BILLS_PK",
-    name: "Utility Bills (Pakistan)",
-    description: "Electricity, gas, water, telephone bills",
-    category: "ADDRESS_PROOF",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["USCIS", "NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "fixed_days",
-    validityDays: 180,
-    defaultWarnDays: 30,
-    wizardSteps: [
-      {
-        stepNumber: 1,
-        title: "Collect Utility Bills",
-        description: "Gather recent utility bills showing your address.",
-        tips: [
-          "Last 6 months recommended",
-          "Include name on bill",
-          "English translation if in Urdu",
-          "Shows proof of residence",
-        ],
-      },
-    ],
-  },
-  {
-    id: "rent-agreement-pakistan",
-    key: "RENT_AGREEMENT_PK",
-    name: "Rent Agreement",
-    description: "Rental lease agreement",
-    category: "ADDRESS_PROOF",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["USCIS", "NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: false,
-    validityType: "user_set",
-    defaultWarnDays: 90,
-    wizardSteps: [
-      {
-        stepNumber: 1,
-        title: "Get Rent Agreement",
-        description: "Ensure you have a valid rental agreement.",
-        tips: [
-          "Should be notarized",
-          "Include both parties' details",
-          "English translation if in Urdu",
-        ],
-      },
-    ],
-  },
-  {
-    id: "property-tax-bills",
-    key: "PROPERTY_TAX",
-    name: "Property Tax Bills",
-    description: "Property tax payment receipts",
-    category: "ADDRESS_PROOF",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY", "PETITIONER"],
-    stages: ["NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: true,
-    validityType: "none",
-  },
-  {
-    id: "post-office-box-proof",
-    key: "PO_BOX_PROOF",
-    name: "PO Box Address Proof",
-    description: "PO Box rental receipt or ownership proof",
-    category: "ADDRESS_PROOF",
-    applicableVisas: FAMILY_VISAS,
-
-    roles: ["BENEFICIARY"],
-    stages: ["NVC", "INTERVIEW"],
-    required: false,
-    multipleFilesAllowed: false,
-    validityType: "fixed_days",
-    validityDays: 365,
-  },
+  // {
+  //   id: "utility-bills-pakistan",
+  //   key: "UTILITY_BILLS_PK",
+  //   name: "Utility Bills (Pakistan)",
+  //   description: "Electricity, gas, water, telephone bills",
+  //   category: "ADDRESS_PROOF",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["USCIS", "NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "fixed_days",
+  //   validityDays: 180,
+  //   defaultWarnDays: 30,
+  //   wizardSteps: [
+  //     {
+  //       stepNumber: 1,
+  //       title: "Collect Utility Bills",
+  //       description: "Gather recent utility bills showing your address.",
+  //       tips: [
+  //         "Last 6 months recommended",
+  //         "Include name on bill",
+  //         "English translation if in Urdu",
+  //         "Shows proof of residence",
+  //       ],
+  //     },
+  //   ],
+  // },
+  // {
+  //   id: "rent-agreement-pakistan",
+  //   key: "RENT_AGREEMENT_PK",
+  //   name: "Rent Agreement",
+  //   description: "Rental lease agreement",
+  //   category: "ADDRESS_PROOF",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["USCIS", "NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: false,
+  //   validityType: "user_set",
+  //   defaultWarnDays: 90,
+  //   wizardSteps: [
+  //     {
+  //       stepNumber: 1,
+  //       title: "Get Rent Agreement",
+  //       description: "Ensure you have a valid rental agreement.",
+  //       tips: [
+  //         "Should be notarized",
+  //         "Include both parties' details",
+  //         "English translation if in Urdu",
+  //       ],
+  //     },
+  //   ],
+  // },
+  // {
+  //   id: "property-tax-bills",
+  //   key: "PROPERTY_TAX",
+  //   name: "Property Tax Bills",
+  //   description: "Property tax payment receipts",
+  //   category: "ADDRESS_PROOF",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY", "PETITIONER"],
+  //   stages: ["NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  // },
+  // {
+  //   id: "post-office-box-proof",
+  //   key: "PO_BOX_PROOF",
+  //   name: "PO Box Address Proof",
+  //   description: "PO Box rental receipt or ownership proof",
+  //   category: "ADDRESS_PROOF",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["BENEFICIARY"],
+  //   stages: ["NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: false,
+  //   validityType: "fixed_days",
+  //   validityDays: 365,
+  // },
 ];
 
 // ============================================================================
@@ -2166,8 +2442,7 @@ const OTHER_DOCS: DocumentDefinition[] = [
     id: "proof-home-country-ties",
     key: "PROOF_HOME_COUNTRY_TIES",
     name: "Proof of Home Country Ties",
-    description:
-      "Evidence of intent to return to home country (property, family, job offers)",
+    description: "Evidence of intent to return to home country (property, family, job offers)",
     category: "OTHER",
     applicableVisas: USA_STUDENT_VISAS,
 
@@ -2229,6 +2504,103 @@ const OTHER_DOCS: DocumentDefinition[] = [
     multipleFilesAllowed: false,
     validityType: "none",
   },
+  {
+    id: "i-130-petition",
+    key: "I130_FORM",
+    name: "Form I-130: Petition for Alien Relative",
+    description:
+      "Petition to establish relationship to a relative who wishes to immigrate to the United States.",
+    category: "OTHER",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER"],
+    stages: ["USCIS"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+  },
+  {
+    id: "i-130a-supplemental",
+    key: "I130A_FORM",
+    name: "Form I-130A: Supplemental Information for Spouse Beneficiary",
+    description: "Personal information about the spouse beneficiary of a marriage-based petition.",
+    category: "OTHER",
+    applicableVisas: ["IR-1", "CR-1"],
+    roles: ["BENEFICIARY"],
+    stages: ["USCIS"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+  },
+  {
+    id: "i-129f-petition",
+    key: "I129F_FORM",
+    name: "Form I-129F: Petition for Alien Fiancé(e)",
+    description: "Petition to bring a fiancé(e) to the United States.",
+    category: "OTHER",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER"],
+    stages: ["USCIS"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    hideUntilUploaded: true,
+  },
+  {
+    id: "i-912-waiver",
+    key: "I912_FORM",
+    name: "Form I-912: Request for Fee Waiver",
+    description: "Request to waive the filing fee for a USCIS application.",
+    category: "OTHER",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER"],
+    stages: ["USCIS"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    hideUntilUploaded: true,
+  },
+  {
+    id: "i-864a-contract",
+    key: "I864A_FORM",
+    name: "Form I-864A: Contract Between Sponsor and Household Member",
+    description: "Contract to combine income and/or assets to meet sponsorship requirements.",
+    category: "OTHER",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["HOUSEHOLD_MEMBER"],
+    stages: ["NVC"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    hideUntilUploaded: true,
+  },
+  {
+    id: "i-864ez-affidavit",
+    key: "I864EZ_FORM",
+    name: "Form I-864EZ: Affidavit of Support for Certain Sponsors",
+    description: "Simplified version of Form I-864 for eligible sponsors.",
+    category: "OTHER",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER"],
+    stages: ["NVC"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    hideUntilUploaded: true,
+  },
+  {
+    id: "i-693-medical",
+    key: "I693_FORM",
+    name: "Form I-693: Report of Immigration Medical Examination",
+    description: "Report of medical examination and vaccination record.",
+    category: "OTHER",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    hideUntilUploaded: true,
+  },
 ];
 
 // ============================================================================
@@ -2244,6 +2616,7 @@ export const ALL_DOCUMENTS: DocumentDefinition[] = [
   ...MEDICAL_DOCS,
   ...PHOTO_DOCS,
   ...TRANSLATION_DOCS,
+  ...SPECIFIC_TRANSLATION_DOCS,
   ...MISC_DOCS,
   // New comprehensive categories
   ...EDUCATION_DOCS,
@@ -2266,7 +2639,16 @@ export const DOCUMENTS_BY_KEY = ALL_DOCUMENTS.reduce(
     acc[doc.key] = doc;
     return acc;
   },
-  {} as Record<string, DocumentDefinition>,
+  {} as Record<string, DocumentDefinition>
+);
+
+// Index by id for quick lookup
+export const DOCUMENTS_BY_ID = ALL_DOCUMENTS.reduce(
+  (acc, doc) => {
+    acc[doc.id] = doc;
+    return acc;
+  },
+  {} as Record<string, DocumentDefinition>
 );
 
 // Index by category
@@ -2278,5 +2660,5 @@ export const DOCUMENTS_BY_CATEGORY = ALL_DOCUMENTS.reduce(
     acc[doc.category].push(doc);
     return acc;
   },
-  {} as Record<DocumentCategory, DocumentDefinition[]>,
+  {} as Record<DocumentCategory, DocumentDefinition[]>
 );

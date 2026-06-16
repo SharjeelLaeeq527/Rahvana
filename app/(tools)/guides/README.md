@@ -1,6 +1,7 @@
 # Document Guides System
 
 ## Overview
+
 This is a comprehensive, user-friendly document guides system for US visa applications. It follows industry best practices from platforms like Boundless, VisaJourney, and USCIS.
 
 ## Structure
@@ -43,6 +44,7 @@ app/(tools)/(guides)/
 ## Features
 
 ### 1. Main Landing Page (`/guides`)
+
 - **Search functionality** - Users can search for specific guides
 - **Category filters** - Filter by document category
 - **Card-based layout** - Easy to scan and navigate
@@ -50,7 +52,9 @@ app/(tools)/(guides)/
 - **SEO optimized** - Each guide has its own URL
 
 ### 2. Individual Guide Pages
+
 Each guide includes:
+
 - **Breadcrumb navigation** - Easy to navigate back
 - **Hero section** - Quick stats (processing time, fee, difficulty)
 - **Purpose section** - Why this document is needed
@@ -63,6 +67,7 @@ Each guide includes:
 - **CTA sections** - Links to relevant tools
 
 ### 3. Interactive Features
+
 - **Province selector** (PCC guide) - Dynamic content based on location
 - **Income calculator** (I-864 guide) - Real-time calculations
 - **Responsive design** - Works on all devices
@@ -72,6 +77,7 @@ Each guide includes:
 Your comprehensive document guide has been organized into the following categories:
 
 ### 1. Identity & Civil Documents
+
 - ✅ **Passport** - `/guides/passport-guide` (Created)
 - 🔲 **CNIC** - `/guides/cnic`
 - 🔲 **Birth Certificate** - `/guides/birth-certificate`
@@ -83,10 +89,12 @@ Your comprehensive document guide has been organized into the following categori
 - 🔲 **Children's Documents** - `/guides/children-documents`
 
 ### 2. Police & Legal Documents
+
 - ✅ **Police Character Certificate (PCC)** - `/guides/police-certificate` (Created)
 - 🔲 **Court/Prison/Military Records** - `/guides/court-records`
 
 ### 3. Financial Support Documents
+
 - ✅ **I-864 Affidavit of Support** - `/guides/affidavit-of-support` (Created)
 - 🔲 **IRS Tax Transcripts** - `/guides/tax-documents`
 - 🔲 **Employment Verification** - `/guides/employment-verification`
@@ -95,6 +103,7 @@ Your comprehensive document guide has been organized into the following categori
 - 🔲 **Proof of US Domicile** - `/guides/us-domicile`
 
 ### 4. Relationship Evidence
+
 - 🔲 **Bona Fide Marriage Proof** - `/guides/relationship-evidence`
 - 🔲 **Wedding Photos** - `/guides/wedding-photos`
 - 🔲 **Communication Records** - `/guides/communication-records`
@@ -102,11 +111,13 @@ Your comprehensive document guide has been organized into the following categori
 - 🔲 **Affidavits from Friends/Family** - `/guides/affidavits`
 
 ### 5. Medical Examination Documents
+
 - 🔲 **Medical Examination** - `/guides/medical-exam`
 - 🔲 **Vaccination Requirements** - `/guides/vaccinations`
 - 🔲 **Polio Vaccination Certificate** - `/guides/polio-certificate`
 
 ### 6. Visa Process Documents
+
 - 🔲 **Approved I-130 Petition** - `/guides/i130-petition`
 - 🔲 **DS-260 Form** - `/guides/ds260`
 - 🔲 **NVC Case Number & Welcome Letter** - `/guides/nvc-documents`
@@ -117,12 +128,15 @@ Your comprehensive document guide has been organized into the following categori
 ## How to Add a New Guide
 
 ### Step 1: Create the Page File
+
 Create a new folder and `page.tsx` file:
+
 ```
 app/(tools)/(guides)/[guide-name]/page.tsx
 ```
 
 ### Step 2: Use the Template Structure
+
 Copy from an existing guide (passport, police-certificate, or affidavit-of-support) and modify:
 
 ```tsx
@@ -130,7 +144,7 @@ Copy from an existing guide (passport, police-certificate, or affidavit-of-suppo
 
 import React from "react";
 import Link from "next/link";
-import { /* Import icons */ } from "lucide-react";
+import {} from /* Import icons */ "lucide-react";
 
 export default function YourGuidePage() {
   return (
@@ -145,7 +159,9 @@ export default function YourGuidePage() {
 ```
 
 ### Step 3: Fill in the Content
+
 Include these sections:
+
 1. **Purpose** - Why this document is needed
 2. **Requirements** - What's required to obtain it
 3. **How to Obtain** - Step-by-step process
@@ -155,6 +171,7 @@ Include these sections:
 7. **Pro Tips** - Expert advice
 
 ### Step 4: Update the Landing Page
+
 Add your guide to `app/(tools)/(guides)/page.tsx` in the `guides` array:
 
 ```tsx
@@ -169,29 +186,34 @@ Add your guide to `app/(tools)/(guides)/page.tsx` in the `guides` array:
 ```
 
 ### Step 5: Update the Header Menu (Optional)
+
 If it's a major guide, add it to `app/components/layout/SiteHeader.tsx` in the guides mega menu.
 
 ## Design Principles
 
 ### 1. User-Friendly
+
 - Clear, simple language
 - Step-by-step instructions
 - Visual hierarchy with icons and colors
 - Mobile-responsive
 
 ### 2. Professional
+
 - Consistent styling
 - Premium design aesthetics
 - Smooth animations
 - Clean typography
 
 ### 3. SEO-Optimized
+
 - Unique URLs for each guide
 - Descriptive titles and meta descriptions
 - Proper heading hierarchy (H1, H2, H3)
 - Semantic HTML
 
 ### 4. Actionable
+
 - Clear CTAs to related tools
 - Quick action buttons
 - External links to official resources
@@ -239,6 +261,7 @@ If it's a major guide, add it to `app/components/layout/SiteHeader.tsx` in the g
 ## Tools Integration
 
 Each guide links to relevant tools:
+
 - **CasePulse AI** - Visa case strength checker
 - **SponsorReady** - Affidavit of support calculator
 - **PhotoPass** - Passport photo generator

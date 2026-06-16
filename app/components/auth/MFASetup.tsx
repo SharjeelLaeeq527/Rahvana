@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { msg, E, errorCode } from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
@@ -14,7 +15,7 @@ import { Loader } from "@/components/ui/spinner";
 export function MFASetup() {
   const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 
   const { showToast } = useToast();
@@ -32,13 +33,7 @@ export function MFASetup() {
   const [profile, setProfile] = useState<{ mfa_enabled: boolean } | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
 
-  const {
-    user,
-    enableMFA,
-    verifyMFASetup,
-    disableMFASetup,
-    listMFACheckFactors,
-  } = useAuth();
+  const { user, enableMFA, verifyMFASetup, disableMFASetup, listMFACheckFactors } = useAuth();
 
   const fetchProfile = useCallback(async () => {
     if (!user) return;
@@ -83,7 +78,7 @@ export function MFASetup() {
       setFactorId(result.factorId);
       setStep("qr");
     } else {
-      setError(result.error || "Failed to enable MFA");
+      setError(result.error || msg(E.AUTH_MFA_ENABLE_FAILED));
     }
 
     setLoading(false);
@@ -91,7 +86,7 @@ export function MFASetup() {
 
   const handleVerifyCode = async () => {
     if (!code.trim() || !factorId) {
-      setError("Please enter the verification code");
+      setError(`${msg(E.AUTH_CLIENT_ENTER_VERIFICATION_CODE)}`);
       return;
     }
 
@@ -102,20 +97,17 @@ export function MFASetup() {
       const result = await verifyMFASetup(factorId, code);
 
       if (result.success) {
-        showToast(
-          "Two-factor authentication has been enabled on your account.",
-          "success",
-        );
+        showToast("Two-factor authentication has been enabled on your account.", "success");
         setTimeout(() => {
           router.replace("/settings");
         }, 800);
 
         return;
       } else {
-        setError(result.error || "Invalid verification code");
+        setError(result.error || `${msg(E.AUTH_MFA_CODE_INVALID)}`);
       }
     } catch {
-      setError("Failed to verify MFA setup");
+      setError(`${msg(E.AUTH_MFA_VERIFY_FAILED)}`);
     }
 
     setLoading(false);
@@ -123,7 +115,7 @@ export function MFASetup() {
 
   const handleDisableMFA = async () => {
     if (!disableOTP.trim()) {
-      setError("Please enter the authentication code");
+      setError(`${msg(E.AUTH_CLIENT_ENTER_VERIFICATION_CODE)}`);
       return;
     }
 
@@ -137,7 +129,7 @@ export function MFASetup() {
     }
 
     if (!currentFactorId) {
-      setError("Unable to identify MFA factor to disable");
+      setError(`${msg(E.AUTH_MFA_FACTOR_NOT_FOUND)}`);
       return;
     }
 
@@ -161,10 +153,10 @@ export function MFASetup() {
 
         return;
       } else {
-        setError(result.error || "Failed to disable MFA");
+        setError(result.error || `${msg(E.AUTH_MFA_DISABLE_FAILED)}`);
       }
     } catch {
-      setError("Failed to disable MFA");
+      setError(`${msg(E.AUTH_MFA_DISABLE_FAILED)}`);
     }
 
     setLoading(false);
@@ -183,24 +175,18 @@ export function MFASetup() {
       <Card className="p-4 sm:p-6 max-w-md w-full mx-auto">
         {profile && !profile.mfa_enabled && (
           <>
-            <h2 className="text-xl font-bold mb-4">
-              Setup Two-Factor Authentication
-            </h2>
+            <h2 className="text-xl font-bold mb-4">Setup Two-Factor Authentication</h2>
             <p className="text-muted-foreground mb-6">
-              Add an extra layer of security to your account by enabling
-              two-factor authentication.
+              Add an extra layer of security to your account by enabling two-factor authentication.
             </p>
           </>
         )}
 
         {profile && profile.mfa_enabled && (
           <>
-            <h2 className="text-xl font-bold mb-4">
-              Manage Two-Factor Authentication
-            </h2>
+            <h2 className="text-xl font-bold mb-4">Manage Two-Factor Authentication</h2>
             <p className="text-muted-foreground mb-6">
-              Control and update your existing two-factor authentication
-              settings.
+              Control and update your existing two-factor authentication settings.
             </p>
           </>
         )}
@@ -212,20 +198,13 @@ export function MFASetup() {
         )}
 
         {profile && !profile.mfa_enabled && (
-          <Button
-            onClick={handleEnableMFA}
-            disabled={loading}
-            className="w-full"
-          >
+          <Button onClick={handleEnableMFA} disabled={loading} className="w-full">
             {loading ? "Setting up..." : "Enable 2FA"}
           </Button>
         )}
 
         {profile && profile.mfa_enabled && (
-          <Button
-            onClick={() => setIsDisableModalOpen(true)}
-            className="w-full"
-          >
+          <Button onClick={() => setIsDisableModalOpen(true)} className="w-full">
             Disable 2FA
           </Button>
         )}
@@ -352,8 +331,7 @@ export function MFASetup() {
 
         <div className="mb-6">
           <p className="text-sm text-muted-foreground font-medium mb-2">
-            If you can&apos;t scan the QR code, you can manually enter the
-            secret key below:
+            If you can&apos;t scan the QR code, you can manually enter the secret key below:
           </p>
 
           <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-3">
@@ -404,8 +382,8 @@ export function MFASetup() {
 
           <div className="mt-4 p-3 bg-blue-50/10 rounded-lg border border-blue-200/20">
             <p className="text-sm text-blue-600">
-              <span className="font-medium">Note:</span> Any TOTP-compatible
-              authenticator app will work.
+              <span className="font-medium">Note:</span> Any TOTP-compatible authenticator app will
+              work.
             </p>
           </div>
         </div>

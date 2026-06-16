@@ -33,9 +33,7 @@ export default function StaticCountryAutocomplete({
   const suggestions = useMemo(() => {
     if (!query || value === query) return [];
     return countries
-      .filter((country) =>
-        country.toLowerCase().includes(query.toLowerCase())
-      )
+      .filter((country) => country.toLowerCase().includes(query.toLowerCase()))
       .slice(0, 10);
   }, [query, value]);
 
@@ -57,15 +55,11 @@ export default function StaticCountryAutocomplete({
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev < suggestions.length - 1 ? prev + 1 : 0
-        );
+        setHighlightedIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : 0));
         break;
       case "ArrowUp":
         e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev > 0 ? prev - 1 : suggestions.length - 1
-        );
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : suggestions.length - 1));
         break;
       case "Enter":
         e.preventDefault();

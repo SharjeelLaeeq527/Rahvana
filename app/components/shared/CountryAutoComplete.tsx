@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Loader } from "@/components/ui/spinner";
+import { E, msg } from '@/lib/errors';
 
 export interface CountryAutocompleteProps {
   /** Form data object containing the country value (e.g. formData) */
@@ -28,6 +29,7 @@ export default function CountryAutocomplete({
   inputClassName,
   placeholder = "Start typing country...",
 }: CountryAutocompleteProps) {
+  // (imports at top provide E/msg)
   const key = valueKey ?? DEFAULT_VALUE_KEY;
   const initialValue = (formData[key] as string | undefined) ?? "";
   const [query, setQuery] = useState(initialValue);
@@ -82,11 +84,11 @@ export default function CountryAutocomplete({
 
       try {
         if (!GEOAPIFY_KEY) {
-          throw new Error("Geoapify key missing");
+          throw new Error(msg(E.GEOAPIFY_KEY_MISSING));
         }
 
         const res = await fetch(
-          `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(value)}&type=country&limit=5&apiKey=${GEOAPIFY_KEY}`,
+          `https://api.geoapify.com/v1/geocode/autocomplete?text=${encodeURIComponent(value)}&type=country&limit=5&apiKey=${GEOAPIFY_KEY}`
         );
 
         if (!res.ok) {
@@ -98,13 +100,16 @@ export default function CountryAutocomplete({
       } catch (error) {
         console.warn(
           "Geoapify error (using fallback countries):",
-          error instanceof Error ? error.message : error,
+          error instanceof Error ? error.message : error
         );
+
+        // Informational: local fallback used
+        console.info(msg(E.GEOAPIFY_FALLBACK_USED));
 
         // Fallback: simple local filter
         const lowerValue = value.toLowerCase();
         const fallbackFeatures = COMMON_COUNTRIES.filter((c) =>
-          c.toLowerCase().includes(lowerValue),
+          c.toLowerCase().includes(lowerValue)
         ).map((c) => ({
           properties: {
             place_id: c,
@@ -117,7 +122,7 @@ export default function CountryAutocomplete({
 
       setLoading(false);
     },
-    [GEOAPIFY_KEY, setFormData, valueKey],
+    [GEOAPIFY_KEY, setFormData, valueKey]
   );
 
   const handleSelect = useCallback(
@@ -127,7 +132,7 @@ export default function CountryAutocomplete({
       setSuggestions([]);
       setHighlightedIndex(-1);
     },
-    [setFormData, valueKey],
+    [setFormData, valueKey]
   );
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
@@ -141,15 +146,11 @@ export default function CountryAutocomplete({
     switch (e.key) {
       case "ArrowDown":
         e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev < suggestions.length - 1 ? prev + 1 : 0,
-        );
+        setHighlightedIndex((prev) => (prev < suggestions.length - 1 ? prev + 1 : 0));
         break;
       case "ArrowUp":
         e.preventDefault();
-        setHighlightedIndex((prev) =>
-          prev > 0 ? prev - 1 : suggestions.length - 1,
-        );
+        setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : suggestions.length - 1));
         break;
       case "Enter":
         e.preventDefault();
@@ -178,9 +179,7 @@ export default function CountryAutocomplete({
   return (
     <div className="relative">
       {!hideLabel && (
-        <label className="text-base text-muted-foreground mb-1 block">
-          Country of Residence
-        </label>
+        <label className="text-base text-muted-foreground mb-1 block">Country of Residence</label>
       )}
 
       <input

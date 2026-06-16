@@ -40,8 +40,7 @@ export default function PDFConverterApp() {
       ".bmp",
       ".docx",
     ];
-    const fileExtension =
-      "." + selectedFile.name.toLowerCase().split(".").pop();
+    const fileExtension = "." + selectedFile.name.toLowerCase().split(".").pop();
 
     if (!validExtensions.includes(fileExtension)) {
       setError(t("pdfProcessing.errors.invalidFile"));
@@ -109,9 +108,7 @@ export default function PDFConverterApp() {
       const originalSize = file.size;
       const convertedSize = blob.size;
       const reduction =
-        originalSize > 0
-          ? (((originalSize - convertedSize) / originalSize) * 100).toFixed(2)
-          : "0";
+        originalSize > 0 ? (((originalSize - convertedSize) / originalSize) * 100).toFixed(2) : "0";
 
       setResult({
         originalSize,
@@ -128,10 +125,7 @@ export default function PDFConverterApp() {
         if (fileInputRef.current) fileInputRef.current.value = "";
       }, 3000);
     } catch (error: unknown) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : t("pdfProcessing.errors.failed");
+      const message = error instanceof Error ? error.message : t("pdfProcessing.errors.failed");
       setError(message);
     } finally {
       setConverting(false);
@@ -190,9 +184,7 @@ export default function PDFConverterApp() {
                 <p className="text-primary/90 font-semibold text-lg mb-1 truncate max-w-xs mx-auto">
                   {file.name}
                 </p>
-                <p className="text-sm text-gray-500">
-                  {formatBytes(file.size)}
-                </p>
+                <p className="text-sm text-gray-500">{formatBytes(file.size)}</p>
                 <p className="text-xs text-gray-400 mt-2">
                   {t("pdfProcessing.compress.changeFile")}
                 </p>
@@ -202,9 +194,7 @@ export default function PDFConverterApp() {
                 <p className="text-gray-700 font-medium mb-1">
                   {t("pdfProcessing.convert.dropzone")}
                 </p>
-                <p className="text-sm text-gray-500">
-                  {t("pdfProcessing.convert.supports")}
-                </p>
+                <p className="text-sm text-gray-500">{t("pdfProcessing.convert.supports")}</p>
               </div>
             )}
           </label>
@@ -244,9 +234,7 @@ export default function PDFConverterApp() {
           <div className="mt-6 p-6 bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-lg shadow-sm">
             <div className="flex items-center text-green-700 mb-4">
               <FileCheck className="h-6 w-6 mr-3" />
-              <span className="font-bold text-lg">
-                {t("pdfProcessing.convert.success")}
-              </span>
+              <span className="font-bold text-lg">{t("pdfProcessing.convert.success")}</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -271,9 +259,7 @@ export default function PDFConverterApp() {
                 {t("pdfProcessing.compress.spaceSaved")}
               </p>
               <div className="flex items-baseline">
-                <p className="text-green-600 font-bold text-3xl">
-                  {result.reduction}%
-                </p>
+                <p className="text-green-600 font-bold text-3xl">{result.reduction}%</p>
                 <p className="text-gray-500 text-sm ml-2">
                   ({formatBytes(result.originalSize - result.convertedSize)}{" "}
                   {t("pdfProcessing.compress.saved")})

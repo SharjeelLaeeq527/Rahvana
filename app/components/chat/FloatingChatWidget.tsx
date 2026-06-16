@@ -1,12 +1,12 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { MessageCircle } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { ChatInterface } from "./ChatInterface"
+import { useState } from "react";
+import { MessageCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ChatInterface } from "./ChatInterface";
 export function FloatingChatWidget() {
-  const [isOpen, setIsOpen] = useState(false)
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
@@ -39,5 +39,5 @@ export function FloatingChatWidget() {
         </DialogContent>
       </Dialog>
     </>
-  )
+  );
 }

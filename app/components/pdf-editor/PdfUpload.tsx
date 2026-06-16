@@ -8,13 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Upload, AlertCircle, FileCheck } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 
-let pdfjsLib: typeof import("pdfjs-dist") | null = null;
+let pdfjsLib: typeof import("pdfjs-dist/build/pdf") | null = null;
 
 async function initPdfJs() {
   if (pdfjsLib) return pdfjsLib;
-  const pdfjs = await import("pdfjs-dist");
+
+  const pdfjs = await import("pdfjs-dist/build/pdf");
+
   pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+
   pdfjsLib = pdfjs;
+
   return pdfjs;
 }
 
@@ -157,9 +161,7 @@ export function PDFUpload() {
                 <p className="text-gray-700 font-medium mb-1">
                   {t("pdfProcessing.compress.dropzone")}
                 </p>
-                <p className="text-sm text-gray-500">
-                  {t("pdfProcessing.compress.pdffilesOnly")}
-                </p>
+                <p className="text-sm text-gray-500">{t("pdfProcessing.compress.pdffilesOnly")}</p>
               </div>
             )}
           </label>
@@ -199,9 +201,7 @@ export function PDFUpload() {
           <div className="mt-6 p-6 bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-lg shadow-sm">
             <div className="flex items-center text-green-700 mb-4">
               <FileCheck className="h-6 w-6 mr-3" />
-              <span className="font-bold text-lg">
-                {t("pdfProcessing.editor.successUpload")}
-              </span>
+              <span className="font-bold text-lg">{t("pdfProcessing.editor.successUpload")}</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -216,9 +216,7 @@ export function PDFUpload() {
                 <p className="text-gray-500 text-xs font-medium mb-1">
                   {t("pdfProcessing.merge.pages")}
                 </p>
-                <p className="text-gray-800 font-bold text-xl">
-                  {result.totalPages}
-                </p>
+                <p className="text-gray-800 font-bold text-xl">{result.totalPages}</p>
               </div>
             </div>
           </div>

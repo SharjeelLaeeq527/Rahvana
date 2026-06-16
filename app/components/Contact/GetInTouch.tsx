@@ -14,14 +14,9 @@ import {
 import { Loader } from "@/components/ui/spinner";
 import { submitContactForm } from "./contact-action";
 import { useLanguage } from "../../context/LanguageContext";
+import * as Errors from "@/lib/errors";
 const XIcon = ({ size = 20 }: { size?: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    aria-hidden="true"
-  >
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
     <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932L18.901 1.153zM17.61 20.644h2.039L6.486 3.24H4.298l13.312 17.403z" />
   </svg>
 );
@@ -48,18 +43,11 @@ export default function GetInTouch() {
         formRef.current?.reset();
       } else {
         setStatus("error");
-        setErrorMessage(
-          result.error ||
-            t("homePage.contactSection.error") ||
-            "Something went wrong. Please try again.",
-        );
+        setErrorMessage(result.error || Errors.msg(Errors.E.CONTACT_SUBMIT_FAILED));
       }
     } catch {
       setStatus("error");
-      setErrorMessage(
-        t("homePage.contactSection.error") ||
-          "An unexpected error occurred. Please try again.",
-      );
+      setErrorMessage(Errors.msg(Errors.E.CONTACT_SUBMIT_FAILED));
     } finally {
       setIsSubmitting(false);
     }
@@ -67,9 +55,10 @@ export default function GetInTouch() {
 
   return (
     <section
-      className="relative bg-background overflow-hidden py-8 md:py-16 font-sans"
+      className="relative overflow-hidden py-8 md:py-16 font-sans"
       id="contact"
       suppressHydrationWarning
+      style={{ background: "linear-gradient(180deg,#f7fffd 0%,#f3f8ff 30%,#fffafc 100%)" }}
     >
       {/* Texture overlay - matching opacity from original */}
       <div
@@ -116,6 +105,7 @@ export default function GetInTouch() {
                 icon={<Linkedin size={20} />}
                 label="LinkedIn"
                 href="https://www.linkedin.com/company/rahvana/posts/?feedView=all"
+                target="_blank"
                 ariaLabel="Connect on LinkedIn"
               />
               {/* <SocialCard
@@ -173,20 +163,14 @@ export default function GetInTouch() {
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="firstName"
-                    className="text-sm font-medium text-foreground"
-                  >
+                  <label htmlFor="firstName" className="text-sm font-medium text-foreground">
                     {t("homePage.contactSection.firstName") || "First Name"}
                   </label>
                   <input
                     type="text"
                     id="firstName"
                     name="firstName"
-                    placeholder={
-                      t("homePage.contactSection.placeholderFirstName") ||
-                      "John"
-                    }
+                    placeholder={t("homePage.contactSection.placeholderFirstName") || "John"}
                     required
                     disabled={isSubmitting}
                     className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
@@ -194,19 +178,14 @@ export default function GetInTouch() {
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="lastName"
-                    className="text-sm font-medium text-foreground"
-                  >
+                  <label htmlFor="lastName" className="text-sm font-medium text-foreground">
                     {t("homePage.contactSection.lastName") || "Last Name"}
                   </label>
                   <input
                     type="text"
                     id="lastName"
                     name="lastName"
-                    placeholder={
-                      t("homePage.contactSection.placeholderLastName") || "Doe"
-                    }
+                    placeholder={t("homePage.contactSection.placeholderLastName") || "Doe"}
                     required
                     disabled={isSubmitting}
                     className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
@@ -215,20 +194,14 @@ export default function GetInTouch() {
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="email"
-                  className="text-sm font-medium text-foreground"
-                >
+                <label htmlFor="email" className="text-sm font-medium text-foreground">
                   {t("homePage.contactSection.email") || "Email Address"}
                 </label>
                 <input
                   type="email"
                   id="email"
                   name="email"
-                  placeholder={
-                    t("homePage.contactSection.placeholderEmail") ||
-                    "john@example.com"
-                  }
+                  placeholder={t("homePage.contactSection.placeholderEmail") || "john@example.com"}
                   required
                   disabled={isSubmitting}
                   className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
@@ -236,18 +209,14 @@ export default function GetInTouch() {
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="message"
-                  className="text-sm font-medium text-foreground"
-                >
+                <label htmlFor="message" className="text-sm font-medium text-foreground">
                   {t("homePage.contactSection.message") || "Message"}
                 </label>
                 <textarea
                   id="message"
                   name="message"
                   placeholder={
-                    t("homePage.contactSection.placeholderMessage") ||
-                    "How can we help you?"
+                    t("homePage.contactSection.placeholderMessage") || "How can we help you?"
                   }
                   required
                   disabled={isSubmitting}

@@ -2,7 +2,7 @@
 // User uploads original Urdu document for translation
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
-
+import { E, msg } from "@/lib/errors";
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const formData = await request.formData();
@@ -35,27 +35,22 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!file || !documentType) {
       return NextResponse.json(
-        {
-          error: "Missing required fields: file, documentType",
-        },
-        { status: 400 },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[file, documentType]" }) },
+        { status: 400 }
       );
     }
 
     // Validate file type (PDF only)
     if (file.type !== "application/pdf") {
-      return NextResponse.json(
-        { error: "Only PDF files are allowed" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: msg(E.UPLOAD_INVALID_PDF) }, { status: 400 });
     }
 
     // Validate file size (max 50MB)
     const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: `File size exceeds 50MB limit` },
-        { status: 400 },
+        { error: msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: 50 }) },
+        { status: 400 }
       );
     }
 
@@ -66,8 +61,12 @@ export async function POST(request: NextRequest) {
     const allowedTypes = ["marriage", "birth", "death", "divorce"];
     if (!allowedTypes.includes(documentType)) {
       return NextResponse.json(
-        { error: "Invalid document type" },
-        { status: 400 },
+        {
+          error: msg(E.UPLOAD_INVALID_DOCUMENT_TYPE, {
+            types: "[marriage, birth, death, divorce]",
+          }),
+        },
+        { status: 400 }
       );
     }
 
@@ -79,7 +78,7 @@ export async function POST(request: NextRequest) {
     const baseFileName = fileName.replace(/\.pdf$/i, "");
     const storageFileName = `${baseFileName}_${safeUserName}.pdf`;
 
-    const storagePath = `translation-originals/${user.id}/${docId}/${timestamp}_${storageFileName}`;
+    const storagePath = `${user.id}/translation-originals/${docId}/${timestamp}_${storageFileName}`;
 
     // Upload to Supabase Storage
     const buffer = Buffer.from(await file.arrayBuffer());
@@ -92,10 +91,7 @@ export async function POST(request: NextRequest) {
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
-      return NextResponse.json(
-        { error: "Failed to upload file to storage" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: msg(E.UPLOAD_PROCESSING_FAILED) }, { status: 500 });
     }
 
     // Create database record
@@ -125,10 +121,7 @@ export async function POST(request: NextRequest) {
       console.error("Database error:", dbError);
       // Cleanup uploaded file
       await supabase.storage.from("document-vault").remove([storagePath]);
-      return NextResponse.json(
-        { error: "Failed to create database record" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to create database record" }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -140,9 +133,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Upload error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

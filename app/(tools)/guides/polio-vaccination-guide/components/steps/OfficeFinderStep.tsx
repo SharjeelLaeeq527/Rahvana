@@ -2,16 +2,7 @@
 
 import React, { useState } from "react";
 import { usePolioWizard } from "../../PolioContext";
-import {
-  AlertTriangle,
-  Search,
-  Clock,
-  Phone,
-  MapIcon,
-  Star,
-  Activity,
-  X,
-} from "lucide-react";
+import { AlertTriangle, Search, Clock, Phone, MapIcon, Star, Activity, X } from "lucide-react";
 
 // Assuming offices.json is available at this path for polio offices
 import guideData from "../../data/offices.json";
@@ -35,9 +26,7 @@ interface Office {
   notes: string;
 }
 
-export default function OfficeFinderStep({
-  onClose,
-}: OfficeFinderStepProps = {}) {
+export default function OfficeFinderStep({ onClose }: OfficeFinderStepProps = {}) {
   const { state } = usePolioWizard();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -47,8 +36,7 @@ export default function OfficeFinderStep({
 
   const filteredOffices = allOffices.filter((o: Office) => {
     const matchesLocation =
-      (!province || o.province === province) &&
-      (!district || o.district === district);
+      (!province || o.province === province) && (!district || o.district === district);
 
     const matchesSearch =
       !searchQuery ||
@@ -91,14 +79,11 @@ export default function OfficeFinderStep({
       <div className="bg-amber-50 border border-amber-100 rounded-xl p-4 flex gap-3 items-start mb-6">
         <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
         <div>
-          <p className="font-bold text-amber-900 mb-1">
-            Important: Ensure NIMS Data Entry
-          </p>
+          <p className="font-bold text-amber-900 mb-1">Important: Ensure NIMS Data Entry</p>
           <p className="text-sm text-amber-800/80 leading-relaxed">
-            Ensure that the vaccination center you plan to visit offers NIMS
-            registration, as you will need this for the online certificate.
-            Listings and contact info may change; always confirm details before
-            visiting.
+            Ensure that the vaccination center you plan to visit offers NIMS registration, as you
+            will need this for the online certificate. Listings and contact info may change; always
+            confirm details before visiting.
           </p>
         </div>
       </div>
@@ -126,9 +111,7 @@ export default function OfficeFinderStep({
               <div className="flex flex-col md:flex-row md:items-start justify-between mb-4 gap-4">
                 <div>
                   <div className="flex items-center gap-3 mb-1">
-                    <h4 className="text-lg font-bold text-slate-900">
-                      {office.name}
-                    </h4>
+                    <h4 className="text-lg font-bold text-slate-900">{office.name}</h4>
                     {office.nadraConnected && (
                       <span className="px-2.5 py-1 rounded-md bg-primary/10 text-primary text-xs font-semibold whitespace-nowrap">
                         NIMS Connected
@@ -177,9 +160,7 @@ export default function OfficeFinderStep({
         ) : (
           <div className="text-center py-12 bg-white border border-slate-200 rounded-2xl">
             <Activity className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-slate-700 mb-1">
-              No centers found
-            </h3>
+            <h3 className="text-lg font-bold text-slate-700 mb-1">No centers found</h3>
             <p className="text-slate-500">
               Try adjusting your search criteria or checking nearby districts.
             </p>

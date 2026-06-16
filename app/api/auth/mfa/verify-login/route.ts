@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from "@/lib/errors";
 
 export async function POST(request: NextRequest) {
   try {
@@ -8,8 +9,8 @@ export async function POST(request: NextRequest) {
 
     if (!factorId || !challengeId || !code) {
       return NextResponse.json(
-        { error: "Missing factorId, challengeId, or code" },
-        { status: 400 },
+        { error: msg(E.AUTH_CLIENT_ENTER_VERIFICATION_CODE) },
+        { status: 400 }
       );
     }
 
@@ -22,19 +23,15 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("MFA verification error:", error);
-      return NextResponse.json({ error: error.message }, { status: 400 });
+      return NextResponse.json({ error: msg(E.AUTH_MFA_CODE_INVALID) }, { status: 400 });
     }
 
     // Get updated session after MFA verification
-    const { data: sessionData, error: sessionError } =
-      await supabase.auth.getSession();
+    const { data: sessionData, error: sessionError } = await supabase.auth.getSession();
 
     if (sessionError) {
       console.error("Session retrieval error:", sessionError);
-      return NextResponse.json(
-        { error: "Failed to retrieve session" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: msg(E.AUTH_MFA_VERIFY_FAILED) }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -44,9 +41,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("MFA verify login error:", error);
-    return NextResponse.json(
-      { error: "Failed to verify MFA code" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: msg(E.AUTH_MFA_VERIFY_FAILED) }, { status: 500 });
   }
 }

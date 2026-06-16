@@ -3,7 +3,8 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-
+import { E, msg } from "@/lib/errors";
+import { triggerTranslationNotification } from "@/lib/notifications";
 function getStorageSupabase() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -13,10 +14,7 @@ function getStorageSupabase() {
   return createSupabaseClient(supabaseUrl, serviceRoleKey);
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const formData = await request.formData();
@@ -24,22 +22,19 @@ export async function POST(
     const adminNotes = formData.get("adminNotes") as string | undefined;
 
     if (!file) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+      return NextResponse.json({ error: msg(E.UPLOAD_NO_FILE) }, { status: 400 });
     }
 
     // Validate file type (PDF only)
     if (!file.type.includes("pdf")) {
-      return NextResponse.json(
-        { error: "Only PDF files are allowed" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: msg(E.UPLOAD_INVALID_PDF) }, { status: 400 });
     }
 
     // Validate file size (max 50MB)
     const maxSize = 50 * 1024 * 1024;
     if (file.size > maxSize) {
       return NextResponse.json(
-        { error: `File size exceeds 50MB limit` },
+        { error: msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: 50 }) },
         { status: 400 }
       );
     }
@@ -54,10 +49,8 @@ export async function POST(
       .single();
 
     if (checkError || !existing) {
-      return NextResponse.json(
-        { error: "Document not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // Allow upload for PENDING, IN_REVIEW, or CHANGES_REQUESTED statuses
@@ -73,9 +66,7 @@ export async function POST(
 
     // Delete old translated file if it exists
     if (existing.translated_file_path) {
-      await supabase.storage
-        .from("document-vault")
-        .remove([existing.translated_file_path]);
+      await supabase.storage.from("document-vault").remove([existing.translated_file_path]);
     }
 
     // Upload new translated file
@@ -93,10 +84,8 @@ export async function POST(
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
-      return NextResponse.json(
-        { error: "Failed to upload translated file" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to upload translated file" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.UPLOAD_PROCESSING_FAILED) }, { status: 500 });
     }
 
     // Determine new version
@@ -124,23 +113,20 @@ export async function POST(
       console.error("Update error:", updateError);
       // Cleanup uploaded file
       await supabase.storage.from("document-vault").remove([storagePath]);
-      return NextResponse.json(
-        { error: "Failed to update database" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to update database" }, { status: 500 });
     }
+
+    // Trigger user notification (email and in-app)
+    await triggerTranslationNotification(id);
 
     return NextResponse.json({
       success: true,
       status: updated.status,
-      message:
-        "Translated document uploaded successfully. User can now review it.",
+      message: msg(E.UPLOAD_TRANSLATION_SUCCESS),
     });
   } catch (error) {
     console.error("Upload translation error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

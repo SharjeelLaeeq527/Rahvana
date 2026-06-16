@@ -28,9 +28,7 @@ export const ExpandableTooltip = ({
           <div className="w-5 h-5 rounded-full bg-[#0d7377] text-white text-xs flex items-center justify-center font-semibold">
             {icon}
           </div>
-          <span className="text-sm font-medium text-[#0d7377]">
-            {title}
-          </span>
+          <span className="text-sm font-medium text-[#0d7377]">{title}</span>
         </div>
         <ChevronDown
           size={18}
@@ -42,7 +40,7 @@ export const ExpandableTooltip = ({
 
       {isOpen && (
         <div className="px-4 py-3 border-t border-[#14a0a6]/30 bg-white">
-          <p className="text-sm text-[#0d7377] leading-relaxed">{message}</p>
+          <p className="text-xs text-[#0d7377] leading-relaxed">{message}</p>
         </div>
       )}
     </div>

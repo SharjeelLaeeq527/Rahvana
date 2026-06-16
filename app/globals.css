@@ -1,4 +1,180 @@
+:root {
+  --icon-free: url("/icons/Free.png");
+  --icon-basic: url("/icons/Basic.png");
+  --icon-premium: url("/icons/Premium.png");
+  --icon-executive: url("/icons/Executive.png");
+
+  --page-heading-size: clamp(2.25rem, 4.5vw, 4rem);
+  --page-heading-weight: 800;
+  --page-heading-line-height: 1.08;
+  --page-heading-tracking: -0.04em;
+  --page-heading-size-sm: clamp(1.6rem, 3.5vw, 2.25rem);
+  --page-heading-size-md: clamp(2rem, 4vw, 3rem);
+  --page-heading-size-lg: clamp(2.25rem, 4.5vw, 4rem);
+  --page-heading-size: var(--page-heading-size-lg);
+  --page-description-size-sm: clamp(0.9rem, 1.2vw, 0.95rem);
+  --page-description-size-md: clamp(1rem, 1.3vw, 1rem);
+  --page-description-size-lg: clamp(1rem, 1.4vw, 1.125rem);
+  --page-description-size: var(--page-description-size-md);
+  --page-description-weight: 400;
+  --page-description-line-height: 1.7;
+}
+
+.plan-icon {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  flex-shrink: 0;
+}
+
+.plan-icon--free {
+  background-image: var(--icon-free);
+}
+.plan-icon--basic {
+  background-image: var(--icon-basic);
+}
+.plan-icon--premium {
+  background-image: var(--icon-premium);
+}
+.plan-icon--executive {
+  background-image: var(--icon-executive);
+}
+
+/* Universal background for all guides */
+.guide-bg {
+  background-image: url("/assets/images/guides-bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+}
+.step-modal.ch3step-bg {
+  position: relative;
+  z-index: 0;
+}
+.step-modal.ch3step-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("/assets/images/ch3steps-bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: 0.6;
+}
+/* Toned down Chapter 1 Step Background */
+
+.ch1step-bg {
+  position: relative;
+  z-index: 0;
+}
+.ch1step-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("/assets/images/ch1steps-bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: 0.6;
+}
+.ch2step-bg {
+  position: relative;
+  z-index: 0;
+}
+.ch2step-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("/assets/images/ch2steps-bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: 0.6;
+}
+.ch3step-bg {
+  position: relative;
+  z-index: 0;
+}
+.ch3step-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: url("/assets/images/ch3steps-bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-attachment: fixed;
+  opacity: 0.6;
+}
+/* Nicer purple for Chapter 2 background */
+.chapter2-bg {
+  position: relative;
+  z-index: 0;
+}
+.chapter2-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: url("/assets/images/chapter-2-bg.png") center/cover no-repeat fixed;
+  opacity: 0.6;
+}
+
+/* Accent colors for headings, progress, etc. */
+.accent-rose {
+  color: #c0596a;
+}
+.accent-brown {
+  color: #28151c;
+}
+
+.accent-rose-bg {
+  background-color: #ac636f;
+}
+.accent-brown-bg {
+  background-color: #28151c;
+}
+
+/* Crisp Modal Styling for Steps */
+.step-modal {
+  border-radius: 18px;
+  box-shadow:
+    0 8px 40px rgba(40, 21, 28, 0.13),
+    0 1.5px 6px rgba(192, 89, 106, 0.07);
+  border: 1.5px solid #e7e2e0;
+  padding: 36px 32px 32px 32px;
+}
+
+.step-modal:not(.ch1step-bg):not(.ch2step-bg):not(.ch3step-bg) {
+  background: #fff;
+}
+
+/* Brown Card Utility (for blue cards) */
+.brown-card {
+  background: #28151c;
+  color: #fff;
+  border-radius: 14px;
+  border: 1.5px solid #c0596a;
+  box-shadow: 0 4px 18px rgba(40, 21, 28, 0.1);
+}
+
+.step-modal-spacing {
+  margin-top: 48px;
+}
+/* Chapter 1 Step Background Utility */
 @import "tailwindcss";
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display:ital@0;1&display=swap");
 
 @custom-variant dark (&:is(.dark *));
 
@@ -10,14 +186,14 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  /* --primary: #0d9488; */
-  --primary: #0d7377;
+  --primary: #0d9488;
+  /* --primary: #d884ae; */
   /* refined brand: blue-teal */
   /* --primary: oklch(0.58 0.16 230); refined brand: blue-teal */
   --primary-foreground: oklch(0.98 0 0);
   /* near-white text on primary */
-  --secondary: #475569;
-  /* --secondary: oklch(0.97 0 0); */
+  /* --secondary: #d88ab0; */
+  --secondary: oklch(0.97 0 0);
   --secondary-foreground: oklch(0.205 0 0);
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
@@ -50,12 +226,54 @@
   --rahvana-primary-pale: #e8f6f6;
   --rahvana-secondary: #32e0c4;
 
+  /* StepView launch-module palette */
+  --rv-ch1: #8284bf;
+  --rv-ch1-dark: #4e518c;
+  --rv-ch1-bg: #2a1c40;
+  --rv-ch1-module-bg: #1a1b31;
+  --rv-ch1-feature-bg: #8284bf14;
+  --rv-ch1-panel: #221126;
+  --rv-ch1-text: #e6dced;
+  --rv-ch1-soft: #f6f7ff;
+  --rv-ch2: #520a50;
+  --rv-ch2-dark: #3a073a;
+  --rv-ch2-module-bg: #1a0a18;
+  --rv-ch2-feature-bg: #520a5014;
+  --rv-ch2-panel: #2d1535;
+  --rv-ch2-text: #f4e6f3;
+  --rv-launch-bg: #1a0a18;
+  --rv-launch-deep: #251f32;
+  --rv-launch-divider: rgb(59, 30, 85);
+  --rv-launch-accent: rgb(156, 103, 125);
+  --rv-launch-sky: #973680;
+  --rv-launch-blue: #6aa8f0;
+  --rv-launch-note: #b48ad6;
+  --rv-launch-navy: #0e1e38;
+  --rv-launch-navy-deep: #0c1b33;
+  --rv-launch-alt-panel: #3a4f63;
+
+  /* Shared v2 palette tokens */
+  --rv-navy: #0c1b33;
+  --rv-ink: #1c2b3a;
+  --rv-soft: #3a4f63;
+  --rv-muted: #6b8097;
+  --rv-line: #d0e4f7;
+  --rv-sky: #e8f1fb;
+  --rv-blue: #2f6fd4;
+  --rv-blue-dark: #2460bb;
+  --rv-blue-deep: #051738;
+  --rv-green: #15744f;
+  --rv-green-bg: #e8f5ef;
+  --rv-amber: #8a6200;
+  --rv-amber-bg: #fef8e8;
+  --rv-purple: #4a2d8a;
+  --rv-purple-bg: #f3f0fb;
+  --rv-rose: #c0596a;
+  --rv-rose-bg: #fbeaec;
+  --rv-rose-soft: #f0f1fb;
+
   /* Guide-specific tokens */
-  --guide-hero-gradient: linear-gradient(
-    135deg,
-    hsl(168 70% 42%),
-    hsl(168 60% 52%)
-  );
+  --guide-hero-gradient: linear-gradient(135deg, hsl(168 70% 42%), hsl(168 60% 52%));
   --guide-card-shadow: 0 4px 24px -4px hsl(168 70% 42% / 0.15);
   --guide-card-hover-shadow: 0 8px 32px -4px hsl(168 70% 42% / 0.25);
   --guide-grid-color: hsl(168 70% 42% / 0.025);
@@ -69,6 +287,42 @@
 }
 
 @layer utilities {
+  .page-heading {
+    font-size: var(--page-heading-size-sm);
+    font-weight: var(--page-heading-weight);
+    line-height: var(--page-heading-line-height);
+    letter-spacing: var(--page-heading-tracking);
+  }
+  @media (min-width: 640px) {
+    .page-heading {
+      font-size: var(--page-heading-size-md);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .page-heading {
+      font-size: var(--page-heading-size-lg);
+    }
+  }
+
+  .page-description {
+    font-size: var(--page-description-size-sm);
+    font-weight: var(--page-description-weight);
+    line-height: var(--page-description-line-height);
+  }
+
+  @media (min-width: 640px) {
+    .page-description {
+      font-size: var(--page-description-size-md);
+    }
+  }
+
+  @media (min-width: 768px) {
+    .page-description {
+      font-size: var(--page-description-size-lg);
+    }
+  }
+
   .site-main-px {
     padding-left: var(--site-px-default);
     padding-right: var(--site-px-default);
@@ -418,6 +672,85 @@
   background-size: 48px 48px;
 }
 
+.interview-dots-bg {
+  background-image:
+    radial-gradient(circle, rgba(13, 115, 119, 0.14) 1.5px, transparent 1.5px),
+    radial-gradient(circle, rgba(137, 164, 160, 0.08) 1px, transparent 1px);
+  background-size:
+    28px 28px,
+    14px 14px;
+  background-position:
+    0 0,
+    7px 7px;
+  animation: dots-drift 60s linear infinite;
+}
+
+@keyframes dots-drift {
+  0% {
+    background-position:
+      0 0,
+      7px 7px;
+  }
+  100% {
+    background-position:
+      28px 28px,
+      35px 35px;
+  }
+}
+
+.animated-border {
+  position: relative;
+}
+
+.animated-border::before {
+  content: "";
+  position: absolute;
+  inset: 0; /* shorthand for top/left/right/bottom */
+  border: 2px solid #0d7377;
+  border-radius: 16px;
+  pointer-events: none;
+
+  animation: rotateBorderColors 6s ease-in-out infinite;
+
+  /* Glow effect */
+  box-shadow:
+    inset 0 0 20px rgba(13, 115, 119, 0.1),
+    0 0 20px rgba(13, 115, 119, 0.15);
+}
+
+@keyframes rotateBorderColors {
+  0% {
+    border-color: #0d7377;
+    box-shadow:
+      inset 0 0 20px rgba(13, 115, 119, 0.1),
+      0 0 20px rgba(13, 115, 119, 0.15);
+  }
+  25% {
+    border-color: #14a0a6;
+    box-shadow:
+      inset 0 0 20px rgba(20, 160, 166, 0.1),
+      0 0 20px rgba(20, 160, 166, 0.15);
+  }
+  50% {
+    border-color: #32e0c4;
+    box-shadow:
+      inset 0 0 20px rgba(50, 224, 196, 0.1),
+      0 0 20px rgba(50, 224, 196, 0.15);
+  }
+  75% {
+    border-color: #0a5a5d;
+    box-shadow:
+      inset 0 0 20px rgba(10, 90, 93, 0.1),
+      0 0 20px rgba(10, 90, 93, 0.15);
+  }
+  100% {
+    border-color: #0d7377;
+    box-shadow:
+      inset 0 0 20px rgba(13, 115, 119, 0.1),
+      0 0 20px rgba(13, 115, 119, 0.15);
+  }
+}
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -427,55 +760,59 @@
   display: none;
 }
 
-/* Custom Scrollbar Theme Colors and Corners */
+/* Custom Scrollbar Theme - Teal Colors */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
-  border-radius: 8px;
+  margin-block: 20px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.25);
-  border-radius: 8px;
+  background: #0d7377;
+  border-radius: 20px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.4);
-}
-
-/* Adjust scrollbar for light backgrounds to match theme */
-.bg-slate-50\/30.custom-scrollbar::-webkit-scrollbar-thumb,
-.bg-slate-50 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(13, 115, 119, 0.25);
-}
-
-.bg-slate-50\/30.custom-scrollbar::-webkit-scrollbar-thumb:hover,
-.bg-slate-50 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(13, 115, 119, 0.45);
+  background: #0a5a5d;
+  background-clip: padding-box;
 }
 
 .custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.25) transparent;
+  scrollbar-color: #0d7377 transparent;
+}
+
+.compact-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+  /* margin-block provides the spacing from top and bottom (the red arrows in your image) */
+  margin-block: 20px;
+}
+
+.compact-scrollbar {
+  scrollbar-width: thin;
 }
 
 /* Premium Scrollbar - Teal Theme */
 .scrollbar-premium::-webkit-scrollbar {
-  width: 6px;
+  width: 10px;
+  height: 10px;
 }
 
 .scrollbar-premium::-webkit-scrollbar-track {
   background: transparent;
+  margin-block: 20px;
 }
 
 .scrollbar-premium::-webkit-scrollbar-thumb {
   background: #0d7377;
-  border-radius: 3px;
-  border: 2px solid transparent;
+  border-radius: 20px;
+  border: 3px solid transparent;
   background-clip: padding-box;
 }
 
@@ -484,9 +821,37 @@
   background-clip: padding-box;
 }
 
+.scrollbar-premium::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 .scrollbar-premium {
   scrollbar-width: thin;
   scrollbar-color: #0d7377 transparent;
+}
+
+/* Subtle neutral scrollbar for the floating CSA side panel.
+   Visible thumb so users know there is more content to scroll to. */
+.panel-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* slate-300 */
+  border-radius: 9999px;
+}
+
+.panel-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* slate-400 */
+}
+
+.panel-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
 }
 
 @keyframes rotate-line {
@@ -580,4 +945,202 @@
   body {
     @apply bg-background text-foreground leading-relaxed;
   }
+}
+
+/* Resource Film Card Design */
+.resource-fcard {
+  background: #fdfaf3;
+  border: 1px solid #c3d6e2;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: all 0.2s ease;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Choice card styles for tutorial branch buttons */
+.choice-card {
+  border-radius: 12px;
+  border: 1.5px solid var(--rv-line);
+  background: var(--choice-bg, transparent);
+  padding: 14px 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  min-height: 72px;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition:
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.12s ease;
+}
+.choice-card:hover {
+  box-shadow: 0 6px 18px rgba(12, 27, 51, 0.08);
+  transform: translateY(-2px);
+}
+.choice-card:focus {
+  outline: 3px solid rgba(47, 111, 212, 0.14);
+  outline-offset: 2px;
+}
+.choice-card .choice-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--rv-ink);
+}
+.choice-card .choice-desc {
+  font-size: 13px;
+  color: var(--rv-muted);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.choice-card--household {
+  --choice-bg: #eefcf6;
+  border-color: #0f766e;
+}
+.choice-card--household:hover {
+  border-color: #115e59;
+}
+
+.choice-card--joint {
+  --choice-bg: #eff6ff;
+  border-color: #2563eb;
+}
+.choice-card--joint:hover {
+  border-color: #1d4ed8;
+}
+
+.resource-fcard.is-added {
+  border-color: #0d7a5c;
+  background: #f4faf8;
+}
+
+.resource-fcard-frame {
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.resource-fhole-row {
+  position: absolute;
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: space-around;
+  padding: 0 8px;
+}
+
+.resource-fhole-row.top {
+  top: 6px;
+}
+.resource-fhole-row.bot {
+  bottom: 6px;
+}
+
+.resource-fhole {
+  width: 5px;
+  height: 5px;
+  border-radius: 1.5px;
+  background: rgba(255, 255, 255, 0.4);
+  border: 0.5px solid rgba(255, 255, 255, 0.2);
+}
+
+.resource-fcard-body {
+  background: #fff;
+  padding: 12px 14px 14px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.resource-fcard-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 4px;
+  line-height: 1.3;
+}
+
+.resource-fcard-desc {
+  font-size: 12px;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.resource-fcard-foot {
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.resource-fcard-price {
+  font-family: "DM Serif Display", serif;
+  font-size: 20px;
+  color: #1a1a1a;
+  line-height: 1;
+}
+
+.resource-fcard-unit {
+  font-size: 10px;
+  color: #999;
+  margin-top: 2px;
+}
+
+.resource-fbtn {
+  font-size: 12px;
+  padding: 5px 16px;
+  border: 1px solid var(--primary);
+  border-radius: 20px;
+  background: #fff;
+  border-color: var(--primary);
+  color: #0d7a5c;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.15s;
+}
+
+.resource-fbtn:hover:not(:disabled) {
+  /* border-color: #0d7a5c; */
+  color: #fff;
+  background: var(--primary);
+}
+
+.resource-fbtn.is-added {
+  background: var(--primary);
+  /* border-color: var(--primary-500); */
+  color: #fff;
+}
+
+.resource-fbtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Add-on card pill button — accent comes from inline --pill var */
+.addon-pill {
+  background: #fff;
+  border-color: var(--pill, var(--primary));
+  color: var(--pill, var(--primary));
+}
+.addon-pill:hover:not(:disabled):not(.is-added) {
+  background: var(--pill, var(--primary));
+  color: #fff;
+}
+.addon-pill.is-added {
+  background: var(--pill, var(--primary));
+  color: #fff;
 }

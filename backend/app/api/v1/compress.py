@@ -19,7 +19,40 @@ router = APIRouter()
 
 class PDFProcessor:
     """Handle EXTREME PDF compression with logging and speed optimization"""
-    
+
+    @staticmethod
+    def _compress_image(image_bytes: bytes, img_quality: int, max_dimension: int) -> Optional[bytes]:
+        """CPU-bound work for a single image. PIL releases the GIL during
+        decode/resize/encode, so calling this from a thread pool gives real
+        parallelism."""
+        pil_image = Image.open(io.BytesIO(image_bytes))
+
+        # Fast path: ask the JPEG decoder to load the image at a reduced scale
+        # directly (decode-time downscale). This is a no-op for non-JPEG formats
+        # but a big speed win for scanned PDFs — we avoid fully decoding a huge
+        # image only to shrink it right after.
+        pil_image.draft('RGB', (max_dimension, max_dimension))
+
+        width, height = pil_image.size
+
+        # Resize only if needed. BICUBIC is much faster than LANCZOS and the
+        # quality difference is negligible for document scans.
+        if width > max_dimension or height > max_dimension:
+            ratio = min(max_dimension / width, max_dimension / height)
+            pil_image = pil_image.resize(
+                (int(width * ratio), int(height * ratio)),
+                Image.Resampling.BICUBIC,
+            )
+
+        if pil_image.mode != 'RGB':
+            pil_image = pil_image.convert('RGB')
+
+        # NOTE: optimize=True is intentionally OFF — it runs a second encoding
+        # pass that roughly doubles encode time for ~tiny size gains.
+        img_buffer = io.BytesIO()
+        pil_image.save(img_buffer, format='JPEG', quality=img_quality)
+        return img_buffer.getvalue()
+
     @staticmethod
     def process_pdf_sync(input_bytes: bytes, password: Optional[str] = None) -> tuple[bytes, dict]:
         original_size = len(input_bytes)
@@ -44,76 +77,85 @@ class PDFProcessor:
             img_quality = 60
             max_dimension = 1024
             
-            # --- STEP 1: Sequential Image Processing ---
+            # --- STEP 1: Collect every unique image once ---
             doc = fitz.open(input_path)
-            
             logger.info(f"Processing PDF with {len(doc)} pages...")
+
+            # Map each unique image (xref) to the first page that references it.
+            # Deduping here means an image reused across N pages is only
+            # decoded/encoded ONCE instead of N times.
+            xref_page: dict[int, int] = {}
             for page_num in range(len(doc)):
-                page = doc[page_num]
-                image_list = page.get_images()
-                
-                for img_info in image_list:
+                for img_info in doc[page_num].get_images():
                     xref = img_info[0]
-                    try:
-                        extracted = doc.extract_image(xref)
-                        if not extracted:
-                            continue
-                        
-                        # Skip small/already compressed JPEGs
-                        if extracted['ext'].lower() in ('jpeg', 'jpg') and extracted['size'] < 50 * 1024:
-                            continue
-                        
-                        image_bytes = extracted["image"]
-                        pil_image = Image.open(io.BytesIO(image_bytes))
-                        width, height = pil_image.size
-                        
-                        # Check and resize only if needed
-                        should_resize = width > max_dimension or height > max_dimension
-                        if should_resize:
-                            ratio = min(max_dimension/width, max_dimension/height)
-                            new_width = int(width * ratio)
-                            new_height = int(height * ratio)
-                            pil_image = pil_image.resize((new_width, new_height), Image.Resampling.LANCZOS)
-                        
-                        if pil_image.mode != 'RGB':
-                            pil_image = pil_image.convert('RGB')
-                        
-                        # Aggressive JPEG compression
-                        img_buffer = io.BytesIO()
-                        pil_image.save(img_buffer, format='JPEG', quality=img_quality, optimize=True)
-                        compressed_image_bytes = img_buffer.getvalue()
-                        
-                        # Update the image in the PDF
-                        page.replace_image(xref, stream=compressed_image_bytes)
-                        
-                    except Exception as e:
-                        logger.warning(f"Failed to process image {xref} on page {page_num + 1}: {e}")
-            
+                    if xref not in xref_page:
+                        xref_page[xref] = page_num
+
+            jobs = []  # (xref, image_bytes)
+            for xref in xref_page:
+                try:
+                    extracted = doc.extract_image(xref)
+                except Exception as e:
+                    logger.warning(f"Failed to extract image {xref}: {e}")
+                    continue
+                if not extracted:
+                    continue
+                # Skip small/already compressed JPEGs
+                if extracted['ext'].lower() in ('jpeg', 'jpg') and extracted['size'] < 50 * 1024:
+                    continue
+                jobs.append((xref, extracted["image"]))
+
+            # --- STEP 2: Compress images in parallel ---
+            def _worker(job):
+                xref, image_bytes = job
+                try:
+                    return xref, PDFProcessor._compress_image(image_bytes, img_quality, max_dimension)
+                except Exception as e:
+                    logger.warning(f"Failed to process image {xref}: {e}")
+                    return xref, None
+
+            if jobs:
+                workers = min(8, (os.cpu_count() or 4))
+                with ThreadPoolExecutor(max_workers=workers) as pool:
+                    results = list(pool.map(_worker, jobs))
+            else:
+                results = []
+
+            # Replace must touch the doc, so do it sequentially on the main thread.
+            for xref, compressed_image_bytes in results:
+                if not compressed_image_bytes:
+                    continue
+                try:
+                    doc[xref_page[xref]].replace_image(xref, stream=compressed_image_bytes)
+                except Exception as e:
+                    logger.warning(f"Failed to replace image {xref}: {e}")
+
             logger.info("Image optimization complete. Starting structural saving.")
-            
-            # Save with aggressive structure settings
+
+            # Save with structure cleanup. Dropped clean=True (sanitizes content
+            # streams — slow); garbage collection + deflate stay.
             doc.save(
                 intermediate_path,
                 garbage=4,
-                deflate=True,
-                clean=True
+                deflate=True
             )
             doc.close()
-            
-            # --- STEP 2: Quick Structure Cleanup with pikepdf ---
+
+            # --- STEP 3: Quick Structure Cleanup with pikepdf ---
             with pikepdf.open(intermediate_path, password=password or '') as pdf:
                 try:
                     with pdf.open_metadata() as meta:
                         meta.clear()
                 except Exception:
                     pass
-                
+
+                # Dropped linearize=True — it adds a server-side reordering pass
+                # for faster web viewing that we don't need here.
                 pdf.save(
                     output_path,
                     compress_streams=True,
                     stream_decode_level=pikepdf.StreamDecodeLevel.generalized,
-                    object_stream_mode=pikepdf.ObjectStreamMode.generate,
-                    linearize=True  # Enable linearization for faster web viewing
+                    object_stream_mode=pikepdf.ObjectStreamMode.generate
                 )
             
             # Read final file

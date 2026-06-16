@@ -43,10 +43,7 @@
           "id": "spousal_relationship_type",
           "label": "What is your relationship to your spouse?",
           "type": "select",
-          "options": [
-            "No biological relation",
-            "First cousins"
-          ],
+          "options": ["No biological relation", "First cousins"],
           "risk_tag": "CONSANGUINEOUS_MARRIAGE"
         },
         {
@@ -54,11 +51,56 @@
           "label": "Which U.S. state do you intend to live in after immigration?",
           "type": "select",
           "options": [
-            "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado", "Connecticut", "Delaware", "Florida", "Georgia", 
-            "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana", "Maine", "Maryland", 
-            "Massachusetts", "Michigan", "Minnesota", "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey", 
-            "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", 
-            "South Dakota", "Tennessee", "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming"
+            "Alabama",
+            "Alaska",
+            "Arizona",
+            "Arkansas",
+            "California",
+            "Colorado",
+            "Connecticut",
+            "Delaware",
+            "Florida",
+            "Georgia",
+            "Hawaii",
+            "Idaho",
+            "Illinois",
+            "Indiana",
+            "Iowa",
+            "Kansas",
+            "Kentucky",
+            "Louisiana",
+            "Maine",
+            "Maryland",
+            "Massachusetts",
+            "Michigan",
+            "Minnesota",
+            "Mississippi",
+            "Missouri",
+            "Montana",
+            "Nebraska",
+            "Nevada",
+            "New Hampshire",
+            "New Jersey",
+            "New Mexico",
+            "New York",
+            "North Carolina",
+            "North Dakota",
+            "Ohio",
+            "Oklahoma",
+            "Oregon",
+            "Pennsylvania",
+            "Rhode Island",
+            "South Carolina",
+            "South Dakota",
+            "Tennessee",
+            "Texas",
+            "Utah",
+            "Vermont",
+            "Virginia",
+            "Washington",
+            "West Virginia",
+            "Wisconsin",
+            "Wyoming"
           ],
           "risk_tag": "MARRIAGE_INVALID_IN_INTENDED_STATE"
         },
@@ -66,12 +108,7 @@
           "id": "i130_status",
           "label": "Current status of Form I-130 Petition",
           "type": "select",
-          "options": [
-            "Not filed yet",
-            "Filed but pending",
-            "Approved",
-            "At NVC / NVC Processing"
-          ],
+          "options": ["Not filed yet", "Filed but pending", "Approved", "At NVC / NVC Processing"],
           "risk_tag": "I130_PROCESS_NOT_STARTED"
         }
       ]
@@ -141,7 +178,7 @@
           "label": "Have you ever been part of any unofficial military or armed groups?",
           "type": "boolean",
           "risk_tag": "WORKING_IN_DEFENSE_SECTOR"
-        },                        
+        },
         {
           "id": "employer_type",
           "label": "Who is your employer?",

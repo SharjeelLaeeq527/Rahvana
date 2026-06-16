@@ -1,6 +1,7 @@
 // app/api/admin/logout/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { E, msg } from "@/lib/errors";
 
 // Create regular Supabase client for authentication
 const supabase = createClient(
@@ -29,13 +30,10 @@ export async function POST(_request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: "Admin logout successful"
+      message: "Admin logout successful",
     });
   } catch (error) {
     console.error("Admin logout API error:", error);
-    return NextResponse.json(
-      { error: "server_error", message: "An unexpected error occurred" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }

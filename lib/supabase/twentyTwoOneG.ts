@@ -1,14 +1,11 @@
 import { createClient } from "@/lib/supabase/client";
-import {
-  FormData,
-  FormSelections,
-} from "@/app/(tools)/(visa)/221g-action-planner/types/221g";
+import { FormData, FormSelections } from "@/app/(tools)/(visa)/221g-action-planner/types/221g";
 
 export async function save221gCase(
   userId: string,
   formData: FormData,
   selectedItems: FormSelections,
-  status: string = "received",
+  status: string = "received"
 ) {
   const supabase = createClient();
   console.log("Saving 221g case for user:", userId, status);
@@ -76,21 +73,20 @@ export async function save221gCase(
 
 export async function getUser221gCase(userId: string) {
   const supabase = createClient();
-  console.log("Fetching 221g case for user:", userId);
   const { data: existingCases, error } = await supabase
     .from("user_221g_cases")
     .select("*")
     .eq("user_id", userId)
     .order("created_at", { ascending: false })
     .limit(1);
-  const data = existingCases?.[0] || null;
 
   if (error) {
-    console.error("Error in getUser221gCase:", error);
-    throw error;
+    // Table may not exist yet or user has no record — return null silently
+    // so FollowUpManager simply shows nothing without breaking the journey
+    return null;
   }
-  console.log("Fetched case data:", data);
-  return data;
+
+  return existingCases?.[0] || null;
 }
 
 export async function update221gStatus(
@@ -98,7 +94,7 @@ export async function update221gStatus(
   status: string,
   nextFollowUpDate?: Date | null,
   lastResponses?: Record<string, boolean>,
-  dismissCount?: number,
+  dismissCount?: number
 ) {
   const supabase = createClient();
   const updateData: {
@@ -128,10 +124,7 @@ export async function update221gStatus(
     updateData.last_responses = lastResponses;
   }
 
-  const { error } = await supabase
-    .from("user_221g_cases")
-    .update(updateData)
-    .eq("id", caseId);
+  const { error } = await supabase.from("user_221g_cases").update(updateData).eq("id", caseId);
 
   if (error) throw error;
 }

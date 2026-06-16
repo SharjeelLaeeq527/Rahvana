@@ -4,13 +4,11 @@ import { useEffect, useMemo, useState, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
-import WizardInfoPanel, {
-  InfoPanelData,
-} from "../../../components/guides/WizardInfoPanel";
+import WizardInfoPanel, { InfoPanelData } from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
-import WhatsThisModal from "../../../components/guides/WhatsThisModal";
+import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/passport-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
@@ -31,10 +29,7 @@ const STEP_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-const INFO_PANEL_KEYS: Record<
-  string,
-  keyof typeof guideData.wizard.info_panel
-> = {
+const INFO_PANEL_KEYS: Record<string, keyof typeof guideData.wizard.info_panel> = {
   document_need: "document_need",
   age_category: "document_need",
   birth_setting: "document_need",
@@ -47,6 +42,7 @@ const INFO_PANEL_KEYS: Record<
 const PassportGuide = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [navigationHandled, setNavigationHandled] = useState(false);
   const [state, setState] = useState<WizardState>({
@@ -82,7 +78,7 @@ const PassportGuide = () => {
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
       savedOffice: prev.savedOffice, // Not used in Passport guide
-    }),
+    })
   );
 
   const { uploadFile: uploadFileHook } = useGuideUpload();
@@ -103,14 +99,14 @@ const PassportGuide = () => {
   const handleSubmitFeedback = async (
     feedbackType: string,
     description: string,
-    attachment?: File,
+    attachment?: File
   ) => {
     await submitFeedbackHook(
       "passport-guide",
       STEP_IDS[currentStep],
       feedbackType,
       description,
-      attachment,
+      attachment
     );
   };
 
@@ -132,12 +128,23 @@ const PassportGuide = () => {
 
     hasInitializedModal.current = true;
 
-    if (!session.hide_intro_modal) {
+    const localHide =
+      typeof window !== "undefined" &&
+      localStorage.getItem("dont_show_passport_welcome") === "true";
+
+    if (!session.hide_intro_modal && !localHide) {
       setShowWhatsThis(true);
     } else {
       setShowWhatsThis(false);
     }
   }, [session]);
+
+  const handleCloseIntro = () => {
+    if (dontShowAgain && typeof window !== "undefined") {
+      localStorage.setItem("dont_show_passport_welcome", "true");
+    }
+    setShowWhatsThis(false);
+  };
 
   useEffect(() => {
     if (session?.saved) {
@@ -152,17 +159,14 @@ const PassportGuide = () => {
       setIsSaved(true); // mark as saved
     },
     navigationHandled,
-    setNavigationHandled,
+    setNavigationHandled
   );
 
   // Before unload confirmation
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       // Show confirmation if user has made progress beyond the first step
-      if (
-        currentStep > 0 ||
-        (state.documentNeed && state.documentNeed !== "")
-      ) {
+      if (currentStep > 0 || (state.documentNeed && state.documentNeed !== "")) {
         e.preventDefault();
         e.returnValue = "";
         return "";
@@ -183,10 +187,7 @@ const PassportGuide = () => {
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       // Show confirmation if user has made progress beyond the first step
-      if (
-        currentStep > 0 ||
-        (state.documentNeed && state.documentNeed !== "")
-      ) {
+      if (currentStep > 0 || (state.documentNeed && state.documentNeed !== "")) {
         e.preventDefault();
         e.returnValue = "";
         return "";
@@ -219,8 +220,7 @@ const PassportGuide = () => {
   };
 
   const goNext = () => {
-    if (currentStep < STEP_IDS.length - 1 && canGoNext())
-      setCurrentStep(currentStep + 1);
+    if (currentStep < STEP_IDS.length - 1 && canGoNext()) setCurrentStep(currentStep + 1);
   };
 
   const goBack = () => {
@@ -301,13 +301,10 @@ const PassportGuide = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-14">
-      <WizardHeader
-        onWhatsThis={() => setShowWhatsThis(true)}
-        title={guideData.wizard.title}
-      />
+    <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-26">
+      <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
 
-      <div className="flex flex-1 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] flex-col xl:flex-row">
+      <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
         <WizardSidebar
           currentStep={STEP_IDS.indexOf(currentStepId)}
           steps={STEP_IDS}
@@ -320,57 +317,66 @@ const PassportGuide = () => {
           session={session}
         />
 
-        <main className="flex-1 xl:overflow-y-auto p-4 sm:p-8 relative min-h-min">
+        <main className="min-w-0 xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
           <div className="fixed inset-0 bg-[linear-gradient(hsl(168_80%_30%/0.02)_1px,transparent_1px),linear-gradient(90deg,hsl(168_80%_30%/0.02)_1px,transparent_1px)] bg-size-[48px_48px] pointer-events-none z-0" />
 
-          <div className="relative z-10 max-w-full md:max-w-2xl mx-auto">
-            <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-8 shadow-sm min-h-100">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentStepId}
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  exit={{ opacity: 0, x: -20 }}
-                  transition={{ duration: 0.25 }}
-                >
-                  {renderStep()}
-                </motion.div>
-              </AnimatePresence>
-            </div>
+          <div className="w-full flex flex-col xl:items-start items-center min-h-137.5 xl:min-h-137.5 justify-center">
+            <div className="relative z-10 w-full max-w-full md:max-w-3xl">
+              <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-8 shadow-sm min-h-100">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={currentStepId}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -20 }}
+                    transition={{ duration: 0.25 }}
+                  >
+                    {renderStep()}
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
-            <div className="flex flex-col justify-between items-center gap-4 mt-5 pb-6 w-full">
-              {currentStep > 0 ? (
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={goBack}
-                  className="flex items-center gap-1 px-5 py-2.5 rounded-lg border border-gray-200 bg-white text-gray-700 text-sm font-semibold cursor-pointer"
-                >
-                  <ArrowLeft className="w-4 h-4" /> Back
-                </motion.button>
-              ) : (
-                <div />
-              )}
+              <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-5 pb-6 w-full">
+                {/* Back Button */}
+                {currentStep > 0 ? (
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={goBack}
+                    className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Back
+                  </motion.button>
+                ) : (
+                  <div className="hidden sm:block w-20" />
+                )}
 
-              <span className="text-sm text-gray-500 font-medium">
-                Step {currentStep + 1} of {STEP_IDS.length}
-              </span>
+                {/* Step Indicator */}
+                <span className="text-sm text-gray-500 font-medium">
+                  Step {currentStep + 1} of {STEP_IDS.length}
+                </span>
 
-              {currentStep < STEP_IDS.length - 1 && (
-                <motion.button
-                  whileHover={{ scale: 1.03 }}
-                  whileTap={{ scale: 0.97 }}
-                  onClick={goNext}
-                  disabled={!canGoNext()}
-                  className={`flex items-center gap-1 px-5 py-2.5 rounded-lg text-sm font-semibold cursor-pointer ${
-                    canGoNext()
-                      ? "bg-linear-to-br from-[#14a0a6] to-[#0d7377] text-white shadow-md border-none"
-                      : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                  }`}
-                >
-                  Continue <ArrowRight className="w-4 h-4" />
-                </motion.button>
-              )}
+                {/* Continue Button */}
+                {currentStep < STEP_IDS.length - 1 ? (
+                  <motion.button
+                    whileHover={{ scale: 1.03 }}
+                    whileTap={{ scale: 0.97 }}
+                    onClick={goNext}
+                    disabled={!canGoNext()}
+                    className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl font-semibold text-sm cursor-pointer transition
+        ${
+          canGoNext()
+            ? "bg-linear-to-br from-teal-600 to-teal-500 text-white shadow-md"
+            : "bg-gray-200 text-gray-400 cursor-not-allowed"
+        }`}
+                  >
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </motion.button>
+                ) : (
+                  <div className="hidden sm:block w-20" />
+                )}
+              </div>
             </div>
           </div>
         </main>
@@ -383,12 +389,13 @@ const PassportGuide = () => {
         />
       </div>
 
-      <WhatsThisModal
-        open={showWhatsThis}
-        onClose={() => setShowWhatsThis(false)}
-        data={guideData.wizard.whats_this}
-        documentLabel="Pakistani Passport"
-        guideSlug="passport-guide"
+      <NarrativeModal
+        isOpen={showWhatsThis}
+        onClose={handleCloseIntro}
+        onComplete={handleCloseIntro}
+        dontShowAgain={dontShowAgain}
+        onDontShowAgainChange={setDontShowAgain}
+        variant="passport"
       />
       <FeedbackButton
         steps={Object.values(STEP_LABELS)}

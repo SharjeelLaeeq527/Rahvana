@@ -88,12 +88,12 @@ export default function SignatureUploader({
         )}
 
         <h3 className="text-lg font-semibold text-slate-900 mb-2">
-          {isDragging ? t("signatureProcessing.uploader.dropzone") : t("signatureProcessing.uploader.uploadTitle")}
+          {isDragging
+            ? t("signatureProcessing.uploader.dropzone")
+            : t("signatureProcessing.uploader.uploadTitle")}
         </h3>
 
-        <p className="text-slate-600 mb-6 text-sm">
-          {t("signatureProcessing.uploader.browse")}
-        </p>
+        <p className="text-slate-600 mb-6 text-sm">{t("signatureProcessing.uploader.browse")}</p>
 
         <button
           type="button"
@@ -104,9 +104,7 @@ export default function SignatureUploader({
           {t("signatureProcessing.uploader.chooseFile")}
         </button>
 
-        <p className="text-xs text-slate-500 mt-4">
-          {t("signatureProcessing.uploader.supported")}
-        </p>
+        <p className="text-xs text-slate-500 mt-4">{t("signatureProcessing.uploader.supported")}</p>
       </div>
     </div>
   );

@@ -10,12 +10,12 @@ export function useGuideUpload() {
 
     try {
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('slug', slug);
-      formData.append('stepKey', stepKey);
+      formData.append("file", file);
+      formData.append("slug", slug);
+      formData.append("stepKey", stepKey);
 
-      const response = await fetch('/api/guides/upload', {
-        method: 'POST',
+      const response = await fetch("/api/guides/upload", {
+        method: "POST",
         body: formData,
       });
 
@@ -25,13 +25,13 @@ export function useGuideUpload() {
       }
 
       const result = await response.json();
-      console.log('File uploaded successfully:', result);
-      
+      console.log("File uploaded successfully:", result);
+
       return result;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+      const errorMessage = error instanceof Error ? error.message : "Upload failed";
       setUploadError(errorMessage);
-      console.error('Upload error:', error);
+      console.error("Upload error:", error);
       throw error;
     } finally {
       setUploading(false);
@@ -42,6 +42,6 @@ export function useGuideUpload() {
     uploadFile,
     uploading,
     uploadError,
-    clearError: () => setUploadError(null)
+    clearError: () => setUploadError(null),
   };
 }

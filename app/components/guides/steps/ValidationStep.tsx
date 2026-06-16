@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { Upload, Check, ChevronDown, CheckCircle2 } from "lucide-react";
+import { Upload, Check, ChevronDown, CheckCircle2, Lock } from "lucide-react";
 import { useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
@@ -11,12 +11,18 @@ interface ValidationCategory {
 interface ValidationData {
   title: string;
   description: string;
-  upload_section: {
+  upload_section?: {
     title: string;
     description: string;
     formats: string;
   };
-  checklist_title: string;
+  uploadSection?: {
+    title: string;
+    description: string;
+    formats: string;
+  };
+  checklist_title?: string;
+  checklistTitle?: string;
   categories: ValidationCategory[];
 }
 
@@ -40,27 +46,27 @@ const ValidationStep = ({
 
   const title = data?.title || t("wizard.common.certificateValidation");
   const description = data?.description || "";
-  const uploadSection = data?.upload_section || {
-    title: "",
-    description: "",
-    formats: "",
-  };
-  const checklistTitle = data?.checklist_title || t("wizard.common.validation");
+  const uploadSection = data?.upload_section ||
+    data?.uploadSection || {
+      title: "",
+      description: "",
+      formats: "",
+    };
+  const checklistTitle =
+    data?.checklist_title || data?.checklistTitle || t("wizard.common.validation");
   const categories = data?.categories || [];
 
   const totalItems = categories.reduce((acc, cat) => acc + cat.items.length, 0);
   const checkedCount = validationChecks.length;
   const criticalTotal = categories.reduce(
     (acc, cat) => acc + cat.items.filter((item) => item.critical).length,
-    0,
+    0
   );
   const criticalChecked = categories.reduce(
     (acc, cat) =>
       acc +
-      cat.items.filter(
-        (item) => item.critical && validationChecks.includes(item.label),
-      ).length,
-    0,
+      cat.items.filter((item) => item.critical && validationChecks.includes(item.label)).length,
+    0
   );
   const criticalRemaining = criticalTotal - criticalChecked;
 
@@ -69,8 +75,8 @@ const ValidationStep = ({
       // Trigger file input when button is clicked
       const fileInput = document.createElement("input");
       fileInput.type = "file";
-      fileInput.accept =
-        data?.upload_section?.formats?.replace(/,/g, ",.") || "";
+      const formats = data?.upload_section?.formats || data?.uploadSection?.formats;
+      fileInput.accept = formats?.replace(/,/g, ",.") || "";
       fileInput.onchange = (e: any) => {
         const file = e.target.files?.[0];
         if (file) {
@@ -95,9 +101,7 @@ const ValidationStep = ({
       >
         {title}
       </h2>
-      <p className="text-[0.95rem] text-[hsl(215_16%_47%)] mb-8">
-        {description}
-      </p>
+      <p className="text-[0.95rem] text-[hsl(215_16%_47%)] mb-8">{description}</p>
 
       {/* Upload Section */}
       <div
@@ -121,9 +125,7 @@ const ValidationStep = ({
               >
                 {t("wizard.common.uploadSuccess")}
               </p>
-              <p
-                className={`text-[0.78rem] text-green-600 ${isUrdu ? "font-urdu-body" : ""}`}
-              >
+              <p className={`text-[0.78rem] text-green-600 ${isUrdu ? "font-urdu-body" : ""}`}>
                 {t("wizard.common.secureStore")}
               </p>
             </>
@@ -153,9 +155,7 @@ const ValidationStep = ({
                         }`}
           >
             {uploadedFile ? (
-              <span
-                className={`flex items-center gap-2 ${isUrdu ? "font-urdu-body" : ""}`}
-              >
+              <span className={`flex items-center gap-2 ${isUrdu ? "font-urdu-body" : ""}`}>
                 <Check className="w-4 h-4" />
                 {t("wizard.common.uploadedToVault")}
               </span>
@@ -165,6 +165,14 @@ const ValidationStep = ({
               </span>
             )}
           </motion.button>
+
+          {/* Security Notice */}
+          <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-500 font-semibold mt-1">
+            <Lock className="w-3.5 h-3.5 text-primary shrink-0" />
+            <span className={isUrdu ? "font-urdu-body" : ""}>
+              {t("documentVaultPage.components.uploadModal.securityNotice")}
+            </span>
+          </div>
         </div>
       </div>
 
@@ -198,9 +206,7 @@ const ValidationStep = ({
           </div>
         </div>
         {!showValidations && (
-          <p
-            className={`text-[0.85rem] text-slate-500 mt-1 ${isUrdu ? "font-urdu-body" : ""}`}
-          >
+          <p className={`text-[0.85rem] text-slate-500 mt-1 ${isUrdu ? "font-urdu-body" : ""}`}>
             {t("wizard.common.clickToSeeValidations")}
           </p>
         )}
@@ -212,9 +218,7 @@ const ValidationStep = ({
           <div key={ci} className="mb-6">
             <div className="flex items-center gap-2 mb-3">
               <div className="w-2 h-2 rounded-full bg-[hsl(168_80%_30%)]" />
-              <h4 className="text-[0.95rem] font-bold text-[hsl(220_20%_15%)]">
-                {category.name}
-              </h4>
+              <h4 className="text-[0.95rem] font-bold text-[hsl(220_20%_15%)]">{category.name}</h4>
             </div>
 
             <div className="flex flex-col gap-2 pl-4">
@@ -238,9 +242,7 @@ const ValidationStep = ({
                                        : "bg-white border-[hsl(214_32%_85%)]"
                                    }`}
                     >
-                      {isChecked && (
-                        <Check className="w-3.5 h-3.5 text-white" />
-                      )}
+                      {isChecked && <Check className="w-3.5 h-3.5 text-white" />}
                     </div>
 
                     {/* Label */}

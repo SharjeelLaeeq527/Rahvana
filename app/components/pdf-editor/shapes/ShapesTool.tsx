@@ -1,17 +1,15 @@
-"use client"
+"use client";
 
-
-export type ShapeType = "checkmark" | "cross" 
+export type ShapeType = "checkmark" | "cross";
 interface ShapesToolProps {
-  onShapeSelect: (shape: ShapeType) => void
+  onShapeSelect: (shape: ShapeType) => void;
 }
 
 export function ShapesTool({ onShapeSelect }: ShapesToolProps) {
   const shapes: { type: ShapeType; icon: string; label: string }[] = [
     { type: "checkmark", icon: "✓", label: "Checkmark" },
     { type: "cross", icon: "✕", label: "Cross" },
-  
-  ]
+  ];
 
   return (
     <div className="flex flex-col gap-1 p-2 bg-white border border-gray-200 rounded shadow-lg">
@@ -26,30 +24,30 @@ export function ShapesTool({ onShapeSelect }: ShapesToolProps) {
         </button>
       ))}
     </div>
-  )
+  );
 }
 
 // Shape Component for rendering on PDF
 interface ShapeAnnotation {
-  id: string
-  type: ShapeType
-  x: number
-  y: number
-  size: number
-  color: string
-  pageIndex: number
+  id: string;
+  type: ShapeType;
+  x: number;
+  y: number;
+  size: number;
+  color: string;
+  pageIndex: number;
 }
 
 export function ShapeRenderer({ shape, scale }: { shape: ShapeAnnotation; scale: number }) {
   const renderShape = () => {
-    const size = shape.size * scale
+    const size = shape.size * scale;
     const commonStyle = {
       width: size,
       height: size,
       color: shape.color,
       fontSize: size,
       lineHeight: `${size}px`,
-    }
+    };
 
     switch (shape.type) {
       case "checkmark":
@@ -57,16 +55,15 @@ export function ShapeRenderer({ shape, scale }: { shape: ShapeAnnotation; scale:
           <span style={commonStyle} className="font-bold">
             ✓
           </span>
-        )
+        );
       case "cross":
         return (
           <span style={commonStyle} className="font-bold">
             ✕
           </span>
-        )
-      
+        );
     }
-  }
+  };
 
   return (
     <div
@@ -78,5 +75,5 @@ export function ShapeRenderer({ shape, scale }: { shape: ShapeAnnotation; scale:
     >
       {renderShape()}
     </div>
-  )
+  );
 }

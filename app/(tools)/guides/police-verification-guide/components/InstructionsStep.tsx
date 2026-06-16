@@ -21,9 +21,7 @@ interface InstructionsStepProps {
 }
 
 const InstructionsStep = ({ data }: InstructionsStepProps) => {
-  const [openPhaseId, setOpenPhaseId] = useState<number | null>(
-    data?.phases?.[0]?.id || null,
-  );
+  const [openPhaseId, setOpenPhaseId] = useState<number | null>(data?.phases?.[0]?.id || null);
 
   if (!data || !data.phases) {
     return (
@@ -40,8 +38,7 @@ const InstructionsStep = ({ data }: InstructionsStepProps) => {
           {data.title}
         </h2>
         <p className="text-slate-600 text-base md:text-lg max-w-xl">
-          Follow these steps carefully to complete your Police Character
-          Certificate application.
+          Follow these steps carefully to complete your Police Character Certificate application.
         </p>
       </div>
 
@@ -67,9 +64,7 @@ const InstructionsStep = ({ data }: InstructionsStepProps) => {
                 <div className="flex items-center gap-3 md:gap-4">
                   <div
                     className={`shrink-0 w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center font-bold text-base md:text-lg transition-colors ${
-                      isOpen
-                        ? "bg-primary text-white"
-                        : "bg-slate-100 text-slate-500"
+                      isOpen ? "bg-primary text-white" : "bg-slate-100 text-slate-500"
                     }`}
                   >
                     {phase.id}

@@ -37,7 +37,7 @@ export default function ProgressBar({ completed, total }: ProgressBarProps) {
           <p className="text-xs text-muted-foreground">
             {completed === 0 && "Ready to start your journey"}
             {completed > 0 && completed < total && `${total - completed} steps remaining`}
-            {completed === total && "All steps completed! 🎉"}
+            {completed === total && "All steps completed!"}
           </p>
         </div>
         <div className="text-right">

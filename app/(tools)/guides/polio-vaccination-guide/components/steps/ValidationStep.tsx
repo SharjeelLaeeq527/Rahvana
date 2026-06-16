@@ -3,15 +3,11 @@
 import React, { useState } from "react";
 import { usePolioWizard } from "../../PolioContext";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Upload,
-  Check,
-  ArrowLeft,
-  ShieldCheck,
-  ChevronDown,
-} from "lucide-react";
+import { Upload, Check, ArrowLeft, ShieldCheck, ChevronDown, Lock } from "lucide-react";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 export default function ValidationStep() {
+  const { t } = useLanguage();
   const { setCurrentStep, resetWizard } = usePolioWizard();
   const [validationChecks, setValidationChecks] = useState<string[]>([]);
   const [uploadedFile, setUploadedFile] = useState(false);
@@ -19,7 +15,7 @@ export default function ValidationStep() {
 
   const onToggleCheck = (label: string) => {
     setValidationChecks((prev) =>
-      prev.includes(label) ? prev.filter((t) => t !== label) : [...prev, label],
+      prev.includes(label) ? prev.filter((t) => t !== label) : [...prev, label]
     );
   };
 
@@ -31,8 +27,7 @@ export default function ValidationStep() {
       "Ensure all requirements are met to avoid rejection at the vaccination center or travel gates.",
     upload_section: {
       title: "Upload Vaccination Records",
-      description:
-        "Securely upload your NIMS downloaded certificate for quick access.",
+      description: "Securely upload your NIMS downloaded certificate for quick access.",
       formats: "PDF, JPG, PNG",
     },
     checklist_title: "Final Check",
@@ -70,22 +65,17 @@ export default function ValidationStep() {
     ],
   };
 
-  const totalItems = config.categories.reduce(
-    (acc, cat) => acc + cat.items.length,
-    0,
-  );
+  const totalItems = config.categories.reduce((acc, cat) => acc + cat.items.length, 0);
   const checkedCount = validationChecks.length;
   const criticalTotal = config.categories.reduce(
     (acc, cat) => acc + cat.items.filter((item) => item.critical).length,
-    0,
+    0
   );
   const criticalChecked = config.categories.reduce(
     (acc, cat) =>
       acc +
-      cat.items.filter(
-        (item) => item.critical && validationChecks.includes(item.label),
-      ).length,
-    0,
+      cat.items.filter((item) => item.critical && validationChecks.includes(item.label)).length,
+    0
   );
 
   const criticalRemaining = criticalTotal - criticalChecked;
@@ -102,28 +92,18 @@ export default function ValidationStep() {
             <ShieldCheck className="w-4 h-4" />
             Step 4 of 4
           </div>
-          <h2 className="text-[1.75rem] font-extrabold text-slate-900 mb-2">
-            {config.title}
-          </h2>
+          <h2 className="text-[1.75rem] font-extrabold text-slate-900 mb-2">{config.title}</h2>
           <p className="text-sm text-slate-500">{config.description}</p>
         </div>
 
         {/* Upload Section */}
         <div className="p-6 rounded-xl border border-slate-200 bg-white mb-8 shadow-sm">
-          <h3 className="text-lg font-bold text-slate-900 mb-4">
-            {config.upload_section.title}
-          </h3>
+          <h3 className="text-lg font-bold text-slate-900 mb-4">{config.upload_section.title}</h3>
 
           <div className="p-8 rounded-lg border-2 border-dashed border-slate-200 bg-slate-50 flex flex-col items-center gap-3 text-center">
-            <Upload
-              className={`w-8 h-8 ${
-                uploadedFile ? "text-primary" : "text-slate-400"
-              }`}
-            />
+            <Upload className={`w-8 h-8 ${uploadedFile ? "text-primary" : "text-slate-400"}`} />
 
-            <p className="text-sm text-slate-500">
-              {config.upload_section.description}
-            </p>
+            <p className="text-sm text-slate-500">{config.upload_section.description}</p>
 
             <p className="text-xs text-slate-400">
               Accepted formats: {config.upload_section.formats}
@@ -144,6 +124,12 @@ export default function ValidationStep() {
             >
               {uploadedFile ? "✓ Uploaded" : "Upload to Vault"}
             </motion.button>
+
+            {/* Security Notice */}
+            <div className="flex items-center justify-center gap-1.5 text-[10px] text-slate-500 font-semibold mt-1">
+              <Lock className="w-3.5 h-3.5 text-primary shrink-0" />
+              <span>{t("documentVaultPage.components.uploadModal.securityNotice")}</span>
+            </div>
           </div>
         </div>
 
@@ -189,9 +175,7 @@ export default function ValidationStep() {
                   {/* Category Header */}
                   <div className="flex items-center gap-2 mb-3">
                     <div className="w-2 h-2 rounded-full bg-primary" />
-                    <h4 className="text-sm font-bold text-slate-800">
-                      {category.name}
-                    </h4>
+                    <h4 className="text-sm font-bold text-slate-800">{category.name}</h4>
                   </div>
 
                   {/* Items */}
@@ -219,26 +203,16 @@ export default function ValidationStep() {
                           {/* Checkbox */}
                           <div
                             className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition shrink-0
-                        ${
-                          isChecked
-                            ? "bg-primary border-primary"
-                            : "border-slate-300 bg-white"
-                        }
+                        ${isChecked ? "bg-primary border-primary" : "border-slate-300 bg-white"}
                       `}
                           >
-                            {isChecked && (
-                              <Check className="w-3 h-3 text-white" />
-                            )}
+                            {isChecked && <Check className="w-3 h-3 text-white" />}
                           </div>
 
                           {/* Label */}
                           <span
                             className={`text-sm flex-1 transition
-                        ${
-                          isChecked
-                            ? "text-slate-400 line-through"
-                            : "text-slate-800"
-                        }
+                        ${isChecked ? "text-slate-400 line-through" : "text-slate-800"}
                       `}
                           >
                             {item.label}

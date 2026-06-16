@@ -7,6 +7,11 @@ from typing import Dict
 import logging
 
 logger = logging.getLogger(__name__)
+
+def is_complex_script(text: str) -> bool:
+    """Detects if text contains Urdu, Arabic or other complex scripts that need font/alignment adjustments."""
+    return bool(re.search(r'[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]', text))
+
 from app.core.form_configs import i130_config 
 from app.core.form_configs import i864_config
 from app.core.form_configs import i130a_config
@@ -76,6 +81,9 @@ class PDFFillerService:
         doc = fitz.open(self.pdf_path)
         filled_count = 0
         unfilled = []
+        
+        # Extract additional info blocks if present
+        additional_blocks = form_data.pop("additional_info_blocks", [])
 
         for frontend_key, value in form_data.items():
             pdf_field_name = self.field_mapping.get(frontend_key)
@@ -93,14 +101,32 @@ class PDFFillerService:
                     if widget.field_name == pdf_field_name or \
                        widget.field_name.split('.')[-1] == pdf_field_name.split('.')[-1]:
                         try:
-                            if widget.field_type in (fitz.PDF_WIDGET_TYPE_CHECKBOX, fitz.PDF_WIDGET_TYPE_RADIOBUTTON):
-                                is_checked = str(value).lower() in ["yes", "true", "1", "on"]
+                             if widget.field_type in (fitz.PDF_WIDGET_TYPE_CHECKBOX, fitz.PDF_WIDGET_TYPE_RADIOBUTTON):
+                                val_lower = str(value).lower().strip()
+                                is_checked = val_lower in ["yes", "true", "1", "on"]
+                                if not is_checked:
+                                    field_lower = (widget.field_name or "").lower()
+                                    if val_lower == "male" and "male" in field_lower and "female" not in field_lower:
+                                        is_checked = True
+                                    elif val_lower == "female" and "female" in field_lower:
+                                        is_checked = True
                                 widget.field_value = "Yes" if is_checked else "Off"
-                            else:
+                             else:
                                 widget.field_value = str_value
-                            widget.update()
-                            filled_count += 1
-                            field_found = True
+                                
+                                # Fix for Urdu/Arabic alignment and cutting
+                                if is_complex_script(str_value):
+                                    # Complex scripts (Urdu) often have larger descenders/ascenders.
+                                    # Reducing font size slightly and ensuring it's not too large for the box.
+                                    # We also try to set a neutral font if possible, though PDF viewers usually override this.
+                                    widget.text_fontsize = 8 
+                                    widget.field_text_justification = 1 # Center alignment
+                                    # Set multi-line flag (1 << 12) which sometimes changes vertical alignment behavior
+                                    widget.field_flags |= 4096 
+                                    
+                             widget.update()
+                             filled_count += 1
+                             field_found = True
                         except Exception as e:
                             logger.error(f"Error filling {pdf_field_name}: {e}")
             
@@ -111,8 +137,73 @@ class PDFFillerService:
         if unfilled:
             logger.warning(f"Unfilled keys: {unfilled[:20]}")
 
+        # Fill additional blocks (this will duplicate Part 9 page if necessary)
+        if additional_blocks:
+            self._fill_additional_blocks(doc, additional_blocks)
+
         output = io.BytesIO()
         doc.save(output, garbage=4, deflate=True, clean=True)
         doc.close()
         output.seek(0)
         return output
+
+    def _fill_additional_blocks(self, doc: fitz.Document, additional_blocks: list):
+        if not additional_blocks:
+            return
+        
+        src_doc = fitz.open(self.pdf_path)
+        last_page_idx = len(doc) - 1
+        last_page_widgets = list(doc[last_page_idx].widgets())
+        
+        # USCIS standard names for Additional Info blocks usually contain 'AdditionalInfo'
+        add_infos = sorted([w for w in last_page_widgets if 'AdditionalInfo' in w.field_name], key=lambda w: w.field_name)
+        
+        if not add_infos:
+            logger.warning("No AdditionalInfo blocks found on the last page. Cannot process additional_info_blocks.")
+            src_doc.close()
+            return
+            
+        blocks_per_page = len(add_infos)
+        current_page_idx = last_page_idx
+        block_idx_on_page = 0
+        
+        for block_data in additional_blocks:
+            if block_idx_on_page >= blocks_per_page:
+                # Duplicate the last page from src_doc
+                doc.insert_pdf(src_doc, from_page=last_page_idx, to_page=last_page_idx)
+                current_page_idx = len(doc) - 1
+                new_page = doc[current_page_idx]
+                
+                # Rename all widgets on this new page to avoid mirroring
+                copy_suffix = f"_copy{current_page_idx}"
+                for w in new_page.widgets():
+                    if w.field_name:
+                        w.field_name = f"{w.field_name}{copy_suffix}"
+                        w.update()
+                    
+                block_idx_on_page = 0
+                
+            page_obj = doc[current_page_idx]
+            page_widgets = list(page_obj.widgets())
+            
+            p_nums = sorted([w for w in page_widgets if w.field_name and 'PageNumber' in w.field_name], key=lambda x: x.field_name)
+            pt_nums = sorted([w for w in page_widgets if w.field_name and 'PartNumber' in w.field_name], key=lambda x: x.field_name)
+            it_nums = sorted([w for w in page_widgets if w.field_name and 'ItemNumber' in w.field_name], key=lambda x: x.field_name)
+            a_infos = sorted([w for w in page_widgets if w.field_name and 'AdditionalInfo' in w.field_name], key=lambda x: x.field_name)
+            
+            if block_idx_on_page < len(p_nums):
+                p_nums[block_idx_on_page].field_value = str(block_data.get('page_number', ''))
+                p_nums[block_idx_on_page].update()
+            if block_idx_on_page < len(pt_nums):
+                pt_nums[block_idx_on_page].field_value = str(block_data.get('part_number', ''))
+                pt_nums[block_idx_on_page].update()
+            if block_idx_on_page < len(it_nums):
+                it_nums[block_idx_on_page].field_value = str(block_data.get('item_number', ''))
+                it_nums[block_idx_on_page].update()
+            if block_idx_on_page < len(a_infos):
+                a_infos[block_idx_on_page].field_value = str(block_data.get('info', ''))
+                a_infos[block_idx_on_page].update()
+                
+            block_idx_on_page += 1
+            
+        src_doc.close()

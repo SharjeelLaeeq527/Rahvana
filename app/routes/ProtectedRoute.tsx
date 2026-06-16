@@ -23,10 +23,10 @@ function RedirectHandler({ redirectTo }: { redirectTo: string }) {
       if (searchParams && searchParams.toString()) {
         currentPath += `?${searchParams.toString()}`;
       }
-      
+
       const separator = redirectTo.includes("?") ? "&" : "?";
       const redirectUrl = `${redirectTo}${separator}redirect=${encodeURIComponent(currentPath)}`;
-      
+
       router.push(redirectUrl);
     }
   }, [user, isLoading, router, redirectTo, pathname, searchParams]);
@@ -34,10 +34,7 @@ function RedirectHandler({ redirectTo }: { redirectTo: string }) {
   return null;
 }
 
-export default function ProtectedRoute({
-  children,
-  redirectTo = "/login"
-}: ProtectedRouteProps) {
+export default function ProtectedRoute({ children, redirectTo = "/login" }: ProtectedRouteProps) {
   const { user, isLoading } = useAuth();
 
   // Loading state with spinner

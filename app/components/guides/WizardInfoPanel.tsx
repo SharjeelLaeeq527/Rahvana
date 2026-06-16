@@ -26,6 +26,10 @@ interface FeeStructure {
     title: string;
     description: string;
   };
+  specialNote?: {
+    title: string;
+    description: string;
+  };
   tiers: FeeStructureTier[];
 }
 
@@ -53,7 +57,9 @@ export interface InfoPanelData {
 
 export interface GuideDataInfo {
   fee_structure?: FeeStructure;
+  feeStructure?: FeeStructure;
   office_finder?: OfficeLocation;
+  officeFinder?: OfficeLocation;
   [key: string]: unknown;
 }
 
@@ -102,7 +108,7 @@ const WizardInfoPanel = ({
         color: "hsl(215 70% 50%)",
       },
     ],
-    [t],
+    [t]
   );
 
   const STATIC_OFFICE_LOCATION: OfficeLocation = useMemo(
@@ -124,26 +130,31 @@ const WizardInfoPanel = ({
         },
       ],
     }),
-    [t],
+    [t]
   );
 
   const feeStructure =
     // data.fee_structure ||
-    guideData?.fee_structure || guideData?.wizard?.fee_structure || null;
+    guideData?.fee_structure ||
+    guideData?.feeStructure ||
+    guideData?.wizard?.fee_structure ||
+    guideData?.wizard?.feeStructure ||
+    null;
 
   const officeLocation =
     // data.office_location ||
-    guideData?.office_finder || guideData?.wizard?.office_finder || null;
+    guideData?.office_finder ||
+    guideData?.officeFinder ||
+    guideData?.wizard?.office_finder ||
+    guideData?.wizard?.officeFinder ||
+    null;
 
   // Show office section based on availability of dynamic data or guide type
   const showOfficeSection =
-    officeLocation ||
-    guideType === "passport" ||
-    guideType === "frc" ||
-    guideType === "cnic";
+    officeLocation || guideType === "passport" || guideType === "frc" || guideType === "cnic";
 
   return (
-    <aside className="flex shrink-0 flex-col bg-white border-t xl:border-t-0 xl:border-l border-slate-200 rounded-xl mx-4 my-3 xl:w-[350px] xl:h-[660px]">
+    <aside className="flex w-full shrink-0 flex-col bg-white border-t xl:border-t-0 xl:border-l border-slate-200 rounded-xl my-3 xl:h-137.5">
       {/* Tabs for Tips/Pitfalls/Links */}
       <div className="flex border-b border-slate-200 p-2 rounded-t-xl">
         {TAB_CONFIG.map((tab) => {
@@ -228,22 +239,20 @@ const WizardInfoPanel = ({
                 {/* Links */}
                 {activeTab === "links" &&
                   (data?.links && data.links.length > 0 ? (
-                    data.links.map(
-                      (link: { label: string; url: string }, i: number) => (
-                        <a
-                          key={i}
-                          href={link.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-3 p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors group"
-                        >
-                          <ExternalLink className="shrink-0 w-4 h-4 text-primary" />
-                          <span className="text-sm font-medium text-slate-700 group-hover:text-primary truncate">
-                            {link.label}
-                          </span>
-                        </a>
-                      ),
-                    )
+                    data.links.map((link: { label: string; url: string }, i: number) => (
+                      <a
+                        key={i}
+                        href={link.url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-3 p-3 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg transition-colors group"
+                      >
+                        <ExternalLink className="shrink-0 w-4 h-4 text-primary" />
+                        <span className="text-sm font-medium text-slate-700 group-hover:text-primary truncate">
+                          {link.label}
+                        </span>
+                      </a>
+                    ))
                   ) : (
                     <p className="text-sm text-slate-500 text-center py-4">
                       {t("wizard.guide.info.noLinks")}
@@ -265,23 +274,28 @@ const WizardInfoPanel = ({
                 </h2>
               </div>
 
-              {feeStructure?.special_note && (
-                <div className="bg-linear-to-r from-primary to-primary/80 rounded-2xl p-4 text-white mb-6 shadow-sm">
-                  <div className="flex items-start gap-3">
-                    <div className="bg-white/20 p-2 rounded-full shrink-0">
-                      <CreditCard className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h3 className="text-lg font-bold mb-1 leading-none font-urdu-body">
-                        {feeStructure.special_note.title}
-                      </h3>
-                      <p className="text-white/90 leading-relaxed text-[0.8rem] font-urdu-body">
-                        {feeStructure.special_note.description}
-                      </p>
+              {(() => {
+                const specialNote =
+                  feeStructure?.special_note || (feeStructure as any)?.specialNote;
+                if (!specialNote) return null;
+                return (
+                  <div className="bg-linear-to-r from-primary to-primary/80 rounded-2xl p-4 text-white mb-6 shadow-sm">
+                    <div className="flex items-start gap-3">
+                      <div className="bg-white/20 p-2 rounded-full shrink-0">
+                        <CreditCard className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold mb-1 leading-none font-urdu-body">
+                          {specialNote.title}
+                        </h3>
+                        <p className="text-white/90 leading-relaxed text-[0.8rem] font-urdu-body">
+                          {specialNote.description}
+                        </p>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                );
+              })()}
 
               <div className="mb-8">
                 <h3 className="text-md font-bold text-slate-800 mb-3 flex items-center gap-2">
@@ -289,46 +303,43 @@ const WizardInfoPanel = ({
                   {t("wizard.guide.fee.processingTiers")}
                 </h3>
                 <div className="flex flex-col gap-3">
-                  {feeStructure?.tiers?.map(
-                    (tier: FeeStructureTier, i: number) => {
-                      const badges: Record<string, string> = {
-                        blue: "bg-blue-100 text-blue-700",
-                        purple: "bg-purple-100 text-purple-700",
-                        orange: "bg-orange-100 text-orange-700",
-                        green: "bg-emerald-100 text-emerald-700",
-                      };
-                      const badgeClass =
-                        badges[tier.badge_variant || "blue"] || badges.blue;
+                  {feeStructure?.tiers?.map((tier: FeeStructureTier, i: number) => {
+                    const badges: Record<string, string> = {
+                      blue: "bg-blue-100 text-blue-700",
+                      purple: "bg-purple-100 text-purple-700",
+                      orange: "bg-orange-100 text-orange-700",
+                      green: "bg-emerald-100 text-emerald-700",
+                    };
+                    const badgeClass = badges[tier.badge_variant || "blue"] || badges.blue;
 
-                      return (
-                        <div
-                          key={i}
-                          className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 flex items-center justify-between shadow-sm gap-3"
-                        >
-                          <div className="flex-1 min-w-0">
-                            <div
-                              className={`inline-block px-2 py-0.5 rounded-full text-[0.6rem] sm:text-[0.65rem] font-bold uppercase tracking-wider mb-1 ${badgeClass}`}
-                            >
-                              {tier.type}
-                            </div>
-                            <p className="text-[0.7rem] sm:text-[0.75rem] text-slate-500 flex items-center gap-1 truncate">
-                              <Clock className="w-3 h-3 shrink-0" />
-                              {tier.days}
-                            </p>
-                          </div>
+                    return (
+                      <div
+                        key={i}
+                        className="bg-white border border-slate-200 rounded-xl p-3 sm:p-4 flex items-center justify-between shadow-sm gap-3"
+                      >
+                        <div className="flex-1 min-w-0">
                           <div
-                            className="text-base sm:text-lg font-black text-slate-900 flex items-baseline gap-1 whitespace-nowrap"
-                            dir="ltr"
+                            className={`inline-block px-2 py-0.5 rounded-full text-[0.6rem] sm:text-[0.65rem] font-bold uppercase tracking-wider mb-1 ${badgeClass}`}
                           >
-                            <span className="text-[0.65rem] sm:text-xs font-medium text-slate-400">
-                              {t("wizard.guide.fee.currency")}
-                            </span>
-                            {tier.price}
+                            {tier.type}
                           </div>
+                          <p className="text-[0.7rem] sm:text-[0.75rem] text-slate-500 flex items-center gap-1 truncate">
+                            <Clock className="w-3 h-3 shrink-0" />
+                            {tier.days}
+                          </p>
                         </div>
-                      );
-                    },
-                  )}
+                        <div
+                          className="text-base sm:text-lg font-black text-slate-900 flex items-baseline gap-1 whitespace-nowrap"
+                          dir="ltr"
+                        >
+                          <span className="text-[0.65rem] sm:text-xs font-medium text-slate-400">
+                            {t("wizard.guide.fee.currency")}
+                          </span>
+                          {tier.price}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             </div>
@@ -345,84 +356,76 @@ const WizardInfoPanel = ({
 
               <div className="bg-slate-100/50 rounded-2xl p-4 border border-slate-200/60">
                 <div className="flex flex-col gap-3">
-                  {(
-                    officeLocation?.options || STATIC_OFFICE_LOCATION.options
-                  ).map((option: OfficeLocationOption, i: number) => {
-                    const icons: Record<
-                      string,
-                      { Icon: React.ElementType; colors: string }
-                    > = {
-                      website: {
-                        Icon: Globe,
-                        colors: "bg-primary/10 text-primary",
-                      },
-                      helpline: {
-                        Icon: PhoneCall,
-                        colors: "bg-blue-100 text-blue-600",
-                      },
-                    };
+                  {(officeLocation?.options || STATIC_OFFICE_LOCATION.options).map(
+                    (option: OfficeLocationOption, i: number) => {
+                      const icons: Record<string, { Icon: React.ElementType; colors: string }> = {
+                        website: {
+                          Icon: Globe,
+                          colors: "bg-primary/10 text-primary",
+                        },
+                        helpline: {
+                          Icon: PhoneCall,
+                          colors: "bg-blue-100 text-blue-600",
+                        },
+                      };
 
-                    const iconConfig = icons[option.type] || icons.website;
-                    const { Icon, colors } = iconConfig;
+                      const iconConfig = icons[option.type] || icons.website;
+                      const { Icon, colors } = iconConfig;
 
-                    return (
-                      <div
-                        key={i}
-                        className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3"
-                      >
-                        <div className={`${colors} p-2 rounded-lg shrink-0`}>
-                          <Icon className="w-4 h-4" />
+                      return (
+                        <div
+                          key={i}
+                          className="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex items-start gap-3"
+                        >
+                          <div className={`${colors} p-2 rounded-lg shrink-0`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div>
+                            <p className="font-bold text-slate-900 text-[0.8rem] mb-0.5 font-urdu-body">
+                              {option.title}
+                            </p>
+                            <p className="text-[0.75rem] text-slate-500 leading-relaxed font-urdu-body">
+                              {option.description && (
+                                <>
+                                  {option.description}
+                                  <br />
+                                </>
+                              )}
+
+                              {option.url && (
+                                <a
+                                  href={option.url}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-primary hover:underline font-medium flex items-center gap-1"
+                                >
+                                  {t("wizard.guide.office.visitWebsite")}
+                                  <ExternalLink className="w-3 h-3" />
+                                </a>
+                              )}
+
+                              {option.phone_local && (
+                                <>
+                                  <br />
+                                  <strong>{t("wizard.guide.office.helpline")}</strong>{" "}
+                                  {t("wizard.guide.office.dial")} {option.phone_local}{" "}
+                                  {t("wizard.guide.office.mobileNote")}
+                                  <br />
+                                </>
+                              )}
+
+                              {option.phone_international && (
+                                <>
+                                  <strong>{t("wizard.guide.office.intHelpline")}</strong>{" "}
+                                  {option.phone_international}
+                                </>
+                              )}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-bold text-slate-900 text-[0.8rem] mb-0.5 font-urdu-body">
-                            {option.title}
-                          </p>
-                          <p className="text-[0.75rem] text-slate-500 leading-relaxed font-urdu-body">
-                            {option.description && (
-                              <>
-                                {option.description}
-                                <br />
-                              </>
-                            )}
-
-                            {option.url && (
-                              <a
-                                href={option.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-primary hover:underline font-medium flex items-center gap-1"
-                              >
-                                {t("wizard.guide.office.visitWebsite")}
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
-                            )}
-
-                            {option.phone_local && (
-                              <>
-                                <br />
-                                <strong>
-                                  {t("wizard.guide.office.helpline")}
-                                </strong>{" "}
-                                {t("wizard.guide.office.dial")}{" "}
-                                {option.phone_local}{" "}
-                                {t("wizard.guide.office.mobileNote")}
-                                <br />
-                              </>
-                            )}
-
-                            {option.phone_international && (
-                              <>
-                                <strong>
-                                  {t("wizard.guide.office.intHelpline")}
-                                </strong>{" "}
-                                {option.phone_international}
-                              </>
-                            )}
-                          </p>
-                        </div>
-                      </div>
-                    );
-                  })}
+                      );
+                    }
+                  )}
                 </div>
               </div>
             </div>

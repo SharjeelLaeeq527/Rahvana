@@ -1,0 +1,1380 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Rahvana — About Us</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      :root {
+        --teal: #0d7a75;
+        --teal-light: #14a89f;
+        --teal-dark: #0a5c58;
+        --cream: #faf7f2;
+        --cream-mid: #f3ede3;
+        --navy: #121e2e;
+        --navy-mid: #1c2d40;
+        --text: #2a2a2a;
+        --muted: #7a7a7a;
+        --white: #ffffff;
+        --copper: #b5451b;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: var(--cream);
+        color: var(--text);
+      }
+
+      /* NAV */
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 18px 48px;
+        background: rgba(250, 247, 242, 0.92);
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+      }
+      .nav-logo {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--teal);
+        text-decoration: none;
+        letter-spacing: -0.5px;
+      }
+      .nav-links {
+        display: flex;
+        align-items: center;
+        gap: 32px;
+        list-style: none;
+      }
+      .nav-links a {
+        text-decoration: none;
+        font-size: 14px;
+        color: var(--text);
+        font-weight: 400;
+        transition: color 0.2s;
+      }
+      .nav-links a:hover,
+      .nav-links a.active {
+        color: var(--teal);
+      }
+      .nav-links a.active {
+        font-weight: 500;
+      }
+      .nav-right {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      .nav-icon {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: 1.5px solid #ddd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .nav-avatar {
+        width: 32px;
+        height: 32px;
+        background: var(--teal);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      /* EYEBROW BUBBLE */
+      .eyebrow-wrap {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      .eyebrow-wrap.left {
+        justify-content: flex-start;
+      }
+      .eyebrow-bubble {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 16px;
+        border: 1.5px solid var(--copper);
+        border-radius: 100px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--copper);
+      }
+
+      /* HERO BADGE (same style, copper) */
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 18px;
+        border: 1.5px solid var(--copper);
+        border-radius: 100px;
+        font-size: 12px;
+        color: var(--copper);
+        font-weight: 500;
+        width: fit-content;
+        letter-spacing: 0.04em;
+      }
+      .hero-badge svg {
+        width: 14px;
+        height: 14px;
+      }
+
+      /* HERO */
+      .hero {
+        min-height: 100vh;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+        gap: 60px;
+        padding: 120px 80px 80px;
+        background: var(--cream);
+        position: relative;
+      }
+      .hero-left {
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      .hero-title {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(40px, 5vw, 64px);
+        line-height: 1.1;
+        color: var(--navy);
+      }
+      .hero-title em {
+        font-style: italic;
+        color: var(--teal);
+      }
+      .hero-subtitle {
+        font-size: 16px;
+        line-height: 1.7;
+        color: #555;
+        max-width: 400px;
+      }
+      .hero-cta {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        margin-top: 8px;
+      }
+      .btn-primary {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--teal);
+        color: white;
+        padding: 14px 28px;
+        border-radius: 100px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        border: none;
+        cursor: pointer;
+        transition:
+          background 0.2s,
+          transform 0.2s;
+      }
+      .btn-primary:hover {
+        background: var(--teal-dark);
+        transform: translateY(-1px);
+      }
+      .hero-label {
+        font-size: 12px;
+        color: var(--muted);
+        letter-spacing: 0.04em;
+      }
+      .hero-right {
+        position: relative;
+        display: flex;
+        justify-content: center;
+      }
+      .hero-image-wrap {
+        position: relative;
+        width: 100%;
+        max-width: 520px;
+        border-radius: 24px;
+        overflow: hidden;
+        aspect-ratio: 4/3;
+        box-shadow: 0 32px 80px rgba(0, 0, 0, 0.14);
+      }
+      .hero-image-wrap img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .hero-card {
+        position: absolute;
+        bottom: 28px;
+        left: 28px;
+        background: white;
+        border-radius: 16px;
+        padding: 14px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+      }
+      .hero-card-icon {
+        width: 36px;
+        height: 36px;
+        background: #f0fafa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--teal);
+      }
+      .hero-card-text strong {
+        font-size: 14px;
+        display: block;
+        color: var(--navy);
+      }
+      .hero-card-text span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .scroll-hint {
+        position: absolute;
+        bottom: 36px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        color: var(--muted);
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+      .scroll-hint::after {
+        content: "";
+        width: 1px;
+        height: 40px;
+        background: linear-gradient(to bottom, var(--muted), transparent);
+      }
+
+      /* SECTION TITLES */
+      .section-title {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(28px, 3.5vw, 44px);
+        color: var(--navy);
+        margin-bottom: 56px;
+        line-height: 1.2;
+        text-align: center;
+      }
+      .section-title em {
+        font-style: italic;
+        color: var(--teal);
+      }
+      .section-title-left {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(28px, 3.5vw, 44px);
+        color: var(--navy);
+        margin-bottom: 16px;
+        line-height: 1.2;
+      }
+      .section-title-left em {
+        font-style: italic;
+        color: var(--teal);
+      }
+
+      /* FRAGMENTS */
+      .fragments {
+        background: var(--cream);
+        padding: 100px 80px;
+        text-align: center;
+      }
+      .fragments-grid {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 20px;
+      }
+      .fragments-row2 {
+        display: flex;
+        justify-content: center;
+        margin-top: 20px;
+      }
+      .fragment-card {
+        background: white;
+        border-radius: 16px;
+        padding: 32px 24px 24px;
+        width: 180px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        transition: transform 0.2s;
+      }
+      .fragment-card:hover {
+        transform: translateY(-4px);
+      }
+      .fragment-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+      }
+      .fc-yellow {
+        background: #fef9e7;
+      }
+      .fc-mint {
+        background: #e8faf8;
+      }
+      .fc-pink {
+        background: #fde8ec;
+      }
+      .fc-blue {
+        background: #eaf2fb;
+      }
+      .fc-purple {
+        background: #f0eafc;
+      }
+      .fragment-card p {
+        font-size: 12px;
+        color: var(--muted);
+        font-style: italic;
+        line-height: 1.5;
+      }
+
+      /* WHY */
+      .why-quote {
+        border-left: 3px solid var(--teal);
+        padding: 20px 28px;
+        background: white;
+        border-radius: 0 12px 12px 0;
+        margin-top: 36px;
+        font-size: 16px;
+        font-style: italic;
+        color: var(--navy);
+        line-height: 1.7;
+      }
+
+      /* EMOTIONAL */
+      .emotional {
+        background: var(--navy);
+        padding: 100px 80px;
+        text-align: center;
+      }
+      .emotional .section-title {
+        color: white;
+      }
+      .emotions-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      .emotion-card {
+        background: var(--navy-mid);
+        border-radius: 16px;
+        padding: 28px;
+        transition: background 0.2s;
+        text-align: left;
+      }
+      .emotion-card:hover {
+        background: #243347;
+      }
+      .emotion-icon {
+        width: 40px;
+        height: 40px;
+        background: rgba(13, 122, 117, 0.25);
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--teal-light);
+        margin-bottom: 16px;
+      }
+      .emotion-card h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: white;
+        margin-bottom: 10px;
+      }
+      .emotion-card p {
+        font-size: 14px;
+        color: #8fa3b8;
+        line-height: 1.6;
+      }
+
+      /* VALUES */
+      .values-section {
+        background: var(--cream);
+        padding: 100px 80px;
+      }
+      .values-inner {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 80px;
+        max-width: 1100px;
+        margin: 0 auto;
+        align-items: start;
+      }
+      .values-description {
+        font-size: 15px;
+        color: var(--muted);
+        line-height: 1.7;
+        margin-top: 8px;
+      }
+      .values-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .value-card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px 24px;
+        display: flex;
+        align-items: flex-start;
+        gap: 16px;
+        box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        border-left: 3px solid var(--teal);
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+      .value-card:hover {
+        transform: translateX(4px);
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.1);
+      }
+      .value-card-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+      .value-card p {
+        font-size: 15px;
+        color: var(--text);
+        line-height: 1.6;
+      }
+
+      /* MOVEMENT */
+      .movement-section {
+        background: #edf6f5;
+        padding: 100px 80px;
+      }
+      .movement-inner {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 80px;
+        max-width: 1200px;
+        margin: 0 auto;
+        align-items: center;
+      }
+      .movement-image {
+        border-radius: 20px;
+        overflow: hidden;
+        aspect-ratio: 4/3;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+      }
+      .movement-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .movement-title {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(28px, 3vw, 40px);
+        color: var(--navy);
+        line-height: 1.2;
+        margin-bottom: 20px;
+      }
+      .movement-title em {
+        font-style: italic;
+        color: var(--teal);
+      }
+      .movement-p {
+        font-size: 15px;
+        color: #555;
+        line-height: 1.8;
+        margin-bottom: 32px;
+      }
+
+      /* TESTIMONIALS */
+      .testimonials {
+        background: var(--cream);
+        padding: 100px 80px;
+        text-align: center;
+      }
+      .testimonials-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+        max-width: 1100px;
+        margin: 0 auto;
+      }
+      .testimonial-card {
+        border-radius: 20px;
+        padding: 36px 28px;
+        text-align: left;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+      }
+      .quote-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--teal);
+        font-size: 22px;
+        font-weight: 800;
+      }
+      .testimonial-card blockquote {
+        font-size: 14px;
+        line-height: 1.7;
+        color: #555;
+        font-style: italic;
+        flex: 1;
+      }
+      .testimonial-author strong {
+        display: block;
+        font-size: 14px;
+        color: var(--navy);
+        font-weight: 600;
+      }
+      .testimonial-author span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      /* TEAM */
+      .team {
+        background: #f8f8f8;
+        padding: 100px 80px;
+        text-align: center;
+      }
+      .team-title {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(28px, 3.5vw, 44px);
+        color: var(--navy);
+        margin-bottom: 56px;
+      }
+      .team-title em {
+        font-style: italic;
+        color: var(--teal);
+      }
+      .team-grid {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 24px;
+        max-width: 900px;
+        margin: 0 auto;
+      }
+      .team-card {
+        background: white;
+        border-radius: 20px;
+        padding: 36px 28px;
+        width: 260px;
+        text-align: center;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      }
+      .team-avatar {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        font-weight: 700;
+        color: white;
+        margin: 0 auto 16px;
+      }
+      .av-teal {
+        background: var(--teal);
+      }
+      .av-amber {
+        background: #e8a020;
+      }
+      .av-rose {
+        background: #d9406a;
+      }
+      .team-role {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--teal);
+        margin-bottom: 12px;
+      }
+      .team-card p {
+        font-size: 14px;
+        color: #666;
+        line-height: 1.65;
+      }
+
+      /* CTA */
+      .cta-banner {
+        background: var(--teal);
+        padding: 80px;
+        text-align: center;
+        color: white;
+      }
+      .cta-banner h2 {
+        font-family: "Playfair Display", serif;
+        font-size: clamp(28px, 4vw, 52px);
+        line-height: 1.2;
+        margin-bottom: 20px;
+      }
+      .cta-banner h2 em {
+        font-style: italic;
+        color: #a8e8e5;
+      }
+      .cta-banner p {
+        font-size: 16px;
+        color: rgba(255, 255, 255, 0.75);
+        max-width: 520px;
+        margin: 0 auto 40px;
+        line-height: 1.7;
+      }
+      .cta-buttons {
+        display: flex;
+        gap: 16px;
+        justify-content: center;
+        flex-wrap: wrap;
+      }
+      .btn-white {
+        background: white;
+        color: var(--teal);
+        padding: 14px 28px;
+        border-radius: 100px;
+        font-size: 14px;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition:
+          transform 0.2s,
+          box-shadow 0.2s;
+      }
+      .btn-white:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+      }
+      .btn-outline-white {
+        background: transparent;
+        color: white;
+        border: 1.5px solid rgba(255, 255, 255, 0.5);
+        padding: 14px 28px;
+        border-radius: 100px;
+        font-size: 14px;
+        font-weight: 500;
+        text-decoration: none;
+        transition:
+          border-color 0.2s,
+          background 0.2s;
+      }
+      .btn-outline-white:hover {
+        border-color: white;
+        background: rgba(255, 255, 255, 0.08);
+      }
+      .cta-phase {
+        margin-top: 28px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.5);
+        letter-spacing: 0.06em;
+      }
+
+      /* FOOTER */
+      footer {
+        background: var(--navy);
+        padding: 64px 80px;
+        color: rgba(255, 255, 255, 0.7);
+      }
+      .footer-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+        gap: 48px;
+        margin-bottom: 56px;
+      }
+      .footer-brand p {
+        font-size: 13px;
+        line-height: 1.7;
+        color: rgba(255, 255, 255, 0.5);
+        margin-top: 16px;
+      }
+      .footer-col h4 {
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.4);
+        margin-bottom: 16px;
+      }
+      .footer-col ul {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .footer-col ul a {
+        text-decoration: none;
+        font-size: 13px;
+        color: rgba(255, 255, 255, 0.65);
+        transition: color 0.2s;
+      }
+      .footer-col ul a:hover {
+        color: white;
+      }
+      .footer-explore {
+        color: white;
+        font-size: 13px;
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        display: inline-block;
+        margin-top: 6px;
+      }
+      .footer-bottom {
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 28px;
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.3);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .footer-bottom a {
+        color: rgba(255, 255, 255, 0.4);
+        text-decoration: none;
+      }
+      .footer-bottom a:hover {
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      /* FEEDBACK */
+      .feedback-btn {
+        position: fixed;
+        bottom: 28px;
+        right: 28px;
+        background: var(--teal);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 100px;
+        font-size: 13px;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        box-shadow: 0 8px 24px rgba(13, 122, 117, 0.35);
+        transition: transform 0.2s;
+        z-index: 99;
+      }
+      .feedback-btn:hover {
+        transform: translateY(-2px);
+      }
+
+      /* ANIMATIONS */
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(24px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .hero-badge {
+        animation: fadeUp 0.6s ease both;
+      }
+      .hero-title {
+        animation: fadeUp 0.6s 0.1s ease both;
+      }
+      .hero-subtitle {
+        animation: fadeUp 0.6s 0.2s ease both;
+      }
+      .hero-cta {
+        animation: fadeUp 0.6s 0.3s ease both;
+      }
+      .hero-right {
+        animation: fadeUp 0.7s 0.2s ease both;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- NAV -->
+    <nav>
+      <a href="#" class="nav-logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+          <path
+            d="M6 26 C6 26 10 10 16 8 C22 6 26 14 22 20 C18 26 10 24 10 18 C10 12 16 12 18 16"
+            stroke="#0d7a75"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            fill="none"
+          />
+        </svg>
+        rahvana
+      </a>
+      <ul class="nav-links">
+        <li><a href="#">IR-1 Journey</a></li>
+        <li><a href="#">Resources ▾</a></li>
+        <li><a href="#">Pricing</a></li>
+        <li><a href="#">FAQ</a></li>
+        <li><a href="#" class="active">About</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+      <div class="nav-right">
+        <div class="nav-icon">?</div>
+        <div class="nav-icon">🔔</div>
+        <div class="nav-avatar">H</div>
+      </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-left">
+        <div class="hero-badge">
+          <svg viewBox="0 0 16 16" fill="currentColor" width="14" height="14">
+            <path d="M8 1.314C12.438-3.248 23.534 4.735 8 15-7.534 4.736 3.562-3.248 8 1.314z" />
+          </svg>
+          OUR STORY
+        </div>
+        <h1 class="hero-title">
+          Some journeys begin<br />with paperwork.<br /><em>Ours began</em><br />with distance.
+        </h1>
+        <p class="hero-subtitle">
+          Rahvana was built for the space between people who belong together — the weeks that
+          stretch too long, the forms that carry real lives, and the quiet hope families hold onto
+          while they wait to be reunited.
+        </p>
+        <div class="hero-cta">
+          <a href="#" class="btn-primary">Start your journey →</a>
+          <span class="hero-label">IR-1 · Spouse Visa · Phase 1</span>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="hero-image-wrap">
+          <img src="Rahvanaherosection.jpg" alt="Airport reunion" />
+          <div class="hero-card">
+            <div class="hero-card-icon">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path
+                  d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"
+                />
+              </svg>
+            </div>
+            <div class="hero-card-text">
+              <strong>IR-1 Journey</strong>
+              <span>Guiding families home</span>
+            </div>
+          </div>
+        </div>
+        <div class="scroll-hint">SCROLL</div>
+      </div>
+    </section>
+
+    <!-- FRAGMENTS -->
+    <section class="fragments">
+      <div class="eyebrow-wrap">
+        <span class="eyebrow-bubble">Fragments From The Journey</span>
+      </div>
+      <h2 class="section-title">
+        Every immigration story is built on <em>moments that quietly shape a future.</em>
+      </h2>
+      <div class="fragments-grid">
+        <div class="fragment-card">
+          <div class="fragment-icon fc-yellow">✈️</div>
+          <p>The last wave before the gate closes.</p>
+        </div>
+        <div class="fragment-card">
+          <div class="fragment-icon fc-mint">✉️</div>
+          <p>Words written when calls were too expensive.</p>
+        </div>
+        <div class="fragment-card">
+          <div class="fragment-icon fc-pink">🤍</div>
+          <p>Home is wherever they are.</p>
+        </div>
+        <div class="fragment-card">
+          <div class="fragment-icon fc-blue">📋</div>
+          <p>Forms that carry the weight of real lives.</p>
+        </div>
+      </div>
+      <div class="fragments-row2">
+        <div class="fragment-card">
+          <div class="fragment-icon fc-purple">📞</div>
+          <p>11pm here. 8am on the other side.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- WHY WE BUILT THIS -->
+    <section style="background: var(--cream-mid); padding: 100px 80px">
+      <div style="max-width: 800px; margin: 0 auto">
+        <div class="eyebrow-wrap left">
+          <span class="eyebrow-bubble">Why We Built This</span>
+        </div>
+        <h2
+          style="
+            font-family: &quot;Playfair Display&quot;, serif;
+            font-size: clamp(24px, 3vw, 36px);
+            color: var(--navy);
+            margin-bottom: 32px;
+            line-height: 1.25;
+          "
+        >
+          The story behind Rahvana
+        </h2>
+        <p style="font-size: 16px; line-height: 1.85; color: #555; margin-bottom: 20px">
+          Behind every immigration case is a family trying to become whole again.
+        </p>
+        <p style="font-size: 16px; line-height: 1.85; color: #555; margin-bottom: 20px">
+          Rahvana was built from that reality — not as an abstract idea, but as a response to what
+          we saw people we love go through: complex form codes instead of clear language, critical
+          steps spread across government sites, and long periods of silence while cases moved
+          through opaque systems.
+        </p>
+        <p style="font-size: 16px; line-height: 1.85; color: #555; margin-bottom: 20px">
+          The paperwork is real. So is what it holds — someone waiting at home, children growing up
+          over video calls, milestones spent apart, and the steady effort of holding hope across
+          distance.
+        </p>
+        <p style="font-size: 16px; line-height: 1.85; color: #555; margin-bottom: 20px">
+          That's Rahvana: the space between people who belong together.
+        </p>
+        <p style="font-size: 16px; line-height: 1.85; color: #555; margin-bottom: 36px">
+          In Phase 1, we are focused exclusively on the IR-1 spouse visa journey — to go deep on one
+          path before expanding further.
+        </p>
+        <div class="why-quote">
+          "We wanted to build something that understood both things: the bureaucratic complexity and
+          the human weight. A tool that holds your hand through the process without losing sight of
+          why you're doing it."
+        </div>
+      </div>
+    </section>
+
+    <!-- EMOTIONAL REALITY -->
+    <section class="emotional">
+      <div class="eyebrow-wrap">
+        <span class="eyebrow-bubble" style="border-color: var(--copper); color: var(--copper)"
+          >What This Really Feels Like</span
+        >
+      </div>
+      <h2 class="section-title">The emotional reality of <em>a family visa journey.</em></h2>
+      <div class="emotions-grid">
+        <div class="emotion-card">
+          <div class="emotion-icon">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
+            </svg>
+          </div>
+          <h3>Waiting</h3>
+          <p>The silence between submissions has its own weight. The weeks blur together.</p>
+        </div>
+        <div class="emotion-card">
+          <div class="emotion-icon">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="12" y1="8" x2="12" y2="12" />
+              <line x1="12" y1="16" x2="12.01" y2="16" />
+            </svg>
+          </div>
+          <h3>Uncertainty</h3>
+          <p>
+            Every case update is a held breath. Clarity feels like a luxury you have to fight for.
+          </p>
+        </div>
+        <div class="emotion-card">
+          <div class="emotion-icon">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" />
+              <circle cx="12" cy="10" r="3" />
+            </svg>
+          </div>
+          <h3>Distance</h3>
+          <p>Distance isn't abstract when you're living it across time zones, every single day.</p>
+        </div>
+        <div class="emotion-card">
+          <div class="emotion-icon">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+          </div>
+          <h3>Gathering</h3>
+          <p>These aren't just documents. They're the evidence of a real life, a real love.</p>
+        </div>
+        <div class="emotion-card">
+          <div class="emotion-icon">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+              <circle cx="9" cy="7" r="4" />
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+              <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+            </svg>
+          </div>
+          <h3>Belonging</h3>
+          <p>The process makes you prove what should simply be felt — that you belong together.</p>
+        </div>
+        <div class="emotion-card">
+          <div class="emotion-icon">
+            <svg
+              width="20"
+              height="20"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"
+              />
+            </svg>
+          </div>
+          <h3>Hope</h3>
+          <p>
+            Still, you keep going. Because who's waiting on the other side makes every form worth
+            it.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- VALUES -->
+    <section class="values-section">
+      <div class="values-inner">
+        <div>
+          <div class="eyebrow-wrap left">
+            <span class="eyebrow-bubble">Our Values</span>
+          </div>
+          <h2 class="section-title-left">What we <em>believe.</em></h2>
+          <p class="values-description">
+            Not a slide deck of corporate values. Just the things we genuinely hold to be true about
+            building tools for people in hard situations.
+          </p>
+        </div>
+        <div class="values-cards">
+          <div class="value-card">
+            <div class="value-card-icon">🤝</div>
+            <p>Immigration help should feel humane, not mechanical.</p>
+          </div>
+          <div class="value-card">
+            <div class="value-card-icon">💡</div>
+            <p>Clarity is a form of care.</p>
+          </div>
+          <div class="value-card">
+            <div class="value-card-icon">🧳</div>
+            <p>
+              Being far from your loved ones is already hard enough. The tools you use shouldn't add
+              to that burden.
+            </p>
+          </div>
+          <div class="value-card">
+            <div class="value-card-icon">📁</div>
+            <p>Every case number belongs to a real person with a real story.</p>
+          </div>
+          <div class="value-card">
+            <div class="value-card-icon">🧭</div>
+            <p>Good guidance respects your intelligence and your situation.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- MEMORY TO MOVEMENT -->
+    <section class="movement-section">
+      <div class="movement-inner">
+        <div class="movement-image">
+          <img
+            src="https://images.unsplash.com/photo-1573497491208-6b1acb260507?w=800&q=80&auto=format&fit=crop"
+            alt="Consultation"
+          />
+        </div>
+        <div>
+          <div class="eyebrow-wrap left">
+            <span class="eyebrow-bubble">From Memory To Movement</span>
+          </div>
+          <h2 class="movement-title">
+            Memory is where the journey <em>begins.</em><br />Rahvana is how it
+            <em>moves forward.</em>
+          </h2>
+          <p class="movement-p">
+            We're not here to keep you in the feeling of distance. We're here to help you close it.
+            Every tool, every guide, every step in Rahvana is designed to move you forward — toward
+            clarity, toward submission, toward reunion.
+          </p>
+          <a href="#" class="btn-primary">Start the IR-1 journey →</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section class="testimonials">
+      <div class="eyebrow-wrap">
+        <span class="eyebrow-bubble">Voices From The Journey</span>
+      </div>
+      <h2 class="section-title">Words from people <em>who've been there.</em></h2>
+      <div class="testimonials-grid">
+        <div class="testimonial-card" style="background: #fde8ec">
+          <div class="quote-icon" style="background: #fbc8d2">"</div>
+          <blockquote>
+            For the first time, I felt like someone had actually thought about what this process
+            feels like to go through — not just the steps, but the weight of it.
+          </blockquote>
+          <div class="testimonial-author">
+            <strong>Fatima A.</strong>
+            <span>IR-1 applicant · Islamabad</span>
+          </div>
+        </div>
+        <div class="testimonial-card" style="background: #e3edf9">
+          <div class="quote-icon" style="background: #c4d9f5">"</div>
+          <blockquote>
+            Three years of waiting. Rahvana helped me understand where I was in the process without
+            the constant anxiety of not knowing what comes next.
+          </blockquote>
+          <div class="testimonial-author">
+            <strong>Omar K.</strong>
+            <span>US Citizen sponsor · Houston</span>
+          </div>
+        </div>
+        <div class="testimonial-card" style="background: #fef9e3">
+          <div class="quote-icon" style="background: #faedb8">"</div>
+          <blockquote>
+            The form filler saved me hours. But more than that — reading the guides felt like being
+            understood by people who knew what this was really like.
+          </blockquote>
+          <div class="testimonial-author">
+            <strong>Sara M.</strong>
+            <span>Beneficiary spouse · Lahore</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TEAM -->
+    <section class="team">
+      <div class="eyebrow-wrap">
+        <span class="eyebrow-bubble">The People Behind It</span>
+      </div>
+      <h2 class="team-title">Built by people who <em>have lived this too.</em></h2>
+      <div class="team-grid">
+        <div class="team-card">
+          <div class="team-avatar av-teal">AH</div>
+          <p class="team-role">FOUNDER</p>
+          <p>
+            Built Rahvana after watching someone close navigate the IR-1 process entirely alone —
+            every form, every wait, every unanswered question.
+          </p>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar av-amber">SR</div>
+          <p class="team-role">PRODUCT</p>
+          <p>
+            Believes that the right tool at the right moment can completely change how a hard
+            journey feels.
+          </p>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar av-rose">FA</div>
+          <p class="team-role">SUPPORT &amp; COMMUNITY</p>
+          <p>
+            Dedicated to making every interaction feel like you're talking to someone who has read
+            your case — not just a script.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- CTA BANNER -->
+    <section class="cta-banner">
+      <h2>If this journey is part of<br />your story too, <em>we're here.</em></h2>
+      <p>
+        You don't have to figure it out alone. Rahvana walks with you through the IR-1 process — one
+        step, one form, one checkpoint at a time.
+      </p>
+      <div class="cta-buttons">
+        <a href="#" class="btn-white">Start your IR-1 journey →</a>
+        <a href="#" class="btn-outline-white">Browse tools &amp; resources</a>
+      </div>
+      <p class="cta-phase">
+        Phase 1 · IR-1 Spouse Visa Journey · U.S. Embassy Islamabad · Karachi · Lahore
+      </p>
+    </section>
+
+    <!-- FOOTER -->
+    <footer>
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="#" class="nav-logo" style="color: white">
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+              <path
+                d="M6 26 C6 26 10 10 16 8 C22 6 26 14 22 20 C18 26 10 24 10 18 C10 12 16 12 18 16"
+                stroke="#0d7a75"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                fill="none"
+              />
+            </svg>
+            rahvana
+          </a>
+          <p>
+            Simplifying immigration journeys with guidance, tools, and expert support. Your path to
+            reuniting with loved ones starts here.
+          </p>
+        </div>
+        <div class="footer-col">
+          <h4>JOURNEYS</h4>
+          <ul>
+            <li><a href="#">Family &amp; Protection</a></li>
+            <li><a href="#">Work &amp; Business</a></li>
+            <li><a href="#">Work Green Cards</a></li>
+            <li><a href="#">Students &amp; Visitors</a></li>
+          </ul>
+          <a href="#" class="footer-explore">Explore all Journeys →</a>
+        </div>
+        <div class="footer-col">
+          <h4>TOOLS</h4>
+          <ul>
+            <li><a href="#">Case Strength Analyzer</a></li>
+            <li><a href="#">Visa Path Finder</a></li>
+            <li><a href="#">Sponsorship Calculator</a></li>
+            <li><a href="#">PDF Tool Kit</a></li>
+          </ul>
+          <a href="#" class="footer-explore">Explore all Tools →</a>
+        </div>
+        <div class="footer-col">
+          <h4>COMPANY</h4>
+          <ul>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>CONNECT WITH US</h4>
+          <ul>
+            <li><a href="#">Instagram</a></li>
+            <li><a href="#">Facebook</a></li>
+            <li><a href="#">X</a></li>
+            <li><a href="#">Youtube</a></li>
+            <li><a href="#">LinkedIn</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span
+          >© 2026 Rahvana. All rights reserved. · Rahvana is not a law firm and does not provide
+          legal advice.</span
+        >
+        <div style="display: flex; gap: 16px">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Cookie Policy</a>
+        </div>
+      </div>
+    </footer>
+
+    <!-- FEEDBACK -->
+    <div class="feedback-btn">
+      <svg
+        width="16"
+        height="16"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+      >
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+      </svg>
+      Provide feedback
+    </div>
+  </body>
+</html>

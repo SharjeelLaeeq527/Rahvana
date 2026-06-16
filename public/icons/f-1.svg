@@ -1,0 +1,10 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='F-1'>
+        <circle cx='32' cy='32' r='14' fill='#DF7C7C' opacity='0.16'/>
+        <path d='M43 22l1.8 1.8 2.8-2.8' stroke='#DF7C7C' stroke-width='1.2' opacity='0.5'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<rect x='18' y='18' width='22' height='26' rx='3' fill='#EAF5FF' stroke='#55718B' stroke-width='1.8'/>
+<path d='M23 24h12M23 28h12M23 32h8' fill='none' stroke='#55718B' stroke-width='1.5' stroke-linecap='round'/>
+<circle cx='38' cy='38' r='6' fill='#FFFFFF' stroke='#DF7C7C' stroke-width='1.8'/>
+<path d='M35 38l2 2 4-4' fill='none' stroke='#DF7C7C' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/>
+<path d='M33 18v-4h14v16h-4' fill='none' stroke='#55718B' stroke-width='1.8' opacity='0.3'/>  </g>
+</svg>

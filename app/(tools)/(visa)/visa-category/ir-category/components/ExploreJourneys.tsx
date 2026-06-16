@@ -2,16 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import {
-  MapPin,
-  Search,
-  Info,
-  CheckCircle,
-  Plus,
-  ArrowRight,
-  X,
-  Clock,
-} from "lucide-react";
+import { MapPin, Search, Info, CheckCircle, Plus, ArrowRight, X, Clock } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -22,19 +13,11 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { VisaEligibilityTool } from "@/app/(tools)/visa-eligibility/components/VisaEligibilityTool";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
-import {
-  loadJourneyProgress,
-  JourneyProgressRecord,
-} from "@/lib/journey/journeyProgressService";
+import { loadJourneyProgress, JourneyProgressRecord } from "@/lib/journey/journeyProgressService";
 import { useRouter } from "next/navigation";
 import { roadmapData } from "@/data/roadmap";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -78,8 +61,7 @@ const JOURNEY_DETAILS: Record<string, Station[]> = {
       key: "uscis",
       label: "USCIS",
       summary: "File I-130 petition",
-      whatYouDo:
-        "U.S. citizen spouse files Form I-130 petition to establish the relationship.",
+      whatYouDo: "U.S. citizen spouse files Form I-130 petition to establish the relationship.",
       uploadsNeeded: [
         "Marriage certificate",
         "Birth certificates",
@@ -97,19 +79,14 @@ const JOURNEY_DETAILS: Record<string, Station[]> = {
       key: "nvc",
       label: "NVC",
       summary: "Submit documents",
-      whatYouDo:
-        "After USCIS approval, case moves to National Visa Center for document review.",
+      whatYouDo: "After USCIS approval, case moves to National Visa Center for document review.",
       uploadsNeeded: [
         "DS-260 form",
         "Civil documents",
         "Financial support (I-864)",
         "Police certificates",
       ],
-      pitfalls: [
-        "Expired police certificates",
-        "Incorrect fee payment",
-        "Missing civil documents",
-      ],
+      pitfalls: ["Expired police certificates", "Incorrect fee payment", "Missing civil documents"],
     },
     {
       key: "interview",
@@ -122,18 +99,13 @@ const JOURNEY_DETAILS: Record<string, Station[]> = {
         "Interview letter",
         "Supporting documents",
       ],
-      pitfalls: [
-        "Inadequate relationship evidence",
-        "Medical issues",
-        "Previous visa violations",
-      ],
+      pitfalls: ["Inadequate relationship evidence", "Medical issues", "Previous visa violations"],
     },
     {
       key: "221g",
       label: "221(g)",
       summary: "Admin Processing",
-      whatYouDo:
-        "Submit missing documents or wait for background checks to complete.",
+      whatYouDo: "Submit missing documents or wait for background checks to complete.",
       uploadsNeeded: [
         "Missing civil documents",
         "New passport (if expired)",
@@ -179,8 +151,7 @@ const JOURNEY_DETAILS: Record<string, Station[]> = {
       key: "221g",
       label: "221(g)",
       summary: "Admin Processing",
-      whatYouDo:
-        "Submit missing documents or wait for background checks to complete.",
+      whatYouDo: "Submit missing documents or wait for background checks to complete.",
       uploadsNeeded: [
         "Missing civil documents",
         "New passport (if expired)",
@@ -203,11 +174,7 @@ const JOURNEY_DETAILS: Record<string, Station[]> = {
       label: "Admission",
       summary: "Get Admission Letter",
       whatYouDo: "Apply to German universities and receive Zulassungsbescheid.",
-      uploadsNeeded: [
-        "Admission letter",
-        "Language certificates",
-        "Transcripts",
-      ],
+      uploadsNeeded: ["Admission letter", "Language certificates", "Transcripts"],
       pitfalls: ["Late application", "Missing certified translations"],
     },
     {
@@ -223,20 +190,14 @@ const JOURNEY_DETAILS: Record<string, Station[]> = {
       label: "Appointment",
       summary: "Embassy Visit",
       whatYouDo: "Book and attend visa interview at German Embassy.",
-      uploadsNeeded: [
-        "Application form",
-        "Passport",
-        "Photos",
-        "Proof of funds",
-      ],
+      uploadsNeeded: ["Application form", "Passport", "Photos", "Proof of funds"],
       pitfalls: ["Incomplete documents", "Interview performance"],
     },
     {
       key: "arrival",
       label: "Arrival",
       summary: "Register in DE",
-      whatYouDo:
-        "Travel to Germany, register address, and get residence permit.",
+      whatYouDo: "Travel to Germany, register address, and get residence permit.",
       uploadsNeeded: ["Registration certificate", "Enrollment certificate"],
       pitfalls: ["Missing deadlines", "Expired visa"],
     },
@@ -246,8 +207,7 @@ const JOURNEY_DETAILS: Record<string, Station[]> = {
       key: "accept",
       label: "Acceptance",
       summary: "Get I-20",
-      whatYouDo:
-        "Gain admission to a SEVP-certified school and receive Form I-20.",
+      whatYouDo: "Gain admission to a SEVP-certified school and receive Form I-20.",
       uploadsNeeded: ["School application", "Financial proof"],
       pitfalls: ["Late application", "Insufficient funds"],
     },
@@ -386,13 +346,7 @@ const JOURNEYS: Journey[] = [
     stations: 3,
     difficulty: "Low",
     pakistanFocused: false,
-    quickRoadmap: [
-      "Apply to School",
-      "Receive I-20",
-      "Pay SEVIS Fee",
-      "Visa Interview",
-      "Travel",
-    ],
+    quickRoadmap: ["Apply to School", "Receive I-20", "Pay SEVIS Fee", "Visa Interview", "Travel"],
     introVideo: {
       title: "U.S. Student Visa Guide",
       duration: "5:10",
@@ -405,8 +359,7 @@ const JOURNEYS: Journey[] = [
     title: "Germany Student Visa",
     category: "Study",
     process: "Consular",
-    description:
-      "National study visa for Germany. Requires university admission.",
+    description: "National study visa for Germany. Requires university admission.",
     matchScore: 82,
     time: "4-8 mo",
     cost: "€11,208 (Blocked)",
@@ -435,8 +388,7 @@ const JOURNEYS: Journey[] = [
     cost: "$460+",
     color: "bg-orange-100 text-orange-700 border-orange-200",
     visaCode: "H-1B",
-    bestFor:
-      "Professionals with bachelor's degree or higher in specialty occupations",
+    bestFor: "Professionals with bachelor's degree or higher in specialty occupations",
     stations: 4,
     difficulty: "High",
     pakistanFocused: false,
@@ -460,8 +412,7 @@ const JOURNEYS: Journey[] = [
     title: "K-1 Fiancé(e) Visa",
     category: "Family",
     process: "Consular",
-    description:
-      "For fiancé(e)s of U.S. citizens to travel to U.S. for marriage.",
+    description: "For fiancé(e)s of U.S. citizens to travel to U.S. for marriage.",
     matchScore: 88,
     time: "8-10 mo",
     cost: "$800+",
@@ -522,12 +473,7 @@ const JOURNEYS: Journey[] = [
     stations: 5,
     difficulty: "High",
     pakistanFocused: false,
-    quickRoadmap: [
-      "Adoption Process",
-      "File Petition",
-      "Visa Interview",
-      "Arrival",
-    ],
+    quickRoadmap: ["Adoption Process", "File Petition", "Visa Interview", "Arrival"],
   },
   // Family Preferences
   {
@@ -700,12 +646,7 @@ const JOURNEYS: Journey[] = [
     stations: 4,
     difficulty: "High",
     pakistanFocused: false,
-    quickRoadmap: [
-      "Employer Petition",
-      "Peer Consultation",
-      "Approval",
-      "Visa",
-    ],
+    quickRoadmap: ["Employer Petition", "Peer Consultation", "Approval", "Visa"],
   },
   {
     id: "o2",
@@ -773,12 +714,7 @@ const JOURNEYS: Journey[] = [
     stations: 3,
     difficulty: "High",
     pakistanFocused: true,
-    quickRoadmap: [
-      "Business Plan",
-      "Investment",
-      "Consular Filing",
-      "Interview",
-    ],
+    quickRoadmap: ["Business Plan", "Investment", "Consular Filing", "Interview"],
   },
   {
     id: "r1",
@@ -915,13 +851,7 @@ const JOURNEYS: Journey[] = [
     stations: 5,
     difficulty: "High",
     pakistanFocused: false,
-    quickRoadmap: [
-      "Labor Cert",
-      "Petition",
-      "Priority Date",
-      "Interview",
-      "Green Card",
-    ],
+    quickRoadmap: ["Labor Cert", "Petition", "Priority Date", "Interview", "Green Card"],
   },
   {
     id: "eb2_niw",
@@ -1135,15 +1065,10 @@ interface ExploreJourneysProps {
   destination: string;
 }
 
-export default function ExploreJourneys({
-  origin,
-  destination,
-}: ExploreJourneysProps) {
+export default function ExploreJourneys({ origin, destination }: ExploreJourneysProps) {
   const { user } = useAuth();
   const { t, language } = useLanguage();
-  const [ir1Progress, setIr1Progress] = useState<JourneyProgressRecord | null>(
-    null,
-  );
+  const [ir1Progress, setIr1Progress] = useState<JourneyProgressRecord | null>(null);
 
   const searchParams = useSearchParams();
   const categoryFromUrl = searchParams.get("category");
@@ -1200,10 +1125,7 @@ export default function ExploreJourneys({
   // Calculate progress percentage for IR-1 if it exists
   const ir1ProgressPercent = React.useMemo(() => {
     if (!ir1Progress) return 0;
-    const totalSteps = roadmapData.stages.reduce(
-      (acc, s) => acc + s.steps.length,
-      0,
-    );
+    const totalSteps = roadmapData.stages.reduce((acc, s) => acc + s.steps.length, 0);
     const completedCount = Array.isArray(ir1Progress.completed_steps)
       ? ir1Progress.completed_steps.length
       : 0;
@@ -1212,17 +1134,13 @@ export default function ExploreJourneys({
 
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedProcess, setSelectedProcess] = useState("Consular");
-  const [highlightedJourney, setHighlightedJourney] = useState<string | null>(
-    null,
-  );
+  const [highlightedJourney, setHighlightedJourney] = useState<string | null>(null);
   const [selectedJourneys, setSelectedJourneys] = useState<string[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [isMatcherOpen, setIsMatcherOpen] = useState(false);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
   const [isQuickRoadmapOpen, setIsQuickRoadmapOpen] = useState(false);
-  const [videoModalJourney, setVideoModalJourney] = useState<Journey | null>(
-    null,
-  );
+  const [videoModalJourney, setVideoModalJourney] = useState<Journey | null>(null);
   const [isVisaWizardOpen, setIsVisaWizardOpen] = useState(false);
 
   const [selectedStationKey, setSelectedStationKey] = useState<string>("uscis");
@@ -1245,8 +1163,7 @@ export default function ExploreJourneys({
 
   // Filter Logic
   const filteredJourneys = JOURNEYS.filter((j) => {
-    if (selectedCategory !== "all" && j.category !== selectedCategory)
-      return false;
+    if (selectedCategory !== "all" && j.category !== selectedCategory) return false;
     if (j.process !== selectedProcess) return false;
     return true;
   });
@@ -1254,10 +1171,7 @@ export default function ExploreJourneys({
   const bestMatches = filteredJourneys.filter((j) => j.matchScore > 90);
   const otherJourneys = filteredJourneys.filter((j) => j.matchScore <= 90);
 
-  const toggleCompare = (
-    id: string,
-    e: React.MouseEvent | { stopPropagation: () => void },
-  ) => {
+  const toggleCompare = (id: string, e: React.MouseEvent | { stopPropagation: () => void }) => {
     e.stopPropagation();
     if (selectedJourneys.includes(id)) {
       setSelectedJourneys(selectedJourneys.filter((j) => j !== id));
@@ -1281,10 +1195,7 @@ export default function ExploreJourneys({
             <div className="flex items-center gap-4"></div>
           </div>
 
-          <Dialog
-            open={isCompareModalOpen}
-            onOpenChange={setIsCompareModalOpen}
-          >
+          <Dialog open={isCompareModalOpen} onOpenChange={setIsCompareModalOpen}>
             <DialogContent className="max-h-[85vh] overflow-y-auto w-[95%] max-w-4xl p-4 md:p-6 rounded-xl gap-4">
               <button
                 onClick={() => setIsCompareModalOpen(false)}
@@ -1293,9 +1204,7 @@ export default function ExploreJourneys({
                 <X className="w-5 h-5" />
               </button>
               <DialogHeader>
-                <DialogTitle className="pr-12">
-                  {t("visaCategory.journeyComparison")}
-                </DialogTitle>
+                <DialogTitle className="pr-12">{t("visaCategory.journeyComparison")}</DialogTitle>
                 <DialogDescription className="sr-only">
                   {t("visaCategory.journeyComparisonDesc")}
                 </DialogDescription>
@@ -1322,13 +1231,8 @@ export default function ExploreJourneys({
                       {selectedJourneys.map((id) => {
                         const journey = JOURNEYS.find((j) => j.id === id);
                         return (
-                          <th
-                            key={id}
-                            className="py-4 px-4 font-bold text-slate-900 min-w-50"
-                          >
-                            {journey
-                              ? getTranslated(journey, "title")
-                              : t("visaCategory.unknown")}
+                          <th key={id} className="py-4 px-4 font-bold text-slate-900 min-w-50">
+                            {journey ? getTranslated(journey, "title") : t("visaCategory.unknown")}
                           </th>
                         );
                       })}
@@ -1355,10 +1259,7 @@ export default function ExploreJourneys({
                       {selectedJourneys.map((id) => {
                         const journey = JOURNEYS.find((j) => j.id === id);
                         return (
-                          <td
-                            key={id}
-                            className="py-4 px-4 text-slate-600 leading-relaxed"
-                          >
+                          <td key={id} className="py-4 px-4 text-slate-600 leading-relaxed">
                             {journey ? getTranslated(journey, "bestFor") : ""}
                           </td>
                         );
@@ -1398,9 +1299,7 @@ export default function ExploreJourneys({
                         const journey = JOURNEYS.find((j) => j.id === id);
                         return (
                           <td key={id} className="py-4 px-4 text-slate-600">
-                            {(journey?.matchScore ?? 0) > 90
-                              ? "Yes"
-                              : "Standard"}
+                            {(journey?.matchScore ?? 0) > 90 ? "Yes" : "Standard"}
                           </td>
                         );
                       })}
@@ -1411,10 +1310,7 @@ export default function ExploreJourneys({
             </DialogContent>
           </Dialog>
 
-          <Dialog
-            open={isQuickRoadmapOpen}
-            onOpenChange={setIsQuickRoadmapOpen}
-          >
+          <Dialog open={isQuickRoadmapOpen} onOpenChange={setIsQuickRoadmapOpen}>
             <DialogContent className="w-[95%] max-w-2xl p-4 md:p-6 rounded-xl gap-4">
               <button
                 onClick={() => setIsQuickRoadmapOpen(false)}
@@ -1428,10 +1324,7 @@ export default function ExploreJourneys({
                   {highlightedJourney
                     ? JOURNEYS.find((j) => j.id === highlightedJourney)
                         ?.bestFor.split(" which")[0]
-                        .replace(
-                          "Married couples where one spouse is a ",
-                          "Spouse of ",
-                        )
+                        .replace("Married couples where one spouse is a ", "Spouse of ")
                     : ""}
                 </DialogTitle>
                 <DialogDescription className="sr-only">
@@ -1441,13 +1334,13 @@ export default function ExploreJourneys({
               <div className="pt-6 space-y-6">
                 <ol className="list-decimal space-y-6 pl-5 text-slate-700">
                   {highlightedJourney &&
-                    JOURNEYS.find(
-                      (j) => j.id === highlightedJourney,
-                    )?.quickRoadmap?.map((step, idx) => (
-                      <li key={idx} className="pl-2">
-                        <span className="text-slate-700">{step}</span>
-                      </li>
-                    ))}
+                    JOURNEYS.find((j) => j.id === highlightedJourney)?.quickRoadmap?.map(
+                      (step, idx) => (
+                        <li key={idx} className="pl-2">
+                          <span className="text-slate-700">{step}</span>
+                        </li>
+                      )
+                    )}
                 </ol>
               </div>
             </DialogContent>
@@ -1504,8 +1397,7 @@ export default function ExploreJourneys({
                   </p>
 
                   <p className="text-xs text-slate-400 italic pt-2">
-                    Note: This is a placeholder. In production, this would be a
-                    real video embed.
+                    Note: This is a placeholder. In production, this would be a real video embed.
                   </p>
                 </div>
               </div>
@@ -1539,13 +1431,9 @@ export default function ExploreJourneys({
                 {t("visaCategory.route")}
               </div>
               <div className="flex items-center gap-2 bg-slate-100 rounded-lg p-2 border border-slate-200 text-sm font-medium text-slate-700">
-                <span className="truncate">
-                  {origin || t("visaCategory.origin")}
-                </span>
+                <span className="truncate">{origin || t("visaCategory.origin")}</span>
                 <ArrowRight className="w-4 h-4 text-slate-400 shrink-0" />
-                <span className="truncate">
-                  {destination || t("visaCategory.destination")}
-                </span>
+                <span className="truncate">{destination || t("visaCategory.destination")}</span>
               </div>
             </div>
 
@@ -1555,15 +1443,7 @@ export default function ExploreJourneys({
                 {t("visaCategory.visaCategory")}
               </div>
               <div className="flex flex-wrap gap-2">
-                {[
-                  "all",
-                  "Family",
-                  "Work",
-                  "Study",
-                  "Humanitarian",
-                  "Visit",
-                  "Other",
-                ].map((cat) => (
+                {["all", "Family", "Work", "Study", "Humanitarian", "Visit", "Other"].map((cat) => (
                   <button
                     key={cat}
                     onClick={() => {
@@ -1574,7 +1454,7 @@ export default function ExploreJourneys({
                       "px-3 py-1.5 rounded-full text-sm font-medium transition-all",
                       selectedCategory === cat
                         ? "bg-primary text-white shadow-md shadow-primary/20"
-                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300",
+                        : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 hover:border-slate-300"
                     )}
                   >
                     {t(`visaCategory.categories.${cat}`) || cat}
@@ -1623,7 +1503,7 @@ export default function ExploreJourneys({
                         "flex-1 py-1 text-sm font-medium rounded-md transition-all",
                         selectedProcess === proc
                           ? "bg-white text-primary shadow-sm"
-                          : "text-slate-500 hover:text-slate-700",
+                          : "text-slate-500 hover:text-slate-700"
                       )}
                     >
                       {proc === "Consular"
@@ -1671,9 +1551,7 @@ export default function ExploreJourneys({
                     onWatchIntro={() => setVideoModalJourney(journey)}
                     hasProgress={journey.id === "ir1" && ir1HasProgress}
                     isLoading={journey.id === "ir1" && checkingProgress}
-                    progressPercent={
-                      journey.id === "ir1" ? ir1ProgressPercent : undefined
-                    }
+                    progressPercent={journey.id === "ir1" ? ir1ProgressPercent : undefined}
                   />
                 ))}
               </div>
@@ -1682,9 +1560,7 @@ export default function ExploreJourneys({
 
           <div className="space-y-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-xl font-bold text-slate-800">
-                {t("visaCategory.all")}
-              </h2>
+              <h2 className="text-xl font-bold text-slate-800">{t("visaCategory.all")}</h2>
             </div>
             {otherJourneys.length > 0 ? (
               <div className="grid gap-4">
@@ -1699,9 +1575,7 @@ export default function ExploreJourneys({
                     onWatchIntro={() => setVideoModalJourney(journey)}
                     hasProgress={journey.id === "ir1" && ir1HasProgress}
                     isLoading={journey.id === "ir1" && checkingProgress}
-                    progressPercent={
-                      journey.id === "ir1" ? ir1ProgressPercent : undefined
-                    }
+                    progressPercent={journey.id === "ir1" ? ir1ProgressPercent : undefined}
                   />
                 ))}
               </div>
@@ -1724,10 +1598,7 @@ export default function ExploreJourneys({
                     {JOURNEYS.find((j) => j.id === highlightedJourney)?.title}
                   </h3>
                   <p className="text-sm text-slate-500 font-medium mt-1">
-                    {
-                      JOURNEYS.find((j) => j.id === highlightedJourney)
-                        ?.visaCode
-                    }
+                    {JOURNEYS.find((j) => j.id === highlightedJourney)?.visaCode}
                   </p>
                 </div>
 
@@ -1743,18 +1614,18 @@ export default function ExploreJourneys({
                         ?.filter((s) => s.key !== "221g")
                         .map((station, index) => {
                           const isActive = selectedStationKey === station.key;
-                          const stations = JOURNEY_DETAILS[
-                            highlightedJourney
-                          ].filter((s) => s.key !== "221g");
+                          const stations = JOURNEY_DETAILS[highlightedJourney].filter(
+                            (s) => s.key !== "221g"
+                          );
                           const currentIndex = stations.findIndex(
-                            (s) => s.key === selectedStationKey,
+                            (s) => s.key === selectedStationKey
                           );
                           const isCompleted = index < currentIndex;
 
                           // 221g Logic
-                          const adminStation = JOURNEY_DETAILS[
-                            highlightedJourney
-                          ].find((s) => s.key === "221g");
+                          const adminStation = JOURNEY_DETAILS[highlightedJourney].find(
+                            (s) => s.key === "221g"
+                          );
                           const isAdminActive = selectedStationKey === "221g";
 
                           return (
@@ -1777,9 +1648,7 @@ export default function ExploreJourneys({
                                     <p
                                       className={cn(
                                         "text-xs font-bold uppercase tracking-wider transition-colors",
-                                        isAdminActive
-                                          ? "text-slate-900"
-                                          : "text-slate-500",
+                                        isAdminActive ? "text-slate-900" : "text-slate-500"
                                       )}
                                     >
                                       {adminStation.label}
@@ -1796,7 +1665,7 @@ export default function ExploreJourneys({
                                         "rounded-full border-[3px] transition-all bg-white box-border",
                                         isAdminActive
                                           ? "border-amber-500 w-8 h-8 ring-4 ring-amber-50"
-                                          : "border-slate-300 group-hover/221g:border-amber-400 w-6 h-6",
+                                          : "border-slate-300 group-hover/221g:border-amber-400 w-6 h-6"
                                       )}
                                     ></div>
                                   </div>
@@ -1814,7 +1683,7 @@ export default function ExploreJourneys({
                                       ? "border-teal-600 w-8 h-8 ring-4 ring-teal-50"
                                       : isCompleted
                                         ? "border-teal-600 bg-teal-600 w-6 h-6"
-                                        : "border-slate-300 group-hover:border-teal-400 w-6 h-6",
+                                        : "border-slate-300 group-hover:border-teal-400 w-6 h-6"
                                   )}
                                 ></div>
                               </div>
@@ -1822,9 +1691,7 @@ export default function ExploreJourneys({
                                 <p
                                   className={cn(
                                     "text-xs font-bold uppercase tracking-wider transition-colors",
-                                    isActive
-                                      ? "text-slate-900"
-                                      : "text-slate-500",
+                                    isActive ? "text-slate-900" : "text-slate-500"
                                   )}
                                 >
                                   {station.label}
@@ -1847,7 +1714,7 @@ export default function ExploreJourneys({
                           <h4 className="text-lg font-bold text-slate-800">
                             {
                               JOURNEY_DETAILS[highlightedJourney]?.find(
-                                (s) => s.key === selectedStationKey,
+                                (s) => s.key === selectedStationKey
                               )?.label
                             }{" "}
                             Station
@@ -1862,7 +1729,7 @@ export default function ExploreJourneys({
                             <p className="text-sm text-slate-700 leading-relaxed">
                               {
                                 JOURNEY_DETAILS[highlightedJourney]?.find(
-                                  (s) => s.key === selectedStationKey,
+                                  (s) => s.key === selectedStationKey
                                 )?.whatYouDo
                               }
                             </p>
@@ -1882,9 +1749,7 @@ export default function ExploreJourneys({
                                       key={idx}
                                       className="text-xs text-slate-600 flex items-start gap-2"
                                     >
-                                      <span className="text-teal-600 mt-0.5">
-                                        •
-                                      </span>
+                                      <span className="text-teal-600 mt-0.5">•</span>
                                       {item}
                                     </li>
                                   ))}
@@ -1903,9 +1768,7 @@ export default function ExploreJourneys({
                                       key={idx}
                                       className="text-xs text-slate-600 flex items-start gap-2"
                                     >
-                                      <span className="text-rose-600 mt-0.5">
-                                        •
-                                      </span>
+                                      <span className="text-rose-600 mt-0.5">•</span>
                                       {item}
                                     </li>
                                   ))}
@@ -1921,9 +1784,7 @@ export default function ExploreJourneys({
                 {/* Footer Actions */}
                 <div className="p-6 border-t border-slate-100 flex items-center gap-3 bg-slate-50/50">
                   {highlightedJourney &&
-                  ["ir1", "ir5", "f1", "germany-student"].includes(
-                    highlightedJourney,
-                  ) ? (
+                  ["ir1", "ir5", "f1", "germany-student"].includes(highlightedJourney) ? (
                     <Link
                       href={`/visa-category/ir-category/${
                         highlightedJourney === "ir1"
@@ -1967,12 +1828,9 @@ export default function ExploreJourneys({
                 <div className="w-12 h-12 md:w-16 md:h-16 rounded-full bg-slate-100 flex items-center justify-center mb-4">
                   <MapPin className="w-6 h-6 md:w-8 md:h-8 text-slate-300" />
                 </div>
-                <h3 className="text-lg font-semibold text-slate-700 mb-1">
-                  No Journey Selected
-                </h3>
+                <h3 className="text-lg font-semibold text-slate-700 mb-1">No Journey Selected</h3>
                 <p className="text-sm text-slate-500 max-w-xs mx-auto">
-                  Select a journey from the left to view its detailed roadmap
-                  and requirements.
+                  Select a journey from the left to view its detailed roadmap and requirements.
                 </p>
               </div>
             )}
@@ -2076,7 +1934,7 @@ function JourneyCard({
         "group relative p-6 rounded-xl border transition-all cursor-pointer",
         isActive
           ? "bg-[#F0FDF9] border-teal-600 shadow-md"
-          : "bg-white border-slate-200 hover:border-teal-200 hover:shadow-md",
+          : "bg-white border-slate-200 hover:border-teal-200 hover:shadow-md"
       )}
     >
       {/* Top Row: Type Label & Match & Compare */}
@@ -2084,11 +1942,10 @@ function JourneyCard({
         <div className="flex items-center gap-2 flex-wrap">
           <span
             className={cn(
-              "px-3 py-1 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600",
+              "px-3 py-1 rounded-full text-xs font-semibold bg-white border border-slate-200 text-slate-600"
             )}
           >
-            {t(`visaCategory.categories.${journey.category}`) ||
-              journey.category}
+            {t(`visaCategory.categories.${journey.category}`) || journey.category}
           </span>
           {journey.matchScore > 90 && (
             <span className="hidden md:block">
@@ -2113,16 +1970,13 @@ function JourneyCard({
         </div>
 
         {/* Compare Checkbox */}
-        <div
-          onClick={onCompare}
-          className="flex items-center gap-2 cursor-pointer group/compare"
-        >
+        <div onClick={onCompare} className="flex items-center gap-2 cursor-pointer group/compare">
           <div
             className={cn(
               "w-5 h-5 rounded border flex items-center justify-center transition-colors",
               isSelected
                 ? "bg-teal-600 border-teal-600 text-white"
-                : "border-slate-300 group-hover/compare:border-teal-400",
+                : "border-slate-300 group-hover/compare:border-teal-400"
             )}
           >
             {isSelected && <CheckCircle className="w-3.5 h-3.5" />}
@@ -2130,9 +1984,7 @@ function JourneyCard({
           <span
             className={cn(
               "text-xs font-medium",
-              isSelected
-                ? "text-teal-700"
-                : "text-slate-400 group-hover/compare:text-teal-600",
+              isSelected ? "text-teal-700" : "text-slate-400 group-hover/compare:text-teal-600"
             )}
           >
             {t("visaCategory.compare")}
@@ -2142,9 +1994,7 @@ function JourneyCard({
 
       {/* Title Section */}
       <div className="mb-4">
-        <h3 className="text-xl font-bold text-slate-900 mb-1">
-          {getTranslated("title")}
-        </h3>
+        <h3 className="text-xl font-bold text-slate-900 mb-1">{getTranslated("title")}</h3>
         <p className="text-sm font-medium text-slate-500 uppercase tracking-wide">
           {journey.visaCode}
         </p>
@@ -2152,9 +2002,7 @@ function JourneyCard({
 
       {/* Best For Highlight */}
       <div className="mb-3">
-        <h4 className="text-sm font-semibold text-teal-700 mb-1">
-          {getTranslated("bestFor")}
-        </h4>
+        <h4 className="text-sm font-semibold text-teal-700 mb-1">{getTranslated("bestFor")}</h4>
         <p className="text-sm text-slate-600 leading-relaxed line-clamp-2">
           {getTranslated("description")}
         </p>
@@ -2198,7 +2046,7 @@ function JourneyCard({
                 hasProgress
                   ? "bg-teal-600 text-white hover:bg-teal-700"
                   : "bg-teal-700 text-white hover:bg-teal-800",
-                isLoading && "opacity-80",
+                isLoading && "opacity-80"
               )}
             >
               {isLoading ? (
@@ -2207,8 +2055,7 @@ function JourneyCard({
                 </>
               ) : hasProgress ? (
                 <>
-                  <ArrowRight className="w-4 h-4 mr-1" />{" "}
-                  {t("visaCategory.resumeJourney")}
+                  <ArrowRight className="w-4 h-4 mr-1" /> {t("visaCategory.resumeJourney")}
                 </>
               ) : (
                 t("visaCategory.startJourney")

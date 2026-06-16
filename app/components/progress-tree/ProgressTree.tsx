@@ -1,15 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Check,
-  ChevronDown,
-  ChevronRight,
-  Circle,
-  CheckCircle2,
-  Clock,
-  Lock,
-} from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Circle, CheckCircle2, Clock, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export type StepStatus = "completed" | "in-progress" | "pending" | "locked";
@@ -100,7 +92,7 @@ const TreeNode: React.FC<{
           "flex items-start gap-3 mb-2 p-3 rounded-lg border-2 transition-all",
           getStatusColor(step.status),
           step.status !== "locked" && "cursor-pointer hover:shadow-md",
-          "relative",
+          "relative"
         )}
         style={{ marginLeft: `${level * 24}px` }}
         onClick={step.status !== "locked" ? handleClick : undefined}
@@ -132,7 +124,7 @@ const TreeNode: React.FC<{
               "font-semibold text-sm",
               step.status === "completed" && "text-green-700",
               step.status === "in-progress" && "text-blue-700",
-              step.status === "locked" && "text-gray-400",
+              step.status === "locked" && "text-gray-400"
             )}
           >
             {step.title}
@@ -141,7 +133,7 @@ const TreeNode: React.FC<{
             <p
               className={cn(
                 "text-xs mt-1",
-                step.status === "locked" ? "text-gray-400" : "text-gray-600",
+                step.status === "locked" ? "text-gray-400" : "text-gray-600"
               )}
             >
               {step.description}
@@ -178,9 +170,7 @@ const TreeNode: React.FC<{
   );
 };
 
-const calculateProgress = (
-  steps: TreeStep[],
-): { completed: number; total: number } => {
+const calculateProgress = (steps: TreeStep[]): { completed: number; total: number } => {
   let completed = 0;
   let total = 0;
 
@@ -228,9 +218,7 @@ export const ProgressTree: React.FC<ProgressTreeProps> = ({
               style={{ width: `${percentage}%` }}
             >
               {percentage > 10 && (
-                <span className="text-white text-xs font-bold">
-                  {percentage}%
-                </span>
+                <span className="text-white text-xs font-bold">{percentage}%</span>
               )}
             </div>
           </div>

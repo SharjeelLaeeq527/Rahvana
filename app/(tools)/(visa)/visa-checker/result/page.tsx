@@ -3,6 +3,7 @@
 import Result from "@/app/components/visa-checker/Result";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 // Define the exact shape here (or import from a shared types file)
 type VisaData = {
@@ -60,7 +61,9 @@ export default function ResultPage() {
   return (
     <div className="bg-blue-50 site-main-px site-main-py">
       <div className="max-w-2xl xl:max-w-4xl mx-auto">
-        <Result data={result} />
+        <ResultGate feature="visa_bulletin_monitor">
+          <Result data={result} />
+        </ResultGate>
       </div>
     </div>
   );

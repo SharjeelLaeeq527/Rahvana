@@ -1,0 +1,12 @@
+﻿<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64' viewBox='0 0 64 64' role='img' aria-label='221g Action Plan'>
+        <path d='M23 20h18l9 12-9 12H23l-9-12z' fill='#DF7C7C' opacity='0.14'/>
+        <path d='M43 22l1.8 1.8 2.8-2.8' stroke='#DF7C7C' stroke-width='1.2' opacity='0.5'/>
+  <g fill='none' stroke-linecap='round' stroke-linejoin='round'>
+<rect x='20' y='15.5' width='24' height='33' rx='5' fill='#FFF8DF' stroke='#6A668E' stroke-width='2'/>
+<rect x='26' y='13' width='12' height='5' rx='2' fill='#FBE9AF' stroke='#6A668E' stroke-width='1.7'/>
+<line x1='24.5' y1='27' x2='39.5' y2='27' stroke='#6A668E' stroke-width='1.8' stroke-linecap='round'/>
+<line x1='24.5' y1='33' x2='36.5' y2='33' stroke='#6A668E' stroke-width='1.8' stroke-linecap='round'/>
+<line x1='24.5' y1='39' x2='33.5' y2='39' stroke='#6A668E' stroke-width='1.8' stroke-linecap='round'/>
+<path d='M35 31l2 2 3-3' fill='none' stroke='#DF7C7C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/>
+<path d='M27 30l1.8 1.8L31 29.6' fill='none' stroke='#E36A8E' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/>  </g>
+</svg>

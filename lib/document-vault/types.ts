@@ -16,11 +16,7 @@ export type VisaCategory =
 
 export type ProcessStage = "USCIS" | "NVC" | "INTERVIEW" | "DS260_SUBMISSION";
 
-export type DocumentRole =
-  | "PETITIONER"
-  | "BENEFICIARY"
-  | "JOINT_SPONSOR"
-  | "HOUSEHOLD_MEMBER";
+export type DocumentRole = "PETITIONER" | "BENEFICIARY" | "JOINT_SPONSOR" | "HOUSEHOLD_MEMBER";
 
 export type DocumentCategory =
   // Original categories
@@ -44,6 +40,7 @@ export type DocumentCategory =
   | "HEALTH_INSURANCE" // Health insurance documents
   | "SOCIAL_MEDIA" // Social media handles history
   | "ADDRESS_PROOF" // Utility bills, rent agreements
+  | "CITIZENSHIP_PROOF" // Dynamic category for U.S. citizenship docs
   | "OTHER";
 
 export type ValidityType =
@@ -108,6 +105,12 @@ export interface DocumentDefinition {
     visaCategories?: VisaCategory[];
     scenarioFlags?: Partial<ScenarioFlags>;
   };
+  hideUntilUploaded?: boolean;
+  translationOf?: string; // ID of the original document this is a translation for
+
+  // Dynamic Category Support
+  isDynamicCategory?: boolean; // If true, this document acts as a container for multiple sub-documents
+  suggestions?: string[]; // List of suggested document types/names for this dynamic category
 }
 
 export interface DocumentWizardStep {
@@ -167,6 +170,7 @@ export interface DocumentVaultConfig {
   petitionerName?: string;
   beneficiaryName?: string;
   jointSponsorName?: string;
+  dynamicDocuments?: Record<string, { id: string; name: string }[]>;
 }
 
 export type NotificationType =

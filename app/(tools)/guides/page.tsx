@@ -1,29 +1,24 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import {
   Search,
   FileText,
   Shield,
-  DollarSign,
   Heart,
-  Users,
-  Briefcase,
-  FileCheck,
-  BookOpen,
-  ArrowRight,
-  GraduationCap,
-  Scale,
   Globe,
   Syringe,
-  Activity,
-  Map,
-  // Truck,
-  // Truck,
-  // Plane,
   ChevronDown,
   LayoutGrid,
+  ArrowRight,
+  BookOpen,
+  Clock,
+  CheckCircle2,
+  PlayCircle,
+  Trash2,
+  ChevronRight,
 } from "lucide-react";
 
 import {
@@ -32,18 +27,28 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { usePlan } from "@/app/context/PlanContext";
+import AddResourceCard from "@/components/resources/AddResourceCard";
+import { useAuth } from "@/app/context/AuthContext";
+import { motion } from "framer-motion";
+import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
+
+interface UserGuideSession {
+  id: string;
+  status: string;
+  progress_percent: number;
+  last_updated_at: string;
+  guides: {
+    slug: string;
+    title: string;
+    description: string;
+  };
+}
 
 // --- Data & Types ---
 
-type GuideCategory =
-  | "Pakistan Document"
-  // | "Embassy Logistics"
-  // | "Arrival & Travel"
-  // | "Financial & Sponsorship"
-  | "Medical & Exam";
-// | "Relationship Evidence"
-// | "Education & Process"
-// | "Visa Strategy";
+type GuideCategory = "Pakistan Document" | "Medical & Exam";
 
 interface Guide {
   id: string;
@@ -55,43 +60,10 @@ interface Guide {
   icon: React.ElementType;
   disabled?: boolean;
   comingSoon?: boolean;
+  entitlementFeature?: string;
 }
 
 const GUIDES: Guide[] = [
-  // --- Pakistan Docs ---
-  // {
-  //   id: "pcc-sindh",
-  //   title: "PCC Playbook — Sindh",
-  //   description:
-  //     "Sindh police certificate guide: requirements, steps, timelines, and common mistakes.",
-  //   category: "Pakistan Docs",
-  //   href: "/police-verification?province=Sindh",
-  //   icon: FileText,
-  // },
-  // {
-  //   id: "pcc-punjab",
-  //   title: "PCC Playbook — Punjab",
-  //   description: "Punjab police certificate guide (service coming soon).",
-  //   category: "Pakistan Docs",
-  //   href: "/police-verification?province=Punjab",
-  //   icon: Shield,
-  // },
-  // {
-  //   id: "pcc-kpk",
-  //   title: "PCC Playbook — KPK",
-  //   description: "KPK police certificate guide (service coming soon).",
-  //   category: "Pakistan Docs",
-  //   href: "/police-verification?province=KPK",
-  //   icon: Shield,
-  // },
-  // {
-  //   id: "pcc-balochistan",
-  //   title: "PCC Playbook — Balochistan",
-  //   description: "Balochistan police certificate guide (service coming soon).",
-  //   category: "Pakistan Docs",
-  //   href: "/police-verification?province=Balochistan",
-  //   icon: Shield,
-  // },
   {
     id: "passport",
     title: "Passport",
@@ -101,6 +73,7 @@ const GUIDES: Guide[] = [
     category: "Pakistan Document",
     href: "/guides/passport-guide",
     icon: Globe,
+    entitlementFeature: "guide_passport",
   },
   {
     id: "police-verification",
@@ -111,16 +84,8 @@ const GUIDES: Guide[] = [
       "Province-wise PCC workflow with required documents, fee tiers, and verification steps.",
     href: "/guides/police-verification-guide",
     category: "Pakistan Document",
+    entitlementFeature: "guide_police",
   },
-  // {
-  //   id: "pcc-reference",
-  //   title: "PCC Reference Guide",
-  //   description:
-  //     "Comprehensive overview of Police Character Certificates for all provinces.",
-  //   category: "Pakistan Docs",
-  //   href: "/guides/police-certificate",
-  //   icon: Shield,
-  // },
   {
     id: "cnic",
     title: "CNIC",
@@ -130,26 +95,27 @@ const GUIDES: Guide[] = [
     category: "Pakistan Document",
     href: "/guides/cnic-guide",
     icon: FileText,
+    entitlementFeature: "guide_cnic",
   },
   {
     id: "birth-certificate",
     title: "Birth Certificate",
     subtitle: "",
-    description:
-      "Union Council CBRC process for birth registration, correction, and replacement",
+    description: "Union Council CBRC process for birth registration, correction, and replacement",
     category: "Pakistan Document",
     href: "/guides/birth-certificate-guide",
     icon: FileText,
+    entitlementFeature: "guide_birth_cert",
   },
   {
     id: "frc",
     title: "FRC",
     subtitle: "NADRA Family Registration Certificate",
-    description:
-      "NADRA process to apply for an FRC and review registered family details.",
+    description: "NADRA process to apply for an FRC and review registered family details.",
     category: "Pakistan Document",
     href: "/guides/frc-guide",
     icon: Globe,
+    entitlementFeature: "guide_frc",
   },
   {
     id: "marriage-certificate",
@@ -160,176 +126,156 @@ const GUIDES: Guide[] = [
     category: "Pakistan Document",
     href: "/guides/nikah-nama-guide",
     icon: Heart,
+    entitlementFeature: "guide_nikah_nama",
   },
-  // {
-  //   id: "divorce-death",
-  //   title: "Divorce & Death",
-  //   description: "Termination of prior marriages documentation.",
-  //   category: "Pakistan Docs",
-  //   href: "/guides/prior-marriage-termination",
-  //   icon: FileCheck,
-  //   disabled: true,
-  //   comingSoon: true,
-  // },
-  // {
-  //   id: "court-records",
-  //   title: "Court & Prison Records",
-  //   description: "Obtaining legal records for visa compliance.",
-  //   category: "Pakistan Docs",
-  //   href: "/guides/court-records",
-  //   icon: Scale,
-  //   disabled: true,
-  //   comingSoon: true,
-  // },
-
-  // --- Embassy Logistics ---
-  // {
-  //   id: "courier-passport",
-  //   title: "Courier & Passport Delivery",
-  //   description:
-  //     "Register, choose delivery options, and troubleshoot common courier issues.",
-  //   category: "Embassy Logistics",
-  //   href: "/guides/courier-registration",
-  //   icon: Map,
-  // },
-  // {
-  //   id: "interview-prep",
-  //   title: "Interview Preparation",
-  //   description: "Required documents and what to bring to the embassy.",
-  //   category: "Embassy Logistics",
-  //   href: "/interview-prep", // Tool Link
-  //   icon: Users,
-  // },
-  // {
-  //   id: "ds260",
-  //   title: "DS-260 Form",
-  //   description: "How to complete the online immigrant visa application.",
-  //   category: "Embassy Logistics",
-  //   href: "/guides/ds260",
-  //   icon: Globe,
-  //   disabled: true,
-  //   comingSoon: true,
-  // },
-
-  // --- Arrival & Travel ---
-  // {
-  //   id: "customs",
-  //   title: "Customs & Declarations",
-  //   description:
-  //     "What to declare, what to avoid, and common pitfalls when traveling.",
-  //   category: "Arrival & Travel",
-  //   href: "/guides/custom-requirements",
-  //   icon: FileCheck,
-  // },
-
-  // --- Financial & Sponsorship ---
-  // {
-  //   id: "asset-docs",
-  //   title: "Asset Documentation",
-  //   description: "Prove your financial standing with correct asset documents.",
-  //   category: "Pakistan Docs",
-  //   href: "/guides/asset-document-guide",
-  //   icon: DollarSign,
-  // },
-  // {
-  //   id: "employment-verification",
-  //   title: "Employment Verification",
-  //   description: "Employment letters, paystubs, and income proof.",
-  //   category: "Pakistan Docs",
-  //   href: "/guides/employment-certificate-guide",
-  //   icon: Briefcase,
-  // },
-  // {
-  //   id: "tax-documents",
-  //   title: "Tax Transcripts",
-  //   description: "IRS tax documents and W-2 forms for sponsorship.",
-  //   category: "Financial & Sponsorship",
-  //   href: "/guides/tax-documents",
-  //   icon: FileText,
-  //   disabled: true,
-  //   comingSoon: true,
-  // },
-  // {
-  //   id: "affidavit-support",
-  //   title: "I-864 Affidavit",
-  //   description: "Complete guide to financial sponsorship requirements.",
-  //   category: "Financial & Sponsorship",
-  //   href: "/affidavit-support-calculator", // Redirect to tool
-  //   icon: DollarSign,
-  // },
-
-  // --- Medical & Exam ---
-  // {
-  //   id: "medical-exam",
-  //   title: "Medical Examination",
-  //   description: "Panel physicians, appointments, and requirements.",
-  //   category: "Medical & Exam",
-  //   href: "/guides/medical-exam",
-  //   icon: Activity,
-  //   disabled: true,
-  //   comingSoon: true,
-  // },
   {
     id: "vaccinations",
     title: "Polio Vaccination",
     subtitle: "",
-    description:
-      "Polio vaccination workflow with NIMS entry and travel certificate issuance.",
+    description: "Polio vaccination workflow with NIMS entry and travel certificate issuance.",
     category: "Medical & Exam",
     href: "/guides/polio-vaccination-guide",
     icon: Syringe,
+    entitlementFeature: "polio_certificate",
   },
-
-  // --- Relationship Evidence ---
-  // {
-  //   id: "relationship-evidence",
-  //   title: "Bona Fide Marriage",
-  //   description: "Photos, chat logs, and proof of genuine relationship.",
-  //   category: "Relationship Evidence",
-  //   href: "/guides/bona-marriage-guide",
-  //   icon: Heart,
-  // },
-
-  // --- Visa Strategy ---
-  // {
-  //   id: "visa-strength",
-  //   title: "Visa Case Strength",
-  //   description: "Understand your visa case strength and improve it.",
-  //   category: "Visa Strategy",
-  //   href: "/guides/visa-strength-guide",
-  //   icon: GraduationCap,
-  // },
-  // {
-  //   id: "educational-docs",
-  //   title: "Educational Certificates (US Visa)",
-  //   description:
-  //     "Complete roadmap: HEC/IBCC attestation, WES evaluation, and I-20 requirements.",
-  //   href: "/guides/educational-certificates-us-visa",
-  //   icon: BookOpen,
-  //   category: "Education & Process",
-  // },
 ];
 
-const CATEGORIES: ("All" | GuideCategory)[] = [
-  "All",
-  "Pakistan Document",
-  // "Embassy Logistics",
-  // "Arrival & Travel",
-  // "Financial & Sponsorship",
-  "Medical & Exam",
-  // "Relationship Evidence",
-  // "Education & Process",
-  // "Visa Strategy",
-];
+const CATEGORIES: ("All" | GuideCategory)[] = ["All", "Pakistan Document", "Medical & Exam"];
+
+// --- Tier-aware card styles ------------------------------------------------
+// Card border, shadow, and gradient border all follow the tier
+const TIER_CARD_STYLE: Record<
+  string,
+  {
+    cardBorder: string;
+    cardShadow: string;
+    cardHoverShadow: string;
+    gradientBorder: string;
+    badgeBg: string;
+    badgeBorder: string;
+  }
+> = {
+  basic: {
+    cardBorder: "border-[#a8d4d4]",
+    cardShadow:
+      "shadow-[0_18px_38px_-24px_rgba(13,148,136,0.6),0_0_0_1px_rgba(168,212,212,0.3)_inset]",
+    cardHoverShadow:
+      "hover:shadow-[0_24px_48px_-24px_rgba(13,148,136,0.75),0_0_26px_rgba(13,148,136,0.15)]",
+    gradientBorder: "from-teal-300 to-teal-200",
+    badgeBg: "bg-teal-50",
+    badgeBorder: "border-teal-200",
+  },
+  premium: {
+    cardBorder: "border-[#94a3b8]",
+    cardShadow:
+      "shadow-[0_18px_38px_-24px_rgba(71,85,105,0.6),0_0_0_1px_rgba(148,163,184,0.3)_inset]",
+    cardHoverShadow:
+      "hover:shadow-[0_24px_48px_-24px_rgba(71,85,105,0.75),0_0_26px_rgba(71,85,105,0.15)]",
+    gradientBorder: "from-slate-400 to-slate-300",
+    badgeBg: "bg-slate-100",
+    badgeBorder: "border-slate-300",
+  },
+  executive: {
+    cardBorder: "border-[#e8c96a]",
+    cardShadow:
+      "shadow-[0_18px_38px_-24px_rgba(202,138,4,0.7),0_0_0_1px_rgba(232,201,106,0.3)_inset]",
+    cardHoverShadow:
+      "hover:shadow-[0_24px_48px_-24px_rgba(202,138,4,0.85),0_0_26px_rgba(202,138,4,0.2)]",
+    gradientBorder: "from-amber-300 to-amber-200",
+    badgeBg: "bg-amber-50",
+    badgeBorder: "border-amber-200",
+  },
+};
+
+// Inline gradient border styles per tier
+const TIER_GRADIENT_BORDER_STYLE: Record<string, React.CSSProperties> = {
+  basic: {
+    padding: "2.5px",
+    background:
+      "linear-gradient(135deg, #0f766e 0%, #5eead4 34%, #0d9488 50%, #99f6e4 66%, #0f766e 100%)",
+    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+    WebkitMaskComposite: "xor",
+    maskComposite: "exclude",
+    opacity: 0.9,
+  },
+  premium: {
+    padding: "2.5px",
+    background:
+      "linear-gradient(135deg, #334155 0%, #94a3b8 25%, #e2e8f0 50%, #94a3b8 75%, #334155 100%)",
+    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+    WebkitMaskComposite: "xor",
+    maskComposite: "exclude",
+    opacity: 0.9,
+  },
+  executive: {
+    padding: "2.5px",
+    background:
+      "linear-gradient(135deg, #5f3a00 0%, #a66a04 18%, #f5d06f 34%, #7a4a00 50%, #fff1a8 66%, #b77905 82%, #5f3a00 100%)",
+    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+    WebkitMaskComposite: "xor",
+    maskComposite: "exclude",
+    opacity: 0.96,
+  },
+};
 
 // --- Components ---
 
-export default function GuidesPage() {
+export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolean }) {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<
-    "All" | GuideCategory
-  >("All");
-  const [visibleCount, setVisibleCount] = useState(7); // Default to all
+  const [selectedCategory, setSelectedCategory] = useState<"All" | GuideCategory>("All");
+  const [visibleCount, setVisibleCount] = useState(7);
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+  const plan = usePlan();
+
+  const [sessions, setSessions] = useState<UserGuideSession[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      setSessions([]);
+      return;
+    }
+    const fetchMyGuides = async () => {
+      try {
+        setSessionsLoading(true);
+        const res = await fetch("/api/guides/my-guides");
+        if (res.ok) {
+          const data = await res.json();
+          setSessions(data.sessions || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch my guides:", error);
+      } finally {
+        setSessionsLoading(false);
+      }
+    };
+    fetchMyGuides();
+  }, [user]);
+
+  const handleDelete = async () => {
+    if (!selectedSessionId) return;
+    try {
+      setDeleting(true);
+      const res = await fetch("/api/guides/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: selectedSessionId }),
+      });
+      if (res.ok) {
+        setSessions((prev) => prev.filter((s) => s.id !== selectedSessionId));
+        setShowConfirmDelete(false);
+        setSelectedSessionId(null);
+      }
+    } catch (error) {
+      console.error("Failed to delete guide:", error);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
@@ -339,21 +285,16 @@ export default function GuidesPage() {
       if (!containerRef.current || !measureRef.current) return;
 
       const containerWidth = containerRef.current.clientWidth;
-      const measureItems = Array.from(
-        measureRef.current.children,
-      ) as HTMLDivElement[];
+      const measureItems = Array.from(measureRef.current.children) as HTMLDivElement[];
 
-      // Extract the More button width (last item) and Category widths
       const moreButtonEl = measureItems[measureItems.length - 1];
       const categoryEls = measureItems.slice(0, measureItems.length - 1);
-
       const moreButtonWidth = moreButtonEl.offsetWidth;
-      const gap = 12; // gap-3 is 12px (0.75rem)
+      const gap = 12;
 
       let totalWidth = 0;
       let visible = 0;
 
-      // First pass: Check if ALL fit
       for (let i = 0; i < categoryEls.length; i++) {
         const itemWidth = categoryEls[i].offsetWidth;
         const isLast = i === categoryEls.length - 1;
@@ -366,17 +307,11 @@ export default function GuidesPage() {
         return;
       }
 
-      // Second pass: Calculate how many fit WITH "More" button
       totalWidth = 0;
-
       for (let i = 0; i < categoryEls.length; i++) {
         const itemWidth = categoryEls[i].offsetWidth;
-        // Check if adding this item + gap + MoreButton exceeds container
-        // Current accumulated + this item + (gap if not first) + gap + MoreButton
         const gapWidth = i > 0 ? gap : 0;
-        const projectedWidth =
-          totalWidth + gapWidth + itemWidth + gap + moreButtonWidth;
-
+        const projectedWidth = totalWidth + gapWidth + itemWidth + gap + moreButtonWidth;
         if (projectedWidth <= containerWidth) {
           visible++;
           totalWidth += gapWidth + itemWidth;
@@ -389,13 +324,8 @@ export default function GuidesPage() {
     };
 
     calculateVisible();
-
-    // Add resize listener
     const observer = new ResizeObserver(calculateVisible);
-    if (containerRef.current) {
-      observer.observe(containerRef.current);
-    }
-
+    if (containerRef.current) observer.observe(containerRef.current);
     return () => observer.disconnect();
   }, []);
 
@@ -407,13 +337,27 @@ export default function GuidesPage() {
     const matchesSearch =
       guide.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       guide.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "All" || guide.category === selectedCategory;
+    const matchesCategory = selectedCategory === "All" || guide.category === selectedCategory;
     return matchesSearch && matchesCategory;
   }).sort((a, b) => a.title.localeCompare(b.title));
 
+  // "My Resources" (embedded) view: only the guides the user has unlocked
+  // (via plan tier or purchased add-ons); free guides always show.
+  const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
+  const displayGuides = isEmbedded
+    ? filteredGuides.filter((guide) => isOwned(guide.entitlementFeature))
+    : filteredGuides;
+
   return (
-    <div className="min-h-screen bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground">
+    <div
+      className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${
+        isEmbedded ? "" : "pt-16"
+      }`}
+    >
+      {upgradeModalFeature && (
+        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
+      )}
+
       {/* Ambient Glow */}
       <div className="fixed top-0 left-0 w-full h-full pointer-events-none -z-10">
         <div className="absolute top-[10%] left-[15%] w-[500px] h-[500px] bg-[#0d7377]/5 rounded-full blur-3xl" />
@@ -421,126 +365,243 @@ export default function GuidesPage() {
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Hero Section */}
-        <section className="text-center mb-5 md:mb-10 relative flex flex-col items-center">
-          <div className="w-full flex justify-end mb-6 md:absolute md:top-0 md:right-0 md:mb-0 md:w-auto md:block">
-            <Link
-              href="/guides/my-guides"
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-bold text-slate-600 hover:text-teal-600 hover:border-teal-200 shadow-sm transition-all"
-            >
-              <LayoutGrid size={16} />
-              My Guides
-            </Link>
-          </div>
-          <h1 className="text-3xl md:text-5xl font-bold mb-4 mt-2 md:mt-0 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
-            Master the Paperwork.
-          </h1>
-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
-            Step-by-step guides for every document you need. Clear instructions,
-            timelines, and common pitfalls to avoid.
-          </p>
-        </section>
+        {/* Hero Section — hidden in the embedded "My Resources" view */}
+        {!isEmbedded && (
+          <section className="text-center mb-5 md:mb-10 pt-1 relative flex flex-col items-center">
+            <div className="w-full flex justify-end mb-6 md:absolute md:top-0 md:right-0 md:mb-0 md:w-auto md:block">
+              <Link
+                href="/guides/my-guides"
+                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-bold text-slate-600 hover:text-teal-600 hover:border-teal-200 shadow-sm transition-all"
+              >
+                <LayoutGrid size={16} />
+                My Guides
+              </Link>
+            </div>
+            <h1 className="text-3xl md:text-5xl font-bold mb-4 mt-2 md:mt-0 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
+              Master the Paperwork.
+            </h1>
+            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
+              Step-by-step guides for every document you need. Clear instructions, timelines, and
+              common pitfalls to avoid.
+            </p>
+          </section>
+        )}
 
         {/* Search Bar */}
-        <div className="relative max-w-lg mx-auto mb-10 animate-scale-in [animation-delay:200ms]">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search guides... (e.g., 'passport', 'police')"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
-          />
-        </div>
-
-        {/* Categories */}
-        <div
-          ref={containerRef}
-          className="relative w-full mb-8 flex justify-center"
-        >
-          {/* Hidden container for measuring */}
-          <div
-            ref={measureRef}
-            aria-hidden="true"
-            className="absolute top-0 left-0 w-full flex flex-wrap gap-3 pointer-events-none opacity-0 z-[-1]"
-          >
-            {/* Render all categories to measure them */}
-            {CATEGORIES.map((cat) => (
-              <div
-                key={cat}
-                className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border"
-              >
-                {cat}
-              </div>
-            ))}
-            {/* Force render the More button to measure it */}
-            <div className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1">
-              More <ChevronDown className="w-4 h-4 ml-1" />
-            </div>
+        {!isEmbedded && (
+          <div className="relative max-w-lg mx-auto mb-10 animate-scale-in [animation-delay:200ms]">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search guides... (e.g., 'passport', 'police')"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
+            />
           </div>
+        )}
 
-          {/* Visible Container */}
-          <div className="flex flex-wrap gap-3 animate-fade-in [animation-delay:300ms]">
-            {visibleCategories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${
-                  selectedCategory === cat
-                    ? "bg-primary text-primary-foreground border-primary shadow-md"
-                    : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+        {/* Categories — hidden in the embedded "My Resources" view */}
+        {!isEmbedded && (
+          <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
+            <div
+              ref={measureRef}
+              aria-hidden="true"
+              className="absolute top-0 left-0 w-full flex flex-wrap gap-3 pointer-events-none opacity-0 z-[-1]"
+            >
+              {CATEGORIES.map((cat) => (
+                <div key={cat} className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border">
+                  {cat}
+                </div>
+              ))}
+              <div className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1">
+                More <ChevronDown className="w-4 h-4 ml-1" />
+              </div>
+            </div>
 
-            {hiddenCategories.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${
-                      isMoreSelected
-                        ? "bg-primary text-primary-foreground border-primary shadow-md"
-                        : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
-                    }`}
-                  >
-                    More <ChevronDown className="w-4 h-4 ml-1" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[200px]">
-                  {hiddenCategories.map((cat) => (
-                    <DropdownMenuItem
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`cursor-pointer ${
-                        selectedCategory === cat
-                          ? "bg-primary/10 text-primary font-semibold"
-                          : ""
+            <div className="flex flex-wrap gap-3 animate-fade-in [animation-delay:300ms]">
+              {visibleCategories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${
+                    selectedCategory === cat
+                      ? "bg-primary text-primary-foreground border-primary shadow-md"
+                      : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+
+              {hiddenCategories.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${
+                        isMoreSelected
+                          ? "bg-primary text-primary-foreground border-primary shadow-md"
+                          : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
                       }`}
                     >
-                      {cat}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                      More <ChevronDown className="w-4 h-4 ml-1" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-[200px]">
+                    {hiddenCategories.map((cat) => (
+                      <DropdownMenuItem
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`cursor-pointer ${
+                          selectedCategory === cat ? "bg-primary/10 text-primary font-semibold" : ""
+                        }`}
+                      >
+                        {cat}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Guides Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 pt-6">
-          {filteredGuides.length > 0 ? (
-            filteredGuides.map((guide, index) => (
-              <GuideCard key={guide.id} guide={guide} index={index} />
-            ))
-          ) : (
+          {displayGuides.map((guide, index) => {
+            const guideSlug = guide.href.split("/").pop();
+            const session = sessions.find((s) => s.guides.slug === guideSlug);
+
+            if (session) {
+              return (
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.4, delay: index * 0.1 }}
+                  key={session.id}
+                  className="group bg-white rounded-3xl border border-slate-200 p-6 shadow-sm hover:shadow-xl hover:border-teal-200 transition-all flex flex-col relative overflow-hidden mt-6"
+                >
+                  {/* Progress bar accent */}
+                  {/* <div
+                    className="absolute top-0 left-0 h-1.5 bg-teal-500 transition-all duration-1000"
+                    style={{ width: `${session.progress_percent}%` }}
+                  /> */}
+
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="p-3 bg-teal-50 rounded-2xl text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">
+                      <BookOpen size={24} />
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <div className="flex items-center gap-2">
+                        <span
+                          className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full 
+                          ${session.status === "completed" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}
+                        >
+                          {session.status.replace("_", " ")}
+                        </span>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setSelectedSessionId(session.id);
+                            setShowConfirmDelete(true);
+                          }}
+                          className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                          title="Delete this progress"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                      <span className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
+                        <Clock size={10} />
+                        {new Date(session.last_updated_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  <h3 className="text-xl font-bold text-slate-900 group-hover:text-teal-700 transition-colors mb-2">
+                    {session.guides.title}
+                  </h3>
+                  <p className="text-slate-500 text-sm leading-relaxed mb-6 line-clamp-2">
+                    {session.guides.description}
+                  </p>
+
+                  <div className="mt-auto">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
+                        Progress
+                      </span>
+                      <span className="text-xs font-black text-teal-600">
+                        {session.progress_percent}%
+                      </span>
+                    </div>
+                    <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-6">
+                      <div
+                        className="h-full bg-teal-500 rounded-full transition-all duration-1000"
+                        style={{ width: `${session.progress_percent}%` }}
+                      />
+                    </div>
+
+                    <Link
+                      href={`/guides/${session.guides.slug}`}
+                      className="flex items-center justify-center gap-2 w-full py-3.5 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-teal-600 transition-all shadow-lg shadow-slate-200 hover:shadow-teal-100 group/btn"
+                    >
+                      {session.status === "completed" ? (
+                        <>
+                          <CheckCircle2 size={18} />
+                          View Results
+                        </>
+                      ) : (
+                        <>
+                          <PlayCircle
+                            size={18}
+                            className="group-hover/btn:scale-110 transition-transform"
+                          />
+                          Resume Guide
+                        </>
+                      )}
+                      <ChevronRight
+                        size={16}
+                        className="ml-1 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all"
+                      />
+                    </Link>
+                  </div>
+                </motion.div>
+              );
+            }
+
+            return (
+              <GuideCard
+                key={guide.id}
+                guide={guide}
+                index={index}
+                onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+              />
+            );
+          })}
+          {isEmbedded && (
+            <AddResourceCard
+              href="/pricing?mode=guides"
+              label="Add guides"
+              index={displayGuides.length}
+            />
+          )}
+          {!isEmbedded && displayGuides.length === 0 && (
             <div className="col-span-full text-center py-12 text-muted-foreground">
               No guides found matching your search.
             </div>
           )}
         </div>
       </div>
+      <ConfirmationModal
+        open={showConfirmDelete}
+        onOpenChange={setShowConfirmDelete}
+        title="Delete Progress?"
+        description="This will permanently delete your progress for this guide. You cannot undo this action."
+        confirmText="Yes, Delete"
+        cancelText="No, Keep it"
+        onConfirm={handleDelete}
+        loading={deleting}
+      />
     </div>
   );
 }
@@ -560,97 +621,105 @@ const CATEGORY_STYLES: Record<
     iconBox: "bg-green-600 text-white border-transparent dark:bg-green-500",
     innerBox: "bg-white/20",
     link: "text-green-600 dark:text-green-400",
-    borderGradient:
-      "from-green-400 to-green-300 dark:from-green-400 dark:to-green-300",
+    borderGradient: "from-green-400 to-green-300 dark:from-green-400 dark:to-green-300",
   },
-  // "Embassy Logistics": {
-  //   iconBox: "bg-blue-600 text-white border-transparent dark:bg-blue-500",
-  //   innerBox: "bg-white/20",
-  //   link: "text-blue-600 dark:text-blue-400",
-  //   borderGradient:
-  //     "from-blue-400 to-blue-300 dark:from-blue-400 dark:to-blue-300",
-  // },
-  // "Arrival & Travel": {
-  //   iconBox: "bg-sky-600 text-white border-transparent dark:bg-sky-500",
-  //   innerBox: "bg-white/20",
-  //   link: "text-sky-600 dark:text-sky-400",
-  //   borderGradient: "from-sky-400 to-sky-300 dark:from-sky-400 dark:to-sky-300",
-  // },
-  // "Financial & Sponsorship": {
-  //   iconBox: "bg-emerald-600 text-white border-transparent dark:bg-emerald-500",
-  //   innerBox: "bg-white/20",
-  //   link: "text-emerald-600 dark:text-emerald-400",
-  //   borderGradient:
-  //     "from-emerald-400 to-emerald-300 dark:from-emerald-400 dark:to-emerald-300",
-  // },
   "Medical & Exam": {
     iconBox: "bg-teal-600 text-white border-transparent dark:bg-teal-500",
     innerBox: "bg-white/20",
     link: "text-teal-600 dark:text-teal-400",
-    borderGradient:
-      "from-teal-400 to-teal-300 dark:from-teal-400 dark:to-teal-300",
+    borderGradient: "from-teal-400 to-teal-300 dark:from-teal-400 dark:to-teal-300",
   },
-  // "Relationship Evidence": {
-  //   iconBox: "bg-rose-600 text-white border-transparent dark:bg-rose-500",
-  //   innerBox: "bg-white/20",
-  //   link: "text-rose-600 dark:text-rose-400",
-  //   borderGradient:
-  //     "from-rose-400 to-rose-300 dark:from-rose-400 dark:to-rose-300",
-  // },
-  // "Visa Strategy": {
-  //   iconBox: "bg-violet-600 text-white border-transparent dark:bg-violet-500",
-  //   innerBox: "bg-white/20",
-  //   link: "text-violet-600 dark:text-violet-400",
-  //   borderGradient:
-  //     "from-violet-400 to-violet-300 dark:from-violet-400 dark:to-violet-300",
-  // },
-  // "Education & Process": {
-  //   iconBox: "bg-amber-600 text-white border-transparent dark:bg-amber-500",
-  //   innerBox: "bg-white/20",
-  //   link: "text-amber-600 dark:text-amber-400",
-  //   borderGradient:
-  //     "from-amber-400 to-amber-300 dark:from-amber-400 dark:to-amber-300",
-  // },
 };
 
-function GuideCard({ guide, index }: { guide: Guide; index: number }) {
+function GuideCard({
+  guide,
+  index,
+  onLockedClick,
+}: {
+  guide: Guide;
+  index: number;
+  onLockedClick: (feature: string) => void;
+}) {
+  const plan = usePlan();
   const Icon = guide.icon;
-  const isClickable = !guide.disabled;
-  const CardWrapper = isClickable ? Link : "div";
   const styles = CATEGORY_STYLES[guide.category];
+
+  const featureLocked =
+    !!guide.entitlementFeature && !plan.isLoading && plan.isLocked(guide.entitlementFeature);
+
+  const upgradeTarget: string =
+    (guide.entitlementFeature ? plan.entitlement(guide.entitlementFeature).upgradeTarget : null) ??
+    "premium";
+
+  // All tier-specific card styles derived from upgradeTarget
+  const tierStyle = TIER_CARD_STYLE[upgradeTarget] ?? TIER_CARD_STYLE.premium;
+  const tierGradientBorderStyle =
+    TIER_GRADIENT_BORDER_STYLE[upgradeTarget] ?? TIER_GRADIENT_BORDER_STYLE.premium;
+  const tierIconClass = `plan-icon--${upgradeTarget}`;
+
+  const isNavigable = !guide.disabled;
+
+  const handleClick = (e: React.MouseEvent) => {
+    if (featureLocked && guide.entitlementFeature) {
+      e.preventDefault();
+      onLockedClick(guide.entitlementFeature);
+    }
+  };
+
+  const CardWrapper = isNavigable ? Link : "div";
 
   return (
     <CardWrapper
-      href={guide.href}
-      className={`group relative flex flex-col bg-card border border-border rounded-[30px] p-6 pt-7 mt-6 
-      transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)] 
+      href={isNavigable ? guide.href : "#"}
+      onClick={handleClick}
+      className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
+      transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
       ${
-        isClickable
-          ? "hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-          : "opacity-80 cursor-not-allowed grayscale-[0.5]"
+        featureLocked
+          ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
+          : isNavigable
+            ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+            : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
       }
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
+      {/* Ribbon for locked cards */}
+      {featureLocked && (
+        <div className="absolute -top-21 -right-12 sm:-right-3 z-20 pointer-events-none">
+          <Image
+            src="/icons/ribbon.png"
+            alt="Premium ribbon"
+            width={240}
+            height={300}
+            priority={false}
+            className="w-40 h-56 object-contain drop-shadow-lg"
+          />
+        </div>
+      )}
+
       {/* Floating Icon Box */}
       <div
-        className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-10 
-        group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg 
+        className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-10
+        group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg
         ${styles.iconBox}`}
       >
-        {/* Inner colored box for depth */}
         <div
           className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
         />
         <Icon className="w-6 h-6 stroke-2" />
       </div>
 
-      {/* Floating Border Gradient (Pseudo-element emulation) */}
-      <div
-        className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
-      />
+      {/* (Removed tier badge — ribbon now indicates locked state) */}
 
-      {/* Radial Glow Effect */}
+      {/* Border gradient on hover (category color, non-locked only) */}
+      {!featureLocked && (
+        <div
+          className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
+        />
+      )}
+
+      {/* Radial Glow */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
 
       {/* Content */}
@@ -677,11 +746,11 @@ function GuideCard({ guide, index }: { guide: Guide; index: number }) {
 
       {/* Footer / Action */}
       <div className="relative z-10 flex items-center justify-between pt-3.5 border-t border-border mt-auto">
-        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1">
-          {/* Placeholder for stats or extra info if needed */}
-        </span>
+        <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
 
-        {isClickable ? (
+        {featureLocked ? (
+          <span aria-hidden="true" className="h-5" />
+        ) : isNavigable ? (
           <span
             className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
           >

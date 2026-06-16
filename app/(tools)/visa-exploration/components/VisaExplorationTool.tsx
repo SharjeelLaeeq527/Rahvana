@@ -21,19 +21,9 @@ import {
 // NEW MODULAR IMPORTS
 import { T, VisaExplorationAnswers, Step } from "../visa-engine/types";
 import { ALL_COUNTRIES } from "../visa-engine/data/countries";
-import {
-  SUPPORTED_DESTINATIONS,
-  getCountryData,
-} from "../visa-engine/data/registry";
-import {
-  buildSteps,
-  DOWNSTREAM_CLEAR_MAP,
-} from "../visa-engine/logic/step-builder";
-import {
-  getEligibleVisas,
-  allGateAnswered,
-  evaluateGate,
-} from "../visa-engine/logic/gate-engine";
+import { SUPPORTED_DESTINATIONS, getCountryData } from "../visa-engine/data/registry";
+import { buildSteps, DOWNSTREAM_CLEAR_MAP } from "../visa-engine/logic/step-builder";
+import { getEligibleVisas, allGateAnswered, evaluateGate } from "../visa-engine/logic/gate-engine";
 
 // ─────────────────────────────────────────────────────────────
 // HELPERS
@@ -41,7 +31,7 @@ import {
 function setNestedAnswer(
   answers: VisaExplorationAnswers,
   field: string,
-  value: any,
+  value: any
 ): VisaExplorationAnswers {
   if (!field.startsWith("gateAnswers.")) return { ...answers, [field]: value };
   const [, visaCode, questionId] = field.split(".");
@@ -127,15 +117,12 @@ function CountryInput({
 
   const filtered =
     query.length >= 1
-      ? ALL_COUNTRIES.filter((c) =>
-          c.toLowerCase().includes(query.toLowerCase()),
-        ).slice(0, 8)
+      ? ALL_COUNTRIES.filter((c) => c.toLowerCase().includes(query.toLowerCase())).slice(0, 8)
       : [];
 
   useEffect(() => {
     const h = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node))
-        setOpen(false);
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
     };
     document.addEventListener("mousedown", h);
     return () => document.removeEventListener("mousedown", h);
@@ -175,9 +162,7 @@ function CountryInput({
       </div>
 
       {!value && !open && hint && (
-        <p className="text-[12px] text-slate-400 mt-2 ml-1 font-medium">
-          {hint}
-        </p>
+        <p className="text-[12px] text-slate-400 mt-2 ml-1 font-medium">{hint}</p>
       )}
 
       <AnimatePresence>
@@ -190,8 +175,7 @@ function CountryInput({
             className="absolute z-[100] top-[calc(100%+6px)] left-0 right-0 bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden"
           >
             {filtered.map((country) => {
-              const comingSoon =
-                isDestination && !SUPPORTED_DESTINATIONS.includes(country);
+              const comingSoon = isDestination && !SUPPORTED_DESTINATIONS.includes(country);
               return (
                 <button
                   key={country}
@@ -256,11 +240,7 @@ function OptionCard({
         >
           {label}
         </h3>
-        {sub && (
-          <p className="text-[13px] text-slate-500 mt-1.5 leading-relaxed">
-            {sub}
-          </p>
-        )}
+        {sub && <p className="text-[13px] text-slate-500 mt-1.5 leading-relaxed">{sub}</p>}
       </div>
       <div
         className={`p-1 rounded-full flex-shrink-0 mt-0.5 transition-all ${
@@ -269,10 +249,7 @@ function OptionCard({
             : "bg-slate-100 text-slate-300 group-hover:bg-slate-200"
         }`}
       >
-        <CheckCircle
-          size={18}
-          className={selected ? "opacity-100" : "opacity-40"}
-        />
+        <CheckCircle size={18} className={selected ? "opacity-100" : "opacity-40"} />
       </div>
     </button>
   );
@@ -308,9 +285,7 @@ function OptionGrid({
           >
             {opt.label}
           </span>
-          {opt.sub && (
-            <span className="text-[12px] text-slate-500">{opt.sub}</span>
-          )}
+          {opt.sub && <span className="text-[12px] text-slate-500">{opt.sub}</span>}
         </button>
       ))}
     </div>
@@ -347,9 +322,7 @@ function GateQuestion({
         >
           {step.visaCode}
         </span>
-        <span className="text-[11px] text-slate-400 font-medium">
-          {step.visaLabel}
-        </span>
+        <span className="text-[11px] text-slate-400 font-medium">{step.visaLabel}</span>
       </div>
 
       <div className="flex flex-col gap-3">
@@ -370,11 +343,7 @@ function GateQuestion({
             >
               <span
                 className={`text-[14px] font-semibold flex-1 ${
-                  isSel
-                    ? isPassOpt
-                      ? "text-[#0D7377]"
-                      : "text-red-700"
-                    : "text-slate-700"
+                  isSel ? (isPassOpt ? "text-[#0D7377]" : "text-red-700") : "text-slate-700"
                 }`}
               >
                 {opt.label}
@@ -399,13 +368,8 @@ function GateQuestion({
             exit={{ opacity: 0, y: -6, height: 0 }}
             className="flex gap-3 p-4 rounded-2xl bg-red-50 border border-red-200 overflow-hidden"
           >
-            <AlertCircle
-              size={18}
-              className="text-red-500 flex-shrink-0 mt-0.5"
-            />
-            <p className="text-[13px] text-red-700 leading-relaxed">
-              {step.failMsg}
-            </p>
+            <AlertCircle size={18} className="text-red-500 flex-shrink-0 mt-0.5" />
+            <p className="text-[13px] text-red-700 leading-relaxed">{step.failMsg}</p>
           </motion.div>
         )}
         {isPassing && (
@@ -457,9 +421,7 @@ function StepContent({
         value={(answers[step.field!] as string) || ""}
         onChange={(v) => onAnswer(step.field!, v)}
         placeholder={
-          step.isDestination
-            ? "Search destination country..."
-            : "Search your country..."
+          step.isDestination ? "Search destination country..." : "Search your country..."
         }
         isDestination={step.isDestination}
         hint={step.hint}
@@ -507,9 +469,7 @@ function VisaResultCard({ visa, onClick }: { visa: any; onClick: () => void }) {
       <div className="relative z-10">
         <div className="flex items-start justify-between mb-4">
           <div className="w-12 h-12 rounded-xl bg-[#0D7377]/5 flex items-center justify-center group-hover:bg-[#0D7377] group-hover:text-white transition-all duration-300">
-            <span className="text-xl font-black tracking-tight leading-none">
-              {visa.code}
-            </span>
+            <span className="text-xl font-black tracking-tight leading-none">{visa.code}</span>
           </div>
           <span className="text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-lg bg-slate-50 text-slate-500 group-hover:bg-[#0D7377]/10 group-hover:text-[#0D7377] transition-all border border-slate-100">
             {visa.badge}
@@ -526,10 +486,7 @@ function VisaResultCard({ visa, onClick }: { visa: any; onClick: () => void }) {
         <div className="flex items-center justify-between border-t border-slate-50 pt-4">
           <div className="flex items-center gap-2 text-[13px] font-bold text-[#0D7377]">
             View details{" "}
-            <ArrowRight
-              size={14}
-              className="group-hover:translate-x-1 transition-transform"
-            />
+            <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
           </div>
           <div className="flex items-center gap-1.5">
             <div className="w-1.5 h-1.5 rounded-full bg-[#14A0A6] group-hover:animate-pulse" />
@@ -597,9 +554,7 @@ function VisaDetailModal({
         </div>
 
         <div className="flex-1 overflow-y-auto px-8 py-7 space-y-7">
-          <p className="text-sm text-slate-500 leading-relaxed italic">
-            {visa.description}
-          </p>
+          <p className="text-sm text-slate-500 leading-relaxed italic">{visa.description}</p>
           <section className="space-y-3">
             <div className="flex items-center justify-between">
               <h5 className="text-[11px] font-black uppercase tracking-widest text-slate-400">
@@ -641,9 +596,7 @@ function VisaDetailModal({
                   Processing
                 </span>
               </div>
-              <p className="text-[13px] font-bold text-slate-800 leading-snug">
-                {visa.processing}
-              </p>
+              <p className="text-[13px] font-bold text-slate-800 leading-snug">{visa.processing}</p>
             </div>
             <div className="p-4 rounded-xl bg-teal-50/50 border border-teal-100/50">
               <div className="flex items-center gap-2 mb-2">
@@ -670,9 +623,7 @@ function VisaDetailModal({
                   >
                     {s.label}
                   </a>
-                  {visa.officialSources && i < visa.officialSources.length - 1
-                    ? " / "
-                    : ""}
+                  {visa.officialSources && i < visa.officialSources.length - 1 ? " / " : ""}
                 </span>
               ))
             ) : (
@@ -747,9 +698,8 @@ function UnsupportedScreen({
           Visa guidance for {destination}
         </h2>
         <p className="text-slate-500 text-[15px] leading-relaxed mb-10 max-w-md mx-auto">
-          We're working on adding detailed visa guidance for {destination}.
-          Right now this tool specializes in <strong>United States</strong>{" "}
-          immigration.
+          We're working on adding detailed visa guidance for {destination}. Right now this tool
+          specializes in <strong>United States</strong> immigration.
         </p>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <button
@@ -794,11 +744,7 @@ function ResultsScreen({
         <div className="p-8 sm:p-10 bg-linear-to-br from-[#0D7377]/5 to-[#E8F6F6]/30 border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
             <div className="w-14 h-14 rounded-2xl bg-[#0D7377] text-white flex items-center justify-center flex-shrink-0 shadow-lg shadow-[#0D7377]/30">
-              {results.length > 0 ? (
-                <CheckCircle size={28} />
-              ) : (
-                <Search size={28} />
-              )}
+              {results.length > 0 ? <CheckCircle size={28} /> : <Search size={28} />}
             </div>
             <div>
               <h2 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">
@@ -837,9 +783,9 @@ function ResultsScreen({
         {results.length > 0 && (
           <div className="px-8 sm:px-10 pt-6">
             <p className="text-[13px] text-slate-500 leading-relaxed bg-blue-50/50 border border-blue-100 rounded-xl p-4">
-              Based on your answers, these are the visa categories you may be
-              eligible for. Tap on any card to see full details, requirements,
-              processing times, and the forms you'll need.
+              Based on your answers, these are the visa categories you may be eligible for. Tap on
+              any card to see full details, requirements, processing times, and the forms you'll
+              need.
             </p>
           </div>
         )}
@@ -855,9 +801,9 @@ function ResultsScreen({
                 Based on your answers, no visa category matched perfectly.
               </p>
               <p className="text-slate-500 text-[13px] max-w-sm mx-auto leading-relaxed">
-                This doesn't mean there's no path for you — immigration is
-                complex. We strongly recommend consulting a licensed immigration
-                attorney who can review your full situation.
+                This doesn't mean there's no path for you — immigration is complex. We strongly
+                recommend consulting a licensed immigration attorney who can review your full
+                situation.
               </p>
             </div>
           ) : (
@@ -869,11 +815,10 @@ function ResultsScreen({
               const countryData = getCountryData(destination);
               const visaWithSources = {
                 ...v,
-                countryId: countryData?.id,
+                countryId: countryData?.code,
                 officialSources: countryData?.officialSources,
               };
-              const countryNotes =
-                countryData?.getCountryNotes?.(answers) || [];
+              const countryNotes = countryData?.getCountryNotes?.(answers) || [];
 
               return (
                 <div key={v.code} className="relative group">
@@ -884,9 +829,7 @@ function ResultsScreen({
                   </div>
                   <VisaResultCard
                     visa={v}
-                    onClick={() =>
-                      setModal({ visa: visaWithSources, notes: countryNotes })
-                    }
+                    onClick={() => setModal({ visa: visaWithSources, notes: countryNotes })}
                   />
                 </div>
               );
@@ -912,8 +855,8 @@ function ResultsScreen({
                 ))}
               </div>
               <p className="text-[11px] text-slate-400 mt-2">
-                Based on your answers to the eligibility questions. A lawyer may
-                find additional options.
+                Based on your answers to the eligibility questions. A lawyer may find additional
+                options.
               </p>
             </div>
           </div>
@@ -1001,9 +944,7 @@ export default function VisaExplorationTool() {
     setAnswersState((prev) => {
       let next = setNestedAnswer(prev, field, value);
       if (!field.startsWith("gateAnswers.")) {
-        (DOWNSTREAM_CLEAR_MAP[field] || []).forEach(
-          (k) => delete (next as any)[k],
-        );
+        (DOWNSTREAM_CLEAR_MAP[field] || []).forEach((k) => delete (next as any)[k]);
       }
       return next;
     });
@@ -1022,11 +963,7 @@ export default function VisaExplorationTool() {
 
   const gatesDone =
     countryData && candidates.length > 0
-      ? allGateAnswered(
-          answers,
-          countryData.getCandidateCodes,
-          countryData.gateQuestions,
-        )
+      ? allGateAnswered(answers, countryData.getCandidateCodes, countryData.gateQuestions)
       : false;
 
   const eligibleVisas =
@@ -1035,7 +972,7 @@ export default function VisaExplorationTool() {
           answers,
           countryData.getCandidateCodes,
           countryData.gateQuestions,
-          countryData.visas,
+          countryData.visas
         )
       : [];
 
@@ -1043,17 +980,13 @@ export default function VisaExplorationTool() {
     gatesDone && countryData
       ? candidates.filter(
           (code) =>
-            !evaluateGate(
-              code,
-              countryData.gateQuestions,
-              (answers.gateAnswers || {})[code] || {},
-            ).eligible,
+            !evaluateGate(code, countryData.gateQuestions, (answers.gateAnswers || {})[code] || {})
+              .eligible
         )
       : [];
 
   const isLastStep = stepIndex >= steps.length - 1;
-  const progress =
-    steps.length > 1 ? Math.round((stepIndex / (steps.length - 1)) * 100) : 3;
+  const progress = steps.length > 1 ? Math.round((stepIndex / (steps.length - 1)) * 100) : 3;
   const currentPhase = getPhase(currentStep, stepIndex);
 
   // FIX: canSeeResults is true when:
@@ -1155,20 +1088,15 @@ export default function VisaExplorationTool() {
                 <h2 className="text-2xl sm:text-3xl font-black text-slate-800 mb-3 tracking-tight leading-tight">
                   {currentStep?.title}
                 </h2>
-                {currentStep?.subtitle &&
-                  currentStep.type !== "gate_question" && (
-                    <p className="text-slate-500 text-[14px] sm:text-[15px] leading-relaxed font-medium">
-                      {currentStep.subtitle}
-                    </p>
-                  )}
+                {currentStep?.subtitle && currentStep.type !== "gate_question" && (
+                  <p className="text-slate-500 text-[14px] sm:text-[15px] leading-relaxed font-medium">
+                    {currentStep.subtitle}
+                  </p>
+                )}
               </div>
 
               <div className="w-full">
-                <StepContent
-                  step={currentStep}
-                  answers={answers}
-                  onAnswer={handleAnswer}
-                />
+                <StepContent step={currentStep} answers={answers} onAnswer={handleAnswer} />
               </div>
             </motion.div>
           </AnimatePresence>

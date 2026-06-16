@@ -160,7 +160,7 @@ FIELD_MAPPING = {
 "Pt2Line23c_checkbox": "form1[0].#subform[2].Pt2Line23c_checkbox[0]",
 "Pt2Line23_DateMarriageEnded": "form1[0].#subform[2].Pt2Line23_DateMarriageEnded[0]",
 
-# Child 1
+# Parent 1
 "Pt2Line24_FamilyName": "form1[0].#subform[2].Pt2Line24_FamilyName[0]",
 "Pt2Line24_GivenName": "form1[0].#subform[2].Pt2Line24_GivenName[0]",
 "Pt2Line24_MiddleName": "form1[0].#subform[2].Pt2Line24_MiddleName[0]",
@@ -171,7 +171,7 @@ FIELD_MAPPING = {
 "Pt2Line28_CityTownOrVillageOfResidence": "form1[0].#subform[2].Pt2Line28_CityTownOrVillageOfResidence[0]",
 "Pt2Line29_CountryOfResidence": "form1[0].#subform[2].Pt2Line29_CountryOfResidence[0]",
 
-# Child 2
+# Parent 2
 "Pt2Line30a_FamilyName": "form1[0].#subform[2].Pt2Line30a_FamilyName[0]",
 "Pt2Line30b_GivenName": "form1[0].#subform[2].Pt2Line30b_GivenName[0]",
 "Pt2Line30c_MiddleName": "form1[0].#subform[2].Pt2Line30c_MiddleName[0]",
@@ -203,6 +203,9 @@ FIELD_MAPPING = {
 # 41
 "Pt2Line41_Yes": "form1[0].#subform[3].Pt2Line41_Yes[0]",
 "Pt2Line41_No": "form1[0].#subform[3].Pt2Line41_No[0]",
+
+# Employer 1 (40-43)
+"Pt2Line40_EmployerOrCompName": "form1[0].#subform[3].Pt2Line40_EmployerOrCompName[0]",
 "Pt2Line41_StreetNumberName": "form1[0].#subform[3].Pt2Line41_StreetNumberName[0]",
 "Pt2Line41_Unit[0]": "form1[0].#subform[3].Pt2Line41_Unit[0]",
 "Pt2Line41_Unit[1]": "form1[0].#subform[3].Pt2Line41_Unit[1]",
@@ -214,11 +217,11 @@ FIELD_MAPPING = {
 "Pt2Line41_Province": "form1[0].#subform[3].Pt2Line41_Province[0]",
 "Pt2Line41_PostalCode": "form1[0].#subform[3].Pt2Line41_PostalCode[0]",
 "Pt2Line41_Country": "form1[0].#subform[3].Pt2Line41_Country[0]",
-
-# 42-47
 "Pt2Line42_Occupation": "form1[0].#subform[3].Pt2Line42_Occupation[0]",
 "Pt2Line43a_DateFrom": "form1[0].#subform[3].Pt2Line43a_DateFrom[0]",
 "Pt2Line43b_DateTo": "form1[0].#subform[3].Pt2Line43b_DateTo[0]",
+
+# Employer 2 (44-47)
 "Pt2Line44_EmployerOrOrgName": "form1[0].#subform[3].Pt2Line44_EmployerOrOrgName[0]",
 "Pt2Line45_StreetNumberName": "form1[0].#subform[3].Pt2Line45_StreetNumberName[0]",
 "Pt2Line45_Unit[0]": "form1[0].#subform[3].Pt2Line45_Unit[0]",
@@ -368,8 +371,10 @@ FIELD_MAPPING = {
 "Pt4Line16c_MiddleName": "form1[0].#subform[5].Pt4Line16c_MiddleName[0]",
 "Pt4Line17_DateMarriageEnded": "form1[0].#subform[5].Pt4Line17_DateMarriageEnded[0]",
 "Pt4Line17_DateMarriageEnded_Extra": "form1[0].#subform[5].Pt4Line17_DateMarriageEnded[1]",
+# Spouse 2 data is missing
 
-# Child 1
+
+# Person 1
 "Pt4Line30a_FamilyName": "form1[0].#subform[5].Pt4Line30a_FamilyName[0]",
 "Pt4Line30b_GivenName": "form1[0].#subform[5].Pt4Line30b_GivenName[0]",
 "Pt4Line30c_MiddleName": "form1[0].#subform[5].Pt4Line30c_MiddleName[0]",
@@ -377,7 +382,7 @@ FIELD_MAPPING = {
 "Pt4Line32_DateOfBirth": "form1[0].#subform[5].Pt4Line32_DateOfBirth[0]",
 "Pt4Line49_CountryOfBirth": "form1[0].#subform[5].Pt4Line49_CountryOfBirth[0]",
 
-# Child 2
+# Person 2
 "Pt4Line34a_FamilyName": "form1[0].#subform[5].Pt4Line34a_FamilyName[0]",
 "Pt4Line34b_GivenName": "form1[0].#subform[5].Pt4Line34b_GivenName[0]",
 "Pt4Line34c_MiddleName": "form1[0].#subform[5].Pt4Line34c_MiddleName[0]",
@@ -385,7 +390,7 @@ FIELD_MAPPING = {
 "Pt4Line36_DateOfBirth": "form1[0].#subform[5].Pt4Line36_DateOfBirth[0]",
 "Pt4Line37_CountryOfBirth": "form1[0].#subform[5].Pt4Line37_CountryOfBirth[0]",
 
-# Child 3
+# Person 3
 "Pt4Line38a_FamilyName": "form1[0].#subform[5].Pt4Line38a_FamilyName[0]",
 "Pt4Line38b_GivenName": "form1[0].#subform[5].Pt4Line38b_GivenName[0]",
 "Pt4Line38c_MiddleName": "form1[0].#subform[5].Pt4Line38c_MiddleName[0]",
@@ -399,32 +404,20 @@ FIELD_MAPPING = {
 
 # page 7# ============================================
 
-#   "# Spouse / Co-Applicant Name",
+#   Person 4
   "Pt4Line42a_FamilyName": "form1[0].#subform[6].Pt4Line42a_FamilyName[0]",
   "Pt4Line42b_GivenName": "form1[0].#subform[6].Pt4Line42b_GivenName[0]",
   "Pt4Line42c_MiddleName": "form1[0].#subform[6].Pt4Line42c_MiddleName[0]",
-
-#   "# Spouse Relationship",
   "Pt4Line43_Relationship": "form1[0].#subform[6].Pt4Line43_Relationship[0]",
-
-#   "# Spouse Date of Birth",
   "Pt4Line44_DateOfBirth": "form1[0].#subform[6].Pt4Line44_DateOfBirth[0]",
-
-#   "# Spouse Country of Birth",
   "Pt4Line45_CountryOfBirth": "form1[0].#subform[6].Pt4Line45_CountryOfBirth[0]",
 
-#   "# Spouse Previous Legal Name",
+#   Person 5
   "Pt4Line46a_FamilyName": "form1[0].#subform[6].Pt4Line46a_FamilyName[0]",
   "Pt4Line46b_GivenName": "form1[0].#subform[6].Pt4Line46b_GivenName[0]",
   "Pt4Line46c_MiddleName": "form1[0].#subform[6].Pt4Line46c_MiddleName[0]",
-
-#   "# Spouse Previous Relationship",
   "Pt4Line47_Relationship": "form1[0].#subform[6].Pt4Line47_Relationship[0]",
-
-#   "# Spouse Previous Date of Birth",
   "Pt4Line48_DateOfBirth": "form1[0].#subform[6].Pt4Line48_DateOfBirth[0]",
-
-#   "# Spouse Previous Country of Birth",
   "Pt4Line49_CountryOfBirth": "form1[0].#subform[6].Pt4Line49_CountryOfBirth[1]",
 
 #   "# Is Spouse a U.S. Citizen?",
@@ -540,11 +533,17 @@ FIELD_MAPPING = {
 "Pt5Line4_DateFiled": "form1[0].#subform[7].Pt5Line4_DateFiled[0]",
 "Pt5Line5_Result": "form1[0].#subform[7].Pt5Line5_Result[0]",
 
-#   "# Additional Person (Relationship)",
+#   "# Additional Person (Relationship 1)",
 "Pt4Line6a_FamilyName": "form1[0].#subform[7].Pt4Line6a_FamilyName[0]",
 "Pt4Line6b_GivenName": "form1[0].#subform[7].Pt4Line6b_GivenName[0]",
 "Pt4Line6c_MiddleName": "form1[0].#subform[7].Pt4Line6c_MiddleName[0]",
 "Pt4Line7_Relationship": "form1[0].#subform[7].Pt4Line7_Relationship[0]",
+
+#   "# Additional Person (Relationship 2)",
+"Pt4Line8a_FamilyName": "form1[0].#subform[8].Pt4Line8a_FamilyName[0]",
+"Pt4Line8b_GivenName": "form1[0].#subform[8].Pt4Line8b_GivenName[0]",
+"Pt4Line8c_MiddleName": "form1[0].#subform[8].Pt4Line8c_MiddleName[0]",
+"Pt4Line9_Relationship": "form1[0].#subform[8].Pt4Line9_Relationship[0]",
 
 #   "# Place of Filing",
 "Pt4Line60a_CityOrTown": "form1[0].#subform[7].Pt4Line60a_CityOrTown[0]",

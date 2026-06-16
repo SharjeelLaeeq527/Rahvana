@@ -57,9 +57,7 @@ export function selectQuestionVariation(question: GeneratedQuestion): string {
 
 // Apply variations to all generated questions
 // This should be called after questions are generated from the question bank
-export function applyVariationsToQuestions(
-  questions: GeneratedQuestion[],
-): GeneratedQuestion[] {
+export function applyVariationsToQuestions(questions: GeneratedQuestion[]): GeneratedQuestion[] {
   return questions.map((question) => ({
     ...question,
     selectedQuestion: selectQuestionVariation(question),

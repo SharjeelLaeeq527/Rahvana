@@ -117,19 +117,12 @@ export interface DocumentNeedStepProps {
   onNext?: () => void;
 }
 
-const DocumentNeedStep = ({
-  selected,
-  onSelect,
-  data,
-  onNext,
-}: DocumentNeedStepProps) => {
+const DocumentNeedStep = ({ selected, onSelect, data, onNext }: DocumentNeedStepProps) => {
   const { t, tRaw } = useLanguage();
   const [internalStep, setInternalStep] = useState(1);
 
-  const title =
-    data?.title || t("wizard.documentNeed.title") || "Application Setup";
-  const description =
-    data?.description || t("wizard.documentNeed.description") || "";
+  const title = data?.title || t("wizard.documentNeed.title") || "Application Setup";
+  const description = data?.description || t("wizard.documentNeed.description") || "";
   const options = data?.options || [];
   const questions = data?.questions || [];
 
@@ -152,9 +145,7 @@ const DocumentNeedStep = ({
             {title}
           </h2>
           {description && (
-            <p className="text-slate-600 text-lg max-w-xl font-urdu-body">
-              {description}
-            </p>
+            <p className="text-slate-600 text-lg max-w-xl font-urdu-body">{description}</p>
           )}
         </div>
 
@@ -173,13 +164,9 @@ const DocumentNeedStep = ({
                     : "opacity-0 translate-y-4 pointer-events-none hidden"
                 }`}
               >
-                <h3 className="text-xl font-bold text-slate-900 mb-4 font-urdu-body">
-                  {q.title}
-                </h3>
+                <h3 className="text-xl font-bold text-slate-900 mb-4 font-urdu-body">{q.title}</h3>
                 {q.description && (
-                  <p className="text-sm text-slate-500 mb-4 font-urdu-body">
-                    {q.description}
-                  </p>
+                  <p className="text-sm text-slate-500 mb-4 font-urdu-body">{q.description}</p>
                 )}
 
                 <div
@@ -206,9 +193,7 @@ const DocumentNeedStep = ({
                       return (
                         <button
                           key={option.id}
-                          onClick={() =>
-                            handleOptionSelect(index, q.id, option.id)
-                          }
+                          onClick={() => handleOptionSelect(index, q.id, option.id)}
                           className={`group relative w-full text-left rounded-xl border-2 transition-all duration-300 overflow-hidden ${
                             isOptSelected
                               ? "border-primary shadow-md ring-2 ring-primary/10 scale-[1.02]"
@@ -221,9 +206,7 @@ const DocumentNeedStep = ({
                             </div>
                           )}
 
-                          <div
-                            className={`p-5 h-full ${bgClass} text-white relative z-0`}
-                          >
+                          <div className={`p-5 h-full ${bgClass} text-white relative z-0`}>
                             <div className="absolute -bottom-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl group-hover:scale-150 transition-transform"></div>
                             <div className="flex items-center justify-between mb-4 w-full">
                               <Icon className="w-8 h-8 text-white/90 shrink-0" />
@@ -262,9 +245,7 @@ const DocumentNeedStep = ({
                     return (
                       <button
                         key={option.id}
-                        onClick={() =>
-                          handleOptionSelect(index, q.id, option.id)
-                        }
+                        onClick={() => handleOptionSelect(index, q.id, option.id)}
                         className={`group flex flex-col w-full items-start text-left p-4 rounded-xl border-2 transition-all duration-200 ${bgClass} ${
                           isOptSelected
                             ? "border-primary shadow-md ring-2 ring-primary/20 scale-[1.02]"
@@ -290,10 +271,7 @@ const DocumentNeedStep = ({
                 {q.note && internalStep === stepNumber && (
                   <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-100 flex gap-3 text-slate-600 text-xs shadow-sm">
                     <AlertCircle className="w-4 h-4 text-slate-400 shrink-0" />
-                    <p
-                      className="font-urdu-body"
-                      dangerouslySetInnerHTML={{ __html: q.note }}
-                    />
+                    <p className="font-urdu-body" dangerouslySetInnerHTML={{ __html: q.note }} />
                   </div>
                 )}
               </div>
@@ -317,9 +295,7 @@ const DocumentNeedStep = ({
             {(() => {
               const currentQ = questions[internalStep - 1];
               const isAnswered =
-                typeof selected === "object" &&
-                selected !== null &&
-                !!selected[currentQ.id];
+                typeof selected === "object" && selected !== null && !!selected[currentQ.id];
 
               return (
                 <button
@@ -337,8 +313,7 @@ const DocumentNeedStep = ({
                       : "bg-gray-200 text-gray-400 cursor-not-allowed"
                   }`}
                 >
-                  {t("wizard.common.continue")}{" "}
-                  <ArrowRight className="w-4 h-4" />
+                  {t("wizard.common.continue")} <ArrowRight className="w-4 h-4" />
                 </button>
               );
             })()}
@@ -353,20 +328,20 @@ const DocumentNeedStep = ({
     <div>
       <h2
         className="text-[1.75rem] font-extrabold text-[hsl(220_20%_10%)]
-                     mb-2 font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif] font-urdu-body"
+                     mb-1 font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif] font-urdu-body"
       >
         {title}
       </h2>
 
       <p
         className="text-[0.95rem] text-[hsl(215_16%_47%)]
-                    mb-8 leading-normal font-urdu-body"
+                    mb-5 leading-normal font-urdu-body"
       >
         {description}
       </p>
 
       <div
-        className={`grid gap-5 ${
+        className={`grid gap-4 ${
           options.length === 4
             ? "grid-cols-1 sm:grid-cols-2 max-w-3xl mx-auto"
             : options.length % 3 === 0
@@ -378,10 +353,10 @@ const DocumentNeedStep = ({
           const Icon = ICONS[option.icon || option.id] || FileText;
           const styles = GRADIENT_STYLES[option.color] || GRADIENT_STYLES.green;
           const isSelected = selected === option.id;
+          const isThreeCols = options.length % 3 === 0;
 
           const activeBorder = "border-[hsl(168_80%_30%)]";
-          const activeBg =
-            "bg-[linear-gradient(135deg,hsl(168_60%_95%),hsl(168_50%_90%))]";
+          const activeBg = "bg-[linear-gradient(135deg,hsl(168_60%_95%),hsl(168_50%_90%))]";
           const activeShadow = "shadow-[0_0_0_3px_hsl(168_80%_30%/0.15)]";
 
           return (
@@ -397,7 +372,7 @@ const DocumentNeedStep = ({
               whileTap={{ scale: 0.97 }}
               onClick={() => onSelect(option.id)}
               className={`
-                p-7 rounded-2xl text-left flex flex-col gap-4
+                p-5 ${isThreeCols ? "md:p-4" : ""} rounded-2xl text-left flex flex-col gap-2
                 border-2 transition-all duration-200
                 ${
                   isSelected
@@ -406,40 +381,36 @@ const DocumentNeedStep = ({
                 }
               `}
             >
-              {/* Icon Box */}
-              <div
-                className={`w-14 h-14 rounded-[14px] flex items-center justify-center
-                  ${isSelected ? "bg-[hsl(168_60%_88%)]" : styles.iconBg}`}
-              >
-                <Icon
-                  className={`w-6.5 h-6.5
-                    ${
-                      isSelected
-                        ? "text-[hsl(168_80%_25%)]"
-                        : "text-[hsl(220_20%_30%)]"
-                    }`}
-                />
-              </div>
-
-              {/* Text */}
-              <div>
+              {/* Icon and Title Row */}
+              <div className={`flex items-center ${isThreeCols ? "gap-3 md:gap-2" : "gap-3"}`}>
+                <div
+                  className={`rounded-[10px] flex items-center justify-center flex-shrink-0
+                    ${isThreeCols ? "w-10 h-10 md:w-8 md:h-8" : "w-10 h-10"}
+                    ${isSelected ? "bg-[hsl(168_60%_88%)]" : styles.iconBg}`}
+                >
+                  <Icon
+                    className={`
+                      ${isThreeCols ? "w-5 h-5 md:w-4 md:h-4" : "w-5 h-5"}
+                      ${isSelected ? "text-[hsl(168_80%_25%)]" : "text-[hsl(220_20%_30%)]"}`}
+                  />
+                </div>
                 <h3
-                  className="text-[1.05rem] font-bold
-                                text-[hsl(220_20%_10%)]
-                                mb-1
-                                font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif] font-urdu-body"
+                  className={`font-bold text-[hsl(220_20%_10%)]
+                              font-['Plus_Jakarta_Sans','Inter',system-ui,sans-serif] font-urdu-body
+                              ${isThreeCols ? "text-[0.95rem] md:text-sm" : "text-[0.95rem]"}`}
                 >
                   {option.title}
                 </h3>
-
-                <p
-                  className="text-[0.85rem]
-                               text-[hsl(215_16%_50%)]
-                               leading-[1.4] font-urdu-body"
-                >
-                  {option.description}
-                </p>
               </div>
+
+              {/* Description */}
+              <p
+                className="text-[0.8rem]
+                             text-[hsl(215_16%_50%)]
+                             leading-[1.3] font-urdu-body"
+              >
+                {option.description}
+              </p>
             </motion.button>
           );
         })}

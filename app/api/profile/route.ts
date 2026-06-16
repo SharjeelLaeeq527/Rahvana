@@ -1,32 +1,56 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { encrypt, decrypt } from "@/lib/encryption";
+import { E, msg } from '@/lib/errors'
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SENSITIVE FIELDS — these are encrypted before DB write and decrypted on read
 // Top-level string fields inside profile_details JSONB that are sensitive.
 // ─────────────────────────────────────────────────────────────────────────────
 const SENSITIVE_TOP_LEVEL = [
-  "ssn",             // US Social Security Number ← most critical
-  "cnic",            // Pakistani National ID
+  "ssn", // US Social Security Number ← most critical
+  "cnic", // Pakistani National ID
   "passportNumber",
   "passportIssueDate",
+  "passportBookNumber",
   "passportExpiry",
   "passportCountry",
-  "alienNumber",     // A-Number
+  "alienNumber", // A-Number
   "uscisAccountNumber",
   "annualIncome",
   "phone",
+  "caseNumber",
+  "nvcInvoice",
+  "surname",
 ] as const;
 
 // Nested objects where every leaf-string should be encrypted
 // Format: { parentKey: ["subKey1", "subKey2"] }
 const SENSITIVE_NESTED: Record<string, string[]> = {
-  currentAddress:   ["street", "city", "state", "zipCode", "country"],
-  mailingAddress:   ["street", "city", "state", "zipCode", "country"],
-  father:           ["dateOfBirth"],
-  mother:           ["dateOfBirth"],
-  sponsor:          ["phone", "email"],
+  currentAddress: ["street", "city", "state", "zipCode", "country"],
+  mailingAddress: ["street", "city", "state", "zipCode", "country"],
+  father: ["dateOfBirth"],
+  mother: ["dateOfBirth"],
+  sponsor: [
+    "phone",
+    "email",
+    "passportNumber",
+    "passportIssueDate",
+    "passportBookNumber",
+    "passportExpiry",
+    "passportCountry",
+    "ssn",
+    "alienNumber",
+    "uscisAccountNumber",
+  ],
+  beneficiary: [
+    "passportNumber",
+    "passportIssueDate",
+    "passportBookNumber",
+    "passportExpiry",
+    "passportCountry",
+    "cnic",
+  ],
   naturalizationInfo: ["certificateNumber", "placeOfIssuance", "dateOfIssuance"],
 };
 
@@ -117,7 +141,8 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error('[Profile API] unauthorized:', userError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { data: profile, error: profileError } = await supabase
@@ -128,7 +153,7 @@ export async function GET() {
 
     if (profileError) {
       console.error("[Profile API] Error fetching profile:", profileError);
-      return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.PROFILE_FETCH_FAILED) }, { status: 500 });
     }
 
     if (!profile) {
@@ -138,14 +163,14 @@ export async function GET() {
     // ── Decrypt flat columns ──────────────────────────────────────────────────
     const decryptedProfile = {
       ...profile,
-      ssn:             decryptFlatColumn(profile.ssn),
-      cnic:            decryptFlatColumn(profile.cnic),
+      ssn: decryptFlatColumn(profile.ssn),
+      cnic: decryptFlatColumn(profile.cnic),
       passport_number: decryptFlatColumn(profile.passport_number),
-      phone_number:    decryptFlatColumn(profile.phone_number),
-      father_name:     decryptFlatColumn(profile.father_name),
-      mother_name:     decryptFlatColumn(profile.mother_name),
-      spouse_name:     decryptFlatColumn(profile.spouse_name),
-      annual_income:   decryptFlatColumn(profile.annual_income),
+      phone_number: decryptFlatColumn(profile.phone_number),
+      father_name: decryptFlatColumn(profile.father_name),
+      mother_name: decryptFlatColumn(profile.mother_name),
+      spouse_name: decryptFlatColumn(profile.spouse_name),
+      annual_income: decryptFlatColumn(profile.annual_income),
       physical_address: profile.physical_address
         ? decryptFlatColumn(JSON.stringify(profile.physical_address))
         : null,
@@ -158,13 +183,10 @@ export async function GET() {
       );
     }
 
-    return NextResponse.json({
-      profile: decryptedProfile,
-      profileCompleted: profile.profile_completed || false,
-    });
+    return NextResponse.json({ profile: decryptedProfile, profileCompleted: profile.profile_completed || false });
   } catch (error) {
     console.error("[Profile API] Unexpected error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.PROFILE_FETCH_FAILED) }, { status: 500 });
   }
 }
 
@@ -182,7 +204,8 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error('[Profile API] POST unauthorized:', userError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const body = await request.json();
@@ -190,45 +213,45 @@ export async function POST(request: Request) {
     // ── Encrypt sensitive flat columns before writing to DB ───────────────────
     const profileData = {
       id: user.id,
-      full_legal_name:     body.fullLegalName,         // name is low-sensitivity
-      date_of_birth:       body.dateOfBirth,
-      place_of_birth:      body.placeOfBirth,
-      nationality:         body.nationality,
-      phone_number:        encryptFlatColumn(body.phoneNumber),
-      cnic:                encryptFlatColumn(body.cnic),
-      passport_number:     encryptFlatColumn(body.passportNumber),
-      passport_expiry:     body.passportExpiry,
-      physical_address:    body.physicalAddress,
-      contact_info:        body.contactInfo,
-      father_name:         encryptFlatColumn(body.fatherName),
-      father_dob:          body.fatherDOB,
-      mother_name:         encryptFlatColumn(body.motherName),
-      mother_dob:          body.motherDOB,
-      spouse_name:         encryptFlatColumn(body.spouseName),
-      spouse_dob:          body.spouseDOB,
-      siblings_count:      body.siblingsCount  ? parseInt(body.siblingsCount)  : null,
-      children_count:      body.childrenCount  ? parseInt(body.childrenCount)  : null,
-      visa_status:         body.visaStatus,
-      petitioner_name:     body.petitionerName,
-      case_number:         body.caseNumber,
-      travel_history:      body.travelHistory,
-      education_level:     body.educationLevel,
-      schools_attended:    body.schoolsAttended,
-      current_employer:    body.currentEmployer,
-      employer_address:    body.employerAddress,
-      position:            body.position,
-      start_date:          body.startDate,
-      previous_employers:  body.previousEmployers,
-      employment_gaps:     body.employmentGaps,
-      annual_income:       encryptFlatColumn(body.annualIncome?.toString()),
-      ssn:                 encryptFlatColumn(body.ssn),
-      sponsor_details:     body.sponsorDetails,
-      bank_statement:      body.bankStatement,
-      residence_history:   body.residenceHistory,
-      countries_visited:   body.countriesVisited,
-      long_term_stays:     body.longTermStays,
-      profile_completed:   true,
-      completed_at:        new Date().toISOString(),
+      full_legal_name: body.fullLegalName, // name is low-sensitivity
+      date_of_birth: body.dateOfBirth,
+      place_of_birth: body.placeOfBirth,
+      nationality: body.nationality,
+      phone_number: encryptFlatColumn(body.phoneNumber),
+      cnic: encryptFlatColumn(body.cnic),
+      passport_number: encryptFlatColumn(body.passportNumber),
+      passport_expiry: body.passportExpiry,
+      physical_address: body.physicalAddress,
+      contact_info: body.contactInfo,
+      father_name: encryptFlatColumn(body.fatherName),
+      father_dob: body.fatherDOB,
+      mother_name: encryptFlatColumn(body.motherName),
+      mother_dob: body.motherDOB,
+      spouse_name: encryptFlatColumn(body.spouseName),
+      spouse_dob: body.spouseDOB,
+      siblings_count: body.siblingsCount ? parseInt(body.siblingsCount) : null,
+      children_count: body.childrenCount ? parseInt(body.childrenCount) : null,
+      visa_status: body.visaStatus,
+      petitioner_name: body.petitionerName,
+      case_number: body.caseNumber,
+      travel_history: body.travelHistory,
+      education_level: body.educationLevel,
+      schools_attended: body.schoolsAttended,
+      current_employer: body.currentEmployer,
+      employer_address: body.employerAddress,
+      position: body.position,
+      start_date: body.startDate,
+      previous_employers: body.previousEmployers,
+      employment_gaps: body.employmentGaps,
+      annual_income: encryptFlatColumn(body.annualIncome?.toString()),
+      ssn: encryptFlatColumn(body.ssn),
+      sponsor_details: body.sponsorDetails,
+      bank_statement: body.bankStatement,
+      residence_history: body.residenceHistory,
+      countries_visited: body.countriesVisited,
+      long_term_stays: body.longTermStays,
+      profile_completed: true,
+      completed_at: new Date().toISOString(),
     };
 
     // Check if profile exists
@@ -247,16 +270,12 @@ export async function POST(request: Request) {
         .select()
         .single();
     } else {
-      result = await supabase
-        .from("user_profiles")
-        .insert([profileData])
-        .select()
-        .single();
+      result = await supabase.from("user_profiles").insert([profileData]).select().single();
     }
 
     if (result.error) {
       console.error("Error saving profile:", result.error);
-      return NextResponse.json({ error: "Failed to save profile" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.PROFILE_SAVE_FAILED) }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -265,6 +284,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Unexpected error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.PROFILE_SAVE_FAILED) }, { status: 500 });
   }
 }

@@ -8,6 +8,8 @@ interface Profile {
 
 import { useState, useEffect, Suspense, FormEvent } from "react";
 import { useAuth } from "@/app/context/AuthContext";
+import { msg, E } from "@/lib/errors";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,14 +25,8 @@ function LoginContent() {
   const [success, setSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
-  const {
-    user,
-    signIn,
-    signInWithGoogle,
-    isLoading,
-    mfaPending,
-    verifyMFALogin,
-  } = useAuth();
+  const { user, signIn, signInWithGoogle, isLoading, mfaPending, verifyMFALogin } = useAuth();
+  const { t } = useLanguage();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [mfaRequired, setMfaRequired] = useState(false);
@@ -60,15 +56,15 @@ function LoginContent() {
     const confirmedParam = searchParams.get("confirmed");
 
     if (errorParam === "auth_callback_error") {
-      setError("Authentication failed. Please try again.");
+      setError(msg(E.AUTH_LOGIN_FAILED));
     } else if (errorParam === "invalid_link") {
-      setError("Invalid or expired confirmation link.");
+      setError(msg(E.AUTH_RESET_LINK_INVALID));
     } else if (errorParam === "link_expired") {
-      setError("This confirmation link has expired. Please sign up again.");
+      setError(msg(E.AUTH_RESET_LINK_INVALID));
     } else if (errorParam === "user_not_found") {
-      setError("Account not found. Please sign up first.");
+      setError(msg(E.AUTH_ACCOUNT_NOT_FOUND));
     } else if (errorParam === "server_error") {
-      setError("Server error. Please try again later.");
+      setError(msg(E.AUTH_LOGIN_SERVER_ERROR));
     }
 
     if (confirmedParam === "true") {
@@ -76,12 +72,9 @@ function LoginContent() {
     }
   }, [searchParams]);
 
-  const redirectParam =
-    searchParams.get("redirect") || searchParams.get("redirectTo");
+  const redirectParam = searchParams.get("redirect") || searchParams.get("redirectTo");
   const redirect =
-    redirectParam &&
-    redirectParam.startsWith("/") &&
-    !redirectParam.startsWith("//")
+    redirectParam && redirectParam.startsWith("/") && !redirectParam.startsWith("//")
       ? redirectParam
       : null;
 
@@ -104,7 +97,7 @@ function LoginContent() {
         if (session?.user) {
           fetchProfile(session.user.id);
         }
-      },
+      }
     );
     return () => listener.subscription.unsubscribe();
   }, []);
@@ -142,10 +135,16 @@ function LoginContent() {
         challengeId: cId,
       } = await signIn(email, password);
       if (signInError) {
-        if (signInError.message.includes("Invalid login credentials")) {
-          setError("Invalid email or password. Please check and try again.");
-        } else if (signInError.message.includes("Email not confirmed")) {
-          setError("Please verify your email before signing in.");
+        const code = String((signInError as { code?: string }).code || "");
+
+        if (code === "AUTH_EMAIL_NOT_CONFIRMED") {
+          setError(msg(E.AUTH_EMAIL_NOT_CONFIRMED));
+        } else if (code === "AUTH_LOGIN_SERVER_ERROR") {
+          setError(msg(E.AUTH_LOGIN_SERVER_ERROR));
+        } else if (code === "AUTH_LOGIN_FAILED") {
+          setError(msg(E.AUTH_LOGIN_FAILED));
+        } else {
+          setError(signInError.message || msg(E.AUTH_LOGIN_SERVER_ERROR));
         }
         setIsSubmitting(false);
         return;
@@ -162,11 +161,7 @@ function LoginContent() {
         setSuccess("Please enter your authentication code");
         setIsSubmitting(false);
         // Add ?mfa=true to URL so refresh doesn't cause redirect
-        window.history.replaceState(
-          null,
-          "",
-          `${window.location.pathname}?mfa=true`,
-        );
+        window.history.replaceState(null, "", `${window.location.pathname}?mfa=true`);
         return;
       }
 
@@ -177,7 +172,7 @@ function LoginContent() {
         window.location.assign("/");
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(msg(E.AUTH_LOGIN_SERVER_ERROR));
       setIsSubmitting(false);
     }
   };
@@ -188,11 +183,7 @@ function LoginContent() {
     setIsSubmitting(true);
 
     try {
-      const { success, error: mfaError } = await verifyMFALogin(
-        factorId,
-        challengeId,
-        mfaCode,
-      );
+      const { success, error: mfaError } = await verifyMFALogin(factorId, challengeId, mfaCode);
 
       if (success) {
         // Clear MFA data
@@ -208,11 +199,11 @@ function LoginContent() {
           window.location.assign("/");
         }
       } else {
-        setError(mfaError || "Invalid authentication code");
+        setError(mfaError || msg(E.AUTH_MFA_CODE_INVALID));
         setIsSubmitting(false);
       }
     } catch {
-      setError("Failed to verify authentication code");
+      setError(msg(E.AUTH_MFA_VERIFY_FAILED));
       setIsSubmitting(false);
     }
   };
@@ -223,11 +214,11 @@ function LoginContent() {
     try {
       const { error: googleError } = await signInWithGoogle(redirect);
       if (googleError) {
-        setError("Failed to sign in with Google. Please try again.");
+        setError(msg(E.AUTH_GOOGLE_SIGNIN_FAILED));
         setIsSubmitting(false);
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(msg(E.AUTH_GOOGLE_SIGNIN_FAILED));
       setIsSubmitting(false);
     }
   };
@@ -261,9 +252,7 @@ function LoginContent() {
             </svg>
           </div>
           <h1 className="text-3xl font-bold text-foreground">Welcome Back</h1>
-          <p className="text-muted-foreground mt-2">
-            Sign in to continue to Rahvana
-          </p>
+          <p className="text-muted-foreground mt-2">Sign in to continue to Rahvana</p>
         </div>
 
         {/* Google Sign In Button */}
@@ -299,9 +288,7 @@ function LoginContent() {
             <div className="w-full border-t border-border"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-muted/20 text-muted-foreground">
-              or sign in with email
-            </span>
+            <span className="px-4 bg-muted/20 text-muted-foreground">or sign in with email</span>
           </div>
         </div>
 
@@ -359,9 +346,7 @@ function LoginContent() {
           ) : (
             <form onSubmit={handleSubmit} className="space-y-5">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">
-                  Email Address
-                </label>
+                <label className="block text-sm font-medium text-foreground">Email Address</label>
                 <Input
                   type="email"
                   value={email}
@@ -375,9 +360,7 @@ function LoginContent() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="block text-sm font-medium text-foreground">
-                    Password
-                  </label>
+                  <label className="block text-sm font-medium text-foreground">Password</label>
                   <Link
                     href="/forgot-password"
                     className="text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -494,10 +477,7 @@ function LoginContent() {
         {/* Sign Up Link */}
         <p className="text-center text-sm text-muted-foreground">
           Don&apos;t have an account?{" "}
-          <Link
-            href="/signup"
-            className="font-semibold text-primary hover:underline"
-          >
+          <Link href="/signup" className="font-semibold text-primary hover:underline">
             Create account
           </Link>
         </p>

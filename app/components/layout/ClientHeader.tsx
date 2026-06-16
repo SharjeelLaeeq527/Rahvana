@@ -6,7 +6,6 @@ import { SiteHeader } from "./SiteHeader";
 import { useRouter, usePathname } from "next/navigation";
 import { Loader } from "@/components/ui/spinner";
 
-
 export function ClientHeader() {
   const { user, profile, signOut } = useAuth();
   const router = useRouter();
@@ -61,12 +60,7 @@ export function ClientHeader() {
 
       {/* Sign-out loading overlay — only shown during actual sign-out */}
       {isSigningOut && (
-        <Loader 
-          fullScreen 
-          size="lg" 
-          text="Signing Out..." 
-          subText="Please wait a moment" 
-        />
+        <Loader fullScreen size="lg" text="Signing Out..." subText="Please wait a moment" />
       )}
     </>
   );

@@ -426,9 +426,7 @@
           "Double check your submitted witness records before verifying.",
           "Ensure your photos meet the specific dimension and background color requirements."
         ],
-        "pitfalls": [
-          "Don't submit blurry document scans; they will be rejected."
-        ],
+        "pitfalls": ["Don't submit blurry document scans; they will be rejected."],
         "links": [
           {
             "label": "Sindh Police",

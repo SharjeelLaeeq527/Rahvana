@@ -1,25 +1,14 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  DocumentDefinition,
-  DocumentWizardStep,
-} from "@/lib/document-vault/types";
+import { DocumentDefinition, DocumentWizardStep } from "@/lib/document-vault/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import {
-  ProgressTree,
-  TreeStep,
-} from "@/app/components/progress-tree/ProgressTree";
+import { ProgressTree, TreeStep } from "@/app/components/progress-tree/ProgressTree";
 import {
   ChevronRight,
   ChevronLeft,
@@ -40,30 +29,19 @@ interface DocumentWizardProps {
   documentDef: DocumentDefinition;
 }
 
-export function DocumentWizard({
-  open,
-  onClose,
-  documentDef,
-}: DocumentWizardProps) {
+export function DocumentWizard({ open, onClose, documentDef }: DocumentWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const { t } = useLanguage();
 
   const completedSteps = useDocumentVaultStore((state) => state.completedSteps);
-  const toggleStepCompletion = useDocumentVaultStore(
-    (state) => state.toggleStepCompletion,
-  );
-  const resetDocumentProgress = useDocumentVaultStore(
-    (state) => state.resetDocumentProgress,
-  );
-  const uploadedDocuments = useDocumentVaultStore(
-    (state) => state.uploadedDocuments,
-  );
+  const toggleStepCompletion = useDocumentVaultStore((state) => state.toggleStepCompletion);
+  const resetDocumentProgress = useDocumentVaultStore((state) => state.resetDocumentProgress);
+  const uploadedDocuments = useDocumentVaultStore((state) => state.uploadedDocuments);
 
   const wizardSteps = useMemo(() => {
-    const translatedSteps = t(
-      `documentVaultPage.documents.${documentDef.id}.wizardSteps`,
-      { returnObjects: true },
-    );
+    const translatedSteps = t(`documentVaultPage.documents.${documentDef.id}.wizardSteps`, {
+      returnObjects: true,
+    });
     if (
       Array.isArray(translatedSteps) &&
       translatedSteps.length > 0 &&
@@ -77,34 +55,28 @@ export function DocumentWizard({
   const isDocumentUploaded = useMemo(
     () =>
       uploadedDocuments.some(
-        (doc) =>
-          doc.documentDefId === documentDef.id && doc.status === "UPLOADED",
+        (doc) => doc.documentDefId === documentDef.id && doc.status === "UPLOADED"
       ),
-    [uploadedDocuments, documentDef.id],
+    [uploadedDocuments, documentDef.id]
   );
 
   // Get completed step IDs for this document
   const docCompletedSteps = useMemo(
     () => completedSteps[documentDef.id] || [],
-    [completedSteps, documentDef.id],
+    [completedSteps, documentDef.id]
   );
 
   // Convert wizard steps to tree steps with completion status
   const treeSteps = useMemo((): TreeStep[] => {
     return wizardSteps.map((step, index) => {
       const stepId = `step-${index}`;
-      const isCompleted =
-        docCompletedSteps.includes(stepId) || isDocumentUploaded;
+      const isCompleted = docCompletedSteps.includes(stepId) || isDocumentUploaded;
 
       return {
         id: stepId,
         title: step.title,
         description: step.description,
-        status: isCompleted
-          ? "completed"
-          : index === currentStep
-            ? "in-progress"
-            : "pending",
+        status: isCompleted ? "completed" : index === currentStep ? "in-progress" : "pending",
         onClick: () => {
           if (!isDocumentUploaded) {
             toggleStepCompletion(documentDef.id, stepId);
@@ -198,11 +170,7 @@ export function DocumentWizard({
                   variant="ghost"
                   size="sm"
                   onClick={() => {
-                    if (
-                      confirm(
-                        t("documentVaultPage.components.wizard.resetConfirm"),
-                      )
-                    ) {
+                    if (confirm(t("documentVaultPage.components.wizard.resetConfirm"))) {
                       resetDocumentProgress(documentDef.id);
                     }
                   }}
@@ -290,9 +258,7 @@ export function DocumentWizard({
                     <ul className="space-y-1 text-sm text-blue-800 dark:text-blue-200">
                       {(step.tips || []).map((tip: string, index: number) => (
                         <li key={index} className="flex items-start gap-2">
-                          <span className="text-blue-600 dark:text-blue-400 mt-0.5">
-                            •
-                          </span>
+                          <span className="text-blue-600 dark:text-blue-400 mt-0.5">•</span>
                           <span>{tip}</span>
                         </li>
                       ))}
@@ -311,10 +277,8 @@ export function DocumentWizard({
                 <div className="space-y-2">
                   {(step.resources || []).map(
                     (
-                      resource: NonNullable<
-                        DocumentWizardStep["resources"]
-                      >[number],
-                      index: number,
+                      resource: NonNullable<DocumentWizardStep["resources"]>[number],
+                      index: number
                     ) => (
                       <a
                         key={index}
@@ -324,12 +288,10 @@ export function DocumentWizard({
                         className="flex items-center gap-2 p-3 border rounded-lg hover:border-brand hover:bg-brand/5 transition-colors"
                       >
                         {getResourceIcon(resource.type)}
-                        <span className="flex-1 font-medium">
-                          {resource.name}
-                        </span>
+                        <span className="flex-1 font-medium">{resource.name}</span>
                         <ExternalLink className="w-4 h-4 text-muted-foreground" />
                       </a>
-                    ),
+                    )
                   )}
                 </div>
               </div>
@@ -351,11 +313,7 @@ export function DocumentWizard({
 
           {currentStep < wizardSteps.length - 1 ? (
             <Button
-              onClick={() =>
-                setCurrentStep(
-                  Math.min(wizardSteps.length - 1, currentStep + 1),
-                )
-              }
+              onClick={() => setCurrentStep(Math.min(wizardSteps.length - 1, currentStep + 1))}
               className="flex-1"
             >
               {t("documentVaultPage.components.wizard.next")}

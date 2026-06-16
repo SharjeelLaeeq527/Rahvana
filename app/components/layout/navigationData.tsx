@@ -15,7 +15,7 @@ import {
   Syringe,
   MessageSquare,
   FileUp,
-  Brain,
+  // Brain, // unused — Case Strength Analyzer commented out
   LifeBuoy,
   Compass,
   Calculator,
@@ -327,8 +327,7 @@ export const NAV_DATA: Record<string, NavSection> = {
               {
                 icon: <Globe className="h-5 w-5" />,
                 title: "H-2B",
-                description:
-                  "Seasonal Non-Agriculture (eligibility list applies)",
+                description: "Seasonal Non-Agriculture (eligibility list applies)",
                 href: "#",
                 // badge: "Soon",
                 disabled: true,
@@ -532,49 +531,38 @@ export const NAV_DATA: Record<string, NavSection> = {
   tools: {
     id: "tools",
     label: "Toolbox",
-    footerLink: { label: "View all tools", href: "/tools" },
+    footerLink: { label: "View all tools", href: "/resources?tab=toolbox" },
     tabs: [
       {
         id: "ai-planning",
         label: "AI & Planning",
         items: [
+          // Temporarily hidden — Case Strength Analyzer (Executive-only feature).
+          // {
+          //   icon: <Brain className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
+          //   title: "Case Strength Analyzer",
+          //   description: "Instant AI case strength score + gaps to fix before NVC/Interview.",
+          //   href: "/visa-case-strength-checker",
+          //   // badge: "Live",
+          // },
           {
-            icon: (
-              <Brain className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-            ),
-            title: "Case Strength Analyzer",
-            description:
-              "Instant AI case strength score + gaps to fix before NVC/Interview.",
-            href: "/visa-case-strength-checker",
-            // badge: "Live",
-          },
-          {
-            icon: (
-              <LifeBuoy className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-            ),
+            icon: <LifeBuoy className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
             title: "221(g) Action Planner",
-            description:
-              "Step-by-step next moves after 221(g) or Administrative Processing.",
+            description: "Step-by-step next moves after 221(g) or Administrative Processing.",
             href: "/221g-action-planner",
             // badge: "Live",
           },
           {
-            icon: (
-              <Compass className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-            ),
+            icon: <Compass className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
             title: "Visa Path Finder",
-            description:
-              "Quick quiz that points you to the right visa path + next steps.",
+            description: "Quick quiz that points you to the right visa path + next steps.",
             href: "/visa-eligibility",
             // badge: "Live",
           },
           {
-            icon: (
-              <MessageSquare className="h-5 w-5 text-violet-600 dark:text-violet-400" />
-            ),
+            icon: <MessageSquare className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
             title: "Interview Prep",
-            description:
-              "Prepare smarter and deliver confident answers when it matters most.",
+            description: "Prepare smarter and deliver confident answers when it matters most.",
             href: "/interview-prep",
             // badge: "Live",
           },
@@ -585,12 +573,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Money & Sponsorship",
         items: [
           {
-            icon: (
-              <Calculator className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-            ),
+            icon: <Calculator className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
             title: "Sponsorship Calculator",
-            description:
-              "Auto-check income/assets and tell you what you still need.",
+            description: "Auto-check income/assets and tell you what you still need.",
             href: "/affidavit-support-calculator",
           },
         ],
@@ -600,25 +585,22 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Tracking",
         items: [
           {
-            icon: (
-              <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-            ),
+            icon: <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />,
             title: "DQ Status Check",
-            description:
-              "Track interview scheduling movement and trends by category.",
+            description: "Track interview scheduling movement and trends by category.",
             href: "/iv-tool",
           },
-          {
-            icon: (
-              <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-            ),
-            title: "Visa Bulletin Monitor",
-            description:
-              "Check your priority date progress against the Visa Bulletin.",
-            href: "/visa-checker",
-            // badge: "Live",
-            disabled: false,
-          },
+          // {
+          //   icon: (
+          //     <Calendar className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+          //   ),
+          //   title: "Visa Bulletin Monitor",
+          //   description:
+          //     "Check your priority date progress against the Visa Bulletin.",
+          //   href: "/visa-checker",
+          //   // badge: "Live",
+          //   disabled: false,
+          // },
         ],
       },
       {
@@ -626,28 +608,21 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Docs & PDFs",
         items: [
           {
-            icon: (
-              <Camera className="h-5 w-5 text-rose-600 dark:text-rose-400" />
-            ),
+            icon: <Camera className="h-5 w-5 text-rose-600 dark:text-rose-400" />,
             title: "Photo Booth",
             description: "Make a compliant passport/visa photo in minutes.",
             href: "/passport",
             // badge: "Live"
           },
           {
-            icon: (
-              <Files className="h-5 w-5 text-rose-600 dark:text-rose-400" />
-            ),
+            icon: <Files className="h-5 w-5 text-rose-600 dark:text-rose-400" />,
             title: "PDF Tool Kit",
-            description:
-              "Merge • compress • convert • edit — all in one toolkit.",
+            description: "Merge • compress • convert • edit — all in one toolkit.",
             href: "/pdf-processing",
             // badge: "Live",
           },
           {
-            icon: (
-              <PenTool className="h-5 w-5 text-rose-600 dark:text-rose-400" />
-            ),
+            icon: <PenTool className="h-5 w-5 text-rose-600 dark:text-rose-400" />,
             title: "Snap & Sign",
             description: "Create a clean digital signature for your forms.",
             href: "/signature-image-processing",
@@ -659,12 +634,9 @@ export const NAV_DATA: Record<string, NavSection> = {
         label: "Forms & Automation",
         items: [
           {
-            icon: (
-              <Wand2 className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />
-            ),
+            icon: <Wand2 className="h-5 w-5 text-cyan-600 dark:text-cyan-400" />,
             title: "Smart Form Filler",
-            description:
-              "Auto-fills your official form and generates a ready-to-upload PDF.",
+            description: "Auto-fills your official form and generates a ready-to-upload PDF.",
             href: "/visa-forms",
           },
         ],
@@ -689,7 +661,7 @@ export const NAV_DATA: Record<string, NavSection> = {
   guides: {
     id: "guides",
     label: "Guides",
-    footerLink: { label: "Browse all guides", href: "/guides" },
+    footerLink: { label: "Browse all guides", href: "/resources?tab=guides" },
     tabs: [
       {
         id: "pakistan-docs",
@@ -714,59 +686,44 @@ export const NAV_DATA: Record<string, NavSection> = {
           //   href: "/guides/police-certificate",
           // },
           {
-            icon: (
-              <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
-            ),
+            icon: <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />,
             title: "Passport",
             description: "DGIP MRP/ePassport application and renewal workflow.",
             href: "/guides/passport-guide",
             // badge: "Live",
           },
           {
-            icon: (
-              <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
-            ),
+            icon: <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />,
             title: "CNIC",
-            description:
-              "NADRA CNIC issuance, correction, and renewal workflow.",
+            description: "NADRA CNIC issuance, correction, and renewal workflow.",
             href: "/guides/cnic-guide",
             // badge: "Live",
           },
           {
-            icon: (
-              <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />
-            ),
+            icon: <FileText className="h-5 w-5 text-green-600 dark:text-green-400" />,
             title: "Birth Certificate",
             description: "Union Council and CBRC birth certificate process.",
             href: "/guides/birth-certificate-guide",
           },
           {
-            icon: (
-              <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />
-            ),
+            icon: <Globe className="h-5 w-5 text-green-600 dark:text-green-400" />,
             title: "FRC",
             description: "FRC application and family record guide.",
             href: "/guides/frc-guide",
             // badge: "Live",
           },
           {
-            icon: (
-              <Heart className="h-5 w-5 text-green-600 dark:text-green-400" />
-            ),
+            icon: <Heart className="h-5 w-5 text-green-600 dark:text-green-400" />,
             title: "Marriage Registration",
-            description:
-              "Union Council Nikah registration and NADRA MRC issuance.",
+            description: "Union Council Nikah registration and NADRA MRC issuance.",
             href: "/guides/nikah-nama-guide",
             // badge: "Live",
           },
           // police certificate
           {
-            icon: (
-              <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />
-            ),
+            icon: <Shield className="h-5 w-5 text-green-600 dark:text-green-400" />,
             title: "Police Character Certificate",
-            description:
-              "Province-wise PCC verification workflow and requirements.",
+            description: "Province-wise PCC verification workflow and requirements.",
             href: "/guides/police-verification-guide",
             // badge: "Live",
           },
@@ -846,12 +803,9 @@ export const NAV_DATA: Record<string, NavSection> = {
           //   disabled: true,
           // },
           {
-            icon: (
-              <Syringe className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-            ),
+            icon: <Syringe className="h-5 w-5 text-teal-600 dark:text-teal-400" />,
             title: "Polio Vaccination",
-            description:
-              "Polio vaccination and NIMS travel certificate workflow.",
+            description: "Polio vaccination and NIMS travel certificate workflow.",
             href: "/guides/polio-vaccination-guide",
           },
         ],
@@ -921,7 +875,7 @@ export const NAV_DATA: Record<string, NavSection> = {
   services: {
     id: "services",
     label: "Services",
-    footerLink: { label: "Explore all services", href: "/services" },
+    footerLink: { label: "Explore all services", href: "/resources?tab=services" },
     tabs: [
       {
         id: "expert-help",
@@ -929,38 +883,26 @@ export const NAV_DATA: Record<string, NavSection> = {
         translationKey: "expertHelp",
         items: [
           {
-            icon: (
-              <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-            ),
-            title: "Book a Consultation",
+            icon: <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />,
+            title: "Expert Consultation",
             translationKey: "bookConsultation",
             description: "Book a call with an expert.",
             href: "/book-consultation",
             disabled: false,
           },
+          // {
+          //   icon: (
+          //     <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+          //   ),
+          //   title: "Expert Case Review",
+          //   translationKey: "expertCaseReview",
+          //   description:
+          //     "Human review of your documents + a tailored improvement plan.",
+          //   href: "#",
+          //   disabled: true,
+          // },
           {
-            icon: (
-              <Users className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
-            ),
-            title: "Expert Case Review",
-            translationKey: "expertCaseReview",
-            description:
-              "Human review of your documents + a tailored improvement plan.",
-            href: "#",
-            disabled: true,
-            // badge: "Soon",
-          },
-        ],
-      },
-      {
-        id: "pakistan-docs-services",
-        label: "Pakistan Docs",
-        translationKey: "pakistanDocsSevices",
-        items: [
-          {
-            icon: (
-              <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-            ),
+            icon: <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
             title: "PCC Filing Service — Sindh",
             translationKey: "pccSindh",
             description: "Done-for-you police certificate filing for Sindh.",
@@ -969,42 +911,34 @@ export const NAV_DATA: Record<string, NavSection> = {
             // href: "/guides/police-verification-guide",
             // badge: "Soon",
           },
-          {
-            icon: (
-              <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-            ),
-            title: "PCC Filing Service — Punjab (Coming Soon)",
-            translationKey: "pccPunjab",
-            description:
-              "Join the waitlist for done-for-you PCC filing in Punjab.",
-            href: "#",
-            // badge: "Soon",
-            disabled: true,
-          },
-          {
-            icon: (
-              <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-            ),
-            title: "PCC Filing Service — KPK (Coming Soon)",
-            translationKey: "pccKpk",
-            description:
-              "Join the waitlist for done-for-you PCC filing in KPK.",
-            href: "#",
-            // badge: "Soon",
-            disabled: true,
-          },
-          {
-            icon: (
-              <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
-            ),
-            title: "PCC Filing Service — Balochistan (Coming Soon)",
-            translationKey: "pccBalochistan",
-            description:
-              "Join the waitlist for done-for-you PCC filing in Balochistan.",
-            href: "#",
-            // badge: "Soon",
-            disabled: true,
-          },
+          // Temporarily hidden — these PCC services are not currently offered (waitlist/coming-soon only).
+          // {
+          //   icon: <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
+          //   title: "PCC Filing Service — Punjab (Coming Soon)",
+          //   translationKey: "pccPunjab",
+          //   description: "Join the waitlist for done-for-you PCC filing in Punjab.",
+          //   href: "#",
+          //   // badge: "Soon",
+          //   disabled: true,
+          // },
+          // {
+          //   icon: <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
+          //   title: "PCC Filing Service — KPK (Coming Soon)",
+          //   translationKey: "pccKpk",
+          //   description: "Join the waitlist for done-for-you PCC filing in KPK.",
+          //   href: "#",
+          //   // badge: "Soon",
+          //   disabled: true,
+          // },
+          // {
+          //   icon: <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
+          //   title: "PCC Filing Service — Balochistan (Coming Soon)",
+          //   translationKey: "pccBalochistan",
+          //   description: "Join the waitlist for done-for-you PCC filing in Balochistan.",
+          //   href: "#",
+          //   // badge: "Soon",
+          //   disabled: true,
+          // },
         ],
       },
       {
@@ -1013,9 +947,7 @@ export const NAV_DATA: Record<string, NavSection> = {
         translationKey: "medical",
         items: [
           {
-            icon: (
-              <Heart className="h-5 w-5 text-rose-600 dark:text-rose-400" />
-            ),
+            icon: <Heart className="h-5 w-5 text-rose-600 dark:text-rose-400" />,
             title: "Book Medical Appointment",
             translationKey: "bookMedical",
             description: "Book your panel physician medical exam appointment.",
@@ -1031,13 +963,10 @@ export const NAV_DATA: Record<string, NavSection> = {
         translationKey: "documents",
         items: [
           {
-            icon: (
-              <FileUp className="h-5 w-5 text-amber-600 dark:text-amber-400" />
-            ),
+            icon: <FileUp className="h-5 w-5 text-amber-600 dark:text-amber-400" />,
             title: "Urdu → English Translation",
             translationKey: "urduEnglish",
-            description:
-              "Request certified translation + formatting for submission.",
+            description: "Request certified translation + formatting for submission.",
             href: "/document-translation",
             disabled: false,
           },

@@ -1,25 +1,23 @@
 /**
  * Interview Preparation API
- * 
+ *
  * Handles creation and retrieval of interview prep sessions.
  * Now supports dynamic category selection.
  */
 
 import { NextResponse, NextRequest } from "next/server";
-import {
-  createInterviewSession,
-  getInterviewSession,
-} from "@/lib/interview-prep/service";
+import { createInterviewSession, getInterviewSession } from "@/lib/interview-prep/service";
 import { categoryLoader } from "@/lib/interview-prep/category-loader";
+import { E, msg } from "@/lib/errors";
 
 /**
  * POST /api/interview-prep
  * Create a new interview preparation session
- * 
+ *
  * Body:
  * - category_slug: string (e.g., 'ir-1-spouse')
- * - user_email: string (optional)
- * - user_name: string (optional)
+ * - user_email: string
+ * - user_name: string
  */
 export async function POST(request: NextRequest) {
   try {
@@ -29,8 +27,8 @@ export async function POST(request: NextRequest) {
     // Validate required fields
     if (!category_slug) {
       return NextResponse.json(
-        { error: "Category slug is required" },
-        { status: 400 },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[category_slug]" }) },
+        { status: 400 }
       );
     }
 
@@ -41,36 +39,40 @@ export async function POST(request: NextRequest) {
     if (!category) {
       return NextResponse.json(
         { error: `Invalid or inactive category slug: ${category_slug}` },
-        { status: 400 },
+        { status: 400 }
       );
     }
 
     // Create session
-    const session = await createInterviewSession({
+    const result = await createInterviewSession({
       category_slug,
       user_email: user_email,
       user_name: user_name,
     });
 
     return NextResponse.json(
-      { success: true, session },
-      { status: 201 },
+      {
+        success: true,
+        alreadyExists: result.alreadyExists,
+        session: result.session,
+        source: result.source || "tool",
+      },
+      {
+        status: result.alreadyExists ? 200 : 201,
+      }
     );
   } catch (error) {
     console.error("Error creating interview session:", error);
-    return NextResponse.json(
-      { error: "Failed to create interview session" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: msg(E.TOOL_INTERVIEW_SESSION_FAILED) }, { status: 500 });
   }
 }
 
 /**
  * GET /api/interview-prep?sessionId={id}
  * Retrieve an existing interview session
- * 
+ *
  * OR
- * 
+ *
  * GET /api/interview-prep?category_slug={slug}
  * Retrieve category questionnaire data
  */
@@ -83,7 +85,7 @@ export async function GET(request: NextRequest) {
   if (category_slug) {
     try {
       const categoryData = await categoryLoader.loadCategory(category_slug);
-      
+
       return NextResponse.json({
         success: true,
         questionnaire: categoryData.questionnaire,
@@ -91,18 +93,15 @@ export async function GET(request: NextRequest) {
       });
     } catch (error) {
       console.error("Error loading category data:", error);
-      return NextResponse.json(
-        { error: "Category not found or failed to load" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: "Category not found or failed to load" }, { status: 404 });
     }
   }
 
   // If sessionId provided, return session data
   if (!sessionId) {
     return NextResponse.json(
-      { error: "Session ID or category_slug is required" },
-      { status: 400 },
+      { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[sessionId]" }) },
+      { status: 400 }
     );
   }
 
@@ -110,18 +109,12 @@ export async function GET(request: NextRequest) {
     const session = await getInterviewSession(sessionId);
 
     if (!session) {
-      return NextResponse.json(
-        { error: "Session not found" },
-        { status: 404 },
-      );
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     return NextResponse.json({ success: true, session });
   } catch (error) {
     console.error("Error fetching interview session:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch interview session" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Failed to fetch interview session" }, { status: 500 });
   }
 }

@@ -34,9 +34,7 @@ const PortalCard: React.FC<PortalCardProps> = ({
       </div>
 
       {/* Title & description */}
-      <h3 className="text-[18px] font-bold text-[#0a1128] mb-1.5 text-center">
-        {title}
-      </h3>
+      <h3 className="text-[18px] font-bold text-[#0a1128] mb-1.5 text-center">{title}</h3>
       <p className="text-[13px] text-[#67737e] text-center leading-relaxed mb-5 min-h-10">
         {description}
       </p>
@@ -57,9 +55,7 @@ const PortalCard: React.FC<PortalCardProps> = ({
       {hasCredentials && (
         <div className="mb-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          <span className="text-[11px] font-semibold text-emerald-700">
-            Credentials Stored
-          </span>
+          <span className="text-[11px] font-semibold text-emerald-700">Credentials Stored</span>
         </div>
       )}
 

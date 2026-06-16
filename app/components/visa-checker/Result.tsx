@@ -42,15 +42,15 @@ export default function Result({ data }: { data: VisaData }) {
   const hasWaitEstimate = waitEstimate && waitEstimate.formatted;
 
   return (
-    <div className="bg-white p-8 rounded-xl shadow-xl max-w-2xl xl:max-w-4xl mx-auto font-sans">
+    <div className="bg-white p-8 rounded-xl shadow-xl max-w-2xl xl:max-w-4xl mx-auto font-sans mt-12">
       {/* Header */}
       <div
         className={`p-4 rounded-t-xl text-white font-bold text-xl ${
           status === "current"
-            ? "bg-green-600"
+            ? "bg-teal-600"
             : status === "waiting"
-              ? "bg-blue-600"
-              : "bg-orange-600"
+              ? "bg-teal-700"
+              : "bg-teal-800"
         }`}
       >
         {status === "current" && t("visaChecker.result.statusCurrent")}
@@ -61,25 +61,19 @@ export default function Result({ data }: { data: VisaData }) {
       <div className="p-6 space-y-6">
         {/* Your Information */}
         <div>
-          <h3 className="font-bold text-gray-800 mb-2">
-            {t("visaChecker.result.yourInfo")}
-          </h3>
+          <h3 className="font-bold text-gray-800 mb-2">{t("visaChecker.result.yourInfo")}</h3>
           <ul className="space-y-1 text-gray-700">
             <li>
-              • <strong>{t("visaChecker.result.infoCategory")}:</strong>{" "}
-              {categoryFull}
+              • <strong>{t("visaChecker.result.infoCategory")}:</strong> {categoryFull}
             </li>
             <li>
-              • <strong>{t("visaChecker.result.infoPriDate")}:</strong>{" "}
-              {priorityDate}
+              • <strong>{t("visaChecker.result.infoPriDate")}:</strong> {priorityDate}
             </li>
             <li>
-              • <strong>{t("visaChecker.result.infoCountry")}:</strong>{" "}
-              {country}
+              • <strong>{t("visaChecker.result.infoCountry")}:</strong> {country}
             </li>
             <li>
-              • <strong>{t("visaChecker.result.infoAppType")}:</strong>{" "}
-              {applicationType}
+              • <strong>{t("visaChecker.result.infoAppType")}:</strong> {applicationType}
             </li>
           </ul>
         </div>
@@ -101,8 +95,8 @@ export default function Result({ data }: { data: VisaData }) {
 
         {/* Waiting Status */}
         {status === "waiting" && daysBehind > 0 && (
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <p className="text-gray-800">
+          <div className="bg-teal-50 p-4 rounded-lg border border-teal-100">
+            <p className="text-teal-900">
               {t("visaChecker.result.waitingDesc", {
                 date: priorityDate,
                 cutoff: cutoffDate,
@@ -110,10 +104,8 @@ export default function Result({ data }: { data: VisaData }) {
             </p>
             <p className="mt-2 font-bold text-lg">
               {t("visaChecker.result.youAre")}{" "}
-              <span className="text-blue-700">
-                {hasWaitEstimate
-                  ? waitEstimate.formatted
-                  : `${daysBehind} days`}
+              <span className="text-teal-700">
+                {hasWaitEstimate ? waitEstimate.formatted : `${daysBehind} days`}
               </span>{" "}
               {t("visaChecker.result.behindCutoff")}
             </p>
@@ -138,12 +130,10 @@ export default function Result({ data }: { data: VisaData }) {
                     <strong>{waitEstimate.avg_movement} days</strong>
                   </li>
                   <li>
-                    • {t("visaChecker.result.estTime")}{" "}
-                    <strong>~{waitEstimate.years} years</strong>
+                    • {t("visaChecker.result.estTime")} <strong>~{waitEstimate.years} years</strong>
                   </li>
                   <li>
-                    • {t("visaChecker.result.approxYear")}{" "}
-                    <strong>2039-2040</strong>
+                    • {t("visaChecker.result.approxYear")} <strong>2039-2040</strong>
                   </li>
                 </ul>
               </div>
@@ -159,19 +149,15 @@ export default function Result({ data }: { data: VisaData }) {
 
         {/* Current Status */}
         {status === "current" && (
-          <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-            <p className="font-bold text-green-800">
-              {t("visaChecker.result.greatNews")}
-            </p>
+          <div className="bg-teal-50 p-4 rounded-lg border border-teal-200">
+            <p className="font-bold text-teal-800">{t("visaChecker.result.greatNews")}</p>
             <p>{t("visaChecker.result.fileNow")}</p>
           </div>
         )}
 
         {/* Action Items */}
         <div>
-          <h3 className="font-bold text-gray-800 mb-2">
-            {t("visaChecker.result.whatToDo")}
-          </h3>
+          <h3 className="font-bold text-gray-800 mb-2">{t("visaChecker.result.whatToDo")}</h3>
           <ul className="space-y-1 text-gray-700">
             {(["1", "2", "3", "4"] as const).map((key) => (
               <li key={key}>{t(`visaChecker.result.actions.${key}`)}</li>
@@ -180,7 +166,7 @@ export default function Result({ data }: { data: VisaData }) {
         </div>
 
         {/* Email Updates */}
-        <div className="bg-indigo-50 p-4 rounded-lg">
+        {/* <div className="bg-indigo-50 p-4 rounded-lg">
           <p className="font-bold text-indigo-800">
             {t("visaChecker.result.wantUpdates")}
           </p>
@@ -193,7 +179,7 @@ export default function Result({ data }: { data: VisaData }) {
           <button className="mt-2 w-full bg-indigo-600 text-white py-2 rounded font-bold">
             {t("visaChecker.result.subscribe")}
           </button>
-        </div>
+        </div> */}
       </div>
     </div>
   );

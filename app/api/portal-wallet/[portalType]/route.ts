@@ -1,10 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from "@/lib/errors";
 
-export async function GET(
-  req: Request,
-  context: { params: Promise<{ portalType: string }> },
-) {
+export async function GET(req: Request, context: { params: Promise<{ portalType: string }> }) {
   try {
     const supabase = await createClient();
 
@@ -13,7 +11,8 @@ export async function GET(
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("portal-wallet [portalType] GET unauthorized");
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { data, error } = await supabase
@@ -29,17 +28,15 @@ export async function GET(
           id,
           question
         )
-      `,
+      `
       )
       .eq("user_id", user.id)
       .eq("portal_type", (await context.params).portalType)
       .single();
 
     if (error) {
-      return NextResponse.json(
-        { error: "Credential not found" },
-        { status: 404 },
-      );
+      console.error("portal-wallet credential not found:", error);
+      return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 404 });
     }
 
     const response = {
@@ -58,9 +55,6 @@ export async function GET(
     return NextResponse.json(response);
   } catch (error) {
     console.error("Error fetching portal:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
   }
 }

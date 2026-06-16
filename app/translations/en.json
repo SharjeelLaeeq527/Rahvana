@@ -191,7 +191,7 @@
             },
             "s5": {
               "title": "5. Security Questions",
-              "desc": "Select three distinct security questions from the dropdowns and provide answers. You MUST remember these for future logins. We are providing facility to remember your security questions.",
+              "desc": "Select three distinct security questions from the dropdown menus and provide your answers. You MUST remember these for future logins. Rahvana provides a feature to help you securely save your security questions. After closing this guide (top-left 'X'), you will find the 'Save Courier Credentials' option located to the right of the Guide card.",
               "link": "Go to Security Questions tab"
             },
             "s6": {
@@ -208,9 +208,7 @@
               "username": "Username:",
               "usernameDesc": "Your pre-filled username will appear here otherwise fill your username.",
               "q1": "Security Question 1:",
-              "q1Desc": "Answer to the security question 1. If you do not remember your security questions then go to",
-              "q1Link": "Security Questions tab",
-              "q1End": "and view your security questions.",
+              "q1Desc": "Answer to the security question 1.",
               "q2": "Security Question 2:",
               "q2Desc": "Answer to the security question 2.",
               "continue": "Click on Continue button to proceed."
@@ -597,7 +595,7 @@
   "documentVaultPage": {
     "page": {
       "title": "Document Vault",
-      "subtitle": "Compliance-Ready Repository",
+      "subtitle": "Organize and manage your documents",
       "case": "Case",
       "guide": "Guide",
       "actions": "Actions",
@@ -609,16 +607,16 @@
       "itemsReady": "Items Ready",
       "criticalMissing": "Critical Missing",
       "alertsExpiring": "Alerts/Expiring",
-      "bankGradeEncryption": "Bank-Grade Encryption Active",
+      "bankGradeEncryption": "Fully Secure & Private",
       "nvcTipTitle": "NVC/USCIS Tip",
-      "nvcTipDesc": "Always use the original color scans. Documents over 4MB will be auto-compressed by Rahvana's NVC engine.",
+      "nvcTipDesc": "Always use the original color scans. Documents over 4MB will be auto-compressed.",
       "actionRequired": "Action Required",
       "alerts": "Alerts",
       "fixNow": "Fix Now",
-      "allMasterChecklist": "All Master Checklist",
+      "allMasterChecklist": "All Documents",
       "more": "More",
       "searchPlaceholder": "Search documents...",
-      "comprehensiveMasterChecklist": "Comprehensive Master Checklist",
+      "comprehensiveMasterChecklist": "Your Documents",
       "searchPrefix": "Search: ",
       "foundPrefix": "Found",
       "matchingDocuments": "matching documents",
@@ -703,52 +701,27 @@
         "categories": {
           "civil": {
             "title": "Civil Documents",
-            "items": [
-              "Birth Certificates",
-              "Nikah Nama",
-              "Passports",
-              "CNIC"
-            ]
+            "items": ["Birth Certificates", "Nikah Nama", "Passports", "CNIC"]
           },
           "financial": {
             "title": "Financial Support",
-            "items": [
-              "Form I-864",
-              "Tax Transcripts",
-              "Employment Letters",
-              "Pay Stubs"
-            ]
+            "items": ["Form I-864", "Tax Transcripts", "Employment Letters", "Pay Stubs"]
           },
           "relationship": {
             "title": "Relationship Evidence",
-            "items": [
-              "Wedding Photos",
-              "Joint Accounts",
-              "Chat Logs",
-              "Family Pictures"
-            ]
+            "items": ["Wedding Photos", "Joint Accounts", "Chat Logs", "Family Pictures"]
           },
           "police": {
             "title": "Police & Court",
-            "items": [
-              "Police Certificates",
-              "Court Records",
-              "Military Records"
-            ]
+            "items": ["Police Certificates", "Court Records", "Military Records"]
           },
           "medical": {
             "title": "Medical & Health",
-            "items": [
-              "Medical Exam (DS-2019)",
-              "Vaccination Records"
-            ]
+            "items": ["Medical Exam (DS-2019)", "Vaccination Records"]
           },
           "photos": {
             "title": "Visa Photos",
-            "items": [
-              "2x2 Inch Validated Photos",
-              "Digital Copies"
-            ]
+            "items": ["2x2 Inch Validated Photos", "Digital Copies"]
           }
         }
       },
@@ -860,7 +833,7 @@
         "fileTypeError": "Only PDF, JPG, PNG, and GIF files are allowed",
         "uploading": "Uploading document...",
         "uploadFailed": "Upload failed",
-        "uploadSuccess": "✅ Document uploaded successfully!",
+        "uploadSuccess": "Document uploaded successfully!",
         "titlePrefix": "Upload Document: ",
         "close": "Close",
         "selectFile": "Select File",
@@ -883,7 +856,8 @@
         "warning": "⚠️ Warning: Set Case Information in left panel for proper USCIS naming!",
         "cancel": "Cancel",
         "uploadBtnLoading": "Uploading...",
-        "uploadBtn": "Upload Document"
+        "uploadBtn": "Upload Document",
+        "securityNotice": "Your documents are encrypted and securely stored."
       },
       "wizard": {
         "noGuide": "No step-by-step guide available for this document yet.",
@@ -1063,7 +1037,7 @@
       "LEGAL": "Legal Documents",
       "HEALTH_INSURANCE": "Health Insurance",
       "SOCIAL_MEDIA": "Social Media",
-      "ADDRESS_PROOF": "Address Proof",
+      "ADDRESS_PROOF": "Proof of Address",
       "OTHER": "Other Documents"
     },
     "visaCategories": {
@@ -1143,8 +1117,8 @@
             "title": "Locate Original Nikah Nama",
             "description": "Find your original Nikah Nama document issued at the time of marriage.",
             "tips": [
-              "Must be signed by Nikah Registrar",
-              "Should have serial number and registration details"
+              "Must be signed and stamped by the Nikah Registrar",
+              "Should include registration details such as the registrar's information, registration record information, and any official registration/serial reference numbers if issued"
             ]
           },
           "step2": {
@@ -1199,7 +1173,7 @@
         "wizardSteps": {
           "step1": {
             "title": "Obtain Divorce Certificate",
-            "description": "Get certified copy of divorce decree from Family Court or Union Council.",
+            "description": "Get a certified copy of the divorce or khula decree from Family Court, or a divorce certificate issued by the Union Council.",
             "tips": [
               "Court-issued decrees must be certified copies",
               "Union Council certificates should have registration number"
@@ -1338,14 +1312,14 @@
         "wizardSteps": {
           "step1": {
             "title": "Schedule Medical Exam",
-            "description": "Book appointment with panel physician approved by U.S. Embassy Islamabad.",
+            "description": "Schedule a medical exam with a U.S. Embassy-approved panel physician in Pakistan.",
             "tips": [
               "Schedule only after receiving interview date",
-              "Bring passport, photos, and vaccination records",
-              "Exam includes physical, blood tests, and X-ray"
+              "Bring your passport, interview letter, photos, vaccination records, and any relevant medical records",
+              "Exam may include medical history review, physical examination, blood tests, TB screening, and chest X-ray depending on age and requirements"
             ],
-            "estimatedTime": "3-4 hours for exam",
-            "cost": "Approximately PKR 20,000-30,000"
+            "estimatedTime": "Several hours; may take longer if additional tests are needed",
+            "cost": "Varies by clinic and required vaccinations/tests; confirm current fees with the approved panel physician"
           },
           "step2": {
             "title": "Collect Medical Report",
@@ -1430,10 +1404,7 @@
           "step1": {
             "title": "Obtain Matric Certificate",
             "description": "Get your original Matriculation certificate from respective board.",
-            "tips": [
-              "Must be original or certified copy",
-              "Get English translation if in Urdu"
-            ]
+            "tips": ["Must be original", "Get English translation if in Urdu"]
           }
         }
       },
@@ -1524,10 +1495,7 @@
           "step1": {
             "title": "Get EOBI Certificate",
             "description": "Obtain EOBI certificate if you have EOBI registration.",
-            "tips": [
-              "Shows employment history in Pakistan",
-              "Useful for proving work experience"
-            ]
+            "tips": ["Shows employment history in Pakistan", "Useful for proving work experience"]
           }
         }
       },
@@ -1546,11 +1514,7 @@
           "step1": {
             "title": "Collect Old Passports",
             "description": "Gather all previous passports showing travel history.",
-            "tips": [
-              "Scan biographical pages",
-              "Scan all visa stamps",
-              "Scan entry/exit stamps"
-            ]
+            "tips": ["Scan biographical pages", "Scan all visa stamps", "Scan entry/exit stamps"]
           }
         }
       },
@@ -1655,10 +1619,7 @@
           "step1": {
             "title": "Get FBR Tax Returns",
             "description": "Download your tax returns from FBR portal.",
-            "tips": [
-              "Last 3 years recommended",
-              "NTN certificate also helpful"
-            ]
+            "tips": ["Last 3 years recommended", "NTN certificate also helpful"]
           }
         }
       },
@@ -2604,11 +2565,7 @@
     "heroTitle1": "Your Immigration Journey, ",
     "heroTitle2": "Simplified",
     "heroDescription": "Navigate the complexities of immigration with confidence. Rahvana provides step-by-step guidance, smart tools, and expert support to help you reunite with loved ones.",
-    "heroFeatures": [
-      "Secure Vault",
-      "AI Insights",
-      "Step-by-Step Guidance"
-    ],
+    "heroFeatures": ["Secure Vault", "AI Insights", "Step-by-Step Guidance"],
     "resumeJourney": "Resume My Journey",
     "exploreJourneys": "Explore Journeys",
     "journeysBadge": "Find Your Path",
@@ -3062,6 +3019,10 @@
       "form-forge": {
         "title": "Smart Form Filler",
         "desc": "Auto-fills your official form and generates a ready-to-upload PDF."
+      },
+      "uscis-case-status": {
+        "title": "USCIS Case Status",
+        "desc": "Real-time USCIS case status lookup via the official Torch API. Enter your receipt number for an instant update."
       },
       "doc-vault": {
         "title": "Document Vault",
@@ -4302,12 +4263,12 @@
       "validation": {
         "title": "Certificate Validation",
         "description": "Ensure your certificate meets international standards and immigration requirements.",
-        "uploadSection": {
+        "upload_section": {
           "title": "Review your Document",
           "description": "Upload a scan of your CBRC for automated field verification.",
           "formats": "PDF, JPG, PNG"
         },
-        "checklistTitle": "Field Verification",
+        "checklist_title": "Field Verification",
         "categories": [
           {
             "name": "Mandatory Fields",
@@ -4389,9 +4350,7 @@
             "Cross-check CBRC with Passport application details.",
             "Attestation by MOFA is usually required for international use."
           ],
-          "pitfalls": [
-            "Manual handwritten certificates are NOT accepted for visas."
-          ]
+          "pitfalls": ["Manual handwritten certificates are NOT accepted for visas."]
         }
       }
     }

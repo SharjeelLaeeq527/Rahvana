@@ -18,12 +18,6 @@ import {
   CopyIcon,
   FileText,
   Mail,
-  ShieldCheck,
-  Sparkles,
-  CheckCircle2,
-  FolderCheck,
-  ClipboardCheck,
-  X,
   ListChecks,
   Info,
   MapPin,
@@ -31,14 +25,16 @@ import {
   Search,
   FileDown,
 } from "lucide-react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 // import { Checkbox } from "@/components/ui/checkbox";
 import Actual221GFormChecker from "./Actual221GFormChecker";
+import { NarrativeModal } from "./NarrativeModal";
 import { FormData, FormSelections } from "../types/221g";
 import { classifySituation } from "../utils/classifier";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useAuth } from "@/app/context/AuthContext";
 import { save221gCase } from "@/lib/supabase/twentyTwoOneG";
+import { useToast } from "@/app/components/shared/ToastProvider";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 interface CombinedIntakeFormProps {
   onSubmit: (data: FormData, selectedItems: FormSelections) => void;
@@ -313,19 +309,19 @@ const VISA_TYPES = [
 ];
 
 const VISA_CATEGORIES = [
-  { value: "IR-1", label: "IR-1 (Immediate Relative â€“ Spouse)" },
-  { value: "IR-2", label: "IR-2 (Immediate Relative â€“ Child)" },
-  { value: "IR-5", label: "IR-5 (Immediate Relative â€“ Parent)" },
-  { value: "CR-1", label: "CR-1 (Conditional Resident â€“ Spouse)" },
-  { value: "F-1", label: "F-1 (Family 1st Preference)" },
-  { value: "F-2A", label: "F-2A (Family 2nd Preference)" },
-  { value: "F-3", label: "F-3 (Family 3rd Preference)" },
-  { value: "F-4", label: "F-4 (Family 4th Preference)" },
-  { value: "K-1", label: "K-1 (FiancÃ©(e))" },
-  { value: "K-3", label: "K-3 (Spouse of U.S. Citizen)" },
-  { value: "B-1/B-2", label: "B-1/B-2 (Tourist/Business)" },
-  { value: "F-1-student", label: "F-1 (Student)" },
-  { value: "other", label: "Other (specify below)" },
+  { value: "IR-1", label: "IR-1 (Immediate Relative Spouse)" },
+  // { value: "IR-2", label: "IR-2 (Immediate Relative â€“ Child)" },
+  // { value: "IR-5", label: "IR-5 (Immediate Relative â€“ Parent)" },
+  // { value: "CR-1", label: "CR-1 (Conditional Resident â€“ Spouse)" },
+  // { value: "F-1", label: "F-1 (Family 1st Preference)" },
+  // { value: "F-2A", label: "F-2A (Family 2nd Preference)" },
+  // { value: "F-3", label: "F-3 (Family 3rd Preference)" },
+  // { value: "F-4", label: "F-4 (Family 4th Preference)" },
+  // { value: "K-1", label: "K-1 (FiancÃ©(e))" },
+  // { value: "K-3", label: "K-3 (Spouse of U.S. Citizen)" },
+  // { value: "B-1/B-2", label: "B-1/B-2 (Tourist/Business)" },
+  // { value: "F-1-student", label: "F-1 (Student)" },
+  // { value: "other", label: "Other (specify below)" },
 ];
 
 const CEAC_STATUSES = [
@@ -359,34 +355,29 @@ export default function CombinedIntakeForm({
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>(initialData ?? EMPTY_FORM);
   const [selected221gItems, setSelected221gItems] = useState<FormSelections>(
-    initialSelections ?? {},
+    initialSelections ?? {}
   );
 
   const [outputs, setOutputs] = useState<{
     actionPlan: string;
     checklist: string;
-    coverLetter: string;
+    // coverLetter: string;
   } | null>(null);
 
   const [isSaving, setIsSaving] = useState(false);
-  const [saveStatus, setSaveStatus] = useState<
-    "idle" | "saving" | "saved" | "error"
-  >("idle");
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [showWelcome, setShowWelcome] = useState(false);
   const [showResetModal, setShowResetModal] = useState(false);
   const [dobError, setDobError] = useState<string | null>(null);
-  const [openWhatIs, setOpenWhatIs] = useState(false);
-  const [openFlow, setOpenFlow] = useState(false);
-  const [openNeed, setOpenNeed] = useState(false);
+  const [caseNumberError, setCaseNumberError] = useState<string | null>(null);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   // Embassy combobox state
-  const [embassySearchText, setEmbassySearchText] = useState(
-    formData.consularPost ?? "",
-  );
+  const [embassySearchText, setEmbassySearchText] = useState(formData.consularPost ?? "");
   const [showEmbassySuggestions, setShowEmbassySuggestions] = useState(false);
   const embassyRef = useRef<HTMLDivElement>(null);
 
   const { user } = useAuth();
+  const { showToast } = useToast();
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -439,10 +430,7 @@ export default function CombinedIntakeForm({
   // Close embassy dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
-      if (
-        embassyRef.current &&
-        !embassyRef.current.contains(e.target as Node)
-      ) {
+      if (embassyRef.current && !embassyRef.current.contains(e.target as Node)) {
         setShowEmbassySuggestions(false);
       }
     };
@@ -458,7 +446,7 @@ export default function CombinedIntakeForm({
   const filteredEmbassies = EMBASSY_OPTIONS.filter(
     (e) =>
       e.label.toLowerCase().includes(embassySearchText.toLowerCase()) ||
-      e.country.toLowerCase().includes(embassySearchText.toLowerCase()),
+      e.country.toLowerCase().includes(embassySearchText.toLowerCase())
   );
 
   const handleStartWizard = () => {
@@ -468,11 +456,11 @@ export default function CombinedIntakeForm({
     setShowWelcome(false);
   };
 
-  const handleWelcomeOpenChange = (open: boolean) => {
-    if (!open && dontShowAgain && typeof window !== "undefined") {
+  const handleCloseWelcome = () => {
+    if (dontShowAgain && typeof window !== "undefined") {
       localStorage.setItem("hide221gWelcome", "true");
     }
-    setShowWelcome(open);
+    setShowWelcome(false);
   };
 
   const handleField = (field: keyof FormData, value: string) => {
@@ -486,12 +474,12 @@ export default function CombinedIntakeForm({
     // Generate outputs based on the logic from the reference JS
     const actionPlan = generateActionPlan();
     const packetChecklist = generatePacketChecklist();
-    const coverLetter = generateCoverLetter();
+    // const coverLetter = generateCoverLetter();
 
     setOutputs({
       actionPlan,
       checklist: packetChecklist,
-      coverLetter,
+      // coverLetter,
     });
 
     setCurrentStep(4);
@@ -528,6 +516,18 @@ export default function CombinedIntakeForm({
     handleField("dateOfBirth", value);
     setDobError(validateDob(value));
   };
+
+  const validateCaseNumber = (value: string): string | null => {
+    if (!value) return null;
+    if (!/^[A-Z]{3}[0-9]{10}$/i.test(value)) {
+      return "Must be exactly 3 letters followed by 10 digits (e.g. ISL2024123456 or IOE0923456789).";
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    setCaseNumberError(formData.caseNumber ? validateCaseNumber(formData.caseNumber) : null);
+  }, [formData.caseNumber]);
 
   const resetWizard = () => {
     setFormData(EMPTY_FORM);
@@ -586,11 +586,7 @@ export default function CombinedIntakeForm({
     plan += `For: ${cb.beneficiaryName || "Beneficiary"}\n`;
     plan += `Case: ${cb.caseNumber || "Not provided"}\n\n`;
 
-    if (
-      smartModeEnabled &&
-      smartClassification &&
-      smartClassification.length > 0
-    ) {
+    if (smartModeEnabled && smartClassification && smartClassification.length > 0) {
       plan += `\n## SMART INSIGHT SUMMARY\n\n`;
       smartClassification.forEach((classification) => {
         plan += `### Scenario: ${classification.description}\n\n`;
@@ -620,20 +616,14 @@ export default function CombinedIntakeForm({
       !cl.dna_test &&
       !cl.other &&
       cl.admin_processing;
-    const isAdminProcessingStatus = cb.ceacStatus
-      ?.toLowerCase()
-      .includes("administrative");
+    const isAdminProcessingStatus = cb.ceacStatus?.toLowerCase().includes("administrative");
 
     if (isAdminOnly || isAdminProcessingStatus) {
       plan += `Your case is currently under Administrative Processing following the visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost}. Under INA Section 221(g), additional review is being conducted before a final decision can be made. No additional documents have been specifically requested at this time â€” you are advised to monitor your CEAC status and wait for further instructions from the embassy.\n\n`;
     } else {
       plan += `Your visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost} resulted in a temporary hold under INA Section 221(g). The consular officer requires the documents listed below before a final decision can be made. This is NOT a permanent denial.\n\n`;
 
-      if (
-        smartModeEnabled &&
-        smartClassification &&
-        smartClassification.length > 0
-      ) {
+      if (smartModeEnabled && smartClassification && smartClassification.length > 0) {
         plan += `**Specific Situations Identified:**\n`;
         smartClassification.forEach((cls) => {
           plan += `- ${cls.description}\n`;
@@ -642,34 +632,22 @@ export default function CombinedIntakeForm({
       }
     }
 
-    const docItemCount = Object.entries(cl).filter(
-      ([, v]) => typeof v === "boolean" && v,
-    ).length;
+    const docItemCount = Object.entries(cl).filter(([, v]) => typeof v === "boolean" && v).length;
     if (docItemCount > 0) {
-      if (
-        !smartModeEnabled ||
-        (smartClassification && smartClassification.length === 0)
-      ) {
+      if (!smartModeEnabled || (smartClassification && smartClassification.length === 0)) {
         plan += `Based on your checklist, the following items have been identified:\n`;
       }
-      if (cl.i864_affidavit)
-        plan += `- Financial sponsorship documents (I-864 package)\n`;
+      if (cl.i864_affidavit) plan += `- Financial sponsorship documents (I-864 package)\n`;
       if (cl.passport) plan += `- Your passport for visa placement\n`;
       if (cl.medical_examination) plan += `- Completed medical examination\n`;
-      if (
-        cl.nadra_family_reg ||
-        cl.nadra_birth_cert ||
-        cl.nadra_marriage_cert ||
-        cl.nikah_nama
-      ) {
+      if (cl.nadra_family_reg || cl.nadra_birth_cert || cl.nadra_marriage_cert || cl.nikah_nama) {
         plan += `- Civil/NADRA registration documents – ${cl.nadra_family_reg_name || cl.nadra_family_reg ? `Family Registration Certificate` : ""} ${cl.nadra_birth_cert ? `, Birth Certificate` : ""} ${cl.nadra_marriage_cert ? `, Marriage Certificate` : ""} ${cl.nikah_nama ? `, Nikkah Nama` : ""}\n`;
       }
       if (cl.police_certificate)
         plan += `- Police certificate – ${cl.police_certificate_country || "[INFORMATION MISSING - please go back and specify country]"}\n`;
       // if (cl.english_translation) plan += `- Certified English translations\n`;
       if (cl.dna_test) plan += `- DNA test\n`;
-      if (cl.admin_processing)
-        plan += `- Administrative processing (no action needed from you)\n`;
+      if (cl.admin_processing) plan += `- Administrative processing (no action needed from you)\n`;
       plan += `\n`;
     }
 
@@ -702,9 +680,7 @@ export default function CombinedIntakeForm({
       plan += `| Police certificate | Beneficiary | ${getMethod("police_certificate")} | ${cl.police_certificate_country || "[INFORMATION MISSING - specify country]"} |\n`;
     if (
       cl.nadra_birth_cert_beneficiary ||
-      (cl.nadra_birth_cert &&
-        !cl.nadra_birth_cert_beneficiary &&
-        !cl.nadra_birth_cert_petitioner)
+      (cl.nadra_birth_cert && !cl.nadra_birth_cert_beneficiary && !cl.nadra_birth_cert_petitioner)
     ) {
       plan += `| NADRA Birth Certificate | Beneficiary | ${getMethod("nadra_birth_cert")} | Original |\n`;
     }
@@ -723,9 +699,7 @@ export default function CombinedIntakeForm({
 
     // Petitioner docs
     if (cl.i864_affidavit || cl.i864_petitioner) {
-      const sponsorName = cl.i864_petitioner_name
-        ? ` (${cl.i864_petitioner_name})`
-        : "";
+      const sponsorName = cl.i864_petitioner_name ? ` (${cl.i864_petitioner_name})` : "";
       plan += `| I-864 Affidavit of Support${sponsorName} | Petitioner | ${getMethod("i864_petitioner")} | Signed and dated |\n`;
       if (cl.irs_transcript)
         plan += `| IRS Tax Transcript | Petitioner | ${getMethod("irs_transcript")} | Year(s): ${cl.i864_tax_years ? cl.i864_tax_years : "Most recent"} |\n`;
@@ -753,9 +727,7 @@ export default function CombinedIntakeForm({
 
     // Joint sponsor
     if (cl.i864_joint_sponsor) {
-      const jsName = cl.i864_joint_sponsor_name
-        ? ` (${cl.i864_joint_sponsor_name})`
-        : "";
+      const jsName = cl.i864_joint_sponsor_name ? ` (${cl.i864_joint_sponsor_name})` : "";
       plan += `| I-864 Affidavit of Support${jsName} | Joint Sponsor | ${getMethod("i864_joint_sponsor")} | Signed and dated |\n`;
       plan += `| Tax and financial evidence | Joint Sponsor | ${getMethod("tax_1040")} | Year(s): ${cl.i864_tax_years ? cl.i864_tax_years : "Most recent"} |\n`;
       plan += `| Proof of U.S. Status/Domicile | Joint Sponsor | ${getMethod("domicile")} | Citizenship/LPR and address proof |\n`;
@@ -875,8 +847,7 @@ export default function CombinedIntakeForm({
       } else {
         plan += `   - **IRS Tax Return Transcript (PREFERRED):** Order at https://www.irs.gov/individuals/get-transcript\n`;
         plan += `     This is the IRS-generated transcript of your tax return, not the return itself.\n`;
-        if (cl.i864_tax_years)
-          plan += `   - Tax year(s) requested: ${cl.i864_tax_years}\n`;
+        if (cl.i864_tax_years) plan += `   - Tax year(s) requested: ${cl.i864_tax_years}\n`;
       }
       if (cl.w2)
         plan += `   - **W-2 Forms:** For all employment income for year(s): ${cl.i864_tax_years || "as requested"}\n`;
@@ -995,7 +966,7 @@ export default function CombinedIntakeForm({
     let checklist = `# PACKET ASSEMBLY CHECKLIST\n\n`;
     checklist += `Assemble your documents in this order:\n\n`;
 
-    checklist += `* Cover Letter (see Cover Letter tab)\n`;
+    // checklist += `* Cover Letter (see Cover Letter tab)\n`;
     checklist += `* Copy of 221(g) Letter (recommended)\n`;
 
     // Beneficiary documents
@@ -1017,11 +988,7 @@ export default function CombinedIntakeForm({
     }
 
     // Petitioner/Sponsor documents
-    if (
-      cl.i864_affidavit ||
-      cl.us_divorce_decree ||
-      cl.nadra_birth_cert_petitioner
-    ) {
+    if (cl.i864_affidavit || cl.us_divorce_decree || cl.nadra_birth_cert_petitioner) {
       checklist += `\n**PETITIONER/SPONSOR DOCUMENTS**\n\n`;
 
       if (cl.i864_affidavit || cl.i864_petitioner) {
@@ -1051,7 +1018,7 @@ export default function CombinedIntakeForm({
     const civilDocs: string[] = [];
     if (cl.nadra_family_reg)
       civilDocs.push(
-        `NADRA Family Registration Certificate${cl.nadra_family_reg_name ? ` – ${cl.nadra_family_reg_name}` : " [INFORMATION MISSING - please go back and specify person]"}`,
+        `NADRA Family Registration Certificate${cl.nadra_family_reg_name ? ` – ${cl.nadra_family_reg_name}` : " [INFORMATION MISSING - please go back and specify person]"}`
       );
     if (cl.nadra_marriage_cert) civilDocs.push("NADRA Marriage Certificate");
     if (cl.nikah_nama) {
@@ -1067,7 +1034,7 @@ export default function CombinedIntakeForm({
     }
     if (cl.death_certificate)
       civilDocs.push(
-        `Death Certificate (${cl.death_certificate_name || "[INFORMATION MISSING - please go back and specify person]"})`,
+        `Death Certificate (${cl.death_certificate_name || "[INFORMATION MISSING - please go back and specify person]"})`
       );
 
     if (civilDocs.length > 0) {
@@ -1096,182 +1063,174 @@ export default function CombinedIntakeForm({
     }
 
     checklist += `\n\n## BEFORE YOU SUBMIT - FINAL CHECKS\n\n`;
-    checklist += `â˜ Cover letter is signed and dated\n`;
-    checklist += `â˜ All documents are in the correct order\n`;
-    checklist += `â˜ Originals are included where required (not photocopies)\n`;
-    checklist += `â˜ All signatures are in blue ink where required\n`;
-    checklist += `â˜ All forms are dated within 6 months\n`;
-    checklist += `â˜ Translations are certified and complete\n`;
-    checklist += `â˜ Names and dates are consistent across all documents\n`;
-    checklist += `â˜ You have kept photocopies of everything\n`;
-    checklist += `â˜ Courier tracking number is recorded\n`;
-    checklist += `â˜ You know how to check CEAC status\n\n`;
+    // checklist += `â˜ Cover letter is signed and dated\n`;
+    checklist += `- All documents are in the correct order\n`;
+    checklist += `- Originals are included where required (not photocopies)\n`;
+    checklist += `- All signatures are in blue ink where required\n`;
+    checklist += `- All forms are dated within 6 months\n`;
+    checklist += `- Translations are certified and complete\n`;
+    checklist += `- Names and dates are consistent across all documents\n`;
+    checklist += `- You have kept photocopies of everything\n`;
+    checklist += `- Courier tracking number is recorded\n`;
+    checklist += `- You know how to check CEAC status\n\n`;
 
     checklist += `**REMEMBER:** Follow your embassy's 221(g) letter instructions if anything differs from this checklist.\n`;
 
     return checklist;
   };
 
-  const generateCoverLetter = () => {
-    const cb = formData;
-    const cl = selected221gItems;
+  // const generateCoverLetter = () => {
+  //   const cb = formData;
+  //   const cl = selected221gItems;
 
-    const today = new Date().toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    });
+  //   const today = new Date().toLocaleDateString("en-US", {
+  //     year: "numeric",
+  //     month: "long",
+  //     day: "numeric",
+  //   });
 
-    const visaUnitType =
-      cb.visaType?.toLowerCase() === "nonimmigrant"
-        ? "Nonimmigrant"
-        : "Immigrant";
-    const visaCategoryFull =
-      VISA_CATEGORIES.find((c) => c.value === cb.visaCategory)?.label ||
-      cb.visaCategory;
+  //   const visaUnitType =
+  //     cb.visaType?.toLowerCase() === "nonimmigrant" ? "Nonimmigrant" : "Immigrant";
+  //   const visaCategoryFull =
+  //     VISA_CATEGORIES.find((c) => c.value === cb.visaCategory)?.label || cb.visaCategory;
 
-    let letter = `${today}\n\n`;
-    letter += `${cb.consularPost}\n`;
-    letter += `${visaUnitType} Visa Unit\n\n`;
-    letter += `**Subject: Response to INA 221(g) Refusal`;
-    if (cb.caseNumber) letter += ` â€“ Case Number: ${cb.caseNumber}`;
-    if (cb.beneficiaryName) letter += ` â€“ ${cb.beneficiaryName}`;
-    letter += `**\n\n`;
+  //   let letter = `${today}\n\n`;
+  //   letter += `${cb.consularPost}\n`;
+  //   letter += `${visaUnitType} Visa Unit\n\n`;
+  //   letter += `**Subject: Response to INA 221(g) Refusal`;
+  //   if (cb.caseNumber) letter += ` â€“ Case Number: ${cb.caseNumber}`;
+  //   if (cb.beneficiaryName) letter += ` â€“ ${cb.beneficiaryName}`;
+  //   letter += `**\n\n`;
 
-    letter += `Dear Consular Officer,\n\n`;
+  //   letter += `Dear Consular Officer,\n\n`;
 
-    letter += `I am writing in response to the Section 221(g) refusal issued following my ${visaUnitType.toLowerCase()} visa interview on ${formatDate(cb.interviewDate)}. `;
-    letter += `I am submitting the requested documents as instructed.\n\n`;
+  //   letter += `I am writing in response to the Section 221(g) refusal issued following my ${visaUnitType.toLowerCase()} visa interview on ${formatDate(cb.interviewDate)}. `;
+  //   letter += `I am submitting the requested documents as instructed.\n\n`;
 
-    letter += `**Applicant Information:**\n`;
-    if (cb.beneficiaryName) letter += `- Full Name: ${cb.beneficiaryName}\n`;
-    if (cb.passportNumber)
-      letter += `- Passport Number: ${cb.passportNumber}\n`;
-    letter += `- Interview Date: ${formatDate(cb.interviewDate)}\n`;
-    if (cb.caseNumber) letter += `- Case Number: ${cb.caseNumber}\n`;
-    letter += `- Visa Category: ${visaCategoryFull}\n`;
-    if (cb.ceacStatus) letter += `- Current CEAC Status: ${cb.ceacStatus}\n`;
-    letter += `\n`;
+  //   letter += `**Applicant Information:**\n`;
+  //   if (cb.beneficiaryName) letter += `- Full Name: ${cb.beneficiaryName}\n`;
+  //   if (cb.passportNumber) letter += `- Passport Number: ${cb.passportNumber}\n`;
+  //   letter += `- Interview Date: ${formatDate(cb.interviewDate)}\n`;
+  //   if (cb.caseNumber) letter += `- Case Number: ${cb.caseNumber}\n`;
+  //   letter += `- Visa Category: ${visaCategoryFull}\n`;
+  //   if (cb.ceacStatus) letter += `- Current CEAC Status: ${cb.ceacStatus}\n`;
+  //   letter += `\n`;
 
-    if (smartModeEnabled && cl.i864_affidavit && cl.i864_sponsor_structure) {
-      letter += `**Financial Sponsorship Structure:**\n`;
-      letter += `- Structure: ${cl.i864_sponsor_structure.replace(/-/g, " ")}\n`;
-      if (cl.i864_petitioner_name) {
-        letter += `- Petitioner: ${cl.i864_petitioner_name}\n`;
-      }
-      if (cl.i864_joint_sponsor_name) {
-        letter += `- Joint Sponsor: ${cl.i864_joint_sponsor_name}\n`;
-      }
-      if (cl.i864_household_member_name) {
-        letter += `- Household Member: ${cl.i864_household_member_name}\n`;
-      }
-      if (cl.i864_tax_years) {
-        letter += `- Tax Years: ${cl.i864_tax_years}\n`;
-      }
-      letter += `\n`;
-    }
+  //   if (smartModeEnabled && cl.i864_affidavit && cl.i864_sponsor_structure) {
+  //     letter += `**Financial Sponsorship Structure:**\n`;
+  //     letter += `- Structure: ${cl.i864_sponsor_structure.replace(/-/g, " ")}\n`;
+  //     if (cl.i864_petitioner_name) {
+  //       letter += `- Petitioner: ${cl.i864_petitioner_name}\n`;
+  //     }
+  //     if (cl.i864_joint_sponsor_name) {
+  //       letter += `- Joint Sponsor: ${cl.i864_joint_sponsor_name}\n`;
+  //     }
+  //     if (cl.i864_household_member_name) {
+  //       letter += `- Household Member: ${cl.i864_household_member_name}\n`;
+  //     }
+  //     if (cl.i864_tax_years) {
+  //       letter += `- Tax Years: ${cl.i864_tax_years}\n`;
+  //     }
+  //     letter += `\n`;
+  //   }
 
-    letter += `**Enclosed Documents:**\n\n`;
+  //   letter += `**Enclosed Documents:**\n\n`;
 
-    // Build document list
-    const docList = [];
-    if (cl.passport) docList.push("Passport (original)");
-    if (cl.medical_examination)
-      docList.push("Medical examination results (sealed)");
+  //   // Build document list
+  //   const docList = [];
+  //   if (cl.passport) docList.push("Passport (original)");
+  //   if (cl.medical_examination) docList.push("Medical examination results (sealed)");
 
-    if (cl.i864_affidavit) {
-      if (cl.i864_affidavit) {
-        docList.push("I-864 Affidavit of Support from petitioner");
-        docList.push("Tax and financial evidence for petitioner");
-        if (cl.i864a) {
-          docList.push("I-864A Contract with household member");
-        }
-      }
-      if (cl.i864_joint_sponsor) {
-        docList.push("I-864 Affidavit of Support from joint sponsor");
-        docList.push("Tax and financial evidence for joint sponsor");
-        if (cl.i864a) {
-          docList.push("I-864A Contract with joint sponsor household member");
-        }
-      }
-      if (!cl.i864_petitioner && !cl.i864_joint_sponsor) {
-        docList.push("I-864 Affidavit of Support package");
-      }
-    }
+  //   if (cl.i864_affidavit) {
+  //     if (cl.i864_affidavit) {
+  //       docList.push("I-864 Affidavit of Support from petitioner");
+  //       docList.push("Tax and financial evidence for petitioner");
+  //       if (cl.i864a) {
+  //         docList.push("I-864A Contract with household member");
+  //       }
+  //     }
+  //     if (cl.i864_joint_sponsor) {
+  //       docList.push("I-864 Affidavit of Support from joint sponsor");
+  //       docList.push("Tax and financial evidence for joint sponsor");
+  //       if (cl.i864a) {
+  //         docList.push("I-864A Contract with joint sponsor household member");
+  //       }
+  //     }
+  //     if (!cl.i864_petitioner && !cl.i864_joint_sponsor) {
+  //       docList.push("I-864 Affidavit of Support package");
+  //     }
+  //   }
 
-    if (cl.nadra_family_reg)
-      docList.push(
-        `NADRA Family Registration Certificate (original)${cl.nadra_family_reg_name ? ` – ${cl.nadra_family_reg_name}` : " [INFORMATION MISSING - please go back and specify person]"}`,
-      );
-    if (cl.nadra_birth_cert && cl.nadra_birth_cert_petitioner) {
-      docList.push(`NADRA Birth Certificate (petitioner) (original)`);
-    }
-    if (cl.nadra_birth_cert && !cl.nadra_birth_cert_petitioner) {
-      docList.push(`NADRA Birth Certificate (beneficiary) (original)`);
-    }
-    if (cl.nadra_marriage_cert)
-      docList.push("NADRA Marriage Certificate (original)");
-    if (cl.nikah_nama) {
-      docList.push("Original Nikah Nama");
-      docList.push(
-        "Computerized Marriage Registration Certificate (MRC) (original)",
-      );
-      docList.push("Beneficiary's CNIC showing husband's name (copy)");
-    }
-    if (cl.nadra_divorce_cert && cl.nadra_divorce_cert_petitioner)
-      docList.push(`NADRA Divorce Certificate (petitioner) (original)`);
-    if (cl.nadra_divorce_cert && !cl.nadra_divorce_cert_petitioner)
-      docList.push(`NADRA Divorce Certificate (beneficiary) (original) `);
-    if (cl.us_divorce_decree)
-      docList.push("U.S. Divorce Decree (original or certified copy)");
-    if (cl.death_certificate)
-      docList.push(
-        `Death Certificate (original)${cl.death_certificate_name ? ` – ${cl.death_certificate_name}` : " [INFORMATION MISSING - please go back and specify person]"}`,
-      );
-    if (cl.police_certificate)
-      docList.push(
-        `Police Certificate from ${cl.police_certificate_country || "[INFORMATION MISSING - please go back and specify country]"} (original)`,
-      );
-    if (cl.english_translation)
-      docList.push(
-        `Certified English translation of ${cl.english_translation_document || "[INFORMATION MISSING - please go back and specify documents that needs to be translated]"}`,
-      );
-    if (cl.dna_test)
-      docList.push(
-        `DNA test results for ${cl.dna_test_name || "[INFORMATION MISSING - please go back and specify parties]"}`,
-      );
+  //   if (cl.nadra_family_reg)
+  //     docList.push(
+  //       `NADRA Family Registration Certificate (original)${cl.nadra_family_reg_name ? ` – ${cl.nadra_family_reg_name}` : " [INFORMATION MISSING - please go back and specify person]"}`
+  //     );
+  //   if (cl.nadra_birth_cert && cl.nadra_birth_cert_petitioner) {
+  //     docList.push(`NADRA Birth Certificate (petitioner) (original)`);
+  //   }
+  //   if (cl.nadra_birth_cert && !cl.nadra_birth_cert_petitioner) {
+  //     docList.push(`NADRA Birth Certificate (beneficiary) (original)`);
+  //   }
+  //   if (cl.nadra_marriage_cert) docList.push("NADRA Marriage Certificate (original)");
+  //   if (cl.nikah_nama) {
+  //     docList.push("Original Nikah Nama");
+  //     docList.push("Computerized Marriage Registration Certificate (MRC) (original)");
+  //     docList.push("Beneficiary's CNIC showing husband's name (copy)");
+  //   }
+  //   if (cl.nadra_divorce_cert && cl.nadra_divorce_cert_petitioner)
+  //     docList.push(`NADRA Divorce Certificate (petitioner) (original)`);
+  //   if (cl.nadra_divorce_cert && !cl.nadra_divorce_cert_petitioner)
+  //     docList.push(`NADRA Divorce Certificate (beneficiary) (original) `);
+  //   if (cl.us_divorce_decree) docList.push("U.S. Divorce Decree (original or certified copy)");
+  //   if (cl.death_certificate)
+  //     docList.push(
+  //       `Death Certificate (original)${cl.death_certificate_name ? ` – ${cl.death_certificate_name}` : " [INFORMATION MISSING - please go back and specify person]"}`
+  //     );
+  //   if (cl.police_certificate)
+  //     docList.push(
+  //       `Police Certificate from ${cl.police_certificate_country || "[INFORMATION MISSING - please go back and specify country]"} (original)`
+  //     );
+  //   if (cl.english_translation)
+  //     docList.push(
+  //       `Certified English translation of ${cl.english_translation_document || "[INFORMATION MISSING - please go back and specify documents that needs to be translated]"}`
+  //     );
+  //   if (cl.dna_test)
+  //     docList.push(
+  //       `DNA test results for ${cl.dna_test_name || "[INFORMATION MISSING - please go back and specify parties]"}`
+  //     );
 
-    if (cl.other && cl.other_details) {
-      docList.push(cl.other_details);
-    }
+  //   if (cl.other && cl.other_details) {
+  //     docList.push(cl.other_details);
+  //   }
 
-    // Format as table
-    letter += `| # | Document |\n`;
-    letter += `|---|----------|\n`;
-    docList.forEach((doc, index) => {
-      letter += `| ${index + 1} | ${doc} |\n`;
-    });
+  //   // Format as table
+  //   letter += `| # | Document |\n`;
+  //   letter += `|---|----------|\n`;
+  //   docList.forEach((doc, index) => {
+  //     letter += `| ${index + 1} | ${doc} |\n`;
+  //   });
 
-    letter += `\n`;
-    letter += `All documents are submitted in accordance with the instructions provided in the 221(g) letter. `;
-    letter += `I have included originals where required and have retained photocopies for my records.\n\n`;
+  //   letter += `\n`;
+  //   letter += `All documents are submitted in accordance with the instructions provided in the 221(g) letter. `;
+  //   letter += `I have included originals where required and have retained photocopies for my records.\n\n`;
 
-    letter += `I respectfully request that you review these documents at your earliest convenience. `;
-    letter += `Please do not hesitate to contact me if additional information is needed.\n\n`;
+  //   letter += `I respectfully request that you review these documents at your earliest convenience. `;
+  //   letter += `Please do not hesitate to contact me if additional information is needed.\n\n`;
 
-    letter += `Thank you for your time and consideration.\n\n`;
-    letter += `Sincerely,\n\n`;
-    letter += `${cb.beneficiaryName || "[Your Full Name]"}\n`;
-    if (cb.passportNumber) letter += `Passport: ${cb.passportNumber}\n`;
-    letter += `[Your Email Address]\n`;
-    letter += `[Your Phone Number]\n`;
+  //   letter += `Thank you for your time and consideration.\n\n`;
+  //   letter += `Sincerely,\n\n`;
+  //   letter += `${cb.beneficiaryName || "[Your Full Name]"}\n`;
+  //   if (cb.passportNumber) letter += `Passport: ${cb.passportNumber}\n`;
+  //   letter += `[Your Email Address]\n`;
+  //   letter += `[Your Phone Number]\n`;
 
-    return letter;
-  };
+  //   return letter;
+  // };
 
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   // Progress Indicator
   // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  
   const ProgressIndicator = () => (
     <div className="flex items-center justify-between mb-8 px-2 max-w-2xl mx-auto">
       {STEPS.map((step, idx) => (
@@ -1288,12 +1247,7 @@ export default function CombinedIntakeForm({
                 }`}
             >
               {currentStep > step.id ? (
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1307,9 +1261,7 @@ export default function CombinedIntakeForm({
             </div>
             <span
               className={`mt-1.5 text-[10px] md:text-xs text-center max-w-[80px] leading-tight font-medium ${
-                currentStep === step.id
-                  ? "text-primary font-bold"
-                  : "text-muted-foreground"
+                currentStep === step.id ? "text-primary font-bold" : "text-muted-foreground"
               }`}
             >
               {step.label}
@@ -1356,7 +1308,7 @@ export default function CombinedIntakeForm({
           "nadra_birth_cert_beneficiary",
           "nadra_divorce_cert_petitioner",
           "nadra_divorce_cert_beneficiary",
-        ].includes(key),
+        ].includes(key)
     ).length;
 
     const getProvider = (key: string) => {
@@ -1387,10 +1339,7 @@ export default function CombinedIntakeForm({
       }
 
       if (key === "nadra_divorce_cert") {
-        if (
-          cl.nadra_divorce_cert_petitioner &&
-          cl.nadra_divorce_cert_beneficiary
-        )
+        if (cl.nadra_divorce_cert_petitioner && cl.nadra_divorce_cert_beneficiary)
           return "Petitioner & Beneficiary";
         if (cl.nadra_divorce_cert_petitioner) return "Petitioner";
         return "Beneficiary";
@@ -1447,9 +1396,7 @@ export default function CombinedIntakeForm({
           <div className="inline-block p-1 px-3 bg-teal-100 text-teal-800 rounded-full text-xs font-bold mb-2 tracking-wide uppercase">
             Almost there!
           </div>
-          <h2 className="text-2xl font-bold text-foreground">
-            Review & Generate
-          </h2>
+          <h2 className="text-2xl font-bold text-foreground">Review & Generate</h2>
           <p className="text-muted-foreground mt-1 text-sm">
             Review your case details and generate your personalised action plan.
           </p>
@@ -1467,9 +1414,7 @@ export default function CombinedIntakeForm({
               <table className="w-full text-sm">
                 <tbody>
                   <tr className="border-b last:border-0">
-                    <th className="text-left p-3 bg-muted/50 font-medium w-40">
-                      Visa Category
-                    </th>
+                    <th className="text-left p-3 bg-muted/50 font-medium w-40">Visa Category</th>
                     <td className="p-3">
                       {formData.visaCategory === "other"
                         ? formData.visaTypeOther
@@ -1477,24 +1422,16 @@ export default function CombinedIntakeForm({
                     </td>
                   </tr>
                   <tr className="border-b last:border-0">
-                    <th className="text-left p-3 bg-muted/50 font-medium">
-                      Interview Date
-                    </th>
-                    <td className="p-3">
-                      {formatDate(formData.interviewDate)}
-                    </td>
+                    <th className="text-left p-3 bg-muted/50 font-medium">Interview Date</th>
+                    <td className="p-3">{formatDate(formData.interviewDate)}</td>
                   </tr>
                   <tr className="border-b last:border-0">
-                    <th className="text-left p-3 bg-muted/50 font-medium">
-                      Consular Post
-                    </th>
+                    <th className="text-left p-3 bg-muted/50 font-medium">Consular Post</th>
                     <td className="p-3">{formData.consularPost}</td>
                   </tr>
                   {formData.caseNumber && (
                     <tr className="border-b last:border-0">
-                      <th className="text-left p-3 bg-muted/50 font-medium">
-                        Case Number
-                      </th>
+                      <th className="text-left p-3 bg-muted/50 font-medium">Case Number</th>
                       <td className="p-3 font-mono">{formData.caseNumber}</td>
                     </tr>
                   )}
@@ -1537,12 +1474,8 @@ export default function CombinedIntakeForm({
                   <table className="w-full text-sm">
                     <thead className="bg-muted/50 border-b">
                       <tr>
-                        <th className="text-left p-3 font-semibold">
-                          Document
-                        </th>
-                        <th className="text-left p-3 font-semibold">
-                          Who Provides
-                        </th>
+                        <th className="text-left p-3 font-semibold">Document</th>
+                        <th className="text-left p-3 font-semibold">Who Provides</th>
                         <th className="text-left p-3 font-semibold">Method</th>
                       </tr>
                     </thead>
@@ -1560,16 +1493,12 @@ export default function CombinedIntakeForm({
                               "nadra_birth_cert_beneficiary",
                               "nadra_divorce_cert_petitioner",
                               "nadra_divorce_cert_beneficiary",
-                            ].includes(key),
+                            ].includes(key)
                         )
                         .map(([key]) => (
                           <tr key={key}>
-                            <td className="p-3 capitalize">
-                              {key.replace(/_/g, " ")}
-                            </td>
-                            <td className="p-3">
-                              {getProviderBadge(getProvider(key))}
-                            </td>
+                            <td className="p-3 capitalize">{key.replace(/_/g, " ")}</td>
+                            <td className="p-3">{getProviderBadge(getProvider(key))}</td>
                             <td className="p-3 opacity-70">{getMethod(key)}</td>
                           </tr>
                         ))}
@@ -1580,49 +1509,42 @@ export default function CombinedIntakeForm({
             )}
           </section>
 
-          {smartModeEnabled &&
-            smartClassification &&
-            smartClassification.length > 0 && (
-              <section className="space-y-4">
-                <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
-                  <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
-                    S
-                  </span>
-                  Smart Insights
-                </h3>
-                {smartClassification.map((classification, cIdx) => (
-                  <div
-                    key={cIdx}
-                    className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-4"
-                  >
-                    <p className="text-sm text-emerald-900">
-                      <span className="font-semibold">Scenario:</span>{" "}
-                      {classification.description}
-                    </p>
+          {smartModeEnabled && smartClassification && smartClassification.length > 0 && (
+            <section className="space-y-4">
+              <h3 className="text-lg font-semibold mb-1 flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center text-xs">
+                  S
+                </span>
+                Smart Insights
+              </h3>
+              {smartClassification.map((classification, cIdx) => (
+                <div
+                  key={cIdx}
+                  className="rounded-lg border border-emerald-200 bg-emerald-50/60 p-4"
+                >
+                  <p className="text-sm text-emerald-900">
+                    <span className="font-semibold">Scenario:</span> {classification.description}
+                  </p>
 
-                    <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-emerald-900">
-                      {classification.nextSteps.map(
-                        (step: string, idx: number) => (
-                          <li key={`${idx}-${step}`}>{step}</li>
-                        ),
-                      )}
-                    </ul>
-                  </div>
-                ))}
-              </section>
-            )}
+                  <ul className="mt-3 list-disc space-y-1 pl-5 text-sm text-emerald-900">
+                    {classification.nextSteps.map((step: string, idx: number) => (
+                      <li key={`${idx}-${step}`}>{step}</li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+            </section>
+          )}
         </div>
 
         <div className="flex gap-3 pt-6 border-t font-semibold">
           <Button variant="outline" onClick={goBack}>
-            â† Back to Checklist
+            Back to Checklist
           </Button>
           <Button
             onClick={handleGenerate}
             className="ml-auto bg-teal-600 hover:bg-teal-700 shadow-teal-900/10 shadow-lg"
-            disabled={
-              selectedCount === 0 && !selected221gItems.admin_processing
-            }
+            disabled={selectedCount === 0 && !selected221gItems.admin_processing}
           >
             Generate Action Plan & Documents
           </Button>
@@ -1639,7 +1561,7 @@ export default function CombinedIntakeForm({
 
     const copyToClipboard = (text: string) => {
       navigator.clipboard.writeText(text);
-      alert("Copied to clipboard!");
+      showToast("Copied to clipboard!", "success");
     };
 
     const generateHtmlContent = (text: string, title: string) => {
@@ -1712,7 +1634,7 @@ export default function CombinedIntakeForm({
             htmlBody += `<thead style="background:#f9fafb; color:#374151;"><tr>`;
             cells.forEach(
               (c) =>
-                (htmlBody += `<th style="padding:8pt; border:1px solid #ddd; font-weight:bold;">${c.trim().replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</th>`),
+                (htmlBody += `<th style="padding:8pt; border:1px solid #ddd; font-weight:bold;">${c.trim().replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</th>`)
             );
             htmlBody += `</tr></thead><tbody>`;
             return;
@@ -1720,7 +1642,7 @@ export default function CombinedIntakeForm({
             htmlBody += `<tr>`;
             cells.forEach(
               (c) =>
-                (htmlBody += `<td style="padding:8pt; border:1px solid #ddd; color:#4b5563;">${c.trim().replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</td>`),
+                (htmlBody += `<td style="padding:8pt; border:1px solid #ddd; color:#4b5563;">${c.trim().replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</td>`)
             );
             htmlBody += `</tr>`;
             return;
@@ -2040,7 +1962,7 @@ export default function CombinedIntakeForm({
               window.print();
               setTimeout(() => window.close(), 500);
             };
-          </script>`,
+          </script>`
         );
         win.document.close();
       }
@@ -2067,11 +1989,8 @@ export default function CombinedIntakeForm({
 
     // Checkbox state for the Packet Checklist tab
     // eslint-disable-next-line react-hooks/rules-of-hooks
-    const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>(
-      {},
-    );
-    const toggleCheck = (i: number) =>
-      setCheckedItems((prev) => ({ ...prev, [i]: !prev[i] }));
+    const [checkedItems, setCheckedItems] = useState<Record<number, boolean>>({});
+    const toggleCheck = (i: number) => setCheckedItems((prev) => ({ ...prev, [i]: !prev[i] }));
 
     // Pre-parse markdown text into structured blocks for correct rendering
     const renderMarkdown = (text: string, isChecklist = false) => {
@@ -2135,7 +2054,7 @@ export default function CombinedIntakeForm({
               className="text-2xl font-bold mb-4 mt-6 pb-2 border-b border-slate-200 text-slate-900"
             >
               {line.substring(2)}
-            </h1>,
+            </h1>
           );
           i++;
           continue;
@@ -2144,19 +2063,16 @@ export default function CombinedIntakeForm({
           nodes.push(
             <h2 key={i} className="text-xl font-bold mb-3 mt-6 text-teal-700">
               {line.substring(3)}
-            </h2>,
+            </h2>
           );
           i++;
           continue;
         }
         if (line.startsWith("### ")) {
           nodes.push(
-            <h3
-              key={i}
-              className="text-base font-bold mb-2 mt-4 text-slate-800"
-            >
+            <h3 key={i} className="text-base font-bold mb-2 mt-4 text-slate-800">
               {line.substring(4)}
-            </h3>,
+            </h3>
           );
           i++;
           continue;
@@ -2180,15 +2096,12 @@ export default function CombinedIntakeForm({
               lines[j]
                 .split("|")
                 .filter((c) => c.trim() !== "")
-                .map((c) => c.trim()),
+                .map((c) => c.trim())
             );
             j++;
           }
           nodes.push(
-            <div
-              key={i}
-              className="my-4 border border-slate-200 rounded-lg overflow-hidden"
-            >
+            <div key={i} className="my-4 border border-slate-200 rounded-lg overflow-hidden">
               <table className="w-full text-sm text-left">
                 <thead className="bg-slate-50">
                   <tr>
@@ -2217,7 +2130,7 @@ export default function CombinedIntakeForm({
                   ))}
                 </tbody>
               </table>
-            </div>,
+            </div>
           );
           i = j;
           continue;
@@ -2233,10 +2146,7 @@ export default function CombinedIntakeForm({
           const label = line.substring(2);
           if (isChecklist) {
             nodes.push(
-              <label
-                key={i}
-                className="flex items-center gap-3 mb-2 cursor-pointer group"
-              >
+              <label key={i} className="flex items-center gap-3 mb-2 cursor-pointer group">
                 <input
                   type="checkbox"
                   checked={!!checkedItems[idx]}
@@ -2248,16 +2158,14 @@ export default function CombinedIntakeForm({
                 >
                   {label}
                 </span>
-              </label>,
+              </label>
             );
           } else {
             nodes.push(
               <div key={i} className="flex items-start gap-2 mb-2">
                 <span className="text-slate-400 mt-0.5">&#9744;</span>
-                <span className="text-sm text-slate-700 leading-snug">
-                  {label}
-                </span>
-              </div>,
+                <span className="text-sm text-slate-700 leading-snug">{label}</span>
+              </div>
             );
           }
           i++;
@@ -2268,12 +2176,9 @@ export default function CombinedIntakeForm({
         if (line.startsWith("* ") || line.startsWith("- ")) {
           const txt = line.substring(2).trim();
           nodes.push(
-            <li
-              key={i}
-              className="ml-5 mb-1.5 text-slate-700 text-sm list-disc"
-            >
+            <li key={i} className="ml-5 mb-1.5 text-slate-700 text-sm list-disc">
               {renderInlineBold(txt)}
-            </li>,
+            </li>
           );
           i++;
           continue;
@@ -2289,7 +2194,7 @@ export default function CombinedIntakeForm({
               style={{ listStyleType: "decimal" }}
             >
               {renderInlineBold(txt)}
-            </li>,
+            </li>
           );
           i++;
           continue;
@@ -2300,7 +2205,7 @@ export default function CombinedIntakeForm({
           nodes.push(
             <p key={i} className="font-bold text-slate-900 text-sm mt-3 mb-1">
               {line.replace(/\*\*/g, "")}
-            </p>,
+            </p>
           );
           i++;
           continue;
@@ -2317,7 +2222,7 @@ export default function CombinedIntakeForm({
         nodes.push(
           <p key={i} className="text-sm text-slate-700 mb-1.5 leading-relaxed">
             {renderInlineBold(line)}
-          </p>,
+          </p>
         );
         i++;
       }
@@ -2410,27 +2315,24 @@ export default function CombinedIntakeForm({
         subtitle: "Track required documents before final submission.",
         icon: ListChecks,
       },
-      coverLetter: {
-        title: "Cover Letter",
-        subtitle: "Ready-to-print letter for embassy packet assembly.",
-        icon: Mail,
-      },
+      // coverLetter: {
+      //   title: "Cover Letter",
+      //   subtitle: "Ready-to-print letter for embassy packet assembly.",
+      //   icon: Mail,
+      // },
     } as const;
 
     return (
       <div className="space-y-6">
         <div className="rounded-2xl border border-slate-200 bg-gradient-to-r from-slate-100 via-slate-50 to-teal-100/80 p-5 md:p-6">
-          <h2 className="text-2xl font-bold text-slate-900">
-            Your 221(g) Response Package
-          </h2>
+          <h2 className="text-2xl font-bold text-slate-900">Your 221(g) Response Package</h2>
           <p className="mt-1 text-sm text-slate-600">
-            Review each document, copy or print instantly, and finalize your
-            response packet.
+            Review each document, copy or print instantly, and finalize your response packet.
           </p>
         </div>
 
         <Tabs defaultValue="actionPlan" className="w-full">
-          <TabsList className="mb-5 grid h-auto w-full grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2 sm:grid-cols-3">
+          <TabsList className="mb-5 grid h-auto w-full grid-cols-1 gap-2 rounded-xl border border-slate-200 bg-slate-50 p-2 sm:grid-cols-2">
             <TabsTrigger
               value="actionPlan"
               className="rounded-lg py-2.5 text-slate-700 data-[state=active]:bg-white data-[state=active]:text-teal-700 data-[state=active]:shadow-sm"
@@ -2443,15 +2345,15 @@ export default function CombinedIntakeForm({
             >
               Packet Checklist
             </TabsTrigger>
-            <TabsTrigger
+            {/* <TabsTrigger
               value="coverLetter"
               className="rounded-lg py-2.5 text-slate-700 data-[state=active]:bg-white data-[state=active]:text-teal-700 data-[state=active]:shadow-sm"
             >
               Cover Letter
-            </TabsTrigger>
+            </TabsTrigger> */}
           </TabsList>
 
-          {(["actionPlan", "checklist", "coverLetter"] as const).map((key) => {
+          {(["actionPlan", "checklist"] as const).map((key) => {
             const config = docConfig[key];
             const Icon = config.icon;
 
@@ -2463,12 +2365,8 @@ export default function CombinedIntakeForm({
                       <Icon className="h-4 w-4" />
                     </div>
                     <div>
-                      <h3 className="text-base font-semibold text-slate-900">
-                        {config.title}
-                      </h3>
-                      <p className="text-xs text-slate-600">
-                        {config.subtitle}
-                      </p>
+                      <h3 className="text-base font-semibold text-slate-900">{config.title}</h3>
+                      <p className="text-xs text-slate-600">{config.subtitle}</p>
                     </div>
                   </div>
                   <div className="flex flex-wrap gap-2">
@@ -2483,9 +2381,7 @@ export default function CombinedIntakeForm({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() =>
-                        handleDownloadPDF(outputs[key], config.title)
-                      }
+                      onClick={() => handleDownloadPDF(outputs[key], config.title)}
                       className="border-teal-200 text-teal-700 hover:bg-teal-50"
                     >
                       <FileText className="mr-2 h-3.5 w-3.5" />
@@ -2494,9 +2390,7 @@ export default function CombinedIntakeForm({
                     <Button
                       className="bg-teal-600 text-white hover:bg-teal-700"
                       size="sm"
-                      onClick={() =>
-                        handleDownloadWord(outputs[key], config.title)
-                      }
+                      onClick={() => handleDownloadWord(outputs[key], config.title)}
                     >
                       <FileDown className="mr-2 h-3.5 w-3.5" />
                       Download as Word
@@ -2513,9 +2407,8 @@ export default function CombinedIntakeForm({
         </Tabs>
 
         <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm italic text-amber-900">
-          <strong>Important:</strong> These documents are generated from your
-          inputs. Always follow your embassy&apos;s 221(g) letter if
-          instructions differ.
+          <strong>Important:</strong> These documents are generated from your inputs. Always follow
+          your embassy&apos;s 221(g) letter if instructions differ.
         </div>
 
         <div className="flex flex-wrap items-center justify-between gap-4 border-t pt-2">
@@ -2559,12 +2452,9 @@ export default function CombinedIntakeForm({
           {currentStep === 1 && (
             <div className="space-y-6">
               <div className="border-b pb-4">
-                <h2 className="text-2xl font-bold text-foreground">
-                  Case Basics
-                </h2>
+                <h2 className="text-2xl font-bold text-foreground">Case Basics</h2>
                 <p className="text-muted-foreground mt-1 text-sm">
-                  Provide your basic case information to personalise your action
-                  plan.
+                  Provide your basic case information to personalise your action plan.
                 </p>
               </div>
 
@@ -2614,9 +2504,7 @@ export default function CombinedIntakeForm({
                   <Input
                     id="visaTypeOther"
                     value={formData.visaTypeOther}
-                    onChange={(e) =>
-                      handleField("visaTypeOther", e.target.value)
-                    }
+                    onChange={(e) => handleField("visaTypeOther", e.target.value)}
                   />
                 </div>
               )}
@@ -2628,9 +2516,7 @@ export default function CombinedIntakeForm({
                     id="interviewDate"
                     type="date"
                     value={formData.interviewDate}
-                    onChange={(e) =>
-                      handleField("interviewDate", e.target.value)
-                    }
+                    onChange={(e) => handleField("interviewDate", e.target.value)}
                   />
                 </div>
 
@@ -2656,9 +2542,7 @@ export default function CombinedIntakeForm({
 
               {/* Embassy Combobox */}
               <div className="space-y-2">
-                <Label htmlFor="consularPost">
-                  Consular Post / Embassy Location *
-                </Label>
+                <Label htmlFor="consularPost">Consular Post / Embassy Location *</Label>
                 <div className="relative" ref={embassyRef}>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
@@ -2696,56 +2580,46 @@ export default function CombinedIntakeForm({
                           </div>
                         ) : (
                           (() => {
-                            const grouped: Record<
-                              string,
-                              typeof filteredEmbassies
-                            > = {};
+                            const grouped: Record<string, typeof filteredEmbassies> = {};
                             filteredEmbassies.forEach((e) => {
                               if (!grouped[e.country]) grouped[e.country] = [];
                               grouped[e.country].push(e);
                             });
-                            return Object.entries(grouped).map(
-                              ([country, items]) => (
-                                <div key={country}>
-                                  <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-muted/50 sticky top-0">
-                                    {country}
-                                  </div>
-                                  {items.map((embassy) => (
-                                    <button
-                                      key={embassy.value}
-                                      type="button"
-                                      className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors hover:bg-primary/5 focus:bg-primary/5 focus:outline-none ${
-                                        formData.consularPost === embassy.value
-                                          ? "bg-primary/10 text-primary font-semibold"
-                                          : "text-foreground"
-                                      }`}
-                                      onMouseDown={(e) => {
-                                        e.preventDefault(); // prevent input blur
-                                        handleEmbassySelect(embassy.value);
-                                      }}
-                                    >
-                                      <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
-                                      {embassy.label}
-                                      {formData.consularPost ===
-                                        embassy.value && (
-                                        <span className="ml-auto text-primary text-xs">
-                                          ✓
-                                        </span>
-                                      )}
-                                    </button>
-                                  ))}
+                            return Object.entries(grouped).map(([country, items]) => (
+                              <div key={country}>
+                                <div className="px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-muted-foreground bg-muted/50 sticky top-0">
+                                  {country}
                                 </div>
-                              ),
-                            );
+                                {items.map((embassy) => (
+                                  <button
+                                    key={embassy.value}
+                                    type="button"
+                                    className={`w-full flex items-center gap-3 px-4 py-2.5 text-sm text-left transition-colors hover:bg-primary/5 focus:bg-primary/5 focus:outline-none ${
+                                      formData.consularPost === embassy.value
+                                        ? "bg-primary/10 text-primary font-semibold"
+                                        : "text-foreground"
+                                    }`}
+                                    onMouseDown={(e) => {
+                                      e.preventDefault(); // prevent input blur
+                                      handleEmbassySelect(embassy.value);
+                                    }}
+                                  >
+                                    <MapPin className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
+                                    {embassy.label}
+                                    {formData.consularPost === embassy.value && (
+                                      <span className="ml-auto text-primary text-xs">✓</span>
+                                    )}
+                                  </button>
+                                ))}
+                              </div>
+                            ));
                           })()
                         )}
                       </div>
                       {/* Custom entry option */}
                       {embassySearchText &&
                         !EMBASSY_OPTIONS.find(
-                          (e) =>
-                            e.value.toLowerCase() ===
-                            embassySearchText.toLowerCase(),
+                          (e) => e.value.toLowerCase() === embassySearchText.toLowerCase()
                         ) && (
                           <div className="border-t border-border">
                             <button
@@ -2757,8 +2631,7 @@ export default function CombinedIntakeForm({
                               }}
                             >
                               <Search className="h-3.5 w-3.5 shrink-0" />
-                              Use &ldquo;{embassySearchText}&rdquo; as custom
-                              location
+                              Use &ldquo;{embassySearchText}&rdquo; as custom location
                             </button>
                           </div>
                         )}
@@ -2773,35 +2646,36 @@ export default function CombinedIntakeForm({
                   <Input
                     id="caseNumber"
                     value={formData.caseNumber}
-                    onChange={(e) => handleField("caseNumber", e.target.value)}
-                    placeholder="ISL2024..."
+                    onChange={(e) => handleField("caseNumber", e.target.value.toUpperCase())}
+                    className={caseNumberError ? "border-red-500 focus-visible:ring-red-400" : ""}
+                    placeholder="e.g. ISL2024123456"
                   />
+                  {caseNumberError && (
+                    <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
+                      <span className="inline-block w-3.5 h-3.5 rounded-full bg-red-100 text-red-600 text-center leading-[14px] font-bold text-[10px]">
+                        !
+                      </span>
+                      {caseNumberError}
+                    </p>
+                  )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="beneficiaryName">
-                    Beneficiary Name (optional)
-                  </Label>
+                  <Label htmlFor="beneficiaryName">Beneficiary Name (optional)</Label>
                   <Input
                     id="beneficiaryName"
                     value={formData.beneficiaryName}
-                    onChange={(e) =>
-                      handleField("beneficiaryName", e.target.value)
-                    }
+                    onChange={(e) => handleField("beneficiaryName", e.target.value)}
                   />
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="passportNumber">
-                    Passport Number (optional)
-                  </Label>
+                  <Label htmlFor="passportNumber">Passport Number (optional)</Label>
                   <Input
                     id="passportNumber"
                     value={formData.passportNumber}
-                    onChange={(e) =>
-                      handleField("passportNumber", e.target.value)
-                    }
+                    onChange={(e) => handleField("passportNumber", e.target.value)}
                     placeholder="AA1234567"
                   />
                 </div>
@@ -2812,25 +2686,17 @@ export default function CombinedIntakeForm({
                     type="date"
                     value={formData.dateOfBirth}
                     max={
-                      new Date(
-                        new Date().setFullYear(new Date().getFullYear() - 1),
-                      )
+                      new Date(new Date().setFullYear(new Date().getFullYear() - 1))
                         .toISOString()
                         .split("T")[0]
                     }
                     min={
-                      new Date(
-                        new Date().setFullYear(new Date().getFullYear() - 120),
-                      )
+                      new Date(new Date().setFullYear(new Date().getFullYear() - 120))
                         .toISOString()
                         .split("T")[0]
                     }
                     onChange={(e) => handleDobChange(e.target.value)}
-                    className={
-                      dobError
-                        ? "border-red-500 focus-visible:ring-red-400"
-                        : ""
-                    }
+                    className={dobError ? "border-red-500 focus-visible:ring-red-400" : ""}
                   />
                   {dobError && (
                     <p className="text-xs text-red-600 flex items-center gap-1 mt-1">
@@ -2851,7 +2717,8 @@ export default function CombinedIntakeForm({
                     !formData.visaCategory ||
                     !formData.interviewDate ||
                     !formData.consularPost ||
-                    !!dobError
+                    !!dobError ||
+                    !!caseNumberError
                   }
                 >
                   Continue to Checklist →
@@ -2872,369 +2739,52 @@ export default function CombinedIntakeForm({
               />
               <div className="flex gap-3 pt-4 border-t">
                 <Button variant="outline" onClick={goBack}>
+                  ← Back
+                </Button>
+                <Button
+                  onClick={goNext}
+                  className="ml-auto bg-primary hover:bg-primary/90 shadow-lg"
+                  disabled={Object.values(selected221gItems).filter((v) => Boolean(v)).length === 0}
+                >
+                  Continue to Review →
+                </Button>
+              </div>
+              <div style={{ display: "none" }}>
+                <Button variant="outline" onClick={goBack}>
                   â† Back
                 </Button>
               </div>
             </div>
           )}
-          {currentStep === 3 && <StepReviewGenerate />}
-          {currentStep === 4 && <StepExportPacket />}
+          {currentStep === 3 && (
+            <ResultGate
+              feature="action_221g"
+              title="Review & Generate Locked"
+              description="Upgrade to Executive to review your 221(g) case response details, next steps, and generate your custom document packet."
+            >
+              <StepReviewGenerate />
+            </ResultGate>
+          )}
+          {currentStep === 4 && (
+            <ResultGate
+              feature="action_221g"
+              title="Action Packet Ready"
+              description="Upgrade to Executive to download, print, or copy your personalized 221(g) response plan and document packet checklist."
+            >
+              <StepExportPacket />
+            </ResultGate>
+          )}
         </div>
       </div>
 
-      <Dialog open={showWelcome} onOpenChange={handleWelcomeOpenChange}>
-        <DialogContent className="max-w-5xl max-h-[92vh] flex flex-col overflow-hidden border-white/5 p-0 shadow-2xl bg-[#042f2e] bg-linear-to-br from-[#042f2e] via-[#0d6b6b] to-[#115e5e] text-white rounded-3xl">
-          <DialogTitle className="sr-only">
-            Welcome to the 221(g) Action Planner
-          </DialogTitle>
-          <div className="absolute top-5 right-5 z-20">
-            <button
-              onClick={() => handleWelcomeOpenChange(false)}
-              className="p-2 rounded-2xl bg-white/10 border border-white/10 hover:bg-white/15 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-md shadow-sm"
-              aria-label="Close modal"
-              type="button"
-            >
-              <X className="w-5 h-5 text-white/85" />
-            </button>
-          </div>
-
-          <div className="flex-1 overflow-y-auto custom-scrollbar w-full">
-            <div className="px-6 pt-12 pb-4 bg-linear-to-b from-black/15 to-transparent backdrop-blur-sm">
-              <div className="text-center">
-                <p className="inline-flex items-center gap-1 rounded-full border border-white/20 bg-white/10 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-white/90 mb-3">
-                  <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-                  Guided Setup
-                </p>
-                <h2 className="text-3xl md:text-4xl font-black tracking-tight text-white mb-3">
-                  Welcome to the 221(g) Action Planner
-                </h2>
-                <p className="mt-2 text-sm md:text-base text-white/75 max-w-3xl mx-auto leading-relaxed flex items-center justify-center gap-2">
-                  Follow a step-by-step workflow to build a cleaner,
-                  embassy-ready response packet{" "}
-                  <CheckCircle2 className="w-5 h-5 text-teal-400" />
-                </p>
-
-                {/* Feature boxes */}
-                <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 md:gap-4 max-w-5xl mx-auto px-4 text-left">
-                  <div className="rounded-2xl border border-teal-500/40 bg-teal-600/20 backdrop-blur-md p-4 flex gap-3 shadow-[0_16px_34px_rgba(0,0,0,0.15)]">
-                    <span className="h-11 w-11 rounded-2xl grid place-items-center shrink-0 border border-white/10 bg-white/10 text-teal-400 shadow-sm">
-                      <ShieldCheck className="w-5 h-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-extrabold text-white leading-snug">
-                        Avoid Pitfalls
-                      </div>
-                      <div className="mt-1 text-xs text-white/70 leading-relaxed">
-                        Common mistakes that cause rejections.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-sky-500/40 bg-sky-600/20 backdrop-blur-md p-4 flex gap-3 shadow-[0_16px_34px_rgba(0,0,0,0.15)]">
-                    <span className="h-11 w-11 rounded-2xl grid place-items-center shrink-0 border border-white/10 bg-white/10 text-sky-400 shadow-sm">
-                      <ClipboardCheck className="w-5 h-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-extrabold text-white leading-snug">
-                        Guided Workflow
-                      </div>
-                      <div className="mt-1 text-xs text-white/70 leading-relaxed">
-                        Step-by-step situation replication.
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="rounded-2xl border border-amber-500/40 bg-amber-600/20 backdrop-blur-md p-4 flex gap-3 shadow-[0_16px_34px_rgba(0,0,0,0.15)]">
-                    <span className="h-11 w-11 rounded-2xl grid place-items-center shrink-0 border border-white/10 bg-white/10 text-amber-400 shadow-sm">
-                      <FolderCheck className="w-5 h-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <div className="text-sm font-extrabold text-white leading-snug">
-                        Clean Output
-                      </div>
-                      <div className="mt-1 text-xs text-white/70 leading-relaxed">
-                        Embassy-ready Packet & Checklist.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Body content */}
-            <div className="px-6 pb-6 mt-4">
-              <div className="space-y-4 max-w-4xl mx-auto">
-                {/* Collapsible Section 1 */}
-                <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-sm overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setOpenWhatIs(!openWhatIs)}
-                    className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-white/5 transition-colors"
-                  >
-                    <div>
-                      <div className="text-sm font-extrabold tracking-wide text-white/95 uppercase">
-                        What is a 221(g)?
-                      </div>
-                      {!openWhatIs && (
-                        <div className="mt-1 text-sm text-white/70">
-                          Expand for description.
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-white/80">
-                        {openWhatIs ? "Hide" : "Learn more"}
-                      </span>
-                      <span
-                        className={`inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 border border-white/10 text-white/85 transition-transform ${openWhatIs ? "rotate-180" : ""}`}
-                      >
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-                          <path
-                            d="M6 9l6 6 6-6"
-                            stroke="currentColor"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </button>
-                  <div
-                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${openWhatIs ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
-                  >
-                    <div className="overflow-hidden">
-                      <div className="px-5 pb-5 pt-0 text-[14px] md:text-[15px] leading-relaxed text-white/85 space-y-3">
-                        <p>
-                          Section 221(g) of the Immigration and Nationality Act
-                          allows consular officers to temporarily refuse a visa
-                          application when additional documents or
-                          administrative processing is required. This is not a
-                          permanent denial; it is a hold pending resolution.
-                        </p>
-                        <p className="text-xs italic text-white/50">
-                          Source: U.S. Department of State
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Collapsible Section 2 */}
-                <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-sm overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setOpenFlow(!openFlow)}
-                    className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-white/5 transition-colors"
-                  >
-                    <div>
-                      <div className="text-sm font-extrabold tracking-wide text-white/95 uppercase">
-                        How this wizard works
-                      </div>
-                      {!openFlow && (
-                        <div className="mt-1 text-sm text-white/70">
-                          Fast, step-by-step flow.
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-white/80">
-                        {openFlow ? "Hide" : "Learn more"}
-                      </span>
-                      <span
-                        className={`inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 border border-white/10 text-white/85 transition-transform ${openFlow ? "rotate-180" : ""}`}
-                      >
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-                          <path
-                            d="M6 9l6 6 6-6"
-                            stroke="currentColor"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </button>
-                  <div
-                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${openFlow ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
-                  >
-                    <div className="overflow-hidden">
-                      <div className="px-5 pb-5 pt-0">
-                        <ol className="space-y-3 pt-2">
-                          {[
-                            "Replicate your 221(g) checklist letter using the guided form.",
-                            "Review and confirm your case details before generation.",
-                            "Generate an action plan, packet checklist, and cover letter.",
-                            "Export documents and submit exactly per embassy instructions.",
-                          ].map((text, idx) => (
-                            <li
-                              key={idx}
-                              className="flex items-start gap-4 p-4 rounded-2xl bg-white/5 border border-white/10 group hover:bg-white/10 transition-colors"
-                            >
-                              <span className="flex h-9 w-9 items-center justify-center rounded-2xl font-extrabold text-sm text-teal-900 bg-white shadow-sm shrink-0 mt-0.5">
-                                {idx + 1}
-                              </span>
-                              <p className="text-[14px] md:text-[15px] leading-snug text-white/90 font-medium pt-1.5">
-                                {text}
-                              </p>
-                            </li>
-                          ))}
-                        </ol>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Collapsible Section 3 - What You'll Need */}
-                <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-sm overflow-hidden">
-                  <button
-                    type="button"
-                    onClick={() => setOpenNeed(!openNeed)}
-                    className="w-full flex items-center justify-between gap-4 px-5 py-4 text-left hover:bg-white/5 transition-colors"
-                  >
-                    <div>
-                      <div className="text-sm font-extrabold tracking-wide text-white/95 uppercase">
-                        What You&apos;ll Need
-                      </div>
-                      {!openNeed && (
-                        <div className="mt-1 text-sm text-white/70">
-                          Gather these before starting.
-                        </div>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-semibold text-white/80">
-                        {openNeed ? "Hide" : "Expand list"}
-                      </span>
-                      <span
-                        className={`inline-flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 border border-white/10 text-white/85 transition-transform ${openNeed ? "rotate-180" : ""}`}
-                      >
-                        <svg
-                          width="18"
-                          height="18"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                        >
-                          <path
-                            d="M6 9l6 6 6-6"
-                            stroke="currentColor"
-                            strokeWidth="2.2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </button>
-                  <div
-                    className={`grid transition-[grid-template-rows] duration-300 ease-out ${openNeed ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
-                  >
-                    <div className="overflow-hidden">
-                      <div className="px-5 pb-5 pt-0">
-                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                          {[
-                            {
-                              icon: <FileText className="w-4 h-4" />,
-                              text: "Your 221(g) refusal letter",
-                            },
-                            {
-                              icon: <ClipboardCheck className="w-4 h-4" />,
-                              text: "Case Number (e.g. ISL...)",
-                            },
-                            {
-                              icon: <ShieldCheck className="w-4 h-4" />,
-                              text: "Passport details",
-                            },
-                            {
-                              icon: <Mail className="w-4 h-4" />,
-                              text: "Beneficiary email & phone",
-                            },
-                          ].map((item, idx) => (
-                            <li
-                              key={idx}
-                              className="flex items-center gap-3 p-3 rounded-xl bg-white/5 border border-white/5 text-white/90 text-sm font-medium"
-                            >
-                              <span className="text-teal-400">{item.icon}</span>
-                              {item.text}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Disclaimer card */}
-                <div className="rounded-2xl border border-yellow-300/30 bg-yellow-400/10 backdrop-blur-md p-5 mt-6 border-dashed">
-                  <div className="flex items-start gap-4">
-                    <span className="h-10 w-10 rounded-full bg-yellow-400/20 flex items-center justify-center shrink-0">
-                      <Info className="w-6 h-6 text-yellow-400" />
-                    </span>
-                    <div>
-                      <p className="text-[15px] font-extrabold text-yellow-400 text-left">
-                        Important Note
-                      </p>
-                      <p className="mt-1.5 text-[14px] leading-relaxed text-white/80 font-medium text-left">
-                        This tool provides general guidance for Pakistan-based
-                        cases (Islamabad/Karachi) and is not legal advice.
-                        Always prioritize your official letter&apos;s
-                        instructions.
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer */}
-                <div className="pt-8 mt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6 pb-6 text-left">
-                  <label className="flex items-center gap-3 cursor-pointer select-none group">
-                    <div className="relative flex items-center justify-center">
-                      <input
-                        type="checkbox"
-                        checked={dontShowAgain}
-                        onChange={(e) => setDontShowAgain(e.target.checked)}
-                        className="peer w-5 h-5 appearance-none rounded border-2 border-white/30 bg-white/10 checked:bg-teal-500 checked:border-teal-500 transition-all focus:outline-none"
-                      />
-                      <svg
-                        className="absolute w-3 h-3 text-white opacity-0 peer-checked:opacity-100 pointer-events-none transition-opacity"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="3"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                      >
-                        <polyline points="20 6 9 17 4 12"></polyline>
-                      </svg>
-                    </div>
-                    <span className="text-sm font-medium text-white/70 group-hover:text-white transition-colors">
-                      Don&apos;t show this again
-                    </span>
-                  </label>
-
-                  <button
-                    onClick={handleStartWizard}
-                    className="px-10 py-3.5 rounded-2xl font-bold bg-white text-[#042f2e] hover:bg-teal-50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-[0_20px_40px_rgba(0,0,0,0.3)] flex items-center gap-2"
-                  >
-                    Start Planner
-                    <ArrowRight className="w-5 h-5" />
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <NarrativeModal
+        isOpen={showWelcome}
+        onClose={handleCloseWelcome}
+        onComplete={handleStartWizard}
+        dontShowAgain={dontShowAgain}
+        onDontShowAgainChange={setDontShowAgain}
+        variant="221g"
+      />
 
       <ConfirmationModal
         open={showResetModal}

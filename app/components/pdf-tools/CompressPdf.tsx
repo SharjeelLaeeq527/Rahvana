@@ -19,7 +19,7 @@ export default function Compress() {
   const [result, setResult] = useState<CompressionResult | null>(null);
   const [error, setError] = useState("");
 
-  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
   useEffect(() => {
     setMounted(true);
@@ -59,7 +59,7 @@ export default function Compress() {
     formData.append("file", file);
 
     try {
-      const response = await fetch(`${API_BASE}/api/v1/compress`, {
+      const response = await fetch(`${API_BASE}/compress`, {
         method: "POST",
         body: formData,
       });
@@ -73,21 +73,16 @@ export default function Compress() {
       const compressedSizeHeader = response.headers.get("x-compressed-size");
       const reductionHeader = response.headers.get("x-reduction");
 
-      const originalSize = originalSizeHeader
-        ? parseInt(originalSizeHeader, 10)
-        : file.size;
+      const originalSize = originalSizeHeader ? parseInt(originalSizeHeader, 10) : file.size;
       const compressedSizeFromHeader = compressedSizeHeader
         ? parseInt(compressedSizeHeader, 10)
         : 0;
-      const reductionFromHeader = reductionHeader
-        ? parseFloat(reductionHeader)
-        : 0;
+      const reductionFromHeader = reductionHeader ? parseFloat(reductionHeader) : 0;
 
       const blob = await response.blob();
       const finalCompressedSize = compressedSizeFromHeader || blob.size;
       const finalReduction =
-        reductionFromHeader ||
-        ((originalSize - finalCompressedSize) / originalSize) * 100;
+        reductionFromHeader || ((originalSize - finalCompressedSize) / originalSize) * 100;
 
       // Trigger download
       const url = window.URL.createObjectURL(blob);
@@ -105,8 +100,7 @@ export default function Compress() {
         reduction: finalReduction.toFixed(2),
       });
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : t("pdfProcessing.errors.failed");
+      const message = err instanceof Error ? err.message : t("pdfProcessing.errors.failed");
       console.error("Compression error:", err);
       setError(message);
     } finally {
@@ -164,9 +158,7 @@ export default function Compress() {
                 <p className="text-primary/90 font-semibold text-lg mb-1 truncate max-w-xs mx-auto">
                   {file.name}
                 </p>
-                <p className="text-sm text-gray-500">
-                  {formatBytes(file.size)}
-                </p>
+                <p className="text-sm text-gray-500">{formatBytes(file.size)}</p>
                 <p className="text-xs text-gray-400 mt-2">
                   {t("pdfProcessing.compress.changeFile")}
                 </p>
@@ -176,9 +168,7 @@ export default function Compress() {
                 <p className="text-gray-700 font-medium mb-1">
                   {t("pdfProcessing.compress.dropzone")}
                 </p>
-                <p className="text-sm text-gray-500">
-                  {t("pdfProcessing.compress.pdffilesOnly")}
-                </p>
+                <p className="text-sm text-gray-500">{t("pdfProcessing.compress.pdffilesOnly")}</p>
               </div>
             )}
           </label>
@@ -218,9 +208,7 @@ export default function Compress() {
           <div className="mt-6 p-6 bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-lg shadow-sm">
             <div className="flex items-center text-green-700 mb-4">
               <FileCheck className="h-6 w-6 mr-3" />
-              <span className="font-bold text-lg">
-                {t("pdfProcessing.compress.success")}
-              </span>
+              <span className="font-bold text-lg">{t("pdfProcessing.compress.success")}</span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -245,9 +233,7 @@ export default function Compress() {
                 {t("pdfProcessing.compress.spaceSaved")}
               </p>
               <div className="flex items-baseline">
-                <p className="text-green-600 font-bold text-3xl">
-                  {result.reduction}%
-                </p>
+                <p className="text-green-600 font-bold text-3xl">{result.reduction}%</p>
                 <p className="text-gray-500 text-sm ml-2">
                   ({formatBytes(result.originalSize - result.compressedSize)}{" "}
                   {t("pdfProcessing.compress.saved")})
