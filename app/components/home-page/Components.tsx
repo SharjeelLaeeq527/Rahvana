@@ -1238,30 +1238,50 @@ export function TwoWaysSection() {
                 <motion.div
                   className={`flex flex-col items-center text-center lg:items-end lg:text-right transition-all duration-300 p-2 sm:p-4 rounded-2xl border ${
                     hoveredSide === "left"
-                      ? "border-teal-500/30 bg-teal-50/20 shadow-md shadow-teal-500/5"
-                      : "border-transparent bg-transparent"
+                      ? "border-[#0d7377] bg-gradient-to-br from-[#0d7377] to-[#14a0a6] shadow-lg shadow-teal-500/20 text-white"
+                      : "border-teal-500/30 bg-teal-50/20 shadow-md shadow-teal-500/5"
                   }`}
                   onMouseEnter={() => handleSetHoveredSide("left")}
                   onMouseLeave={() => handleSetHoveredSide(null)}
                   animate={
-                    hoveredSide === "right"
-                      ? { opacity: 0.5, scale: 0.98 }
-                      : { opacity: 1, scale: 1 }
+                    hoveredSide === "left"
+                      ? { opacity: 1, scale: 1.01 }
+                      : hoveredSide === "right"
+                        ? { opacity: 0.5, scale: 0.98 }
+                        : { opacity: 1, scale: 1 }
                   }
                 >
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#0d7377] mb-1.5 px-2 py-0.5 bg-teal-50 border border-teal-100 rounded-full">
+                  <span
+                    className={`text-[9px] font-extrabold uppercase tracking-widest mb-1.5 px-2 py-0.5 rounded-full border transition-all duration-300 ${
+                      hoveredSide === "left"
+                        ? "text-white bg-white/20 border-white/25"
+                        : "text-[#0d7377] bg-teal-50 border-teal-100"
+                    }`}
+                  >
                     Beginners
                   </span>
-                  <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug mb-2">
+                  <h3
+                    className={`text-lg sm:text-xl font-black leading-snug mb-2 transition-all duration-300 ${
+                      hoveredSide === "left" ? "text-white" : "text-slate-900"
+                    }`}
+                  >
                     Follow IR-1 Roadmap
                   </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed mb-4 max-w-[280px]">
+                  <p
+                    className={`text-xs leading-relaxed mb-4 max-w-[280px] transition-all duration-300 ${
+                      hoveredSide === "left" ? "text-teal-50/90" : "text-slate-500"
+                    }`}
+                  >
                     Ideal for beginners seeking structured, step-by-step guidance and progress
                     tracking.
                   </p>
                   <Link
                     href={journeyHref}
-                    className="inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-600/10 hover:shadow-lg hover:shadow-teal-600/20 text-white transition-all duration-200 no-underline mb-5"
+                    className={`inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all duration-200 no-underline mb-5 ${
+                      hoveredSide === "left"
+                        ? "bg-white text-[#0d7377] hover:bg-teal-50 shadow-lg shadow-black/10"
+                        : "bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-600/10 hover:shadow-lg hover:shadow-teal-600/20"
+                    }`}
                   >
                     Start Roadmap
                     <ArrowRight size={14} />
@@ -1426,30 +1446,50 @@ export function TwoWaysSection() {
                 <motion.div
                   className={`flex flex-col items-center text-center lg:items-start lg:text-left transition-all duration-300 p-2 sm:p-4 rounded-2xl border ${
                     hoveredSide === "right"
-                      ? "border-orange-500/30 bg-orange-50/10 shadow-md shadow-orange-500/5"
-                      : "border-transparent bg-transparent"
+                      ? "border-[#b5451b] bg-gradient-to-br from-[#b5451b] to-[#d96b43] shadow-lg shadow-orange-500/20 text-white"
+                      : "border-orange-500/30 bg-orange-50/10 shadow-md shadow-orange-500/5"
                   }`}
                   onMouseEnter={() => handleSetHoveredSide("right")}
                   onMouseLeave={() => handleSetHoveredSide(null)}
                   animate={
-                    hoveredSide === "left"
-                      ? { opacity: 0.5, scale: 0.98 }
-                      : { opacity: 1, scale: 1 }
+                    hoveredSide === "right"
+                      ? { opacity: 1, scale: 1.01 }
+                      : hoveredSide === "left"
+                        ? { opacity: 0.5, scale: 0.98 }
+                        : { opacity: 1, scale: 1 }
                   }
                 >
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#b5451b] mb-1.5 px-2 py-0.5 bg-orange-50 border border-orange-100 rounded-full">
+                  <span
+                    className={`text-[9px] font-extrabold uppercase tracking-widest mb-1.5 px-2 py-0.5 rounded-full border transition-all duration-300 ${
+                      hoveredSide === "right"
+                        ? "text-white bg-white/20 border-white/25"
+                        : "text-[#b5451b] bg-orange-50 border-orange-100"
+                    }`}
+                  >
                     Experienced
                   </span>
-                  <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug mb-2">
+                  <h3
+                    className={`text-lg sm:text-xl font-black leading-snug mb-2 transition-all duration-300 ${
+                      hoveredSide === "right" ? "text-white" : "text-slate-900"
+                    }`}
+                  >
                     Use Independent Tools
                   </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed mb-4 max-w-[280px]">
+                  <p
+                    className={`text-xs leading-relaxed mb-4 max-w-[280px] transition-all duration-300 ${
+                      hoveredSide === "right" ? "text-orange-50/90" : "text-slate-500"
+                    }`}
+                  >
                     Suitable for experienced users who prefer flexibility and focused
                     self-direction.
                   </p>
                   <Link
                     href={toolsHref}
-                    className="inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 shadow-md shadow-slate-800/10 hover:shadow-lg hover:shadow-slate-800/20 text-white transition-all duration-200 no-underline mb-5"
+                    className={`inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all duration-200 no-underline mb-5 ${
+                      hoveredSide === "right"
+                        ? "bg-white text-[#b5451b] hover:bg-orange-50 shadow-lg shadow-black/10"
+                        : "bg-slate-800 hover:bg-slate-900 text-white shadow-md shadow-slate-800/10 hover:shadow-lg hover:shadow-slate-800/20"
+                    }`}
                   >
                     Browse Resources
                     <ArrowRight size={14} />
