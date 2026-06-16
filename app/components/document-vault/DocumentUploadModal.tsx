@@ -59,7 +59,7 @@ export function DocumentUploadModal({
   // modal serves every OCR-eligible document without per-type branching here.
   const ocrMeta = ocrConfig ? getOcrDocTypeMeta(ocrConfig.docType) : null;
   const OCR_FIELD_ORDER = ocrMeta?.fields ?? [];
-  const [ocrPhase, setOcrPhase] = useState<"idle" | "reading" | "confirm">("idle");
+  const [ocrPhase, setOcrPhase] = useState<"idle" | "reading" | "confirm" | "error">("idle");
   const [ocrFields, setOcrFields] = useState<Record<string, string>>({});
   const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
   const [ocrSaving, setOcrSaving] = useState(false);
@@ -115,16 +115,17 @@ export function DocumentUploadModal({
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json) {
-        showToast("Uploaded. We couldn't auto-read this document — you can fill details manually.", "info");
-        handleClose();
+        // The file is already saved in the vault; only the auto-read failed. Keep the
+        // modal open in an error state so the user can re-read or fill in manually,
+        // instead of dropping them out with no way to retry.
+        setOcrPhase("error");
         return;
       }
       setOcrFields(json.fields || {});
       setOcrWarnings(json.warnings || []);
       setOcrPhase("confirm");
     } catch {
-      showToast("Uploaded. We couldn't auto-read this document — you can fill details manually.", "info");
-      handleClose();
+      setOcrPhase("error");
     }
   };
 
@@ -418,18 +419,36 @@ export function DocumentUploadModal({
                 <div className="w-9 h-9 rounded-xl bg-[#e8f1fb] text-brand flex items-center justify-center">
                   <ScanLine className="w-5 h-5" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="font-bold text-sm">
                     {ocrPhase === "reading"
                       ? "Reading your document…"
-                      : "Confirm the details we read"}
+                      : ocrPhase === "error"
+                        ? "We couldn't read this document"
+                        : "Confirm the details we read"}
                   </p>
-                  <p className="text-xs text-[#6b8097]">
-                    {ocrConfig?.target === "beneficiary"
-                      ? "These will be saved to your spouse's (beneficiary) details."
-                      : "These will be saved to your profile."}
-                  </p>
+                  {ocrPhase !== "error" && (
+                    <p className="text-xs text-[#6b8097]">
+                      {ocrConfig?.target === "beneficiary"
+                        ? "These will be saved to your spouse's (beneficiary) details."
+                        : "These will be saved to your profile."}
+                    </p>
+                  )}
                 </div>
+                {/* Re-read shortcut on the confirm screen — lets the user retry the
+                    auto-read if the values look off, without re-uploading the file. */}
+                {ocrPhase === "confirm" && selectedFile && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => runOcr(selectedFile)}
+                    disabled={ocrSaving}
+                    className="rounded-xl border-[#d0e4f7] text-[#6b8097] hover:bg-slate-50 text-xs font-semibold gap-1.5"
+                  >
+                    <ScanLine className="w-3.5 h-3.5" />
+                    Re-read
+                  </Button>
+                )}
               </div>
 
               {ocrPhase === "reading" && (
@@ -437,6 +456,36 @@ export function DocumentUploadModal({
                   <div className="w-5 h-5 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
                   <span className="text-sm font-medium">Extracting fields…</span>
                 </div>
+              )}
+
+              {ocrPhase === "error" && (
+                <>
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+                    <p className="font-semibold mb-1">Your document is saved — we just couldn&apos;t auto-read it.</p>
+                    <p className="leading-relaxed">
+                      The photo may be blurry, cropped, or have glare. For the best result,
+                      use a clear, well-lit photo of the full document, then try again. You
+                      can also fill in the details yourself.
+                    </p>
+                  </div>
+                  <div className="flex gap-3 pt-2 pb-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleClose}
+                      className="flex-1 rounded-xl border-[#d0e4f7] text-[#6b8097] hover:bg-slate-50 font-semibold"
+                    >
+                      Fill in manually
+                    </Button>
+                    <Button
+                      onClick={() => selectedFile && runOcr(selectedFile)}
+                      disabled={!selectedFile}
+                      className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold gap-1.5"
+                    >
+                      <ScanLine className="w-4 h-4" />
+                      Re-read document
+                    </Button>
+                  </div>
+                </>
               )}
 
               {ocrPhase === "confirm" && (
