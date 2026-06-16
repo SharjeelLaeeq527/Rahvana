@@ -161,7 +161,7 @@ export async function PUT(req: NextRequest) {
       return Response.json({ error: msg(E.AUTH_UNAUTHORIZED_ADMIN) }, { status: 403 });
     }
 
-    const { id, status, adminNotes } = await req.json();
+    const { id, status, adminNotes, preferredDate, preferredTime } = await req.json();
 
     if (!id || !status) {
       return Response.json({ error: "Missing required fields" }, { status: 400 });
@@ -180,9 +180,21 @@ export async function PUT(req: NextRequest) {
       }
     );
 
+    const updateData: any = {
+      status,
+      admin_notes: adminNotes || "",
+    };
+
+    if (preferredDate !== undefined) {
+      updateData.preferred_date = preferredDate || null;
+    }
+    if (preferredTime !== undefined) {
+      updateData.preferred_time = preferredTime || null;
+    }
+
     const { error } = await supabase
       .from("appointments")
-      .update({ status, admin_notes: adminNotes || "" })
+      .update(updateData)
       .eq("id", id);
 
     if (error) {

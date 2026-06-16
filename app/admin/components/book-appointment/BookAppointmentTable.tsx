@@ -82,6 +82,7 @@ interface Appointment {
   k_one_letter_url?: string;
   appointment_confirmation_letter_url?: string;
   applicants?: Applicant[];
+  admin_notes?: string;
 }
 
 export default function BookAppointmentTable() {
@@ -100,6 +101,8 @@ export default function BookAppointmentTable() {
   const [statusUpdateConfirmOpen, setStatusUpdateConfirmOpen] = useState(false);
   const [pendingUpdate, setPendingUpdate] = useState<{ id: string; status: AppointmentStatus } | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
+  const [preferredDate, setPreferredDate] = useState("");
+  const [preferredTime, setPreferredTime] = useState("");
 
   const fetchAppointments = useCallback(async () => {
     try {
@@ -155,12 +158,24 @@ export default function BookAppointmentTable() {
     setFilteredAppointments(filtered);
   }, [appointments, selectedStatus, searchTerm, sortOrder]);
 
-  const updateAppointmentStatus = async (id: string, newStatus: AppointmentStatus, notes?: string) => {
+  const updateAppointmentStatus = async (
+    id: string,
+    newStatus: AppointmentStatus,
+    notes?: string,
+    prefDate?: string,
+    prefTime?: string
+  ) => {
     try {
       const response = await fetch("/api/admin/appointments", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status: newStatus, adminNotes: notes }),
+        body: JSON.stringify({
+          id,
+          status: newStatus,
+          adminNotes: notes,
+          preferredDate: prefDate,
+          preferredTime: prefTime,
+        }),
       });
 
       const result = await response.json();
@@ -178,8 +193,31 @@ export default function BookAppointmentTable() {
   };
 
   const initiateStatusUpdate = (id: string, newStatus: AppointmentStatus) => {
+    const appt = appointments.find((a) => a.id === id);
     setPendingUpdate({ id, status: newStatus });
-    setAdminNotes("");
+    setAdminNotes(appt?.admin_notes || "");
+
+    let formattedDate = "";
+    if (appt?.preferred_date) {
+      try {
+        const d = new Date(appt.preferred_date);
+        if (!isNaN(d.getTime())) {
+          formattedDate = d.toISOString().split("T")[0];
+        } else {
+          formattedDate = appt.preferred_date.substring(0, 10);
+        }
+      } catch (e) {
+        formattedDate = appt.preferred_date.substring(0, 10);
+      }
+    }
+
+    let formattedTime = "";
+    if (appt?.preferred_time) {
+      formattedTime = appt.preferred_time.substring(0, 5);
+    }
+
+    setPreferredDate(formattedDate);
+    setPreferredTime(formattedTime);
     setStatusUpdateConfirmOpen(true);
   };
 
@@ -902,7 +940,18 @@ export default function BookAppointmentTable() {
       </Card>
 
       {/* Status Update Confirmation Modal */}
-      <Dialog open={statusUpdateConfirmOpen} onOpenChange={setStatusUpdateConfirmOpen}>
+      <Dialog
+        open={statusUpdateConfirmOpen}
+        onOpenChange={(open) => {
+          setStatusUpdateConfirmOpen(open);
+          if (!open) {
+            setPendingUpdate(null);
+            setAdminNotes("");
+            setPreferredDate("");
+            setPreferredTime("");
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Update Status</DialogTitle>
@@ -910,17 +959,47 @@ export default function BookAppointmentTable() {
               Are you sure you want to update the status to <span className="font-semibold uppercase text-primary">{pendingUpdate?.status}</span>?
             </div>
           </DialogHeader>
-          <div className="py-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Admin Notes (Optional)
-            </label>
-            <textarea
-              value={adminNotes}
-              onChange={(e) => setAdminNotes(e.target.value)}
-              placeholder="Add any notes about this status update..."
-              className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-              maxLength={500}
-            />
+          <div className="py-4 space-y-4">
+            {pendingUpdate?.status === "completed" && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Appointment Date <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="date"
+                    value={preferredDate}
+                    onChange={(e) => setPreferredDate(e.target.value)}
+                    className="w-full"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Appointment Time <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="time"
+                    value={preferredTime}
+                    onChange={(e) => setPreferredTime(e.target.value)}
+                    className="w-full"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Admin Notes (Optional)
+              </label>
+              <textarea
+                value={adminNotes}
+                onChange={(e) => setAdminNotes(e.target.value)}
+                placeholder="Add any notes about this status update..."
+                className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                maxLength={500}
+              />
+            </div>
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button
@@ -929,18 +1008,29 @@ export default function BookAppointmentTable() {
                 setStatusUpdateConfirmOpen(false);
                 setPendingUpdate(null);
                 setAdminNotes("");
+                setPreferredDate("");
+                setPreferredTime("");
               }}
             >
               Cancel
             </Button>
             <Button
+              disabled={pendingUpdate?.status === "completed" && (!preferredDate || !preferredTime)}
               onClick={async () => {
                 if (pendingUpdate) {
-                  await updateAppointmentStatus(pendingUpdate.id, pendingUpdate.status, adminNotes);
+                  await updateAppointmentStatus(
+                    pendingUpdate.id,
+                    pendingUpdate.status,
+                    adminNotes,
+                    pendingUpdate.status === "completed" ? preferredDate : undefined,
+                    pendingUpdate.status === "completed" ? preferredTime : undefined
+                  );
                 }
                 setStatusUpdateConfirmOpen(false);
                 setPendingUpdate(null);
                 setAdminNotes("");
+                setPreferredDate("");
+                setPreferredTime("");
               }}
             >
               Confirm

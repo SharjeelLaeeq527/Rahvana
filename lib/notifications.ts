@@ -33,6 +33,46 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
       adminNotes,
     } = data;
 
+    // Format date nicely: "Wednesday, June 17, 2026"
+    const formatAppointmentDate = (dateStr?: string) => {
+      if (!dateStr) return "To be scheduled";
+      try {
+        const parts = dateStr.split("-");
+        if (parts.length === 3) {
+          const year = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10) - 1;
+          const day = parseInt(parts[2], 10);
+          const d = new Date(year, month, day);
+          if (!isNaN(d.getTime())) {
+            return d.toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            });
+          }
+        }
+      } catch (e) {}
+      return dateStr;
+    };
+
+    // Format time nicely: "2:30 PM"
+    const formatAppointmentTime = (timeStr?: string) => {
+      if (!timeStr) return "To be scheduled";
+      try {
+        const parts = timeStr.split(":");
+        if (parts.length >= 2) {
+          const hours = parseInt(parts[0], 10);
+          const minutes = parseInt(parts[1], 10);
+          const ampm = hours >= 12 ? "PM" : "AM";
+          const formattedHours = hours % 12 || 12;
+          const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+          return `${formattedHours}:${formattedMinutes} ${ampm}`;
+        }
+      } catch (e) {}
+      return timeStr;
+    };
+
     let subject = "";
     let htmlContent = "";
 
@@ -48,9 +88,8 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
             <h2 style="color: #374151; margin-top: 0;">Appointment Details</h2>
             <p><strong>Medical Website:</strong> ${medicalWebsite}</p>
             <p><strong>Appointment Location:</strong> ${appointmentLocation}</p>
-            <p><strong>Booking Reference:</strong> ${bookingReference || "N/A"}</p>
-            <p><strong>Date:</strong> ${appointmentDate || "To be scheduled"}</p>
-            <p><strong>Time:</strong> ${appointmentTime || "To be scheduled"}</p>
+            <p><strong>Date:</strong> ${formatAppointmentDate(appointmentDate)}</p>
+            <p><strong>Time:</strong> ${formatAppointmentTime(appointmentTime)}</p>
           </div>
           
           ${

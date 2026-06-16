@@ -776,7 +776,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                           </div>
                           <div>
                             {appointment.preferred_date
-                              ? <><span className="font-medium">Preferred Date:</span>{" "}
+                              ? <><span className="font-medium">Appointment Date:</span>{" "}
                               {new Date(appointment.preferred_date).toLocaleDateString(undefined, {
                                   month: "short",
                                   day: "numeric",
@@ -787,7 +787,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                           </div>
                           <div>
                             {appointment.preferred_time
-                              ? <><span className="font-medium">Preferred Time:</span>{" "}
+                              ? <><span className="font-medium">Appointment Time:</span>{" "}
                               {appointment.preferred_time}
                               </>
                               : "N/A"}

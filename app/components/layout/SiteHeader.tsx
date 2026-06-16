@@ -290,8 +290,7 @@ export function SiteHeader({
 
       // 3. Merge and sort by created_at descending
       const merged = [...journeyReminders, ...appNotifications].sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
 
       setNotifList(merged);
@@ -339,9 +338,7 @@ export function SiteHeader({
         body: JSON.stringify({ id, action: "read" }),
       }).catch(() => {});
       // Update local state immediately
-      setNotifList((prev) =>
-        prev.map((n: any) => (n.id === id ? { ...n, is_read: true } : n))
-      );
+      setNotifList((prev) => prev.map((n: any) => (n.id === id ? { ...n, is_read: true } : n)));
     } else {
       // Journey reminders: use localStorage-based tracking
       setReadIds((prev) => {
@@ -474,7 +471,6 @@ export function SiteHeader({
     return false;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [scrolled, setScrolled] = useState(false);
   const [heroTransitioned, setHeroTransitioned] = useState(false);
   useEffect(() => {
@@ -960,7 +956,7 @@ export function SiteHeader({
                         }
                       />
                       {unreadCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center border border-white/50">
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-semibold flex items-center justify-center border border-white/50">
                           {unreadCount > 9 ? "9+" : unreadCount}
                         </span>
                       )}
@@ -1008,7 +1004,8 @@ export function SiteHeader({
                               {notifList.slice(0, 8).map((n: any) => {
                                 const isExpanded = expandedNotifs.has(n.id);
                                 const bodyLong = n.body && n.body.length > 80;
-                                const isRead = n._source === "app" ? !!n.is_read : readIds.has(n.id);
+                                const isRead =
+                                  n._source === "app" ? !!n.is_read : readIds.has(n.id);
                                 return (
                                   <div
                                     key={n.id}
