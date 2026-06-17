@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useMemo } from "react";
+import { useState, useRef, useMemo, useEffect } from "react";
 import { DocumentDefinition, DocumentRole } from "@/lib/document-vault/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
@@ -59,11 +59,48 @@ export function DocumentUploadModal({
   // modal serves every OCR-eligible document without per-type branching here.
   const ocrMeta = ocrConfig ? getOcrDocTypeMeta(ocrConfig.docType) : null;
   const OCR_FIELD_ORDER = ocrMeta?.fields ?? [];
-  const [ocrPhase, setOcrPhase] = useState<"idle" | "reading" | "confirm">("idle");
+  const [ocrPhase, setOcrPhase] = useState<"idle" | "reading" | "confirm" | "error">("idle");
   const [ocrFields, setOcrFields] = useState<Record<string, string>>({});
-  const [ocrConfidence, setOcrConfidence] = useState<Record<string, number>>({});
   const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
   const [ocrSaving, setOcrSaving] = useState(false);
+
+  // ── Two-source check (journey step answer) ──
+  // For a prior-marriage proof (divorce decree / death cert), the journey earlier
+  // asked the beneficiary whether they were previously married. We fetch that answer
+  // so we can flag a clash ("you said this is your first marriage, but this document
+  // shows a previous one") and, on save, overwrite that earlier answer.
+  // null = not yet known / not applicable; "yes" | "no" | "" once fetched.
+  const [journeyPriorMarriage, setJourneyPriorMarriage] = useState<string | null>(null);
+  const isDivorceDoc = ocrConfig?.docType === "divorce";
+
+  useEffect(() => {
+    if (ocrPhase !== "confirm" || !isDivorceDoc) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch("/api/journey/marriage-check");
+        const json = await res.json().catch(() => null);
+        if (!cancelled) setJourneyPriorMarriage(json?.priorMarriageBeneficiary ?? "");
+      } catch {
+        if (!cancelled) setJourneyPriorMarriage("");
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [ocrPhase, isDivorceDoc]);
+
+  // A clash exists when this document shows a previous marriage but the journey step
+  // explicitly recorded "no" prior marriage. (Empty = unanswered → we don't nag.)
+  const hasPriorMarriageData =
+    isDivorceDoc &&
+    Boolean(
+      ocrFields["relationship.priorMarriage.spouseName"] ||
+        ocrFields["relationship.priorMarriage.dateMarriageEnded"] ||
+        ocrFields["relationship.priorMarriage.howEnded"]
+    );
+  const journeyMarriageClash =
+    isDivorceDoc && hasPriorMarriageData && journeyPriorMarriage === "no";
 
   const runOcr = async (file: File) => {
     if (!ocrConfig) return;
@@ -78,17 +115,17 @@ export function DocumentUploadModal({
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json) {
-        showToast("Uploaded. We couldn't auto-read this document — you can fill details manually.", "info");
-        handleClose();
+        // The file is already saved in the vault; only the auto-read failed. Keep the
+        // modal open in an error state so the user can re-read or fill in manually,
+        // instead of dropping them out with no way to retry.
+        setOcrPhase("error");
         return;
       }
       setOcrFields(json.fields || {});
-      setOcrConfidence(json.confidence || {});
       setOcrWarnings(json.warnings || []);
       setOcrPhase("confirm");
     } catch {
-      showToast("Uploaded. We couldn't auto-read this document — you can fill details manually.", "info");
-      handleClose();
+      setOcrPhase("error");
     }
   };
 
@@ -105,8 +142,9 @@ export function DocumentUploadModal({
     if (ocrPhase !== "confirm" || !profile) return null;
     const stored: Record<string, string> = {};
     for (const { key } of OCR_FIELD_ORDER) {
-      // Beneficiary docs store under beneficiary.* (relationship.* is self-only).
-      const path = ocrConfig?.target === "beneficiary" ? `beneficiary.${key}` : key;
+      // Non-self docs store under that person's subsection (sponsor.* / beneficiary.*).
+      const path =
+        ocrConfig && ocrConfig.target !== "self" ? `${ocrConfig.target}.${key}` : key;
       const v = readProfilePath(profile, path);
       if (v) stored[key] = v;
     }
@@ -133,6 +171,23 @@ export function DocumentUploadModal({
         showToast(json?.error || "Could not save details to your profile.", "error");
         return;
       }
+      // For a prior-marriage proof, also OVERWRITE the earlier journey step answer
+      // ("first marriage?") so the two sources stay in sync. Best-effort — never
+      // blocks the save.
+      if (isDivorceDoc && hasPriorMarriageData) {
+        try {
+          await fetch("/api/journey/marriage-check", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              howEnded: ocrFields["relationship.priorMarriage.howEnded"] || "divorce",
+            }),
+          });
+        } catch {
+          // Non-fatal: the profile save already succeeded.
+        }
+      }
+
       await refreshProfile();
       showToast("Details saved to your profile.", "success");
       handleClose();
@@ -312,8 +367,8 @@ export function DocumentUploadModal({
     setNotes("");
     setOcrPhase("idle");
     setOcrFields({});
-    setOcrConfidence({});
     setOcrWarnings([]);
+    setJourneyPriorMarriage(null);
     onClose();
   };
 
@@ -322,7 +377,11 @@ export function DocumentUploadModal({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-2xl w-[95vw] sm:w-full p-0 overflow-hidden rounded-2xl border-none shadow-2xl">
+      <DialogContent
+        className={`${
+          ocrPhase === "confirm" ? "max-w-4xl" : "max-w-2xl"
+        } w-[95vw] sm:w-full p-0 overflow-hidden rounded-2xl border-none shadow-2xl`}
+      >
         <div className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader className="relative pb-4">
             <DialogTitle className="text-lg sm:text-xl pr-8 font-bold text-[#0c1b33]">
@@ -360,18 +419,36 @@ export function DocumentUploadModal({
                 <div className="w-9 h-9 rounded-xl bg-[#e8f1fb] text-brand flex items-center justify-center">
                   <ScanLine className="w-5 h-5" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="font-bold text-sm">
                     {ocrPhase === "reading"
                       ? "Reading your document…"
-                      : "Confirm the details we read"}
+                      : ocrPhase === "error"
+                        ? "We couldn't read this document"
+                        : "Confirm the details we read"}
                   </p>
-                  <p className="text-xs text-[#6b8097]">
-                    {ocrConfig?.target === "beneficiary"
-                      ? "These will be saved to your spouse's (beneficiary) details."
-                      : "These will be saved to your profile."}
-                  </p>
+                  {ocrPhase !== "error" && (
+                    <p className="text-xs text-[#6b8097]">
+                      {ocrConfig?.target === "beneficiary"
+                        ? "These will be saved to your spouse's (beneficiary) details."
+                        : "These will be saved to your profile."}
+                    </p>
+                  )}
                 </div>
+                {/* Re-read shortcut on the confirm screen — lets the user retry the
+                    auto-read if the values look off, without re-uploading the file. */}
+                {ocrPhase === "confirm" && selectedFile && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => runOcr(selectedFile)}
+                    disabled={ocrSaving}
+                    className="rounded-xl border-[#d0e4f7] text-[#6b8097] hover:bg-slate-50 text-xs font-semibold gap-1.5"
+                  >
+                    <ScanLine className="w-3.5 h-3.5" />
+                    Re-read
+                  </Button>
+                )}
               </div>
 
               {ocrPhase === "reading" && (
@@ -379,6 +456,36 @@ export function DocumentUploadModal({
                   <div className="w-5 h-5 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
                   <span className="text-sm font-medium">Extracting fields…</span>
                 </div>
+              )}
+
+              {ocrPhase === "error" && (
+                <>
+                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+                    <p className="font-semibold mb-1">Your document is saved — we just couldn&apos;t auto-read it.</p>
+                    <p className="leading-relaxed">
+                      The photo may be blurry, cropped, or have glare. For the best result,
+                      use a clear, well-lit photo of the full document, then try again. You
+                      can also fill in the details yourself.
+                    </p>
+                  </div>
+                  <div className="flex gap-3 pt-2 pb-2">
+                    <Button
+                      variant="outline"
+                      onClick={handleClose}
+                      className="flex-1 rounded-xl border-[#d0e4f7] text-[#6b8097] hover:bg-slate-50 font-semibold"
+                    >
+                      Fill in manually
+                    </Button>
+                    <Button
+                      onClick={() => selectedFile && runOcr(selectedFile)}
+                      disabled={!selectedFile}
+                      className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold gap-1.5"
+                    >
+                      <ScanLine className="w-4 h-4" />
+                      Re-read document
+                    </Button>
+                  </div>
+                </>
               )}
 
               {ocrPhase === "confirm" && (
@@ -391,6 +498,19 @@ export function DocumentUploadModal({
                           <li key={i}>{w}</li>
                         ))}
                       </ul>
+                    </div>
+                  )}
+
+                  {journeyMarriageClash && (
+                    <div className="bg-red-50 border border-red-300 rounded-xl p-4 text-sm text-red-800">
+                      <p className="font-semibold mb-1">⚠️ Please review — this may not match an earlier answer</p>
+                      <p>
+                        This document suggests a <strong>previous marriage</strong>, but earlier in
+                        your journey you indicated this is your <strong>first marriage</strong>. If
+                        the document is correct, click <strong>Confirm &amp; Save</strong> and
+                        we&apos;ll update that earlier answer for you. If not, edit the fields below
+                        or skip.
+                      </p>
                     </div>
                   )}
 
@@ -411,20 +531,18 @@ export function DocumentUploadModal({
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 items-start">
                     {OCR_FIELD_ORDER.map(({ key, label }) => {
-                      const conf = ocrConfidence[key];
                       const isMismatch = mismatchKeys.has(key);
                       return (
-                        <div key={key} className="space-y-1">
-                          <Label htmlFor={`ocr-${key}`} className="flex items-center gap-2">
+                        <div key={key} className="flex flex-col">
+                          {/* Reserve two lines for every label so single- and two-line
+                              labels keep all the input boxes aligned across the row. */}
+                          <Label
+                            htmlFor={`ocr-${key}`}
+                            className="flex min-h-[2.5rem] items-start text-sm leading-snug"
+                          >
                             {label}
-                            {typeof conf === "number" && conf < 0.6 && (
-                              <span className="text-xs text-amber-600">(low confidence)</span>
-                            )}
-                            {isMismatch && (
-                              <span className="text-xs text-red-600">(doesn&apos;t match saved)</span>
-                            )}
                           </Label>
                           <Input
                             id={`ocr-${key}`}
@@ -435,6 +553,13 @@ export function DocumentUploadModal({
                               isMismatch ? "border-red-400 focus-visible:ring-red-400" : undefined
                             }
                           />
+                          {/* Mismatch note sits BELOW the input so it never pushes the
+                              box out of alignment with its neighbours. */}
+                          {isMismatch && (
+                            <span className="mt-1 text-xs text-red-600">
+                              Doesn&apos;t match your saved value
+                            </span>
+                          )}
                         </div>
                       );
                     })}

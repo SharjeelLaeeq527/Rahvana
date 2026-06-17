@@ -2,15 +2,31 @@
 
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createBrowserClient } from "@supabase/ssr";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
 import { MasterProfile } from "@/types/profile";
-import { ChevronDown, Pencil, Check, X } from "lucide-react";
+import {
+  Pencil,
+  Check,
+  X,
+  User as UserIcon,
+  HeartHandshake,
+  Mail,
+  Users,
+  Briefcase,
+  Plane,
+  Heart,
+  FileText,
+  DollarSign,
+  Compass,
+  ShieldCheck,
+  AlertCircle,
+} from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import { getProfileCompleteness } from "@/lib/profile/helpers";
-import { FormField, FormSelect, FormCheckbox } from "./form-field";
+import { FormField, FormSelect, FormCheckbox, SectionHeader } from "./form-field";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 export default function ProfilePage() {
@@ -27,22 +43,26 @@ export default function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
   const [isEditing, setIsEditing] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Track if we've already fetched for this user
   const hasFetchedRef = useRef<string | null>(null);
 
+  // All sections start collapsed — the user expands only what they want to edit,
+  // so the page opens as a clean, scannable list of section headers.
   const [sections, setSections] = useState({
-    personal: true,
-    contact: true,
-    family: true,
-    employment: true,
-    immigration: true,
-    documents: true,
-    financial: true,
-    relationship: true,
-    affidavit: true,
-    visaContext: true,
-    visaEligibility: true,
+    personal: false,
+    sponsor: false,
+    contact: false,
+    family: false,
+    employment: false,
+    immigration: false,
+    documents: false,
+    financial: false,
+    relationship: false,
+    affidavit: false,
+    visaContext: false,
+    visaEligibility: false,
   });
 
   // Memoize user ID to prevent unnecessary re-renders
@@ -91,7 +111,56 @@ export default function ProfilePage() {
     }
   }, [userId, isLoading, router, fetchProfile, user]);
 
+  // ── Validation ──────────────────────────────────────────────────────────────
+  // Format + cross-field checks on fields that HAVE a value (the profile is
+  // progressive, so we don't force empty fields — we only reject bad data).
+  const validate = useCallback((data: MasterProfile): Record<string, string> => {
+    const next: Record<string, string> = {};
+    const today = new Date().toISOString().slice(0, 10);
+
+    const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+    const isFutureDate = (v: string) => v > today;
+
+    // Date of birth can't be in the future.
+    if (data.dateOfBirth && isFutureDate(data.dateOfBirth)) {
+      next["dateOfBirth"] = "Date of birth can't be in the future.";
+    }
+    // Passport expiry must be after the issue date.
+    if (
+      data.passportExpiry &&
+      data.passportIssueDate &&
+      data.passportExpiry <= data.passportIssueDate
+    ) {
+      next["passportExpiry"] = "Expiry must be after the issue date.";
+    }
+    // CNIC format: 00000-0000000-0 (13 digits).
+    if (data.cnic && !/^\d{5}-\d{7}-\d$/.test(data.cnic.trim())) {
+      next["cnic"] = "Format must be 00000-0000000-0.";
+    }
+    // SSN: 9 digits (with or without dashes).
+    if (data.ssn && !/^\d{3}-?\d{2}-?\d{4}$/.test(data.ssn.trim())) {
+      next["ssn"] = "SSN must be 9 digits (e.g. 123-45-6789).";
+    }
+
+    // Sponsor (US petitioner).
+    if (data.sponsor?.email && !isEmail(data.sponsor.email)) {
+      next["sponsor.email"] = "Enter a valid email address.";
+    }
+    if (data.sponsor?.dateOfBirth && isFutureDate(data.sponsor.dateOfBirth)) {
+      next["sponsor.dateOfBirth"] = "Date of birth can't be in the future.";
+    }
+    return next;
+  }, []);
+
   const handleSave = async () => {
+    // Block the save on validation errors and surface them inline.
+    const found = validate(formData);
+    setErrors(found);
+    if (Object.keys(found).length > 0) {
+      setMessage("Please fix the highlighted fields before saving.");
+      return;
+    }
+
     try {
       setSaving(true);
       setMessage("");
@@ -125,6 +194,8 @@ export default function ProfilePage() {
 
   const handleCancel = () => {
     setIsEditing(false);
+    setErrors({});
+    setMessage("");
     // Reset fetch tracking and refetch to restore original data
     hasFetchedRef.current = null;
     fetchProfile();
@@ -171,6 +242,23 @@ export default function ProfilePage() {
     }));
   };
 
+  // Sponsor section helpers — sponsor.* holds the US petitioner's own data
+  // (the top-level fields are the account holder's / beneficiary's).
+  const updateSponsor = (field: string, value: unknown) => updateNested("sponsor", field, value);
+
+  const updateSponsorSub = (sub: "name" | "placeOfBirth" | "address", field: string, value: string) => {
+    setFormData((prev) => {
+      const sponsor = (prev.sponsor || {}) as Record<string, unknown>;
+      const current = sponsor[sub];
+      const subObj =
+        typeof current === "object" && current !== null
+          ? { ...(current as Record<string, unknown>) }
+          : {};
+      subObj[field] = value;
+      return { ...prev, sponsor: { ...sponsor, [sub]: subObj } as MasterProfile["sponsor"] };
+    });
+  };
+
   <div className="min-h-screen flex items-center justify-center bg-slate-50">
     <Loader size="md" />
   </div>;
@@ -179,104 +267,120 @@ export default function ProfilePage() {
 
   const completeness = formData.name ? getProfileCompleteness(formData) : 0;
 
+  const hasErrors = Object.keys(errors).length > 0;
+  const isSuccess = Boolean(message) && !message.includes("Error") && !hasErrors;
+
   return (
-    <div className="min-h-screen bg-slate-50">
-      <div className="w-full">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6">
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
-              {t("profile.title")}
-            </h1>
-            <p className="text-slate-500 text-sm mt-1">{t("profile.subtitle")}</p>
-          </div>
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto mt-2 md:mt-0">
-            <Button
-              variant="outline"
-              onClick={() => router.push("/complete-profile")}
-              className="w-full sm:w-auto h-9 text-sm px-4 border-primary/20 hover:bg-primary/5 text-primary"
-            >
-              <Check className="w-4 h-4 mr-2" />
-              {t("profile.buttons.completeProfile")}
-            </Button>
-            {isEditing ? (
-              <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:flex-row">
+    <div className="w-full">
+      {/* ── Hero band: title + actions + completeness in one clean card ── */}
+      <div className="mb-5 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+        <div className="p-5 sm:p-6">
+          <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="hidden sm:flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <UserIcon className="h-5 w-5" />
+              </div>
+              <div>
+                <h1 className="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">
+                  {t("profile.title")}
+                </h1>
+                <p className="text-slate-500 text-sm mt-0.5">{t("profile.subtitle")}</p>
+              </div>
+            </div>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 w-full md:w-auto">
+              <Button
+                variant="outline"
+                onClick={() => router.push("/complete-profile")}
+                className="w-full sm:w-auto h-9 text-sm px-4 border-primary/20 hover:bg-primary/5 text-primary"
+              >
+                <Check className="w-4 h-4 mr-2" />
+                {t("profile.buttons.completeProfile")}
+              </Button>
+              {isEditing ? (
+                <div className="grid grid-cols-2 gap-2 w-full sm:w-auto sm:flex sm:flex-row">
+                  <Button
+                    variant="outline"
+                    onClick={handleCancel}
+                    disabled={saving}
+                    className="w-full sm:w-auto h-9 text-sm px-4 bg-transparent"
+                  >
+                    <X className="w-4 h-4 mr-2" />
+                    {t("profile.buttons.cancel")}
+                  </Button>
+                  <Button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="w-full sm:w-auto h-9 text-sm px-4"
+                  >
+                    {saving ? <Loader size="sm" /> : <Check className="w-4 h-4 mr-2" />}
+                    {t("profile.buttons.save")}
+                  </Button>
+                </div>
+              ) : (
                 <Button
-                  variant="outline"
-                  onClick={handleCancel}
-                  disabled={saving}
-                  className="w-full sm:w-auto h-9 text-sm px-4 bg-transparent"
-                >
-                  <X className="w-4 h-4 mr-2" />
-                  {t("profile.buttons.cancel")}
-                </Button>
-                <Button
-                  onClick={handleSave}
-                  disabled={saving}
+                  onClick={() => setIsEditing(true)}
                   className="w-full sm:w-auto h-9 text-sm px-4"
                 >
-                  {saving ? <Loader size="sm" /> : <Check className="w-4 h-4 mr-2" />}
-                  {t("profile.buttons.save")}
+                  <Pencil className="w-4 h-4 mr-2" />
+                  {t("profile.buttons.editProfile")}
                 </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Profile Completeness */}
+          {formData.name && (
+            <div className="mt-5">
+              <div className="flex items-center justify-between mb-1.5">
+                <span className="text-xs font-medium text-slate-600">
+                  {t("profile.completeness")}
+                </span>
+                <span className="text-sm font-semibold text-primary">{completeness}%</span>
               </div>
-            ) : (
-              <Button
-                onClick={() => setIsEditing(true)}
-                className="w-full sm:w-auto h-9 text-sm px-4"
-              >
-                <Pencil className="w-4 h-4 mr-2" />
-                {t("profile.buttons.editProfile")}
-              </Button>
-            )}
-          </div>
+              <div className="w-full h-2 bg-slate-100 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-primary transition-all duration-500 rounded-full"
+                  style={{ width: `${completeness}%` }}
+                />
+              </div>
+            </div>
+          )}
         </div>
+      </div>
 
-        {/* Success/Error Message */}
-        {message && (
-          <div
-            className={`mb-4 px-3 py-2 rounded-md text-xs ${
-              message.includes("Error")
-                ? "bg-red-50 text-red-700 border border-red-200"
-                : "bg-green-50 text-green-700 border border-green-200"
-            }`}
-          >
-            {message}
-          </div>
-        )}
+      {/* Success / Error / Validation banner */}
+      {message && (
+        <div
+          className={`mb-4 flex items-start gap-2 px-3.5 py-2.5 rounded-lg text-sm border ${
+            isSuccess
+              ? "bg-green-50 text-green-700 border-green-200"
+              : "bg-red-50 text-red-700 border-red-200"
+          }`}
+        >
+          {isSuccess ? (
+            <Check className="h-4 w-4 mt-0.5 shrink-0" />
+          ) : (
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+          )}
+          <span>{message}</span>
+        </div>
+      )}
 
-        {/* Profile Completeness */}
-        {formData.name && (
-          <div className="mb-4 px-4 py-3 bg-white border border-slate-200 rounded-lg">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-medium text-slate-600">
-                {t("profile.completeness")}
-              </span>
-              <span className="text-sm font-semibold text-slate-800">{completeness}%</span>
-            </div>
-            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
-              <div
-                className="h-full bg-slate-700 transition-all duration-500 rounded-full"
-                style={{ width: `${completeness}%` }}
-              />
-            </div>
-          </div>
-        )}
-
-        <div className="space-y-4">
+      <div className="space-y-4">
           {/* Personal Information */}
           <Card className="bg-white border-slate-200">
             <CardHeader
               className="cursor-pointer hover:bg-slate-50/50 transition-colors px-4 py-3"
               onClick={() => toggleSection("personal")}
             >
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-semibold text-slate-800">
-                  {t("profile.sections.personal")}
-                </CardTitle>
-                <ChevronDown
-                  className={`h-4 w-4 text-slate-400 transition-transform ${sections.personal ? "rotate-180" : ""}`}
-                />
-              </div>
+              <SectionHeader
+                icon={<UserIcon className="h-4 w-4" />}
+                title={t("profile.sections.personal")}
+                description="Your own details — the visa applicant (beneficiary)."
+                accent="slate"
+                badge="You"
+                isOpen={sections.personal}
+              />
             </CardHeader>
             {sections.personal && (
               <CardContent className="pt-0 pb-4 px-4">
@@ -308,6 +412,7 @@ export default function ProfilePage() {
                     value={formData.dateOfBirth || ""}
                     onChange={(v: string) => updateField("dateOfBirth", v)}
                     readOnly={!isEditing}
+                    error={errors["dateOfBirth"]}
                   />
                   <FormField
                     label={t("profile.fields.cityOfBirth")}
@@ -448,6 +553,7 @@ export default function ProfilePage() {
                     value={formData.passportExpiry || ""}
                     onChange={(v: string) => updateField("passportExpiry", v)}
                     readOnly={!isEditing}
+                    error={errors["passportExpiry"]}
                   />
                   <FormField
                     label={t("profile.fields.passportCountry")}
@@ -469,6 +575,7 @@ export default function ProfilePage() {
                         onChange={(v: string) => updateField("ssn", v)}
                         readOnly={!isEditing}
                         placeholder={t("profile.placeholders.ssn")}
+                        error={errors["ssn"]}
                       />
                       <FormField
                         label={t("profile.fields.alienNumber")}
@@ -492,20 +599,171 @@ export default function ProfilePage() {
             )}
           </Card>
 
+          {/* Sponsor / Petitioner (the US spouse). The sections above describe the
+              account holder (the beneficiary / visa applicant); this card captures
+              the sponsor's own details for I-130 Part 1 autofill. The emerald accent
+              + badge make it clearly "the other person", easy to spot on the page. */}
+          <Card className="bg-white border-emerald-200 ring-1 ring-emerald-100">
+            <CardHeader
+              className="cursor-pointer hover:bg-emerald-50/40 transition-colors px-4 py-3"
+              onClick={() => toggleSection("sponsor")}
+            >
+              <SectionHeader
+                icon={<HeartHandshake className="h-4 w-4" />}
+                title="Sponsor (U.S. Petitioner)"
+                description="The U.S. spouse filing the petition — their details, not yours."
+                accent="emerald"
+                badge="The other person"
+                isOpen={sections.sponsor}
+              />
+            </CardHeader>
+            {sections.sponsor && (
+              <CardContent className="pt-0 pb-4 px-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                  <FormField
+                    label="First name"
+                    value={formData.sponsor?.name?.first || ""}
+                    onChange={(v: string) => updateSponsorSub("name", "first", v)}
+                    readOnly={!isEditing}
+                  />
+                  <FormField
+                    label="Middle name"
+                    value={formData.sponsor?.name?.middle || ""}
+                    onChange={(v: string) => updateSponsorSub("name", "middle", v)}
+                    readOnly={!isEditing}
+                  />
+                  <FormField
+                    label="Last name"
+                    value={formData.sponsor?.name?.last || ""}
+                    onChange={(v: string) => updateSponsorSub("name", "last", v)}
+                    readOnly={!isEditing}
+                  />
+                  <FormField
+                    label="Date of birth"
+                    type="date"
+                    value={formData.sponsor?.dateOfBirth || ""}
+                    onChange={(v: string) => updateSponsor("dateOfBirth", v)}
+                    readOnly={!isEditing}
+                    error={errors["sponsor.dateOfBirth"]}
+                  />
+                  <FormField
+                    label="City of birth"
+                    value={formData.sponsor?.placeOfBirth?.city || ""}
+                    onChange={(v: string) => updateSponsorSub("placeOfBirth", "city", v)}
+                    readOnly={!isEditing}
+                  />
+                  <FormField
+                    label="Country of birth"
+                    value={formData.sponsor?.placeOfBirth?.country || ""}
+                    onChange={(v: string) => updateSponsorSub("placeOfBirth", "country", v)}
+                    readOnly={!isEditing}
+                  />
+                  {isEditing ? (
+                    <FormSelect
+                      label="Sex"
+                      value={formData.sponsor?.sex || "Male"}
+                      onChange={(v: string) => updateSponsor("sex", v)}
+                      options={[
+                        { value: "Male", label: t("profile.fields.sex.options.male") },
+                        { value: "Female", label: t("profile.fields.sex.options.female") },
+                      ]}
+                    />
+                  ) : (
+                    <FormField
+                      label="Sex"
+                      value={formData.sponsor?.sex || ""}
+                      onChange={() => {}}
+                      readOnly
+                    />
+                  )}
+                  <FormField
+                    label="Phone"
+                    value={formData.sponsor?.phone || ""}
+                    onChange={(v: string) => updateSponsor("phone", v)}
+                    readOnly={!isEditing}
+                  />
+                  <FormField
+                    label="Email"
+                    type="email"
+                    value={formData.sponsor?.email || ""}
+                    onChange={(v: string) => updateSponsor("email", v)}
+                    readOnly={!isEditing}
+                    error={errors["sponsor.email"]}
+                  />
+                  <FormField
+                    label="Passport number"
+                    value={formData.sponsor?.passportNumber || ""}
+                    onChange={(v: string) => updateSponsor("passportNumber", v)}
+                    readOnly={!isEditing}
+                  />
+                  <FormField
+                    label="Passport expiry"
+                    type="date"
+                    value={formData.sponsor?.passportExpiry || ""}
+                    onChange={(v: string) => updateSponsor("passportExpiry", v)}
+                    readOnly={!isEditing}
+                  />
+                  <FormField
+                    label="SSN"
+                    value={formData.sponsor?.ssn || ""}
+                    onChange={(v: string) => updateSponsor("ssn", v)}
+                    readOnly={!isEditing}
+                  />
+
+                  {/* US address */}
+                  <div className="sm:col-span-2 md:col-span-3 pt-4 border-t border-slate-100 mt-4">
+                    <h4 className="text-xs font-medium text-slate-600 mb-3">U.S. address</h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                      <FormField
+                        label="Street"
+                        value={formData.sponsor?.address?.street || ""}
+                        onChange={(v: string) => updateSponsorSub("address", "street", v)}
+                        readOnly={!isEditing}
+                      />
+                      <FormField
+                        label="City"
+                        value={formData.sponsor?.address?.city || ""}
+                        onChange={(v: string) => updateSponsorSub("address", "city", v)}
+                        readOnly={!isEditing}
+                      />
+                      <FormField
+                        label="State"
+                        value={formData.sponsor?.address?.state || ""}
+                        onChange={(v: string) => updateSponsorSub("address", "state", v)}
+                        readOnly={!isEditing}
+                      />
+                      <FormField
+                        label="ZIP code"
+                        value={formData.sponsor?.address?.zipCode || ""}
+                        onChange={(v: string) => updateSponsorSub("address", "zipCode", v)}
+                        readOnly={!isEditing}
+                      />
+                      <FormField
+                        label="Country"
+                        value={formData.sponsor?.address?.country || ""}
+                        onChange={(v: string) => updateSponsorSub("address", "country", v)}
+                        readOnly={!isEditing}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            )}
+          </Card>
+
           {/* Contact & Address */}
           <Card className="bg-white border-slate-200">
             <CardHeader
               className="cursor-pointer hover:bg-slate-50/50 transition-colors px-4 py-3"
               onClick={() => toggleSection("contact")}
             >
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-semibold text-slate-800">
-                  {t("profile.sections.contact")}
-                </CardTitle>
-                <ChevronDown
-                  className={`h-4 w-4 text-slate-400 transition-transform ${sections.contact ? "rotate-180" : ""}`}
-                />
-              </div>
+              <SectionHeader
+                icon={<Mail className="h-4 w-4" />}
+                title={t("profile.sections.contact")}
+                description="The visa applicant's contact details & address (you)."
+                accent="sky"
+                isOpen={sections.contact}
+              />
             </CardHeader>
             {sections.contact && (
               <CardContent className="pt-0 pb-4 px-4 space-y-4">
@@ -529,6 +787,7 @@ export default function ProfilePage() {
                     onChange={(v: string) => updateField("cnic", v)}
                     readOnly={!isEditing}
                     placeholder={t("profile.placeholders.cnic")}
+                    error={errors["cnic"]}
                   />
                 </div>
 
@@ -649,14 +908,13 @@ export default function ProfilePage() {
               className="cursor-pointer hover:bg-slate-50/50 transition-colors px-4 py-3"
               onClick={() => toggleSection("family")}
             >
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-semibold text-slate-800">
-                  {t("profile.sections.family")}
-                </CardTitle>
-                <ChevronDown
-                  className={`h-4 w-4 text-slate-400 transition-transform ${sections.family ? "rotate-180" : ""}`}
-                />
-              </div>
+              <SectionHeader
+                icon={<Users className="h-4 w-4" />}
+                title={t("profile.sections.family")}
+                description="The visa applicant's parents — father & mother (you)."
+                accent="violet"
+                isOpen={sections.family}
+              />
             </CardHeader>
             {sections.family && (
               <CardContent className="pt-0 pb-4 px-4 space-y-8">
@@ -883,14 +1141,13 @@ export default function ProfilePage() {
               className="cursor-pointer hover:bg-slate-50/50 transition-colors px-4 py-3"
               onClick={() => toggleSection("employment")}
             >
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-semibold text-slate-800">
-                  {t("profile.sections.employment")}
-                </CardTitle>
-                <ChevronDown
-                  className={`h-4 w-4 text-slate-400 transition-transform ${sections.employment ? "rotate-180" : ""}`}
-                />
-              </div>
+              <SectionHeader
+                icon={<Briefcase className="h-4 w-4" />}
+                title={t("profile.sections.employment")}
+                description="The visa applicant's work & education (you)."
+                accent="amber"
+                isOpen={sections.employment}
+              />
             </CardHeader>
             {sections.employment && (
               <CardContent className="pt-0 pb-4 px-4">
@@ -1043,14 +1300,13 @@ export default function ProfilePage() {
               className="cursor-pointer hover:bg-slate-50/50 transition-colors px-4 py-3"
               onClick={() => toggleSection("immigration")}
             >
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-semibold text-slate-800">
-                  {t("profile.sections.immigration")}
-                </CardTitle>
-                <ChevronDown
-                  className={`h-4 w-4 text-slate-400 transition-transform ${sections.immigration ? "rotate-180" : ""}`}
-                />
-              </div>
+              <SectionHeader
+                icon={<Plane className="h-4 w-4" />}
+                title={t("profile.sections.immigration")}
+                description="The visa applicant's travel & immigration history (you)."
+                accent="rose"
+                isOpen={sections.immigration}
+              />
             </CardHeader>
             {sections.immigration && (
               <CardContent className="pt-0 pb-4 px-4 space-y-3">
@@ -1138,14 +1394,13 @@ export default function ProfilePage() {
               className="cursor-pointer hover:bg-slate-50/50 transition-colors px-4 py-3"
               onClick={() => toggleSection("relationship")}
             >
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-semibold text-slate-800">
-                  {t("profile.sections.relationship")}
-                </CardTitle>
-                <ChevronDown
-                  className={`h-4 w-4 text-slate-400 transition-transform ${sections.relationship ? "rotate-180" : ""}`}
-                />
-              </div>
+              <SectionHeader
+                icon={<Heart className="h-4 w-4" />}
+                title={t("profile.sections.relationship")}
+                description="About your marriage & relationship with the sponsor."
+                accent="pink"
+                isOpen={sections.relationship}
+              />
             </CardHeader>
             {sections.relationship && (
               <CardContent className="pt-0 pb-4 px-4">
@@ -1265,14 +1520,13 @@ export default function ProfilePage() {
               className="cursor-pointer hover:bg-slate-50/50 transition-colors px-4 py-3"
               onClick={() => toggleSection("documents")}
             >
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-semibold text-slate-800">
-                  {t("profile.sections.documents")}
-                </CardTitle>
-                <ChevronDown
-                  className={`h-4 w-4 text-slate-400 transition-transform ${sections.documents ? "rotate-180" : ""}`}
-                />
-              </div>
+              <SectionHeader
+                icon={<FileText className="h-4 w-4" />}
+                title={t("profile.sections.documents")}
+                description="Which supporting documents you have ready."
+                accent="indigo"
+                isOpen={sections.documents}
+              />
             </CardHeader>
             {sections.documents && (
               <CardContent className="pt-0 pb-4 px-4">
@@ -1359,14 +1613,13 @@ export default function ProfilePage() {
               className="cursor-pointer hover:bg-slate-50/50 transition-colors px-4 py-3"
               onClick={() => toggleSection("affidavit")}
             >
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-semibold text-slate-800">
-                  {t("profile.sections.affidavit")}
-                </CardTitle>
-                <ChevronDown
-                  className={`h-4 w-4 text-slate-400 transition-transform ${sections.affidavit ? "rotate-180" : ""}`}
-                />
-              </div>
+              <SectionHeader
+                icon={<DollarSign className="h-4 w-4" />}
+                title={t("profile.sections.affidavit")}
+                description="The sponsor's financial details (Affidavit of Support, I-864)."
+                accent="green"
+                isOpen={sections.affidavit}
+              />
             </CardHeader>
             {sections.affidavit && (
               <CardContent className="pt-0 pb-4 px-4 space-y-4">
@@ -1537,14 +1790,13 @@ export default function ProfilePage() {
               className="cursor-pointer hover:bg-slate-50/50 transition-colors px-4 py-3"
               onClick={() => toggleSection("visaContext")}
             >
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-semibold text-slate-800">
-                  {t("profile.sections.visaContext")}
-                </CardTitle>
-                <ChevronDown
-                  className={`h-4 w-4 text-slate-400 transition-transform ${sections.visaContext ? "rotate-180" : ""}`}
-                />
-              </div>
+              <SectionHeader
+                icon={<Compass className="h-4 w-4" />}
+                title={t("profile.sections.visaContext")}
+                description="Background details for your visa case."
+                accent="cyan"
+                isOpen={sections.visaContext}
+              />
             </CardHeader>
             {sections.visaContext && (
               <CardContent className="pt-0 pb-4 px-4 space-y-8">
@@ -1741,14 +1993,13 @@ export default function ProfilePage() {
               className="cursor-pointer hover:bg-slate-50/50 transition-colors px-4 py-3"
               onClick={() => toggleSection("visaEligibility")}
             >
-              <div className="flex justify-between items-center">
-                <CardTitle className="text-sm font-semibold text-slate-800">
-                  {t("profile.sections.visaEligibility")}
-                </CardTitle>
-                <ChevronDown
-                  className={`h-4 w-4 text-slate-400 transition-transform ${sections.visaEligibility ? "rotate-180" : ""}`}
-                />
-              </div>
+              <SectionHeader
+                icon={<ShieldCheck className="h-4 w-4" />}
+                title={t("profile.sections.visaEligibility")}
+                description="Eligibility details for your visa case."
+                accent="teal"
+                isOpen={sections.visaEligibility}
+              />
             </CardHeader>
             {sections.visaEligibility && (
               <CardContent className="pt-0 pb-4 px-4 space-y-8">
@@ -1991,7 +2242,6 @@ export default function ProfilePage() {
             )}
           </Card>
         </div>
-      </div>
     </div>
   );
 }

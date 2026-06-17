@@ -2,26 +2,17 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 import { parseMarriageText } from "@/lib/document-ocr/marriageParser";
+import { asParser, runDocExtraction } from "@/lib/document-ocr/extractPipeline";
 
-// Mirrors app/api/documents/extract-passport — same proven OCR.space (free) pattern.
-// Reads a marriage document (NADRA MRC / Nikah Nama English translation) and
-// extracts the marriage date (+ best-effort place) for relationship.* profile keys.
-const OCR_SPACE_ENDPOINT = "https://api.ocr.space/parse/image";
-const OCR_FREE_FILE_LIMIT_BYTES = 1 * 1024 * 1024;
-
-type OcrSpaceResponse = {
-  ParsedResults?: Array<{ ParsedText?: string }>;
-  OCRExitCode?: string | number;
-  IsErroredOnProcessing?: boolean;
-  ErrorMessage?: string;
-  ErrorDetails?: string;
-};
+// Reads a marriage document (NADRA MRC / Nikah Nama, often bilingual and dense). It has
+// no machine-readable anchor, so the free OCR text parse is unreliable — vision is the
+// authority and overwrites it (no trusted text keys).
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
     const { data: authData, error: authError } = await supabase.auth.getUser();
-
     if (authError || !authData.user) {
       console.error("[extract-marriage] Authentication failed:", authError);
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
@@ -29,101 +20,33 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get("file");
-
     if (!(file instanceof File)) {
       return NextResponse.json({ error: msg(E.UPLOAD_NO_FILE) }, { status: 400 });
+    }
+    if (file.size > MAX_UPLOAD_BYTES) {
+      return NextResponse.json(
+        { error: msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: MAX_UPLOAD_BYTES / (1024 * 1024) }) },
+        { status: 413 }
+      );
     }
 
     console.log(
       `[extract-marriage] upload user=${authData.user.id} file=${file.name} size=${file.size}`
     );
 
-    if (file.size > OCR_FREE_FILE_LIMIT_BYTES) {
-      return NextResponse.json(
-        {
-          error: msg(E.UPLOAD_FILE_TOO_LARGE, {
-            maxSize: OCR_FREE_FILE_LIMIT_BYTES / (1024 * 1024),
-          }),
-        },
-        { status: 413 }
-      );
-    }
-
-    const ocrApiKey = process.env.OCR_SPACE_API_KEY;
-    if (!ocrApiKey) {
-      console.error("[extract-marriage] OCR_SPACE_API_KEY not configured");
-      return NextResponse.json({ error: "OCR_SPACE_API_KEY is not configured." }, { status: 500 });
-    }
-
-    const ocrFormData = new FormData();
-    ocrFormData.append("file", file, file.name);
-    ocrFormData.append("language", "eng");
-    ocrFormData.append("isOverlayRequired", "false");
-    ocrFormData.append("detectOrientation", "true");
-    ocrFormData.append("scale", "true");
-    // Certificates are semi-tabular; engine 2 handles mixed layouts better.
-    ocrFormData.append("OCREngine", "2");
-
-    const ocrResponse = await fetch(OCR_SPACE_ENDPOINT, {
-      method: "POST",
-      headers: { apikey: ocrApiKey },
-      body: ocrFormData,
+    const result = await runDocExtraction({
+      file,
+      docType: "marriage",
+      parse: asParser(parseMarriageText),
     });
-
-    const responseJson = (await ocrResponse.json().catch(() => null)) as OcrSpaceResponse | null;
-    if (!ocrResponse.ok || !responseJson) {
-      console.error("[extract-marriage] OCR service request failed", {
-        status: ocrResponse.status,
-        statusText: ocrResponse.statusText,
-      });
-      return NextResponse.json({ error: msg(E.UPLOAD_PROCESSING_FAILED) }, { status: 502 });
-    }
-
-    const parsedResults = Array.isArray(responseJson.ParsedResults)
-      ? responseJson.ParsedResults
-      : [];
-
-    const rawText = parsedResults
-      .map((result) => result?.ParsedText || "")
-      .join("\n")
-      .trim();
-
-    if (!rawText && responseJson.IsErroredOnProcessing) {
-      return NextResponse.json(
-        {
-          error:
-            responseJson.ErrorMessage ||
-            responseJson.ErrorDetails ||
-            "OCR could not read this marriage document.",
-        },
-        { status: 422 }
-      );
-    }
-
-    const parsed = parseMarriageText(rawText);
-
-    const warnings = [...parsed.warnings];
-    if (responseJson.IsErroredOnProcessing) {
-      warnings.push(
-        responseJson.ErrorMessage ||
-          responseJson.ErrorDetails ||
-          "OCR.space returned a partial-processing warning."
-      );
-    }
 
     console.log("[extract-marriage] parsed", {
-      source: parsed.source,
-      keys: Object.keys(parsed.fields),
-      warnings: parsed.warnings.length,
+      source: result.source,
+      keys: Object.keys(result.fields),
+      warnings: result.warnings.length,
     });
 
-    return NextResponse.json({
-      docType: "marriage",
-      fields: parsed.fields,
-      confidence: parsed.confidence,
-      source: parsed.source,
-      warnings,
-    });
+    return NextResponse.json({ docType: "marriage", ...result });
   } catch (error) {
     console.error("[extract-marriage] Unhandled error:", error);
     return NextResponse.json({ error: msg(E.UPLOAD_PROCESSING_FAILED) }, { status: 500 });

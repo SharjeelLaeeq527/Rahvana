@@ -7,7 +7,6 @@ import { AuthProvider } from "./context/AuthContext";
 import { ClientWidgets } from "./components/layout/ClientWidgets";
 import Footer from "./components/layout/Footer";
 import { ToastProvider } from "./components/shared/ToastProvider";
-import { Toaster } from "sonner";
 import { LanguageProvider } from "./context/LanguageContext";
 import { PlanProvider } from "./context/PlanContext";
 import { UserProfileProvider } from "./context/UserProfileContext";
@@ -68,7 +67,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             })();
           `}
         </Script>
-        <Toaster richColors position="top-right" />
         <ToastProvider>
           <AuthProvider>
             <PlanProvider>

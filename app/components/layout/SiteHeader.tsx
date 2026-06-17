@@ -34,6 +34,7 @@ import { useAuth, UserProfile } from "@/app/context/AuthContext";
 // import { useLanguage } from "@/app/context/LanguageContext";
 import { NAV_DATA } from "./navigationData";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
+import { requestNavigation } from "@/lib/guides/navigationGuardStore";
 // import { useTheme } from "next-themes";
 
 interface HeaderProps {
@@ -461,6 +462,10 @@ export function SiteHeader({
       };
 
       const targetRoute = routes[id] || "/";
+
+      // If a navigation guard is active, defer to it (opens confirmation modal)
+      if (requestNavigation(targetRoute)) return;
+
       router.push(targetRoute);
     }
   };

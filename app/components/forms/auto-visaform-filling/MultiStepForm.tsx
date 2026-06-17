@@ -352,10 +352,14 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       const autoData = autoFillForm(userProfile, prev) as Record<string, string>;
 
       const merged = { ...prev };
+      const overrides = getFormFieldOverrides(formCode);
 
       // Global mapper: only fill fields that are still empty (don't touch drafts).
+      // Fields with a per-form override are NEVER filled from the global map —
+      // the global path may be the WRONG PERSON for this form (e.g. I-130 Part 1
+      // asks the SPONSOR's name; the top-level profile is the beneficiary's).
       Object.entries(autoData).forEach(([key, value]) => {
-        if (!merged[key]) {
+        if (!merged[key] && !(key in overrides)) {
           merged[key] = value;
         }
       });
@@ -365,7 +369,6 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       // in the form — a previously-saved draft, or a wrong-person value the global
       // mapper filled (I-130A / DS-260 "you" = beneficiary, not petitioner). We only
       // overwrite when the profile actually has a value, so we never blank a field.
-      const overrides = getFormFieldOverrides(formCode);
       const profileForOverride = userProfile as unknown as Record<string, unknown>;
       for (const [formKey, paths] of Object.entries(overrides)) {
         const val = firstProfileValue(profileForOverride, paths);
@@ -692,7 +695,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       // Save completed form data back to central profile (auto-fill for other tools)
       if (userProfile) {
         try {
-          const profileDelta = mapFormToProfile(formData, userProfile);
+          const profileDelta = mapFormToProfile(formData, userProfile, getFormFieldOverrides(formCode));
           if (Object.keys(profileDelta).length > 0) {
             updateProfile(profileDelta, { silent: true });
           }
@@ -783,7 +786,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     // Save current step data back to central profile (real-time sync for other tools)
     if (userProfile) {
       try {
-        const profileDelta = mapFormToProfile(formData, userProfile);
+        const profileDelta = mapFormToProfile(formData, userProfile, getFormFieldOverrides(formCode));
         if (Object.keys(profileDelta).length > 0) {
           updateProfile(profileDelta, { silent: true });
         }

@@ -2,7 +2,7 @@
 
 import React from "react";
 import { X, CheckCircle2, ArrowRight } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { POLIO_CERTIFICATE_DATA } from "../PolioCertificateData";
 
 interface PolioCertificateToolProps {
@@ -37,6 +37,7 @@ export const PolioCertificateTool: React.FC<PolioCertificateToolProps> = ({
     setPolioChecks,
   } = polioState;
   const [isSaving, setIsSaving] = React.useState(false);
+  const { showToast } = useToast();
   const data = POLIO_CERTIFICATE_DATA;
 
   return (
@@ -157,7 +158,7 @@ export const PolioCertificateTool: React.FC<PolioCertificateToolProps> = ({
                           polio_launched: "true",
                         });
                         setIsPolioGuideOpen(false);
-                        toast.success("Guide completed!");
+                        showToast("Guide completed!", "success");
                       } finally {
                         setIsSaving(false);
                       }

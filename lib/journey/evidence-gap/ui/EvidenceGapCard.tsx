@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight,
@@ -20,7 +19,9 @@ import {
   Sparkles,
   ClipboardList,
   X,
+  ChevronDown,
 } from "lucide-react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import type {
   EvidenceGapAnalysis,
   EvidenceCategoryAssessment,
@@ -519,6 +520,21 @@ function QuestionnaireModal({
 }) {
   const [localResponses, setLocalResponses] = useState<Record<string, boolean>>(responses);
 
+  // Initialize expanded groups: expand groups with answers, or first group if none answered
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
+    const initial = new Set<string>();
+    for (const q of EVIDENCE_QUESTIONNAIRE) {
+      if (responses[q.id]) {
+        initial.add(q.group);
+      }
+    }
+    // If no answers yet, expand the first group by default
+    if (initial.size === 0 && EVIDENCE_QUESTIONNAIRE.length > 0) {
+      initial.add(EVIDENCE_QUESTIONNAIRE[0].group);
+    }
+    return initial;
+  });
+
   // Group questions by category
   const groupedQuestions: Record<string, EvidenceQuestion[]> = {};
   for (const q of EVIDENCE_QUESTIONNAIRE) {
@@ -540,90 +556,176 @@ function QuestionnaireModal({
     onClose();
   };
 
-  if (!isOpen) return null;
+  const toggleGroup = (group: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(group)) next.delete(group);
+      else next.add(group);
+      return next;
+    });
+  };
 
-  // Use portal to render modal outside of component tree (avoids z-index/overflow issues)
-  return createPortal(
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4 bg-black/50">
-      <motion.div
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        exit={{ opacity: 0, scale: 0.95 }}
-        className="bg-white rounded-2xl shadow-xl max-w-lg w-full max-h-[80vh] overflow-hidden"
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-200">
-          <div className="flex items-center gap-2">
-            <ClipboardList className="w-5 h-5" style={{ color: "#0d7377" }} />
-            <h3 className="text-sm font-bold text-slate-800">Evidence Questionnaire</h3>
-          </div>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-100 transition-colors">
-            <X className="w-4 h-4 text-slate-500" />
-          </button>
-        </div>
+  // Count answered questions
+  const answeredCount = Object.values(localResponses).filter(Boolean).length;
+  const totalQuestions = EVIDENCE_QUESTIONNAIRE.length;
 
-        {/* Content */}
-        <div className="overflow-y-auto max-h-[60vh] px-5 py-4 space-y-5">
-          <p className="text-xs text-slate-500">
-            Answer these questions to help us understand what evidence you have, even if you
-            haven&apos;t uploaded it yet.
-          </p>
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-xl w-[95vw] p-0 overflow-hidden border-none rounded-[28px] shadow-2xl">
+        <div className="relative overflow-hidden bg-white">
+          {/* Background Decorations */}
+          <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl pointer-events-none" />
 
-          {Object.entries(groupedQuestions).map(([group, questions]) => (
-            <div key={group}>
-              <h4 className="text-xs font-bold uppercase tracking-wide text-slate-600 mb-2">
-                {group}
-              </h4>
-              <div className="space-y-2">
-                {questions.map((question) => (
-                  <div
-                    key={question.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
-                  >
-                    <div className="flex-1 min-w-0 mr-3">
-                      <p className="text-[12px] font-medium text-slate-700">{question.question}</p>
-                      {question.description && (
-                        <p className="text-[10px] text-slate-500 mt-0.5">{question.description}</p>
-                      )}
-                    </div>
-                    <button
-                      onClick={() => handleToggle(question.id)}
-                      className={`shrink-0 w-12 h-6 rounded-full transition-colors ${
-                        localResponses[question.id] ? "bg-emerald-500" : "bg-slate-200"
-                      }`}
-                    >
-                      <div
-                        className={`w-5 h-5 bg-white rounded-full shadow-sm transition-transform ${
-                          localResponses[question.id] ? "translate-x-6" : "translate-x-0.5"
-                        }`}
-                      />
-                    </button>
+          <div className="relative">
+            {/* Header */}
+            <div className="px-8 pt-8 pb-6">
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                    <ClipboardList size={24} />
                   </div>
-                ))}
+                  <div>
+                    <DialogTitle className="text-xl font-bold text-[#0f1f38]">
+                      Evidence Questionnaire
+                    </DialogTitle>
+                    <p className="text-sm text-[#6b8097] mt-0.5">
+                      Tell us about evidence you have, even if not uploaded yet
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-full hover:bg-slate-100 transition-colors"
+                >
+                  <X className="w-5 h-5 text-[#6b8097]" />
+                </button>
+              </div>
+
+              {/* Progress indicator */}
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-1.5 rounded-full bg-slate-100 overflow-hidden">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all duration-300"
+                    style={{ width: `${(answeredCount / totalQuestions) * 100}%` }}
+                  />
+                </div>
+                <span className="text-xs font-medium text-[#6b8097]">
+                  {answeredCount}/{totalQuestions}
+                </span>
               </div>
             </div>
-          ))}
-        </div>
 
-        {/* Footer */}
-        <div className="px-5 py-4 border-t border-slate-200 flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-2.5 rounded-lg border border-slate-200 text-sm font-medium text-slate-600 hover:bg-slate-50 transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            className="flex-1 py-2.5 rounded-lg text-sm font-medium text-white transition-colors"
-            style={{ backgroundColor: "#0d7377" }}
-          >
-            Save Answers
-          </button>
+            {/* Scrollable Content */}
+            <div className="overflow-y-auto max-h-[50vh] px-8 pb-6 space-y-4">
+              {Object.entries(groupedQuestions).map(([group, questions]) => {
+                const groupAnswered = questions.filter((q) => localResponses[q.id]).length;
+                const isExpanded = expandedGroups.has(group);
+
+                return (
+                  <div
+                    key={group}
+                    className="rounded-2xl border border-[#d0e4f7]/60 bg-[#f8fbff] overflow-hidden"
+                  >
+                    <button
+                      onClick={() => toggleGroup(group)}
+                      className="w-full flex items-center justify-between px-5 py-4 hover:bg-[#f0f7ff] transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-xl bg-white border border-[#d0e4f7] flex items-center justify-center">
+                          <ClipboardList className="w-4 h-4 text-primary" />
+                        </div>
+                        <div className="text-left">
+                          <h4 className="text-sm font-semibold text-[#0f1f38]">{group}</h4>
+                          <p className="text-[11px] text-[#6b8097]">
+                            {groupAnswered}/{questions.length} answered
+                          </p>
+                        </div>
+                      </div>
+                      <ChevronDown
+                        className="w-5 h-5 text-[#6b8097] transition-transform"
+                        style={{ transform: isExpanded ? "rotate(180deg)" : "rotate(0)" }}
+                      />
+                    </button>
+
+                    <AnimatePresence initial={false}>
+                      {isExpanded && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.2 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-5 pb-4 space-y-2">
+                            {questions.map((question) => (
+                              <div
+                                key={question.id}
+                                className={`flex items-center justify-between p-4 rounded-xl border transition-all ${
+                                  localResponses[question.id]
+                                    ? "bg-white border-primary/30 shadow-sm"
+                                    : "bg-white/60 border-[#d0e4f7]/40 hover:border-[#d0e4f7]"
+                                }`}
+                              >
+                                <div className="flex-1 min-w-0 mr-4">
+                                  <p className="text-[13px] font-medium text-[#0f1f38]">
+                                    {question.question}
+                                  </p>
+                                  {question.description && (
+                                    <p className="text-[11px] text-[#6b8097] mt-1 leading-relaxed">
+                                      {question.description}
+                                    </p>
+                                  )}
+                                </div>
+                                <button
+                                  onClick={() => handleToggle(question.id)}
+                                  className={`shrink-0 w-12 h-7 rounded-full transition-all duration-200 ${
+                                    localResponses[question.id]
+                                      ? "bg-primary shadow-[0_2px_8px_rgba(13,148,136,0.3)]"
+                                      : "bg-slate-200"
+                                  }`}
+                                >
+                                  <div
+                                    className="bg-white rounded-full shadow-sm transition-transform duration-200"
+                                    style={{
+                                      width: 22,
+                                      height: 22,
+                                      transform: localResponses[question.id]
+                                        ? "translateX(22px)"
+                                        : "translateX(3px)",
+                                    }}
+                                  />
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Footer */}
+            <div className="px-8 py-6 border-t border-[#d0e4f7]/50 flex gap-3">
+              <button
+                onClick={onClose}
+                className="flex-1 py-3 rounded-full border border-[#d0e4f7] text-sm font-semibold text-[#6b8097] hover:bg-slate-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="flex-1 py-3 rounded-full text-sm font-semibold text-white bg-primary hover:bg-primary/90 transition-colors shadow-[0_4px_12px_rgba(13,148,136,0.25)]"
+              >
+                Save Answers
+              </button>
+            </div>
+          </div>
         </div>
-      </motion.div>
-    </div>,
-    document.body
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -799,7 +901,6 @@ export function EvidenceGapCard({
 
                 {/* Supporting Evidence Strength Header */}
                 <div className="flex items-center gap-2 pt-1">
-                  <Sparkles className="w-3.5 h-3.5 text-slate-400" />
                   <p className="text-[11px] font-bold uppercase tracking-wide text-slate-500">
                     Supporting Evidence Strength
                   </p>

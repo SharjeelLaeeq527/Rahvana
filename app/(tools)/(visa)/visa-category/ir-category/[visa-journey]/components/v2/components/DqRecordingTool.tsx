@@ -11,8 +11,6 @@ interface DqRecordingToolProps {
     setDqDate: (v: string) => void;
     dqCategory: string;
     setDqCategory: (v: string) => void;
-    dqPost: string;
-    setDqPost: (v: string) => void;
     dqCountry: string;
     setDqCountry: (v: string) => void;
   };
@@ -30,8 +28,6 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({ dqState, actio
     setDqDate,
     dqCategory,
     setDqCategory,
-    dqPost,
-    setDqPost,
     dqCountry,
     setDqCountry,
   } = dqState;
@@ -74,24 +70,9 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({ dqState, actio
               onChange={(e) => setDqDate(e.target.value)}
               className="p-2.5 border rounded-lg"
             />
-            <select
-              value={dqCategory}
-              onChange={(e) => setDqCategory(e.target.value)}
-              className="p-2.5 border rounded-lg"
-            >
-              <option value="">Select Category</option>
-              <option value="IR-1">IR-1</option>
-              <option value="F2A">F2A</option>
-            </select>
-            <select
-              value={dqPost}
-              onChange={(e) => setDqPost(e.target.value)}
-              className="p-2.5 border rounded-lg"
-            >
-              <option value="">Select Post</option>
-              <option value="Islamabad">Islamabad</option>
-              <option value="Karachi">Karachi</option>
-            </select>
+            <div className="p-2.5 border rounded-lg bg-slate-50 text-slate-700 font-medium">
+              IR-1
+            </div>
           </div>
           <button
             onClick={async () => {
@@ -101,10 +82,8 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({ dqState, actio
                 await actions.updateMetadata({
                   dqSaved: true,
                   dqDate,
-                  dqCategory,
-                  dqPost,
+                  dqCategory: "IR-1",
                   dqCountry,
-                  post: dqPost,
                 });
                 setDqSaved(true);
               } finally {

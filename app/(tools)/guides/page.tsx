@@ -578,7 +578,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
               />
             );
           })}
-          {isEmbedded && (
+          {isEmbedded && plan.tier !== "premium" && plan.tier !== "executive" && (
             <AddResourceCard
               href="/pricing?mode=guides"
               label="Add guides"

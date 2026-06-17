@@ -99,6 +99,9 @@ export function MultipleDocumentUploadModal({
   // and offer to auto-fill the profile. Target ("self" / "beneficiary") comes
   // from the selected type's OCR config — nothing is saved until the user confirms.
   const [ocrPhase, setOcrPhase] = useState<"idle" | "reading" | "confirm">("idle");
+  // Hold the just-read file so the confirm screen can offer a "Re-read" retry
+  // (e.g. when the extracted values look wrong) without re-uploading.
+  const [ocrFile, setOcrFile] = useState<File | null>(null);
   const [ocrFields, setOcrFields] = useState<PassportFields>({});
   const [ocrConfidence, setOcrConfidence] = useState<
     Partial<Record<keyof PassportFields, number>>
@@ -159,6 +162,7 @@ export function MultipleDocumentUploadModal({
   // Reset OCR panel and leave a fresh blank upload row so the user can continue.
   const dismissOcr = () => {
     setOcrPhase("idle");
+    setOcrFile(null);
     setOcrFields({});
     setOcrConfidence({});
     setOcrWarnings([]);
@@ -168,6 +172,7 @@ export function MultipleDocumentUploadModal({
 
   const runOcr = async (file: File, target: OcrTarget) => {
     setOcrTarget(target);
+    setOcrFile(file);
     setOcrPhase("reading");
     try {
       const prepared = await resizeImageIfNeeded(file);
@@ -685,7 +690,7 @@ export function MultipleDocumentUploadModal({
                 <div className="w-9 h-9 rounded-xl bg-[#e8f1fb] text-brand flex items-center justify-center">
                   <ScanLine className="w-5 h-5" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="font-bold text-sm">
                     {ocrPhase === "reading"
                       ? "Reading your document…"
@@ -703,6 +708,19 @@ export function MultipleDocumentUploadModal({
                         : "These will be saved to your profile."}
                   </p>
                 </div>
+                {/* Re-read shortcut — retry the auto-read if the values look off. */}
+                {ocrPhase === "confirm" && ocrFile && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => runOcr(ocrFile, ocrTarget)}
+                    disabled={ocrSaving}
+                    className="rounded-xl border-[#d0e4f7] text-[#6b8097] hover:bg-slate-50 text-xs font-semibold gap-1.5"
+                  >
+                    <ScanLine className="w-3.5 h-3.5" />
+                    Re-read
+                  </Button>
+                )}
               </div>
 
               {ocrPhase === "reading" && (
