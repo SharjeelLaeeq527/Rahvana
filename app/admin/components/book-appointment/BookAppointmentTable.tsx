@@ -85,6 +85,34 @@ interface Appointment {
   admin_notes?: string;
 }
 
+const CANCELLATION_TEMPLATES = [
+  {
+    value: "Dear Applicant, your appointment booking request has been cancelled as a duplicate request was already found in our system. Please check your existing appointment status or contact support if you believe this is an error.",
+    label: "Duplicate Request",
+  },
+  {
+    value: "Dear Applicant, we were unable to verify the payment for your appointment. As a result, your booking request has been cancelled. Please initiate a new request and ensure the payment is processed correctly.",
+    label: "Payment Failed",
+  },
+  {
+    value: "Dear Applicant, the passport details or copy provided in your application do not match our validation criteria or are invalid. Your appointment request has been cancelled. Please re-apply with accurate passport details and a clear scanned copy.",
+    label: "Invalid Passport Details",
+  },
+  {
+    value: "Dear Applicant, your appointment request has been cancelled because the required documents (scanned passport, K-1 letter, or confirmation letter) are missing, incomplete, or illegible. Please submit a new request with clear and complete documentation.",
+    label: "Missing/Unclear Documents",
+  },
+  {
+    value: "Dear Applicant, as per your request, your appointment booking has been cancelled. If you wish to reschedule in the future, please submit a new request through our portal.",
+    label: "Client Requested Cancellation",
+  },
+  {
+    value: "Dear Applicant, your appointment request has been cancelled due to incorrect or invalid details submitted in the form. Please review your details and submit a new request with accurate information.",
+    label: "Incorrect/Invalid Information",
+  },
+  { value: "other", label: "Other (Custom note)" },
+];
+
 export default function BookAppointmentTable() {
   const { showToast } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
@@ -99,10 +127,14 @@ export default function BookAppointmentTable() {
 
   // Status update confirmation modal states
   const [statusUpdateConfirmOpen, setStatusUpdateConfirmOpen] = useState(false);
-  const [pendingUpdate, setPendingUpdate] = useState<{ id: string; status: AppointmentStatus } | null>(null);
+  const [pendingUpdate, setPendingUpdate] = useState<{
+    id: string;
+    status: AppointmentStatus;
+  } | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
   const [preferredDate, setPreferredDate] = useState("");
   const [preferredTime, setPreferredTime] = useState("");
+  const [cancellationReason, setCancellationReason] = useState("");
 
   const fetchAppointments = useCallback(async () => {
     try {
@@ -196,6 +228,7 @@ export default function BookAppointmentTable() {
     const appt = appointments.find((a) => a.id === id);
     setPendingUpdate({ id, status: newStatus });
     setAdminNotes(appt?.admin_notes || "");
+    setCancellationReason("");
 
     let formattedDate = "";
     if (appt?.preferred_date) {
@@ -949,6 +982,7 @@ export default function BookAppointmentTable() {
             setAdminNotes("");
             setPreferredDate("");
             setPreferredTime("");
+            setCancellationReason("");
           }
         }}
       >
@@ -956,7 +990,8 @@ export default function BookAppointmentTable() {
           <DialogHeader>
             <DialogTitle>Update Status</DialogTitle>
             <div className="text-sm text-muted-foreground mt-1">
-              Are you sure you want to update the status to <span className="font-semibold uppercase text-primary">{pendingUpdate?.status}</span>?
+              Are you sure you want to update the status to{" "}
+              <span className="font-semibold uppercase text-primary">{pendingUpdate?.status}</span>?
             </div>
           </DialogHeader>
           <div className="py-4 space-y-4">
@@ -988,18 +1023,65 @@ export default function BookAppointmentTable() {
                 </div>
               </div>
             )}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Admin Notes (Optional)
-              </label>
-              <textarea
-                value={adminNotes}
-                onChange={(e) => setAdminNotes(e.target.value)}
-                placeholder="Add any notes about this status update..."
-                className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-                maxLength={500}
-              />
-            </div>
+            {pendingUpdate?.status === "cancelled" ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cancellation Reason <span className="text-red-500">*</span>
+                  </label>
+                  <Select
+                    value={cancellationReason}
+                    onValueChange={(val) => {
+                      setCancellationReason(val);
+                      if (val !== "other") {
+                        setAdminNotes(val);
+                      } else {
+                        setAdminNotes("");
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select cancellation reason" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CANCELLATION_TEMPLATES.map((tpl) => (
+                        <SelectItem key={tpl.value} value={tpl.value}>
+                          {tpl.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {cancellationReason === "other" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Admin Notes (Custom Cancellation Reason){" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      value={adminNotes}
+                      onChange={(e) => setAdminNotes(e.target.value)}
+                      placeholder="Add custom reason for cancellation..."
+                      className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                      maxLength={500}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Admin Notes (Optional)
+                </label>
+                <textarea
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  placeholder="Add any notes about this status update..."
+                  className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                  maxLength={500}
+                />
+              </div>
+            )}
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button
@@ -1010,12 +1092,17 @@ export default function BookAppointmentTable() {
                 setAdminNotes("");
                 setPreferredDate("");
                 setPreferredTime("");
+                setCancellationReason("");
               }}
             >
               Cancel
             </Button>
             <Button
-              disabled={pendingUpdate?.status === "completed" && (!preferredDate || !preferredTime)}
+              disabled={
+                (pendingUpdate?.status === "completed" && (!preferredDate || !preferredTime)) ||
+                (pendingUpdate?.status === "cancelled" &&
+                  (!cancellationReason || (cancellationReason === "other" && !adminNotes.trim())))
+              }
               onClick={async () => {
                 if (pendingUpdate) {
                   await updateAppointmentStatus(
@@ -1031,6 +1118,7 @@ export default function BookAppointmentTable() {
                 setAdminNotes("");
                 setPreferredDate("");
                 setPreferredTime("");
+                setCancellationReason("");
               }}
             >
               Confirm

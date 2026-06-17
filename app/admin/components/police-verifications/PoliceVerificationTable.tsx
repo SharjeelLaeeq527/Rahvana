@@ -94,6 +94,38 @@ interface PoliceVerificationRequest {
 
 type VerificationStatus = "pending" | "in_progress" | "completed" | "cancelled";
 
+const CANCELLATION_TEMPLATES = [
+  {
+    value: "Dear Applicant, your police verification request has been cancelled due to incorrect or invalid CNIC/Passport numbers or issue/expiry dates. Please submit a new request with accurate official identification details.",
+    label: "Invalid CNIC/Passport Details",
+  },
+  {
+    value: "Dear Applicant, your police verification request has been cancelled because the witness details provided (names, CNICs, contacts, or addresses) are incomplete, invalid, or could not be verified. Please submit a new request with valid and verifiable witness details.",
+    label: "Invalid Witness Info",
+  },
+  {
+    value: "Dear Applicant, your police verification request has been cancelled because the province or district selected does not match the stay details, current address, or utility bills provided. Please submit a new request ensuring matching location information.",
+    label: "District/Province Mismatch",
+  },
+  {
+    value: "Dear Applicant, we were unable to verify the payment for your police verification request. As a result, your request has been cancelled. Please submit a new request ensuring the payment is successfully processed.",
+    label: "Payment Failed",
+  },
+  {
+    value: "Dear Applicant, your request has been cancelled because a duplicate police verification application was already submitted and is being processed under a different request ID.",
+    label: "Duplicate Request",
+  },
+  {
+    value: "Dear Applicant, as per your request, your police verification request has been cancelled. If you wish to re-apply in the future, please submit a new request through our portal.",
+    label: "Client Requested Cancellation",
+  },
+  {
+    value: "Dear Applicant, your police verification request has been cancelled due to incorrect or invalid details provided in the form. Please submit a new application with correct details.",
+    label: "Incorrect/Invalid Information",
+  },
+  { value: "other", label: "Other (Custom note)" },
+];
+
 export default function PoliceVerificationTable() {
   const [policeVerifications, setPoliceVerifications] = useState<PoliceVerificationRequest[]>([]);
   const [filteredPoliceVerifications, setFilteredPoliceVerifications] = useState<
@@ -111,6 +143,7 @@ export default function PoliceVerificationTable() {
   const [statusUpdateConfirmOpen, setStatusUpdateConfirmOpen] = useState(false);
   const [pendingUpdate, setPendingUpdate] = useState<{ id: string; status: VerificationStatus } | null>(null);
   const [adminNotes, setAdminNotes] = useState("");
+  const [cancellationReason, setCancellationReason] = useState("");
 
   // Pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -206,6 +239,7 @@ export default function PoliceVerificationTable() {
   const initiateStatusUpdate = (id: string, newStatus: VerificationStatus) => {
     setPendingUpdate({ id, status: newStatus });
     setAdminNotes("");
+    setCancellationReason("");
     setStatusUpdateConfirmOpen(true);
   };
 
@@ -451,7 +485,17 @@ export default function PoliceVerificationTable() {
       </Card>
 
       {/* Status Update Confirmation Modal */}
-      <Dialog open={statusUpdateConfirmOpen} onOpenChange={setStatusUpdateConfirmOpen}>
+      <Dialog
+        open={statusUpdateConfirmOpen}
+        onOpenChange={(open) => {
+          setStatusUpdateConfirmOpen(open);
+          if (!open) {
+            setPendingUpdate(null);
+            setAdminNotes("");
+            setCancellationReason("");
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>Update Status</DialogTitle>
@@ -460,16 +504,64 @@ export default function PoliceVerificationTable() {
             </div>
           </DialogHeader>
           <div className="py-4">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Admin Notes (Optional)
-            </label>
-            <textarea
-              value={adminNotes}
-              onChange={(e) => setAdminNotes(e.target.value)}
-              placeholder="Add any notes about this status update..."
-              className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
-              maxLength={500}
-            />
+            {pendingUpdate?.status === "cancelled" ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cancellation Reason <span className="text-red-500">*</span>
+                  </label>
+                  <Select
+                    value={cancellationReason}
+                    onValueChange={(val) => {
+                      setCancellationReason(val);
+                      if (val !== "other") {
+                        setAdminNotes(val);
+                      } else {
+                        setAdminNotes("");
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select cancellation reason" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CANCELLATION_TEMPLATES.map((tpl) => (
+                        <SelectItem key={tpl.value} value={tpl.value}>
+                          {tpl.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {cancellationReason === "other" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Admin Notes (Custom Cancellation Reason) <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      value={adminNotes}
+                      onChange={(e) => setAdminNotes(e.target.value)}
+                      placeholder="Add custom reason for cancellation..."
+                      className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                      maxLength={500}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Admin Notes (Optional)
+                </label>
+                <textarea
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  placeholder="Add any notes about this status update..."
+                  className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                  maxLength={500}
+                />
+              </div>
+            )}
           </div>
           <div className="flex justify-end gap-3 pt-2">
             <Button
@@ -478,11 +570,15 @@ export default function PoliceVerificationTable() {
                 setStatusUpdateConfirmOpen(false);
                 setPendingUpdate(null);
                 setAdminNotes("");
+                setCancellationReason("");
               }}
             >
               Cancel
             </Button>
             <Button
+              disabled={
+                pendingUpdate?.status === "cancelled" && (!cancellationReason || (cancellationReason === "other" && !adminNotes.trim()))
+              }
               onClick={async () => {
                 if (pendingUpdate) {
                   await updateStatus(pendingUpdate.id, pendingUpdate.status, adminNotes);
@@ -490,6 +586,7 @@ export default function PoliceVerificationTable() {
                 setStatusUpdateConfirmOpen(false);
                 setPendingUpdate(null);
                 setAdminNotes("");
+                setCancellationReason("");
               }}
             >
               Confirm

@@ -956,7 +956,7 @@ export function SiteHeader({
                         }
                       />
                       {unreadCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-normal flex items-center justify-center border border-white/50">
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-medium flex items-center justify-center border border-white/50">
                           {unreadCount > 9 ? "9+" : unreadCount}
                         </span>
                       )}
