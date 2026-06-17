@@ -206,8 +206,8 @@ export function CaseStatusHero({
 
           {/* Bottom row: Next action CTA */}
           {nextActionData && !isLocked && (
-            <div className="flex items-center justify-between gap-4 pt-4 border-t border-white/10">
-              <div className="flex-1 min-w-0">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pt-4 border-t border-white/10">
+              <div className="flex-1 min-w-0 w-full sm:w-auto">
                 <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/35 mb-1">
                   Next Action
                 </div>
@@ -224,7 +224,7 @@ export function CaseStatusHero({
               </div>
               <button
                 onClick={onContinue}
-                className="shrink-0 inline-flex items-center gap-2.5 px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold text-[14px] shadow-lg shadow-primary/30 transition-all active:scale-95 group"
+                className="shrink-0 inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold text-[14px] shadow-lg shadow-primary/30 transition-all active:scale-95 group w-full sm:w-auto"
               >
                 Continue Journey
                 <ArrowRight

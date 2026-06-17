@@ -212,7 +212,7 @@ export function AlertCenter({ issues, onOpenStep }: AlertCenterProps) {
       </div>
 
       {/* Issue list */}
-      <div className="p-2 space-y-1.5 max-h-[400px] overflow-y-auto overscroll-contain">
+      <div className="p-2 space-y-1.5 max-h-[600px] overflow-y-auto overscroll-contain">
         {activeIssues.map((issue, i) => (
           <AlertRow
             key={`${issue.stepKey}-${i}`}

@@ -191,6 +191,12 @@ export function CaseHealthOverview({
 }: CaseHealthOverviewProps) {
   const colors = STATUS_COLORS[healthStatus];
 
+  // Derive score-based status for pie chart color
+  // <50 = weak (red), 50-80 = moderate (yellow), >80 = good (green)
+  const scoreStatus: "excellent" | "good" | "needs-attention" | "critical" =
+    overallScore > 80 ? "excellent" : overallScore >= 50 ? "needs-attention" : "critical";
+  const scoreColors = STATUS_COLORS[scoreStatus];
+
   // Evidence coverage: count strong categories
   const stats = evidenceAnalysis?.stats;
   const strongCats = stats?.strongCategories ?? 0;
@@ -262,7 +268,7 @@ export function CaseHealthOverview({
         <div className="flex items-center gap-5">
           {/* Radial Score */}
           <div className="shrink-0 flex flex-col items-center gap-1.5">
-            <RadialScore score={overallScore} status={healthStatus} size={110} strokeWidth={9} />
+            <RadialScore score={overallScore} status={scoreStatus} size={110} strokeWidth={9} />
             <span className="text-[9px] font-semibold text-slate-400">Case Score</span>
           </div>
 

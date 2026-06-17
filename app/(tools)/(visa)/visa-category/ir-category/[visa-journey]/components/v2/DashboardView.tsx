@@ -409,8 +409,8 @@ export function DashboardView({
 
   // Compact summary text for CaseHealthOverview (truncated executive summary)
   const compactSummary = caseNarrative?.executiveSummary
-    ? caseNarrative.executiveSummary.length > 200
-      ? caseNarrative.executiveSummary.slice(0, 200).trim() + "\u2026"
+    ? caseNarrative.executiveSummary.length > 280
+      ? caseNarrative.executiveSummary.slice(0, 280).trim() + "\u2026"
       : caseNarrative.executiveSummary
     : undefined;
 
@@ -899,13 +899,13 @@ export function DashboardView({
                     }
                   }}
                 />
-                <JourneyRiskCard
+                {/* <JourneyRiskCard
                   metadata={state.metadata}
                   onOpenEligibility={() => {
                     actions.setStage(0);
                     actions.setCurrentStep(0);
                   }}
-                />
+                /> */}
                 {step1_2DocItems && (
                   <DocCaseStrengthMeter
                     documentItems={step1_2DocItems}

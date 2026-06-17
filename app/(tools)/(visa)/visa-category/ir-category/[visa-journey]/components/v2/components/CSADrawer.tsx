@@ -140,26 +140,26 @@ export function CSADrawer({
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {/* Backdrop — starts below the site header */}
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm"
+            className="fixed left-0 right-0 bottom-0 top-[80px] z-40 bg-black/30 backdrop-blur-sm"
             onClick={onClose}
           />
 
-          {/* Drawer */}
+          {/* Drawer — offset below the site header */}
           <motion.aside
             initial={{ x: "100%" }}
             animate={{ x: 0 }}
             exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 32, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-[520px] bg-white shadow-2xl flex flex-col"
+            className="fixed right-0 top-[80px] bottom-0 z-50 w-[calc(100%-2rem)] sm:w-full max-w-[520px] bg-white shadow-2xl flex flex-col rounded-tl-2xl"
           >
             {/* Header */}
-            <div className="shrink-0 px-6 pt-5 pb-4 border-b border-slate-100 bg-slate-50/80">
+            <div className="shrink-0 px-5 sm:px-6 pt-6 pb-4 border-b border-slate-100 bg-slate-50/80">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center">
