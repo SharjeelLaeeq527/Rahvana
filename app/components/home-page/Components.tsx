@@ -1208,7 +1208,7 @@ export function TwoWaysSection() {
 
   const roadmapImages = [
     "/assets/images/guided_roadmap_image.png",
-    // "/assets/images/guided_roadmap_image2.png"
+    // "/assets/images/guided_roadmap_image_with_bg.png"
   ];
 
   return (
@@ -1291,6 +1291,7 @@ export function TwoWaysSection() {
                   <div className="w-full max-w-[480px] flex flex-col items-center lg:items-end">
                     <div className="relative w-full h-[220px] sm:h-[280px] lg:h-[340px] flex items-center justify-center">
                       <Image
+                        // src={hoveredSide === "left" ? roadmapImages[1] : roadmapImages[0]}
                         src={roadmapImages[roadmapImageIdx]}
                         alt="Guided Roadmap Preview"
                         fill
@@ -4642,8 +4643,8 @@ export function ToolsBucketDiagram() {
           />
 
           {/* Green Checkpoint Dots on Paths */}
-          <circle cx="81.9" cy="233.8" r="3.5" fill="#22c55e" />
-          <circle cx="358.1" cy="233.8" r="3.5" fill="#22c55e" />
+          {/* <circle cx="81.9" cy="233.8" r="3.5" fill="#22c55e" />
+          <circle cx="358.1" cy="233.8" r="3.5" fill="#22c55e" /> */}
         </svg>
 
         {/* 1. Center Bucket & Everything You Need Card */}
