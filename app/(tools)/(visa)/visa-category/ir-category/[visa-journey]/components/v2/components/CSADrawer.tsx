@@ -168,7 +168,7 @@ export function CSADrawer({
                   <div>
                     <h2 className="text-[16px] font-black text-slate-900">Case Analysis</h2>
                     <p className="text-[10px] text-slate-500 font-medium">
-                      Evidence Gap · Consistency Intelligence · Recommendations
+                      Overview · Evidence Gap · Consistency Intelligence
                     </p>
                   </div>
                 </div>

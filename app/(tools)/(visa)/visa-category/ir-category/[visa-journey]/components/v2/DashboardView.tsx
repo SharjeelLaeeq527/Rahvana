@@ -1,15 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import {
-  ChevronDown,
-  ArrowRight,
-  ExternalLink,
-  Clock,
-  Shield,
-  AlertTriangle,
-  Lock,
-} from "lucide-react";
+import { ChevronDown, ExternalLink, Clock, Shield } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getJourneyLockStatus } from "@/lib/journey-lock";
@@ -24,7 +16,6 @@ import { CaseStatusHero } from "./components/CaseStatusHero";
 import { CaseHealthOverview } from "./components/CaseHealthOverview";
 import { CSADrawer } from "./components/CSADrawer";
 import { AlertCenter } from "./components/AlertCenter";
-import { EvidenceGapCard } from "@/lib/journey/evidence-gap";
 import { EvidenceGapEngine } from "@/lib/journey/evidence-gap";
 import type { EvidenceGapAnalysis } from "@/lib/journey/evidence-gap";
 import { DOCUMENTS_BY_ID } from "@/lib/document-vault/document-definitions";
