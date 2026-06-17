@@ -518,3 +518,29 @@ export function getCaseHealthStatus(input: NarrativeInput): {
 
   return { status: "critical", label: "Needs Immediate Attention", color: "#ef4444" };
 }
+
+/**
+ * Compute an overall case score (0–100) that combines evidence coverage
+ * and consistency intelligence into a single weighted metric.
+ *
+ * Weights:
+ * - Evidence score: 60%
+ * - Consistency score: 40% (derived from unresolved findings penalty)
+ */
+export function computeOverallCaseScore(input: NarrativeInput): number {
+  const { evidenceAnalysis, consistencyFindings } = input;
+  const evidenceScore = evidenceAnalysis?.overallScore ?? 50;
+
+  // Consistency scoring: start at 100, deduct for unresolved findings
+  const unresolved = consistencyFindings.filter((f) => !f.resolved);
+  let consistencyPenalty = 0;
+  for (const f of unresolved) {
+    if (f.severity === "critical") consistencyPenalty += 20;
+    else if (f.severity === "warning") consistencyPenalty += 8;
+    else consistencyPenalty += 3; // informational
+  }
+  const consistencyScore = Math.max(0, 100 - consistencyPenalty);
+
+  // Weighted combination
+  return Math.round(evidenceScore * 0.6 + consistencyScore * 0.4);
+}
