@@ -296,10 +296,8 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       // I-130 baseline exists but the DS-260 values haven't been confirmed here.
       const parts: string[] = [];
       if (i130.marriageDate) parts.push(`marriage date ${i130.marriageDate}`);
-      if (i130.petitionerDateOfBirth)
-        parts.push(`petitioner DOB ${i130.petitionerDateOfBirth}`);
-      if (i130.beneficiaryDateOfBirth)
-        parts.push(`beneficiary DOB ${i130.beneficiaryDateOfBirth}`);
+      if (i130.petitionerDateOfBirth) parts.push(`petitioner DOB ${i130.petitionerDateOfBirth}`);
+      if (i130.beneficiaryDateOfBirth) parts.push(`beneficiary DOB ${i130.beneficiaryDateOfBirth}`);
       checks.push({
         level: "info",
         title: "Match these on your DS-260",
@@ -339,7 +337,11 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       uploadedDocuments,
       eligibilityAnswers,
     });
-    const checks: StepCheck[] = issues.map((i) => ({ level: i.level, title: i.title, hint: i.hint }));
+    const checks: StepCheck[] = issues.map((i) => ({
+      level: i.level,
+      title: i.title,
+      hint: i.hint,
+    }));
 
     // While civil-doc work is still pending, surface the foreign-document
     // guidance that applies to every overseas case (the #1 here being a
@@ -372,7 +374,9 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
 
     if (result.isEligible === false) {
       const shortfall =
-        typeof result.shortfall === "number" ? `$${result.shortfall.toLocaleString()}` : "an amount";
+        typeof result.shortfall === "number"
+          ? `$${result.shortfall.toLocaleString()}`
+          : "an amount";
       const required =
         typeof result.requiredIncome === "number"
           ? `$${result.requiredIncome.toLocaleString()}`
@@ -479,8 +483,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   // Step 3.1 — Schedule Medical Examination (completeness + timeline)
   step_3_1: ({ state }) => {
     const checks: StepCheck[] = [];
-    const scheduled =
-      state.metadata?.med_appt_saved === "true" || !!state.metadata?.med_date;
+    const scheduled = state.metadata?.med_appt_saved === "true" || !!state.metadata?.med_date;
     const interviewDate = state.metadata?.interviewDate as string | undefined;
     if (!scheduled) {
       checks.push({
@@ -498,9 +501,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   step_3_2: ({ state }) => {
     const checks: StepCheck[] = [];
     const launched = state.metadata?.polio_launched === "true";
-    const polioChecks = state.metadata?.polio_checks as
-      | Record<string, boolean>
-      | undefined;
+    const polioChecks = state.metadata?.polio_checks as Record<string, boolean> | undefined;
     const anyChecked = polioChecks && Object.values(polioChecks).some(Boolean);
     if (!launched && !anyChecked) {
       checks.push({
@@ -556,11 +557,13 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     const requiredGroups = Array.isArray(groups)
       ? groups
           .filter(
-            (g) =>
-              typeof g?.badge === "string" &&
-              g.badge.toLowerCase().startsWith("required")
+            (g) => typeof g?.badge === "string" && g.badge.toLowerCase().startsWith("required")
           )
-          .map((g) => String(g?.label || "").replace(/^Bring\s*[—-]\s*/i, "").trim())
+          .map((g) =>
+            String(g?.label || "")
+              .replace(/^Bring\s*[—-]\s*/i, "")
+              .trim()
+          )
           .filter(Boolean)
       : [];
     if (requiredGroups.length > 0) {
@@ -659,10 +662,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
  * common cause of trouble than the underlying issue itself.
  */
 function ds260Disclosures(
-  answers:
-    | Record<string, Record<string, string | string[]> | undefined>
-    | null
-    | undefined
+  answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined
 ): StepCheck[] {
   if (!answers) return [];
   const checks: StepCheck[] = [];
@@ -712,10 +712,7 @@ function ds260Disclosures(
  * `ds260Disclosures`. Consistency with the filed DS-260 is the goal.
  */
 function interviewDisclosureReminders(
-  answers:
-    | Record<string, Record<string, string | string[]> | undefined>
-    | null
-    | undefined
+  answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined
 ): StepCheck[] {
   if (!answers) return [];
   const checks: StepCheck[] = [];
@@ -770,11 +767,10 @@ function receiptChecks(state: WizardState): StepCheck[] {
   if (receiptStepDone) return [];
 
   // Also check any metadata paths that some flows may write
-  const num = (
+  const num =
     (state.metadata?.receiptNum as string) ||
     (state.metadata?.receiptNumber as string) ||
-    (state.metadata?.uscis_receipt_number as string)
-  );
+    (state.metadata?.uscis_receipt_number as string);
   if (num) return [];
 
   return [

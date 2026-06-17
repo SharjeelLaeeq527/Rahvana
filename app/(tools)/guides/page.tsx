@@ -13,7 +13,9 @@ import {
   ChevronDown,
   LayoutGrid,
   ArrowRight,
+  Lock,
 } from "lucide-react";
+import { getCostOfWaitingMessage } from "@/lib/ui/costOfWaitingMessages";
 
 import {
   DropdownMenu,
@@ -119,6 +121,19 @@ const GUIDES: Guide[] = [
 ];
 
 const CATEGORIES: ("All" | GuideCategory)[] = ["All", "Pakistan Document", "Medical & Exam"];
+
+const GUIDE_COST_MESSAGE_MAP: Record<
+  string,
+  keyof typeof import("@/lib/ui/costOfWaitingMessages").COST_OF_WAITING_MESSAGES
+> = {
+  passport: "PASSPORT_GUIDE",
+  "police-verification": "PCC_GUIDE",
+  cnic: "CNIC_GUIDE",
+  "birth-certificate": "BIRTH_CERTIFICATE_GUIDE",
+  frc: "FRC_GUIDE",
+  "marriage-certificate": "MARRIAGE_REGISTRATION_GUIDE",
+  vaccinations: "POLIO_VACCINATION_CERT",
+};
 
 // --- Tier-aware card styles ------------------------------------------------
 // Card border, shadow, and gradient border all follow the tier
@@ -270,8 +285,9 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
 
   return (
     <div
-      className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${isEmbedded ? "" : "pt-16"
-        }`}
+      className={`bg-background text-foreground font-sans overflow-x-hidden selection:bg-primary selection:text-primary-foreground ${
+        isEmbedded ? "" : "pt-16"
+      }`}
     >
       {upgradeModalFeature && (
         <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
@@ -338,10 +354,11 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${selectedCategory === cat
+                className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${
+                  selectedCategory === cat
                     ? "bg-primary text-primary-foreground border-primary shadow-md"
                     : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
-                  }`}
+                }`}
               >
                 {cat}
               </button>
@@ -351,10 +368,11 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
-                    className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${isMoreSelected
+                    className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${
+                      isMoreSelected
                         ? "bg-primary text-primary-foreground border-primary shadow-md"
                         : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
-                      }`}
+                    }`}
                   >
                     More <ChevronDown className="w-4 h-4 ml-1" />
                   </button>
@@ -364,8 +382,9 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                     <DropdownMenuItem
                       key={cat}
                       onClick={() => setSelectedCategory(cat)}
-                      className={`cursor-pointer ${selectedCategory === cat ? "bg-primary/10 text-primary font-semibold" : ""
-                        }`}
+                      className={`cursor-pointer ${
+                        selectedCategory === cat ? "bg-primary/10 text-primary font-semibold" : ""
+                      }`}
                     >
                       {cat}
                     </DropdownMenuItem>
@@ -438,6 +457,8 @@ function GuideCard({
 
   const featureLocked =
     !!guide.entitlementFeature && !plan.isLoading && plan.isLocked(guide.entitlementFeature);
+  const costMessageKey = GUIDE_COST_MESSAGE_MAP[guide.id];
+  const costOfWaitingMessage = costMessageKey ? getCostOfWaitingMessage(costMessageKey) : null;
 
   const upgradeTarget: string =
     (guide.entitlementFeature ? plan.entitlement(guide.entitlementFeature).upgradeTarget : null) ??
@@ -464,14 +485,15 @@ function GuideCard({
     <CardWrapper
       href={isNavigable ? guide.href : "#"}
       onClick={handleClick}
-      className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
+      className={`group relative flex flex-col bg-card rounded-2xl p-8 pt-8 mt-6
       transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
-      ${featureLocked
+      ${
+        featureLocked
           ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
           : isNavigable
             ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
             : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
-        }
+      }
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
@@ -514,32 +536,63 @@ function GuideCard({
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col grow pt-2">
+      <div className="relative z-10 flex flex-col pt-1">
         <h3 className="text-lg md:text-xl leading-tight font-bold text-foreground mb-0.5 transition-colors">
           {guide.title}
         </h3>
         <p
-          className={`text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 mb-4 ${guide.subtitle ? "" : "invisible"
-            }`}
+          className={`text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 mb-1 ${
+            guide.subtitle ? "" : "invisible"
+          }`}
         >
           {guide.subtitle || " "}
         </p>
-        <div className="mb-3">
+        <div className="mb-2">
           <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-primary/85 bg-primary/10 border border-primary/20 px-2 py-1 rounded">
             {guide.category}
           </span>
         </div>
-        <p className="text-sm leading-6 font-medium text-slate-500 dark:text-slate-400 mb-5 grow [text-wrap:pretty]">
+        <p
+          className="text-sm font-medium text-slate-500 dark:text-slate-400 [text-wrap:pretty] mb-0 pb-0"
+          style={{ minHeight: 88, paddingBottom: 0, lineHeight: 1.3 }}
+        >
           {guide.description}
         </p>
+
+        {costOfWaitingMessage && (
+          <div className="-mt-6 mb-0">
+            <p
+              className="w-full text-teal-700 dark:text-teal-300 text-sm italic"
+              style={{
+                fontSize: 13,
+                lineHeight: 1.1,
+                marginTop: 0,
+                marginBottom: 0,
+                fontWeight: 400,
+                letterSpacing: "-0.01em",
+                fontStyle: "italic",
+                fontFamily: "Georgia, 'Times New Roman', serif",
+              }}
+            >
+              {costOfWaitingMessage}
+            </p>
+          </div>
+        )}
+        <div className="grow" />
       </div>
 
       {/* Footer / Action */}
-      <div className="relative z-10 flex items-center justify-between pt-3.5 border-t border-border mt-auto">
+      <div className="relative z-10 flex items-center justify-between pt-2 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
 
         {featureLocked ? (
-          <span aria-hidden="true" className="h-5" />
+          <button
+            type="button"
+            onClick={() => guide.entitlementFeature && onLockedClick(guide.entitlementFeature)}
+            className="text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 text-[#0d7377] dark:text-[#32e0c4]"
+          >
+            <Lock size={14} className="mb-[1px]" /> Unlock
+          </button>
         ) : isNavigable ? (
           <span
             className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}

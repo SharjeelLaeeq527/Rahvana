@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { E, msg } from "@/lib/errors";
+import { triggerAppointmentNotification } from "@/lib/notifications";
 
 export async function POST(req: NextRequest) {
   console.log("=== Starting appointment submission ===");
@@ -143,6 +144,13 @@ export async function POST(req: NextRequest) {
     }
 
     console.log("✅ Appointment created successfully:", appointment.id);
+
+    // Trigger admin notification for the new request
+    try {
+      await triggerAppointmentNotification(appointment.id);
+    } catch (notifError) {
+      console.error("Failed to trigger appointment notification:", notifError);
+    }
 
     // If there are additional applicants, save them to the database
     if (

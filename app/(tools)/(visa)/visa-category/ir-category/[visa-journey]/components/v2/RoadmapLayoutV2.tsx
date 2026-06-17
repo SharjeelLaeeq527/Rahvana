@@ -211,9 +211,8 @@ export default function RoadmapLayoutV2({ data, state, actions }: RoadmapLayoutV
               </span>
             </button>
           )}
-
           {/* DEV ONLY — reset button, uncomment for local testing */}
-          {/* <button
+          <button
             onClick={async () => {
               if (confirm("Are you sure you want to reset your progress? This cannot be undone.")) {
                 await actions.resetProgress();
@@ -225,7 +224,7 @@ export default function RoadmapLayoutV2({ data, state, actions }: RoadmapLayoutV
             aria-label="Reset progress"
           >
             <X size={14} />
-          </button> */}
+          </button>
         </div>
       </nav>
 

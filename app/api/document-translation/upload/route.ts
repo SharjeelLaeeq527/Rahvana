@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
+import { triggerTranslationNotification } from "@/lib/notifications";
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -122,6 +123,17 @@ export async function POST(request: NextRequest) {
       // Cleanup uploaded file
       await supabase.storage.from("document-vault").remove([storagePath]);
       return NextResponse.json({ error: "Failed to create database record" }, { status: 500 });
+    }
+    // Trigger admin notification
+    try {
+      await triggerTranslationNotification(
+        document.id,
+        undefined, // No journey ID available in this context
+        document.document_type,
+        userName
+      );
+    } catch (notifError) {
+      console.error("Failed to trigger admin notification:", notifError);
     }
 
     return NextResponse.json({

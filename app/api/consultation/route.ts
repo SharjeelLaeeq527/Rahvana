@@ -84,6 +84,13 @@ export async function POST(request: NextRequest) {
     // In a real app, you would send an email/SMS notification here
     console.log(`New consultation request created: ${newBooking.reference_id}`);
 
+    // Trigger admin notification for the new request
+    try {
+      await triggerConsultationNotification(newBooking.id);
+    } catch (notifError) {
+      console.error("Failed to trigger consultation notification:", notifError);
+    }
+
     return NextResponse.json(newBooking, { status: 201 });
   } catch (error) {
     return handleServiceError(error, "Error creating consultation booking");

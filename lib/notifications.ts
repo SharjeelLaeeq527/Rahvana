@@ -1,7 +1,16 @@
 // lib/notifications.ts
+"use server";
+
 import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Resend } from "resend";
-import * as Errors from '@/lib/errors'
+import * as Errors from "@/lib/errors";
+import { Notification } from "@/types/notifications";
+import {
+  NotificationType,
+  NOTIFICATION_TEMPLATES,
+  CreateNotificationBody,
+} from "@/types/notifications";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -130,10 +139,8 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
 // Function to trigger notification when appointment status changes
 export async function triggerAppointmentNotification(appointmentId: string) {
   try {
-    const supabase = await createClient();
-
-    // Get appointment details
-    const { data: appointment, error } = await supabase
+    // Use admin client to bypass RLS and fetch the record details
+    const { data: appointment, error } = await supabaseAdmin
       .from("appointments")
       .select("*")
       .eq("id", appointmentId)
@@ -156,7 +163,24 @@ export async function triggerAppointmentNotification(appointmentId: string) {
       status: appointment.status,
     };
 
-    return await sendAppointmentNotification(notificationData);
+    const result = await sendAppointmentNotification(notificationData);
+
+    // Admin Connection: Notify admin specifically WHO booked WHAT
+    if (
+      appointment.status === "scheduled" ||
+      appointment.status === "pending_confirmation" ||
+      appointment.status === "pending"
+    ) {
+      await notifyAdmins(
+        "admin_new_appointment",
+        appointment.journey_id || undefined, // Handle potential null journey_id
+        `${appointment.full_name} has booked a ${appointment.appointment_type} medical appointment.`,
+        undefined,
+        "New Medical Appointment"
+      );
+    }
+
+    return result;
   } catch (error) {
     console.error("Error triggering notification:", error);
     return { error: Errors.msg(Errors.E.APPOINTMENT_TRIGGER_FAILED) };
@@ -192,11 +216,13 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
     const formatSlotDate = (date: Date | string) => {
       try {
         const d = new Date(date);
-        return d.toLocaleString("en-US", {
-          timeZone: "America/New_York",
-          dateStyle: "medium",
-          timeStyle: "short",
-        }) + " (ET)";
+        return (
+          d.toLocaleString("en-US", {
+            timeZone: "America/New_York",
+            dateStyle: "medium",
+            timeStyle: "short",
+          }) + " (ET)"
+        );
       } catch (err) {
         return String(date);
       }
@@ -241,12 +267,16 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
             
             <p>Our consultation experts look forward to speaking with you. Please ensure you are online and ready at the scheduled time.</p>
             
-            ${adminNotes ? `
+            ${
+              adminNotes
+                ? `
             <div style="background-color: #f3f4f6; border-left: 4px solid #4f46e5; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
               <strong style="display: block; color: #374151; font-size: 14px; margin-bottom: 5px;">Important Notes:</strong>
               <p style="margin: 0; font-style: italic; color: #4b5563;">${adminNotes}</p>
             </div>
-            ` : ""}
+            `
+                : ""
+            }
             
             <p>If you need to make changes or have any urgent questions, please feel free to reach out to us.</p>
             ${footerHtml}
@@ -255,10 +285,16 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
       `;
     } else if (status === "alternatives_proposed") {
       subject = `Alternative Consultation Slots Proposed - Ref: ${referenceId}`;
-      
-      const slotsList = alternateSlots && alternateSlots.length > 0
-        ? alternateSlots.map(slot => `<li style="margin: 8px 0; font-weight: 600; color: #4f46e5;">${formatSlotDate(slot)}</li>`).join("")
-        : `<li style="margin: 8px 0; font-style: italic; color: #6b7280;">No explicit alternative slots proposed</li>`;
+
+      const slotsList =
+        alternateSlots && alternateSlots.length > 0
+          ? alternateSlots
+              .map(
+                (slot) =>
+                  `<li style="margin: 8px 0; font-weight: 600; color: #4f46e5;">${formatSlotDate(slot)}</li>`
+              )
+              .join("")
+          : `<li style="margin: 8px 0; font-style: italic; color: #6b7280;">No explicit alternative slots proposed</li>`;
 
       htmlContent = `
         <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
@@ -275,12 +311,16 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
               </ul>
             </div>
 
-            ${adminNotes ? `
+            ${
+              adminNotes
+                ? `
             <div style="background-color: #fef3c7; border-left: 4px solid #d97706; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0; color: #92400e;">
               <strong style="display: block; font-size: 14px; margin-bottom: 5px;">Message from Admin:</strong>
               <p style="margin: 0; font-style: italic;">${adminNotes}</p>
             </div>
-            ` : ""}
+            `
+                : ""
+            }
             
             <p>Please visit your booking portal to select one of these preferred slots or propose different times.</p>
             ${footerHtml}
@@ -320,14 +360,18 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
             <p>Dear ${fullName},</p>
             <p>We are writing to let you know that your consultation request with reference <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${referenceId}</span> has been cancelled.</p>
             
-            ${adminNotes ? `
+            ${
+              adminNotes
+                ? `
             <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0; color: #991b1b;">
               <strong style="display: block; font-size: 14px; margin-bottom: 5px;">Cancellation Note:</strong>
               <p style="margin: 0; font-style: italic;">${adminNotes}</p>
             </div>
-            ` : `
+            `
+                : `
             <p>If you believe this was done in error or if you would like to reschedule, please visit our website and submit a new request.</p>
-            `}
+            `
+            }
             
             <p>Best regards,<br/>The Arachnie Team</p>
             ${footerHtml}
@@ -365,10 +409,8 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
 
 export async function triggerConsultationNotification(bookingId: string) {
   try {
-    const supabase = await createClient();
-
-    // Get consultation booking details
-    const { data: booking, error } = await supabase
+    // Use admin client to bypass RLS and fetch the record details
+    const { data: booking, error } = await supabaseAdmin
       .from("consultation_bookings")
       .select("*")
       .eq("id", bookingId)
@@ -391,9 +433,283 @@ export async function triggerConsultationNotification(bookingId: string) {
       adminNotes: booking.admin_notes,
     };
 
-    return await sendConsultationNotification(notificationData);
+    const result = await sendConsultationNotification(notificationData);
+
+    // Admin Connection: Notify admin of new consultation requests
+    if (booking.status === "pending_approval") {
+      await notifyAdmins(
+        "admin_new_consultation",
+        undefined,
+        `${booking.full_name} has requested a consultation regarding ${booking.issue_category}.`,
+        undefined,
+        "New Consultation Request"
+      );
+    }
+
+    return result;
   } catch (error) {
     console.error("Error triggering consultation notification:", error);
     return { error: "Failed to trigger consultation notification" };
+  }
+}
+
+/**
+ * Triggered when a user submits a document for translation.
+ */
+export async function triggerTranslationNotification(
+  documentId: string,
+  journeyId: string | null | undefined,
+  docLabel: string,
+  userName?: string
+) {
+  try {
+    return await notifyAdmins(
+      "admin_new_translation",
+      journeyId || undefined,
+      userName
+        ? `${userName} requested translation for: ${docLabel}`
+        : `Translation needed for: ${docLabel}`,
+      undefined,
+      "Document Translation Request"
+    );
+  } catch (error) {
+    console.error("Error triggering translation notification:", error);
+    return { error: "Failed to notify admins of translation request" };
+  }
+}
+
+/**
+ * Triggered when a user confirms and accepts a completed translation.
+ */
+export async function triggerTranslationConfirmedNotification(
+  journeyId: string | null | undefined,
+  userName: string,
+  docLabel: string
+) {
+  try {
+    return await notifyAdmins(
+      "admin_new_translation",
+      journeyId || undefined,
+      `${userName} has confirmed and accepted the translation for: ${docLabel}`,
+      undefined,
+      "Translation Accepted"
+    );
+  } catch (error) {
+    console.error("Error triggering translation confirmation notification:", error);
+    return { error: "Failed to notify admins of translation confirmation" };
+  }
+}
+
+/**
+ * Triggered when a user requests a Police Clearance Certificate verification.
+ */
+export async function triggerPCCNotification(
+  requestId: string,
+  journeyId: string | null | undefined, // Allow null or undefined journeyId
+  userName: string,
+  customBody?: string
+) {
+  try {
+    return await notifyAdmins(
+      "admin_new_pcc",
+      journeyId || undefined, // Pass undefined if journeyId is null
+      customBody || `PCC verification request from ${userName}`,
+      undefined,
+      "PCC Verification Request"
+    );
+  } catch (error) {
+    console.error("Error triggering PCC notification:", error);
+    return { error: "Failed to notify admins of PCC request" };
+  }
+}
+
+/**
+ * Triggered when a user submits feedback or a feature request.
+ */
+export async function triggerFeedbackNotification(userName: string, feedbackType: string) {
+  try {
+    return await notifyAdmins(
+      "admin_feedback_received",
+      undefined,
+      `New ${feedbackType} received from ${userName}`,
+      undefined,
+      "New User Feedback"
+    );
+  } catch (error) {
+    console.error("Error triggering feedback notification:", error);
+    return { error: "Failed to notify admins of feedback" };
+  }
+}
+
+/**
+ * Broadcasts an in-app notification to all users with the 'admin' role.
+ * Used for events like new consultation bookings, document translations, etc.
+ */
+export async function notifyAdmins(
+  type: NotificationType,
+  journeyId?: string,
+  customBody?: string,
+  customUrl?: string,
+  customTitle?: string
+) {
+  try {
+    console.log(`🔔 notifyAdmins triggered for type: ${type}`);
+    const template = NOTIFICATION_TEMPLATES[type];
+    if (!template) throw new Error(`Template not found for type: ${type}`);
+
+    // 1. Fetch all admin users from the profiles table
+    const { data: admins, error: adminError } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("role", "admin");
+
+    if (adminError || !admins) {
+      console.error("Error fetching admin users:", adminError);
+      return { error: "Failed to fetch admin users" };
+    }
+
+    console.log(`👥 Found ${admins.length} admin(s) to notify.`);
+
+    if (admins.length === 0) {
+      console.warn("⚠️ No admin users found in profiles table with role='admin'");
+      return { success: true, count: 0 };
+    }
+
+    // 2. Prepare the notification records
+    // journeyId is optional as some events (like feedback) aren't tied to a specific journey
+    const notifications = admins.map((admin) => ({
+      user_id: admin.id,
+      journey_id: journeyId || null,
+      type,
+      priority: template.priority,
+      title: customTitle || template.title,
+      body: customBody || template.body,
+      action_url: customUrl || template.action_url,
+      action_label: template.action_label,
+      status: "unread",
+      created_at: new Date().toISOString(),
+    }));
+
+    // 3. Batch insert into the notifications table
+    const { error: insertError } = await supabaseAdmin.from("notifications").insert(notifications);
+
+    if (insertError) {
+      console.error("Error inserting admin notifications:", insertError);
+      return { error: "Failed to create admin notifications" };
+    }
+
+    console.log(`✅ Successfully created ${notifications.length} notification records.`);
+    return { success: true, count: admins.length };
+  } catch (error) {
+    console.error("Error in notifyAdmins:", error);
+    return { error: "Failed to broadcast notification to admins" };
+  }
+}
+
+/**
+ * Fetches admin notifications for a specific user.
+ * @param adminUserId The ID of the admin user.
+ */
+export async function fetchAdminNotifications(adminUserId: string): Promise<{
+  notifications: Notification[];
+  unreadCount: number;
+  error: string | null;
+}> {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("notifications")
+      .select("*")
+      .eq("user_id", adminUserId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching admin notifications:", error);
+      return { notifications: [], unreadCount: 0, error: error.message };
+    }
+
+    const unreadCount = data.filter((n) => n.status === "unread").length;
+    return { notifications: data as Notification[], unreadCount, error: null };
+  } catch (err) {
+    console.error("Exception in fetchAdminNotifications:", err);
+    return { notifications: [], unreadCount: 0, error: "An unexpected error occurred." };
+  }
+}
+
+/**
+ * Marks a specific notification as read.
+ * @param notificationId The ID of the notification to mark as read.
+ * @param adminUserId The ID of the admin user (for authorization).
+ */
+export async function markNotificationAsRead(
+  notificationId: string,
+  adminUserId: string
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const { error } = await supabaseAdmin
+      .from("notifications")
+      .update({ status: "read", read_at: new Date().toISOString() })
+      .eq("id", notificationId)
+      .eq("user_id", adminUserId); // Ensure only the owner can mark as read
+
+    if (error) {
+      console.error("Error marking notification as read:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, error: null };
+  } catch (err) {
+    console.error("Exception in markNotificationAsRead:", err);
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+/**
+ * Dismisses a specific notification.
+ * @param notificationId The ID of the notification to dismiss.
+ * @param adminUserId The ID of the admin user (for authorization).
+ */
+export async function dismissNotification(
+  notificationId: string,
+  adminUserId: string
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const { error } = await supabaseAdmin
+      .from("notifications")
+      .update({ status: "dismissed", dismissed_at: new Date().toISOString() })
+      .eq("id", notificationId)
+      .eq("user_id", adminUserId); // Ensure only the owner can dismiss
+
+    if (error) {
+      console.error("Error dismissing notification:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, error: null };
+  } catch (err) {
+    console.error("Exception in dismissNotification:", err);
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+/**
+ * Marks all unread notifications for a specific user as read.
+ * @param adminUserId The ID of the admin user.
+ */
+export async function markAllNotificationsAsRead(
+  adminUserId: string
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const { error } = await supabaseAdmin
+      .from("notifications")
+      .update({ status: "read", read_at: new Date().toISOString() })
+      .eq("user_id", adminUserId)
+      .eq("status", "unread");
+
+    if (error) {
+      console.error("Error marking all notifications as read:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, error: null };
+  } catch (err) {
+    console.error("Exception in markAllNotificationsAsRead:", err);
+    return { success: false, error: "An unexpected error occurred." };
   }
 }
