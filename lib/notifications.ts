@@ -1500,7 +1500,7 @@ export async function sendPoliceVerificationNotification(data: PoliceVerificatio
         <p>You can retrieve and download your official Police Character Certificate from your user dashboard by clicking the button below.</p>
         
         <div style="text-align: center; margin: 36px 0;">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://arachnie.com"}/user-dashboard" 
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/user-dashboard" 
              style="background-color: #0d7377; color: white; padding: 16px 40px; border-radius: 14px; text-decoration: none; font-weight: 600; display: inline-block; box-shadow:0 6px 18px rgba(13,115,119,0.25);">
             Go to Dashboard
           </a>
@@ -1534,7 +1534,7 @@ export async function sendPoliceVerificationNotification(data: PoliceVerificatio
         <p>Our team is handling the documentation and coordinating with the relevant department. We will notify you as soon as the certificate is finalized or if any further details are required.</p>
         
         <div style="text-align: center; margin: 36px 0;">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://arachnie.com"}/user-dashboard" 
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/user-dashboard" 
              style="background-color: #0d7377; color: white; padding: 16px 40px; border-radius: 14px; text-decoration: none; font-weight: 600; display: inline-block; box-shadow:0 6px 18px rgba(13,115,119,0.25);">
             Track Request
           </a>
@@ -1566,7 +1566,7 @@ export async function sendPoliceVerificationNotification(data: PoliceVerificatio
         <p>Please log in to your user dashboard to review the specific notes from the admin, update any incorrect details or uploads, and re-submit the request for filing.</p>
         
         <div style="text-align: center; margin: 36px 0;">
-          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://arachnie.com"}/user-dashboard" 
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/user-dashboard" 
              style="background-color: #dc2626; color: white; padding: 16px 40px; border-radius: 14px; text-decoration: none; font-weight: 600; display: inline-block; box-shadow:0 6px 18px rgba(220,38,38,0.25);">
             Review Request Details
           </a>
