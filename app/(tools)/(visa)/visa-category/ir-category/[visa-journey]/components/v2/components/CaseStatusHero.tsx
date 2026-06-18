@@ -58,7 +58,7 @@ function getCurrentStage(
     return {
       stage: "Journey Complete",
       status: "Visa Issued",
-      statusColor: "#10b981",
+      statusColor: "#afdbdb",
     };
   }
 
@@ -67,7 +67,7 @@ function getCurrentStage(
     return {
       stage: "Post-Interview",
       status: "Visa Approved",
-      statusColor: "#10b981",
+      statusColor: "#afdbdb",
       upcomingEvent: "Awaiting visa issuance",
     };
   }
@@ -77,7 +77,7 @@ function getCurrentStage(
     return {
       stage: "Post-Interview",
       status: "221(g) Administrative Processing",
-      statusColor: "#f59e0b",
+      statusColor: "#cdadcc",
       upcomingEvent: "Respond to 221(g) requirements",
     };
   }
@@ -87,7 +87,7 @@ function getCurrentStage(
     return {
       stage: "Medical & Interview",
       status: "Interview Scheduled",
-      statusColor: "#3b82f6",
+      statusColor: "#0d7377",
       upcomingEvent: `Interview — ${interviewDate}${tracking.interview_time ? ` at ${tracking.interview_time}` : ""}`,
       upcomingDate: interviewDate,
     };
@@ -98,7 +98,7 @@ function getCurrentStage(
     return {
       stage: "Documentarily Qualified",
       status: "Awaiting Interview Scheduling",
-      statusColor: "#8b5cf6",
+      statusColor: "#0d7377",
       upcomingEvent: "Interview date pending embassy scheduling",
     };
   }
@@ -109,7 +109,7 @@ function getCurrentStage(
       stage: "NVC Document Processing",
       status:
         tracking.dq_status === "qualified" ? "Documentarily Qualified" : "Documents Under Review",
-      statusColor: tracking.dq_status === "qualified" ? "#8b5cf6" : "#3b82f6",
+      statusColor: tracking.dq_status === "qualified" ? "#0d7377" : "#89a4a0",
     };
   }
 
@@ -117,7 +117,7 @@ function getCurrentStage(
   return {
     stage: "Petition Preparation",
     status: "Gathering Documents",
-    statusColor: "#6366f1",
+    statusColor: "#89a4a0",
   };
 }
 
@@ -135,14 +135,14 @@ export function CaseStatusHero({
   const tracking = (meta.tracking_status as any) || {};
 
   return (
-    <section className="relative rounded-3xl overflow-hidden shadow-[0_20px_64px_rgba(15,23,42,0.18),0_8px_32px_rgba(47,111,212,0.12)]">
-      {/* Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0c1b33] via-[#0f2040] to-[#0a1628]" />
-      <div className="absolute top-0 right-0 w-80 h-80 bg-primary/8 rounded-full -translate-y-1/3 translate-x-1/4 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-48 h-48 bg-indigo-500/8 rounded-full translate-y-1/3 -translate-x-1/4 blur-2xl pointer-events-none" />
+    <section className="relative rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(13,115,119,0.12),0_4px_16px_rgba(0,0,0,0.06)]">
+      {/* Background — brand teal gradient */}
+      <div className="absolute inset-0 bg-gradient-to-br from-[#0d7377] via-[#095c5f] to-[#063e40]" />
+      <div className="absolute top-0 right-0 w-80 h-80 bg-white/6 rounded-full -translate-y-1/3 translate-x-1/4 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#afdbdb]/8 rounded-full translate-y-1/3 -translate-x-1/4 blur-2xl pointer-events-none" />
 
       {/* Top accent line */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary via-indigo-400 to-transparent opacity-80" />
+      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#afdbdb] via-[#0d7377] to-transparent opacity-60" />
 
       <div className="relative z-10 p-6 md:p-8">
         {/* Top row: eyebrow + stage chip */}
@@ -216,15 +216,13 @@ export function CaseStatusHero({
                 </div>
                 {nextActionData.step.step_description && (
                   <p className="text-[12px] text-white/45 leading-relaxed mt-1 max-w-md">
-                    {nextActionData.step.step_description.length > 120
-                      ? nextActionData.step.step_description.slice(0, 120).trim() + "\u2026"
-                      : nextActionData.step.step_description}
+                    {nextActionData.step.step_description}
                   </p>
                 )}
               </div>
               <button
                 onClick={onContinue}
-                className="shrink-0 inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-2xl font-bold text-[14px] shadow-lg shadow-primary/30 transition-all active:scale-95 group w-full sm:w-auto"
+                className="shrink-0 inline-flex items-center justify-center gap-2.5 px-6 py-3 bg-white hover:bg-white/90 text-[#0d7377] rounded-xl font-bold text-[14px] shadow-lg shadow-black/10 transition-all active:scale-95 group w-full sm:w-auto"
               >
                 Continue Journey
                 <ArrowRight
@@ -236,8 +234,8 @@ export function CaseStatusHero({
             </div>
           )}
           {isLocked && (
-            <div className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-2xl w-fit">
-              <AlertTriangle size={14} className="text-amber-400/70" />
+            <div className="flex items-center gap-2 px-4 py-2 bg-white/10 border border-white/15 rounded-xl w-fit">
+              <AlertTriangle size={14} className="text-[#cdadcc]" />
               <span className="text-[11px] font-semibold text-white/50">
                 Journey in read-only mode
               </span>

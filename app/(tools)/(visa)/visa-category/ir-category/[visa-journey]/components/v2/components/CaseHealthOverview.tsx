@@ -40,10 +40,10 @@ export interface CaseHealthOverviewProps {
 // ─── Color Palettes ─────────────────────────────────────────────────────────────
 
 const STATUS_COLORS = {
-  excellent: { primary: "#10b981", secondary: "#d1fae5", text: "#065f46", ring: "#34d399" },
-  good: { primary: "#3b82f6", secondary: "#dbeafe", text: "#1e40af", ring: "#60a5fa" },
-  "needs-attention": { primary: "#f59e0b", secondary: "#fef3c7", text: "#92400e", ring: "#fbbf24" },
-  critical: { primary: "#ef4444", secondary: "#fee2e2", text: "#991b1b", ring: "#f87171" },
+  excellent: { primary: "#0d7377", secondary: "#e6f5f5", text: "#063e40", ring: "#afdbdb" },
+  good: { primary: "#0d7377", secondary: "#e6f5f5", text: "#095c5f", ring: "#0d7377" },
+  "needs-attention": { primary: "#cdadcc", secondary: "#f5eef5", text: "#6b4566", ring: "#cdadcc" },
+  critical: { primary: "#db8090", secondary: "#fbe8ec", text: "#7a3a4a", ring: "#db8090" },
 };
 
 // ─── Radial Score SVG ────────────────────────────────────────────────────────────
@@ -164,7 +164,7 @@ function MetricBadge({
       <div className="min-w-0">
         <div
           className="text-[8px] font-bold uppercase tracking-widest"
-          style={{ color: `${color}99` }}
+          style={{ color: "#64748b" }}
         >
           {label}
         </div>
@@ -225,20 +225,20 @@ export function CaseHealthOverview({
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4, delay: 0.1 }}
-      className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm"
+      className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-sm"
     >
       {/* Header */}
-      <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/80 flex items-center justify-between">
+      <div className="px-5 py-3.5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div
-            className="w-7 h-7 rounded-lg flex items-center justify-center"
-            style={{ background: `${colors.primary}20` }}
+            className="w-8 h-8 rounded-lg flex items-center justify-center"
+            style={{ background: `${colors.primary}15` }}
           >
-            <Shield size={14} style={{ color: colors.primary }} />
+            <Shield size={16} style={{ color: colors.primary }} />
           </div>
           <div>
-            <h3 className="text-[13px] font-bold text-slate-900">Case Health</h3>
-            <p className="text-[9px] text-slate-500 font-medium">
+            <h3 className="text-[14px] font-bold text-slate-900">Case Health</h3>
+            <p className="text-[10px] text-slate-500 font-medium">
               Based on evidence coverage & consistency analysis
             </p>
           </div>
@@ -279,9 +279,9 @@ export function CaseHealthOverview({
               icon={<FileCheck size={12} />}
               label="Evidence"
               value={coverageValue}
-              color="#6366f1"
-              bgColor="#f0f0ff"
-              borderColor="#e0e0ff"
+              color="#0d7377"
+              bgColor="#f7fafa"
+              borderColor="#e0eded"
             />
 
             {/* Consistency Warnings */}
@@ -293,9 +293,9 @@ export function CaseHealthOverview({
                   ? `${warningCount} Warning${warningCount !== 1 ? "s" : ""}`
                   : "None"
               }
-              color={warningCount > 0 ? "#f59e0b" : "#10b981"}
-              bgColor={warningCount > 0 ? "#fffbeb" : "#f0fdf4"}
-              borderColor={warningCount > 0 ? "#fde68a" : "#bbf7d0"}
+              color={warningCount > 0 ? "#9a6b96" : "#0d7377"}
+              bgColor={warningCount > 0 ? "#f9f3f9" : "#f7fafa"}
+              borderColor={warningCount > 0 ? "#e8d4e7" : "#e0eded"}
             />
 
             {/* Critical Issues */}
@@ -303,9 +303,9 @@ export function CaseHealthOverview({
               icon={<CircleAlert size={12} />}
               label="Critical"
               value={criticalCount > 0 ? `${criticalCount} Critical` : "None"}
-              color={criticalCount > 0 ? "#ef4444" : "#10b981"}
-              bgColor={criticalCount > 0 ? "#fef2f2" : "#f0fdf4"}
-              borderColor={criticalCount > 0 ? "#fecaca" : "#bbf7d0"}
+              color={criticalCount > 0 ? "#db8090" : "#0d7377"}
+              bgColor={criticalCount > 0 ? "#fdf0f3" : "#f7fafa"}
+              borderColor={criticalCount > 0 ? "#f0c8d0" : "#e0eded"}
             />
           </div>
         </div>
@@ -321,12 +321,7 @@ export function CaseHealthOverview({
         <div className="mt-4 pt-3 border-t border-slate-100">
           <button
             onClick={onViewFullAnalysis}
-            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-bold transition-all hover:shadow-sm active:scale-[0.99]"
-            style={{
-              background: `${colors.primary}10`,
-              color: colors.primary,
-              border: `1.5px solid ${colors.primary}30`,
-            }}
+            className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-bold transition-all hover:shadow-sm active:scale-[0.99] bg-[#0d7377]/8 text-[#0d7377] border border-[#0d7377]/20"
           >
             View Full Analysis
             <ArrowRight size={13} />
