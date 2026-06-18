@@ -1,15 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect } from "react";
-import {
-  ChevronDown,
-  ArrowRight,
-  ExternalLink,
-  Clock,
-  Shield,
-  AlertTriangle,
-  Lock,
-} from "lucide-react";
+import { ChevronDown, ExternalLink, Clock, Shield } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getJourneyLockStatus } from "@/lib/journey-lock";
@@ -18,18 +10,29 @@ import APTrackingTool from "./APTrackingTool";
 import WaitingStateCard from "./WaitingStateCard";
 import { JourneyRiskCard } from "./components/JourneyRiskCard";
 import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
-import { DashboardCriticalCard } from "./components/DashboardCriticalCard";
-import { CaseSummaryCard } from "./components/CaseSummaryCard";
-import { EvidenceGapCard } from "@/lib/journey/evidence-gap";
+import { Phase2Modal } from "./components/Phase2Modal";
+import { EvidenceQuestionnaireModal } from "./components/EvidenceQuestionnaireModal";
+import { CaseStatusHero } from "./components/CaseStatusHero";
+import { CaseHealthOverview } from "./components/CaseHealthOverview";
+import { CSADrawer } from "./components/CSADrawer";
+import { AlertCenter } from "./components/AlertCenter";
 import { EvidenceGapEngine } from "@/lib/journey/evidence-gap";
 import type { EvidenceGapAnalysis } from "@/lib/journey/evidence-gap";
 import { DOCUMENTS_BY_ID } from "@/lib/document-vault/document-definitions";
 import {
   generateCaseNarrative,
   getCaseHealthStatus,
+  computeOverallCaseScore,
   runFullConsistencyAnalysis,
   type Phase2Responses,
 } from "@/lib/case-strength";
+import {
+  aggregateChapter1Issues,
+  aggregateChapter2Issues,
+  aggregateChapter3Issues,
+  type AggregatedIssue,
+} from "@/lib/case-strength/aggregate-issues";
+import type { ConsistencyFinding } from "@/lib/case-strength/consistency-intelligence";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
@@ -303,6 +306,116 @@ export function DashboardView({
       consistencyFindings,
     });
   }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
+
+  // ── CSA Drawer State ─────────────────────────────────────────────────────
+  const [isCSADrawerOpen, setIsCSADrawerOpen] = useState(false);
+  const [showPhase2Modal, setShowPhase2Modal] = useState(false);
+  const [showEvidenceQuestionnaireModal, setShowEvidenceQuestionnaireModal] = useState(false);
+
+  // ── Alert Center Issues ─────────────────────────────────────────────────────
+  // Compute issues for the AlertCenter (critical + warning only)
+  const alertCenterIssues = useMemo(() => {
+    const chapters = (data as any).chapters || (data as any).stages || [];
+    const ch1 = aggregateChapter1Issues({ chapters, state, uploadedDocuments });
+    const ch2 = aggregateChapter2Issues({ chapters, state, uploadedDocuments });
+    const ch3 = aggregateChapter3Issues({ chapters, state, uploadedDocuments });
+
+    const eligibilityAnswers =
+      (state.answers?.["eligibility-suite"] as any) ??
+      (state.metadata?.["questAnswers_eligibility-suite"] as any);
+
+    const consistencyFindings = runFullConsistencyAnalysis(
+      { state, eligibilityAnswers },
+      (phase2Responses as Phase2Responses) ?? null,
+      uploadedDocuments
+    );
+
+    const existingKeys = new Set([...ch1, ...ch2, ...ch3].map((i) => `${i.stepKey}:${i.title}`));
+
+    const levelMap: Record<string, AggregatedIssue["level"]> = {
+      critical: "critical",
+      warning: "warning",
+      informational: "info",
+    };
+
+    const consistencyIssues: AggregatedIssue[] = consistencyFindings
+      .map((finding: ConsistencyFinding) => {
+        let chapterIdx = 0;
+        let stepIdx = 0;
+        let stepName = finding.category.replace(/_/g, " ");
+        let stepNumber = 0;
+        if (finding.actionableStepKey) {
+          const match = finding.actionableStepKey.match(/step_(\d+)_(\d+)/);
+          if (match) {
+            const chapNum = parseInt(match[1], 10) - 1;
+            const stepNum = parseInt(match[2], 10);
+            if (chapters[chapNum]?.steps) {
+              chapterIdx = chapNum;
+              const foundIdx = chapters[chapNum].steps.findIndex(
+                (s: any) => s.step_key === finding.actionableStepKey
+              );
+              stepIdx = foundIdx >= 0 ? foundIdx : stepNum - 1;
+              stepName = chapters[chapNum].steps[stepIdx]?.step_name ?? stepName;
+              stepNumber = chapters[chapNum].steps[stepIdx]?.step_number ?? stepNum;
+            }
+          }
+        }
+        return {
+          level: levelMap[finding.severity] ?? ("info" as AggregatedIssue["level"]),
+          title: finding.title,
+          hint: `${finding.description}\n\nHow to resolve: ${finding.resolution}`,
+          stepKey: finding.actionableStepKey ?? "unknown",
+          stepName,
+          stepNumber,
+          chapterIdx,
+          stepIdx,
+          resolved: finding.resolved ?? false,
+        };
+      })
+      .filter((issue) => !existingKeys.has(`${issue.stepKey}:${issue.title}`));
+
+    const all = [...ch1, ...ch2, ...ch3, ...consistencyIssues];
+    const order = { critical: 0, warning: 1, info: 2 };
+    return all.sort((a, b) => {
+      if (!!a.resolved !== !!b.resolved) return a.resolved ? 1 : -1;
+      if (order[a.level] !== order[b.level]) return order[a.level] - order[b.level];
+      return a.chapterIdx - b.chapterIdx;
+    });
+  }, [data, state, uploadedDocuments, phase2Responses]);
+
+  // Counts for the CaseHealthOverview
+  const critIssueCount = alertCenterIssues.filter(
+    (i) => i.level === "critical" && !i.resolved
+  ).length;
+  const warnIssueCount = alertCenterIssues.filter(
+    (i) => i.level === "warning" && !i.resolved
+  ).length;
+
+  // Overall combined case score (evidence + consistency)
+  const overallCaseScore = useMemo(() => {
+    const eligibilityAnswers =
+      (state.answers?.["eligibility-suite"] as any) ??
+      (state.metadata?.["questAnswers_eligibility-suite"] as any);
+    const consistencyFindings = runFullConsistencyAnalysis(
+      { state, eligibilityAnswers },
+      (phase2Responses as Phase2Responses) ?? null,
+      uploadedDocuments
+    );
+    return computeOverallCaseScore({ evidenceAnalysis, consistencyFindings });
+  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
+
+  // Compact summary text for CaseHealthOverview (truncated executive summary)
+  const compactSummary = caseNarrative?.executiveSummary
+    ? caseNarrative.executiveSummary.length > 280
+      ? caseNarrative.executiveSummary.slice(0, 280).trim() + "\u2026"
+      : caseNarrative.executiveSummary
+    : undefined;
+
+  // Phase 2 answered count
+  const phase2AnsweredCount = Object.values(phase2Responses).filter(Boolean).length;
+
+  // Evidence questionnaire answered count
+  const evidenceAnsweredCount = Object.values(questionnaireResponses).filter(Boolean).length;
 
   // Extract step_1_2 document_items from roadmap data
   const step1_2DocItems = useMemo(() => {
@@ -705,13 +818,10 @@ export function DashboardView({
         style={{ backgroundImage: `url(${dashboardBg})`, opacity: 0.6 }}
       />
       <div className="w-full max-w-[1200px] xl:max-w-[1500px] mx-auto animate-in fade-in duration-700 relative z-10">
-        <div className={`w-full ${showSidebar ? "" : "lg:max-w-4xl mx-auto"}`}>
-          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-2 text-center lg:text-left">
+        <div className={`w-full mb-6`}>
+          <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-1 text-center lg:text-left">
             IR-1 Spouse Visa · Pakistan
           </div>
-          <h1 className="font-black text-[clamp(22px,3vw,28px)] text-[#0c1b33] mb-8 text-center lg:text-left">
-            Case Dashboard
-          </h1>
         </div>
 
         {upgradeModalFeature && (
@@ -721,14 +831,95 @@ export function DashboardView({
           />
         )}
 
-        {/* 3-column layout — LEFT: risk card | CENTER: chapters | RIGHT: doc strength */}
+        {/* ── Section 1 + 2: Hero & Health Overview in column grid ──────── */}
+        <div className="grid grid-cols-1 xl:grid-cols-[3fr_2fr] gap-4 mb-6 items-stretch">
+          {/* Left: Case Status Hero */}
+          <CaseStatusHero
+            data={data}
+            state={state}
+            nextActionData={nextActionData}
+            isLocked={lockStatus.isLocked}
+            onContinue={() => {
+              if (plan.isLocked("roadmap_access")) {
+                setUpgradeModalFeature("roadmap_access");
+                return;
+              }
+              if (nextActionData) {
+                if (nextStepLock.isLocked) {
+                  setUpgradeModalFeature(getModalFeatureForTier(nextStepLock.requiredPlan!));
+                  return;
+                }
+                if (onSelectStep) {
+                  onSelectStep(nextActionData.chapterIdx, nextActionData.stepIdxInChapter);
+                } else {
+                  actions.setStage(nextActionData.chapterIdx);
+                  actions.setCurrentStep(nextActionData.stepIdxInChapter);
+                }
+              }
+            }}
+          />
+
+          {/* Right: Case Health + Summary (combined) */}
+          <CaseHealthOverview
+            evidenceAnalysis={evidenceAnalysis}
+            criticalCount={critIssueCount}
+            warningCount={warnIssueCount}
+            overallScore={overallCaseScore}
+            healthLabel={caseHealthStatus?.label ?? "Analyzing"}
+            healthStatus={caseHealthStatus?.status ?? "needs-attention"}
+            loading={evidenceLoading}
+            onViewFullAnalysis={() => setIsCSADrawerOpen(true)}
+            summaryText={compactSummary}
+          />
+        </div>
+
+        {/* ── Status cards (commented out — now handled by CaseStatusHero) ── */}
+        {/* {isJourneyComplete && (
+          <WaitingStateCard
+            icon="check"
+            title="IR-1 Journey Complete!"
+            description="Congratulations — you have completed every step of the roadmap."
+            status="complete"
+          />
+        )}
+        {lockStatus.isLocked && (
+          <div className="bg-[#1a1a2e] border border-[#3a3a5c] rounded-2xl p-4 flex items-start gap-3">
+            <div className="w-8 h-8 bg-white/5 rounded-full flex items-center justify-center shrink-0">
+              <Lock size={14} className="text-white/60" />
+            </div>
+            <div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-white/40 mb-0.5">Journey Locked</div>
+              <div className="text-[13px] font-bold text-white/90">This journey is in read-only mode</div>
+            </div>
+          </div>
+        )}
+        {isApprovedPhase && !isJourneyComplete && (
+          <WaitingStateCard
+            icon="check"
+            title="Visa Approved!"
+            description="Your visa was approved at interview."
+            status="complete"
+            actionLabel="Track Visa Issuance"
+            onAction={() => onSelectStep ? onSelectStep(2, 9) : (actions.setStage(2), actions.setCurrentStep(9))}
+          />
+        )}
+        {interviewOutcome === "221g" && state.metadata?.apSaved !== "true" && (
+          <WaitingStateCard
+            icon="alert"
+            title="221(g) Refusal — Action Required"
+            description="Complete the follow-up steps in Chapter 3 to respond."
+            status="action-needed"
+            actionLabel="Continue Chapter 3"
+            onAction={() => onSelectChapter ? onSelectChapter(2) : undefined}
+          />
+        )} */}
+
+        {/* 3-column layout — LEFT: Alert Center | CENTER: chapters | RIGHT: Live tracking */}
         <div className="grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)_280px] gap-5 items-start">
-          {/* ── LEFT COLUMN — Critical Items + Evidence Gap Analysis ─── */}
+          {/* ── LEFT COLUMN — Alert Center (critical + warnings only) ─── */}
           <div className="hidden xl:flex flex-col gap-3">
-            <DashboardCriticalCard
-              chapters={(data as any).chapters || (data as any).stages || []}
-              state={state}
-              uploadedDocuments={uploadedDocuments}
+            <AlertCenter
+              issues={alertCenterIssues}
               onOpenStep={(cIdx, sIdx) => {
                 if (onSelectStep) onSelectStep(cIdx, sIdx);
                 else {
@@ -736,212 +927,34 @@ export function DashboardView({
                   actions.setCurrentStep(sIdx);
                 }
               }}
-              phase2Responses={phase2Responses}
-              onPhase2Save={handlePhase2Save}
-            />
-            {/* Evidence Gap Analysis Card */}
-            <EvidenceGapCard
-              analysis={evidenceAnalysis}
-              loading={evidenceLoading}
-              onRefresh={refreshEvidenceAnalysis}
-              onNavigateToVault={() => window.open("/document-vault", "_blank")}
-              questionnaireResponses={questionnaireResponses}
-              onQuestionnaireSave={handleQuestionnaireSave}
             />
           </div>
 
-          {/* ── CENTER — Case Summary + Hero + Chapters + Accordions ─── */}
+          {/* ── CENTER — Chapters + Accordions ─── */}
           <div className="flex flex-col xl:flex-col lg:flex-row gap-8 xl:gap-6 items-start">
             {/* Main Content Column */}
             <div
               className={`flex flex-col gap-6 order-1 w-full xl:max-w-none ${showSidebar ? "flex-1" : "lg:max-w-4xl"}`}
             >
-              {/* Case Summary — Dynamic Narrative (top-level overview) */}
-              <CaseSummaryCard
-                narrative={caseNarrative}
-                healthStatus={caseHealthStatus}
-                loading={evidenceLoading}
-              />
-
-              {/* Journey Complete — highest priority status card */}
-              {isJourneyComplete && (
-                <WaitingStateCard
-                  icon="check"
-                  title="IR-1 Journey Complete!"
-                  description="Congratulations — you have completed every step of the roadmap. Your journey is now in read-only mode for reference."
-                  status="complete"
-                />
-              )}
-              {/* Journey Locked — 14-day window expired */}
-              {lockStatus.isLocked && (
-                <div className="bg-[#1a1a2e] border border-[#3a3a5c] rounded-2xl p-5 flex items-start gap-4 animate-in fade-in duration-300">
-                  <div className="w-10 h-10 bg-white/5 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                    <Lock size={18} className="text-white/60" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-bold uppercase tracking-widest text-white/40 mb-1">
-                      Journey Locked
-                    </div>
-                    <div className="text-[15px] font-bold text-white/90 mb-1">
-                      This journey is now in read-only mode
-                    </div>
-                    <div className="text-[13px] text-white/55 leading-relaxed">
-                      The 14-day editing window following your CEAC status being marked as Issued
-                      has ended. Your roadmap is preserved for reference. Contact support if you
-                      need to make changes.
-                    </div>
-                  </div>
-                </div>
-              )}
-              {/* Lock Warning — approaching lock (≤ 3 days remaining) */}
-              {lockStatus.isWarning && !lockStatus.isLocked && (
-                <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-2xl p-5 flex items-start gap-4 animate-in fade-in duration-300">
-                  <div className="w-10 h-10 bg-[#f0d98a]/30 rounded-full flex items-center justify-center shrink-0 mt-0.5">
-                    <AlertTriangle size={18} className="text-[#8a6200]" />
-                  </div>
-                  <div>
-                    <div className="text-[11px] font-bold uppercase tracking-widest text-[#8a6200]/60 mb-1">
-                      Journey Locking Soon
-                    </div>
-                    <div className="text-[15px] font-bold text-[#0c1b33] mb-1">
-                      {lockStatus.daysRemaining === 1
-                        ? "Your journey locks tomorrow"
-                        : `Your journey locks in ${lockStatus.daysRemaining} days`}
-                    </div>
-                    <div className="text-[13px] text-[#8a6200]/80 leading-relaxed">
-                      After{" "}
-                      {lockStatus.lockDate?.toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      })}
-                      , this journey will become read-only. Complete any remaining steps before
-                      then.
-                    </div>
-                  </div>
-                </div>
-              )}
-              {/* Visa Approved — show when outcome confirmed but journey not yet closed */}
-              {isApprovedPhase && !isJourneyComplete && (
-                <WaitingStateCard
-                  icon="check"
-                  title="Visa Approved!"
-                  description="Your visa was approved at interview. Continue in Chapter 3 to track issuance and prepare for arrival."
-                  status="complete"
-                  actionLabel="Track Visa Issuance"
-                  onAction={() => {
-                    if (onSelectStep) onSelectStep(2, 9);
-                    else {
-                      actions.setStage(2);
-                      actions.setCurrentStep(9);
-                    }
-                  }}
-                />
-              )}
-              {/* 221(g) new path — outcome selected but AP details not yet recorded */}
-              {interviewOutcome === "221g" && state.metadata?.apSaved !== "true" && (
-                <WaitingStateCard
-                  icon="alert"
-                  title="221(g) Refusal — Action Required"
-                  description="Complete the follow-up steps in Chapter 3 to respond to the 221(g) and track your case status."
-                  status="action-needed"
-                  actionLabel="Continue Chapter 3"
-                  onAction={() => {
-                    if (onSelectChapter) onSelectChapter(2);
-                  }}
-                />
-              )}
-              {/* Administrative Processing — legacy path (apSaved before new outcome flow) */}
-              {isApPhase && !interviewOutcome && state.metadata?.apSaved !== "true" && (
-                <WaitingStateCard
-                  icon="alert"
-                  title="Case in Administrative Processing"
-                  description="Your case is under review. Go to Chapter 3 → Step 9 to record your AP details and activate full tracking."
-                  date={trackingStatus.ap_date}
-                  status="waiting"
-                  actionLabel="Go to Step 9"
-                  onAction={() => {
-                    if (onSelectStep) onSelectStep(2, 8);
-                    else {
-                      actions.setStage(2);
-                      actions.setCurrentStep(8);
-                    }
-                  }}
-                />
-              )}
-
-              {/* IR-1 Live ticker — journey dashboard (placed above hero) */}
-              {receiptRecord !== undefined && (
-                <div className="mb-1 mt-1">
-                  <IR1Ticker
-                    {...buildIR1TickerProps(
-                      state,
-                      trackingStatus,
-                      nvcCaseNum,
-                      nvcInvoice,
-                      uploadedDocuments as any[],
-                      receiptRecord
-                    )}
-                  />
-                </div>
-              )}
-              {/* Hero Section */}
-              <section className="bg-[#0c1b33] rounded-2xl p-[20px_24px] relative overflow-hidden animate-in zoom-in duration-500 shadow-[0_20px_64px_rgba(36,42,66,0.16),0_8px_32px_rgba(47,111,212,0.13)] border-2 border-gradient-to-br from-[#3a4a66] to-[#6aa8f0] outline outline-2 outline-[#22304a] after:content-[''] after:absolute after:-top-[50px] after:-right-[50px] after:w-[180px] after:h-[180px] after:rounded-full after:bg-[#2f6fd41f] after:pointer-events-none">
-                <div className="relative z-10">
-                  <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/40 mb-1.5">
-                    Next roadmap step
-                  </div>
-                  <h2 className="text-white/95 text-xl font-black leading-tight mb-1">
-                    {nextActionData?.step.step_name || "Journey Complete!"}
-                  </h2>
-                  <p className="text-white/45 text-[12.5px] leading-relaxed mb-4 max-w-md">
-                    {nextActionData?.step.step_description ||
-                      "You have reached the end of the roadmap. All major verification steps are fulfilled."}
-                  </p>
-                  <button
-                    onClick={() => {
-                      if (plan.isLocked("roadmap_access")) {
-                        setUpgradeModalFeature("roadmap_access");
-                        return;
-                      }
-                      if (nextActionData) {
-                        // Check if the next action step is locked for the user's tier
-                        if (nextStepLock.isLocked) {
-                          setUpgradeModalFeature(
-                            getModalFeatureForTier(nextStepLock.requiredPlan!)
-                          );
-                          return;
-                        }
-
-                        if (onSelectStep) {
-                          onSelectStep(nextActionData.chapterIdx, nextActionData.stepIdxInChapter);
-                        } else {
-                          actions.setStage(nextActionData.chapterIdx);
-                          actions.setCurrentStep(nextActionData.stepIdxInChapter);
-                        }
-                      }
-                    }}
-                    disabled={!nextActionData && !plan.isLocked("roadmap_access")}
-                    className="inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 disabled:opacity-50 text-white rounded-[12px] font-bold text-[14px] shadow-lg shadow-primary/40 transition-all active:scale-95 group"
-                  >
-                    Continue Roadmap
-                    <ArrowRight
-                      size={16}
-                      className="group-hover:translate-x-1 transition-transform"
-                      strokeWidth={3}
-                    />
-                  </button>
-                </div>
-              </section>
-              {/* Mobile/tablet only — analysis cards inline below hero */}
+              {/* Mobile/tablet only — Alert Center + analysis cards inline */}
               <div className="xl:hidden flex flex-col gap-4">
-                <JourneyRiskCard
+                <AlertCenter
+                  issues={alertCenterIssues}
+                  onOpenStep={(cIdx, sIdx) => {
+                    if (onSelectStep) onSelectStep(cIdx, sIdx);
+                    else {
+                      actions.setStage(cIdx);
+                      actions.setCurrentStep(sIdx);
+                    }
+                  }}
+                />
+                {/* <JourneyRiskCard
                   metadata={state.metadata}
                   onOpenEligibility={() => {
                     actions.setStage(0);
                     actions.setCurrentStep(0);
                   }}
-                />
+                /> */}
                 {step1_2DocItems && (
                   <DocCaseStrengthMeter
                     documentItems={step1_2DocItems}
@@ -1625,6 +1638,42 @@ export function DashboardView({
         </div>
         {/* end 3-col grid */}
       </div>
+
+      {/* ── CSA Drawer ── */}
+      <CSADrawer
+        isOpen={isCSADrawerOpen}
+        onClose={() => setIsCSADrawerOpen(false)}
+        narrative={caseNarrative}
+        evidenceAnalysis={evidenceAnalysis}
+        evidenceLoading={evidenceLoading}
+        healthStatus={caseHealthStatus}
+        onOpenEvidenceQuestionnaire={() => {
+          setIsCSADrawerOpen(false);
+          setShowEvidenceQuestionnaireModal(true);
+        }}
+        evidenceAnswered={evidenceAnsweredCount}
+        onOpenPhase2={() => {
+          setIsCSADrawerOpen(false);
+          setShowPhase2Modal(true);
+        }}
+        phase2Answered={phase2AnsweredCount}
+      />
+
+      {/* ── Phase 2 Questionnaire Modal ── */}
+      <Phase2Modal
+        isOpen={showPhase2Modal}
+        onClose={() => setShowPhase2Modal(false)}
+        responses={phase2Responses}
+        onSave={handlePhase2Save}
+      />
+
+      {/* ── Evidence Questionnaire Modal ── */}
+      <EvidenceQuestionnaireModal
+        isOpen={showEvidenceQuestionnaireModal}
+        onClose={() => setShowEvidenceQuestionnaireModal(false)}
+        responses={questionnaireResponses}
+        onSave={handleQuestionnaireSave}
+      />
     </div>
   );
 }

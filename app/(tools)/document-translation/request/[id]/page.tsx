@@ -14,7 +14,7 @@ import {
   User,
   MessageSquare,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -118,6 +118,7 @@ export default function TranslationRequestDetails({ params }: { params: Promise<
   const { t } = useLanguage();
   const [request, setRequest] = useState<TranslationRequest | null>(null);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
   const [showChangeRequestModal, setShowChangeRequestModal] = useState(false);
   const [changeRequestReason, setChangeRequestReason] = useState("");
 
@@ -167,7 +168,7 @@ export default function TranslationRequestDetails({ params }: { params: Promise<
 
       if (response.ok) {
         // Show success toast
-        toast.success(t("documentTranslation.requestDetailsPage.messages.confirmSuccess"));
+        showToast(t("documentTranslation.requestDetailsPage.messages.confirmSuccess"), "success");
 
         // Update the request status with a forced update
         setRequest((prevRequest) => ({
@@ -176,8 +177,9 @@ export default function TranslationRequestDetails({ params }: { params: Promise<
         }));
       } else {
         console.error("Error confirming translation:", data.error);
-        toast.error(
-          data.error || t("documentTranslation.requestDetailsPage.messages.confirmFailed")
+        showToast(
+          data.error || t("documentTranslation.requestDetailsPage.messages.confirmFailed"),
+          "error"
         );
       }
     } catch (error) {
@@ -203,7 +205,7 @@ export default function TranslationRequestDetails({ params }: { params: Promise<
 
       if (response.ok) {
         // Show success toast
-        toast.success(t("documentTranslation.requestDetailsPage.messages.changeSuccess"));
+        showToast(t("documentTranslation.requestDetailsPage.messages.changeSuccess"), "success");
 
         // Update the request status
         setRequest((prevRequest) => ({
@@ -212,8 +214,9 @@ export default function TranslationRequestDetails({ params }: { params: Promise<
         }));
       } else {
         console.error("Error requesting changes:", data.error);
-        toast.error(
-          data.error || t("documentTranslation.requestDetailsPage.messages.changeFailed")
+        showToast(
+          data.error || t("documentTranslation.requestDetailsPage.messages.changeFailed"),
+          "error"
         );
       }
     } catch (error) {
