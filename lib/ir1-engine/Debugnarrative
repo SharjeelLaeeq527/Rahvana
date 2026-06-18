@@ -1,0 +1,181 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// debugNarrative.ts — DROP-IN DIAGNOSTIC TOOL
+//
+// USAGE: Import this and call debugNarrative(user, ctx) anywhere you render
+// the ticker or dashboard card. It logs a full breakdown to the console so
+// you can see exactly what data the engine is receiving and what it decides.
+//
+// Example (in whatever component renders IR1Ticker):
+//   import { debugNarrative } from "@/lib/ir1-engine/debugNarrative";
+//   debugNarrative(user, journeyContext);
+//
+// Remove after diagnosing.
+// ─────────────────────────────────────────────────────────────────────────────
+
+import {
+  generateNarrative,
+  detectStage,
+  CaseFields,
+  NarrativeJourneyContext,
+} from "../narrative/narrativeEngine";
+import { generateEstimate } from "./timelineEstimator";
+
+export function debugNarrative(user: CaseFields, ctx: NarrativeJourneyContext = {}): void {
+  const stage = detectStage(user, ctx);
+  const narrative = generateNarrative(user, ctx);
+
+  console.group("🔍 IR-1 Engine Debug");
+
+  console.group("📥 RAW INPUT — CaseFields");
+  console.table({
+    i130_submitted: user.i130_submitted ?? "❌ missing",
+    receipt_number: user.receipt_number ?? "❌ missing",
+    nvc_case_number: user.nvc_case_number ?? "❌ missing",
+    nvc_invoice_id: user.nvc_invoice_id ?? "❌ missing",
+    ds260_submitted: user.ds260_submitted ?? "❌ missing",
+    docs_submitted_nvc: user.docs_submitted_nvc ?? "❌ missing",
+    dq_date: user.dq_date ?? "❌ missing",
+    medical_scheduled: user.medical_scheduled ?? "❌ missing",
+    medical_attended: user.medical_attended ?? "❌ missing",
+    interview_date: user.interview_date ?? "❌ missing",
+    visa_interview_attended: user.visa_interview_attended ?? "❌ missing",
+    interview_outcome: user.interview_outcome ?? "❌ missing",
+    visa_issued: user.visa_issued ?? "❌ missing",
+    embassy: user.embassy ?? "❌ missing",
+    filing_method: user.filing_method ?? "❌ missing",
+  });
+  console.groupEnd();
+
+  console.group("📥 RAW INPUT — JourneyContext");
+  console.log("caseTypeId:", ctx.caseTypeId ?? "❌ missing — defaulting to I130_USC_NBC");
+  console.log("caseData:", ctx.caseData ?? "❌ missing");
+  console.log("metadata:", ctx.metadata ?? "❌ missing");
+  console.groupEnd();
+
+  console.group("🎯 STAGE DETECTION");
+  console.log("Detected stage:", stage);
+
+  // Show what triggered the stage
+  const triggers: string[] = [];
+  if (user.visa_issued) triggers.push("visa_issued ✓");
+  if (user.interview_outcome) triggers.push("interview_outcome ✓");
+  if (user.visa_interview_attended) triggers.push("visa_interview_attended ✓");
+  if (user.interview_date) triggers.push("interview_date ✓");
+  if (user.medical_attended) triggers.push("medical_attended ✓");
+  if (user.medical_scheduled) triggers.push("medical_scheduled ✓");
+  if (user.dq_date) triggers.push("dq_date ✓");
+  if (user.docs_submitted_nvc) triggers.push("docs_submitted_nvc ✓");
+  if (user.ds260_submitted) triggers.push("ds260_submitted ✓");
+  if (user.nvc_case_number) triggers.push("nvc_case_number ✓ (identifier)");
+  if (user.nvc_invoice_id) triggers.push("nvc_invoice_id ✓ (identifier)");
+  if (user.receipt_number) triggers.push("receipt_number ✓ (identifier)");
+  if (user.i130_submitted) triggers.push("i130_submitted ✓");
+
+  // Also check ctx.caseData
+  const cd = ctx.caseData ?? {};
+  const ctxTriggers: string[] = [];
+  if (cd.approved_date) ctxTriggers.push("approved_date ✓");
+  if (cd.nvc_received_date) ctxTriggers.push("nvc_received_date ✓");
+  if (cd.fees_paid_date) ctxTriggers.push("fees_paid_date ✓");
+  if (cd.noa1_date) ctxTriggers.push("noa1_date ✓");
+  if (cd.dq_date) ctxTriggers.push("dq_date (ctx) ✓");
+
+  console.log(
+    "CaseFields triggers:",
+    triggers.length > 0 ? triggers : ["❌ NONE — stage inferred from identifiers or defaults"]
+  );
+  console.log("Context triggers:", ctxTriggers.length > 0 ? ctxTriggers : ["❌ NONE"]);
+
+  if (triggers.length === 0 && ctxTriggers.length === 0) {
+    console.warn(
+      "⚠️  NO DATE OR IDENTIFIER FIELDS POPULATED. The engine has nothing to work with. " +
+        "Check that your parent component is correctly mapping the DB row to CaseFields. " +
+        "Common cause: field name mismatch (e.g. passing `interview_scheduled_date` " +
+        "but CaseFields expects `interview_date`)."
+    );
+  }
+  console.groupEnd();
+
+  console.group("📤 NARRATIVE OUTPUT");
+  console.log("stage:", narrative.stage);
+  console.log("badge:", narrative.badge ?? "null");
+  console.log("headline:", narrative.headline);
+  console.log("context:", narrative.context ?? "null");
+  console.log("estimate:", narrative.estimate ?? "null");
+  console.log("action:", narrative.action ?? "null");
+  console.log("policyAlert:", narrative.policyAlert ?? "null");
+  console.groupEnd();
+
+  // Estimate breakdown
+  if (
+    ![
+      "PRE_FILING",
+      "VISA_ISSUED",
+      "INTERVIEW_OUTCOME",
+      "INTERVIEW_ATTENDED",
+      "MEDICAL_ATTENDED",
+    ].includes(stage)
+  ) {
+    const caseTypeId = ctx.caseTypeId ?? "I130_USC_NBC";
+    const filingDate = user.i130_submitted ?? undefined;
+
+    // Build milestone dates from what we have
+    const milestoneDates = {
+      FILED: user.i130_submitted ?? null,
+      DQ: user.dq_date ?? (cd.dq_date as string | null) ?? null,
+      INTERVIEW_SCHEDULED: user.interview_date ?? null,
+      VISA_ISSUED: user.visa_issued ?? null,
+      NVC_RECEIVED: (cd.nvc_received_date as string | null) ?? null,
+      FEES_PAID: (cd.fees_paid_date as string | null) ?? null,
+      DS260_SUBMITTED: user.ds260_submitted ?? null,
+      DOCS_SUBMITTED: user.docs_submitted_nvc ?? null,
+      APPROVED: (cd.approved_date as string | null) ?? null,
+    };
+
+    const est = generateEstimate({ caseTypeId, filingDate, milestoneDates });
+    if (est) {
+      console.group("📊 ESTIMATE BREAKDOWN");
+      console.log("currentStage:", est.currentStage);
+      console.log("uscisPhaseComplete:", est.provenance.uscisPhaseComplete);
+      console.log("nvcPhaseComplete:", est.provenance.nvcPhaseComplete);
+      console.log("filingDatePresent:", est.provenance.filingDatePresent);
+      console.log("monthsElapsed:", est.monthsElapsed.toFixed(1));
+      console.log("dominantFactor:", est.provenance.dominantFactor);
+      console.log("USCIS remaining min:", est.provenance.breakdown.uscisRemainingMin);
+      console.log("USCIS remaining max:", est.provenance.breakdown.uscisRemainingMax);
+      console.log("NVC remaining typical:", est.provenance.breakdown.nvcRemainingTypical);
+      console.log("Embassy remaining:", est.provenance.breakdown.embassyRemainingTypical);
+      console.log(
+        "Visa issuance months:",
+        est.provenance.breakdown.visaIssuanceMonths ?? "INDEFINITE (pause)"
+      );
+      console.log(
+        "e2e typicalMin:",
+        est.endToEnd.typicalMin.toFixed(1),
+        "→",
+        est.endToEnd.typicalMinQuarter.label
+      );
+      console.log(
+        "e2e typicalMax:",
+        est.endToEnd.typicalMax.toFixed(1),
+        "→",
+        est.endToEnd.typicalMaxQuarter.label
+      );
+      console.log("confidence:", est.confidence.level, "—", est.confidence.label);
+      console.log("visaIssuanceIndefinite:", est.endToEnd.visaIssuanceIndefinite);
+      console.log("sourceNote:", est.provenance.sourceNote);
+      if (est.activePolicyFlags.length > 0) {
+        console.warn(
+          "🚨 Active policy flags:",
+          est.activePolicyFlags.map((f) => f.id)
+        );
+      }
+      console.groupEnd();
+    } else {
+      console.warn("⚠️  generateEstimate returned null — unknown caseTypeId or missing config?");
+      console.log("caseTypeId passed:", caseTypeId);
+    }
+  }
+
+  console.groupEnd(); // main group
+}

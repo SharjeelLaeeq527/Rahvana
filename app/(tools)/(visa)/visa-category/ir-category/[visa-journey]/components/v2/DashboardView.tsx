@@ -41,6 +41,12 @@ import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 import { getActiveStepsForStage } from "./journeyHelpers";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 import { E, msg } from "@/lib/errors";
+import IR1Ticker from "./IR1Ticker";
+import {
+  buildIR1TickerProps,
+  fetchReceiptForJourney,
+  ReceiptRecord,
+} from "@/app/components/home-page/Ir1tickerprops";
 
 interface DashboardViewProps {
   data: RoadmapData;
@@ -439,11 +445,22 @@ export function DashboardView({
   const interviewDate =
     trackingStatus.interview_date || (state.metadata?.interviewDate as string | undefined);
 
-  // Interview attended = user completed Step 3.8 (attend visa interview)
+  const interviewDateValid = useMemo(() => {
+    if (!interviewDate) return false;
+    const date = new Date(interviewDate);
+    return !Number.isNaN(date.getTime()) && date.getUTCFullYear() >= 2000;
+  }, [interviewDate]);
+
+  // New outcome metadata
+  const interviewOutcome = state.metadata?.interviewOutcome as string | undefined;
+  const journeyCompletedAt = state.metadata?.journeyCompletedAt as string | undefined;
+
+  // Interview attended = user completed Step 3.8, admin AP state, or any recorded outcome.
   const interviewAttended =
     state.completedSteps?.has("step_3_8") ||
     state.completedSteps?.has("c3s8") ||
-    !!trackingStatus.ap_status; // if admin set AP, interview happened
+    !!trackingStatus.ap_status ||
+    !!interviewOutcome;
 
   // DQ is active (case qualified, waiting for interview scheduling)
   const isDqPhase =
@@ -451,10 +468,6 @@ export function DashboardView({
       trackingStatus.dq_status === "qualified" ||
       state.metadata?.dqStatus === "qualified") &&
     !interviewDate;
-
-  // New outcome metadata
-  const interviewOutcome = state.metadata?.interviewOutcome as string | undefined;
-  const journeyCompletedAt = state.metadata?.journeyCompletedAt as string | undefined;
   const isJourneyComplete = !!journeyCompletedAt;
 
   // AP phase: legacy (apSaved/admin) OR new 221g path
@@ -532,7 +545,7 @@ export function DashboardView({
       });
     }
 
-    if (!hasTrackingData && isCaseRegistered) {
+    if (!hasTrackingData && isCaseRegistered && !interviewDateValid) {
       list.push({
         type: "sky",
         iconColor: "d-sky",
@@ -545,6 +558,7 @@ export function DashboardView({
     if (
       meta.interviewDate &&
       !trackingStatus.interview_date &&
+      interviewDateValid &&
       !list.some((a) => a.title === "Interview scheduled")
     ) {
       list.push({
@@ -624,11 +638,11 @@ export function DashboardView({
   const showSidebar = useMemo(() => {
     const hasWaitingStateCards =
       (trackingStatus.interview_queue &&
-        !interviewDate &&
+        !interviewDateValid &&
         !state.metadata?.dqDate &&
         trackingStatus.dq_status !== "qualified" &&
         !state.metadata?.dqStatus) ||
-      (!!interviewDate && !interviewAttended) ||
+      (interviewDateValid && !interviewAttended) ||
       (isApPhase && state.metadata?.apSaved !== "true");
     return (
       alerts.length > 0 ||
@@ -732,6 +746,43 @@ export function DashboardView({
     };
   }, [state.metadata.portalType]);
 
+  const [receiptRecord, setReceiptRecord] = useState<ReceiptRecord | null | undefined>(undefined);
+  useEffect(() => {
+    console.log("DEBUG [receipt effect] FIRED — state.backendId:", state.backendId);
+    let cancelled = false;
+    const jId = state.backendId;
+
+    if (!jId) {
+      console.log("DEBUG [receipt effect] No backendId yet — skipping fetch");
+      return;
+    }
+
+    console.log("DEBUG [receipt effect] Calling fetchReceiptForJourney with:", jId);
+
+    fetchReceiptForJourney(jId)
+      .then(({ record, error }) => {
+        console.log("DEBUG [receipt effect] fetchReceiptForJourney resolved:", {
+          record: record ? JSON.stringify(record) : null,
+          error,
+          cancelled,
+        });
+        if (!cancelled) {
+          setReceiptRecord(record ?? null);
+          console.log("DEBUG [receipt effect] setReceiptRecord called with:", record ?? null);
+        } else {
+          console.log("DEBUG [receipt effect] Cancelled before setReceiptRecord");
+        }
+      })
+      .catch((err) => {
+        console.error("DEBUG [receipt effect] fetchReceiptForJourney threw:", err);
+        if (!cancelled) setReceiptRecord(null);
+      });
+
+    return () => {
+      console.log("DEBUG [receipt effect] Cleanup — marking cancelled");
+      cancelled = true;
+    };
+  }, [state.backendId]);
   const caseFields = [
     { label: "Filing method", value: state.metadata.filingMethod },
     { label: "Receipt number", value: state.metadata.receiptNum },
@@ -765,14 +816,27 @@ export function DashboardView({
             IR-1 Spouse Visa · Pakistan
           </div>
         </div>
-
         {upgradeModalFeature && (
           <UpgradeModal
             feature={upgradeModalFeature}
             onClose={() => setUpgradeModalFeature(null)}
           />
         )}
-
+        {/* IR-1 Live ticker — journey dashboard (placed above hero) */}
+        {receiptRecord !== undefined && (
+          <div className="mb-6">
+            <IR1Ticker
+              {...buildIR1TickerProps(
+                state,
+                trackingStatus,
+                nvcCaseNum,
+                nvcInvoice,
+                uploadedDocuments as any[],
+                receiptRecord
+              )}
+            />
+          </div>
+        )}
         {/* ── Section 1 + 2: Hero & Health Overview in column grid ──────── */}
         <div className="grid grid-cols-1 xl:grid-cols-[3fr_2fr] gap-4 mb-6 items-stretch">
           {/* Left: Case Status Hero */}
@@ -917,7 +981,6 @@ export function DashboardView({
                   />
                 )}
               </div>
-
               <div
                 className={`grid grid-cols-1 md:grid-cols-2 gap-3 ${
                   showSidebar ? "xl:grid-cols-3" : "lg:grid-cols-3"
@@ -1078,7 +1141,6 @@ export function DashboardView({
                     );
                   })}
               </div>
-
               {/* Accordions */}
               <div className="bg-white border-2 border-gradient-to-br from-[#3a4a66] to-[#6aa8f0] rounded-3xl overflow-hidden shadow-[0_20px_64px_rgba(36,42,66,0.16),0_8px_32px_rgba(47,111,212,0.13)] outline outline-1 outline-[#22304a]">
                 {/* Case Details */}

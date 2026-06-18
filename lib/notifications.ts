@@ -1,6 +1,16 @@
 // lib/notifications.ts
+"use server";
+
+import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Resend } from "resend";
 import * as Errors from "@/lib/errors";
+import { Notification } from "@/types/notifications";
+import {
+  NotificationType,
+  NOTIFICATION_TEMPLATES,
+  CreateNotificationBody,
+} from "@/types/notifications";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -447,7 +457,29 @@ export async function triggerAppointmentNotification(appointmentId: string) {
       console.error("[InAppNotif] Background error:", err);
     });
 
-    return await sendAppointmentNotification(notificationData);
+    // Create in-app notification (non-blocking — don't let it fail the email)
+    createInAppNotification(appointmentId, appointment).catch((err) => {
+      console.error("[InAppNotif] Background error:", err);
+    });
+
+    const result = await sendAppointmentNotification(notificationData);
+
+    // Admin Connection: Notify admin specifically WHO booked WHAT
+    if (
+      appointment.status === "scheduled" ||
+      appointment.status === "pending_confirmation" ||
+      appointment.status === "pending"
+    ) {
+      await notifyAdmins(
+        "admin_new_appointment",
+        appointment.journey_id || undefined, // Handle potential null journey_id
+        `${appointment.full_name} has booked a ${appointment.appointment_type} medical appointment.`,
+        undefined,
+        "New Medical Appointment"
+      );
+    }
+
+    return result;
   } catch (error) {
     console.error("Error triggering notification:", error);
     return { error: Errors.msg(Errors.E.APPOINTMENT_TRIGGER_FAILED) };
@@ -814,10 +846,259 @@ export async function triggerConsultationNotification(bookingId: string) {
       console.error("[ConsultationInAppNotif] Background error:", err);
     });
 
-    return await sendConsultationNotification(notificationData);
+    const result = await sendConsultationNotification(notificationData);
+
+    // Admin Connection: Notify admin of new consultation requests
+    if (booking.status === "pending_approval") {
+      await notifyAdmins(
+        "admin_new_consultation",
+        undefined,
+        `${booking.full_name} has requested a consultation regarding ${booking.issue_category}.`,
+        undefined,
+        "New Consultation Request"
+      );
+    }
+
+    return result;
   } catch (error) {
     console.error("Error triggering consultation notification:", error);
     return { error: "Failed to trigger consultation notification" };
+  }
+}
+
+/**
+ * Triggered when a user confirms and accepts a completed translation.
+ */
+export async function triggerTranslationConfirmedNotification(
+  journeyId: string | null | undefined,
+  userName: string,
+  docLabel: string
+) {
+  try {
+    return await notifyAdmins(
+      "admin_new_translation",
+      journeyId || undefined,
+      `${userName} has confirmed and accepted the translation for: ${docLabel}`,
+      undefined,
+      "Translation Accepted"
+    );
+  } catch (error) {
+    console.error("Error triggering translation confirmation notification:", error);
+    return { error: "Failed to notify admins of translation confirmation" };
+  }
+}
+
+/**
+ * Triggered when a user requests a Police Clearance Certificate verification.
+ */
+export async function triggerPCCNotification(
+  requestId: string,
+  journeyId: string | null | undefined, // Allow null or undefined journeyId
+  userName: string,
+  customBody?: string
+) {
+  try {
+    return await notifyAdmins(
+      "admin_new_pcc",
+      journeyId || undefined, // Pass undefined if journeyId is null
+      customBody || `PCC verification request from ${userName}`,
+      undefined,
+      "PCC Verification Request"
+    );
+  } catch (error) {
+    console.error("Error triggering PCC notification:", error);
+    return { error: "Failed to notify admins of PCC request" };
+  }
+}
+
+/**
+ * Triggered when a user submits feedback or a feature request.
+ */
+export async function triggerFeedbackNotification(userName: string, feedbackType: string) {
+  try {
+    return await notifyAdmins(
+      "admin_feedback_received",
+      undefined,
+      `New ${feedbackType} received from ${userName}`,
+      undefined,
+      "New User Feedback"
+    );
+  } catch (error) {
+    console.error("Error triggering feedback notification:", error);
+    return { error: "Failed to notify admins of feedback" };
+  }
+}
+
+/**
+ * Broadcasts an in-app notification to all users with the 'admin' role.
+ * Used for events like new consultation bookings, document translations, etc.
+ */
+export async function notifyAdmins(
+  type: NotificationType,
+  journeyId?: string,
+  customBody?: string,
+  customUrl?: string,
+  customTitle?: string
+) {
+  try {
+    console.log(`🔔 notifyAdmins triggered for type: ${type}`);
+    const template = NOTIFICATION_TEMPLATES[type];
+    if (!template) throw new Error(`Template not found for type: ${type}`);
+
+    // 1. Fetch all admin users from the profiles table
+    const { data: admins, error: adminError } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("role", "admin");
+
+    if (adminError || !admins) {
+      console.error("Error fetching admin users:", adminError);
+      return { error: "Failed to fetch admin users" };
+    }
+
+    console.log(`👥 Found ${admins.length} admin(s) to notify.`);
+
+    if (admins.length === 0) {
+      console.warn("⚠️ No admin users found in profiles table with role='admin'");
+      return { success: true, count: 0 };
+    }
+
+    // 2. Prepare the notification records
+    // journeyId is optional as some events (like feedback) aren't tied to a specific journey
+    const notifications = admins.map((admin) => ({
+      user_id: admin.id,
+      journey_id: journeyId || null,
+      type,
+      priority: template.priority,
+      title: customTitle || template.title,
+      body: customBody || template.body,
+      action_url: customUrl || template.action_url,
+      action_label: template.action_label,
+      status: "unread",
+      created_at: new Date().toISOString(),
+    }));
+
+    // 3. Batch insert into the notifications table
+    const { error: insertError } = await supabaseAdmin.from("notifications").insert(notifications);
+
+    if (insertError) {
+      console.error("Error inserting admin notifications:", insertError);
+      return { error: "Failed to create admin notifications" };
+    }
+
+    console.log(`✅ Successfully created ${notifications.length} notification records.`);
+    return { success: true, count: admins.length };
+  } catch (error) {
+    console.error("Error in notifyAdmins:", error);
+    return { error: "Failed to broadcast notification to admins" };
+  }
+}
+
+/**
+ * Fetches admin notifications for a specific user.
+ * @param adminUserId The ID of the admin user.
+ */
+export async function fetchAdminNotifications(adminUserId: string): Promise<{
+  notifications: Notification[];
+  unreadCount: number;
+  error: string | null;
+}> {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("notifications")
+      .select("*")
+      .eq("user_id", adminUserId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching admin notifications:", error);
+      return { notifications: [], unreadCount: 0, error: error.message };
+    }
+
+    const unreadCount = data.filter((n) => n.status === "unread").length;
+    return { notifications: data as Notification[], unreadCount, error: null };
+  } catch (err) {
+    console.error("Exception in fetchAdminNotifications:", err);
+    return { notifications: [], unreadCount: 0, error: "An unexpected error occurred." };
+  }
+}
+
+/**
+ * Marks a specific notification as read.
+ * @param notificationId The ID of the notification to mark as read.
+ * @param adminUserId The ID of the admin user (for authorization).
+ */
+export async function markNotificationAsRead(
+  notificationId: string,
+  adminUserId: string
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const { error } = await supabaseAdmin
+      .from("notifications")
+      .update({ status: "read", read_at: new Date().toISOString() })
+      .eq("id", notificationId)
+      .eq("user_id", adminUserId); // Ensure only the owner can mark as read
+
+    if (error) {
+      console.error("Error marking notification as read:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, error: null };
+  } catch (err) {
+    console.error("Exception in markNotificationAsRead:", err);
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+/**
+ * Dismisses a specific notification.
+ * @param notificationId The ID of the notification to dismiss.
+ * @param adminUserId The ID of the admin user (for authorization).
+ */
+export async function dismissNotification(
+  notificationId: string,
+  adminUserId: string
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const { error } = await supabaseAdmin
+      .from("notifications")
+      .update({ status: "dismissed", dismissed_at: new Date().toISOString() })
+      .eq("id", notificationId)
+      .eq("user_id", adminUserId); // Ensure only the owner can dismiss
+
+    if (error) {
+      console.error("Error dismissing notification:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, error: null };
+  } catch (err) {
+    console.error("Exception in dismissNotification:", err);
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+/**
+ * Marks all unread notifications for a specific user as read.
+ * @param adminUserId The ID of the admin user.
+ */
+export async function markAllNotificationsAsRead(
+  adminUserId: string
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const { error } = await supabaseAdmin
+      .from("notifications")
+      .update({ status: "read", read_at: new Date().toISOString() })
+      .eq("user_id", adminUserId)
+      .eq("status", "unread");
+
+    if (error) {
+      console.error("Error marking all notifications as read:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, error: null };
+  } catch (err) {
+    console.error("Exception in markAllNotificationsAsRead:", err);
+    return { success: false, error: "An unexpected error occurred." };
   }
 }
 

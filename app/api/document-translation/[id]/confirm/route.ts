@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
+import { triggerTranslationConfirmedNotification } from "@/lib/notifications";
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
@@ -23,7 +24,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Check if document exists and is in TRANSLATED state
     const { data: existing, error: checkError } = await supabase
       .from("translation_documents")
-      .select("status, translated_file_path")
+      .select("status, translated_file_path, document_label, journey_id")
       .eq("id", id)
       .eq("user_id", user.id)
       .single();
