@@ -40,9 +40,11 @@ export interface MasterProfile {
   // Personal
   name: PersonName;
   otherNames?: PersonName[]; // Maiden names, aliases
+  nativeFullName?: string; // Full name in native alphabet (Urdu) — DS-260 S01-Q003
   dateOfBirth: string;
   placeOfBirth: {
     city: string;
+    state?: string; // Province/state — DS-260 S01-Q008 asks it; mapper already maps it
     country: string;
   };
   sex: "Male" | "Female";
@@ -96,7 +98,25 @@ export interface MasterProfile {
     marriageDate?: string; // date_of_marriage
     marriagePlace?: {
       city: string;
+      state?: string; // Province/state of marriage — I-130 Item 20.b/20.c
       country: string;
+    };
+    marriageRegistrationNumber?: string; // NADRA MRC / Union Council registration no.
+    dateOfRegistration?: string; // ISO date the marriage was registered (NADRA MRC)
+    // Both parties exactly as printed on the marriage certificate. Stored faithfully
+    // for display/verification — NOT auto-mapped to applicant vs sponsor (the cert
+    // doesn't say which party is which; that identity comes from passports/CNIC).
+    husbandName?: string;
+    husbandFatherName?: string;
+    wifeName?: string;
+    wifeFatherName?: string;
+    // Prior marriage (from a divorce decree / death certificate). Feeds I-130
+    // "Names of Spouses" (prior spouse) and powers the first-marriage warning.
+    priorMarriage?: {
+      spouseName?: string;
+      dateMarriageEnded?: string; // ISO date
+      howEnded?: "divorce" | "death" | "annulment";
+      country?: string;
     };
     howDidYouMeet?: string;
     numberOfInPersonVisits?: number;
@@ -111,20 +131,51 @@ export interface MasterProfile {
     meetingProof?: boolean;
   };
 
-  // Sponsor Information (when user is the beneficiary applying for visa)
+  // Sponsor / Petitioner Information — the US spouse. The account holder is the
+  // BENEFICIARY (top-level fields are theirs), so the sponsor's own biographic
+  // data lives here. Feeds I-130 Part 1 (petitioner) autofill and the sponsor's
+  // document OCR (US passport / citizenship proof).
   sponsor?: {
     name: PersonName;
     dateOfBirth: string;
+    placeOfBirth?: { city?: string; state?: string; country?: string };
+    sex?: "Male" | "Female";
+    nationality?: string;
+    passportNumber?: string;
+    passportIssueDate?: string;
+    passportPlaceOfIssue?: string; // City/authority where passport was issued
+    passportBookNumber?: string; // DS-260 passport book number
+    passportExpiry?: string;
+    passportCountry?: string;
+    ssn?: string;
+    alienNumber?: string;
+    uscisAccountNumber?: string;
+    // U.S. citizenship proof (naturalization certificate) — I-130 Items 39.a/39.c
+    citizenshipCertNumber?: string;
+    citizenshipCertDate?: string;
     phone?: string;
     email?: string;
     address?: Address;
   };
 
   // Beneficiary Information (when user is the sponsor petitioning for someone)
+  // Mirrors the biographic fields forms (I-130A, DS-260) ask about the beneficiary,
+  // so they can be captured once (passport/birth-cert OCR) and auto-filled everywhere.
   beneficiary?: {
     name: PersonName;
     dateOfBirth: string;
     countryOfResidence?: string;
+    nationality?: string; // Country of citizenship (e.g. from passport OCR)
+    sex?: "Male" | "Female";
+    placeOfBirth?: { city?: string; state?: string; country?: string };
+    cnic?: string; // National ID (from CNIC OCR)
+    nativeFullName?: string; // Full name in native alphabet (Urdu) — DS-260 S01-Q003
+    passportNumber?: string;
+    passportIssueDate?: string;
+    passportPlaceOfIssue?: string; // City/authority where passport was issued
+    passportBookNumber?: string; // DS-260 passport book number
+    passportExpiry?: string;
+    passportCountry?: string;
   };
 
   // Family Background (Parents are critical for almost all forms)
@@ -157,6 +208,8 @@ export interface MasterProfile {
   uscisAccountNumber?: string;
   passportNumber?: string;
   passportIssueDate?: string; // Date passport was issued
+  passportPlaceOfIssue?: string; // City/authority where passport was issued — DS-260
+  passportBookNumber?: string; // DS-260 passport book number
   passportExpiry?: string;
   passportCountry?: string; // Country that issued the passport
   cnic?: string; // National ID (Pakistan/other countries)

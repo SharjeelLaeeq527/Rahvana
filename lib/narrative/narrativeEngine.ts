@@ -142,6 +142,15 @@ function weeksAgoRounded(dateStr: string): number {
   );
 }
 
+function dqElapsed(dateStr: string): string {
+  const days = daysAgoRounded(dateStr);
+  if (days === 0) return "today";
+  if (days === 1) return "1 day";
+  if (days < 30) return `${days} days`;
+  const mo = Math.round((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24 * 30.44));
+  return pl(mo, "month");
+}
+
 function daysUntil(dateStr: string): number {
   return Math.round((new Date(dateStr).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
 }
@@ -198,6 +207,13 @@ function offsetDate(dateStr: string, days: number): string {
 
 function todayStr(): string {
   return new Date().toISOString().split("T")[0];
+}
+
+function daysAgoRounded(dateStr: string): number {
+  return Math.max(
+    0,
+    Math.round((Date.now() - new Date(dateStr).getTime()) / (1000 * 60 * 60 * 24))
+  );
 }
 
 function deriveEffectiveFilingDate(
@@ -693,12 +709,24 @@ export function generateNarrative(
       };
 
     // ─────────────────────────────────────────────────────────────────────────
-    // DQ — Documentarily Qualified, in the interview queue (pause-aware)
+    // DQ — Documentarily Qualified (pause-aware)
+    //
+    // FIX (v6.3): no duplicate case, why: context, dqElapsedStr display,
+    // unclamped dqMo for queue math, headline uses dqElapsedStr.
     // ─────────────────────────────────────────────────────────────────────────
     case "DQ": {
       const consulate = getConsulateForCaseType(caseTypeId);
       const hasDqDate = isMeaningfulDate(user.dq_date);
-      const dqMo = hasDqDate ? (monthsAgoRounded(user.dq_date!, false) ?? 0) : 0;
+
+      // Unclamped float for queue math comparisons
+      const dqRawMonths = hasDqDate
+        ? (Date.now() - new Date(user.dq_date!).getTime()) / (1000 * 60 * 60 * 24 * 30.44)
+        : 0;
+      // Unclamped rounded months for queue math — NOT clamped to 1
+      const dqMo = Math.round(dqRawMonths);
+      // Human-readable elapsed string for display only
+      const dqElapsedStr = hasDqDate ? dqElapsed(user.dq_date!) : "";
+
       const queueTypical = consulate.postDQTypical;
       const holdActive = stageAffectedByPolicy("DQ");
 
@@ -706,7 +734,7 @@ export function generateNarrative(
 
       if (holdActive) {
         context = hasDqDate
-          ? `You reached Documentary Qualification ${pl(dqMo, "month")} ago — that's a real milestone and your paperwork is complete. ` +
+          ? `You reached Documentary Qualification ${dqElapsedStr} ago — that's a real milestone and your paperwork is complete. ` +
             `Under normal circumstances, Islamabad schedules interviews about ${pl(queueTypical, "month")} after DQ. ` +
             `Right now, NVC is holding DQ'd Pakistan cases rather than forwarding them to the embassy while a policy pause is in place. ` +
             `Your place in the queue is preserved — this is a temporary hold, not an issue with your case.`
@@ -723,17 +751,17 @@ export function generateNarrative(
       } else if (dqMo < queueTypical - 1) {
         context =
           `Islamabad is scheduling cases about ${pl(queueTypical, "month")} after DQ. ` +
-          `You're ${pl(dqMo, "month")} in — your interview notice should arrive within the next ${pl(queueTypical - dqMo, "month")} or so.`;
+          `You're ${dqElapsedStr} in — your interview notice should arrive within the next ${pl(queueTypical - dqMo, "month")} or so.`;
         badge = "In Islamabad queue";
       } else if (dqMo <= queueTypical + 2) {
         context =
-          `At ${pl(dqMo, "month")} since DQ, you're right at the current Islamabad typical (~${queueTypical} months). ` +
+          `At ${dqElapsedStr} since DQ, you're right at the current Islamabad typical (~${queueTypical} months). ` +
           `Interview notices are going out for cases around your DQ date.`;
         badge = "Interview notice coming";
       } else {
         const past = dqMo - queueTypical;
         context =
-          `You've been waiting ${pl(dqMo, "month")} since DQ — ${pl(past, "month")} longer than the current typical, ` +
+          `You've been waiting ${dqElapsedStr} since DQ — ${pl(past, "month")} longer than the current typical, ` +
           `which is common when embassy volume is higher than usual. Islamabad also handles Afghanistan cases, ` +
           `which adds to the queue. Your place is preserved — no action needed beyond monitoring CEAC and your registered email.`;
         badge = "Queue taking a little longer";
@@ -743,9 +771,9 @@ export function generateNarrative(
         stage,
         policyAlert,
         headline: hasDqDate
-          ? `Documentarily qualified since ${fmtMonth(user.dq_date!)} — ${holdActive ? "waiting for scheduling to resume" : "in the Islamabad interview queue"}.`
+          ? `Documentarily qualified ${dqElapsedStr} ago — ${holdActive ? "waiting for scheduling to resume" : "in the Islamabad interview queue"}.`
           : `Documentarily qualified — ${holdActive ? "waiting for scheduling to resume" : "in the Islamabad interview queue"}.`,
-        why: "",
+        why: context,
         action: holdActive
           ? "Use this time well — book your medical exam if you haven't already (it's valid for 2 years, so there's no downside to doing it early) " +
             "and make sure your interview document packet is ready to go. " +
@@ -758,19 +786,26 @@ export function generateNarrative(
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // INTERVIEW_WAIT — explicit post-DQ queue wait (pause-aware)
+    // INTERVIEW_WAIT (pause-aware)
+    //
+    // FIX (v6.3): same elapsed fix as DQ — uses dqElapsed(), unclamped dqMo.
     // ─────────────────────────────────────────────────────────────────────────
     case "INTERVIEW_WAIT": {
       const consulate = getConsulateForCaseType(caseTypeId);
       const hasDqDate = isMeaningfulDate(user.dq_date);
-      const dqMo = hasDqDate ? (monthsAgoRounded(user.dq_date!, false) ?? 0) : 0;
+
+      const dqRawMonths = hasDqDate
+        ? (Date.now() - new Date(user.dq_date!).getTime()) / (1000 * 60 * 60 * 24 * 30.44)
+        : 0;
+      void dqRawMonths; // used in parent scope for queue math if needed
+      const dqElapsedStr = hasDqDate ? dqElapsed(user.dq_date!) : "";
       const holdActive = stageAffectedByPolicy("INTERVIEW_WAIT");
 
       return {
         stage,
         policyAlert,
         headline: hasDqDate
-          ? `In the Islamabad queue — ${pl(dqMo, "month")} since DQ${holdActive ? " (scheduling currently paused)" : ""}.`
+          ? `In the Islamabad queue — ${dqElapsedStr} since DQ${holdActive ? " (scheduling currently paused)" : ""}.`
           : `In the Islamabad queue${holdActive ? " — scheduling currently paused" : " — interview date coming"}.`,
         why: holdActive
           ? `Islamabad normally schedules interviews about ${pl(consulate.postDQTypical, "month")} after DQ. ` +
@@ -788,7 +823,6 @@ export function generateNarrative(
         badge: holdActive ? "Queue paused — your place is held" : "In Islamabad queue",
       };
     }
-
     // ─────────────────────────────────────────────────────────────────────────
     // MEDICAL_SCHEDULED
     // ─────────────────────────────────────────────────────────────────────────
@@ -979,54 +1013,167 @@ export function generateNarrative(
       const pauseActive = POLICY_FLAGS.PAKISTAN_IV_PAUSE?.active ?? false;
       const hasApSlip = isMeaningfulDate(user.ap_slip_received_date) && user.ap_reason_category;
 
-      if (pauseActive) {
+      // FIX (v6.3): read outcome string written by IR1TickerProps v4.
+      // caseData.interviewOutcome = "approved" | "221g" | "refused" | null
+      const outcomeStr =
+        (getCaseData(ctx).interviewOutcome as string | null) ??
+        (getCaseData(ctx).interview_outcome_str as string | null) ??
+        null;
+
+      const isApproved = outcomeStr === "approved";
+      const is221g = outcomeStr === "221g";
+      const isRefused = outcomeStr === "refused";
+
+      // ── Branch A: approved outcome ────────────────────────────────────────
+      // Show clean approved copy regardless of pause status.
+      // The pause affects visa ISSUANCE (stamping/courier), not approval itself.
+      // We mention the pause only as a brief note so users know their passport
+      // courier may be delayed — not as the headline message.
+      if (isApproved) {
         return {
           stage,
-          policyAlert,
-          headline: "Interview outcome recorded — visa issuance on hold.",
-          why:
-            "Your interview is done and the outcome is on file, but the U.S. Department of State " +
-            "has paused immigrant visa issuances for Pakistani nationals while a policy review is in place. " +
-            "Your case is ready — it's just waiting for that pause to lift. " +
-            "Keep an eye on pk.usembassy.gov for the latest.",
-          action:
-            "If there are any outstanding document requests, respond to those immediately so you're in the best position when visa issuance resumes. " +
-            "Monitor pk.usembassy.gov and CEAC for updates.",
+          policyAlert: null, // suppress the generic pause alert for approved cases
+          headline: "Interview approved — visa issuance in progress.",
+          why: pauseActive
+            ? "Your interview was approved. Under normal circumstances the visa packet is " +
+              "couriered within 1–2 weeks of approval. Right now, the Department of State has " +
+              "a temporary pause on immigrant visa issuances for Pakistani nationals — your " +
+              "case is fully approved and in the queue, just waiting for that pause to lift."
+            : "Your interview was approved. The visa packet is typically couriered within " +
+              "1–2 weeks of approval. Watch CEAC and your registered email for the issuance notice.",
+          action: pauseActive
+            ? "Monitor pk.usembassy.gov and CEAC for updates on when visa issuance resumes. " +
+              "Make sure your delivery address in the courier portal is correct so there are no delays once things open up."
+            : "Keep an eye on CEAC and your email. Once issued, you'll receive a courier tracking number. " +
+              "Do not open the sealed visa packet — hand it to CBP at your port of entry.",
           estimate: null,
-          badge: "Outcome on file — waiting for pause to lift",
+          badge: pauseActive ? "Approved — awaiting issuance" : "Visa being issued",
         };
       }
 
+      // ── Branch B: pause active + not approved ─────────────────────────────
+      // Show pause message for 221g / refused / unknown outcome cases.
+      if (pauseActive && !isApproved) {
+        // 221g packet submission state — read from caseData written by IR1TickerProps v5
+        const packetSubmittedDate =
+          (getCaseData(ctx).respond221gDate as string | null) ??
+          (getCaseData(ctx).response221gDate as string | null) ??
+          null;
+        const packetSubmitted = isMeaningfulDate(packetSubmittedDate);
+        const daysSinceSubmission = packetSubmitted
+          ? Math.floor(
+              (Date.now() - new Date(packetSubmittedDate!).getTime()) / (1000 * 60 * 60 * 24)
+            )
+          : null;
+        const submissionMethod = (getCaseData(ctx).response221gMethod as string | null) ?? null;
+        const submissionMethodLabel = submissionMethod ? submissionMethod.replace(/_/g, " ") : null;
+
+        const get221gWhy = () => {
+          if (!packetSubmitted) {
+            return (
+              "A 221(g) means your case is still active — it's a request for additional review or " +
+              "documents, not a final denial. The most important thing you can do right now is respond " +
+              "to whatever the officer requested as quickly as possible. " +
+              "Separately, there's a temporary pause on immigrant visa issuances for Pakistani nationals " +
+              "— this affects everyone at this stage, so your case isn't being singled out. " +
+              "Responding promptly means you'll be at the front of the queue when things resume."
+            );
+          }
+          if (daysSinceSubmission! < 10) {
+            return (
+              `Your 221(g) response packet was submitted ${daysSinceSubmission === 0 ? "today" : `${daysSinceSubmission} day${daysSinceSubmission === 1 ? "" : "s"} ago`}` +
+              (submissionMethodLabel ? ` via ${submissionMethodLabel}` : "") +
+              ". The embassy typically needs at least 10 business days to process a response — " +
+              "there's nothing more to do right now except wait. " +
+              "There's also a temporary pause on immigrant visa issuances for Pakistani nationals, " +
+              "which affects all cases at this stage."
+            );
+          }
+          return (
+            `Your 221(g) response packet was submitted ${daysSinceSubmission} days ago` +
+            (submissionMethodLabel ? ` via ${submissionMethodLabel}` : "") +
+            ". At this point it's reasonable to check CEAC for any status change. " +
+            "If there's been no update, a polite status inquiry to the embassy is a reasonable next step — " +
+            "it won't speed things up but it confirms your packet was received. " +
+            "The temporary pause on Pakistani immigrant visas may also be a factor in the delay."
+          );
+        };
+
+        const get221gAction = () => {
+          if (!packetSubmitted) {
+            return (
+              "Continue in Chapter 3 — the next steps walk you through exactly what to submit and how. " +
+              "Use the 221(g) Action Plan tool to build your response checklist."
+            );
+          }
+          if (daysSinceSubmission! < 10) {
+            return "Check CEAC in a few days for any status update. No further action needed right now.";
+          }
+          return (
+            "Check CEAC for any status change. If nothing has moved, consider sending a brief " +
+            "status inquiry to the embassy — keep it factual: your case number, submission date, " +
+            "and a request for confirmation that your packet was received."
+          );
+        };
+
+        const get221gBadge = () => {
+          if (!packetSubmitted) return "221(g) — respond now";
+          if (daysSinceSubmission! < 10) return "221(g) — packet submitted, allow time";
+          return "221(g) — consider status inquiry";
+        };
+
+        return {
+          stage,
+          policyAlert,
+          headline: is221g
+            ? packetSubmitted
+              ? "221(g) packet submitted — monitoring for a response."
+              : "221(g) recorded — your next move matters most right now."
+            : isRefused
+              ? "Interview outcome recorded — review your written notice."
+              : "Interview outcome recorded — visa issuance on hold.",
+          why: is221g
+            ? get221gWhy()
+            : isRefused
+              ? "Your written notice from the officer will state whether this is a 221(g) request " +
+                "(case still active — you can submit the requested documents) or a final denial " +
+                "under a specific INA ground. These two situations require completely different responses. " +
+                "Read the notice carefully before taking any action."
+              : "Your interview is done and the outcome is on file, but the U.S. Department of State " +
+                "has paused immigrant visa issuances for Pakistani nationals while a policy review is in place. " +
+                "Your case is ready — it's just waiting for that pause to lift. " +
+                "Keep an eye on pk.usembassy.gov for the latest.",
+          action: is221g
+            ? get221gAction()
+            : isRefused
+              ? "Read your written refusal notice carefully. If it is a 221(g), gather the " +
+                "requested items and submit them as directed. If it is a final denial, consider " +
+                "consulting an immigration attorney before taking any next steps."
+              : "If there are any outstanding document requests, respond to those immediately. " +
+                "Monitor pk.usembassy.gov and CEAC for updates.",
+          estimate: null,
+          badge: is221g
+            ? get221gBadge()
+            : isRefused
+              ? "Refused — review your notice"
+              : "Outcome on file — waiting for pause to lift",
+        };
+      }
+
+      // ── Branch C: 221g AP tracking (no pause / pause not active) ─────────
       if (hasApSlip) {
         const weeksWaiting = weeksAgoRounded(user.ap_slip_received_date!);
         const guidance = getAPResolutionGuidance(user.ap_reason_category!);
 
-        let context: string, badge: string;
+        let badge: string;
 
         if (weeksWaiting < AP_ESCALATION_THRESHOLDS.normalWeeks) {
-          context =
-            `Outcome recorded — your case is in Administrative Processing (221g). ` +
-            `${guidance.description} At ${pl(weeksWaiting, "week")} in, you're well within the early normal window.`;
           badge = "AP — in progress";
         } else if (weeksWaiting <= AP_ESCALATION_THRESHOLDS.typicalMaxWeeks) {
-          context =
-            `Your case has been in Administrative Processing for ${pl(weeksWaiting, "week")} — ` +
-            `right in line with the typical duration (around 4 months on average). This is just how long these reviews normally take.`;
           badge = "AP — normal duration";
         } else if (weeksWaiting <= AP_ESCALATION_THRESHOLDS.extendedMaxWeeks) {
-          context =
-            `Your case has been in Administrative Processing for ${pl(weeksWaiting, "week")} — longer than average, ` +
-            `but extended AP is genuinely common for cases involving additional security review, ` +
-            `particularly for Pakistani applicants. ${guidance.description}`;
           badge = "AP — extended (not unusual)";
         } else {
-          context =
-            `Your case has been in Administrative Processing for ${pl(weeksWaiting, "week")} — ` +
-            `well into the range associated with Security Advisory Opinion review, which can run 12–18 months. ` +
-            `This is a recognised delay category, not a sign of a problem with your case. ` +
-            (weeksWaiting >= AP_ESCALATION_THRESHOLDS.mandamusConsiderationWeeks
-              ? `At this duration, a consultation to talk through what options exist can be worthwhile — there's no guaranteed path forward, but it helps to get a second opinion.`
-              : `If you reach the 18-month mark without movement, it's worth getting a consultation to talk through your options.`);
           badge = "AP — extended (SAO range)";
         }
 
@@ -1042,6 +1189,25 @@ export function generateNarrative(
         };
       }
 
+      // ── Branch D: refused without AP slip / generic fallthrough ──────────
+      if (isRefused) {
+        return {
+          stage,
+          policyAlert: null,
+          headline: "Interview outcome recorded — review your written notice.",
+          why:
+            "Your written notice from the officer will state whether this is a 221(g) request " +
+            "(case still active) or a final denial. These require completely different responses — " +
+            "read the notice carefully before taking any action.",
+          action:
+            "If it's a 221(g), gather the requested items and submit them as directed. " +
+            "If it's a final denial, consider consulting an immigration attorney.",
+          estimate: null,
+          badge: "Refused — review your notice",
+        };
+      }
+
+      // ── Branch E: generic (outcome string not set or unrecognised) ────────
       return {
         stage,
         policyAlert,
@@ -1054,7 +1220,6 @@ export function generateNarrative(
         badge: "Awaiting visa issuance",
       };
     }
-
     // ─────────────────────────────────────────────────────────────────────────
     // VISA_ISSUED
     // ─────────────────────────────────────────────────────────────────────────

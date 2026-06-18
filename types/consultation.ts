@@ -21,10 +21,13 @@ export interface ConsultationBooking {
     | "confirmed"
     | "completed"
     | "canceled";
+  payment_status?: "pending" | "paid" | "free" | "failed" | null;
+  payment_id?: string | null;
   admin_notes?: string;
   created_at: Date;
   updated_at: Date;
   expires_at?: Date;
+  user_id?: string | null;
 }
 
 export interface TimeSlot {

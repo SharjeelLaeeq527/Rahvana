@@ -90,10 +90,11 @@ export async function GET(req: NextRequest) {
 
     console.log("📋 Fetching appointments...");
 
-    // Fetch appointments
+    // Fetch only confirmed appointments: paid bookings plus free executive bookings without a payment record
     const { data: appointments, error: appointmentsError } = await supabase
       .from("appointments")
       .select("*")
+      .or("payment_status.eq.paid,payment_id.is.null")
       .order("created_at", { ascending: false });
 
     if (appointmentsError) {

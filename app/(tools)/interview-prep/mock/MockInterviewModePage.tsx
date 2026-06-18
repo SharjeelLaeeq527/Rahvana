@@ -16,14 +16,17 @@ import {
 import {
   AlertTriangle,
   ArrowRight,
+  Check,
   CheckCircle2,
   Clock,
   ListChecks,
   Mic,
   MicOff,
+  Pencil,
   Play,
   ShieldCheck,
   Timer,
+  Volume2,
   X,
   TrendingUp,
 } from "lucide-react";
@@ -159,6 +162,8 @@ export function MockInterviewModePage({
   const [answeringFlowMode, setAnsweringFlowMode] = useState<"toggle" | "pushToTalk">("pushToTalk");
   const [questionRecords, setQuestionRecords] = useState<Record<string, QuestionRecord>>({});
   const [sessionEndReason, setSessionEndReason] = useState<SessionEndReason | null>(null);
+  const [editedTranscript, setEditedTranscript] = useState<string>("");
+  const [isEditingTranscript, setIsEditingTranscript] = useState(false);
 
   const {
     canvasRef: waveformCanvasRef,
@@ -239,6 +244,22 @@ export function MockInterviewModePage({
   const timeProgressPercent =
     ((sessionDurationSeconds - secondsRemaining) / sessionDurationSeconds) * 100;
 
+  // Replay question audio handler
+  const handleReplayQuestion = useCallback(() => {
+    if (!currentQuestion || isQuestionSpeaking) return;
+    stopSpeaking();
+    const textToSpeak = currentQuestion.selectedQuestion || currentQuestion.question;
+    speakQuestion(textToSpeak);
+  }, [currentQuestion, isQuestionSpeaking, speakQuestion, stopSpeaking]);
+
+  // Sync editedTranscript with live transcript while listening
+  useEffect(() => {
+    if (isListening) {
+      setEditedTranscript(currentTranscript);
+      setIsEditingTranscript(false);
+    }
+  }, [isListening, currentTranscript]);
+
   const voiceStatusLabel = isQuestionSpeaking
     ? "Question Speaking"
     : voiceState === "speaking"
@@ -254,7 +275,8 @@ export function MockInterviewModePage({
       return;
     }
 
-    const responseText = currentTranscript;
+    // Use edited transcript if available, otherwise use live transcript
+    const responseText = editedTranscript || currentTranscript;
     const durationSeconds = Math.max(1, Math.round((Date.now() - questionStartRef.current) / 1000));
 
     const record: QuestionRecord = {
@@ -270,7 +292,7 @@ export function MockInterviewModePage({
 
     recordsRef.current = nextRecords;
     setQuestionRecords(nextRecords);
-  }, [currentQuestion, currentTranscript]);
+  }, [currentQuestion, currentTranscript, editedTranscript]);
 
   const completeInterview = useCallback(
     (endReason: SessionEndReason = "completed") => {
@@ -440,6 +462,8 @@ export function MockInterviewModePage({
     activeQuestionIdRef.current = interviewQuestions[nextIndex].id;
     questionStartRef.current = Date.now();
     clearTranscript();
+    setEditedTranscript("");
+    setIsEditingTranscript(false);
     // Do not auto-start listening for the next question — user must opt in.
   };
 
@@ -886,8 +910,8 @@ export function MockInterviewModePage({
                     onClick={() => setAnsweringFlowMode("toggle")}
                     className={`w-full rounded-2xl border p-4 text-left transition ${
                       answeringFlowMode === "toggle"
-                      ? "border-[#db8090] bg-[#fff7f8] shadow-[0_4px_16px_-8px_rgba(219,128,144,0.25)]"
-                      : "border-[#f0d6dc] bg-white hover:border-[#db8090]/40 hover:bg-[#fffafb]"
+                        ? "border-[#db8090] bg-[#fff7f8] shadow-[0_4px_16px_-8px_rgba(219,128,144,0.25)]"
+                        : "border-[#f0d6dc] bg-white hover:border-[#db8090]/40 hover:bg-[#fffafb]"
                     }`}
                   >
                     <div className="flex items-start gap-3">
@@ -1414,9 +1438,20 @@ export function MockInterviewModePage({
                   <div className="pointer-events-none absolute bottom-4 right-4 opacity-[0.035]">
                     <Mic className="w-24 h-24 text-[#0d7377]" strokeWidth={1} />
                   </div>
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#89a4a0] mb-3 relative z-10">
-                    Current Question
-                  </p>
+                  <div className="flex items-center justify-between mb-3 relative z-10">
+                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#89a4a0]">
+                      Current Question
+                    </p>
+                    <button
+                      onClick={handleReplayQuestion}
+                      disabled={isQuestionSpeaking || isListening}
+                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg mr-16 text-[11px] font-semibold text-[#0d7377] bg-[#e8f6f6] border border-[#0d7377]/15 hover:bg-[#d6f0f0] hover:border-[#0d7377]/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                      title="Listen to question again"
+                    >
+                      <Volume2 className="h-3.5 w-3.5" />
+                      Replay
+                    </button>
+                  </div>
                   <h3 className="text-2xl sm:text-3xl font-semibold text-slate-900 leading-snug tracking-tight relative z-10">
                     {currentQuestion.selectedQuestion || currentQuestion.question}
                   </h3>
@@ -1442,16 +1477,54 @@ export function MockInterviewModePage({
                       </div>
                     </div>
 
-                    <p className="text-[11px] text-slate-400 uppercase tracking-wider hidden sm:block">
-                      Live Transcript
-                    </p>
+                    <div className="flex items-center gap-2">
+                      {!isListening && currentTranscript && (
+                        <button
+                          onClick={() => {
+                            if (isEditingTranscript) {
+                              setIsEditingTranscript(false);
+                            } else {
+                              setEditedTranscript(currentTranscript);
+                              setIsEditingTranscript(true);
+                            }
+                          }}
+                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                            isEditingTranscript
+                              ? "bg-[#0d7377] text-white"
+                              : "bg-[#e8f6f6] text-[#0d7377] hover:bg-[#d6f0f0]"
+                          }`}
+                        >
+                          {isEditingTranscript ? (
+                            <>
+                              <Check className="h-3 w-3" />
+                              Done
+                            </>
+                          ) : (
+                            <>
+                              <Pencil className="h-3 w-3" />
+                              Edit
+                            </>
+                          )}
+                        </button>
+                      )}
+                      <p className="text-[11px] text-slate-400 uppercase tracking-wider hidden sm:block">
+                        {isEditingTranscript ? "Editing" : "Live Transcript"}
+                      </p>
+                    </div>
                   </div>
 
                   <ScrollArea className="flex-1">
                     <div className="px-5 py-5 space-y-2 pr-7">
-                      {currentTranscript ? (
+                      {isEditingTranscript ? (
+                        <textarea
+                          value={editedTranscript}
+                          onChange={(e) => setEditedTranscript(e.target.value)}
+                          className="w-full h-full min-h-[200px] text-base text-slate-800 leading-relaxed bg-transparent border-0 outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 resize-none p-0"
+                          placeholder="Type your answer here..."
+                        />
+                      ) : editedTranscript || currentTranscript ? (
                         <p className="text-base text-slate-800 leading-relaxed">
-                          {currentTranscript}
+                          {editedTranscript || currentTranscript}
                         </p>
                       ) : (
                         <p className="text-sm text-slate-400 italic">
@@ -1464,7 +1537,7 @@ export function MockInterviewModePage({
                               : "Press Start Answering to begin recording your answer."}
                         </p>
                       )}
-                      {interimTranscript && (
+                      {interimTranscript && !isEditingTranscript && (
                         <p className="text-base text-slate-400 italic leading-relaxed">
                           {interimTranscript}
                         </p>

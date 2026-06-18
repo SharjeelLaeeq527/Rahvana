@@ -68,6 +68,14 @@ export class ProgressCalculationService {
       // Auto-mark journey as completed if all steps are done
       if (completionPercentage === 100) {
         await db.updateJourneyDB(journeyId, { status: "completed" });
+
+        // Delete associated interview sessions to free uniqueness slot for future journeys
+        try {
+          const { deleteJourneySessions } = await import("@/lib/interview-prep/data-access");
+          await deleteJourneySessions(journeyId);
+        } catch (deleteError) {
+          console.warn("[JourneyService] Failed to delete interview sessions:", deleteError);
+        }
       }
 
       return progressData;
@@ -984,6 +992,24 @@ export class JourneyService {
       // Calculate initial progress
       const progressSummary = await this.progressService.calculateJourneyProgress(journey.id);
 
+      // Auto-create interview session for IR-1 journeys
+      // This creates a "ready" session without triggering questionnaire flow
+      let interviewSessionCreated = false;
+      if (journey.journey_type === "IR1" || journey.journey_type === "IR-1") {
+        try {
+          // Dynamically import to avoid circular dependencies
+          const { createJourneyInterviewSession } = await import("@/lib/interview-prep/service");
+          await createJourneyInterviewSession(journey.id, "ir-1-spouse");
+          interviewSessionCreated = true;
+          console.log(`[JourneyService] Auto-created interview session for journey ${journey.id}`);
+        } catch (interviewError) {
+          console.error(
+            "[JourneyService] Failed to create interview session:",
+            interviewError instanceof Error ? interviewError.message : String(interviewError)
+          );
+        }
+      }
+
       return {
         journey,
         chapters: createdChapters,
@@ -991,6 +1017,7 @@ export class JourneyService {
         case_data_keys: caseDataKeys,
         // case_data_initialized: createdCaseData.length,
         progress_summary: progressSummary,
+        interview_session_created: interviewSessionCreated,
         message: `Journey created: ${journeyInput.journey_name} (${createdChapters.length} chapters, ${totalStepsCreated} steps)`,
       };
     } catch (error) {

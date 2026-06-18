@@ -1,6 +1,6 @@
 import React from "react";
 import { X, Check, ChevronLeft } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 interface GatheringGuideOverlayProps {
   isOpen: boolean;
@@ -21,6 +21,8 @@ export const GatheringGuideOverlay: React.FC<GatheringGuideOverlayProps> = ({
   setGatheringStatus,
   actions,
 }) => {
+  const { showToast } = useToast();
+
   if (!isOpen || !selectedGatheringItem) return null;
 
   return (
@@ -87,7 +89,7 @@ export const GatheringGuideOverlay: React.FC<GatheringGuideOverlayProps> = ({
                   gathering_status: JSON.stringify(next),
                 });
                 onClose();
-                toast.success("Document marked as packed!");
+                showToast("Document marked as packed!", "success");
               }}
               disabled={gatheringStatus[selectedGatheringItem.id] === "reviewed"}
               className="p-[14px_24px] bg-[#15744f] text-white border-none rounded-[16px] text-[14px] sm:text-[15px] font-semibold transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"

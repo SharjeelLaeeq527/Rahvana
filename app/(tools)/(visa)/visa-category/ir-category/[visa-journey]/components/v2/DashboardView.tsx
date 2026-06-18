@@ -19,6 +19,17 @@ import WaitingStateCard from "./WaitingStateCard";
 import { JourneyRiskCard } from "./components/JourneyRiskCard";
 import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
 import { DashboardCriticalCard } from "./components/DashboardCriticalCard";
+import { CaseSummaryCard } from "./components/CaseSummaryCard";
+import { EvidenceGapCard } from "@/lib/journey/evidence-gap";
+import { EvidenceGapEngine } from "@/lib/journey/evidence-gap";
+import type { EvidenceGapAnalysis } from "@/lib/journey/evidence-gap";
+import { DOCUMENTS_BY_ID } from "@/lib/document-vault/document-definitions";
+import {
+  generateCaseNarrative,
+  getCaseHealthStatus,
+  runFullConsistencyAnalysis,
+  type Phase2Responses,
+} from "@/lib/case-strength";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
@@ -61,6 +72,237 @@ export function DashboardView({
 
   // Pull uploaded docs from vault for DocCaseStrengthMeter
   const { uploadedDocuments } = useDocumentVaultStore();
+
+  // ── Evidence Gap Analysis ──────────────────────────────────────────────────
+  const [evidenceAnalysis, setEvidenceAnalysis] = useState<EvidenceGapAnalysis | null>(null);
+  const [evidenceLoading, setEvidenceLoading] = useState(false);
+
+  // Load questionnaire responses from metadata (persisted)
+  const [questionnaireResponses, setQuestionnaireResponses] = useState<Record<string, boolean>>(
+    () => {
+      const saved = state.metadata?.evidence_questionnaire;
+      if (saved && typeof saved === "object") {
+        return saved as Record<string, boolean>;
+      }
+      return {};
+    }
+  );
+
+  // Save questionnaire responses to journey metadata
+  const handleQuestionnaireSave = (responses: Record<string, boolean>) => {
+    setQuestionnaireResponses(responses);
+    // Persist to journey metadata
+    if (actions?.updateMetadata) {
+      actions.updateMetadata({
+        ...state.metadata,
+        evidence_questionnaire: responses,
+      });
+    }
+  };
+
+  // ── Consistency Analysis Phase 2 Questionnaire ──
+  const [phase2Responses, setPhase2Responses] = useState<Record<string, boolean>>(() => {
+    const saved = state.metadata?.consistency_questionnaire;
+    if (saved && typeof saved === "object") return saved as Record<string, boolean>;
+    return {};
+  });
+
+  const handlePhase2Save = (responses: Record<string, boolean>) => {
+    setPhase2Responses(responses);
+    if (actions?.updateMetadata) {
+      actions.updateMetadata({
+        ...state.metadata,
+        consistency_questionnaire: responses,
+      });
+    }
+  };
+
+  // Run evidence gap analysis when documents change
+  useEffect(() => {
+    const runAnalysis = async () => {
+      const journeyId = state.backendId;
+      if (!journeyId) return;
+
+      setEvidenceLoading(true);
+      try {
+        const engine = new EvidenceGapEngine();
+
+        // Build journey documents from chapters/steps document_items
+        const chapters = (data as any).chapters || (data as any).stages || [];
+        const journeyDocs: Array<{
+          document_type: string;
+          document_label?: string;
+          status: string;
+          is_required: boolean;
+          vault_file_id?: string;
+          uploaded_date?: string;
+        }> = [];
+
+        chapters.forEach((chapter: any) => {
+          (chapter.steps || []).forEach((step: any) => {
+            (step.document_items || []).forEach((item: any) => {
+              journeyDocs.push({
+                document_type: item.key || item.id || step.step_key,
+                document_label: item.label || item.name,
+                status: item.status || (item.uploaded ? "uploaded" : "pending"),
+                is_required: item.required ?? false,
+                vault_file_id: item.vault_file_id,
+                uploaded_date: item.uploaded_date,
+              });
+            });
+          });
+        });
+
+        // Build vault documents with category mapping
+        // documentDefId stores the document definition's id (e.g., "wedding-photos")
+        // We need to get the key (e.g., "WEDDING_PHOTOS") for evidence mapping
+        const vaultDocs = uploadedDocuments.map((doc) => {
+          const docDef = DOCUMENTS_BY_ID[doc.documentDefId];
+          return {
+            id: doc.id,
+            documentDefId: docDef?.key || doc.documentDefId, // Pass the key, not the id
+            category: docDef?.category,
+            uploadedAt: doc.uploadedAt,
+            status: doc.status,
+          };
+        });
+
+        // Build case data from state.metadata
+        const caseDataEntries = Object.entries(state.metadata || {}).reduce(
+          (acc, [key, value]) => {
+            if (value !== null && value !== undefined && key !== "tracking_status") {
+              acc[key] = {
+                data_value: value,
+                is_verified: false,
+                source: "user_input",
+              };
+            }
+            return acc;
+          },
+          {} as Record<string, { data_value: unknown; is_verified: boolean; source: string }>
+        );
+
+        const analysis = await engine.analyze({
+          journeyId,
+          journeyDocuments: journeyDocs,
+          vaultDocuments: vaultDocs,
+          caseData: caseDataEntries,
+          questionnaireResponses,
+        });
+
+        setEvidenceAnalysis(analysis);
+      } catch (err) {
+        console.error("[EvidenceGap] Analysis failed:", err);
+      } finally {
+        setEvidenceLoading(false);
+      }
+    };
+
+    runAnalysis();
+  }, [state.backendId, uploadedDocuments, data, state.metadata, questionnaireResponses]);
+
+  // Refresh evidence analysis
+  const refreshEvidenceAnalysis = () => {
+    setEvidenceAnalysis(null);
+    // Re-trigger effect by forcing re-evaluation
+    const journeyId = state.backendId;
+    if (!journeyId) return;
+    setEvidenceLoading(true);
+    setTimeout(() => {
+      // Trigger re-run by updating a dependency
+      const engine = new EvidenceGapEngine();
+      const chapters = (data as any).chapters || (data as any).stages || [];
+      const journeyDocs: Array<{
+        document_type: string;
+        document_label?: string;
+        status: string;
+        is_required: boolean;
+      }> = [];
+      chapters.forEach((chapter: any) => {
+        (chapter.steps || []).forEach((step: any) => {
+          (step.document_items || []).forEach((item: any) => {
+            journeyDocs.push({
+              document_type: item.key || item.id || step.step_key,
+              document_label: item.label || item.name,
+              status: item.status || (item.uploaded ? "uploaded" : "pending"),
+              is_required: item.required ?? false,
+            });
+          });
+        });
+      });
+      const vaultDocs = uploadedDocuments.map((doc) => {
+        const docDef = DOCUMENTS_BY_ID[doc.documentDefId];
+        return {
+          id: doc.id,
+          documentDefId: docDef?.key || doc.documentDefId, // Pass the key, not the id
+          category: docDef?.category,
+          uploadedAt: doc.uploadedAt,
+          status: doc.status,
+        };
+      });
+      const caseDataEntries = Object.entries(state.metadata || {}).reduce(
+        (acc, [key, value]) => {
+          if (value !== null && value !== undefined && key !== "tracking_status") {
+            acc[key] = { data_value: value, is_verified: false, source: "user_input" };
+          }
+          return acc;
+        },
+        {} as Record<string, { data_value: unknown; is_verified: boolean; source: string }>
+      );
+      try {
+        const result = engine.analyze({
+          journeyId,
+          journeyDocuments: journeyDocs,
+          vaultDocuments: vaultDocs,
+          caseData: caseDataEntries,
+          questionnaireResponses,
+        });
+        setEvidenceAnalysis(result);
+      } catch (err) {
+        console.error("[EvidenceGap] Analysis failed:", err);
+      } finally {
+        setEvidenceLoading(false);
+      }
+    }, 100);
+  };
+
+  // ── Case Narrative Generation ─────────────────────────────────────────────
+  // Consumes existing CSA outputs (Evidence Gap + Consistency Intelligence)
+  // to generate a human-readable case summary. No new analysis performed.
+  const caseNarrative = useMemo(() => {
+    const eligibilityAnswers =
+      (state.answers?.["eligibility-suite"] as any) ??
+      (state.metadata?.["questAnswers_eligibility-suite"] as any);
+
+    const consistencyFindings = runFullConsistencyAnalysis(
+      { state, eligibilityAnswers },
+      (phase2Responses as Phase2Responses) ?? null,
+      uploadedDocuments
+    );
+
+    return generateCaseNarrative({
+      evidenceAnalysis,
+      consistencyFindings,
+    });
+  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
+
+  // Health status badge for the CaseSummaryCard header
+  const caseHealthStatus = useMemo(() => {
+    const eligibilityAnswers =
+      (state.answers?.["eligibility-suite"] as any) ??
+      (state.metadata?.["questAnswers_eligibility-suite"] as any);
+
+    const consistencyFindings = runFullConsistencyAnalysis(
+      { state, eligibilityAnswers },
+      (phase2Responses as Phase2Responses) ?? null,
+      uploadedDocuments
+    );
+
+    return getCaseHealthStatus({
+      evidenceAnalysis,
+      consistencyFindings,
+    });
+  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
 
   // Extract step_1_2 document_items from roadmap data
   const step1_2DocItems = useMemo(() => {
@@ -167,8 +409,11 @@ export function DashboardView({
         action: {
           label: "Interview Prep Guide",
           onAction: () => {
-            actions.setStage(2);
-            actions.setCurrentStep(3);
+            if (onSelectStep) onSelectStep(2, 6);
+            else {
+              actions.setStage(2);
+              actions.setCurrentStep(6);
+            }
           },
         },
       });
@@ -478,7 +723,7 @@ export function DashboardView({
 
         {/* 3-column layout — LEFT: risk card | CENTER: chapters | RIGHT: doc strength */}
         <div className="grid grid-cols-1 xl:grid-cols-[280px_minmax(0,1fr)_280px] gap-5 items-start">
-          {/* ── LEFT COLUMN — Dashboard Critical Items (single consolidated card) ─── */}
+          {/* ── LEFT COLUMN — Critical Items + Evidence Gap Analysis ─── */}
           <div className="hidden xl:flex flex-col gap-3">
             <DashboardCriticalCard
               chapters={(data as any).chapters || (data as any).stages || []}
@@ -491,15 +736,33 @@ export function DashboardView({
                   actions.setCurrentStep(sIdx);
                 }
               }}
+              phase2Responses={phase2Responses}
+              onPhase2Save={handlePhase2Save}
+            />
+            {/* Evidence Gap Analysis Card */}
+            <EvidenceGapCard
+              analysis={evidenceAnalysis}
+              loading={evidenceLoading}
+              onRefresh={refreshEvidenceAnalysis}
+              onNavigateToVault={() => window.open("/document-vault", "_blank")}
+              questionnaireResponses={questionnaireResponses}
+              onQuestionnaireSave={handleQuestionnaireSave}
             />
           </div>
 
-          {/* ── CENTER — Hero + Chapters + Accordions ─── */}
+          {/* ── CENTER — Case Summary + Hero + Chapters + Accordions ─── */}
           <div className="flex flex-col xl:flex-col lg:flex-row gap-8 xl:gap-6 items-start">
             {/* Main Content Column */}
             <div
               className={`flex flex-col gap-6 order-1 w-full xl:max-w-none ${showSidebar ? "flex-1" : "lg:max-w-4xl"}`}
             >
+              {/* Case Summary — Dynamic Narrative (top-level overview) */}
+              <CaseSummaryCard
+                narrative={caseNarrative}
+                healthStatus={caseHealthStatus}
+                loading={evidenceLoading}
+              />
+
               {/* Journey Complete — highest priority status card */}
               {isJourneyComplete && (
                 <WaitingStateCard
@@ -566,7 +829,13 @@ export function DashboardView({
                   description="Your visa was approved at interview. Continue in Chapter 3 to track issuance and prepare for arrival."
                   status="complete"
                   actionLabel="Track Visa Issuance"
-                  onAction={() => actions.setStage(2)}
+                  onAction={() => {
+                    if (onSelectStep) onSelectStep(2, 9);
+                    else {
+                      actions.setStage(2);
+                      actions.setCurrentStep(9);
+                    }
+                  }}
                 />
               )}
               {/* 221(g) new path — outcome selected but AP details not yet recorded */}
@@ -577,7 +846,9 @@ export function DashboardView({
                   description="Complete the follow-up steps in Chapter 3 to respond to the 221(g) and track your case status."
                   status="action-needed"
                   actionLabel="Continue Chapter 3"
-                  onAction={() => actions.setStage(2)}
+                  onAction={() => {
+                    if (onSelectChapter) onSelectChapter(2);
+                  }}
                 />
               )}
               {/* Administrative Processing — legacy path (apSaved before new outcome flow) */}
@@ -589,7 +860,13 @@ export function DashboardView({
                   date={trackingStatus.ap_date}
                   status="waiting"
                   actionLabel="Go to Step 9"
-                  actionUrl="/visa-category/ir-category/ir1-journey"
+                  onAction={() => {
+                    if (onSelectStep) onSelectStep(2, 8);
+                    else {
+                      actions.setStage(2);
+                      actions.setCurrentStep(8);
+                    }
+                  }}
                 />
               )}
 
@@ -980,8 +1257,11 @@ export function DashboardView({
                     status="complete"
                     actionLabel="Interview Prep Guide"
                     onAction={() => {
-                      actions.setStage(2);
-                      actions.setCurrentStep(3);
+                      if (onSelectStep) onSelectStep(2, 6);
+                      else {
+                        actions.setStage(2);
+                        actions.setCurrentStep(6);
+                      }
                     }}
                   />
                 )}
@@ -994,7 +1274,13 @@ export function DashboardView({
                     date={trackingStatus.ap_date}
                     status="waiting"
                     actionLabel="Go to Step 9"
-                    actionUrl="/visa-category/ir-category/ir1-journey"
+                    onAction={() => {
+                      if (onSelectStep) onSelectStep(2, 8);
+                      else {
+                        actions.setStage(2);
+                        actions.setCurrentStep(8);
+                      }
+                    }}
                   />
                 )}
 
@@ -1287,8 +1573,11 @@ export function DashboardView({
                     status="complete"
                     actionLabel="Interview Prep"
                     onAction={() => {
-                      actions.setStage(2);
-                      actions.setCurrentStep(3);
+                      if (onSelectStep) onSelectStep(2, 6);
+                      else {
+                        actions.setStage(2);
+                        actions.setCurrentStep(6);
+                      }
                     }}
                   />
                 )}
@@ -1300,7 +1589,13 @@ export function DashboardView({
                     date={trackingStatus.ap_date}
                     status="waiting"
                     actionLabel="Go to Step 9"
-                    actionUrl="/visa-category/ir-category/ir1-journey"
+                    onAction={() => {
+                      if (onSelectStep) onSelectStep(2, 8);
+                      else {
+                        actions.setStage(2);
+                        actions.setCurrentStep(8);
+                      }
+                    }}
                   />
                 )}
                 {alerts.length > 0 && (

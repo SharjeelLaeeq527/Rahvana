@@ -76,18 +76,21 @@ export const formFields: Field[] = [
           { label: "Yes", value: "Yes", pdfKey: "sibling_adoption_Yes" },
           { label: "No", value: "No", pdfKey: "sibling_adoption_No" },
         ],
+        subQuestions: [
+          {
+            key: "citizen_adoption",
+            pdfKey: "citizen_adoption",
+            label: "Did you become a U.S. citizen or get a Green Card because you were adopted?",
+            type: "radio",
+            section: "Relationship",
+            condition: (d) => d.sibling_adoption === "Yes",
+            options: [
+              { label: "Yes", value: "Yes", pdfKey: "citizen_adoption_Yes" },
+              { label: "No", value: "No", pdfKey: "citizen_adoption_No" },
+            ],
+          },
+        ],
       },
-    ],
-  },
-  {
-    key: "citizen_adoption",
-    pdfKey: "citizen_adoption",
-    label: "Did you become a U.S. citizen or get a Green Card because you were adopted?",
-    type: "radio",
-    section: "Relationship",
-    options: [
-      { label: "Yes", value: "Yes", pdfKey: "citizen_adoption_Yes" },
-      { label: "No", value: "No", pdfKey: "citizen_adoption_No" },
     ],
   },
 

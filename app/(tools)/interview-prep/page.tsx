@@ -37,16 +37,17 @@ export default function InterviewPreparation() {
   const [noDataMessage, setNoDataMessage] = useState<string | null>(null);
 
   const [step, setStep] = useState<number>(0);
-  const [showWhatsThis, setShowWhatsThis] = useState(true);
+  const [showWhatsThis, setShowWhatsThis] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const hasInitializedModal = useRef(false);
+  const [initialCheckDone, setInitialCheckDone] = useState(false);
 
   const [formData, setFormData] = useState<Partial<InterviewFormData>>({
     caseType: "",
   });
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-  const [loadingMessage, setLoadingMessage] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
+  const [loadingMessage, setLoadingMessage] = useState<string>("Loading...");
 
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [generatedResults, setGeneratedResults] = useState<InterviewPrepOutput | null>(null);
@@ -55,12 +56,19 @@ export default function InterviewPreparation() {
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [sessionRestorationAttempted, setSessionRestorationAttempted] = useState(false);
 
+  // Journey session tracking
+  const [sessionSource, setSessionSource] = useState<"journey" | "tool">("tool");
+  const [journeyId, setJourneyId] = useState<string | null>(null);
+  const [isJourneySession, setIsJourneySession] = useState(false);
+
   type RestorableSession = {
     id: string;
     category_slug: string;
     updated_at?: string;
     answers?: Array<{ question_key: string; answer_value: unknown }>;
     results?: InterviewPrepOutput;
+    source?: "journey" | "tool";
+    journey_id?: string | null;
   };
 
   // NEW: Confirmation modal state for session restoration
@@ -219,7 +227,7 @@ export default function InterviewPreparation() {
           // If results were already generated, restore them and jump to results step
           if (session.results) {
             setGeneratedResults(session.results);
-            setStep((catData.questionnaire?.sections?.length || 0) + 3); // Show results
+            setStep((catData.questionnaire?.sections?.length || 0) + 2); // Show results
           } else {
             setStep(1); // Show first question section
           }
@@ -236,6 +244,100 @@ export default function InterviewPreparation() {
 
     const restoreIncompleteSession = async () => {
       try {
+        // Set loading immediately to prevent modals from flashing
+        setLoading(true);
+        setLoadingMessage("Checking for existing sessions...");
+
+        // FIRST: Check for active journey session (IR-1)
+        // Journey sessions take priority over tool-based sessions
+        const journeyResponse = await fetch(`/api/interview-prep/active-journey-session`);
+        const journeyData = await journeyResponse.json();
+
+        if (journeyData.success && journeyData.hasActiveJourney && journeyData.session) {
+          // Found an active journey session - use it
+          console.log("[InterviewPrep] Found active journey session:", journeyData.journey_id);
+
+          setSessionId(journeyData.session.id);
+          setJourneyId(journeyData.journey_id);
+          setSessionSource("journey");
+          setIsJourneySession(true);
+
+          // Store in localStorage for persistence
+          localStorage.setItem("interviewPrepSessionId", journeyData.session.id);
+          localStorage.setItem("interviewPrepSessionSource", "journey");
+          if (journeyData.journey_id) {
+            localStorage.setItem("interviewPrepJourneyId", journeyData.journey_id);
+          }
+
+          // Load category data and restore session state
+          const categorySlug = journeyData.session.category_slug || "ir-1-spouse";
+          const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
+          const catData = await catDataResponse.json();
+
+          if (catData.success) {
+            // Find and set the category (don't filter by country - journey categories are always available)
+            const categoriesResponse = await fetch(`/api/interview-prep/categories`);
+            const categoriesData = await categoriesResponse.json();
+
+            if (categoriesData.success && categoriesData.categories) {
+              const category = categoriesData.categories.find(
+                (c: { categorySlug: string }) => c.categorySlug === categorySlug
+              );
+              if (category) {
+                setSelectedCategory(category);
+                setQuestionnaire({
+                  categorySlug: category.categorySlug,
+                  version: catData.questionnaire?.version || "1.0.0",
+                  lastUpdated: new Date().toISOString(),
+                  sections: catData.questionnaire?.sections || [],
+                });
+                setAvailableCategories(categoriesData.categories);
+                setShowCountryModal(false);
+
+                // Restore form data if available
+                if (journeyData.session.answers && Array.isArray(journeyData.session.answers)) {
+                  const answersMap: Record<string, unknown> = {};
+                  journeyData.session.answers.forEach(
+                    (answer: { question_key: string; answer_value: unknown }) => {
+                      answersMap[answer.question_key] = answer.answer_value;
+                    }
+                  );
+                  setFormData((prev) => ({ ...prev, ...answersMap }));
+                }
+
+                // If results were generated, show them; otherwise show questionnaire
+                if (journeyData.session.output && journeyData.session.output.length > 0) {
+                  setGeneratedResults({
+                    sessionId: journeyData.session.id,
+                    questions: journeyData.session.output,
+                    summary: {
+                      totalQuestions: journeyData.session.output.length,
+                      applicableQuestions: journeyData.session.output.length,
+                      categories: Array.from(
+                        new Set(
+                          journeyData.session.output.map((q: { category: string }) => q.category)
+                        )
+                      ),
+                    },
+                  });
+                  setStep((catData.questionnaire?.sections?.length || 0) + 2); // Show results
+                } else {
+                  setStep(1); // Start questionnaire
+                }
+              }
+            }
+          }
+
+          setSessionRestorationAttempted(true);
+          setLoading(false);
+          setLoadingMessage("");
+          return;
+        }
+
+        // No active journey session - proceed with tool-based session flow
+        setSessionSource("tool");
+        setIsJourneySession(false);
+
         // Check for sessionId query parameter first (for completed session revisit)
         const urlParams = new URLSearchParams(window.location.search);
         const sessionIdParam = urlParams.get("sessionId");
@@ -256,21 +358,41 @@ export default function InterviewPreparation() {
             // Found a completed session, load results directly
             setSessionId(sessionIdParam);
             setGeneratedResults(sessionData.session.interview_prep_results.generated_questions);
-            setStep(questionnaire ? questionnaire.sections.length + 3 : 4);
+            setStep(questionnaire ? questionnaire.sections.length + 2 : 4);
             setLoading(false);
             setLoadingMessage("");
             setSessionRestorationAttempted(true);
+
+            // Track session source from restored session
+            if (sessionData.session.source === "journey") {
+              setSessionSource("journey");
+              setIsJourneySession(true);
+              setJourneyId(sessionData.session.journey_id);
+            }
             return;
           }
         }
 
         // Check for saved session in localStorage first (current browser/session)
         const savedSessionId = localStorage.getItem("interviewPrepSessionId");
+        const savedSessionSource = localStorage.getItem("interviewPrepSessionSource") as
+          | "journey"
+          | "tool"
+          | null;
+
         if (savedSessionId && step === 0) {
           const response = await fetch(`/api/interview-prep/sessions/${savedSessionId}`);
           const sessionData = await response.json();
 
           if (response.ok && sessionData.session && sessionData.session.completed === false) {
+            // Track session source
+            const source = sessionData.session.source || savedSessionSource || "tool";
+            setSessionSource(source);
+            if (source === "journey") {
+              setIsJourneySession(true);
+              setJourneyId(sessionData.session.journey_id);
+            }
+
             await restoreSessionData(sessionData.session, (categorySlug: string) => {
               const category = availableCategories.find((c) => c.categorySlug === categorySlug);
               return category;
@@ -280,6 +402,8 @@ export default function InterviewPreparation() {
             return;
           } else {
             localStorage.removeItem("interviewPrepSessionId");
+            localStorage.removeItem("interviewPrepSessionSource");
+            localStorage.removeItem("interviewPrepJourneyId");
           }
         }
 
@@ -290,8 +414,14 @@ export default function InterviewPreparation() {
           const latestData = await latestResponse.json();
 
           // Only restore if session has NO generated results (truly at questionnaire stage)
-          if (latestData.success && latestData.session && !latestData.session.results) {
-            // Found an incomplete session - offer to restore it via modal
+          // Also skip journey sessions here - they're handled above
+          if (
+            latestData.success &&
+            latestData.session &&
+            !latestData.session.results &&
+            latestData.session.source !== "journey"
+          ) {
+            // Found an incomplete tool-based session - offer to restore it via modal
             setPendingRestoreSession(latestData.session);
             setRestoreSessionModalOpen(true);
           }
@@ -300,6 +430,8 @@ export default function InterviewPreparation() {
         setSessionRestorationAttempted(true);
       } catch (err) {
         console.error("Error checking for incomplete session:", err);
+        setLoading(false);
+        setLoadingMessage("");
         setSessionRestorationAttempted(true);
       }
     };
@@ -312,7 +444,8 @@ export default function InterviewPreparation() {
 
   useEffect(() => {
     if (hasInitializedModal.current) return;
-    if (step !== 0) return;
+    if (!initialCheckDone) return; // Wait for session check to complete
+    if (sessionId) return; // Don't show if session was restored
 
     hasInitializedModal.current = true;
 
@@ -326,7 +459,16 @@ export default function InterviewPreparation() {
     } else {
       setShowWhatsThis(false);
     }
-  }, []);
+  }, [initialCheckDone, sessionId]);
+
+  // When session restoration check completes, mark initial check as done
+  useEffect(() => {
+    if (sessionRestorationAttempted && !initialCheckDone) {
+      setInitialCheckDone(true);
+      setLoading(false);
+      setLoadingMessage("");
+    }
+  }, [sessionRestorationAttempted, initialCheckDone]);
 
   const handleCloseIntro = () => {
     if (dontShowAgain && typeof window !== "undefined") {
@@ -423,12 +565,43 @@ export default function InterviewPreparation() {
       }
 
       // SESSION ALREADY EXISTS
-      // Redirect user to My Sessions page
       if (sessionResult.alreadyExists) {
+        // If it's a journey session (active journey), use it directly
+        if (sessionResult.source === "journey") {
+          const existingSession = sessionResult.session;
+          setSessionId(existingSession.id);
+          setSessionSource("journey");
+          setIsJourneySession(true);
+          setJourneyId(existingSession.journey_id || null);
+
+          localStorage.setItem("interviewPrepSessionId", existingSession.id);
+          localStorage.setItem("interviewPrepSessionSource", "journey");
+          if (existingSession.journey_id) {
+            localStorage.setItem("interviewPrepJourneyId", existingSession.journey_id);
+          }
+
+          const existCatDataResponse = await fetch(
+            `/api/interview-prep?category_slug=${categorySlug}`
+          );
+          const existCatData = await existCatDataResponse.json();
+
+          if (existCatData.success) {
+            setQuestionnaire({
+              categorySlug: selectedCategory.categorySlug,
+              version: existCatData.questionnaire?.version || "1.0.0",
+              lastUpdated: new Date().toISOString(),
+              sections: existCatData.questionnaire?.sections || [],
+            });
+            setError(null);
+            setStep(1);
+          }
+          return;
+        }
+
+        // Tool session already exists for this category - redirect to My Sessions
         setIsRedirectingSession(true);
         setLoadingMessage("Redirecting to your existing session...");
-
-        router.push("/interview-prep/my-sessions");
+        router.push("/interview-prep/my-sessions?message=session-exists");
         return;
       }
 
@@ -437,8 +610,13 @@ export default function InterviewPreparation() {
 
       setSessionId(newSessionId);
 
-      // Optional convenience cache
+      // Track session source (tool-based session created via category selection)
+      setSessionSource("tool");
+      setIsJourneySession(false);
+
+      // Store session info in localStorage
       localStorage.setItem("interviewPrepSessionId", newSessionId);
+      localStorage.setItem("interviewPrepSessionSource", "tool");
 
       // Load questionnaire
       const catDataResponse = await fetch(`/api/interview-prep?category_slug=${categorySlug}`);
@@ -487,40 +665,27 @@ export default function InterviewPreparation() {
     }
   };
 
-  const prevStep = async () => {
-    // Save answers before moving to previous step if we have a session ID
-    if (sessionId) {
-      try {
-        // Filter out non-question fields before saving
-        const answers: Record<string, unknown> = {};
-        Object.keys(formData).forEach((k) => {
-          if (k !== "caseType" && k !== "visaCategory") {
-            answers[k] = formData[k as keyof typeof formData];
-          }
-        });
-
-        const answersResponse = await fetch(`/api/interview-prep/sessions/${sessionId}`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            action: "update-answers",
-            answers,
-          }),
-        });
-
-        if (!answersResponse.ok) {
-          console.error("Failed to save answers on step change:", await answersResponse.text());
-        }
-      } catch (err) {
-        console.error("Error saving answers on step change:", err);
-      }
-    }
-
+  const prevStep = () => {
+    // Navigate immediately — don't wait for the save
     setStep((prev) => prev - 1);
     if (error) {
       setError(null);
+    }
+
+    // Save answers in the background (fire-and-forget)
+    if (sessionId) {
+      const answers: Record<string, unknown> = {};
+      Object.keys(formData).forEach((k) => {
+        if (k !== "caseType" && k !== "visaCategory") {
+          answers[k] = formData[k as keyof typeof formData];
+        }
+      });
+
+      fetch(`/api/interview-prep/sessions/${sessionId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "update-answers", answers }),
+      }).catch((err) => console.error("Error saving answers on back:", err));
     }
   };
 
@@ -695,6 +860,25 @@ export default function InterviewPreparation() {
     return <div>Unknown step</div>;
   };
 
+  // Section color palette - matches review-step.tsx and dynamic-question-step.tsx
+  const getSectionColor = (sectionId: string): { color: string; lightColor: string } => {
+    const colorMap: Record<string, { color: string; lightColor: string }> = {
+      // Step 1: Marriage & Basic Info - Rose
+      marriage_and_basic_info: { color: "#db8090", lightColor: "#fce8ec" },
+      // Step 2: Relationship Origin - Rose
+      relationship_origin: { color: "#db8090", lightColor: "#fce8ec" },
+      // Step 3: Relationship Strength - Amber
+      relationship_strength: { color: "#9c6f38", lightColor: "#f3ede7" },
+      // Step 4: Family & Social - Sage
+      family_and_social: { color: "#89a4a0", lightColor: "#e8f0ed" },
+      // Step 5: Petitioner & Plans - Teal
+      petitioner_and_plans: { color: "#0d7377", lightColor: "#e8f6f6" },
+      // Step 6: Background Check - Rose
+      background_check: { color: "#db8090", lightColor: "#fce8ec" },
+    };
+    return colorMap[sectionId] || { color: "#0d7377", lightColor: "#e8f6f6" };
+  };
+
   const renderProgressSections = () => {
     if (!questionnaire || step === 0) return null;
 
@@ -702,6 +886,10 @@ export default function InterviewPreparation() {
     const currentSectionIndex = step - 1;
     const totalSteps = sections.length + 2; // +2 for review and results
     const progressPercentage = Math.round(((step - 1) / totalSteps) * 100);
+
+    // Get current section's color for progress bar
+    const currentSection = sections[currentSectionIndex];
+    const currentColor = currentSection ? getSectionColor(currentSection.id).color : "#0d7377";
 
     return (
       <div className="mb-8">
@@ -714,9 +902,10 @@ export default function InterviewPreparation() {
 
         <div className="w-full bg-slate-200 rounded-full h-3">
           <div
-            className="bg-teal-600 h-3 rounded-full transition-all duration-500 ease-in-out"
+            className="h-3 rounded-full transition-all duration-500 ease-in-out"
             style={{
               width: `${progressPercentage > 100 ? 100 : progressPercentage}%`,
+              backgroundColor: currentColor,
             }}
           ></div>
         </div>
@@ -726,51 +915,55 @@ export default function InterviewPreparation() {
           {sections.map((section, index) => {
             const isActive = index === currentSectionIndex;
             const isCompleted = index < currentSectionIndex;
+            const { color, lightColor } = getSectionColor(section.id);
 
             return (
               <div
                 key={index}
-                className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+                className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
+                style={
                   isActive
-                    ? "bg-teal-600 text-white border-2 border-teal-600"
+                    ? { backgroundColor: color, borderColor: color, color: "white" }
                     : isCompleted
-                      ? "bg-teal-100 text-teal-800 border-2 border-teal-200"
-                      : "bg-slate-100 text-slate-500 border-2 border-slate-200"
-                }`}
+                      ? { backgroundColor: lightColor, borderColor: lightColor, color }
+                      : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
+                }
               >
                 <div className="font-semibold truncate">
                   {section.title.substring(0, 20)}
                   {section.title.length > 20 ? "..." : ""}
                 </div>
-                <div className="text-[10px] mt-1">Step {index + 1}</div>
+                <div className="text-[10px] mt-1 opacity-80">Step {index + 1}</div>
               </div>
             );
           })}
 
           {/* Review Step Indicator */}
           <div
-            className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+            className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
+            style={
               step === sections.length + 1
-                ? "bg-teal-600 text-white border-2 border-teal-600"
+                ? { backgroundColor: "#0d7377", borderColor: "#0d7377", color: "white" }
                 : step > sections.length + 1
-                  ? "bg-teal-100 text-teal-800 border-2 border-teal-200"
-                  : "bg-slate-100 text-slate-500 border-2 border-slate-200"
-            }`}
+                  ? { backgroundColor: "#e8f6f6", borderColor: "#e8f6f6", color: "#0d7377" }
+                  : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
+            }
           >
             <div className="font-semibold">Review</div>
-            <div className="text-[10px] mt-1">Step {sections.length + 1}</div>
+            <div className="text-[10px] mt-1 opacity-80">Step {sections.length + 1}</div>
           </div>
 
           {/* Results Step Indicator */}
           <div
-            className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+            className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
+            style={
               step === sections.length + 2
-                ? "bg-teal-600 text-white border-2 border-teal-600"
-                : "bg-slate-100 text-slate-500 border-2 border-slate-200"
-            }`}
+                ? { backgroundColor: "#0d7377", borderColor: "#0d7377", color: "white" }
+                : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
+            }
           >
             <div className="font-semibold">Results</div>
-            <div className="text-[10px] mt-1">Step {sections.length + 2}</div>
+            <div className="text-[10px] mt-1 opacity-80">Step {sections.length + 2}</div>
           </div>
         </div>
 
@@ -783,7 +976,10 @@ export default function InterviewPreparation() {
                 className="w-full flex justify-between items-center bg-slate-50 border-slate-200 shadow-sm text-slate-700"
               >
                 <span>View All Steps</span>
-                <span className="text-xs font-mono bg-teal-100 text-teal-800 px-2 py-0.5 rounded-full">
+                <span
+                  className="text-xs font-mono px-2 py-0.5 rounded-full"
+                  style={{ backgroundColor: currentColor + "20", color: currentColor }}
+                >
                   {step}/{totalSteps}
                 </span>
               </Button>
@@ -796,51 +992,74 @@ export default function InterviewPreparation() {
                 {sections.map((section, index) => {
                   const isActive = index === currentSectionIndex;
                   const isCompleted = index < currentSectionIndex;
+                  const { color, lightColor } = getSectionColor(section.id);
 
                   return (
                     <div
                       key={index}
-                      className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+                      className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
+                      style={
                         isActive
-                          ? "bg-teal-600 text-white border-2 border-teal-600 shadow-md"
+                          ? {
+                              backgroundColor: color,
+                              borderColor: color,
+                              color: "white",
+                              boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+                            }
                           : isCompleted
-                            ? "bg-teal-100 text-teal-800 border-2 border-teal-200"
-                            : "bg-slate-100 text-slate-500 border-2 border-slate-200"
-                      }`}
+                            ? { backgroundColor: lightColor, borderColor: lightColor, color }
+                            : {
+                                backgroundColor: "#f1f5f9",
+                                borderColor: "#e2e8f0",
+                                color: "#64748b",
+                              }
+                      }
                     >
                       <div className="font-semibold truncate">
                         {section.title.substring(0, 20)}
                         {section.title.length > 20 ? "..." : ""}
                       </div>
-                      <div className="text-[10px] mt-1">Step {index + 1}</div>
+                      <div className="text-[10px] mt-1 opacity-80">Step {index + 1}</div>
                     </div>
                   );
                 })}
 
                 {/* Review Step Indicator */}
                 <div
-                  className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+                  className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
+                  style={
                     step === sections.length + 1
-                      ? "bg-teal-600 text-white border-2 border-teal-600 shadow-md"
+                      ? {
+                          backgroundColor: "#0d7377",
+                          borderColor: "#0d7377",
+                          color: "white",
+                          boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+                        }
                       : step > sections.length + 1
-                        ? "bg-teal-100 text-teal-800 border-2 border-teal-200"
-                        : "bg-slate-100 text-slate-500 border-2 border-slate-200"
-                  }`}
+                        ? { backgroundColor: "#e8f6f6", borderColor: "#e8f6f6", color: "#0d7377" }
+                        : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
+                  }
                 >
                   <div className="font-semibold">Review</div>
-                  <div className="text-[10px] mt-1">Step {sections.length + 1}</div>
+                  <div className="text-[10px] mt-1 opacity-80">Step {sections.length + 1}</div>
                 </div>
 
                 {/* Results Step Indicator */}
                 <div
-                  className={`p-3 rounded-lg text-center text-xs font-medium transition-all ${
+                  className="p-3 rounded-lg text-center text-xs font-medium transition-all border-2"
+                  style={
                     step === sections.length + 2
-                      ? "bg-teal-600 text-white border-2 border-teal-600 shadow-md"
-                      : "bg-slate-100 text-slate-500 border-2 border-slate-200"
-                  }`}
+                      ? {
+                          backgroundColor: "#0d7377",
+                          borderColor: "#0d7377",
+                          color: "white",
+                          boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1)",
+                        }
+                      : { backgroundColor: "#f1f5f9", borderColor: "#e2e8f0", color: "#64748b" }
+                  }
                 >
                   <div className="font-semibold">Results</div>
-                  <div className="text-[10px] mt-1">Step {sections.length + 2}</div>
+                  <div className="text-[10px] mt-1 opacity-80">Step {sections.length + 2}</div>
                 </div>
               </div>
             </SheetContent>
@@ -852,21 +1071,25 @@ export default function InterviewPreparation() {
 
   return (
     <>
-      <NarrativeModal
-        isOpen={showWhatsThis}
-        onClose={handleCloseIntro}
-        onComplete={handleCloseIntro}
-        dontShowAgain={dontShowAgain}
-        onDontShowAgainChange={setDontShowAgain}
-        variant="interview-prep"
-      />
+      {initialCheckDone && !sessionId && (
+        <NarrativeModal
+          isOpen={showWhatsThis}
+          onClose={handleCloseIntro}
+          onComplete={handleCloseIntro}
+          dontShowAgain={dontShowAgain}
+          onDontShowAgainChange={setDontShowAgain}
+          variant="interview-prep"
+        />
+      )}
 
-      <CountrySelectionModal
-        isOpen={showCountryModal}
-        onCountrySelected={handleCountrySelected}
-        isLoading={loading && showCountryModal}
-        noDataMessage={noDataMessage || undefined}
-      />
+      {initialCheckDone && !sessionId && (
+        <CountrySelectionModal
+          isOpen={showCountryModal}
+          onCountrySelected={handleCountrySelected}
+          isLoading={loading && showCountryModal}
+          noDataMessage={noDataMessage || undefined}
+        />
+      )}
 
       <div className="site-main-px site-main-py mt-12">
         <div className="text-center mb-8">
@@ -876,20 +1099,12 @@ export default function InterviewPreparation() {
               ? selectedCategory.description
               : "Prepare for your visa interview with personalized questions"}
           </p>
-
-          <button
-            onClick={() => (window.location.href = "/interview-prep/my-sessions")}
-            suppressHydrationWarning
-            className="text-teal-600 hover:text-teal-700 mt-4 cursor-pointer hover:underline text-base font-medium"
-          >
-            See my interview sessions →
-          </button>
         </div>
 
         {renderProgressSections()}
 
         <Card className="p-6 shadow-lg">
-          {loading && !sessionId ? (
+          {!initialCheckDone ? (
             <div className="flex flex-col items-center justify-center py-12 space-y-4">
               <Loader size="md" />
               <p className="text-slate-600">{loadingMessage || "Loading..."}</p>

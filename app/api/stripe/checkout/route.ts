@@ -3,7 +3,7 @@ import { stripe, PRODUCTS } from "@/lib/stripe/config";
 import { paymentService } from "@/lib/services/paymentService";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
-import { VISA_CATEGORIES } from "@/app/(main)/pricing/data/pricing";
+import { VISA_CATEGORIES, ADDONS } from "@/app/(main)/pricing/data/pricing";
 import { reconcileUserPlan } from "@/lib/plan/reconcile";
 import * as fs from "fs";
 import * as path from "path";
@@ -27,8 +27,19 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
     logDebug("Request body:", body);
-    const { productTier, userId, consultationId, addons, visaCategory, isUpgrade, currentTier } =
-      body;
+    const {
+      productTier,
+      userId,
+      consultationId,
+      consultationDetails,
+      appointmentId,
+      policeVerificationId,
+      documentTranslationId,
+      addons,
+      visaCategory,
+      isUpgrade,
+      currentTier,
+    } = body;
 
     // Validate required fields
     if (!userId) {
@@ -114,10 +125,45 @@ export async function POST(request: NextRequest) {
       stripeCustomerId = customer.id;
     }
 
+    // Base URL for redirects — derive from the incoming request origin so it
+    // works on whatever host the user is actually on (localhost in dev, the real
+    // domain in prod). Falls back to the env var if no origin header is present.
+    const origin =
+      request.headers.get("origin") ||
+      request.nextUrl.origin ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      "";
+
+    // ── Cancel URL — industry-standard: return the user to where they started
+    // (the order summary) with their selection intact, NOT a dead-end "canceled"
+    // page. The pricing page reads these params, restores the order, and shows a
+    // subtle "checkout canceled, no charge made" notice.
+    const buildCancelUrl = () => {
+      const base = origin;
+      // Consultations have no order-summary concept — send back to booking.
+      if (!productTier && !(Array.isArray(addons) && addons.length > 0) && consultationId) {
+        return `${base}/book-consultation?checkout_canceled=1`;
+      }
+      const params = new URLSearchParams({ checkout_canceled: "1" });
+      if (productTier) {
+        params.set("mode", "plans");
+        params.set("plan", productTier);
+        params.set("step", "review");
+      } else if (Array.isArray(addons) && addons.length > 0) {
+        const firstKind =
+          (ADDONS.find((a) => a.id === addons[0]) as { kind?: string } | undefined)?.kind ??
+          "tools";
+        params.set("mode", firstKind);
+      }
+      if (Array.isArray(addons) && addons.length > 0) params.set("addons", addons.join(","));
+      if (effectiveVisaCategory) params.set("visa", effectiveVisaCategory);
+      return `${base}/pricing?${params.toString()}`;
+    };
+
     const sessionParams: Stripe.Checkout.SessionCreateParams = {
       customer: stripeCustomerId,
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/cancel`,
+      success_url: `${origin}/payment/success?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: buildCancelUrl(),
       automatic_tax: { enabled: true },
       billing_address_collection: "required",
       customer_update: { address: "auto" },
@@ -278,10 +324,65 @@ export async function POST(request: NextRequest) {
         visa_category: effectiveVisaCategory,
       };
     }
-    // ================================================
-    // CONSULTATION — One-time Payment
-    // ================================================
-    else if (consultationId) {
+    else if (consultationDetails) {
+      const referenceId = `REQ-${Math.floor(100000 + Math.random() * 900000)}`;
+      const consultationPrice = 99; // $99 per consultation
+
+      sessionParams.mode = "payment";
+      sessionParams.line_items = [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Consultation Booking",
+              description: `${consultationDetails.issue_category} - ${consultationDetails.visa_category || "IR-1 / CR-1"}`,
+            },
+            unit_amount: consultationPrice * 100,
+          },
+          quantity: 1,
+        },
+      ];
+
+      // Helper to split a long string into chunks of max 450 chars for Stripe metadata
+      const splitMetadataString = (str: string, prefix: string) => {
+        const chunkLimit = 450;
+        const meta: Record<string, string> = {};
+        if (!str) return meta;
+        let index = 1;
+        for (let i = 0; i < str.length; i += chunkLimit) {
+          meta[`${prefix}_${index}`] = str.substring(i, i + chunkLimit);
+          index++;
+        }
+        return meta;
+      };
+
+      const summaryMeta = splitMetadataString(consultationDetails.case_summary || "", "c_summary");
+
+      sessionParams.metadata = {
+        ...sessionParams.metadata,
+        product_type: "consultation",
+        product_id: referenceId, // store referenceId as product_id in payment
+        consultation_reference: referenceId,
+        c_reference_id: referenceId,
+        c_issue_category: consultationDetails.issue_category || "",
+        c_visa_category: consultationDetails.visa_category || "",
+        c_case_stage: consultationDetails.case_stage || "",
+        c_urgency: consultationDetails.urgency || "normal",
+        c_preferred_language: consultationDetails.preferred_language || "English",
+        c_full_name: consultationDetails.full_name || "",
+        c_email: consultationDetails.email || "",
+        c_whatsapp_phone: consultationDetails.whatsapp_phone || "",
+        c_embassy_consulate: consultationDetails.embassy_consulate || "",
+        c_selected_slot: consultationDetails.selected_slot || "",
+        c_alternate_slots: Array.isArray(consultationDetails.alternate_slots) 
+          ? consultationDetails.alternate_slots.join(",") 
+          : "",
+        c_attachments: Array.isArray(consultationDetails.attachments) 
+          ? consultationDetails.attachments.join(",") 
+          : "",
+        ...summaryMeta,
+      };
+    } else if (consultationId) {
       const { data: consultation, error: consultationError } = await supabase
         .from("consultation_bookings")
         .select("*")
@@ -315,9 +416,118 @@ export async function POST(request: NextRequest) {
         product_id: consultationId,
         consultation_reference: consultation.reference_id,
       };
+    } else if (appointmentId) {
+      const { data: appointment, error: appointmentError } = await supabase
+        .from("appointments")
+        .select("*")
+        .eq("id", appointmentId)
+        .single();
+
+      if (appointmentError || !appointment) {
+        return NextResponse.json({ error: "Appointment not found" }, { status: 404 });
+      }
+
+      const appointmentPrice = 5; // $5 per medical appointment booking
+
+      sessionParams.mode = "payment";
+      sessionParams.line_items = [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Book Medical Appointment",
+              description: `Appointment for ${appointment.full_name} (${appointment.location})`,
+            },
+            unit_amount: appointmentPrice * 100,
+          },
+          quantity: 1,
+        },
+      ];
+
+      sessionParams.metadata = {
+        ...sessionParams.metadata,
+        product_type: "medical_booking",
+        product_id: appointmentId,
+      };
+    } else if (policeVerificationId) {
+      const { data: requestRecord, error: requestError } = await supabase
+        .from("police_verification_requests")
+        .select("*")
+        .eq("id", policeVerificationId)
+        .single();
+
+      if (requestError || !requestRecord) {
+        return NextResponse.json(
+          { error: "Police verification request not found" },
+          { status: 404 }
+        );
+      }
+
+      const pccPrice = 25; // $25 per police verification request
+
+      sessionParams.mode = "payment";
+      sessionParams.line_items = [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "PCC Filing (Sindh Only)",
+              description: `Police Verification for ${requestRecord.full_name} (${requestRecord.district})`,
+            },
+            unit_amount: pccPrice * 100,
+          },
+          quantity: 1,
+        },
+      ];
+
+      sessionParams.metadata = {
+        ...sessionParams.metadata,
+        product_type: "pcc_filing",
+        product_id: policeVerificationId,
+      };
+    } else if (documentTranslationId) {
+      // Note: document upload route stores records in `translation_documents`
+      const { data: requestRecord, error: requestError } = await supabase
+        .from("translation_documents")
+        .select("*")
+        .eq("id", documentTranslationId)
+        .single();
+
+      if (requestError || !requestRecord) {
+        return NextResponse.json(
+          { error: "Document translation request not found" },
+          { status: 404 }
+        );
+      }
+
+      const documentTranslationPrice = 25; // $25 per document translation request
+
+      sessionParams.mode = "payment";
+      sessionParams.line_items = [
+        {
+          price_data: {
+            currency: "usd",
+            product_data: {
+              name: "Document Translation",
+              description: `Document Translation for ${requestRecord.full_name} (${requestRecord.documentType})`,
+            },
+            unit_amount: documentTranslationPrice * 100,
+          },
+          quantity: 1,
+        },
+      ];
+
+      sessionParams.metadata = {
+        ...sessionParams.metadata,
+        product_type: "document_translations",
+        product_id: documentTranslationId,
+      };
     } else {
       return NextResponse.json(
-        { error: "Either productTier, addons, or consultationId is required" },
+        {
+          error:
+            "Either productTier, addons, consultationId, appointmentId, documentTranslationId,  or policeVerificationId is required",
+        },
         { status: 400 }
       );
     }
@@ -342,33 +552,118 @@ export async function POST(request: NextRequest) {
     // Save payment record in Supabase
 
     // FIX: Map standalone_addon to journey_plan for the DB insert to satisfy the check constraint,
-    // but keep it as standalone_addon in the Stripe metadata so the webhook works perfectly.
+    // and map medical_booking / pcc_filing to consultation to satisfy the check constraint as well,
+    // but keep it as medical_booking / pcc_filing in the Stripe metadata so the webhook/verify-session works perfectly.
     const dbProductType =
       sessionParams.metadata?.product_type === "standalone_addon"
         ? "journey_plan"
-        : (sessionParams.metadata?.product_type as any) || "journey_plan";
+        : sessionParams.metadata?.product_type === "medical_booking" ||
+            sessionParams.metadata?.product_type === "pcc_filing" ||
+            sessionParams.metadata?.product_type === "document_translations"
+          ? "consultation"
+          : (sessionParams.metadata?.product_type as any) || "journey_plan";
 
     const dbProductId =
       sessionParams.metadata?.product_type === "standalone_addon"
         ? addons?.[0] || "addon"
-        : String(sessionParams.metadata?.product_id || "");
+        : sessionParams.metadata?.product_type === "medical_booking"
+          ? appointmentId
+          : sessionParams.metadata?.product_type === "pcc_filing"
+            ? policeVerificationId
+            : sessionParams.metadata?.product_type === "document_translations"
+              ? documentTranslationId
+              : String(sessionParams.metadata?.product_id || "");
 
-    await paymentService.createPayment({
-      user_id: userId,
-      stripe_checkout_session_id: session.id,
-      amount: (session.amount_total ?? 0) / 100,
-      currency: session.currency || "usd",
-      status: "pending",
-      product_type: dbProductType,
-      product_id: dbProductId,
-      metadata: {
-        product_name: sessionParams.metadata?.product_name || "Add-on Purchase",
-        customer_email: userEmail,
-        stripe_customer_id: stripeCustomerId!,
-        original_product_type: sessionParams.metadata?.product_type, // keep reference
-      },
-    });
-    logDebug("Payment record created successfully");
+    let paymentId: string | null = null;
+    try {
+      const payment = await paymentService.createPayment({
+        user_id: userId,
+        stripe_checkout_session_id: session.id,
+        amount: (session.amount_total ?? 0) / 100,
+        currency: session.currency || "usd",
+        status: "pending",
+        product_type: dbProductType,
+        product_id: dbProductId,
+        metadata: {
+          product_name: sessionParams.metadata?.product_name || "Add-on Purchase",
+          customer_email: userEmail,
+          stripe_customer_id: stripeCustomerId!,
+          original_product_type: sessionParams.metadata?.product_type || "",
+        },
+      });
+      paymentId = payment.id;
+      logDebug("Payment record created successfully:", { paymentId });
+
+      // Link payment to translation document if this is a document translation purchase
+      if (
+        sessionParams.metadata?.product_type === "document_translations" &&
+        documentTranslationId &&
+        paymentId
+      ) {
+        const { error: updateErr } = await supabase
+          .from("translation_documents")
+          .update({ payment_id: paymentId, payment_status: "pending" })
+          .eq("id", documentTranslationId);
+
+        if (updateErr) {
+          logDebug("Warning: Failed to link payment_id to translation_documents:", updateErr);
+          // Don't throw - the payment was created successfully, this is just linking
+        } else {
+          logDebug("Successfully linked payment_id to translation_documents");
+        }
+      }
+
+      // Link payment to appointment if this is a medical booking purchase
+      if (
+        sessionParams.metadata?.product_type === "medical_booking" &&
+        appointmentId &&
+        paymentId
+      ) {
+        const { error: updateErr } = await supabase
+          .from("appointments")
+          .update({ payment_id: paymentId, payment_status: "pending" })
+          .eq("id", appointmentId);
+
+        if (updateErr) {
+          logDebug("Warning: Failed to link payment_id to appointments:", updateErr);
+        } else {
+          logDebug("Successfully linked payment_id to appointment");
+        }
+      }
+
+      // Link payment to police verification document if this is a police verification purchase
+      if (
+        sessionParams.metadata?.product_type === "pcc_filing" &&
+        policeVerificationId &&
+        paymentId
+      ) {
+        const { error: updateErr } = await supabase
+          .from("police_verification_requests")
+          .update({ payment_id: paymentId, payment_status: "pending" })
+          .eq("id", policeVerificationId);
+
+        if (updateErr) {
+          logDebug(
+            "Warning: Failed to link payment_id to police_verification_requests:",
+            updateErr
+          );
+        } else {
+          logDebug("Successfully linked payment_id to police_verification_requests");
+        }
+      }
+    } catch (payErr: any) {
+      // Log detailed Supabase error for debugging and return a clearer message
+      logDebug(
+        "paymentService.createPayment failed:",
+        payErr && payErr.message ? payErr.message : String(payErr)
+      );
+      try {
+        logDebug("paymentService.createPayment error (full):", JSON.stringify(payErr));
+      } catch (e) {
+        // ignore JSON stringify errors
+      }
+      return NextResponse.json({ error: msg(E.PAYMENT_CREATE_FAILED) }, { status: 500 });
+    }
 
     logDebug("Returning 200 with session details");
     return NextResponse.json({

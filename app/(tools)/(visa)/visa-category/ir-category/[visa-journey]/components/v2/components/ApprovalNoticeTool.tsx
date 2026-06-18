@@ -4,7 +4,7 @@ import React, { useRef, useState } from "react";
 import { X, Info, RefreshCw, Upload, Lock } from "lucide-react";
 import { APPROVAL_NOTICE_DATA as data } from "../ApprovalNoticeData";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { usePlan } from "@/app/context/PlanContext";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -41,6 +41,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
   onSelectChapter,
   onSelectStep,
 }) => {
+  const { showToast } = useToast();
   const { t, isUrdu } = useLanguage();
   const {
     isApprovalModalOpen,
@@ -82,13 +83,13 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
 
   const saveDetails = () => {
     if (!approvalDetails.approvalDate || !approvalDetails.receiptNumber) {
-      toast.error(msg(E.TOOL_APPROVAL_FIELDS_REQUIRED));
+      showToast(msg(E.TOOL_APPROVAL_FIELDS_REQUIRED), "error");
       return;
     }
 
     if (!validateReceiptNumber(approvalDetails.receiptNumber)) {
       setReceiptError(msg(E.TOOL_APPROVAL_RECEIPT_FORMAT_FAILED));
-      toast.error(msg(E.TOOL_APPROVAL_RECEIPT_FORMAT_FAILED));
+      showToast(msg(E.TOOL_APPROVAL_RECEIPT_FORMAT_FAILED), "error");
       return;
     }
 
@@ -99,7 +100,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
       approvalSaved: "true",
     });
     setIsApprovalModalOpen(false);
-    toast.success("Approval notice details saved!");
+    showToast("Approval notice details saved!", "success");
   };
 
   const handleReceivedBtn = () => {

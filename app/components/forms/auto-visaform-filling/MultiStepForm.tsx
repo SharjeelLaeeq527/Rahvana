@@ -14,6 +14,7 @@ import { createBrowserClient } from "@supabase/ssr";
 import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { autoFillForm, mapFormToProfile } from "@/lib/autoFill/mapper";
+import { getFormFieldOverrides, firstProfileValue } from "@/lib/autoFill/formOverrides";
 import type { MasterProfile } from "@/types/profile";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DocumentRole } from "@/lib/document-vault/types";
@@ -339,24 +340,45 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   // This was previously used but is no longer needed
 
   // Auto-fill from central UserProfileContext (no direct Supabase call)
+  // IMPORTANT: wait for `draftLoaded` first. The draft/initial form data is set by
+  // the async initialization effect; if auto-fill ran before that, the later
+  // setFormData(draft) would overwrite (wipe) the auto-filled values. Gating on
+  // draftLoaded guarantees we merge INTO the loaded form data instead of racing it.
   useEffect(() => {
-    if (isContextProfileLoading || profileLoaded || !userProfile) return;
+    if (isContextProfileLoading || profileLoaded || !userProfile || !draftLoaded) return;
 
     setFormData((prev) => {
       // Use current form structure as template for auto-fill
       const autoData = autoFillForm(userProfile, prev) as Record<string, string>;
-      const merged = { ...prev };
 
+      const merged = { ...prev };
+      const overrides = getFormFieldOverrides(formCode);
+
+      // Global mapper: only fill fields that are still empty (don't touch drafts).
+      // Fields with a per-form override are NEVER filled from the global map —
+      // the global path may be the WRONG PERSON for this form (e.g. I-130 Part 1
+      // asks the SPONSOR's name; the top-level profile is the beneficiary's).
       Object.entries(autoData).forEach(([key, value]) => {
-        if (!merged[key]) {
+        if (!merged[key] && !(key in overrides)) {
           merged[key] = value;
         }
       });
 
+      // Per-form overrides: for these fields the central profile (e.g. passport-derived
+      // beneficiary data) is the SOURCE OF TRUTH, so OVERWRITE any stale value already
+      // in the form — a previously-saved draft, or a wrong-person value the global
+      // mapper filled (I-130A / DS-260 "you" = beneficiary, not petitioner). We only
+      // overwrite when the profile actually has a value, so we never blank a field.
+      const profileForOverride = userProfile as unknown as Record<string, unknown>;
+      for (const [formKey, paths] of Object.entries(overrides)) {
+        const val = firstProfileValue(profileForOverride, paths);
+        if (val) merged[formKey] = val;
+      }
+
       return merged;
     });
     setProfileLoaded(true);
-  }, [userProfile, isContextProfileLoading, profileLoaded]);
+  }, [userProfile, isContextProfileLoading, profileLoaded, draftLoaded]);
 
   const sections = useMemo(() => {
     if (!config) return [];
@@ -673,7 +695,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       // Save completed form data back to central profile (auto-fill for other tools)
       if (userProfile) {
         try {
-          const profileDelta = mapFormToProfile(formData, userProfile);
+          const profileDelta = mapFormToProfile(formData, userProfile, getFormFieldOverrides(formCode));
           if (Object.keys(profileDelta).length > 0) {
             updateProfile(profileDelta, { silent: true });
           }
@@ -715,8 +737,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       
       const isNextFieldEmpty = !nextField || !formData[nextField.key] || formData[nextField.key].trim() === "";
       
-      if (filledFieldsCount >= 10 && isNextFieldEmpty) {
-        showToast("Free Preview: You've reached the 10-question limit. Redirecting to review page...", "info", 6000);
+      if (filledFieldsCount >= 15 && isNextFieldEmpty) {
+        showToast("Free Preview: You've reached the 15-question limit. Redirecting to review page...", "info", 6000);
         setView("review");
         return;
       }
@@ -764,7 +786,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     // Save current step data back to central profile (real-time sync for other tools)
     if (userProfile) {
       try {
-        const profileDelta = mapFormToProfile(formData, userProfile);
+        const profileDelta = mapFormToProfile(formData, userProfile, getFormFieldOverrides(formCode));
         if (Object.keys(profileDelta).length > 0) {
           updateProfile(profileDelta, { silent: true });
         }
@@ -825,7 +847,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   }, []);
 
   const handleJumpToQuestion = useCallback((stepIdx: number, questionIdx: number) => {
-    if (isFreePreview && filledFieldsCount >= 10) {
+    if (isFreePreview && filledFieldsCount >= 15) {
       const targetSection = sections[stepIdx];
       const targetField = targetSection?.fields.filter(
         (f) => !f.condition || f.condition(formData)
@@ -834,7 +856,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       const isTargetEmpty = !targetField || !formData[targetField.key] || formData[targetField.key].trim() === "";
       
       if (isTargetEmpty) {
-        showToast("Free Preview: You've reached the 10-question limit. Please unlock the tool or upgrade to access new questions.", "info", 5000);
+        showToast("Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new questions.", "info", 5000);
         setView("review");
         return;
       }
@@ -845,14 +867,14 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   }, [isFreePreview, filledFieldsCount, sections, formData]);
 
   const handleGoToStep = useCallback((step: number) => {
-    if (isFreePreview && filledFieldsCount >= 10) {
+    if (isFreePreview && filledFieldsCount >= 15) {
       const targetSection = sections[step - 1];
       const hasAnyAnswered = targetSection?.fields.some(
         (f) => formData[f.key] && formData[f.key].trim() !== ""
       );
       
       if (!hasAnyAnswered) {
-        showToast("Free Preview: You've reached the 10-question limit. Please unlock the tool or upgrade to access new sections.", "info", 5000);
+        showToast("Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new sections.", "info", 5000);
         setView("review");
         return;
       }

@@ -67,7 +67,7 @@ export const defaultPlans: PlanData[] = [
     false,
     "The full self-guided roadmap. Every step visible with checklists and core tools. No hand-holding needed.",
     [
-      "Full roadmap — all steps & chapters visible",
+      "Full roadmap: all steps & chapters visible",
       "Checklist engine for your case",
       "Portal wallet (save credentials securely)",
       "Visa Bulletin Monitor & DQ Status Check",
@@ -86,10 +86,10 @@ export const defaultPlans: PlanData[] = [
     [
       "Everything in Basic",
       "Step-by-step guides in every step",
-      "Document vault — upload & auto-extract",
+      "Document vault: upload & auto-extract",
       "Tracker & reminders (DQ, interview, case status)",
       "Smart Form Filler (I-130 / I-130A)",
-      "Case Strength Analyzer & Sponsorship Calculator",
+      "Sponsorship Calculator",
       "Rapid Fire interview prep",
       "Medical appointment booking via Rahvana",
       "Civil document guides",
@@ -105,12 +105,13 @@ export const defaultPlans: PlanData[] = [
     "Full-suite support for when things get complicated. Expert reviews, 221(g) planning, and more.",
     [
       "Everything in Premium",
+      "Case Strength Analyzer",
       "221(g) Action Planner",
       "Mock interview sessions",
-      "Expert case review — 2 sessions included",
-      "Expert consultation calls — 2 sessions included",
+      "Expert case review: 2 sessions included",
+      "Expert consultation calls: 2 sessions included",
       "PCC filing assistance (Sindh only)",
-      "Document translation — 2 documents included",
+      "Document translation: 2 documents included",
     ]
   ),
 ];
@@ -141,7 +142,7 @@ export const CR2Plans: PlanData[] = [
     false,
     "The full self-guided roadmap. Every step visible with checklists and core tools.",
     [
-      "Full roadmap — all steps & chapters visible",
+      "Full roadmap: all steps & chapters visible",
       "Checklist engine for your case",
       "Portal wallet (save credentials securely)",
       "Visa Bulletin Monitor & DQ Status Check",
@@ -160,10 +161,10 @@ export const CR2Plans: PlanData[] = [
     [
       "Everything in Basic",
       "Step-by-step guides in every step",
-      "Document vault — upload & auto-extract",
+      "Document vault: upload & auto-extract",
       "Tracker & reminders (DQ, interview, case status)",
       "Smart Form Filler (I-130 / I-130A)",
-      "Case Strength Analyzer & Sponsorship Calculator",
+      "Sponsorship Calculator",
       "Rapid Fire interview prep",
       "Medical appointment booking via Rahvana",
       "Civil document guides",
@@ -179,12 +180,13 @@ export const CR2Plans: PlanData[] = [
     "Full-suite support for when things get complicated. Expert reviews, 221(g) planning, and more.",
     [
       "Everything in Premium",
+      "Case Strength Analyzer",
       "221(g) Action Planner",
       "Mock interview sessions",
-      "Expert case review — 2 sessions included",
-      "Expert consultation calls — 2 sessions included",
+      "Expert case review: 2 sessions included",
+      "Expert consultation calls: 2 sessions included",
       "PCC filing assistance (Sindh only)",
-      "Document translation — 2 documents included",
+      "Document translation: 2 documents included",
     ]
   ),
 ];
@@ -203,7 +205,7 @@ export const VISA_CATEGORIES: VisaCategoryData[] = [
 export const HELPER_DATA = [
   {
     title: "The confident self-starter",
-    copy: "You want structure and automation. You'll drive the process yourself — no hand-holding needed.",
+    copy: "You want structure and automation. You'll drive the process yourself, no hand-holding needed.",
     plan: "basic",
   },
   {
@@ -232,15 +234,15 @@ export const COMPARISON_GROUPS = [
   {
     label: "Core Journey Platform",
     rows: [
-      ["Full visa roadmap — all chapters & steps", "Included", "Included", "Included"],
+      ["Full visa roadmap: all chapters & steps", "Included", "Included", "Included"],
       ["Checklist engine for your case", "Included", "Included", "Included"],
       ["Step-by-step guides in every step", "—", "Included", "Included"],
-      ["Document vault — upload & auto-extract", "—", "Included", "Included"],
+      ["Document vault: upload & auto-extract", "—", "Included", "Included"],
       ["Tracker & reminders", "—", "Included", "Included"],
     ],
   },
   {
-    label: "Tools — Included in All Paid Plans",
+    label: "Tools: Included in All Paid Plans",
     rows: [
       ["Portal Wallet (credential storage)", "Included", "Included", "Included"],
       ["Visa Bulletin Monitor", "Included", "Included", "Included"],
@@ -251,20 +253,20 @@ export const COMPARISON_GROUPS = [
     ],
   },
   {
-    label: "Tools — Premium Upgrades (Add-on for Basic)",
+    label: "Tools: Premium Upgrades (Add-on for Basic)",
     rows: [
-      ["Case Strength Analyzer", "—", "Included", "Included"],
       ["Rapid Fire Interview Prep", "—", "Included", "Included"],
       ["Smart Form Filler (I-130 / I-130A)", "—", "Included", "Included"],
       ["Sponsorship Calculator", "—", "Included", "Included"],
       ["Photo Booth", "—", "2 included", "Unlimited"],
-      ["Medical Appointment Booking", "—", "Included", "Included"],
+      ["Medical Appointment Booking", "Add On · $5", "Included", "Included"],
       ["Civil Document Guides", "—", "Included", "Included"],
     ],
   },
   {
-    label: "Tools — Executive Only (Add-on for Basic & Premium)",
+    label: "Tools: Executive Only (Add-on for Basic & Premium)",
     rows: [
+      ["Case Strength Analyzer", "—", "—", "Included"],
       ["221(g) Action Planner", "—", "—", "Included"],
       ["Mock Interview", "—", "—", "Included"],
     ],
@@ -279,7 +281,7 @@ export const COMPARISON_GROUPS = [
   {
     label: "Services",
     rows: [
-      ["PCC Filing (Sindh Only)", "—", "—", "Included"],
+      ["PCC Filing (Sindh Only)", "Add On · $25", "Add On · $25", "Included"],
       ["Document Translation", "—", "—", "2 included"],
       // ["Dedicated Case Manager",                    "—",             "—",             "—"],
     ],
@@ -288,27 +290,31 @@ export const COMPARISON_GROUPS = [
 
 // ─── Add-on catalog (purchasable items; matches ADDON in config.ts) ───────────
 // NOT included: pdf_toolkit and snap_sign (included in Basic+).
-// NOT included: medical_booking (must upgrade to Premium, not purchasable as add-on).
-// NOT included: pcc_filing (must upgrade to Executive, not purchasable as add-on).
+// Medical Appointment Booking and PCC Filing (Sindh) are also sold as standalone
+// service add-ons here, in addition to being bundled into Premium / Executive.
 export const ADDONS = [
   {
     id: "221g",
+    kind: "tools",
     title: "221(g) Action Planner",
     price: 199,
     unit: "one-time",
     copy: "Step-by-step next moves after 221(g) or Administrative Processing. Includes a personalised action roadmap.",
     note: "Expires at the end of your visa journey",
   },
-  {
-    id: "case-strength",
-    title: "Case Strength Analyzer",
-    price: 49,
-    unit: "one-time",
-    copy: "Instant AI case strength score with flagged gaps to fix before NVC review or your embassy interview.",
-    note: "Valid for one full case analysis",
-  },
+  // Temporarily hidden — Case Strength Analyzer add-on commented out.
+  // {
+  //   id: "case-strength",
+  //   kind: "tools",
+  //   title: "Case Strength Analyzer",
+  //   price: 49,
+  //   unit: "one-time",
+  //   copy: "Instant AI case strength score with flagged gaps to fix before NVC review or your embassy interview.",
+  //   note: "Valid for one full case analysis",
+  // },
   {
     id: "interview-prep",
+    kind: "tools",
     title: "Interview Prep",
     price: 200,
     unit: "one-time",
@@ -317,14 +323,16 @@ export const ADDONS = [
   },
   {
     id: "photo",
+    kind: "tools",
     title: "Photo Booth",
     price: 15,
     unit: "per photo",
-    copy: "Make a fully compliant biometric passport or visa photo in minutes — no studio visit needed.",
+    copy: "Make a fully compliant biometric passport or visa photo in minutes, no studio visit needed.",
     note: "One compliant photo output per credit",
   },
   {
     id: "smart",
+    kind: "tools",
     title: "Smart Form Filler",
     price: 39,
     unit: "per form",
@@ -333,6 +341,7 @@ export const ADDONS = [
   },
   {
     id: "sponsor",
+    kind: "tools",
     title: "Sponsorship Calculator",
     price: 15,
     unit: "one-time",
@@ -340,15 +349,36 @@ export const ADDONS = [
     note: "Unlimited recalculations for your case",
   },
   {
-    id: "doc-review",
-    title: "Expert Case Review",
-    price: 59,
-    unit: "per request",
-    copy: "Human review of your application packet with written feedback on completeness, quality, and flagged issues.",
-    note: "Returned within 2 business days",
+    id: "pdf",
+    kind: "tools",
+    title: "PDF Tool Kit",
+    price: 69,
+    unit: "one-time",
+    copy: "Merge, edit, compress and convert your PDFs in one place — get every document into the exact format the embassy expects.",
+    note: "Included free with Basic, Premium & Executive",
   },
   {
+    id: "snap",
+    kind: "tools",
+    title: "Snap & Sign",
+    price: 5,
+    unit: "per signature",
+    copy: "Snap a photo of your handwritten signature and get a clean, background-free digital signature ready to drop into your forms.",
+    note: "Included free with Basic, Premium & Executive",
+  },
+  // Temporarily disabled — service not currently offered.
+  // {
+  //   id: "doc-review",
+  //   kind: "services",
+  //   title: "Expert Case Review",
+  //   price: 59,
+  //   unit: "per request",
+  //   copy: "Human review of your application packet with written feedback on completeness, quality, and flagged issues.",
+  //   note: "Returned within 2 business days",
+  // },
+  {
     id: "consultation",
+    kind: "services",
     title: "Expert Consultation",
     price: 99,
     unit: "per 30 min",
@@ -357,6 +387,7 @@ export const ADDONS = [
   },
   {
     id: "translate",
+    kind: "services",
     title: "Document Translation",
     price: 25,
     unit: "per document",
@@ -364,36 +395,117 @@ export const ADDONS = [
     note: "Delivered within 3 business days",
   },
   {
-    id: "case-manager",
-    // title: "Dedicated Case Manager",
-    price: 300,
-    unit: "per year",
-    copy: "A named support contact who follows your case end-to-end, answers questions, and coordinates reviews.",
-    note: "Available across all plan tiers",
+    id: "medical",
+    kind: "services",
+    title: "Book Medical Appointment",
+    price: 5,
+    unit: "per request",
+    copy: "We book your panel physician medical exam appointment for you and coordinate the scheduling through Rahvana.",
+    note: "One appointment booking per request",
   },
   {
-    id: "civil-guid",
-    title: "Civil Document Guides",
+    id: "pcc",
+    kind: "services",
+    title: "PCC Filing (Sindh Only)",
+    price: 25,
+    unit: "per request",
+    copy: "Done-for-you police character certificate filing for Sindh, handled end-to-end on your behalf.",
+    note: "Sindh province only",
+  },
+  // Temporarily disabled — service not currently offered.
+  // {
+  //   id: "case-manager",
+  //   kind: "services",
+  //   title: "Dedicated Case Manager",
+  //   price: 300,
+  //   unit: "per year",
+  //   copy: "A named support contact who follows your case end-to-end, answers questions, and coordinates reviews.",
+  //   note: "Available across all plan tiers",
+  // },
+  // Individual document guides — buyable à la carte so users can add only the
+  // one they need. IDs match the entitlement ADDON catalog in lib/entitlements/config.ts.
+  {
+    id: "guide-passport",
+    kind: "guides",
+    title: "Passport Guide",
     price: 5,
-    unit: "per guide",
-    copy: "Country-specific guides detailing exactly how and where to obtain each required civil document.",
-    note: "Permanent access to purchased guides",
+    unit: "one-time",
+    copy: "DGIP roadmap for MRP and ePassport applications, renewals, and lost or damaged cases.",
+    note: "Permanent access to the purchased guide",
+  },
+  {
+    id: "guide-police",
+    kind: "guides",
+    title: "Police Character Certificate Guide",
+    price: 5,
+    unit: "one-time",
+    copy: "Province-wise PCC workflow with required documents, fee tiers, and verification steps.",
+    note: "Permanent access to the purchased guide",
+  },
+  {
+    id: "guide-cnic",
+    kind: "guides",
+    title: "CNIC Guide",
+    price: 5,
+    unit: "one-time",
+    copy: "NADRA CNIC workflow for new issuance, corrections, and replacement or renewal applications.",
+    note: "Permanent access to the purchased guide",
+  },
+  {
+    id: "guide-birth-cert",
+    kind: "guides",
+    title: "Birth Certificate Guide",
+    price: 5,
+    unit: "one-time",
+    copy: "Union Council CBRC process for birth registration, correction, and replacement.",
+    note: "Permanent access to the purchased guide",
+  },
+  {
+    id: "guide-frc",
+    kind: "guides",
+    title: "FRC Guide",
+    price: 5,
+    unit: "one-time",
+    copy: "NADRA process to apply for a Family Registration Certificate and review registered family details.",
+    note: "Permanent access to the purchased guide",
+  },
+  {
+    id: "guide-nikah-nama",
+    kind: "guides",
+    title: "Marriage Registration Guide",
+    price: 5,
+    unit: "one-time",
+    copy: "Nikah Nama registration through Union Council and NADRA MRC issuance with the attestation pathway.",
+    note: "Permanent access to the purchased guide",
   },
 ];
+
+// ─── Service flows ────────────────────────────────────────────────────────────
+// Service-kind add-ons are NOT added to the cart like tools/guides. Instead the
+// user clicks "Explore" → lands on the service's /resources/[slug] info page →
+// then a CTA there sends them to a guided flow page that collects the required
+// info and lets them pay at checkout (e.g. /book-consultation). Map each service
+// add-on id to its flow route here (single source of truth for card + detail page).
+export const SERVICE_FLOW_HREF: Record<string, string> = {
+  consultation: "/book-consultation",
+  translate: "/document-translation",
+  medical: "/book-appointment",
+  pcc: "/police-verification/apply?province=Sindh",
+};
 
 // ─── FAQs ─────────────────────────────────────────────────────────────────────
 export const FAQS: [string, string][] = [
   [
     "How does billing work?",
-    "Your Rahvana plan is billed monthly at a fixed rate — $29/mo for Basic, $58/mo for Premium, or $92/mo for Executive. You are committing to the full plan total (e.g. $699 for Premium) which is collected in monthly installments over the life of your journey. You are not charged all at once, but the full amount is your financial commitment.",
+    "Your Rahvana plan is billed monthly at a fixed rate: $29/mo for Basic, $58/mo for Premium, or $92/mo for Executive. You are committing to the full plan total (e.g. $699 for Premium) which is collected in monthly installments over the life of your journey. You are not charged all at once, but the full amount is your financial commitment.",
   ],
   [
     "Are government fees included?",
-    "No. USCIS, NVC, embassy, and medical examination fees are paid separately and are not included in any Rahvana plan. Our platform supports you through the process — it does not cover government-mandated costs.",
+    "No. USCIS, NVC, embassy, and medical examination fees are paid separately and are not included in any Rahvana plan. Our platform supports you through the process. It does not cover government-mandated costs.",
   ],
   [
     "Can I upgrade later?",
-    "Yes. You can upgrade from Basic to Premium or Executive at any time during your journey. Your existing progress, data, and add-ons carry over — you only pay the difference.",
+    "Yes. You can upgrade from Basic to Premium or Executive at any time during your journey. Your existing progress, data, and add-ons carry over, so you only pay the difference.",
   ],
   [
     "What are add-ons and how do they work?",
@@ -405,11 +517,11 @@ export const FAQS: [string, string][] = [
   ],
   [
     "Does Rahvana replace an immigration lawyer?",
-    "Rahvana provides guided workflows, automation, checklists, and structural reviews to help you navigate the process independently. For highly complex cases — prior visa denials, criminal history, or unusual circumstances — we recommend consulting a licensed immigration attorney.",
+    "Rahvana provides guided workflows, automation, checklists, and structural reviews to help you navigate the process independently. For highly complex cases (prior visa denials, criminal history, or unusual circumstances), we recommend consulting a licensed immigration attorney.",
   ],
   [
     "How long do I have access after purchasing?",
-    "Your plan covers your full immigration journey from the date of purchase. Once purchased, plans cannot be cancelled after the grace period — please review features carefully before committing. You can upgrade to a higher tier at any time, and your journey data and progress are always preserved.",
+    "Your plan covers your full immigration journey from the date of purchase. Once purchased, plans cannot be cancelled after the grace period. Please review features carefully before committing. You can upgrade to a higher tier at any time, and your journey data and progress are always preserved.",
   ],
   [
     "Do you offer refunds?",

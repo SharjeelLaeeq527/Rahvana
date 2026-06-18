@@ -58,7 +58,7 @@ import { getAllActiveSteps, getStageProgress } from "./journeyHelpers";
 import { getActiveStepsForStage } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { InlineGuideData } from "./InlineGuideData";
 import { USCIS_TUTORIAL_STEPS } from "./UscisTutorialData";
@@ -74,6 +74,7 @@ import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUpl
 import { MultipleDocumentUploadModal } from "@/app/components/document-vault/MultipleDocumentUploadModal";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { useAuth } from "@/app/context/AuthContext";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 import PassportPhotoTool from "@/components/tools/PassportPhotoTool";
 import DocumentTranslationTool from "@/components/tools/DocumentTranslationTool";
 import { usePortalWallet } from "./hooks/usePortalWallet";
@@ -230,6 +231,48 @@ const STEP_CITATIONS: Record<string, { text: string; link: string }[]> = {
   ],
 };
 
+/**
+ * Find a vault document that matches an item, considering dynamic categories.
+ * When a parent doc (e.g. "Proof of U.S. Citizenship") has `isDynamicCategory: true`,
+ * the MultipleDocumentUploadModal stores uploads under the sub-type's mapped ID
+ * (e.g. "passport-petitioner" for "U.S. passport") or a dynamic slot ID.
+ * This function checks all those possibilities so the status badge shows "Uploaded".
+ */
+function findVaultDocForItem<T extends { documentDefId: string }>(
+  itemTitle: string,
+  mappedId: string,
+  uploadedDocs: T[]
+): T | undefined {
+  // 1. Direct exact match
+  const direct = uploadedDocs.find((d) => d.documentDefId === mappedId);
+  if (direct) return direct;
+
+  // 2. Check if the mapped ID is a dynamic-category parent
+  const parentDef = ALL_DOCUMENTS.find((d) => d.id === mappedId);
+  if (!parentDef?.isDynamicCategory) return undefined;
+
+  const parentCategory = (parentDef as any).category as string;
+
+  // 3. Check sub-type mapped IDs from suggestions
+  if (parentDef.suggestions) {
+    for (const opt of parentDef.suggestions) {
+      const subId = mapDocumentNameToId(opt);
+      if (subId !== mappedId && subId !== "misc-document") {
+        const m = uploadedDocs.find((d) => d.documentDefId === subId);
+        if (m) return m;
+      }
+    }
+  }
+
+  // 4. Check dynamic slot IDs – return any doc under this parent's category
+  if (parentCategory) {
+    const m = uploadedDocs.find((d) => d.documentDefId.startsWith(`dynamic-${parentCategory}-`));
+    if (m) return m;
+  }
+
+  return undefined;
+}
+
 interface StepViewProps {
   data: RoadmapData;
   state: WizardState;
@@ -307,10 +350,16 @@ export const StepView: React.FC<StepViewProps> = ({
     doc: null,
   });
 
+  // Profile feeds OCR-extracted values (e.g. DOBs from passport upload) into the
+  // step_1_4 consistency baseline so the user doesn't re-type them by hand.
+  const { profile } = useUserProfile();
+
   // Document Questionnaire State (Chapter 1, Step 2)
   const isDocQuestionnaireCompleted = state.metadata?.docQuestionnaireCompleted === true;
   const [showDocQuestionnaire, setShowDocQuestionnaire] = useState(false);
   const [showPrerequisiteModal, setShowPrerequisiteModal] = useState(false);
+
+  const { showToast } = useToast();
 
   // Derive document-questionnaire answers from Step 1 eligibility quest answers
   // so duplicate questions (prior marriage, criminal history) don't need to be asked again.
@@ -980,7 +1029,7 @@ export const StepView: React.FC<StepViewProps> = ({
   const handleSaveNvcFee = (newData: any) => {
     actions.updateMetadata({ nvcFeeStatus: newData });
     setIsNvcFeeModalOpen(false);
-    toast.success("Payment status saved to your Portal Wallet!");
+    showToast("Payment status saved to your Portal Wallet!", "success");
     // Auto-complete step if both are paid
     if (newData.aos === "Paid" && newData.iv === "Paid") {
       if (!isCompleted) handleToggleComplete();
@@ -1051,7 +1100,7 @@ export const StepView: React.FC<StepViewProps> = ({
   const handleSaveApUpdate = (newData: any) => {
     actions.updateMetadata({ apUpdateStatus: newData });
     setIsApUpdateModalOpen(false);
-    toast.success("AP status saved!");
+    showToast("AP status saved!", "success");
   };
 
   const renderDocActionModal = () => {
@@ -1519,6 +1568,9 @@ export const StepView: React.FC<StepViewProps> = ({
               isDeletingIds={isDeletingIds}
               isReloadingDocs={isReloadingDocs}
               getVaultId={(item) => mapDocumentNameToId(item.title)}
+              findVaultDoc={(item, docs) =>
+                findVaultDocForItem(item.title, mapDocumentNameToId(item.title), docs)
+              }
               progressLabel="packed"
               onItemClick={(item) => {
                 setDocActionModal({
@@ -1539,6 +1591,10 @@ export const StepView: React.FC<StepViewProps> = ({
                   onUpload: () => {
                     if (!stepEntitlement.guard()) return;
                     const defId = mapDocumentNameToId(item.title);
+                    if (!ALL_DOCUMENTS.find((d) => d.id === defId)) {
+                      console.warn("[upload] Unknown documentDefId:", defId, "for:", item.title);
+                      return;
+                    }
                     setActiveUploadId(item.id);
                     setActiveUploadType("doc");
                     openUploadModal(defId);
@@ -1658,6 +1714,9 @@ export const StepView: React.FC<StepViewProps> = ({
               isDeletingIds={isDeletingIds}
               isReloadingDocs={isReloadingDocs}
               getVaultId={(item) => mapDocumentNameToId(item.title)}
+              findVaultDoc={(item, docs) =>
+                findVaultDocForItem(item.title, mapDocumentNameToId(item.title), docs)
+              }
               showTags={true}
               onItemClick={(item) => {
                 setDocActionModal({
@@ -1674,6 +1733,10 @@ export const StepView: React.FC<StepViewProps> = ({
                   onUpload: () => {
                     if (!stepEntitlement.guard()) return;
                     const defId = mapDocumentNameToId(item.title);
+                    if (!ALL_DOCUMENTS.find((d) => d.id === defId)) {
+                      console.warn("[upload] Unknown documentDefId:", defId, "for:", item.title);
+                      return;
+                    }
                     setActiveUploadId(item.id);
                     setActiveUploadType("doc");
                     openUploadModal(defId);
@@ -1977,31 +2040,112 @@ export const StepView: React.FC<StepViewProps> = ({
           )}
 
           {/* CONSISTENCY BASELINE CAPTURE — step_1_4 (Fill I-130) */}
-          {sId === "step_1_4" && (
-            <ConsistencyBaselineCapture
-              baseline={state.metadata?.consistencyBaseline as ConsistencyBaseline | undefined}
-              onSave={(next) => actions.updateMetadata({ consistencyBaseline: next })}
-            />
-          )}
+          {sId === "step_1_4" &&
+            (() => {
+              // Merge any saved baseline with profile-derived defaults (petitioner =
+              // account holder, beneficiary = spouse) so OCR'd dates pre-fill the form.
+              //
+              // DOBs: the passport is the source of truth. When a passport-derived DOB
+              // exists in the profile it WINS over any previously-saved baseline value,
+              // so the I-130 dates always stay in sync with the uploaded passport (no
+              // mismatch between Step 2's passport and this step). Marriage date keeps
+              // saved-first priority since no passport supplies it.
+              const savedBaseline = state.metadata?.consistencyBaseline as
+                | ConsistencyBaseline
+                | undefined;
+              const prof = profile as Record<string, any> | null;
+              const derivedBaseline: ConsistencyBaseline = {
+                ...savedBaseline,
+                marriageDate:
+                  savedBaseline?.marriageDate || prof?.relationship?.marriageDate || undefined,
+                petitionerDateOfBirth:
+                  prof?.dateOfBirth || savedBaseline?.petitionerDateOfBirth || undefined,
+                beneficiaryDateOfBirth:
+                  prof?.beneficiary?.dateOfBirth ||
+                  savedBaseline?.beneficiaryDateOfBirth ||
+                  undefined,
+              };
+              return (
+                <ConsistencyBaselineCapture
+                  baseline={derivedBaseline}
+                  onSave={(next) => actions.updateMetadata({ consistencyBaseline: next })}
+                />
+              );
+            })()}
 
           {/* DS-260 CROSS-FORM CONSISTENCY CAPTURE — step_2_3 (Fill DS-260) */}
-          {sId === "step_2_3" && (
-            <Ds260BaselineCapture
-              i130Baseline={state.metadata?.consistencyBaseline as ConsistencyBaseline | undefined}
-              baseline={state.metadata?.ds260Baseline as Ds260Baseline | undefined}
-              onSave={(next) => actions.updateMetadata({ ds260Baseline: next })}
-            />
-          )}
+          {sId === "step_2_3" &&
+            (() => {
+              // Both baselines are derived from the profile the SAME way step_1_4
+              // derives the I-130 baseline: passport-derived DOBs win over any
+              // stale saved value, marriage date keeps saved-first priority. This
+              // (a) auto-fills the DS-260 dates from the uploaded passport, and
+              // (b) compares against an equally-fresh I-130 baseline, so the two
+              // forms agree by default and the user only sees a mismatch when they
+              // intentionally type a different DS-260 value.
+              const prof = profile as Record<string, any> | null;
+              const savedI130 = state.metadata?.consistencyBaseline as
+                | ConsistencyBaseline
+                | undefined;
+              const i130Derived: ConsistencyBaseline = {
+                ...savedI130,
+                marriageDate:
+                  savedI130?.marriageDate || prof?.relationship?.marriageDate || undefined,
+                petitionerDateOfBirth:
+                  prof?.dateOfBirth || savedI130?.petitionerDateOfBirth || undefined,
+                beneficiaryDateOfBirth:
+                  prof?.beneficiary?.dateOfBirth ||
+                  savedI130?.beneficiaryDateOfBirth ||
+                  undefined,
+              };
+              const savedDs260 = state.metadata?.ds260Baseline as Ds260Baseline | undefined;
+              const ds260Derived: Ds260Baseline = {
+                ...savedDs260,
+                marriageDate:
+                  savedDs260?.marriageDate || prof?.relationship?.marriageDate || undefined,
+                petitionerDateOfBirth:
+                  prof?.dateOfBirth || savedDs260?.petitionerDateOfBirth || undefined,
+                beneficiaryDateOfBirth:
+                  prof?.beneficiary?.dateOfBirth ||
+                  savedDs260?.beneficiaryDateOfBirth ||
+                  undefined,
+              };
+              return (
+                <Ds260BaselineCapture
+                  i130Baseline={i130Derived}
+                  baseline={ds260Derived}
+                  onSave={(next) => actions.updateMetadata({ ds260Baseline: next })}
+                />
+              );
+            })()}
 
           {/* BENEFICIARY RESIDENCE CAPTURE — step_1_5 (Fill I-130A) */}
-          {sId === "step_1_5" && (
-            <BeneficiaryResidenceCapture
-              baseline={state.metadata?.beneficiaryBaseline as BeneficiaryBaseline | undefined}
-              config={(currentStep as any).beneficiary_residence_capture}
-              petitionerCountry={state.metadata?.petitionerCountry as string | undefined}
-              onSave={(next) => actions.updateMetadata({ beneficiaryBaseline: next })}
-            />
-          )}
+          {sId === "step_1_5" &&
+            (() => {
+              // Seed the current country from the profile (beneficiary's residence,
+              // falling back to nationality from passport OCR) when nothing has been
+              // saved yet — so the user doesn't re-type what we already captured.
+              const savedBaseline = state.metadata?.beneficiaryBaseline as
+                | BeneficiaryBaseline
+                | undefined;
+              const prof = profile as Record<string, any> | null;
+              const derivedBaseline: BeneficiaryBaseline = {
+                ...savedBaseline,
+                currentCountry:
+                  savedBaseline?.currentCountry ||
+                  prof?.beneficiary?.countryOfResidence ||
+                  prof?.beneficiary?.nationality ||
+                  undefined,
+              };
+              return (
+                <BeneficiaryResidenceCapture
+                  baseline={derivedBaseline}
+                  config={(currentStep as any).beneficiary_residence_capture}
+                  petitionerCountry={state.metadata?.petitionerCountry as string | undefined}
+                  onSave={(next) => actions.updateMetadata({ beneficiaryBaseline: next })}
+                />
+              );
+            })()}
 
           {/* FILE QUALITY PRE-CHECK — step_1_8 (Upload, online path) */}
           {sId === "step_1_8" && <FileQualityPreCheck uploadedDocuments={uploadedDocuments} />}
@@ -3099,8 +3243,26 @@ export const StepView: React.FC<StepViewProps> = ({
                                                       documentName: doc.name,
                                                       options: documentDef.suggestions || [],
                                                     });
-                                                  } else {
+                                                  } else if (documentDef) {
                                                     openUploadModal(defId);
+                                                  } else {
+                                                    // Def not in ALL_DOCUMENTS – find parent dynamic category
+                                                    const parentCat = ALL_DOCUMENTS.find(
+                                                      (d) =>
+                                                        d.isDynamicCategory &&
+                                                        d.suggestions?.some(
+                                                          (opt: string) =>
+                                                            mapDocumentNameToId(opt) === defId
+                                                        )
+                                                    );
+                                                    if (parentCat) {
+                                                      setMultipleUploadModalState({
+                                                        isOpen: true,
+                                                        categoryId: parentCat.id,
+                                                        documentName: doc.name,
+                                                        options: parentCat.suggestions || [],
+                                                      });
+                                                    }
                                                   }
                                                 },
                                               });
@@ -3206,12 +3368,13 @@ export const StepView: React.FC<StepViewProps> = ({
                                               {/* Status Badge */}
                                               {(() => {
                                                 const defId = mapDocumentNameToId(doc.name);
-                                                const isUploadedInVault = uploadedDocuments.some(
-                                                  (ud) => ud.documentDefId === defId
+                                                const vaultMatch = findVaultDocForItem(
+                                                  doc.name,
+                                                  defId,
+                                                  uploadedDocuments
                                                 );
-                                                const uploadedDoc = uploadedDocuments.find(
-                                                  (ud) => ud.documentDefId === defId
-                                                );
+                                                const isUploadedInVault = !!vaultMatch;
+                                                const uploadedDoc = vaultMatch;
                                                 const isDeleting = uploadedDoc
                                                   ? isDeletingIds.includes(uploadedDoc.id)
                                                   : false;
@@ -3250,8 +3413,10 @@ export const StepView: React.FC<StepViewProps> = ({
                                               {/* Upload State / Dropdown */}
                                               {(() => {
                                                 const defId = mapDocumentNameToId(doc.name);
-                                                const uploadedDoc = uploadedDocuments.find(
-                                                  (ud) => ud.documentDefId === defId
+                                                const uploadedDoc = findVaultDocForItem(
+                                                  doc.name,
+                                                  defId,
+                                                  uploadedDocuments
                                                 );
                                                 const isDeleting = uploadedDoc
                                                   ? isDeletingIds.includes(uploadedDoc.id)
@@ -3445,6 +3610,9 @@ export const StepView: React.FC<StepViewProps> = ({
                           isDeletingIds={isDeletingIds}
                           isReloadingDocs={isReloadingDocs}
                           getVaultId={(item) => mapDocumentNameToId(item.title)}
+                          findVaultDoc={(item, docs) =>
+                            findVaultDocForItem(item.title, mapDocumentNameToId(item.title), docs)
+                          }
                           showTags
                           onItemClick={(item) => {
                             setDocActionModal({
@@ -3477,8 +3645,25 @@ export const StepView: React.FC<StepViewProps> = ({
                                     documentName: item.title,
                                     options: documentDef.suggestions || [],
                                   });
-                                } else {
+                                } else if (documentDef) {
                                   openUploadModal(defId);
+                                } else {
+                                  // Def not in ALL_DOCUMENTS – find parent dynamic category
+                                  const parentCat = ALL_DOCUMENTS.find(
+                                    (d) =>
+                                      d.isDynamicCategory &&
+                                      d.suggestions?.some(
+                                        (opt: string) => mapDocumentNameToId(opt) === defId
+                                      )
+                                  );
+                                  if (parentCat) {
+                                    setMultipleUploadModalState({
+                                      isOpen: true,
+                                      categoryId: parentCat.id,
+                                      documentName: item.title,
+                                      options: parentCat.suggestions || [],
+                                    });
+                                  }
                                 }
                               },
                             });
@@ -3937,9 +4122,9 @@ export const StepView: React.FC<StepViewProps> = ({
 
           try {
             await deleteDocument(docId);
-            toast.success("Document deleted successfully");
+            showToast("Document deleted successfully", "success");
           } catch (err) {
-            toast.error(msg(E.VAULT_DELETE_FAILED));
+            showToast(`${msg(E.VAULT_DELETE_FAILED)}`, "error");
           }
         }}
       />
@@ -4879,7 +5064,7 @@ export const StepView: React.FC<StepViewProps> = ({
                       gathering_status: JSON.stringify(next),
                     });
                     setIsGatheringGuideOpen(false);
-                    toast.success("Document marked as packed!");
+                    showToast("Document marked as packed!", "success");
                   }}
                   disabled={gatheringStatus[selectedGatheringItem.id] === "reviewed"}
                   className="p-[14px_24px] bg-[#15744f] text-white border-none rounded-[16px] text-[14px] sm:text-[15px] font-semibold transition-all hover:bg-[#0e5c3c] hover:-translate-y-[1px] active:translate-y-0 disabled:bg-[#d0e4f7] disabled:text-[#6b8097] disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center gap-2"
@@ -5026,41 +5211,43 @@ export const StepView: React.FC<StepViewProps> = ({
       )}
 
       {/* Document Vault Integration */}
-      {uploadModalOpen && selectedDocumentDefId && (
-        <DocumentUploadModal
-          open={uploadModalOpen}
-          onClose={closeUploadModal}
-          documentDef={ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId)!}
-          onUploadComplete={async () => {
-            await reloadDocuments();
+      {uploadModalOpen &&
+        selectedDocumentDefId &&
+        ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId) && (
+          <DocumentUploadModal
+            open={uploadModalOpen}
+            onClose={closeUploadModal}
+            documentDef={ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId)!}
+            onUploadComplete={async () => {
+              await reloadDocuments();
 
-            if (activeUploadId && activeUploadType) {
-              const currentHhStatus = (state.metadata.hhDocsStatus as any) || {};
-              const currentFinStatus = (state.metadata.financialDocsStatus as any) || {};
+              if (activeUploadId && activeUploadType) {
+                const currentHhStatus = (state.metadata.hhDocsStatus as any) || {};
+                const currentFinStatus = (state.metadata.financialDocsStatus as any) || {};
 
-              if (activeUploadType === "doc") {
-                actions.updateDocumentStatus?.(activeUploadId, "reviewed");
-              } else if (activeUploadType === "hh") {
-                const nextHhStatus = {
-                  ...currentHhStatus,
-                  [activeUploadId]: "reviewed",
-                };
-                setHhDocsStatus(nextHhStatus);
-                actions.updateMetadata({
-                  hhDocsStatus: nextHhStatus,
-                });
-              } else if (activeUploadType === "financial") {
-                actions.updateMetadata({
-                  financialDocsStatus: {
-                    ...currentFinStatus,
+                if (activeUploadType === "doc") {
+                  actions.updateDocumentStatus?.(activeUploadId, "reviewed");
+                } else if (activeUploadType === "hh") {
+                  const nextHhStatus = {
+                    ...currentHhStatus,
                     [activeUploadId]: "reviewed",
-                  },
-                });
+                  };
+                  setHhDocsStatus(nextHhStatus);
+                  actions.updateMetadata({
+                    hhDocsStatus: nextHhStatus,
+                  });
+                } else if (activeUploadType === "financial") {
+                  actions.updateMetadata({
+                    financialDocsStatus: {
+                      ...currentFinStatus,
+                      [activeUploadId]: "reviewed",
+                    },
+                  });
+                }
               }
-            }
-          }}
-        />
-      )}
+            }}
+          />
+        )}
     </div>
   );
 };

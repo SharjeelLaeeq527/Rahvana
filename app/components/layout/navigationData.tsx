@@ -15,7 +15,7 @@ import {
   Syringe,
   MessageSquare,
   FileUp,
-  Brain,
+  // Brain, // unused — Case Strength Analyzer commented out
   LifeBuoy,
   Compass,
   Calculator,
@@ -537,13 +537,14 @@ export const NAV_DATA: Record<string, NavSection> = {
         id: "ai-planning",
         label: "AI & Planning",
         items: [
-          {
-            icon: <Brain className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
-            title: "Case Strength Analyzer",
-            description: "Instant AI case strength score + gaps to fix before NVC/Interview.",
-            href: "/visa-case-strength-checker",
-            // badge: "Live",
-          },
+          // Temporarily hidden — Case Strength Analyzer (Executive-only feature).
+          // {
+          //   icon: <Brain className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
+          //   title: "Case Strength Analyzer",
+          //   description: "Instant AI case strength score + gaps to fix before NVC/Interview.",
+          //   href: "/visa-case-strength-checker",
+          //   // badge: "Live",
+          // },
           {
             icon: <LifeBuoy className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
             title: "221(g) Action Planner",
@@ -883,7 +884,7 @@ export const NAV_DATA: Record<string, NavSection> = {
         items: [
           {
             icon: <MessageSquare className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />,
-            title: "Book a Consultation",
+            title: "Expert Consultation",
             translationKey: "bookConsultation",
             description: "Book a call with an expert.",
             href: "/book-consultation",
@@ -910,33 +911,34 @@ export const NAV_DATA: Record<string, NavSection> = {
             // href: "/guides/police-verification-guide",
             // badge: "Soon",
           },
-          {
-            icon: <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
-            title: "PCC Filing Service — Punjab (Coming Soon)",
-            translationKey: "pccPunjab",
-            description: "Join the waitlist for done-for-you PCC filing in Punjab.",
-            href: "#",
-            // badge: "Soon",
-            disabled: true,
-          },
-          {
-            icon: <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
-            title: "PCC Filing Service — KPK (Coming Soon)",
-            translationKey: "pccKpk",
-            description: "Join the waitlist for done-for-you PCC filing in KPK.",
-            href: "#",
-            // badge: "Soon",
-            disabled: true,
-          },
-          {
-            icon: <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
-            title: "PCC Filing Service — Balochistan (Coming Soon)",
-            translationKey: "pccBalochistan",
-            description: "Join the waitlist for done-for-you PCC filing in Balochistan.",
-            href: "#",
-            // badge: "Soon",
-            disabled: true,
-          },
+          // Temporarily hidden — these PCC services are not currently offered (waitlist/coming-soon only).
+          // {
+          //   icon: <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
+          //   title: "PCC Filing Service — Punjab (Coming Soon)",
+          //   translationKey: "pccPunjab",
+          //   description: "Join the waitlist for done-for-you PCC filing in Punjab.",
+          //   href: "#",
+          //   // badge: "Soon",
+          //   disabled: true,
+          // },
+          // {
+          //   icon: <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
+          //   title: "PCC Filing Service — KPK (Coming Soon)",
+          //   translationKey: "pccKpk",
+          //   description: "Join the waitlist for done-for-you PCC filing in KPK.",
+          //   href: "#",
+          //   // badge: "Soon",
+          //   disabled: true,
+          // },
+          // {
+          //   icon: <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
+          //   title: "PCC Filing Service — Balochistan (Coming Soon)",
+          //   translationKey: "pccBalochistan",
+          //   description: "Join the waitlist for done-for-you PCC filing in Balochistan.",
+          //   href: "#",
+          //   // badge: "Soon",
+          //   disabled: true,
+          // },
         ],
       },
       {

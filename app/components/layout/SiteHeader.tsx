@@ -251,6 +251,8 @@ export function SiteHeader({
 
   const fetchNotifications = useCallback(async () => {
     try {
+      // 1. Fetch journey reminders (existing logic)
+      let journeyReminders: any[] = [];
       let jId = notifJourneyId;
       if (!jId) {
         const res = await fetch("/api/journeys");
@@ -262,12 +264,37 @@ export function SiteHeader({
           if (jId) setNotifJourneyId(jId);
         }
       }
-      if (!jId) return;
-      const r = await fetch(`/api/v1/journeys/${jId}/reminders`);
-      if (r.ok) {
-        const d = await r.json();
-        setNotifList(d.reminders ?? []);
+      if (jId) {
+        const r = await fetch(`/api/v1/journeys/${jId}/reminders`);
+        if (r.ok) {
+          const d = await r.json();
+          journeyReminders = (d.reminders ?? []).map((n: any) => ({
+            ...n,
+            _source: "journey" as const,
+          }));
+        }
       }
+
+      // 2. Fetch in-app notifications (appointment status updates, etc.)
+      let appNotifications: any[] = [];
+      try {
+        const appRes = await fetch("/api/notifications");
+        if (appRes.ok) {
+          const appData = await appRes.json();
+          appNotifications = (appData.notifications ?? []).map((n: any) => ({
+            ...n,
+            _source: "app" as const,
+          }));
+        }
+      } catch {}
+
+      // 3. Merge and sort by created_at descending
+      const merged = [...journeyReminders, ...appNotifications].sort(
+        (a, b) =>
+          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      );
+
+      setNotifList(merged);
     } catch {}
   }, [notifJourneyId]);
 
@@ -301,13 +328,30 @@ export function SiteHeader({
   };
 
   const markOneRead = (id: string) => {
-    setReadIds((prev) => {
-      const next = new Set([...prev, id]);
-      try {
-        localStorage.setItem("rahvana_notif_read", JSON.stringify([...next]));
-      } catch {}
-      return next;
-    });
+    // Find the notification to determine its source
+    const notif = notifList.find((n: any) => n.id === id);
+
+    if (notif?._source === "app") {
+      // Server-side: mark as read via API
+      fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action: "read" }),
+      }).catch(() => {});
+      // Update local state immediately
+      setNotifList((prev) =>
+        prev.map((n: any) => (n.id === id ? { ...n, is_read: true } : n))
+      );
+    } else {
+      // Journey reminders: use localStorage-based tracking
+      setReadIds((prev) => {
+        const next = new Set([...prev, id]);
+        try {
+          localStorage.setItem("rahvana_notif_read", JSON.stringify([...next]));
+        } catch {}
+        return next;
+      });
+    }
   };
 
   const handleBellClick = () => {
@@ -315,8 +359,18 @@ export function SiteHeader({
   };
 
   const dismissNotif = async (id: string) => {
+    const notif = notifList.find((n: any) => n.id === id);
     setNotifList((prev) => prev.filter((n) => n.id !== id));
-    if (notifJourneyId) {
+
+    if (notif?._source === "app") {
+      // Dismiss via notifications API
+      await fetch("/api/notifications", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, action: "dismiss" }),
+      }).catch(() => {});
+    } else if (notifJourneyId) {
+      // Dismiss via journey reminders API
       await fetch(`/api/v1/journeys/${notifJourneyId}/reminders/${id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
@@ -325,7 +379,11 @@ export function SiteHeader({
     }
   };
 
-  const unreadCount = notifList.filter((n: any) => !readIds.has(n.id)).length;
+  // Unread count: journey reminders use localStorage readIds, app notifications use server is_read
+  const unreadCount = notifList.filter((n: any) => {
+    if (n._source === "app") return !n.is_read;
+    return !readIds.has(n.id);
+  }).length;
 
   // const { language, setLanguage } = useLanguage();
 
@@ -581,7 +639,7 @@ export function SiteHeader({
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
-                Resources
+                My Resources
                 <ChevronDown
                   className={`h-4 w-4 transition-transform duration-300 ${activeMenu === "resources" ? "rotate-180" : ""}`}
                 />
@@ -798,15 +856,7 @@ export function SiteHeader({
                   className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
                 >
                   <Wrench className="h-4 w-4 text-[#0d7377] dark:text-teal-400" />
-                  Tools
-                </Link>
-                <Link
-                  href="/resources?tab=guides"
-                  onClick={handleLinkClick}
-                  className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
-                >
-                  <BookOpen className="h-4 w-4 text-cyan-500 dark:text-cyan-400" />
-                  Guides
+                  My Tools
                 </Link>
                 <Link
                   href="/resources?tab=services"
@@ -814,14 +864,15 @@ export function SiteHeader({
                   className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
                 >
                   <Briefcase className="h-4 w-4 text-amber-500 dark:text-amber-400" />
-                  Services
+                  My Services
                 </Link>
-                <div className="my-2 border-t border-border" />
                 <Link
-                  href="/resources"
-                  className="block py-2 px-2 text-sm font-semibold text-[#0d7377] hover:underline transition-colors"
+                  href="/resources?tab=guides"
+                  onClick={handleLinkClick}
+                  className="flex items-center gap-2 py-2 px-2 text-sm font-medium text-muted-foreground hover:text-[#0d7377] hover:bg-muted rounded-md transition-colors"
                 >
-                  View all Resources &rarr;
+                  <BookOpen className="h-4 w-4 text-cyan-500 dark:text-cyan-400" />
+                  My Guides
                 </Link>
               </div>
             </motion.div>
@@ -954,10 +1005,10 @@ export function SiteHeader({
                             </div>
                           ) : (
                             <div className="divide-y divide-border">
-                              {notifList.slice(0, 6).map((n: any) => {
+                              {notifList.slice(0, 8).map((n: any) => {
                                 const isExpanded = expandedNotifs.has(n.id);
                                 const bodyLong = n.body && n.body.length > 80;
-                                const isRead = readIds.has(n.id);
+                                const isRead = n._source === "app" ? !!n.is_read : readIds.has(n.id);
                                 return (
                                   <div
                                     key={n.id}
@@ -1349,7 +1400,7 @@ export function SiteHeader({
                 >
                   <div className="flex items-center gap-3">
                     <ToolCase className="w-5 h-5 text-[#db8090] dark:text-[#db8090]" />
-                    <span className="font-bold">Resources</span>
+                    <span className="font-bold">My Resources</span>
                   </div>
                   <ChevronDown
                     className={`h-4 w-4 transition-transform duration-400 ${
@@ -1373,28 +1424,21 @@ export function SiteHeader({
                           onClick={() => setIsMenuOpen(false)}
                           className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
                         >
-                          Tools
-                        </Link>
-                        <Link
-                          href="/resources?tab=guides"
-                          onClick={() => setIsMenuOpen(false)}
-                          className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
-                        >
-                          Guides
+                          My Tools
                         </Link>
                         <Link
                           href="/resources?tab=services"
                           onClick={() => setIsMenuOpen(false)}
                           className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
                         >
-                          Services
+                          My Services
                         </Link>
-                        <div className="my-1 border-t border-slate-100" />
                         <Link
-                          href="#"
-                          className="text-sm font-semibold text-[#0d7377] hover:underline mt-2 flex items-center gap-1 px-2"
+                          href="/resources?tab=guides"
+                          onClick={() => setIsMenuOpen(false)}
+                          className="block py-2 text-sm transition-all rounded-md px-2 text-slate-600 hover:text-[#0d7377] hover:bg-slate-50"
                         >
-                          View all Resources &rarr;
+                          My Guides
                         </Link>
                       </div>
                     </motion.div>

@@ -279,6 +279,14 @@ function PaymentSuccessContent() {
     if (pollingStarted.current) return;
     pollingStarted.current = true;
 
+    // Purchase went through — clear the persisted pricing cart so old add-ons
+    // don't reappear next time the user visits /pricing.
+    try {
+      sessionStorage.removeItem("rahvana_pricing_cart_addons");
+    } catch {
+      /* sessionStorage unavailable — non-fatal */
+    }
+
     pollUntilActivated(
       sessionId,
       (_tier) => {

@@ -22,7 +22,7 @@
 // Sourcing: U.S. Department of State 9 FAM 504.4 (DS-260 adjudication);
 // INA 212(a)(6)(C) — material misrepresentation.
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { CalendarDays, ShieldAlert, CheckCircle2, Save, Check } from "lucide-react";
 import { compareBaselines } from "@/lib/case-strength";
 import type { BaselineDates } from "@/lib/case-strength";
@@ -53,6 +53,28 @@ export function Ds260BaselineCapture({
   const [petitionerDob, setPetitionerDob] = useState(baseline?.petitionerDateOfBirth ?? "");
   const [beneficiaryDob, setBeneficiaryDob] = useState(baseline?.beneficiaryDateOfBirth ?? "");
   const [justSaved, setJustSaved] = useState(false);
+
+  // The parent feeds defaults derived from the user's profile (e.g. dates
+  // auto-filled from passport OCR), which can arrive after first render
+  // (profile loads async). Mirrors the I-130 baseline (step_1_4) exactly so the
+  // two forms stay in sync by default:
+  //   - DOBs follow the passport: whenever the incoming value CHANGES we sync the
+  //     field to it, so the DS-260 baseline never silently disagrees with the
+  //     I-130 / Step 2 passport. The dependency array gates the effect to only
+  //     fire on an actual prop change, so a correction the user types between
+  //     uploads is never clobbered.
+  //   - Marriage date has no passport source, so it's only seeded when empty.
+  useEffect(() => {
+    if (baseline?.marriageDate) setMarriageDate((v) => v || baseline.marriageDate!);
+  }, [baseline?.marriageDate]);
+
+  useEffect(() => {
+    if (baseline?.petitionerDateOfBirth) setPetitionerDob(baseline.petitionerDateOfBirth);
+  }, [baseline?.petitionerDateOfBirth]);
+
+  useEffect(() => {
+    if (baseline?.beneficiaryDateOfBirth) setBeneficiaryDob(baseline.beneficiaryDateOfBirth);
+  }, [baseline?.beneficiaryDateOfBirth]);
 
   const handleSave = () => {
     const next: Ds260Baseline = {

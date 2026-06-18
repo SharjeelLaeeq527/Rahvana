@@ -17,6 +17,8 @@ export interface StepCheck {
   level: "info" | "warning" | "critical";
   title: string;
   hint?: string;
+  /** When true, the item stays visible but shows as resolved (checkmark + disabled action) */
+  resolved?: boolean;
 }
 
 export interface StepCheckContext {
@@ -130,11 +132,20 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   step_1_6: ({ state }) => {
     const checks: StepCheck[] = [];
     const fm = state.metadata?.filingMethod as string | undefined;
-    if (fm === "online" && !state.metadata?.uscisAccountReady) {
+    const done = (key: string) => state.completedSteps?.has?.(key);
+    const uscisSaved = done("step_1_6") || state.metadata?.uscisPortalSaved === "true";
+    if (fm === "online" && !uscisSaved) {
       checks.push({
         level: "warning",
         title: "USCIS online account not confirmed",
         hint: "Create a myUSCIS account before submitting online",
+      });
+    } else if (fm === "online" && uscisSaved) {
+      checks.push({
+        level: "info",
+        title: "USCIS online account confirmed",
+        hint: "Your myUSCIS credentials are saved",
+        resolved: true,
       });
     }
     if (fm === "paper" && !state.metadata?.mailingAddressConfirmed) {
@@ -150,11 +161,21 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   // Step 1.7 — Fee preparation
   step_1_7: ({ state }) => {
     const checks: StepCheck[] = [];
-    if (!state.metadata?.feePaymentReady) {
+    const done = (key: string) => state.completedSteps?.has?.(key);
+    const feeReady =
+      done("step_1_7") || !!state.metadata?.filingFeeDate || !!state.metadata?.feePaymentReady;
+    if (!feeReady) {
       checks.push({
         level: "info",
         title: "Payment method ready?",
         hint: "USCIS accepts credit/debit card (online) or check/money order (paper)",
+      });
+    } else {
+      checks.push({
+        level: "info",
+        title: "Payment method ready",
+        hint: "Filing fee payment has been addressed",
+        resolved: true,
       });
     }
     return checks;
@@ -231,6 +252,27 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     return checks;
   },
 
+  // Step 1.12 — Prepare Filing Fee (paper path payment method)
+  step_1_12: ({ state }) => {
+    const checks: StepCheck[] = [];
+    const savedMethod = state.metadata?.paper_payment_method as string | undefined;
+    if (!savedMethod) {
+      checks.push({
+        level: "info",
+        title: "Save payment method",
+        hint: "Store the payment method you plan to use for the USCIS filing fee",
+      });
+    } else {
+      checks.push({
+        level: "info",
+        title: `Payment method saved: ${savedMethod}`,
+        hint: "Your chosen payment method is recorded",
+        resolved: true,
+      });
+    }
+    return checks;
+  },
+
   // Step 1.13 — Mailing (packet checklist)
   step_1_13: ({ state }) => {
     const checks: StepCheck[] = [];
@@ -245,15 +287,25 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     return checks;
   },
 
-  // Step 1.14 — Tracking & receipt
+  // Step 1.14 — Tracking & mailing details
   step_1_14: ({ state }) => {
     const checks: StepCheck[] = [];
     const fm = state.metadata?.filingMethod as string | undefined;
-    if (fm === "paper" && !state.metadata?.mailingTrackingNumber) {
+    const savedCarrier = state.metadata?.paper_mailing_carrier as string | undefined;
+    const savedTracking = state.metadata?.paper_mailing_tracking as string | undefined;
+    const mailingSaved = !!(savedCarrier && savedTracking);
+    if (fm === "paper" && !mailingSaved && !state.metadata?.mailingTrackingNumber) {
       checks.push({
         level: "info",
-        title: "Save USPS tracking number",
-        hint: "You'll use it to confirm USCIS received your packet",
+        title: "Save mailing details & tracking number",
+        hint: "Record the carrier and tracking number after mailing your packet to USCIS",
+      });
+    } else if (fm === "paper" && mailingSaved) {
+      checks.push({
+        level: "info",
+        title: `Mailing details saved: ${savedCarrier}`,
+        hint: `Carrier and tracking number (${savedTracking}) are recorded`,
+        resolved: true,
       });
     }
     return checks;
@@ -341,6 +393,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       level: i.level,
       title: i.title,
       hint: i.hint,
+      resolved: i.resolved,
     }));
 
     // While civil-doc work is still pending, surface the foreign-document

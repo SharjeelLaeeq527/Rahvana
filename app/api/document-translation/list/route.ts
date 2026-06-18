@@ -31,6 +31,9 @@ export async function GET(request: NextRequest) {
       .from("translation_documents")
       .select("*", { count: "exact" })
       .eq("user_id", user.id)
+      // Only show documents that have been paid for (payment_status='paid')
+      // or documents without a payment requirement (payment_id IS NULL means free/no payment)
+      .or("payment_status.eq.paid,payment_id.is.null")
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 

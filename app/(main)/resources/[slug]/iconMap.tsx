@@ -46,6 +46,14 @@ import {
   CalendarRange,
   LifeBuoy,
   FileUp,
+  Stethoscope,
+  Combine,
+  Minimize2,
+  RefreshCw,
+  PenLine,
+  Eraser,
+  FileImage,
+  Smartphone,
   type LucideIcon,
 } from "lucide-react";
 
@@ -97,6 +105,14 @@ const ICONS: Record<string, LucideIcon> = {
   CalendarRange,
   LifeBuoy,
   FileUp,
+  Stethoscope,
+  Combine,
+  Minimize2,
+  RefreshCw,
+  PenLine,
+  Eraser,
+  FileImage,
+  Smartphone,
 };
 
 export function getIcon(name?: string): LucideIcon {
@@ -111,11 +127,22 @@ export const SLUG_THEME: Record<string, { accent: string; tint: string; icon: st
   photo: { accent: "#903030", tint: "#FEF0F0", icon: "Camera" },
   smart: { accent: "#0E7490", tint: "#E0F2FE", icon: "Wand2" },
   sponsor: { accent: "#3A6E4A", tint: "#EEF6F0", icon: "Calculator" },
+  pdf: { accent: "#9B2C4A", tint: "#FCE9EF", icon: "Combine" },
+  snap: { accent: "#0E7490", tint: "#E0F2FE", icon: "PenLine" },
   "doc-review": { accent: "#9B6220", tint: "#FBF2E3", icon: "FileSearch" },
   consultation: { accent: "#1A5FA3", tint: "#EAF1FB", icon: "Users" },
   translate: { accent: "#9B6220", tint: "#FBF2E3", icon: "FileUp" },
+  medical: { accent: "#903030", tint: "#FEF0F0", icon: "Stethoscope" },
+  pcc: { accent: "#3A6E4A", tint: "#EEF6F0", icon: "ShieldCheck" },
   "civil-guid": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "Globe" },
   "case-manager": { accent: "#1A5FA3", tint: "#EAF1FB", icon: "UserCheck" },
+  // Individual document guides (buyable à la carte on the pricing Guides tab).
+  "guide-passport": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "Globe" },
+  "guide-police": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "ShieldCheck" },
+  "guide-cnic": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "FileText" },
+  "guide-birth-cert": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "FileText" },
+  "guide-frc": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "FileBadge" },
+  "guide-nikah-nama": { accent: "#3A6E4A", tint: "#EEF6F0", icon: "ScrollText" },
 };
 
 export function getSlugTheme(slug: string) {

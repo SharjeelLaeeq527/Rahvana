@@ -23,7 +23,7 @@ import {
 import { createBrowserClient } from "@supabase/ssr";
 import { useAuth } from "@/app/context/AuthContext";
 import type { MasterProfile } from "@/types/profile";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Context Types
@@ -64,9 +64,7 @@ interface UserProfileContextType {
   refreshProfile: () => Promise<void>;
 }
 
-const UserProfileContext = createContext<UserProfileContextType | undefined>(
-  undefined
-);
+const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Deep merge utility (1 level deep objects, arrays replaced not merged)
@@ -110,11 +108,8 @@ function deepMergeProfile(
 
 const DEBOUNCE_MS = 2000; // 2-second debounce for save-back
 
-export function UserProfileProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function UserProfileProvider({ children }: { children: React.ReactNode }) {
+  const { showToast } = useToast();
   const { user } = useAuth();
   const [profile, setProfile] = useState<MasterProfile | null>(null);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
@@ -139,35 +134,31 @@ export function UserProfileProvider({
 
   // ── Fetch profile from Decrypted Profile API ─────────────────────────────
 
-  const fetchProfile = useCallback(
-    async (userId: string) => {
-      try {
-        setIsProfileLoading(true);
+  const fetchProfile = useCallback(async (userId: string) => {
+    try {
+      setIsProfileLoading(true);
 
-        const response = await fetch("/api/profile");
-        if (!response.ok) {
-          const data = await response.json().catch(() => ({}));
-          throw new Error(data.error || "Failed to fetch profile");
-        }
-
-        const data = await response.json();
-        if (data?.profile?.profile_details) {
-          setProfile(data.profile.profile_details as MasterProfile);
-        } else {
-          setProfile(null);
-        }
-      } catch (err) {
-        console.error(
-          "[UserProfileContext] Unexpected error fetching profile:",
-          err
-        );
-        setProfile(null);
-      } finally {
-        setIsProfileLoading(false);
+      const response = await fetch("/api/profile");
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.error || "Failed to fetch profile");
       }
-    },
-    []
-  );
+
+      const data = await response.json();
+      if (data?.profile?.profile_details) {
+        setProfile(data.profile.profile_details as MasterProfile);
+      } else {
+        setProfile(null);
+      }
+    } catch (err) {
+      console.error("[UserProfileContext] Unexpected error fetching profile:", err);
+      // Keep any previously-loaded profile on a transient fetch error (e.g. a
+      // dev-server hiccup). Nulling it here would blank dependent UI such as the
+      // Ch.1 Step 4 consistency baseline right after the user saved their DOB.
+    } finally {
+      setIsProfileLoading(false);
+    }
+  }, []);
 
   // ── Save profile to Supabase (via server-side encryption route) ─────────
 
@@ -190,7 +181,7 @@ export function UserProfileProvider({
       }
     } catch (err) {
       console.error("[UserProfileContext] Error saving profile:", err);
-      toast.error("Failed to save your information. Please try again.");
+      showToast("Failed to save your information. Please try again.", "error");
       throw err; // Rethrow to prevent subsequent success toast
     } finally {
       setIsSaving(false);
@@ -200,10 +191,7 @@ export function UserProfileProvider({
   // ── Update profile (optimistic merge + debounced save) ──────────────────
 
   const updateProfile = useCallback(
-    (
-      partial: Partial<MasterProfile>,
-      options?: { silent?: boolean; immediate?: boolean }
-    ) => {
+    (partial: Partial<MasterProfile>, options?: { silent?: boolean; immediate?: boolean }) => {
       if (!user?.id) return;
 
       // Optimistic local merge
@@ -225,9 +213,8 @@ export function UserProfileProvider({
         saveProfile()
           .then(() => {
             if (!options?.silent) {
-              toast.success("Your information has been saved", {
+              showToast("Your information has been saved", "success", {
                 duration: 2000,
-                position: "bottom-right",
               });
             }
           })
@@ -240,9 +227,8 @@ export function UserProfileProvider({
           saveProfile()
             .then(() => {
               if (!options?.silent) {
-                toast.success("Your information has been saved", {
+                showToast("Your information has been saved", "success", {
                   duration: 2000,
-                  position: "bottom-right",
                 });
               }
             })
@@ -307,11 +293,7 @@ export function UserProfileProvider({
     [profile, isProfileLoading, isSaving, updateProfile, saveProfile, refreshProfile]
   );
 
-  return (
-    <UserProfileContext.Provider value={contextValue}>
-      {children}
-    </UserProfileContext.Provider>
-  );
+  return <UserProfileContext.Provider value={contextValue}>{children}</UserProfileContext.Provider>;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -321,9 +303,7 @@ export function UserProfileProvider({
 export function useUserProfile() {
   const context = useContext(UserProfileContext);
   if (context === undefined) {
-    throw new Error(
-      "useUserProfile must be used within a UserProfileProvider"
-    );
+    throw new Error("useUserProfile must be used within a UserProfileProvider");
   }
   return context;
 }
