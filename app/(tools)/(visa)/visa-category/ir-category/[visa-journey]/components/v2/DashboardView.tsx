@@ -746,13 +746,6 @@ export function DashboardView({
     };
   }, [state.metadata.portalType]);
 
-  // ── NOA1 receipt record — used by the IR-1 ticker / narrative engine ──────
-  // This is the same record RegisterReceiptStep saves via /api/receipt/journey.
-  // It carries the NOA1 "notice date" (USCIS acknowledged receipt), which is
-  // DISTINCT from the NOA2 "approval date" stored under
-  // state.metadata.approvalDetails.approvalDate. Without this fetch, the
-  // ticker has no way to see the notice date and will keep prompting the
-  // user to enter it even after they've registered their receipt.
   const [receiptRecord, setReceiptRecord] = useState<ReceiptRecord | null | undefined>(undefined);
   useEffect(() => {
     console.log("DEBUG [receipt effect] FIRED — state.backendId:", state.backendId);
@@ -823,14 +816,27 @@ export function DashboardView({
             IR-1 Spouse Visa · Pakistan
           </div>
         </div>
-
         {upgradeModalFeature && (
           <UpgradeModal
             feature={upgradeModalFeature}
             onClose={() => setUpgradeModalFeature(null)}
           />
         )}
-
+        {/* IR-1 Live ticker — journey dashboard (placed above hero) */}
+        {receiptRecord !== undefined && (
+          <div className="mb-6">
+            <IR1Ticker
+              {...buildIR1TickerProps(
+                state,
+                trackingStatus,
+                nvcCaseNum,
+                nvcInvoice,
+                uploadedDocuments as any[],
+                receiptRecord
+              )}
+            />
+          </div>
+        )}
         {/* ── Section 1 + 2: Hero & Health Overview in column grid ──────── */}
         <div className="grid grid-cols-1 xl:grid-cols-[3fr_2fr] gap-4 mb-6 items-stretch">
           {/* Left: Case Status Hero */}

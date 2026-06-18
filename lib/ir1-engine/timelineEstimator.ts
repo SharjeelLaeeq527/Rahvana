@@ -1,54 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// IR-1 Engine · Timeline Estimator + Delay Impact Engine
-// Pakistan-focused · v6, June 2026
-//
-// CHANGES FROM v5:
-//
-//   1. VISA PAUSE AWARE (policyFlags.ts).
-//      effectiveVisaIssuanceMonths() returns null when PAKISTAN_IV_PAUSE is
-//      active. End-to-end estimate treats null visa months as "indefinite" —
-//      the estimate output carries visaIssuanceIndefinite: true and the
-//      endToEnd numbers only cover up-to-interview, not visa issuance.
-//      Confidence is forced to "very_low" for any e2e that includes issuance.
-//
-//   2. SPARSE-DATA STAGE INFERENCE — no more zero-month USCIS ghosts.
-//      Problem: a user who entered their NVC case number + DQ date but never
-//      entered their filing date would get uscisMin=0, uscisMax=0 (wrong) and
-//      also a confidence downgrade for "missing filing date" (unfair — USCIS is
-//      obviously already complete).
-//
-//      Fix: if currentStage is isUscisComplete(), we skip USCIS remaining
-//      entirely and set uscis* = 0 (correct). The "no filing date" confidence
-//      penalty only applies when USCIS is NOT complete.
-//
-//      Similarly: if currentStage is isNvcComplete(), nvc* = 0 (correct).
-//
-//      This means a case at DQ with only a DQ date shows:
-//        USCIS: 0 (done — no estimate needed)
-//        NVC:   0 (done — no estimate needed)
-//        Embassy: postDQTypical − elapsed (correct)
-//      Without any fake "we don't have your filing date" penalty.
-//
-//   3. UNKNOWN USCIS ELAPSED — graceful fallback, not "0 months".
-//      If USCIS is NOT complete and filingDate is absent, we previously set
-//      uscis* to the full duration as if filed today (worst case). That can
-//      badly overestimate for a case that's already been in USCIS review for
-//      a year. New behavior:
-//        - If receipt notice date (NOA1) is present but no filing date,
-//          use NOA1 date as a lower-bound anchor (petition was filed ≤ 4 weeks
-//          before NOA1 in the typical case). Subtract that elapsed time.
-//        - If neither filing date nor NOA1 is present, use the full duration
-//          with a "no anchor" confidence penalty — same as before.
-//      The caller (narrativeEngine) already computes an approximate filing date
-//      from NOA1 when available; that date flows in via input.filingDate.
-//
-//   4. NVC DOUBLE-COUNTING FIX (from v5 — retained).
-//      DOCS_SUBMITTED models only the DQ review period, not a separate queue.
-//
-//   5. SOURCE TIER + COMMUNITY DATASET NOTE (from v5 — retained).
-//      provenance.sourceNote now includes community dataset n-count.
-// ─────────────────────────────────────────────────────────────────────────────
-
 import {
   getCaseTypeConfig,
   getConsulateForCaseType,
@@ -152,18 +101,6 @@ export interface EstimateOutput {
     note: string;
   };
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// NVC stage duration constants
-//
-// DOUBLE-COUNTING NOTE (from v5 audit):
-//   DOCS_SUBMITTED → DQ is NOT a second queue. When documents are accepted
-//   clean, DQ often follows within days. NVC_DQ_REVIEW is the review-only
-//   period. If documents are rejected, each correction round adds 2–4 weeks.
-//
-// typicalMax = uscisMax + nvcTypical + embassyTypical (NOT nvcWorstCase).
-// worstCase retained for disclosure-only output.
-// ─────────────────────────────────────────────────────────────────────────────
 
 const NVC_DQ_REVIEW = { optimistic: 0.25, typical: 0.75, worstCase: 2.0 };
 
@@ -269,10 +206,6 @@ function isNvcComplete(stage: MilestoneId): boolean {
 
 export interface EstimateInput {
   caseTypeId: string;
-  // filingDate: the real I-130 filing date OR an approximation derived from
-  // the NOA1 receipt notice date (offset ~3 weeks). May be undefined if the
-  // user has provided only NVC/embassy-phase data — which is fine; in that
-  // case USCIS is complete and this field is simply not needed for the math.
   filingDate?: string;
   milestoneDates: MilestoneDates;
 }
@@ -329,16 +262,6 @@ export function generateEstimate(input: EstimateInput): EstimateOutput | null {
   })();
   const visaIssuanceIndefinite = visaIssuanceMonths === null;
 
-  // ── 1. USCIS Remaining ────────────────────────────────────────────────────
-  // KEY RULE: if USCIS is complete, we know it: set all uscis* = 0.
-  // Do NOT penalise confidence for missing filing date when USCIS is done.
-  //
-  // If USCIS is NOT complete:
-  //   a) If we have a filing date (real or approximate), subtract elapsed.
-  //   b) If we have NO filing date and NO elapsed anchor, use full duration
-  //      with a confidence penalty. This is the only case where "no filing date"
-  //      should degrade confidence.
-
   let uscisOpt = 0,
     uscisMin = 0,
     uscisMax = 0,
@@ -361,10 +284,6 @@ export function generateEstimate(input: EstimateInput): EstimateOutput | null {
       uscisDelay = estimate.delayRiskMonths;
     }
   }
-  // If uscisPhaseComplete: all uscis* stay 0 — correct.
-
-  // ── 2. NVC Remaining ─────────────────────────────────────────────────────
-  // Same logic: if NVC is done (isNvcComplete), nvc* = 0. No penalty.
 
   let nvcOpt = 0,
     nvcTyp = 0,
@@ -381,11 +300,7 @@ export function generateEstimate(input: EstimateInput): EstimateOutput | null {
       nvcOpt = NVC_FULL.optimistic;
       nvcTyp = NVC_FULL.typical;
       nvcWorstCase = NVC_FULL.worstCase;
-    }
-    // If uscisPhaseComplete but stage not in NVC_REMAINING and not nvcComplete:
-    // This means USCIS is done but we don't have a specific NVC stage.
-    // Use NVC_FULL as the conservative estimate (APPROVED / NVC_RECEIVED).
-    else if (uscisPhaseComplete && !nvcPhaseComplete) {
+    } else if (uscisPhaseComplete && !nvcPhaseComplete) {
       const fallback = NVC_REMAINING["NVC_RECEIVED"];
       nvcOpt = fallback.optimistic;
       nvcTyp = fallback.typical;
@@ -425,11 +340,6 @@ export function generateEstimate(input: EstimateInput): EstimateOutput | null {
       embassyWorstCase = consulate.postDQMax;
     }
   }
-
-  // ── 4. End-to-end totals ──────────────────────────────────────────────────
-  // When visa issuance is indefinite (policy flag), we exclude it from the
-  // numeric totals and set visaIssuanceIndefinite: true instead.
-  // Callers should display "estimate covers up to interview" in that case.
 
   const visaMo = visaIssuanceMonths ?? 0; // 0 contribution when indefinite
 

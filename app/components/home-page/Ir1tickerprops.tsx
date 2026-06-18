@@ -1,134 +1,6 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// IR1TickerProps.tsx — Correct prop mapping for DashboardView
-//
-// PROBLEMS FIXED (original):
-//
-//   1. journeyContext had NO caseTypeId.
-//
-//   2. journeyContext passed state.metadata as `metadata` but the narrative
-//      engine looks for approved_date, nvc_received_date, fees_paid_date,
-//      noa1_date, notice_date in ctx.caseData — not ctx.metadata.
-//
-//   3. CaseFields.i130_submitted used wrong metadata keys. Filing date was
-//      ALWAYS null.
-//
-//   4. interview_date only used state.metadata?.interviewDate but the
-//      admin-set interview date lives in trackingStatus.interview_date.
-//
-//   5. visa_interview_attended used state.metadata?.visaInterviewAttended
-//      but the actual signal is step completion (step_3_8) in
-//      state.completedSteps — not metadata.
-//
-//   6. medical_attended had no mapping from completedSteps (step_3_5).
-//
-//   7. NOA1 vs NOA2 date confusion:
-//      RegisterReceiptStep saves NOA1 notice date to /api/receipt/journey.
-//      ApprovalNoticeTool saves NOA2 approval date nested at
-//      state.metadata.approvalDetails.approvalDate.
-//      Old mapper looked for both in wrong places, so notice_date was always
-//      null producing an endless "add your NOA1 notice date" prompt.
-//
-//      FIX: accepts optional `receiptRecord` (from fetchReceiptForJourney)
-//      and maps receiptRecord.noticeDate → notice_date.
-//      approved_date is read from meta.approvalDetails.approvalDate.
-//
-// ADDITIONAL FIX (v2) — Sub-case A race condition:
-//
-//   8. Race condition where DashboardView renders IR1Ticker before receipt
-//      fetch resolves, triggering Sub-case A "add your receipt notice date"
-//      even when the date IS saved.
-//
-//      Fix A — DashboardView should suppress the ticker while receiptRecord
-//      is undefined (tri-state: undefined = loading, null = not found).
-//      Fix B — caseData includes all NOA1 aliases.
-//      Fix C — receiptNoticeDate checks trackingStatus admin keys too.
-//
-// ADDITIONAL FIX (v3) — docs_submitted_nvc / ds260_submitted:
-//
-//   9. "step-completed" sentinel fails isMeaningfulDate() in the engine.
-//      Use todayStr() as proxy — passes isMeaningfulDate() and correctly
-//      advances stage detection.
-//
-//  10. SubmissionReviewTool saves submissionSaved / submissionDate to metadata.
-//      docs_submitted_nvc now reads those before falling back to step
-//      completion.
-//
-// ADDITIONAL FIX (v4) — InterviewOutcomeTool + Respond221gTool wiring:
-//
-//  11. InterviewOutcomeTool saves interviewOutcome ("approved" | "221g" |
-//      "refused") and outcome221gSubtype to metadata.
-//      Previously interview_outcome in CaseFields was always null because
-//      the mapper only read meta.interviewOutcomeDate (a date field that
-//      almost nobody fills in) — so the INTERVIEW_OUTCOME stage never fired,
-//      including the "visa approved" narrative.
-//
-//      FIX: interviewOutcomeDate now synthesises a proxy date when
-//      meta.interviewOutcome is set but no explicit outcome date exists,
-//      using interviewDate (or todayStr() as last resort) as the anchor.
-//      This means:
-//        - outcome "approved"  → INTERVIEW_OUTCOME fires → "visa on the way"
-//        - outcome "221g"      → INTERVIEW_OUTCOME fires → AP branch
-//        - outcome "refused"   → INTERVIEW_OUTCOME fires → generic outcome copy
-//
-//  12. Respond221gTool saves response221gDate and response221gMethod to
-//      metadata. ap_slip_received_date now reads response221gDate as a
-//      fallback so the AP escalation timer starts correctly.
-//
-//  13. ap_reason_category now also reads outcome221gSubtype saved by
-//      InterviewOutcomeTool and maps the known subtype strings to the engine's
-//      APReasonCategory values:
-//        "docs_requested"  → "document_request"
-//        "further_review"  → "security_check"
-//        "security_check"  → "security_check"
-//        "social_media"    → "social_media"
-//        "name_check"      → "name_check"
-//
-//  14. visa_interview_attended date derivation broadened: now also fires when
-//      meta.interviewOutcome is set (any recorded outcome implies the
-//      interview happened) even if step_3_8 is not marked complete.
-//
-// HOW TO USE in DashboardView.tsx:
-//
-//   1. Add the imports:
-//        import {
-//          buildIR1TickerProps,
-//          fetchReceiptForJourney,
-//          type ReceiptRecord,
-//        } from "./IR1TickerProps";
-//
-//   2. Fetch the receipt record with a tri-state to distinguish
-//      "loading" from "loaded but empty":
-//
-//        const [receiptRecord, setReceiptRecord] = useState<
-//          ReceiptRecord | null | undefined
-//        >(undefined); // undefined = still loading
-//
-//        useEffect(() => {
-//          let cancelled = false;
-//          const journeyId = state.backendId;
-//          if (!journeyId) { setReceiptRecord(null); return; }
-//          fetchReceiptForJourney(journeyId).then(({ record }) => {
-//            if (!cancelled) setReceiptRecord(record ?? null);
-//          });
-//          return () => { cancelled = true; };
-//        }, [state.backendId]);
-//
-//   3. Guard the ticker render until the fetch resolves:
-//
-//        {receiptRecord !== undefined && (
-//          <IR1Ticker
-//            {...buildIR1TickerProps(
-//              state, trackingStatus, nvcCaseNum, nvcInvoice,
-//              uploadedDocuments, receiptRecord,
-//            )}
-//          />
-//        )}
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { CaseFields, NarrativeJourneyContext } from "@/lib/narrative/narrativeEngine";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 
-// ── 221(g) AP reason category — kept in sync with apTracking.config.ts ────────
 export type APReasonCategory =
   | "document_request"
   | "security_check"
@@ -136,7 +8,6 @@ export type APReasonCategory =
   | "name_check"
   | "unspecified";
 
-// ── ReceiptRecord shape — kept in sync with lib/register-receipt.ts ───────────
 export interface ReceiptRecord {
   receiptNumber: string;
   noticeDate: string | null;
@@ -155,10 +26,6 @@ interface UploadedDoc {
   originalFilename?: string;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// Local date helpers — mirrors narrativeEngine.ts (not exported from there)
-// ─────────────────────────────────────────────────────────────────────────────
-
 function isMeaningfulDate(value: string | null | undefined): value is string {
   if (!value) return false;
   const ts = new Date(value).getTime();
@@ -168,13 +35,6 @@ function isMeaningfulDate(value: string | null | undefined): value is string {
 function todayStr(): string {
   return new Date().toISOString().split("T")[0];
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// mapOutcomeSubtypeToAPCategory
-//
-// InterviewOutcomeTool saves outcome221gSubtype using its own string values.
-// Map those to the engine's APReasonCategory enum.
-// ─────────────────────────────────────────────────────────────────────────────
 
 function mapOutcomeSubtypeToAPCategory(
   subtype: string | null | undefined
@@ -200,10 +60,6 @@ function mapOutcomeSubtypeToAPCategory(
       return "unspecified";
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// fetchReceiptForJourney — shared fetch for the NOA1 receipt record.
-// ─────────────────────────────────────────────────────────────────────────────
 
 export async function fetchReceiptForJourney(
   journeyId: string
@@ -288,8 +144,6 @@ export function buildIR1TickerProps(
     return stepKeys.some((k) => completed.has(k));
   }
 
-  // ── NOA1 receipt notice date ──────────────────────────────────────────────
-  // Priority: receiptRecord.noticeDate → trackingStatus keys → meta keys
   const receiptNoticeDate: string | null =
     receiptRecord?.noticeDate ??
     (trackingStatus.notice_date as string | null) ??
@@ -304,7 +158,6 @@ export function buildIR1TickerProps(
     (meta.notice_date as string | null) ??
     null;
 
-  // ── Filing date ───────────────────────────────────────────────────────────
   const filingDate: string | null =
     (meta.filedDate as string | null) ??
     (meta.filed_date as string | null) ??
@@ -312,21 +165,14 @@ export function buildIR1TickerProps(
     (meta.i130SubmittedDate as string | null) ??
     null;
 
-  // ── Interview date ────────────────────────────────────────────────────────
-  // Admin-set (trackingStatus) takes priority over user-recorded (metadata).
   const interviewDate: string | null =
     (trackingStatus.interview_date as string | null) ??
     (meta.interviewDate as string | null) ??
     (meta.interview_date as string | null) ??
     null;
 
-  // ── Interview outcome string from InterviewOutcomeTool ────────────────────
-  // "approved" | "221g" | "refused" | "" | null
   const interviewOutcomeStr = (meta.interviewOutcome as string | null) ?? null;
 
-  // ── visa_interview_attended ───────────────────────────────────────────────
-  // FIX (v4): any recorded outcome from InterviewOutcomeTool implies the
-  // interview happened, even if step_3_8 is not marked complete.
   const visaInterviewAttended: string | null =
     (meta.visaInterviewAttended as string | null) ??
     (meta.visa_interview_attended as string | null) ??
@@ -336,18 +182,6 @@ export function buildIR1TickerProps(
     // Any recorded outcome → interview happened; use interview date or today
     (interviewOutcomeStr ? (isMeaningfulDate(interviewDate) ? interviewDate : todayStr()) : null);
 
-  // ── interview_outcome (DATE field for engine stage detection) ─────────────
-  //
-  // FIX (v4): The engine's detectStage() calls isMeaningfulDate(u.interview_outcome)
-  // — it expects a DATE string, not the "approved"/"221g" string label that
-  // InterviewOutcomeTool saves. Since almost no users fill in a separate
-  // "outcome date" field, this was always null and INTERVIEW_OUTCOME never fired.
-  //
-  // Resolution: synthesise a proxy date whenever interviewOutcomeStr is set.
-  // Priority:
-  //   1. Explicit date field (interviewOutcomeDate) — rare but respect it
-  //   2. interviewOutcomeStr set → use interviewDate as proxy
-  //   3. Last resort: todayStr() if outcome string present but no dates at all
   const interviewOutcomeDate: string | null =
     (meta.interviewOutcomeDate as string | null) ??
     (meta.interview_outcome_date as string | null) ??
@@ -404,11 +238,6 @@ export function buildIR1TickerProps(
     (meta.embassy as string | null) ??
     null;
 
-  // ── ap_slip_received_date ─────────────────────────────────────────────────
-  // The slip was received AT the interview — so the interview date is the
-  // correct AP start anchor, not the packet submission date.
-  // Do NOT use response221gDate here — that's when they submitted their
-  // response packet, which is later and tracked separately below.
   const apSlipReceivedDate: string | null =
     (meta.apSlipReceivedDate as string | null) ??
     (meta.ap_slip_received_date as string | null) ??
@@ -416,14 +245,8 @@ export function buildIR1TickerProps(
     // 221g outcome + interview date → slip was given at interview
     (interviewOutcomeStr === "221g" && isMeaningfulDate(interviewDate) ? interviewDate : null);
 
-  // ── 221g packet submission date (Respond221gTool) ─────────────────────────
-  // Saved by Respond221gTool when the user logs their response submission.
-  // Distinct from ap_slip_received_date (when the slip was received at
-  // interview). Used in the engine to branch post-submission messaging.
   const respond221gDate: string | null = (meta.response221gDate as string | null) ?? null;
 
-  // ── ap_reason_category ────────────────────────────────────────────────────
-  // FIX (v4): map InterviewOutcomeTool's outcome221gSubtype to engine enum.
   const _rawCategory =
     (meta.apReasonCategory as string | null) ?? (meta.ap_reason_category as string | null) ?? null;
   const _mappedSubtype = mapOutcomeSubtypeToAPCategory(
@@ -526,7 +349,6 @@ export function buildIR1TickerProps(
         return null;
       })(),
 
-      // ── Mirrors for engine helpers ────────────────────────────────────────
       dq_date: dqDate,
       dqDate: dqDate,
       interview_date: interviewDate,
@@ -536,25 +358,14 @@ export function buildIR1TickerProps(
       visa_issued_date: visaIssued,
       visaIssuedDate: visaIssued,
 
-      // ── DS-260 and docs (v3 fix: real dates, no "step-completed") ─────────
       ds260_submitted_date: ds260Date,
       ds260SubmittedDate: ds260Date,
       docs_submitted_date: docsSubmitted,
       docsSubmittedDate: docsSubmitted,
 
-      // ── Interview outcome string (v4) ─────────────────────────────────────
-      // Passed through for any engine helpers that read it directly.
-      // Stage detection itself uses the synthesised date in user.interview_outcome.
       interviewOutcome: interviewOutcomeStr,
       interview_outcome_str: interviewOutcomeStr,
 
-      // ── 221g packet submission (v5) ───────────────────────────────────────
-      // response221gDate = when the user submitted their 221(g) response
-      // packet (logged via Respond221gTool). Distinct from ap_slip_received_date
-      // which anchors the AP start. The engine uses this to branch:
-      //   - not set   → "submit your packet"
-      //   - set < 10d → "packet submitted — allow time before following up"
-      //   - set ≥ 10d → "consider submitting a status inquiry"
       respond221gDate: respond221gDate,
       response221gDate: respond221gDate,
       response221gMethod: (meta.response221gMethod as string | null) ?? null,
@@ -563,7 +374,6 @@ export function buildIR1TickerProps(
       filingMethod: (meta.filingMethod as string | undefined) ?? "online",
       uscisAccountReady: meta.uscisAccountReady ?? false,
       nvcFeeStatus: meta.nvcFeeStatus ?? null,
-      // Pass tracking status through so the engine has the full admin picture
       ...trackingStatus,
     },
     answers: state.answers ?? {},

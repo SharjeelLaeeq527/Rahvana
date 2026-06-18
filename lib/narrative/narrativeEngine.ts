@@ -1,33 +1,3 @@
-// ─────────────────────────────────────────────────────────────────────────────
-// narrativeEngine.ts · v6.2, June 2026
-//
-// CHANGES vs v6.1:
-//
-//   FIX 5 — FEES_PAID stage not detected:
-//     buildRealMilestoneDates was only reading fees_paid_date / feesPaidDate
-//     from caseData. Users who paid fees but didn't record a date stayed on
-//     NVC_RECEIVED. Fix: also check ctx.metadata.nvcFeeStatus (written by the
-//     step_2_2 checker) and ctx.metadata.feesPaidAt as fallback anchors.
-//     When either is present and no explicit date exists, we synthesise today
-//     as the FEES_PAID milestone so detectCurrentStage advances correctly.
-//
-//   COPY OVERHAUL — all stage messages rewritten for:
-//     • Natural, conversational tone — less policy-manual, more human
-//     • Chapter/step position awareness — we never know exactly which step
-//       the user is currently on inside a chapter, so messages avoid saying
-//       "begin Chapter 2" when they may already be mid-way through it
-//     • Delay and pause framing is reassuring rather than alarming
-//     • Pause-affected stages: removed "the pause does not affect this stage"
-//       (unnecessary when the stage genuinely isn't affected); affected stages
-//       give calm context instead of warnings
-//     • Estimate suffix reworded: "(timeline to interview — visa stamping
-//       timing depends on policy at that point)" instead of the blunt paused label
-//     • Filing date prompt removed from NOA1/ACTIVE_REVIEW copy — we never ask
-//       users to enter their filing date in the roadmap, so prompting them to
-//       "add it" was confusing. Sub-cases that relied on it now give equally
-//       useful copy without the ask.
-// ─────────────────────────────────────────────────────────────────────────────
-
 import { getConsulateForCaseType } from "../ir1-engine/caseTypes.config";
 import { generateEstimate } from "../ir1-engine/timelineEstimator";
 import { MilestoneDates, detectCurrentStage } from "../ir1-engine/milestones.config";
@@ -710,9 +680,6 @@ export function generateNarrative(
 
     // ─────────────────────────────────────────────────────────────────────────
     // DQ — Documentarily Qualified (pause-aware)
-    //
-    // FIX (v6.3): no duplicate case, why: context, dqElapsedStr display,
-    // unclamped dqMo for queue math, headline uses dqElapsedStr.
     // ─────────────────────────────────────────────────────────────────────────
     case "DQ": {
       const consulate = getConsulateForCaseType(caseTypeId);
@@ -787,8 +754,6 @@ export function generateNarrative(
 
     // ─────────────────────────────────────────────────────────────────────────
     // INTERVIEW_WAIT (pause-aware)
-    //
-    // FIX (v6.3): same elapsed fix as DQ — uses dqElapsed(), unclamped dqMo.
     // ─────────────────────────────────────────────────────────────────────────
     case "INTERVIEW_WAIT": {
       const consulate = getConsulateForCaseType(caseTypeId);
@@ -1013,8 +978,6 @@ export function generateNarrative(
       const pauseActive = POLICY_FLAGS.PAKISTAN_IV_PAUSE?.active ?? false;
       const hasApSlip = isMeaningfulDate(user.ap_slip_received_date) && user.ap_reason_category;
 
-      // FIX (v6.3): read outcome string written by IR1TickerProps v4.
-      // caseData.interviewOutcome = "approved" | "221g" | "refused" | null
       const outcomeStr =
         (getCaseData(ctx).interviewOutcome as string | null) ??
         (getCaseData(ctx).interview_outcome_str as string | null) ??
@@ -1025,10 +988,7 @@ export function generateNarrative(
       const isRefused = outcomeStr === "refused";
 
       // ── Branch A: approved outcome ────────────────────────────────────────
-      // Show clean approved copy regardless of pause status.
       // The pause affects visa ISSUANCE (stamping/courier), not approval itself.
-      // We mention the pause only as a brief note so users know their passport
-      // courier may be delayed — not as the headline message.
       if (isApproved) {
         return {
           stage,
