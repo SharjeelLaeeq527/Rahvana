@@ -99,7 +99,10 @@ export function EditTextModal({ isOpen, onClose }: EditTextModalProps) {
 
         {/* Footer */}
         <div className="border-t px-6 py-4 bg-gray-50">
-          <Button onClick={onClose} className="w-full bg-primary hover:bg-primary/90 text-white">
+          <Button
+            onClick={onClose}
+            className="w-full bg-rahvana-primary hover:bg-rahvana-primary-dark text-white"
+          >
             {t("pdfProcessing.editor.editText.gotIt")}
           </Button>
         </div>

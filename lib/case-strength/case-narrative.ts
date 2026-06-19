@@ -537,6 +537,21 @@ export function getCaseHealthStatus(input: NarrativeInput): {
 }
 
 /**
+ * Compute the consistency sub-score (0–100) from unresolved findings.
+ * Starts at 100 and deducts: critical −20, warning −8, informational −3.
+ */
+export function computeConsistencyScore(consistencyFindings: ConsistencyFinding[]): number {
+  const unresolved = consistencyFindings.filter((f) => !f.resolved);
+  let penalty = 0;
+  for (const f of unresolved) {
+    if (f.severity === "critical") penalty += 20;
+    else if (f.severity === "warning") penalty += 8;
+    else penalty += 3;
+  }
+  return Math.max(0, 100 - penalty);
+}
+
+/**
  * Compute an overall case score (0–100) that combines evidence coverage
  * and consistency intelligence into a single weighted metric.
  *
@@ -545,19 +560,7 @@ export function getCaseHealthStatus(input: NarrativeInput): {
  * - Consistency score: 40% (derived from unresolved findings penalty)
  */
 export function computeOverallCaseScore(input: NarrativeInput): number {
-  const { evidenceAnalysis, consistencyFindings } = input;
-  const evidenceScore = evidenceAnalysis?.overallScore ?? 50;
-
-  // Consistency scoring: start at 100, deduct for unresolved findings
-  const unresolved = consistencyFindings.filter((f) => !f.resolved);
-  let consistencyPenalty = 0;
-  for (const f of unresolved) {
-    if (f.severity === "critical") consistencyPenalty += 20;
-    else if (f.severity === "warning") consistencyPenalty += 8;
-    else consistencyPenalty += 3; // informational
-  }
-  const consistencyScore = Math.max(0, 100 - consistencyPenalty);
-
-  // Weighted combination
+  const evidenceScore = input.evidenceAnalysis?.overallScore ?? 50;
+  const consistencyScore = computeConsistencyScore(input.consistencyFindings);
   return Math.round(evidenceScore * 0.6 + consistencyScore * 0.4);
 }

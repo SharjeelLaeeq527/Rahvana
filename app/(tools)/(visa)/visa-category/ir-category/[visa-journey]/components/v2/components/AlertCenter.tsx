@@ -29,19 +29,19 @@ export interface AlertCenterProps {
 
 const SEV = {
   critical: {
-    accent: "#dc2626",
-    bg: "#fef2f2",
-    border: "#fecaca",
-    chipBg: "#fee2e2",
-    chipFg: "#7f1d1d",
+    accent: "#db8090",
+    rowBg: "#fef0f3",
+    expandedBg: "#fce8ed",
+    chipBg: "#f9d4dc",
+    chipFg: "#7a3a4a",
     icon: CircleAlert,
   },
   warning: {
-    accent: "#d97706",
-    bg: "#fffbeb",
-    border: "#fde68a",
-    chipBg: "#fef3c7",
-    chipFg: "#78350f",
+    accent: "#cdadcc",
+    rowBg: "#f7eef7",
+    expandedBg: "#f0e3f0",
+    chipBg: "#e8d4e8",
+    chipFg: "#6b4566",
     icon: AlertTriangle,
   },
 };
@@ -68,10 +68,9 @@ function AlertRow({
 
   return (
     <div
-      className="rounded-xl overflow-hidden transition-all"
+      className="rounded-xl overflow-hidden transition-all shadow-sm"
       style={{
-        background: expanded ? s.bg : "white",
-        border: `1px solid ${expanded ? s.border : "#f1f5f9"}`,
+        background: expanded ? s.expandedBg : s.rowBg,
       }}
     >
       <button
@@ -82,7 +81,7 @@ function AlertRow({
           className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
           style={{ background: s.chipBg }}
         >
-          <Icon size={12} style={{ color: s.accent }} />
+          <Icon size={12} style={{ color: s.chipFg }} />
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[11px] font-semibold text-slate-800 leading-snug">{issue.title}</p>
@@ -149,40 +148,41 @@ export function AlertCenter({ issues, onOpenStep }: AlertCenterProps) {
   // All clear state
   if (activeIssues.length === 0) {
     return (
-      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-4 flex items-center gap-3">
-        <div className="w-8 h-8 rounded-xl bg-white border border-emerald-200 flex items-center justify-center shrink-0">
-          <ShieldCheck size={15} className="text-emerald-600" />
+      <div className="rounded-2xl border border-[#afdbdb]/40 bg-gradient-to-br from-[#e6f5f5]/60 to-[#f7fafa] px-4 py-4 flex items-center gap-3 shadow-sm">
+        <div className="w-8 h-8 rounded-xl bg-[#e6f5f5] border border-[#afdbdb]/50 flex items-center justify-center shrink-0">
+          <ShieldCheck size={15} className="text-[#0d7377]" />
         </div>
         <div className="min-w-0">
-          <div className="text-[11px] font-extrabold text-emerald-900">All clear</div>
-          <div className="text-[9.5px] text-emerald-600 mt-0.5">No critical or warning issues</div>
+          <div className="text-[11px] font-extrabold text-[#0d7377]">All clear</div>
+          <div className="text-[9.5px] text-[#89a4a0] mt-0.5">No critical or warning issues</div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm">
+    <div className="rounded-2xl bg-[#f4f6f7] overflow-hidden shadow-md">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/80">
+      <div
+        className="px-4 py-3.5"
+        style={{
+          background:
+            critCount > 0
+              ? "linear-gradient(135deg, #fbe8ec 0%, #f5eef5 100%)"
+              : "linear-gradient(135deg, #f5eef5 0%, #eef3f5 100%)",
+        }}
+      >
         <div className="flex items-center gap-2 mb-2">
           <div
             className="w-6 h-6 rounded-lg flex items-center justify-center"
             style={{
-              background:
-                critCount > 0
-                  ? "linear-gradient(135deg, #dc2626 0%, #ef4444 100%)"
-                  : "linear-gradient(135deg, #d97706 0%, #f59e0b 100%)",
-              boxShadow:
-                critCount > 0
-                  ? "0 3px 8px -2px rgba(220,38,38,0.35)"
-                  : "0 3px 8px -2px rgba(217,119,6,0.35)",
+              background: critCount > 0 ? "#fbe8ec" : "#f5eef5",
             }}
           >
             {critCount > 0 ? (
-              <CircleAlert size={11} className="text-white" />
+              <CircleAlert size={11} className="text-[#b85a6a]" />
             ) : (
-              <AlertTriangle size={11} className="text-white" />
+              <AlertTriangle size={11} className="text-[#8a5a86]" />
             )}
           </div>
           <h3 className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
@@ -212,7 +212,7 @@ export function AlertCenter({ issues, onOpenStep }: AlertCenterProps) {
       </div>
 
       {/* Issue list */}
-      <div className="p-2 space-y-1.5 max-h-[600px] overflow-y-auto overscroll-contain">
+      <div className="p-2.5 space-y-2 max-h-[600px] overflow-y-auto overscroll-contain">
         {activeIssues.map((issue, i) => (
           <AlertRow
             key={`${issue.stepKey}-${i}`}

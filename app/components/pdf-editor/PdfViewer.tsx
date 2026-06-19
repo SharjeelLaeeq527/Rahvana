@@ -5,6 +5,13 @@ import Image from "next/image";
 import { usePDFStore, type ShapeType } from "@/lib/store";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import DraggableTextPro from "./text/DraggableTextPro";
 import DraggableShape from "./shapes/DraggableShape";
 import DraggableSignature from "./signature/DraggableSignature";
@@ -315,6 +322,7 @@ export function PDFViewer({
             onClick={() => setScale((p) => Math.max(0.08, p - 0.2))}
             variant="ghost"
             size="sm"
+            className="hover:bg-rahvana-primary/10 hover:text-rahvana-primary"
           >
             <ZoomOut className="h-4 w-4" />
           </Button>
@@ -335,6 +343,7 @@ export function PDFViewer({
             }}
             variant="outline"
             size="sm"
+            className="hover:bg-rahvana-primary/10 hover:text-rahvana-primary hover:border-rahvana-primary/30"
             title={
               fitMode === "width"
                 ? t("pdfProcessing.editor.viewer.fitWidthOpt")
@@ -346,15 +355,19 @@ export function PDFViewer({
 
           <span className="text-sm font-medium">{Math.round(scale * 100)}%</span>
 
-          <Button onClick={() => setScale((p) => Math.min(6, p + 0.2))} variant="ghost" size="sm">
+          <Button
+            onClick={() => setScale((p) => Math.min(6, p + 0.2))}
+            variant="ghost"
+            size="sm"
+            className="hover:bg-rahvana-primary/10 hover:text-rahvana-primary"
+          >
             <ZoomIn className="h-4 w-4" />
           </Button>
 
           {/* Zoom Dropdown */}
-          <select
-            value={scale}
-            onChange={(e) => {
-              const val = e.target.value;
+          <Select
+            value={String(scale)}
+            onValueChange={(val) => {
               if (val === "fitWidth" && containerRef.current && pageWidth) {
                 const containerWidth = containerRef.current.clientWidth - 32;
                 setScale(containerWidth / pageWidth);
@@ -365,18 +378,27 @@ export function PDFViewer({
                 setScale(Number(val));
               }
             }}
-            className="text-sm border rounded px-2 py-1 bg-white"
           >
-            <option value={0.5}>50%</option>
-            <option value={0.75}>75%</option>
-            <option value={1}>{t("pdfProcessing.editor.viewer.actual")}</option>
-            <option value={1.25}>125%</option>
-            <option value={1.5}>150%</option>
-            <option value={2}>200%</option>
-            <option value={3}>300%</option>
-            <option value="fitWidth">{t("pdfProcessing.editor.viewer.fitWidth")}</option>
-            <option value="fitHeight">{t("pdfProcessing.editor.viewer.fitHeight")}</option>
-          </select>
+            <SelectTrigger
+              className="h-8 w-[100px] text-sm bg-white"
+              onMouseDown={(e) => e.stopPropagation()}
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="z-[9999]">
+              <SelectItem value="0.5">50%</SelectItem>
+              <SelectItem value="0.75">75%</SelectItem>
+              <SelectItem value="1">{t("pdfProcessing.editor.viewer.actual")}</SelectItem>
+              <SelectItem value="1.25">125%</SelectItem>
+              <SelectItem value="1.5">150%</SelectItem>
+              <SelectItem value="2">200%</SelectItem>
+              <SelectItem value="3">300%</SelectItem>
+              <SelectItem value="fitWidth">{t("pdfProcessing.editor.viewer.fitWidth")}</SelectItem>
+              <SelectItem value="fitHeight">
+                {t("pdfProcessing.editor.viewer.fitHeight")}
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

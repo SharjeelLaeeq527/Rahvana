@@ -62,10 +62,10 @@ const TABS: { id: CSATab; label: string; icon: React.ElementType }[] = [
 // ─── Health badge style ──────────────────────────────────────────────────────────
 
 const HEALTH_STYLES = {
-  excellent: { bg: "#ecfdf5", border: "#a7f3d0", text: "#065f46" },
-  good: { bg: "#eff6ff", border: "#bfdbfe", text: "#1e40af" },
-  "needs-attention": { bg: "#fffbeb", border: "#fde68a", text: "#92400e" },
-  critical: { bg: "#fef2f2", border: "#fecaca", text: "#991b1b" },
+  excellent: { bg: "#e6f5f5", border: "#afdbdb", text: "#063e40" },
+  good: { bg: "#e6f5f5", border: "#a8d4d5", text: "#095c5f" },
+  "needs-attention": { bg: "#f5eef5", border: "#cdadcc", text: "#6b4566" },
+  critical: { bg: "#fbe8ec", border: "#db8090", text: "#7a3a4a" },
 };
 
 // ─── Narrative Bullet Item ───────────────────────────────────────────────────────
@@ -110,10 +110,10 @@ function BulletItem({
 // ─── Category Level Badge ─────────────────────────────────────────────────────────
 
 const LEVEL_COLORS: Record<string, { bg: string; text: string; label: string }> = {
-  STRONG: { bg: "#d1fae5", text: "#065f46", label: "Strong" },
-  MODERATE: { bg: "#dbeafe", text: "#1e40af", label: "Moderate" },
-  WEAK: { bg: "#fef3c7", text: "#92400e", label: "Weak" },
-  MISSING: { bg: "#fee2e2", text: "#991b1b", label: "Missing" },
+  STRONG: { bg: "#e6f5f5", text: "#063e40", label: "Strong" },
+  MODERATE: { bg: "#e6f5f5", text: "#095c5f", label: "Moderate" },
+  WEAK: { bg: "#f5eef5", text: "#6b4566", label: "Weak" },
+  MISSING: { bg: "#fbe8ec", text: "#7a3a4a", label: "Missing" },
 };
 
 // ─── Main Component ──────────────────────────────────────────────────────────────
@@ -245,7 +245,7 @@ export function CSADrawer({
                   {narrative && narrative.strengths.length > 0 && (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <TrendingUp size={13} className="text-emerald-500" />
+                        <TrendingUp size={13} className="text-[#0d7377]" />
                         <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
                           Strengths ({narrative.strengths.length})
                         </h3>
@@ -255,9 +255,9 @@ export function CSADrawer({
                           <BulletItem
                             key={i}
                             item={item}
-                            color="#10b981"
-                            bgColor="#f0fdf4"
-                            icon={<CheckCircle2 size={12} className="text-emerald-500" />}
+                            color="#0d7377"
+                            bgColor="#e6f5f5"
+                            icon={<CheckCircle2 size={12} className="text-[#0d7377]" />}
                           />
                         ))}
                       </div>
@@ -268,7 +268,7 @@ export function CSADrawer({
                   {narrative && narrative.recommendedNextSteps.length > 0 && (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <ArrowRight size={13} className="text-blue-500" />
+                        <ArrowRight size={13} className="text-[#0d7377]" />
                         <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-500">
                           Next Steps ({narrative.recommendedNextSteps.length})
                         </h3>
@@ -278,9 +278,9 @@ export function CSADrawer({
                           <BulletItem
                             key={i}
                             item={item}
-                            color="#3b82f6"
-                            bgColor="#eff6ff"
-                            icon={<ArrowRight size={12} className="text-blue-500" />}
+                            color="#0d7377"
+                            bgColor="#e6f5f5"
+                            icon={<ArrowRight size={12} className="text-[#0d7377]" />}
                           />
                         ))}
                       </div>
@@ -300,17 +300,17 @@ export function CSADrawer({
                   ) : evidenceAnalysis ? (
                     <>
                       {/* Score */}
-                      <div className="rounded-xl border border-indigo-200 bg-indigo-50 p-4 flex items-center gap-4">
-                        <div className="text-4xl font-black text-indigo-600">
+                      <div className="rounded-xl border border-[#a8d4d5] bg-[#e6f5f5] p-4 flex items-center gap-4">
+                        <div className="text-4xl font-black text-[#0d7377]">
                           {evidenceAnalysis.overallScore}
                         </div>
                         <div>
-                          <div className="text-[9px] font-bold uppercase tracking-widest text-indigo-400 mb-1">
+                          <div className="text-[9px] font-bold uppercase tracking-widest text-[#89a4a0] mb-1">
                             Overall Evidence Score
                           </div>
-                          <div className="w-32 h-2 bg-indigo-100 rounded-full overflow-hidden">
+                          <div className="w-32 h-2 bg-[#afdbdb]/30 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-indigo-500 rounded-full transition-all duration-700"
+                              className="h-full bg-[#0d7377] rounded-full transition-all duration-700"
                               style={{ width: `${evidenceAnalysis.overallScore}%` }}
                             />
                           </div>
@@ -358,7 +358,7 @@ export function CSADrawer({
                         <div className="flex items-center gap-3 mb-2">
                           <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
                             <div
-                              className="h-full bg-emerald-500 rounded-full"
+                              className="h-full bg-[#0d7377] rounded-full"
                               style={{
                                 width: `${evidenceAnalysis.requiredDocuments.completionPercentage}%`,
                               }}
@@ -371,13 +371,13 @@ export function CSADrawer({
                         </div>
                         {evidenceAnalysis.requiredDocuments.missing.length > 0 && (
                           <div className="mt-3 space-y-1">
-                            <div className="text-[9px] font-bold uppercase text-red-400 tracking-widest">
+                            <div className="text-[9px] font-bold uppercase text-[#db8090] tracking-widest">
                               Missing ({evidenceAnalysis.requiredDocuments.missing.length})
                             </div>
                             {evidenceAnalysis.requiredDocuments.missing.slice(0, 5).map((d, i) => (
                               <div
                                 key={i}
-                                className="text-[11px] text-red-600 flex items-center gap-1.5"
+                                className="text-[11px] text-[#db8090] flex items-center gap-1.5"
                               >
                                 <AlertCircle size={10} className="shrink-0" />
                                 {d.name}
@@ -389,9 +389,9 @@ export function CSADrawer({
 
                       {/* Improve Evidence Analysis CTA — opens evidence questionnaire */}
                       {onOpenEvidenceQuestionnaire && (
-                        <div className="rounded-xl border-2 border-dashed border-indigo-300/50 p-4 bg-indigo-50/50">
+                        <div className="rounded-xl border-2 border-dashed border-[#a8d4d5]/50 p-4 bg-[#e6f5f5]/50">
                           <div className="flex items-center gap-3 mb-2">
-                            <ClipboardList size={16} className="text-indigo-600" />
+                            <ClipboardList size={16} className="text-[#0d7377]" />
                             <div>
                               <div className="text-[12px] font-bold text-slate-800">
                                 Improve Evidence Analysis
@@ -405,7 +405,7 @@ export function CSADrawer({
                           </div>
                           <button
                             onClick={onOpenEvidenceQuestionnaire}
-                            className="mt-2 w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-indigo-600 text-white text-[11px] font-bold hover:bg-indigo-700 transition-colors"
+                            className="mt-2 w-full flex items-center justify-center gap-2 py-2 rounded-xl bg-[#0d7377] text-white text-[11px] font-bold hover:bg-[#095c5f] transition-colors"
                           >
                             {evidenceAnswered > 0 ? "Update Analysis" : "Start Questionnaire"}
                             <ArrowRight size={12} />
@@ -444,7 +444,7 @@ export function CSADrawer({
                       {narrative.areasRequiringAttention.filter((b) => b.source === "consistency")
                         .length > 0 && (
                         <div className="space-y-2">
-                          <h3 className="text-[11px] font-bold uppercase tracking-widest text-amber-500">
+                          <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#cdadcc]">
                             Findings
                           </h3>
                           {narrative.areasRequiringAttention
@@ -453,9 +453,9 @@ export function CSADrawer({
                               <BulletItem
                                 key={i}
                                 item={item}
-                                color="#f59e0b"
-                                bgColor="#fffbeb"
-                                icon={<AlertCircle size={12} className="text-amber-500" />}
+                                color="#cdadcc"
+                                bgColor="#f5eef5"
+                                icon={<AlertCircle size={12} className="text-[#cdadcc]" />}
                               />
                             ))}
                         </div>
@@ -463,7 +463,7 @@ export function CSADrawer({
 
                       {narrative.strengths.filter((b) => b.source === "consistency").length > 0 && (
                         <div className="space-y-2">
-                          <h3 className="text-[11px] font-bold uppercase tracking-widest text-emerald-500">
+                          <h3 className="text-[11px] font-bold uppercase tracking-widest text-[#0d7377]">
                             Resolved / Clear
                           </h3>
                           {narrative.strengths
@@ -472,9 +472,9 @@ export function CSADrawer({
                               <BulletItem
                                 key={i}
                                 item={item}
-                                color="#10b981"
-                                bgColor="#f0fdf4"
-                                icon={<CheckCircle2 size={12} className="text-emerald-500" />}
+                                color="#0d7377"
+                                bgColor="#e6f5f5"
+                                icon={<CheckCircle2 size={12} className="text-[#0d7377]" />}
                               />
                             ))}
                         </div>
@@ -515,7 +515,7 @@ export function CSADrawer({
 
             {/* Footer */}
             <div className="shrink-0 px-6 py-3 border-t border-slate-100 bg-slate-50/50 text-center">
-              <p className="text-[9px] text-slate-400">
+              <p className="text-[12px] text-slate-400">
                 Analysis is based on uploaded documents and journey data · Not legal advice
               </p>
             </div>
