@@ -5,6 +5,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useRouter } from "next/navigation";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { useVaultRealtime } from "@/lib/document-vault/useVaultRealtime";
 import {
   getCategoryDisplayName,
   DYNAMIC_CATEGORIES,
@@ -86,6 +87,9 @@ export default function DocumentVaultPage() {
     addDynamicSlot,
     renameDynamicSlot,
   } = useDocumentVaultStore();
+
+  // Live-refresh when the spouse uploads/deletes a doc or edits the checklist.
+  useVaultRealtime();
 
   const [showConfigWizard, setShowConfigWizard] = useState(false);
   const [initialized, setInitialized] = useState(false);

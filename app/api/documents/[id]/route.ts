@@ -7,6 +7,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
+import { resolveActiveJourneyId } from "@/lib/case-collaboration/helpers";
 import { createClient as createClientJs } from "@supabase/supabase-js";
 import { E, msg } from "@/lib/errors";
 // GET - Get document metadata
@@ -24,8 +25,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const { id } = await params;
     const documentId = id;
+    const journeyId = await resolveActiveJourneyId(supabase, user.id);
     const dbStorage = new DocumentDatabaseStorage(supabase);
-    const document = await dbStorage.getDocument(documentId, user.id);
+    const document = await dbStorage.getDocument(documentId, user.id, journeyId);
 
     if (!document) {
       return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
@@ -56,8 +58,9 @@ export async function DELETE(
 
     const { id } = await params;
     const documentId = id;
+    const journeyId = await resolveActiveJourneyId(supabase, user.id);
     const dbStorage = new DocumentDatabaseStorage(supabase);
-    const document = await dbStorage.getDocument(documentId, user.id);
+    const document = await dbStorage.getDocument(documentId, user.id, journeyId);
 
     if (!document) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
@@ -76,8 +79,8 @@ export async function DELETE(
 
     await storageSupabase.storage.from("document-vault").remove(filesToDelete);
 
-    // Delete metadata
-    await dbStorage.deleteDocument(documentId, user.id);
+    // Delete metadata (any case member may delete the shared doc)
+    await dbStorage.deleteDocument(documentId, user.id, journeyId);
 
     return NextResponse.json({
       success: true,
@@ -107,8 +110,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const body = await request.json();
     const { expirationDate, notes, status } = body;
 
+    const journeyId = await resolveActiveJourneyId(supabase, user.id);
     const dbStorage = new DocumentDatabaseStorage(supabase);
-    const document = await dbStorage.getDocument(documentId, user.id);
+    const document = await dbStorage.getDocument(documentId, user.id, journeyId);
 
     if (!document) {
       return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
@@ -126,7 +130,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       updates.status = status;
     }
 
-    const updatedDocument = await dbStorage.updateDocument(documentId, user.id, updates);
+    const updatedDocument = await dbStorage.updateDocument(documentId, user.id, updates, journeyId);
 
     return NextResponse.json({
       success: true,

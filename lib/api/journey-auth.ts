@@ -52,18 +52,51 @@ export async function verifyAuth(): Promise<AuthResult | AuthError> {
 
 // ─────────────────────────────────────────────────────────────
 // verifyJourneyAccess
-// Checks auth AND verifies the user owns the given journeyId
+// Checks auth AND verifies the user is a MEMBER of the given journeyId
+// (owner OR an active collaborator — see case_collaborators +
+// public.is_journey_member). This is THE chokepoint for every journey-scoped
+// API route, so changing it here unlocks shared access everywhere at once.
+//
+// `isOwner` is returned so routes that must stay owner-only (delete a journey,
+// invite/remove a collaborator, assign case roles) can enforce it explicitly.
 // ─────────────────────────────────────────────────────────────
 
 export async function verifyJourneyAccess(
   journeyId: string
-): Promise<(AuthResult & { journey: { id: string; user_id: string } }) | AuthError> {
+): Promise<
+  (AuthResult & { journey: { id: string; user_id: string }; isOwner: boolean }) | AuthError
+> {
   const authResult = await verifyAuth();
   if (authResult.error) return authResult as AuthError;
 
   const { user, supabase } = authResult as AuthResult;
 
-  // Verify user owns this journey (Hammad's journeys table)
+  // Membership check via the shared DB primitive (owner OR active collaborator).
+  // Done explicitly (rather than relying solely on RLS) because this file is the
+  // security chokepoint — it must hold even if a future RLS change is loosened.
+  const { data: isMember, error: memberError } = await supabase.rpc("is_journey_member", {
+    p_journey_id: journeyId,
+    p_uid: user.id,
+  });
+
+  if (memberError) {
+    return {
+      error: NextResponse.json(errorResponse("INTERNAL", "Membership check failed"), {
+        status: 500,
+      }),
+    };
+  }
+
+  if (!isMember) {
+    // Non-member, or journey doesn't exist — don't leak which.
+    return {
+      error: NextResponse.json(errorResponse("FORBIDDEN", "Access denied to this journey"), {
+        status: 403,
+      }),
+    };
+  }
+
+  // Member confirmed — fetch the row (RLS now permits members) for owner checks.
   const { data: journey, error: journeyError } = await supabase
     .from("journeys")
     .select("id, user_id")
@@ -76,15 +109,7 @@ export async function verifyJourneyAccess(
     };
   }
 
-  if (journey.user_id !== user.id) {
-    return {
-      error: NextResponse.json(errorResponse("FORBIDDEN", "Access denied to this journey"), {
-        status: 403,
-      }),
-    };
-  }
-
-  return { user, supabase, journey };
+  return { user, supabase, journey, isOwner: journey.user_id === user.id };
 }
 
 // ─────────────────────────────────────────────────────────────

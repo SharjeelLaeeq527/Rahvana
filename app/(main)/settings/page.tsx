@@ -11,6 +11,8 @@ import { useRouter } from "next/navigation";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { Loader } from "@/components/ui/spinner";
+import CollaboratorsPanel from "@/components/case/CollaboratorsPanel";
+import CaseProgressPanel from "@/components/case/CaseProgressPanel";
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -37,6 +39,8 @@ export default function SettingsPage() {
   const [profile, setProfile] = useState<{ mfa_enabled: boolean } | null>(null);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
   const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
+  // The case this user belongs to (own OR shared) — drives the spouse panel.
+  const [journeyId, setJourneyId] = useState<string | null>(null);
 
   // Track if we've already fetched for this user
   const hasFetchedRef = useRef<string | null>(null);
@@ -131,6 +135,45 @@ export default function SettingsPage() {
       setLoading(false);
     }
   }, [userId, isLoading, router, fetchSettings, fetchProfile, user]);
+
+  // Resolve the user's case (RLS scopes to journeys they're a member of —
+  // their own or a spouse's shared case) so the spouse panel knows which case.
+  useEffect(() => {
+    if (!userId) return;
+    let cancelled = false;
+    (async () => {
+      // 1. The user's OWN case (owner). Explicitly scoped by user_id so an
+      //    admin/dev account doesn't accidentally pick up someone else's journey
+      //    via a broad RLS view (which then 403s on the membership check).
+      const { data: own } = await supabase
+        .from("journeys")
+        .select("id")
+        .eq("user_id", userId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+
+      let jid = (own as { id: string } | null)?.id ?? null;
+
+      // 2. Otherwise the case they were invited to (partner).
+      if (!jid) {
+        const { data: collab } = await supabase
+          .from("case_collaborators")
+          .select("journey_id")
+          .eq("user_id", userId)
+          .eq("status", "active")
+          .order("joined_at", { ascending: false })
+          .limit(1)
+          .maybeSingle();
+        jid = (collab as { journey_id: string } | null)?.journey_id ?? null;
+      }
+
+      if (!cancelled) setJourneyId(jid);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [userId, supabase]);
 
   const handleNotificationChange = (type: string) => {
     setNotifications((prev) => ({
@@ -371,6 +414,19 @@ export default function SettingsPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Shared case — invite / manage your spouse */}
+          {journeyId && (
+            <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">
+              <CardHeader className="border-b border-slate-200 pb-4">
+                <CardTitle className="text-lg sm:text-xl text-slate-900">Shared case</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-2 sm:pt-6 space-y-6">
+                <CollaboratorsPanel journeyId={journeyId} />
+                <CaseProgressPanel journeyId={journeyId} />
+              </CardContent>
+            </Card>
+          )}
 
           {/* Security Settings */}
           <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">

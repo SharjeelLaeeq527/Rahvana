@@ -22,9 +22,21 @@ interface ResultPageProps {
   sessionId: string;
   results?: InterviewPrepOutput | null;
   onRestart: () => void;
+  // Read-only view for the PETITIONER spouse: shows the beneficiary's questions
+  // and saved answers but hides every edit/practice affordance (spec §13).
+  readOnly?: boolean;
+  // Pre-loaded answers for the read-only view (the petitioner can't fetch them
+  // via the per-user /user-answers route — they don't own the session).
+  initialSavedAnswers?: Record<string, string>;
 }
 
-export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) => {
+export const ResultPage = ({
+  sessionId,
+  results,
+  onRestart,
+  readOnly = false,
+  initialSavedAnswers,
+}: ResultPageProps) => {
   const { showToast } = useToast();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -192,12 +204,17 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
       // Initialize with original order
       const applicableQuestions = results.questions.filter((q: GeneratedQuestion) => q.applicable);
       setQuestionsList(applicableQuestions.filter(canSeePrepQuestion));
-      // Load existing answers
-      if (sessionId) {
+      // Read-only (petitioner): the saved answers are passed in — the per-user
+      // /user-answers route would 404 since they don't own the session.
+      if (readOnly) {
+        setSavedAnswers(initialSavedAnswers || {});
+        setUserAnswers(initialSavedAnswers || {});
+      } else if (sessionId) {
+        // Load existing answers
         loadAnswers();
       }
     }
-  }, [canSeePrepQuestion, results, sessionId, loadAnswers]);
+  }, [canSeePrepQuestion, results, sessionId, loadAnswers, readOnly, initialSavedAnswers]);
 
   // NEW: Save answer to database
   const handleSaveAnswer = async (questionId: string) => {
@@ -375,12 +392,28 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
         <div className="pointer-events-none absolute bottom-32 -right-32 w-80 h-80 rounded-full bg-[#cdadcc]/10 blur-3xl" />
         <div className="">
           <div className="text-center mb-8">
-            <InterviewModeTabs
-              mode={mode}
-              onPrep={() => setMode("prep")}
-              onRapid={handleRapidFireModeClick}
-              onMock={handleMockInterviewPageStart}
-            />
+            {/* Practice modes are the beneficiary's only — petitioner is read-only. */}
+            {!readOnly && (
+              <InterviewModeTabs
+                mode={mode}
+                onPrep={() => setMode("prep")}
+                onRapid={handleRapidFireModeClick}
+                onMock={handleMockInterviewPageStart}
+              />
+            )}
+
+            {readOnly && (
+              <div className="mx-auto mb-6 max-w-2xl rounded-xl border border-[#a8d9be] bg-[#e8f5ef] px-5 py-3 text-left">
+                <div className="text-sm font-bold text-[#15744f]">
+                  Viewing your spouse&apos;s interview prep
+                </div>
+                <div className="mt-0.5 text-xs leading-relaxed text-[#3a4f63]">
+                  In an IR-1 case the beneficiary attends the interview, so they complete the
+                  practice. You can review their questions and saved answers here, but editing and
+                  practice modes are turned off for you.
+                </div>
+              </div>
+            )}
 
             <h2 className="text-3xl font-bold text-slate-900 mb-2">
               {mode === "prep"
@@ -672,7 +705,9 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                             </div>
                           )}
 
-                          {/* Answer button on back of card */}
+                          {/* Answer button on back of card — hidden for the
+                              read-only petitioner view. */}
+                          {!readOnly && (
                           <div className="mt-3 sm:mt-4 flex gap-2">
                             <div className="group relative flex-1 overflow-visible">
                               <Button
@@ -722,6 +757,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                               )}
                             </div>
                           </div>
+                          )}
 
                           <div className="text-center mt-2">
                             <p className="text-slate-300 text-xs">Click to flip</p>

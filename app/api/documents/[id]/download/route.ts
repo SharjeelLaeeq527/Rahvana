@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { E, msg } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
+import { resolveActiveJourneyId } from "@/lib/case-collaboration/helpers";
 import { createClient as createClientJs } from "@supabase/supabase-js";
 import { decryptFile, isEncryptedFile } from "@/lib/document-vault/file-encryption";
 
@@ -34,9 +35,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     const { id } = await params;
 
-    // ── 2. Fetch document metadata (RLS enforced — only owner's docs) ─────────
+    // ── 2. Fetch document metadata (membership RLS — owner OR case partner) ───
+    const journeyId = await resolveActiveJourneyId(supabase, user.id);
     const dbStorage = new DocumentDatabaseStorage(supabase);
-    const document = await dbStorage.getDocument(id, user.id);
+    const document = await dbStorage.getDocument(id, user.id, journeyId);
 
     if (!document) {
       return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
@@ -69,9 +71,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     let fileBuffer: Buffer;
 
     if (isEncryptedFile(encryptedBuffer)) {
-      // File is encrypted with our AES-256-GCM scheme — decrypt it
+      // File is encrypted with our AES-256-GCM scheme — decrypt it.
+      // The key is derived from the UPLOADER's id (document.userId), NOT the
+      // requester's, so a case partner can open files the other spouse uploaded.
       try {
-        fileBuffer = decryptFile(encryptedBuffer, user.id);
+        fileBuffer = decryptFile(encryptedBuffer, document.userId);
       } catch (decryptError) {
         console.error("[download] Decryption failed:", decryptError);
         return NextResponse.json(

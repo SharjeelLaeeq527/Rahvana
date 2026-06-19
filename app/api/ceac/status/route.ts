@@ -54,12 +54,13 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Verify journey belongs to this user
+    // Verify the caller is a MEMBER of this journey (owner OR partner).
+    // RLS on journeys (is_journey_member) returns the row only to members, so a
+    // non-member gets null below → 404. Either spouse can report CEAC status.
     const { data: journey } = await supabase
       .from("journeys")
       .select("id")
       .eq("id", journeyId)
-      .eq("user_id", user.id)
       .single();
 
     if (!journey)
@@ -160,12 +161,11 @@ export async function PATCH(req: NextRequest) {
       );
     }
 
-    // Verify ownership
+    // Verify membership (owner OR partner) — RLS scopes the row to members.
     const { data: journey } = await supabase
       .from("journeys")
       .select("id")
       .eq("id", journeyId)
-      .eq("user_id", user.id)
       .single();
 
     if (!journey)

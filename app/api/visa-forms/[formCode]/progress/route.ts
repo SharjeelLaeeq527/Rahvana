@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { resolveActiveJourneyId } from "@/lib/case-collaboration/helpers";
 import { E, msg } from "@/lib/errors";
 
 type DraftPayload = {
@@ -27,7 +28,7 @@ async function getAuthedUser() {
   return { supabase, user };
 }
 
-export async function GET(request: NextRequest, { params }: { params: { formCode: string } }) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ formCode: string }> }) {
   try {
     const { formCode } = await params;
     const journeyKey = request.nextUrl.searchParams.get("journey_key") || "global";
@@ -38,13 +39,17 @@ export async function GET(request: NextRequest, { params }: { params: { formCode
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
-    const { data, error } = await supabase
-      .from("visa_forms_draft")
-      .select("*")
-      .eq("user_id", user.id)
-      .eq("form_code", formCode)
-      .eq("journey_key", journeyKey)
-      .maybeSingle();
+    // Scope the draft to the SHARED case, not the individual user, so a spouse
+    // opens the same I-130/DS-260/etc. (one draft per case + form). Falls back
+    // to per-user keying only when the user has no journey yet.
+    const journeyId = await resolveActiveJourneyId(supabase, user.id);
+
+    let query = supabase.from("visa_forms_draft").select("*").eq("form_code", formCode);
+    query = journeyId
+      ? query.eq("journey_id", journeyId)
+      : query.eq("user_id", user.id).eq("journey_key", journeyKey);
+
+    const { data, error } = await query.maybeSingle();
 
     if (error) {
       console.error("/api/visa-forms progress GET db error:", error);
@@ -58,7 +63,7 @@ export async function GET(request: NextRequest, { params }: { params: { formCode
   }
 }
 
-export async function POST(request: NextRequest, { params }: { params: { formCode: string } }) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ formCode: string }> }) {
   try {
     const { formCode } = await params;
     const body = (await request.json()) as DraftPayload;
@@ -70,10 +75,18 @@ export async function POST(request: NextRequest, { params }: { params: { formCod
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
+    // One shared draft per case + form. When the user belongs to a case we key
+    // by journey_id (both spouses upsert the same row; user_id records the last
+    // editor) and set journey_key = the journey id so the legacy per-user index
+    // never collides with their own pre-join 'global' draft. No journey yet ->
+    // keep the original per-user behaviour.
+    const journeyId = await resolveActiveJourneyId(supabase, user.id);
+
     const upsertRow = {
       user_id: user.id,
       form_code: formCode,
-      journey_key: journeyKey,
+      journey_id: journeyId,
+      journey_key: journeyId ?? journeyKey,
       payload: body.payload,
       current_step: body.current_step ?? 1,
       current_question_index: body.current_question_index ?? 0,
@@ -86,7 +99,9 @@ export async function POST(request: NextRequest, { params }: { params: { formCod
 
     const { data, error } = await supabase
       .from("visa_forms_draft")
-      .upsert(upsertRow, { onConflict: "user_id,form_code,journey_key" })
+      .upsert(upsertRow, {
+        onConflict: journeyId ? "journey_id,form_code" : "user_id,form_code,journey_key",
+      })
       .select()
       .maybeSingle();
 
@@ -102,7 +117,7 @@ export async function POST(request: NextRequest, { params }: { params: { formCod
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { formCode: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ formCode: string }> }) {
   try {
     const { formCode } = await params;
     const journeyKey = request.nextUrl.searchParams.get("journey_key") || "global";
@@ -113,12 +128,15 @@ export async function DELETE(request: NextRequest, { params }: { params: { formC
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
-    const { data, error } = await supabase
-      .from("visa_forms_draft")
-      .delete()
-      .eq("user_id", user.id)
-      .eq("form_code", formCode)
-      .eq("journey_key", journeyKey);
+    // Delete the shared case draft when in a case; otherwise the per-user one.
+    const journeyId = await resolveActiveJourneyId(supabase, user.id);
+
+    let delQuery = supabase.from("visa_forms_draft").delete().eq("form_code", formCode);
+    delQuery = journeyId
+      ? delQuery.eq("journey_id", journeyId)
+      : delQuery.eq("user_id", user.id).eq("journey_key", journeyKey);
+
+    const { data, error } = await delQuery;
 
     if (error) {
       console.error("/api/visa-forms progress DELETE db error:", error);

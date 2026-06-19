@@ -70,11 +70,15 @@ export async function loadJourneyProgress(
   try {
     const supabase = createClient();
     const { data, error } = await withTimeout<any>(
+      // RLS scopes to journeys the user is a member of (own + shared spouse
+      // case). No user_id filter. limit(1) keeps maybeSingle safe in the rare
+      // case a user both owns and partners on a same-type journey.
       supabase
         .from("journeys")
         .select("*")
-        .eq("user_id", userId)
         .eq("journey_type", journeyId)
+        .order("updated_at", { ascending: false })
+        .limit(1)
         .maybeSingle()
     );
 
@@ -123,12 +127,13 @@ export async function listUserJourneys(userId: string): Promise<JourneyProgressR
   try {
     const supabase = createClient();
     const { data, error } = await withTimeout<any>(
+      // RLS scopes to member journeys (own + any shared spouse case), so a
+      // partner sees the shared case listed too. No explicit user_id filter.
       supabase
         .from("journeys")
         .select(
           "id, journey_type, completed_steps_count, total_steps_count, updated_at, filing_method"
         )
-        .eq("user_id", userId)
         .order("updated_at", { ascending: false })
     );
 

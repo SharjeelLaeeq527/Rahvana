@@ -2,7 +2,6 @@
 
 import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useAuth } from "./AuthContext";
-import { createClient } from "@/lib/supabase/client";
 import {
   PlanTier,
   getEntitlement,
@@ -29,6 +28,9 @@ interface PlanContextValue {
   setDevOverride: (t: PlanTier | null) => void;
   /** Add-on IDs purchased by this user (e.g. ["sponsor", "interview-prep"]). */
   purchasedAddons: string[];
+  /** True when the active plan is inherited from a shared-case owner (the
+   *  current user is an invited partner, not the buyer). */
+  isInheritedPlan: boolean;
   /** Re-fetch the user's plan from DB (call after successful payment). */
   refresh: () => void;
   /** Look up the full entitlement object for a feature, respecting purchased add-ons. */
@@ -68,6 +70,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   const { user, isLoading: authLoading } = useAuth();
   const [realTier, setRealTier] = useState<PlanTier>("free");
   const [purchasedAddons, setPurchasedAddons] = useState<string[]>([]);
+  const [isInheritedPlan, setIsInheritedPlan] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [devOverride, setDevOverride] = useState<PlanTier | null>(null);
   const [refreshCounter, setRefreshCounter] = useState(0);
@@ -87,6 +90,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     if (!user?.id) {
       setRealTier("free");
       setPurchasedAddons([]);
+      setIsInheritedPlan(false);
       setIsLoading(false);
       return;
     }
@@ -94,43 +98,39 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     setIsLoading(true);
 
-    const supabase = createClient();
-
     // 1. Defensive reconciliation: if user has a successful payment that
-    //    hasn't been applied to subscription_tier yet, apply it.
-    //    Fails open — if the endpoint errors, we still load from DB normally.
+    //    hasn't been applied to subscription_tier yet, apply it. This acts on
+    //    the user's OWN payments (no-op for a free invited partner).
+    //    Fails open — if the endpoint errors, we still load the plan normally.
     const reconcile = fetch("/api/plan/reconcile", { method: "POST" })
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null);
 
-    // 2. Wait for reconcile to settle, THEN read the (possibly updated) tier.
+    // 2. After reconcile settles, resolve the EFFECTIVE plan via the server.
+    //    This is membership-aware (spec §6): an invited partner inherits the
+    //    case owner's tier + add-ons, resolved live. Everyone else gets their
+    //    own plan. Must be server-side — a partner can't read the owner's
+    //    user_profiles row through RLS.
     reconcile
-      .then(() =>
-        supabase
-          .from("user_profiles")
-          .select("subscription_tier, profile_details")
-          .eq("id", user.id)
-          .single()
-      )
+      .then(() => fetch("/api/plan/effective"))
+      .then((r) => (r.ok ? r.json() : null))
       .then(
-        ({
-          data,
-        }: {
-          data: {
-            subscription_tier?: string;
-            profile_details?: Record<string, unknown> | null;
-          } | null;
-        }) => {
+        (data: {
+          subscriptionTier?: string | null;
+          purchasedAddons?: string[];
+          isInherited?: boolean;
+        } | null) => {
           if (cancelled) return;
-          setRealTier(normalizeTier(data?.subscription_tier));
-          const addons = data?.profile_details?.purchased_addons as string[] | undefined;
-          setPurchasedAddons(Array.isArray(addons) ? addons : []);
+          setRealTier(normalizeTier(data?.subscriptionTier));
+          setPurchasedAddons(Array.isArray(data?.purchasedAddons) ? data.purchasedAddons : []);
+          setIsInheritedPlan(Boolean(data?.isInherited));
         }
       )
       .catch(() => {
         if (!cancelled) {
           setRealTier("free");
           setPurchasedAddons([]);
+          setIsInheritedPlan(false);
         }
       })
       .finally(() => {
@@ -149,6 +149,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     devOverride,
     setDevOverride,
     purchasedAddons,
+    isInheritedPlan,
     refresh,
     entitlement: useCallback(
       (f) => getEffectiveEntitlement(f, tier, purchasedAddons),

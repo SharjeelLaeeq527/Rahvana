@@ -22,15 +22,19 @@ import { E, msg } from "@/lib/errors";
 const PRIOR_KEY = "prior_marriage_beneficiary";
 const END_KEY = "beneficiary_marriage_end";
 
-/** Find the authenticated user's most-recent IR-1 journey UUID, or null. */
+/**
+ * Find the most-recent IR-1 journey the authenticated user is a MEMBER of
+ * (owner OR invited partner), or null. We deliberately do NOT filter by
+ * user_id: RLS on journeys (is_journey_member) already returns only the
+ * journeys this user can access, which includes a spouse's shared case.
+ */
 async function findIr1JourneyId(
   supabase: Awaited<ReturnType<typeof createClient>>,
-  userId: string
+  _userId: string
 ): Promise<string | null> {
   const { data, error } = await supabase
     .from("journeys")
     .select("id, journey_type, updated_at")
-    .eq("user_id", userId)
     .order("updated_at", { ascending: false });
 
   if (error || !data || data.length === 0) return null;

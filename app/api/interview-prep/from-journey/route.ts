@@ -19,6 +19,8 @@ import {
   createJourneyInterviewSession,
   getInterviewSessionByJourney,
 } from "@/lib/interview-prep/service";
+import { verifyAuth } from "@/lib/api/journey-auth";
+import { getAdminClient, getCaseRole } from "@/lib/case-collaboration/helpers";
 import { E, msg } from "@/lib/errors";
 
 export async function POST(request: NextRequest) {
@@ -31,6 +33,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[journey_id]" }) },
         { status: 400 }
+      );
+    }
+
+    // Role gate (spec §13): the BENEFICIARY owns the case interview session and
+    // does the practice; the PETITIONER is read-only (they don't sit the IR-1
+    // interview). Block a petitioner from creating a parallel journey session —
+    // this also stops a petitioner-owner's auto-init from claiming the session.
+    const auth = await verifyAuth();
+    if (auth.error) return auth.error;
+
+    const role = await getCaseRole(getAdminClient(), journey_id, auth.user.id);
+    if (role === "petitioner") {
+      return NextResponse.json(
+        {
+          error:
+            "As the petitioner you have read-only access to interview prep. The beneficiary completes the interview practice.",
+        },
+        { status: 403 }
       );
     }
 

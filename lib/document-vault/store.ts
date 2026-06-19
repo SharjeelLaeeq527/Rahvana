@@ -24,6 +24,10 @@ interface DocumentVaultStore {
   notificationConfig: NotificationConfig | null;
   notificationPreferences: NotificationPreferences | null;
 
+  // Shared-case id (drives realtime subscription). Null when the user has no
+  // journey / vault isn't case-scoped.
+  journeyId: string | null;
+
   // Documents
   uploadedDocuments: UploadedDocument[];
   requiredDocuments: DocumentDefinition[];
@@ -57,6 +61,7 @@ interface DocumentVaultStore {
   deleteDocument: (documentId: string) => void;
   refreshDocumentStatuses: () => void;
   reloadDocuments: () => Promise<void>;
+  reloadConfig: () => Promise<void>;
   addDynamicSlot: (category: string) => void;
   addNamedDynamicSlot: (category: string, name: string) => Promise<string>;
   renameDynamicSlot: (categoryId: string, slotId: string, newName: string) => void;
@@ -113,6 +118,7 @@ const initialState = {
   config: null,
   notificationConfig: null,
   notificationPreferences: null,
+  journeyId: null,
   uploadedDocuments: [],
   requiredDocuments: [],
   completedSteps: {},
@@ -181,6 +187,9 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
       const docsData = await docsResponse.json();
       const documents = docsData.documents || [];
 
+      // The shared-case id (used to subscribe to live updates).
+      const journeyId = (configData.journeyId ?? docsData.journeyId ?? null) as string | null;
+
       if (config) {
         const requiredDocs = generateRequiredDocuments(config, true, documents); // Include optional documents
 
@@ -192,6 +201,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
 
         set({
           config,
+          journeyId,
           uploadedDocuments: updatedDocs,
           requiredDocuments: requiredDocs,
           completedSteps,
@@ -207,6 +217,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
         const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
         const updatedDocs = updateDocumentStatuses(documents, defsMap);
         set({
+          journeyId,
           uploadedDocuments: updatedDocs,
           isLoading: false,
           completedSteps,
@@ -374,6 +385,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
         uploadedAt: new Date(doc.uploadedAt as string),
         expirationDate: doc.expirationDate ? new Date(doc.expirationDate as string) : undefined,
       }));
+      const journeyId = (data.journeyId ?? get().journeyId ?? null) as string | null;
 
       const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
       const updatedDocs = updateDocumentStatuses(documents, defsMap);
@@ -383,6 +395,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
       if (config) {
         const requiredDocs = generateRequiredDocuments(config, true, updatedDocs);
         set({
+          journeyId,
           uploadedDocuments: updatedDocs,
           requiredDocuments: requiredDocs,
           isReloadingDocs: false,
@@ -390,6 +403,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
         });
       } else {
         set({
+          journeyId,
           uploadedDocuments: updatedDocs,
           isReloadingDocs: false,
           hasLoadedDocsInitial: true,
@@ -398,6 +412,29 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
     } catch (error) {
       console.error("Failed to reload documents:", error);
       set({ isReloadingDocs: false });
+    }
+  },
+
+  // Refetch the SHARED checklist config (e.g. after a spouse adds a custom slot)
+  // and regenerate the required-documents list against current uploads.
+  reloadConfig: async () => {
+    try {
+      const response = await fetch("/api/documents/config");
+      const data = await response.json();
+      const config = data.config;
+      const journeyId = (data.journeyId ?? get().journeyId ?? null) as string | null;
+
+      if (!config) {
+        set({ journeyId });
+        return;
+      }
+
+      const { uploadedDocuments } = get();
+      const requiredDocs = generateRequiredDocuments(config, true, uploadedDocuments);
+      set({ config, journeyId, requiredDocuments: requiredDocs });
+      get().refreshNotifications();
+    } catch (error) {
+      console.error("Failed to reload config:", error);
     }
   },
 

@@ -61,6 +61,27 @@ export default function InterviewPreparation() {
   const [journeyId, setJourneyId] = useState<string | null>(null);
   const [isJourneySession, setIsJourneySession] = useState(false);
 
+  // Spouse collaboration: read-only mode for the PETITIONER. They review the
+  // beneficiary's shared interview prep but can't edit/practice (spec §13).
+  const [readOnly, setReadOnly] = useState(false);
+  const [readOnlySavedAnswers, setReadOnlySavedAnswers] = useState<Record<string, string>>({});
+  const [readOnlyAnsweredCount, setReadOnlyAnsweredCount] = useState(0);
+  type RapidFireSummary = {
+    currentRound: number;
+    totalRoundsCompleted: number;
+    score: number;
+    lastRoundScore: number;
+    completed: boolean;
+    roundSummary: {
+      coveredCount?: number;
+      partialCount?: number;
+      missedCount?: number;
+      skippedCount?: number;
+      readinessScore?: number;
+    } | null;
+  };
+  const [readOnlyRapidFire, setReadOnlyRapidFire] = useState<RapidFireSummary | null>(null);
+
   type RestorableSession = {
     id: string;
     category_slug: string;
@@ -247,6 +268,35 @@ export default function InterviewPreparation() {
         // Set loading immediately to prevent modals from flashing
         setLoading(true);
         setLoadingMessage("Checking for existing sessions...");
+
+        // SPOUSE COLLABORATION: if the caller is the PETITIONER of a shared case,
+        // the interview prep belongs to the beneficiary. Show it read-only and
+        // stop — the per-user flow below would never find the beneficiary's
+        // session for them. Beneficiary / solo users fall through unchanged.
+        try {
+          const caseResp = await fetch(`/api/case/interview`);
+          const caseJson = await caseResp.json();
+          const caseData = caseJson?.data;
+          if (caseResp.ok && caseData?.hasCase && caseData.canEdit === false) {
+            setReadOnly(true);
+            setSessionSource("journey");
+            setIsJourneySession(true);
+            if (caseData.journeyId) setJourneyId(caseData.journeyId);
+            if (caseData.session?.id) setSessionId(caseData.session.id);
+            if (caseData.output) setGeneratedResults(caseData.output);
+            setReadOnlySavedAnswers(caseData.userAnswers || {});
+            setReadOnlyAnsweredCount(caseData.answeredCount || 0);
+            setReadOnlyRapidFire(caseData.rapidFire || null);
+            setShowCountryModal(false);
+            setSessionRestorationAttempted(true);
+            setLoading(false);
+            setLoadingMessage("");
+            return;
+          }
+        } catch (caseErr) {
+          // Non-fatal — fall through to the normal per-user flow.
+          console.error("[InterviewPrep] case interview check failed:", caseErr);
+        }
 
         // FIRST: Check for active journey session (IR-1)
         // Journey sessions take priority over tool-based sessions
@@ -757,6 +807,81 @@ export default function InterviewPreparation() {
     }
   };
 
+  // Rapid Fire practice summary (read-only) — mirrors the beneficiary's rounds.
+  const renderRapidFireSummary = () => {
+    const rf = readOnlyRapidFire;
+    if (!rf || rf.totalRoundsCompleted <= 0) return null;
+    const s = rf.roundSummary || {};
+    const readiness = rf.roundSummary?.readinessScore ?? rf.lastRoundScore ?? rf.score;
+    const stat = (label: string, value: number | string, color: string) => (
+      <div className="flex flex-col items-center rounded-lg bg-white px-3 py-2 border border-slate-100">
+        <span className="text-lg font-bold" style={{ color }}>
+          {value}
+        </span>
+        <span className="text-[11px] text-slate-500">{label}</span>
+      </div>
+    );
+    return (
+      <div className="mx-auto mb-6 max-w-2xl rounded-xl border border-[#cdadcc]/40 bg-[#faf8fb] p-4">
+        <div className="mb-3 flex items-center justify-between">
+          <span className="text-sm font-bold text-[#6b5b7b]">Rapid Fire practice</span>
+          <span className="text-xs font-semibold text-slate-500">
+            {rf.totalRoundsCompleted} round{rf.totalRoundsCompleted === 1 ? "" : "s"} completed
+          </span>
+        </div>
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+          {stat("Readiness", `${Math.round(Number(readiness) || 0)}%`, "#6b5b7b")}
+          {stat("Covered", s.coveredCount ?? 0, "#15744f")}
+          {stat("Partial", s.partialCount ?? 0, "#9c6f38")}
+          {stat("Missed", s.missedCount ?? 0, "#db8090")}
+          {stat("Skipped", s.skippedCount ?? 0, "#64748b")}
+        </div>
+        <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
+          This reflects your spouse&apos;s latest Rapid Fire round. It updates as they keep
+          practising.
+        </p>
+      </div>
+    );
+  };
+
+  // Read-only view for the petitioner spouse: the beneficiary's questions +
+  // saved answers, or a friendly "not ready yet" state if nothing's generated.
+  const renderReadOnly = () => {
+    if (generatedResults && sessionId) {
+      return (
+        <>
+          {renderRapidFireSummary()}
+          <ResultPage
+            sessionId={sessionId}
+            results={generatedResults}
+            readOnly
+            initialSavedAnswers={readOnlySavedAnswers}
+            onRestart={() => {}}
+          />
+        </>
+      );
+    }
+    return (
+      <div className="text-center py-12 space-y-3">
+        <div className="mx-auto mb-2 w-fit rounded-full bg-[#e8f5ef] px-3 py-1 text-xs font-bold text-[#15744f]">
+          Read-only · your spouse&apos;s interview prep
+        </div>
+        <h3 className="text-xl font-semibold text-slate-800">
+          {readOnlyAnsweredCount > 0
+            ? "Preparation in progress"
+            : "Interview prep not started yet"}
+        </h3>
+        <p className="text-slate-600 max-w-md mx-auto">
+          {readOnlyAnsweredCount > 0
+            ? `Your spouse (the beneficiary) has answered ${readOnlyAnsweredCount} questionnaire ${
+                readOnlyAnsweredCount === 1 ? "question" : "questions"
+              } so far. Once they generate their interview questions, you'll be able to review everything here.`
+            : "Your spouse (the beneficiary) hasn't started their interview preparation yet. As soon as they do, their progress and answers will appear here for you to review."}
+        </p>
+      </div>
+    );
+  };
+
   // Render the appropriate step
   const renderStep = () => {
     if (isRedirectingSession) {
@@ -1071,7 +1196,7 @@ export default function InterviewPreparation() {
 
   return (
     <>
-      {initialCheckDone && !sessionId && (
+      {initialCheckDone && !sessionId && !readOnly && (
         <NarrativeModal
           isOpen={showWhatsThis}
           onClose={handleCloseIntro}
@@ -1082,7 +1207,7 @@ export default function InterviewPreparation() {
         />
       )}
 
-      {initialCheckDone && !sessionId && (
+      {initialCheckDone && !sessionId && !readOnly && (
         <CountrySelectionModal
           isOpen={showCountryModal}
           onCountrySelected={handleCountrySelected}
@@ -1109,6 +1234,8 @@ export default function InterviewPreparation() {
               <Loader size="md" />
               <p className="text-slate-600">{loadingMessage || "Loading..."}</p>
             </div>
+          ) : readOnly ? (
+            renderReadOnly()
           ) : (
             renderStep()
           )}

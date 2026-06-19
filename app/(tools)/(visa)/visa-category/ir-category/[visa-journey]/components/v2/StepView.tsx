@@ -70,6 +70,7 @@ import { SUBMISSION_TUTORIAL_STEPS, SubmissionTutorialOverlay } from "./Submissi
 import { AWAITING_REVIEW_DATA } from "./AwaitingReviewData";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { useVaultRealtime } from "@/lib/document-vault/useVaultRealtime";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
 import { MultipleDocumentUploadModal } from "@/app/components/document-vault/MultipleDocumentUploadModal";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
@@ -331,6 +332,9 @@ export const StepView: React.FC<StepViewProps> = ({
     isDeletingIds,
     deleteDocument,
   } = useDocumentVaultStore();
+  // Live-refresh the vault when the spouse uploads/deletes a doc or edits the
+  // shared checklist — no page reload needed.
+  useVaultRealtime();
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [activeUploadType, setActiveUploadType] = useState<"doc" | "hh" | "financial" | null>(null);
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null);

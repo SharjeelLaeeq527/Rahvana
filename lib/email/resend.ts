@@ -453,6 +453,82 @@ export function getMFADisabledEmailHtml(): string {
   `;
 }
 
+export function getSpouseInviteEmailHtml(inviteLink: string, inviterName: string): string {
+  const safeName = inviterName?.trim() || "Your spouse";
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>You're invited to a shared visa case</title>
+  </head>
+  <body style="margin:0; padding:0; background-color:#e8f6f6; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
+      <tr>
+        <td align="center">
+          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; background:#ffffff; border-radius:18px; box-shadow:0 8px 24px rgba(13,115,119,0.08); overflow:hidden;">
+            <tr>
+              <td style="height:4px; background:linear-gradient(90deg,#0d7377,#14a0a6,#32e0c4);"></td>
+            </tr>
+            <tr>
+              <td style="padding:48px 40px;">
+                <div style="text-align:center; margin-bottom:32px;">
+                  <div style="display:inline-block; padding:18px;">
+                    ${LOGO_IMAGE}
+                  </div>
+                </div>
+
+                <h1 style="margin:0 0 20px; font-size:26px; font-weight:700; color:#0d7377; text-align:center;">
+                  Join your shared visa journey
+                </h1>
+
+                <p style="margin:0 0 24px; font-size:16px; line-height:1.7; color:#475569; text-align:center;">
+                  <strong>${safeName}</strong> has invited you to collaborate on their
+                  IR-1 visa case on Rahvana. You'll both be able to work on the same
+                  case &mdash; documents, steps and progress &mdash; each from your own account.
+                </p>
+
+                <div style="text-align:center; margin:36px 0;">
+                  <a href="${inviteLink}"
+                     style="display:inline-block; padding:16px 40px; background:#0d7377; color:#ffffff; text-decoration:none; font-size:16px; font-weight:600; border-radius:14px; box-shadow:0 6px 18px rgba(13,115,119,0.25);">
+                    Accept Invite
+                  </a>
+                </div>
+
+                <div style="height:1px; background:#e2e8f0; margin:32px 0;"></div>
+
+                <p style="margin:0 0 10px; font-size:14px; color:#64748b;">
+                  If the button above doesn't work, copy and paste this link into your browser:
+                </p>
+                <p style="margin:0 0 28px; font-size:14px; color:#0d7377; word-break:break-word;">
+                  ${inviteLink}
+                </p>
+
+                <div style="background:#e8f6f6; border-radius:12px; padding:16px;">
+                  <p style="font-size:14px; margin:0; color:#0a5a5d; font-weight:500;">
+                    You can accept with any account you sign up or log in with. This
+                    link is private to you and expires in 7 days.
+                  </p>
+                </div>
+
+                <p style="margin:28px 0 0; font-size:14px; color:#94a3b8; text-align:center;">
+                  If you weren't expecting this invitation, you can safely ignore this email.
+                </p>
+              </td>
+            </tr>
+          </table>
+          <p style="margin-top:28px; font-size:12px; color:#94a3b8;">
+            © ${new Date().getFullYear()} Rahvana. All rights reserved.
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>
+  `;
+}
+
 export function getFeatureAnnouncementEmailHtml(
   title: string,
   description: string,

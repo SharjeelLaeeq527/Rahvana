@@ -7,6 +7,7 @@ import { E, msg } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import { DocumentFileManager } from "@/lib/document-vault/storage-server";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
+import { resolveActiveJourneyId } from "@/lib/case-collaboration/helpers";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import JSZip from "jszip";
 
@@ -28,9 +29,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params;
     const documentId = id;
 
-    // Get document metadata
+    // Get document metadata (membership RLS — owner OR case partner)
+    const journeyId = await resolveActiveJourneyId(supabase, user.id);
     const dbStorage = new DocumentDatabaseStorage(supabase);
-    const document = await dbStorage.getDocument(documentId, user.id);
+    const document = await dbStorage.getDocument(documentId, user.id, journeyId);
 
     if (!document) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 });

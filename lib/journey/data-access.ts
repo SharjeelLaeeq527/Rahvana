@@ -72,13 +72,15 @@ export async function getJourneyDB(
   journeyId: string,
   client?: { supabase: any; user: any }
 ): Promise<Journey | null> {
-  const { supabase, user } = await getSupabaseWithUser(client);
+  const { supabase } = await getSupabaseWithUser(client);
 
+  // Membership (owner OR active partner) is enforced by RLS on journeys
+  // (is_journey_member). We must NOT filter by user_id here, or an invited
+  // partner would be unable to load the shared case.
   const { data, error } = await supabase
     .from("journeys")
     .select("*")
     .eq("id", journeyId)
-    .eq("user_id", user.id)
     .single();
 
   if (error) {
@@ -103,12 +105,14 @@ export async function getAllJourneysDB(
   },
   client?: { supabase: any; user: any }
 ): Promise<Journey[]> {
-  const { supabase, user } = await getSupabaseWithUser(client);
+  const { supabase } = await getSupabaseWithUser(client);
 
+  // RLS scopes this to journeys the user is a MEMBER of (their own + any case
+  // they were invited to as a partner). No explicit user_id filter — that would
+  // hide a spouse's shared case and, in initialize(), wrongly create a duplicate.
   let query = supabase
     .from("journeys")
     .select("*")
-    .eq("user_id", user.id)
     .order("created_at", { ascending: false });
 
   if (filters?.status) {
@@ -136,12 +140,12 @@ export async function getLatestInProgressJourneyDB(client?: {
   supabase: any;
   user: any;
 }): Promise<Journey | null> {
-  const { supabase, user } = await getSupabaseWithUser(client);
+  const { supabase } = await getSupabaseWithUser(client);
 
+  // RLS scopes to member journeys (owner OR partner); no user_id filter.
   const { data, error } = await supabase
     .from("journeys")
     .select("*")
-    .eq("user_id", user.id)
     .eq("status", "in_progress")
     .order("updated_at", { ascending: false })
     .limit(1)
@@ -187,8 +191,10 @@ export async function updateJourneyDB(
         started_at: updates.started_at,
       }),
     })
+    // Membership UPDATE is allowed by RLS for owner OR partner. The existing
+    // getJourneyDB() check above already confirmed the caller is a member, so we
+    // do not filter by user_id (that would block a partner editing the case).
     .eq("id", journeyId)
-    .eq("user_id", user.id)
     .select()
     .single();
 
@@ -270,8 +276,11 @@ export async function updateJourneyProgressDB(
   progressData: ProgressData,
   client?: { supabase: any; user: any }
 ): Promise<void> {
-  const { supabase, user } = await getSupabaseWithUser(client);
+  const { supabase } = await getSupabaseWithUser(client);
 
+  // Progress is recalculated whenever EITHER spouse completes a step, so this
+  // update must succeed for a partner too. RLS (membership UPDATE) gates it; no
+  // user_id filter, which would otherwise silently match 0 rows for a partner.
   const { error } = await supabase
     .from("journeys")
     .update({
@@ -279,8 +288,7 @@ export async function updateJourneyProgressDB(
       completed_steps_count: progressData.completed_steps_count,
       completion_percentage: progressData.completion_percentage,
     })
-    .eq("id", journeyId)
-    .eq("user_id", user.id);
+    .eq("id", journeyId);
 
   if (error) throw new Error(error.message);
 }

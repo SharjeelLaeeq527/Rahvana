@@ -13,14 +13,15 @@ export class DocumentDatabaseStorage {
   constructor(private supabase: SupabaseClient) {}
 
   /**
-   * Gets all documents for a user
+   * Gets all documents for a user — or, when `journeyId` is given, for the whole
+   * SHARED CASE (both spouses' uploads). Membership RLS gates access, so passing
+   * the journey is safe only after the caller's membership has been verified.
    */
-  async getAllDocuments(userId: string): Promise<UploadedDocument[]> {
-    const { data, error } = await this.supabase
-      .from("documents")
-      .select("*")
-      .eq("user_id", userId)
-      .order("uploaded_at", { ascending: false });
+  async getAllDocuments(userId: string, journeyId?: string | null): Promise<UploadedDocument[]> {
+    let query = this.supabase.from("documents").select("*");
+    query = journeyId ? query.eq("journey_id", journeyId) : query.eq("user_id", userId);
+
+    const { data, error } = await query.order("uploaded_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching documents:", error);
@@ -75,14 +76,18 @@ export class DocumentDatabaseStorage {
   }
 
   /**
-   * Deletes document from database
+   * Deletes document from database. With `journeyId` set, any case member may
+   * delete the shared doc (membership RLS gates); otherwise owner-only by user_id.
    */
-  async deleteDocument(documentId: string, userId: string): Promise<boolean> {
-    const { error } = await this.supabase
-      .from("documents")
-      .delete()
-      .eq("id", documentId)
-      .eq("user_id", userId);
+  async deleteDocument(
+    documentId: string,
+    userId: string,
+    journeyId?: string | null
+  ): Promise<boolean> {
+    let query = this.supabase.from("documents").delete().eq("id", documentId);
+    if (!journeyId) query = query.eq("user_id", userId);
+
+    const { error } = await query;
 
     if (error) {
       console.error("Error deleting document:", error);
@@ -93,15 +98,18 @@ export class DocumentDatabaseStorage {
   }
 
   /**
-   * Gets document by ID
+   * Gets document by ID. With `journeyId` set, resolves the doc within the shared
+   * case (membership RLS gates), so a partner can read the other's upload.
    */
-  async getDocument(documentId: string, userId: string): Promise<UploadedDocument | null> {
-    const { data, error } = await this.supabase
-      .from("documents")
-      .select("*")
-      .eq("id", documentId)
-      .eq("user_id", userId)
-      .single();
+  async getDocument(
+    documentId: string,
+    userId: string,
+    journeyId?: string | null
+  ): Promise<UploadedDocument | null> {
+    let query = this.supabase.from("documents").select("*").eq("id", documentId);
+    if (!journeyId) query = query.eq("user_id", userId);
+
+    const { data, error } = await query.maybeSingle();
 
     if (error) {
       if (error.code === "PGRST116") {
@@ -116,15 +124,18 @@ export class DocumentDatabaseStorage {
   }
 
   /**
-   * Gets documents by definition ID
+   * Gets documents by definition ID. With `journeyId` set, scopes to the shared
+   * case so version numbers increment across BOTH spouses' uploads.
    */
-  async getDocumentsByDefId(documentDefId: string, userId: string): Promise<UploadedDocument[]> {
-    const { data, error } = await this.supabase
-      .from("documents")
-      .select("*")
-      .eq("user_id", userId)
-      .eq("document_def_id", documentDefId)
-      .order("version", { ascending: true });
+  async getDocumentsByDefId(
+    documentDefId: string,
+    userId: string,
+    journeyId?: string | null
+  ): Promise<UploadedDocument[]> {
+    let query = this.supabase.from("documents").select("*").eq("document_def_id", documentDefId);
+    query = journeyId ? query.eq("journey_id", journeyId) : query.eq("user_id", userId);
+
+    const { data, error } = await query.order("version", { ascending: true });
 
     if (error) {
       console.error("Error fetching documents by def ID:", error);
@@ -164,7 +175,8 @@ export class DocumentDatabaseStorage {
   async updateDocument(
     documentId: string,
     userId: string,
-    updates: Partial<UploadedDocument>
+    updates: Partial<UploadedDocument>,
+    journeyId?: string | null
   ): Promise<UploadedDocument> {
     const dbUpdates: Record<string, unknown> = {
       updated_at: new Date().toISOString(),
@@ -183,13 +195,10 @@ export class DocumentDatabaseStorage {
       dbUpdates.is_expired = updates.isExpired;
     }
 
-    const { data, error } = await this.supabase
-      .from("documents")
-      .update(dbUpdates)
-      .eq("id", documentId)
-      .eq("user_id", userId)
-      .select()
-      .single();
+    let query = this.supabase.from("documents").update(dbUpdates).eq("id", documentId);
+    if (!journeyId) query = query.eq("user_id", userId);
+
+    const { data, error } = await query.select().single();
 
     if (error) {
       console.error("Error updating document:", error);
@@ -205,6 +214,7 @@ export class DocumentDatabaseStorage {
   async saveVaultConfig(config: DocumentVaultConfig): Promise<DocumentVaultConfig> {
     const dbConfig = {
       user_id: config.userId,
+      journey_id: config.journeyId ?? null,
       visa_category: config.visaCategory,
       scenario_flags: config.scenarioFlags || {},
       case_id: config.caseId,
@@ -215,13 +225,38 @@ export class DocumentDatabaseStorage {
       updated_at: new Date().toISOString(),
     };
 
-    const { data, error } = await this.supabase
+    // One shared config per case: when the user belongs to a journey, upsert the
+    // single row keyed by journey_id (both spouses edit the same checklist).
+    if (config.journeyId) {
+      const { data, error } = await this.supabase
+        .from("document_vault_config")
+        .upsert(dbConfig, { onConflict: "journey_id" })
+        .select()
+        .single();
+
+      if (error) {
+        console.error("Error saving vault config:", error);
+        throw error;
+      }
+
+      return this.mapDatabaseToConfig(data);
+    }
+
+    // No journey yet → fall back to a per-user config (no unique to upsert on
+    // anymore, so find-then-write the user's existing row).
+    const { data: existing } = await this.supabase
       .from("document_vault_config")
-      .upsert(dbConfig, {
-        onConflict: "user_id", // Specify the unique constraint column
-      })
-      .select()
-      .single();
+      .select("id")
+      .eq("user_id", config.userId)
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+
+    const writer = existing?.id
+      ? this.supabase.from("document_vault_config").update(dbConfig).eq("id", existing.id)
+      : this.supabase.from("document_vault_config").insert(dbConfig);
+
+    const { data, error } = await writer.select().single();
 
     if (error) {
       console.error("Error saving vault config:", error);
@@ -234,12 +269,17 @@ export class DocumentDatabaseStorage {
   /**
    * Gets vault configuration
    */
-  async getVaultConfig(userId: string): Promise<DocumentVaultConfig | null> {
-    const { data, error } = await this.supabase
-      .from("document_vault_config")
-      .select("*")
-      .eq("user_id", userId)
-      .single();
+  async getVaultConfig(
+    userId: string,
+    journeyId?: string | null
+  ): Promise<DocumentVaultConfig | null> {
+    let query = this.supabase.from("document_vault_config").select("*");
+    query = journeyId ? query.eq("journey_id", journeyId) : query.eq("user_id", userId);
+
+    const { data, error } = await query
+      .order("updated_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
 
     if (error) {
       if (error.code === "PGRST116") {
@@ -324,6 +364,7 @@ export class DocumentDatabaseStorage {
     return {
       id: data.id as string,
       userId: data.user_id as string,
+      journeyId: (data.journey_id as string | null) ?? undefined,
       documentDefId: data.document_def_id as string,
       originalFilename: data.original_filename as string,
       standardizedFilename: data.standardized_filename as string,
@@ -355,6 +396,7 @@ export class DocumentDatabaseStorage {
     const dbDoc: Record<string, unknown> = {
       id: document.id,
       user_id: document.userId,
+      journey_id: document.journeyId ?? null,
       document_def_id: document.documentDefId,
       original_filename: document.originalFilename,
       standardized_filename: document.standardizedFilename,
@@ -389,6 +431,7 @@ export class DocumentDatabaseStorage {
   private mapDatabaseToConfig(data: Record<string, unknown>): DocumentVaultConfig {
     return {
       userId: data.user_id as string,
+      journeyId: (data.journey_id as string | null) ?? undefined,
       visaCategory: data.visa_category as VisaCategory,
       scenarioFlags: (data.scenario_flags as Record<string, unknown>) || {},
       caseId: data.case_id as string | undefined,

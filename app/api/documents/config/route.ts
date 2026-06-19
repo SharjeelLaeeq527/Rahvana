@@ -5,6 +5,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
+import { resolveActiveJourneyId } from "@/lib/case-collaboration/helpers";
 import { DocumentVaultConfig } from "@/lib/document-vault/types";
 import { E, msg } from "@/lib/errors";
 
@@ -21,17 +22,19 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get vault configuration
+    // Get the SHARED case checklist config (both spouses see the same one).
+    const journeyId = await resolveActiveJourneyId(supabase, user.id);
     const dbStorage = new DocumentDatabaseStorage(supabase);
-    const config = await dbStorage.getVaultConfig(user.id);
+    const config = await dbStorage.getVaultConfig(user.id, journeyId);
 
     if (!config) {
-      return NextResponse.json({ success: true, config: null });
+      return NextResponse.json({ success: true, config: null, journeyId });
     }
 
     return NextResponse.json({
       success: true,
       config,
+      journeyId, // lets the client subscribe to the shared case's realtime feed
     });
   } catch (error) {
     console.error("Get config error:", error);
@@ -54,8 +57,12 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
+    // Scope to the shared case so a checklist edit by either spouse writes the
+    // single per-journey config row.
+    const journeyId = await resolveActiveJourneyId(supabase, user.id);
     const config: DocumentVaultConfig = {
       userId: user.id,
+      journeyId: journeyId ?? undefined,
       visaCategory: body.visaCategory,
       scenarioFlags: body.scenarioFlags || {},
       caseId: body.caseId,

@@ -131,6 +131,9 @@ export interface UploadedDocument {
   isRead: unknown;
   id: string;
   userId: string;
+  // Shared-case scope. When set, the vault doc belongs to a journey (case) and
+  // is visible to BOTH spouses via membership RLS. Null = legacy per-user doc.
+  journeyId?: string;
   documentDefId: string; // References DocumentDefinition
 
   // File info
@@ -162,6 +165,10 @@ export interface UploadedDocument {
 
 export interface DocumentVaultConfig {
   userId: string;
+  // Shared-case scope. When set, this checklist config is the ONE shared config
+  // for the journey (case) — both spouses see the same checklist. Null = legacy
+  // per-user config.
+  journeyId?: string;
   visaCategory: VisaCategory;
   scenarioFlags: ScenarioFlags;
   caseId?: string; // USCIS receipt or NVC case number

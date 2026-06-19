@@ -16,6 +16,7 @@ import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { calculateExpirationDate } from "@/lib/document-vault/expiration-tracker";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { UploadedDocument, DocumentRole, DocumentCategory } from "@/lib/document-vault/types";
+import { resolveActiveJourneyId } from "@/lib/case-collaboration/helpers";
 import { createClient as createClientJs } from "@supabase/supabase-js";
 import { encryptFile } from "@/lib/document-vault/file-encryption";
 
@@ -179,14 +180,18 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid document definition" }, { status: 400 });
     }
 
+    // Scope the upload to the SHARED case so the partner sees it and version
+    // numbers increment across both spouses. Null when the user has no journey.
+    const journeyId = await resolveActiveJourneyId(supabase, user.id);
+
     // Get existing documents for this definition
     const dbStorage = new DocumentDatabaseStorage(supabase);
-    let existingDocs = await dbStorage.getDocumentsByDefId(documentDefId, user.id);
+    let existingDocs = await dbStorage.getDocumentsByDefId(documentDefId, user.id, journeyId);
 
     // Safety check for rapid sequential uploads
     // If the specific query missed a very recent upload, fallback to global list
     if (existingDocs.length === 0) {
-      const allDocs = await dbStorage.getAllDocuments(user.id);
+      const allDocs = await dbStorage.getAllDocuments(user.id, journeyId);
       const recentDocs = allDocs.filter(
         (d) =>
           d.documentDefId === documentDefId && Date.now() - new Date(d.uploadedAt).getTime() < 10000
@@ -205,7 +210,7 @@ export async function POST(request: NextRequest) {
       : null;
 
     if (documentDefId.startsWith("dynamic-") && currentTypeMatch) {
-      const allDocs = await dbStorage.getAllDocuments(user.id);
+      const allDocs = await dbStorage.getAllDocuments(user.id, journeyId);
       const docsWithSameType = allDocs.filter((d) => {
         if (!d.notes || !d.notes.startsWith("Type: ")) return false;
         const typeLabel = d.notes.split("\n")[0].replace("Type: ", "").trim().toLowerCase();
@@ -328,6 +333,7 @@ export async function POST(request: NextRequest) {
     const uploadedDocument: UploadedDocument = {
       id: documentId,
       userId: user.id,
+      journeyId: journeyId ?? undefined,
       documentDefId,
       originalFilename: file.name,
       standardizedFilename: originalFilename,
