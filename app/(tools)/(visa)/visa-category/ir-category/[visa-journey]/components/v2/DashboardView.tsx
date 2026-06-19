@@ -23,6 +23,7 @@ import {
   generateCaseNarrative,
   getCaseHealthStatus,
   computeOverallCaseScore,
+  computeConsistencyScore,
   runFullConsistencyAnalysis,
   type Phase2Responses,
 } from "@/lib/case-strength";
@@ -397,6 +398,20 @@ export function DashboardView({
     );
     return computeOverallCaseScore({ evidenceAnalysis, consistencyFindings });
   }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
+
+  // Sub-scores for the CaseHealthOverview popover breakdown
+  const evidenceSubScore = evidenceAnalysis?.overallScore ?? 50;
+  const consistencySubScore = useMemo(() => {
+    const eligibilityAnswers =
+      (state.answers?.["eligibility-suite"] as any) ??
+      (state.metadata?.["questAnswers_eligibility-suite"] as any);
+    const consistencyFindings = runFullConsistencyAnalysis(
+      { state, eligibilityAnswers },
+      (phase2Responses as Phase2Responses) ?? null,
+      uploadedDocuments
+    );
+    return computeConsistencyScore(consistencyFindings);
+  }, [state, phase2Responses, uploadedDocuments]);
 
   // Compact summary text for CaseHealthOverview (truncated executive summary)
   const compactSummary = caseNarrative?.executiveSummary
@@ -807,6 +822,8 @@ export function DashboardView({
             criticalCount={critIssueCount}
             warningCount={warnIssueCount}
             overallScore={overallCaseScore}
+            evidenceScore={evidenceSubScore}
+            consistencyScore={consistencySubScore}
             healthLabel={caseHealthStatus?.label ?? "Analyzing"}
             healthStatus={caseHealthStatus?.status ?? "needs-attention"}
             loading={evidenceLoading}
