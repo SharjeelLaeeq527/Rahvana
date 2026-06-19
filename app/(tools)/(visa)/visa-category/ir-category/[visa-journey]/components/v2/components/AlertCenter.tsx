@@ -30,17 +30,17 @@ export interface AlertCenterProps {
 const SEV = {
   critical: {
     accent: "#db8090",
-    bg: "white",
-    border: "#f0c8d0",
-    chipBg: "#fbe8ec",
+    rowBg: "#fef0f3",
+    expandedBg: "#fce8ed",
+    chipBg: "#f9d4dc",
     chipFg: "#7a3a4a",
     icon: CircleAlert,
   },
   warning: {
     accent: "#cdadcc",
-    bg: "white",
-    border: "#e8d4e7",
-    chipBg: "#f5eef5",
+    rowBg: "#f7eef7",
+    expandedBg: "#f0e3f0",
+    chipBg: "#e8d4e8",
     chipFg: "#6b4566",
     icon: AlertTriangle,
   },
@@ -68,12 +68,9 @@ function AlertRow({
 
   return (
     <div
-      className="rounded-xl overflow-hidden transition-all border-l-[3px]"
+      className="rounded-xl overflow-hidden transition-all shadow-sm"
       style={{
-        background: expanded ? "#fafafa" : "white",
-        borderLeftColor: s.accent,
-        border: `1px solid ${expanded ? "#f1f5f9" : "#f1f5f9"}`,
-        borderLeftWidth: 3,
+        background: expanded ? s.expandedBg : s.rowBg,
       }}
     >
       <button
@@ -151,7 +148,7 @@ export function AlertCenter({ issues, onOpenStep }: AlertCenterProps) {
   // All clear state
   if (activeIssues.length === 0) {
     return (
-      <div className="rounded-2xl border border-amber-200 bg-amber-50/40 px-4 py-4 flex items-center gap-3">
+      <div className="rounded-2xl border border-[#afdbdb]/40 bg-gradient-to-br from-[#e6f5f5]/60 to-[#f7fafa] px-4 py-4 flex items-center gap-3 shadow-sm">
         <div className="w-8 h-8 rounded-xl bg-[#e6f5f5] border border-[#afdbdb]/50 flex items-center justify-center shrink-0">
           <ShieldCheck size={15} className="text-[#0d7377]" />
         </div>
@@ -164,9 +161,17 @@ export function AlertCenter({ issues, onOpenStep }: AlertCenterProps) {
   }
 
   return (
-    <div className="rounded-2xl border border-slate-200/80 bg-white overflow-hidden shadow-sm">
+    <div className="rounded-2xl bg-[#f4f6f7] overflow-hidden shadow-md">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-slate-100 bg-slate-50/50">
+      <div
+        className="px-4 py-3.5"
+        style={{
+          background:
+            critCount > 0
+              ? "linear-gradient(135deg, #fbe8ec 0%, #f5eef5 100%)"
+              : "linear-gradient(135deg, #f5eef5 0%, #eef3f5 100%)",
+        }}
+      >
         <div className="flex items-center gap-2 mb-2">
           <div
             className="w-6 h-6 rounded-lg flex items-center justify-center"
@@ -207,7 +212,7 @@ export function AlertCenter({ issues, onOpenStep }: AlertCenterProps) {
       </div>
 
       {/* Issue list */}
-      <div className="p-2 space-y-1.5 max-h-[600px] overflow-y-auto overscroll-contain">
+      <div className="p-2.5 space-y-2 max-h-[600px] overflow-y-auto overscroll-contain">
         {activeIssues.map((issue, i) => (
           <AlertRow
             key={`${issue.stepKey}-${i}`}

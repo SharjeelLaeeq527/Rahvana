@@ -95,7 +95,6 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
       }
     } catch (error) {
       console.error("Error generating signature:", error);
-      alert(t("pdfProcessing.editor.signature.failed"));
       showToast(t("pdfProcessing.editor.signature.failed"), "error");
     }
   };

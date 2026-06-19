@@ -3519,7 +3519,11 @@
         "applyChanges": "Apply Changes",
         "successAlert": "Page organization saved! Changes will appear in the viewer.",
         "reorderTip": "{count} page(s) • Drag to reorder",
-        "allPagesDeletedAlert": "Cannot delete all pages!"
+        "allPagesDeletedAlert": "Cannot delete all pages!",
+        "deleteConfirmTitle": "Delete Page",
+        "deleteConfirmDesc": "Are you sure you want to delete this page? This action cannot be undone.",
+        "confirmDelete": "Delete",
+        "bulkDeleteTitle": "Delete Selected Pages"
       },
       "crop": {
         "title": "Adjust Your Signature",

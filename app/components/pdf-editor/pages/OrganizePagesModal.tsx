@@ -10,6 +10,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import * as Errors from "@/lib/errors";
 
 interface PageItem {
@@ -31,6 +32,8 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
   const [pages, setPages] = useState<PageItem[]>([]);
   const [selectedPages, setSelectedPages] = useState<Set<number>>(new Set());
   const [draggedPage, setDraggedPage] = useState<number | null>(null);
+  const [deleteIndex, setDeleteIndex] = useState<number | null>(null);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (!isOpen || !pdfFile) return;
@@ -107,19 +110,23 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
       showToast(Errors.msg(Errors.E.PDF_CANNOT_DELETE_LAST_PAGE), "error");
       return;
     }
-    if (confirm("Are you sure you want to delete this page?")) {
-      const newPages = pages.filter((_, i) => i !== index);
-      setPages(newPages);
+    setDeleteIndex(index);
+  };
 
-      const newSelected = new Set(selectedPages);
-      newSelected.delete(index);
-      const adjusted = new Set<number>();
-      newSelected.forEach((idx) => {
-        if (idx > index) adjusted.add(idx - 1);
-        else if (idx < index) adjusted.add(idx);
-      });
-      setSelectedPages(adjusted);
-    }
+  const executeDeletePage = () => {
+    if (deleteIndex === null) return;
+    const newPages = pages.filter((_, i) => i !== deleteIndex);
+    setPages(newPages);
+
+    const newSelected = new Set(selectedPages);
+    newSelected.delete(deleteIndex);
+    const adjusted = new Set<number>();
+    newSelected.forEach((idx) => {
+      if (idx > deleteIndex) adjusted.add(idx - 1);
+      else if (idx < deleteIndex) adjusted.add(idx);
+    });
+    setSelectedPages(adjusted);
+    setDeleteIndex(null);
   };
 
   const handleDuplicatePage = (index: number) => {
@@ -228,16 +235,13 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
       showToast(t("pdfProcessing.editor.organizePages.allPagesDeletedAlert"), "error");
       return;
     }
-    if (
-      confirm(
-        t("pdfProcessing.editor.organizePages.bulkDeleteConfirm", {
-          count: selectedPages.size,
-        })
-      )
-    ) {
-      setPages(pages.filter((_, i) => !selectedPages.has(i)));
-      setSelectedPages(new Set());
-    }
+    setShowBulkDeleteConfirm(true);
+  };
+
+  const executeBulkDelete = () => {
+    setPages(pages.filter((_, i) => !selectedPages.has(i)));
+    setSelectedPages(new Set());
+    setShowBulkDeleteConfirm(false);
   };
 
   const handleSaveChanges = () => {
@@ -262,141 +266,174 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
   };
 
   return (
-    <Dialog
-      open={isOpen}
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
-    >
-      <DialogContent className="max-w-6xl w-[95vw] md:w-full max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0 bg-white border-none shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between border-b px-6 py-4 bg-linear-to-r from-primary to-primary text-white shrink-0">
-          <DialogTitle className="text-2xl font-bold">
-            {t("pdfProcessing.editor.organizePages.title")}
-          </DialogTitle>
-          <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition">
-            <X className="w-6 h-6" />
-          </button>
-        </div>
-
-        {/* Toolbar */}
-        {selectedPages.size > 0 && (
-          <div className="bg-blue-50 border-b px-6 py-3 flex items-center gap-3 shrink-0">
-            <span className="text-sm font-semibold text-blue-900">
-              {t("pdfProcessing.editor.organizePages.selected", {
-                count: selectedPages.size,
-              })}
-            </span>
-            <button
-              onClick={handleBulkDelete}
-              className="ml-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
-            >
-              <Trash2 className="w-4 h-4" />
-              {t("pdfProcessing.editor.organizePages.deleteSelected")}
+    <>
+      <Dialog
+        open={isOpen}
+        onOpenChange={(open) => {
+          if (!open) onClose();
+        }}
+      >
+        <DialogContent className="max-w-6xl w-[95vw] md:w-full max-h-[90vh] overflow-hidden flex flex-col p-0 gap-0 bg-white border-none shadow-2xl">
+          {/* Header */}
+          <div className="flex items-center justify-between border-b px-6 py-4 bg-linear-to-r from-primary to-primary text-white shrink-0">
+            <DialogTitle className="text-2xl font-bold">
+              {t("pdfProcessing.editor.organizePages.title")}
+            </DialogTitle>
+            <button onClick={onClose} className="p-2 hover:bg-white/20 rounded-lg transition">
+              <X className="w-6 h-6" />
             </button>
           </div>
-        )}
 
-        {/* Pages Grid */}
-        <div className="flex-1 overflow-auto p-6">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
-            {pages.map((page, index) => (
-              <div
-                key={`${page.originalIndex}-${index}`}
-                draggable
-                onDragStart={() => handleDragStart(index)}
-                onDragOver={handleDragOver}
-                onDrop={() => handleDrop(index)}
-                onClick={(e) => handleToggleSelect(index, e.shiftKey)}
-                className={cn(
-                  "relative group cursor-move rounded-lg overflow-hidden transition-all hover:scale-105 aspect-3/4",
-                  selectedPages.has(index)
-                    ? "ring-4 ring-blue-500 shadow-lg"
-                    : "hover:shadow-lg border-2 border-gray-200"
-                )}
+          {/* Toolbar */}
+          {selectedPages.size > 0 && (
+            <div className="bg-blue-50 border-b px-6 py-3 flex items-center gap-3 shrink-0">
+              <span className="text-sm font-semibold text-blue-900">
+                {t("pdfProcessing.editor.organizePages.selected", {
+                  count: selectedPages.size,
+                })}
+              </span>
+              <button
+                onClick={handleBulkDelete}
+                className="ml-auto px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
               >
-                {/* Thumbnail */}
-                <div className="relative w-full h-full flex items-center justify-center bg-gray-100">
-                  <NextImage
-                    src={page.thumbnail || "/placeholder.svg"}
-                    alt={`Page ${index + 1}`}
-                    fill
-                    className="object-contain"
-                    unoptimized
-                  />
-                </div>
+                <Trash2 className="w-4 h-4" />
+                {t("pdfProcessing.editor.organizePages.deleteSelected")}
+              </button>
+            </div>
+          )}
 
-                {/* Page Number */}
-                <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded">
-                  {index + 1}
-                </div>
-
-                {/* Action Buttons */}
-                <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleRotatePage(index);
-                    }}
-                    className="p-2 bg-white/90 hover:bg-white rounded-lg transition"
-                    title={t("pdfProcessing.editor.organizePages.rotateTip")}
-                  >
-                    <RotateCw className="w-4 h-4 text-gray-700" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDuplicatePage(index);
-                    }}
-                    className="p-2 bg-green-500/90 hover:bg-green-600 text-white rounded-lg transition"
-                    title={t("pdfProcessing.editor.organizePages.duplicateTip")}
-                  >
-                    <Copy className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeletePage(index);
-                    }}
-                    className="p-2 bg-red-500/90 hover:bg-red-600 text-white rounded-lg transition"
-                    title={t("pdfProcessing.editor.organizePages.deleteTip")}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                </div>
-
-                {/* Checkmark for selected */}
-                {selectedPages.has(index) && (
-                  <div className="absolute top-2 right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    ✓
+          {/* Pages Grid */}
+          <div className="flex-1 overflow-auto p-6">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {pages.map((page, index) => (
+                <div
+                  key={`${page.originalIndex}-${index}`}
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={handleDragOver}
+                  onDrop={() => handleDrop(index)}
+                  onClick={(e) => handleToggleSelect(index, e.shiftKey)}
+                  className={cn(
+                    "relative group cursor-move rounded-lg overflow-hidden transition-all hover:scale-105 aspect-3/4",
+                    selectedPages.has(index)
+                      ? "ring-4 ring-blue-500 shadow-lg"
+                      : "hover:shadow-lg border-2 border-gray-200"
+                  )}
+                >
+                  {/* Thumbnail */}
+                  <div className="relative w-full h-full flex items-center justify-center bg-gray-100">
+                    <NextImage
+                      src={page.thumbnail || "/placeholder.svg"}
+                      alt={`Page ${index + 1}`}
+                      fill
+                      className="object-contain"
+                      unoptimized
+                    />
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
 
-        {/* Footer */}
-        <div className="border-t px-6 py-4 bg-gray-50 flex justify-between items-center shrink-0">
-          <p className="text-sm text-gray-600">
-            {t("pdfProcessing.editor.organizePages.reorderTip", {
-              count: pages.length,
-            })}
-          </p>
-          <div className="flex gap-3">
-            <Button onClick={onClose} variant="outline">
-              {t("pdfProcessing.editor.signature.cancel")}
-            </Button>
-            <Button
-              onClick={handleSaveChanges}
-              className="bg-rahvana-primary hover:bg-rahvana-primary-dark text-white"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {t("pdfProcessing.editor.organizePages.applyChanges")}
-            </Button>
+                  {/* Page Number */}
+                  <div className="absolute bottom-2 left-2 bg-black/70 text-white text-xs font-bold px-2 py-1 rounded">
+                    {index + 1}
+                  </div>
+
+                  {/* Action Buttons */}
+                  <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleRotatePage(index);
+                      }}
+                      className="p-2 bg-white/90 hover:bg-white rounded-lg transition"
+                      title={t("pdfProcessing.editor.organizePages.rotateTip")}
+                    >
+                      <RotateCw className="w-4 h-4 text-gray-700" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDuplicatePage(index);
+                      }}
+                      className="p-2 bg-green-500/90 hover:bg-green-600 text-white rounded-lg transition"
+                      title={t("pdfProcessing.editor.organizePages.duplicateTip")}
+                    >
+                      <Copy className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeletePage(index);
+                      }}
+                      className="p-2 bg-red-500/90 hover:bg-red-600 text-white rounded-lg transition"
+                      title={t("pdfProcessing.editor.organizePages.deleteTip")}
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
+
+                  {/* Checkmark for selected */}
+                  {selectedPages.has(index) && (
+                    <div className="absolute top-2 right-2 w-6 h-6 bg-blue-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
+                      ✓
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+
+          {/* Footer */}
+          <div className="border-t px-6 py-4 bg-gray-50 flex justify-between items-center shrink-0">
+            <p className="text-sm text-gray-600">
+              {t("pdfProcessing.editor.organizePages.reorderTip", {
+                count: pages.length,
+              })}
+            </p>
+            <div className="flex gap-3">
+              <Button onClick={onClose} variant="outline">
+                {t("pdfProcessing.editor.signature.cancel")}
+              </Button>
+              <Button
+                onClick={handleSaveChanges}
+                className="bg-rahvana-primary hover:bg-rahvana-primary-dark text-white"
+              >
+                <Save className="w-4 h-4 mr-2" />
+                {t("pdfProcessing.editor.organizePages.applyChanges")}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete single page confirmation */}
+      <ConfirmationModal
+        open={deleteIndex !== null}
+        onOpenChange={(open) => {
+          if (!open) setDeleteIndex(null);
+        }}
+        title={t("pdfProcessing.editor.organizePages.deleteConfirmTitle") || "Delete Page"}
+        description={
+          t("pdfProcessing.editor.organizePages.deleteConfirmDesc") ||
+          "Are you sure you want to delete this page? This action cannot be undone."
+        }
+        confirmText={t("pdfProcessing.editor.organizePages.confirmDelete") || "Delete"}
+        cancelText={t("pdfProcessing.editor.signature.cancel")}
+        onConfirm={executeDeletePage}
+        confirmVariant="danger"
+      />
+
+      {/* Bulk delete confirmation */}
+      <ConfirmationModal
+        open={showBulkDeleteConfirm}
+        onOpenChange={setShowBulkDeleteConfirm}
+        title={t("pdfProcessing.editor.organizePages.bulkDeleteTitle") || "Delete Selected Pages"}
+        description={t("pdfProcessing.editor.organizePages.bulkDeleteConfirm", {
+          count: selectedPages.size,
+        })}
+        confirmText={t("pdfProcessing.editor.organizePages.confirmDelete") || "Delete"}
+        cancelText={t("pdfProcessing.editor.signature.cancel")}
+        onConfirm={executeBulkDelete}
+        confirmVariant="danger"
+      />
+    </>
   );
 }

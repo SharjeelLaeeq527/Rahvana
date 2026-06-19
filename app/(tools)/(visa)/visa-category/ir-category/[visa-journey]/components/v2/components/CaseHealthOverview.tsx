@@ -236,17 +236,17 @@ export function CaseHealthOverview({
 
   return (
     <motion.div
-  initial={{ opacity: 0, y: 12 }}
-  animate={{ opacity: 1, y: 0 }}
-  transition={{ duration: 0.4, delay: 0.1 }}
-  className="rounded-2xl shadow-sm"
-  style={{
-    background: "rgba(13,115,119,0.04)",
-    border: "1px solid rgba(13,115,119,0.12)",
-  }}
->
+      initial={{ opacity: 0, y: 12 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4, delay: 0.1 }}
+      className="rounded-2xl shadow-md"
+      style={{
+        background: "rgba(13,115,119,0.06)",
+        border: "1.5px solid rgba(13,115,119,0.18)",
+      }}
+    >
       {/* Header */}
-      <div className="px-5 py-3.5 border-b border-slate-200/60 flex items-center justify-between">
+      <div className="px-5 py-3.5 border-b border-[#0d7377]/10 bg-gradient-to-r from-[#0d7377]/5 to-transparent flex items-center justify-between">
         <div className="flex items-center gap-2.5">
           <div
             className="w-8 h-8 rounded-lg flex items-center justify-center"
