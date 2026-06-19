@@ -4,6 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase/admin";
 import { NextResponse } from "next/server";
 import { E, msg } from "@/lib/errors";
 import { appendFeedbackToSheet } from "@/lib/googleSheets";
+import { triggerFeedbackNotification } from "@/lib/notifications";
 
 /** Convert a URL path to a human-readable page name */
 function pathToPageName(url: string): string {
@@ -170,6 +171,16 @@ export async function POST(request: Request) {
       });
     } catch (sheetErr) {
       console.error("Google Sheets sync error (non-fatal):", sheetErr);
+    }
+
+    // ── 7. Notify Admins ──────────────────────────────────────────────────
+    try {
+      await triggerFeedbackNotification(
+        user?.email ?? "Anonymous",
+        FEEDBACK_TYPE_LABELS[feedbackType] ?? feedbackType
+      );
+    } catch (notifErr) {
+      console.error("Admin notification for feedback failed (non-fatal):", notifErr);
     }
 
     return NextResponse.json({ message: "Feedback submitted successfully" });
