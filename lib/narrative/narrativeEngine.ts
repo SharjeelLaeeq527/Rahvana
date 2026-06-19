@@ -857,11 +857,12 @@ export function generateNarrative(
             "but the majority resolve within a few months.",
         action: pauseActive
           ? "First, confirm your interview is still scheduled — check CEAC or contact the embassy. " +
-            "Either way, prepare fully: bring all originals — passport, Nikah Nama, CNIC, police clearances " +
-            "(all qualifying cities), birth certificate, sealed medical envelope (do not open), and two passport photos. " +
-            "Chapter 3 has the full checklist."
-          : "Bring all originals: passport, Nikah Nama, CNIC, police clearances (all qualifying cities), " +
-            "birth certificate, sealed medical envelope (do not open), and two passport photos. Chapter 3 has the full checklist.",
+            "Either way, start preparing now: pack your originals — passport, Nikah Nama, CNIC, police clearances " +
+            "(all qualifying cities), birth certificate, sealed medical envelope (do not open), and two passport photos — " +
+            "then work through the Interview Prep Tool and the Interview Day Guide in Chapter 3 to walk in ready."
+          : "Pack your originals — passport, Nikah Nama, CNIC, police clearances (all qualifying cities), " +
+            "birth certificate, sealed medical envelope (do not open), and two passport photos — " +
+            "then work through the Interview Prep Tool and the Interview Day Guide in Chapter 3 to walk in ready.",
         estimate: null,
         badge:
           days !== null

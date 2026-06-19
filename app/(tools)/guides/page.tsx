@@ -19,8 +19,8 @@ import {
   PlayCircle,
   Trash2,
   ChevronRight,
+  Lock,
 } from "lucide-react";
-import { getCostOfWaitingMessage } from "@/lib/ui/costOfWaitingMessages";
 
 import {
   DropdownMenu,
@@ -142,19 +142,6 @@ const GUIDES: Guide[] = [
 ];
 
 const CATEGORIES: ("All" | GuideCategory)[] = ["All", "Pakistan Document", "Medical & Exam"];
-
-const GUIDE_COST_MESSAGE_MAP: Record<
-  string,
-  keyof typeof import("@/lib/ui/costOfWaitingMessages").COST_OF_WAITING_MESSAGES
-> = {
-  passport: "PASSPORT_GUIDE",
-  "police-verification": "PCC_GUIDE",
-  cnic: "CNIC_GUIDE",
-  "birth-certificate": "BIRTH_CERTIFICATE_GUIDE",
-  frc: "FRC_GUIDE",
-  "marriage-certificate": "MARRIAGE_REGISTRATION_GUIDE",
-  vaccinations: "POLIO_VACCINATION_CERT",
-};
 
 // --- Tier-aware card styles ------------------------------------------------
 // Card border, shadow, and gradient border all follow the tier
@@ -660,8 +647,6 @@ function GuideCard({
 
   const featureLocked =
     !!guide.entitlementFeature && !plan.isLoading && plan.isLocked(guide.entitlementFeature);
-  const costMessageKey = GUIDE_COST_MESSAGE_MAP[guide.id];
-  const costOfWaitingMessage = costMessageKey ? getCostOfWaitingMessage(costMessageKey) : null;
 
   const upgradeTarget: string =
     (guide.entitlementFeature ? plan.entitlement(guide.entitlementFeature).upgradeTarget : null) ??
@@ -762,25 +747,6 @@ function GuideCard({
           {guide.description}
         </p>
 
-        {costOfWaitingMessage && (
-          <div className="-mt-6 mb-0">
-            <p
-              className="w-full text-teal-700 dark:text-teal-300 text-sm italic"
-              style={{
-                fontSize: 13,
-                lineHeight: 1.1,
-                marginTop: 0,
-                marginBottom: 0,
-                fontWeight: 400,
-                letterSpacing: "-0.01em",
-                fontStyle: "italic",
-                fontFamily: "Georgia, 'Times New Roman', serif",
-              }}
-            >
-              {costOfWaitingMessage}
-            </p>
-          </div>
-        )}
         <div className="grow" />
       </div>
 

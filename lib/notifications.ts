@@ -332,7 +332,7 @@ export async function triggerAppointmentNotification(appointmentId: string) {
       await notifyAdmins(
         "admin_new_appointment",
         appointment.journey_id || undefined, // Handle potential null journey_id
-        `${appointment.full_name} has booked a ${appointment.appointment_type} medical appointment.`,
+        `${appointment.full_name} has booked a medical appointment.`,
         undefined,
         "New Medical Appointment"
       );
@@ -1362,6 +1362,17 @@ export async function triggerTranslationNotification(documentId: string) {
     createTranslationInAppNotification(documentId, document).catch((err) => {
       console.error("[TranslationInAppNotif] Background error:", err);
     });
+
+    // Notify admins of a brand-new translation document submission
+    if (document.status === "PENDING") {
+      await notifyAdmins(
+        "admin_new_translation",
+        document.journey_id || undefined,
+        `${fullName} has uploaded a ${document.document_type} certificate for translation.`,
+        undefined,
+        "New Translation Request"
+      );
+    }
 
     return { success: true };
   } catch (error) {

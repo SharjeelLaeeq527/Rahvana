@@ -125,13 +125,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to create database record" }, { status: 500 });
     }
     // Trigger admin notification
+    // Trigger admin notification
     try {
-      await triggerTranslationNotification(
-        document.id,
-        undefined, // No journey ID available in this context
-        document.document_type,
-        userName
-      );
+      await triggerTranslationNotification(document.id);
     } catch (notifError) {
       console.error("Failed to trigger admin notification:", notifError);
     }

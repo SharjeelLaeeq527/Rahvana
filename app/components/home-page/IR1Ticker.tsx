@@ -1,19 +1,5 @@
 "use client";
 
-// ─────────────────────────────────────────────────────────────────────────────
-// IR1Ticker.tsx · v6, June 2026
-//
-// CHANGES FROM v5:
-//   - policyAlert field surfaced as a high-priority "Alert" item (red dot)
-//     rendered BEFORE the headline when present. Ensures IV pause is the
-//     first thing a user in a post-interview stage sees in the ticker.
-//   - estimate suffix "(up to interview — visa issuance paused)" passed
-//     through from narrative.estimate — no special handling needed here.
-//   - Item order: policyAlert → badge → headline → context → estimate → action.
-//   - All prior v5 changes retained (single source of truth from narrative,
-//     no duplicate estimate path, badge surfaced, confidence not dropped).
-// ─────────────────────────────────────────────────────────────────────────────
-
 import React, { useMemo } from "react";
 import type { CSSProperties } from "react";
 import {
@@ -91,13 +77,13 @@ export interface IR1TickerProps {
 export default function IR1Ticker({
   user,
   journeyContext,
-  speed = 28,
+  speed = 50,
   className,
   style,
 }: IR1TickerProps) {
   const items = useMemo(() => buildItems(user, journeyContext), [user, journeyContext]);
 
-  const duration = Math.max(12, Math.min(60, speed + items.length * 1.5));
+  const duration = Math.max(20, Math.min(90, speed + items.length * 2.5));
 
   if (items.length === 0) return null;
 

@@ -22,9 +22,6 @@ import {
   Lock,
   Crown,
 } from "lucide-react";
-import { getCostOfWaitingMessage } from "@/lib/ui/costOfWaitingMessages";
-import { getCostOfWaitingMessage } from "@/lib/ui/costOfWaitingMessages";
-
 import { useLanguage } from "@/app/context/LanguageContext";
 import { usePlan } from "../../context/PlanContext";
 import { UpgradeModal } from "../../components/entitlements/UpgradeModal";
@@ -217,22 +214,6 @@ const CATEGORIES: ("All" | ToolCategory)[] = [
   "Forms & Automation",
 ];
 
-const TOOL_COST_MESSAGE_MAP: Record<
-  string,
-  keyof typeof import("@/lib/ui/costOfWaitingMessages").COST_OF_WAITING_MESSAGES
-> = {
-  "case-strength-analyzer": "CASE_STRENGTH_TOOL_CARD",
-  "221g-planner": "ACTION_PLANNER_TOOL_CARD_221G",
-  "visa-path": "VISA_PATH_TOOL_CARD",
-  "interview-prep": "INTERVIEW_PREP_TOOL_CARD",
-  "queue-watch": "DQ_STATUS_CHECK_TOOL_CARD",
-  "visa-bulletin-monitor": "VISA_BULLETIN_MONITOR_CURRENT",
-  "sponsorship-calculator": "SPONSORSHIP_CALCULATOR_TOOL_CARD",
-  "photo-booth": "PHOTO_BOOTH_TOOL_CARD",
-  "pdf-toolkit": "PDF_TOOL_KIT_TOOL_CARD",
-  "snap-sign": "SNAP_AND_SIGN_TOOL_CARD",
-  "form-forge": "SMART_FORM_FILLER_TOOL_CARD",
-};
 
 // ─── Page component ───────────────────────────────────────────────────────────
 
@@ -530,9 +511,6 @@ function ToolCard({
   const isRouteLocked = isLocked && ROUTE_FEATURE_MAP[tool.href] !== undefined;
   const isResultLocked = isLocked && ROUTE_FEATURE_MAP[tool.href] === undefined;
 
-  const costMessageKey = TOOL_COST_MESSAGE_MAP[tool.id];
-  const costOfWaitingMessage = costMessageKey ? getCostOfWaitingMessage(costMessageKey) : null;
-
   const isNavigable = !tool.disabled && !isRouteLocked;
 
   const handleClick = (e: React.MouseEvent) => {
@@ -607,53 +585,12 @@ function ToolCard({
           )} */}
         </div>
         <p className={`text-sm leading-relaxed mb-1 grow text-slate-900 dark:text-white mb-0 grow`}>
-        <p className={`text-sm leading-relaxed mb-1 grow text-slate-900 dark:text-white mb-0 grow`}>
           {t(`toolsPage.toolsItems.${tool.id}.desc`) || tool.description}
         </p>
 
-        {costOfWaitingMessage && (
-          <div className="mt-0 mb-0">
-            <p
-              className="w-full text-teal-700 dark:text-teal-300 text-sm italic"
-              style={{
-                fontSize: 13,
-                lineHeight: 1.4,
-                marginTop: 0,
-                marginBottom: 0,
-                fontWeight: 400,
-                letterSpacing: "-0.01em",
-                fontStyle: "italic",
-                fontFamily: "Georgia, 'Times New Roman', serif",
-              }}
-            >
-              {costOfWaitingMessage}
-            </p>
-          </div>
-        )}
-
-        {costOfWaitingMessage && (
-          <div className="mt-0 mb-0">
-            <p
-              className="w-full text-teal-700 dark:text-teal-300 text-sm italic"
-              style={{
-                fontSize: 13,
-                lineHeight: 1.4,
-                marginTop: 0,
-                marginBottom: 0,
-                fontWeight: 400,
-                letterSpacing: "-0.01em",
-                fontStyle: "italic",
-                fontFamily: "Georgia, 'Times New Roman', serif",
-              }}
-            >
-              {costOfWaitingMessage}
-            </p>
-          </div>
-        )}
       </div>
 
       {/* Footer */}
-      <div className="relative z-10 flex items-center justify-between pt-3 border-t border-border mt-auto">
       <div className="relative z-10 flex items-center justify-between pt-3 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
         {isRouteLocked ? (
