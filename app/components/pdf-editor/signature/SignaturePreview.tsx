@@ -97,7 +97,7 @@ export default function SignaturePreview({
             </button>
             <button
               onClick={() => setShowTiltMode(true)}
-              className="flex-1 sm:flex-none justify-center px-4 py-2 sm:px-6 sm:py-3 bg-primary/90 hover:bg-primary text-white rounded-lg font-semibold transition-all flex items-center gap-2 text-sm sm:text-base shadow-md"
+              className="flex-1 sm:flex-none justify-center px-4 py-2 sm:px-6 sm:py-3 bg-rahvana-primary hover:bg-rahvana-primary-dark text-white rounded-lg font-semibold transition-all flex items-center gap-2 text-sm sm:text-base shadow-md"
             >
               <Move className="w-4 h-4 sm:w-5 sm:h-5" />
               {t("signatureProcessing.tilt")}

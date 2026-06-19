@@ -151,7 +151,7 @@ export function AlertCenter({ issues, onOpenStep }: AlertCenterProps) {
   // All clear state
   if (activeIssues.length === 0) {
     return (
-      <div className="rounded-2xl border border-slate-200/80 bg-white px-4 py-4 flex items-center gap-3">
+      <div className="rounded-2xl border border-amber-200 bg-amber-50/40 px-4 py-4 flex items-center gap-3">
         <div className="w-8 h-8 rounded-xl bg-[#e6f5f5] border border-[#afdbdb]/50 flex items-center justify-center shrink-0">
           <ShieldCheck size={15} className="text-[#0d7377]" />
         </div>

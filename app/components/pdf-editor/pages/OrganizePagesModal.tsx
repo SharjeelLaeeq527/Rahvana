@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import * as Errors from '@/lib/errors'
+import * as Errors from "@/lib/errors";
 
 interface PageItem {
   index: number;
@@ -389,7 +389,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
             </Button>
             <Button
               onClick={handleSaveChanges}
-              className="bg-primary hover:bg-primary/90 text-white"
+              className="bg-rahvana-primary hover:bg-rahvana-primary-dark text-white"
             >
               <Save className="w-4 h-4 mr-2" />
               {t("pdfProcessing.editor.organizePages.applyChanges")}

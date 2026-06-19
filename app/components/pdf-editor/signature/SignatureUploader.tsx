@@ -66,8 +66,8 @@ export default function SignatureUploader({
         ${disabled ? "opacity-50 cursor-not-allowed" : ""}
         ${
           isDragging
-            ? "border-slate-400 bg-slate-50"
-            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+            ? "border-rahvana-primary bg-rahvana-primary-pale scale-[1.02]"
+            : "border-slate-200 bg-white hover:border-rahvana-primary/40 hover:bg-rahvana-primary-pale/30"
         }
       `}
     >
@@ -82,7 +82,7 @@ export default function SignatureUploader({
 
       <div className="flex flex-col items-center">
         {isDragging ? (
-          <ImageIcon className="w-12 h-12 text-slate-600 mb-4" />
+          <ImageIcon className="w-12 h-12 text-rahvana-primary mb-4" />
         ) : (
           <Upload className="w-12 h-12 text-slate-400 mb-4" />
         )}
@@ -98,8 +98,8 @@ export default function SignatureUploader({
         <button
           type="button"
           disabled={disabled}
-          className="text-white bg-primary/90 px-6 py-2.5 rounded transition-colors text-sm
-                     hover:bg-primary disabled:opacity-50 disabled:cursor-not-allowed"
+          className="text-white bg-rahvana-primary px-6 py-2.5 rounded transition-colors text-sm
+                     hover:bg-rahvana-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {t("signatureProcessing.uploader.chooseFile")}
         </button>

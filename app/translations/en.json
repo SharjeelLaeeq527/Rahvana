@@ -3488,7 +3488,8 @@
         "red": "Red",
         "uploadPlaceholder": "Click to upload signature image",
         "processing": "Processing...",
-        "enterName": "Please enter your name"
+        "enterName": "Please enter your name",
+        "failed": "Failed to create signature. Please try again."
       },
       "shapes": {
         "title": "Shapes",
