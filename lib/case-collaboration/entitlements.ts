@@ -1,16 +1,35 @@
 // lib/case-collaboration/entitlements.ts
-// Phase 4 — entitlement inheritance for the shared case (spec §6).
+// Entitlement resolution for the shared case (spec §6).
 //
-// The invited spouse's OWN account is free with no add-ons. When they are an
-// active *partner* on a shared case, their entitlements must resolve against the
-// case OWNER's profile (tier + purchased add-ons) — NOT their own.
+// MODEL: "best plan in the case wins" (owner decision 2026-06-19). Both spouses
+// are self-sufficient — EITHER can buy/upgrade on their own account, and the
+// whole shared case gets the BEST tier + the UNION of every member's add-ons.
+// So if the beneficiary has Premium and the petitioner buys Executive, both see
+// Executive. (Previously only the case OWNER's plan counted; that locked the
+// partner out of upgrading.)
 //
-// This MUST run server-side with the service-role client: a partner cannot read
-// the owner's `user_profiles` row through RLS, so a client-side lookup would
-// always fail. Resolution is LIVE (read on every call) — never snapshotted —
-// so if the owner downgrades or lapses, the partner immediately drops with them.
+// This MUST run server-side with the service-role client: a member cannot read
+// the other member's `user_profiles` row through RLS, so a client-side lookup
+// would always fail. Resolution is LIVE (read on every call) — never snapshotted
+// — so if a member downgrades or lapses, the effective plan recomputes at once.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { resolveActiveJourneyId } from "@/lib/case-collaboration/helpers";
+
+// Tier ranking for the MAX comparison. DB stores either the canonical names or
+// the legacy aliases (core/plus/pro), mirrored from PlanContext's DB_TIER_MAP.
+const TIER_RANK: Record<string, number> = {
+  free: 0,
+  basic: 1,
+  core: 1,
+  premium: 2,
+  plus: 2,
+  executive: 3,
+  pro: 3,
+};
+function tierRank(raw: string | null | undefined): number {
+  return TIER_RANK[String(raw ?? "").trim().toLowerCase()] ?? 0;
+}
 
 export interface EffectivePlan {
   /** Raw DB tier string (e.g. "premium", "pro", "free"). Client normalizes. */
@@ -53,51 +72,97 @@ async function readProfilePlan(
 }
 
 /**
- * Resolve the plan that applies to `userId` right now, accounting for shared-case
- * membership:
- *   - If the user is an ACTIVE PARTNER on a case → the case OWNER's plan.
- *   - Otherwise → the user's own plan.
+ * Resolve the plan that applies to `userId` right now using the "best plan in
+ * the case wins" model:
+ *   - Find the shared case the user belongs to (their own journey, else the case
+ *     they were invited to — same resolution the rest of the app uses).
+ *   - The effective plan = the HIGHEST tier among all active members + the UNION
+ *     of every member's purchased add-ons.
+ *   - Solo / no-case users just get their own plan.
+ *
+ * `isInherited` is true when the effective plan is BETTER than the user's own
+ * account (i.e. a spouse's purchase is lifting them) — useful for a "shared with
+ * your spouse" hint.
  *
  * `admin` must be a service-role client (bypasses RLS). Fails safe to the user's
- * own plan if the partner/owner lookup errors.
+ * own plan on any lookup error.
  */
 export async function resolveEffectivePlan(
   admin: SupabaseClient,
   userId: string
 ): Promise<EffectivePlan> {
-  // 1. Is this user an active partner on someone else's case?
-  const { data: membership, error: memberErr } = await admin
-    .from("case_collaborators")
-    .select("journey_id")
-    .eq("user_id", userId)
-    .eq("membership_role", "partner")
-    .eq("status", "active")
-    .order("joined_at", { ascending: false })
-    .limit(1)
-    .maybeSingle();
+  // The user's own plan — baseline + the fallback if anything below fails.
+  const ownPlan = await readProfilePlan(admin, userId, false);
 
-  // On lookup error, fall back to the user's own plan (fail safe, never crash).
-  if (memberErr || !membership?.journey_id) {
-    return readProfilePlan(admin, userId, false);
+  // Which shared case is this user part of? (own journey, else collaborator)
+  let journeyId: string | null = null;
+  try {
+    journeyId = await resolveActiveJourneyId(admin, userId);
+  } catch {
+    journeyId = null;
+  }
+  if (!journeyId) return ownPlan;
+
+  // Collect every member of the case: the user, the journey owner, and all
+  // active collaborators. (Owner may not have a collaborators row yet, so add
+  // it explicitly.)
+  const memberIds = new Set<string>([userId]);
+  try {
+    const { data: jrow } = await admin
+      .from("journeys")
+      .select("user_id")
+      .eq("id", journeyId)
+      .maybeSingle();
+    const ownerId = (jrow as { user_id: string } | null)?.user_id;
+    if (ownerId) memberIds.add(ownerId);
+
+    const { data: collabs } = await admin
+      .from("case_collaborators")
+      .select("user_id")
+      .eq("journey_id", journeyId)
+      .eq("status", "active");
+    ((collabs as Array<{ user_id: string }>) || []).forEach((c) => memberIds.add(c.user_id));
+  } catch {
+    return ownPlan;
   }
 
-  // 2. Find that case's owner and inherit their LIVE plan.
-  const { data: journey, error: journeyErr } = await admin
-    .from("journeys")
-    .select("user_id")
-    .eq("id", membership.journey_id)
-    .single();
+  // Solo case (just this user) → nothing to merge.
+  if (memberIds.size <= 1) return ownPlan;
 
-  if (journeyErr || !journey?.user_id) {
-    return readProfilePlan(admin, userId, false);
+  // Read every member's plan in one query and compute MAX tier + union add-ons.
+  const { data: profiles, error } = await admin
+    .from("user_profiles")
+    .select("id, subscription_tier, profile_details")
+    .in("id", Array.from(memberIds));
+
+  if (error || !profiles) return ownPlan;
+
+  let bestTier = "free";
+  let bestRank = -1;
+  const addonSet = new Set<string>();
+
+  for (const p of profiles as Array<{
+    id: string;
+    subscription_tier: string | null;
+    profile_details: Record<string, unknown> | null;
+  }>) {
+    const t = p.subscription_tier ?? "free";
+    const r = tierRank(t);
+    if (r > bestRank) {
+      bestRank = r;
+      bestTier = t;
+    }
+    const ad = p.profile_details?.purchased_addons;
+    if (Array.isArray(ad)) (ad as string[]).forEach((a) => addonSet.add(a));
   }
 
-  // Defensive: if the owner row somehow points back at this user, that's not an
-  // inherited plan — read it as their own.
-  const ownerId = journey.user_id as string;
-  if (ownerId === userId) {
-    return readProfilePlan(admin, userId, false);
-  }
+  const purchasedAddons = Array.from(addonSet);
 
-  return readProfilePlan(admin, ownerId, true);
+  // Inherited = the case plan beats the user's own account (a spouse is lifting
+  // them), either by tier or by an add-on they don't personally own.
+  const ownAddons = new Set(ownPlan.purchasedAddons);
+  const gainedAddon = purchasedAddons.some((a) => !ownAddons.has(a));
+  const isInherited = bestRank > tierRank(ownPlan.subscriptionTier) || gainedAddon;
+
+  return { subscriptionTier: bestTier, purchasedAddons, isInherited };
 }

@@ -1,7 +1,8 @@
 // app/api/case/roles/route.ts
-// POST — EITHER spouse assigns/swaps case roles. The caller declares THEIR OWN
-// role; the other active member automatically gets the opposite. Atomic + swap-
-// safe via the public.assign_case_roles() SECURITY DEFINER function.
+// POST — EITHER spouse makes the ONE-TIME case-role choice. The caller declares
+// THEIR OWN role; the other active member automatically gets the opposite. Roles
+// CANNOT be swapped afterward: public.assign_case_roles() rejects a second
+// assignment (returns a clear error the UI surfaces).
 // Spec: docs/partner-collaboration-spec.md §7.1.
 
 import { NextRequest, NextResponse } from "next/server";

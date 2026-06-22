@@ -280,46 +280,46 @@ CREATE POLICY "Members can view case-linked vault docs" ON public.documents
 
 ---
 
-## 6. Billing — NO extra payment; spouse inherits the owner's plan
+## 6. Billing — NO extra payment; "best plan in the case wins"
 
 **There is no "partner seat", no new add-on, no new Stripe price, and no change
-to `pricing.ts` or the webhook.** The owner already pays for one plan
-(basic / premium / executive); the spouse joins free and uses that same plan
-**for the shared case**.
+to `pricing.ts` or the webhook.** One paid plan covers the shared case.
 
-### The one real technical change: entitlement inheritance
+> **Model updated 2026-06-19 (owner decision): "best plan in the case wins"
+> (MAX), replacing the earlier owner-only inheritance.** Both spouses are
+> **self-sufficient** — EITHER can buy/upgrade on their own account, and the
+> whole shared case gets the **highest tier among all members + the union of all
+> members' add-ons**. So if the beneficiary has Premium and the petitioner later
+> buys Executive, both see Executive. The earlier design (only the case OWNER's
+> plan counted) meant a non-owner partner couldn't upgrade the case — fixed.
 
-Today `PlanContext` / `usePlan()` reads the **logged-in user's own**
-`user_profiles.subscription_tier` **and** `profile_details.purchased_addons`. But
-the invited spouse's own account is **free** with no add-ons. So when the spouse
-opens the shared case, their entitlements must resolve against the **owner's**
-profile, not their own.
+### The one real technical change: effective-plan resolution
 
-> **Inherit BOTH tier and add-ons.** `PlanContext` derives access from two
-> fields: `subscription_tier` *and* `purchased_addons` (sponsor, interview-prep,
-> photo, etc. live in the owner's `profile_details.purchased_addons`). If we
-> inherit only the tier, add-on-gated tools stay locked for the spouse. The
-> effective entitlement for the shared case = owner's tier **+** owner's add-ons.
+`PlanContext` / `usePlan()` reads the **logged-in user's own**
+`user_profiles.subscription_tier` **and** `profile_details.purchased_addons`. For
+a shared case this is resolved server-side into the **effective** plan.
 
-Plan:
+How it works (`lib/case-collaboration/entitlements.ts` → `resolveEffectivePlan`,
+behind `GET /api/plan/effective`, service-role):
 
-1. When loading a case, determine the **effective entitlements** = the tier
-   **and** `purchased_addons` of that case's **owner**
-   (`journeys.user_id` → owner's `user_profiles`).
-2. Feed those into the plan context used on journey/case screens, so the spouse
-   sees exactly what the owner's plan unlocks (steps, tools, vault, etc.).
-   Owner's own screens are unchanged.
-3. The spouse's personal (non-case) screens still use their own free account —
-   only the **shared case** inherits the owner's plan.
-4. **Resolve live, never copy.** The effective tier is read from the owner's
-   current profile on each case load — it is never snapshotted onto the spouse's
-   row. So if the owner **downgrades or lets the subscription lapse**, the spouse
-   immediately drops to the owner's new (lower) tier on the shared case. No
-   webhook or sync job needed; the inheritance is always a live lookup.
+1. Resolve the shared case the user belongs to (own journey, else the case they
+   were invited to — `resolveActiveJourneyId`).
+2. Gather **all active members** (the user, the journey owner, every active
+   collaborator).
+3. Effective plan = **MAX `subscription_tier`** across members (rank
+   free<basic<premium<executive; legacy aliases core/plus/pro mapped) **+ UNION**
+   of every member's `purchased_addons`.
+4. **Resolve live, never copy** — read on every call, never snapshotted. So if
+   any member downgrades or lapses, the effective plan recomputes immediately.
+5. Solo / no-case users just get their own plan. `isInherited` = true when the
+   effective plan beats the user's own account (a spouse is lifting them).
 
-> Net effect: whatever plan the owner buys or upgrades to, **both husband and
-> wife see the same unlocked features inside the shared case, each from their
-> own login** — exactly as requested.
+Why service-role: a member can't read the other member's `user_profiles` row via
+RLS, so the merge must run with the admin client server-side.
+
+> Net effect: whichever spouse buys or upgrades, **both see the same unlocked
+> features inside the shared case, each from their own login** — and either one
+> can be the buyer.
 
 ### Who can invite
 
@@ -342,29 +342,29 @@ specific tier only.)*
   Whoever picks first declares **their own** role ("I am the petitioner /
   beneficiary"); the **other member is automatically given the opposite** role.
   The unique partial index guarantees exactly one of each.
-- **Either spouse can re-assign / swap roles later** (in case of a mistake). The
-  `roles` route is idempotent and accepts a swap.
+- **Roles are a ONE-TIME choice — NO swapping later** (owner decision, updated
+  2026-06-19; supersedes the earlier "either spouse can re-assign / swap"
+  design). Because picking the wrong role would mis-route data, the choice is
+  made deliberately behind a **confirmation modal** that states plainly that it
+  cannot be changed afterward; the assign UI also carries a visible "this is a
+  one-time choice and cannot be swapped" warning. Once set, the panel just shows
+  the locked roles ("🔒 Roles are set and cannot be changed").
 
-  **The swap-collision problem & its fix.** `uniq_case_role_per_journey` forbids
-  two active rows sharing a `case_role`. A naive swap (A: pet→ben, B: ben→pet)
-  fails: Postgres checks the *non-deferrable partial* unique index per-row mid-
-  statement, so it sees a transient duplicate. A partial unique **index** can't
-  be made `DEFERRABLE` either. The robust fix is **NULL-then-set inside one
-  atomic function**: first set both rows' `case_role` to `NULL` (NULLs are
-  excluded from the partial index, so no conflict), then set caller→chosen,
-  other→opposite (now NULL→distinct values, no transient duplicate). This lives
-  in a `SECURITY DEFINER` SQL function `public.assign_case_roles(p_journey_id,
-  p_caller_role)`:
+  **Enforcement (`public.assign_case_roles(p_journey_id, p_caller_role)`,
+  `SECURITY DEFINER`):**
   - Uses `auth.uid()` internally (never trusts a passed caller id).
   - Verifies the caller is an **active member** of the journey.
   - Requires **exactly 2 active members** (a partner must exist first).
+  - **One-time guard (`20260620_lock_case_roles.sql`):** if ANY active member
+    already has a non-null `case_role`, the function raises *"Roles have already
+    been assigned for this case and cannot be changed."* — the `roles` route
+    surfaces this as a 400 and the UI shows it. So the first assignment wins and
+    is final.
   - `SECURITY DEFINER` so EITHER member can assign without loosening the strict
     "owner manages collaborators" RLS on direct table writes.
-- **Late-change strategy (confirmed):** on swap, **data is NOT auto-migrated**
-  (v1). Documents/answers already routed under the old roles stay put; the UI
-  shows a **confirmation warning** telling the user to review already-sorted
-  info. Auto-migrating petitioner↔beneficiary data is a risky v2 candidate.
-  Both members see the current roles; both can change them.
+  - The NULL-then-set shape is kept for safety/idempotence, but since we only
+    ever go all-NULL → set-once, the old swap-collision on the partial unique
+    index can no longer occur.
 
 ### 7.2 Routing logic
 

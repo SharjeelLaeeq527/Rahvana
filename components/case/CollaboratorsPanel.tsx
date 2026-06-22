@@ -4,7 +4,9 @@
 // Mount on the case dashboard / settings, passing the current journeyId.
 // Gated by plan: free owners see a locked state with an upgrade hint.
 // Role assignment (petitioner/beneficiary) is available to EITHER spouse once
-// both are in the case, with a confirmation modal on both choose and swap.
+// both are in the case. It is a ONE-TIME choice — a confirmation modal makes the
+// user commit deliberately, and roles CANNOT be swapped afterward (enforced by
+// public.assign_case_roles, which rejects a second assignment).
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
 import { usePlan } from "@/app/context/PlanContext";
@@ -45,9 +47,10 @@ export default function CollaboratorsPanel({ journeyId }: { journeyId: string })
   // When the invite email can't be delivered, we surface the raw link here so the
   // owner can copy it and send it to their spouse manually.
   const [manualLink, setManualLink] = useState<string | null>(null);
-  // Confirmation modal for choosing OR swapping a role. `role` is the role the
-  // current user would take; the spouse automatically gets the opposite.
-  const [confirm, setConfirm] = useState<{ kind: "assign" | "swap"; role: CaseRole } | null>(null);
+  // Confirmation modal for the one-time role choice. `role` is the role the
+  // current user would take; the spouse automatically gets the opposite. Roles
+  // can't be swapped later, so the modal makes the user confirm deliberately.
+  const [confirm, setConfirm] = useState<CaseRole | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -129,8 +132,9 @@ export default function CollaboratorsPanel({ journeyId }: { journeyId: string })
     }
   };
 
-  // Assign / swap who is petitioner vs beneficiary. The caller declares THEIR
-  // OWN role; the server gives the spouse the opposite (atomic, swap-safe).
+  // Assign who is petitioner vs beneficiary — a ONE-TIME choice. The caller
+  // declares THEIR OWN role; the server gives the spouse the opposite. The
+  // server rejects any later change.
   const assignRole = async (role: CaseRole) => {
     setBusy(true);
     setError(null);
@@ -205,19 +209,23 @@ export default function CollaboratorsPanel({ journeyId }: { journeyId: string })
           {!rolesAssigned ? (
             <div className="rounded-lg bg-slate-50 px-4 py-3">
               <p className="text-sm font-medium text-slate-700 mb-1">Who is who?</p>
-              <p className="text-xs text-slate-500 mb-3">
+              <p className="text-xs text-slate-500 mb-2">
                 Pick your role — your spouse is automatically given the other.
+              </p>
+              <p className="text-xs font-medium text-amber-700 mb-3">
+                ⚠️ Choose carefully: this is a one-time choice and roles cannot be
+                swapped later.
               </p>
               <div className="flex gap-2">
                 <button
-                  onClick={() => setConfirm({ kind: "assign", role: "petitioner" })}
+                  onClick={() => setConfirm("petitioner")}
                   disabled={busy}
                   className="flex-1 rounded-lg border border-[#0d7377] px-3 py-2 text-sm font-semibold text-[#0d7377] hover:bg-[#0d7377] hover:text-white disabled:opacity-50"
                 >
                   I&apos;m the petitioner
                 </button>
                 <button
-                  onClick={() => setConfirm({ kind: "assign", role: "beneficiary" })}
+                  onClick={() => setConfirm("beneficiary")}
                   disabled={busy}
                   className="flex-1 rounded-lg border border-[#0d7377] px-3 py-2 text-sm font-semibold text-[#0d7377] hover:bg-[#0d7377] hover:text-white disabled:opacity-50"
                 >
@@ -231,15 +239,9 @@ export default function CollaboratorsPanel({ journeyId }: { journeyId: string })
                 You: <span className="font-semibold capitalize">{me?.caseRole}</span> · Spouse:{" "}
                 <span className="font-semibold capitalize">{other?.caseRole}</span>
               </p>
-              <button
-                onClick={() =>
-                  me?.caseRole &&
-                  setConfirm({ kind: "swap", role: opposite(me.caseRole as CaseRole) })
-                }
-                className="mt-2 text-xs font-medium text-[#0d7377] hover:underline"
-              >
-                Swap roles
-              </button>
+              <p className="mt-1 text-xs text-slate-400">
+                🔒 Roles are set and cannot be changed.
+              </p>
             </div>
           )}
         </div>
@@ -317,28 +319,22 @@ export default function CollaboratorsPanel({ journeyId }: { journeyId: string })
         </div>
       )}
 
-      {/* Shared confirmation modal — used for BOTH choosing and swapping a role,
-          so the user is sure before committing (and to avoid needless swaps). */}
+      {/* One-time role confirmation. Roles can't be swapped later, so make the
+          user commit deliberately. */}
       {confirm && (
         <ConfirmationModal
           open
           onOpenChange={(o) => {
             if (!o) setConfirm(null);
           }}
-          title={confirm.kind === "swap" ? "Swap roles?" : "Confirm your role"}
-          description={
-            confirm.kind === "swap"
-              ? `You'll become the ${confirm.role} and your spouse the ${opposite(
-                  confirm.role
-                )}. Documents and answers you've already saved were sorted by the current roles — they are NOT moved automatically, so please review them after swapping.`
-              : `You'll be the ${confirm.role} and your spouse will automatically be the ${opposite(
-                  confirm.role
-                )}. You can change this later, but any saved info would then need review — so make sure this is correct now.`
-          }
-          confirmText={confirm.kind === "swap" ? "Yes, swap" : `Yes, I'm the ${confirm.role}`}
-          confirmVariant={confirm.kind === "swap" ? "danger" : "primary"}
+          title="Confirm your role"
+          description={`You'll be the ${confirm} and your spouse will automatically be the ${opposite(
+            confirm
+          )}. This is a one-time choice — roles CANNOT be changed or swapped later, so please make sure this is correct before confirming.`}
+          confirmText={`Yes, I'm the ${confirm}`}
+          confirmVariant="primary"
           loading={busy}
-          onConfirm={() => assignRole(confirm.role)}
+          onConfirm={() => assignRole(confirm)}
         />
       )}
     </div>
