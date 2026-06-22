@@ -17,6 +17,7 @@ import { calculateExpirationDate } from "@/lib/document-vault/expiration-tracker
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { UploadedDocument, DocumentRole, DocumentCategory } from "@/lib/document-vault/types";
 import { resolveActiveJourneyId } from "@/lib/case-collaboration/helpers";
+import { logCaseActivity } from "@/lib/case-collaboration/activity";
 import { createClient as createClientJs } from "@supabase/supabase-js";
 import { encryptFile } from "@/lib/document-vault/file-encryption";
 
@@ -356,6 +357,20 @@ export async function POST(request: NextRequest) {
 
     // Save document metadata to database
     const savedDocument = await dbStorage.saveDocument(uploadedDocument);
+
+    // Audit log (best-effort, shared case only). Label = the document's name.
+    await logCaseActivity({
+      journeyId,
+      actorUserId: user.id,
+      action: "document.upload",
+      targetLabel: documentDef.name,
+      metadata: {
+        document_id: documentId,
+        document_def_id: documentDefId,
+        filename: file.name,
+        version,
+      },
+    });
 
     return NextResponse.json({
       success: true,

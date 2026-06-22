@@ -550,13 +550,25 @@ is owner-only or a personal reset.
 >   count, with the **admin client** (so the other spouse, who owns no row, can
 >   still read). Returns
 >   `{ hasCase, journeyId, caseRole, canEdit, session, output, userAnswers, answeredCount }`.
-> - **`canEdit` is OWNERSHIP-based, not role-assignment-based** (fixed 2026-06-19 —
->   the first cut keyed it to `caseRole === 'petitioner'`, so a partner whose role
->   was never assigned saw nothing): petitioner role → false; beneficiary role →
->   true; else, if a journey session exists → `session.user_id === me` (the creator
->   edits, the other spouse views read-only); else → `journeys.user_id === me` (the
->   journey owner/beneficiary may start it). Net effect: the spouse who did NOT do
->   the prep is read-only **even if roles were never assigned**.
+> - **Prep is found by the BENEFICIARY's `user_id`, not by `journey_id`** (fixed
+>   2026-06-19 after debugging real data): in practice the interview session is a
+>   standalone `source='tool'` session with `journey_id = null` — people use the
+>   standalone tool, not the journey auto-init — so a journey-only lookup found
+>   nothing and the partner saw an empty page. beneficiaryId = the active member
+>   whose `case_role = 'beneficiary'`, else the journey owner (account-holder
+>   default). Session lookup prefers `user_id = beneficiaryId AND journey_id =
+>   journeyId`, then falls back to that user's **latest session of any source**.
+> - **`canEdit = (beneficiaryId === me)`.** The beneficiary edits/practices; every
+>   other case member is read-only. Works with or without roles assigned. Edge case
+>   now handled: owner = petitioner + partner = beneficiary (roles assigned) → the
+>   beneficiary partner edits, the petitioner-owner is read-only.
+> - **Rapid Fire mirror:** `interview_prep_session_progress` is surfaced read-only
+>   (`rapidFire` in the payload). GOTCHA: `total_rounds_completed` can stay 0
+>   mid-practice and `round_summary` is often null, so roundsDone =
+>   `max(total_rounds_completed, current_round − 1, 0)` and activity =
+>   `current_round > 1 || score > 0`. The frontend renders a "Rapid Fire practice"
+>   card (rounds practised + points, or covered/partial/missed/readiness when a
+>   `round_summary` exists).
 > - **Write-gate** in `app/api/interview-prep/from-journey/route.ts` POST: a
 >   **petitioner** creating a journey session gets **403** (stops a petitioner-owner
 >   auto-init from claiming the case session). Other writes are already isolated by
@@ -766,10 +778,48 @@ Net: a spouse's upload/delete or a new custom slot appears for the other
 
 ---
 
-## 13b. Activity history (audit log) — PLANNED (not built yet)
+## 13b. Activity history (audit log) — BUILT (2026-06-19)
 
-> **Status: planned only.** This section is the agreed design; no code/migration
-> written yet. Build after the shared-forms migration is tested.
+> **Status: BUILT.** Append-only per-case feed, view-only, both spouses read it.
+> One migration (`20260619_create_case_activity.sql` — user runs it). What shipped:
+>
+> - **Table `case_activity`** (`journey_id`, `actor_user_id` `ON DELETE SET NULL`,
+>   `actor_role` **snapshot**, `action`, `target_label`, `metadata` JSONB,
+>   `created_at`), index `(journey_id, created_at DESC)`. RLS: members SELECT
+>   (`is_journey_member`); INSERT limited to `actor_user_id = auth.uid()` + member;
+>   service-role full access.
+> - **Logger** `lib/case-collaboration/activity.ts` → `logCaseActivity({ journeyId,
+>   actorUserId, action, targetLabel, metadata })`. Best-effort & non-throwing
+>   (try/catch — never breaks the real action); no-ops when `journeyId` is null
+>   (solo/pre-case). Snapshots `actor_role` from `case_collaborators`
+>   (case_role, else `'owner'` when the actor owns the journey).
+> - **Action points instrumented** (server-side, after the real write succeeds):
+>   - `app/api/visa-forms/[formCode]/progress` POST → `form.complete` when
+>     `body.completed`, else `form.save` (label = friendly form name).
+>   - `app/api/case/roles` POST → `role.assign` (after the swap, so the snapshot
+>     reflects the chosen role).
+>   - `app/api/documents/upload` POST → `document.upload` (label = doc def name).
+>   - `app/api/documents/[id]` DELETE → `document.delete` (label = doc def name,
+>     fallback original filename).
+>   - `app/api/steps/[id]` POST `?action=complete` → `step.complete`; PATCH with a
+>     non-`completed` status on a previously-`completed` step → `step.reopen`
+>     (reads prior status before updating; actor via a quick `getActorId()`).
+> - **Read API** `app/api/case/activity` GET `?journeyId=&limit=` (default 100,
+>   max 300) — `verifyJourneyAccess` (member), service-role select `created_at
+>   DESC`, enriches each row with the actor's email (`auth.admin.getUserById`,
+>   deduped per unique id). Returns `{ activity[], members[] }`.
+> - **UI** `app/(main)/case-history/page.tsx` — own page (resolves the case the
+>   same way `/settings` does: own journey, else active collaborator journey),
+>   latest-first feed with emoji + verb + role badge + target label + relative
+>   time, and an **All / Petitioner / Beneficiary** filter (by `actorRole`
+>   snapshot). View-only. Reached via a **"View history"** button on the Shared
+>   case card in `/settings`.
+>
+> **Scope guards:** view-only (no undo); v1 tracks only the four action groups
+> above; no realtime (loads on open) — both can be added later by adding `action`
+> values + log calls / a subscription.
+
+### Original plan (below — superseded by the BUILT notes above)
 
 ### In plain words (for non-technical readers)
 - Har case ki ek **history** banegi: kis ne, kab, kya kiya.

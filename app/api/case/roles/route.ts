@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { verifyJourneyAccess, errorResponse, successResponse } from "@/lib/api/journey-auth";
+import { logCaseActivity } from "@/lib/case-collaboration/activity";
 
 const VALID_ROLES = ["petitioner", "beneficiary"] as const;
 type CaseRole = (typeof VALID_ROLES)[number];
@@ -49,6 +50,16 @@ export async function POST(req: NextRequest) {
         { status: 400 }
       );
     }
+
+    // Audit log (best-effort). actor_role is snapshotted AFTER the swap, so it
+    // reflects the role the caller just chose for themselves.
+    await logCaseActivity({
+      journeyId,
+      actorUserId: access.user.id,
+      action: "role.assign",
+      targetLabel: `Set themselves as ${role}`,
+      metadata: { chosen_role: role },
+    });
 
     return NextResponse.json(
       successResponse({ assigned: true, yourRole: role }, "Roles updated")

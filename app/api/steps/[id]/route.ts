@@ -3,7 +3,22 @@ import { stepService } from "@/lib/journey/service";
 import * as db from "@/lib/journey/data-access";
 import type { StepUpdate } from "@/lib/journey/types";
 import { stepCompletionEngine } from "@/lib/journey/service";
+import { createClient } from "@/lib/supabase/server";
+import { logCaseActivity } from "@/lib/case-collaboration/activity";
 import { E, msg, normalizeError } from "@/lib/errors";
+
+/** Current authenticated user id (best-effort, for activity attribution). */
+async function getActorId(): Promise<string | null> {
+  try {
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    return user?.id ?? null;
+  } catch {
+    return null;
+  }
+}
 
 // GET /api/steps/[id] - Get step details with metadata and visibility context
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -93,7 +108,27 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const stepId = (await params).id;
     const updates: StepUpdate = await request.json();
 
+    // Detect a "reopen" (a completed step being moved back to an open status) so
+    // we can log it. Read the prior status before the update.
+    const isStatusChange = typeof updates.status === "string" && updates.status !== "completed";
+    const priorStep = isStatusChange ? await db.getStepDB(stepId) : null;
+
     const result = await stepService.updateStep(stepId, updates);
+
+    // Audit log (best-effort, shared case only) — only when a completed step was
+    // actually reopened.
+    if (priorStep && priorStep.status === "completed") {
+      const chapter = await db.getChapterDB(priorStep.chapter_id);
+      if (chapter) {
+        await logCaseActivity({
+          journeyId: chapter.journey_id,
+          actorUserId: await getActorId(),
+          action: "step.reopen",
+          targetLabel: priorStep.step_name,
+          metadata: { step_key: priorStep.step_key, new_status: updates.status },
+        });
+      }
+    }
 
     return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (error) {
@@ -160,6 +195,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Complete step with journey context
     const result = await stepService.completeStep(stepId, chapter.journey_id, body);
+
+    // Audit log (best-effort, shared case only).
+    await logCaseActivity({
+      journeyId: chapter.journey_id,
+      actorUserId: await getActorId(),
+      action: "step.complete",
+      targetLabel: step.step_name,
+      metadata: { step_key: step.step_key },
+    });
 
     return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (error) {

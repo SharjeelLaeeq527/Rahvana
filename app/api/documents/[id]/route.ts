@@ -8,6 +8,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { resolveActiveJourneyId } from "@/lib/case-collaboration/helpers";
+import { logCaseActivity } from "@/lib/case-collaboration/activity";
+import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { createClient as createClientJs } from "@supabase/supabase-js";
 import { E, msg } from "@/lib/errors";
 // GET - Get document metadata
@@ -81,6 +83,23 @@ export async function DELETE(
 
     // Delete metadata (any case member may delete the shared doc)
     await dbStorage.deleteDocument(documentId, user.id, journeyId);
+
+    // Audit log (best-effort, shared case only). Prefer the document's friendly
+    // definition name; fall back to the original filename.
+    const docDefName =
+      ALL_DOCUMENTS.find((d) => d.id === document.documentDefId)?.name ||
+      document.originalFilename;
+    await logCaseActivity({
+      journeyId,
+      actorUserId: user.id,
+      action: "document.delete",
+      targetLabel: docDefName,
+      metadata: {
+        document_id: documentId,
+        document_def_id: document.documentDefId,
+        filename: document.originalFilename,
+      },
+    });
 
     return NextResponse.json({
       success: true,

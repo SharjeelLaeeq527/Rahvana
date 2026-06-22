@@ -424,6 +424,21 @@ export default function SettingsPage() {
               <CardContent className="pt-2 sm:pt-6 space-y-6">
                 <CollaboratorsPanel journeyId={journeyId} />
                 <CaseProgressPanel journeyId={journeyId} />
+                <div className="flex items-center justify-between rounded-xl border border-slate-200 p-4">
+                  <div>
+                    <p className="text-sm font-medium text-slate-800">Activity history</p>
+                    <p className="text-xs text-slate-500">
+                      See who did what — uploads, forms, steps and role changes.
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    className="border-slate-300"
+                    onClick={() => router.push("/case-history")}
+                  >
+                    View history
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}

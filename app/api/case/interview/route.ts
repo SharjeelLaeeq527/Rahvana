@@ -172,11 +172,23 @@ export async function GET(req: NextRequest) {
       completed: boolean | null;
     } | null;
 
-    // Only surface Rapid Fire once at least one round is done.
+    // Surface Rapid Fire once there's ANY practice activity. The app doesn't
+    // always bump total_rounds_completed (it can stay 0 mid-practice), so we also
+    // treat current_round > 1 (they've moved past round 1) or score > 0 as
+    // activity. roundsDone derives the best available round count.
+    const rfRoundsDone = prog
+      ? Math.max(prog.total_rounds_completed ?? 0, (prog.current_round ?? 1) - 1, 0)
+      : 0;
+    const rfHasActivity =
+      !!prog &&
+      ((prog.total_rounds_completed ?? 0) > 0 ||
+        (prog.current_round ?? 0) > 1 ||
+        (prog.score ?? 0) > 0);
     const rapidFire =
-      prog && (prog.total_rounds_completed ?? 0) > 0
+      prog && rfHasActivity
         ? {
             currentRound: prog.current_round ?? 0,
+            roundsDone: rfRoundsDone,
             totalRoundsCompleted: prog.total_rounds_completed ?? 0,
             score: prog.score ?? 0,
             lastRoundScore: prog.last_round_score ?? 0,

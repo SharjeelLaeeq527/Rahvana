@@ -68,6 +68,7 @@ export default function InterviewPreparation() {
   const [readOnlyAnsweredCount, setReadOnlyAnsweredCount] = useState(0);
   type RapidFireSummary = {
     currentRound: number;
+    roundsDone: number;
     totalRoundsCompleted: number;
     score: number;
     lastRoundScore: number;
@@ -810,9 +811,8 @@ export default function InterviewPreparation() {
   // Rapid Fire practice summary (read-only) — mirrors the beneficiary's rounds.
   const renderRapidFireSummary = () => {
     const rf = readOnlyRapidFire;
-    if (!rf || rf.totalRoundsCompleted <= 0) return null;
-    const s = rf.roundSummary || {};
-    const readiness = rf.roundSummary?.readinessScore ?? rf.lastRoundScore ?? rf.score;
+    if (!rf) return null;
+    const s = rf.roundSummary;
     const stat = (label: string, value: number | string, color: string) => (
       <div className="flex flex-col items-center rounded-lg bg-white px-3 py-2 border border-slate-100">
         <span className="text-lg font-bold" style={{ color }}>
@@ -826,19 +826,31 @@ export default function InterviewPreparation() {
         <div className="mb-3 flex items-center justify-between">
           <span className="text-sm font-bold text-[#6b5b7b]">Rapid Fire practice</span>
           <span className="text-xs font-semibold text-slate-500">
-            {rf.totalRoundsCompleted} round{rf.totalRoundsCompleted === 1 ? "" : "s"} completed
+            {rf.roundsDone > 0
+              ? `${rf.roundsDone} round${rf.roundsDone === 1 ? "" : "s"} practised`
+              : "Practice started"}
           </span>
         </div>
-        <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-          {stat("Readiness", `${Math.round(Number(readiness) || 0)}%`, "#6b5b7b")}
-          {stat("Covered", s.coveredCount ?? 0, "#15744f")}
-          {stat("Partial", s.partialCount ?? 0, "#9c6f38")}
-          {stat("Missed", s.missedCount ?? 0, "#db8090")}
-          {stat("Skipped", s.skippedCount ?? 0, "#64748b")}
-        </div>
+        {s ? (
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
+            {stat(
+              "Readiness",
+              `${Math.round(Number(s.readinessScore ?? rf.score) || 0)}%`,
+              "#6b5b7b"
+            )}
+            {stat("Covered", s.coveredCount ?? 0, "#15744f")}
+            {stat("Partial", s.partialCount ?? 0, "#9c6f38")}
+            {stat("Missed", s.missedCount ?? 0, "#db8090")}
+            {stat("Skipped", s.skippedCount ?? 0, "#64748b")}
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-2">
+            {stat("Rounds practised", rf.roundsDone, "#6b5b7b")}
+            {stat("Points", rf.score, "#15744f")}
+          </div>
+        )}
         <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
-          This reflects your spouse&apos;s latest Rapid Fire round. It updates as they keep
-          practising.
+          This reflects your spouse&apos;s Rapid Fire practice. It updates as they keep practising.
         </p>
       </div>
     );

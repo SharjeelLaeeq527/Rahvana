@@ -1,7 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { resolveActiveJourneyId } from "@/lib/case-collaboration/helpers";
+import { logCaseActivity } from "@/lib/case-collaboration/activity";
 import { E, msg } from "@/lib/errors";
+
+// Friendly form labels for the activity feed. Unknown codes fall back to the
+// upper-cased code.
+const FORM_LABELS: Record<string, string> = {
+  i130: "Form I-130",
+  i130a: "Form I-130A",
+  ds260: "Form DS-260",
+  i864: "Form I-864",
+  i864a: "Form I-864A",
+};
+function formLabel(code: string): string {
+  return FORM_LABELS[code.toLowerCase()] || `Form ${code.toUpperCase()}`;
+}
 
 type DraftPayload = {
   payload: Record<string, string>;
@@ -109,6 +123,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       console.error("/api/visa-forms progress POST db error:", error);
       return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
     }
+
+    // Audit log (best-effort, shared case only). form.complete when the draft
+    // just flipped to completed; otherwise a regular form.save.
+    await logCaseActivity({
+      journeyId,
+      actorUserId: user.id,
+      action: body.completed ? "form.complete" : "form.save",
+      targetLabel: formLabel(formCode),
+      metadata: { form_code: formCode, current_step: upsertRow.current_step },
+    });
 
     return NextResponse.json({ draft: data ?? null });
   } catch (error) {
