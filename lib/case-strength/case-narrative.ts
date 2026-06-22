@@ -556,11 +556,14 @@ export function computeConsistencyScore(consistencyFindings: ConsistencyFinding[
  * and consistency intelligence into a single weighted metric.
  *
  * Weights:
- * - Evidence score: 60%
- * - Consistency score: 40% (derived from unresolved findings penalty)
+ * - Evidence score: 50%
+ * - Consistency score: 50%
+ *
+ * Both analyses are weighted equally — strong evidence and consistent
+ * information are equally important for a healthy case.
  */
 export function computeOverallCaseScore(input: NarrativeInput): number {
   const evidenceScore = input.evidenceAnalysis?.overallScore ?? 50;
   const consistencyScore = computeConsistencyScore(input.consistencyFindings);
-  return Math.round(evidenceScore * 0.6 + consistencyScore * 0.4);
+  return Math.round(evidenceScore * 0.5 + consistencyScore * 0.5);
 }
