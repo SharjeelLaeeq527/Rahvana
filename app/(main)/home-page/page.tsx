@@ -15,11 +15,21 @@ const caveat = Caveat({
 // ----------------------------------------------------------------------------
 // Every node/card that the snake line should pass through registers its
 // DOM element here (keyed by an order index) via `useRoadmapAnchor`.
-// A single top-level <RoadmapCanvas> reads all registered elements,
+// A single top-level <RoadmapProvider> reads all registered elements,
 // measures their real on-screen centers, and draws ONE smooth path
-// through them. This replaces the old per-section 0-100 viewBox SVGs,
-// which could never line up with the actual node positions because each
-// section's coordinate space was independent and ignorant of true layout.
+// through them.
+//
+// NOTE ON THE "STRAIGHT LINE" ISSUE:
+// the curve math itself was never broken. A Catmull-Rom/cubic-bezier
+// curve through points that all share the same x-coordinate IS a
+// straight line -- there's no horizontal distance to bend through.
+// Once the circular nodes AND the card placeholders were both centered
+// in the previous pass, every anchor landed on the same vertical axis,
+// so the "smooth curve" correctly degenerated into a straight line.
+// To get the zigzag/snake back, the cards now sit shifted left of
+// center (consistently, not alternating) while the round nodes stay
+// dead-center -- this reintroduces the horizontal displacement the
+// curve needs to actually curve, matching the reference screenshot.
 // ----------------------------------------------------------------------------
 
 type AnchorColor = "teal" | "amber" | "purple" | "rose" | "green";
@@ -46,8 +56,6 @@ function useRoadmapAnchor(id: string, color: AnchorColor) {
   return ref;
 }
 
-// Wraps the whole timeline. Owns the anchor registry + the single SVG
-// that draws the smooth snake line behind all sections.
 function RoadmapProvider({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const anchorsRef = useRef<Map<string, AnchorEntry>>(new Map());
@@ -74,9 +82,6 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
     const container = containerRef.current;
     if (!container) return;
 
-    // Only draw the snake line on md+ layouts (matches the original
-    // "hidden md:block" intent — on mobile the two-column roadmap
-    // collapses to a single stack and the connecting line doesn't apply).
     const isDesktop = window.matchMedia("(min-width: 768px)").matches;
     if (!isDesktop) {
       setPathSegments([]);
@@ -101,13 +106,6 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    // Build one smooth Catmull-Rom-derived cubic bezier curve through
-    // every point, but emit it as per-segment <path> pieces so each
-    // segment can carry its own stroke color (matching the original
-    // teal -> amber -> purple -> rose -> green progression) while the
-    // tangents are computed across the FULL point sequence, so the
-    // curve stays smooth and continuous across color boundaries
-    // (no visible kink where the color changes).
     const segments: { d: string; color: AnchorColor }[] = [];
     for (let i = 0; i < points.length - 1; i++) {
       const p0 = points[i === 0 ? i : i - 1];
@@ -121,8 +119,6 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
       const cp2y = p2.y - (p3.y - p1.y) / 6;
 
       const d = `M ${p1.x},${p1.y} C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
-      // Color a segment by the color of the node/card it's LEAVING,
-      // matching the original section-by-section coloring.
       segments.push({ d, color: p1.color });
     }
 
@@ -138,8 +134,6 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
 
     window.addEventListener("resize", scheduleRecompute);
 
-    // Recompute again after fonts/images settle and after scroll-reveal
-    // animations run, since those can shift layout slightly.
     const t1 = setTimeout(scheduleRecompute, 300);
     const t2 = setTimeout(scheduleRecompute, 1000);
 
@@ -188,8 +182,6 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
-// Small wrapper that registers any element (leaf dot, card placeholder,
-// or NodeCircle) as a point the snake line must pass through.
 function RoadmapAnchor({
   id,
   color,
@@ -209,9 +201,6 @@ function RoadmapAnchor({
   );
 }
 
-// ----------------------------------------------------------------------------
-// Scroll Reveal Component (unchanged)
-// ----------------------------------------------------------------------------
 function ScrollReveal({
   children,
   delayClass = "",
@@ -246,7 +235,6 @@ function ScrollReveal({
   );
 }
 
-// Annotation Label with hand-drawn arrow style (unchanged)
 function Annotation({ text, direction = "left" }: { text: string; direction?: "left" | "right" }) {
   return (
     <div
@@ -294,8 +282,6 @@ function Annotation({ text, direction = "left" }: { text: string; direction?: "l
   );
 }
 
-// Interactive pulsing Node Circle (unchanged visually; anchoring now
-// happens in the wrapping <RoadmapAnchor> at each call site)
 function NodeCircle({
   icon: Icon,
   label,
@@ -330,10 +316,16 @@ function NodeCircle({
   );
 }
 
+// Card placeholder wrapper: shifts the card consistently left of its
+// flex-centered column, so its anchor center sits left of the node
+// anchors above/below it -- this is what gives the line a real
+// horizontal swing to curve through, instead of a vertical straight
+// line. Direction is fixed (not alternating) per your last request.
+const CARD_OFFSET_CLASS = "md:-translate-x-12";
+
 export default function RoadmapPage() {
   return (
     <div className={`w-full min-h-screen bg-slate-50/50 pb-20 ${caveat.variable}`}>
-      {/* Hero Section Placeholder */}
       <div className="w-full min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-linear-to-br from-teal-500/10 via-transparent to-amber-500/10 border-b border-slate-100">
         <div className="absolute inset-0 guide-grid-bg opacity-30 pointer-events-none" />
         <div className="text-center px-4 relative z-10 max-w-2xl">
@@ -343,7 +335,6 @@ export default function RoadmapPage() {
 
       <RoadmapProvider>
         <div className="max-w-5xl mx-auto px-6 mt-12 relative">
-          {/* SECTION 1 */}
           <div className="py-16 md:py-24 flex items-center justify-center text-center relative">
             <ScrollReveal>
               <div className="max-w-xl mx-auto">
@@ -381,7 +372,7 @@ export default function RoadmapPage() {
             </div>
           </div>
 
-          {/* SECTION 3 — Petition node (anchor "02") */}
+          {/* SECTION 3 — Petition node (anchor "02") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
@@ -393,7 +384,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7">
+            <div className="col-span-12 md:col-span-7 flex justify-center">
               <ScrollReveal>
                 <RoadmapAnchor id="02" color="teal" className="inline-block">
                   <NodeCircle icon={Icons.FileText} label="Petition" color="teal" />
@@ -402,7 +393,7 @@ export default function RoadmapPage() {
             </div>
           </div>
 
-          {/* SECTION 4 — card placeholder (anchor "03") */}
+          {/* SECTION 4 — card placeholder (anchor "03") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
@@ -416,14 +407,14 @@ export default function RoadmapPage() {
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
               <ScrollReveal delayClass="reveal-delay-1">
-                <RoadmapAnchor id="03" color="teal" className="inline-block">
+                <RoadmapAnchor id="03" color="teal" className={`inline-block ${CARD_OFFSET_CLASS}`}>
                   <div className="relative h-[300px] w-[500px] bg-white border border-slate-200 shadow-xl rounded-2xl p-6 max-w-sm overflow-hidden group hover:border-teal-500/20 transition-all duration-300" />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
           </div>
 
-          {/* SECTION 5 — card placeholder (anchor "04") */}
+          {/* SECTION 5 — card placeholder (anchor "04") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
@@ -437,14 +428,14 @@ export default function RoadmapPage() {
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
               <ScrollReveal delayClass="reveal-delay-2">
-                <RoadmapAnchor id="04" color="teal" className="inline-block">
+                <RoadmapAnchor id="04" color="teal" className={`inline-block ${CARD_OFFSET_CLASS}`}>
                   <div className="relative h-[300px] w-[500px] bg-white border border-slate-200 shadow-xl rounded-2xl p-6 max-w-sm overflow-hidden group hover:border-[#0d7377]/20 transition-all duration-300" />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
           </div>
 
-          {/* SECTION 6 — Check node (anchor "05") */}
+          {/* SECTION 6 — Check node (anchor "05") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
@@ -456,7 +447,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 relative">
+            <div className="col-span-12 md:col-span-7 relative flex justify-center">
               <ScrollReveal>
                 <RoadmapAnchor id="05" color="amber" className="inline-block">
                   <NodeCircle icon={Icons.Check} color="teal" />
@@ -466,7 +457,7 @@ export default function RoadmapPage() {
             </div>
           </div>
 
-          {/* SECTION 7 — Documents node (anchor "06") */}
+          {/* SECTION 7 — Documents node (anchor "06") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
@@ -478,7 +469,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7">
+            <div className="col-span-12 md:col-span-7 flex justify-center">
               <ScrollReveal>
                 <RoadmapAnchor id="06" color="amber" className="inline-block">
                   <NodeCircle icon={Icons.FolderOpen} label="Documents" color="amber" />
@@ -487,7 +478,7 @@ export default function RoadmapPage() {
             </div>
           </div>
 
-          {/* SECTION 8 — card placeholder (anchor "07") */}
+          {/* SECTION 8 — card placeholder (anchor "07") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
@@ -501,14 +492,18 @@ export default function RoadmapPage() {
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
               <ScrollReveal delayClass="reveal-delay-1">
-                <RoadmapAnchor id="07" color="amber" className="inline-block">
+                <RoadmapAnchor
+                  id="07"
+                  color="amber"
+                  className={`inline-block ${CARD_OFFSET_CLASS}`}
+                >
                   <div className="relative h-[300px] w-[500px] max-w-sm bg-white border border-slate-200 shadow-xl rounded-2xl p-5 overflow-hidden group hover:border-amber-500/20 transition-all duration-300" />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
           </div>
 
-          {/* SECTION 9 — card placeholder (anchor "08") */}
+          {/* SECTION 9 — card placeholder (anchor "08") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
@@ -522,14 +517,18 @@ export default function RoadmapPage() {
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
               <ScrollReveal delayClass="reveal-delay-2">
-                <RoadmapAnchor id="08" color="amber" className="inline-block">
+                <RoadmapAnchor
+                  id="08"
+                  color="amber"
+                  className={`inline-block ${CARD_OFFSET_CLASS}`}
+                >
                   <div className="bg-white h-[300px] w-[500px] border border-slate-200 shadow-xl rounded-2xl p-5 max-w-sm group hover:border-amber-500/20 transition-all duration-300" />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
           </div>
 
-          {/* SECTION 10 — FolderCheck node (anchor "09") */}
+          {/* SECTION 10 — FolderCheck node (anchor "09") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
@@ -541,7 +540,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 relative">
+            <div className="col-span-12 md:col-span-7 relative flex justify-center">
               <ScrollReveal>
                 <RoadmapAnchor id="09" color="purple" className="inline-block">
                   <NodeCircle icon={Icons.FolderCheck} color="amber" />
@@ -551,7 +550,7 @@ export default function RoadmapPage() {
             </div>
           </div>
 
-          {/* SECTION 11 — Finance node (anchor "10") */}
+          {/* SECTION 11 — Finance node (anchor "10") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
@@ -563,7 +562,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7">
+            <div className="col-span-12 md:col-span-7 flex justify-center">
               <ScrollReveal>
                 <RoadmapAnchor id="10" color="purple" className="inline-block">
                   <NodeCircle icon={Icons.Calculator} label="Finance" color="purple" />
@@ -572,7 +571,7 @@ export default function RoadmapPage() {
             </div>
           </div>
 
-          {/* SECTION 12 — card placeholder (anchor "11") */}
+          {/* SECTION 12 — card placeholder (anchor "11") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
@@ -586,14 +585,18 @@ export default function RoadmapPage() {
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
               <ScrollReveal delayClass="reveal-delay-1">
-                <RoadmapAnchor id="11" color="purple" className="inline-block">
+                <RoadmapAnchor
+                  id="11"
+                  color="purple"
+                  className={`inline-block ${CARD_OFFSET_CLASS}`}
+                >
                   <div className="bg-white border h-[300px] w-[500px] border-slate-200 shadow-xl rounded-2xl p-5 max-w-sm group hover:border-purple-500/20 transition-all duration-300" />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
           </div>
 
-          {/* SECTION 13 — card placeholder (anchor "12") */}
+          {/* SECTION 13 — card placeholder (anchor "12") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
@@ -607,14 +610,18 @@ export default function RoadmapPage() {
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
               <ScrollReveal delayClass="reveal-delay-2">
-                <RoadmapAnchor id="12" color="purple" className="inline-block">
+                <RoadmapAnchor
+                  id="12"
+                  color="purple"
+                  className={`inline-block ${CARD_OFFSET_CLASS}`}
+                >
                   <div className="bg-white border h-[300px] w-[500px] border-slate-200 shadow-xl rounded-2xl p-5 max-w-sm group hover:border-purple-500/20 transition-all duration-300" />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
           </div>
 
-          {/* SECTION 14 — Interview node (anchor "13") */}
+          {/* SECTION 14 — Interview node (anchor "13") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
@@ -626,7 +633,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7">
+            <div className="col-span-12 md:col-span-7 flex justify-center">
               <ScrollReveal>
                 <RoadmapAnchor id="13" color="rose" className="inline-block">
                   <NodeCircle icon={Icons.Users} label="Interview" color="rose" />
@@ -635,7 +642,7 @@ export default function RoadmapPage() {
             </div>
           </div>
 
-          {/* SECTION 15 — card placeholder (anchor "14") */}
+          {/* SECTION 15 — card placeholder (anchor "14") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
@@ -649,14 +656,14 @@ export default function RoadmapPage() {
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
               <ScrollReveal delayClass="reveal-delay-1">
-                <RoadmapAnchor id="14" color="rose" className="inline-block">
+                <RoadmapAnchor id="14" color="rose" className={`inline-block ${CARD_OFFSET_CLASS}`}>
                   <div className="bg-white h-[300px] w-[500px] border border-slate-200 shadow-xl rounded-2xl p-5 max-w-sm group hover:border-rose-500/20 transition-all duration-300 relative overflow-hidden" />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
           </div>
 
-          {/* SECTION 16 — card placeholder (anchor "15") */}
+          {/* SECTION 16 — card placeholder (anchor "15") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
@@ -670,14 +677,14 @@ export default function RoadmapPage() {
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
               <ScrollReveal delayClass="reveal-delay-2">
-                <RoadmapAnchor id="15" color="rose" className="inline-block">
+                <RoadmapAnchor id="15" color="rose" className={`inline-block ${CARD_OFFSET_CLASS}`}>
                   <div className="bg-white h-[300px] w-[500px] border border-slate-200 shadow-xl rounded-2xl p-5 max-w-sm group hover:border-rose-500/20 transition-all duration-300" />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
           </div>
 
-          {/* SECTION 17 — final Welcome node (anchor "16") */}
+          {/* SECTION 17 — final Welcome node (anchor "16") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
             <div className="col-span-12 md:col-span-6 md:pr-6">
               <ScrollReveal>
@@ -691,7 +698,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-6 relative">
+            <div className="col-span-12 md:col-span-6 relative flex justify-center">
               <ScrollReveal>
                 <RoadmapAnchor id="16" color="green" className="inline-block">
                   <NodeCircle icon={Icons.ThumbsUp} label="Welcome to the USA!" color="green" />
