@@ -29,19 +29,21 @@ export interface AlertCenterProps {
 
 const SEV = {
   critical: {
-    accent: "#db8090",
-    rowBg: "#fef0f3",
-    expandedBg: "#fce8ed",
-    chipBg: "#f9d4dc",
-    chipFg: "#7a3a4a",
+    accent: "#DC2626",
+    rowBg: "#FEF2F2",
+    expandedBg: "#FEE2E2",
+    chipBg: "#FEF2F2",
+    chipFg: "#DC2626",
+    border: "#EF4444",
     icon: CircleAlert,
   },
   warning: {
-    accent: "#cdadcc",
-    rowBg: "#f7eef7",
-    expandedBg: "#f0e3f0",
-    chipBg: "#e8d4e8",
-    chipFg: "#6b4566",
+    accent: "#D97706",
+    rowBg: "#FFF7ED",
+    expandedBg: "#FFEDD5",
+    chipBg: "#FFF7ED",
+    chipFg: "#D97706",
+    border: "#F59E0B",
     icon: AlertTriangle,
   },
 };
@@ -68,26 +70,46 @@ function AlertRow({
 
   return (
     <div
-      className="rounded-xl overflow-hidden transition-all shadow-sm"
+      className="rounded-xl overflow-hidden transition-all"
       style={{
         background: expanded ? s.expandedBg : s.rowBg,
+        border: `1px solid ${s.border}`,
+        boxShadow: expanded
+          ? `0 2px 8px ${s.accent}15, inset 0 1px 0 rgba(255,255,255,0.6)`
+          : `0 1px 3px ${s.accent}10`,
       }}
     >
       <button
         onClick={onToggle}
-        className="w-full flex items-start gap-2.5 px-3 py-2.5 text-left hover:bg-slate-50/50 transition-colors"
+        className="w-full flex items-start gap-2.5 px-3 py-2.5 text-left transition-colors"
+        style={{
+          background: expanded ? "transparent" : undefined,
+        }}
       >
         <div
-          className="w-6 h-6 rounded-lg flex items-center justify-center shrink-0 mt-0.5"
-          style={{ background: s.chipBg }}
+          className="w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 border"
+          style={{
+            background: s.chipBg,
+            borderColor: s.border,
+            color: s.accent,
+          }}
         >
-          <Icon size={12} style={{ color: s.chipFg }} />
+          <Icon size={13} strokeWidth={2.5} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[11px] font-semibold text-slate-800 leading-snug">{issue.title}</p>
+          <p
+            className="text-[11px] font-bold leading-snug"
+            style={{ color: issue.level === "critical" ? "#991B1B" : "#92400E" }}
+          >
+            {issue.title}
+          </p>
           <span
-            className="inline-block mt-1 text-[8.5px] font-bold px-1.5 py-0.5 rounded"
-            style={{ background: s.chipBg, color: s.chipFg }}
+            className="inline-block mt-1.5 text-[8.5px] font-bold px-2 py-0.5 rounded-md border"
+            style={{
+              background: s.chipBg,
+              color: s.chipFg,
+              borderColor: `${s.border}80`,
+            }}
           >
             {stepLabel}
           </span>
@@ -108,9 +130,9 @@ function AlertRow({
             transition={{ duration: 0.15 }}
             className="overflow-hidden"
           >
-            <div className="px-3 pb-3 pt-0.5 space-y-2">
+            <div className="px-3 pb-3 pt-0.5 space-y-2 border-t" style={{ borderColor: `${s.border}40` }}>
               {issue.hint && (
-                <p className="text-[10.5px] text-slate-500 leading-relaxed">{issue.hint}</p>
+                <p className="text-[10.5px] text-slate-600 leading-relaxed pt-2">{issue.hint}</p>
               )}
               {onOpenStep && (
                 <button
@@ -118,8 +140,12 @@ function AlertRow({
                     e.stopPropagation();
                     onOpenStep();
                   }}
-                  className="inline-flex items-center gap-1.5 text-[10px] font-bold rounded-lg px-2.5 py-1.5 transition-all hover:brightness-110"
-                  style={{ background: s.chipBg, color: s.chipFg }}
+                  className="inline-flex items-center gap-1.5 text-[10px] font-bold rounded-lg px-2.5 py-1.5 transition-all border hover:brightness-95"
+                  style={{
+                    background: s.chipBg,
+                    color: s.chipFg,
+                    borderColor: s.border,
+                  }}
                 >
                   Go to step <ChevronRight size={10} />
                 </button>
@@ -164,46 +190,56 @@ export function AlertCenter({ issues, onOpenStep }: AlertCenterProps) {
     <div className="rounded-2xl bg-[#f4f6f7] overflow-hidden shadow-md">
       {/* Header */}
       <div
-        className="px-4 py-3.5"
+        className="px-4 py-3.5 border-b border-slate-200/60"
         style={{
           background:
             critCount > 0
-              ? "linear-gradient(135deg, #fbe8ec 0%, #f5eef5 100%)"
-              : "linear-gradient(135deg, #f5eef5 0%, #eef3f5 100%)",
+              ? "linear-gradient(135deg, #FEF2F2 0%, #FFF7ED 100%)"
+              : "linear-gradient(135deg, #FFF7ED 0%, #FFFBEB 100%)",
         }}
       >
         <div className="flex items-center gap-2 mb-2">
           <div
-            className="w-6 h-6 rounded-lg flex items-center justify-center"
+            className="w-6 h-6 rounded-lg flex items-center justify-center border"
             style={{
-              background: critCount > 0 ? "#fbe8ec" : "#f5eef5",
+              background: critCount > 0 ? "#FEF2F2" : "#FFF7ED",
+              borderColor: critCount > 0 ? "#EF4444" : "#F59E0B",
+              color: critCount > 0 ? "#DC2626" : "#D97706",
             }}
           >
             {critCount > 0 ? (
-              <CircleAlert size={11} className="text-[#b85a6a]" />
+              <CircleAlert size={12} strokeWidth={2.5} />
             ) : (
-              <AlertTriangle size={11} className="text-[#8a5a86]" />
+              <AlertTriangle size={12} strokeWidth={2.5} />
             )}
           </div>
-          <h3 className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">
+          <h3 className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-600">
             Alert Center
           </h3>
         </div>
 
-        {/* Count chips */}
-        <div className="flex items-center gap-2">
+        {/* Severity count badges */}
+        <div className="flex items-center gap-2 flex-wrap">
           {critCount > 0 && (
             <span
-              className="text-[9px] font-bold px-2 py-0.5 rounded-full"
-              style={{ background: SEV.critical.chipBg, color: SEV.critical.chipFg }}
+              className="text-[9px] font-bold px-2.5 py-1 rounded-full border"
+              style={{
+                background: "#FEF2F2",
+                color: "#DC2626",
+                borderColor: "#EF4444",
+              }}
             >
-              {critCount} Critical
+              {critCount} Critical Issue{critCount !== 1 ? "s" : ""}
             </span>
           )}
           {warnCount > 0 && (
             <span
-              className="text-[9px] font-bold px-2 py-0.5 rounded-full"
-              style={{ background: SEV.warning.chipBg, color: SEV.warning.chipFg }}
+              className="text-[9px] font-bold px-2.5 py-1 rounded-full border"
+              style={{
+                background: "#FFF7ED",
+                color: "#D97706",
+                borderColor: "#F59E0B",
+              }}
             >
               {warnCount} Warning{warnCount !== 1 ? "s" : ""}
             </span>

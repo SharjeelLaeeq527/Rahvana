@@ -11,7 +11,7 @@
  * - Info modal with score breakdown and disclaimer
  */
 
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   CheckCircle2,
@@ -63,19 +63,30 @@ const STATUS_COLORS = {
     labelBorder: "rgba(20,160,166,0.3)",
   },
   "needs-attention": {
-    primary: "#d4a5d3",
-    ring: "#cdadcc",
-    accent: "#d4a5d3",
-    labelBg: "rgba(212,165,211,0.15)",
-    labelBorder: "rgba(212,165,211,0.3)",
+    primary: "#F59E0B",
+    ring: "#D97706",
+    accent: "#FBBF24",
+    labelBg: "rgba(245,158,11,0.18)",
+    labelBorder: "rgba(245,158,11,0.55)",
   },
   critical: {
-    primary: "#f0929e",
-    ring: "#db8090",
-    accent: "#f0929e",
-    labelBg: "rgba(240,146,158,0.15)",
-    labelBorder: "rgba(240,146,158,0.3)",
+    primary: "#EF4444",
+    ring: "#DC2626",
+    accent: "#F87171",
+    labelBg: "rgba(239,68,68,0.18)",
+    labelBorder: "rgba(239,68,68,0.55)",
   },
+};
+
+const CASE_HEALTH_EDUCATION_KEY = "rahvana_case_health_education_dismissed";
+
+/** Dark premium analytics surface — distinct charcoal-teal from Hero green-teal */
+const ANALYSIS_PANEL = {
+  shadow:
+    "0 0 0 1px rgba(20,184,166,0.08), 0 8px 32px rgba(0,0,0,0.28), 0 2px 8px rgba(0,0,0,0.16), inset 0 1px 0 rgba(255,255,255,0.06)",
+  scoreWellShadow:
+    "0 4px 20px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.06), inset 0 1px 0 rgba(255,255,255,0.05)",
+  border: "rgba(20,184,166,0.20)",
 };
 
 // ─── Radial Score SVG ────────────────────────────────────────────────────────────
@@ -108,6 +119,12 @@ function RadialScore({
       className="relative flex items-center justify-center"
       style={{ width: size, height: size }}
     >
+      {/* Status-colored ambient glow */}
+      <div
+        className="absolute inset-2 rounded-full blur-xl opacity-50 pointer-events-none"
+        style={{ background: colors.primary }}
+      />
+
       <svg
         width={size}
         height={size}
@@ -115,25 +132,22 @@ function RadialScore({
         className="relative"
         style={{ transform: "rotate(-90deg)" }}
       >
-        {/* Inner fill — subtle depth against dark bg */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius - strokeWidth / 2}
-          fill="rgba(255,255,255,0.03)"
+          fill="rgba(255,255,255,0.04)"
         />
 
-        {/* Track */}
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
           fill="none"
-          stroke="rgba(255,255,255,0.08)"
+          stroke="rgba(255,255,255,0.10)"
           strokeWidth={strokeWidth}
         />
 
-        {/* Progress arc */}
         <motion.circle
           cx={size / 2}
           cy={size / 2}
@@ -146,21 +160,20 @@ function RadialScore({
           initial={{ strokeDashoffset: circumference }}
           animate={{ strokeDashoffset: offset }}
           transition={{ duration: 1.2, ease: "easeOut", delay: 0.1 }}
-          style={{ filter: `drop-shadow(0 0 4px ${colors.primary}50)` }}
+          style={{ filter: `drop-shadow(0 0 6px ${colors.primary}60)` }}
         />
       </svg>
 
-      {/* Score text */}
       <div className="absolute flex flex-col items-center justify-center">
         <motion.span
-          className="text-[36px] font-black tracking-tight leading-none text-white"
+          className="text-[34px] font-black tracking-tight leading-none text-white"
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 0.6, delay: 0.3 }}
         >
           {animatedScore}
         </motion.span>
-        <span className="text-[9px] font-bold text-white/30 tracking-widest mt-0.5">/ 100</span>
+        <span className="text-[9px] font-bold text-white/40 tracking-widest mt-0.5">/ 100</span>
       </div>
     </div>
   );
@@ -172,7 +185,7 @@ function MetricBadge({
   icon,
   label,
   value,
-  accentColor = "#3dd9df",
+  accentColor = "#5eead4",
 }: {
   icon: React.ReactNode;
   label: string;
@@ -180,28 +193,26 @@ function MetricBadge({
   accentColor?: string;
 }) {
   return (
-    <div className="relative flex items-center gap-2 px-2.5 py-2 rounded-xl overflow-hidden group">
-      {/* Subtle glass background */}
+    <div className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl border border-white/[0.10] bg-white/[0.06] group cursor-default transition-all duration-200 hover:bg-white/[0.09] hover:border-white/[0.14]">
       <div
-        className="absolute inset-0 rounded-xl"
-        style={{ background: "rgba(255,255,255,0.05)" }}
-      />
-      {/* Hover glow */}
-      <div
-        className="absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        style={{ background: `${accentColor}08` }}
+        className="absolute inset-x-0 top-0 h-px rounded-t-xl"
+        style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent)" }}
       />
       <div
-        className="relative w-6 h-6 rounded-lg flex items-center justify-center shrink-0"
-        style={{ background: `${accentColor}18`, color: accentColor }}
+        className="relative w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border"
+        style={{
+          background: `${accentColor}18`,
+          borderColor: `${accentColor}30`,
+          color: accentColor,
+        }}
       >
         {icon}
       </div>
       <div className="relative min-w-0 flex-1">
-        <div className="text-[8px] font-bold uppercase tracking-[0.12em] text-white/35">
+        <div className="text-[8px] font-bold uppercase tracking-[0.14em] text-white/45">
           {label}
         </div>
-        <div className="text-[11px] font-bold text-white/90 mt-0.5">{value}</div>
+        <div className="text-[11px] font-semibold text-white/90 mt-0.5 tracking-tight">{value}</div>
       </div>
     </div>
   );
@@ -224,8 +235,43 @@ export function CaseHealthOverview({
 }: CaseHealthOverviewProps) {
   const colors = STATUS_COLORS[healthStatus];
 
-  // ── Info modal state ──
+  // ── Info modal & first-visit education tooltip ──
   const [showInfoModal, setShowInfoModal] = useState(false);
+  const [showEducationTooltip, setShowEducationTooltip] = useState(false);
+  const infoButtonRef = useRef<HTMLButtonElement>(null);
+
+  const dismissEducationTooltip = useCallback(() => {
+    setShowEducationTooltip(false);
+    try {
+      localStorage.setItem(CASE_HEALTH_EDUCATION_KEY, "1");
+    } catch {
+      /* storage unavailable */
+    }
+  }, []);
+
+  const openInfoModal = useCallback(() => {
+    dismissEducationTooltip();
+    setShowInfoModal(true);
+  }, [dismissEducationTooltip]);
+
+  useEffect(() => {
+    if (loading) return;
+    try {
+      if (localStorage.getItem(CASE_HEALTH_EDUCATION_KEY)) return;
+    } catch {
+      return;
+    }
+
+    const showTimer = window.setTimeout(() => setShowEducationTooltip(true), 2500);
+    return () => window.clearTimeout(showTimer);
+  }, [loading]);
+
+  useEffect(() => {
+    if (!showEducationTooltip) return;
+
+    const hideTimer = window.setTimeout(() => dismissEducationTooltip(), 7000);
+    return () => window.clearTimeout(hideTimer);
+  }, [showEducationTooltip, dismissEducationTooltip]);
 
   // Derive score-based status for pie chart color
   // <50 = weak (red), 50-80 = moderate (yellow), >80 = good (green)
@@ -242,13 +288,13 @@ export function CaseHealthOverview({
 
   if (loading) {
     return (
-      <div className="relative rounded-2xl overflow-hidden shadow-[0_8px_32px_rgba(13,115,119,0.12),0_4px_16px_rgba(0,0,0,0.06)]">
-        <div className="absolute inset-0 bg-gradient-to-br from-[#0f8084] via-[#0b6b70] to-[#085a5f]" />
-        {/* Top accent */}
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#afdbdb] via-[#89a4a0] to-transparent opacity-60" />
+      <div
+        className="relative rounded-2xl overflow-hidden border bg-gradient-to-br from-[#121f22] via-[#162629] to-[#1a2e32]"
+        style={{ borderColor: ANALYSIS_PANEL.border, boxShadow: ANALYSIS_PANEL.shadow }}
+      >
         <div className="relative z-10 p-7 animate-pulse">
           <div className="flex items-center gap-5">
-            <div className="w-[110px] h-[110px] rounded-full bg-white/8" />
+            <div className="w-[118px] h-[118px] rounded-full bg-white/8" />
             <div className="flex-1 space-y-3">
               <div className="w-36 h-5 bg-white/10 rounded" />
               <div className="w-52 h-3 bg-white/8 rounded" />
@@ -266,66 +312,74 @@ export function CaseHealthOverview({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: 0.1 }}
       className="relative rounded-2xl overflow-hidden"
-      style={{
-        boxShadow: `0 0 40px -8px ${colors.primary}25, 0 8px 32px rgba(13,115,119,0.14), 0 4px 16px rgba(0,0,0,0.08)`,
-      }}
+      style={{ boxShadow: ANALYSIS_PANEL.shadow }}
     >
-      {/* Ocean teal gradient — cyan-shifted, lighter, distinct from Hero's green-teal */}
-      <div className="absolute inset-0 bg-gradient-to-br from-[#0f8084] via-[#0b6b70] to-[#085a5f]" />
-
-      {/* Decorative orbs — brand palette colors */}
-      <div className="absolute top-0 right-0 w-72 h-72 bg-[#afdbdb]/[0.06] rounded-full -translate-y-1/3 translate-x-1/4 blur-3xl pointer-events-none" />
-      <div className="absolute bottom-0 left-0 w-48 h-48 bg-[#89a4a0]/[0.08] rounded-full translate-y-1/3 -translate-x-1/4 blur-2xl pointer-events-none" />
-
-      {/* Top accent line — #afdbdb → #89a4a0 shimmer */}
+      {/* Clipped background layers — charcoal-teal */}
       <div
-        className="absolute top-0 left-0 right-0 h-[2px]"
-        style={{
-          background: `linear-gradient(to right, #afdbdb, #89a4a0, transparent)`,
-          opacity: 0.6,
-        }}
-      />
-
-      {/* Subtle noise texture overlay */}
-      <div
-        className="absolute inset-0 opacity-[0.025]"
-        style={{
-          backgroundImage:
-            "url(\"data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E\")",
-        }}
-      />
+        className="absolute inset-0 rounded-2xl overflow-hidden border bg-gradient-to-br from-[#121f22] via-[#162629] to-[#1a2e32]"
+        style={{ borderColor: ANALYSIS_PANEL.border }}
+      >
+        <div
+          className="absolute inset-0 opacity-[0.25]"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, rgba(20,184,166,0.12) 1px, transparent 1px)",
+            backgroundSize: "20px 20px",
+          }}
+        />
+        <div className="absolute top-0 left-0 w-72 h-72 bg-[#14b8a6]/[0.07] rounded-full -translate-x-1/3 -translate-y-1/3 blur-3xl pointer-events-none" />
+        <div className="absolute bottom-0 right-0 w-56 h-56 bg-black/20 rounded-full translate-x-1/4 translate-y-1/4 blur-2xl pointer-events-none" />
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "linear-gradient(145deg, rgba(20,184,166,0.05) 0%, transparent 50%, rgba(0,0,0,0.12) 100%)",
+          }}
+        />
+        <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#14b8a6]/80 via-[#0d7377]/50 to-transparent" />
+      </div>
 
       <div className="relative z-10">
         {/* Header */}
-        <div className="px-5 py-3.5 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white/[0.08] border border-white/[0.08]">
-              <Shield size={16} className="text-white/80" />
+        <div className="px-5 py-4 flex items-center justify-between border-b border-white/[0.08] bg-white/[0.03] backdrop-blur-sm">
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/[0.08] border border-white/[0.10] shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+              <Shield size={16} className="text-[#5eead4]" />
             </div>
             <div>
-              <h3 className="text-[14px] font-bold text-white tracking-tight">Case Overview</h3>
-              <p className="text-[10px] text-white/40 font-semibold tracking-wide mt-0.5">
-                Evidence & Consistency Analysis
+              <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#5eead4]/70">
+                Case Analysis
               </p>
+              <h3 className="text-[15px] font-bold text-white tracking-tight leading-tight">
+                Case Health Overview
+              </h3>
             </div>
           </div>
 
           {/* Health label chip */}
           <div
-            className="flex items-center gap-1.5 px-2.5 py-1 rounded-full border text-[10px] font-bold tracking-wide"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border-2 text-[10px] font-bold tracking-wide"
             style={{
               background: colors.labelBg,
               borderColor: colors.labelBorder,
               color: colors.primary,
+              boxShadow: `0 0 12px ${colors.primary}15`,
             }}
           >
-            {/* Pulsing dot */}
-            <motion.div
-              className="w-2 h-2 rounded-full"
-              style={{ background: colors.primary }}
-              animate={{ opacity: [0.5, 1, 0.5] }}
-              transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-            />
+            <span className="relative flex h-2 w-2">
+              <motion.span
+                className="absolute inline-flex h-full w-full rounded-full opacity-60"
+                style={{ background: colors.primary }}
+                animate={{ scale: [1, 1.8, 1], opacity: [0.6, 0, 0.6] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+              <motion.span
+                className="relative inline-flex h-2 w-2 rounded-full"
+                style={{ background: colors.primary }}
+                animate={{ opacity: [0.7, 1, 0.7] }}
+                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              />
+            </span>
             {healthStatus === "excellent" || healthStatus === "good" ? (
               <CheckCircle2 size={11} style={{ color: colors.primary }} />
             ) : (
@@ -335,73 +389,111 @@ export function CaseHealthOverview({
           </div>
         </div>
 
-        {/* Divider */}
-        <div className="mx-5 h-px bg-gradient-to-r from-white/[0.06] via-white/[0.10] to-white/[0.06]" />
-
         {/* Body */}
-        <div className="px-5 pb-5 pt-4">
-          <div className="flex items-center gap-5">
-            {/* Score section */}
-            <div className="shrink-0 flex flex-col items-center gap-2 relative">
-              <RadialScore score={overallScore} status={scoreStatus} size={110} strokeWidth={9} />
-              <div className="flex items-center gap-2">
-                <span className="text-[11px] font-bold text-white/40 tracking-wide uppercase">
+        <div className="px-5 pb-5 pt-5">
+          <div className="flex items-start gap-5">
+            {/* Score pedestal — dark focal well, hero of this card */}
+            <div className="shrink-0 flex flex-col items-center gap-3">
+              <div
+                className="relative rounded-full p-[3px] bg-gradient-to-br from-slate-600/80 via-slate-700 to-slate-900"
+                style={{ boxShadow: ANALYSIS_PANEL.scoreWellShadow }}
+              >
+                <div className="rounded-full bg-gradient-to-br from-[#0f172a] to-[#020617] p-1">
+                  <RadialScore score={overallScore} status={scoreStatus} size={104} strokeWidth={8} />
+                </div>
+              </div>
+
+              {/* Label + info — tooltip drops below, clear of dial */}
+              <div className="flex items-center gap-1.5">
+                <span className="text-[10px] font-bold text-white/45 tracking-wide uppercase">
                   Case Health
                 </span>
-                <button
-                  onClick={() => setShowInfoModal(true)}
-                  className="w-[18px] h-[18px] rounded-full flex items-center justify-center text-white/35 hover:text-white/90 hover:bg-white/10 transition-all cursor-pointer"
-                  aria-label="How is Case Health calculated?"
-                >
-                  <Info size={14} strokeWidth={2.5} />
-                </button>
+                <div className="relative group/tooltip">
+                  <button
+                    ref={infoButtonRef}
+                    onClick={openInfoModal}
+                    className="w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-[#5eead4] hover:bg-white/10 transition-all cursor-pointer ring-1 ring-white/10 hover:ring-[#5eead4]/40"
+                    aria-label="How is Case Health calculated?"
+                  >
+                    <Info size={12} strokeWidth={2.5} />
+                  </button>
+
+                  {/* First-visit education callout — below icon, away from radial dial */}
+                  <AnimatePresence>
+                    {showEducationTooltip && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -4 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -4 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 sm:w-64 p-3 sm:p-4 bg-gradient-to-br from-gray-900 to-gray-800 text-white text-xs rounded-xl z-50 shadow-2xl border border-gray-700 pointer-events-auto"
+                      >
+                        <button
+                          onClick={dismissEducationTooltip}
+                          className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full flex items-center justify-center text-white/40 hover:text-white/80 hover:bg-white/10 transition-colors"
+                          aria-label="Dismiss tip"
+                        >
+                          <X size={11} />
+                        </button>
+                        <div className="font-semibold text-xs sm:text-sm pr-5">
+                          Case Health Methodology
+                        </div>
+                        <div className="text-[10px] sm:text-[11px] opacity-80 mt-1 leading-relaxed">
+                          A composite readiness score derived from evidence coverage and information
+                          consistency across your case.
+                        </div>
+                        <button
+                          onClick={openInfoModal}
+                          className="mt-2.5 text-[10px] sm:text-[11px] font-semibold text-teal-300 hover:text-teal-200 transition-colors inline-flex items-center gap-1"
+                        >
+                          View score breakdown
+                          <ArrowRight size={10} />
+                        </button>
+                        <div className="absolute -top-2 left-1/2 -translate-x-1/2 w-0 h-0 border-l-8 border-r-8 border-b-8 border-l-transparent border-r-transparent border-b-gray-900" />
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
 
-            {/* Metrics section */}
-            <div className="flex-1 min-w-0 flex flex-col gap-1.5">
+            {/* Metrics — glass rows on dark surface */}
+            <div className="flex-1 min-w-0 flex flex-col gap-2 pt-1">
               <MetricBadge
-                icon={<FileCheck size={12} />}
+                icon={<FileCheck size={13} />}
                 label="Evidence"
                 value={coverageValue}
-                accentColor="#3dd9df"
+                accentColor="#5eead4"
               />
               <MetricBadge
-                icon={<AlertTriangle size={12} />}
+                icon={<AlertTriangle size={13} />}
                 label="Consistency"
                 value={
                   warningCount > 0
                     ? `${warningCount} Warning${warningCount !== 1 ? "s" : ""}`
                     : "All Clear"
                 }
-                accentColor={warningCount > 0 ? "#d4a5d3" : "#3dd9df"}
+                accentColor={warningCount > 0 ? "#FBBF24" : "#5eead4"}
               />
               <MetricBadge
-                icon={<CircleAlert size={12} />}
+                icon={<CircleAlert size={13} />}
                 label="Critical"
                 value={criticalCount > 0 ? `${criticalCount} Critical` : "All Clear"}
-                accentColor={criticalCount > 0 ? "#f0929e" : "#3dd9df"}
+                accentColor={criticalCount > 0 ? "#F87171" : "#5eead4"}
               />
             </div>
           </div>
 
-          {/* Summary text */}
           {summaryText && (
-            <div className="mt-4 pt-3 border-t border-white/[0.06]">
+            <div className="mt-4 pt-3 border-t border-white/[0.08]">
               <p className="text-[12px] text-white/45 leading-relaxed font-medium">{summaryText}</p>
             </div>
           )}
 
-          {/* CTA Button — more prominent */}
-          <div className="mt-4 pt-3 border-t border-white/[0.06]">
+          <div className="mt-4 pt-3 border-t border-white/[0.08]">
             <button
               onClick={onViewFullAnalysis}
-              className="group w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-bold transition-all hover:shadow-lg hover:shadow-black/10 active:scale-[0.98]"
-              style={{
-                background: `linear-gradient(135deg, rgba(255,255,255,0.10), rgba(255,255,255,0.05))`,
-                color: "white",
-                border: `1px solid rgba(255,255,255,0.12)`,
-              }}
+              className="group w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-[12px] font-bold transition-all active:scale-[0.98] border border-white/[0.12] bg-white/[0.08] text-white hover:bg-white/[0.12] hover:border-white/[0.18] shadow-[0_4px_14px_rgba(0,0,0,0.2)]"
             >
               View Full Analysis
               <ArrowRight
