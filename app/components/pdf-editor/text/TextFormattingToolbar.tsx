@@ -1,14 +1,13 @@
 "use client";
 import { useState } from "react";
+import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
 import {
-  Bold,
-  Italic,
-  Underline,
-  AlignLeft,
-  AlignCenter,
-  AlignRight,
-  ChevronDown,
-} from "lucide-react";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import ColorPicker from "../tools/ColorPicker";
 import { useLanguage } from "@/app/context/LanguageContext";
 
@@ -56,24 +55,28 @@ export function TextFormattingToolbar({
         <label className="text-xs font-medium text-gray-600">
           {t("pdfProcessing.editor.toolbar.font")}
         </label>
-        <div className="relative">
-          <select
-            value={format.font}
-            onChange={(e) => {
-              onFormatChange({ font: e.target.value });
-              setActivePicker(null);
-            }}
-            className="px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-6 bg-white"
+        <Select
+          value={format.font}
+          onValueChange={(value) => {
+            onFormatChange({ font: value });
+            setActivePicker(null);
+          }}
+        >
+          <SelectTrigger
+            className="h-8 w-[130px] text-sm bg-white border-gray-300"
             style={{ fontFamily: format.font }}
+            onMouseDown={(e) => e.stopPropagation()}
           >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="z-[9999]">
             {fonts.map((font) => (
-              <option key={font} value={font} style={{ fontFamily: font }}>
-                {font}
-              </option>
+              <SelectItem key={font} value={font}>
+                <span style={{ fontFamily: font }}>{font}</span>
+              </SelectItem>
             ))}
-          </select>
-          <ChevronDown className="w-4 h-4 absolute right-1.5 top-2 text-gray-400 pointer-events-none" />
-        </div>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Font Size Dropdown */}
@@ -81,23 +84,27 @@ export function TextFormattingToolbar({
         <label className="text-xs font-medium text-gray-600">
           {t("pdfProcessing.editor.toolbar.size")}
         </label>
-        <div className="relative">
-          <select
-            value={format.size}
-            onChange={(e) => {
-              onFormatChange({ size: Number(e.target.value) });
-              setActivePicker(null);
-            }}
-            className="px-2 py-1.5 border border-gray-300 rounded text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-6 bg-white"
+        <Select
+          value={String(format.size)}
+          onValueChange={(value) => {
+            onFormatChange({ size: Number(value) });
+            setActivePicker(null);
+          }}
+        >
+          <SelectTrigger
+            className="h-8 w-[80px] text-sm bg-white border-gray-300"
+            onMouseDown={(e) => e.stopPropagation()}
           >
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent className="z-[9999]">
             {sizes.map((size) => (
-              <option key={size} value={size}>
+              <SelectItem key={size} value={String(size)}>
                 {size}px
-              </option>
+              </SelectItem>
             ))}
-          </select>
-          <ChevronDown className="w-4 h-4 absolute right-1.5 top-2 text-gray-400 pointer-events-none" />
-        </div>
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Divider */}
@@ -146,7 +153,7 @@ export function TextFormattingToolbar({
             onFocus={() => setActivePicker(null)}
             className="w-20 h-2 rounded-lg appearance-none cursor-pointer bg-gray-200"
             style={{
-              accentColor: "#3b82f6",
+              accentColor: "#0d7377",
             }}
           />
           <span className="text-xs text-gray-600 w-8 text-right">{format.opacity}%</span>
@@ -163,7 +170,9 @@ export function TextFormattingToolbar({
           setActivePicker(null);
         }}
         className={`p-2 rounded transition ${
-          format.bold ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+          format.bold
+            ? "bg-rahvana-primary text-white"
+            : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
         title={t("pdfProcessing.editor.toolbar.bold")}
       >
@@ -177,7 +186,9 @@ export function TextFormattingToolbar({
           setActivePicker(null);
         }}
         className={`p-2 rounded transition ${
-          format.italic ? "bg-blue-500 text-white" : "bg-gray-100 hover:bg-gray-200 text-gray-700"
+          format.italic
+            ? "bg-rahvana-primary text-white"
+            : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
         title={t("pdfProcessing.editor.toolbar.italic")}
       >
@@ -192,7 +203,7 @@ export function TextFormattingToolbar({
         }}
         className={`p-2 rounded transition ${
           format.underline
-            ? "bg-blue-500 text-white"
+            ? "bg-rahvana-primary text-white"
             : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
         title={t("pdfProcessing.editor.toolbar.underline")}
@@ -211,7 +222,7 @@ export function TextFormattingToolbar({
         }}
         className={`p-2 rounded transition ${
           format.align === "left"
-            ? "bg-blue-500 text-white"
+            ? "bg-rahvana-primary text-white"
             : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
         title={t("pdfProcessing.editor.toolbar.alignLeft")}
@@ -227,7 +238,7 @@ export function TextFormattingToolbar({
         }}
         className={`p-2 rounded transition ${
           format.align === "center"
-            ? "bg-blue-500 text-white"
+            ? "bg-rahvana-primary text-white"
             : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
         title={t("pdfProcessing.editor.toolbar.alignCenter")}
@@ -243,7 +254,7 @@ export function TextFormattingToolbar({
         }}
         className={`p-2 rounded transition ${
           format.align === "right"
-            ? "bg-blue-500 text-white"
+            ? "bg-rahvana-primary text-white"
             : "bg-gray-100 hover:bg-gray-200 text-gray-700"
         }`}
         title={t("pdfProcessing.editor.toolbar.alignRight")}

@@ -9,6 +9,7 @@ import {
   getUserAnswersForSessionDB,
   getUserAnswerDB,
 } from "@/lib/interview-prep/data-access";
+import { resolveSessionAccess } from "@/lib/interview-prep/case-access";
 import { E, msg } from "@/lib/errors";
 
 /**
@@ -43,12 +44,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: msg(E.INTERVIEW_ANSWER_TOO_SHORT) }, { status: 400 });
     }
 
+    // Owner OR shared-case member (petitioner) may save against this session.
+    const access = await resolveSessionAccess(sessionId);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
+    }
+    const acting = access.mode === "delegate" ? access.acting : undefined;
+
     // Save answer
     const savedAnswer = await saveUserAnswerDB(
       sessionId,
       questionId,
       userAnswerText,
-      confidenceScore
+      confidenceScore,
+      acting
     );
 
     return NextResponse.json({ success: true, answer: savedAnswer }, { status: 201 });
@@ -78,14 +87,21 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "sessionId query parameter is required" }, { status: 400 });
     }
 
+    // Owner OR shared-case member (petitioner) may read these answers.
+    const access = await resolveSessionAccess(sessionId);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
+    }
+    const acting = access.mode === "delegate" ? access.acting : undefined;
+
     // If questionId is provided, get single answer
     if (questionId) {
-      const answer = await getUserAnswerDB(sessionId, questionId);
+      const answer = await getUserAnswerDB(sessionId, questionId, acting);
       return NextResponse.json({ success: true, answer }, { status: 200 });
     }
 
     // Otherwise get all answers for session
-    const answers = await getUserAnswersForSessionDB(sessionId);
+    const answers = await getUserAnswersForSessionDB(sessionId, acting);
     return NextResponse.json({ success: true, answers }, { status: 200 });
   } catch (error) {
     console.error("Error retrieving user answers:", error);

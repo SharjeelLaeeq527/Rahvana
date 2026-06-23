@@ -59,6 +59,8 @@ export {
 export {
   generateCaseNarrative,
   getCaseHealthStatus,
+  computeOverallCaseScore,
+  computeConsistencyScore,
   type CaseNarrative,
   type NarrativeBullet,
   type NarrativeInput,

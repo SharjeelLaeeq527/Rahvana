@@ -13,6 +13,7 @@ import {
 } from "@/lib/interview-prep/service";
 import type { InterviewAnswer } from "@/lib/interview-prep/types";
 import { getSessionAnswersDB, getInterviewResultsDB } from "@/lib/interview-prep/data-access";
+import { resolveSessionAccess } from "@/lib/interview-prep/case-access";
 
 export async function POST(
   request: NextRequest,
@@ -23,15 +24,13 @@ export async function POST(
     const body = await request.json();
     const { action, answers } = body;
 
-    // Verify session exists
-    if (!sessionId || sessionId === "undefined") {
-      return NextResponse.json({ error: "Invalid session ID" }, { status: 400 });
+    // Verify session exists + the caller may act on it (owner OR shared-case
+    // member — the petitioner editing the beneficiary's shared interview).
+    const access = await resolveSessionAccess(sessionId);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
-
-    const session = await getInterviewSession(sessionId);
-    if (!session) {
-      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
-    }
+    const acting = access.mode === "delegate" ? access.acting : undefined;
 
     // Handle different actions
     switch (action) {
@@ -40,17 +39,17 @@ export async function POST(
           return NextResponse.json({ error: "Invalid answers data" }, { status: 400 });
         }
 
-        const updatedSession = await updateInterviewSessionAnswers(sessionId, answers);
+        const updatedSession = await updateInterviewSessionAnswers(sessionId, answers, acting);
         return NextResponse.json({ success: true, session: updatedSession });
       }
 
       case "generate": {
-        const output = await generateInterviewPrepOutput(sessionId);
+        const output = await generateInterviewPrepOutput(sessionId, acting);
         return NextResponse.json({ success: true, output });
       }
 
       case "complete": {
-        const completedSession = await completeInterviewSession(sessionId);
+        const completedSession = await completeInterviewSession(sessionId, acting);
         return NextResponse.json({ success: true, session: completedSession });
       }
 
@@ -70,11 +69,14 @@ export async function GET(
   try {
     const { sessionId } = await params;
 
-    if (!sessionId || sessionId === "undefined") {
-      return NextResponse.json({ error: "Invalid session ID" }, { status: 400 });
+    // Owner OR shared-case member may read the session.
+    const access = await resolveSessionAccess(sessionId);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
+    const acting = access.mode === "delegate" ? access.acting : undefined;
 
-    const session = await getInterviewSession(sessionId);
+    const session = await getInterviewSession(sessionId, acting);
 
     if (!session) {
       return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
@@ -85,13 +87,13 @@ export async function GET(
     let results: any = null;
 
     try {
-      answers = await getSessionAnswersDB(sessionId);
+      answers = await getSessionAnswersDB(sessionId, acting);
     } catch (err) {
       console.error("Error loading answers:", err);
     }
 
     try {
-      results = await getInterviewResultsDB(sessionId);
+      results = await getInterviewResultsDB(sessionId, acting);
     } catch (err) {
       console.error("Error loading results:", err);
     }

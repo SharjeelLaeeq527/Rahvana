@@ -1,5 +1,6 @@
 import { NextResponse, NextRequest } from "next/server";
-import { saveAIImprovementDB, getInterviewSessionDB } from "@/lib/interview-prep/data-access";
+import { saveAIImprovementDB } from "@/lib/interview-prep/data-access";
+import { resolveSessionAccess } from "@/lib/interview-prep/case-access";
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { generatePrompt } from "@/lib/interview-prep/utils";
 
@@ -22,11 +23,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Verify user owns this session
-    const session = await getInterviewSessionDB(sessionId);
-    if (!session) {
-      return NextResponse.json({ error: "Session not found or unauthorized" }, { status: 404 });
+    // Owner OR shared-case member (petitioner) may improve answers on this session.
+    const access = await resolveSessionAccess(sessionId);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
+    const acting = access.mode === "delegate" ? access.acting : undefined;
 
     // Verify API key is configured
     if (!process.env.GEMINI_API_KEY) {
@@ -50,7 +52,8 @@ export async function POST(request: NextRequest) {
         questionId,
         userAnswer,
         improvedAnswer,
-        improvementType || "clarity"
+        improvementType || "clarity",
+        acting
       );
 
       return NextResponse.json(

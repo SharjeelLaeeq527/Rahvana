@@ -21,6 +21,7 @@ import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
 
 import TranslationQueueTable from "./components/translation-queue/TranslationQueueTable";
+import { AdminNotificationBell } from "@/lib/AdminNotificationBell";
 import PoliceVerificationTable from "./components/police-verifications/PoliceVerificationTable";
 import BookAppointmentTable from "./components/book-appointment/BookAppointmentTable";
 import ConsultationRequestsTable from "./components/consultation-requests/ConsultationRequestsTable";
@@ -123,6 +124,7 @@ export default function AdminPanel() {
               >
                 Logout
               </Button>
+              <AdminNotificationBell adminUserId={user.id} />
             </div>
           </div>
         </div>

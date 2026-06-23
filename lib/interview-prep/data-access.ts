@@ -1,4 +1,5 @@
 // lib/interview-prep/data-access.ts
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "../supabase/server";
 import {
   InterviewSession,
@@ -19,6 +20,33 @@ export async function getSupabaseWithUser() {
   if (!user) throw new Error("Unauthorized");
 
   return { supabase, user };
+}
+
+/**
+ * Spouse collaboration: an "acting" context lets a verified case MEMBER operate
+ * on another member's session (e.g. the petitioner editing/practising the shared
+ * interview the beneficiary owns). When provided, queries run with the supplied
+ * (service-role) client and treat `userId` as the effective owner — so the
+ * existing `user_id`-scoped logic keeps working, just against the shared owner's
+ * data. When omitted, behaviour is identical to before (the logged-in user).
+ *
+ * The caller MUST verify case membership (see lib/interview-prep/case-access.ts)
+ * before constructing this — these functions trust it.
+ */
+export type ActingContext = { client: SupabaseClient; userId: string; email?: string | null };
+
+async function resolveActing(acting?: ActingContext) {
+  if (acting) {
+    return {
+      supabase: acting.client,
+      user: {
+        id: acting.userId,
+        email: acting.email ?? null,
+        user_metadata: {} as Record<string, unknown>,
+      },
+    };
+  }
+  return await getSupabaseWithUser();
 }
 
 // Create new session - now supports source and journey_id
@@ -49,9 +77,12 @@ export async function createInterviewSessionDB(
   return data as InterviewSession;
 }
 
-// Get session (enforce ownership)
-export async function getInterviewSessionDB(sessionId: string): Promise<InterviewSession | null> {
-  const { supabase, user } = await getSupabaseWithUser();
+// Get session (enforce ownership, or shared-case access via `acting`)
+export async function getInterviewSessionDB(
+  sessionId: string,
+  acting?: ActingContext
+): Promise<InterviewSession | null> {
+  const { supabase, user } = await resolveActing(acting);
 
   const { data, error } = await supabase
     .from("interview_prep_sessions")
@@ -281,9 +312,10 @@ export async function getAllUserSessionsDB(
 // Update session
 export async function updateInterviewSessionDB(
   sessionId: string,
-  updateData: Partial<InterviewSession>
+  updateData: Partial<InterviewSession>,
+  acting?: ActingContext
 ): Promise<InterviewSession> {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase, user } = await resolveActing(acting);
 
   const { data, error } = await supabase
     .from("interview_prep_sessions")
@@ -301,12 +333,13 @@ export async function updateInterviewSessionDB(
 // Save answers
 export async function saveInterviewAnswersDB(
   sessionId: string,
-  answers: Array<{ question_key: string; answer_value: unknown }>
+  answers: Array<{ question_key: string; answer_value: unknown }>,
+  acting?: ActingContext
 ) {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase } = await resolveActing(acting);
 
-  // Ensure session belongs to user
-  const session = await getInterviewSessionDB(sessionId);
+  // Ensure session belongs to user (or shared case via `acting`)
+  const session = await getInterviewSessionDB(sessionId, acting);
   if (!session) throw new Error("Session not found");
 
   const answersToInsert = answers.map((a) => ({
@@ -323,11 +356,14 @@ export async function saveInterviewAnswersDB(
 }
 
 // Get answers
-export async function getSessionAnswersDB(sessionId: string): Promise<InterviewAnswer[]> {
-  const { supabase, user } = await getSupabaseWithUser();
+export async function getSessionAnswersDB(
+  sessionId: string,
+  acting?: ActingContext
+): Promise<InterviewAnswer[]> {
+  const { supabase } = await resolveActing(acting);
 
-  // Enforce ownership
-  const session = await getInterviewSessionDB(sessionId);
+  // Enforce ownership (or shared case via `acting`)
+  const session = await getInterviewSessionDB(sessionId, acting);
   if (!session) throw new Error("Session not found");
 
   const { data, error } = await supabase
@@ -343,12 +379,13 @@ export async function getSessionAnswersDB(sessionId: string): Promise<InterviewA
 // Save results
 export async function saveInterviewResultsDB(
   sessionId: string,
-  generatedQuestions: unknown[]
+  generatedQuestions: unknown[],
+  acting?: ActingContext
 ): Promise<InterviewResult> {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase } = await resolveActing(acting);
 
-  // Ensure session ownership
-  const session = await getInterviewSessionDB(sessionId);
+  // Ensure session ownership (or shared case via `acting`)
+  const session = await getInterviewSessionDB(sessionId, acting);
   if (!session) throw new Error("Session not found");
 
   const { data, error } = await supabase
@@ -366,10 +403,13 @@ export async function saveInterviewResultsDB(
 }
 
 // Get results
-export async function getInterviewResultsDB(sessionId: string): Promise<InterviewResult | null> {
-  const { supabase, user } = await getSupabaseWithUser();
+export async function getInterviewResultsDB(
+  sessionId: string,
+  acting?: ActingContext
+): Promise<InterviewResult | null> {
+  const { supabase } = await resolveActing(acting);
 
-  const session = await getInterviewSessionDB(sessionId);
+  const session = await getInterviewSessionDB(sessionId, acting);
   if (!session) return null;
 
   const { data, error } = await supabase
@@ -387,11 +427,12 @@ export async function getInterviewResultsDB(sessionId: string): Promise<Intervie
 }
 
 export async function getInterviewSessionProgressDB(
-  sessionId: string
+  sessionId: string,
+  acting?: ActingContext
 ): Promise<InterviewPrepSessionProgress | null> {
-  const { supabase } = await getSupabaseWithUser();
+  const { supabase } = await resolveActing(acting);
 
-  const session = await getInterviewSessionDB(sessionId);
+  const session = await getInterviewSessionDB(sessionId, acting);
   if (!session) return null;
 
   const { data, error } = await supabase
@@ -407,11 +448,12 @@ export async function getInterviewSessionProgressDB(
 
 export async function upsertInterviewSessionProgressDB(
   sessionId: string,
-  payload: InterviewPrepSessionProgressInput
+  payload: InterviewPrepSessionProgressInput,
+  acting?: ActingContext
 ): Promise<InterviewPrepSessionProgress> {
-  const { supabase } = await getSupabaseWithUser();
+  const { supabase } = await resolveActing(acting);
 
-  const session = await getInterviewSessionDB(sessionId);
+  const session = await getInterviewSessionDB(sessionId, acting);
   if (!session) throw new Error("Session not found");
 
   const { data, error } = await supabase
@@ -431,10 +473,13 @@ export async function upsertInterviewSessionProgressDB(
   return data as InterviewPrepSessionProgress;
 }
 
-export async function deleteInterviewSessionProgressDB(sessionId: string): Promise<void> {
-  const { supabase } = await getSupabaseWithUser();
+export async function deleteInterviewSessionProgressDB(
+  sessionId: string,
+  acting?: ActingContext
+): Promise<void> {
+  const { supabase } = await resolveActing(acting);
 
-  const session = await getInterviewSessionDB(sessionId);
+  const session = await getInterviewSessionDB(sessionId, acting);
   if (!session) throw new Error("Session not found");
 
   const { error } = await supabase
@@ -450,12 +495,13 @@ export async function saveUserAnswerDB(
   sessionId: string,
   questionId: string,
   userAnswerText: string,
-  confidenceScore?: number
+  confidenceScore?: number,
+  acting?: ActingContext
 ): Promise<any> {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase } = await resolveActing(acting);
 
-  // Verify session ownership
-  const session = await getInterviewSessionDB(sessionId);
+  // Verify session ownership (or shared case via `acting`)
+  const session = await getInterviewSessionDB(sessionId, acting);
   if (!session) throw new Error("Session not found");
 
   const wordCount = userAnswerText.trim().split(/\s+/).length;
@@ -485,11 +531,14 @@ export async function saveUserAnswerDB(
 }
 
 // STEP 5: Get user's saved answers for a session
-export async function getUserAnswersForSessionDB(sessionId: string): Promise<any[]> {
-  const { supabase, user } = await getSupabaseWithUser();
+export async function getUserAnswersForSessionDB(
+  sessionId: string,
+  acting?: ActingContext
+): Promise<any[]> {
+  const { supabase } = await resolveActing(acting);
 
-  // Verify session ownership
-  const session = await getInterviewSessionDB(sessionId);
+  // Verify session ownership (or shared case via `acting`)
+  const session = await getInterviewSessionDB(sessionId, acting);
   if (!session) throw new Error("Session not found");
 
   const { data, error } = await supabase
@@ -504,11 +553,15 @@ export async function getUserAnswersForSessionDB(sessionId: string): Promise<any
 }
 
 // STEP 5: Get single user answer for a question
-export async function getUserAnswerDB(sessionId: string, questionId: string): Promise<any | null> {
-  const { supabase, user } = await getSupabaseWithUser();
+export async function getUserAnswerDB(
+  sessionId: string,
+  questionId: string,
+  acting?: ActingContext
+): Promise<any | null> {
+  const { supabase } = await resolveActing(acting);
 
-  // Verify session ownership
-  const session = await getInterviewSessionDB(sessionId);
+  // Verify session ownership (or shared case via `acting`)
+  const session = await getInterviewSessionDB(sessionId, acting);
   if (!session) throw new Error("Session not found");
 
   const { data, error } = await supabase
@@ -532,16 +585,17 @@ export async function saveAIImprovementDB(
   questionId: string,
   originalAnswer: string,
   improvedAnswer: string,
-  improvementType: string
+  improvementType: string,
+  acting?: ActingContext
 ): Promise<any> {
-  const { supabase, user } = await getSupabaseWithUser();
+  const { supabase } = await resolveActing(acting);
 
-  // Verify session ownership
-  const session = await getInterviewSessionDB(sessionId);
+  // Verify session ownership (or shared case via `acting`)
+  const session = await getInterviewSessionDB(sessionId, acting);
   if (!session) throw new Error("Session not found");
 
   // Get current answer with improvements
-  const currentAnswer = await getUserAnswerDB(sessionId, questionId);
+  const currentAnswer = await getUserAnswerDB(sessionId, questionId, acting);
 
   if (!currentAnswer) throw new Error("Answer not found");
 

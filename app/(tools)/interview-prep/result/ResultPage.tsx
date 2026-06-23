@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import Image from "next/image";
 import { msg, E } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
@@ -215,6 +215,64 @@ export const ResultPage = ({
       }
     }
   }, [canSeePrepQuestion, results, sessionId, loadAnswers, readOnly, initialSavedAnswers]);
+
+  // ── Spouse collaboration: LIVE answer sync ──────────────────────────────
+  // The interview is one shared session — either spouse may answer. Poll the
+  // (member-aware) answers endpoint so a question answered by one spouse shows
+  // up for the other within a few seconds, WITHOUT clobbering an answer the
+  // local user is currently typing. We mirror the latest state into refs so the
+  // poll can diff against it without re-subscribing each render.
+  const savedAnswersRef = useRef<Record<string, string>>({});
+  const userAnswersRef = useRef<Record<string, string>>({});
+  useEffect(() => {
+    savedAnswersRef.current = savedAnswers;
+  }, [savedAnswers]);
+  useEffect(() => {
+    userAnswersRef.current = userAnswers;
+  }, [userAnswers]);
+
+  const refreshAnswers = useCallback(async () => {
+    if (readOnly || !sessionId) return;
+    try {
+      const res = await fetch(`/api/interview-prep/user-answers?sessionId=${sessionId}`);
+      const data = await res.json();
+      if (!data.success || !Array.isArray(data.answers)) return;
+
+      const remote: Record<string, string> = {};
+      data.answers.forEach((a: { question_id: string; user_answer_text?: string | null }) => {
+        remote[a.question_id] = a.user_answer_text || "";
+      });
+
+      const prevSaved = savedAnswersRef.current;
+      const prevUser = userAnswersRef.current;
+
+      // Pull in the other spouse's saved text for every question the local user
+      // is NOT mid-editing (i.e. their textarea still matches what was saved).
+      const nextUser = { ...prevUser };
+      let changed = false;
+      Object.keys(remote).forEach((qid) => {
+        const hasUnsavedLocalEdit = (prevUser[qid] ?? "") !== (prevSaved[qid] ?? "");
+        if (!hasUnsavedLocalEdit && (prevUser[qid] ?? "") !== remote[qid]) {
+          nextUser[qid] = remote[qid];
+          changed = true;
+        }
+      });
+
+      setSavedAnswers((p) => ({ ...p, ...remote }));
+      if (changed) setUserAnswers(nextUser);
+    } catch {
+      // best-effort live sync — ignore transient errors
+    }
+  }, [sessionId, readOnly]);
+
+  useEffect(() => {
+    if (readOnly || !sessionId) return;
+    const id = setInterval(() => {
+      // Only refresh in the prep view; rapid/mock modes drive their own state.
+      if (mode === "prep") refreshAnswers();
+    }, 6000);
+    return () => clearInterval(id);
+  }, [sessionId, readOnly, mode, refreshAnswers]);
 
   // NEW: Save answer to database
   const handleSaveAnswer = async (questionId: string) => {

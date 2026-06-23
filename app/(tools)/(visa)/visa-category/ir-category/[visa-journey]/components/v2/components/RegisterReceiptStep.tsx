@@ -240,6 +240,7 @@ async function postReceipt(
   journeyId: string,
   payload: RegisterReceiptPayload
 ): Promise<{ record: ReceiptRecord | null; error: string }> {
+  console.log("[RegisterReceiptStep v2] postReceipt initiated", { journeyId, payload });
   try {
     const res = await fetch(`/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`, {
       method: "POST",
@@ -247,45 +248,50 @@ async function postReceipt(
       body: JSON.stringify(payload),
     });
     const data = await res.json();
+    console.log("[RegisterReceiptStep v2] postReceipt raw response:", data);
     if (!res.ok || "error" in data) {
       return { record: null, error: msg(E.JOURNEY_RECEIPT_SAVE_FAILED) };
     }
     const record: ReceiptRecord = {
-      receiptNumber: data.receipt_number,
-      noticeDate: data.notice_date,
-      priorityDate: data.priority_date,
-      caseLabel: data.case_label,
-      source: data.source,
-      trackingEnabled: data.tracking_enabled,
-      lastKnownStatus: data.last_known_status,
-      lastCheckedAt: data.last_checked_at,
-      savedAt: data.saved_at,
+      receiptNumber: data.receipt_number || data.receiptNumber || "",
+      noticeDate: data.notice_date || data.noticeDate || null,
+      priorityDate: data.priority_date || data.priorityDate || null,
+      caseLabel: data.case_label || data.caseLabel || null,
+      source: data.source || "manual",
+      trackingEnabled: !!(data.tracking_enabled ?? data.trackingEnabled),
+      lastKnownStatus: data.last_known_status || data.lastKnownStatus || null,
+      lastCheckedAt: data.last_checked_at || data.lastCheckedAt || null,
+      savedAt: data.saved_at || data.savedAt || null,
     };
     return { record, error: "" };
   } catch {
-    return { record: null, error: msg(E.JOURNEY_RECEIPT_SAVE_FAILED) };
+    console.error("[RegisterReceiptStep v2] postReceipt network error");
+    return { record: null, error: "Network error while saving receipt — please try again." };
   }
 }
 
 async function fetchReceipt(journeyId: string) {
+  console.log("[RegisterReceiptStep v2] fetchReceipt initiated for journeyId:", journeyId);
   try {
     const res = await fetch(`/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`);
     const data = await res.json();
+    console.log("[RegisterReceiptStep v2] fetchReceipt raw response:", data);
     if (!res.ok || data.error) return { record: null, error: msg(E.JOURNEY_RECEIPT_FETCH_FAILED) };
     const record: ReceiptRecord = {
-      receiptNumber: data.receipt_number,
-      noticeDate: data.notice_date,
-      priorityDate: data.priority_date,
-      caseLabel: data.case_label,
-      source: data.source,
-      trackingEnabled: data.tracking_enabled,
-      lastKnownStatus: data.last_known_status,
-      lastCheckedAt: data.last_checked_at,
-      savedAt: data.saved_at,
+      receiptNumber: data.receipt_number || data.receiptNumber || "",
+      noticeDate: data.notice_date || data.noticeDate || null,
+      priorityDate: data.priority_date || data.priorityDate || null,
+      caseLabel: data.case_label || data.caseLabel || null,
+      source: data.source || "manual",
+      trackingEnabled: !!(data.tracking_enabled ?? data.trackingEnabled),
+      lastKnownStatus: data.last_known_status || data.lastKnownStatus || null,
+      lastCheckedAt: data.last_checked_at || data.lastCheckedAt || null,
+      savedAt: data.saved_at || data.savedAt || null,
     };
     return { record, error: "" };
   } catch {
-    return { record: null, error: msg(E.JOURNEY_RECEIPT_FETCH_FAILED) };
+    console.error("[RegisterReceiptStep v2] fetchReceipt network error");
+    return { record: null, error: "Network error while fetching receipt" };
   }
 }
 
@@ -333,6 +339,7 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
     priorityDate: existingRecord?.priorityDate ?? "",
     caseLabel: existingRecord?.caseLabel ?? "",
   });
+  console.log("[RegisterReceiptStep] current journeyId:", journeyId); // Add this line
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const set = (k: keyof typeof fields) => (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -341,6 +348,10 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
     (e.target.style.borderColor = "#8284bf");
   const blurBorder = (e: React.FocusEvent<HTMLInputElement>) =>
     (e.target.style.borderColor = "#d0e4f7");
+
+  useEffect(() => {
+    console.log("[ManualForm v2] noticeDate state updated:", fields.noticeDate);
+  }, [fields.noticeDate]);
 
   async function handleSubmit() {
     // If tracking is locked for this tier, show the upgrade nudge instead
@@ -562,7 +573,15 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
   const blurBorder = (e: React.FocusEvent<HTMLInputElement>) =>
     (e.target.style.borderColor = "#d0e4f7");
 
+  useEffect(() => {
+    console.log("[UploadForm v2] noticeDate state updated:", fields.noticeDate);
+  }, [fields.noticeDate]);
+
   const ocrRequestIdRef = useRef(0);
+
+  useEffect(() => {
+    console.log("DEBUG [UploadForm v2] noticeDate changed in state:", fields.noticeDate);
+  }, [fields.noticeDate]);
 
   async function runOCR(file: File) {
     const currentRequestId = Date.now();
@@ -927,6 +946,8 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
   state,
   actions,
 }) => {
+  console.log("DEBUG [RegisterReceiptStep v2] Root render with journeyId:", journeyId);
+
   const stepEntitlement = useStepEntitlement("step_1_15");
   const plan = usePlan();
 

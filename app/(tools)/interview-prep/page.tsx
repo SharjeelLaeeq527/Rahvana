@@ -61,27 +61,14 @@ export default function InterviewPreparation() {
   const [journeyId, setJourneyId] = useState<string | null>(null);
   const [isJourneySession, setIsJourneySession] = useState(false);
 
-  // Spouse collaboration: read-only mode for the PETITIONER. They review the
-  // beneficiary's shared interview prep but can't edit/practice (spec §13).
-  const [readOnly, setReadOnly] = useState(false);
+  // Spouse collaboration: the SHARED interview belongs to the beneficiary's
+  // session. When the current user is the OTHER member (the petitioner), we load
+  // that shared session here and let them view, edit AND practise it — writes go
+  // to the beneficiary's session via the service-role "acting" path. (Updated
+  // 2026-06-23: petitioner is no longer read-only; both spouses collaborate.)
+  const [sharedMember, setSharedMember] = useState(false);
   const [readOnlySavedAnswers, setReadOnlySavedAnswers] = useState<Record<string, string>>({});
   const [readOnlyAnsweredCount, setReadOnlyAnsweredCount] = useState(0);
-  type RapidFireSummary = {
-    currentRound: number;
-    roundsDone: number;
-    totalRoundsCompleted: number;
-    score: number;
-    lastRoundScore: number;
-    completed: boolean;
-    roundSummary: {
-      coveredCount?: number;
-      partialCount?: number;
-      missedCount?: number;
-      skippedCount?: number;
-      readinessScore?: number;
-    } | null;
-  };
-  const [readOnlyRapidFire, setReadOnlyRapidFire] = useState<RapidFireSummary | null>(null);
 
   type RestorableSession = {
     id: string;
@@ -270,16 +257,19 @@ export default function InterviewPreparation() {
         setLoading(true);
         setLoadingMessage("Checking for existing sessions...");
 
-        // SPOUSE COLLABORATION: if the caller is the PETITIONER of a shared case,
-        // the interview prep belongs to the beneficiary. Show it read-only and
-        // stop — the per-user flow below would never find the beneficiary's
-        // session for them. Beneficiary / solo users fall through unchanged.
+        // SPOUSE COLLABORATION: if the caller is the OTHER member of a shared
+        // case (the petitioner — i.e. NOT the beneficiary who owns the session),
+        // the interview belongs to the beneficiary's session. Load it here so the
+        // petitioner can view/edit/practise the SAME session; the per-user flow
+        // below would never find the beneficiary's session for them. The
+        // beneficiary (isBeneficiary === true) and solo users fall through
+        // unchanged to their own per-user session.
         try {
           const caseResp = await fetch(`/api/case/interview`);
           const caseJson = await caseResp.json();
           const caseData = caseJson?.data;
-          if (caseResp.ok && caseData?.hasCase && caseData.canEdit === false) {
-            setReadOnly(true);
+          if (caseResp.ok && caseData?.hasCase && caseData.isBeneficiary === false) {
+            setSharedMember(true);
             setSessionSource("journey");
             setIsJourneySession(true);
             if (caseData.journeyId) setJourneyId(caseData.journeyId);
@@ -287,7 +277,6 @@ export default function InterviewPreparation() {
             if (caseData.output) setGeneratedResults(caseData.output);
             setReadOnlySavedAnswers(caseData.userAnswers || {});
             setReadOnlyAnsweredCount(caseData.answeredCount || 0);
-            setReadOnlyRapidFire(caseData.rapidFire || null);
             setShowCountryModal(false);
             setSessionRestorationAttempted(true);
             setLoading(false);
@@ -520,6 +509,30 @@ export default function InterviewPreparation() {
       setLoadingMessage("");
     }
   }, [sessionRestorationAttempted, initialCheckDone]);
+
+  // Spouse collaboration: while the OTHER member (petitioner) is waiting for the
+  // beneficiary to generate the interview questions, poll the shared-case
+  // endpoint so the editable results appear here the moment they're generated.
+  // Stops once results load — from then on ResultPage's own poll keeps the saved
+  // answers in sync live. (Answer-level live sync lives in ResultPage.)
+  useEffect(() => {
+    if (!sharedMember || generatedResults) return;
+    const id = setInterval(async () => {
+      try {
+        const r = await fetch(`/api/case/interview`);
+        const j = await r.json();
+        const d = j?.data;
+        if (r.ok && d?.hasCase) {
+          if (typeof d.answeredCount === "number") setReadOnlyAnsweredCount(d.answeredCount);
+          if (d.session?.id) setSessionId((prev) => prev ?? d.session.id);
+          if (d.output) setGeneratedResults(d.output);
+        }
+      } catch {
+        // best-effort — ignore transient errors
+      }
+    }, 7000);
+    return () => clearInterval(id);
+  }, [sharedMember, generatedResults]);
 
   const handleCloseIntro = () => {
     if (dontShowAgain && typeof window !== "undefined") {
@@ -808,65 +821,21 @@ export default function InterviewPreparation() {
     }
   };
 
-  // Rapid Fire practice summary (read-only) — mirrors the beneficiary's rounds.
-  const renderRapidFireSummary = () => {
-    const rf = readOnlyRapidFire;
-    if (!rf) return null;
-    const s = rf.roundSummary;
-    const stat = (label: string, value: number | string, color: string) => (
-      <div className="flex flex-col items-center rounded-lg bg-white px-3 py-2 border border-slate-100">
-        <span className="text-lg font-bold" style={{ color }}>
-          {value}
-        </span>
-        <span className="text-[11px] text-slate-500">{label}</span>
-      </div>
-    );
-    return (
-      <div className="mx-auto mb-6 max-w-2xl rounded-xl border border-[#cdadcc]/40 bg-[#faf8fb] p-4">
-        <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-bold text-[#6b5b7b]">Rapid Fire practice</span>
-          <span className="text-xs font-semibold text-slate-500">
-            {rf.roundsDone > 0
-              ? `${rf.roundsDone} round${rf.roundsDone === 1 ? "" : "s"} practised`
-              : "Practice started"}
-          </span>
-        </div>
-        {s ? (
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-5">
-            {stat(
-              "Readiness",
-              `${Math.round(Number(s.readinessScore ?? rf.score) || 0)}%`,
-              "#6b5b7b"
-            )}
-            {stat("Covered", s.coveredCount ?? 0, "#15744f")}
-            {stat("Partial", s.partialCount ?? 0, "#9c6f38")}
-            {stat("Missed", s.missedCount ?? 0, "#db8090")}
-            {stat("Skipped", s.skippedCount ?? 0, "#64748b")}
-          </div>
-        ) : (
-          <div className="grid grid-cols-2 gap-2">
-            {stat("Rounds practised", rf.roundsDone, "#6b5b7b")}
-            {stat("Points", rf.score, "#15744f")}
-          </div>
-        )}
-        <p className="mt-3 text-[11px] leading-relaxed text-slate-500">
-          This reflects your spouse&apos;s Rapid Fire practice. It updates as they keep practising.
-        </p>
-      </div>
-    );
-  };
-
-  // Read-only view for the petitioner spouse: the beneficiary's questions +
-  // saved answers, or a friendly "not ready yet" state if nothing's generated.
-  const renderReadOnly = () => {
+  // Shared view for the OTHER spouse (the petitioner): the SAME interview the
+  // beneficiary owns, fully editable + practisable. Edits/practice write to the
+  // shared session via the service-role "acting" path. If the beneficiary hasn't
+  // generated questions yet, show a friendly "not ready" state (there's nothing
+  // to practise until questions exist).
+  const renderSharedMember = () => {
     if (generatedResults && sessionId) {
       return (
         <>
-          {renderRapidFireSummary()}
+          <div className="mx-auto mb-5 max-w-2xl rounded-lg border border-[#0d7377]/20 bg-[#e8f6f6] px-4 py-2.5 text-center text-xs font-semibold text-[#0a585b]">
+            Shared with your spouse — you can view, edit and practise together.
+          </div>
           <ResultPage
             sessionId={sessionId}
             results={generatedResults}
-            readOnly
             initialSavedAnswers={readOnlySavedAnswers}
             onRestart={() => {}}
           />
@@ -875,8 +844,8 @@ export default function InterviewPreparation() {
     }
     return (
       <div className="text-center py-12 space-y-3">
-        <div className="mx-auto mb-2 w-fit rounded-full bg-[#e8f5ef] px-3 py-1 text-xs font-bold text-[#15744f]">
-          Read-only · your spouse&apos;s interview prep
+        <div className="mx-auto mb-2 w-fit rounded-full bg-[#e8f6f6] px-3 py-1 text-xs font-bold text-[#0a585b]">
+          Shared interview · with your spouse
         </div>
         <h3 className="text-xl font-semibold text-slate-800">
           {readOnlyAnsweredCount > 0
@@ -887,8 +856,8 @@ export default function InterviewPreparation() {
           {readOnlyAnsweredCount > 0
             ? `Your spouse (the beneficiary) has answered ${readOnlyAnsweredCount} questionnaire ${
                 readOnlyAnsweredCount === 1 ? "question" : "questions"
-              } so far. Once they generate their interview questions, you'll be able to review everything here.`
-            : "Your spouse (the beneficiary) hasn't started their interview preparation yet. As soon as they do, their progress and answers will appear here for you to review."}
+              } so far. Once the interview questions are generated, you can both review and practise them here.`
+            : "The interview questions haven't been generated yet. Once the beneficiary completes the short questionnaire, you can both review and practise the questions together here."}
         </p>
       </div>
     );
@@ -1208,7 +1177,7 @@ export default function InterviewPreparation() {
 
   return (
     <>
-      {initialCheckDone && !sessionId && !readOnly && (
+      {initialCheckDone && !sessionId && !sharedMember && (
         <NarrativeModal
           isOpen={showWhatsThis}
           onClose={handleCloseIntro}
@@ -1219,7 +1188,7 @@ export default function InterviewPreparation() {
         />
       )}
 
-      {initialCheckDone && !sessionId && !readOnly && (
+      {initialCheckDone && !sessionId && !sharedMember && (
         <CountrySelectionModal
           isOpen={showCountryModal}
           onCountrySelected={handleCountrySelected}
@@ -1246,8 +1215,8 @@ export default function InterviewPreparation() {
               <Loader size="md" />
               <p className="text-slate-600">{loadingMessage || "Loading..."}</p>
             </div>
-          ) : readOnly ? (
-            renderReadOnly()
+          ) : sharedMember ? (
+            renderSharedMember()
           ) : (
             renderStep()
           )}

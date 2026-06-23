@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import {
   deleteInterviewSessionProgressDB,
-  getInterviewSessionDB,
   getInterviewSessionProgressDB,
   upsertInterviewSessionProgressDB,
 } from "@/lib/interview-prep/data-access";
+import { resolveSessionAccess } from "@/lib/interview-prep/case-access";
 import { InterviewPrepSessionProgressInput } from "@/lib/interview-prep/types";
 
 export async function GET(
@@ -14,16 +14,13 @@ export async function GET(
   try {
     const { sessionId } = await params;
 
-    if (!sessionId || sessionId === "undefined") {
-      return NextResponse.json({ error: "Invalid session ID" }, { status: 400 });
+    const access = await resolveSessionAccess(sessionId);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
+    const acting = access.mode === "delegate" ? access.acting : undefined;
 
-    const session = await getInterviewSessionDB(sessionId);
-    if (!session) {
-      return NextResponse.json({ error: "Session not found" }, { status: 404 });
-    }
-
-    const progress = await getInterviewSessionProgressDB(sessionId);
+    const progress = await getInterviewSessionProgressDB(sessionId, acting);
 
     return NextResponse.json({ success: true, progress });
   } catch (error) {
@@ -42,13 +39,15 @@ export async function POST(
   try {
     const { sessionId } = await params;
 
-    if (!sessionId || sessionId === "undefined") {
-      return NextResponse.json({ error: "Invalid session ID" }, { status: 400 });
+    const access = await resolveSessionAccess(sessionId);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
+    const acting = access.mode === "delegate" ? access.acting : undefined;
 
     const body = (await request.json()) as InterviewPrepSessionProgressInput;
 
-    const progress = await upsertInterviewSessionProgressDB(sessionId, body);
+    const progress = await upsertInterviewSessionProgressDB(sessionId, body, acting);
 
     return NextResponse.json({ success: true, progress });
   } catch (error) {
@@ -67,11 +66,13 @@ export async function DELETE(
   try {
     const { sessionId } = await params;
 
-    if (!sessionId || sessionId === "undefined") {
-      return NextResponse.json({ error: "Invalid session ID" }, { status: 400 });
+    const access = await resolveSessionAccess(sessionId);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
+    const acting = access.mode === "delegate" ? access.acting : undefined;
 
-    await deleteInterviewSessionProgressDB(sessionId);
+    await deleteInterviewSessionProgressDB(sessionId, acting);
 
     return NextResponse.json({ success: true });
   } catch (error) {
