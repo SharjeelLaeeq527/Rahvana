@@ -12,6 +12,18 @@ import { createBrowserClient } from "@supabase/ssr";
 import { useAuth } from "@/app/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/ui/spinner";
+import CaseProgressPanel from "@/components/case/CaseProgressPanel";
+import {
+  Paperclip,
+  Trash2,
+  Pencil,
+  FileCheck,
+  CheckCircle2,
+  RotateCcw,
+  Users,
+  Dot,
+  type LucideIcon,
+} from "lucide-react";
 
 interface ActivityEntry {
   id: string;
@@ -25,15 +37,16 @@ interface ActivityEntry {
   isYou: boolean;
 }
 
-// action -> { verb, emoji } for the feed line.
-const ACTION_META: Record<string, { verb: string; emoji: string }> = {
-  "document.upload": { verb: "uploaded", emoji: "📎" },
-  "document.delete": { verb: "deleted", emoji: "🗑️" },
-  "form.save": { verb: "updated", emoji: "✏️" },
-  "form.complete": { verb: "completed", emoji: "✅" },
-  "step.complete": { verb: "completed step", emoji: "✔️" },
-  "step.reopen": { verb: "reopened step", emoji: "↩️" },
-  "role.assign": { verb: "set roles", emoji: "👥" },
+// action -> { verb, icon, tone } for the feed line. Icons are lucide (clean,
+// professional), tinted by the kind of action.
+const ACTION_META: Record<string, { verb: string; icon: LucideIcon; tone: string }> = {
+  "document.upload": { verb: "uploaded", icon: Paperclip, tone: "text-sky-600" },
+  "document.delete": { verb: "deleted", icon: Trash2, tone: "text-rose-600" },
+  "form.save": { verb: "updated", icon: Pencil, tone: "text-amber-600" },
+  "form.complete": { verb: "completed", icon: FileCheck, tone: "text-emerald-600" },
+  "step.complete": { verb: "completed step", icon: CheckCircle2, tone: "text-emerald-600" },
+  "step.reopen": { verb: "reopened step", icon: RotateCcw, tone: "text-slate-500" },
+  "role.assign": { verb: "set roles", icon: Users, tone: "text-[#0d7377]" },
 };
 
 type RoleFilter = "all" | "petitioner" | "beneficiary";
@@ -173,11 +186,17 @@ export default function CaseHistoryPage() {
         >
           ← Back to settings
         </button>
-        <h1 className="text-2xl font-semibold text-slate-900">Activity history</h1>
+        <h1 className="text-2xl font-semibold text-slate-900">Progress &amp; history</h1>
         <p className="mt-1 text-sm text-slate-500">
-          A record of who did what on this shared case — view-only.
+          Live shared progress and a record of who did what on this case — view-only.
         </p>
       </div>
+
+      {!authLoading && !loading && !error && journeyId && (
+        <div className="mb-6">
+          <CaseProgressPanel journeyId={journeyId} />
+        </div>
+      )}
 
       {(authLoading || (loading && !error)) && (
         <div className="flex justify-center py-16">
@@ -197,6 +216,7 @@ export default function CaseHistoryPage() {
 
       {!authLoading && !loading && !error && journeyId && (
         <>
+          <h2 className="mb-3 text-lg font-semibold text-slate-900">Activity log</h2>
           <div className="mb-5 flex flex-wrap gap-2">
             <FilterTab value="all" label="All" />
             <FilterTab value="petitioner" label="Petitioner" />
@@ -212,14 +232,17 @@ export default function CaseHistoryPage() {
           ) : (
             <ol className="space-y-2">
               {filtered.map((e) => {
-                const meta = ACTION_META[e.action] || { verb: e.action, emoji: "•" };
+                const meta = ACTION_META[e.action] || { verb: e.action, icon: Dot, tone: "text-slate-400" };
+                const Icon = meta.icon;
                 const who = e.isYou ? "You" : e.actorEmail || "A case member";
                 return (
                   <li
                     key={e.id}
                     className="flex items-start gap-3 rounded-xl border border-slate-200 bg-white px-4 py-3"
                   >
-                    <span className="mt-0.5 text-lg leading-none">{meta.emoji}</span>
+                    <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-50">
+                      <Icon className={`h-4 w-4 ${meta.tone}`} strokeWidth={2} />
+                    </span>
                     <div className="min-w-0 flex-1">
                       <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
                         <span className="font-medium text-slate-800">{who}</span>

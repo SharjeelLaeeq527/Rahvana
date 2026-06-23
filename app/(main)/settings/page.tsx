@@ -12,7 +12,6 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { Loader } from "@/components/ui/spinner";
 import CollaboratorsPanel from "@/components/case/CollaboratorsPanel";
-import CaseProgressPanel from "@/components/case/CaseProgressPanel";
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -423,12 +422,11 @@ export default function SettingsPage() {
               </CardHeader>
               <CardContent className="pt-2 sm:pt-6 space-y-6">
                 <CollaboratorsPanel journeyId={journeyId} />
-                <CaseProgressPanel journeyId={journeyId} />
                 <div className="flex items-center justify-between rounded-xl border border-slate-200 p-4">
                   <div>
-                    <p className="text-sm font-medium text-slate-800">Activity history</p>
+                    <p className="text-sm font-medium text-slate-800">Shared progress &amp; history</p>
                     <p className="text-xs text-slate-500">
-                      See who did what — uploads, forms, steps and role changes.
+                      Live progress plus a record of who did what — uploads, forms, steps and roles.
                     </p>
                   </div>
                   <Button

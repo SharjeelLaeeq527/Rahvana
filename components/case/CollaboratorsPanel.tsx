@@ -9,6 +9,7 @@
 // public.assign_case_roles, which rejects a second assignment).
 
 import { useCallback, useEffect, useState, type FormEvent } from "react";
+import { AlertTriangle, Lock } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 
@@ -212,9 +213,12 @@ export default function CollaboratorsPanel({ journeyId }: { journeyId: string })
               <p className="text-xs text-slate-500 mb-2">
                 Pick your role — your spouse is automatically given the other.
               </p>
-              <p className="text-xs font-medium text-amber-700 mb-3">
-                ⚠️ Choose carefully: this is a one-time choice and roles cannot be
-                swapped later.
+              <p className="flex items-start gap-1.5 text-xs font-medium text-amber-700 mb-3">
+                <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" strokeWidth={2} />
+                <span>
+                  Choose carefully: this is a one-time choice and roles cannot be
+                  swapped later.
+                </span>
               </p>
               <div className="flex gap-2">
                 <button
@@ -239,8 +243,9 @@ export default function CollaboratorsPanel({ journeyId }: { journeyId: string })
                 You: <span className="font-semibold capitalize">{me?.caseRole}</span> · Spouse:{" "}
                 <span className="font-semibold capitalize">{other?.caseRole}</span>
               </p>
-              <p className="mt-1 text-xs text-slate-400">
-                🔒 Roles are set and cannot be changed.
+              <p className="mt-1 flex items-center gap-1.5 text-xs text-slate-400">
+                <Lock className="h-3 w-3 shrink-0" strokeWidth={2} />
+                Roles are set and cannot be changed.
               </p>
             </div>
           )}
