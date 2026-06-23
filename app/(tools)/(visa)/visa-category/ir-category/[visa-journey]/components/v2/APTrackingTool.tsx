@@ -11,257 +11,216 @@ import {
   ExternalLink,
   Shield,
   Calendar,
-  History,
-  ArrowRight,
-  ShieldCheck,
+  Sparkles,
+  Target,
+  Activity,
 } from "lucide-react";
+// NOTE: When pasting into your codebase, replace this with:
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
+// type WizardState = { metadata?: Record<string, any> };
 
 interface APTrackingToolProps {
   state: WizardState;
 }
 
-// Brand color palette used throughout:
-// Primary: #0d7377, Success: #afdbdb, Neutral: #89a4a0, Warning: #cdadcc, Critical: #db8090
+/* ------------------------------------------------------------------ */
+/*  Status design system                                              */
+/* ------------------------------------------------------------------ */
+
+type StatusKey =
+  | "Administrative Processing"
+  | "In Transit"
+  | "Ready"
+  | "Pending"
+  | "Not Available"
+  | "Issued"
+  | "Approved"
+  | "Refused";
 
 interface StatusUI {
-  iconBg: string;
-  iconColor: string;
-  iconBorder: string;
+  /** Primary accent — used for borders, glow, icon ring */
+  accent: string;
+  /** Soft accent tint for subtle fills */
+  accentSoft: string;
+  /** Status chip text/background */
   chipBg: string;
   chipColor: string;
-  counterColor: string;
-  cardBorder: string;
-  accentTop: string;
-  accentBottom: string;
   heading: string;
   trackerLabel: string;
   counterLabel: (days: number) => string;
-  intBg: string;
-  intBorder: string;
-  intTitle: string;
   intLabel: string;
   icon: any;
 }
 
-const CEAC_STATUS_UI: Record<string, StatusUI> = {
+const CEAC_STATUS_UI: Record<StatusKey, StatusUI> = {
   "Administrative Processing": {
-    iconBg: "#f5eef5",
-    iconColor: "#8a5a86",
-    iconBorder: "#d5c0d3",
-    chipBg: "#f5eef5",
-    chipColor: "#8a5a86",
-    counterColor: "#8a5a86",
-    cardBorder: "#d5c0d3",
-    accentTop: "rgba(205,173,204,0.12)",
-    accentBottom: "rgba(205,173,204,0.06)",
+    accent: "#B58AE0",
+    accentSoft: "rgba(181,138,224,0.14)",
+    chipBg: "rgba(181,138,224,0.18)",
+    chipColor: "#E5D2F5",
     heading: "Administrative Processing",
     trackerLabel: "AP Status Tracker",
-    counterLabel: (d) => `${d} Day${d !== 1 ? "s" : ""} in AP`,
-    intBg: "#f9f3f9",
-    intBorder: "#e8d4e7",
-    intTitle: "#8a5a86",
+    counterLabel: (d) => `${d} Day${d !== 1 ? "s" : ""} In AP`,
     intLabel: "AP Intelligence",
     icon: Clock,
   },
   "In Transit": {
-    iconBg: "#e6f5f5",
-    iconColor: "#0d7377",
-    iconBorder: "#a8d4d5",
-    chipBg: "#e6f5f5",
-    chipColor: "#095c5f",
-    counterColor: "#0d7377",
-    cardBorder: "#a8d4d5",
-    accentTop: "rgba(13,115,119,0.10)",
-    accentBottom: "rgba(13,115,119,0.05)",
-    heading: "Case In Transit — Being Transferred",
+    accent: "#38BDF8",
+    accentSoft: "rgba(56,189,248,0.14)",
+    chipBg: "rgba(56,189,248,0.18)",
+    chipColor: "#CFF0FF",
+    heading: "Case In Transit",
     trackerLabel: "CEAC Status Tracker",
     counterLabel: (d) =>
-      d === 0 ? "Just entered In Transit" : `In Transit for ${d} day${d !== 1 ? "s" : ""}`,
-    intBg: "#e6f5f5",
-    intBorder: "#a8d4d5",
-    intTitle: "#095c5f",
-    intLabel: "What 'In Transit' means",
+      d === 0 ? "Just Entered In Transit" : `In Transit · ${d} Day${d !== 1 ? "s" : ""}`,
+    intLabel: "What \u201CIn Transit\u201D Means",
     icon: Clock,
   },
   Ready: {
-    iconBg: "#e6f5f5",
-    iconColor: "#0d7377",
-    iconBorder: "#a8d4d5",
-    chipBg: "#e6f5f5",
-    chipColor: "#095c5f",
-    counterColor: "#0d7377",
-    cardBorder: "#a8d4d5",
-    accentTop: "rgba(13,115,119,0.10)",
-    accentBottom: "rgba(13,115,119,0.05)",
-    heading: "Status: Ready — Case at Embassy",
+    accent: "#38BDF8",
+    accentSoft: "rgba(56,189,248,0.14)",
+    chipBg: "rgba(56,189,248,0.18)",
+    chipColor: "#CFF0FF",
+    heading: "Ready — Case at Embassy",
     trackerLabel: "CEAC Status Tracker",
     counterLabel: (d) =>
-      d === 0 ? "Just became Ready" : `Ready for ${d} day${d !== 1 ? "s" : ""}`,
-    intBg: "#e6f5f5",
-    intBorder: "#a8d4d5",
-    intTitle: "#095c5f",
-    intLabel: "What 'Ready' means",
+      d === 0 ? "Just Became Ready" : `Ready · ${d} Day${d !== 1 ? "s" : ""}`,
+    intLabel: "What \u201CReady\u201D Means",
     icon: Shield,
   },
   Pending: {
-    iconBg: "#f0f5f4",
-    iconColor: "#64748b",
-    iconBorder: "#b7c2c0",
-    chipBg: "#f0f5f4",
-    chipColor: "#4a6260",
-    counterColor: "#4a6260",
-    cardBorder: "#b7c2c0",
-    accentTop: "rgba(137,164,160,0.10)",
-    accentBottom: "rgba(137,164,160,0.05)",
-    heading: "Status: Pending — Awaiting Processing",
+    accent: "#F59E0B",
+    accentSoft: "rgba(245,158,11,0.14)",
+    chipBg: "rgba(245,158,11,0.18)",
+    chipColor: "#FCE3B0",
+    heading: "Pending — Awaiting Processing",
     trackerLabel: "CEAC Status Tracker",
     counterLabel: (d) =>
-      d === 0 ? "Pending since today" : `Pending for ${d} day${d !== 1 ? "s" : ""}`,
-    intBg: "#f0f5f4",
-    intBorder: "#b7c2c0",
-    intTitle: "#4a6260",
-    intLabel: "What 'Pending' means",
+      d === 0 ? "Pending Since Today" : `Pending · ${d} Day${d !== 1 ? "s" : ""}`,
+    intLabel: "What \u201CPending\u201D Means",
     icon: Clock,
   },
   "Not Available": {
-    iconBg: "#f0f5f4",
-    iconColor: "#4a6260",
-    iconBorder: "#89a4a0",
-    chipBg: "#f0f5f4",
-    chipColor: "#4a6260",
-    counterColor: "#4a6260",
-    cardBorder: "#89a4a0",
-    accentTop: "rgba(137,164,160,0.10)",
-    accentBottom: "rgba(137,164,160,0.05)",
-    heading: "Status: Not Available",
+    accent: "#F59E0B",
+    accentSoft: "rgba(245,158,11,0.14)",
+    chipBg: "rgba(245,158,11,0.18)",
+    chipColor: "#FCE3B0",
+    heading: "Status Not Available",
     trackerLabel: "CEAC Status Tracker",
     counterLabel: (d) =>
-      d === 0 ? "Status unavailable" : `Unavailable for ${d} day${d !== 1 ? "s" : ""}`,
-    intBg: "#f0f5f4",
-    intBorder: "#89a4a0",
-    intTitle: "#4a6260",
-    intLabel: "Why is status Not Available?",
+      d === 0 ? "Status Unavailable" : `Unavailable · ${d} Day${d !== 1 ? "s" : ""}`,
+    intLabel: "Why Is Status Not Available?",
     icon: AlertTriangle,
   },
   Issued: {
-    iconBg: "#e6f5f5",
-    iconColor: "#0d7377",
-    iconBorder: "#afdbdb",
-    chipBg: "#e6f5f5",
-    chipColor: "#095c5f",
-    counterColor: "#095c5f",
-    cardBorder: "#afdbdb",
-    accentTop: "rgba(175,219,219,0.15)",
-    accentBottom: "rgba(175,219,219,0.08)",
-    heading: "Visa Issued — Congratulations!",
+    accent: "#22C55E",
+    accentSoft: "rgba(34,197,94,0.14)",
+    chipBg: "rgba(34,197,94,0.18)",
+    chipColor: "#C5F2D6",
+    heading: "Visa Issued — Congratulations",
     trackerLabel: "Visa Status",
-    counterLabel: (d) => (d === 0 ? "Issued today!" : `Issued ${d} day${d !== 1 ? "s" : ""} ago`),
-    intBg: "#e6f5f5",
-    intBorder: "#afdbdb",
-    intTitle: "#095c5f",
-    intLabel: "Next step — track your courier",
+    counterLabel: (d) => (d === 0 ? "Issued Today" : `Issued ${d} Day${d !== 1 ? "s" : ""} Ago`),
+    intLabel: "Next Step — Track Your Courier",
     icon: CheckCircle2,
   },
   Approved: {
-    iconBg: "#e6f5f5",
-    iconColor: "#0d7377",
-    iconBorder: "#afdbdb",
-    chipBg: "#e6f5f5",
-    chipColor: "#095c5f",
-    counterColor: "#095c5f",
-    cardBorder: "#afdbdb",
-    accentTop: "rgba(175,219,219,0.15)",
-    accentBottom: "rgba(175,219,219,0.08)",
+    accent: "#22C55E",
+    accentSoft: "rgba(34,197,94,0.14)",
+    chipBg: "rgba(34,197,94,0.18)",
+    chipColor: "#C5F2D6",
     heading: "Visa Approved",
     trackerLabel: "Visa Status",
-    counterLabel: (d) => `Approved ${d} day${d !== 1 ? "s" : ""} ago`,
-    intBg: "#e6f5f5",
-    intBorder: "#afdbdb",
-    intTitle: "#095c5f",
-    intLabel: "Next steps",
+    counterLabel: (d) => `Approved ${d} Day${d !== 1 ? "s" : ""} Ago`,
+    intLabel: "Next Steps",
     icon: CheckCircle2,
   },
   Refused: {
-    iconBg: "#fbe8ec",
-    iconColor: "#b85a6a",
-    iconBorder: "#f0c8d0",
-    chipBg: "#fbe8ec",
-    chipColor: "#7a3a4a",
-    counterColor: "#b85a6a",
-    cardBorder: "#f0c8d0",
-    accentTop: "rgba(219,128,144,0.12)",
-    accentBottom: "rgba(219,128,144,0.06)",
+    accent: "#EF4444",
+    accentSoft: "rgba(239,68,68,0.14)",
+    chipBg: "rgba(239,68,68,0.18)",
+    chipColor: "#FBD3D3",
     heading: "Refused — Review Your Written Notice",
     trackerLabel: "Refusal & 221(g) Tracker",
-    counterLabel: (d) => `${d} Day${d !== 1 ? "s" : ""} since refusal`,
-    intBg: "#fbe8ec",
-    intBorder: "#f0c8d0",
-    intTitle: "#7a3a4a",
-    intLabel: "221(g) or Final Denial? — Read your notice",
+    counterLabel: (d) => `${d} Day${d !== 1 ? "s" : ""} Since Refusal`,
+    intLabel: "221(g) or Final Denial?",
     icon: AlertTriangle,
   },
 };
 
-export default function APTrackingTool({ state }: APTrackingToolProps) {
-  const [isExpanded, setIsExpanded] = useState(true);
+/* ------------------------------------------------------------------ */
+/*  Reusable glass surface                                            */
+/* ------------------------------------------------------------------ */
 
-  // Pulling data directly from the Roadmap Step 9 recorded metadata
+const GLASS_STYLE: React.CSSProperties = {
+  background: "rgba(255,255,255,0.05)",
+  backdropFilter: "blur(12px)",
+  WebkitBackdropFilter: "blur(12px)",
+  border: "1px solid rgba(255,255,255,0.08)",
+  borderRadius: 16,
+};
+
+/* ------------------------------------------------------------------ */
+/*  Component                                                         */
+/* ------------------------------------------------------------------ */
+
+export default function APTrackingTool({ state }: APTrackingToolProps) {
+  // Collapsed by default per spec
+  const [isExpanded, setIsExpanded] = useState(false);
+
   const apDetails = state.metadata?.apDetails || {};
   const apSaved = state.metadata?.apSaved === "true";
   const updateLog = (state.metadata?.apUpdateLog as any[]) || [];
 
+  /* ----------- inactive state ----------- */
   if (!apSaved) {
     return (
       <div
-        className="rounded-[22px] border p-6 text-white mb-4 relative overflow-hidden group"
+        className="relative overflow-hidden rounded-3xl p-6 flex items-center justify-between"
         style={{
-          background: "linear-gradient(135deg, #0d7377 0%, #063e40 100%)",
-          borderColor: "#db8090",
+          background: "linear-gradient(180deg, #0d7377 0%, #09585b 100%)",
+          boxShadow: "0 12px 30px rgba(0,0,0,0.18)",
         }}
       >
-        <div
-          className="absolute -top-10 -right-10 w-40 h-40 rounded-full blur-[80px] pointer-events-none"
-          style={{ background: "rgba(219,128,144,0.15)" }}
-        />
-        <div className="relative z-10 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div
-              className="w-12 h-12 rounded-xl flex items-center justify-center border"
-              style={{ background: "rgba(219,128,144,0.2)", borderColor: "rgba(219,128,144,0.35)" }}
-            >
-              <Shield className="text-[#db8090]" size={22} />
-            </div>
-            <div>
-              <h3 className="text-[16px] font-black">AP Tracking Active</h3>
-              <p className="text-[12px] text-white/60">
-                Please record your AP details in Chapter 3, Step 9 to activate dashboard tracking.
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })}
-            className="w-10 h-10 rounded-full flex items-center justify-center transition-all text-white hover:bg-white/20"
+        <div className="flex items-center gap-4 min-w-0">
+          <div
+            className="w-12 h-12 rounded-2xl flex items-center justify-center shrink-0"
             style={{
               background: "rgba(255,255,255,0.08)",
               border: "1px solid rgba(255,255,255,0.15)",
             }}
           >
-            <ArrowRight size={18} />
-          </button>
+            <Shield className="w-5 h-5 text-white" />
+          </div>
+          <div className="min-w-0">
+            <div className="text-white text-[15px] font-bold">AP Tracking Inactive</div>
+            <div className="text-white/70 text-[12px] mt-0.5 truncate">
+              Record your AP details in Chapter 3, Step 9 to activate dashboard tracking.
+            </div>
+          </div>
         </div>
+        <button
+          onClick={() =>
+            window.scrollTo({ top: document.body.scrollHeight, behavior: "smooth" })
+          }
+          className="w-10 h-10 rounded-full flex items-center justify-center text-white shrink-0 ml-3"
+          style={{
+            background: "rgba(255,255,255,0.08)",
+            border: "1px solid rgba(255,255,255,0.15)",
+          }}
+        >
+          <ChevronDown className="w-4 h-4" />
+        </button>
       </div>
     );
   }
 
-  const ceacStatusRaw = (apDetails.ceacStatus as string) || "Administrative Processing";
+  /* ----------- derived data ----------- */
+  const ceacStatusRaw = (apDetails.ceacStatus as StatusKey) || "Administrative Processing";
   const isTransitionalStatus = ["Ready", "In Transit", "Pending", "Not Available"].includes(
     ceacStatusRaw
   );
-  // Admin-set last check date (from admin panel) — user cannot edit this
   const adminLastCheckDate = state.metadata?.admin_last_check_date as string | undefined;
-  const dateField = isTransitionalStatus ? apDetails.interviewDate : apDetails.interviewDate;
-  const startDate = dateField ? new Date(dateField) : null;
+  const startDate = apDetails.interviewDate ? new Date(apDetails.interviewDate) : null;
   const isDateInFuture = startDate ? startDate.getTime() > Date.now() : false;
   const daysInAP =
     startDate && !isDateInFuture
@@ -271,303 +230,402 @@ export default function APTrackingTool({ state }: APTrackingToolProps) {
   const statusUI = CEAC_STATUS_UI[ceacStatusRaw] || CEAC_STATUS_UI["Administrative Processing"];
   const StatusIcon = statusUI.icon;
 
-  const ceacStatus = ceacStatusRaw;
-  const isIssued = ceacStatus === "Issued" || ceacStatus === "Approved";
-  const isRefused = ceacStatus === "Refused";
-  const isAP = ceacStatus === "Administrative Processing";
-  const isTransitional = isTransitionalStatus;
+  const isIssued = ceacStatusRaw === "Issued" || ceacStatusRaw === "Approved";
+  const isRefused = ceacStatusRaw === "Refused";
+  const isAP = ceacStatusRaw === "Administrative Processing";
 
-  // Intelligence message — changes per status and days elapsed
+  /* ----------- intelligence + recommended action ----------- */
   const intelligenceMessage = isIssued
-    ? "Log into your USVisaScheduling courier account now and track your passport delivery. Confirm your delivery address is correct. If there is a delivery issue, contact the courier service — not the embassy."
+    ? "Visa issued. Track your passport delivery via the courier portal."
     : isRefused
-      ? "Read your written notice from the officer carefully. It will state whether this is a 221(g) request (case still active — submit the requested documents) or a final denial under a specific INA ground. These two situations require completely different responses."
+      ? "Carefully read your written notice — it tells you whether this is a 221(g) request or a final denial under a specific INA ground."
       : isAP
         ? daysInAP < 30
-          ? "Initial processing phase. Most cases resolve within 60–90 days, though security clearances can take longer. No action needed right now — check CEAC weekly and update here if anything changes."
+          ? "Initial processing phase. Most AP cases resolve within 60–90 days."
           : daysInAP < 90
-            ? "You are within the standard AP window. Check CEAC every 1–2 weeks. Do not contact the embassy repeatedly — it does not speed up the process."
-            : "Your case has exceeded 90 days in AP. Consider a congressional inquiry or consulting an immigration attorney. Continue checking CEAC weekly."
-        : ceacStatus === "In Transit"
-          ? "Your case has left NVC and is being transferred to the U.S. Embassy or consulate. This status is usually brief — hours to a few days. Watch for the status to change to 'Ready' or your post-interview outcome. No action needed."
-          : ceacStatus === "Ready"
-            ? "'Ready' means your case is Documentarily Qualified (DQ) and has been sent to the U.S. Embassy or consulate. The embassy has your file and is scheduling or processing your interview. This is a pre-interview status. Check CEAC regularly — once your interview is complete, the status will change to Issued, Administrative Processing, or Refused within a few days."
-            : ceacStatus === "Pending"
-              ? "'Pending' means your case has not yet been processed by NVC or the consulate. This is normal in early stages. Check back in 2–3 days. If it persists beyond 2 weeks, verify your case number is correct."
-              : ceacStatus === "Not Available"
-                ? "CEAC cannot find your case number. Double-check the case number you entered. It can take 2–5 business days after NVC registration for the case to appear. If it persists beyond 1 week, contact NVC."
+            ? "You are within the standard AP window. No escalation recommended yet."
+            : "Case has exceeded 90 days in AP. Consider escalation."
+        : ceacStatusRaw === "In Transit"
+          ? "Case is being transferred to the embassy. This status is usually brief."
+          : ceacStatusRaw === "Ready"
+            ? "Case is documentarily qualified and at the embassy. Pre-interview status."
+            : ceacStatusRaw === "Pending"
+              ? "Case not yet processed by NVC or the consulate. Normal in early stages."
+              : ceacStatusRaw === "Not Available"
+                ? "CEAC cannot locate this case number. Verify the number or wait 2–5 business days."
                 : "Monitor your CEAC status and update it here when it changes.";
 
+  const recommendedAction = isIssued
+    ? "Log into USVisaScheduling and confirm your delivery address."
+    : isRefused
+      ? apDetails.docsRequested === "yes"
+        ? "Submit the requested 221(g) documents as soon as possible."
+        : "Review your refusal notice and consult an immigration attorney."
+      : isAP
+        ? daysInAP < 90
+          ? "Continue monitoring CEAC weekly. No action required."
+          : "Consider a congressional inquiry or attorney consultation."
+        : ceacStatusRaw === "Ready" || ceacStatusRaw === "In Transit"
+          ? "Check CEAC every 2–3 days for status changes."
+          : ceacStatusRaw === "Pending"
+            ? "Check back in 2–3 days. No action required."
+            : ceacStatusRaw === "Not Available"
+              ? "Re-verify your case number. Contact NVC if it persists beyond 1 week."
+              : "Continue monitoring CEAC weekly.";
+
+  /* ----------- timeline milestones ----------- */
+  type Milestone = { label: string; sub?: string; date?: string; done: boolean; current?: boolean };
+  const timeline: Milestone[] = [];
+  if (startDate) {
+    timeline.push({
+      label: "Interview Completed",
+      date: startDate.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }),
+      done: !isDateInFuture,
+      current: false,
+    });
+  }
+  if (isAP || isRefused) {
+    if (apDetails.docsRequested === "yes") {
+      timeline.push({
+        label: "221(g) Issued",
+        sub: "Additional documents requested",
+        done: true,
+      });
+      timeline.push({
+        label: apDetails.docs221gSubmittedAt ? "Documents Submitted" : "Documents Pending",
+        sub: apDetails.docs221gSubmittedAt ? "Awaiting review" : "Submission required",
+        date: apDetails.docs221gSubmittedAt
+          ? new Date(apDetails.docs221gSubmittedAt).toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+              year: "numeric",
+            })
+          : undefined,
+        done: !!apDetails.docs221gSubmittedAt,
+      });
+    }
+  }
+  timeline.push({
+    label: statusUI.heading,
+    sub: statusUI.counterLabel(daysInAP),
+    done: true,
+    current: true,
+  });
+
+  /* ----------- render ----------- */
   return (
     <div
-      className="rounded-[26px] shadow-xl overflow-hidden relative mb-4"
+      className="relative overflow-hidden rounded-3xl"
       style={{
-        background: "linear-gradient(135deg, #0d7377 0%, #063e40 100%)",
-        border: `1px solid ${statusUI.cardBorder}`,
+        background: "linear-gradient(180deg, #0d7377 0%, #09585b 100%)",
+        boxShadow: "0 12px 30px rgba(0,0,0,0.18)",
       }}
     >
-      {/* Background Accents — dynamic per status */}
+      {/* Status accent glow */}
       <div
-        className="absolute -top-20 -right-20 w-64 h-64 rounded-full blur-[100px] pointer-events-none"
-        style={{ background: statusUI.accentTop }}
-      />
-      <div
-        className="absolute -bottom-20 -left-20 w-64 h-64 rounded-full blur-[100px] pointer-events-none"
-        style={{ background: statusUI.accentBottom }}
+        className="absolute inset-x-0 top-0 h-32 pointer-events-none"
+        style={{
+          background: `radial-gradient(60% 100% at 50% 0%, ${statusUI.accentSoft} 0%, transparent 70%)`,
+        }}
       />
 
-      {/* Main Header / Trigger */}
+      {/* ============ HEADER (always visible) ============ */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full relative z-10 p-6 flex items-center justify-between text-left"
+        className="relative z-10 w-full p-6 text-left"
       >
-        <div className="flex items-center gap-5">
-          <div
-            className="w-14 h-14 rounded-2xl flex items-center justify-center border shadow-lg"
-            style={{ background: statusUI.iconBg, borderColor: statusUI.iconBorder }}
-          >
-            <StatusIcon
-              style={{ color: statusUI.iconColor }}
-              className="h-6 w-6"
-              strokeWidth={2.5}
-            />
-          </div>
-          <div>
-            <div className="flex items-center gap-2 mb-1.5">
-              <span
-                className="px-2 py-0.5 rounded-md text-[9px] font-black uppercase tracking-widest"
-                style={{
-                  background: statusUI.chipBg,
-                  color: statusUI.chipColor,
-                  border: `1px solid ${statusUI.iconBorder}`,
-                }}
-              >
-                {ceacStatus}
-              </span>
-              <span className="text-white/25 text-[10px]">•</span>
-              <span className="text-white/50 text-[10px] font-bold uppercase tracking-wider">
-                {statusUI.trackerLabel}
-              </span>
+        <div className="grid grid-cols-[minmax(0,1fr)_auto] items-start gap-4">
+          <div className="flex min-w-0 items-start gap-4">
+            {/* Status Icon */}
+            <div
+              className="w-10 h-10 rounded-2xl flex items-center justify-center shrink-0"
+              style={{
+                background: statusUI.accentSoft,
+                border: `1px solid ${statusUI.accent}55`,
+                boxShadow: `0 0 0 4px ${statusUI.accent}14`,
+              }}
+            >
+              <StatusIcon className="w-5 h-5" style={{ color: statusUI.accent }} />
             </div>
-            <h3 className="text-[20px] font-black text-white leading-tight">{statusUI.heading}</h3>
-            <div className="flex items-center gap-3 mt-1">
-              {isDateInFuture && !isIssued && !isRefused ? (
-                <span className="text-[12px] font-bold text-[#cdadcc]">
-                  Interview date is upcoming — tracking starts after your interview
-                </span>
-              ) : isDateInFuture && (isIssued || isRefused) ? (
-                <span className="text-[12px] font-bold text-[#cdadcc]">
-                  Please verify your interview date — it appears to be in the future
-                </span>
-              ) : (
-                <span className="text-[12px] font-bold" style={{ color: statusUI.counterColor }}>
-                  {statusUI.counterLabel(daysInAP)}
-                </span>
-              )}
-              {adminLastCheckDate && (
+
+            <div className="min-w-0 flex-1">
+              {/* Tracker label */}
+              <div className="flex items-center gap-2 mb-1.5">
                 <span
-                  className="flex items-center gap-1 text-[11px] font-semibold"
-                  style={{ color: "#afdbdb" }}
+                  className="px-2 py-0.5 rounded-full text-[10px] font-bold tracking-wide uppercase"
+                  style={{ background: statusUI.chipBg, color: statusUI.chipColor }}
                 >
-                  <ShieldCheck size={11} />
-                  Verified{" "}
-                  {new Date(adminLastCheckDate).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                  {ceacStatusRaw}
                 </span>
-              )}
+              </div>
+
+              <span
+    className="lg:mt-2 lg:ml-8
+      shrink-0
+      inline-flex
+      items-center
+      px-3 py-1.5
+      rounded-full
+      text-[9px]
+      font-bold
+      uppercase
+      tracking-[0.18em]
+      text-white/80
+      bg-white/[0.08]
+      border border-white/[0.12]
+      backdrop-blur-md
+      shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]
+      transition-all duration-300
+      hover:bg-white/[0.12]
+      hover:border-white/[0.20]
+      hover:text-white
+      whitespace-nowrap
+    "
+  >
+    {statusUI.trackerLabel}
+  </span>
+
+              
+              {/* Counter + verified */}
+              {/* <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1">
+                {isDateInFuture && !isIssued && !isRefused ? (
+                  <span className="text-white/70 text-[12px]">
+                    Interview is upcoming — tracking starts after your interview
+                  </span>
+                ) : (
+                  <span
+                    className="text-[13px] font-bold"
+                    style={{ color: statusUI.accent }}
+                  >
+                    {statusUI.counterLabel(daysInAP)}
+                  </span>
+                )}
+                {adminLastCheckDate && (
+                  <span className="inline-flex items-center gap-1 text-white/60 text-[11px]">
+                    <Calendar className="w-3 h-3" />
+                    Verified{" "}
+                    {new Date(adminLastCheckDate).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </span>
+                )}
+              </div> */}
             </div>
           </div>
-        </div>
-        <div
-          className="w-10 h-10 rounded-full flex items-center justify-center text-white/50"
-          style={{
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}
-        >
-          {isExpanded ? <ChevronUp size={20} /> : <ChevronDown size={20} />}
+
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center text-white shrink-0"
+            style={{
+              background: "rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.15)",
+            }}
+          >
+            {isExpanded ? (
+              <ChevronUp className="w-4 h-4" />
+            ) : (
+              <ChevronDown className="w-4 h-4" />
+            )}
+          </div>
         </div>
       </button>
 
-      {/* Expanded Content */}
+      {/* ============ EXPANDED CONTENT ============ */}
       {isExpanded && (
-        <div className="relative z-10 px-6 pb-6 animate-in slide-in-from-top-2 duration-300">
-          <div className="h-px bg-white/8 mb-6" />
+        <div className="relative z-10 px-6 pb-6 space-y-4">
+          {/* ---- Section 2: Case Progress Timeline ---- */}
+          <section style={GLASS_STYLE} className="p-5">
+            <div className="flex items-center gap-2 mb-4">
+              <Activity className="w-3.5 h-3.5 text-white/60" />
+              <h3 className="text-white/80 text-[11px] font-bold uppercase tracking-wider">
+                Case Progress
+              </h3>
+            </div>
 
-          {/* Info Cards — AP/Refused only (not for transitional statuses or Issued) */}
-          {!isIssued && !isTransitional && (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <ol className="relative">
+              {timeline.map((m, i) => {
+                const isLast = i === timeline.length - 1;
+                const dotColor = m.current
+                  ? statusUI.accent
+                  : m.done
+                    ? "#ffffff"
+                    : "rgba(255,255,255,0.3)";
+                return (
+                  <li key={i} className="relative pl-6 pb-4 last:pb-0">
+                    {/* Connector */}
+                    {!isLast && (
+                      <span
+                        className="absolute left-[5px] top-3 bottom-0 w-px"
+                        style={{ background: "rgba(255,255,255,0.15)" }}
+                      />
+                    )}
+                    {/* Dot */}
+                    <span
+                      className="absolute left-0 top-1.5 w-[11px] h-[11px] rounded-full"
+                      style={{
+                        background: dotColor,
+                        boxShadow: m.current
+                          ? `0 0 0 4px ${statusUI.accent}33`
+                          : "0 0 0 2px rgba(255,255,255,0.08)",
+                      }}
+                    />
+                    <div className="flex items-baseline justify-between gap-3">
+                      <div className="min-w-0">
+                        <div
+                          className="text-[13px] font-bold leading-tight"
+                          style={{ color: m.current ? statusUI.accent : "white" }}
+                        >
+                          {m.label}
+                        </div>
+                        {m.sub && (
+                          <div className="text-white/60 text-[11px] mt-0.5">{m.sub}</div>
+                        )}
+                      </div>
+                      {m.date && (
+                        <span className="text-white/50 text-[11px] shrink-0">{m.date}</span>
+                      )}
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </section>
+
+          {/* ---- Section 3: AP Intelligence (compact insight) ---- */}
+          <section
+            className="p-4 flex gap-3"
+            style={{
+              ...GLASS_STYLE,
+            }}
+          >
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: statusUI.accentSoft }}
+            >
+              <Sparkles className="w-3.5 h-3.5" style={{ color: statusUI.accent }} />
+            </div>
+            <div className="min-w-0">
               <div
-                className="rounded-2xl p-4"
-                style={{
-                  background: "rgba(255,255,255,0.08)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                }}
+                className="text-[11px] font-bold uppercase tracking-wider mb-1"
+                style={{ color: statusUI.accent }}
               >
-                <div className="flex items-center gap-2 mb-3">
-                  <Calendar size={14} className="text-white/40" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
-                    Interview Date
-                  </span>
+                {statusUI.intLabel}
+              </div>
+              <p className="text-white/85 text-[13px] leading-relaxed">{intelligenceMessage}</p>
+            </div>
+          </section>
+
+          {/* ---- Section 4: Recommended Action ---- */}
+          <section style={GLASS_STYLE} className="p-4 flex gap-3">
+            <div
+              className="w-8 h-8 rounded-lg flex items-center justify-center shrink-0"
+              style={{ background: "rgba(255,255,255,0.08)" }}
+            >
+              <Target className="w-3.5 h-3.5 text-white" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-white/60 text-[11px] font-bold uppercase tracking-wider mb-1">
+                Recommended Action
+              </div>
+              <p className="text-white text-[13px] font-semibold leading-relaxed">
+                {recommendedAction}
+              </p>
+            </div>
+          </section>
+
+          {/* ---- Issued helper: courier tracking ---- */}
+          {isIssued && (
+            <button
+              onClick={() => window.open("https://www.usvisascheduling.com", "_blank")}
+              className="w-full p-4 rounded-2xl flex items-center justify-between gap-3 transition-all hover:brightness-110"
+              style={{
+                background: "rgba(34,197,94,0.15)",
+                border: "1px solid rgba(34,197,94,0.35)",
+              }}
+            >
+              <div className="text-left min-w-0">
+                <div className="text-white text-[13px] font-bold">Track Your Courier</div>
+                <div className="text-white/70 text-[11px] mt-0.5">
+                  Log into USVisaScheduling to track passport delivery
                 </div>
-                <p className="text-[13px] font-bold text-white">
-                  {startDate
-                    ? startDate.toLocaleDateString("en-US", {
-                        month: "long",
-                        day: "numeric",
-                        year: "numeric",
-                      })
-                    : "Not recorded"}
-                </p>
-                <p className="text-[11px] text-white/40 mt-1">
-                  {isAP ? "Date AP was placed on your case" : "Date of your interview"}
-                </p>
+              </div>
+              <ExternalLink className="w-4 h-4 text-white shrink-0" />
+            </button>
+          )}
+
+          {/* ---- Section 5: Status Activity Feed ---- */}
+          {updateLog.length > 0 && (
+            <section style={GLASS_STYLE} className="p-5">
+              <div className="flex items-center gap-2 mb-4">
+                <FileText className="w-3.5 h-3.5 text-white/60" />
+                <h3 className="text-white/80 text-[11px] font-bold uppercase tracking-wider">
+                  Status Activity
+                </h3>
               </div>
 
-              {(isAP || isRefused) && (
-                <div
-                  className="rounded-2xl p-4"
-                  style={{
-                    background: "rgba(255,255,255,0.08)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                  }}
-                >
-                  <div className="flex items-center gap-2 mb-3">
-                    <FileText size={14} className="text-white/40" />
-                    <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
-                      221(g) Documents
-                    </span>
-                  </div>
-                  {apDetails.docsRequested === "yes" ? (
-                    <>
-                      <p className="text-[13px] font-bold text-[#cdadcc]">
-                        Additional docs requested
-                      </p>
-                      {apDetails.docs221gSubmittedAt ? (
-                        <p className="text-[11px] mt-1 font-bold" style={{ color: "#afdbdb" }}>
-                          ✓ Submitted{" "}
-                          {new Date(apDetails.docs221gSubmittedAt).toLocaleDateString("en-US", {
+              <ol className="relative">
+                {updateLog.slice(0, 5).map((log: any, idx: number) => {
+                  const isLast = idx === Math.min(updateLog.length, 5) - 1;
+                  return (
+                    <li key={idx} className="relative pl-6 pb-3 last:pb-0">
+                      {!isLast && (
+                        <span
+                          className="absolute left-[5px] top-3 bottom-0 w-px"
+                          style={{ background: "rgba(255,255,255,0.12)" }}
+                        />
+                      )}
+                      <span
+                        className="absolute left-0 top-1.5 w-[11px] h-[11px] rounded-full"
+                        style={{
+                          background:
+                            idx === 0 ? statusUI.accent : "rgba(255,255,255,0.4)",
+                          boxShadow:
+                            idx === 0
+                              ? `0 0 0 4px ${statusUI.accent}33`
+                              : "0 0 0 2px rgba(255,255,255,0.08)",
+                        }}
+                      />
+                      <div className="flex items-baseline justify-between gap-3">
+                        <div className="min-w-0">
+                          <div className="text-white text-[12px] font-bold">
+                            {log.ceac || "Status Checked"}
+                          </div>
+                          {log.note && (
+                            <div className="text-white/60 text-[11px] mt-0.5">{log.note}</div>
+                          )}
+                        </div>
+                        <span className="text-white/50 text-[11px] shrink-0">
+                          {new Date(log.date).toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
-                            year: "numeric",
                           })}
-                        </p>
-                      ) : (
-                        <p className="text-[11px] text-white/50 mt-1">
-                          Pending submission — update Step 9 when sent
-                        </p>
-                      )}
-                    </>
-                  ) : (
-                    <>
-                      <p className="text-[13px] font-bold text-white/70">No documents requested</p>
-                      <p className="text-[11px] text-white/40 mt-1">221(g) not applicable</p>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Issued — courier tracking card */}
-          {isIssued && (
-            <div
-              className="rounded-2xl p-4 mb-6 flex items-center justify-between gap-4"
-              style={{ background: "#e6f5f5", border: "1px solid #afdbdb" }}
-            >
-              <div>
-                <p className="text-[13px] font-black text-[#095c5f] mb-1">
-                  Track your courier delivery
-                </p>
-                <p className="text-[11px] text-[#0d7377]/70">
-                  Log into USVisaScheduling to track your passport shipment.
-                </p>
-              </div>
-              <button
-                onClick={() => window.open("https://www.usvisascheduling.com", "_blank")}
-                className="shrink-0 px-4 py-2 rounded-xl text-[11px] font-black flex items-center gap-1.5 transition-all hover:brightness-110"
-                style={{ background: "#0d7377", color: "white", border: "1px solid #095c5f" }}
-              >
-                Track <ExternalLink size={10} />
-              </button>
-            </div>
-          )}
-
-          {/* Intelligence Block — dynamic content and color per status */}
-          <div
-            className="rounded-2xl p-5 mb-6"
-            style={{ background: statusUI.intBg, border: `1px solid ${statusUI.intBorder}` }}
-          >
-            <div className="flex items-start gap-4">
-              <div
-                className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-                style={{ background: statusUI.iconBg }}
-              >
-                <StatusIcon style={{ color: statusUI.iconColor }} size={16} />
-              </div>
-              <div>
-                <h4 className="text-[13px] font-black mb-1" style={{ color: statusUI.intTitle }}>
-                  {statusUI.intLabel}
-                </h4>
-                <p className="text-[12px] text-white/60 leading-relaxed font-medium">
-                  {intelligenceMessage}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Update History Log */}
-          {updateLog.length > 0 && (
-            <div className="mt-2 text-white">
-              <div className="flex items-center gap-2 mb-4">
-                <History size={14} className="text-white/40" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-white/40">
-                  Status History
-                </span>
-              </div>
-              <div className="space-y-3">
-                {updateLog.slice(0, 3).map((log: any, idx: number) => (
-                  <div
-                    key={idx}
-                    className="rounded-xl p-3 flex justify-between items-center"
-                    style={{
-                      background: "rgba(255,255,255,0.06)",
-                      border: "1px solid rgba(255,255,255,0.08)",
-                    }}
-                  >
-                    <div>
-                      <div className="text-[10px] font-bold text-white/40">
-                        {new Date(log.date).toLocaleDateString()}
+                        </span>
                       </div>
-                      <div className="text-[12px] font-medium text-white/70 mt-0.5">
-                        {log.note || "Status checked"}
-                      </div>
-                    </div>
-                    <div className="text-[10px] font-black text-white/30">{log.ceac}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
           )}
 
+          {/* ---- CEAC button ---- */}
           <button
             onClick={() =>
               window.open("https://ceac.state.gov/CEACStatTracker/Status.aspx", "_blank")
             }
-            className="w-full mt-6 py-4 rounded-2xl flex items-center justify-center gap-3 text-[13px] font-black text-white transition-all group hover:bg-white/15"
+            className="w-full mt-2 py-4 rounded-2xl flex items-center justify-center gap-3 text-[13px] font-black text-white transition-all hover:bg-white/15"
             style={{
               background: "rgba(255,255,255,0.08)",
               border: "1px solid rgba(255,255,255,0.12)",
             }}
           >
             Check Official CEAC Tracker
-            <ExternalLink
-              size={14}
-              className="text-white/40 group-hover:text-white transition-colors"
-            />
+            <ExternalLink className="w-4 h-4" />
           </button>
         </div>
       )}
