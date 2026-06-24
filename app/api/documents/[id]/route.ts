@@ -151,6 +151,24 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     const updatedDocument = await dbStorage.updateDocument(documentId, user.id, updates, journeyId);
 
+    if (Object.keys(updates).length > 0) {
+      const docDefName =
+        ALL_DOCUMENTS.find((d) => d.id === document.documentDefId)?.name ||
+        document.originalFilename;
+
+      await logCaseActivity({
+        journeyId,
+        actorUserId: user.id,
+        action: "document.update",
+        targetLabel: docDefName,
+        metadata: {
+          document_id: documentId,
+          document_def_id: document.documentDefId,
+          updated_fields: Object.keys(updates),
+        },
+      });
+    }
+
     return NextResponse.json({
       success: true,
       document: updatedDocument,

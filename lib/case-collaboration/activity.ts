@@ -12,6 +12,7 @@ import { getAdminClient } from "@/lib/case-collaboration/helpers";
 export type CaseActivityAction =
   | "document.upload"
   | "document.delete"
+  | "document.update"
   | "form.save"
   | "form.complete"
   | "step.complete"
