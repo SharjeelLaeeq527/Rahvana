@@ -19,11 +19,7 @@ interface ToastContextType {
     options?: { id?: string | number; duration?: number }
   ) => string | number;
 
-  updateToast: (
-    id: string | number,
-    message: string,
-    type?: ToastType
-  ) => void;
+  updateToast: (id: string | number, message: string, type?: ToastType) => void;
 
   dismissToast: (id: string | number) => void;
 }
@@ -64,14 +60,8 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
   };
 
   // ✅ NEW: update existing toast (loading → success/error)
-  const updateToast = (
-    id: string | number,
-    message: string,
-    type: ToastType = "info"
-  ) => {
-    setToasts((prev) =>
-      prev.map((t) => (t.id === id ? { ...t, message, type } : t))
-    );
+  const updateToast = (id: string | number, message: string, type: ToastType = "info") => {
+    setToasts((prev) => prev.map((t) => (t.id === id ? { ...t, message, type } : t)));
 
     if (type !== "loading") {
       setTimeout(() => {
@@ -89,7 +79,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
     <ToastContext.Provider value={{ showToast, updateToast, dismissToast }}>
       {children}
 
-      <div className="fixed bottom-6 left-0 right-0 sm:left-auto sm:right-6 sm:w-auto flex flex-col items-center sm:items-end px-4 sm:px-0 space-y-3 z-50">
+      <div className="fixed bottom-6 left-0 right-0 sm:left-auto sm:right-6 sm:w-auto flex flex-col items-center sm:items-end px-4 sm:px-0 space-y-3 z-[99999] pointer-events-none">
         <AnimatePresence>
           {toasts.map((toast) => {
             const isError = toast.type === "error";
@@ -102,7 +92,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: 20 }}
-                className={`border shadow-lg rounded-xl px-4 py-3.5 md:px-6 md:py-4 flex items-start gap-3.5 max-w-[90vw] sm:max-w-md ${
+                className={`pointer-events-auto border shadow-lg rounded-xl px-4 py-3.5 md:px-6 md:py-4 flex items-start gap-3.5 max-w-[90vw] sm:max-w-md ${
                   isError
                     ? "bg-red-50 border-red-200 text-red-800"
                     : "bg-card border-border text-foreground"
@@ -118,9 +108,7 @@ export const ToastProvider = ({ children }: { children: React.ReactNode }) => {
                   <Icons.Info className="w-5 h-5 text-blue-500 shrink-0 mt-0.5" />
                 )}
 
-                <span className="text-sm leading-relaxed whitespace-pre-line">
-                  {toast.message}
-                </span>
+                <span className="text-sm leading-relaxed whitespace-pre-line">{toast.message}</span>
               </motion.div>
             );
           })}

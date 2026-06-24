@@ -36,10 +36,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Role gate (spec §13): the BENEFICIARY owns the case interview session and
-    // does the practice; the PETITIONER is read-only (they don't sit the IR-1
-    // interview). Block a petitioner from creating a parallel journey session —
-    // this also stops a petitioner-owner's auto-init from claiming the session.
+    // There is ONE shared interview per case, owned by the BENEFICIARY. Both
+    // spouses can view/edit/practise it (the petitioner does so via the shared
+    // /api/case/interview load + the service-role "acting" write path). We still
+    // block a PETITIONER from auto-creating a SEPARATE journey session here, so a
+    // petitioner-owner's auto-init can't spawn a parallel/duplicate session — the
+    // canonical session stays the beneficiary's.
     const auth = await verifyAuth();
     if (auth.error) return auth.error;
 
@@ -48,7 +50,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           error:
-            "As the petitioner you have read-only access to interview prep. The beneficiary completes the interview practice.",
+            "The shared interview belongs to the beneficiary's session; it is not created from the petitioner side.",
         },
         { status: 403 }
       );

@@ -1,11 +1,12 @@
 // components/signature-tool/UploadImage.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import NextImage from "next/image";
 import { SignatureImageProcessor } from "@/lib/imageProcessor";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { Upload } from "lucide-react";
 
 type Props = {
   onUpload: (dataURL: string) => void;
@@ -19,6 +20,8 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
   const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedColor, setSelectedColor] = useState<string>("#000000");
+  const [isDragging, setIsDragging] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const colors = [
     { name: t("pdfProcessing.editor.signature.black"), value: "#000000" },
@@ -50,6 +53,34 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
       }
     };
     reader.readAsDataURL(file);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      showToast(t("pdfProcessing.errors.invalidFile"), "error");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      if (typeof ev.target?.result === "string") {
+        setUploadedImage(ev.target.result);
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDragging(false);
   };
 
   const processUploadedImage = async () => {
@@ -130,7 +161,7 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
             key={color.value}
             onClick={() => setSelectedColor(color.value)}
             className={`w-10 h-10 rounded-full transition-all ${
-              selectedColor === color.value ? "ring-4 ring-blue-300 ring-offset-2" : ""
+              selectedColor === color.value ? "ring-4 ring-rahvana-primary/30 ring-offset-2" : ""
             }`}
             style={{ backgroundColor: color.value }}
             title={color.name}
@@ -140,35 +171,61 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
 
       {/* Canvas Area */}
       <div
-        className="relative border-2 border-gray-200 rounded-lg bg-white overflow-hidden"
+        className={`relative border-2 rounded-lg bg-white overflow-hidden transition-all ${
+          isDragging
+            ? "border-rahvana-primary bg-rahvana-primary-pale scale-[1.01]"
+            : "border-gray-200"
+        }`}
         style={{ height: "400px" }}
       >
         {!processedImage ? (
-          <div className="absolute inset-0 flex items-center justify-center">
-            <label className="cursor-pointer">
-              <input type="file" accept="image/*" onChange={handleFileUpload} className="hidden" />
+          <div
+            className="absolute inset-0 flex items-center justify-center"
+            onDrop={handleDrop}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+          >
+            <label className="cursor-pointer w-full h-full flex items-center justify-center">
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleFileUpload}
+                className="hidden"
+              />
               <div className="text-center text-gray-400">
-                <svg
-                  className="w-16 h-16 mx-auto mb-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={1.5}
-                    d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
-                  />
-                </svg>
-                <p className="text-sm">{t("pdfProcessing.editor.signature.uploadPlaceholder")}</p>
+                {isDragging ? (
+                  <Upload className="w-16 h-16 mx-auto mb-2 text-rahvana-primary" />
+                ) : (
+                  <svg
+                    className="w-16 h-16 mx-auto mb-2"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
+                    />
+                  </svg>
+                )}
+                <p className="text-sm font-medium">
+                  {isDragging
+                    ? t("signatureProcessing.uploader.dropzone")
+                    : t("pdfProcessing.editor.signature.uploadPlaceholder")}
+                </p>
+                {!isDragging && (
+                  <p className="text-xs text-gray-400 mt-1">or drag and drop your image here</p>
+                )}
               </div>
             </label>
           </div>
         ) : (
           <div className="absolute inset-0 flex items-center justify-center p-8">
             {isProcessing ? (
-              <div className="text-blue-600 text-sm">
+              <div className="text-rahvana-primary text-sm">
                 {t("pdfProcessing.editor.signature.processing")}
               </div>
             ) : processedImage ? (
@@ -203,7 +260,7 @@ export default function UploadImage({ onUpload, closeModal }: Props) {
         <button
           onClick={handleCreate}
           disabled={!processedImage || isProcessing}
-          className="px-6 py-2 bg-primary text-white text-sm font-medium rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition"
+          className="px-6 py-2 bg-rahvana-primary text-white text-sm font-medium rounded-lg hover:bg-rahvana-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition"
         >
           {t("pdfProcessing.editor.signature.create")}
         </button>

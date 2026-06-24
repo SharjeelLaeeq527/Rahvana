@@ -8,22 +8,24 @@ import {
 } from "@/lib/interview-prep/round-engine";
 import { GeneratedQuestion } from "@/lib/interview-prep/types";
 import {
-  getInterviewSessionDB,
   getInterviewSessionProgressDB,
 } from "@/lib/interview-prep/data-access";
+import { resolveSessionAccess } from "@/lib/interview-prep/case-access";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { sessionId: string } }
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
-    const { sessionId } = params;
+    const { sessionId } = await params;
     const body = await req.json();
 
-    const session = await getInterviewSessionDB(sessionId);
-    if (!session) {
-      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+    // Owner OR shared-case member (petitioner) may practise this session.
+    const access = await resolveSessionAccess(sessionId);
+    if (!access.ok) {
+      return NextResponse.json({ error: access.error }, { status: access.status });
     }
+    const acting = access.mode === "delegate" ? access.acting : undefined;
 
     const {
       questionResponses,
@@ -40,7 +42,7 @@ export async function POST(
     };
 
     // Load persisted progress to merge mastered/completed ids
-    const persistedProgress = await getInterviewSessionProgressDB(sessionId);
+    const persistedProgress = await getInterviewSessionProgressDB(sessionId, acting);
     const persistedMasteredIds = (persistedProgress?.mastered_question_ids as string[]) ?? [];
     const persistedCompletedIds = (persistedProgress?.completed_question_ids as string[]) ?? [];
 

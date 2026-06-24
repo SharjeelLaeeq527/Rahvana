@@ -3560,7 +3560,11 @@
         "applyChanges": "تبدیلیاں لاگو کریں",
         "successAlert": "صفحات کی ترتیب محفوظ ہو گئی! تبدیلیاں ویوور میں نظر آئیں گی۔",
         "reorderTip": "{count} صفحات • ترتیب بدلنے کے لیے کھینچیں (Drag)",
-        "allPagesDeletedAlert": "تمام صفحات حذف نہیں کیے جا سکتے!"
+        "allPagesDeletedAlert": "تمام صفحات حذف نہیں کیے جا سکتے!",
+        "deleteConfirmTitle": "صفحہ حذف کریں",
+        "deleteConfirmDesc": "کیا آپ واقعی یہ صفحہ حذف کرنا چاہتے ہیں؟ یہ عمل واپس نہیں ہو سکتا۔",
+        "confirmDelete": "حذف کریں",
+        "bulkDeleteTitle": "منتخب صفحات حذف کریں"
       },
       "crop": {
         "title": "اپنے دستخط کو درست کریں",

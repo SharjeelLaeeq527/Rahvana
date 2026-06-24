@@ -14,6 +14,7 @@ import {
   createJourneyInterviewSessionDB,
   isJourneyActive,
   getActiveJourneySession,
+  type ActingContext,
 } from "./data-access";
 import {
   InterviewSession,
@@ -357,12 +358,15 @@ export async function validateSessionAccess(sessionId: string): Promise<{
 }
 
 //  Get an interview session with answers and results
-export async function getInterviewSession(sessionId: string): Promise<InterviewSession | null> {
-  const session = await getInterviewSessionDB(sessionId);
+export async function getInterviewSession(
+  sessionId: string,
+  acting?: ActingContext
+): Promise<InterviewSession | null> {
+  const session = await getInterviewSessionDB(sessionId, acting);
   if (!session) return null;
 
-  const answers = await getSessionAnswersDB(sessionId);
-  const results = await getInterviewResultsDB(sessionId);
+  const answers = await getSessionAnswersDB(sessionId, acting);
+  const results = await getInterviewResultsDB(sessionId, acting);
 
   return {
     ...session,
@@ -374,9 +378,10 @@ export async function getInterviewSession(sessionId: string): Promise<InterviewS
 // Update answers for an interview session
 export async function updateInterviewSessionAnswers(
   sessionId: string,
-  answers: Record<string, unknown>
+  answers: Record<string, unknown>,
+  acting?: ActingContext
 ): Promise<InterviewSession> {
-  const session = await getInterviewSessionDB(sessionId);
+  const session = await getInterviewSessionDB(sessionId, acting);
   if (!session) {
     throw new Error("Session not found");
   }
@@ -386,13 +391,16 @@ export async function updateInterviewSessionAnswers(
     answer_value: answerValue,
   }));
 
-  await saveInterviewAnswersDB(sessionId, answersArray);
-  return (await getInterviewSession(sessionId)) as InterviewSession;
+  await saveInterviewAnswersDB(sessionId, answersArray, acting);
+  return (await getInterviewSession(sessionId, acting)) as InterviewSession;
 }
 
 // Generate personalized interview prep output
-export async function generateInterviewPrepOutput(sessionId: string): Promise<InterviewPrepOutput> {
-  const session = await getInterviewSessionDB(sessionId);
+export async function generateInterviewPrepOutput(
+  sessionId: string,
+  acting?: ActingContext
+): Promise<InterviewPrepOutput> {
+  const session = await getInterviewSessionDB(sessionId, acting);
   if (!session) {
     throw new Error("Session not found");
   }
@@ -400,7 +408,7 @@ export async function generateInterviewPrepOutput(sessionId: string): Promise<In
   // Initialize variation session cache for consistent variation selection within this session
   initializeVariationSession();
 
-  const answers = await getSessionAnswersDB(sessionId);
+  const answers = await getSessionAnswersDB(sessionId, acting);
   const categoryData = await categoryLoader.loadCategory(session.category_slug);
 
   // Load rules for the category
@@ -423,7 +431,7 @@ export async function generateInterviewPrepOutput(sessionId: string): Promise<In
   // Apply variation selection to each question
   const questionsWithVariations = applyVariationsToQuestions(generatedQuestions);
 
-  await saveInterviewResultsDB(sessionId, questionsWithVariations);
+  await saveInterviewResultsDB(sessionId, questionsWithVariations, acting);
 
   return {
     sessionId,
@@ -437,10 +445,15 @@ export async function generateInterviewPrepOutput(sessionId: string): Promise<In
 }
 
 //  Mark an interview session as completed
-export async function completeInterviewSession(sessionId: string): Promise<InterviewSession> {
-  const updatedSession = await updateInterviewSessionDB(sessionId, {
-    completed: true,
-  });
+export async function completeInterviewSession(
+  sessionId: string,
+  acting?: ActingContext
+): Promise<InterviewSession> {
+  const updatedSession = await updateInterviewSessionDB(
+    sessionId,
+    { completed: true },
+    acting
+  );
   return updatedSession;
 }
 

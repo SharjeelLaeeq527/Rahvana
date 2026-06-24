@@ -169,7 +169,7 @@ export default function TiltCorrectionTool({
             {/* Full Reset Button */}
             <button
               onClick={handleResetAll}
-              className="w-full px-4 py-2 bg-primary/90 hover:bg-primary/100 text-white rounded-lg transition text-sm flex items-center justify-center gap-2 font-semibold"
+              className="w-full px-4 py-2 bg-rahvana-primary hover:bg-rahvana-primary-dark text-white rounded-lg transition text-sm flex items-center justify-center gap-2 font-semibold"
             >
               <RotateCcw className="w-4 h-4" />
               {t("pdfProcessing.editor.tilt.resetTilt")}
@@ -273,7 +273,7 @@ export default function TiltCorrectionTool({
         <button
           onClick={handleApply}
           disabled={isApplying}
-          className="px-10 py-4 bg-primary/90 hover:bg-primary/100 text-white rounded-xl font-bold transition-all flex items-center gap-3 text-lg shadow-md disabled:opacity-50"
+          className="px-10 py-4 bg-rahvana-primary hover:bg-rahvana-primary-dark text-white rounded-xl font-bold transition-all flex items-center gap-3 text-lg shadow-md disabled:opacity-50"
         >
           {isApplying ? (
             <Loader size="sm" text={t("pdfProcessing.editor.tilt.applying")} />

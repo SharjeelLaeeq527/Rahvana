@@ -25,6 +25,8 @@ interface WizardSidebarProps {
   onGuideSaved?: () => void;
   saving: boolean;
   session: any;
+  /** Highest step index the user has reached — steps up to this are clickable */
+  highestReachedStep?: number;
 }
 
 const DEFAULT_LABELS: Record<string, string> = {
@@ -53,6 +55,7 @@ const WizardSidebar = ({
   onGuideSaved,
   saving,
   session,
+  highestReachedStep,
 }: WizardSidebarProps) => {
   const { t, tRaw } = useLanguage();
   const labels = stepLabels || DEFAULT_LABELS;
@@ -109,7 +112,8 @@ const WizardSidebar = ({
             const status = getStatus(index, currentStep);
             const Icon = STEP_ICONS[stepId] || ClipboardList;
             const label = labels[stepId] || stepId;
-            const isClickable = status === "completed";
+            const maxReached = highestReachedStep ?? currentStep;
+            const isClickable = index <= maxReached;
 
             return (
               <div key={stepId}>

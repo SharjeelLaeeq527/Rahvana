@@ -10,7 +10,13 @@ export type NotificationType =
   | "administrative_processing"
   | "ap_cleared"
   | "admin_status_update"
-  | "nvc_check_reminder";
+  | "nvc_check_reminder"
+  | "admin_new_consultation"
+  | "admin_new_appointment"
+  | "admin_new_translation"
+  | "admin_new_pcc"
+  | "admin_feedback_received"
+  | "admin_system_alert";
 
 export type NotificationPriority = "low" | "normal" | "high" | "critical";
 
@@ -109,5 +115,47 @@ export const NOTIFICATION_TEMPLATES: Record<
     priority: "normal",
     action_label: "Open CEAC Portal",
     action_url: "https://ceac.state.gov/IV/Login.aspx",
+  },
+  admin_new_consultation: {
+    title: "New Consultation Request",
+    body: "A new consultation booking requires review and approval.",
+    priority: "high",
+    action_label: "View Requests",
+    action_url: "/admin/consultations",
+  },
+  admin_new_appointment: {
+    title: "New Journey Appointment",
+    body: "A user has scheduled a new medical or interview appointment.",
+    priority: "normal",
+    action_label: "View Appointments",
+    action_url: "/admin/appointments",
+  },
+  admin_new_translation: {
+    title: "New Translation Request",
+    body: "A document has been submitted for translation services.",
+    priority: "high",
+    action_label: "View Translation Queue",
+    action_url: "/admin/translations",
+  },
+  admin_new_pcc: {
+    title: "New PCC Verification Request",
+    body: "A user has requested help with a Police Clearance Certificate.",
+    priority: "high",
+    action_label: "Manage PCC Requests",
+    action_url: "/admin/pcc",
+  },
+  admin_feedback_received: {
+    title: "New User Feedback",
+    body: "A user has submitted feedback via the platform widget.",
+    priority: "low",
+    action_label: "View Feedback",
+    action_url: "https://docs.google.com/spreadsheets/d/your-id",
+  },
+  admin_system_alert: {
+    title: "System Health Alert",
+    body: "A critical background process or API integration requires attention.",
+    priority: "critical",
+    action_label: "Check logs",
+    action_url: "/admin/logs",
   },
 };

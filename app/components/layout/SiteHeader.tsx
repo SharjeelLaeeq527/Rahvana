@@ -34,6 +34,7 @@ import { useAuth, UserProfile } from "@/app/context/AuthContext";
 // import { useLanguage } from "@/app/context/LanguageContext";
 import { NAV_DATA } from "./navigationData";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
+import { requestNavigation } from "@/lib/guides/navigationGuardStore";
 // import { useTheme } from "next-themes";
 
 interface HeaderProps {
@@ -290,8 +291,7 @@ export function SiteHeader({
 
       // 3. Merge and sort by created_at descending
       const merged = [...journeyReminders, ...appNotifications].sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
 
       setNotifList(merged);
@@ -339,9 +339,7 @@ export function SiteHeader({
         body: JSON.stringify({ id, action: "read" }),
       }).catch(() => {});
       // Update local state immediately
-      setNotifList((prev) =>
-        prev.map((n: any) => (n.id === id ? { ...n, is_read: true } : n))
-      );
+      setNotifList((prev) => prev.map((n: any) => (n.id === id ? { ...n, is_read: true } : n)));
     } else {
       // Journey reminders: use localStorage-based tracking
       setReadIds((prev) => {
@@ -464,6 +462,10 @@ export function SiteHeader({
       };
 
       const targetRoute = routes[id] || "/";
+
+      // If a navigation guard is active, defer to it (opens confirmation modal)
+      if (requestNavigation(targetRoute)) return;
+
       router.push(targetRoute);
     }
   };
@@ -1008,7 +1010,8 @@ export function SiteHeader({
                               {notifList.slice(0, 8).map((n: any) => {
                                 const isExpanded = expandedNotifs.has(n.id);
                                 const bodyLong = n.body && n.body.length > 80;
-                                const isRead = n._source === "app" ? !!n.is_read : readIds.has(n.id);
+                                const isRead =
+                                  n._source === "app" ? !!n.is_read : readIds.has(n.id);
                                 return (
                                   <div
                                     key={n.id}

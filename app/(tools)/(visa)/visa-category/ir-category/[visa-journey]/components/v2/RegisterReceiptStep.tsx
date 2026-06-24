@@ -232,6 +232,7 @@ async function postReceipt(
   journeyId: string,
   payload: RegisterReceiptPayload
 ): Promise<{ record: ReceiptRecord | null; error: string }> {
+  console.log("[RegisterReceiptStep] postReceipt initiated", { journeyId, payload });
   try {
     const res = await fetch(`/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`, {
       method: "POST",
@@ -239,6 +240,7 @@ async function postReceipt(
       body: JSON.stringify(payload),
     });
     const data = await res.json();
+    console.log("[RegisterReceiptStep] postReceipt raw response:", data);
     if (!res.ok || "error" in data) {
       return { record: null, error: msg(E.JOURNEY_RECEIPT_SAVE_FAILED) };
     }
@@ -255,14 +257,17 @@ async function postReceipt(
     };
     return { record, error: "" };
   } catch {
-    return { record: null, error: "Network error — please try again." };
+    console.error("[RegisterReceiptStep] postReceipt network error");
+    return { record: null, error: "Network error while saving receipt — please try again." };
   }
 }
 
 async function fetchReceipt(journeyId: string) {
+  console.log("[RegisterReceiptStep] fetchReceipt initiated for journeyId:", journeyId);
   try {
     const res = await fetch(`/api/receipt/journey?journeyId=${encodeURIComponent(journeyId)}`);
     const data = await res.json();
+    console.log("[RegisterReceiptStep] fetchReceipt raw response:", data);
     if (!res.ok || data.error) return { record: null, error: msg(E.JOURNEY_RECEIPT_FETCH_FAILED) };
     const record: ReceiptRecord = {
       receiptNumber: data.receipt_number,
@@ -277,6 +282,7 @@ async function fetchReceipt(journeyId: string) {
     };
     return { record, error: "" };
   } catch {
+    console.error("[RegisterReceiptStep] fetchReceipt network error");
     return { record: null, error: "Network error while fetching receipt" };
   }
 }
@@ -1082,6 +1088,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
   actions,
 }) => {
   const stepEntitlement = useStepEntitlement("step_1_15");
+
   const plan = usePlan();
 
   // Basic tier cannot use upload or guide; tracking is locked on save

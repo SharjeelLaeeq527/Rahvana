@@ -17,7 +17,7 @@ import { useWizardSession } from "@/lib/guides/useWizardSession";
 import { useGuideUpload } from "@/lib/guides/useGuideUpload";
 import { useGuideSave } from "@/lib/guides/useGuideSave";
 import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
-import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
+import { NavigationGuard } from "@/lib/guides/useNavigationGuard";
 
 import guideDataRaw from "@/data/police-verification-guide-data.json";
 import { ArrowLeft, ArrowRight, FileText, MapPin, Building2, UserCheck } from "lucide-react";
@@ -58,8 +58,12 @@ const INFO_PANEL_KEYS: Record<string, keyof typeof guideData.wizard.info_panel> 
 
 export default function PoliceVerificationGuide() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [highestReachedStep, setHighestReachedStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
-  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(
+    typeof window !== "undefined" &&
+      localStorage.getItem("dont_show_police_character_welcome") === "true"
+  );
   const [isSaved, setIsSaved] = useState(false);
   const [navigationHandled, setNavigationHandled] = useState(false);
 
@@ -191,20 +195,16 @@ export default function PoliceVerificationGuide() {
   };
 
   useEffect(() => {
+    setHighestReachedStep((prev) => Math.max(prev, currentStep));
+  }, [currentStep]);
+
+  useEffect(() => {
     if (session?.saved) {
       setIsSaved(true);
     }
   }, [session]);
 
-  useNavigationGuard(
-    hasProgress && !isSaved,
-    async () => {
-      await saveGuide("police-verification-guide");
-      setIsSaved(true);
-    },
-    navigationHandled,
-    setNavigationHandled
-  );
+  // Navigation guard handled by NavigationGuard component in render
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -363,6 +363,7 @@ export default function PoliceVerificationGuide() {
           onGuideSaved={() => setIsSaved(true)}
           saving={saving}
           session={session}
+          highestReachedStep={highestReachedStep}
         />
 
         <main className="min-w-0 xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
@@ -498,6 +499,16 @@ export default function PoliceVerificationGuide() {
         dontShowAgain={dontShowAgain}
         onDontShowAgainChange={setDontShowAgain}
         variant="police-verification"
+      />
+
+      <NavigationGuard
+        shouldBlock={hasProgress && !isSaved}
+        onSave={async () => {
+          await saveGuide("police-verification-guide");
+          setIsSaved(true);
+        }}
+        navigationHandled={navigationHandled}
+        setNavigationHandled={setNavigationHandled}
       />
 
       <FeedbackButton
