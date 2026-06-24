@@ -59,9 +59,17 @@ function useRoadmapAnchor(id: string, color: AnchorColor) {
 function RoadmapProvider({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const anchorsRef = useRef<Map<string, AnchorEntry>>(new Map());
-  const [pathSegments, setPathSegments] = useState<{ d: string; color: AnchorColor }[]>([]);
+  const [pathSegments, setPathSegments] = useState<
+    { d: string; color: AnchorColor; yStart: number; yEnd: number }[]
+  >([]);
   const [svgHeight, setSvgHeight] = useState(0);
   const rafRef = useRef<number | null>(null);
+
+  const [scrollY, setScrollY] = useState(0);
+  const containerTopRef = useRef(0);
+  const windowHeightRef = useRef(0);
+  const pathRefs = useRef<(SVGPathElement | null)[]>([]);
+  const [pathLengths, setPathLengths] = useState<number[]>([]);
 
   const register = useCallback((id: string, entry: AnchorEntry | null) => {
     if (entry) {
@@ -89,6 +97,9 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
     }
 
     const containerRect = container.getBoundingClientRect();
+    containerTopRef.current = containerRect.top + window.scrollY;
+    windowHeightRef.current = window.innerHeight;
+
     const ids = Array.from(anchorsRef.current.keys()).sort((a, b) => parseFloat(a) - parseFloat(b));
 
     const points = ids.map((id) => {
@@ -106,7 +117,7 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const segments: { d: string; color: AnchorColor }[] = [];
+    const segments: { d: string; color: AnchorColor; yStart: number; yEnd: number }[] = [];
     for (let i = 0; i < points.length - 1; i++) {
       const p0 = points[i === 0 ? i : i - 1];
       const p1 = points[i];
@@ -119,7 +130,7 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
       const cp2y = p2.y - (p3.y - p1.y) / 6;
 
       const d = `M ${p1.x},${p1.y} C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
-      segments.push({ d, color: p1.color });
+      segments.push({ d, color: p1.color, yStart: p1.y, yEnd: p2.y });
     }
 
     setPathSegments(segments);
@@ -127,7 +138,11 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
   }
 
   useLayoutEffect(() => {
-    scheduleRecompute();
+    if (typeof window !== "undefined") {
+      setScrollY(window.scrollY);
+      windowHeightRef.current = window.innerHeight;
+    }
+    recompute();
 
     const ro = new ResizeObserver(() => scheduleRecompute());
     if (containerRef.current) ro.observe(containerRef.current);
@@ -147,6 +162,29 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  useEffect(() => {
+    let rafId: number;
+    function handleScroll() {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        setScrollY(window.scrollY);
+      });
+    }
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  useLayoutEffect(() => {
+    const lengths = pathSegments.map((_, i) => {
+      const path = pathRefs.current[i];
+      return path ? path.getTotalLength() : 0;
+    });
+    setPathLengths(lengths);
+  }, [pathSegments]);
+
   const strokeColors: Record<AnchorColor, string> = {
     teal: "#0d7377",
     amber: "#8a6200",
@@ -164,17 +202,57 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
           width="100%"
           preserveAspectRatio="none"
         >
-          {pathSegments.map((seg, i) => (
-            <path
-              key={i}
-              d={seg.d}
-              fill="none"
-              stroke={strokeColors[seg.color]}
-              strokeWidth="2"
-              strokeDasharray="4,4"
-              className="opacity-50"
-            />
-          ))}
+          {pathSegments.map((seg, i) => {
+            const length = pathLengths[i] || 0;
+            const yStart = seg.yStart;
+            const yEnd = seg.yEnd;
+
+            // Calculate progress based on scroll
+            const revealY = scrollY + (windowHeightRef.current || 800) - 80;
+            const currentY = revealY - containerTopRef.current;
+
+            let progress = 0;
+            if (currentY >= yEnd) {
+              progress = 1;
+            } else if (currentY <= yStart) {
+              progress = 0;
+            } else if (yEnd > yStart) {
+              progress = (currentY - yStart) / (yEnd - yStart);
+            }
+
+            const activeLength = length || 1000;
+            const dashOffset = activeLength * (1 - progress);
+
+            return (
+              <React.Fragment key={i}>
+                <mask id={`roadmap-mask-${i}`}>
+                  <path
+                    d={seg.d}
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="6"
+                    strokeDasharray={activeLength}
+                    strokeDashoffset={dashOffset}
+                    style={{
+                      transition: "stroke-dashoffset 0.15s ease-out",
+                    }}
+                  />
+                </mask>
+                <path
+                  ref={(el) => {
+                    pathRefs.current[i] = el;
+                  }}
+                  d={seg.d}
+                  fill="none"
+                  stroke={strokeColors[seg.color]}
+                  strokeWidth="2"
+                  strokeDasharray="4,4"
+                  className="opacity-50"
+                  mask={`url(#roadmap-mask-${i})`}
+                />
+              </React.Fragment>
+            );
+          })}
         </svg>
         {children}
       </div>
@@ -235,14 +313,25 @@ function ScrollReveal({
   );
 }
 
-function Annotation({ text, direction = "left" }: { text: string; direction?: "left" | "right" }) {
+function Annotation({
+  text,
+  direction = "left",
+  className = "",
+}: {
+  text: string;
+  direction?: "left" | "right";
+  className?: string;
+}) {
+  const defaultPos =
+    direction === "left"
+      ? "left-[10%] md:left-[15%] top-[10%]"
+      : "right-[10%] md:right-[15%] top-[15%]";
+
   return (
     <div
-      className={`absolute z-10 ${
-        direction === "left"
-          ? "left-[10%] md:left-[15%] top-[10%]"
-          : "right-[10%] md:right-[15%] top-[15%]"
-      } max-w-[160px] transform ${direction === "left" ? "-rotate-6" : "rotate-6"} pointer-events-none`}
+      className={`absolute z-10 ${className || defaultPos} max-w-[160px] transform ${
+        direction === "left" ? "-rotate-6" : "rotate-6"
+      } pointer-events-none`}
     >
       <p
         className={`${caveat.className} text-slate-500 text-lg md:text-xl leading-tight font-medium`}
@@ -338,7 +427,7 @@ export default function RoadmapPage() {
           <div className="py-16 md:py-24 flex items-center justify-center text-center relative">
             <ScrollReveal>
               <div className="max-w-xl mx-auto">
-                <h2 className="text-3xl md:text-5xl font-bold text-primary mt-2 mb-4 leading-tight tracking-tight">
+                <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mt-2 mb-4 leading-tight tracking-tight">
                   Where do I even start?
                 </h2>
                 <p className="text-lg md:text-xl text-slate-500 max-w-md mx-auto leading-relaxed">
@@ -449,10 +538,16 @@ export default function RoadmapPage() {
             </div>
             <div className="col-span-12 md:col-span-7 relative flex justify-center">
               <ScrollReveal>
-                <RoadmapAnchor id="05" color="amber" className="inline-block">
-                  <NodeCircle icon={Icons.Check} color="teal" />
-                </RoadmapAnchor>
-                <Annotation text="Progress feels good." direction="left" />
+                <div className="relative inline-block">
+                  <RoadmapAnchor id="05" color="amber" className="inline-block">
+                    <NodeCircle icon={Icons.Check} color="teal" />
+                  </RoadmapAnchor>
+                  <Annotation
+                    text="Progress feels good."
+                    direction="left"
+                    className="right-[105%] md:right-[125%] top-[-10px] md:top-2"
+                  />
+                </div>
               </ScrollReveal>
             </div>
           </div>
@@ -542,10 +637,16 @@ export default function RoadmapPage() {
             </div>
             <div className="col-span-12 md:col-span-7 relative flex justify-center">
               <ScrollReveal>
-                <RoadmapAnchor id="09" color="purple" className="inline-block">
-                  <NodeCircle icon={Icons.FolderCheck} color="amber" />
-                </RoadmapAnchor>
-                <Annotation text="This feels relieving." direction="right" />
+                <div className="relative inline-block">
+                  <RoadmapAnchor id="09" color="purple" className="inline-block">
+                    <NodeCircle icon={Icons.FolderCheck} color="amber" />
+                  </RoadmapAnchor>
+                  <Annotation
+                    text="This feels relieving."
+                    direction="right"
+                    className="left-[105%] md:left-[125%] top-[-5px] md:top-4"
+                  />
+                </div>
               </ScrollReveal>
             </div>
           </div>
@@ -701,9 +802,9 @@ export default function RoadmapPage() {
             <div className="col-span-12 md:col-span-6 relative flex justify-center">
               <ScrollReveal>
                 <RoadmapAnchor id="16" color="green" className="inline-block">
-                  <NodeCircle icon={Icons.ThumbsUp} label="Welcome to the USA!" color="green" />
+                  <NodeCircle icon={Icons.ThumbsUp} color="green" />
                 </RoadmapAnchor>
-                <Annotation text="Reunited at last!" direction="left" />
+                {/* <Annotation text="Reunited at last!" direction="left" /> */}
               </ScrollReveal>
             </div>
           </div>
