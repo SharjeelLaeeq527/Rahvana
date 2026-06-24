@@ -1224,7 +1224,7 @@ export function DashboardView({
               <div className="w-full lg:w-[360px] xl:hidden shrink-0 order-2 flex flex-col gap-4">
                 <div className="flex items-center justify-between px-1">
                   <h2 className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-900">
-                    Live Case Tracking
+                    Case Tracking Center
                   </h2>
                   <div className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#0d7377] animate-pulse" />
@@ -1544,7 +1544,7 @@ export function DashboardView({
               <div className="flex flex-col gap-3 mt-1">
                 <div className="flex items-center justify-between px-1">
                   <h2 className="text-[11px] font-bold uppercase tracking-[0.1em] text-slate-900">
-                    Live Case Tracking
+                    Case Tracking Center
                   </h2>
                   <div className="flex items-center gap-1.5">
                     <div className="w-1.5 h-1.5 rounded-full bg-[#0d7377] animate-pulse" />

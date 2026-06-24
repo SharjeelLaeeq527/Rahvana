@@ -186,18 +186,72 @@ function MetricBadge({
   label,
   value,
   accentColor = "#5eead4",
+  progress,
 }: {
   icon: React.ReactNode;
   label: string;
   value: string;
   accentColor?: string;
+  progress?: number;
 }) {
+  const isAnalysisCard = label === "Evidence" || label === "Consistency";
+
+  if (isAnalysisCard) {
+    return (
+      <div className="relative flex items-center rounded-xl border border-white/[0.10] bg-white/[0.06] overflow-hidden group transition-all duration-200 hover:bg-white/[0.09] hover:border-white/[0.14]">
+        {/* LEFT SECTION */}
+        <div className="flex-1 px-3 py-3 min-w-0">
+          <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/55 mb-2">
+            {label} Analysis
+          </div>
+
+          <div className="flex items-center gap-2">
+            <div className="flex-1 h-2 rounded-full bg-white/10 overflow-hidden">
+              <div
+                className="h-full rounded-full transition-all duration-700"
+                style={{
+                  width: `${progress || 0}%`,
+                  background: accentColor,
+                }}
+              />
+            </div>
+
+            <span className="text-[11px] font-bold tabular-nums" style={{ color: accentColor }}>
+              {progress || 0}%
+            </span>
+          </div>
+        </div>
+
+        {/* CENTER DIVIDER */}
+        <div className="self-stretch w-px bg-white/10" />
+
+        {/* RIGHT SECTION */}
+        <div className="flex items-center gap-3 px-3 py-3 min-w-[140px]">
+          <div
+            className="w-8 h-8 rounded-lg flex items-center justify-center border shrink-0"
+            style={{
+              background: `${accentColor}18`,
+              borderColor: `${accentColor}30`,
+              color: accentColor,
+            }}
+          >
+            {icon}
+          </div>
+
+          <div>
+            <div className="text-[9px] font-bold uppercase tracking-[0.12em] text-white/40">
+              Status
+            </div>
+            <div className="text-[11px] font-semibold text-white/90">{value}</div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Critical card stays existing style
   return (
-    <div className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl border border-white/[0.10] bg-white/[0.06] group cursor-default transition-all duration-200 hover:bg-white/[0.09] hover:border-white/[0.14]">
-      <div
-        className="absolute inset-x-0 top-0 h-px rounded-t-xl"
-        style={{ background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.10), transparent)" }}
-      />
+    <div className="relative flex items-center gap-3 px-3 py-2.5 rounded-xl border border-white/[0.10] bg-white/[0.06] group transition-all duration-200 hover:bg-white/[0.09] hover:border-white/[0.14]">
       <div
         className="relative w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border"
         style={{
@@ -208,11 +262,12 @@ function MetricBadge({
       >
         {icon}
       </div>
-      <div className="relative min-w-0 flex-1">
+
+      <div className="min-w-0 flex-1">
         <div className="text-[8px] font-bold uppercase tracking-[0.14em] text-white/45">
           {label}
         </div>
-        <div className="text-[11px] font-semibold text-white/90 mt-0.5 tracking-tight">{value}</div>
+        <div className="text-[11px] font-semibold text-white/90 mt-0.5">{value}</div>
       </div>
     </div>
   );
@@ -322,8 +377,7 @@ export function CaseHealthOverview({
         <div
           className="absolute inset-0 opacity-[0.25]"
           style={{
-            backgroundImage:
-              "radial-gradient(circle, rgba(20,184,166,0.12) 1px, transparent 1px)",
+            backgroundImage: "radial-gradient(circle, rgba(20,184,166,0.12) 1px, transparent 1px)",
             backgroundSize: "20px 20px",
           }}
         />
@@ -399,7 +453,12 @@ export function CaseHealthOverview({
                 style={{ boxShadow: ANALYSIS_PANEL.scoreWellShadow }}
               >
                 <div className="rounded-full bg-gradient-to-br from-[#0f172a] to-[#020617] p-1">
-                  <RadialScore score={overallScore} status={scoreStatus} size={104} strokeWidth={8} />
+                  <RadialScore
+                    score={overallScore}
+                    status={scoreStatus}
+                    size={104}
+                    strokeWidth={8}
+                  />
                 </div>
               </div>
 
@@ -426,7 +485,7 @@ export function CaseHealthOverview({
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: -4 }}
                         transition={{ duration: 0.3, ease: "easeOut" }}
-                        className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-56 sm:w-64 p-3 sm:p-4 bg-gradient-to-br from-gray-900 to-gray-800 text-white text-xs rounded-xl z-50 shadow-2xl border border-gray-700 pointer-events-auto"
+                        className="absolute top-full left-1/2 -translate-x-[40%] mt-2 w-56 sm:w-64 p-3 sm:p-4 bg-gradient-to-br from-gray-900 to-gray-800 text-white text-xs rounded-xl z-100 shadow-2xl border border-gray-700 pointer-events-auto"
                       >
                         <button
                           onClick={dismissEducationTooltip}
@@ -463,8 +522,10 @@ export function CaseHealthOverview({
                 icon={<FileCheck size={13} />}
                 label="Evidence"
                 value={coverageValue}
+                progress={evidenceScore}
                 accentColor="#5eead4"
               />
+
               <MetricBadge
                 icon={<AlertTriangle size={13} />}
                 label="Consistency"
@@ -473,8 +534,10 @@ export function CaseHealthOverview({
                     ? `${warningCount} Warning${warningCount !== 1 ? "s" : ""}`
                     : "All Clear"
                 }
+                progress={consistencyScore}
                 accentColor={warningCount > 0 ? "#FBBF24" : "#5eead4"}
               />
+
               <MetricBadge
                 icon={<CircleAlert size={13} />}
                 label="Critical"
