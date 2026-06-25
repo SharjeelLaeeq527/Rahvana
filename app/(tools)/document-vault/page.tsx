@@ -19,9 +19,7 @@ import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPr
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
 import { DocumentWizard } from "@/app/components/document-vault/DocumentWizard";
 // import { ConfigurationWizard } from "@/app/components/document-vault/ConfigurationWizard";
-import { LiveConfigPanel } from "@/app/components/document-vault/LiveConfigPanel";
 import { NotificationBell } from "@/app/components/document-vault/NotificationCenter";
-import { NotificationTestPanel } from "@/app/components/document-vault/NotificationTestPanel";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
@@ -31,8 +29,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -40,11 +36,7 @@ import {
   Search,
   X as CloseIcon,
   ShieldCheck,
-  BookOpen,
   ChevronDown,
-  Download,
-  Clock,
-  Trash2,
   Zap,
   CheckCircle,
   AlertCircle,
@@ -82,7 +74,6 @@ export default function DocumentVaultPage() {
     refreshDocumentStatuses,
     refreshNotifications,
     reloadDocuments,
-    notifications,
     addDynamicSlot,
     renameDynamicSlot,
   } = useDocumentVaultStore();
@@ -123,7 +114,7 @@ export default function DocumentVaultPage() {
     });
 
     return filtered;
-  }, [config, searchQuery]);
+  }, [config, searchQuery, uploadedDocuments]);
 
   // Calculate stats - must be before any conditional returns
   const stats = useMemo(() => {
@@ -393,83 +384,83 @@ export default function DocumentVaultPage() {
     setPreviewOpen(true);
   };
 
-  const handleExport = async () => {
-    try {
-      showToast(t("documentVaultPage.page.messages.preparingExport"), "info");
-      const response = await fetch("/api/documents/export?structureByCategory=true");
+  // const handleExport = async () => {
+  //   try {
+  //     showToast(t("documentVaultPage.page.messages.preparingExport"), "info");
+  //     const response = await fetch("/api/documents/export?structureByCategory=true");
 
-      if (!response.ok) {
-        throw new Error("Export failed");
-      }
+  //     if (!response.ok) {
+  //       throw new Error("Export failed");
+  //     }
 
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = `document-vault-export-${new Date().toISOString().split("T")[0]}.zip`;
-      document.body.appendChild(a);
-      a.click();
-      window.URL.revokeObjectURL(url);
-      document.body.removeChild(a);
+  //     const blob = await response.blob();
+  //     const url = window.URL.createObjectURL(blob);
+  //     const a = document.createElement("a");
+  //     a.href = url;
+  //     a.download = `document-vault-export-${new Date().toISOString().split("T")[0]}.zip`;
+  //     document.body.appendChild(a);
+  //     a.click();
+  //     window.URL.revokeObjectURL(url);
+  //     document.body.removeChild(a);
 
-      showToast(t("documentVaultPage.page.messages.exportCompleted"), "success");
-    } catch (error) {
-      console.error("Export error:", error);
-      showToast(t("documentVaultPage.page.messages.exportAllFailed"), "error");
-    }
-  };
+  //     showToast(t("documentVaultPage.page.messages.exportCompleted"), "success");
+  //   } catch (error) {
+  //     console.error("Export error:", error);
+  //     showToast(t("documentVaultPage.page.messages.exportAllFailed"), "error");
+  //   }
+  // };
 
-  const handleDeleteAll = async () => {
-    if (!confirm(t("documentVaultPage.page.messages.deleteAllConfirmWarning"))) {
-      return;
-    }
+  // const handleDeleteAll = async () => {
+  //   if (!confirm(t("documentVaultPage.page.messages.deleteAllConfirmWarning"))) {
+  //     return;
+  //   }
 
-    if (!confirm(t("documentVaultPage.page.messages.deleteAllFinalConfirm"))) {
-      return;
-    }
+  //   if (!confirm(t("documentVaultPage.page.messages.deleteAllFinalConfirm"))) {
+  //     return;
+  //   }
 
-    try {
-      showToast(t("documentVaultPage.page.messages.deletingAll"), "loading", {
-        id: "delete-all",
-      });
+  //   try {
+  //     showToast(t("documentVaultPage.page.messages.deletingAll"), "loading", {
+  //       id: "delete-all",
+  //     });
 
-      // Get all uploaded document IDs
-      const documentIds = uploadedDocuments.map((doc) => doc.id);
+  //     // Get all uploaded document IDs
+  //     const documentIds = uploadedDocuments.map((doc) => doc.id);
 
-      // Delete each document
-      let deleted = 0;
-      for (const docId of documentIds) {
-        const response = await fetch(`/api/documents/${docId}`, {
-          method: "DELETE",
-        });
+  //     // Delete each document
+  //     let deleted = 0;
+  //     for (const docId of documentIds) {
+  //       const response = await fetch(`/api/documents/${docId}`, {
+  //         method: "DELETE",
+  //       });
 
-        if (response.ok) {
-          deleted++;
-        }
-      }
+  //       if (response.ok) {
+  //         deleted++;
+  //       }
+  //     }
 
-      showToast(
-        t("documentVaultPage.page.messages.deletedAllSuccess").replace(
-          "{{count}}",
-          deleted.toString()
-        ),
-        "success",
-        {
-          id: "delete-all",
-        }
-      );
+  //     showToast(
+  //       t("documentVaultPage.page.messages.deletedAllSuccess").replace(
+  //         "{{count}}",
+  //         deleted.toString()
+  //       ),
+  //       "success",
+  //       {
+  //         id: "delete-all",
+  //       }
+  //     );
 
-      // Reload data
-      if (user) {
-        await initialize(user.id, t);
-      }
-    } catch (error) {
-      console.error("Delete all error:", error);
-      showToast(t("documentVaultPage.page.messages.deleteAllFailed"), "error", {
-        id: "delete-all",
-      });
-    }
-  };
+  //     // Reload data
+  //     if (user) {
+  //       await initialize(user.id, t);
+  //     }
+  //   } catch (error) {
+  //     console.error("Delete all error:", error);
+  //     showToast(t("documentVaultPage.page.messages.deleteAllFailed"), "error", {
+  //       id: "delete-all",
+  //     });
+  //   }
+  // };
 
   return (
     <TooltipProvider>
