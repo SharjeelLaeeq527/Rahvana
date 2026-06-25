@@ -5,7 +5,7 @@
 --
 -- One append-only feed per shared case: "who did what, when". Both spouses
 -- read it (view-only) from /case-history. Tracked actions in v1:
---   document.upload / document.delete
+--   document.upload / document.delete / document.update
 --   form.save / form.complete
 --   step.complete / step.reopen
 --   role.assign
@@ -32,7 +32,7 @@ CREATE TABLE IF NOT EXISTS public.case_activity (
 
   action        TEXT NOT NULL
                 CHECK (action IN (
-                  'document.upload','document.delete',
+                  'document.upload','document.delete','document.update',
                   'form.save','form.complete',
                   'step.complete','step.reopen',
                   'role.assign'
@@ -46,6 +46,19 @@ CREATE TABLE IF NOT EXISTS public.case_activity (
 
   created_at    TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Keep the action allow-list idempotently upgradeable when the migration has
+-- already been applied in a local/dev database.
+ALTER TABLE public.case_activity
+  DROP CONSTRAINT IF EXISTS case_activity_action_check;
+
+ALTER TABLE public.case_activity
+  ADD CONSTRAINT case_activity_action_check CHECK (action IN (
+    'document.upload','document.delete','document.update',
+    'form.save','form.complete',
+    'step.complete','step.reopen',
+    'role.assign'
+  ));
 
 -- Feed query: latest first within a case.
 CREATE INDEX IF NOT EXISTS idx_case_activity_feed

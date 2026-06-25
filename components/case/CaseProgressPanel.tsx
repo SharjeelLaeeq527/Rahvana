@@ -7,8 +7,18 @@
 // subscription refetches the moment the other person saves, so it updates live.
 // A slow poll is kept as a fallback in case the realtime publication is off.
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import {
+  CartesianGrid,
+  Line,
+  LineChart,
+  ReferenceLine,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 interface ToolProgress {
   toolKey: string;
@@ -74,6 +84,20 @@ export default function CaseProgressPanel({ journeyId }: { journeyId: string }) 
   // Debounce bursts of realtime events into a single refetch.
   const refetchTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const journeyChartData = useMemo(() => {
+    if (!data) return [];
+
+    const totalSteps = Math.max(1, data.journey.totalSteps);
+    const completedSteps = Math.max(0, Math.min(data.journey.completedSteps, totalSteps));
+
+    return Array.from({ length: totalSteps + 1 }, (_, step) => ({
+      step,
+      label: step === 0 ? "Start" : `Step ${step}`,
+      projectedProgress: Math.round((step / totalSteps) * 100),
+      currentProgress: step <= completedSteps ? Math.round((step / totalSteps) * 100) : null,
+    }));
+  }, [data]);
+
   const load = useCallback(async () => {
     try {
       const res = await fetch(`/api/case/progress?journeyId=${journeyId}`);
@@ -115,12 +139,22 @@ export default function CaseProgressPanel({ journeyId }: { journeyId: string }) 
       .channel(`case-progress:${journeyId}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "tool_sessions", filter: `journey_id=eq.${journeyId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "tool_sessions",
+          filter: `journey_id=eq.${journeyId}`,
+        },
         scheduleRefetch
       )
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "visa_forms_draft", filter: `journey_id=eq.${journeyId}` },
+        {
+          event: "*",
+          schema: "public",
+          table: "visa_forms_draft",
+          filter: `journey_id=eq.${journeyId}`,
+        },
         scheduleRefetch
       )
       .on(
@@ -155,7 +189,7 @@ export default function CaseProgressPanel({ journeyId }: { journeyId: string }) 
   const bothPresent = data.members.length === 2;
 
   return (
-    <div className="rounded-xl border border-slate-200 p-5">
+    <div className="rounded-xl border border-slate-200 bg-white/95 p-5 shadow-sm">
       <div className="mb-4 flex items-center justify-between">
         <h3 className="text-lg font-semibold text-[#0d7377]">Shared progress</h3>
         <span className="flex items-center gap-1.5 text-xs text-slate-400">
@@ -174,7 +208,7 @@ export default function CaseProgressPanel({ journeyId }: { journeyId: string }) 
       )}
 
       {/* Overall journey progress */}
-      <div className="mb-5 rounded-lg bg-slate-50 px-4 py-3">
+      <div className="mb-5 rounded-lg border border-slate-200 bg-linear-to-br from-white to-slate-50 px-4 py-4">
         <div className="mb-1 flex items-center justify-between text-sm">
           <span className="font-medium text-slate-700">Overall journey</span>
           <span className="text-slate-500">
@@ -182,7 +216,71 @@ export default function CaseProgressPanel({ journeyId }: { journeyId: string }) 
             {Math.round(data.journey.completionPercentage)}%
           </span>
         </div>
-        <Bar pct={data.journey.completionPercentage} />
+        <div className="mt-4 h-64 w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={journeyChartData} margin={{ top: 8, right: 12, left: -12, bottom: 4 }}>
+              <CartesianGrid stroke="#e2e8f0" strokeDasharray="4 4" vertical={false} />
+              <XAxis
+                dataKey="label"
+                tick={{ fill: "#64748b", fontSize: 11 }}
+                tickLine={false}
+                axisLine={false}
+                interval="preserveStartEnd"
+              />
+              <YAxis
+                domain={[0, 100]}
+                tick={{ fill: "#64748b", fontSize: 11 }}
+                tickFormatter={(value) => `${value}%`}
+                tickLine={false}
+                axisLine={false}
+                width={48}
+              />
+              <Tooltip
+                formatter={(value, name) => [
+                  `${value}%`,
+                  name === "currentProgress" ? "Current progress" : "Journey path",
+                ]}
+                labelFormatter={(label) => label}
+                contentStyle={{
+                  borderRadius: 8,
+                  border: "1px solid #e2e8f0",
+                  boxShadow: "0 18px 45px -28px rgba(15, 23, 42, 0.45)",
+                }}
+              />
+              <ReferenceLine
+                x={
+                  data.journey.completedSteps === 0
+                    ? "Start"
+                    : `Step ${data.journey.completedSteps}`
+                }
+                stroke="#0d7377"
+                strokeDasharray="3 3"
+                ifOverflow="extendDomain"
+              />
+              <Line
+                type="monotone"
+                dataKey="projectedProgress"
+                stroke="#cbd5e1"
+                strokeWidth={2}
+                dot={false}
+                activeDot={false}
+                isAnimationActive
+                animationDuration={900}
+              />
+              <Line
+                type="monotone"
+                dataKey="currentProgress"
+                stroke="#0d7377"
+                strokeWidth={4}
+                dot={false}
+                activeDot={{ r: 5, fill: "#32e0c4", stroke: "#0d7377", strokeWidth: 2 }}
+                connectNulls={false}
+                isAnimationActive
+                animationDuration={1200}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Autofiller forms */}
