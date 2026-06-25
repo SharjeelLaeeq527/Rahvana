@@ -289,7 +289,7 @@ const PortalWallet: React.FC = () => {
         </div>
 
         {/* Portal Cards */}
-        <div className="flex flex-col md:flex-row items-stretch justify-center gap-6">
+        <div className="flex flex-col md:flex-row items-center md:items-stretch justify-center gap-6">
           {portals.map((portal) => {
             const cred = getCredential(portal.type);
             return (
@@ -340,6 +340,8 @@ const PortalWallet: React.FC = () => {
             ? {
                 username: formCredential.username,
                 password: "",
+                nvcCaseNumber: formCredential.nvc_case_number || "",
+                nvcInvoiceId: formCredential.nvc_invoice_id || "",
                 securityQuestions: formCredential.security_questions.map((sq) => ({
                   id: sq.id,
                   question: sq.question,
