@@ -487,7 +487,7 @@ export default function RoadmapPage() {
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
-                  Wait... these forms look intimidating.
+                  Wait... these forms look complicated.
                 </h3>
                 <p className="text-slate-500 text-base md:text-lg leading-relaxed">
                   Long. Confusing. Full of questions I don&apos;t understand.
@@ -603,10 +603,10 @@ export default function RoadmapPage() {
             <div className="col-span-12 md:col-span-5">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
-                  Rahvana tells you exactly what you need.
+                  Rahvana tells you exactly what documents you need.
                 </h3>
                 <p className="text-slate-500 text-base md:text-lg leading-relaxed">
-                  Upload, review, and keep everything in one place.
+                  Track required documents, upload your files, and keep everything organized in one place.
                 </p>
               </ScrollReveal>
             </div>
