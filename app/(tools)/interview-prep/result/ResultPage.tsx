@@ -842,8 +842,9 @@ export const ResultPage = ({
               </div>
             )}
 
-            {/* Rapid Fire Mode */}
-            {mode === "rapid" && (
+            {/* Rapid Fire Mode — interactive intro (beneficiary only; the
+                petitioner gets the read-only question list below). */}
+            {mode === "rapid" && !readOnly && (
               <div className="w-full max-w-2xl mx-auto">
                 <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-[0_8px_30px_rgba(13,115,119,0.08)] site-main-px border border-[rgba(13,115,119,0.08)] overflow-hidden relative">
                   {/* Soft decorative glow */}
@@ -871,50 +872,82 @@ export const ResultPage = ({
                     </div>
 
                     <div className="flex gap-4 justify-center">
-                      {readOnly ? (
-                        <div className="rounded-lg border border-[#cdadcc]/40 bg-[#faf8fb] px-5 py-3 text-sm text-[#6b5b7b] max-w-md">
-                          View only — your spouse (the beneficiary) runs the Rapid Fire practice.
-                          You can review their questions and saved answers in the Prep tab.
-                        </div>
-                      ) : (
-                        <Button
-                          onClick={handleRapidFirePageStart}
-                          className="bg-[#6b5b7b] hover:bg-[#5a4a6a] px-8 py-3 text-lg flex items-center gap-2 text-white font-semibold"
-                        >
-                          Start Rapid Fire Session
-                        </Button>
-                      )}
+                      <Button
+                        onClick={handleRapidFirePageStart}
+                        className="bg-[#6b5b7b] hover:bg-[#5a4a6a] px-8 py-3 text-lg flex items-center gap-2 text-white font-semibold"
+                      >
+                        Start Rapid Fire Session
+                      </Button>
                     </div>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Mock Interview — read-only view for the petitioner. (For the
-                beneficiary, selecting Mock launches the full-screen simulation
-                via the early return above, so this only renders read-only.) */}
-            {readOnly && mode === "mock" && (
-              <div className="w-full max-w-2xl mx-auto">
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-[0_8px_30px_rgba(13,115,119,0.08)] site-main-px border border-[rgba(13,115,119,0.08)] overflow-hidden relative">
-                  <div className="pointer-events-none absolute -top-20 -right-20 w-60 h-60 rounded-full bg-[#afdbdb]/12 blur-3xl" />
-                  <div className="text-center site-main-py relative z-10">
-                    <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-[#afdbdb]/25 border border-[#afdbdb]/30 mb-4 shadow-[0_4px_16px_-6px_rgba(175,219,219,0.4)]">
-                      <Mic className="w-8 h-8 text-[#0d7377]" />
-                    </div>
+            {/* Read-only view for the petitioner — show ALL the questions this
+                mode practises (with the beneficiary's saved answer or the sample
+                answer). The timed/voice practice itself is the beneficiary's. */}
+            {readOnly && (mode === "rapid" || mode === "mock") && (
+              <div className="w-full max-w-3xl mx-auto">
+                <div className="mb-5 flex items-start gap-2 rounded-lg border border-[#a8d9be] bg-[#e8f5ef] px-4 py-3 text-sm text-[#15744f]">
+                  {mode === "rapid" ? (
+                    <Zap className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2} />
+                  ) : (
+                    <Mic className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2} />
+                  )}
+                  <span>
+                    View only — all the questions your spouse practises in{" "}
+                    {mode === "rapid" ? "Rapid Fire" : "the Mock Interview"}. The{" "}
+                    {mode === "rapid" ? "timed practice" : "voice simulation"} is run by the
+                    beneficiary.
+                  </span>
+                </div>
 
-                    <h3 className="text-2xl font-bold text-slate-900 mb-2">Mock Interview Mode</h3>
+                <div className="space-y-3">
+                  {(mode === "rapid" ? rapidFireQuestions : mockInterviewQuestions).map(
+                    (item: GeneratedQuestion, index: number) => (
+                      <div
+                        key={item.id || index}
+                        className="rounded-xl border border-[rgba(13,115,119,0.12)] bg-white p-4 shadow-sm"
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[#89a4a0] text-xs font-medium text-white">
+                            {index + 1}
+                          </span>
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-slate-800">
+                              {item.selectedQuestion || item.question}
+                            </p>
+                            <span className="mt-2 inline-block rounded-full bg-[#f3ede7] px-1.5 py-0.5 text-xs font-medium text-[#9c6f38]">
+                              {item.category}
+                            </span>
 
-                    <p className="text-[#89a4a0] mb-6 max-w-2xl mx-auto">
-                      A full-screen voice interview simulation that mirrors the real consular
-                      interview.
-                    </p>
-
-                    <div className="rounded-lg border border-[#afdbdb]/50 bg-[#e8f6f6] px-5 py-3 text-sm text-[#0a585b] max-w-md mx-auto">
-                      View only — your spouse (the beneficiary) attends the interview, so they run
-                      the Mock practice. You can review their questions and saved answers in the
-                      Prep tab.
-                    </div>
-                  </div>
+                            {savedAnswers[item.id] ? (
+                              <div className="mt-3 rounded-lg bg-[#e8f6f6] px-3 py-2">
+                                <p className="mb-0.5 text-[11px] font-semibold text-[#0a585b]">
+                                  Saved answer
+                                </p>
+                                <p className="text-xs leading-relaxed text-slate-700">
+                                  {savedAnswers[item.id]}
+                                </p>
+                              </div>
+                            ) : (
+                              item.sampleAnswer && (
+                                <div className="mt-3 rounded-lg bg-slate-50 px-3 py-2">
+                                  <p className="mb-0.5 text-[11px] font-semibold text-slate-500">
+                                    Sample answer
+                                  </p>
+                                  <p className="text-xs leading-relaxed text-slate-600">
+                                    {item.sampleAnswer}
+                                  </p>
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  )}
                 </div>
               </div>
             )}

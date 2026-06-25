@@ -159,7 +159,18 @@ export function useWizard(options: UseWizardOptions = {}) {
           body: JSON.stringify({ journey_type: journeyId }),
         });
 
-        if (!res.ok) throw new Error(`Initialize failed: HTTP ${res.status}`);
+        if (!res.ok) {
+          // TEMP DIAGNOSTIC: log the server's real error reason
+          let detail = "";
+          try {
+            const body = await res.json();
+            detail = body?.detail || body?.error?.message || JSON.stringify(body);
+          } catch {
+            detail = await res.text().catch(() => "");
+          }
+          console.error("[useWizard] Initialize 500 detail:", detail);
+          throw new Error(`Initialize failed: HTTP ${res.status} — ${detail}`);
+        }
         const { data } = await res.json();
         if (cancelled) return;
 
