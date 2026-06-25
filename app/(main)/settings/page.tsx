@@ -174,6 +174,19 @@ export default function SettingsPage() {
     };
   }, [userId, supabase]);
 
+  useEffect(() => {
+    if (!journeyId || typeof window === "undefined" || window.location.hash !== "#spouse-access") {
+      return;
+    }
+
+    window.setTimeout(() => {
+      document.getElementById("spouse-access")?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }, 0);
+  }, [journeyId]);
+
   const handleNotificationChange = (type: string) => {
     setNotifications((prev) => ({
       ...prev,
@@ -416,7 +429,10 @@ export default function SettingsPage() {
 
           {/* Shared case — invite / manage your spouse */}
           {journeyId && (
-            <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">
+            <Card
+              id="spouse-access"
+              className="scroll-mt-24 px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0"
+            >
               <CardHeader className="border-b border-slate-200 pb-4">
                 <CardTitle className="text-lg sm:text-xl text-slate-900">Shared case</CardTitle>
               </CardHeader>

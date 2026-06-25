@@ -1,7 +1,14 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
-import { ChevronDown, ExternalLink, Clock, Shield } from "lucide-react";
+import React, { useCallback, useMemo, useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { ChevronDown, ExternalLink, Clock, Shield, Users } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getJourneyLockStatus } from "@/lib/journey-lock";
@@ -71,8 +78,15 @@ export function DashboardView({
   onSelectStep,
   actions,
 }: DashboardViewProps) {
+  const router = useRouter();
   const plan = usePlan();
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+  const [spouseInviteStatus, setSpouseInviteStatus] = useState({
+    checked: false,
+    alreadyInvited: true,
+  });
+  const [spousePromptSaving, setSpousePromptSaving] = useState(false);
+  const [spousePromptError, setSpousePromptError] = useState<string | null>(null);
 
   // Pull uploaded docs from vault for DocCaseStrengthMeter
   const { uploadedDocuments } = useDocumentVaultStore();
@@ -675,8 +689,89 @@ export function DashboardView({
     interviewDate,
     state.metadata?.dqDate,
     state.metadata?.dqStatus,
+    interviewDateValid,
     interviewAttended,
   ]);
+
+  const spouseInvitePromptShown =
+    state.metadata?.spouseInvitePromptShown === true ||
+    state.metadata?.spouseInvitePromptShown === "true";
+
+  useEffect(() => {
+    const journeyId = state.backendId;
+    if (!journeyId || spouseInvitePromptShown) {
+      setSpouseInviteStatus({ checked: true, alreadyInvited: true });
+      return;
+    }
+
+    let cancelled = false;
+    setSpouseInviteStatus({ checked: false, alreadyInvited: true });
+
+    async function loadSpouseInviteStatus() {
+      try {
+        const res = await fetch(`/api/case/collaborators?journeyId=${journeyId}`);
+        const json = await res.json().catch(() => null);
+        if (!res.ok) throw new Error(json?.error?.message || "Could not load spouse status.");
+
+        const collaborators = json?.data?.collaborators ?? [];
+        const hasPartner = collaborators.some(
+          (member: any) => member.membershipRole === "partner"
+        );
+        const hasPendingInvite = !!json?.data?.pendingInvite;
+
+        if (!cancelled) {
+          setSpouseInviteStatus({
+            checked: true,
+            alreadyInvited: hasPartner || hasPendingInvite,
+          });
+        }
+      } catch (err) {
+        console.error("[DashboardView] Spouse invite status failed:", err);
+        if (!cancelled) {
+          setSpouseInviteStatus({ checked: true, alreadyInvited: true });
+        }
+      }
+    }
+
+    loadSpouseInviteStatus();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [state.backendId, spouseInvitePromptShown]);
+
+  const showSpouseInvitePrompt =
+    !!state.backendId &&
+    spouseInviteStatus.checked &&
+    !spouseInvitePromptShown &&
+    !spouseInviteStatus.alreadyInvited;
+
+  const markSpouseInvitePromptShown = useCallback(async () => {
+    if (spouseInvitePromptShown || spousePromptSaving) return true;
+
+    setSpousePromptSaving(true);
+    setSpousePromptError(null);
+
+    try {
+      await actions.updateMetadata({ spouseInvitePromptShown: true });
+      return true;
+    } catch (err) {
+      console.error("[DashboardView] Could not persist spouse invite prompt dismissal:", err);
+      setSpousePromptError("Could not save this preference. Please try again.");
+      return false;
+    } finally {
+      setSpousePromptSaving(false);
+    }
+  }, [actions, spouseInvitePromptShown, spousePromptSaving]);
+
+  const handleSpousePromptClose = useCallback(async () => {
+    await markSpouseInvitePromptShown();
+  }, [markSpouseInvitePromptShown]);
+
+  const handleInviteNow = useCallback(async () => {
+    const saved = await markSpouseInvitePromptShown();
+    if (saved) router.push("/settings#spouse-access");
+  }, [markSpouseInvitePromptShown, router]);
 
   const [openAccordions, setOpenAccordions] = useState<Record<string, boolean>>({
     "case-details": true,
@@ -1662,6 +1757,54 @@ export function DashboardView({
         responses={questionnaireResponses}
         onSave={handleQuestionnaireSave}
       />
+
+      <Dialog
+        open={showSpouseInvitePrompt}
+        onOpenChange={(open) => {
+          if (!open) handleSpousePromptClose();
+        }}
+      >
+        <DialogContent className="w-[92vw] max-w-md overflow-hidden rounded-2xl border border-slate-200 bg-white p-0 shadow-2xl">
+          <div className="p-6">
+            <div className="mb-5 flex h-12 w-12 items-center justify-center rounded-full bg-[#0d7377]/10 text-[#0d7377]">
+              <Users size={22} strokeWidth={2.4} />
+            </div>
+
+            <DialogTitle className="text-2xl font-black text-slate-950">
+              Invite Your Spouse
+            </DialogTitle>
+            <DialogDescription className="mt-3 text-sm leading-6 text-slate-600">
+              Your journey has been created successfully. You can now invite your spouse to
+              collaborate on this case. Go to Settings &rarr; Spouse Access to send an invitation.
+            </DialogDescription>
+
+            {spousePromptError && (
+              <p className="mt-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {spousePromptError}
+              </p>
+            )}
+
+            <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+              <button
+                type="button"
+                onClick={handleSpousePromptClose}
+                disabled={spousePromptSaving}
+                className="rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Maybe Later
+              </button>
+              <button
+                type="button"
+                onClick={handleInviteNow}
+                disabled={spousePromptSaving}
+                className="rounded-lg bg-[#0d7377] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0a5f63] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {spousePromptSaving ? "Saving..." : "Invite Now"}
+              </button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
