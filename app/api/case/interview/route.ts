@@ -77,15 +77,15 @@ export async function GET(req: NextRequest) {
       []).find((m) => m.case_role === "beneficiary");
     const beneficiaryId = beneficiaryMember?.user_id ?? journeyOwnerId;
 
-    // Shared interview: BOTH spouses may view, edit and practise the one case
-    // interview (owner decision 2026-06-23 — replacing the old petitioner
-    // read-only rule). `canEdit` is therefore true for any verified member.
-    // `isBeneficiary` tells the client who actually OWNS the session row: the
-    // beneficiary loads it via the normal per-user flow, while the other member
-    // (petitioner) loads the SAME session through this shared endpoint and writes
-    // to it via the service-role "acting" path (lib/interview-prep/case-access).
+    // Shared interview, role-gated (owner decision 2026-06-24): in IR-1 the
+    // BENEFICIARY attends the interview, so only the beneficiary may edit, fill
+    // or practise. Both spouses can VIEW everything (all questions, saved
+    // answers, all three modes) — the petitioner loads the SAME session through
+    // this shared endpoint and the client renders it read-only. `canEdit` is
+    // therefore true only for the beneficiary (the session owner); writes are
+    // also blocked server-side (resolveSessionAccess `{ write: true }`).
     const isBeneficiary = !!beneficiaryId && beneficiaryId === user.id;
-    const canEdit = true;
+    const canEdit = isBeneficiary;
 
     // The beneficiary's interview prep. Prefer a session linked to this journey,
     // but FALL BACK to their latest session of any kind — in practice the prep is

@@ -88,4 +88,7 @@ export interface ReviewStepProps {
   onSubmit: () => void;
   onBack: () => void;
   categorySlug?: string;
+  // Read-only view for the petitioner spouse: the summary is shown but the
+  // "Generate" action is disabled (only the beneficiary generates).
+  readOnly?: boolean;
 }

@@ -20,8 +20,9 @@ export async function POST(
     const { sessionId } = await params;
     const body = await req.json();
 
-    // Owner OR shared-case member (petitioner) may practise this session.
-    const access = await resolveSessionAccess(sessionId);
+    // Advancing a practice round is a write — beneficiary only; petitioner is
+    // read-only.
+    const access = await resolveSessionAccess(sessionId, { write: true });
     if (!access.ok) {
       return NextResponse.json({ error: access.error }, { status: access.status });
     }

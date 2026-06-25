@@ -214,6 +214,7 @@ export function ReviewStep({
   onSubmit,
   onBack,
   categorySlug,
+  readOnly = false,
 }: ReviewStepProps) {
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([0]));
 
@@ -311,7 +312,9 @@ export function ReviewStep({
               Review Your Information
             </h2>
             <p className="text-sm md:text-base text-white/90">
-              Please review your responses before generating your interview preparation.
+              {readOnly
+                ? "Your spouse's responses. Only the beneficiary can generate the interview prep."
+                : "Please review your responses before generating your interview preparation."}
             </p>
           </div>
         </div>
@@ -439,13 +442,19 @@ export function ReviewStep({
           >
             ← Back
           </Button>
-          <Button
-            onClick={onSubmit}
-            disabled={loading}
-            className="bg-[#0d7377] hover:bg-[#0a5a5d] px-6 py-3 text-base disabled:opacity-50 shadow-lg shadow-[#0d7377]/20"
-          >
-            {loading ? "Generating Interview Prep..." : "Generate Interview Prep"}
-          </Button>
+          {readOnly ? (
+            <div className="rounded-lg border border-[#a8d9be] bg-[#e8f5ef] px-5 py-3 text-sm text-[#15744f] flex items-center">
+              View only — only the beneficiary can generate the interview prep.
+            </div>
+          ) : (
+            <Button
+              onClick={onSubmit}
+              disabled={loading}
+              className="bg-[#0d7377] hover:bg-[#0a5a5d] px-6 py-3 text-base disabled:opacity-50 shadow-lg shadow-[#0d7377]/20"
+            >
+              {loading ? "Generating Interview Prep..." : "Generate Interview Prep"}
+            </Button>
+          )}
         </div>
       </div>
     </div>

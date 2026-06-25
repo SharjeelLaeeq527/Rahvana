@@ -39,7 +39,9 @@ export async function POST(
   try {
     const { sessionId } = await params;
 
-    const access = await resolveSessionAccess(sessionId);
+    // Saving practice progress is a write — beneficiary only; petitioner is
+    // read-only.
+    const access = await resolveSessionAccess(sessionId, { write: true });
     if (!access.ok) {
       return NextResponse.json({ error: access.error }, { status: access.status });
     }
@@ -66,7 +68,9 @@ export async function DELETE(
   try {
     const { sessionId } = await params;
 
-    const access = await resolveSessionAccess(sessionId);
+    // Deleting practice progress is a write — beneficiary only; petitioner is
+    // read-only.
+    const access = await resolveSessionAccess(sessionId, { write: true });
     if (!access.ok) {
       return NextResponse.json({ error: access.error }, { status: access.status });
     }

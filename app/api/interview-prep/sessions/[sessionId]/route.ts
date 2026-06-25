@@ -24,9 +24,9 @@ export async function POST(
     const body = await request.json();
     const { action, answers } = body;
 
-    // Verify session exists + the caller may act on it (owner OR shared-case
-    // member — the petitioner editing the beneficiary's shared interview).
-    const access = await resolveSessionAccess(sessionId);
+    // Mutating actions (update-answers / generate / complete) — only the
+    // beneficiary (session owner) may write; the petitioner is read-only.
+    const access = await resolveSessionAccess(sessionId, { write: true });
     if (!access.ok) {
       return NextResponse.json({ error: access.error }, { status: access.status });
     }

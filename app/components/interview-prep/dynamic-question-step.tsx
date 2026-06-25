@@ -26,6 +26,9 @@ interface DynamicQuestionStepProps {
   onBack: () => Promise<void> | void;
   setError: (msg: string | null) => void;
   error?: string | null;
+  // Read-only view for the petitioner spouse: fields are shown (with the
+  // beneficiary's answers, or empty) but locked; Next just navigates.
+  readOnly?: boolean;
 }
 
 // Section-based icon and color mapping
@@ -136,6 +139,7 @@ export function DynamicQuestionStep({
   onBack,
   setError,
   error,
+  readOnly = false,
 }: DynamicQuestionStepProps) {
   const questionRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -274,6 +278,14 @@ export function DynamicQuestionStep({
   };
 
   const handleNext = () => {
+    // Read-only (petitioner): no editing/validation — just move to the next
+    // section so they can browse every field.
+    if (readOnly) {
+      setError(null);
+      onNext();
+      return;
+    }
+
     const newFieldErrors: Record<string, string> = {};
     let hasErrors = false;
     let firstErrorKey = "";
@@ -476,10 +488,16 @@ export function DynamicQuestionStep({
           <p className="text-lg text-slate-600 leading-relaxed max-w-xl mx-auto">
             {section.description}
           </p>
+
+          {readOnly && (
+            <div className="mx-auto mt-5 w-fit rounded-full border border-[#a8d9be] bg-[#e8f5ef] px-4 py-1.5 text-xs font-semibold text-[#15744f]">
+              View only — your spouse&apos;s answers. Only the beneficiary can edit.
+            </div>
+          )}
         </div>
 
-        {/* Questions Container */}
-        <div className="space-y-8 mb-8">
+        {/* Questions Container — locked (non-interactive) in read-only mode */}
+        <div className={`space-y-8 mb-8 ${readOnly ? "pointer-events-none select-none" : ""}`}>
           <div className="space-y-8">
             {section.questions.map((question) => {
               if (shouldSkipQuestion(question)) {

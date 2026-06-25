@@ -63,12 +63,12 @@ export default function InterviewPreparation() {
 
   // Spouse collaboration: the SHARED interview belongs to the beneficiary's
   // session. When the current user is the OTHER member (the petitioner), we load
-  // that shared session here and let them view, edit AND practise it — writes go
-  // to the beneficiary's session via the service-role "acting" path. (Updated
-  // 2026-06-23: petitioner is no longer read-only; both spouses collaborate.)
+  // that shared session here so they can VIEW everything — all questions, the
+  // beneficiary's saved answers and all three modes — but read-only. Only the
+  // beneficiary edits, fills or practises (owner decision 2026-06-24); the
+  // petitioner's writes are blocked server-side too.
   const [sharedMember, setSharedMember] = useState(false);
   const [readOnlySavedAnswers, setReadOnlySavedAnswers] = useState<Record<string, string>>({});
-  const [readOnlyAnsweredCount, setReadOnlyAnsweredCount] = useState(0);
 
   type RestorableSession = {
     id: string;
@@ -92,6 +92,9 @@ export default function InterviewPreparation() {
 
   const saveProgressToProfile = (currentFormData = formData) => {
     if (!user) return;
+    // The petitioner's read-only view shows the beneficiary's answers — never
+    // write those back into the petitioner's own profile.
+    if (sharedMember) return;
     try {
       const profileUpdate = mapFormToProfile(currentFormData as Record<string, unknown>);
       updateProfile(profileUpdate, { silent: true });
@@ -272,12 +275,64 @@ export default function InterviewPreparation() {
             setSharedMember(true);
             setSessionSource("journey");
             setIsJourneySession(true);
+            // Don't auto-fill the petitioner's OWN profile into this shared view —
+            // it shows the beneficiary's interview.
+            setProfileLoaded(true);
             if (caseData.journeyId) setJourneyId(caseData.journeyId);
             if (caseData.session?.id) setSessionId(caseData.session.id);
             if (caseData.output) setGeneratedResults(caseData.output);
             setReadOnlySavedAnswers(caseData.userAnswers || {});
-            setReadOnlyAnsweredCount(caseData.answeredCount || 0);
             setShowCountryModal(false);
+
+            // No interview generated yet → show the FULL questionnaire read-only
+            // (all sections/fields, pre-filled with the beneficiary's saved
+            // answers, or empty), so the petitioner sees the whole tool like a
+            // normal case instead of a dead-end. Once the beneficiary generates,
+            // the poll swaps this for the read-only flashcards + 3 modes.
+            if (!caseData.output) {
+              const categorySlug = caseData.session?.category_slug || "ir-1-spouse";
+              try {
+                const catResp = await fetch(
+                  `/api/interview-prep?category_slug=${categorySlug}`
+                );
+                const catData = await catResp.json();
+                if (catData.success) {
+                  setQuestionnaire({
+                    categorySlug,
+                    version: catData.questionnaire?.version || "1.0.0",
+                    lastUpdated: new Date().toISOString(),
+                    sections: catData.questionnaire?.sections || [],
+                  });
+
+                  // Pre-fill the beneficiary's saved questionnaire answers (a
+                  // delegate READ is allowed). Empty where unanswered.
+                  const seeded: Record<string, unknown> = { caseType: "" };
+                  if (caseData.session?.id) {
+                    try {
+                      const sResp = await fetch(
+                        `/api/interview-prep/sessions/${caseData.session.id}`
+                      );
+                      const sData = await sResp.json();
+                      const answers = sData?.session?.answers;
+                      if (Array.isArray(answers)) {
+                        answers.forEach(
+                          (a: { question_key: string; answer_value: unknown }) => {
+                            seeded[a.question_key] = a.answer_value;
+                          }
+                        );
+                      }
+                    } catch (e) {
+                      console.error("[InterviewPrep] failed to load shared answers:", e);
+                    }
+                  }
+                  setFormData(seeded as Partial<InterviewFormData>);
+                  setStep(1);
+                }
+              } catch (e) {
+                console.error("[InterviewPrep] failed to load shared questionnaire:", e);
+              }
+            }
+
             setSessionRestorationAttempted(true);
             setLoading(false);
             setLoadingMessage("");
@@ -510,29 +565,29 @@ export default function InterviewPreparation() {
     }
   }, [sessionRestorationAttempted, initialCheckDone]);
 
-  // Spouse collaboration: while the OTHER member (petitioner) is waiting for the
-  // beneficiary to generate the interview questions, poll the shared-case
-  // endpoint so the editable results appear here the moment they're generated.
-  // Stops once results load — from then on ResultPage's own poll keeps the saved
-  // answers in sync live. (Answer-level live sync lives in ResultPage.)
+  // Spouse collaboration: while the OTHER member (petitioner) has the shared
+  // interview open, poll the shared-case endpoint so their read-only view stays
+  // live — the results appear the moment the beneficiary generates them, and the
+  // beneficiary's saved answers refresh as they're added. (The petitioner can
+  // only view; ResultPage receives these answers via initialSavedAnswers.)
   useEffect(() => {
-    if (!sharedMember || generatedResults) return;
+    if (!sharedMember) return;
     const id = setInterval(async () => {
       try {
         const r = await fetch(`/api/case/interview`);
         const j = await r.json();
         const d = j?.data;
         if (r.ok && d?.hasCase) {
-          if (typeof d.answeredCount === "number") setReadOnlyAnsweredCount(d.answeredCount);
           if (d.session?.id) setSessionId((prev) => prev ?? d.session.id);
           if (d.output) setGeneratedResults(d.output);
+          if (d.userAnswers) setReadOnlySavedAnswers(d.userAnswers);
         }
       } catch {
         // best-effort — ignore transient errors
       }
     }, 7000);
     return () => clearInterval(id);
-  }, [sharedMember, generatedResults]);
+  }, [sharedMember]);
 
   const handleCloseIntro = () => {
     if (dontShowAgain && typeof window !== "undefined") {
@@ -542,6 +597,10 @@ export default function InterviewPreparation() {
   };
 
   const handleInputChange = (key: string, value: unknown) => {
+    // Petitioner is read-only — ignore any stray edits (fields are locked, and
+    // the save route would 403 anyway).
+    if (sharedMember) return;
+
     const updatedFormData = { ...formData, [key]: value };
     setFormData(updatedFormData);
     if (error) {
@@ -730,6 +789,14 @@ export default function InterviewPreparation() {
   };
 
   const prevStep = () => {
+    // Read-only petitioner: stay within the questionnaire sections (step >= 1) —
+    // don't drop to the editable category-selection step — and never save.
+    if (sharedMember) {
+      if (step > 1) setStep((prev) => prev - 1);
+      if (error) setError(null);
+      return;
+    }
+
     // Navigate immediately — don't wait for the save
     setStep((prev) => prev - 1);
     if (error) {
@@ -822,43 +889,37 @@ export default function InterviewPreparation() {
   };
 
   // Shared view for the OTHER spouse (the petitioner): the SAME interview the
-  // beneficiary owns, fully editable + practisable. Edits/practice write to the
-  // shared session via the service-role "acting" path. If the beneficiary hasn't
-  // generated questions yet, show a friendly "not ready" state (there's nothing
-  // to practise until questions exist).
+  // beneficiary owns, but READ-ONLY. They can view every question, all three
+  // modes and the beneficiary's saved answers, but cannot edit, fill or
+  // practise (the beneficiary attends the IR-1 interview). ResultPage renders the
+  // read-only affordances; writes are also blocked server-side. If the
+  // beneficiary hasn't generated questions yet, show a friendly "not ready"
+  // state (there's nothing to review until questions exist).
   const renderSharedMember = () => {
+    // Once the beneficiary has generated the interview, show the read-only
+    // flashcards + all three modes.
     if (generatedResults && sessionId) {
       return (
-        <>
-          <div className="mx-auto mb-5 max-w-2xl rounded-lg border border-[#0d7377]/20 bg-[#e8f6f6] px-4 py-2.5 text-center text-xs font-semibold text-[#0a585b]">
-            Shared with your spouse — you can view, edit and practise together.
-          </div>
-          <ResultPage
-            sessionId={sessionId}
-            results={generatedResults}
-            initialSavedAnswers={readOnlySavedAnswers}
-            onRestart={() => {}}
-          />
-        </>
+        <ResultPage
+          sessionId={sessionId}
+          results={generatedResults}
+          readOnly
+          initialSavedAnswers={readOnlySavedAnswers}
+          onRestart={() => {}}
+        />
       );
     }
+    // Not generated yet → show the FULL questionnaire read-only (all fields,
+    // pre-filled with the beneficiary's answers or empty) via the normal step
+    // flow, so the petitioner sees the whole tool, not a dead-end.
+    if (questionnaire) {
+      return renderStep();
+    }
+    // Questionnaire still loading.
     return (
-      <div className="text-center py-12 space-y-3">
-        <div className="mx-auto mb-2 w-fit rounded-full bg-[#e8f6f6] px-3 py-1 text-xs font-bold text-[#0a585b]">
-          Shared interview · with your spouse
-        </div>
-        <h3 className="text-xl font-semibold text-slate-800">
-          {readOnlyAnsweredCount > 0
-            ? "Preparation in progress"
-            : "Interview prep not started yet"}
-        </h3>
-        <p className="text-slate-600 max-w-md mx-auto">
-          {readOnlyAnsweredCount > 0
-            ? `Your spouse (the beneficiary) has answered ${readOnlyAnsweredCount} questionnaire ${
-                readOnlyAnsweredCount === 1 ? "question" : "questions"
-              } so far. Once the interview questions are generated, you can both review and practise them here.`
-            : "The interview questions haven't been generated yet. Once the beneficiary completes the short questionnaire, you can both review and practise the questions together here."}
-        </p>
+      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+        <Loader size="md" />
+        <p className="text-slate-600">Loading your spouse&apos;s interview…</p>
       </div>
     );
   };
@@ -914,6 +975,7 @@ export default function InterviewPreparation() {
           onNext={nextStep}
           onBack={prevStep}
           setError={setError}
+          readOnly={sharedMember}
         />
       );
     }
@@ -928,6 +990,7 @@ export default function InterviewPreparation() {
           onSubmit={handleSubmit}
           onBack={prevStep}
           categorySlug={questionnaire.categorySlug}
+          readOnly={sharedMember}
         />
       );
     }

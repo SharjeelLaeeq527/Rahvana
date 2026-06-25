@@ -5,12 +5,13 @@
 // `user_id`-scoped), so by default only the session's owner can read/write it.
 //
 // For a SHARED CASE, both spouses work on ONE interview — the beneficiary owns
-// the session, and the petitioner (the other case member) may also view, edit
-// and practise it. When the caller is a case member who is NOT the owner, we
-// return an `ActingContext` (service-role client + the owner's id) that the
-// data-access layer uses to operate on the owner's session on the member's
-// behalf. Membership is verified here with `is_journey_member` before any
-// elevated access is granted — the data-access layer trusts this gate.
+// the session. The petitioner (the other case member) may VIEW everything but
+// is read-only: only the beneficiary edits, fills or practises (owner decision
+// 2026-06-24 — in IR-1 the beneficiary attends the interview). So a non-owner
+// case member is granted an `ActingContext` for READS only; any WRITE call must
+// pass `{ write: true }`, which rejects the delegate with 403. Membership is
+// verified here with `is_journey_member` before any elevated access is granted —
+// the data-access layer trusts this gate.
 
 import { verifyAuth } from "@/lib/api/journey-auth";
 import { getAdminClient, resolveActiveJourneyId } from "@/lib/case-collaboration/helpers";
@@ -25,12 +26,20 @@ export type SessionAccess =
  * Resolve the authenticated caller's access to `sessionId`.
  *  - 'owner'    → the caller owns the session (use the normal user-scoped path;
  *                 `acting` is undefined).
- *  - 'delegate' → the caller is a case member acting on the owner's shared
- *                 session (pass `acting` into the data-access functions).
+ *  - 'delegate' → the caller is a case member reading the owner's shared session
+ *                 (pass `acting` into the read data-access functions).
  *  - ok:false   → 401 (unauthenticated) / 404 (no such session) / 403 (not the
- *                 owner and not a member of the owner's case).
+ *                 owner and not a member of the owner's case, OR a non-owner
+ *                 member attempting a write with `{ write: true }`).
+ *
+ * Pass `{ write: true }` from any route that MUTATES the session. The session
+ * owner (the beneficiary) is always allowed; a non-owner case member (the
+ * petitioner) is read-only and gets 403 on writes.
  */
-export async function resolveSessionAccess(sessionId: string): Promise<SessionAccess> {
+export async function resolveSessionAccess(
+  sessionId: string,
+  opts?: { write?: boolean }
+): Promise<SessionAccess> {
   if (!sessionId || sessionId === "undefined") {
     return { ok: false, status: 400, error: "Invalid session ID" };
   }
@@ -70,6 +79,15 @@ export async function resolveSessionAccess(sessionId: string): Promise<SessionAc
     ]);
 
     if (callerMember && ownerMember) {
+      // A verified case member who is NOT the session owner is the petitioner.
+      // They may read the beneficiary's interview but never write it (view-only).
+      if (opts?.write) {
+        return {
+          ok: false,
+          status: 403,
+          error: "Only the beneficiary can edit or practise this interview.",
+        };
+      }
       let email: string | null = null;
       try {
         const { data: ownerInfo } = await admin.auth.admin.getUserById(ownerId);

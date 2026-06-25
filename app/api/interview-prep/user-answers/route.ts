@@ -44,8 +44,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: msg(E.INTERVIEW_ANSWER_TOO_SHORT) }, { status: 400 });
     }
 
-    // Owner OR shared-case member (petitioner) may save against this session.
-    const access = await resolveSessionAccess(sessionId);
+    // Saving an answer is a write — only the beneficiary (session owner) may do
+    // it; the petitioner is read-only.
+    const access = await resolveSessionAccess(sessionId, { write: true });
     if (!access.ok) {
       return NextResponse.json({ error: access.error }, { status: access.status });
     }

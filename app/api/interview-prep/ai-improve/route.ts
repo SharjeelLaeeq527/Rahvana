@@ -23,8 +23,9 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Owner OR shared-case member (petitioner) may improve answers on this session.
-    const access = await resolveSessionAccess(sessionId);
+    // AI-improving + saving an answer is a write — beneficiary only; petitioner
+    // is read-only.
+    const access = await resolveSessionAccess(sessionId, { write: true });
     if (!access.ok) {
       return NextResponse.json({ error: access.error }, { status: access.status });
     }
