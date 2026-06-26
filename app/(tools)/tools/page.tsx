@@ -22,7 +22,6 @@ import {
   Lock,
   Crown,
 } from "lucide-react";
-
 import { useLanguage } from "@/app/context/LanguageContext";
 import { usePlan } from "../../context/PlanContext";
 import { UpgradeModal } from "../../components/entitlements/UpgradeModal";
@@ -215,6 +214,7 @@ const CATEGORIES: ("All" | ToolCategory)[] = [
   "Forms & Automation",
 ];
 
+
 // ─── Page component ───────────────────────────────────────────────────────────
 
 export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean }) {
@@ -253,11 +253,7 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
       for (let i = 0; i < categoryEls.length; i++) {
         const gapWidth = i > 0 ? gap : 0;
         if (
-          totalWidth +
-          gapWidth +
-          categoryEls[i].offsetWidth +
-          gap +
-          moreButtonWidth <=
+          totalWidth + gapWidth + categoryEls[i].offsetWidth + gap + moreButtonWidth <=
           containerWidth
         ) {
           visible++;
@@ -510,9 +506,7 @@ function ToolCard({
   const plan = usePlan();
 
   const isLocked =
-    !!tool.entitlementFeature &&
-    !plan.isLoading &&
-    plan.isLocked(tool.entitlementFeature);
+    !!tool.entitlementFeature && !plan.isLoading && plan.isLocked(tool.entitlementFeature);
 
   const isRouteLocked = isLocked && ROUTE_FEATURE_MAP[tool.href] !== undefined;
   const isResultLocked = isLocked && ROUTE_FEATURE_MAP[tool.href] === undefined;
@@ -528,11 +522,12 @@ function ToolCard({
 
   const cardClasses = `group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
     transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
-    ${isRouteLocked
-      ? "border-[1.5px] border-slate-200 bg-white cursor-pointer shadow-sm hover:shadow-[0_12px_40px_-12px_rgba(99,102,241,0.18)] hover:-translate-y-1"
-      : isNavigable
-        ? "border-[1.5px] border-slate-200 bg-white hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-        : "border-[1.5px] border-slate-200 bg-white opacity-80 cursor-not-allowed grayscale-[0.5]"
+    ${
+      isRouteLocked
+        ? "border-[1.5px] border-slate-200 bg-white cursor-pointer shadow-sm hover:shadow-[0_12px_40px_-12px_rgba(99,102,241,0.18)] hover:-translate-y-1"
+        : isNavigable
+          ? "border-[1.5px] border-slate-200 bg-white hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+          : "border-[1.5px] border-slate-200 bg-white opacity-80 cursor-not-allowed grayscale-[0.5]"
     }
     animate-fade-up`;
 
@@ -571,8 +566,6 @@ function ToolCard({
         <Icon className="w-6 h-6 stroke-2" />
       </div>
 
-
-
       {/* Radial glow */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
 
@@ -591,16 +584,19 @@ function ToolCard({
             </span>
           )} */}
         </div>
-        <p className="text-sm leading-relaxed mb-6 grow text-slate-900 dark:text-white">
+        <p className={`text-sm leading-relaxed mb-1 grow text-slate-900 dark:text-white mb-0 grow`}>
           {t(`toolsPage.toolsItems.${tool.id}.desc`) || tool.description}
         </p>
+
       </div>
 
       {/* Footer */}
-      <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
+      <div className="relative z-10 flex items-center justify-between pt-3 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
         {isRouteLocked ? (
-          <span className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}>
+          <span
+            className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
+          >
             <Lock size={14} className="mb-[1px]" />{" "}
             {t("toolsPage.unlockPro") !== "toolsPage.unlockPro"
               ? t("toolsPage.unlockPro")

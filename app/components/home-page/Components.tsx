@@ -1839,7 +1839,7 @@ export function GuidedRoadmapScene() {
                       <div className="rounded-lg bg-[#f0f9f6] p-2.5 border border-[#d1e7e2]">
                         <div className="text-[10px] font-black text-[#0d7377] uppercase mb-1 flex items-center gap-1.5">
                           <div className="size-1.5 rounded-full bg-[#0d7377]" />
-                          Live Case Tracking
+                          Case Tracking Center
                         </div>
                         <div className="text-[11px] leading-snug text-[#4a5c62]">
                           Automated alerts for USCIS/NVC status changes and priority date movements.

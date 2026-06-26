@@ -92,11 +92,23 @@ export function generateCaseNarrative(input: NarrativeInput): CaseNarrative {
   const unresolvedFindings = consistencyFindings.filter((f) => !f.resolved);
   const resolvedFindings = consistencyFindings.filter((f) => f.resolved);
 
+  // Compute overall combined score (evidence 60% + consistency 40%)
+  const evidenceScore = evidenceAnalysis?.overallScore ?? 50;
+  let consistencyPenalty = 0;
+  for (const f of unresolvedFindings) {
+    if (f.severity === "critical") consistencyPenalty += 20;
+    else if (f.severity === "warning") consistencyPenalty += 8;
+    else consistencyPenalty += 3;
+  }
+  const consistencyScore = Math.max(0, 100 - consistencyPenalty);
+  const overallCombinedScore = Math.round(evidenceScore * 0.6 + consistencyScore * 0.4);
+
   // Build each section
   const executiveSummary = buildExecutiveSummary(
     evidenceAnalysis,
     unresolvedFindings,
-    resolvedFindings.length
+    resolvedFindings.length,
+    overallCombinedScore
   );
 
   const strengths = buildStrengths(evidenceAnalysis, resolvedFindings);
@@ -120,24 +132,29 @@ export function generateCaseNarrative(input: NarrativeInput): CaseNarrative {
 function buildExecutiveSummary(
   evidenceAnalysis: EvidenceGapAnalysis | null,
   unresolvedFindings: ConsistencyFinding[],
-  resolvedCount: number
+  resolvedCount: number,
+  overallScore: number
 ): string {
   const parts: string[] = [];
 
-  // Overall assessment from evidence score
-  if (evidenceAnalysis) {
-    const score = evidenceAnalysis.overallScore;
-    const stats = evidenceAnalysis.stats;
+  // Overall assessment using combined score
+  if (overallScore >= 80) {
+    parts.push(
+      "Your case is in strong shape overall — evidence coverage and consistency checks are solid"
+    );
+  } else if (overallScore >= 60) {
+    parts.push("Your case shows moderate strength with room for improvement in key areas");
+  } else if (overallScore >= 40) {
+    parts.push("Your case has notable gaps in documentation or consistency that need attention");
+  } else {
+    parts.push(
+      "Your case requires significant improvements in both evidence coverage and data consistency"
+    );
+  }
 
-    if (score >= 80) {
-      parts.push("Your case appears to be well-documented overall.");
-    } else if (score >= 60) {
-      parts.push("Your case appears moderately strong.");
-    } else if (score >= 40) {
-      parts.push("Your case documentation has some gaps that need attention.");
-    } else {
-      parts.push("Your case requires significant documentation improvements.");
-    }
+  // Evidence-specific details
+  if (evidenceAnalysis) {
+    const stats = evidenceAnalysis.stats;
 
     // Highlight strong categories
     if (stats.strongCategories > 0) {
@@ -517,4 +534,36 @@ export function getCaseHealthStatus(input: NarrativeInput): {
   }
 
   return { status: "critical", label: "Needs Immediate Attention", color: "#ef4444" };
+}
+
+/**
+ * Compute the consistency sub-score (0–100) from unresolved findings.
+ * Starts at 100 and deducts: critical −20, warning −8, informational −3.
+ */
+export function computeConsistencyScore(consistencyFindings: ConsistencyFinding[]): number {
+  const unresolved = consistencyFindings.filter((f) => !f.resolved);
+  let penalty = 0;
+  for (const f of unresolved) {
+    if (f.severity === "critical") penalty += 20;
+    else if (f.severity === "warning") penalty += 8;
+    else penalty += 3;
+  }
+  return Math.max(0, 100 - penalty);
+}
+
+/**
+ * Compute an overall case score (0–100) that combines evidence coverage
+ * and consistency intelligence into a single weighted metric.
+ *
+ * Weights:
+ * - Evidence score: 50%
+ * - Consistency score: 50%
+ *
+ * Both analyses are weighted equally — strong evidence and consistent
+ * information are equally important for a healthy case.
+ */
+export function computeOverallCaseScore(input: NarrativeInput): number {
+  const evidenceScore = input.evidenceAnalysis?.overallScore ?? 50;
+  const consistencyScore = computeConsistencyScore(input.consistencyFindings);
+  return Math.round(evidenceScore * 0.5 + consistencyScore * 0.5);
 }

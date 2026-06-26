@@ -21,7 +21,7 @@ import { useWizardSession } from "@/lib/guides/useWizardSession";
 import { useGuideSave } from "@/lib/guides/useGuideSave";
 import { useGuideUpload } from "@/lib/guides/useGuideUpload";
 import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
-import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
+import { NavigationGuard } from "@/lib/guides/useNavigationGuard";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
@@ -51,8 +51,12 @@ const INFO_PANEL_KEYS: Record<string, keyof typeof guideData.wizard.info_panel> 
 
 const PolioVaccinationGuide = () => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [highestReachedStep, setHighestReachedStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
-  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(
+    typeof window !== "undefined" &&
+      localStorage.getItem("dont_show_polio_vaccination_welcome") === "true"
+  );
   const [isSaved, setIsSaved] = useState(false);
   const [navigationHandled, setNavigationHandled] = useState(false);
   const [state, setState] = useState<WizardState>({
@@ -154,20 +158,16 @@ const PolioVaccinationGuide = () => {
   };
 
   useEffect(() => {
+    setHighestReachedStep((prev) => Math.max(prev, currentStep));
+  }, [currentStep]);
+
+  useEffect(() => {
     if (session?.saved) {
       setIsSaved(true);
     }
   }, [session]);
 
-  useNavigationGuard(
-    hasProgress && !isSaved,
-    async () => {
-      await saveGuide("polio-vaccination-guide"); // wait save complete
-      setIsSaved(true); // mark as saved
-    },
-    navigationHandled,
-    setNavigationHandled
-  );
+  // Navigation guard handled by NavigationGuard component in render
 
   // Before unload confirmation
   useEffect(() => {
@@ -361,6 +361,7 @@ const PolioVaccinationGuide = () => {
           onGuideSaved={() => setIsSaved(true)}
           saving={saving}
           session={session}
+          highestReachedStep={highestReachedStep}
         />
 
         <main className="min-w-0 xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
@@ -449,6 +450,15 @@ const PolioVaccinationGuide = () => {
         dontShowAgain={dontShowAgain}
         onDontShowAgainChange={setDontShowAgain}
         variant="polio-vaccination"
+      />
+      <NavigationGuard
+        shouldBlock={hasProgress && !isSaved}
+        onSave={async () => {
+          await saveGuide("polio-vaccination-guide");
+          setIsSaved(true);
+        }}
+        navigationHandled={navigationHandled}
+        setNavigationHandled={setNavigationHandled}
       />
       <FeedbackButton
         steps={Object.values(STEP_LABELS)}

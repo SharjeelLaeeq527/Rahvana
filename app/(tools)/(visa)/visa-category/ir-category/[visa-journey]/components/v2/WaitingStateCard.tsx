@@ -50,17 +50,17 @@ export default function WaitingStateCard({
   };
 
   const statusColors = {
-    complete: "bg-slate-50 border-slate-200 text-slate-900",
-    pending: "bg-yellow-50 border-yellow-200 text-yellow-900",
-    waiting: "bg-blue-50 border-blue-200 text-blue-900",
-    "action-needed": "bg-red-50 border-red-200 text-red-900",
+    complete: "bg-white border-[#afdbdb] text-slate-900",
+    pending: "bg-white border-[#cdadcc] text-slate-900",
+    waiting: "bg-white border-[#a8d4d5] text-slate-900",
+    "action-needed": "bg-white border-[#db8090] text-slate-900",
   };
 
   const badgeColors = {
-    complete: "bg-slate-200 text-slate-800",
-    pending: "bg-yellow-100 text-yellow-800",
-    waiting: "bg-blue-100 text-blue-800",
-    "action-needed": "bg-red-100 text-red-800",
+    complete: "bg-[#e6f5f5] text-[#095c5f] border border-[#a8d4d5]/50",
+    pending: "bg-[#f5eef5] text-[#6b4566] border border-[#d5c0d3]/50",
+    waiting: "bg-[#e6f5f5] text-[#095c5f] border border-[#a8d4d5]/50",
+    "action-needed": "bg-[#fbe8ec] text-[#7a3a4a] border border-[#f0c8d0]/50",
   };
 
   return (
@@ -90,7 +90,11 @@ export default function WaitingStateCard({
             {(actionLabel || showIVToolLink) && (
               <div className="flex gap-2 mt-3">
                 {actionLabel && (
-                  <Button size="sm" variant="outline" onClick={onAction} className="text-xs">
+                  <Button
+                    size="sm"
+                    onClick={onAction}
+                    className="text-xs bg-[#0d7377] text-white border-0 hover:bg-[#095c5f] hover:text-white shadow-sm"
+                  >
                     {actionLabel}
                     <ArrowRight className="ml-1 h-3 w-3" />
                   </Button>
@@ -98,9 +102,8 @@ export default function WaitingStateCard({
                 {actionUrl && (
                   <Button
                     size="sm"
-                    variant="outline"
                     onClick={() => window.open(actionUrl, "_blank")}
-                    className="text-xs"
+                    className="text-xs bg-[#0d7377] text-white border-0 hover:bg-[#095c5f] hover:text-white shadow-sm"
                   >
                     <ExternalLink className="mr-1 h-3 w-3" />
                     Open Link
@@ -111,13 +114,15 @@ export default function WaitingStateCard({
 
             {/* IV Wait Times Tool Link */}
             {showIVToolLink && ivEmbassy && (
-              <div className="mt-3 p-3 bg-white/50 rounded-lg border border-current">
-                <p className="text-xs font-semibold mb-1">📊 Estimated Wait Time at {ivEmbassy}:</p>
+              <div className="mt-3 p-3 bg-[#f7fafa] rounded-xl border border-[#e0eded]">
+                <p className="text-xs font-semibold mb-1 text-slate-700">
+                  📊 Estimated Wait Time at {ivEmbassy}:
+                </p>
                 <Button
                   size="sm"
                   variant="ghost"
                   onClick={() => window.open(`/iv-tool?city=${ivEmbassy}`, "_blank")}
-                  className="text-xs p-0 h-auto font-medium"
+                  className="text-xs p-0 h-auto font-semibold text-[#0d7377] hover:text-[#095c5f] hover:bg-[#0d7377]/8"
                 >
                   View IV Wait Times <ExternalLink className="ml-1 h-3 w-3" />
                 </Button>

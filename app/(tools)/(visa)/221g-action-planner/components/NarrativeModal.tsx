@@ -1260,6 +1260,8 @@ export function NarrativeModal({
   const isCompactPagesTwoToFive = isCompactView && isPagesTwoToFiveScene;
   const isCompactPagesThreeToSix = isCompactView && isPagesThreeToSixScene;
   const isCompactPagesFourToFive = isCompactView && isPagesFourToFiveScene;
+  const [showDontShowAgain, setShowDontShowAgain] = useState(true);
+
   const docBadgeTextByVariant: Record<NonNullable<NarrativeModalProps["variant"]>, string> = {
     "221g": "221(g)",
     passport: "Passport",
@@ -1315,6 +1317,12 @@ export function NarrativeModal({
       }),
     []
   );
+
+  useEffect(() => {
+    if (isOpen) {
+      setShowDontShowAgain(!dontShowAgain);
+    }
+  }, [isOpen]);
 
   const handleNext = () => {
     if (currentScene < scenes.length - 1) {
@@ -1510,15 +1518,17 @@ export function NarrativeModal({
               </button>
             </div>
 
-            <label className="absolute left-6 top-6 z-20 hidden items-center gap-2 rounded-full border border-[#dbe8e8] bg-white/95 px-3.5 py-1.5 text-[11px] font-semibold tracking-[0.01em] text-slate-600 shadow-sm sm:flex">
-              <input
-                type="checkbox"
-                checked={dontShowAgain}
-                onChange={(e) => onDontShowAgainChange(e.target.checked)}
-                className="h-3.5 w-3.5 rounded border-slate-300 text-[#0d7377]"
-              />
-              Don&apos;t show again
-            </label>
+            {showDontShowAgain && (
+              <label className="absolute left-6 top-6 z-20 hidden items-center gap-2 rounded-full border border-[#dbe8e8] bg-white/95 px-3.5 py-1.5 text-[11px] font-semibold tracking-[0.01em] text-slate-600 shadow-sm sm:flex">
+                <input
+                  type="checkbox"
+                  checked={dontShowAgain}
+                  onChange={(e) => onDontShowAgainChange(e.target.checked)}
+                  className="h-3.5 w-3.5 rounded border-slate-300 text-[#0d7377]"
+                />
+                Don&apos;t show again
+              </label>
+            )}
 
             <div
               ref={sceneScrollRef}

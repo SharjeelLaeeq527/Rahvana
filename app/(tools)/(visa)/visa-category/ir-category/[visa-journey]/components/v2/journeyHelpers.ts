@@ -98,11 +98,17 @@ export function getNextBestAction(
   const chapters = data.chapters || (data as any).stages;
   for (let cIdx = 0; cIdx < chapters.length; cIdx++) {
     const activeSteps = getActiveStepsForStage(data, cIdx, state.metadata, state.filingType);
-    const stepInActiveIdx = activeSteps.findIndex(
+    const isInChapter = activeSteps.some(
       (s: any) => (s.step_key || s.id) === (nextStep.step_key || (nextStep as any).id)
     );
-    if (stepInActiveIdx !== -1) {
-      return { step: nextStep, chapterIdx: cIdx, stepIdxInChapter: stepInActiveIdx };
+    if (isInChapter) {
+      // Return the index in the raw steps array (not the filtered active list)
+      // since setCurrentStep / StepView index into raw chapter.steps
+      const rawSteps = (chapters[cIdx] as RoadmapChapter).steps || [];
+      const rawIdx = rawSteps.findIndex(
+        (s: any) => (s.step_key || s.id) === (nextStep.step_key || (nextStep as any).id)
+      );
+      return { step: nextStep, chapterIdx: cIdx, stepIdxInChapter: rawIdx !== -1 ? rawIdx : 0 };
     }
   }
 

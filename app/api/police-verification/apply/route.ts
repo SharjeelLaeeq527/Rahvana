@@ -1,5 +1,6 @@
 import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { triggerPCCNotification } from "@/lib/notifications";
 
 interface PoliceVerificationData {
   user_id?: string;
@@ -134,6 +135,21 @@ export async function POST(req: NextRequest) {
       console.error("Error creating police verification request:", error);
       return Response.json({ error: error.message }, { status: 500 });
     }
+    // Notify admins of the new PCC request (non-blocking)
+    const locationParts = [verificationData.district, verificationData.province].filter(Boolean);
+    const locationText = locationParts.length > 0 ? ` for ${locationParts.join(", ")}` : "";
+    const refText = verificationData.request_id ? ` (${verificationData.request_id})` : "";
+
+    const pccNotificationBody = `${verificationData.full_name} has submitted a new Police Verification request${refText}${locationText}.`;
+
+    triggerPCCNotification(
+      data.id,
+      body.journeyId || undefined,
+      verificationData.full_name,
+      pccNotificationBody
+    ).catch((err) => {
+      console.error("[PCCNotif] Error triggering admin notification:", err);
+    });
 
     return Response.json({ success: true, id: data.id, requestId: data.request_id });
   } catch (error) {

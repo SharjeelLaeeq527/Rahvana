@@ -615,7 +615,7 @@ export const StepView: React.FC<StepViewProps> = ({
   // Step 2.10 DQ Recording States
   const [dqSaved, setDqSaved] = useState(state.metadata.dqSaved === true);
   const [dqDate, setDqDate] = useState((state.metadata.dqDate as string) || "");
-  const [dqCategory, setDqCategory] = useState((state.metadata.dqCategory as string) || "");
+  const [dqCategory, setDqCategory] = useState("IR-1");
   const [dqPost, setDqPost] = useState((state.metadata.dqPost as string) || "");
   const [dqCountry, setDqCountry] = useState((state.metadata.dqCountry as string) || "Pakistan");
 
@@ -888,7 +888,7 @@ export const StepView: React.FC<StepViewProps> = ({
 
   // --- CUSTOM RENDER FOR STEP 11 & 12 ---
   let customRenderer: React.ReactElement | null = null;
-  const journeyId: string = state.backendId ?? "";
+  const journeyId: string = state.backendId || (state as any).journeyId || "";
   if (sId === "step_1_15" && currentStep.tool_data) {
     customRenderer = (
       <RegisterReceiptStep

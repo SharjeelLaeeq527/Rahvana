@@ -330,7 +330,7 @@ export default function CropTool({
       onApplyCrop(finalImageData);
     } catch (error) {
       console.error("Crop error:", error);
-      alert(Errors.msg(Errors.E.PDF_CROP_FAILED));
+      showToast(Errors.msg(Errors.E.PDF_CROP_FAILED), "error");
     }
   };
 
