@@ -3,6 +3,8 @@
 import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
 import { Caveat } from "next/font/google";
 import * as Icons from "lucide-react";
+import { ToolsDock } from "./ToolDock";
+import HeroSection from "./herosection";
 
 const caveat = Caveat({
   subsets: ["latin"],
@@ -415,12 +417,7 @@ const CARD_OFFSET_CLASS = "md:-translate-x-12";
 export default function RoadmapPage() {
   return (
     <div className={`w-full min-h-screen bg-slate-50/50 pb-20 ${caveat.variable}`}>
-      <div className="w-full min-h-screen flex flex-col items-center justify-center relative overflow-hidden bg-linear-to-br from-teal-500/10 via-transparent to-amber-500/10 border-b border-slate-100">
-        <div className="absolute inset-0 guide-grid-bg opacity-30 pointer-events-none" />
-        <div className="text-center px-4 relative z-10 max-w-2xl">
-          <h2 className="text-slate-400 text-xl font-medium mt-4">[Hero Section Placeholder]</h2>
-        </div>
-      </div>
+      <HeroSection />
 
       <RoadmapProvider>
         <div className="max-w-5xl mx-auto px-6 mt-12 relative">
@@ -810,6 +807,9 @@ export default function RoadmapPage() {
           </div>
         </div>
       </RoadmapProvider>
+
+      {/* SECTION — Toolkit / ToolDock */}
+      <ToolsDock />
     </div>
   );
 }
