@@ -619,7 +619,8 @@ export default function RoadmapPage() {
                   Rahvana tells you exactly what documents you need.
                 </h3>
                 <p className="text-slate-500 text-base md:text-lg leading-relaxed">
-                  Track required documents, upload your files, and keep everything organized in one place.
+                  Track required documents, upload your files, and keep everything organized in one
+                  place.
                 </p>
               </ScrollReveal>
             </div>
@@ -786,7 +787,12 @@ export default function RoadmapPage() {
             <div className="col-span-12 md:col-span-7 flex justify-center">
               <ScrollReveal delayClass="reveal-delay-1">
                 <RoadmapAnchor id="14" color="rose" className={`inline-block ${CARD_OFFSET_CLASS}`}>
-                  <div className="bg-white h-[300px] w-[500px] border border-slate-200 shadow-xl rounded-2xl p-5 max-w-sm group hover:border-rose-500/20 transition-all duration-300 relative overflow-hidden" />
+                  <AnimationCard
+                    file="rahvana_interview_anxiety_final.html"
+                    title="Interview anxiety — what if I forget?"
+                    w={480}
+                    h={460}
+                  />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
@@ -807,7 +813,12 @@ export default function RoadmapPage() {
             <div className="col-span-12 md:col-span-7 flex justify-center">
               <ScrollReveal delayClass="reveal-delay-2">
                 <RoadmapAnchor id="15" color="rose" className={`inline-block ${CARD_OFFSET_CLASS}`}>
-                  <div className="bg-white h-[300px] w-[500px] border border-slate-200 shadow-xl rounded-2xl p-5 max-w-sm group hover:border-rose-500/20 transition-all duration-300" />
+                  <AnimationCard
+                    file="rahvana_visa_prep_animation.html"
+                    title="Rahvana helps you prepare with confidence"
+                    w={560}
+                    h={480}
+                  />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
