@@ -19,6 +19,7 @@ import {
   CreditCard,
   ShoppingBag,
   Sparkles,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/spinner";
@@ -2689,16 +2690,17 @@ const ConsultationBookingPageContent = () => {
                   {userBookings.map((booking: Booking) => (
                     <div
                       key={booking.id}
-                      className="border border-gray-100 rounded-xl p-5 hover:border-teal-200 hover:shadow-md transition bg-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+                      className="border border-gray-100 rounded-2xl p-5 hover:border-teal-200 hover:shadow-md transition bg-white flex flex-col gap-4"
                     >
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-mono text-xs font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded">
+                      {/* Top Header Row */}
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-gray-100 pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-md">
                             {booking.reference_id}
                           </span>
                           <span
                             className={cn(
-                              "text-[10px] uppercase font-black px-2 py-0.5 rounded flex items-center gap-1",
+                              "text-[10px] uppercase font-black px-2.5 py-1 rounded-md flex items-center gap-1",
                               booking.status === "confirmed"
                                 ? "bg-green-100 text-green-700"
                                 : booking.status === "pending_approval"
@@ -2711,61 +2713,73 @@ const ConsultationBookingPageContent = () => {
                             {booking.status?.replace("_", " ")}
                           </span>
                         </div>
-                        <h4 className="font-bold text-gray-900">{booking.full_name}</h4>
-                        <p className="text-sm text-gray-500">
-                          {booking.visa_category} • {booking.issue_category}
-                        </p>
-                      </div>
-                      <div className="text-right flex flex-col items-end gap-2">
-                        <div>
-                          <p className="text-xs text-gray-400 mb-1">Requested Date</p>
-                          <p className="text-sm font-medium">
+                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                          <span className="font-medium text-gray-400">Requested Date:</span>
+                          <span className="font-semibold text-gray-750 bg-gray-50 px-2 py-0.5 rounded">
                             {new Date(booking.selected_slot).toLocaleString(undefined, {
                               month: "short",
                               day: "numeric",
                               hour: "numeric",
                               minute: "2-digit",
                             })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content Row */}
+                      <div className="space-y-3">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                            Applicant
+                          </p>
+                          <h4 className="font-extrabold text-base text-gray-900 leading-tight">
+                            {booking.full_name}
+                          </h4>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Case Stage:{" "}
+                            <span className="font-semibold text-gray-700">
+                              {booking.visa_category} • {booking.issue_category}
+                            </span>
                           </p>
                         </div>
 
-                        {booking.status === "alternatives_proposed" &&
-                          booking.alternate_slots &&
-                          booking.alternate_slots.length > 0 && (
-                            <div className="mt-4 p-4 bg-teal-50 rounded-xl border border-teal-100 text-left w-full sm:w-auto">
-                              <p className="text-[10px] font-black uppercase text-teal-700 mb-2">
-                                Alternative Slots Proposed:
-                              </p>
-                              <div className="flex flex-wrap gap-2">
-                                {booking.alternate_slots.map((slot: string, idx: number) => (
-                                  <Button
-                                    key={idx}
-                                    onClick={() =>
-                                      handleAcceptAlternative(booking.id, new Date(slot))
-                                    }
-                                    variant="outline"
-                                    className="text-[10px] py-1 h-auto bg-white hover:bg-teal-600 hover:text-white transition-colors"
-                                  >
-                                    {new Date(slot).toLocaleDateString(undefined, {
-                                      month: "short",
-                                      day: "numeric",
-                                    })}{" "}
-                                    @{" "}
-                                    {new Date(slot).toLocaleTimeString([], {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })}
-                                  </Button>
-                                ))}
-                              </div>
-                              {booking.admin_notes && (
-                                <p className="mt-2 text-[10px] text-teal-800 italic">
-                                  <strong>Note:</strong> {booking.admin_notes}
-                                </p>
-                              )}
-                            </div>
-                          )}
+                        {booking.admin_notes && (
+                          <CollapsibleAdminNotes notes={booking.admin_notes} />
+                        )}
                       </div>
+
+                      {/* Alternatives Row */}
+                      {booking.status === "alternatives_proposed" &&
+                        booking.alternate_slots &&
+                        booking.alternate_slots.length > 0 && (
+                          <div className="mt-1 p-4 bg-purple-50 rounded-xl border border-purple-100">
+                            <p className="text-[10px] font-black uppercase text-purple-750 mb-2">
+                              Alternative Slots Proposed by Admin:
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {booking.alternate_slots.map((slot: string, idx: number) => (
+                                <Button
+                                  key={idx}
+                                  onClick={() =>
+                                    handleAcceptAlternative(booking.id, new Date(slot))
+                                  }
+                                  variant="outline"
+                                  className="text-[10px] py-1.5 px-3 h-auto bg-white hover:bg-purple-650 hover:text-white hover:border-purple-650 transition-colors border-purple-200 text-purple-755 font-semibold"
+                                >
+                                  {new Date(slot).toLocaleDateString(undefined, {
+                                    month: "short",
+                                    day: "numeric",
+                                  })}{" "}
+                                  @{" "}
+                                  {new Date(slot).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                     </div>
                   ))}
                 </div>
@@ -2999,14 +3013,16 @@ const ConsultationBookingPageContent = () => {
 
 export default function ConsultationBookingPage() {
   return (
-    <React.Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
-          <p className="text-gray-500 font-medium">Loading Booking System...</p>
+    <React.Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-gray-500 font-medium">Loading Booking System...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <ConsultationBookingPageContent />
     </React.Suspense>
   );
@@ -3052,3 +3068,27 @@ const Button: React.FC<ButtonProps> = ({
     </button>
   );
 };
+
+// --- Collapsible Admin Notes component ---
+function CollapsibleAdminNotes({ notes }: { notes: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="mt-2 border border-teal-100 rounded-lg overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-3 py-2 bg-teal-50/70 hover:bg-teal-50 text-xs font-bold text-teal-800 transition-colors focus:outline-none"
+      >
+        <span>Admin Note</span>
+        <ChevronDown
+          className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+      {isOpen && (
+        <div className="px-3 py-2.5 bg-white text-xs text-slate-700 border-t border-teal-50 leading-relaxed">
+          {notes}
+        </div>
+      )}
+    </div>
+  );
+}

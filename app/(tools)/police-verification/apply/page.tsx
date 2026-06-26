@@ -260,7 +260,7 @@ function PoliceApplyContent() {
           receive a confirmation once the process is completed.
         </p>
         <div className="flex justify-center gap-4">
-          <Link href={"/user-dashboard"}>
+          <Link href={"/resources?tab=services"}>
             <Button onClick={() => {}} className="bg-teal-600 hover:bg-teal-700 text-white">
               Check Status
             </Button>
