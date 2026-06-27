@@ -4,7 +4,12 @@ import { useEffect, useRef, useState } from "react";
 
 /**
  * Embeds one of the self-contained HTML animations from
- * `/public/animation_videos/` as a decorative, CSS-isolated card.
+ * `/public/animation_videos/` as a borderless, CSS-isolated element.
+ *
+ * The wrapper has NO card chrome (no border, shadow, or rounded corners).
+ * The animation body/wrap backgrounds are forced transparent so each
+ * animation's internal styling (notebooks, cards, etc.) floats directly
+ * on the page background, producing a seamless, consistent look.
  *
  * Why fetch + `srcDoc` instead of `<iframe src=...>`:
  * the site sets `X-Frame-Options: DENY` on every route (next.config.mjs),
@@ -15,20 +20,19 @@ import { useEffect, useRef, useState } from "react";
  *
  * Sizing (contain model): each animation is authored at a fixed logical size
  * (`w` x `h`). We fit it inside a max box (`maxW` x `maxH`) preserving aspect
- * ratio — so wide/landscape animations cap on width (and get a shorter card,
- * no letterbox) while tall ones cap on height. The card never exceeds `maxW`,
- * keeping it inside its layout column so it can't overlap the section text.
- * On smaller screens `maxWidth: 100%` shrinks it to the column and a
+ * ratio — so wide/landscape animations cap on width while tall ones cap on
+ * height. On smaller screens `maxWidth: 100%` shrinks it to the column and a
  * ResizeObserver rescales the iframe to match.
  */
 export default function AnimationCard({
   file,
   w,
   h,
-  maxW = 460,
+  maxW = 500,
   maxH = 430,
   className = "",
   title,
+  bgClass = "bg-transparent",
 }: {
   file: string;
   w: number;
@@ -37,6 +41,7 @@ export default function AnimationCard({
   maxH?: number;
   className?: string;
   title?: string;
+  bgClass?: string;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [boxW, setBoxW] = useState(0);
@@ -44,12 +49,16 @@ export default function AnimationCard({
 
   const src = `/animation_videos/${encodeURIComponent(file)}`;
 
+  // Inject a tiny stylesheet that forces the outermost layers transparent
+  // so animations blend into the page instead of showing their own bg.
+  const TRANSPARENT_CSS = "<style>body,html,.wrap{background:transparent!important;}</style>";
+
   useEffect(() => {
     let cancelled = false;
     fetch(src)
       .then((r) => (r.ok ? r.text() : Promise.reject(r.status)))
       .then((t) => {
-        if (!cancelled) setHtml(t);
+        if (!cancelled) setHtml(TRANSPARENT_CSS + t);
       })
       .catch(() => {
         /* leave blank on failure */
@@ -82,7 +91,7 @@ export default function AnimationCard({
   return (
     <div
       ref={wrapRef}
-      className={`relative mx-auto overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xl ${className}`}
+      className={`relative z-10 mx-auto overflow-hidden ${bgClass} ${className}`}
       style={{ width: dispW, maxWidth: "100%", height }}
     >
       <iframe

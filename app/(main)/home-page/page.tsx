@@ -605,6 +605,7 @@ export default function RoadmapPage() {
                     title="Gathering documents is confusing"
                     w={380}
                     h={440}
+                    bgClass="bg-slate-50 border border-slate-200/40 rounded-2xl shadow-sm"
                   />
                 </RoadmapAnchor>
               </ScrollReveal>
@@ -715,6 +716,7 @@ export default function RoadmapPage() {
                     title="Worrying about whether you financially qualify"
                     w={460}
                     h={360}
+                    bgClass="bg-slate-50 border border-slate-200/40 rounded-2xl shadow-sm"
                   />
                 </RoadmapAnchor>
               </ScrollReveal>
@@ -791,7 +793,7 @@ export default function RoadmapPage() {
                     file="rahvana_interview_anxiety_final.html"
                     title="Interview anxiety — what if I forget?"
                     w={480}
-                    h={460}
+                    h={520}
                   />
                 </RoadmapAnchor>
               </ScrollReveal>
