@@ -1144,3 +1144,8 @@
   background: var(--pill, var(--primary));
   color: #fff;
 }
+
+/* Prevent CSS Grid items from expanding beyond viewport width on mobile */
+.grid > * {
+  min-width: 0;
+}
