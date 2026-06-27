@@ -74,41 +74,6 @@ export default function AnimationCard({
           background: transparent !important;
         }
       </style>
-      <script>
-        (function() {
-          var designW = ${w};
-          var isZoomSupported = 'zoom' in document.documentElement.style || (window.CSS && CSS.supports && CSS.supports('zoom', '1'));
-
-          function applyScale(scaleVal) {
-            var body = document.body;
-            if (!body) return;
-            if (isZoomSupported) {
-              body.style.zoom = scaleVal;
-              body.style.transform = '';
-            } else {
-              body.style.transform = 'scale(' + scaleVal + ')';
-              body.style.transformOrigin = 'top left';
-            }
-          }
-
-          function applyInitial() {
-            var body = document.body;
-            if (body) {
-              var initialScale = window.innerWidth / designW;
-              applyScale(initialScale);
-            } else {
-              setTimeout(applyInitial, 5);
-            }
-          }
-          applyInitial();
-
-          window.addEventListener('message', function(event) {
-            if (event.data && typeof event.data.scale === 'number') {
-              applyScale(event.data.scale);
-            }
-          });
-        })();
-      </script>
     `;
   }, [w, h]);
 
@@ -147,20 +112,6 @@ export default function AnimationCard({
   const height = boxW ? Math.round((boxW * h) / w) : Math.round(h * capScale);
   const ready = scale > 0 && html !== null;
 
-  // Send scale to iframe when scale changes
-  useEffect(() => {
-    const iframe = iframeRef.current;
-    if (!iframe || !iframe.contentWindow || !ready) return;
-    iframe.contentWindow.postMessage({ scale }, "*");
-  }, [scale, ready]);
-
-  const handleLoad = () => {
-    const iframe = iframeRef.current;
-    if (iframe && iframe.contentWindow && ready) {
-      iframe.contentWindow.postMessage({ scale }, "*");
-    }
-  };
-
   return (
     <div
       ref={wrapRef}
@@ -176,10 +127,11 @@ export default function AnimationCard({
         aria-hidden="true"
         sandbox="allow-scripts"
         className="absolute left-0 top-0 border-0 pointer-events-none select-none"
-        onLoad={handleLoad}
         style={{
-          width: "100%",
-          height: "100%",
+          width: w,
+          height: h,
+          transform: `scale(${scale})`,
+          transformOrigin: "top left",
           opacity: ready ? 1 : 0,
           transition: "opacity 0.35s ease",
         }}
