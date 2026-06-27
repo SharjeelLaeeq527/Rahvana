@@ -285,9 +285,11 @@ function RoadmapAnchor({
 function ScrollReveal({
   children,
   delayClass = "",
+  className = "",
 }: {
   children: React.ReactNode;
   delayClass?: string;
+  className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -310,7 +312,7 @@ function ScrollReveal({
   }, []);
 
   return (
-    <div ref={ref} className={`reveal ${delayClass} ${visible ? "visible" : ""}`}>
+    <div ref={ref} className={`reveal ${delayClass} ${visible ? "visible" : ""} ${className}`}>
       {children}
     </div>
   );
@@ -447,7 +449,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 relative h-48 flex items-center justify-center">
+            <div className="hidden md:block col-span-12 md:col-span-7 relative h-48 flex items-center justify-center">
               <Annotation text="A clear path. No more guessing." direction="right" />
               <RoadmapAnchor
                 id="01"
@@ -493,8 +495,12 @@ export default function RoadmapPage() {
               </ScrollReveal>
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-1">
-                <RoadmapAnchor id="03" color="teal" className={`inline-block ${CARD_OFFSET_CLASS}`}>
+              <ScrollReveal delayClass="reveal-delay-1" className="w-full flex justify-center">
+                <RoadmapAnchor
+                  id="03"
+                  color="teal"
+                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                >
                   <AnimationCard
                     file="wait... section animation final.html"
                     title="Immigration forms feel overwhelming"
@@ -519,8 +525,12 @@ export default function RoadmapPage() {
               </ScrollReveal>
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-2">
-                <RoadmapAnchor id="04" color="teal" className={`inline-block ${CARD_OFFSET_CLASS}`}>
+              <ScrollReveal delayClass="reveal-delay-2" className="w-full flex justify-center">
+                <RoadmapAnchor
+                  id="04"
+                  color="teal"
+                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                >
                   <AnimationCard
                     file="visa form solution final.html"
                     title="Rahvana breaks the form down section by section"
@@ -594,11 +604,11 @@ export default function RoadmapPage() {
               </ScrollReveal>
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-1">
+              <ScrollReveal delayClass="reveal-delay-1" className="w-full flex justify-center">
                 <RoadmapAnchor
                   id="07"
                   color="amber"
-                  className={`inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
                   <AnimationCard
                     file="document_gathering_problem option 1 final.html"
@@ -626,11 +636,11 @@ export default function RoadmapPage() {
               </ScrollReveal>
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-2">
+              <ScrollReveal delayClass="reveal-delay-2" className="w-full flex justify-center">
                 <RoadmapAnchor
                   id="08"
                   color="amber"
-                  className={`inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
                   <AnimationCard
                     file="rahvana-document-vault-v3 final.html"
@@ -705,11 +715,11 @@ export default function RoadmapPage() {
               </ScrollReveal>
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-1">
+              <ScrollReveal delayClass="reveal-delay-1" className="w-full flex justify-center">
                 <RoadmapAnchor
                   id="11"
                   color="purple"
-                  className={`inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
                   <AnimationCard
                     file="rahvana_sponsorship_anxiety_v4 final.html"
@@ -736,11 +746,11 @@ export default function RoadmapPage() {
               </ScrollReveal>
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-2">
+              <ScrollReveal delayClass="reveal-delay-2" className="w-full flex justify-center">
                 <RoadmapAnchor
                   id="12"
                   color="purple"
-                  className={`inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
                   <AnimationCard
                     file="sponsorship calculator solution final.html"
@@ -787,8 +797,12 @@ export default function RoadmapPage() {
               </ScrollReveal>
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-1">
-                <RoadmapAnchor id="14" color="rose" className={`inline-block ${CARD_OFFSET_CLASS}`}>
+              <ScrollReveal delayClass="reveal-delay-1" className="w-full flex justify-center">
+                <RoadmapAnchor
+                  id="14"
+                  color="rose"
+                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                >
                   <AnimationCard
                     file="rahvana_interview_anxiety_final.html"
                     title="Interview anxiety — what if I forget?"
@@ -813,8 +827,12 @@ export default function RoadmapPage() {
               </ScrollReveal>
             </div>
             <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-2">
-                <RoadmapAnchor id="15" color="rose" className={`inline-block ${CARD_OFFSET_CLASS}`}>
+              <ScrollReveal delayClass="reveal-delay-2" className="w-full flex justify-center">
+                <RoadmapAnchor
+                  id="15"
+                  color="rose"
+                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                >
                   <AnimationCard
                     file="rahvana_visa_prep_animation.html"
                     title="Rahvana helps you prepare with confidence"
