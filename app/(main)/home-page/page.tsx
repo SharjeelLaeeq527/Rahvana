@@ -413,7 +413,7 @@ function NodeCircle({
 // anchors above/below it -- this is what gives the line a real
 // horizontal swing to curve through, instead of a vertical straight
 // line. Direction is fixed (not alternating) per your last request.
-const CARD_OFFSET_CLASS = "md:-translate-x-12";
+const CARD_OFFSET_CLASS = "md:-ml-12";
 
 export default function RoadmapPage() {
   return (

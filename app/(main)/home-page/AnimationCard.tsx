@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 /**
  * Embeds one of the self-contained HTML animations from
@@ -44,21 +44,80 @@ export default function AnimationCard({
   bgClass?: string;
 }) {
   const wrapRef = useRef<HTMLDivElement>(null);
+  const iframeRef = useRef<HTMLIFrameElement>(null);
   const [boxW, setBoxW] = useState(0);
   const [html, setHtml] = useState<string | null>(null);
 
   const src = `/animation_videos/${encodeURIComponent(file)}`;
 
-  // Inject a tiny stylesheet that forces the outermost layers transparent
-  // so animations blend into the page instead of showing their own bg.
-  const TRANSPARENT_CSS = "<style>body,html,.wrap{background:transparent!important;}</style>";
+  // Inject a stylesheet and script to scale the iframe contents internally.
+  // We use CSS zoom as the primary method because it is layout-aware and scales
+  // vector paths/fonts dynamically before rasterization, resulting in perfect
+  // crispness. We keep transform scale as a progressive-enhancement fallback.
+  const injectedHead = useMemo(() => {
+    return `
+      <style>
+        html, body {
+          background: transparent !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          overflow: hidden !important;
+          width: ${w}px !important;
+          height: ${h}px !important;
+          min-height: 0 !important;
+          max-height: ${h}px !important;
+          -webkit-font-smoothing: subpixel-antialiased !important;
+          -moz-osx-font-smoothing: auto !important;
+          text-rendering: optimizeLegibility !important;
+        }
+        .wrap {
+          background: transparent !important;
+        }
+      </style>
+      <script>
+        (function() {
+          var designW = ${w};
+          var isZoomSupported = 'zoom' in document.documentElement.style || (window.CSS && CSS.supports && CSS.supports('zoom', '1'));
+
+          function applyScale(scaleVal) {
+            var body = document.body;
+            if (!body) return;
+            if (isZoomSupported) {
+              body.style.zoom = scaleVal;
+              body.style.transform = '';
+            } else {
+              body.style.transform = 'scale(' + scaleVal + ')';
+              body.style.transformOrigin = 'top left';
+            }
+          }
+
+          function applyInitial() {
+            var body = document.body;
+            if (body) {
+              var initialScale = window.innerWidth / designW;
+              applyScale(initialScale);
+            } else {
+              setTimeout(applyInitial, 5);
+            }
+          }
+          applyInitial();
+
+          window.addEventListener('message', function(event) {
+            if (event.data && typeof event.data.scale === 'number') {
+              applyScale(event.data.scale);
+            }
+          });
+        })();
+      </script>
+    `;
+  }, [w, h]);
 
   useEffect(() => {
     let cancelled = false;
     fetch(src)
       .then((r) => (r.ok ? r.text() : Promise.reject(r.status)))
       .then((t) => {
-        if (!cancelled) setHtml(TRANSPARENT_CSS + t);
+        if (!cancelled) setHtml(injectedHead + t);
       })
       .catch(() => {
         /* leave blank on failure */
@@ -66,7 +125,7 @@ export default function AnimationCard({
     return () => {
       cancelled = true;
     };
-  }, [src]);
+  }, [src, injectedHead]);
 
   useEffect(() => {
     const el = wrapRef.current;
@@ -88,6 +147,20 @@ export default function AnimationCard({
   const height = boxW ? Math.round((boxW * h) / w) : Math.round(h * capScale);
   const ready = scale > 0 && html !== null;
 
+  // Send scale to iframe when scale changes
+  useEffect(() => {
+    const iframe = iframeRef.current;
+    if (!iframe || !iframe.contentWindow || !ready) return;
+    iframe.contentWindow.postMessage({ scale }, "*");
+  }, [scale, ready]);
+
+  const handleLoad = () => {
+    const iframe = iframeRef.current;
+    if (iframe && iframe.contentWindow && ready) {
+      iframe.contentWindow.postMessage({ scale }, "*");
+    }
+  };
+
   return (
     <div
       ref={wrapRef}
@@ -95,6 +168,7 @@ export default function AnimationCard({
       style={{ width: dispW, maxWidth: "100%", height }}
     >
       <iframe
+        ref={iframeRef}
         srcDoc={html ?? ""}
         title={title || file}
         scrolling="no"
@@ -102,11 +176,10 @@ export default function AnimationCard({
         aria-hidden="true"
         sandbox="allow-scripts"
         className="absolute left-0 top-0 border-0 pointer-events-none select-none"
+        onLoad={handleLoad}
         style={{
-          width: w,
-          height: h,
-          transformOrigin: "top left",
-          transform: `scale(${scale || 0.0001})`,
+          width: "100%",
+          height: "100%",
           opacity: ready ? 1 : 0,
           transition: "opacity 0.35s ease",
         }}
