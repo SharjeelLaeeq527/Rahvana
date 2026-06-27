@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
-import { motion } from "motion/react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { AnimatePresence, motion } from "motion/react";
 import {
   Camera,
   FileText,
@@ -259,7 +259,7 @@ const tools: Tool[] = [
 ];
 
 const AUTOPLAY_MS = 8000;
-const VISIBLE = 7; // odd number — active is centered
+const VISIBLE = 5; // odd number — active is centered
 
 export function ToolsDock() {
   const [index, setIndex] = useState(0);
@@ -419,16 +419,27 @@ function CurvedDock({
   activeIndex: number;
   onSelect: (i: number) => void;
 }) {
-  // Windowed view: show only VISIBLE items, centered on active
+  const half = Math.floor(VISIBLE / 2);
+
+  // Track direction of spin: +1 = forward (right→left), -1 = backward (left→right)
+  const prevIndexRef = useRef(activeIndex);
+  const dirRef = useRef<1 | -1>(1);
+  if (prevIndexRef.current !== activeIndex) {
+    // Detect shortest-path direction around the ring
+    const fwd = (activeIndex - prevIndexRef.current + tools.length) % tools.length;
+    dirRef.current = fwd <= tools.length / 2 ? 1 : -1;
+    prevIndexRef.current = activeIndex;
+  }
+
+  // Visible window keyed by tool.id so Framer Motion tracks across renders
   const visibleItems = useMemo(() => {
-    const half = Math.floor(VISIBLE / 2);
     const out: { tool: Tool; idx: number; offset: number }[] = [];
     for (let o = -half; o <= half; o++) {
       const idx = (activeIndex + o + tools.length) % tools.length;
       out.push({ tool: tools[idx], idx, offset: o });
     }
     return out;
-  }, [activeIndex, tools]);
+  }, [activeIndex, tools, half]);
 
   const width = 680;
   const height = 110;
@@ -437,8 +448,32 @@ function CurvedDock({
   const r = cy - 25;
   const slot = (width - 80) / (VISIBLE - 1);
 
-  const prev = () =>
-    onSelect((activeIndex - 1 + tools.length) % tools.length);
+  /** Convert an offset (-half … +half) to { left%, top } along the arc */
+  const arcPos = (offset: number, isActive: boolean) => {
+    const x = cx + offset * slot;
+    const dx = x - cx;
+    const y = cy - Math.sqrt(r * r - dx * dx);
+    const half2 = isActive ? 28 : 22;
+    return {
+      left: `calc(${(x / width) * 100}% - ${half2}px)`,
+      top: `${y - half2}px`,
+    };
+  };
+
+  /** Off-screen entry / exit position — one slot beyond the edge of the arc */
+  const edgePos = (side: "left" | "right") => {
+    const edgeOffset = side === "right" ? half + 1.5 : -(half + 1.5);
+    const x = cx + edgeOffset * slot;
+    const clamped = Math.min(Math.abs(x - cx), r - 1);
+    const dx = x > cx ? clamped : -clamped;
+    const y = cy - Math.sqrt(r * r - dx * dx);
+    return {
+      left: `calc(${(x / width) * 100}% - 22px)`,
+      top: `${y - 22}px`,
+    };
+  };
+
+  const prev = () => onSelect((activeIndex - 1 + tools.length) % tools.length);
   const next = () => onSelect((activeIndex + 1) % tools.length);
 
   return (
@@ -452,6 +487,7 @@ function CurvedDock({
       </button>
 
       <div className="relative flex-1 overflow-visible">
+        {/* Arc guide line */}
         <svg
           viewBox={`0 0 ${width} ${height}`}
           className="block h-[110px] w-full"
@@ -466,46 +502,61 @@ function CurvedDock({
             strokeWidth={1}
           />
         </svg>
+
+        {/* Icons — each keyed by tool.id so Framer animates them along the arc */}
         <div className="absolute inset-0">
-          {visibleItems.map(({ tool, idx, offset }) => {
-            const x = cx + offset * slot;
-            const dx = x - cx;
-            const y = cy - Math.sqrt(r * r - dx * dx);
-            const isActive = idx === activeIndex;
-            const dist = Math.abs(offset);
-            const opacity = 1 - dist * 0.18;
-            return (
-              <motion.button
-                key={`${tool.id}-${offset}`}
-                layout
-                onClick={() => onSelect(idx)}
-                aria-label={tool.name}
-                aria-pressed={isActive}
-                initial={{ opacity: 0, scale: 0.6 }}
-                animate={{
-                  opacity,
-                  scale: isActive ? 1.3 : 1 - dist * 0.06,
-                  left: `calc(${(x / width) * 100}% - 22px)`,
-                  top: `${y - 22}px`,
-                }}
-                transition={{ type: "spring", stiffness: 280, damping: 24 }}
-                className="group absolute"
-              >
-                <div
-                  className={`flex h-11 w-11 items-center justify-center rounded-2xl border border-black/[0.05] ${tool.tint} ${
-                    isActive
-                      ? "shadow-[0_14px_30px_-10px_rgba(0,0,0,0.28)]"
-                      : ""
-                  }`}
+          <AnimatePresence initial={false}>
+            {visibleItems.map(({ tool, idx, offset }) => {
+              const isActive = idx === activeIndex;
+              const dist = Math.abs(offset);
+              const opacity = 1 - dist * 0.18;
+              const pos = arcPos(offset, isActive);
+
+              // Entering from the side the wheel is spinning FROM
+              const enterSide = dirRef.current === 1 ? "right" : "left";
+              const exitSide = dirRef.current === 1 ? "left" : "right";
+              const enterPos = edgePos(enterSide);
+              const exitPos = edgePos(exitSide);
+
+              return (
+                <motion.button
+                  key={tool.id}
+                  onClick={() => onSelect(idx)}
+                  aria-label={tool.name}
+                  aria-pressed={isActive}
+                  initial={{ opacity: 0, left: enterPos.left, top: enterPos.top, scale: 0.7 }}
+                  animate={{
+                    opacity,
+                    left: pos.left,
+                    top: pos.top,
+                    scale: 1,
+                  }}
+                  exit={{ opacity: 0, left: exitPos.left, top: exitPos.top, scale: 0.7 }}
+                  transition={{ type: "spring", stiffness: 240, damping: 26 }}
+                  className="group absolute"
                 >
-                  <tool.Icon className={`h-5 w-5 ${tool.accent}`} />
-                </div>
-                <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-900 px-2 py-1 text-[10px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
-                  {tool.name}
-                </span>
-              </motion.button>
-            );
-          })}
+                  <div
+                    className={`flex items-center justify-center border border-black/[0.05] ${
+                      tool.tint
+                    } transition-all duration-300 ${
+                      isActive
+                        ? "h-14 w-14 rounded-3xl shadow-[0_18px_36px_-12px_rgba(0,0,0,0.32)]"
+                        : "h-11 w-11 rounded-2xl"
+                    }`}
+                  >
+                    <tool.Icon
+                      className={`transition-all duration-300 ${
+                        isActive ? `h-7 w-7 ${tool.accent}` : `h-5 w-5 ${tool.accent}`
+                      }`}
+                    />
+                  </div>
+                  <span className="pointer-events-none absolute -top-8 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-md bg-zinc-900 px-2 py-1 text-[10px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+                    {tool.name}
+                  </span>
+                </motion.button>
+              );
+            })}
+          </AnimatePresence>
         </div>
       </div>
 
