@@ -439,7 +439,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 2 — leaf start node (anchor "01") */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
                   Let&apos;s take it one step at a time.
@@ -463,7 +463,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 3 — Petition node (anchor "02") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
                   Everything starts with the petition.
@@ -473,7 +473,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
+            <div className="col-span-12 md:col-span-7 flex justify-center min-w-0">
               <ScrollReveal>
                 <RoadmapAnchor id="02" color="teal" className="inline-block">
                   <NodeCircle icon={Icons.FileText} label="Petition" color="teal" />
@@ -484,7 +484,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 4 — card placeholder (anchor "03") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
                   Wait... these forms look complicated.
@@ -494,12 +494,12 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-1" className="w-full flex justify-center">
+            <div className="col-span-12 md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal delayClass="reveal-delay-1" className="w-full flex justify-center min-w-0">
                 <RoadmapAnchor
                   id="03"
                   color="teal"
-                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
                   <AnimationCard
                     file="wait... section animation final.html"
@@ -514,7 +514,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 5 — card placeholder (anchor "04") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
                   Rahvana breaks it down for you.
@@ -524,12 +524,12 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-2" className="w-full flex justify-center">
+            <div className="col-span-12 md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal delayClass="reveal-delay-2" className="w-full flex justify-center min-w-0">
                 <RoadmapAnchor
                   id="04"
                   color="teal"
-                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
                   <AnimationCard
                     file="visa form solution final.html"
@@ -544,7 +544,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 6 — Check node (anchor "05") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
                   That wasn&apos;t so bad.
@@ -572,7 +572,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 7 — Documents node (anchor "06") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
                   What&apos;s next?
@@ -582,7 +582,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
+            <div className="col-span-12 md:col-span-7 flex justify-center min-w-0">
               <ScrollReveal>
                 <RoadmapAnchor id="06" color="amber" className="inline-block">
                   <NodeCircle icon={Icons.FolderOpen} label="Documents" color="amber" />
@@ -593,7 +593,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 8 — card placeholder (anchor "07") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
                   So many documents... what if I miss something important?
@@ -603,12 +603,12 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-1" className="w-full flex justify-center">
+            <div className="col-span-12 md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal delayClass="reveal-delay-1" className="w-full flex justify-center min-w-0">
                 <RoadmapAnchor
                   id="07"
                   color="amber"
-                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
                   <AnimationCard
                     file="document_gathering_problem option 1 final.html"
@@ -624,7 +624,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 9 — card placeholder (anchor "08") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
                   Rahvana tells you exactly what documents you need.
@@ -635,12 +635,12 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-2" className="w-full flex justify-center">
+            <div className="col-span-12 md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal delayClass="reveal-delay-2" className="w-full flex justify-center min-w-0">
                 <RoadmapAnchor
                   id="08"
                   color="amber"
-                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
                   <AnimationCard
                     file="rahvana-document-vault-v3 final.html"
@@ -655,7 +655,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 10 — FolderCheck node (anchor "09") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
                   Finally, I know I have everything.
@@ -683,7 +683,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 11 — Finance node (anchor "10") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
                   Next up, the financial part.
@@ -693,7 +693,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
+            <div className="col-span-12 md:col-span-7 flex justify-center min-w-0">
               <ScrollReveal>
                 <RoadmapAnchor id="10" color="purple" className="inline-block">
                   <NodeCircle icon={Icons.Calculator} label="Finance" color="purple" />
@@ -704,7 +704,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 12 — card placeholder (anchor "11") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
                   Do I qualify? What if I don&apos;t make enough?
@@ -714,12 +714,12 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-1" className="w-full flex justify-center">
+            <div className="col-span-12 md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal delayClass="reveal-delay-1" className="w-full flex justify-center min-w-0">
                 <RoadmapAnchor
                   id="11"
                   color="purple"
-                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
                   <AnimationCard
                     file="rahvana_sponsorship_anxiety_v4 final.html"
@@ -735,7 +735,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 13 — card placeholder (anchor "12") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
                   Rahvana gives you a clear answer.
@@ -745,12 +745,12 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-2" className="w-full flex justify-center">
+            <div className="col-span-12 md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal delayClass="reveal-delay-2" className="w-full flex justify-center min-w-0">
                 <RoadmapAnchor
                   id="12"
                   color="purple"
-                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
                   <AnimationCard
                     file="sponsorship calculator solution final.html"
@@ -765,7 +765,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 14 — Interview node (anchor "13") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
                   Almost there.
@@ -775,7 +775,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
+            <div className="col-span-12 md:col-span-7 flex justify-center min-w-0">
               <ScrollReveal>
                 <RoadmapAnchor id="13" color="rose" className="inline-block">
                   <NodeCircle icon={Icons.Users} label="Interview" color="rose" />
@@ -786,7 +786,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 15 — card placeholder (anchor "14") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
                   The interview makes me nervous.
@@ -796,12 +796,12 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-1" className="w-full flex justify-center">
+            <div className="col-span-12 md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal delayClass="reveal-delay-1" className="w-full flex justify-center min-w-0">
                 <RoadmapAnchor
                   id="14"
                   color="rose"
-                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
                   <AnimationCard
                     file="rahvana_interview_anxiety_final.html"
@@ -816,7 +816,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 16 — card placeholder (anchor "15") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="col-span-12 md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
                   Rahvana helps you prepare with confidence.
@@ -826,12 +826,12 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-2" className="w-full flex justify-center">
+            <div className="col-span-12 md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal delayClass="reveal-delay-2" className="w-full flex justify-center min-w-0">
                 <RoadmapAnchor
                   id="15"
                   color="rose"
-                  className={`w-full flex justify-center md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
                   <AnimationCard
                     file="rahvana_visa_prep_animation.html"
@@ -846,7 +846,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 17 — final Welcome node (anchor "16") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-6 md:pr-6">
+            <div className="col-span-12 md:col-span-6 md:pr-6 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-4 leading-tight">
                   Navigate your spouse visa journey with clarity and confidence
@@ -858,7 +858,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-6 relative flex justify-center">
+            <div className="col-span-12 md:col-span-6 relative flex justify-center min-w-0">
               <ScrollReveal>
                 <RoadmapAnchor id="16" color="green" className="inline-block">
                   <NodeCircle icon={Icons.ThumbsUp} color="green" />
