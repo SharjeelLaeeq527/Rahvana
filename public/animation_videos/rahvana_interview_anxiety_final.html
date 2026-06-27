@@ -310,23 +310,28 @@
 
     function showRow(el) {
       el.style.display = "";
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => el.classList.add("vis"));
-      });
+      el.offsetHeight; // force reflow
+      el.classList.add("vis");
     }
     function hideRow(el) {
       el.classList.remove("vis");
     }
 
+    let fragTimers = [];
     async function fadeFrags(show) {
       const ids = ["f0", "f1", "f2", "f3", "f4", "f5"];
       const gaps = [0, 200, 360, 540, 160, 680];
+      
+      fragTimers.forEach(clearTimeout);
+      fragTimers = [];
+
       if (show) {
-        ids.forEach((id, i) =>
-          setTimeout(() => {
+        ids.forEach((id, i) => {
+          const t = setTimeout(() => {
             document.getElementById(id).style.opacity = ".6";
-          }, gaps[i]),
-        );
+          }, gaps[i]);
+          fragTimers.push(t);
+        });
         await sleep(3000);
       } else {
         ids.forEach((id) => {
@@ -389,7 +394,7 @@
         await sleep(300);
 
         answerSec.style.display = "block";
-        await sleep(40);
+        answerSec.offsetHeight; // force reflow
         answerSec.classList.add("vis");
         await sleep(550);
 
@@ -425,7 +430,7 @@
         secLabel.textContent = "Your answer";
         secLabel.classList.add("vis");
         answerSec.style.display = "block";
-        await sleep(40);
+        answerSec.offsetHeight; // force reflow
         answerSec.classList.add("vis");
         aTxt.textContent = "";
         await sleep(650);
