@@ -5,6 +5,7 @@ import { Caveat } from "next/font/google";
 import * as Icons from "lucide-react";
 import { ToolsDock } from "./ToolDock";
 import HeroSection from "./herosection";
+import AnimationCard from "./AnimationCard";
 
 const caveat = Caveat({
   subsets: ["latin"],
@@ -284,9 +285,11 @@ function RoadmapAnchor({
 function ScrollReveal({
   children,
   delayClass = "",
+  className = "",
 }: {
   children: React.ReactNode;
   delayClass?: string;
+  className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -309,7 +312,7 @@ function ScrollReveal({
   }, []);
 
   return (
-    <div ref={ref} className={`reveal ${delayClass} ${visible ? "visible" : ""}`}>
+    <div ref={ref} className={`reveal ${delayClass} ${visible ? "visible" : ""} ${className}`}>
       {children}
     </div>
   );
@@ -319,10 +322,12 @@ function Annotation({
   text,
   direction = "left",
   className = "",
+  arrowRotation = "",
 }: {
   text: string;
   direction?: "left" | "right";
   className?: string;
+  arrowRotation?: string;
 }) {
   const defaultPos =
     direction === "left"
@@ -342,7 +347,7 @@ function Annotation({
       </p>
       {direction === "left" ? (
         <svg
-          className="w-10 h-10 text-slate-400/80 -mt-1 ml-6 rotate-[-25deg]"
+          className={`w-10 h-10 text-slate-400/80 -mt-1 ml-6 ${arrowRotation || "rotate-[-25deg]"}`}
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
@@ -356,7 +361,7 @@ function Annotation({
         </svg>
       ) : (
         <svg
-          className="w-10 h-10 text-slate-400/80 -mt-1 mr-6 rotate-[75deg]"
+          className={`w-10 h-10 text-slate-400/80 -mt-1 mr-6 ${arrowRotation || "rotate-[75deg]"}`}
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
@@ -412,7 +417,7 @@ function NodeCircle({
 // anchors above/below it -- this is what gives the line a real
 // horizontal swing to curve through, instead of a vertical straight
 // line. Direction is fixed (not alternating) per your last request.
-const CARD_OFFSET_CLASS = "md:-translate-x-12";
+const CARD_OFFSET_CLASS = "md:-ml-12";
 
 export default function RoadmapPage() {
   return (
@@ -436,7 +441,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 2 — leaf start node (anchor "01") */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
                   Let&apos;s take it one step at a time.
@@ -446,12 +451,12 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 relative h-48 flex items-center justify-center">
-              <Annotation text="A clear path. No more guessing." direction="right" />
+            <div className="md:col-span-7 relative h-48 flex items-center justify-center min-w-0">
+              <Annotation text="A clear path. No more guessing." direction="right" arrowRotation="rotate-[-45deg]" />
               <RoadmapAnchor
                 id="01"
                 color="teal"
-                className="absolute top-[30%] md:left-[29%] right-[35%] md:right-auto transform md:-translate-x-1/2 z-10"
+                className="hidden md:block absolute top-[30%] md:left-[29%] right-[35%] md:right-auto transform md:-translate-x-1/2 z-10"
               >
                 <div className="w-8 h-8 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-600" />
               </RoadmapAnchor>
@@ -460,7 +465,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 3 — Petition node (anchor "02") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
                   Everything starts with the petition.
@@ -470,7 +475,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
+            <div className="md:col-span-7 flex justify-center min-w-0">
               <ScrollReveal>
                 <RoadmapAnchor id="02" color="teal" className="inline-block">
                   <NodeCircle icon={Icons.FileText} label="Petition" color="teal" />
@@ -481,7 +486,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 4 — card placeholder (anchor "03") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
                   Wait... these forms look complicated.
@@ -491,10 +496,22 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-1">
-                <RoadmapAnchor id="03" color="teal" className={`inline-block ${CARD_OFFSET_CLASS}`}>
-                  <div className="relative h-[300px] w-[500px] bg-white border border-slate-200 shadow-xl rounded-2xl p-6 max-w-sm overflow-hidden group hover:border-teal-500/20 transition-all duration-300" />
+            <div className="md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal
+                delayClass="reveal-delay-1"
+                className="w-full flex justify-center min-w-0"
+              >
+                <RoadmapAnchor
+                  id="03"
+                  color="teal"
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                >
+                  <AnimationCard
+                    file="wait... section animation final.html"
+                    title="Immigration forms feel overwhelming"
+                    w={480}
+                    h={600}
+                  />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
@@ -502,7 +519,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 5 — card placeholder (anchor "04") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
                   Rahvana breaks it down for you.
@@ -512,10 +529,22 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-2">
-                <RoadmapAnchor id="04" color="teal" className={`inline-block ${CARD_OFFSET_CLASS}`}>
-                  <div className="relative h-[300px] w-[500px] bg-white border border-slate-200 shadow-xl rounded-2xl p-6 max-w-sm overflow-hidden group hover:border-[#0d7377]/20 transition-all duration-300" />
+            <div className="md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal
+                delayClass="reveal-delay-2"
+                className="w-full flex justify-center min-w-0"
+              >
+                <RoadmapAnchor
+                  id="04"
+                  color="teal"
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                >
+                  <AnimationCard
+                    file="visa form solution final.html"
+                    title="Rahvana breaks the form down section by section"
+                    w={660}
+                    h={430}
+                  />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
@@ -523,7 +552,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 6 — Check node (anchor "05") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
                   That wasn&apos;t so bad.
@@ -533,7 +562,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 relative flex justify-center">
+            <div className="md:col-span-7 relative flex justify-center min-w-0">
               <ScrollReveal>
                 <div className="relative inline-block">
                   <RoadmapAnchor id="05" color="amber" className="inline-block">
@@ -551,7 +580,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 7 — Documents node (anchor "06") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
                   What&apos;s next?
@@ -561,7 +590,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
+            <div className="md:col-span-7 flex justify-center min-w-0">
               <ScrollReveal>
                 <RoadmapAnchor id="06" color="amber" className="inline-block">
                   <NodeCircle icon={Icons.FolderOpen} label="Documents" color="amber" />
@@ -572,7 +601,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 8 — card placeholder (anchor "07") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
                   So many documents... what if I miss something important?
@@ -582,14 +611,23 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-1">
+            <div className="md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal
+                delayClass="reveal-delay-1"
+                className="w-full flex justify-center min-w-0"
+              >
                 <RoadmapAnchor
                   id="07"
                   color="amber"
-                  className={`inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
-                  <div className="relative h-[300px] w-[500px] max-w-sm bg-white border border-slate-200 shadow-xl rounded-2xl p-5 overflow-hidden group hover:border-amber-500/20 transition-all duration-300" />
+                  <AnimationCard
+                    file="document_gathering_problem option 1 final.html"
+                    title="Gathering documents is confusing"
+                    w={380}
+                    h={440}
+                    bgClass="bg-slate-50 border border-slate-200/40 rounded-2xl shadow-sm"
+                  />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
@@ -597,24 +635,33 @@ export default function RoadmapPage() {
 
           {/* SECTION 9 — card placeholder (anchor "08") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
                   Rahvana tells you exactly what documents you need.
                 </h3>
                 <p className="text-slate-500 text-base md:text-lg leading-relaxed">
-                  Track required documents, upload your files, and keep everything organized in one place.
+                  Track required documents, upload your files, and keep everything organized in one
+                  place.
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-2">
+            <div className="md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal
+                delayClass="reveal-delay-2"
+                className="w-full flex justify-center min-w-0"
+              >
                 <RoadmapAnchor
                   id="08"
                   color="amber"
-                  className={`inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
-                  <div className="bg-white h-[300px] w-[500px] border border-slate-200 shadow-xl rounded-2xl p-5 max-w-sm group hover:border-amber-500/20 transition-all duration-300" />
+                  <AnimationCard
+                    file="rahvana-document-vault-v3 final.html"
+                    title="Rahvana's document vault keeps everything organized"
+                    w={480}
+                    h={640}
+                  />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
@@ -622,7 +669,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 10 — FolderCheck node (anchor "09") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
                   Finally, I know I have everything.
@@ -632,7 +679,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 relative flex justify-center">
+            <div className="md:col-span-7 relative flex justify-center min-w-0">
               <ScrollReveal>
                 <div className="relative inline-block">
                   <RoadmapAnchor id="09" color="purple" className="inline-block">
@@ -650,7 +697,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 11 — Finance node (anchor "10") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
                   Next up, the financial part.
@@ -660,7 +707,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
+            <div className="md:col-span-7 flex justify-center min-w-0">
               <ScrollReveal>
                 <RoadmapAnchor id="10" color="purple" className="inline-block">
                   <NodeCircle icon={Icons.Calculator} label="Finance" color="purple" />
@@ -671,7 +718,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 12 — card placeholder (anchor "11") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
                   Do I qualify? What if I don&apos;t make enough?
@@ -681,14 +728,23 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-1">
+            <div className="md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal
+                delayClass="reveal-delay-1"
+                className="w-full flex justify-center min-w-0"
+              >
                 <RoadmapAnchor
                   id="11"
                   color="purple"
-                  className={`inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
-                  <div className="bg-white border h-[300px] w-[500px] border-slate-200 shadow-xl rounded-2xl p-5 max-w-sm group hover:border-purple-500/20 transition-all duration-300" />
+                  <AnimationCard
+                    file="rahvana_sponsorship_anxiety_v4 final.html"
+                    title="Worrying about whether you financially qualify"
+                    w={460}
+                    h={360}
+                    bgClass="bg-slate-50 border border-slate-200/40 rounded-2xl shadow-sm"
+                  />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
@@ -696,7 +752,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 13 — card placeholder (anchor "12") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
                   Rahvana gives you a clear answer.
@@ -706,14 +762,22 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-2">
+            <div className="md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal
+                delayClass="reveal-delay-2"
+                className="w-full flex justify-center min-w-0"
+              >
                 <RoadmapAnchor
                   id="12"
                   color="purple"
-                  className={`inline-block ${CARD_OFFSET_CLASS}`}
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
-                  <div className="bg-white border h-[300px] w-[500px] border-slate-200 shadow-xl rounded-2xl p-5 max-w-sm group hover:border-purple-500/20 transition-all duration-300" />
+                  <AnimationCard
+                    file="sponsorship calculator solution final.html"
+                    title="Rahvana calculates whether you qualify"
+                    w={484}
+                    h={448}
+                  />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
@@ -721,7 +785,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 14 — Interview node (anchor "13") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
                   Almost there.
@@ -731,7 +795,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
+            <div className="md:col-span-7 flex justify-center min-w-0">
               <ScrollReveal>
                 <RoadmapAnchor id="13" color="rose" className="inline-block">
                   <NodeCircle icon={Icons.Users} label="Interview" color="rose" />
@@ -742,7 +806,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 15 — card placeholder (anchor "14") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
                   The interview makes me nervous.
@@ -752,10 +816,22 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-1">
-                <RoadmapAnchor id="14" color="rose" className={`inline-block ${CARD_OFFSET_CLASS}`}>
-                  <div className="bg-white h-[300px] w-[500px] border border-slate-200 shadow-xl rounded-2xl p-5 max-w-sm group hover:border-rose-500/20 transition-all duration-300 relative overflow-hidden" />
+            <div className="md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal
+                delayClass="reveal-delay-1"
+                className="w-full flex justify-center min-w-0"
+              >
+                <RoadmapAnchor
+                  id="14"
+                  color="rose"
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                >
+                  <AnimationCard
+                    file="rahvana_interview_anxiety_final.html"
+                    title="Interview anxiety — what if I forget?"
+                    w={480}
+                    h={520}
+                  />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
@@ -763,7 +839,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 16 — card placeholder (anchor "15") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
-            <div className="col-span-12 md:col-span-5">
+            <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
                   Rahvana helps you prepare with confidence.
@@ -773,10 +849,22 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-7 flex justify-center">
-              <ScrollReveal delayClass="reveal-delay-2">
-                <RoadmapAnchor id="15" color="rose" className={`inline-block ${CARD_OFFSET_CLASS}`}>
-                  <div className="bg-white h-[300px] w-[500px] border border-slate-200 shadow-xl rounded-2xl p-5 max-w-sm group hover:border-rose-500/20 transition-all duration-300" />
+            <div className="md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal
+                delayClass="reveal-delay-2"
+                className="w-full flex justify-center min-w-0"
+              >
+                <RoadmapAnchor
+                  id="15"
+                  color="rose"
+                  className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                >
+                  <AnimationCard
+                    file="rahvana_visa_prep_animation.html"
+                    title="Rahvana helps you prepare with confidence"
+                    w={560}
+                    h={480}
+                  />
                 </RoadmapAnchor>
               </ScrollReveal>
             </div>
@@ -784,7 +872,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 17 — final Welcome node (anchor "16") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
-            <div className="col-span-12 md:col-span-6 md:pr-6">
+            <div className="md:col-span-6 md:pr-6 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-4 leading-tight">
                   Navigate your spouse visa journey with clarity and confidence
@@ -796,7 +884,7 @@ export default function RoadmapPage() {
                 </p>
               </ScrollReveal>
             </div>
-            <div className="col-span-12 md:col-span-6 relative flex justify-center">
+            <div className="md:col-span-6 relative flex justify-center min-w-0">
               <ScrollReveal>
                 <RoadmapAnchor id="16" color="green" className="inline-block">
                   <NodeCircle icon={Icons.ThumbsUp} color="green" />
