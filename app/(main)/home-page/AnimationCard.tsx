@@ -73,6 +73,9 @@ export default function AnimationCard({
         .wrap {
           background: transparent !important;
         }
+        .rahvana-card {
+          box-shadow: none !important;
+        }
       </style>
       <script>
         (function() {
@@ -161,11 +164,25 @@ export default function AnimationCard({
     }
   };
 
+  const isDefaultBg = bgClass === "bg-transparent";
+  const cardRadius = Math.round(24 * scale);
+
   return (
     <div
       ref={wrapRef}
       className={`relative z-10 mx-auto overflow-hidden ${bgClass} ${className}`}
-      style={{ width: dispW, maxWidth: "100%", height }}
+      style={{
+        width: dispW,
+        maxWidth: "100%",
+        height,
+        ...(isDefaultBg
+          ? {
+              borderRadius: `${cardRadius}px`,
+              boxShadow:
+                "0 30px 60px -20px rgba(15, 40, 42, 0.25), 0 2px 8px rgba(15, 40, 42, 0.06)",
+            }
+          : {}),
+      }}
     >
       <iframe
         ref={iframeRef}

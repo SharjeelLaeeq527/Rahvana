@@ -322,10 +322,12 @@ function Annotation({
   text,
   direction = "left",
   className = "",
+  arrowRotation = "",
 }: {
   text: string;
   direction?: "left" | "right";
   className?: string;
+  arrowRotation?: string;
 }) {
   const defaultPos =
     direction === "left"
@@ -345,7 +347,7 @@ function Annotation({
       </p>
       {direction === "left" ? (
         <svg
-          className="w-10 h-10 text-slate-400/80 -mt-1 ml-6 rotate-[-25deg]"
+          className={`w-10 h-10 text-slate-400/80 -mt-1 ml-6 ${arrowRotation || "rotate-[-25deg]"}`}
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
@@ -359,7 +361,7 @@ function Annotation({
         </svg>
       ) : (
         <svg
-          className="w-10 h-10 text-slate-400/80 -mt-1 mr-6 rotate-[75deg]"
+          className={`w-10 h-10 text-slate-400/80 -mt-1 mr-6 ${arrowRotation || "rotate-[75deg]"}`}
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
@@ -450,7 +452,7 @@ export default function RoadmapPage() {
               </ScrollReveal>
             </div>
             <div className="md:col-span-7 relative h-48 flex items-center justify-center min-w-0">
-              <Annotation text="A clear path. No more guessing." direction="right" />
+              <Annotation text="A clear path. No more guessing." direction="right" arrowRotation="rotate-[-45deg]" />
               <RoadmapAnchor
                 id="01"
                 color="teal"
