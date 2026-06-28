@@ -286,6 +286,17 @@ export function ToolsDock() {
   const [iconInFront, setIconInFront] = useState(true);
   const active = tools[index];
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
+
   // Each tool gets two beats: icon in front → scenario in front → next tool
   useEffect(() => {
     const id = setInterval(() => {
@@ -337,10 +348,10 @@ export function ToolsDock() {
             {/* Icon card — full-bleed icon, no wasted space */}
             <motion.div
               animate={{
-                x: iconInFront ? -110 : 90,
-                y: iconInFront ? 10 : -10,
-                rotate: iconInFront ? -5 : 4,
-                scale: iconInFront ? 1 : 0.9,
+                x: isMobile ? 0 : (iconInFront ? -110 : 90),
+                y: isMobile ? (iconInFront ? 15 : -15) : (iconInFront ? 10 : -10),
+                rotate: isMobile ? (iconInFront ? -2 : 2) : (iconInFront ? -5 : 4),
+                scale: isMobile ? (iconInFront ? 1 : 0.9) : (iconInFront ? 1 : 0.9),
                 zIndex: iconInFront ? 20 : 10,
               }}
               transition={{ type: "spring", stiffness: 50, damping: 18 }}
@@ -355,7 +366,7 @@ export function ToolsDock() {
               {iconInFront ? (
                 <Link href={active.href} className="block">
                   <div
-                    className={`group relative flex h-[300px] w-[240px] flex-col overflow-hidden rounded-[28px] border border-black/[0.06] ${active.tint} shadow-[0_30px_60px_-20px_rgba(0,0,0,0.25)] transition-transform duration-300 hover:scale-[1.02]`}
+                    className={`group relative flex h-[260px] md:h-[300px] w-[200px] md:w-[240px] flex-col overflow-hidden rounded-[28px] border border-black/[0.06] ${active.tint} shadow-[0_30px_60px_-20px_rgba(0,0,0,0.25)] transition-transform duration-300 hover:scale-[1.02]`}
                   >
                     {/* Big icon fills the card */}
                     <motion.div
@@ -365,10 +376,10 @@ export function ToolsDock() {
                       transition={{ type: "spring", stiffness: 180, damping: 18 }}
                       className="flex flex-1 items-center justify-center"
                     >
-                      <active.Icon className={`h-32 w-32 ${active.accent}`} strokeWidth={1.4} />
+                      <active.Icon className={`h-24 w-24 md:h-32 md:w-32 ${active.accent}`} strokeWidth={1.4} />
                     </motion.div>
                     {/* Label strip at bottom */}
-                    <div className="border-t border-black/5 bg-white/70 px-5 py-3 backdrop-blur-sm">
+                    <div className="border-t border-black/5 bg-white/70 px-4 py-2.5 md:px-5 md:py-3 backdrop-blur-sm">
                       <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-zinc-500">
                         {active.tag}
                       </span>
@@ -387,7 +398,7 @@ export function ToolsDock() {
                 </Link>
               ) : (
                 <div
-                  className={`relative flex h-[300px] w-[240px] flex-col overflow-hidden rounded-[28px] border border-black/[0.06] ${active.tint} shadow-[0_30px_60px_-20px_rgba(0,0,0,0.25)]`}
+                  className={`relative flex h-[260px] md:h-[300px] w-[200px] md:w-[240px] flex-col overflow-hidden rounded-[28px] border border-black/[0.06] ${active.tint} shadow-[0_30px_60px_-20px_rgba(0,0,0,0.25)]`}
                 >
                   {/* Big icon fills the card */}
                   <motion.div
@@ -397,10 +408,10 @@ export function ToolsDock() {
                     transition={{ type: "spring", stiffness: 180, damping: 18 }}
                     className="flex flex-1 items-center justify-center"
                   >
-                    <active.Icon className={`h-32 w-32 ${active.accent}`} strokeWidth={1.4} />
+                    <active.Icon className={`h-24 w-24 md:h-32 md:w-32 ${active.accent}`} strokeWidth={1.4} />
                   </motion.div>
                   {/* Label strip at bottom */}
-                  <div className="border-t border-black/5 bg-white/70 px-5 py-3 backdrop-blur-sm">
+                  <div className="border-t border-black/5 bg-white/70 px-4 py-2.5 md:px-5 md:py-3 backdrop-blur-sm">
                     <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-zinc-500">
                       {active.tag}
                     </span>
@@ -415,10 +426,10 @@ export function ToolsDock() {
             {/* Scenario card — tight, animated text */}
             <motion.div
               animate={{
-                x: iconInFront ? 110 : -90,
-                y: iconInFront ? -10 : 10,
-                rotate: iconInFront ? 4 : -5,
-                scale: iconInFront ? 0.92 : 1,
+                x: isMobile ? 0 : (iconInFront ? 110 : -90),
+                y: isMobile ? (iconInFront ? -15 : 15) : (iconInFront ? -10 : 10),
+                rotate: isMobile ? (iconInFront ? 2 : -2) : (iconInFront ? 4 : -5),
+                scale: isMobile ? (iconInFront ? 0.9 : 1) : (iconInFront ? 0.92 : 1),
                 zIndex: iconInFront ? 10 : 20,
               }}
               transition={{ type: "spring", stiffness: 50, damping: 18 }}
@@ -432,9 +443,9 @@ export function ToolsDock() {
             >
               {!iconInFront ? (
                 <Link href={active.href} className="block">
-                  <div className="group relative flex h-[300px] w-[320px] flex-col justify-between rounded-[28px] border border-black/[0.06] bg-white p-7 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.18)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.22)]">
+                  <div className="group relative flex h-[260px] md:h-[300px] w-[260px] md:w-[320px] flex-col justify-between rounded-[28px] border border-black/[0.06] bg-white p-5 md:p-7 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.18)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.22)]">
                     <div className="flex-1 flex flex-col justify-center">
-                      <span className="absolute left-7 top-6 inline-flex items-center gap-1.5 rounded-full border border-black/5 bg-zinc-50 px-2.5 py-1 font-mono text-[9px] uppercase tracking-widest text-zinc-500">
+                      <span className="absolute left-5 top-5 md:left-7 md:top-6 inline-flex items-center gap-1.5 rounded-full border border-black/5 bg-zinc-50 px-2.5 py-1 font-mono text-[9px] uppercase tracking-widest text-zinc-500">
                         <span
                           className={`h-1.5 w-1.5 rounded-full ${active.accent.replace("text-", "bg-")}`}
                         />
@@ -445,25 +456,26 @@ export function ToolsDock() {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.45, ease: "easeOut" }}
+                        className="mt-4"
                       >
-                        <h4 className="text-pretty text-[22px] font-medium leading-snug tracking-tight text-zinc-900">
+                        <h4 className="text-pretty text-[16px] md:text-[22px] font-medium leading-snug tracking-tight text-zinc-900">
                           {active.scenario.title}
                         </h4>
-                        <p className="mt-3 text-[14px] leading-relaxed text-zinc-500 text-left">
+                        <p className="mt-1.5 md:mt-3 text-[12px] md:text-[14px] leading-relaxed text-zinc-500 text-left">
                           {active.scenario.body}
                         </p>
                       </motion.div>
                     </div>
                     {/* Always visible CTA at bottom of card text */}
-                    <div className="mt-4 flex items-center gap-1.5 text-xs font-semibold text-zinc-950 group-hover:text-zinc-700 transition-colors">
+                    <div className="mt-2.5 md:mt-4 flex items-center gap-1.5 text-xs font-semibold text-zinc-950 group-hover:text-zinc-700 transition-colors">
                       <span>Open Tool</span>
                       <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" strokeWidth={2.5} />
                     </div>
                   </div>
                 </Link>
               ) : (
-                <div className="relative flex h-[300px] w-[320px] flex-col justify-center rounded-[28px] border border-black/[0.06] bg-white p-7 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.18)]">
-                  <span className="absolute left-7 top-6 inline-flex items-center gap-1.5 rounded-full border border-black/5 bg-zinc-50 px-2.5 py-1 font-mono text-[9px] uppercase tracking-widest text-zinc-500">
+                <div className="relative flex h-[260px] md:h-[300px] w-[260px] md:w-[320px] flex-col justify-center rounded-[28px] border border-black/[0.06] bg-white p-5 md:p-7 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.18)]">
+                  <span className="absolute left-5 top-5 md:left-7 md:top-6 inline-flex items-center gap-1.5 rounded-full border border-black/5 bg-zinc-50 px-2.5 py-1 font-mono text-[9px] uppercase tracking-widest text-zinc-500">
                     <span
                       className={`h-1.5 w-1.5 rounded-full ${active.accent.replace("text-", "bg-")}`}
                     />
@@ -474,11 +486,12 @@ export function ToolsDock() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.45, ease: "easeOut" }}
+                    className="mt-4"
                   >
-                    <h4 className="text-pretty text-[22px] font-medium leading-snug tracking-tight text-zinc-900">
+                    <h4 className="text-pretty text-[16px] md:text-[22px] font-medium leading-snug tracking-tight text-zinc-900">
                       {active.scenario.title}
                     </h4>
-                    <p className="mt-3 text-[14px] leading-relaxed text-zinc-500 text-left">
+                    <p className="mt-1.5 md:mt-3 text-[12px] md:text-[14px] leading-relaxed text-zinc-500 text-left">
                       {active.scenario.body}
                     </p>
                   </motion.div>
@@ -496,6 +509,7 @@ export function ToolsDock() {
             setIndex(i);
             setIconInFront((f) => !f);
           }}
+          isMobile={isMobile}
         />
       </div>
     </section>
@@ -506,10 +520,12 @@ function CurvedDock({
   tools,
   activeIndex,
   onSelect,
+  isMobile,
 }: {
   tools: Tool[];
   activeIndex: number;
   onSelect: (i: number) => void;
+  isMobile: boolean;
 }) {
   const half = Math.floor(VISIBLE / 2);
 
@@ -545,10 +561,12 @@ function CurvedDock({
     const x = cx + offset * slot;
     const dx = x - cx;
     const y = cy - Math.sqrt(r * r - dx * dx);
-    const half2 = isActive ? 28 : 22;
+    const half2 = isActive
+      ? (isMobile ? 20 : 28)
+      : (isMobile ? 16 : 22);
     return {
       left: `calc(${(x / width) * 100}% - ${half2}px)`,
-      top: `${y - half2}px`,
+      top: `calc(${(y / height) * 100}% - ${half2}px)`,
     };
   };
 
@@ -559,9 +577,10 @@ function CurvedDock({
     const clamped = Math.min(Math.abs(x - cx), r - 1);
     const dx = x > cx ? clamped : -clamped;
     const y = cy - Math.sqrt(r * r - dx * dx);
+    const half2 = isMobile ? 16 : 22;
     return {
-      left: `calc(${(x / width) * 100}% - 22px)`,
-      top: `${y - 22}px`,
+      left: `calc(${(x / width) * 100}% - ${half2}px)`,
+      top: `calc(${(y / height) * 100}% - ${half2}px)`,
     };
   };
 
@@ -569,7 +588,7 @@ function CurvedDock({
   const next = () => onSelect((activeIndex + 1) % tools.length);
 
   return (
-    <div className="mx-auto mt-10 flex w-full max-w-[820px] items-center gap-3">
+    <div className="mx-auto mt-10 flex w-full max-w-[820px] items-center gap-1.5 md:gap-3">
       <button
         onClick={prev}
         aria-label="Previous"
@@ -578,9 +597,9 @@ function CurvedDock({
         <ChevronLeft className="h-4 w-4" />
       </button>
 
-      <div className="relative flex-1 overflow-visible">
+      <div className="relative flex-1 aspect-[680/110] overflow-visible">
         {/* Arc guide line */}
-        <svg viewBox={`0 0 ${width} ${height}`} className="block h-[110px] w-full" aria-hidden>
+        <svg viewBox={`0 0 ${width} ${height}`} className="absolute inset-0 w-full h-full block" aria-hidden>
           <path
             d={`M 40 ${cy - Math.sqrt(r * r - (cx - 40) * (cx - 40))} A ${r} ${r} 0 0 1 ${width - 40} ${
               cy - Math.sqrt(r * r - (cx - (width - 40)) * (cx - (width - 40)))
@@ -592,7 +611,7 @@ function CurvedDock({
         </svg>
 
         {/* Icons — each keyed by tool.id so Framer animates them along the arc */}
-        <div className="absolute inset-0">
+        <div className="absolute inset-0 w-full h-full">
           <AnimatePresence initial={false}>
             {visibleItems.map(({ tool, idx, offset }) => {
               const isActive = idx === activeIndex;
@@ -628,13 +647,13 @@ function CurvedDock({
                       tool.tint
                     } transition-all duration-300 ${
                       isActive
-                        ? "h-14 w-14 rounded-3xl shadow-[0_18px_36px_-12px_rgba(0,0,0,0.32)]"
-                        : "h-11 w-11 rounded-2xl"
+                        ? "h-10 w-10 md:h-14 md:w-14 rounded-2xl md:rounded-3xl shadow-[0_18px_36px_-12px_rgba(0,0,0,0.32)]"
+                        : "h-8 w-8 md:h-11 md:w-11 rounded-lg md:rounded-2xl"
                     }`}
                   >
                     <tool.Icon
                       className={`transition-all duration-300 ${
-                        isActive ? `h-7 w-7 ${tool.accent}` : `h-5 w-5 ${tool.accent}`
+                        isActive ? `h-5 w-5 md:h-7 md:w-7 ${tool.accent}` : `h-4 w-4 md:h-5 md:w-5 ${tool.accent}`
                       }`}
                     />
                   </div>
