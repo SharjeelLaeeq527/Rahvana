@@ -405,9 +405,13 @@ function NodeCircle({
           <Icon className="w-10 h-10" />
         </div>
       </div>
-      <div className="mt-3 text-center">
-        <h4 className="font-bold text-slate-800 text-lg">{label}</h4>
-      </div>
+      {label && (
+        <div className="mt-3 text-center relative z-20">
+          <h4 className="font-bold text-slate-800 text-lg px-4 py-1.5 rounded-full bg-white/95 backdrop-blur-md shadow-sm border border-slate-200/50 inline-block relative z-20">
+            {label}
+          </h4>
+        </div>
+      )}
     </div>
   );
 }
@@ -452,7 +456,11 @@ export default function RoadmapPage() {
               </ScrollReveal>
             </div>
             <div className="md:col-span-7 relative h-48 flex items-center justify-center min-w-0">
-              <Annotation text="A clear path. No more guessing." direction="right" arrowRotation="rotate-[-45deg]" />
+              <Annotation
+                text="A clear path. No more guessing."
+                direction="right"
+                arrowRotation="rotate-[-45deg]"
+              />
               <RoadmapAnchor
                 id="01"
                 color="teal"
@@ -827,10 +835,11 @@ export default function RoadmapPage() {
                   className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                 >
                   <AnimationCard
-                    file="rahvana_interview_anxiety_final.html"
+                    file="rahvana_question_stack_with_image.html"
                     title="Interview anxiety — what if I forget?"
-                    w={480}
-                    h={520}
+                    w={450}
+                    h={640}
+                    maxH={640}
                   />
                 </RoadmapAnchor>
               </ScrollReveal>
@@ -870,7 +879,28 @@ export default function RoadmapPage() {
             </div>
           </div>
 
-          {/* SECTION 17 — final Welcome node (anchor "16") — centered */}
+          {/* SECTION 17 — Visa Approval node (anchor "16") — centered */}
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+            <div className="md:col-span-5 min-w-0">
+              <ScrollReveal>
+                <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
+                  Visa Approved
+                </h3>
+                <p className="text-slate-500 text-base md:text-lg leading-relaxed font-medium">
+                  The final milestone in your journey. Your passport is stamped, and you are officially ready to begin your new life together.
+                </p>
+              </ScrollReveal>
+            </div>
+            <div className="md:col-span-7 flex justify-center min-w-0">
+              <ScrollReveal>
+                <RoadmapAnchor id="16" color="green" className="inline-block">
+                  <NodeCircle icon={Icons.CheckCircle} label="Visa Approval" color="green" />
+                </RoadmapAnchor>
+              </ScrollReveal>
+            </div>
+          </div>
+
+          {/* SECTION 18 — final Welcome node (anchor "17") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
             <div className="md:col-span-6 md:pr-6 min-w-0">
               <ScrollReveal>
@@ -886,7 +916,7 @@ export default function RoadmapPage() {
             </div>
             <div className="md:col-span-6 relative flex justify-center min-w-0">
               <ScrollReveal>
-                <RoadmapAnchor id="16" color="green" className="inline-block">
+                <RoadmapAnchor id="17" color="green" className="inline-block">
                   <NodeCircle icon={Icons.ThumbsUp} color="green" />
                 </RoadmapAnchor>
                 {/* <Annotation text="Reunited at last!" direction="left" /> */}
