@@ -82,7 +82,36 @@ interface Appointment {
   k_one_letter_url?: string;
   appointment_confirmation_letter_url?: string;
   applicants?: Applicant[];
+  admin_notes?: string;
 }
+
+const CANCELLATION_TEMPLATES = [
+  {
+    value: "Dear Applicant, your appointment booking request has been cancelled as a duplicate request was already found in our system. Please check your existing appointment status or contact support if you believe this is an error.",
+    label: "Duplicate Request",
+  },
+  {
+    value: "Dear Applicant, we were unable to verify the payment for your appointment. As a result, your booking request has been cancelled. Please initiate a new request and ensure the payment is processed correctly.",
+    label: "Payment Failed",
+  },
+  {
+    value: "Dear Applicant, the passport details or copy provided in your application do not match our validation criteria or are invalid. Your appointment request has been cancelled. Please re-apply with accurate passport details and a clear scanned copy.",
+    label: "Invalid Passport Details",
+  },
+  {
+    value: "Dear Applicant, your appointment request has been cancelled because the required documents (scanned passport, K-1 letter, or confirmation letter) are missing, incomplete, or illegible. Please submit a new request with clear and complete documentation.",
+    label: "Missing/Unclear Documents",
+  },
+  {
+    value: "Dear Applicant, as per your request, your appointment booking has been cancelled. If you wish to reschedule in the future, please submit a new request through our portal.",
+    label: "Client Requested Cancellation",
+  },
+  {
+    value: "Dear Applicant, your appointment request has been cancelled due to incorrect or invalid details submitted in the form. Please review your details and submit a new request with accurate information.",
+    label: "Incorrect/Invalid Information",
+  },
+  { value: "other", label: "Other (Custom note)" },
+];
 
 export default function BookAppointmentTable() {
   const { showToast } = useToast();
@@ -95,6 +124,17 @@ export default function BookAppointmentTable() {
   const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [currentAppointment, setCurrentAppointment] = useState<Appointment | null>(null);
+
+  // Status update confirmation modal states
+  const [statusUpdateConfirmOpen, setStatusUpdateConfirmOpen] = useState(false);
+  const [pendingUpdate, setPendingUpdate] = useState<{
+    id: string;
+    status: AppointmentStatus;
+  } | null>(null);
+  const [adminNotes, setAdminNotes] = useState("");
+  const [preferredDate, setPreferredDate] = useState("");
+  const [preferredTime, setPreferredTime] = useState("");
+  const [cancellationReason, setCancellationReason] = useState("");
 
   const fetchAppointments = useCallback(async () => {
     try {
@@ -150,12 +190,24 @@ export default function BookAppointmentTable() {
     setFilteredAppointments(filtered);
   }, [appointments, selectedStatus, searchTerm, sortOrder]);
 
-  const updateAppointmentStatus = async (id: string, newStatus: AppointmentStatus) => {
+  const updateAppointmentStatus = async (
+    id: string,
+    newStatus: AppointmentStatus,
+    notes?: string,
+    prefDate?: string,
+    prefTime?: string
+  ) => {
     try {
       const response = await fetch("/api/admin/appointments", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status: newStatus }),
+        body: JSON.stringify({
+          id,
+          status: newStatus,
+          adminNotes: notes,
+          preferredDate: prefDate,
+          preferredTime: prefTime,
+        }),
       });
 
       const result = await response.json();
@@ -170,6 +222,36 @@ export default function BookAppointmentTable() {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       showToast(`Failed to update appointment status: ${errorMessage}`, "error");
     }
+  };
+
+  const initiateStatusUpdate = (id: string, newStatus: AppointmentStatus) => {
+    const appt = appointments.find((a) => a.id === id);
+    setPendingUpdate({ id, status: newStatus });
+    setAdminNotes(appt?.admin_notes || "");
+    setCancellationReason("");
+
+    let formattedDate = "";
+    if (appt?.preferred_date) {
+      try {
+        const d = new Date(appt.preferred_date);
+        if (!isNaN(d.getTime())) {
+          formattedDate = d.toISOString().split("T")[0];
+        } else {
+          formattedDate = appt.preferred_date.substring(0, 10);
+        }
+      } catch (e) {
+        formattedDate = appt.preferred_date.substring(0, 10);
+      }
+    }
+
+    let formattedTime = "";
+    if (appt?.preferred_time) {
+      formattedTime = appt.preferred_time.substring(0, 5);
+    }
+
+    setPreferredDate(formattedDate);
+    setPreferredTime(formattedTime);
+    setStatusUpdateConfirmOpen(true);
   };
 
   const getStatusBadgeVariant = (status: AppointmentStatus) => {
@@ -866,7 +948,7 @@ export default function BookAppointmentTable() {
                           <Select
                             value={appointment.status}
                             onValueChange={(value: AppointmentStatus) =>
-                              updateAppointmentStatus(appointment.id, value)
+                              initiateStatusUpdate(appointment.id, value)
                             }
                           >
                             <SelectTrigger className="w-32">
@@ -889,6 +971,161 @@ export default function BookAppointmentTable() {
           )}
         </CardContent>
       </Card>
+
+      {/* Status Update Confirmation Modal */}
+      <Dialog
+        open={statusUpdateConfirmOpen}
+        onOpenChange={(open) => {
+          setStatusUpdateConfirmOpen(open);
+          if (!open) {
+            setPendingUpdate(null);
+            setAdminNotes("");
+            setPreferredDate("");
+            setPreferredTime("");
+            setCancellationReason("");
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Update Status</DialogTitle>
+            <div className="text-sm text-muted-foreground mt-1">
+              Are you sure you want to update the status to{" "}
+              <span className="font-semibold uppercase text-primary">{pendingUpdate?.status}</span>?
+            </div>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            {pendingUpdate?.status === "completed" && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Appointment Date <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="date"
+                    value={preferredDate}
+                    onChange={(e) => setPreferredDate(e.target.value)}
+                    className="w-full"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Appointment Time <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="time"
+                    value={preferredTime}
+                    onChange={(e) => setPreferredTime(e.target.value)}
+                    className="w-full"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+            {pendingUpdate?.status === "cancelled" ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cancellation Reason <span className="text-red-500">*</span>
+                  </label>
+                  <Select
+                    value={cancellationReason}
+                    onValueChange={(val) => {
+                      setCancellationReason(val);
+                      if (val !== "other") {
+                        setAdminNotes(val);
+                      } else {
+                        setAdminNotes("");
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select cancellation reason" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CANCELLATION_TEMPLATES.map((tpl) => (
+                        <SelectItem key={tpl.value} value={tpl.value}>
+                          {tpl.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {cancellationReason === "other" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Admin Notes (Custom Cancellation Reason){" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      value={adminNotes}
+                      onChange={(e) => setAdminNotes(e.target.value)}
+                      placeholder="Add custom reason for cancellation..."
+                      className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                      maxLength={500}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Admin Notes (Optional)
+                </label>
+                <textarea
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  placeholder="Add any notes about this status update..."
+                  className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                  maxLength={500}
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setStatusUpdateConfirmOpen(false);
+                setPendingUpdate(null);
+                setAdminNotes("");
+                setPreferredDate("");
+                setPreferredTime("");
+                setCancellationReason("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={
+                (pendingUpdate?.status === "completed" && (!preferredDate || !preferredTime)) ||
+                (pendingUpdate?.status === "cancelled" &&
+                  (!cancellationReason || (cancellationReason === "other" && !adminNotes.trim())))
+              }
+              onClick={async () => {
+                if (pendingUpdate) {
+                  await updateAppointmentStatus(
+                    pendingUpdate.id,
+                    pendingUpdate.status,
+                    adminNotes,
+                    pendingUpdate.status === "completed" ? preferredDate : undefined,
+                    pendingUpdate.status === "completed" ? preferredTime : undefined
+                  );
+                }
+                setStatusUpdateConfirmOpen(false);
+                setPendingUpdate(null);
+                setAdminNotes("");
+                setPreferredDate("");
+                setPreferredTime("");
+                setCancellationReason("");
+              }}
+            >
+              Confirm
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 mt-8 max-w-6xl mx-auto">

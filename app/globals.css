@@ -638,7 +638,7 @@
 
   .reveal.visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 
   .reveal-delay-1 {
@@ -1143,4 +1143,9 @@
 .addon-pill.is-added {
   background: var(--pill, var(--primary));
   color: #fff;
+}
+
+/* Prevent CSS Grid items from expanding beyond viewport width on mobile */
+.grid > * {
+  min-width: 0;
 }

@@ -43,6 +43,7 @@ interface PCCRequest {
   district: string;
   purpose: string;
   province: string;
+  admin_notes?: string;
   created_at?: string;
 }
 
@@ -56,6 +57,7 @@ interface MedicalAppointment {
   preferred_date?: string;
   preferred_time?: string;
   notes?: string;
+  admin_notes?: string;
   created_at?: string;
 }
 
@@ -687,6 +689,9 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                             </div>
                           )}
                         </div>
+                        {req.admin_notes && (
+                          <CollapsibleAdminNotes notes={req.admin_notes} />
+                        )}
                       </div>
                     ))}
                   </div>
@@ -770,24 +775,31 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                             {appointment.passport_number || "N/A"}
                           </div>
                           <div>
-                            <span className="font-medium">Preferred Date:</span>{" "}
                             {appointment.preferred_date
-                              ? new Date(appointment.preferred_date).toLocaleDateString(undefined, {
+                              ? <><span className="font-medium">Appointment Date:</span>{" "}
+                              {new Date(appointment.preferred_date).toLocaleDateString(undefined, {
                                   month: "short",
                                   day: "numeric",
                                   year: "numeric",
-                                })
+                                })}
+                              </>
                               : "N/A"}
                           </div>
                           <div>
-                            <span className="font-medium">Preferred Time:</span>{" "}
-                            {appointment.preferred_time || "N/A"}
+                            {appointment.preferred_time
+                              ? <><span className="font-medium">Appointment Time:</span>{" "}
+                              {appointment.preferred_time}
+                              </>
+                              : "N/A"}
                           </div>
                         </div>
                         {appointment.notes && (
                           <div className="mt-2 text-xs text-gray-600 bg-gray-100/50 p-2 rounded">
                             <span className="font-semibold">Note:</span> {appointment.notes}
                           </div>
+                        )}
+                        {appointment.admin_notes && (
+                          <CollapsibleAdminNotes notes={appointment.admin_notes} />
                         )}
                       </div>
                     ))}
@@ -964,5 +976,27 @@ function ServiceCard({
         )}
       </div>
     </CardWrapper>
+  );
+}
+
+// --- Collapsible Admin Notes component ---
+function CollapsibleAdminNotes({ notes }: { notes: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="mt-2 border border-teal-100 rounded-lg overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-3 py-2 bg-teal-50/70 hover:bg-teal-50 text-xs font-bold text-teal-800 transition-colors focus:outline-none"
+      >
+        <span>Admin Message</span>
+        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+      </button>
+      {isOpen && (
+        <div className="px-3 py-2.5 bg-white text-xs text-slate-700 border-t border-teal-50 leading-relaxed">
+          {notes}
+        </div>
+      )}
+    </div>
   );
 }
