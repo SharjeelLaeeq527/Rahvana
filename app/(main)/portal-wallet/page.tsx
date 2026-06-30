@@ -87,6 +87,7 @@ const PortalWallet: React.FC = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [deletePortal, setDeletePortal] = useState<PortalType | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [processingPortal, setProcessingPortal] = useState<PortalType | null>(null);
 
   const { showToast } = useToast();
 
@@ -111,6 +112,8 @@ const PortalWallet: React.FC = () => {
 
   const handleAddOrEdit = async (data: any) => {
     setIsSubmitting(true);
+    setProcessingPortal(data.portalType);
+
     try {
       const res = await fetch(API_BASE, {
         method: "POST",
@@ -124,6 +127,7 @@ const PortalWallet: React.FC = () => {
     } catch {
       showToast(msg(E.VAULT_CREDENTIAL_SAVE_FAILED), "error");
     } finally {
+      setProcessingPortal(null);
       setIsSubmitting(false);
     }
   };
@@ -134,6 +138,7 @@ const PortalWallet: React.FC = () => {
 
   const confirmDelete = async (portalType: PortalType) => {
     setIsSubmitting(true);
+    setProcessingPortal(portalType);
 
     try {
       const res = await fetch(`${API_BASE}/${portalType}/delete`, {
@@ -151,6 +156,7 @@ const PortalWallet: React.FC = () => {
     } catch {
       showToast(msg(E.VAULT_CREDENTIAL_DELETE_FAILED), "error");
     } finally {
+      setProcessingPortal(null);
       setIsSubmitting(false);
     }
   };
@@ -301,6 +307,7 @@ const PortalWallet: React.FC = () => {
                 portalUrl={portal.url}
                 hasCredentials={!!cred}
                 iconBgColor={portal.iconBgColor}
+                loading={processingPortal === portal.type}
                 onAction={() => {
                   if (cred) {
                     setViewModal({ open: true, portalType: portal.type });

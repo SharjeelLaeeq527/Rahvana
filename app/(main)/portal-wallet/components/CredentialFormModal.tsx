@@ -21,7 +21,8 @@ const portalQuestionLimit: Record<PortalType, number> = {
   COURIER: 3,
 };
 
-const normalizeSecurityAnswer = (answer: string) => answer.trim().replace(/\s+/g, " ").toLowerCase();
+const normalizeSecurityAnswer = (answer: string) =>
+  answer.trim().replace(/\s+/g, " ").toLowerCase();
 
 interface SecurityQuestionField {
   question: string;
@@ -158,12 +159,17 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
       return;
     }
 
-    const filledQuestions = securityQuestions
-      .map((sq) => ({
-        question: sq.question,
-        answer: sq.answer.trim(),
-      }))
-      .filter((sq) => sq.question && sq.answer);
+    const hasIncompleteQuestions = securityQuestions.some((sq) => !sq.question || !sq.answer);
+
+    if (hasIncompleteQuestions) {
+      showToast(`Please complete all ${questionLimit} security questions.`, "error");
+      return;
+    }
+
+    const filledQuestions = securityQuestions.map((sq) => ({
+      question: sq.question,
+      answer: sq.answer.trim(),
+    }));
 
     const normalizedAnswers = filledQuestions.map((sq) => normalizeSecurityAnswer(sq.answer));
     const hasDuplicateAnswers = new Set(normalizedAnswers).size !== normalizedAnswers.length;
@@ -231,88 +237,88 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
               <div className="flex-1 overflow-y-auto px-4 sm:px-5 py-4 space-y-3 sm:space-y-4">
                 {portalType !== "NVC" && (
                   <>
-              {/* Username */}
-              <div>
-                <label className="block text-[11px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
-                  Username / Email
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={username}
-                  onChange={(e) => setUsername(e.target.value)}
-                  placeholder="Enter your portal username or email"
-                  className="w-full h-10 px-3.5 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
-                />
-              </div>
+                    {/* Username */}
+                    <div>
+                      <label className="block text-[11px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
+                        Username / Email
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        placeholder="Enter your portal username or email"
+                        className="w-full h-10 px-3.5 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                      />
+                    </div>
 
-              {/* Password */}
-              <div>
-                <label className="block text-[11px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
-                  Password
-                </label>
-                <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    required={mode === "add"}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder={"Enter your portal password"}
-                    className="w-full h-10 px-3.5 pr-11 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#0d7377] transition-colors"
-                  >
-                    {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
-                  </button>
-                </div>
-              </div>
+                    {/* Password */}
+                    <div>
+                      <label className="block text-[11px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
+                        Password
+                      </label>
+                      <div className="relative">
+                        <input
+                          type={showPassword ? "text" : "password"}
+                          required={mode === "add"}
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                          placeholder={"Enter your portal password"}
+                          className="w-full h-10 px-3.5 pr-11 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-[#9ca3af] hover:text-[#0d7377] transition-colors"
+                        >
+                          {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+                        </button>
+                      </div>
+                    </div>
                   </>
                 )}
 
                 {portalType === "NVC" && (
                   <>
-              {/* Case Number */}
-              <div>
-                <label className="block text-[11px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
-                  NVC Case Number
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={nvcCaseNumber}
-                  pattern="[A-Z]{3}.*"
-                  title="Must start with 3 uppercase letters"
-                  onChange={(e) => {
-                    const value = e.target.value.toUpperCase();
-                    setNvcCaseNumber(value);
-                  }}
-                  placeholder="Enter NVC case number"
-                  className="w-full h-10 px-3.5 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
-                />
-              </div>
+                    {/* Case Number */}
+                    <div>
+                      <label className="block text-[11px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
+                        NVC Case Number
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={nvcCaseNumber}
+                        pattern="[A-Z]{3}.*"
+                        title="Must start with 3 uppercase letters"
+                        onChange={(e) => {
+                          const value = e.target.value.toUpperCase();
+                          setNvcCaseNumber(value);
+                        }}
+                        placeholder="Enter NVC case number"
+                        className="w-full h-10 px-3.5 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                      />
+                    </div>
 
-              {/* Invoice ID */}
-              <div>
-                <label className="block text-[11px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
-                  Invoice ID Number
-                </label>
-                <input
-                  type="text"
-                  required
-                  value={nvcInvoiceId}
-                  pattern="IVSCA.*"
-                  title="Must start with IVSCA"
-                  onChange={(e) => {
-                    const value = e.target.value.toUpperCase();
-                    setNvcInvoiceId(value);
-                  }}
-                  placeholder="Enter invoice ID number"
-                  className="w-full h-10 px-3.5 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
-                />
-              </div>
+                    {/* Invoice ID */}
+                    <div>
+                      <label className="block text-[11px] font-semibold text-[#0a1128] mb-1.5 uppercase tracking-wide">
+                        Invoice ID Number
+                      </label>
+                      <input
+                        type="text"
+                        required
+                        value={nvcInvoiceId}
+                        pattern="IVSCA.*"
+                        title="Must start with IVSCA"
+                        onChange={(e) => {
+                          const value = e.target.value.toUpperCase();
+                          setNvcInvoiceId(value);
+                        }}
+                        placeholder="Enter invoice ID number"
+                        className="w-full h-10 px-3.5 rounded-xl border border-[#e0f0f0] bg-[#f8fafa] text-[13px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                      />
+                    </div>
                   </>
                 )}
 
@@ -335,34 +341,34 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
                         key={index}
                         className="space-y-2 p-2.5 sm:p-3 rounded-xl bg-[#f8fafa] border border-[#e0f0f0]"
                       >
-                  <label className="block text-[10px] font-semibold text-[#67737e] uppercase tracking-wide">
-                    Question {index + 1}
-                  </label>
+                        <label className="block text-[10px] font-semibold text-[#67737e] uppercase tracking-wide">
+                          Question {index + 1} <span className="text-red-500">*</span>
+                        </label>
 
-                  <Select
-                    value={sq.question}
-                    onValueChange={(val) => handleQuestionChange(index, val)}
-                  >
-                    <SelectTrigger className="w-full h-9 px-3 rounded-lg border border-[#e0f0f0] bg-white text-[12px] text-[#0a1128] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all cursor-pointer">
-                      <SelectValue placeholder="Select a security question" />
-                    </SelectTrigger>
+                        <Select
+                          value={sq.question}
+                          onValueChange={(val) => handleQuestionChange(index, val)}
+                        >
+                          <SelectTrigger className="w-full h-9 px-3 rounded-lg border border-[#e0f0f0] bg-white text-[12px] text-[#0a1128] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all cursor-pointer">
+                            <SelectValue placeholder="Select a security question" />
+                          </SelectTrigger>
 
-                    <SelectContent className="max-h-96 overflow-y-auto">
-                      {getFilteredQuestions(index).map((q) => (
-                        <SelectItem key={q} value={q}>
-                          {q}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                          <SelectContent className="max-h-96 overflow-y-auto">
+                            {getFilteredQuestions(index).map((q) => (
+                              <SelectItem key={q} value={q}>
+                                {q}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
 
-                  <input
-                    type="text"
-                    value={sq.answer}
-                    onChange={(e) => handleAnswerChange(index, e.target.value)}
-                    placeholder="Your answer"
-                    className="w-full h-9 px-3 rounded-lg border border-[#e0f0f0] bg-white text-[12px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
-                  />
+                        <input
+                          type="text"
+                          value={sq.answer}
+                          onChange={(e) => handleAnswerChange(index, e.target.value)}
+                          placeholder="Your answer"
+                          className="w-full h-9 px-3 rounded-lg border border-[#e0f0f0] bg-white text-[12px] text-[#0a1128] placeholder:text-[#c0c7ce] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all"
+                        />
                       </div>
                     ))}
                   </div>

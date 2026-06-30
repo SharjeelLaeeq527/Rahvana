@@ -10,6 +10,7 @@ interface PortalCardProps {
   onAction: () => void;
   iconBgColor?: string;
   iconHoverBgColor?: string;
+  loading?: boolean;
 }
 
 const PortalCard: React.FC<PortalCardProps> = ({
@@ -21,9 +22,15 @@ const PortalCard: React.FC<PortalCardProps> = ({
   onAction,
   iconBgColor,
   iconHoverBgColor,
+  loading = false,
 }) => {
   return (
-    <div className="mx-auto flex w-full max-w-85 lg:max-w-100 flex-col items-center bg-white rounded-2xl border border-[#e0f0f0] p-6 hover:shadow-lg hover:border-[#0d7377]/30 transition-all duration-300 group">
+    <div
+      className={`mx-auto flex w-full max-w-85 lg:max-w-100 flex-col items-center
+      bg-white rounded-2xl border border-[#e0f0f0] p-6
+      hover:shadow-lg hover:border-[#0d7377]/30 transition-all duration-300 group
+      ${loading ? "opacity-70 pointer-events-none" : ""}`}
+    >
       {/* Icon */}
       <div
         className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-5 
@@ -62,10 +69,19 @@ const PortalCard: React.FC<PortalCardProps> = ({
       {/* Action button */}
       <button
         onClick={onAction}
+        disabled={loading}
         className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[13px] font-semibold transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md bg-primary text-white hover:bg-[#0a5a5d]"
       >
-        {!hasCredentials && <Plus size={15} />}
-        {hasCredentials ? "View Credentials" : "Add Credentials"}
+        {loading ? (
+          <>
+            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+          </>
+        ) : (
+          <>
+            {!hasCredentials && <Plus size={15} />}
+            {hasCredentials ? "View Credentials" : "Add Credentials"}
+          </>
+        )}
       </button>
     </div>
   );
