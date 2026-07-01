@@ -17,6 +17,7 @@ import { usePlan } from "@/app/context/PlanContext";
 import { useAuth } from "@/app/context/AuthContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import AddResourceCard from "@/components/resources/AddResourceCard";
+import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader";
 import StatCard from "@/app/components/shared/StatCard";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Loader } from "@/components/ui/spinner";
@@ -407,12 +408,18 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
     })
     .sort((a, b) => a.title.localeCompare(b.title));
 
-  // "My Resources" (embedded) view: only the services the user has unlocked
-  // (via plan tier or purchased add-ons); free services always show.
+  // "My Resources" (embedded) view splits the catalog into two sections:
+  //  • "My Services"     — services the user owns (plan/add-ons) OR has an active booking
+  //  • "Browse Services" — everything else, shown as locked/"Unlock" cards to explore
   const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
-  const displayServices = isEmbedded
-    ? filteredServices.filter((service) => isOwned(service.entitlementFeature))
-    : filteredServices;
+  const hasBooking = (service: Service) => getActiveBookingData(service.id) !== null;
+  // A service with an active request/booking belongs in "My Services" even if locked.
+  const isMine = (service: Service) => isOwned(service.entitlementFeature) || hasBooking(service);
+  const ownedServices = filteredServices.filter(isMine);
+  const browseServices = filteredServices.filter((service) => !isMine(service));
+  // Embedded "My Resources" shows owned/booked in the first grid; the standalone
+  // page shows the full filtered list.
+  const displayServices = isEmbedded ? ownedServices : filteredServices;
 
   return (
     <div
@@ -532,6 +539,14 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           </div>
         )}
 
+        {/* My Services — owned or with an active booking (embedded view only) */}
+        {isEmbedded && (
+          <ResourceSectionHeader
+            title="My Services"
+            subtitle="Services you've unlocked or already have an active request for."
+          />
+        )}
+
         {/* Services Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
           {displayServices.map((service, index) => {
@@ -591,6 +606,27 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
             </div>
           )}
         </div>
+
+        {/* Browse Services — everything not yet owned (embedded view only) */}
+        {isEmbedded && browseServices.length > 0 && (
+          <>
+            <ResourceSectionHeader
+              title="Browse Services"
+              subtitle="Explore more services — unlock them when you're ready."
+              className="mt-12"
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+              {browseServices.map((service, index) => (
+                <ServiceCard
+                  key={service.id}
+                  service={service}
+                  index={index}
+                  onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+                />
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       {/* Dialog modal to show requests and statuses */}

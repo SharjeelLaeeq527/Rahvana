@@ -82,6 +82,23 @@ const nextConfig = {
             key: "X-XSS-Protection",
             value: "1; mode=block",
           },
+          // Content Security Policy — blocks inline script injection & unauthorized origins
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com",
+              "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
+              "font-src 'self' fonts.gstatic.com data:",
+              "img-src 'self' data: blob: *.supabase.co images.unsplash.com",
+              "connect-src 'self' *.supabase.co *.stripe.com *.google-analytics.com rahvana-1.onrender.com wss://*.supabase.co",
+              "frame-src 'self' js.stripe.com",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "frame-ancestors 'none'",
+            ].join("; "),
+          },
         ],
       },
     ];

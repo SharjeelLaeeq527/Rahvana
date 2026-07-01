@@ -139,6 +139,9 @@ export const en: Record<ErrorId, string> = {
   // 1033 — POST /auth/signup — failed to create account
   1033: "We couldn't create your account right now. Please try again later.",
 
+  // 1034 — Rate limiter — too many requests from the same IP
+  1034: "Too many attempts. Please try again in {minutes} minute(s).",
+
   // ─── DASHBOARD & NAVIGATION ──────────────────────────────────────────────
 
   // 1100 — useWizard hook, auto-save to cloud failed (data safe locally)

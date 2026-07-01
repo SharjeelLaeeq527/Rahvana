@@ -10,6 +10,7 @@ import {
 } from "@/app/(main)/pricing/data/resourceDetails";
 import ResourceGallery from "./ResourceGallery";
 import AddToOrderButton from "./AddToOrderButton";
+import { getDemoRouteForSlug } from "@/lib/entitlements/resourceLinks";
 import ReviewForm from "@/components/resources/ReviewForm";
 import { getApprovedReviews, getReviewStats } from "@/lib/reviews/data-access";
 import { getSlugTheme, getIcon } from "./iconMap";
@@ -95,6 +96,10 @@ export default async function ResourceDetailPage({
   // collects info and handles payment at checkout (e.g. /book-consultation).
   const serviceFlowHref =
     addon.kind === "services" ? SERVICE_FLOW_HREF[slug] : undefined;
+
+  // "Try the demo" target — the real tool route. Null for items without a demo
+  // (e.g. services), in which case the button is not rendered.
+  const demoHref = getDemoRouteForSlug(slug);
 
   const related = detail.related
     .map((rs) => ({ slug: rs, detail: RESOURCE_DETAILS[rs], addon: getAddon(rs) }))
@@ -203,6 +208,16 @@ export default async function ResourceDetailPage({
                 </Link>
               ) : (
                 <AddToOrderButton slug={slug} price={addon.price} unit={addon.unit} accent={TEAL} />
+              )}
+              {demoHref && (
+                <Link
+                  href={demoHref}
+                  className="inline-flex items-center justify-center rounded-full border px-6 py-3 text-[14px] font-semibold transition-all duration-200 hover:-translate-y-0.5"
+                  style={{ borderColor: TEAL, color: TEAL }}
+                >
+                  Try the demo
+                  <span className="ml-2 font-normal">→</span>
+                </Link>
               )}
               <Link
                 href={`/pricing?mode=${addon.kind}`}
