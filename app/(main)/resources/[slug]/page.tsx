@@ -206,7 +206,7 @@ export default async function ResourceDetailPage({
               ) : (
                 <AddToOrderButton slug={slug} price={addon.price} unit={addon.unit} accent={TEAL} />
               )}
-              <ResourceLaunchButton href={launchHref} />
+              <ResourceLaunchButton href={launchHref} kind={addon.kind} />
             </div>
 
             <p className="mt-7 text-[12.5px] text-muted-foreground">

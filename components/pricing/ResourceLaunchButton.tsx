@@ -9,14 +9,17 @@ export default function ResourceLaunchButton({
   href,
   size = "detail",
   className = "",
+  kind = "tools",
 }: {
   href: string;
   className?: string;
   size?: "detail" | "card";
+  kind?: "tools" | "guides" | "services";
 }) {
   const router = useRouter();
   const plan = usePlan();
-  const label = plan.tier === "free" ? "Explore Tool" : "Launch Tool";
+  const noun = kind === "guides" ? "Guide" : kind === "services" ? "Service" : "Tool";
+  const label = `${plan.tier === "free" ? "Explore" : "Launch"} ${noun}`;
 
   const sizeClasses =
     size === "card"

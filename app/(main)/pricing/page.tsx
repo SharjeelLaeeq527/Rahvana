@@ -712,10 +712,10 @@ function PricingContent() {
   );
 
   return (
-    <div className="min-h-screen text-foreground font-sans selection:bg-primary/20 pb-20">
+    <div className="min-h-[100dvh] overflow-x-hidden text-foreground font-sans selection:bg-primary/20 pb-12 sm:pb-20">
       {/* ── Mode Toggle ──────────────────────────────────────────────────────── */}
       <div className={`${W} pt-[88px] pb-0`}>
-        <nav className="flex items-end gap-1 border-b-2 border-border/40" aria-label="Pricing mode">
+        <nav className="grid grid-cols-2 md:grid-cols-4 items-end gap-1 border-b-2 border-border/40" aria-label="Pricing mode">
           {(
             [
               {
@@ -805,7 +805,7 @@ function PricingContent() {
             <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
               <div>
                 <div className={eyebrow}>Journey Plans</div>
-                <h1 className="page-heading m-0 whitespace-nowrap">
+                <h1 className="page-heading m-0">
                   Choose your Rahvana journey plan
                 </h1>
                 <p className="page-description mt-2 text-muted-foreground">

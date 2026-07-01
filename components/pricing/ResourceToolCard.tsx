@@ -161,7 +161,14 @@ export default function ResourceToolCard({
                 )}
               </button>
             )}
-            <ResourceLaunchButton href={launchHref} size="card" className="shrink-0" />
+            {!isService && (
+              <ResourceLaunchButton
+                href={launchHref}
+                size="card"
+                kind={addon.kind === "guides" ? "guides" : "tools"}
+                className="shrink-0"
+              />
+            )}
           </div>
         </div>
       </div>
