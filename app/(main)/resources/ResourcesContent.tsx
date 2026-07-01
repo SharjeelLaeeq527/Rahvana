@@ -25,6 +25,10 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
   const [hasStartedGuides, setHasStartedGuides] = useState(false);
 
   useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
+
+  useEffect(() => {
     if (!user) {
       setHasActiveRequests(false);
       setHasStartedGuides(false);

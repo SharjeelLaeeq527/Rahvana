@@ -4,7 +4,9 @@ import { encrypt, decrypt } from "@/lib/encryption";
 import { E, msg } from "@/lib/errors";
 import { auditLog } from "@/lib/security/audit-log";
 
-export async function GET(request: NextRequest) {
+const normalizeSecurityAnswer = (answer: string) => answer.trim().replace(/\s+/g, " ").toLowerCase();
+
+export async function GET() {
   try {
     const supabase = await createClient();
 
@@ -135,8 +137,8 @@ export async function POST(req: Request) {
     const encryptedPassword = password
       ? encrypt(password)
       : existingCred?.encrypted_password || null;
-    const encryptedCaseNumber = nvcCaseNumber ? encrypt(nvcCaseNumber) : null;
-    const encryptedInvoiceId = nvcInvoiceId ? encrypt(nvcInvoiceId) : null;
+    const encryptedCaseNumber = nvcCaseNumber ? encrypt(nvcCaseNumber.trim()) : null;
+    const encryptedInvoiceId = nvcInvoiceId ? encrypt(nvcInvoiceId.trim()) : null;
 
     const { data: credential, error } = await supabase
       .from("portal_wallet_credentials")
@@ -161,23 +163,37 @@ export async function POST(req: Request) {
     }
 
     if (portalType !== "NVC" && securityQuestions?.length) {
+      const completedSecurityQuestions = securityQuestions.filter((q: any) => q.question && q.answer);
+      const normalizedAnswers = completedSecurityQuestions.map((q: any) =>
+        normalizeSecurityAnswer(q.answer)
+      );
+
+      if (new Set(normalizedAnswers).size !== normalizedAnswers.length) {
+        return NextResponse.json(
+          { error: "Security question answers must be unique" },
+          { status: 400 }
+        );
+      }
+
       await supabase
         .from("portal_wallet_security_questions")
         .delete()
         .eq("credential_id", credential.id);
 
-      const rows = securityQuestions.map((q: any) => ({
+      const rows = completedSecurityQuestions.map((q: any) => ({
         credential_id: credential.id,
         question: q.question,
-        encrypted_answer: encrypt(q.answer),
+        encrypted_answer: encrypt(q.answer.trim()),
       }));
 
-      const { error: questionError } = await supabase
-        .from("portal_wallet_security_questions")
-        .insert(rows);
+      if (rows.length) {
+        const { error: questionError } = await supabase
+          .from("portal_wallet_security_questions")
+          .insert(rows);
 
-      if (questionError) {
-        console.error("Error saving questions:", questionError);
+        if (questionError) {
+          console.error("Error saving questions:", questionError);
+        }
       }
     }
 
