@@ -5,7 +5,9 @@ import Link from "next/link";
 import { ArrowRight, Check, Plus } from "lucide-react";
 
 import { RESOURCE_DETAILS } from "@/app/(main)/pricing/data/resourceDetails";
+import { getResourceLaunchHref } from "@/app/(main)/pricing/data/pricing";
 import { getSlugTheme, getIcon } from "@/app/(main)/resources/[slug]/iconMap";
+import ResourceLaunchButton from "./ResourceLaunchButton";
 
 export type ResourceCardAddon = {
   id: string;
@@ -19,7 +21,8 @@ export type ResourceCardAddon = {
 /**
  * Attractive, clickable add-on card. The whole card links to the tool's detail
  * page (/resources/[slug]); the "Add to order" button toggles selection without
- * navigating (stopPropagation + preventDefault).
+ * navigating (stopPropagation + preventDefault). The secondary CTA launches the
+ * live tool/service/guide route.
  */
 export default function ResourceToolCard({
   addon,
@@ -37,6 +40,7 @@ export default function ResourceToolCard({
   const { accent, tint } = theme;
   const Icon = getIcon(theme.icon);
   const title = addon.title ?? addon.id;
+  const launchHref = getResourceLaunchHref(addon.id, addon.kind);
 
   // Services are not "added to cart" — the user explores them, gives info on a
   // guided flow page, and pays at checkout there. So a service card shows an
@@ -123,39 +127,49 @@ export default function ResourceToolCard({
             <div className="mt-1 text-[10px] text-muted-foreground">{addon.unit}</div>
           </div>
 
-          {isService ? (
-            // Explore — follows the card link to the service's detail page (no toggle).
-            <span
-              className="addon-pill inline-flex items-center gap-1 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-150"
-              style={{ ["--pill" as string]: accent } as CSSProperties}
-            >
-              Explore <ArrowRight className="h-3.5 w-3.5" />
-            </span>
-          ) : (
-            <button
-              type="button"
-              disabled={disabled}
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                onToggle(addon.id);
-              }}
-              className={`addon-pill inline-flex items-center gap-1 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
-                isAdded ? "is-added" : ""
-              }`}
-              style={{ ["--pill" as string]: accent } as CSSProperties}
-            >
-              {isAdded ? (
-                <>
-                  <Check className="h-3.5 w-3.5" /> Added
-                </>
-              ) : (
-                <>
-                  <Plus className="h-3.5 w-3.5" /> Add to order
-                </>
-              )}
-            </button>
-          )}
+          <div className="ml-auto flex items-center justify-end gap-1.5">
+            {isService ? (
+              // Services still navigate to the detail page via the card body.
+              <span
+                className="addon-pill inline-flex items-center gap-1 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-150"
+                style={{ ["--pill" as string]: accent } as CSSProperties}
+              >
+                Explore <ArrowRight className="h-3.5 w-3.5" />
+              </span>
+            ) : (
+              <button
+                type="button"
+                disabled={disabled}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onToggle(addon.id);
+                }}
+                className={`addon-pill inline-flex items-center gap-1 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
+                  isAdded ? "is-added" : ""
+                }`}
+                style={{ ["--pill" as string]: accent } as CSSProperties}
+              >
+                {isAdded ? (
+                  <>
+                    <Check className="h-3.5 w-3.5" /> Added
+                  </>
+                ) : (
+                  <>
+                    <Plus className="h-3.5 w-3.5" /> Add to order
+                  </>
+                )}
+              </button>
+            )}
+            {!isService && (
+              <ResourceLaunchButton
+                href={launchHref}
+                size="card"
+                kind={addon.kind === "guides" ? "guides" : "tools"}
+                className="shrink-0"
+              />
+            )}
+          </div>
         </div>
       </div>
     </Link>
