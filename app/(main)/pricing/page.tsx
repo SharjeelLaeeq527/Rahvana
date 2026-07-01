@@ -21,6 +21,7 @@ import {
   ShieldCheck,
   ArrowLeft,
   ArrowRight,
+  ArrowUpRight,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { E, msg, errorCode } from "@/lib/errors";
@@ -494,9 +495,7 @@ function PricingContent() {
 
   const resourcesForMode = useMemo(() => {
     if (mode === "plans") return [];
-    return ADDONS.filter((a) => a.kind === mode).sort((a, b) =>
-      a.title.localeCompare(b.title)
-    );
+    return ADDONS.filter((a) => a.kind === mode).sort((a, b) => a.title.localeCompare(b.title));
   }, [mode]);
 
   // Handlers
@@ -724,13 +723,21 @@ function PricingContent() {
                 label: "Journey Plans",
                 sub: "Full roadmap guidance",
               },
-              { id: "tools" as const, label: RESOURCE_TABS.tools.label, sub: RESOURCE_TABS.tools.sub },
+              {
+                id: "tools" as const,
+                label: RESOURCE_TABS.tools.label,
+                sub: RESOURCE_TABS.tools.sub,
+              },
               {
                 id: "services" as const,
                 label: RESOURCE_TABS.services.label,
                 sub: RESOURCE_TABS.services.sub,
               },
-              { id: "guides" as const, label: RESOURCE_TABS.guides.label, sub: RESOURCE_TABS.guides.sub },
+              {
+                id: "guides" as const,
+                label: RESOURCE_TABS.guides.label,
+                sub: RESOURCE_TABS.guides.sub,
+              },
             ] as const
           ).map(({ id, label, sub }) => (
             <button
@@ -1188,14 +1195,13 @@ function PricingContent() {
                                     <div className="resource-fcard-price">${addon.price}</div>
                                     <div className="resource-fcard-unit">{addon.unit}</div>
                                   </div>
-
-                                  <button
-                                    disabled={isAnyCheckoutLoading}
-                                    className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
-                                    onClick={() => toggleAddon(addon.id)}
-                                  >
-                                    {isAdded ? "✓ Added to order" : "+ Add to order"}
-                                  </button>
+                                    <button
+                                      disabled={isAnyCheckoutLoading}
+                                      className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
+                                      onClick={() => toggleAddon(addon.id)}
+                                    >
+                                      {isAdded ? "✓ Added to order" : "+ Add to order"}
+                                    </button>
                                 </div>
                               </div>
                             </article>

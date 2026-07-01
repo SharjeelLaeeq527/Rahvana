@@ -493,6 +493,36 @@ export const SERVICE_FLOW_HREF: Record<string, string> = {
   pcc: "/police-verification/apply?province=Sindh",
 };
 
+// Standalone launch targets for the detail-page CTA and the secondary CTA on
+// pricing cards. Services resolve through SERVICE_FLOW_HREF above; tools and
+// guides point at their live app/guide routes here.
+export const RESOURCE_LAUNCH_HREF: Record<string, string> = {
+  "221g": "/221g-action-planner",
+  "interview-prep": "/interview-prep",
+  photo: "/passport",
+  smart: "/visa-forms",
+  sponsor: "/affidavit-support-calculator",
+  pdf: "/pdf-processing",
+  snap: "/signature-image-processing",
+  consultation: "/book-consultation",
+  translate: "/document-translation",
+  medical: "/book-appointment",
+  pcc: "/police-verification/apply?province=Sindh",
+  "guide-passport": "/guides/passport-guide",
+  "guide-police": "/guides/police-verification-guide",
+  "guide-cnic": "/guides/cnic-guide",
+  "guide-birth-cert": "/guides/birth-certificate-guide",
+  "guide-frc": "/guides/frc-guide",
+  "guide-nikah-nama": "/guides/nikah-nama-guide",
+};
+
+export function getResourceLaunchHref(slug: string, kind?: string): string {
+  if (kind === "services") {
+    return SERVICE_FLOW_HREF[slug] ?? "/book-consultation";
+  }
+  return RESOURCE_LAUNCH_HREF[slug] ?? `/resources/${slug}`;
+}
+
 // ─── FAQs ─────────────────────────────────────────────────────────────────────
 export const FAQS: [string, string][] = [
   [

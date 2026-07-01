@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 
-import { ADDONS, SERVICE_FLOW_HREF } from "@/app/(main)/pricing/data/pricing";
+import { ADDONS, SERVICE_FLOW_HREF, getResourceLaunchHref } from "@/app/(main)/pricing/data/pricing";
 import {
   RESOURCE_DETAILS,
   RESOURCE_SLUGS,
@@ -10,6 +10,7 @@ import {
 } from "@/app/(main)/pricing/data/resourceDetails";
 import ResourceGallery from "./ResourceGallery";
 import AddToOrderButton from "./AddToOrderButton";
+import ResourceLaunchButton from "@/components/pricing/ResourceLaunchButton";
 import ReviewForm from "@/components/resources/ReviewForm";
 import { getApprovedReviews, getReviewStats } from "@/lib/reviews/data-access";
 import { getSlugTheme, getIcon } from "./iconMap";
@@ -95,6 +96,7 @@ export default async function ResourceDetailPage({
   // collects info and handles payment at checkout (e.g. /book-consultation).
   const serviceFlowHref =
     addon.kind === "services" ? SERVICE_FLOW_HREF[slug] : undefined;
+  const launchHref = getResourceLaunchHref(slug, addon.kind);
 
   const related = detail.related
     .map((rs) => ({ slug: rs, detail: RESOURCE_DETAILS[rs], addon: getAddon(rs) }))
@@ -204,12 +206,7 @@ export default async function ResourceDetailPage({
               ) : (
                 <AddToOrderButton slug={slug} price={addon.price} unit={addon.unit} accent={TEAL} />
               )}
-              <Link
-                href={`/pricing?mode=${addon.kind}`}
-                className="text-[14px] font-medium text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
-              >
-                Browse all
-              </Link>
+              <ResourceLaunchButton href={launchHref} />
             </div>
 
             <p className="mt-7 text-[12.5px] text-muted-foreground">
