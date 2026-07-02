@@ -98,10 +98,6 @@ export default async function ResourceDetailPage({
     addon.kind === "services" ? SERVICE_FLOW_HREF[slug] : undefined;
   const launchHref = getResourceLaunchHref(slug, addon.kind);
 
-  // "Try the demo" target — the real tool route. Null for items without a demo
-  // (e.g. services), in which case the button is not rendered.
-  const demoHref = getDemoRouteForSlug(slug);
-
   const related = detail.related
     .map((rs) => ({ slug: rs, detail: RESOURCE_DETAILS[rs], addon: getAddon(rs) }))
     .filter((r) => r.detail && r.addon);
