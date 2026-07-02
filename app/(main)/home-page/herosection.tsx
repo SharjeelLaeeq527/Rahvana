@@ -347,7 +347,7 @@ const rand=(a,b)=>a+Math.random()*(b-a);
 const clampNum=(v,min,max)=>Math.min(max,Math.max(min,v));
 const lerp=(v0,v1,vw,w0,w1)=>clampNum(v0+(v1-v0)*((vw-w0)/(w1-w0)),Math.min(v0,v1),Math.max(v0,v1));
 
-export default function HeroAnimation(){
+export default function HeroAnimation({skipToEnd=false,onComplete}={}){
   const[query,setQuery]=useState("");
   const[submitted,setSubmit]=useState(false);
   const[tabs,setTabs]=useState([]);
@@ -364,6 +364,12 @@ export default function HeroAnimation(){
   const[seqHl,setSeqHl]=useState(null);
   const[cVis,setCVis]=useState(new Set());
   const[charPose,setCharPose]=useState("standing");
+
+  // Tracks whether the running async sequence should keep going. Kept as a
+  // ref (not state) so the sequence can check it synchronously on every
+  // tick without waiting for a re-render, and so an external "skip" call
+  // can stop it immediately.
+  const aliveRef=useRef(true);
 
   const[vw,setVw]=useState(typeof window!=="undefined"?window.innerWidth:1200);
   const[vh,setVh]=useState(typeof window!=="undefined"?window.innerHeight:800);
@@ -387,14 +393,6 @@ export default function HeroAnimation(){
   const browserInnerH=clampNum(browserW*browserAR,115,375);
   const charSize=clampNum(browserInnerH*0.92,100,235);
 
-  useEffect(()=>{
-    if(typeof document==="undefined")return;
-    const lock=endPhase!=="hero";
-    document.body.style.overflow=lock?"hidden":"";
-    document.documentElement.style.overflow=lock?"hidden":"";
-    return()=>{document.body.style.overflow="";document.documentElement.style.overflow="";};
-  },[endPhase]);
-
   const camZoom=useMotionValue(0.80),camX=useMotionValue(0),camY=useMotionValue(0),camRot=useMotionValue(-2),shakeX=useMotionValue(0),shakeY=useMotionValue(0);
   const stageT=useTransform([camZoom,camX,camY,camRot,shakeX,shakeY],([z,x,y,r,sx,sy])=>`translate3d(${x+sx}px,${y+sy}px,0) scale(${z}) rotate(${r}deg)`);
   // Camera pan distances below were tuned against a desktop-width stage.
@@ -413,18 +411,18 @@ export default function HeroAnimation(){
   },[narrPhase,visibleJ]);
 
   useEffect(()=>{
-    let alive=true;
+    aliveRef.current=true;
     const cam=(to,dur=1.1)=>{const ease=[0.22,1,0.36,1];if(to.zoom!=null)mAnimate(camZoom,1+(to.zoom-1)*zoomDampen,{duration:dur,ease});if(to.x!=null)mAnimate(camX,to.x*panScale,{duration:dur,ease});if(to.y!=null)mAnimate(camY,to.y*panScale,{duration:dur,ease});if(to.rotate!=null)mAnimate(camRot,to.rotate,{duration:dur,ease});};
-    const shake=async()=>{for(let i=0;i<16;i++){if(!alive)return;shakeX.set(rand(-12,12)*panScale);shakeY.set(rand(-8,8)*panScale);await sleep(32);}shakeX.set(0);shakeY.set(0);};
-    const narrate=async(idx,holdMs,lvl)=>{setNarrPhase(lvl);setContent({kind:"narration",sceneIdx:idx});await sleep(holdMs);if(!alive)return;setContent({kind:"search"});setNarrPhase(null);await sleep(300);};
+    const shake=async()=>{for(let i=0;i<16;i++){if(!aliveRef.current)return;shakeX.set(rand(-12,12)*panScale);shakeY.set(rand(-8,8)*panScale);await sleep(32);}shakeX.set(0);shakeY.set(0);};
+    const narrate=async(idx,holdMs,lvl)=>{setNarrPhase(lvl);setContent({kind:"narration",sceneIdx:idx});await sleep(holdMs);if(!aliveRef.current)return;setContent({kind:"search"});setNarrPhase(null);await sleep(300);};
     const wave=w=>setVisibleJ(p=>{const n=new Set(p);(WAVE_IDS[w]||[]).forEach(id=>n.add(id));return n;});
     (async()=>{
-      cam({zoom:0.58,x:30,y:40,rotate:-8},0.01);await sleep(300);
-      cam({zoom:0.75,x:-15,y:10,rotate:3},2.2);await sleep(600);
+      cam({zoom:0.58,x:30,y:40,rotate:-8},0.01);await sleep(200);
+      cam({zoom:0.75,x:-15,y:10,rotate:3},1.8);await sleep(400);
 
       setSubmit(false);setCharPose("standing");
       const q1="how do I bring my spouse to the US";
-      for(let i=0;i<q1.length;i++){if(!alive)return;if(i===3)setCharPose("thinking");setQuery(q1.slice(0,i+1));await sleep(q1[i]===" "?rand(75,170):rand(32,85));if(Math.random()<0.11&&q1[i]===" ")await sleep(rand(180,400));}
+      for(let i=0;i<q1.length;i++){if(!aliveRef.current)return;if(i===3)setCharPose("thinking");setQuery(q1.slice(0,i+1));await sleep(q1[i]===" "?rand(75,170):rand(32,85));if(Math.random()<0.11&&q1[i]===" ")await sleep(rand(180,400));}
       await sleep(360);setSubmit(true);
       setCharPose("walking");
       cam({zoom:1.05,x:10,y:-30,rotate:-1.5},0.9);
@@ -434,19 +432,21 @@ export default function HeroAnimation(){
 
       setCharPose("confused");
       await narrate(0,2400,1);
+      if(!aliveRef.current)return;
 
       setCharPose("standing");
       let len=0;setQuery(q=>{len=q.length;return q;});await sleep(0);
-      for(let i=0;i<len;i++){if(!alive)return;setQuery(q=>q.slice(0,-1));await sleep(10);}
+      for(let i=0;i<len;i++){if(!aliveRef.current)return;setQuery(q=>q.slice(0,-1));await sleep(10);}
       setSubmit(false);await sleep(360);
+      if(!aliveRef.current)return;
 
       setCharPose("thinking");
       const typo="what is NCV";
-      for(const ch of typo){if(!alive)return;setQuery(q=>q+ch);await sleep(rand(36,70));}
+      for(const ch of typo){if(!aliveRef.current)return;setQuery(q=>q+ch);await sleep(rand(36,70));}
       await sleep(560);
-      for(let i=0;i<3;i++){if(!alive)return;setQuery(q=>q.slice(0,-1));await sleep(85);}
+      for(let i=0;i<3;i++){if(!aliveRef.current)return;setQuery(q=>q.slice(0,-1));await sleep(85);}
       await sleep(200);
-      for(const ch of "NVC"){if(!alive)return;setQuery(q=>q+ch);await sleep(55);}
+      for(const ch of "NVC"){if(!aliveRef.current)return;setQuery(q=>q+ch);await sleep(55);}
       await sleep(300);setSubmit(true);
       setTabs(p=>[...p,{id:"nvc",label:"NVC"}]);setActive("nvc");await sleep(620);
 
@@ -457,48 +457,75 @@ export default function HeroAnimation(){
 
       setCharPose("stressed");
       await narrate(1,2600,2);
+      if(!aliveRef.current)return;
 
       setCharPose("walking");
       wave(3);cam({zoom:0.88,x:-40,y:15,rotate:2.8},1.4);await sleep(480);
 
       setCharPose("carryingBooks");
       await narrate(2,2400,3);
+      if(!aliveRef.current)return;
 
       wave(4);await shake();
+      if(!aliveRef.current)return;
       setCharPose("sittingDown");
       cam({zoom:0.72,x:20,y:35,rotate:-5.2},1.3);await sleep(680);
 
       setCharPose("reading");
       await narrate(3,3000,4);
+      if(!aliveRef.current)return;
 
       let len2=0;setQuery(q=>{len2=q.length;return q;});await sleep(0);
-      for(let i=0;i<len2;i++){if(!alive)return;setQuery(q=>q.slice(0,-1));await sleep(10);}
+      for(let i=0;i<len2;i++){if(!aliveRef.current)return;setQuery(q=>q.slice(0,-1));await sleep(10);}
       setSubmit(false);await sleep(360);
+      if(!aliveRef.current)return;
       const q3="what am i missing???????";
-      for(const ch of q3){if(!alive)return;setQuery(q=>q+ch);await sleep(rand(36,70));}
+      for(const ch of q3){if(!aliveRef.current)return;setQuery(q=>q+ch);await sleep(rand(36,70));}
       await sleep(460);setSubmit(true);await sleep(720);
+      if(!aliveRef.current)return;
 
       setEndPhase("list");setCharPose("sittingDown");
       const words=["Forms.","Documents.","Deadlines.","Interviews.","Requirements.","Fees.","Translations.","Proofs."];
-      for(let i=0;i<words.length;i++){if(!alive)return;setListWords(words.slice(0,i+1));await sleep(260);}
-      await sleep(1900);
-      for(let i=0;i<words.length;i++){if(!alive)return;setConverging(i);await sleep(52);}
+      for(let i=0;i<words.length;i++){if(!aliveRef.current)return;setListWords(words.slice(0,i+1));await sleep(220);}
+      await sleep(1800);
+      for(let i=0;i<words.length;i++){if(!aliveRef.current)return;setConverging(i);await sleep(52);}
       await sleep(520);setListWords([]);await sleep(100);
+      if(!aliveRef.current)return;
 
       setEndPhase("cinematic");setCharPose("sittingUp");
       setCVis(new Set([0]));await sleep(CIN_SLIDES[0].holdMs);
+      if(!aliveRef.current)return;
       setCVis(new Set([0,1]));await sleep(CIN_SLIDES[1].holdMs);
+      if(!aliveRef.current)return;
       setCVis(new Set());await sleep(400);
+      if(!aliveRef.current)return;
 
       setEndPhase("fade");
-      for(let i=1;i<=30;i++){if(!alive)return;setFade(i/30);await sleep(18);}
-      await sleep(100);setEndPhase("hero");
+      for(let i=1;i<=30;i++){if(!aliveRef.current)return;setFade(i/30);await sleep(18);}
+      await sleep(100);
+      if(!aliveRef.current)return;
+      setEndPhase("hero");
+      onComplete?.();
 
       const full="Let's map it out.";
-      for(let i=0;i<=full.length;i++){if(!alive)return;setTypeText(full.slice(0,i));await sleep(rand(34,76));}
+      for(let i=0;i<=full.length;i++){if(!aliveRef.current)return;setTypeText(full.slice(0,i));await sleep(rand(34,76));}
     })();
-    return()=>{alive=false;};
+    return()=>{aliveRef.current=false;};
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   },[]);
+
+  // External skip: stop the sequence wherever it is and jump straight to
+  // the finished hero frame, fully typed out.
+  useEffect(()=>{
+    if(skipToEnd){
+      aliveRef.current=false;
+      setEndPhase("hero");
+      setFade(0);
+      setTypeText("Let's map it out.");
+      onComplete?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[skipToEnd]);
 
   const showStage=endPhase===null;
   const isN=content.kind==="narration";
@@ -605,25 +632,48 @@ export default function HeroAnimation(){
       )}
 
       {endPhase==="list"&&(
-        <div style={{position:"absolute",inset:0,zIndex:50,display:"flex",flexDirection:"column",
-          alignItems:"center",justifyContent:"center",padding:"0 6vw",gap:2}}>
+        <div style={{position:"absolute",inset:0,zIndex:50,display:"flex",
+          alignItems:"center",justifyContent:"center",overflow:"hidden"}}>
           {listWords.map((w,i)=>{
-            const ex=[-180,200,-220,160,-240,190,-170,210][i]??(i%2===0?-180:180);
-            const ey=[-60,-40,20,-30,40,-50,30,-20][i]??0;
-            const er=[-22,18,-28,14,-20,25,-16,22][i]??0;
-            const yOff=(i-(listWords.length-1)/2)*clampNum(vh*0.07,38,74);
-            const conv=convergingIdx>=i,cd=[0,0.04,0.02,0.06,0.01,0.05,0.03,0.07][i]??0;
+            /* Settled positions — deliberately crowded, nothing centred or tidy */
+            const SX=[-0.24, 0.16,-0.06, 0.28,-0.32, 0.08,-0.18, 0.22];
+            const SY=[-0.20, 0.14,-0.32,-0.04, 0.22,-0.26, 0.10, 0.28];
+            const ROT=[-9, 5,-14, 7,-5, 11,-7, 4];
+            const sx=vw*SX[i], sy=vh*SY[i], rot=ROT[i];
+
+            /* Words fly in from outside, each from a distinct angle            */
+            const θ=(i/8)*Math.PI*2;
+            const d=Math.max(vw,vh)*0.7;
+            const ex=Math.cos(θ)*d, ey=Math.sin(θ)*d;
+            const initRot=[-16,10,-20, 9,-12, 17,-9,13][i];
+
+            /* Size: wildly uneven — the process feels unscalable               */
+            const BASE=[82,54,38,72,34,96,42,64][i];
+            const sz=clampNum(BASE*jScale,BASE*0.42,BASE);
+            const fw=["900","700","500","800","500","900","600","800"][i];
+
+            /* Colour: not a single palette — stress-testing the eye             */
+            const col=["#0f172a",TEAL,CRIMSON,"#334155","#64748b",AMBER,"#475569",TEAL][i];
+
+            const conv=convergingIdx>=i;
+            const cd=[0,0.04,0.02,0.06,0.01,0.05,0.03,0.07][i]??0;
             return(
               <motion.div key={w}
-                initial={{opacity:0,x:ex,y:ey,scale:0.6,rotate:er,filter:"blur(12px)"}}
-                animate={conv?{opacity:0,x:0,y:-yOff,scale:0.04,rotate:0,filter:"blur(24px)"}:{opacity:1,x:0,y:0,scale:1,rotate:0,filter:"blur(0px)"}}
-                transition={conv?{duration:0.42,ease:[0.7,0,1,0.3],delay:cd}:{duration:0.45,ease:[0.16,1,0.3,1],delay:i*0.07,filter:{duration:0.4}}}
-                style={{fontSize:"clamp(18px,7vw,62px)",fontWeight:900,
-                  color:i%2===0?TEAL:"#1e293b",letterSpacing:"-0.05em",lineHeight:1.02,
-                  alignSelf:i%3===0?"flex-start":i%3===1?"flex-end":"center",fontFamily:FD,
-                  textShadow:conv?"none":"0 2px 18px rgba(0,0,0,0.08)"}}>
-                {w}
-              </motion.div>
+                initial={{opacity:0,x:ex,y:ey,rotate:initRot,scale:0.55}}
+                animate={conv
+                  ?{opacity:0,x:0,y:0,rotate:0,scale:0.04,filter:"blur(28px)"}
+                  :{opacity:1,x:sx,y:sy,rotate:rot,scale:1,filter:"blur(0px)"}}
+                transition={conv
+                  ?{duration:0.44,ease:[0.72,0,1,0.28],delay:cd}
+                  :{duration:0.58,ease:[0.16,1,0.3,1],delay:i*0.11}}
+                style={{
+                  position:"absolute",fontSize:sz,fontWeight:fw,
+                  fontFamily:FD,color:col,
+                  letterSpacing:"-0.04em",lineHeight:1,whiteSpace:"nowrap",
+                  WebkitFontSmoothing:"antialiased",
+                  textShadow:"0 4px 24px rgba(0,0,0,0.10)",
+                }}
+              >{w}</motion.div>
             );
           })}
         </div>
@@ -648,183 +698,98 @@ export default function HeroAnimation(){
   );
 }
 
-function InnerNarration({beatIdx,jScale}){
-  const beat=NARR_BEATS[beatIdx];if(!beat)return null;
-  return(
-    <motion.div initial={{opacity:0,scale:0.94,filter:"blur(10px)"}} animate={{opacity:1,scale:1,filter:"blur(0px)"}} exit={{opacity:0,scale:0.96,filter:"blur(6px)"}} transition={{duration:0.72,ease:[0.16,1,0.3,1]}}
-      style={{position:"absolute",inset:0,zIndex:45,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 4vw",pointerEvents:"none"}}>
-      <motion.p initial={{opacity:0,y:14}} animate={{opacity:1,y:0}} transition={{delay:0.06,duration:0.72,ease:[0.16,1,0.3,1]}}
-        style={{fontSize:clampNum(11*jScale,8,12),fontWeight:600,letterSpacing:"0.15em",textTransform:"uppercase",color:SLATE,margin:"0 0 1.2em",fontFamily:FB}}>{beat.eyebrow}</motion.p>
-      <div>{beat.lines.map((line,li)=>(
-        <motion.div key={li} initial={{opacity:0,y:28,filter:"blur(10px)",scale:0.94}} animate={{opacity:1,y:0,filter:"blur(0px)",scale:1}} transition={{delay:0.14+li*0.14,duration:0.85,ease:[0.16,1,0.3,1]}}
-          style={{display:"block",fontSize:"clamp(20px,4.5vw,56px)",fontWeight:900,lineHeight:0.95,letterSpacing:"-0.03em",fontFamily:FD,WebkitFontSmoothing:"antialiased",background:"linear-gradient(160deg,#020617 0%,#334155 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:li<beat.lines.length-1?"0.1em":0}}>{line.text}</motion.div>
-      ))}</div>
-      {beat.sub&&<motion.p initial={{opacity:0,y:8}} animate={{opacity:0.6}} transition={{delay:0.5,duration:0.72}}
-        style={{fontSize:clampNum(12*jScale,9,13),color:SLATE,fontFamily:FB,fontWeight:500,letterSpacing:"0.1em",textTransform:"uppercase",margin:"1.2em 0 0"}}>{beat.sub}</motion.p>}
-    </motion.div>
-  );
+function Dot({c,jScale}){
+  const s=clampNum(10*jScale,7,10);
+  return <div style={{width:s,height:s,borderRadius:"50%",background:c,flexShrink:0}}/>;
 }
-
-function EditorialSlide({slide}){
-  return(
-    <motion.div initial={{opacity:0,filter:"blur(24px)",scale:0.4}} animate={{opacity:1,filter:"blur(0px)",scale:1}}
-      exit={{opacity:0,y:-20,filter:"blur(8px)",scale:1.02,transition:{duration:0.6,ease:[0.16,1,0.3,1]}}} transition={{duration:1.2,ease:[0.16,1,0.3,1]}}
-      style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",justifyContent:"center",textAlign:"center",padding:"0 7vw",pointerEvents:"none"}}>
-      {slide.eyebrow&&<motion.p initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.08,duration:0.8}}
-        style={{fontSize:"clamp(9px,0.9vw,13px)",fontWeight:500,letterSpacing:"0.24em",textTransform:"uppercase",color:SLATE,margin:"0 0 1.1em",fontFamily:FB}}>{slide.eyebrow}</motion.p>}
-      {slide.lines.map((line,li)=>(
-        <motion.div key={li} initial={{opacity:0,y:60,filter:"blur(18px)",scale:0.95}} animate={{opacity:1,y:0,filter:"blur(0px)",scale:1}} transition={{delay:0.14+li*0.16,duration:1,ease:[0.16,1,0.3,1]}}
-          style={{display:"block",fontSize:"clamp(26px,7.5vw,64px)",fontWeight:900,lineHeight:0.84,letterSpacing:"-0.056em",fontFamily:FD,WebkitFontSmoothing:"antialiased",background:"linear-gradient(160deg,#020617 0%,#334155 100%)",WebkitBackgroundClip:"text",WebkitTextFillColor:"transparent",marginBottom:li<slide.lines.length-1?"0.07em":0}}>{line.text}</motion.div>
-      ))}
-      {slide.sub&&<motion.p initial={{opacity:0,y:10}} animate={{opacity:0.5}} transition={{delay:0.6,duration:0.85}}
-        style={{fontSize:"clamp(11px,1.1vw,16px)",color:SLATE,fontFamily:FB,fontWeight:400,letterSpacing:"0.08em",margin:"1.2em 0 0"}}>{slide.sub}</motion.p>}
-    </motion.div>
-  );
+function SearchIcon(){
+  return(<svg width="16" height="16" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>);
 }
-
-function URLBar({browserW,jScale}){
-  return(
-    <motion.div initial={{opacity:0,y:-3}} animate={{opacity:1,y:0}} transition={{duration:0.3}}>
-      <div style={{margin:"0 auto",height:clampNum(22*jScale,18,22),maxWidth:clampNum(browserW*0.45,140,340),
-        borderRadius:6,display:"flex",alignItems:"center",justifyContent:"center",padding:"0 10px",gap:6,
-        border:"1px solid rgba(0,0,0,0.08)",background:"rgba(255,255,255,0.6)",overflow:"hidden",whiteSpace:"nowrap"}}>
-        <Icons.Lock size={10} color="#9ca3af"/>
-        <span style={{fontSize:clampNum(10.5*jScale,9,10.5),color:"#64748b",letterSpacing:"0.01em",fontFamily:FB}}>rahvana.com</span>
-      </div>
-    </motion.div>
-  );
-}
+function Blink(){return <span style={{display:"inline-block",width:1.5,height:"1.2em",background:"#2e7175",marginLeft:2,animation:"_blink 1.0s step-start infinite",verticalAlign:"text-top"}}/>;}
 
 function TabBar({tabs,subTabs,activeTab,jScale}){
-  const rowRef=useRef(null),subRef=useRef(null);
-  useEffect(()=>{if(rowRef.current)rowRef.current.scrollLeft=rowRef.current.scrollWidth;},[tabs]);
-  useEffect(()=>{if(subRef.current)subRef.current.scrollLeft=subRef.current.scrollWidth;},[subTabs]);
+  const activeSubs=activeTab&&subTabs[activeTab]?subTabs[activeTab]:[];
   if(!tabs.length)return null;
-  const ep=Object.keys(subTabs)[0]??null;
-  const pad=clampNum(7*jScale,4,7);
   return(
-    <div style={{background:"linear-gradient(to bottom,#f4f4f7,#f1f1f4)",borderBottom:"1px solid #e2e2e6"}}>
-      <div ref={rowRef} style={{display:"flex",alignItems:"flex-end",padding:`${pad}px ${pad*1.7}px 0`,gap:1,overflowX:"auto",scrollbarWidth:"none",width:"100%"}}>
-        {tabs.map(t=>{const ca=(subTabs[t.id]??[]).some(c=>c.id===activeTab);const ia=activeTab===t.id||ca;return(<motion.div key={t.id} initial={{opacity:0,y:12,scale:0.9}} animate={{opacity:1,y:0,scale:1}} transition={{type:"spring",stiffness:440,damping:24,mass:0.6}} style={{flexShrink:0}}><BTab label={t.label} active={ia} jScale={jScale}/></motion.div>);})}
+    <div style={{display:"flex",flexDirection:"column",borderBottom:"1px solid #e8e8ec"}}>
+      <div style={{display:"flex",gap:clampNum(2*jScale,1,2),padding:`${clampNum(6*jScale,4,6)}px ${clampNum(8*jScale,5,8)}px 0`,background:"#f9f9fb"}}>
+        {tabs.map(t=>(
+          <div key={t.id} style={{padding:`${clampNum(5*jScale,3,5)}px ${clampNum(12*jScale,7,12)}px`,
+            background:activeTab===t.id?"#fff":"transparent",borderRadius:clampNum(6*jScale,4,6),
+            fontSize:clampNum(11*jScale,9,11),fontWeight:500,color:activeTab===t.id?"#1a202c":"#6b7280",
+            border:activeTab===t.id?"1px solid #e8e8ec":"1px solid transparent",borderBottom:"none",
+            boxShadow:activeTab===t.id?"0 -1px 4px rgba(0,0,0,0.03)":"none"}}>{t.label}</div>
+        ))}
       </div>
-      {ep&&subTabs[ep]&&(
-        <motion.div initial={{opacity:0,height:0}} animate={{opacity:1,height:"auto"}} transition={{duration:0.4,ease:[0.22,1,0.36,1]}} style={{overflow:"hidden"}}>
-          <div ref={subRef} style={{display:"flex",alignItems:"flex-end",gap:1,padding:`2px ${pad*1.7}px 0`,borderTop:"1px dashed #d1d5db",overflowX:"auto",scrollbarWidth:"none"}}>
-            {subTabs[ep].map((c,i)=>(<motion.div key={c.id} initial={{opacity:0,y:8,scale:0.9}} animate={{opacity:1,y:0,scale:1}} transition={{type:"spring",stiffness:380,damping:22,mass:0.7,delay:0.05*i}} style={{flexShrink:0}}><BTab label={c.label} active={activeTab===c.id} jScale={jScale} small/></motion.div>))}
-          </div>
-        </motion.div>
+      {activeSubs.length>0&&(
+        <div style={{display:"flex",gap:clampNum(6*jScale,4,6),padding:`${clampNum(6*jScale,4,6)}px ${clampNum(10*jScale,6,10)}px`,
+          background:"#fff",overflow:"auto"}}>
+          {activeSubs.map(s=>(
+            <div key={s.id} style={{fontSize:clampNum(9*jScale,7,9),color:"#6b7280",whiteSpace:"nowrap",flexShrink:0}}>{s.label}</div>
+          ))}
+        </div>
       )}
     </div>
   );
 }
-
-function BTab({label,active,jScale,small}){
-  const h=clampNum((small?22:28)*jScale,18,small?22:30);
-  const fs=clampNum((small?9.5:11.5)*jScale,8,small?9.5:11.5);
-  const px=clampNum((small?9:14)*jScale,6,small?9:15);
-  return(<div style={{height:h,paddingLeft:px,paddingRight:px,display:"inline-flex",alignItems:"center",fontSize:fs,fontWeight:active?600:400,color:active?TEALB:"#718096",background:active?"#fff":"rgba(255,255,255,0.5)",clipPath:"polygon(6px 0,calc(100% - 6px) 0,100% 100%,0 100%)",marginRight:-4,flexShrink:0,whiteSpace:"nowrap",transition:"all 180ms",fontFamily:FB}}>
-    <span style={{width:small?4:5,height:small?4:5,borderRadius:"50%",background:active?TEAL:"#cbd5e0",display:"inline-block",marginRight:small?4:5,flexShrink:0}}/>
-    {label}
-  </div>);
-}
-
-function HeroFrame({typeText,isMobile,isTablet,vw}){
-  const done=typeText==="Let's map it out.";
-  const STEPS=[{n:"01",l:"File"},{n:"02",l:"Process"},{n:"03",l:"Interview"},{n:"04",l:"Approved"}];
-  const logoScale=clampNum(vw/1100,0.5,1);
-  const showSteps=vw>=860;
+function URLBar({browserW,jScale}){
+  const w=clampNum(browserW*0.45,160,360);
   return(
-    <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{duration:1.6,ease:[0.16,1,0.3,1]}}
-      style={{position:"absolute",inset:0,zIndex:70,background:HERO_BG,display:"flex",flexDirection:"column",
-        alignItems:"center",justifyContent:"center",padding:isMobile?"0 6vw":"0 7vw",overflow:"hidden"}}>
-
-      <motion.div initial={{opacity:0,y:-14}} animate={{opacity:1,y:0}} transition={{delay:0.15,duration:0.85,ease:[0.22,1,0.36,1]}}
-        style={{position:"absolute",top:"clamp(20px,5vw,40px)",left:isMobile?"6vw":"7vw",color:TEAL,transform:`scale(${logoScale})`,transformOrigin:"top left"}}>
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="152 220 710 215" style={{height:30,width:"auto",fill:"currentColor"}}>
-          <path d="M194.478302,411.482117C188.648972,398.666321 181.184067,387.211884 174.078979,375.556946C161.946335,355.654999 154.218430,334.429535 152.466766,310.927032C150.965759,290.787415 151.490814,271.069061 158.657028,251.953415C161.906097,243.286591 167.372574,236.333282 175.068100,231.098938C187.972153,222.321823 212.377777,222.515015 222.031631,242.165817C226.003326,250.250381 232.154404,254.994858 241.386230,255.103607C240.874603,257.700470 239.210571,257.303253 238.057617,257.539734C214.604111,262.350281 200.098267,276.975067 192.363480,299.065857C184.921768,320.319672 187.555267,352.132874 198.628662,372.172211C195.346085,360.736084 194.548477,349.072571 194.585556,337.231354C194.686203,305.091156 209.071442,282.030487 237.587112,267.388245C252.463837,259.749298 268.363953,254.738281 283.791870,248.515182C300.024750,241.967392 315.867065,234.607849 330.889893,225.571030C331.848022,224.994675 332.727417,224.133804 334.330139,224.642090C334.086884,229.016586 332.356110,232.995224 331.110291,237.029678C325.877838,253.974487 319.356995,270.258270 307.731262,284.109070C295.584656,298.580475 279.797791,306.307983 261.751282,310.259583C255.743668,311.575104 249.729248,312.898682 243.795959,314.506500C229.390137,318.410126 220.388382,329.212219 218.286926,343.947327C216.575470,355.947906 217.905655,367.798737 218.737152,379.737518C219.623474,392.463135 221.756760,405.206818 219.303925,418.003387C217.963852,424.994537 214.710114,430.344635 207.688766,433.006439C204.303909,434.289673 202.544754,433.679260 201.368622,430.074707C199.358749,423.914886 196.908096,417.898895 194.478302,411.482117z"/>
-          <path d="M347.022308,320.000671C347.016052,314.839264 347.105347,310.174835 346.965759,305.517273C346.865234,302.162506 348.128204,300.629364 351.628418,300.734467C356.786560,300.889313 361.960175,300.922363 367.113922,300.699646C370.973633,300.532806 372.427643,301.928192 372.368347,305.879303C372.186157,318.023376 372.301971,330.171936 372.301971,342.083649C373.283447,342.867767 373.819183,342.426117 374.318726,342.006836C383.782745,334.063324 394.575775,332.615875 406.196838,335.633057C415.899536,338.152130 422.744904,346.587646 423.310516,356.622040C424.267090,373.593201 423.737030,390.584991 423.953217,407.566589C423.995270,410.868988 423.022247,412.495087 419.405853,412.347473C414.084778,412.130249 408.740967,412.096069 403.421997,412.329346C399.633331,412.495514 398.561127,410.970825 398.606415,407.354187C398.766998,394.531891 398.675171,381.706299 398.663269,368.881958C398.653717,358.575378 395.399567,354.366302 387.286011,354.116821C377.843262,353.826508 372.628845,358.719452 372.391693,368.828339C372.122253,380.313904 372.349670,391.810638 372.318054,403.302399C372.289795,413.578827 373.113983,412.175079 363.109467,412.274994C359.445770,412.311584 355.772827,412.113037 352.119568,412.309662C348.129639,412.524414 346.894379,410.660309 346.908722,406.924530C346.998840,383.444702 346.970551,359.964386 346.985443,336.484253C346.988831,331.156372 347.007996,325.828522 347.022308,320.000671z"/>
-          <path d="M320.909363,412.311096C317.090668,412.315186 313.737823,412.059113 310.437317,412.365967C305.318787,412.841858 301.746216,411.882538 302.918549,404.615967C295.871124,410.791656 288.552673,413.763123 280.156006,414.249451C254.958969,415.708740 237.504608,396.636383 239.498611,370.735535C239.781265,367.064178 240.334641,363.492889 241.348862,359.967224C249.310272,332.292297 281.741791,328.266632 299.022125,340.520233C300.048828,341.248291 300.767242,342.583801 302.297913,342.519531C303.777649,335.660950 303.777649,335.661041 311.217407,335.661530C315.046356,335.661774 318.896240,335.913361 322.698822,335.596771C327.228424,335.219635 328.372986,337.188049 328.342041,341.407928C328.185883,362.715698 328.266510,384.025238 328.261688,405.334137C328.260132,412.186127 328.256805,412.186127 320.909363,412.311096M301.669952,365.008423C295.854095,354.320007 283.816345,350.650452 274.124878,356.611633C264.651733,362.438538 261.929047,377.159515 268.562775,386.684814C274.734344,395.546509 288.041443,397.276093 296.853241,389.902008C304.682800,383.349915 304.819550,374.753296 301.669952,365.008423z"/>
-          <path d="M605.060913,373.000000C605.062988,384.657990 604.973816,395.817139 605.115417,406.973328C605.163574,410.764404 603.888367,412.517792 599.916382,412.297821C596.098145,412.086365 592.258423,412.278320 588.428223,412.263885C581.340210,412.237213 581.340271,412.228333 580.396484,405.534912C578.652649,405.182587 577.723206,406.577301 576.587097,407.410583C564.256653,416.454071 551.032898,416.485992 537.883057,410.164795C525.372864,404.151062 519.815430,393.082336 518.661011,379.565979C517.650513,367.735138 519.446167,356.688538 527.285583,347.204102C539.560242,332.353760 562.272705,329.781647 577.620483,341.553528C578.269348,342.051208 578.930420,342.532898 579.531860,342.981750C579.975769,342.721405 580.485229,342.552582 580.478455,342.407898C580.185974,336.163940 583.752686,335.041809 589.019958,335.614197C592.147156,335.954010 595.341675,335.664795 598.505798,335.677979C604.895813,335.704559 605.023010,335.813751 605.037109,342.023712C605.060242,352.182434 605.053894,362.341248 605.060913,373.000000M560.688660,354.010437C551.697937,354.960571 545.673096,359.988037 543.586243,368.281647C541.270569,377.484711 544.135803,386.858582 550.601074,391.231262C557.524597,395.913879 567.137268,395.721375 574.094788,390.760834C580.548767,386.159302 583.183777,376.489594 580.517395,367.191528C578.133301,358.877991 571.864624,354.512573 560.688660,354.010437z"/>
-          <path d="M791.203979,365.000000C791.216858,379.151947 791.068298,392.806946 791.330078,406.454102C791.419312,411.109009 789.796753,412.746704 785.268616,412.344116C781.965149,412.050415 778.614258,412.285797 775.284485,412.293915C768.156677,412.311279 768.156677,412.313538 767.357422,405.215393C764.213135,407.193054 761.370483,409.448242 758.167908,410.920929C733.721130,422.162598 707.000671,405.737396 705.710083,378.830902C705.135010,366.839264 706.926270,355.504913 715.175415,346.176605C727.394165,332.359222 748.536804,330.064270 763.725403,340.652008C764.770203,341.380341 765.547607,342.627289 767.044250,342.615326C768.603943,335.673187 768.603943,335.673187 776.271057,335.669495C791.293762,335.662231 791.290283,335.662231 791.225891,350.515137C791.205688,355.176697 791.210022,359.838379 791.203979,365.000000M768.573364,376.996460C769.015320,373.435791 768.214661,370.040833 767.117615,366.707123C764.123230,357.607910 755.689209,352.825104 745.305481,354.289215C737.101746,355.445923 731.056091,363.018951 730.341125,373.034027C729.616272,383.187927 734.786743,391.471527 743.217041,393.662537C755.729126,396.914307 764.723938,391.261047 768.573364,376.996460z"/>
-          <path d="M697.327026,399.984680C697.339050,412.311646 697.339050,412.311615 685.404663,412.283051C670.974670,412.248474 670.964172,412.248535 670.934204,397.847595C670.912354,387.349304 670.950134,376.850830 670.910339,366.352631C670.877319,357.649750 667.768311,354.120880 660.178406,354.030457C651.960327,353.932495 646.475220,358.640869 646.328003,366.479462C646.090149,379.139923 646.175232,391.806488 646.130127,404.470490C646.102478,412.239929 646.107666,412.248108 638.147339,412.267700C633.814819,412.278351 629.479553,412.159454 625.150574,412.280670C622.015259,412.368408 620.641907,411.190186 620.652283,407.922607C620.723999,385.259857 620.724670,362.596588 620.651917,339.933838C620.641296,336.624023 622.086670,335.543457 625.194092,335.645996C629.355530,335.783325 633.524902,335.671936 637.690918,335.677185C645.251038,335.686707 645.251038,335.689728 646.772644,342.860565C652.933044,338.273254 659.430969,334.844513 667.182312,334.359741C685.805542,333.194977 696.572632,343.763824 697.123047,358.999908C697.610107,372.480835 697.291077,385.990845 697.327026,399.984680z"/>
-          <path d="M462.865234,349.315674C466.810211,360.099579 470.616516,370.517090 474.916962,382.287018C479.384949,370.264709 483.446716,359.611023 487.304840,348.884125C492.050720,335.688873 491.977295,335.663025 505.813934,335.672577C509.450104,335.675079 513.086243,335.672974 516.388855,335.672974C517.832825,337.670685 516.935730,339.029816 516.375854,340.352936C506.968994,362.584229 497.464996,384.774902 488.184998,407.058929C486.539337,411.010712 484.388458,412.776581 479.977966,412.379303C475.350067,411.962463 470.655884,412.190247 465.993652,412.284424C463.688049,412.331024 462.271484,411.462463 461.363007,409.333313C451.367401,385.906311 441.325592,362.499023 431.328247,339.072754C431.024841,338.361816 431.069000,337.502533 430.862396,336.117645C439.559174,335.296478 447.964783,335.637482 456.359894,335.899841C458.206085,335.957550 458.559937,337.773163 459.088776,339.116821C460.368408,342.367920 461.522064,345.668579 462.865234,349.315674z"/>
-        </svg>
-      </motion.div>
-
-      <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.3,duration:1,ease:[0.22,1,0.36,1]}}
-        style={{position:"absolute",top:"clamp(20px,5vw,44px)",right:isMobile?"6vw":"7vw",fontSize:"clamp(8px,1vw,11px)",fontWeight:600,
-          letterSpacing:"0.18em",textTransform:"uppercase",color:SLATE,fontFamily:FB,whiteSpace:"nowrap"}}>
-        Immigration — Mapped
-      </motion.div>
-
-      <div style={{position:"relative",zIndex:2,width:"100%",maxWidth:1040,
-        display:"flex",flexDirection:isMobile?"column":"row",alignItems:isMobile?"center":"flex-end",
-        justifyContent:"space-between",gap:isMobile?28:0}}>
-
-        <div style={{textAlign:isMobile?"center":"left",maxWidth:isMobile?"100%":620}}>
-          <motion.h1 animate={{letterSpacing:done?"-0.045em":"-0.02em"}} transition={{duration:0.95,ease:[0.22,1,0.36,1]}}
-            style={{fontSize:"clamp(28px,8vw,84px)",fontWeight:900,lineHeight:0.96,margin:0,
-              color:"#020617",fontFamily:FD,WebkitFontSmoothing:"antialiased"}}>
-            {typeText.split(" ").map((w,i)=>(
-              <span key={i} style={{color:i===1?TEAL:"#020617"}}>{w}{" "}</span>
-            ))}
-            {!done&&<span style={{display:"inline-block",width:"0.05em",height:"0.78em",background:TEAL,
-              marginLeft:"0.04em",verticalAlign:"middle",borderRadius:2,animation:"_blink 1s step-start infinite"}}/>}
-          </motion.h1>
-
-          {done&&(
-            <motion.div initial={{opacity:0,y:18}} animate={{opacity:1,y:0}} transition={{delay:0.5,duration:0.9,ease:[0.22,1,0.36,1]}}
-              style={{display:"flex",flexWrap:"wrap",alignItems:"center",gap:18,marginTop:"clamp(16px,3vw,26px)",
-                justifyContent:isMobile?"center":"flex-start"}}>
-              <p style={{fontSize:"clamp(12px,2.6vw,17px)",color:SLATE,
-                lineHeight:1.7,fontWeight:300,margin:0,maxWidth:340,fontFamily:FB}}>
-                Every form, deadline, and milestone — laid out before you start.
-              </p>
-              <CTALink/>
-            </motion.div>
-          )}
-        </div>
-
-        {showSteps&&(
-          <motion.div initial={{opacity:0}} animate={{opacity:1}} transition={{delay:0.7,duration:0.9}}
-            style={{display:"flex",flexDirection:"column",gap:14,paddingBottom:6}}>
-            {STEPS.map((s,i)=>(
-              <motion.div key={s.n} initial={{opacity:0,x:14}} animate={{opacity:done?1:0,x:done?0:14}}
-                transition={{delay:0.85+i*0.12,duration:0.6,ease:[0.22,1,0.36,1]}}
-                style={{display:"flex",alignItems:"baseline",gap:10,justifyContent:"flex-end"}}>
-                <span style={{fontFamily:FD,fontSize:13,fontWeight:600,color:i===3?TEAL:"#94a3b8",letterSpacing:"0.02em"}}>{s.n}</span>
-                <span style={{fontFamily:FB,fontSize:13,fontWeight:500,color:i===3?TEALB:"#475569",letterSpacing:"0.02em"}}>{s.l}</span>
-                <span style={{width:i===3?18:10,height:1,background:i===3?TEAL:"#cbd5e1"}}/>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </div>
-
-      <motion.div initial={{scaleX:0}} animate={{scaleX:done?1:0}} transition={{delay:0.95,duration:1.1,ease:[0.22,1,0.36,1]}}
-        style={{position:"absolute",bottom:"clamp(32px,7vw,56px)",left:isMobile?"6vw":"7vw",right:isMobile?"6vw":"7vw",height:1,
-          background:"linear-gradient(to right,rgba(46,113,117,0.35),transparent 70%)",transformOrigin:"left"}}/>
+    <div style={{width:w,height:clampNum(22*jScale,16,24),borderRadius:clampNum(5*jScale,3,5),
+      background:"rgba(255,255,255,0.6)",border:"1px solid rgba(0,0,0,0.06)",
+      display:"flex",alignItems:"center",padding:`0 ${clampNum(8*jScale,5,8)}px`,
+      fontSize:clampNum(10*jScale,8,10),color:"#6b7280",overflow:"hidden"}}>
+      <span style={{opacity:0.5,marginRight:4}}>🔒</span>
+      <span style={{whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>immigration-help.gov</span>
+    </div>
+  );
+}
+function InnerNarration({beatIdx,jScale}){
+  const b=NARR_BEATS[beatIdx];
+  if(!b)return null;
+  return(
+    <motion.div initial={{opacity:0,scale:0.92}} animate={{opacity:1,scale:1}} exit={{opacity:0,scale:0.88}}
+      transition={{duration:0.5,ease:[0.22,1,0.36,1]}}
+      style={{textAlign:"center",maxWidth:"90%"}}>
+      <div style={{fontSize:clampNum(9*jScale,7,9),letterSpacing:"0.15em",textTransform:"uppercase",
+        color:"rgba(46,113,117,0.7)",fontWeight:600,marginBottom:clampNum(8*jScale,5,8),fontFamily:FB}}>{b.eyebrow}</div>
+      {b.lines.map((ln,i)=>(
+        <div key={i} style={{fontSize:clampNum(24*jScale,16,28),fontWeight:900,lineHeight:1.1,
+          letterSpacing:"-0.02em",color:"#1e293b",fontFamily:FD}}>{ln.text}</div>
+      ))}
+      {b.sub&&<div style={{fontSize:clampNum(11*jScale,9,11),color:"#6b7280",marginTop:clampNum(10*jScale,6,10),fontFamily:FB}}>{b.sub}</div>}
     </motion.div>
   );
 }
-
-function CTALink(){
-  const[hover,setHover]=useState(false);
+function EditorialSlide({slide}){
   return(
-    <motion.a onMouseEnter={()=>setHover(true)} onMouseLeave={()=>setHover(false)}
-      style={{position:"relative",display:"inline-flex",alignItems:"center",gap:6,cursor:"pointer",
-        fontFamily:FB,fontSize:14,fontWeight:600,color:TEALB,letterSpacing:"0.01em",flexShrink:0}}>
-      Start your journey
-      <span style={{position:"relative",display:"inline-block",width:14,height:14}}>
-        <motion.span animate={{x:hover?3:0,opacity:hover?0:1}} transition={{duration:0.25}}
-          style={{position:"absolute",inset:0}}>→</motion.span>
-      </span>
-      <motion.span animate={{scaleX:hover?1:0.32}} transition={{duration:0.35,ease:[0.22,1,0.36,1]}}
-        style={{position:"absolute",left:0,bottom:-4,height:1.4,width:"100%",background:TEAL,transformOrigin:"left"}}/>
-    </motion.a>
+    <motion.div initial={{opacity:0,scale:0.90,y:20}} animate={{opacity:1,scale:1,y:0}} exit={{opacity:0,scale:0.88,y:-20}}
+      transition={{duration:0.7,ease:[0.22,1,0.36,1]}}
+      style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",
+        justifyContent:"center",padding:"0 8vw",textAlign:"center"}}>
+      <div style={{fontSize:"clamp(8px,1.2vw,13px)",letterSpacing:"0.22em",textTransform:"uppercase",
+        color:"rgba(46,113,117,0.65)",fontWeight:600,marginBottom:"clamp(14px,2vw,24px)",fontFamily:FB}}>{slide.eyebrow}</div>
+      {slide.lines.map((ln,i)=>(
+        <div key={i} style={{fontSize:"clamp(32px,8vw,88px)",fontWeight:900,lineHeight:0.96,
+          letterSpacing:"-0.04em",color:"#1e293b",fontFamily:FD}}>{ln.text}</div>
+      ))}
+      {slide.sub&&<div style={{fontSize:"clamp(10px,1.8vw,20px)",color:"#6b7280",marginTop:"clamp(16px,2.4vw,32px)",fontFamily:FB}}>{slide.sub}</div>}
+    </motion.div>
   );
 }
-
-function Dot({c,jScale=1}){const s=clampNum(10*jScale,7,10);return<span style={{width:s,height:s,borderRadius:"50%",background:c,display:"inline-block",flexShrink:0}}/>;}
-function SearchIcon(){return<svg width="15" height="15" viewBox="0 0 16 16" fill="none" style={{color:"#9ca3af",flexShrink:0}}><circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5"/><path d="m11 11 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/></svg>;}
-function Blink(){return<span style={{display:"inline-block",width:2,height:"1em",background:TEALB,marginLeft:2,verticalAlign:"middle",borderRadius:1,animation:"_blink 1s step-start infinite"}}/>;}
+function HeroFrame({typeText,isMobile,isTablet,vw}){
+  const btnW=clampNum(vw*0.20,140,240);
+  return(
+    <div style={{position:"absolute",inset:0,display:"flex",flexDirection:"column",alignItems:"center",
+      justifyContent:"center",padding:isMobile?"0 6vw":"0 8vw"}}>
+      <motion.h1 initial={{opacity:0,y:12}} animate={{opacity:1,y:0}} transition={{duration:0.6,ease:[0.22,1,0.36,1]}}
+        style={{fontSize:isMobile?"clamp(24px,7vw,36px)":isTablet?"clamp(32px,6vw,52px)":"clamp(42px,5.5vw,68px)",
+          fontWeight:900,lineHeight:1.08,letterSpacing:"-0.03em",color:"#1e293b",textAlign:"center",
+          marginBottom:isMobile?"clamp(12px,3vw,18px)":"clamp(16px,2.4vw,28px)",fontFamily:FD}}>{typeText}<Blink/></motion.h1>
+      <motion.button initial={{opacity:0,y:8}} animate={{opacity:1,y:0}} transition={{duration:0.5,delay:0.3,ease:[0.22,1,0.36,1]}}
+        style={{padding:`${clampNum(vw*0.012,10,18)}px ${clampNum(vw*0.028,22,42)}px`,background:TEAL,color:"#fff",
+          fontSize:clampNum(vw*0.014,12,18),fontWeight:700,borderRadius:999,border:"none",cursor:"pointer",
+          boxShadow:"0 4px 16px rgba(46,113,117,0.24)",width:btnW,fontFamily:FB}}>Start Your Journey</motion.button>
+    </div>
+  );
+}

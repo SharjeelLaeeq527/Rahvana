@@ -315,7 +315,7 @@ export function ToolsDock() {
   }, []);
 
   return (
-    <section className="relative flex h-screen max-h-screen w-full flex-col justify-center overflow-hidden bg-slate-50/50 px-6 py-4">
+    <section className="relative flex w-full flex-col justify-center overflow-hidden bg-slate-50/50 px-6 py-10 md:py-14">
       <div className="mx-auto flex w-full max-w-5xl flex-col justify-center">
         {/* Eyebrow + headline */}
         <div className="mx-auto mb-4 md:mb-6 max-w-2xl text-center shrink-0">
@@ -552,10 +552,10 @@ function CurvedDock({
   }, [activeIndex, tools, half]);
 
   const width = 680;
-  const height = 80;
+  const height = 90;
   const cx = width / 2;
-  const cy = height + 220;
-  const r = cy - 20;
+  const cy = height + 320;
+  const r = cy - 25;
   const slot = (width - 80) / (VISIBLE - 1);
 
   /** Convert an offset (-half … +half) to { left%, top } along the arc */
@@ -599,7 +599,7 @@ function CurvedDock({
         <ChevronLeft className="h-4 w-4" />
       </button>
 
-      <div className="relative flex-1 aspect-[680/80] overflow-visible">
+      <div className="relative flex-1 aspect-[680/90] overflow-visible">
         {/* Arc guide line */}
         <svg viewBox={`0 0 ${width} ${height}`} className="absolute inset-0 w-full h-full block" aria-hidden>
           <path

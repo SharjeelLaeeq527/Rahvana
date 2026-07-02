@@ -4,7 +4,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from
 import { Caveat } from "next/font/google";
 import * as Icons from "lucide-react";
 import { ToolsDock } from "./ToolDock";
-import HeroSection from "./herosection";
+import Intro from "./Intro";
 import AnimationCard from "./AnimationCard";
 
 const caveat = Caveat({
@@ -422,7 +422,7 @@ const CARD_OFFSET_CLASS = "md:-ml-12";
 export default function RoadmapPage() {
   return (
     <div className={`w-full min-h-screen bg-slate-50/50 pb-20 ${caveat.variable}`}>
-      <HeroSection />
+      <Intro />
 
       <RoadmapProvider>
         <div className="max-w-5xl mx-auto px-6 mt-12 relative">

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import HeroAnimation from "./herosection";
+import HeroAnimation from "../imports/pasted_text/hero-animations";
+import { useState, useEffect, useRef } from "react";
 
 const TEAL = "#2e7175";
 const FD   = "'Fraunces', Georgia, serif";
@@ -13,6 +14,15 @@ const INK   = (a: number) => `rgba(12,18,42,${a})`;
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const rnd   = (a: number, b: number) => a + Math.random() * (b - a);
+
+const [heroDone, setHeroDone] = useState(false);
+const skipRef = useRef(false);
+
+function handleSkip() {
+  skipRef.current = true;
+  setStage("done");
+  setStartHero(true);
+}
 
 type Stage = "typing" | "sketch" | "dissolving" | "done";
 
@@ -307,49 +317,49 @@ export default function App() {
       const TI = "Marriage-Based Immigration";
       setCur("ti");
       for (let i = 1; i <= TI.length; i++) {
-        if (!alive) return;
+        if (!alive || skipRef.current) return;
         setTitle(TI.slice(0, i));
-        await sleep([" ", "-"].includes(TI[i - 1]) ? rnd(50, 102) : rnd(23, 56));
+        await sleep([" ", "-"].includes(TI[i - 1]) ? rnd(50, 95) : rnd(22, 52));
       }
-      await sleep(210);
+      await sleep(180);
 
       const SB = "for spouses of US citizens";
       setCur("sb");
       for (let i = 1; i <= SB.length; i++) {
-        if (!alive) return;
+        if (!alive || skipRef.current) return;
         setSub(SB.slice(0, i));
-        await sleep(SB[i - 1] === " " ? rnd(38, 78) : rnd(17, 44));
+        await sleep(SB[i - 1] === " " ? rnd(34, 68) : rnd(15, 38));
       }
-      await sleep(350);
+      await sleep(300);
 
       const L1 = "The process doesn't come with a map.";
       setCur("l1");
       for (let i = 1; i <= L1.length; i++) {
-        if (!alive) return;
+        if (!alive || skipRef.current) return;
         setLine1(L1.slice(0, i));
-        await sleep(L1[i - 1] === " " ? rnd(28, 64) : rnd(13, 40));
+        await sleep(L1[i - 1] === " " ? rnd(26, 56) : rnd(12, 34));
       }
-      await sleep(150);
+      await sleep(130);
 
       const L2 = "Now it does.";
       setCur("l2");
       for (let i = 1; i <= L2.length; i++) {
-        if (!alive) return;
+        if (!alive || skipRef.current) return;
         setLine2(L2.slice(0, i));
-        await sleep(rnd(32, 70));
+        await sleep(rnd(28, 60));
       }
       setCur("off");
 
-      await sleep(1700);
-      if (!alive) return;
+      await sleep(1200);
+      if (!alive || skipRef.current) return;
       setStage("sketch");
 
-      await sleep(4000);   /* Wait for sketch to FULLY develop (~3.2s draw + 0.8s hold) */
-      if (!alive) return;
+      await sleep(3200);   /* sketch fully drawn (~2.9s) + brief hold */
+      if (!alive || skipRef.current) return;
       setStage("dissolving");
 
-      await sleep(1800);   /* multi-stage morph transition duration */
-      if (!alive) return;
+      await sleep(1400);   /* chunk mask dissolve */
+      if (!alive || skipRef.current) return;
       setStage("done");
       setStartHero(true);  /* Now start the hero animation */
     })();
