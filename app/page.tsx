@@ -1200,7 +1200,7 @@ function HomePageContent() {
                           className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
                         >
                           <AnimationCard
-                            file="rahvana_question_stack_standalone.html"
+                            file="rahvana_question_stack_standalone_final.html"
                             title="Interview anxiety — what if I forget?"
                             w={450}
                             h={640}
