@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Check, X, Calendar as CalendarIcon, Save, Trash2, Edit2 } from "lucide-react";
+import { Check, X, Calendar as CalendarIcon, Save, Trash2, Edit2, ChevronLeft, ChevronRight } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,10 @@ const AvailabilityGrid = () => {
   const [slots, setSlots] = useState<Slot[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+
+  // Pagination state
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Show 5 dates at a time
 
   // New slot form state
   const [newSlot, setNewSlot] = useState({
@@ -162,6 +166,7 @@ const AvailabilityGrid = () => {
       if (response.ok) {
         const data = await response.json();
         setSlots(data);
+        setCurrentPage(1);
       }
     } catch (error) {
       console.error("Error fetching slots:", error);
@@ -387,8 +392,16 @@ const AvailabilityGrid = () => {
     {} as Record<string, ProcessedSlot[]>
   );
 
-  // Get unique dates sorted
-  const sortedDates = Object.keys(groupedSlots).sort();
+  // Get unique dates sorted in descending order (latest dates first)
+  const sortedDates = Object.keys(groupedSlots).sort((a, b) => b.localeCompare(a));
+
+  // Pagination calculation
+  const totalPages = Math.ceil(sortedDates.length / itemsPerPage);
+  const safeCurrentPage = Math.min(Math.max(1, currentPage), Math.max(1, totalPages));
+  const paginatedDates = sortedDates.slice(
+    (safeCurrentPage - 1) * itemsPerPage,
+    safeCurrentPage * itemsPerPage
+  );
 
   return (
     <div className="space-y-6">
@@ -493,85 +506,157 @@ const AvailabilityGrid = () => {
                 <p>No availability slots defined yet.</p>
               </div>
             ) : (
-              <div className="overflow-auto max-h-125">
-                {sortedDates.map((date) => (
-                  <div key={date} className="border-b last:border-0 p-4">
-                    <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
-                      <span className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded text-xs uppercase tracking-wider">
-                        {new Date(date).toLocaleDateString(undefined, {
-                          weekday: "short",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </span>
-                    </h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                      {groupedSlots[date]
-                        .sort((a, b) => a.start_time.localeCompare(b.start_time))
-                        .map((slot) => (
-                          <div
-                            key={slot.id}
-                            className={cn(
-                              "group relative flex items-center justify-between p-2 rounded-lg border transition-all cursor-pointer hover:shadow-sm",
-                              slot.status === "available"
-                                ? (slot.localStart.getTime() < Date.now()
-                                    ? "bg-gray-50 border-gray-150 grayscale opacity-70 hover:border-gray-300"
-                                    : "bg-white border-teal-100 hover:border-teal-400 hover:bg-teal-50/10"
-                                  )
-                                : slot.status === "confirmed"
-                                  ? "bg-green-50 border-green-200 hover:border-green-400"
-                                  : slot.status === "pending"
-                                    ? "bg-yellow-50 border-yellow-200 hover:border-yellow-400"
-                                    : slot.status === "canceled" || slot.status === "cancelled"
-                                      ? "bg-red-50 border-red-200 hover:border-red-400"
-                                      : "bg-gray-50 border-gray-200 grayscale opacity-70 hover:border-gray-400"
-                            )}
-                            onClick={() => handleOpenEditModal(slot)}
-                          >
-                            <div className="flex flex-col">
-                              <span className="text-xs font-bold font-mono">
-                                {slot.localStart.toLocaleTimeString("en-US", {
-                                  hour: "2-digit",
-                                  minute: "2-digit",
-                                  hour12: false, // Use 24-hour format to be clear
-                                })}
-                              </span>
-                              <span
-                                className={cn(
-                                  "text-[9px] uppercase font-black",
-                                  slot.status === "available"
-                                    ? (slot.localStart.getTime() < Date.now() ? "text-gray-400" : "text-teal-600")
-                                    : slot.status === "confirmed"
-                                      ? "text-green-600"
-                                      : slot.status === "pending"
-                                        ? "text-yellow-600"
-                                        : slot.status === "canceled" || slot.status === "cancelled"
-                                          ? "text-red-600 font-extrabold"
-                                          : "text-gray-400"
-                                )}
-                              >
-                                {slot.status === "available" && slot.localStart.getTime() < Date.now() ? "expired" : slot.status}
-                              </span>
-                            </div>
-                            {slot.status === "available" ? (
-                              slot.localStart.getTime() < Date.now() ? (
+              <>
+                <div className="overflow-auto max-h-125">
+                  {paginatedDates.map((date) => (
+                    <div key={date} className="border-b last:border-0 p-4">
+                      <h4 className="font-bold text-gray-900 mb-3 flex items-center gap-2">
+                        <span className="bg-teal-100 text-teal-800 px-2 py-0.5 rounded text-xs uppercase tracking-wider">
+                          {new Date(date).toLocaleDateString(undefined, {
+                            weekday: "short",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </h4>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                        {groupedSlots[date]
+                          .sort((a, b) => a.start_time.localeCompare(b.start_time))
+                          .map((slot) => (
+                            <div
+                              key={slot.id}
+                              className={cn(
+                                "group relative flex items-center justify-between p-2 rounded-lg border transition-all cursor-pointer hover:shadow-sm",
+                                slot.status === "available"
+                                  ? (slot.localStart.getTime() < Date.now()
+                                      ? "bg-gray-50 border-gray-150 grayscale opacity-70 hover:border-gray-300"
+                                      : "bg-white border-teal-100 hover:border-teal-400 hover:bg-teal-50/10"
+                                    )
+                                  : slot.status === "confirmed"
+                                    ? "bg-green-50 border-green-200 hover:border-green-400"
+                                    : slot.status === "pending"
+                                      ? "bg-yellow-50 border-yellow-200 hover:border-yellow-400"
+                                      : slot.status === "canceled" || slot.status === "cancelled"
+                                        ? "bg-red-50 border-red-200 hover:border-red-400"
+                                        : "bg-gray-50 border-gray-200 grayscale opacity-70 hover:border-gray-400"
+                              )}
+                              onClick={() => handleOpenEditModal(slot)}
+                            >
+                              <div className="flex flex-col">
+                                <span className="text-xs font-bold font-mono">
+                                  {slot.localStart.toLocaleTimeString("en-US", {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                    hour12: false, // Use 24-hour format to be clear
+                                  })}
+                                </span>
+                                <span
+                                  className={cn(
+                                    "text-[9px] uppercase font-black",
+                                    slot.status === "available"
+                                      ? (slot.localStart.getTime() < Date.now() ? "text-gray-400" : "text-teal-600")
+                                      : slot.status === "confirmed"
+                                        ? "text-green-600"
+                                        : slot.status === "pending"
+                                          ? "text-yellow-600"
+                                          : slot.status === "canceled" || slot.status === "cancelled"
+                                            ? "text-red-600 font-extrabold"
+                                            : "text-gray-400"
+                                  )}
+                                >
+                                  {slot.status === "available" && slot.localStart.getTime() < Date.now() ? "expired" : slot.status}
+                                </span>
+                              </div>
+                              {slot.status === "available" ? (
+                                slot.localStart.getTime() < Date.now() ? (
+                                  <X className="h-3 w-3 text-gray-300 group-hover:text-red-400 transition-colors" />
+                                ) : (
+                                  <Check className="h-3 w-3 text-teal-300 group-hover:text-teal-500 transition-colors" />
+                                )
+                              ) : slot.status === "unavailable" ? (
                                 <X className="h-3 w-3 text-gray-300 group-hover:text-red-400 transition-colors" />
+                              ) : slot.status === "canceled" || slot.status === "cancelled" ? (
+                                <X className="h-3 w-3 text-red-400" />
                               ) : (
-                                <Check className="h-3 w-3 text-teal-300 group-hover:text-teal-500 transition-colors" />
-                              )
-                            ) : slot.status === "unavailable" ? (
-                              <X className="h-3 w-3 text-gray-300 group-hover:text-red-400 transition-colors" />
-                            ) : slot.status === "canceled" || slot.status === "cancelled" ? (
-                              <X className="h-3 w-3 text-red-400" />
-                            ) : (
-                              <Edit2 className="h-3 w-3 text-gray-300 opacity-0 group-hover:opacity-100 group-hover:text-teal-500 transition-all" />
+                                <Edit2 className="h-3 w-3 text-gray-300 opacity-0 group-hover:opacity-100 group-hover:text-teal-500 transition-all" />
+                              )}
+                            </div>
+                          ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Pagination Controls */}
+                {totalPages > 1 && (
+                  <div className="flex flex-col sm:flex-row items-center justify-between p-4 border-t bg-gray-50/50 gap-3">
+                    <span className="text-xs text-gray-500 font-semibold">
+                      Showing page {safeCurrentPage} of {totalPages} ({sortedDates.length} dates total)
+                    </span>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(safeCurrentPage - 1)}
+                        disabled={safeCurrentPage === 1}
+                        className="h-8 px-2 border-gray-200 text-xs font-semibold"
+                      >
+                        <ChevronLeft className="h-4.5 w-4.5 mr-0.5" />
+                        Prev
+                      </Button>
+                      
+                      {/* Page numbers */}
+                      {Array.from({ length: totalPages }).map((_, idx) => {
+                        const pageNum = idx + 1;
+                        const shouldShow =
+                          totalPages <= 5 ||
+                          pageNum === 1 ||
+                          pageNum === totalPages ||
+                          Math.abs(pageNum - safeCurrentPage) <= 1;
+
+                        if (!shouldShow) {
+                          if (pageNum === 2 || pageNum === totalPages - 1) {
+                            return (
+                              <span key={pageNum} className="text-gray-400 px-1.5 text-xs select-none">
+                                ...
+                              </span>
+                            );
+                          }
+                          return null;
+                        }
+
+                        return (
+                          <Button
+                            key={pageNum}
+                            variant={safeCurrentPage === pageNum ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setCurrentPage(pageNum)}
+                            className={cn(
+                              "h-8 w-8 p-0 font-bold text-xs",
+                              safeCurrentPage === pageNum
+                                ? "bg-teal-600 hover:bg-teal-700 text-white"
+                                : "border-gray-200 hover:bg-teal-50 hover:text-teal-700"
                             )}
-                          </div>
-                        ))}
+                          >
+                            {pageNum}
+                          </Button>
+                        );
+                      })}
+
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setCurrentPage(safeCurrentPage + 1)}
+                        disabled={safeCurrentPage === totalPages}
+                        className="h-8 px-2 border-gray-200 text-xs font-semibold"
+                      >
+                        Next
+                        <ChevronRight className="h-4.5 w-4.5 ml-0.5" />
+                      </Button>
                     </div>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </CardContent>
         </Card>
