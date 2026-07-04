@@ -4,6 +4,8 @@ import { createClient } from "@supabase/supabase-js";
 import { sendEmail, getPasswordResetEmailHtml } from "@/lib/email/resend";
 import crypto from "crypto";
 import { msg, E } from "@/lib/errors";
+import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
+import { auditLog, auditBlocked } from "@/lib/security/audit-log";
 
 // Create admin client for password reset
 const supabaseAdmin = createClient(
@@ -18,6 +20,13 @@ const supabaseAdmin = createClient(
 );
 
 export async function POST(request: NextRequest) {
+  // ── Rate Limit (stricter: 3 per 15 min since this triggers emails) ──
+  const rl = checkRateLimit(request, "auth-forgot-password", { maxAttempts: 3 });
+  if (!rl.allowed) {
+    auditBlocked(request, "auth.forgot_password", { reason: "rate_limited" });
+    return rateLimitResponse(rl);
+  }
+
   try {
     const { email } = await request.json();
 
@@ -107,6 +116,14 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    auditLog({
+      action: "auth.forgot_password",
+      resource: "auth",
+      request,
+      metadata: { email: normalizedEmail },
+      status: "success",
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

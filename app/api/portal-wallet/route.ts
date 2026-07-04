@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { encrypt, decrypt } from "@/lib/encryption";
 import { E, msg } from "@/lib/errors";
+import { auditLog } from "@/lib/security/audit-log";
 
 const normalizeSecurityAnswer = (answer: string) => answer.trim().replace(/\s+/g, " ").toLowerCase();
 
@@ -70,6 +71,15 @@ export async function GET() {
                 answer: "••••••",
               })) || [],
       })) || [];
+
+    auditLog({
+      userId: user.id,
+      action: "portal_wallet.view",
+      resource: "portal_wallet_credentials",
+      request,
+      metadata: { count: response.length },
+      status: "success",
+    });
 
     return NextResponse.json({ credentials: response });
   } catch (error) {
@@ -186,6 +196,16 @@ export async function POST(req: Request) {
         }
       }
     }
+
+    auditLog({
+      userId: user.id,
+      action: "portal_wallet.save",
+      resource: "portal_wallet_credentials",
+      resourceId: credential.id,
+      request: req,
+      metadata: { portalType },
+      status: "success",
+    });
 
     return NextResponse.json({ success: true, credentialId: credential.id });
   } catch (error) {

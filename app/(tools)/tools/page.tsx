@@ -27,6 +27,7 @@ import { usePlan } from "../../context/PlanContext";
 import { UpgradeModal } from "../../components/entitlements/UpgradeModal";
 import { ROUTE_FEATURE_MAP } from "@/lib/entitlements/routeFeatureMap";
 import AddResourceCard from "@/components/resources/AddResourceCard";
+import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader";
 
 import {
   DropdownMenu,
@@ -281,13 +282,22 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
     return matchesSearch && matchesCategory;
   }).sort((a, b) => a.title.localeCompare(b.title));
 
-  // "My Resources" (embedded) view: only the tools the user actually owns —
-  // free/public tools plus anything unlocked by their plan or purchased add-ons.
+  // "My Resources" (embedded) view splits the catalog into two sections:
+  //  • "My Tools"     — tools the user owns (free/public + unlocked by plan or add-ons)
+  //  • "Browse Tools" — everything else, shown as locked/"Unlock" cards to explore
   const isOwned = (feature?: string) =>
     !feature || (!plan.isLoading && !plan.isLocked(feature));
-  const displayTools = isEmbedded
-    ? filteredTools.filter((tool) => isOwned(tool.entitlementFeature))
-    : filteredTools;
+  const ownedTools = filteredTools.filter((tool) => isOwned(tool.entitlementFeature));
+  const browseTools = filteredTools.filter((tool) => !isOwned(tool.entitlementFeature));
+
+  const renderToolCard = (tool: Tool, index: number) => (
+    <ToolCard
+      key={tool.id}
+      tool={tool}
+      index={index}
+      onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+    />
+  );
 
   return (
     <div
@@ -389,28 +399,46 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
         )}
 
         {/* Tools grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
-          {displayTools.map((tool, index) => (
-            <ToolCard
-              key={tool.id}
-              tool={tool}
-              index={index}
-              onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+        {isEmbedded ? (
+          <>
+            {/* My Tools — what the user owns */}
+            <ResourceSectionHeader
+              title="My Tools"
+              subtitle="Tools you've unlocked with your plan or add-ons."
             />
-          ))}
-          {isEmbedded && (
-            <AddResourceCard
-              href="/pricing?mode=tools"
-              label="Add tool"
-              index={displayTools.length}
-            />
-          )}
-          {!isEmbedded && displayTools.length === 0 && (
-            <div className="col-span-full text-center py-12 text-muted-foreground">
-              {t("toolsPage.noToolsFound") || "No tools found matching your search."}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+              {ownedTools.map((tool, index) => renderToolCard(tool, index))}
+              <AddResourceCard
+                href="/pricing?mode=tools"
+                label="Add tool"
+                index={ownedTools.length}
+              />
             </div>
-          )}
-        </div>
+
+            {/* Browse Tools — everything not yet owned */}
+            {browseTools.length > 0 && (
+              <>
+                <ResourceSectionHeader
+                  title="Browse Tools"
+                  subtitle="Explore more tools — try a demo or unlock the full version."
+                  className="mt-12"
+                />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+                  {browseTools.map((tool, index) => renderToolCard(tool, index))}
+                </div>
+              </>
+            )}
+          </>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+            {filteredTools.map((tool, index) => renderToolCard(tool, index))}
+            {filteredTools.length === 0 && (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                {t("toolsPage.noToolsFound") || "No tools found matching your search."}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

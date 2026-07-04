@@ -31,6 +31,7 @@ import {
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { usePlan } from "@/app/context/PlanContext";
 import AddResourceCard from "@/components/resources/AddResourceCard";
+import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader";
 import { useAuth } from "@/app/context/AuthContext";
 import { motion } from "framer-motion";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
@@ -342,12 +343,127 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
     return matchesSearch && matchesCategory;
   }).sort((a, b) => a.title.localeCompare(b.title));
 
-  // "My Resources" (embedded) view: only the guides the user has unlocked
-  // (via plan tier or purchased add-ons); free guides always show.
+  // "My Resources" (embedded) view splits the catalog into two sections:
+  //  • "My Guides"     — guides the user owns (plan/add-ons) OR has already started
+  //  • "Browse Guides" — everything else, shown as locked/"Unlock" cards to explore
   const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
-  const displayGuides = isEmbedded
-    ? filteredGuides.filter((guide) => isOwned(guide.entitlementFeature))
-    : filteredGuides;
+  const hasSession = (guide: Guide) => {
+    const slug = guide.href.split("/").pop();
+    return sessions.some((s) => s.guides.slug === slug);
+  };
+  // A started guide belongs in "My Guides" even if its entitlement is locked.
+  const isMine = (guide: Guide) => isOwned(guide.entitlementFeature) || hasSession(guide);
+  const ownedGuides = filteredGuides.filter(isMine);
+  const browseGuides = filteredGuides.filter((guide) => !isMine(guide));
+  // Embedded "My Resources" shows owned/started in the first grid; the standalone
+  // page shows the full filtered list.
+  const displayGuides = isEmbedded ? ownedGuides : filteredGuides;
+
+  // Renders a started-guide progress card when a session exists, otherwise a GuideCard.
+  const renderGuideCard = (guide: Guide, index: number) => {
+    const guideSlug = guide.href.split("/").pop();
+    const session = sessions.find((s) => s.guides.slug === guideSlug);
+
+    if (session) {
+      return (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: index * 0.1 }}
+          key={session.id}
+          className="group bg-white rounded-3xl border border-slate-200 p-6 shadow-sm hover:shadow-xl hover:border-teal-200 transition-all flex flex-col relative overflow-hidden mt-6"
+        >
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-3 bg-teal-50 rounded-2xl text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">
+              <BookOpen size={24} />
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full
+                  ${session.status === "completed" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}
+                >
+                  {session.status.replace("_", " ")}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSelectedSessionId(session.id);
+                    setShowConfirmDelete(true);
+                  }}
+                  className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                  title="Delete this progress"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <span className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
+                <Clock size={10} />
+                {new Date(session.last_updated_at).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+
+          <h3 className="text-xl font-bold text-slate-900 group-hover:text-teal-700 transition-colors mb-2">
+            {session.guides.title}
+          </h3>
+          <p className="text-slate-500 text-sm leading-relaxed mb-6 line-clamp-2">
+            {session.guides.description}
+          </p>
+
+          <div className="mt-auto">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
+                Progress
+              </span>
+              <span className="text-xs font-black text-teal-600">
+                {session.progress_percent}%
+              </span>
+            </div>
+            <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-6">
+              <div
+                className="h-full bg-teal-500 rounded-full transition-all duration-1000"
+                style={{ width: `${session.progress_percent}%` }}
+              />
+            </div>
+
+            <Link
+              href={`/guides/${session.guides.slug}`}
+              className="flex items-center justify-center gap-2 w-full py-3.5 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-teal-600 transition-all shadow-lg shadow-slate-200 hover:shadow-teal-100 group/btn"
+            >
+              {session.status === "completed" ? (
+                <>
+                  <CheckCircle2 size={18} />
+                  View Results
+                </>
+              ) : (
+                <>
+                  <PlayCircle
+                    size={18}
+                    className="group-hover/btn:scale-110 transition-transform"
+                  />
+                  Resume Guide
+                </>
+              )}
+              <ChevronRight
+                size={16}
+                className="ml-1 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all"
+              />
+            </Link>
+          </div>
+        </motion.div>
+      );
+    }
+
+    return (
+      <GuideCard
+        key={guide.id}
+        guide={guide}
+        index={index}
+        onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+      />
+    );
+  };
 
   return (
     <div
@@ -465,6 +581,14 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
               )}
             </div>
           </div>
+        )}
+
+        {/* My Guides — owned or already started (embedded view only) */}
+        {isEmbedded && (
+          <ResourceSectionHeader
+            title="My Guides"
+            subtitle="Guides you've unlocked or already started."
+          />
         )}
 
         {/* Guides Grid */}
@@ -592,6 +716,20 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
             </div>
           )}
         </div>
+
+        {/* Browse Guides — everything not yet owned (embedded view only) */}
+        {isEmbedded && browseGuides.length > 0 && (
+          <>
+            <ResourceSectionHeader
+              title="Browse Guides"
+              subtitle="Explore more guides — preview them or unlock the full version."
+              className="mt-12"
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 pt-6">
+              {browseGuides.map((guide, index) => renderGuideCard(guide, index))}
+            </div>
+          </>
+        )}
       </div>
       <ConfirmationModal
         open={showConfirmDelete}

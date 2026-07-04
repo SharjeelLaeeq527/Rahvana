@@ -152,6 +152,8 @@ export const E = {
   /** POST /forgot-password — client omitted the email field */
   AUTH_RESET_EMAIL_REQUIRED: 1026,
 
+  /** Rate limiter — too many requests from the same IP to an auth endpoint */
+  AUTH_RATE_LIMITED: 1034,
 
   // ─── DASHBOARD & NAVIGATION (1100–1149) ──────────────────────────────────
 

@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
+import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
+import { auditLog, auditBlocked } from "@/lib/security/audit-log";
 
 export async function POST(request: NextRequest) {
+  // ── Rate Limit ──
+  const rl = checkRateLimit(request, "auth-mfa-enroll", { maxAttempts: 5 });
+  if (!rl.allowed) {
+    auditBlocked(request, "auth.mfa_enroll", { reason: "rate_limited" });
+    return rateLimitResponse(rl);
+  }
+
   try {
     const supabase = await createClient();
 
@@ -78,6 +87,15 @@ export async function POST(request: NextRequest) {
         { status: 500 }
       );
     }
+
+    auditLog({
+      userId: user.id,
+      action: "auth.mfa_enroll",
+      resource: "auth",
+      request,
+      metadata: { factorId: data.id },
+      status: "success",
+    });
 
     return NextResponse.json({
       success: true,
