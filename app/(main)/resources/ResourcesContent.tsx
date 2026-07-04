@@ -25,6 +25,10 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
   const [hasStartedGuides, setHasStartedGuides] = useState(false);
 
   useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
+
+  useEffect(() => {
     if (!user) {
       setHasActiveRequests(false);
       setHasStartedGuides(false);
@@ -83,7 +87,7 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
           My Resources
         </h1>
         <p className="mt-3 text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
-          Everything you own in one place — your tools, guides, and services. Add more anytime.
+          Everything you&apos;ve added — plus the full catalog to browse and try anytime.
         </p>
       </div>
 

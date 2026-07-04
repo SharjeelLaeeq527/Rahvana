@@ -2,6 +2,7 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { auditLog } from "@/lib/security/audit-log";
 
 // =============================
 // Admin Emails
@@ -117,6 +118,16 @@ export async function updateSession(request: NextRequest) {
       profile && ADMIN_EMAILS.includes(profile.email) && profile.role === "admin";
 
     if (!isAuthorizedAdmin) {
+      // Audit: unauthorized admin access attempt
+      auditLog({
+        userId: user.id,
+        action: "admin.access_denied",
+        resource: "admin",
+        request,
+        metadata: { pathname, email: profile?.email },
+        status: "blocked",
+      });
+
       if (isApiAdminRoute) {
         return NextResponse.json({ error: "Forbidden: Admin access required" }, { status: 403 });
       }
@@ -124,6 +135,16 @@ export async function updateSession(request: NextRequest) {
       url.pathname = "/";
       return NextResponse.redirect(url);
     }
+
+    // Audit: successful admin access
+    auditLog({
+      userId: user.id,
+      action: "admin.access",
+      resource: "admin",
+      request,
+      metadata: { pathname },
+      status: "success",
+    });
   }
 
   // =============================

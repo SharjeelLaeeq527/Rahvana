@@ -457,11 +457,6 @@ export async function triggerAppointmentNotification(appointmentId: string) {
       console.error("[InAppNotif] Background error:", err);
     });
 
-    // Create in-app notification (non-blocking — don't let it fail the email)
-    createInAppNotification(appointmentId, appointment).catch((err) => {
-      console.error("[InAppNotif] Background error:", err);
-    });
-
     const result = await sendAppointmentNotification(notificationData);
 
     // Admin Connection: Notify admin specifically WHO booked WHAT

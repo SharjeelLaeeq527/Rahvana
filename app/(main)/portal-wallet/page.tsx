@@ -87,6 +87,7 @@ const PortalWallet: React.FC = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [deletePortal, setDeletePortal] = useState<PortalType | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [processingPortal, setProcessingPortal] = useState<PortalType | null>(null);
 
   const { showToast } = useToast();
 
@@ -111,6 +112,8 @@ const PortalWallet: React.FC = () => {
 
   const handleAddOrEdit = async (data: any) => {
     setIsSubmitting(true);
+    setProcessingPortal(data.portalType);
+
     try {
       const res = await fetch(API_BASE, {
         method: "POST",
@@ -124,6 +127,7 @@ const PortalWallet: React.FC = () => {
     } catch {
       showToast(msg(E.VAULT_CREDENTIAL_SAVE_FAILED), "error");
     } finally {
+      setProcessingPortal(null);
       setIsSubmitting(false);
     }
   };
@@ -134,6 +138,7 @@ const PortalWallet: React.FC = () => {
 
   const confirmDelete = async (portalType: PortalType) => {
     setIsSubmitting(true);
+    setProcessingPortal(portalType);
 
     try {
       const res = await fetch(`${API_BASE}/${portalType}/delete`, {
@@ -151,6 +156,7 @@ const PortalWallet: React.FC = () => {
     } catch {
       showToast(msg(E.VAULT_CREDENTIAL_DELETE_FAILED), "error");
     } finally {
+      setProcessingPortal(null);
       setIsSubmitting(false);
     }
   };
@@ -289,7 +295,7 @@ const PortalWallet: React.FC = () => {
         </div>
 
         {/* Portal Cards */}
-        <div className="flex flex-col md:flex-row items-stretch justify-center gap-6">
+        <div className="flex flex-col md:flex-row items-center md:items-stretch justify-center gap-6">
           {portals.map((portal) => {
             const cred = getCredential(portal.type);
             return (
@@ -301,6 +307,7 @@ const PortalWallet: React.FC = () => {
                 portalUrl={portal.url}
                 hasCredentials={!!cred}
                 iconBgColor={portal.iconBgColor}
+                loading={processingPortal === portal.type}
                 onAction={() => {
                   if (cred) {
                     setViewModal({ open: true, portalType: portal.type });
@@ -340,6 +347,8 @@ const PortalWallet: React.FC = () => {
             ? {
                 username: formCredential.username,
                 password: "",
+                nvcCaseNumber: formCredential.nvc_case_number || "",
+                nvcInvoiceId: formCredential.nvc_invoice_id || "",
                 securityQuestions: formCredential.security_questions.map((sq) => ({
                   id: sq.id,
                   question: sq.question,

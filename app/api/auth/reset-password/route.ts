@@ -3,6 +3,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { E, msg } from "@/lib/errors";
 import crypto from "crypto";
+import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
+import { auditLog, auditBlocked } from "@/lib/security/audit-log";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -25,6 +27,13 @@ function safeCompare(a: string, b: string) {
 }
 
 export async function POST(request: NextRequest) {
+  // ── Rate Limit ──
+  const rl = checkRateLimit(request, "auth-reset-password", { maxAttempts: 5 });
+  if (!rl.allowed) {
+    auditBlocked(request, "auth.reset_password", { reason: "rate_limited" });
+    return rateLimitResponse(rl);
+  }
+
   try {
     const { token, email, password } = await request.json();
 
@@ -86,6 +95,15 @@ export async function POST(request: NextRequest) {
       console.error("Error updating password:", updateError);
       return NextResponse.json({ error: "Failed to update password" }, { status: 500 });
     }
+
+    auditLog({
+      userId: user.id,
+      action: "auth.reset_password",
+      resource: "auth",
+      request,
+      metadata: { email },
+      status: "success",
+    });
 
     return NextResponse.json({ success: true });
   } catch (error) {

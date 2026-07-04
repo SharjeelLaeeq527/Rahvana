@@ -164,9 +164,6 @@ export default function AnimationCard({
     }
   };
 
-  const isDefaultBg = bgClass === "bg-transparent";
-  const cardRadius = Math.round(24 * scale);
-
   return (
     <div
       ref={wrapRef}
@@ -175,13 +172,6 @@ export default function AnimationCard({
         width: dispW,
         maxWidth: "100%",
         height,
-        ...(isDefaultBg
-          ? {
-              borderRadius: `${cardRadius}px`,
-              boxShadow:
-                "0 30px 60px -20px rgba(15, 40, 42, 0.25), 0 2px 8px rgba(15, 40, 42, 0.06)",
-            }
-          : {}),
       }}
     >
       <iframe

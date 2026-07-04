@@ -82,98 +82,106 @@ export default function ResourceGallery({
 
   return (
     <div className="w-full">
-      {/* Stage */}
-      <div
-        className="relative aspect-[16/10] w-full overflow-hidden rounded-[24px] border shadow-sm"
-        style={{
-          borderColor: `${accent}22`,
-          background: `linear-gradient(160deg, ${tint} 0%, #ffffff 70%)`,
-        }}
-      >
-        {showFallback ? (
-          Placeholder
-        ) : current.type === "video" ? (
-          <video
-            key={current.src}
-            controls
-            poster={current.poster}
-            className="h-full w-full bg-black object-contain"
-          >
-            <source src={current.src} type="video/mp4" />
-          </video>
-        ) : (
-          <button
-            type="button"
-            onClick={() => setZoomed(true)}
-            className="group absolute inset-0 h-full w-full cursor-zoom-in"
-            aria-label={`Enlarge ${current.alt}`}
-          >
-            <Image
-              key={current.src}
-              src={current.src}
-              alt={current.alt}
-              fill
-              sizes="(max-width: 1024px) 100vw, 640px"
-              className="object-contain transition-transform duration-300 group-hover:scale-[1.02]"
-              onError={() => setErrored((e) => ({ ...e, [active]: true }))}
-              priority
-            />
-            {/* Zoom hint */}
-            <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /><path d="M11 8v6M8 11h6" /></svg>
-              Click to enlarge
-            </span>
-          </button>
-        )}
+      <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-[#f5f7fb] shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+        <div className="flex items-center gap-3 border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur-sm">
+          <div className="flex items-center gap-1.5 shrink-0">
+            <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
+            <span className="h-3 w-3 rounded-full bg-[#febc2e]" />
+            <span className="h-3 w-3 rounded-full bg-[#28c840]" />
+          </div>
+        </div>
 
-        {!showFallback && current.caption && (
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent p-4">
-            <p className="text-[13px] font-medium text-white">{current.caption}</p>
+        {/* Stage */}
+        <div
+          className="relative aspect-[16/10] w-full overflow-hidden"
+          style={{
+            background: `linear-gradient(160deg, ${tint} 0%, #ffffff 70%)`,
+          }}
+        >
+          {showFallback ? (
+            Placeholder
+          ) : current.type === "video" ? (
+            <video
+              key={current.src}
+              controls
+              poster={current.poster}
+              className="h-full w-full bg-black object-contain"
+            >
+              <source src={current.src} type="video/mp4" />
+            </video>
+          ) : (
+            <button
+              type="button"
+              onClick={() => setZoomed(true)}
+              className="group absolute inset-0 h-full w-full cursor-zoom-in"
+              aria-label={`Enlarge ${current.alt}`}
+            >
+              <Image
+                key={current.src}
+                src={current.src}
+                alt={current.alt}
+                fill
+                sizes="(max-width: 1024px) 100vw, 640px"
+                className="object-contain transition-transform duration-300 group-hover:scale-[1.02]"
+                onError={() => setErrored((e) => ({ ...e, [active]: true }))}
+                priority
+              />
+              <span className="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-black/55 px-2.5 py-1 text-[11px] font-medium text-white opacity-0 transition-opacity group-hover:opacity-100">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><path d="m21 21-4.3-4.3" /><path d="M11 8v6M8 11h6" /></svg>
+                Click to enlarge
+              </span>
+            </button>
+          )}
+
+          {!showFallback && current.caption && (
+            <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/65 to-transparent p-4">
+              <p className="text-[13px] font-medium text-white">{current.caption}</p>
+            </div>
+          )}
+        </div>
+
+        {/* Thumbnails */}
+        {items.length > 1 && (
+          <div className="flex gap-3 p-4 pt-3">
+            {items.map((m, i) => {
+              const isActive = i === active;
+              const thumbFallback = !m.src || errored[i];
+              return (
+                <button
+                  key={i}
+                  onClick={() => setActive(i)}
+                  className="relative aspect-[16/10] w-24 shrink-0 overflow-hidden rounded-xl border-2 transition-all"
+                  style={{ borderColor: isActive ? accent : "transparent", opacity: isActive ? 1 : 0.7 }}
+                  aria-label={`View ${m.alt}`}
+                >
+                  {thumbFallback ? (
+                    <span
+                      className="flex h-full w-full items-center justify-center text-[18px]"
+                      style={{ backgroundColor: tint, fontFamily: SERIF, color: accent }}
+                    >
+                      {monogram}
+                    </span>
+                  ) : m.type === "video" ? (
+                    <span className="flex h-full w-full items-center justify-center bg-black/80">
+                      <span className="text-white">▶</span>
+                    </span>
+                  ) : (
+                    <Image
+                      src={m.src}
+                      alt={m.alt}
+                      fill
+                      sizes="96px"
+                      className="object-contain"
+                      style={{ backgroundColor: tint }}
+                      onError={() => setErrored((e) => ({ ...e, [i]: true }))}
+                    />
+                  )}
+                </button>
+              );
+            })}
           </div>
         )}
       </div>
-
-      {/* Thumbnails */}
-      {items.length > 1 && (
-        <div className="mt-3 flex gap-3">
-          {items.map((m, i) => {
-            const isActive = i === active;
-            const thumbFallback = !m.src || errored[i];
-            return (
-              <button
-                key={i}
-                onClick={() => setActive(i)}
-                className="relative aspect-[16/10] w-24 shrink-0 overflow-hidden rounded-xl border-2 transition-all"
-                style={{ borderColor: isActive ? accent : "transparent", opacity: isActive ? 1 : 0.7 }}
-                aria-label={`View ${m.alt}`}
-              >
-                {thumbFallback ? (
-                  <span
-                    className="flex h-full w-full items-center justify-center text-[18px]"
-                    style={{ backgroundColor: tint, fontFamily: SERIF, color: accent }}
-                  >
-                    {monogram}
-                  </span>
-                ) : m.type === "video" ? (
-                  <span className="flex h-full w-full items-center justify-center bg-black/80">
-                    <span className="text-white">▶</span>
-                  </span>
-                ) : (
-                  <Image
-                    src={m.src}
-                    alt={m.alt}
-                    fill
-                    sizes="96px"
-                    className="object-contain"
-                    style={{ backgroundColor: tint }}
-                    onError={() => setErrored((e) => ({ ...e, [i]: true }))}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      )}
 
       {/* Lightbox modal */}
       {zoomed && !showFallback && current.type === "image" && (
