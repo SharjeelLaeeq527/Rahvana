@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rahvana — Tangle to Path (enhanced)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Serif+Display:ital@0;1&family=Caveat:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f8fa;--ink:#0f172a;--muted:#64748b;
+    --teal:#0f766e;--teal-bright:#0d9488;
+    --amber:#a16207;--purple:#6d28d9;--coral:#e11d48;--green:#059669;
+    --card-line:#e6ebf0;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:"DM Sans",system-ui,sans-serif;color:var(--ink);background:var(--bg);line-height:1.5;overflow-x:hidden}
+
+  /* soft ambient teal wash fills the gutters so the centre isn't lonely */
+  .ambient{position:fixed;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+  .blob{position:absolute;border-radius:50%;filter:blur(90px)}
+  .blob.l{width:560px;height:560px;left:-240px;top:12%;background:radial-gradient(circle,rgba(13,148,136,.16),transparent 70%);animation:drift 17s ease-in-out infinite}
+  .blob.r{width:600px;height:600px;right:-260px;top:46%;background:radial-gradient(circle,rgba(15,118,110,.14),transparent 70%);animation:drift 21s ease-in-out infinite reverse}
+  .blob.b{width:460px;height:460px;left:-160px;bottom:6%;background:radial-gradient(circle,rgba(20,160,140,.12),transparent 70%);animation:drift 19s ease-in-out infinite}
+  @keyframes drift{0%,100%{transform:translateY(0)}50%{transform:translateY(-28px)}}
+
+  /* thread lives in a centred band -> stays clear of side text, threads through centred nodes */
+  .bg{position:fixed;inset:0;z-index:1;pointer-events:none;display:flex;justify-content:center}
+  .bg svg{width:min(760px,96vw);height:100%;display:block}
+  #thread{fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;opacity:calc(.16 + var(--p) * .22)}
+  #bead-halo{opacity:.16}
+  #bead{opacity:calc(.35 + var(--p)*.4)}
+
+  .stage{position:relative;z-index:2}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 32px}
+
+  .hero{min-height:96vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;position:relative}
+  .eyebrow{font-size:12px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:22px}
+  .hero h1{font-family:"DM Serif Display",serif;font-size:clamp(40px,7vw,86px);line-height:1.02;letter-spacing:-.01em}
+  .hero .sub{margin-top:22px;color:var(--muted);font-size:clamp(16px,2vw,20px);max-width:30ch}
+  .scrollcue{position:absolute;bottom:36px;font-size:12px;letter-spacing:.18em;text-transform:uppercase;color:var(--muted);animation:bob 2.2s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(0);opacity:.5}50%{transform:translateY(8px);opacity:1}}
+
+  .step{min-height:78vh;display:flex;align-items:center}
+  .step .row{width:100%;display:grid;grid-template-columns:1fr 120px 1fr;align-items:center;gap:28px}
+
+  /* frosted card lifts copy off the busy line -> readability + deliberate fg/bg */
+  .copy{max-width:360px;background:rgba(255,255,255,.55);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);
+    border:1px solid rgba(255,255,255,.75);border-radius:18px;padding:22px 26px;
+    box-shadow:0 18px 50px -22px rgba(15,23,42,.22);
+    opacity:0;transform:translateY(14px);transition:opacity .7s ease,transform .7s cubic-bezier(.22,1,.36,1)}
+  .step.in .copy{opacity:1;transform:translateY(0)}
+  .step.left .copy{grid-column:1;text-align:right;justify-self:end}
+  .step.right .copy{grid-column:3;text-align:left}
+  .step h2{font-family:"DM Serif Display",serif;font-size:clamp(23px,3.2vw,32px);line-height:1.12;margin-bottom:10px}
+  .step p{color:var(--muted);font-size:16px}
+
+  .node-slot{grid-column:2;display:flex;justify-content:center}
+  .node{--nc:var(--teal);width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;
+    background:var(--nc);
+    box-shadow:0 0 0 9px var(--bg);           /* mask the line behind the node cleanly */
+    transform:scale(.35);opacity:0;
+    transition:transform .7s cubic-bezier(.34,1.56,.5,1),opacity .6s ease,box-shadow .6s ease}
+  .node svg{width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .node.in{transform:scale(1);opacity:1;
+    box-shadow:0 0 0 9px var(--bg),0 0 0 19px color-mix(in srgb,var(--nc) 14%,transparent),0 14px 34px -10px color-mix(in srgb,var(--nc) 60%,transparent)}
+  .node-label{position:absolute;margin-top:82px;font-size:12px;font-weight:700;color:var(--ink);opacity:0;transition:opacity .7s ease .12s;white-space:nowrap}
+  .node.in + .node-label{opacity:1}
+  .n-teal{--nc:var(--teal)}.n-amber{--nc:var(--amber)}.n-purple{--nc:var(--purple)}.n-coral{--nc:var(--coral)}.n-green{--nc:var(--green)}
+
+  .finale{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .finale h2{font-family:"DM Serif Display",serif;font-size:clamp(30px,5vw,54px);line-height:1.05;max-width:16ch;letter-spacing:-.01em}
+  .finale .sub{margin-top:20px;color:var(--muted);font-size:18px;max-width:44ch}
+  .promise{margin-top:32px;font-family:"Caveat",cursive;font-size:27px;color:var(--teal)}
+  .scribble{font-family:"Caveat",cursive;color:var(--muted);font-size:22px;line-height:1.15}
+  /* settle pulse on arrival */
+  .node.settle{animation:settle 2.4s ease-out .2s}
+  @keyframes settle{0%{box-shadow:0 0 0 9px var(--bg),0 0 0 12px color-mix(in srgb,var(--green) 45%,transparent)}
+    100%{box-shadow:0 0 0 9px var(--bg),0 0 0 40px color-mix(in srgb,var(--green) 0%,transparent)}}
+
+  .explain-btn{position:fixed;top:20px;right:20px;z-index:20;font:inherit;font-size:13px;font-weight:600;color:var(--ink);
+    background:#fff;border:1px solid var(--card-line);border-radius:999px;padding:9px 16px;cursor:pointer;
+    box-shadow:0 6px 18px -8px rgba(15,23,42,.3);display:flex;align-items:center;gap:7px}
+  .explain-btn .dot{width:8px;height:8px;border-radius:50%;background:var(--coral)}
+  body.explaining .explain-btn .dot{background:var(--green)}
+  .note{position:fixed;z-index:15;max-width:240px;background:#0f172a;color:#e2e8f0;border-radius:12px;padding:12px 14px;
+    font-size:12.5px;line-height:1.45;box-shadow:0 14px 40px -12px rgba(0,0,0,.55);opacity:0;transform:translateY(6px);
+    pointer-events:none;transition:opacity .3s,transform .3s}
+  .note b{color:#5eead4}
+  body.explaining .note{opacity:1;transform:translateY(0)}
+  .note.n1{top:110px;left:20px}.note.n2{top:46%;left:20px}.note.n3{bottom:110px;right:20px}
+  .preadout{position:fixed;bottom:16px;left:20px;z-index:15;font-size:11px;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--muted);background:#fff;border:1px solid var(--card-line);border-radius:8px;padding:6px 10px;opacity:0;transition:opacity .3s}
+  body.explaining .preadout{opacity:1}
+
+  @media (max-width:720px){
+    .step .row{grid-template-columns:1fr 72px 1fr;gap:10px}
+    .copy{padding:16px 18px;font-size:14px}
+    .note{display:none}
+    .blob{filter:blur(60px)}
+  }
+  @media (prefers-reduced-motion:reduce){.scrollcue,.blob,.node.settle{animation:none}}
+</style>
+</head>
+<body>
+  <div class="ambient" aria-hidden="true"><div class="blob l"></div><div class="blob r"></div><div class="blob b"></div></div>
+
+  <div class="bg" aria-hidden="true">
+    <svg id="svg" viewBox="0 0 600 1000" preserveAspectRatio="xMidYMid meet">
+      <path id="thread"></path>
+      <circle id="bead-halo" r="15" fill="#0d9488"></circle>
+      <circle id="bead" r="6" fill="#0d9488"></circle>
+    </svg>
+  </div>
+
+  <button class="explain-btn" id="explainBtn"><span class="dot"></span>Explain the effect</button>
+  <div class="preadout" id="preadout">scroll · 0%</div>
+  <div class="note n1"><b>Tangled start.</b> One knotted line — the process as it feels. Faint, so your text stays clear.</div>
+  <div class="note n2"><b>The pull-bead.</b> The glowing point rides the line at your scroll position — the hand drawing the thread taut.</div>
+  <div class="note n3"><b>The line delivers you.</b> Each milestone lights up in its own colour as the line reaches it, then threads on.</div>
+
+  <div class="stage">
+    <section class="hero">
+      <div class="eyebrow">IR-1 Spouse Visa Journey</div>
+      <h1>Where do I<br>even start?</h1>
+      <div class="sub">If only someone could show me the right order.</div>
+      <div class="scrollcue">Scroll ↓</div>
+    </section>
+
+    <section class="step right">
+      <div class="wrap"><div class="row">
+        <div class="node-slot">
+          <div class="node n-teal" data-reveal="0.20"><svg viewBox="0 0 24 24"><path d="M14 3v4a1 1 0 0 0 1 1h4"/><path d="M17 21H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h7l5 5v11a2 2 0 0 1-2 2z"/></svg></div>
+          <div class="node-label">Petition</div>
+        </div>
+        <div class="copy"><h2>Everything starts with the petition.</h2><p>This is where your journey begins — and where the knot starts to loosen.</p></div>
+      </div></div>
+    </section>
+
+    <section class="step left">
+      <div class="wrap"><div class="row">
+        <div class="copy"><h2>Then, your documents.</h2><p>Track everything you need, in one place. Another length of the line pulls straight.</p></div>
+        <div class="node-slot">
+          <div class="node n-amber" data-reveal="0.40"><svg viewBox="0 0 24 24"><path d="M4 20h16a1 1 0 0 0 1-1V8a1 1 0 0 0-1-1h-7l-2-2H4a1 1 0 0 0-1 1v13a1 1 0 0 0 1 1z"/></svg></div>
+          <div class="node-label">Documents</div>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="step right">
+      <div class="wrap"><div class="row">
+        <div class="node-slot">
+          <div class="node n-purple" data-reveal="0.60"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h6M9 15h3"/></svg></div>
+          <div class="node-label">Finance</div>
+        </div>
+        <div class="copy"><h2>Next, the financial part.</h2><p>We calculate exactly where you stand. The line keeps settling.</p></div>
+      </div></div>
+    </section>
+
+    <section class="step left">
+      <div class="wrap"><div class="row">
+        <div class="copy"><h2>And the interview.</h2><p>Practice, get feedback, walk in ready. The last knots come undone.</p><div class="scribble" style="margin-top:14px">this feels doable now ↴</div></div>
+        <div class="node-slot">
+          <div class="node n-coral" data-reveal="0.80"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><path d="M15 11a3 3 0 1 0 0-6"/><path d="M3 20c0-3 2.5-5 6-5s6 2 6 5"/><path d="M17 20c0-2-1-3.5-2.5-4.3"/></svg></div>
+          <div class="node-label">Interview</div>
+        </div>
+      </div></div>
+    </section>
+
+    <section class="finale">
+      <div class="wrap" style="display:flex;flex-direction:column;align-items:center">
+        <div class="node n-green in" id="finalNode" style="margin-bottom:30px;width:60px;height:60px"><svg viewBox="0 0 24 24"><path d="M5 12l4 4L19 7"/></svg></div>
+        <h2>Navigate your spouse visa journey with clarity and confidence.</h2>
+        <div class="sub">You always know where you are and what comes next.</div>
+        <div class="promise">We turn a complicated process into a simple journey.</div>
+      </div>
+    </section>
+  </div>
+
+<script>
+(function(){
+  const W=600,H=1000,N=80,CX=W/2;
+  const path=document.getElementById('thread'), bead=document.getElementById('bead'),
+        halo=document.getElementById('bead-halo'), root=document.documentElement,
+        readout=document.getElementById('preadout');
+  const reduce=window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+  const S=t=>{t=Math.max(0,Math.min(1,t));return t*t*(3-2*t);};
+
+  // stage colours light the resolved portion of the line as you pass each node
+  const stops=[[0,'#0f766e'],[0.20,'#0f766e'],[0.40,'#a16207'],[0.60,'#6d28d9'],[0.80,'#e11d48'],[1,'#059669']];
+  function lineColor(p){
+    for(let i=stops.length-1;i>=0;i--){if(p>=stops[i][0])return stops[i][1];}
+    return stops[0][1];
+  }
+
+  function tang(i){
+    const by=90+(i/(N-1))*(H-180);
+    const x=CX+Math.sin(i*0.5+0.4)*120+Math.sin(i*1.5)*80+Math.sin(i*2.7+1)*40+Math.cos(i*0.33)*30;
+    const y=by+Math.sin(i*0.85)*44+Math.sin(i*2.1)*20;
+    return [x,y];
+  }
+  const str=i=>[CX,90+(i/(N-1))*(H-180)];
+  const loc=(i,p)=>S((p*(N+18)-i)/18);
+  function pts(p){const a=[];for(let i=0;i<N;i++){const[tx,ty]=tang(i),[sx,sy]=str(i),s=loc(i,p);a.push([tx+(sx-tx)*s,ty+(sy-ty)*s]);}return a;}
+  function d(a){let s=`M ${a[0][0].toFixed(1)} ${a[0][1].toFixed(1)} `;for(let i=0;i<a.length-1;i++){const p0=a[i-1]||a[i],p1=a[i],p2=a[i+1],p3=a[i+2]||a[i+1];s+=`C ${(p1[0]+(p2[0]-p0[0])/6).toFixed(1)} ${(p1[1]+(p2[1]-p0[1])/6).toFixed(1)} ${(p2[0]-(p3[0]-p1[0])/6).toFixed(1)} ${(p2[1]-(p3[1]-p1[1])/6).toFixed(1)} ${p2[0].toFixed(1)} ${p2[1].toFixed(1)} `;}return s;}
+
+  const nodes=[...document.querySelectorAll('.node[data-reveal]')];
+  const steps=[...document.querySelectorAll('.step')];
+
+  function render(p){
+    const a=pts(p);
+    path.setAttribute('d',d(a));
+    const col=lineColor(p);
+    path.style.stroke=col; bead.setAttribute('fill',col); halo.setAttribute('fill',col);
+    root.style.setProperty('--p',p.toFixed(3));
+    // pull-bead rides the straightening front
+    const idx=Math.min(N-1,Math.round(p*(N-1)));
+    const [bx,by]=a[idx];
+    bead.setAttribute('cx',bx.toFixed(1)); bead.setAttribute('cy',by.toFixed(1));
+    halo.setAttribute('cx',bx.toFixed(1)); halo.setAttribute('cy',by.toFixed(1));
+    nodes.forEach(n=>n.classList.toggle('in',p>=parseFloat(n.dataset.reveal)));
+    if(readout)readout.textContent='scroll · '+Math.round(p*100)+'%';
+  }
+  const sp=()=>{const m=document.body.scrollHeight-window.innerHeight;return m>0?Math.min(1,Math.max(0,window.scrollY/m)):0;};
+  let t=false;const onS=()=>{if(t)return;t=true;requestAnimationFrame(()=>{render(sp());t=false;});};
+
+  // reveal copy cards + settle pulse on the final node
+  const io=new IntersectionObserver((es)=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');
+    if(e.target.id==='finalNode'){e.target.classList.add('settle');}}});},{threshold:.4});
+  steps.forEach(s=>io.observe(s));
+  const fn=document.getElementById('finalNode'); if(fn)io.observe(fn);
+
+  if(reduce){render(0.94);nodes.forEach(n=>n.classList.add('in'));steps.forEach(s=>s.classList.add('in'));}
+  else{render(sp());window.addEventListener('scroll',onS,{passive:true});window.addEventListener('resize',onS);}
+
+  const btn=document.getElementById('explainBtn');
+  btn.addEventListener('click',()=>{document.body.classList.toggle('explaining');
+    btn.lastChild.textContent=document.body.classList.contains('explaining')?'Hide explanation':'Explain the effect';});
+})();
+</script>
+</body>
+</html>

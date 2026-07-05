@@ -89,42 +89,31 @@ export default function GetInTouch() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
           {/* Social Column */}
-          <div>
+          <div className="flex flex-col items-center justify-center text-center">
             <h3 className="text-xl font-semibold text-foreground mb-6">
               {t("homePage.contactSection.followUs") || "Follow Us"}
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex justify-between items-center gap-4 w-full max-w-[380px]">
               <SocialCard
-                icon={<Instagram size={20} />}
-                label="Instagram"
+                icon={<Instagram size={28} />}
                 href="https://www.instagram.com/rahvana.co?igsh=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr"
                 target="_blank"
                 ariaLabel="Follow us on Instagram"
               />
               <SocialCard
-                icon={<Linkedin size={20} />}
-                label="LinkedIn"
+                icon={<Linkedin size={28} />}
                 href="https://www.linkedin.com/company/rahvana/posts/?feedView=all"
                 target="_blank"
                 ariaLabel="Connect on LinkedIn"
               />
-              {/* <SocialCard
-                icon={<Youtube size={20} />}
-                label="Youtube"
-                href="https://youtube.com/@rahvana_co?si=Mb5-OwJmc5ThTxJs"
-                target="_blank"
-                ariaLabel="Follow us on Youtube"
-              /> */}
               <SocialCard
-                icon={<XIcon size={20} />}
-                label="X"
+                icon={<XIcon size={28} />}
                 href="https://x.com/rahvanaco?s=21&t=a8CQwdRgHqBFZmUfsX8Gpg"
                 target="_blank"
                 ariaLabel="Follow us on X"
               />
               <SocialCard
-                icon={<Facebook size={20} />}
-                label="Facebook"
+                icon={<Facebook size={28} />}
                 href="https://www.facebook.com/profile.php?id=61587967827317&mibextid=wwXIfr"
                 target="_blank"
                 ariaLabel="Follow us on Facebook"
@@ -252,13 +241,11 @@ export default function GetInTouch() {
 
 function SocialCard({
   icon,
-  label,
   href,
   target,
   ariaLabel,
 }: {
   icon: React.ReactNode;
-  label: string;
   href: string;
   target?: string;
   ariaLabel: string;
@@ -267,13 +254,10 @@ function SocialCard({
     <a
       href={href}
       target={target}
-      className="flex items-center gap-3 p-4 bg-muted/30 border border-border rounded-xl text-foreground no-underline transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow-md group"
+      className="flex items-center justify-center w-20 h-20 bg-muted/30 border border-border rounded-2xl text-primary no-underline transition-all hover:bg-primary hover:text-primary-foreground hover:border-primary hover:-translate-y-1 hover:shadow-lg group"
       aria-label={ariaLabel}
     >
-      <div className="flex items-center justify-center w-10 h-10 bg-primary/10 text-primary rounded-lg shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-        {icon}
-      </div>
-      <span className="text-sm font-medium">{label}</span>
+      <div className="transition-transform duration-300 group-hover:scale-110">{icon}</div>
     </a>
   );
 }
