@@ -8,8 +8,7 @@ import {
   animate as mAnimate,
 } from "motion/react";
 import * as Icons from "lucide-react";
-
-const HERO_BG = "#f5f7f8",
+const HERO_BG = "linear-gradient(90deg, #E4F0F6 0%, #FAFAFA 45%, #FAFAFA 55%, #FDF6EB 100%)",
   TEAL = "#2e7175",
   TEALB = "#235658",
   INDIGO = "#4a4070",
@@ -799,7 +798,7 @@ const NARR_BEATS = [
   {
     eyebrow: "You just wanted a simple answer.",
     lines: [{ text: "WHERE TO START?" }],
-    sub: "Spouse Visa  ·  IR-1  ·  K-1",
+    sub: "Spouse Visa  ·  IR-1",
   },
   {
     eyebrow: "But one thing leads to ten others.",
@@ -881,9 +880,11 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
   // Browser frame + character scale continuously with viewport width,
   // clamped so it never gets comically large or unreadably small.
   const browserW = clampNum(vw * 0.7, 260, 780);
-  const browserAR = isMobile ? 0.44 : isTablet ? 0.52 : 0.5; // landscape frame even on phones
-  const browserInnerH = clampNum(browserW * browserAR, 115, 375);
-  const charSize = clampNum(browserInnerH * 0.92, 100, 235);
+  const browserAR = isMobile ? 1.05 : isTablet ? 0.52 : 0.5; // taller mockup on mobile
+  const browserInnerH = clampNum(browserW * browserAR, isMobile ? 220 : 115, 375);
+  const charSize = isMobile
+    ? clampNum(browserW * 0.28, 70, 95)
+    : clampNum(browserInnerH * 0.92, 100, 235);
 
   const camZoom = useMotionValue(0.8),
     camX = useMotionValue(0),
@@ -918,6 +919,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
   }, [narrPhase, visibleJ]);
 
   useEffect(() => {
+    let isAlive = true;
     aliveRef.current = true;
     const cam = (to, dur = 1.1) => {
       const ease = [0.22, 1, 0.36, 1];
@@ -929,7 +931,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
     };
     const shake = async () => {
       for (let i = 0; i < 16; i++) {
-        if (!aliveRef.current) return;
+        if (!isAlive || !aliveRef.current) return;
         shakeX.set(rand(-12, 12) * panScale);
         shakeY.set(rand(-8, 8) * panScale);
         await sleep(32);
@@ -941,7 +943,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       setNarrPhase(lvl);
       setContent({ kind: "narration", sceneIdx: idx });
       await sleep(holdMs);
-      if (!aliveRef.current) return;
+      if (!isAlive || !aliveRef.current) return;
       setContent({ kind: "search" });
       setNarrPhase(null);
       await sleep(300);
@@ -953,6 +955,12 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
         return n;
       });
     (async () => {
+      setTabs([]);
+      setSubTabs({});
+      setQuery("");
+      setSubmit(false);
+      setCharPose("standing");
+      
       cam({ zoom: 0.58, x: 30, y: 40, rotate: -8 }, 0.01);
       await sleep(200);
       cam({ zoom: 0.75, x: -15, y: 10, rotate: 3 }, 1.8);
@@ -962,7 +970,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       setCharPose("standing");
       const q1 = "how do I bring my spouse to the US";
       for (let i = 0; i < q1.length; i++) {
-        if (!aliveRef.current) return;
+        if (!isAlive || !aliveRef.current) return;
         if (i === 3) setCharPose("thinking");
         setQuery(q1.slice(0, i + 1));
         await sleep(q1[i] === " " ? rand(75, 170) : rand(32, 85));
@@ -982,7 +990,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
 
       setCharPose("confused");
       await narrate(0, 2400, 1);
-      if (!aliveRef.current) return;
+      if (!isAlive || !aliveRef.current) return;
 
       setCharPose("standing");
       let len = 0;
@@ -992,30 +1000,30 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       });
       await sleep(0);
       for (let i = 0; i < len; i++) {
-        if (!aliveRef.current) return;
+        if (!isAlive || !aliveRef.current) return;
         setQuery((q) => q.slice(0, -1));
         await sleep(10);
       }
       setSubmit(false);
       await sleep(360);
-      if (!aliveRef.current) return;
+      if (!isAlive || !aliveRef.current) return;
 
       setCharPose("thinking");
       const typo = "what is NCV";
       for (const ch of typo) {
-        if (!aliveRef.current) return;
+        if (!isAlive || !aliveRef.current) return;
         setQuery((q) => q + ch);
         await sleep(rand(36, 70));
       }
       await sleep(560);
       for (let i = 0; i < 3; i++) {
-        if (!aliveRef.current) return;
+        if (!isAlive || !aliveRef.current) return;
         setQuery((q) => q.slice(0, -1));
         await sleep(85);
       }
       await sleep(200);
       for (const ch of "NVC") {
-        if (!aliveRef.current) return;
+        if (!isAlive || !aliveRef.current) return;
         setQuery((q) => q + ch);
         await sleep(55);
       }
@@ -1044,7 +1052,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
 
       setCharPose("stressed");
       await narrate(1, 2600, 2);
-      if (!aliveRef.current) return;
+      if (!isAlive || !aliveRef.current) return;
 
       setCharPose("walking");
       wave(3);
@@ -1053,18 +1061,18 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
 
       setCharPose("carryingBooks");
       await narrate(2, 2400, 3);
-      if (!aliveRef.current) return;
+      if (!isAlive || !aliveRef.current) return;
 
       wave(4);
       await shake();
-      if (!aliveRef.current) return;
+      if (!isAlive || !aliveRef.current) return;
       setCharPose("sittingDown");
       cam({ zoom: 0.72, x: 20, y: 35, rotate: -5.2 }, 1.3);
       await sleep(680);
 
       setCharPose("reading");
       await narrate(3, 3000, 4);
-      if (!aliveRef.current) return;
+      if (!isAlive || !aliveRef.current) return;
 
       let len2 = 0;
       setQuery((q) => {
@@ -1073,23 +1081,23 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       });
       await sleep(0);
       for (let i = 0; i < len2; i++) {
-        if (!aliveRef.current) return;
+        if (!isAlive || !aliveRef.current) return;
         setQuery((q) => q.slice(0, -1));
         await sleep(10);
       }
       setSubmit(false);
       await sleep(360);
-      if (!aliveRef.current) return;
+      if (!isAlive || !aliveRef.current) return;
       const q3 = "what am i missing???????";
       for (const ch of q3) {
-        if (!aliveRef.current) return;
+        if (!isAlive || !aliveRef.current) return;
         setQuery((q) => q + ch);
         await sleep(rand(36, 70));
       }
       await sleep(460);
       setSubmit(true);
       await sleep(720);
-      if (!aliveRef.current) return;
+      if (!isAlive || !aliveRef.current) return;
 
       setEndPhase("list");
       setCharPose("sittingDown");
@@ -1104,53 +1112,54 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
         "Proofs.",
       ];
       for (let i = 0; i < words.length; i++) {
-        if (!aliveRef.current) return;
+        if (!isAlive || !aliveRef.current) return;
         setListWords(words.slice(0, i + 1));
         await sleep(220);
       }
       await sleep(1800);
       for (let i = 0; i < words.length; i++) {
-        if (!aliveRef.current) return;
+        if (!isAlive || !aliveRef.current) return;
         setConverging(i);
         await sleep(52);
       }
       await sleep(520);
       setListWords([]);
       await sleep(100);
-      if (!aliveRef.current) return;
+      if (!isAlive || !aliveRef.current) return;
 
       setEndPhase("cinematic");
       setCharPose("sittingUp");
       setCVis(new Set([0]));
       await sleep(CIN_SLIDES[0].holdMs);
-      if (!aliveRef.current) return;
+      if (!isAlive || !aliveRef.current) return;
       setCVis(new Set([0, 1]));
       await sleep(CIN_SLIDES[1].holdMs);
-      if (!aliveRef.current) return;
+      if (!isAlive || !aliveRef.current) return;
       setCVis(new Set());
       await sleep(400);
-      if (!aliveRef.current) return;
+      if (!isAlive || !aliveRef.current) return;
 
       setEndPhase("fade");
       for (let i = 1; i <= 30; i++) {
-        if (!aliveRef.current) return;
+        if (!isAlive || !aliveRef.current) return;
         setFade(i / 30);
         await sleep(18);
       }
       await sleep(100);
-      if (!aliveRef.current) return;
+      if (!isAlive || !aliveRef.current) return;
       setFade(0);
       setEndPhase("hero");
       onComplete?.();
 
       const full = "Let's map it out.";
       for (let i = 0; i <= full.length; i++) {
-        if (!aliveRef.current) return;
+        if (!isAlive || !aliveRef.current) return;
         setTypeText(full.slice(0, i));
         await sleep(rand(34, 76));
       }
     })();
     return () => {
+      isAlive = false;
       aliveRef.current = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1429,6 +1438,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
                         key={`n${narrSceneIdx}`}
                         beatIdx={narrSceneIdx}
                         jScale={jScale}
+                        isMobile={isMobile}
                       />
                     ) : (
                       <motion.div
@@ -1439,7 +1449,9 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
                         transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
                         style={{
                           width: "100%",
-                          maxWidth: clampNum(browserW * 0.58, 230, 440),
+                          maxWidth: isMobile
+                            ? clampNum(browserW * 0.6, 150, 440)
+                            : clampNum(browserW * 0.58, 230, 440),
                           pointerEvents: "auto",
                           zIndex: 6,
                         }}
@@ -1594,7 +1606,65 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       )}
 
       {endPhase === "hero" && (
-        <HeroFrame typeText={typeText} isMobile={isMobile} isTablet={isTablet} vw={vw} />
+        <HeroFrame
+          typeText={typeText}
+          isMobile={isMobile}
+          isTablet={isTablet}
+          vw={vw}
+          onSkip={() => {
+            aliveRef.current = false;
+            setTypeText("Let's map it out.");
+          }}
+        />
+      )}
+
+      {typeText !== "Let's map it out." && (
+        <button
+          type="button"
+          onClick={() => {
+            aliveRef.current = false;
+            setEndPhase("hero");
+            setFade(0);
+            setTypeText("Let's map it out.");
+            onComplete?.();
+          }}
+          className="hero-skip-button"
+          style={{
+            position: "fixed",
+            bottom: "max(16px, env(safe-area-inset-bottom))",
+            right: 16,
+            zIndex: 120,
+            transform: "none",
+            border: "1px solid rgba(12,18,42,0.08)",
+            borderRadius: 999,
+            background: "rgba(255,255,255,0.42)",
+            color: "rgba(12,18,42,0.42)",
+            fontFamily: FB,
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            padding: "7px 12px",
+            cursor: "pointer",
+            boxShadow: "0 4px 14px rgba(12,18,42,0.05)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            opacity: 0.7,
+            transition: "opacity 160ms ease, background-color 160ms ease, transform 160ms ease",
+          }}
+          onMouseEnter={(event) => {
+            event.currentTarget.style.opacity = "1";
+            event.currentTarget.style.backgroundColor = "rgba(255,255,255,0.62)";
+            event.currentTarget.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={(event) => {
+            event.currentTarget.style.opacity = "0.7";
+            event.currentTarget.style.backgroundColor = "rgba(255,255,255,0.42)";
+            event.currentTarget.style.transform = "none";
+          }}
+        >
+          Skip
+        </button>
       )}
 
       <style>{`@keyframes _blink{50%{opacity:0}}`}</style>
@@ -1644,6 +1714,15 @@ function TabBar({ tabs, subTabs, activeTab, jScale }) {
   if (!tabs.length) return null;
   return (
     <div style={{ display: "flex", flexDirection: "column", borderBottom: "1px solid #e8e8ec" }}>
+      <style>{`
+        .subtabs-scroll::-webkit-scrollbar {
+          display: none !important;
+        }
+        .subtabs-scroll {
+          -ms-overflow-style: none !important;  /* IE and Edge */
+          scrollbar-width: none !important;  /* Firefox */
+        }
+      `}</style>
       <div
         style={{
           display: "flex",
@@ -1662,7 +1741,9 @@ function TabBar({ tabs, subTabs, activeTab, jScale }) {
               fontSize: clampNum(11 * jScale, 9, 11),
               fontWeight: 500,
               color: activeTab === t.id ? "#1a202c" : "#6b7280",
-              border: activeTab === t.id ? "1px solid #e8e8ec" : "1px solid transparent",
+              borderTop: activeTab === t.id ? "1px solid #e8e8ec" : "1px solid transparent",
+              borderLeft: activeTab === t.id ? "1px solid #e8e8ec" : "1px solid transparent",
+              borderRight: activeTab === t.id ? "1px solid #e8e8ec" : "1px solid transparent",
               borderBottom: "none",
               boxShadow: activeTab === t.id ? "0 -1px 4px rgba(0,0,0,0.03)" : "none",
             }}
@@ -1673,12 +1754,15 @@ function TabBar({ tabs, subTabs, activeTab, jScale }) {
       </div>
       {activeSubs.length > 0 && (
         <div
+          className="subtabs-scroll"
           style={{
             display: "flex",
             gap: clampNum(6 * jScale, 4, 6),
             padding: `${clampNum(6 * jScale, 4, 6)}px ${clampNum(10 * jScale, 6, 10)}px`,
             background: "#fff",
-            overflow: "auto",
+            overflowX: "auto",
+            overflowY: "hidden",
+            WebkitOverflowScrolling: "touch",
           }}
         >
           {activeSubs.map((s) => (
@@ -1724,7 +1808,7 @@ function URLBar({ browserW, jScale }) {
     </div>
   );
 }
-function InnerNarration({ beatIdx, jScale }) {
+function InnerNarration({ beatIdx, jScale, isMobile }) {
   const b = NARR_BEATS[beatIdx];
   if (!b) return null;
   return (
@@ -1733,11 +1817,11 @@ function InnerNarration({ beatIdx, jScale }) {
       animate={{ opacity: 1, scale: 1 }}
       exit={{ opacity: 0, scale: 0.88 }}
       transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
-      style={{ textAlign: "center", maxWidth: "90%" }}
+      style={{ textAlign: "center", maxWidth: isMobile ? "70%" : "90%" }}
     >
       <div
         style={{
-          fontSize: clampNum(9 * jScale, 7, 9),
+          fontSize: clampNum(14 * jScale, 12, 16),
           letterSpacing: "0.15em",
           textTransform: "uppercase",
           color: "rgba(46,113,117,0.7)",
@@ -1752,7 +1836,7 @@ function InnerNarration({ beatIdx, jScale }) {
         <div
           key={i}
           style={{
-            fontSize: clampNum(24 * jScale, 16, 28),
+            fontSize: clampNum(36 * jScale, 28, 48),
             fontWeight: 900,
             lineHeight: 1.1,
             letterSpacing: "-0.02em",
@@ -1798,7 +1882,7 @@ function EditorialSlide({ slide }) {
     >
       <div
         style={{
-          fontSize: "clamp(8px,1.2vw,13px)",
+          fontSize: "clamp(12px,1.6vw,16px)",
           letterSpacing: "0.22em",
           textTransform: "uppercase",
           color: "rgba(46,113,117,0.65)",
@@ -1813,7 +1897,7 @@ function EditorialSlide({ slide }) {
         <div
           key={i}
           style={{
-            fontSize: "clamp(32px,8vw,88px)",
+            fontSize: "clamp(42px,10vw,110px)",
             fontWeight: 900,
             lineHeight: 0.96,
             letterSpacing: "-0.04em",
@@ -1839,150 +1923,25 @@ function EditorialSlide({ slide }) {
     </motion.div>
   );
 }
-function HeroFrame({ typeText, isMobile, isTablet, vw }) {
-  const btnW = clampNum(vw * 0.2, 140, 240);
+function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
+  const isLine2Started = typeText.length > 5;
+  const line1Text = typeText.slice(0, 5);
+  const line2Text = typeText.slice(5).trimStart();
+  const isDone = typeText === "Let's map it out.";
+
   return (
     <div
       style={{
         position: "absolute",
         inset: 0,
-        overflow: "hidden",
+        overflow: "visible",
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
         padding: isMobile ? "24px 6vw" : "32px 8vw",
+        background: HERO_BG,
       }}
     >
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "radial-gradient(circle at 50% 42%, rgba(255,255,255,0.98) 0%, rgba(248,251,253,0.92) 12%, rgba(231,239,245,0.72) 28%, rgba(214,225,234,0.32) 52%, rgba(214,225,234,0) 76%), radial-gradient(circle at 10% 18%, rgba(46,113,117,0.28) 0, rgba(46,113,117,0.14) 14%, rgba(46,113,117,0.04) 32%, rgba(46,113,117,0) 46%), radial-gradient(circle at 92% 12%, rgba(74,64,112,0.20) 0, rgba(74,64,112,0.10) 12%, rgba(74,64,112,0.03) 30%, rgba(74,64,112,0) 44%), radial-gradient(circle at 50% 90%, rgba(35,86,88,0.20) 0, rgba(35,86,88,0.08) 16%, rgba(35,86,88,0.02) 34%, rgba(35,86,88,0) 48%), linear-gradient(135deg, #f8fcfd 0%, #edf4f7 30%, #e0e9f0 62%, #d7e3eb 100%)",
-          pointerEvents: "none",
-        }}
-      />
-      <motion.div
-        aria-hidden="true"
-        animate={{ rotate: [0, 360] }}
-        transition={{ duration: 52, repeat: Infinity, ease: "linear" }}
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: "46%",
-          width: isMobile ? 340 : 760,
-          height: isMobile ? 340 : 760,
-          marginLeft: isMobile ? -170 : -380,
-          marginTop: isMobile ? -170 : -380,
-          borderRadius: "50%",
-          border: "1px solid rgba(46,113,117,0.12)",
-          borderTopColor: "rgba(46,113,117,0.24)",
-          borderRightColor: "rgba(74,64,112,0.18)",
-          borderBottomColor: "rgba(35,86,88,0.10)",
-          opacity: 0.55,
-          pointerEvents: "none",
-          filter: "blur(0.2px)",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          left: "50%",
-          top: "46%",
-          width: isMobile ? 260 : 640,
-          height: isMobile ? 190 : 420,
-          marginLeft: isMobile ? -130 : -320,
-          marginTop: isMobile ? -95 : -210,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(ellipse at center, rgba(255,255,255,0.84) 0%, rgba(248,251,253,0.58) 38%, rgba(235,241,246,0.14) 70%, rgba(235,241,246,0) 100%)",
-          filter: "blur(14px)",
-          pointerEvents: "none",
-          mixBlendMode: "screen",
-        }}
-      />
-      <motion.div
-        aria-hidden="true"
-        animate={{
-          x: isMobile ? [-8, 10, -8] : [-20, 22, -20],
-          y: isMobile ? [-6, 12, -6] : [-14, 18, -14],
-          scale: [1, 1.08, 1],
-          opacity: [0.72, 0.92, 0.72],
-        }}
-        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: "absolute",
-          left: isMobile ? "-18%" : "-10%",
-          top: isMobile ? "8%" : "5%",
-          width: isMobile ? 260 : 520,
-          height: isMobile ? 260 : 520,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle, rgba(46,113,117,0.26) 0%, rgba(46,113,117,0.12) 26%, rgba(46,113,117,0.03) 56%, rgba(46,113,117,0) 76%)",
-          filter: "blur(34px)",
-          pointerEvents: "none",
-          mixBlendMode: "multiply",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage:
-            "repeating-linear-gradient(135deg, rgba(16,32,58,0.03) 0 2px, transparent 2px 18px), radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 42%, rgba(255,255,255,0.10) 100%)",
-          backgroundSize: "auto, 100% 100%",
-          mixBlendMode: "soft-light",
-          opacity: 0.28,
-          pointerEvents: "none",
-        }}
-      />
-      <motion.div
-        aria-hidden="true"
-        animate={{
-          x: isMobile ? [10, -12, 10] : [18, -26, 18],
-          y: isMobile ? [8, -10, 8] : [14, -18, 14],
-          scale: [1, 1.06, 1],
-          opacity: [0.68, 0.88, 0.68],
-        }}
-        transition={{ duration: 17, repeat: Infinity, ease: "easeInOut" }}
-        style={{
-          position: "absolute",
-          right: isMobile ? "-20%" : "-8%",
-          bottom: isMobile ? "-14%" : "-8%",
-          width: isMobile ? 280 : 560,
-          height: isMobile ? 280 : 560,
-          borderRadius: "50%",
-          background:
-            "radial-gradient(circle, rgba(74,64,112,0.18) 0%, rgba(74,64,112,0.09) 28%, rgba(74,64,112,0.02) 56%, rgba(74,64,112,0) 76%)",
-          filter: "blur(38px)",
-          pointerEvents: "none",
-          mixBlendMode: "multiply",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          backgroundImage:
-            "linear-gradient(rgba(16,32,58,0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(16,32,58,0.05) 1px, transparent 1px), radial-gradient(circle at 50% 50%, rgba(255,255,255,0) 44%, rgba(255,255,255,0.22) 100%)",
-          backgroundSize: "92px 92px, 92px 92px, 100% 100%",
-          backgroundPosition: "center center",
-          mixBlendMode: "soft-light",
-          opacity: 0.62,
-          pointerEvents: "none",
-        }}
-      />
-      <div
-        style={{
-          position: "absolute",
-          inset: 0,
-          background:
-            "linear-gradient(180deg, rgba(255,255,255,0.62) 0%, rgba(255,255,255,0.12) 12%, rgba(255,255,255,0) 40%, rgba(255,255,255,0.10) 74%, rgba(255,255,255,0.52) 100%), linear-gradient(120deg, rgba(46,113,117,0.14) 0%, rgba(46,113,117,0) 20%, rgba(74,64,112,0.14) 72%, rgba(74,64,112,0) 100%), linear-gradient(160deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.16) 48%, rgba(255,255,255,0) 100%)",
-          mixBlendMode: "screen",
-          opacity: 0.82,
-          pointerEvents: "none",
-        }}
-      />
       <motion.div
         initial={{ opacity: 0, y: 16, scale: 0.98 }}
         animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -1992,6 +1951,7 @@ function HeroFrame({ typeText, isMobile, isTablet, vw }) {
           width: "min(760px, 100%)",
           padding: isMobile ? "10px 0" : "14px 0",
           textAlign: "center",
+          marginTop: isMobile ? 16 : 28,
         }}
       >
         <div
@@ -2004,86 +1964,128 @@ function HeroFrame({ typeText, isMobile, isTablet, vw }) {
             gap: 0,
           }}
         >
-          <div
-            style={{
-              fontFamily: FB,
-              fontSize: isMobile ? 11 : 12,
-              fontWeight: 700,
-              letterSpacing: "0.28em",
-              textTransform: "uppercase",
-              color: "rgba(16,32,58,0.62)",
-              marginBottom: isMobile ? 12 : 14,
-            }}
-          >
-            Your path, clarified
-          </div>
-
           <motion.h1
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             style={{
               fontSize: isMobile
-                ? "clamp(30px,9vw,44px)"
+                ? "clamp(42px, 10vw, 56px)"
                 : isTablet
-                  ? "clamp(38px,6vw,58px)"
-                  : "clamp(52px,5.3vw,82px)",
+                  ? "clamp(56px, 7vw, 72px)"
+                  : "clamp(72px, 6vw, 96px)",
               fontWeight: 900,
-              lineHeight: 0.98,
-              letterSpacing: "-0.05em",
-              color: "#10203a",
+              lineHeight: 1.05,
+              letterSpacing: "-0.04em",
+              color: "#0b131f",
               margin: 0,
               fontFamily: FD,
-              maxWidth: "12ch",
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
             }}
           >
-            {typeText}
-            <Blink />
+            <span style={{ display: "inline-block" }}>
+              {line1Text}
+              {!isLine2Started && !isDone && <Blink />}
+            </span>
+            {isLine2Started && (
+              <span
+                style={{
+                  position: "relative",
+                  display: "inline-block",
+                  whiteSpace: "nowrap",
+                  marginTop: "4px",
+                }}
+              >
+                {line2Text}
+                {!isDone && <Blink />}
+              </span>
+            )}
           </motion.h1>
 
           <div
             style={{
-              marginTop: isMobile ? 14 : 18,
-              maxWidth: 560,
-              fontSize: isMobile ? 15 : 18,
-              lineHeight: 1.65,
-              color: "rgba(16,32,58,0.70)",
+              marginTop: isMobile ? 25 : 7,
+              maxWidth: 420,
+              fontSize: isMobile ? 16 : 18,
+              lineHeight: 1.5,
+              color: JB,
               fontFamily: FB,
+              textAlign: "left",
+              position: "relative",
+              left: isMobile ? "23px" : "-45px",
             }}
           >
-            A cleaner starting point for spouse visa steps, forms, and next actions.
+            One view of every step, every <br />
+            <span style={{ display: "inline-block", width: isMobile ? "0px" : "90px" }} />
+            dependency, and everything in between.
           </div>
 
           <motion.button
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            whileHover={{ y: -2, scale: 1.01 }}
-            whileTap={{ scale: 0.99 }}
+            whileHover={{ y: -2, scale: 1.02, backgroundColor: "#000000" }}
+            whileTap={{ scale: 0.98 }}
             style={{
-              marginTop: isMobile ? 22 : 28,
-              padding: `${clampNum(vw * 0.008, 8, 13)}px ${clampNum(vw * 0.018, 16, 24)}px`,
-              background:
-                "linear-gradient(135deg, rgba(46,113,117,1) 0%, rgba(35,86,88,1) 68%, rgba(28,71,73,1) 100%)",
-              color: "#fff",
-              fontSize: clampNum(vw * 0.0105, 10, 13),
-              fontWeight: 600,
-              borderRadius: 14,
-              border: "1px solid rgba(255,255,255,0.16)",
+              marginTop: isMobile ? 16 : 20,
+              padding: "12px 28px",
+              background: TEAL,
+              color: "#ffffff",
+              fontSize: 15,
+              fontWeight: 500,
+              borderRadius: 9999,
+              border: "none",
               cursor: "pointer",
-              boxShadow: "0 8px 18px rgba(46,113,117,0.14)",
-              width: isMobile ? "100%" : btnW,
               fontFamily: FB,
-              letterSpacing: "0.01em",
               display: "inline-flex",
               alignItems: "center",
               justifyContent: "center",
+              gap: 8,
+              boxShadow: "0 4px 12px rgba(11, 19, 31, 0.15)",
             }}
           >
-            Start Your Journey
+            Start your journey
+            {/* <Icons.ArrowRight size={16} /> */}
           </motion.button>
         </div>
       </motion.div>
+
+      {/* Map illustration — positioned relative to the full hero viewport */}
+      <motion.img
+        src="/assets/images/illustartions/map.png"
+        alt="Map illustration"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: typeText === "Let's map it out." ? 1 : 0 }}
+        transition={{ duration: 0.4 }}
+        style={{
+          position: "absolute",
+          marginTop: isMobile ? 36 : 32,
+          marginBottom: isMobile ? 36 : 33,
+          top: isMobile ? "35%" : "40%",
+          left: isMobile ? "35%" : "42%",
+          width: isMobile ? "75%" : "38%",
+          maxWidth: "none",
+          pointerEvents: "none",
+          zIndex: 0,
+        }}
+      />
+
+      <div
+        style={{
+          position: "absolute",
+          bottom: 24,
+          left: "50%",
+          transform: "translateX(-50%)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          pointerEvents: "none",
+        }}
+      >
+        <Icons.ChevronDown size={28} style={{ color: "#0b131f", opacity: 0.6 }} />
+      </div>
     </div>
   );
 }

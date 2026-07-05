@@ -84,17 +84,40 @@ const CONTENT_MARKS = Array.from(
 ).join(" ");
 
 /* ─── Full-page hand-drawn sketch ─────────────────────────────────────────── */
-function FullPageSketch({ go }: { go: boolean }) {
+function FullPageSketch({ go, vw, vh }: { go: boolean; vw: number; vh: number }) {
   /*
     Two rendering layers:
     A) Shading — NO filter (so fine hatching lines stay crisp and visible)
     B) Outlines — subtle pencil-ink filter for organic stroke quality
+
+    Responsive: all paths live in a 1440×900 design space. We compute a
+    uniform scale so the artwork fits the real viewport, then translate to
+    center it — so the browser frame is always fully visible on any screen.
   */
+
+  /*
+    Scale strategy:
+    - LANDSCAPE (desktop, tablet, landscape mobile): original `xMidYMid slice`
+      behaviour — Math.max(vw/1440, vh/900). Fills the screen exactly as before.
+    - PORTRAIT (mobile/tablet): cap so the browser frame (819×435 design px)
+      fits within 90% screen width / 78% screen height. Decorative elements
+      outside the frame may bleed off-screen — intentional and looks good.
+  */
+  const FRAME_W = 819; /* browser frame width in design space (x 309–1128) */
+  const FRAME_H = 435; /* browser frame height in design space (y 250–685)  */
+  const isPortrait = vh > vw;
+  const scaleFill  = Math.max(vw / 1440, vh / 900); /* original slice scale  */
+  const scale = isPortrait
+    ? Math.min(scaleFill, (vw * 0.90) / FRAME_W, (vh * 0.78) / FRAME_H)
+    : scaleFill;
+  /* Center-offset so the scaled content sits in the middle of the viewport    */
+  const tx = (vw - 1440 * scale) / 2;
+  const ty = (vh - 900 * scale) / 2;
 
   /* Outline path: draws in via pathLength animation                            */
   const seg = (delay: number, dur: number, stroke: string, sw: number) => ({
     stroke,
-    strokeWidth: String(sw),
+    strokeWidth: String(sw / scale), /* compensate stroke for scale so width stays visually consistent */
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
     fill: "none",
@@ -113,7 +136,7 @@ function FullPageSketch({ go }: { go: boolean }) {
   /* Shading path: opacity fade, no filter so strokes remain crisp              */
   const sh = (delay: number, stroke: string, sw: number) => ({
     stroke,
-    strokeWidth: String(sw),
+    strokeWidth: String(sw / scale),
     strokeLinecap: "round" as const,
     fill: "none",
     initial: { opacity: 0 },
@@ -126,12 +149,14 @@ function FullPageSketch({ go }: { go: boolean }) {
   return (
     <div style={{ position: "absolute", inset: 0, zIndex: 1, pointerEvents: "none" }}>
       <svg
-        viewBox="0 0 1440 900"
+        viewBox={`0 0 ${vw} ${vh}`}
         width="100%"
         height="100%"
-        preserveAspectRatio="xMidYMid slice"
+        preserveAspectRatio="none"
         style={{ display: "block" }}
       >
+        {/* Single transform group: scales 1440×900 artwork to fit any viewport */}
+        <g transform={`translate(${tx},${ty}) scale(${scale})`}>
         <defs>
           {/*
             Pencil-ink filter — VERY subtle displacement for organic quality.
@@ -326,7 +351,8 @@ function FullPageSketch({ go }: { go: boolean }) {
             {...seg(2.9, 0.2, INK(0.16), 1.2)}
             d="M 222 772 L 358 772 C 375 772 381 798 358 798 L 222 798 C 205 798 198 772 222 772"
           />
-        </g>
+          </g>
+        </g>{/* end responsive scale group */}
       </svg>
     </div>
   );
@@ -417,7 +443,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
       }
       await sleep(300);
 
-      const L1 = "The process doesn't come with a map.";
+      const L1 = "The process didn't come with a map.";
       setCur("l1");
       for (let i = 1; i <= L1.length; i++) {
         if (!alive || skipRef.current) return;
@@ -454,6 +480,24 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
 
   const isDissolving = stage === "dissolving";
   const isDone = stage === "done";
+
+  /*
+   * Mirror the FullPageSketch scale formula so text layout and SVG sketch
+   * always agree about where the browser frame sits on screen.
+   */
+  const _FRAME_W = 819; /* frame width in design space  */
+  const _FRAME_H = 435; /* frame height in design space */
+  const _portrait = vh > vw;
+  const _sFill     = Math.max(vw / 1440, vh / 900);
+  const _sketchS   = _portrait
+    ? Math.min(_sFill, (vw * 0.90) / _FRAME_W, (vh * 0.78) / _FRAME_H)
+    : _sFill;
+  /* Frame content-area center Y as a % of viewport height.
+     Design-space Y of tab-bar ≈ 328, frame bottom = 685 → center = 506.5
+     Screen Y = 506.5 * s + (vh - 900*s)/2  →  as % = 50 + 56.5*s/vh * 100 */
+  const _sketchTopPct = `${Math.round((0.5 + 56.5 * _sketchS / vh) * 100)}%`;
+  /* Text container: 82% of the frame pixel width (88% on mobile portrait to reduce wrapping), clamped 220–500px */
+  const _textW = `${Math.min(500, Math.max(220, Math.floor(_FRAME_W * _sketchS * (_portrait ? 0.88 : 0.82))))}px`;
 
   return (
     <div
@@ -534,7 +578,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
             className="intro-skip-button"
             style={{
               position: "fixed",
-              bottom: 16,
+              bottom: "max(16px, env(safe-area-inset-bottom))",
               right: 16,
               zIndex: 120,
               transform: "none",
@@ -547,13 +591,16 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
               fontWeight: 600,
               letterSpacing: "0.12em",
               textTransform: "uppercase",
-              padding: "7px 12px",
+              padding: "10px 16px",
+              minHeight: 44,
+              minWidth: 44,
               cursor: "pointer",
               boxShadow: "0 4px 14px rgba(12,18,42,0.05)",
               backdropFilter: "blur(10px)",
               WebkitBackdropFilter: "blur(10px)",
               opacity: 0.7,
               transition: "opacity 160ms ease, background-color 160ms ease, transform 160ms ease",
+              WebkitTapHighlightColor: "transparent",
             }}
             onMouseEnter={(event) => {
               event.currentTarget.style.opacity = "1";
@@ -566,7 +613,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
               event.currentTarget.style.transform = "none";
             }}
           >
-            Skip intro
+            Skip
           </button>
         )}
 
@@ -591,7 +638,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
             {/* Intro text — fades with sketch */}
             <motion.div
               animate={{
-                top: stage === "sketch" || stage === "dissolving" ? "55%" : "50%",
+                top: stage === "sketch" || stage === "dissolving" ? _sketchTopPct : "50%",
                 opacity: isDissolving ? [1, 0] : 1 /* Fades out with sketch */,
                 filter: isDissolving
                   ? ["blur(0px)", "blur(2px)"]
@@ -605,15 +652,18 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
               style={{
                 position: "absolute",
                 left: "50%",
+                /* Always rotate -5° during sketch — matches the SVG frame's own
+                   rotate(-5, 720, 460) so text and frame visually align on all screens */
                 transform: `translateX(-50%) translateY(-50%)
                             rotate(${stage === "sketch" || stage === "dissolving" ? "-5deg" : "0deg"})`,
                 zIndex: 2,
                 textAlign: "center",
-                width: "min(500px, 52vw)",
+                width: _textW,
                 display: "flex",
                 flexDirection: "column",
                 alignItems: "center",
                 gap: 0,
+                padding: "0 4px",
               }}
             >
               {/* Title */}
@@ -621,10 +671,10 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
                 <div
                   style={{
                     fontFamily: FD,
-                    fontSize: "clamp(24px, 4.8vw, 58px)",
+                    fontSize: _portrait ? "clamp(15px, 5vw, 58px)" : "clamp(26px, 6.5vw, 58px)",
                     fontWeight: 900,
-                    lineHeight: 1.0,
-                    letterSpacing: "-0.04em",
+                    lineHeight: 1.05,
+                    letterSpacing: "-0.03em",
                     color: INK(0.88),
                     WebkitFontSmoothing: "antialiased",
                   }}
@@ -639,12 +689,12 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
                 <div
                   style={{
                     fontFamily: FB,
-                    fontSize: "clamp(8px, 0.88vw, 11px)",
+                    fontSize: _portrait ? "clamp(7px, 1.5vw, 11px)" : "clamp(9px, 1.8vw, 11px)",
                     fontWeight: 400,
-                    letterSpacing: "0.28em",
+                    letterSpacing: "0.22em",
                     textTransform: "uppercase",
                     color: INK(0.4),
-                    marginTop: "clamp(5px, 0.6vw, 9px)",
+                    marginTop: _portrait ? `${Math.round(6 * _sketchS)}px` : "clamp(6px, 1.2vw, 9px)",
                   }}
                 >
                   {sub}
@@ -659,7 +709,9 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
                     width: 24,
                     height: 1,
                     background: INK(0.18),
-                    margin: "clamp(13px, 1.6vw, 20px) 0 clamp(11px, 1.4vw, 17px)",
+                    margin: _portrait 
+                      ? `${Math.round(10 * _sketchS)}px 0 ${Math.round(8 * _sketchS)}px`
+                      : "clamp(14px, 2.4vw, 20px) 0 clamp(12px, 2vw, 17px)",
                     alignSelf: "center",
                   }}
                 />
@@ -670,11 +722,11 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
                 <div
                   style={{
                     fontFamily: FD,
-                    fontSize: "clamp(12px, 1.55vw, 18px)",
+                    fontSize: _portrait ? "clamp(9px, 2.5vw, 18px)" : "clamp(14px, 3vw, 18px)",
                     fontWeight: 400,
                     fontStyle: "italic",
                     color: INK(0.58),
-                    lineHeight: 1.5,
+                    lineHeight: _portrait ? 1.3 : 1.5,
                   }}
                 >
                   {line1}
@@ -687,10 +739,10 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
                 <div
                   style={{
                     fontFamily: FD,
-                    fontSize: "clamp(12px, 1.55vw, 18px)",
+                    fontSize: _portrait ? "clamp(9px, 2.5vw, 18px)" : "clamp(14px, 3vw, 18px)",
                     fontWeight: 700,
                     color: TEAL,
-                    marginTop: "clamp(1px, 0.15vw, 3px)",
+                    marginTop: _portrait ? `${Math.round(2 * _sketchS)}px` : "clamp(2px, 0.4vw, 4px)",
                   }}
                 >
                   {line2}
@@ -716,7 +768,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
                   inset: 0,
                 }}
               >
-                <FullPageSketch go={true} />
+                <FullPageSketch go={true} vw={vw} vh={vh} />
               </motion.div>
             )}
           </motion.div>
@@ -728,8 +780,9 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
 
         @media (max-width: 640px) {
           .intro-skip-button {
-            bottom: 16px !important;
+            bottom: max(16px, env(safe-area-inset-bottom)) !important;
             right: 16px !important;
+            font-size: 10px !important;
           }
         }
       `}</style>
