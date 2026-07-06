@@ -818,13 +818,13 @@ const CIN_SLIDES = [
   {
     eyebrow: "Stop piecing it together yourself.",
     lines: [{ text: "SEE EXACTLY" }, { text: "WHAT'S NEXT." }],
-    holdMs: 2800,
+    holdMs: 3800, // was 2800
   },
   {
     eyebrow: "Because immigration isn't a search.",
     lines: [{ text: "IT'S A" }, { text: "PROCESS." }],
     sub: "and every process needs a map.",
-    holdMs: 4800,
+    holdMs: 5800, // was 4800
   },
 ];
 
@@ -857,6 +857,17 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
   // tick without waiting for a re-render, and so an external "skip" call
   // can stop it immediately.
   const aliveRef = useRef(true);
+
+  // Preload all pose images to prevent rendering/loading delays
+  useEffect(() => {
+    Object.values(IMG).forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+    // Also preload map image
+    const mapImg = new Image();
+    mapImg.src = "/assets/images/illustartions/map.png";
+  }, []);
 
   const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
   const [vh, setVh] = useState(typeof window !== "undefined" ? window.innerHeight : 800);
@@ -914,14 +925,14 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
     const iv = setInterval(() => {
       setSeqHl(ids[i % ids.length]);
       i++;
-    }, 180);
+    }, 250); // slowed down seq highlight interval slightly
     return () => clearInterval(iv);
   }, [narrPhase, visibleJ]);
 
   useEffect(() => {
     let isAlive = true;
     aliveRef.current = true;
-    const cam = (to, dur = 1.1) => {
+    const cam = (to, dur = 1.4) => { // slightly slower camera duration default
       const ease = [0.22, 1, 0.36, 1];
       if (to.zoom != null)
         mAnimate(camZoom, 1 + (to.zoom - 1) * zoomDampen, { duration: dur, ease });
@@ -934,7 +945,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
         if (!isAlive || !aliveRef.current) return;
         shakeX.set(rand(-12, 12) * panScale);
         shakeY.set(rand(-8, 8) * panScale);
-        await sleep(32);
+        await sleep(40); // was 32
       }
       shakeX.set(0);
       shakeY.set(0);
@@ -946,7 +957,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       if (!isAlive || !aliveRef.current) return;
       setContent({ kind: "search" });
       setNarrPhase(null);
-      await sleep(300);
+      await sleep(500); // was 300
     };
     const wave = (w) =>
       setVisibleJ((p) => {
@@ -962,9 +973,9 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       setCharPose("standing");
       
       cam({ zoom: 0.58, x: 30, y: 40, rotate: -8 }, 0.01);
-      await sleep(200);
-      cam({ zoom: 0.75, x: -15, y: 10, rotate: 3 }, 1.8);
-      await sleep(400);
+      await sleep(400); // was 200
+      cam({ zoom: 0.75, x: -15, y: 10, rotate: 3 }, 2.2); // was 1.8
+      await sleep(600); // was 400
 
       setSubmit(false);
       setCharPose("standing");
@@ -973,23 +984,23 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
         if (!isAlive || !aliveRef.current) return;
         if (i === 3) setCharPose("thinking");
         setQuery(q1.slice(0, i + 1));
-        await sleep(q1[i] === " " ? rand(75, 170) : rand(32, 85));
-        if (Math.random() < 0.11 && q1[i] === " ") await sleep(rand(180, 400));
+        await sleep(q1[i] === " " ? rand(120, 240) : rand(50, 110)); // was rand(75, 170) : rand(32, 85)
+        if (Math.random() < 0.11 && q1[i] === " ") await sleep(rand(250, 500)); // was rand(180, 400)
       }
-      await sleep(360);
+      await sleep(600); // was 360
       setSubmit(true);
       setCharPose("walking");
-      cam({ zoom: 1.05, x: 10, y: -30, rotate: -1.5 }, 0.9);
+      cam({ zoom: 1.05, x: 10, y: -30, rotate: -1.5 }, 1.2); // was 0.9
       setTabs((p) => [...p, { id: "spouse", label: "Spouse Visa" }]);
       setActive("spouse");
       wave(1);
-      await sleep(800);
+      await sleep(1200); // was 800
 
       setCharPose("reading");
-      await sleep(600);
+      await sleep(1000); // was 600
 
       setCharPose("confused");
-      await narrate(0, 2400, 1);
+      await narrate(0, 3600, 1); // was 2400
       if (!isAlive || !aliveRef.current) return;
 
       setCharPose("standing");
@@ -1002,10 +1013,10 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       for (let i = 0; i < len; i++) {
         if (!isAlive || !aliveRef.current) return;
         setQuery((q) => q.slice(0, -1));
-        await sleep(10);
+        await sleep(15); // was 10
       }
       setSubmit(false);
-      await sleep(360);
+      await sleep(500); // was 360
       if (!isAlive || !aliveRef.current) return;
 
       setCharPose("thinking");
@@ -1013,25 +1024,25 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       for (const ch of typo) {
         if (!isAlive || !aliveRef.current) return;
         setQuery((q) => q + ch);
-        await sleep(rand(36, 70));
+        await sleep(rand(50, 90)); // was rand(36, 70)
       }
-      await sleep(560);
+      await sleep(700); // was 560
       for (let i = 0; i < 3; i++) {
         if (!isAlive || !aliveRef.current) return;
         setQuery((q) => q.slice(0, -1));
-        await sleep(85);
+        await sleep(120); // was 85
       }
-      await sleep(200);
+      await sleep(300); // was 200
       for (const ch of "NVC") {
         if (!isAlive || !aliveRef.current) return;
         setQuery((q) => q + ch);
-        await sleep(55);
+        await sleep(80); // was 55
       }
-      await sleep(300);
+      await sleep(400); // was 300
       setSubmit(true);
       setTabs((p) => [...p, { id: "nvc", label: "NVC" }]);
       setActive("nvc");
-      await sleep(620);
+      await sleep(900); // was 620
 
       setSubTabs({
         nvc: [
@@ -1046,32 +1057,32 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       });
       setActive("ds260");
       setCharPose("carryingBooks");
-      cam({ zoom: 1.25, x: 120, y: -50, rotate: -4.5 }, 1.0);
+      cam({ zoom: 1.25, x: 120, y: -50, rotate: -4.5 }, 1.4); // was 1.0
       wave(2);
-      await sleep(680);
+      await sleep(1000); // was 680
 
       setCharPose("stressed");
-      await narrate(1, 2600, 2);
+      await narrate(1, 3800, 2); // was 2600
       if (!isAlive || !aliveRef.current) return;
 
       setCharPose("walking");
       wave(3);
-      cam({ zoom: 0.88, x: -40, y: 15, rotate: 2.8 }, 1.4);
-      await sleep(480);
+      cam({ zoom: 0.88, x: -40, y: 15, rotate: 2.8 }, 1.8); // was 1.4
+      await sleep(700); // was 480
 
       setCharPose("carryingBooks");
-      await narrate(2, 2400, 3);
+      await narrate(2, 3600, 3); // was 2400
       if (!isAlive || !aliveRef.current) return;
 
       wave(4);
       await shake();
       if (!isAlive || !aliveRef.current) return;
       setCharPose("sittingDown");
-      cam({ zoom: 0.72, x: 20, y: 35, rotate: -5.2 }, 1.3);
-      await sleep(680);
+      cam({ zoom: 0.72, x: 20, y: 35, rotate: -5.2 }, 1.8); // was 1.3
+      await sleep(1000); // was 680
 
       setCharPose("reading");
-      await narrate(3, 3000, 4);
+      await narrate(3, 4200, 4); // was 3000
       if (!isAlive || !aliveRef.current) return;
 
       let len2 = 0;
@@ -1083,20 +1094,20 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       for (let i = 0; i < len2; i++) {
         if (!isAlive || !aliveRef.current) return;
         setQuery((q) => q.slice(0, -1));
-        await sleep(10);
+        await sleep(15); // was 10
       }
       setSubmit(false);
-      await sleep(360);
+      await sleep(500); // was 360
       if (!isAlive || !aliveRef.current) return;
       const q3 = "what am i missing???????";
       for (const ch of q3) {
         if (!isAlive || !aliveRef.current) return;
         setQuery((q) => q + ch);
-        await sleep(rand(36, 70));
+        await sleep(rand(50, 90)); // was rand(36, 70)
       }
-      await sleep(460);
+      await sleep(700); // was 460
       setSubmit(true);
-      await sleep(720);
+      await sleep(1000); // was 720
       if (!isAlive || !aliveRef.current) return;
 
       setEndPhase("list");
@@ -1114,17 +1125,17 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       for (let i = 0; i < words.length; i++) {
         if (!isAlive || !aliveRef.current) return;
         setListWords(words.slice(0, i + 1));
-        await sleep(220);
+        await sleep(350); // was 220
       }
-      await sleep(1800);
+      await sleep(2200); // was 1800
       for (let i = 0; i < words.length; i++) {
         if (!isAlive || !aliveRef.current) return;
         setConverging(i);
-        await sleep(52);
+        await sleep(75); // was 52
       }
-      await sleep(520);
+      await sleep(700); // was 520
       setListWords([]);
-      await sleep(100);
+      await sleep(150); // was 100
       if (!isAlive || !aliveRef.current) return;
 
       setEndPhase("cinematic");
@@ -1136,16 +1147,16 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       await sleep(CIN_SLIDES[1].holdMs);
       if (!isAlive || !aliveRef.current) return;
       setCVis(new Set());
-      await sleep(400);
+      await sleep(600); // was 400
       if (!isAlive || !aliveRef.current) return;
 
       setEndPhase("fade");
       for (let i = 1; i <= 30; i++) {
         if (!isAlive || !aliveRef.current) return;
         setFade(i / 30);
-        await sleep(18);
+        await sleep(22); // was 18
       }
-      await sleep(100);
+      await sleep(150); // was 100
       if (!isAlive || !aliveRef.current) return;
       setFade(0);
       setEndPhase("hero");
@@ -1155,7 +1166,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       for (let i = 0; i <= full.length; i++) {
         if (!isAlive || !aliveRef.current) return;
         setTypeText(full.slice(0, i));
-        await sleep(rand(34, 76));
+        await sleep(rand(45, 95)); // was rand(34, 76)
       }
     })();
     return () => {
@@ -1962,6 +1973,8 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
             justifyContent: "center",
             textAlign: "center",
             gap: 0,
+            position: "relative",
+            zIndex: 2,
           }}
         >
           <motion.h1
@@ -1973,7 +1986,7 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
                 ? "clamp(42px, 10vw, 56px)"
                 : isTablet
                   ? "clamp(56px, 7vw, 72px)"
-                  : "clamp(72px, 6vw, 96px)",
+                  : "96px", // Completely fixed font size on desktop
               fontWeight: 900,
               lineHeight: 1.05,
               letterSpacing: "-0.04em",
@@ -2006,15 +2019,15 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
 
           <div
             style={{
-              marginTop: isMobile ? 25 : 7,
+              marginTop: isMobile ? 11 : 7,
               maxWidth: 420,
-              fontSize: isMobile ? 16 : 18,
+              fontSize: isMobile ? 12 : 18,
               lineHeight: 1.5,
               color: JB,
               fontFamily: FB,
               textAlign: "left",
               position: "relative",
-              left: isMobile ? "23px" : "-45px",
+              left: isMobile ? "0px" : "-45px",
             }}
           >
             One view of every step, every <br />
@@ -2050,27 +2063,34 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
             {/* <Icons.ArrowRight size={16} /> */}
           </motion.button>
         </div>
-      </motion.div>
 
-      {/* Map illustration — positioned relative to the full hero viewport */}
-      <motion.img
-        src="/assets/images/illustartions/map.png"
-        alt="Map illustration"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: typeText === "Let's map it out." ? 1 : 0 }}
-        transition={{ duration: 0.4 }}
-        style={{
-          position: "absolute",
-          marginTop: isMobile ? 36 : 32,
-          marginBottom: isMobile ? 36 : 33,
-          top: isMobile ? "35%" : "40%",
-          left: isMobile ? "35%" : "42%",
-          width: isMobile ? "75%" : "38%",
-          maxWidth: "none",
-          pointerEvents: "none",
-          zIndex: 0,
-        }}
-      />
+        {/* Map illustration — positioned relative to the centered text container */}
+        <motion.img
+          src="/assets/images/illustartions/map.png"
+          alt="Map illustration"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: typeText === "Let's map it out." ? 1 : 0 }}
+          transition={{ duration: 0.4 }}
+          style={{
+            position: "absolute",
+            pointerEvents: "none",
+            zIndex: 1,
+            ...(isMobile ? {
+              marginTop: 36,
+              marginBottom: 36,
+              top: "11%",
+              left: "35%",
+              width: "75%",
+            } : {
+              // Values selected to look identical to 80% screen zoom layout proportions
+              top: "36%",
+              left: "34.5%",
+              width: "76%",
+              maxWidth: "none",
+            })
+          }}
+        />
+      </motion.div>
 
       <div
         style={{
