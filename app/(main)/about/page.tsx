@@ -504,7 +504,7 @@ export default function AboutPage() {
               initials: "SL",
               image: "/assets/images/Sharjeel.PNG",
               color: "bg-[#e8a020]",
-              role: "Founder",
+              role: "Co-Founder",
               desc: "Rahvana came from a personal place. I watched someone close to me navigate the IR-1 process alone, confused, overwhelmed, and constantly unsure if they were doing things right. There was no real support, just paperwork and waiting. I built Rahvana so others wouldn't have to face that process without clarity and guidance.",
             },
             {
