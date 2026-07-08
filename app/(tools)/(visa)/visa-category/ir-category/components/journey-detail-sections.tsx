@@ -2,7 +2,13 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
-import { motion, useScroll, useSpring } from "framer-motion";
+import {
+  AnimatePresence,
+  motion,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+} from "framer-motion";
 import {
   ArrowRight,
   BadgeCheck,
@@ -32,6 +38,20 @@ const PREPARATION_ICONS: Record<JourneyPreparationCategory["icon"], LucideIcon> 
   forms: FileText,
   interview: UserRoundCheck,
   arrival: PlaneTakeoff,
+};
+
+const smoothSpring = {
+  type: "spring" as const,
+  stiffness: 120,
+  damping: 22,
+  mass: 0.9,
+};
+
+const cardEase = [0.22, 1, 0.36, 1] as const;
+
+const softTween = {
+  duration: 0.72,
+  ease: [0.16, 1, 0.3, 1] as const,
 };
 
 export function JourneyHeroImageCard({ journey }: { journey: JourneyDetailContent }) {
@@ -65,6 +85,7 @@ export function JourneyRoadmap({ steps }: { steps: JourneyStep[] }) {
     target: timelineRef,
     offset: ["start 72%", "end 45%"],
   });
+
   const lineScale = useSpring(scrollYProgress, {
     stiffness: 90,
     damping: 24,
@@ -93,7 +114,11 @@ export function JourneyRoadmap({ steps }: { steps: JourneyStep[] }) {
             initial={{ opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-80px" }}
-            transition={{ duration: 0.35, delay: Math.min(index * 0.06, 0.24), ease: "easeOut" }}
+            transition={{
+              duration: 0.35,
+              delay: Math.min(index * 0.06, 0.24),
+              ease: "easeOut",
+            }}
             className="relative overflow-hidden rounded-lg border border-[var(--rv-line)] bg-white p-5 shadow-[0_16px_38px_-32px_rgba(12,27,51,0.45)]"
           >
             <span
@@ -101,6 +126,7 @@ export function JourneyRoadmap({ steps }: { steps: JourneyStep[] }) {
                 index === 0 ? "bg-[var(--rahvana-primary-dark)]" : "bg-[#8fdde1]"
               }`}
             />
+
             <div className="grid gap-5 xl:grid-cols-[1fr_0.82fr]">
               <div>
                 <p className="text-[10px] font-extrabold uppercase tracking-[0.18em] text-[var(--rahvana-primary)]">
@@ -112,7 +138,9 @@ export function JourneyRoadmap({ steps }: { steps: JourneyStep[] }) {
                 <p className="mt-2 text-sm font-semibold leading-6 text-[var(--rahvana-primary-dark)]">
                   {step.summary}
                 </p>
-                <p className="mt-2 text-sm leading-6 text-[var(--rv-soft)]">{step.detail}</p>
+                <p className="mt-2 text-sm leading-6 text-[var(--rv-soft)]">
+                  {step.detail}
+                </p>
               </div>
 
               <div className="rounded-lg bg-[var(--rahvana-primary-pale)] p-4">
@@ -150,7 +178,9 @@ function StageMeta({
         <p className="text-[10px] font-extrabold uppercase tracking-[0.16em] text-[var(--rv-muted)]">
           {label}
         </p>
-        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--rv-navy)]">{value}</p>
+        <p className="mt-1 text-xs font-semibold leading-5 text-[var(--rv-navy)]">
+          {value}
+        </p>
       </div>
     </div>
   );
@@ -183,14 +213,18 @@ export function JourneyQuickFacts({ journey }: { journey: JourneyDetailContent }
         <p className="mt-2 text-xs font-semibold leading-5 text-[var(--rv-navy)]">
           {journey.callout.title}
         </p>
-        <p className="mt-2 text-xs leading-5 text-[var(--rv-soft)]">{journey.callout.body}</p>
+        <p className="mt-2 text-xs leading-5 text-[var(--rv-soft)]">
+          {journey.callout.body}
+        </p>
       </div>
 
       <div className="mt-5 space-y-3">
         {journey.supportingResources.map((resource) => (
           <div key={resource.title} className="rounded-lg border border-[var(--rv-line)] p-3">
             <p className="text-sm font-bold text-[var(--rv-navy)]">{resource.title}</p>
-            <p className="mt-1 text-xs leading-5 text-[var(--rv-soft)]">{resource.description}</p>
+            <p className="mt-1 text-xs leading-5 text-[var(--rv-soft)]">
+              {resource.description}
+            </p>
           </div>
         ))}
       </div>
@@ -208,58 +242,46 @@ export function JourneyQuickFacts({ journey }: { journey: JourneyDetailContent }
 
 export function JourneyPreparationStack({ journey }: { journey: JourneyDetailContent }) {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [previousIndex, setPreviousIndex] = useState(0);
+  const [stackBaseIndex, setStackBaseIndex] = useState(0);
+  const shouldReduceMotion = useReducedMotion();
+
   const categories = journey.preparationCategories;
+  const activeCategory = categories[activeIndex];
+  const isTransitioning = activeIndex !== stackBaseIndex;
 
   useEffect(() => {
+    if (!categories.length) return;
     const timer = window.setInterval(() => {
-      setActiveIndex((current) => {
-        setPreviousIndex(current);
-        return (current + 1) % categories.length;
-      });
-    }, 3200);
-
+      setActiveIndex((current) => (current + 1) % categories.length);
+    }, 4600);
     return () => window.clearInterval(timer);
   }, [categories.length]);
 
-  const stackedCategories = useMemo(
-    () =>
-      categories.map((category, index) => {
-        const offset = (index - activeIndex + categories.length) % categories.length;
-        const wasFront = index === previousIndex && index !== activeIndex;
-        return { category, index, offset, wasFront };
-      }),
-    [activeIndex, categories, previousIndex]
-  );
+  const backgroundStack = useMemo(() => {
+    return [1, 2, 3].map((offset) => {
+      const index = (stackBaseIndex + offset) % categories.length;
+      return { category: categories[index], index, offset };
+    });
+  }, [categories, stackBaseIndex]);
 
-  function getCardState(offset: number, wasFront: boolean) {
-    if (wasFront) {
-      return {
-        x: [0, -92, 92],
-        y: [0, 42, 64],
-        scale: [1, 0.92, 0.82],
-        rotate: [0, -5, 2.8],
-        opacity: [1, 0.62, 0.36],
-        zIndex: 1,
-      };
+  function selectCategory(index: number) {
+    if (index !== activeIndex) {
+      if (shouldReduceMotion) setStackBaseIndex(index);
+      setActiveIndex(index);
     }
-
-    const visibleOffset = Math.min(offset, 3);
-    const isFront = offset === 0;
-    return {
-      x: isFront ? [92, 0] : visibleOffset * 28,
-      y: isFront ? [22, 0] : visibleOffset * 20,
-      scale: isFront ? [0.95, 1] : 1 - visibleOffset * 0.045,
-      rotate: isFront ? [2, 0] : visibleOffset * 0.8,
-      opacity: offset < 4 ? (isFront ? [0.78, 1] : 0.76 - visibleOffset * 0.09) : 0,
-      zIndex: isFront ? categories.length + 2 : categories.length - offset,
-    };
   }
+
+  if (!categories.length) return null;
 
   return (
     <section className="overflow-hidden bg-white/80 px-4 py-16 sm:px-6 lg:px-12 lg:py-20">
       <div className="mx-auto grid max-w-7xl gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
-        <div>
+        <motion.div
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+          whileInView={shouldReduceMotion ? undefined : { opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-80px" }}
+          transition={softTween}
+        >
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-[var(--rahvana-primary)]">
             Journey preparation
           </p>
@@ -269,50 +291,130 @@ export function JourneyPreparationStack({ journey }: { journey: JourneyDetailCon
           <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--rv-soft)] sm:text-base">
             {journey.preparationDescription}
           </p>
+
           <div className="mt-6 flex flex-wrap gap-2">
             {categories.map((category, index) => (
               <button
                 key={category.title}
                 type="button"
-                onClick={() => setActiveIndex(index)}
-                className={`rounded-full px-3 py-1.5 text-xs font-bold transition-colors ${
+                onClick={() => selectCategory(index)}
+                className={`rounded-full px-3 py-1.5 text-xs font-bold transition-all duration-300 ${
                   index === activeIndex
-                    ? "bg-[var(--rahvana-primary)] text-white"
-                    : "bg-[var(--rahvana-primary-pale)] text-[var(--rahvana-primary-dark)]"
+                    ? "bg-[var(--rahvana-primary)] text-white shadow-[0_10px_28px_-20px_rgba(4,120,124,0.75)]"
+                    : "bg-[var(--rahvana-primary-pale)] text-[var(--rahvana-primary-dark)] hover:-translate-y-0.5 hover:bg-[#dff5f6]"
                 }`}
               >
                 {category.title}
               </button>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        <div className="relative min-h-[360px]">
-          {stackedCategories.map(({ category, index, offset, wasFront }) => {
-            const isFront = offset === 0;
-            const cardState = getCardState(offset, wasFront);
+        <div
+          className="relative min-h-[410px] sm:min-h-[390px] lg:min-h-[385px]"
+          style={{ perspective: 1400 }}
+        >
+          {backgroundStack
+            .slice()
+            .reverse()
+            .map(({ category, index, offset }) => {
+              const hideIncomingDuplicate = isTransitioning && index === activeIndex;
 
-            return (
-              <motion.div
-                key={category.title}
-                className="absolute inset-x-0 top-0"
-                animate={cardState}
-                transition={{
-                  x: { duration: wasFront ? 0.82 : 0.58, ease: [0.22, 1, 0.36, 1] },
-                  y: { duration: wasFront ? 0.82 : 0.58, ease: [0.22, 1, 0.36, 1] },
-                  scale: { duration: wasFront ? 0.82 : 0.58, ease: [0.22, 1, 0.36, 1] },
-                  rotate: { duration: wasFront ? 0.82 : 0.58, ease: [0.22, 1, 0.36, 1] },
-                  opacity: { duration: 0.42, ease: "easeOut" },
-                }}
-              >
-                <PreparationCard
-                  category={category}
-                  compactLabel={`0${index + 1}`}
-                  className={isFront ? "" : "pointer-events-none"}
-                />
-              </motion.div>
-            );
-          })}
+              return (
+                <motion.div
+                  key={`stack-${category.title}`}
+                  className="pointer-events-none absolute inset-x-0 top-0 will-change-transform"
+                  initial={false}
+                  animate={
+                    shouldReduceMotion
+                      ? {
+                          opacity: hideIncomingDuplicate ? 0 : 0.35,
+                          x: 0,
+                          y: offset * 18,
+                          scale: 1,
+                          rotate: 0,
+                          zIndex: 10 - offset,
+                        }
+                      : {
+                          x: offset * 28,
+                          y: offset * 22,
+                          scale: 1 - offset * 0.045,
+                          rotate: offset * 0.65,
+                          opacity: hideIncomingDuplicate ? 0 : 0.72 - offset * 0.13,
+                          zIndex: 10 - offset,
+                        }
+                  }
+                  transition={smoothSpring}
+                >
+                  <PreparationCard category={category} compactLabel={`0${index + 1}`} muted />
+                </motion.div>
+              );
+            })}
+
+          <AnimatePresence
+            mode="popLayout"
+            initial={false}
+            onExitComplete={() => setStackBaseIndex(activeIndex)}
+          >
+            <motion.div
+              key={activeCategory.title}
+              className="absolute inset-x-0 top-0 z-20 will-change-transform"
+              style={{ transformStyle: "preserve-3d", transformOrigin: "50% 60%" }}
+              initial={
+                shouldReduceMotion
+                  ? { opacity: 0 }
+                  : {
+                      x: 420,
+                      y: -20,
+                      scale: 0.92,
+                      rotate: 6,
+                      rotateY: -18,
+                      opacity: 0,
+                    }
+              }
+              animate={
+                shouldReduceMotion
+                  ? { opacity: 1 }
+                  : {
+                      x: 0,
+                      y: 0,
+                      scale: 1,
+                      rotate: 0,
+                      rotateY: 0,
+                      opacity: 1,
+                    }
+              }
+              exit={
+                shouldReduceMotion
+                  ? { opacity: 0 }
+                  : {
+                      x: -190,
+                      y: 70,
+                      scale: 0.85,
+                      rotate: -6,
+                      rotateY: 10,
+                      opacity: 0,
+                    }
+              }
+              transition={
+                shouldReduceMotion
+                  ? { duration: 0.15 }
+                  : {
+                      x: { type: "spring", stiffness: 55, damping: 22, mass: 1.15 },
+                      y: { type: "spring", stiffness: 55, damping: 24, mass: 1.15 },
+                      scale: { duration: 1.25, ease: cardEase },
+                      rotate: { duration: 1.25, ease: cardEase },
+                      rotateY: { duration: 1.25, ease: cardEase },
+                      opacity: { duration: 1.1, ease: [0.4, 0, 0.6, 1], delay: 0.15 },
+                    }
+              }              
+            >
+              <PreparationCard
+                category={activeCategory}
+                compactLabel={`0${activeIndex + 1}`}
+              />
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
     </section>
@@ -322,30 +424,40 @@ export function JourneyPreparationStack({ journey }: { journey: JourneyDetailCon
 function PreparationCard({
   category,
   compactLabel,
+  muted = false,
   className = "",
 }: {
   category: JourneyPreparationCategory;
   compactLabel: string;
+  muted?: boolean;
   className?: string;
 }) {
   const Icon = PREPARATION_ICONS[category.icon];
 
   return (
     <article
-      className={`rounded-lg border border-[var(--rv-line)] bg-white p-7 shadow-[0_28px_70px_-46px_rgba(12,27,51,0.55)] ${className}`}
+      className={`rounded-lg border border-[var(--rv-line)] bg-white p-7 shadow-[0_28px_70px_-46px_rgba(12,27,51,0.55)] transition-shadow duration-500 ${
+        muted ? "opacity-90" : ""
+      } ${className}`}
     >
       <div className="flex items-start justify-between gap-5">
         <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[var(--rahvana-primary-pale)] text-[var(--rahvana-primary)]">
           <Icon className="h-7 w-7" />
         </div>
-        <span className="text-sm font-extrabold text-[var(--rv-line)]">{compactLabel}</span>
+
+        <span className="text-sm font-extrabold text-[var(--rv-line)]">
+          {compactLabel}
+        </span>
       </div>
+
       <h3 className="mt-6 text-2xl font-bold tracking-[-0.03em] text-[var(--rv-navy)]">
         {category.title}
       </h3>
+
       <p className="mt-3 max-w-xl text-sm leading-7 text-[var(--rv-soft)]">
         {category.description}
       </p>
+
       <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-[var(--rahvana-primary-pale)] px-4 py-2 text-xs font-bold text-[var(--rahvana-primary-dark)]">
         <BadgeCheck className="h-4 w-4" />
         Prepared inside the guided journey
