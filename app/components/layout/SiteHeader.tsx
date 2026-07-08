@@ -21,13 +21,27 @@ import {
   BookOpen,
   FolderLock,
   Wand2,
-  Sparkles,
   HelpCircleIcon,
   ToolCase,
   Wrench,
   Info,
+  LifeBuoy,
+  MessageSquare,
+  Calculator,
+  Clock,
+  Camera,
+  Files,
+  PenTool,
+  Globe,
+  Shield,
+  FileText,
+  Heart,
+  Syringe,
+  Pin,
+  PinOff,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuickAccess } from "@/app/context/QuickAccessContext";
 import MegaMenu from "./MegaMenu";
 import { User } from "@supabase/supabase-js";
 import { useAuth, UserProfile } from "@/app/context/AuthContext";
@@ -90,6 +104,25 @@ const useExtensionCleanup = () => {
     }, 0);
     return () => clearTimeout(timer);
   }, []);
+};
+
+const QUICK_ACCESS_ICON_MAP: Record<string, React.ComponentType<any>> = {
+  LifeBuoy,
+  MessageSquare,
+  Calculator,
+  Clock,
+  Camera,
+  Files,
+  PenTool,
+  Wand2,
+  Zap,
+  Globe,
+  Shield,
+  FileText,
+  Heart,
+  Syringe,
+  Briefcase,
+  BookOpen,
 };
 
 export function SiteHeader({
@@ -156,6 +189,8 @@ export function SiteHeader({
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [quickAccessOpen, setQuickAccessOpen] = useState(false);
+  const quickAccessRef = useRef<HTMLDivElement>(null);
   const [readIds, setReadIds] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem("rahvana_notif_read");
@@ -165,6 +200,9 @@ export function SiteHeader({
     }
   });
   const notifRef = useRef<HTMLDivElement>(null);
+
+  // Quick Access context
+  const { items: quickAccessItems, removeItem: removeQuickAccessItem } = useQuickAccess();
 
   // Real notification data
   const [notifList, setNotifList] = useState<any[]>([]);
@@ -212,6 +250,10 @@ export function SiteHeader({
       if (notifRef.current && !notifRef.current.contains(target)) {
         setNotificationsOpen(false);
       }
+      // Quick Access
+      if (quickAccessRef.current && !quickAccessRef.current.contains(target)) {
+        setQuickAccessOpen(false);
+      }
       // Mega Menus or Profile Menu
       if (activeMenu) {
         if (activeMenu === "profile") {
@@ -245,6 +287,7 @@ export function SiteHeader({
     setActiveMenu(null);
     setIsMenuOpen(false);
     setNotificationsOpen(false);
+    setQuickAccessOpen(false);
   }, [pathname]);
 
   const { profile, isLoading, user: authUser } = useAuth();
@@ -1098,6 +1141,151 @@ export function SiteHeader({
                   </AnimatePresence>
                 </div>
               )}
+
+          {/* ── Pinned Items Button ── */}
+          {isSignedIn && (
+            <div className="relative" ref={quickAccessRef}>
+              <HydrationSafeButton
+                aria-label="Pinned Items"
+                onClick={() => {
+                  setQuickAccessOpen((prev) => !prev);
+                  setNotificationsOpen(false);
+                }}
+                className={`relative rounded-md transition-colors shadow-none border-0 ${
+                  isHomeHeroState
+                    ? "text-white"
+                    : isHomeHeroP2State
+                      ? "text-white"
+                      : quickAccessOpen
+                        ? "text-[#0d7377]"
+                        : "text-rahvana-primary"
+                }`}
+                style={{
+                  padding: 0,
+                  width: 40,
+                  height: 40,
+                  background: "none",
+                  boxShadow: "none",
+                  border: "none",
+                  borderRadius: "50%",
+                }}
+              >
+                <div className="relative inline-flex">
+                  <Pin
+                    className={`h-5 w-5 transition-all duration-200 ${quickAccessOpen ? "fill-[#0d7377] text-[#0d7377] rotate-45" : ""}`}
+                    style={isHomeHeroP2State || isHomeHeroState ? { color: "#fff" } : {}}
+                  />
+                  {quickAccessItems.length > 0 && (
+                    <span className="absolute top-[-9px] -right-1.5 w-4 h-4 rounded-full bg-[#0d7377] text-white text-[9px] font-medium flex items-center justify-center border border-white/50">
+                      {quickAccessItems.length > 9 ? "9+" : quickAccessItems.length}
+                    </span>
+                  )}
+                </div>
+              </HydrationSafeButton>
+
+              <AnimatePresence>
+                {quickAccessOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className="absolute right-0 top-full mt-1 w-72 rounded-xl shadow-xl border border-slate-200 bg-white z-[9999] overflow-hidden origin-top-right"
+                  >
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
+                      <div className="flex items-center gap-2">
+                        <Pin className="w-4 h-4 text-[#0d7377] fill-[#0d7377] rotate-45" />
+                        <span className="text-sm font-bold text-foreground">Pinned Items</span>
+                      </div>
+                      <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                        {quickAccessItems.length} Pinned
+                      </span>
+                    </div>
+
+                    {/* Body */}
+                    <div className="max-h-[320px] overflow-y-auto">
+                      {quickAccessItems.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center px-6 py-10 gap-3">
+                          <div className="w-12 h-12 rounded-2xl bg-[#0d7377]/8 flex items-center justify-center">
+                            <Pin className="w-5 h-5 text-[#0d7377]/40" />
+                          </div>
+                          <div className="text-center space-y-1">
+                            <p className="text-sm font-semibold text-foreground">
+                              Nothing pinned yet
+                            </p>
+                            <p className="text-xs text-muted-foreground max-w-[200px] mx-auto leading-relaxed">
+                              Pin any tool, guide, or service card to access it here.
+                            </p>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-border">
+                          {quickAccessItems.map((item) => (
+                            <div
+                              key={item.id}
+                              className="flex items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors group"
+                            >
+                              <div className="w-7 h-7 rounded-lg bg-[#0d7377]/10 flex items-center justify-center shrink-0">
+                                {(() => {
+                                  const IconComponent =
+                                    (item.icon_name && QUICK_ACCESS_ICON_MAP[item.icon_name]) ||
+                                    Pin;
+                                  return <IconComponent className="w-3.5 h-3.5 text-[#0d7377]" />;
+                                })()}
+                              </div>
+                              <Link
+                                href={item.href}
+                                onClick={() => setQuickAccessOpen(false)}
+                                className="flex-1 min-w-0"
+                              >
+                                <p className="text-sm font-medium text-foreground truncate group-hover:text-[#0d7377] transition-colors">
+                                  {item.title}
+                                </p>
+                              </Link>
+                              <div className="flex items-center gap-1 shrink-0">
+                                <button
+                                  onClick={() => removeQuickAccessItem(item.id)}
+                                  className="p-1.5 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors"
+                                  title="Unpin"
+                                >
+                                  <PinOff className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-4 py-2.5 border-t border-border bg-muted/20 flex items-center justify-between">
+                      <Link
+                        href="/resources"
+                        onClick={() => setQuickAccessOpen(false)}
+                        className="text-xs text-[#0d7377] hover:underline font-medium flex items-center gap-1 transition-colors"
+                      >
+                        <Wrench className="w-3 h-3" />
+                        Browse all resources
+                      </Link>
+                      {quickAccessItems.length > 0 && (
+                        <button
+                          className="text-xs text-muted-foreground hover:text-red-400 font-medium transition-colors"
+                          onClick={async () => {
+                            for (const item of quickAccessItems) {
+                              await removeQuickAccessItem(item.id);
+                            }
+                          }}
+                        >
+                          Unpin all
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
 
           {/* LOGIN / PROFILE toggle */}
           {isLoading && !resolvedUser ? (
