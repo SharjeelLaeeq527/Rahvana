@@ -105,10 +105,16 @@ export default function Footer() {
                 <ArrowRight size={14} className="inline-block ml-1" />
               </Link> */}
               <Link
-                href="/visa-category/ir-category/ir1-journey"
+                href="/visa-category/ir-category/ir-1"
                 className="text-slate-400 hover:text-white transition-colors"
               >
                 IR-1 Journey
+              </Link>
+              <Link
+                href="/visa-category/ir-category/ir-5"
+                className="text-slate-400 hover:text-white transition-colors"
+              >
+                IR-5 Journey
               </Link>
             </nav>
           </div>
