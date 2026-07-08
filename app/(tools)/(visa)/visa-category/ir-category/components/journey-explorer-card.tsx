@@ -2,11 +2,15 @@
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, Bell, Hourglass } from "lucide-react";
 import type { ExplorerJourneyCard as ExplorerJourneyCardType } from "../data/journeys";
 
 export function ExplorerJourneyCard({ card }: { card: ExplorerJourneyCardType }) {
   const isLive = card.status === "Live" && card.href;
+
+  if (card.code === "K-1") {
+    return <ComingSoonJourneyCard />;
+  }
 
   return (
     <motion.article
@@ -14,7 +18,7 @@ export function ExplorerJourneyCard({ card }: { card: ExplorerJourneyCardType })
       transition={{ duration: 0.18, ease: "easeOut" }}
       className="group flex h-full flex-col overflow-hidden rounded-[1.35rem] border border-[var(--rv-line)] bg-white shadow-[0_20px_46px_-34px_rgba(12,27,51,0.48)]"
     >
-      <div className="relative h-64 overflow-hidden">
+      <div className="relative h-80 overflow-hidden">
         <div
           className="absolute inset-0 bg-cover bg-center transition-transform duration-700 group-hover:scale-105"
           style={{ backgroundImage: `url(${card.image})` }}
@@ -60,6 +64,58 @@ export function ExplorerJourneyCard({ card }: { card: ExplorerJourneyCardType })
             Coming soon
           </button>
         )}
+      </div>
+    </motion.article>
+  );
+}
+
+function ComingSoonJourneyCard() {
+  return (
+    <motion.article
+      whileHover={{ y: -5 }}
+      transition={{ duration: 0.18, ease: "easeOut" }}
+      className="guide-grid-bg relative flex h-full min-h-[341px] flex-col overflow-hidden rounded-[1.35rem] border border-[var(--rv-line)] bg-white p-6 text-center shadow-[0_20px_46px_-34px_rgba(12,27,51,0.48)]"
+    >
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.88),rgba(232,241,251,0.72))]" />
+      <div className="relative z-10 flex flex-1 flex-col items-center justify-center">
+        <motion.div
+          animate={{ y: [0, -5, 0] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+          className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--rahvana-primary-pale)] text-[var(--rahvana-primary)]"
+        >
+          <Hourglass className="h-7 w-7" />
+        </motion.div>
+
+        <p className="mt-6 text-xs font-bold uppercase tracking-[0.22em] text-[var(--rahvana-primary)]">
+          FUTURE READY
+        </p>
+        <h3 className="mt-3 text-3xl font-extrabold tracking-[-0.04em] text-[var(--rv-navy)]">
+          More Journeys Ahead
+        </h3>
+        <p className="mt-3 max-w-xs text-sm leading-7 text-[var(--rv-soft)]">
+          Rahvana is designed to support more immigration pathways over time, while IR-1 and IR-5
+          remain the active guided journeys today.
+        </p>
+
+        <div className="mt-6 inline-flex items-center gap-3 rounded-full border border-[var(--rv-line)] bg-white/80 px-5 py-3 shadow-sm backdrop-blur">
+          <div className="flex gap-1">
+            {[0, 1, 2].map((item) => (
+              <span
+                key={item}
+                className="h-2 w-2 animate-bounce rounded-full bg-[var(--rahvana-primary)]"
+                style={{ animationDelay: `${item * 0.18}s` }}
+              />
+            ))}
+          </div>
+          <span className="text-sm font-semibold text-[var(--rv-navy)]">
+            Built for future expansion
+          </span>
+        </div>
+
+        <div className="mt-5 flex items-center gap-2 text-[11px] font-semibold text-[var(--rv-muted)]">
+          <Bell className="h-3 w-3 text-[var(--rahvana-primary)]" />
+          Additional journeys will be introduced when they are ready.
+        </div>
       </div>
     </motion.article>
   );

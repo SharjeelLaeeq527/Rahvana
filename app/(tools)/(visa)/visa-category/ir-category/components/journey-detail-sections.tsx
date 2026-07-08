@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { CSSProperties } from "react";
 import Link from "next/link";
-import { AnimatePresence, motion, useScroll, useSpring } from "framer-motion";
+import { motion, useScroll, useSpring } from "framer-motion";
 import {
   ArrowRight,
   BadgeCheck,
@@ -209,25 +208,53 @@ export function JourneyQuickFacts({ journey }: { journey: JourneyDetailContent }
 
 export function JourneyPreparationStack({ journey }: { journey: JourneyDetailContent }) {
   const [activeIndex, setActiveIndex] = useState(0);
+  const [previousIndex, setPreviousIndex] = useState(0);
   const categories = journey.preparationCategories;
-  const activeCategory = categories[activeIndex];
 
   useEffect(() => {
     const timer = window.setInterval(() => {
-      setActiveIndex((current) => (current + 1) % categories.length);
+      setActiveIndex((current) => {
+        setPreviousIndex(current);
+        return (current + 1) % categories.length;
+      });
     }, 3200);
 
     return () => window.clearInterval(timer);
   }, [categories.length]);
 
-  const stackedPreview = useMemo(
+  const stackedCategories = useMemo(
     () =>
-      categories
-        .map((category, index) => ({ category, index }))
-        .filter(({ index }) => index !== activeIndex)
-        .slice(0, 3),
-    [activeIndex, categories]
+      categories.map((category, index) => {
+        const offset = (index - activeIndex + categories.length) % categories.length;
+        const wasFront = index === previousIndex && index !== activeIndex;
+        return { category, index, offset, wasFront };
+      }),
+    [activeIndex, categories, previousIndex]
   );
+
+  function getCardState(offset: number, wasFront: boolean) {
+    if (wasFront) {
+      return {
+        x: [0, -92, 92],
+        y: [0, 42, 64],
+        scale: [1, 0.92, 0.82],
+        rotate: [0, -5, 2.8],
+        opacity: [1, 0.62, 0.36],
+        zIndex: 1,
+      };
+    }
+
+    const visibleOffset = Math.min(offset, 3);
+    const isFront = offset === 0;
+    return {
+      x: isFront ? [92, 0] : visibleOffset * 28,
+      y: isFront ? [22, 0] : visibleOffset * 20,
+      scale: isFront ? [0.95, 1] : 1 - visibleOffset * 0.045,
+      rotate: isFront ? [2, 0] : visibleOffset * 0.8,
+      opacity: offset < 4 ? (isFront ? [0.78, 1] : 0.76 - visibleOffset * 0.09) : 0,
+      zIndex: isFront ? categories.length + 2 : categories.length - offset,
+    };
+  }
 
   return (
     <section className="overflow-hidden bg-white/80 px-4 py-16 sm:px-6 lg:px-12 lg:py-20">
@@ -237,12 +264,10 @@ export function JourneyPreparationStack({ journey }: { journey: JourneyDetailCon
             Journey preparation
           </p>
           <h2 className="mt-3 text-3xl font-bold tracking-[-0.03em] text-[var(--rv-navy)] sm:text-4xl">
-            What You&apos;ll Need Along the Way
+            {journey.preparationHeading}
           </h2>
           <p className="mt-4 max-w-xl text-sm leading-7 text-[var(--rv-soft)] sm:text-base">
-            Each journey gathers different proof at different milestones. Rahvana keeps these
-            categories attached to the stage where they matter, so users prepare the right material
-            at the right time.
+            {journey.preparationDescription}
           </p>
           <div className="mt-6 flex flex-wrap gap-2">
             {categories.map((category, index) => (
@@ -263,33 +288,31 @@ export function JourneyPreparationStack({ journey }: { journey: JourneyDetailCon
         </div>
 
         <div className="relative min-h-[360px]">
-          {stackedPreview.map(({ category, index }, stackIndex) => (
-            <PreparationCard
-              key={category.title}
-              category={category}
-              className="absolute inset-x-0 top-8 opacity-70"
-              style={{
-                transform: `translate(${(stackIndex + 1) * 18}px, ${(stackIndex + 1) * 18}px) scale(${
-                  1 - (stackIndex + 1) * 0.045
-                })`,
-                zIndex: 2 - stackIndex,
-              }}
-              compactLabel={`0${index + 1}`}
-            />
-          ))}
+          {stackedCategories.map(({ category, index, offset, wasFront }) => {
+            const isFront = offset === 0;
+            const cardState = getCardState(offset, wasFront);
 
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={activeCategory.title}
-              initial={{ opacity: 0, x: 60, rotate: 1.5 }}
-              animate={{ opacity: 1, x: 0, rotate: 0 }}
-              exit={{ opacity: 0, x: -80, rotate: -2 }}
-              transition={{ duration: 0.45, ease: "easeOut" }}
-              className="relative z-10"
-            >
-              <PreparationCard category={activeCategory} compactLabel={`0${activeIndex + 1}`} />
-            </motion.div>
-          </AnimatePresence>
+            return (
+              <motion.div
+                key={category.title}
+                className="absolute inset-x-0 top-0"
+                animate={cardState}
+                transition={{
+                  x: { duration: wasFront ? 0.82 : 0.58, ease: [0.22, 1, 0.36, 1] },
+                  y: { duration: wasFront ? 0.82 : 0.58, ease: [0.22, 1, 0.36, 1] },
+                  scale: { duration: wasFront ? 0.82 : 0.58, ease: [0.22, 1, 0.36, 1] },
+                  rotate: { duration: wasFront ? 0.82 : 0.58, ease: [0.22, 1, 0.36, 1] },
+                  opacity: { duration: 0.42, ease: "easeOut" },
+                }}
+              >
+                <PreparationCard
+                  category={category}
+                  compactLabel={`0${index + 1}`}
+                  className={isFront ? "" : "pointer-events-none"}
+                />
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
@@ -300,19 +323,16 @@ function PreparationCard({
   category,
   compactLabel,
   className = "",
-  style,
 }: {
   category: JourneyPreparationCategory;
   compactLabel: string;
   className?: string;
-  style?: CSSProperties;
 }) {
   const Icon = PREPARATION_ICONS[category.icon];
 
   return (
     <article
       className={`rounded-lg border border-[var(--rv-line)] bg-white p-7 shadow-[0_28px_70px_-46px_rgba(12,27,51,0.55)] ${className}`}
-      style={style}
     >
       <div className="flex items-start justify-between gap-5">
         <div className="flex h-14 w-14 items-center justify-center rounded-lg bg-[var(--rahvana-primary-pale)] text-[var(--rahvana-primary)]">

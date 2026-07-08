@@ -62,6 +62,8 @@ export interface JourneyDetailContent {
   heroOverlay: string;
   quickFacts: JourneyFact[];
   timeline: JourneyStep[];
+  preparationHeading: string;
+  preparationDescription: string;
   preparationCategories: JourneyPreparationCategory[];
   supportingResources: JourneySupportingResource[];
   evidence: string[];
@@ -190,6 +192,9 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
           "Rahvana records the interview outcome, unlocks the correct next steps for approval or 221(g), tracks visa issuance or post-interview review, and keeps delivery and arrival tasks visible.",
       },
     ],
+    preparationHeading: "What Couples Need Along the Spouse Visa Journey",
+    preparationDescription:
+      "IR-1/CR-1 cases depend on clean marriage records, strong relationship evidence, sponsor financial proof, and interview-ready civil documents. Rahvana keeps each requirement tied to the correct stage so couples know what to prepare before USCIS, NVC, and the consular interview.",
     preparationCategories: [
       {
         title: "Relationship Evidence",
@@ -333,6 +338,9 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
           "Rahvana keeps final travel, immigrant fee, U.S. address, and post-approval document tasks organized through arrival.",
       },
     ],
+    preparationHeading: "What Families Need Along the Parent Visa Journey",
+    preparationDescription:
+      "IR-5 cases depend on proving the U.S. citizen child's age, citizenship, parent-child relationship, sponsor financial support, and the parent's civil documents. Rahvana organizes these requirements by stage so families can prepare the right proof before USCIS, NVC, and the embassy interview.",
     preparationCategories: [
       {
         title: "Parent-Child Relationship Proof",
