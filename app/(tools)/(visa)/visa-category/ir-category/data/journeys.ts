@@ -1,4 +1,10 @@
-export type JourneySlug = "ir-1" | "ir-5";
+export const JOURNEY_SLUGS = ["ir-1", "ir-5"] as const;
+
+export type JourneySlug = (typeof JOURNEY_SLUGS)[number];
+
+export function isJourneySlug(slug: string): slug is JourneySlug {
+  return (JOURNEY_SLUGS as readonly string[]).includes(slug);
+}
 
 export type JourneyCategory = "Family" | "Work" | "Study" | "Investment";
 
