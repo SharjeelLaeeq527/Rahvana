@@ -7,20 +7,16 @@ import {
   Search,
   // Brain, // unused — Case Strength Analyzer tool commented out
   LifeBuoy,
-  Compass,
   MessageSquare,
   Calculator,
   Clock,
-  Calendar,
   Camera,
   Files,
   PenTool,
   Wand2,
-  FileSearch,
   ArrowRight,
   ChevronDown,
   Lock,
-  Crown,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { usePlan } from "../../context/PlanContext";
@@ -28,6 +24,7 @@ import { UpgradeModal } from "../../components/entitlements/UpgradeModal";
 import { ROUTE_FEATURE_MAP } from "@/lib/entitlements/routeFeatureMap";
 import AddResourceCard from "@/components/resources/AddResourceCard";
 import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 import {
   DropdownMenu,
@@ -215,7 +212,6 @@ const CATEGORIES: ("All" | ToolCategory)[] = [
   "Forms & Automation",
 ];
 
-
 // ─── Page component ───────────────────────────────────────────────────────────
 
 export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean }) {
@@ -285,8 +281,7 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
   // "My Resources" (embedded) view splits the catalog into two sections:
   //  • "My Tools"     — tools the user owns (free/public + unlocked by plan or add-ons)
   //  • "Browse Tools" — everything else, shown as locked/"Unlock" cards to explore
-  const isOwned = (feature?: string) =>
-    !feature || (!plan.isLoading && !plan.isLocked(feature));
+  const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
   const ownedTools = filteredTools.filter((tool) => isOwned(tool.entitlementFeature));
   const browseTools = filteredTools.filter((tool) => !isOwned(tool.entitlementFeature));
 
@@ -330,72 +325,72 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
 
         {/* Search */}
         {!isEmbedded && (
-        <div className="relative max-w-lg mx-auto mb-10 animate-scale-in [animation-delay:200ms]">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
-          <input
-            type="text"
-            placeholder={t("toolsPage.searchPlaceholder") || "Search tools..."}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
-          />
-        </div>
+          <div className="relative max-w-lg mx-auto mb-10 animate-scale-in [animation-delay:200ms]">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
+            <input
+              type="text"
+              placeholder={t("toolsPage.searchPlaceholder") || "Search tools..."}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
+            />
+          </div>
         )}
 
         {/* Category tabs — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
-        <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
-          <div
-            ref={measureRef}
-            aria-hidden="true"
-            className="absolute top-0 left-0 w-full flex flex-wrap gap-3 pointer-events-none opacity-0 z-[-1]"
-          >
-            {CATEGORIES.map((cat) => (
-              <div key={cat} className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border">
-                {t(`toolsPage.categories.${cat}`) || cat}
-              </div>
-            ))}
+          <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
             <div
-              data-more-button="true"
-              className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1"
+              ref={measureRef}
+              aria-hidden="true"
+              className="absolute top-0 left-0 w-full flex flex-wrap gap-3 pointer-events-none opacity-0 z-[-1]"
             >
-              {t("toolsPage.more") || "More"} <ChevronDown className="w-4 h-4 ml-1" />
+              {CATEGORIES.map((cat) => (
+                <div key={cat} className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border">
+                  {t(`toolsPage.categories.${cat}`) || cat}
+                </div>
+              ))}
+              <div
+                data-more-button="true"
+                className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1"
+              >
+                {t("toolsPage.more") || "More"} <ChevronDown className="w-4 h-4 ml-1" />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3 animate-fade-in [animation-delay:300ms]">
+              {visibleCategories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${selectedCategory === cat ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
+                >
+                  {t(`toolsPage.categories.${cat}`) || cat}
+                </button>
+              ))}
+              {hiddenCategories.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${isMoreSelected ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
+                    >
+                      {t("toolsPage.more") || "More"} <ChevronDown className="w-4 h-4 ml-1" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-[200px]">
+                    {hiddenCategories.map((cat) => (
+                      <DropdownMenuItem
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`cursor-pointer ${selectedCategory === cat ? "bg-primary/10 text-primary font-semibold" : ""}`}
+                      >
+                        {t(`toolsPage.categories.${cat}`) || cat}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           </div>
-          <div className="flex flex-wrap gap-3 animate-fade-in [animation-delay:300ms]">
-            {visibleCategories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${selectedCategory === cat ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
-              >
-                {t(`toolsPage.categories.${cat}`) || cat}
-              </button>
-            ))}
-            {hiddenCategories.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className={`px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${isMoreSelected ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
-                  >
-                    {t("toolsPage.more") || "More"} <ChevronDown className="w-4 h-4 ml-1" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[200px]">
-                  {hiddenCategories.map((cat) => (
-                    <DropdownMenuItem
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`cursor-pointer ${selectedCategory === cat ? "bg-primary/10 text-primary font-semibold" : ""}`}
-                    >
-                      {t(`toolsPage.categories.${cat}`) || cat}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-        </div>
         )}
 
         {/* Tools grid */}
@@ -599,9 +594,36 @@ function ToolCard({
 
       {/* Content */}
       <div className="relative z-30 flex flex-col grow pt-2">
-        <h3 className="text-xl font-bold mb-1 text-foreground transition-colors">
-          {t(`toolsPage.toolsItems.${tool.id}.title`) || tool.title}
-        </h3>
+        <div className="flex justify-between items-start gap-3">
+          <h3 className="text-xl font-bold mb-1 text-foreground transition-colors">
+            {t(`toolsPage.toolsItems.${tool.id}.title`) || tool.title}
+          </h3>
+          {!isLocked && (
+            <div className="relative z-50 shrink-0">
+              <QuickAccessButton
+                item={{
+                  id: tool.id === "221g-planner" ? "221g-action-planner" : tool.id,
+                  title: tool.title,
+                  href: tool.href,
+                  icon_name: (() => {
+                    const mapping: Record<string, string> = {
+                      "221g-planner": "LifeBuoy",
+                      "interview-prep": "MessageSquare",
+                      "sponsorship-calculator": "Calculator",
+                      "queue-watch": "Clock",
+                      "photo-booth": "Camera",
+                      "pdf-toolkit": "Files",
+                      "snap-sign": "PenTool",
+                      "form-forge": "Wand2",
+                    };
+                    return mapping[tool.id] || "Zap";
+                  })(),
+                }}
+                mode="icon"
+              />
+            </div>
+          )}
+        </div>
         <div className="mb-3 flex gap-2 items-center">
           <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground/80 bg-muted px-2 py-0.5 rounded">
             {t(`toolsPage.categories.${tool.category}`) || tool.category}
@@ -615,7 +637,6 @@ function ToolCard({
         <p className={`text-sm leading-relaxed mb-1 grow text-slate-900 dark:text-white mb-0 grow`}>
           {t(`toolsPage.toolsItems.${tool.id}.desc`) || tool.description}
         </p>
-
       </div>
 
       {/* Footer */}

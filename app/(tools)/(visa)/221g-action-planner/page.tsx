@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import CombinedIntakeFormWrapper from "./components/CombinedIntakeFormWrapper";
 import { FormData, FormSelections } from "./types/221g";
 import { useUserProfile } from "@/app/context/UserProfileContext";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 export default function TwentyTwoOneGActionPlanner() {
   const [formData, setFormData] = useState<FormData | null>(null);
@@ -121,12 +122,24 @@ export default function TwentyTwoOneGActionPlanner() {
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
           Visa Response Toolkit
         </p>
-        <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
-          221(g) Action Planner
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Build and export a structured 221(g) response packet step by step.
-        </p>
+        <div className="mt-1 flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
+              221(g) Action Planner
+            </h1>
+            <p className="mt-1 text-sm text-slate-600">
+              Build and export a structured 221(g) response packet step by step.
+            </p>
+          </div>
+          <QuickAccessButton
+            item={{
+              id: "221g-action-planner",
+              title: "221(g) Action Planner",
+              href: "/221g-action-planner",
+              icon_name: "LifeBuoy",
+            }}
+          />
+        </div>
         <p className="mt-3 text-xs text-slate-500 italic leading-relaxed border-t border-slate-100 pt-2">
           Note: 221(g) notices may differ by embassy/consulate; always follow the specific instructions provided with your case notice.
         </p>

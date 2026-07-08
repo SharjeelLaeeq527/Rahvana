@@ -9,6 +9,7 @@ import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
 import { usePlan } from "@/app/context/PlanContext";
 import { Loader } from "../ui/spinner";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
@@ -270,6 +271,16 @@ export default function PassportPhotoTool({
             >
               {t("passportPhoto.subtitle")}
             </p>
+            <div className="flex justify-center mt-4">
+              <QuickAccessButton
+                item={{
+                  id: "photo-booth",
+                  title: "Photo Booth",
+                  href: "/passport",
+                  icon_name: "Camera",
+                }}
+              />
+            </div>
           </header>
         )}
 
@@ -434,17 +445,16 @@ export default function PassportPhotoTool({
               style={
                 !file || loading
                   ? {
-                    backgroundColor: "#d1dde3",
-                    color: "#8aafc0",
-                    cursor: "not-allowed",
-                  }
+                      backgroundColor: "#d1dde3",
+                      color: "#8aafc0",
+                      cursor: "not-allowed",
+                    }
                   : {
-                    backgroundColor: "#5a9ab5",
-                    color: "#ffffff",
-                    boxShadow:
-                      "0 4px 18px rgba(90,154,181,0.45), 0 1px 4px rgba(0,0,0,0.10)",
-                    cursor: "pointer",
-                  }
+                      backgroundColor: "#5a9ab5",
+                      color: "#ffffff",
+                      boxShadow: "0 4px 18px rgba(90,154,181,0.45), 0 1px 4px rgba(0,0,0,0.10)",
+                      cursor: "pointer",
+                    }
               }
               onMouseEnter={(e) => {
                 if (file && !loading)
@@ -460,9 +470,10 @@ export default function PassportPhotoTool({
               ) : (
                 <>
                   <Upload className="w-5 h-5" />
-                  {remainingCredits !== null && remainingCredits <= 0 && tier !== "executive" ? tier === "premium"
-                    ? "Upgrade to Executive"
-                    : "Upgrade to continue"
+                  {remainingCredits !== null && remainingCredits <= 0 && tier !== "executive"
+                    ? tier === "premium"
+                      ? "Upgrade to Executive"
+                      : "Upgrade to continue"
                     : t("passportPhoto.generate")}
                 </>
               )}
@@ -473,14 +484,9 @@ export default function PassportPhotoTool({
         {/* Result */}
         {result && (
           <section ref={resultRef} className="mt-12 w-full max-w-2xl">
-
             <ResultGate
               feature="photo_booth"
-              isLocked={
-                tier !== "executive" &&
-                remainingCredits !== null &&
-                remainingCredits <= 0
-              }
+              isLocked={tier !== "executive" && remainingCredits !== null && remainingCredits <= 0}
             >
               <div
                 className="rounded-2xl p-4 sm:p-6"
@@ -515,8 +521,7 @@ export default function PassportPhotoTool({
                   style={{
                     backgroundColor: "#4a8c6e",
                     color: "#ffffff",
-                    boxShadow:
-                      "0 4px 18px rgba(74,140,110,0.4), 0 1px 4px rgba(0,0,0,0.10)",
+                    boxShadow: "0 4px 18px rgba(74,140,110,0.4), 0 1px 4px rgba(0,0,0,0.10)",
                   }}
                 >
                   <Download className="w-5 h-5" />

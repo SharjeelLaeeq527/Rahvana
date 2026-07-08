@@ -6,6 +6,7 @@ import { Loader } from "@/components/ui/spinner";
 import dynamic from "next/dynamic";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 // Dynamically import components that use browser APIs - disable SSR
 const SignatureUploader = dynamic(
@@ -120,6 +121,16 @@ export default function SignatureRemoverPage() {
           <p className="text-slate-600 text-sm sm:text-base md:text-lg max-w-3xl mx-auto">
             {t("signatureProcessing.subtitle")}
           </p>
+          <div className="flex justify-center mt-4">
+            <QuickAccessButton
+              item={{
+                id: "snap-sign",
+                title: "Snap & Sign",
+                href: "/signature-image-processing",
+                icon_name: "PenTool",
+              }}
+            />
+          </div>
         </header>
 
         <div className="bg-slate-50 rounded-lg border border-slate-200 p-6 sm:p-8 mb-8">

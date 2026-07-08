@@ -21,6 +21,7 @@ import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader"
 import StatCard from "@/app/components/shared/StatCard";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Loader } from "@/components/ui/spinner";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 // --- Types ---
 interface Service {
@@ -571,6 +572,25 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                     countLabel={bookingData.countLabel}
                     description={bookingData.description}
                     extraContent={bookingData.extraContent}
+                    quickAccessButton={
+                      <QuickAccessButton
+                        item={{
+                          id: `service-${service.id}`,
+                          title: service.title,
+                          href: service.href,
+                          icon_name: (() => {
+                            const mapping: Record<string, string> = {
+                              "book-a-consultation": "Briefcase",
+                              "pcc-filing-service-—-sindh": "Shield",
+                              "book-medical-appointment": "Clock",
+                              "urdu-→-english-translation": "Files",
+                            };
+                            return mapping[service.id] || "Briefcase";
+                          })(),
+                        }}
+                        mode="icon"
+                      />
+                    }
                     actionButton={bookingData.actionButton}
                     onClick={() => {
                       if (bookingData.onClick) {
@@ -980,9 +1000,32 @@ function ServiceCard({
 
       {/* Content */}
       <div className="relative z-10 flex flex-col grow pt-2">
-        <h3 className="text-xl font-bold text-foreground mb-1 transition-colors">
-          {service.title}
-        </h3>
+        <div className="flex justify-between items-start gap-3">
+          <h3 className="text-xl font-bold text-foreground mb-1 transition-colors">
+            {service.title}
+          </h3>
+          {!featureLocked && (
+            <div className="relative z-50 shrink-0">
+              <QuickAccessButton
+                item={{
+                  id: `service-${service.id}`,
+                  title: service.title,
+                  href: service.href,
+                  icon_name: (() => {
+                    const mapping: Record<string, string> = {
+                      "book-a-consultation": "Briefcase",
+                      "pcc-filing-service-—-sindh": "Shield",
+                      "book-medical-appointment": "Clock",
+                      "urdu-→-english-translation": "Files",
+                    };
+                    return mapping[service.id] || "Briefcase";
+                  })(),
+                }}
+                mode="icon"
+              />
+            </div>
+          )}
+        </div>
         <div className="mb-3">
           <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground/80 bg-muted px-2 py-0.5 rounded">
             {service.categoryLabel}

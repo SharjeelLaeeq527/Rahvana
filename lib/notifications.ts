@@ -1245,7 +1245,7 @@ function getTranslationNotificationContent(
     case "TRANSLATED":
       return {
         title: "Translation Ready for Review",
-        body: `Your Urdu to English translation for "${docTypeLabel}" (Version ${version}) is ready. Please review and approve it.`,
+        body: `Your Urdu to English translation for "${docTypeLabel} Certificate" (Version ${version}) is ready. Please review and approve it.`,
         priority: "high",
         actionLabel: "Review Translation",
         actionUrl: `/document-translation/request`,

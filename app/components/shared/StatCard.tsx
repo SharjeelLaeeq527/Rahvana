@@ -11,6 +11,7 @@ interface StatCardProps {
   description?: React.ReactNode;
   onClick?: () => void;
   extraContent?: React.ReactNode;
+  quickAccessButton?: React.ReactNode;
   actionButton?: {
     label: string;
     href: string;
@@ -28,6 +29,7 @@ const StatCard: React.FC<StatCardProps> = ({
   onClick,
   type,
   extraContent,
+  quickAccessButton,
   actionButton,
 }) => {
   const isLive = status === "live";
@@ -70,13 +72,18 @@ const StatCard: React.FC<StatCardProps> = ({
       {/* Icon */}
 
       {/* Title + Journey Type */}
-      <div className="flex justify-between">
+      <div className="flex justify-between items-start gap-2">
         <h3
           className={`text-[15px] font-semibold mb-1 ${isLive ? "text-[#0a1128]" : "text-[#6b7280]"}`}
           style={{ fontFamily: "Inter, sans-serif" }}
         >
           {title}
         </h3>
+        {quickAccessButton && (
+          <div className="relative z-50 shrink-0">
+            {quickAccessButton}
+          </div>
+        )}
         {type && (
           <span className="inline-block bg-[#e8f6f6] text-[#0d7377] text-[11px] font-semibold px-2.5 py-1 rounded-full mb-2">
             {type}

@@ -20,6 +20,7 @@ import { useUserProfile } from "@/app/context/UserProfileContext";
 import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
 import { usePlan } from "@/app/context/PlanContext";
 import { Crown, CreditCard, ShoppingBag, Sparkles } from "lucide-react";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 type Location = "karachi" | "lahore" | "islamabad";
 type IslamabadProvider = "amc" | "iom";
@@ -102,10 +103,11 @@ const LocationStep = ({
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
             type="button"
-            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${formData.location === "karachi"
-              ? "border-teal-600 bg-teal-50"
-              : "border-gray-200 hover:border-teal-400"
-              }`}
+            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
+              formData.location === "karachi"
+                ? "border-teal-600 bg-teal-50"
+                : "border-gray-200 hover:border-teal-400"
+            }`}
             onClick={() => onLocationChange("karachi")}
           >
             <h3 className="font-semibold text-lg mb-2">
@@ -118,10 +120,11 @@ const LocationStep = ({
 
           <button
             type="button"
-            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${formData.location === "lahore"
-              ? "border-teal-600 bg-teal-50"
-              : "border-gray-200 hover:border-teal-400"
-              }`}
+            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
+              formData.location === "lahore"
+                ? "border-teal-600 bg-teal-50"
+                : "border-gray-200 hover:border-teal-400"
+            }`}
             onClick={() => onLocationChange("lahore")}
           >
             <h3 className="font-semibold text-lg mb-2">
@@ -134,10 +137,11 @@ const LocationStep = ({
 
           <button
             type="button"
-            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${formData.location === "islamabad"
-              ? "border-teal-600 bg-teal-50"
-              : "border-gray-200 hover:border-teal-400"
-              }`}
+            className={`p-4 sm:p-6 border-2 rounded-xl text-center transition-all ${
+              formData.location === "islamabad"
+                ? "border-teal-600 bg-teal-50"
+                : "border-gray-200 hover:border-teal-400"
+            }`}
             onClick={() => onLocationChange("islamabad")}
           >
             <h3 className="font-semibold text-lg mb-2">
@@ -157,10 +161,11 @@ const LocationStep = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <button
                 type="button"
-                className={`p-4 border-2 rounded-lg text-center transition-all ${formData.islamabadProvider === "amc"
-                  ? "border-blue-600 bg-blue-100"
-                  : "border-gray-300 hover:border-blue-400"
-                  }`}
+                className={`p-4 border-2 rounded-lg text-center transition-all ${
+                  formData.islamabadProvider === "amc"
+                    ? "border-blue-600 bg-blue-100"
+                    : "border-gray-300 hover:border-blue-400"
+                }`}
                 onClick={() => onProviderChange("amc")}
               >
                 <h4 className="font-semibold mb-1">{t("bookAppointment.locationStep.amc")}</h4>
@@ -171,10 +176,11 @@ const LocationStep = ({
 
               <button
                 type="button"
-                className={`p-4 border-2 rounded-lg text-center transition-all ${formData.islamabadProvider === "iom"
-                  ? "border-blue-600 bg-blue-100"
-                  : "border-gray-300 hover:border-blue-400"
-                  }`}
+                className={`p-4 border-2 rounded-lg text-center transition-all ${
+                  formData.islamabadProvider === "iom"
+                    ? "border-blue-600 bg-blue-100"
+                    : "border-gray-300 hover:border-blue-400"
+                }`}
                 onClick={() => onProviderChange("iom")}
               >
                 <h4 className="font-semibold mb-1">{t("bookAppointment.locationStep.iom")}</h4>
@@ -1361,9 +1367,7 @@ const ReviewStep = ({
             </h3>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <p className="text-sm text-slate-600">
-                  {t("bookAppointment.reviewStep.fullName")}
-                </p>
+                <p className="text-sm text-slate-600">{t("bookAppointment.reviewStep.fullName")}</p>
                 <p className="font-medium">{formData.fullName}</p>
               </div>
               <div>
@@ -1383,9 +1387,7 @@ const ReviewStep = ({
                 </p>
               </div>
               <div>
-                <p className="text-sm text-slate-600">
-                  {t("bookAppointment.reviewStep.visaType")}
-                </p>
+                <p className="text-sm text-slate-600">{t("bookAppointment.reviewStep.visaType")}</p>
                 <p className="font-medium">{formData.visaType}</p>
               </div>
               <div>
@@ -1395,9 +1397,7 @@ const ReviewStep = ({
                 <p className="font-medium">+92 {formData.contactNumber}</p>
               </div>
               <div>
-                <p className="text-sm text-slate-600">
-                  {t("bookAppointment.reviewStep.email")}
-                </p>
+                <p className="text-sm text-slate-600">{t("bookAppointment.reviewStep.email")}</p>
                 <p className="font-medium">{formData.email}</p>
               </div>
               <div>
@@ -1978,37 +1978,46 @@ const CheckoutStep = ({
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-2 mb-6">
-        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">
-          Checkout
-        </div>
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-          Payment &amp; Confirmation
-        </h2>
+        <div className="bg-teal-600 text-white px-3 py-1 rounded font-semibold">Checkout</div>
+        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">Payment &amp; Confirmation</h2>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
         {/* Left column: Booking summary */}
         <div className="md:col-span-3 space-y-4">
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-5">
-            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-tight">Booking Summary</h4>
+            <h4 className="text-xs font-bold text-slate-400 uppercase tracking-tight">
+              Booking Summary
+            </h4>
             <div className="mt-3 space-y-2">
               <p className="text-sm font-semibold text-slate-800">
                 {formData.surname}, {formData.givenName}
               </p>
               <p className="text-xs text-slate-500">
-                Center: <span className="capitalize font-medium text-slate-700">{formData.location}</span>
+                Center:{" "}
+                <span className="capitalize font-medium text-slate-700">{formData.location}</span>
                 {formData.location === "islamabad" && formData.islamabadProvider && (
-                  <> - <span className="uppercase font-medium text-slate-700">{formData.islamabadProvider}</span></>
+                  <>
+                    {" "}
+                    -{" "}
+                    <span className="uppercase font-medium text-slate-700">
+                      {formData.islamabadProvider}
+                    </span>
+                  </>
                 )}
               </p>
               {formData.preferredAppointmentDate && (
                 <p className="text-xs text-slate-500">
-                  Preferred Date: <span className="font-medium text-slate-700">{formatDate(formData.preferredAppointmentDate)}</span>
+                  Preferred Date:{" "}
+                  <span className="font-medium text-slate-700">
+                    {formatDate(formData.preferredAppointmentDate)}
+                  </span>
                 </p>
               )}
               {formData.preferredTime && (
                 <p className="text-xs text-slate-500">
-                  Preferred Time: <span className="font-medium text-slate-700">{formData.preferredTime}</span>
+                  Preferred Time:{" "}
+                  <span className="font-medium text-slate-700">{formData.preferredTime}</span>
                 </p>
               )}
             </div>
@@ -2017,9 +2026,12 @@ const CheckoutStep = ({
           <div className="bg-slate-50 rounded-2xl p-5 border border-slate-200/60 flex items-start gap-3">
             <CreditCard className="h-5 w-5 text-teal-600 flex-shrink-0 mt-0.5" />
             <div>
-              <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wide">Secure Transaction</h5>
+              <h5 className="text-xs font-bold text-slate-900 uppercase tracking-wide">
+                Secure Transaction
+              </h5>
               <p className="text-xs text-slate-500 mt-1 leading-relaxed">
-                Your details are handled securely. One-time card payments are processed securely via Stripe.
+                Your details are handled securely. One-time card payments are processed securely via
+                Stripe.
               </p>
             </div>
           </div>
@@ -2510,10 +2522,7 @@ export default function WilcareAppointmentForm() {
       const appointmentResult = await appointmentResponse.json();
 
       if (!appointmentResponse.ok) {
-        throw new Error(
-          appointmentResult.error ||
-          t("bookAppointment.validation.submitError"),
-        );
+        throw new Error(appointmentResult.error || t("bookAppointment.validation.submitError"));
       }
 
       const appointmentId = appointmentResult.id;
@@ -2812,6 +2821,16 @@ export default function WilcareAppointmentForm() {
             {t("bookAppointment.title")}
           </h1>
           <p className="text-slate-600 text-sm sm:text-base">{t("bookAppointment.description")}</p>
+          <div className="flex justify-center mt-4">
+            <QuickAccessButton
+              item={{
+                id: "service-book-medical-appointment",
+                title: t("bookAppointment.title") || "Book Medical Appointment",
+                href: "/book-appointment",
+                icon_name: "Clock",
+              }}
+            />
+          </div>
 
           {step > 1 && step < 10 && step !== 9 && !isIOM && (
             <div className="mt-6">
@@ -2848,13 +2867,7 @@ export default function WilcareAppointmentForm() {
                 <div
                   className="h-full bg-teal-600 rounded-full transition-all duration-300"
                   style={{
-                    width: `${
-                      step === 9
-                        ? 33
-                        : step === 7
-                          ? 66
-                          : 100
-                    }%`
+                    width: `${step === 9 ? 33 : step === 7 ? 66 : 100}%`,
                   }}
                 ></div>
               </div>
