@@ -25,6 +25,7 @@ import { ROUTE_FEATURE_MAP } from "@/lib/entitlements/routeFeatureMap";
 import AddResourceCard from "@/components/resources/AddResourceCard";
 import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { useQuickAccess } from "@/app/context/QuickAccessContext";
 
 import {
   DropdownMenu,
@@ -527,6 +528,7 @@ function ToolCard({
   const styles = CATEGORY_STYLES[tool.category];
   const { t } = useLanguage();
   const plan = usePlan();
+  const { isInQuickAccess } = useQuickAccess();
 
   const isLocked =
     !!tool.entitlementFeature && !plan.isLoading && plan.isLocked(tool.entitlementFeature);
@@ -535,6 +537,8 @@ function ToolCard({
   const isResultLocked = isLocked && ROUTE_FEATURE_MAP[tool.href] === undefined;
 
   const isNavigable = !tool.disabled && !isRouteLocked;
+
+  const isPinned = isInQuickAccess(tool.id === "221g-planner" ? "221g-action-planner" : tool.id);
 
   const handleClick = (e: React.MouseEvent) => {
     if (isRouteLocked && tool.entitlementFeature) {
@@ -546,11 +550,13 @@ function ToolCard({
   const cardClasses = `group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
     transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
     ${
-      isRouteLocked
-        ? "border-[1.5px] border-slate-200 bg-white cursor-pointer shadow-sm hover:shadow-[0_12px_40px_-12px_rgba(99,102,241,0.18)] hover:-translate-y-1"
-        : isNavigable
-          ? "border-[1.5px] border-slate-200 bg-white hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-          : "border-[1.5px] border-slate-200 bg-white opacity-80 cursor-not-allowed grayscale-[0.5]"
+      isPinned
+        ? "border-[3px] border-[#0d7377] dark:border-[#32e0c4] bg-white shadow-[0_8px_30px_rgba(13,115,119,0.08)] hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+        : isRouteLocked
+          ? "border-[1.5px] border-slate-200 bg-white cursor-pointer shadow-sm hover:shadow-[0_12px_40px_-12px_rgba(99,102,241,0.18)] hover:-translate-y-1"
+          : isNavigable
+            ? "border-[1.5px] border-slate-200 bg-white hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+            : "border-[1.5px] border-slate-200 bg-white opacity-80 cursor-not-allowed grayscale-[0.5]"
     }
     animate-fade-up`;
 

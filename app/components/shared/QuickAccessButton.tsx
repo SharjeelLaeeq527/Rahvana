@@ -67,12 +67,12 @@ export function QuickAccessButton({
         whileTap={{ scale: 0.95 }}
         onClick={handleToggle}
         disabled={isPending}
-        title={pinned ? "Remove from Pinned Items" : "Add to Pinned Items"}
-        aria-label={pinned ? "Remove from Pinned Items" : "Add to Pinned Items"}
-        className={`group relative flex items-center justify-center w-7 h-7 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
+        title={pinned ? "Remove from Quick Access List" : "Add to Quick Access List"}
+        aria-label={pinned ? "Remove from Quick Access List" : "Add to Quick Access List"}
+        className={`group relative flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
           pinned
-            ? "bg-[#0d7377]/10 text-[#0d7377] hover:bg-red-50 hover:text-red-500"
-            : "bg-transparent text-muted-foreground hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+            ? "bg-[#0d7377]/10 text-[#0d7377] hover:bg-red-50 hover:text-red-500 border border-[#0d7377]/20 hover:border-red-200"
+            : "bg-transparent text-muted-foreground hover:bg-[#0d7377]/10 hover:text-[#0d7377] border border-slate-200/80 dark:border-slate-800 hover:border-[#0d7377]/30"
         } ${isPending ? "opacity-60 cursor-wait" : "cursor-pointer"} ${className}`}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -85,7 +85,7 @@ export function QuickAccessButton({
               transition={{ duration: 0.15 }}
               className="flex"
             >
-              <Pin className="w-4 h-4 fill-current rotate-45" />
+              <Pin className="w-4.5 h-4.5 fill-current rotate-45" />
             </motion.span>
           ) : (
             <motion.span
@@ -110,7 +110,7 @@ export function QuickAccessButton({
       whileTap={{ scale: 0.97 }}
       onClick={handleToggle}
       disabled={isPending}
-      aria-label={pinned ? "Remove from Pinned Items" : "Add to Pinned Items"}
+      aria-label={pinned ? "Remove from Quick Access List" : "Add to Quick Access List"}
       className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
         pinned
           ? "bg-[#0d7377]/10 text-[#0d7377] hover:bg-red-50 hover:text-red-500 border border-[#0d7377]/20 hover:border-red-200"
@@ -151,7 +151,7 @@ export function QuickAccessButton({
           transition={{ duration: 0.1 }}
           className="whitespace-nowrap"
         >
-          {pinned ? "Remove from Pinned Items" : "Add to Pinned Items"}
+          {pinned ? "Remove from Quick Access List" : "Add to Quick Access List"}
         </motion.span>
       </AnimatePresence>
     </motion.button>

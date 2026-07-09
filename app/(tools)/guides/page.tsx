@@ -36,6 +36,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { motion } from "framer-motion";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { useQuickAccess } from "@/app/context/QuickAccessContext";
 
 interface UserGuideSession {
   id: string;
@@ -417,13 +418,13 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
                   href: guide.href,
                   icon_name: (() => {
                     const mapping: Record<string, string> = {
-                      "passport": "Globe",
+                      passport: "Globe",
                       "police-verification": "Shield",
-                      "cnic": "FileText",
+                      cnic: "FileText",
                       "birth-certificate": "FileText",
-                      "frc": "Globe",
+                      frc: "Globe",
                       "marriage-certificate": "Heart",
-                      "vaccinations": "Syringe",
+                      vaccinations: "Syringe",
                     };
                     return mapping[guide.id] || "BookOpen";
                   })(),
@@ -441,9 +442,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
               <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
                 Progress
               </span>
-              <span className="text-xs font-black text-teal-600">
-                {session.progress_percent}%
-              </span>
+              <span className="text-xs font-black text-teal-600">{session.progress_percent}%</span>
             </div>
             <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-6">
               <div
@@ -670,6 +669,8 @@ const CATEGORY_STYLES: Record<
     innerBox: string;
     link: string;
     borderGradient: string;
+    hoverBg: string;
+    hoverBorder: string;
   }
 > = {
   "Pakistan Document": {
@@ -677,12 +678,16 @@ const CATEGORY_STYLES: Record<
     innerBox: "bg-white/20",
     link: "text-green-600 dark:text-green-400",
     borderGradient: "from-green-400 to-green-300 dark:from-green-400 dark:to-green-300",
+    hoverBg: "group-hover:bg-green-100 dark:group-hover:bg-green-950/10",
+    hoverBorder: "group-hover:border-green-500/30 dark:group-hover:border-green-500/20",
   },
   "Medical & Exam": {
     iconBox: "bg-teal-600 text-white border-transparent dark:bg-teal-500",
     innerBox: "bg-white/20",
     link: "text-teal-600 dark:text-teal-400",
     borderGradient: "from-teal-400 to-teal-300 dark:from-teal-400 dark:to-teal-300",
+    hoverBg: "group-hover:bg-teal-100 dark:group-hover:bg-teal-950/10",
+    hoverBorder: "group-hover:border-teal-500/30 dark:group-hover:border-teal-500/20",
   },
 };
 
@@ -698,6 +703,7 @@ function GuideCard({
   const plan = usePlan();
   const Icon = guide.icon;
   const styles = CATEGORY_STYLES[guide.category];
+  const { isInQuickAccess } = useQuickAccess();
 
   const featureLocked =
     !!guide.entitlementFeature && !plan.isLoading && plan.isLocked(guide.entitlementFeature);
@@ -713,6 +719,8 @@ function GuideCard({
   const tierIconClass = `plan-icon--${upgradeTarget}`;
 
   const isNavigable = !guide.disabled;
+
+  const isPinned = isInQuickAccess(`guide-${guide.id}`);
 
   const handleClick = (e: React.MouseEvent) => {
     if (featureLocked && guide.entitlementFeature) {
@@ -730,11 +738,13 @@ function GuideCard({
       className={`group relative flex flex-col bg-card rounded-2xl p-8 pt-8 mt-6
       transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
       ${
-        featureLocked
-          ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
-          : isNavigable
-            ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-            : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
+        isPinned
+          ? "border-[3px] border-[#0d7377] dark:border-[#32e0c4] shadow-md hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+          : featureLocked
+            ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
+            : isNavigable
+              ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+              : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
       }
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
@@ -767,10 +777,10 @@ function GuideCard({
 
       {/* (Removed tier badge — ribbon now indicates locked state) */}
 
-      {/* Border gradient on hover (category color, non-locked only) */}
+      {/* Hover overlay with light category-specific background & border */}
       {!featureLocked && (
         <div
-          className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
+          className={`absolute inset-0 rounded-2xl border border-transparent transition-all duration-400 pointer-events-none z-0 ${styles.hoverBg} ${styles.hoverBorder}`}
         />
       )}
 
@@ -792,13 +802,13 @@ function GuideCard({
                   href: guide.href,
                   icon_name: (() => {
                     const mapping: Record<string, string> = {
-                      "passport": "Globe",
+                      passport: "Globe",
                       "police-verification": "Shield",
-                      "cnic": "FileText",
+                      cnic: "FileText",
                       "birth-certificate": "FileText",
-                      "frc": "Globe",
+                      frc: "Globe",
                       "marriage-certificate": "Heart",
-                      "vaccinations": "Syringe",
+                      vaccinations: "Syringe",
                     };
                     return mapping[guide.id] || "BookOpen";
                   })(),
