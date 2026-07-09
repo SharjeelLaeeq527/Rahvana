@@ -315,28 +315,28 @@ export function ToolsDock() {
   }, []);
 
   return (
-    <section className="relative w-full overflow-hidden bg-slate-50/50 px-6 py-24">
-      <div className="mx-auto max-w-5xl">
+    <section className="relative flex w-full flex-col justify-center overflow-hidden bg-slate-50/50 px-6 py-10 md:py-14">
+      <div className="mx-auto flex w-full max-w-5xl flex-col justify-center">
         {/* Eyebrow + headline */}
-        <div className="mx-auto mb-14 max-w-2xl text-center">
-          <span className="mb-4 block font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400">
+        <div className="mx-auto mb-4 md:mb-6 max-w-2xl text-center shrink-0">
+          <span className="mb-2 block font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400">
             Do it yourself
           </span>
-          <h2 className="text-balance text-4xl font-medium leading-[1.1] tracking-tight text-zinc-900 md:text-5xl">
+          <h2 className="text-balance text-2xl md:text-4xl font-medium leading-[1.1] tracking-tight text-zinc-900">
             Already know what you're doing?{" "}
             <span className="text-zinc-400">You just need the right tools.</span>
           </h2>
-          <p className="mx-auto mt-5 max-w-lg text-[15px] leading-relaxed text-zinc-500">
+          <p className="mx-auto mt-2 md:mt-3 max-w-lg text-[13px] md:text-[15px] leading-relaxed text-zinc-500">
             Tools, expert services, and country-specific guides — all in one place.
           </p>
         </div>
 
         {/* Stage */}
-        <div className="relative mx-auto flex h-[440px] w-full max-w-3xl items-center justify-center">
+        <div className="relative mx-auto flex h-[240px] sm:h-[280px] md:h-[320px] w-full max-w-3xl items-center justify-center shrink-0">
           {/* Halo glow */}
           <motion.div
             aria-hidden
-            className="pointer-events-none absolute left-1/2 top-1/2 h-[520px] w-[520px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
+            className="pointer-events-none absolute left-1/2 top-1/2 h-[340px] w-[340px] md:h-[420px] md:w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-full blur-3xl"
             animate={{
               background: `radial-gradient(circle, ${active.glow} 0%, rgba(255,255,255,0) 65%)`,
             }}
@@ -344,12 +344,12 @@ export function ToolsDock() {
           />
 
           {/* Two overlapping cards — both always visible, swap front/back */}
-          <div className="relative h-[380px] w-[560px] max-w-full">
+          <div className="relative h-[220px] sm:h-[260px] md:h-[300px] w-[460px] max-w-full">
             {/* Icon card — full-bleed icon, no wasted space */}
             <motion.div
               animate={{
-                x: isMobile ? 0 : (iconInFront ? -110 : 90),
-                y: isMobile ? (iconInFront ? 15 : -15) : (iconInFront ? 10 : -10),
+                x: isMobile ? 0 : (iconInFront ? -85 : 70),
+                y: isMobile ? (iconInFront ? 10 : -10) : (iconInFront ? 8 : -8),
                 rotate: isMobile ? (iconInFront ? -2 : 2) : (iconInFront ? -5 : 4),
                 scale: isMobile ? (iconInFront ? 1 : 0.9) : (iconInFront ? 1 : 0.9),
                 zIndex: iconInFront ? 20 : 10,
@@ -366,7 +366,7 @@ export function ToolsDock() {
               {iconInFront ? (
                 <Link href={active.href} className="block">
                   <div
-                    className={`group relative flex h-[260px] md:h-[300px] w-[200px] md:w-[240px] flex-col overflow-hidden rounded-[28px] border border-black/[0.06] ${active.tint} shadow-[0_30px_60px_-20px_rgba(0,0,0,0.25)] transition-transform duration-300 hover:scale-[1.02]`}
+                    className={`group relative flex h-[180px] sm:h-[220px] md:h-[240px] w-[150px] sm:w-[170px] md:w-[190px] flex-col overflow-hidden rounded-[24px] border border-black/[0.06] ${active.tint} shadow-[0_20px_45px_-15px_rgba(0,0,0,0.25)] transition-transform duration-300 hover:scale-[1.02]`}
                   >
                     {/* Big icon fills the card */}
                     <motion.div
@@ -376,29 +376,29 @@ export function ToolsDock() {
                       transition={{ type: "spring", stiffness: 180, damping: 18 }}
                       className="flex flex-1 items-center justify-center"
                     >
-                      <active.Icon className={`h-24 w-24 md:h-32 md:w-32 ${active.accent}`} strokeWidth={1.4} />
+                      <active.Icon className={`h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 ${active.accent}`} strokeWidth={1.4} />
                     </motion.div>
                     {/* Label strip at bottom */}
-                    <div className="border-t border-black/5 bg-white/70 px-4 py-2.5 md:px-5 md:py-3 backdrop-blur-sm">
-                      <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-zinc-500">
+                    <div className="border-t border-black/5 bg-white/70 px-3 py-2 backdrop-blur-sm">
+                      <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-500">
                         {active.tag}
                       </span>
-                      <h3 className="mt-0.5 text-[15px] font-medium leading-tight tracking-tight text-zinc-900">
+                      <h3 className="mt-0.5 text-[12px] md:text-[13px] font-medium leading-tight tracking-tight text-zinc-900">
                         {active.name}
                       </h3>
                     </div>
                     {/* Glassmorphic Hover Overlay */}
-                    <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px] rounded-[28px]">
-                      <div className="rounded-full bg-white/95 px-4 py-2 text-xs font-semibold text-zinc-950 shadow-lg flex items-center gap-1.5 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
+                    <div className="absolute inset-0 bg-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px] rounded-[24px]">
+                      <div className="rounded-full bg-white/95 px-3 py-1.5 text-[11px] font-semibold text-zinc-950 shadow-lg flex items-center gap-1.5 transform translate-y-2 group-hover:translate-y-0 transition-all duration-300">
                         <span>Open Tool</span>
-                        <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" />
+                        <ArrowRight className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-0.5" />
                       </div>
                     </div>
                   </div>
                 </Link>
               ) : (
                 <div
-                  className={`relative flex h-[260px] md:h-[300px] w-[200px] md:w-[240px] flex-col overflow-hidden rounded-[28px] border border-black/[0.06] ${active.tint} shadow-[0_30px_60px_-20px_rgba(0,0,0,0.25)]`}
+                  className={`relative flex h-[180px] sm:h-[220px] md:h-[240px] w-[150px] sm:w-[170px] md:w-[190px] flex-col overflow-hidden rounded-[24px] border border-black/[0.06] ${active.tint} shadow-[0_20px_45px_-15px_rgba(0,0,0,0.25)]`}
                 >
                   {/* Big icon fills the card */}
                   <motion.div
@@ -408,14 +408,14 @@ export function ToolsDock() {
                     transition={{ type: "spring", stiffness: 180, damping: 18 }}
                     className="flex flex-1 items-center justify-center"
                   >
-                    <active.Icon className={`h-24 w-24 md:h-32 md:w-32 ${active.accent}`} strokeWidth={1.4} />
+                    <active.Icon className={`h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 ${active.accent}`} strokeWidth={1.4} />
                   </motion.div>
                   {/* Label strip at bottom */}
-                  <div className="border-t border-black/5 bg-white/70 px-4 py-2.5 md:px-5 md:py-3 backdrop-blur-sm">
-                    <span className="font-mono text-[9px] uppercase tracking-[0.18em] text-zinc-500">
+                  <div className="border-t border-black/5 bg-white/70 px-3 py-2 backdrop-blur-sm">
+                    <span className="font-mono text-[8px] uppercase tracking-[0.18em] text-zinc-500">
                       {active.tag}
                     </span>
-                    <h3 className="mt-0.5 text-[15px] font-medium leading-tight tracking-tight text-zinc-900">
+                    <h3 className="mt-0.5 text-[12px] md:text-[13px] font-medium leading-tight tracking-tight text-zinc-900">
                       {active.name}
                     </h3>
                   </div>
@@ -426,8 +426,8 @@ export function ToolsDock() {
             {/* Scenario card — tight, animated text */}
             <motion.div
               animate={{
-                x: isMobile ? 0 : (iconInFront ? 110 : -90),
-                y: isMobile ? (iconInFront ? -15 : 15) : (iconInFront ? -10 : 10),
+                x: isMobile ? 0 : (iconInFront ? 85 : -70),
+                y: isMobile ? (iconInFront ? -10 : 10) : (iconInFront ? -8 : 8),
                 rotate: isMobile ? (iconInFront ? 2 : -2) : (iconInFront ? 4 : -5),
                 scale: isMobile ? (iconInFront ? 0.9 : 1) : (iconInFront ? 0.92 : 1),
                 zIndex: iconInFront ? 10 : 20,
@@ -443,9 +443,9 @@ export function ToolsDock() {
             >
               {!iconInFront ? (
                 <Link href={active.href} className="block">
-                  <div className="group relative flex h-[260px] md:h-[300px] w-[260px] md:w-[320px] flex-col justify-between rounded-[28px] border border-black/[0.06] bg-white p-5 md:p-7 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.18)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_40px_80px_-20px_rgba(0,0,0,0.22)]">
+                  <div className="group relative flex h-[190px] sm:h-[220px] md:h-[240px] w-[200px] sm:w-[230px] md:w-[250px] flex-col justify-between rounded-[24px] border border-black/[0.06] bg-white p-4 md:p-5 shadow-[0_20px_45px_-15px_rgba(0,0,0,0.18)] transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_28px_60px_-15px_rgba(0,0,0,0.22)]">
                     <div className="flex-1 flex flex-col justify-center">
-                      <span className="absolute left-5 top-5 md:left-7 md:top-6 inline-flex items-center gap-1.5 rounded-full border border-black/5 bg-zinc-50 px-2.5 py-1 font-mono text-[9px] uppercase tracking-widest text-zinc-500">
+                      <span className="absolute left-4 top-4 md:left-5 md:top-5 inline-flex items-center gap-1.5 rounded-full border border-black/5 bg-zinc-50 px-2 py-0.5 font-mono text-[8px] uppercase tracking-widest text-zinc-500">
                         <span
                           className={`h-1.5 w-1.5 rounded-full ${active.accent.replace("text-", "bg-")}`}
                         />
@@ -456,26 +456,26 @@ export function ToolsDock() {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.45, ease: "easeOut" }}
-                        className="mt-4"
+                        className="mt-3"
                       >
-                        <h4 className="text-pretty text-[16px] md:text-[22px] font-medium leading-snug tracking-tight text-zinc-900">
+                        <h4 className="text-pretty text-[13px] md:text-[16px] font-medium leading-snug tracking-tight text-zinc-900">
                           {active.scenario.title}
                         </h4>
-                        <p className="mt-1.5 md:mt-3 text-[12px] md:text-[14px] leading-relaxed text-zinc-500 text-left">
+                        <p className="mt-1 md:mt-2 text-[11px] md:text-[12px] leading-relaxed text-zinc-500 text-left line-clamp-4">
                           {active.scenario.body}
                         </p>
                       </motion.div>
                     </div>
                     {/* Always visible CTA at bottom of card text */}
-                    <div className="mt-2.5 md:mt-4 flex items-center gap-1.5 text-xs font-semibold text-zinc-950 group-hover:text-zinc-700 transition-colors">
+                    <div className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-zinc-950 group-hover:text-zinc-700 transition-colors">
                       <span>Open Tool</span>
-                      <ArrowRight className="h-3.5 w-3.5 transition-transform duration-300 group-hover:translate-x-0.5" strokeWidth={2.5} />
+                      <ArrowRight className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-0.5" strokeWidth={2.5} />
                     </div>
                   </div>
                 </Link>
               ) : (
-                <div className="relative flex h-[260px] md:h-[300px] w-[260px] md:w-[320px] flex-col justify-center rounded-[28px] border border-black/[0.06] bg-white p-5 md:p-7 shadow-[0_30px_60px_-20px_rgba(0,0,0,0.18)]">
-                  <span className="absolute left-5 top-5 md:left-7 md:top-6 inline-flex items-center gap-1.5 rounded-full border border-black/5 bg-zinc-50 px-2.5 py-1 font-mono text-[9px] uppercase tracking-widest text-zinc-500">
+                <div className="relative flex h-[190px] sm:h-[220px] md:h-[240px] w-[200px] sm:w-[230px] md:w-[250px] flex-col justify-center rounded-[24px] border border-black/[0.06] bg-white p-4 md:p-5 shadow-[0_20px_45px_-15px_rgba(0,0,0,0.18)]">
+                  <span className="absolute left-4 top-4 md:left-5 md:top-5 inline-flex items-center gap-1.5 rounded-full border border-black/5 bg-zinc-50 px-2 py-0.5 font-mono text-[8px] uppercase tracking-widest text-zinc-500">
                     <span
                       className={`h-1.5 w-1.5 rounded-full ${active.accent.replace("text-", "bg-")}`}
                     />
@@ -486,12 +486,12 @@ export function ToolsDock() {
                     initial={{ opacity: 0, y: 8 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.45, ease: "easeOut" }}
-                    className="mt-4"
+                    className="mt-3"
                   >
-                    <h4 className="text-pretty text-[16px] md:text-[22px] font-medium leading-snug tracking-tight text-zinc-900">
+                    <h4 className="text-pretty text-[13px] md:text-[16px] font-medium leading-snug tracking-tight text-zinc-900">
                       {active.scenario.title}
                     </h4>
-                    <p className="mt-1.5 md:mt-3 text-[12px] md:text-[14px] leading-relaxed text-zinc-500 text-left">
+                    <p className="mt-1 md:mt-2 text-[11px] md:text-[12px] leading-relaxed text-zinc-500 text-left line-clamp-4">
                       {active.scenario.body}
                     </p>
                   </motion.div>
@@ -502,15 +502,17 @@ export function ToolsDock() {
         </div>
 
         {/* Curved icon strip — windowed */}
-        <CurvedDock
-          tools={tools}
-          activeIndex={index}
-          onSelect={(i) => {
-            setIndex(i);
-            setIconInFront((f) => !f);
-          }}
-          isMobile={isMobile}
-        />
+        <div className="shrink-0">
+          <CurvedDock
+            tools={tools}
+            activeIndex={index}
+            onSelect={(i) => {
+              setIndex(i);
+              setIconInFront((f) => !f);
+            }}
+            isMobile={isMobile}
+          />
+        </div>
       </div>
     </section>
   );
@@ -550,7 +552,7 @@ function CurvedDock({
   }, [activeIndex, tools, half]);
 
   const width = 680;
-  const height = 110;
+  const height = 90;
   const cx = width / 2;
   const cy = height + 320;
   const r = cy - 25;
@@ -562,8 +564,8 @@ function CurvedDock({
     const dx = x - cx;
     const y = cy - Math.sqrt(r * r - dx * dx);
     const half2 = isActive
-      ? (isMobile ? 20 : 28)
-      : (isMobile ? 16 : 22);
+      ? (isMobile ? 18 : 24)
+      : (isMobile ? 14 : 19);
     return {
       left: `calc(${(x / width) * 100}% - ${half2}px)`,
       top: `calc(${(y / height) * 100}% - ${half2}px)`,
@@ -577,7 +579,7 @@ function CurvedDock({
     const clamped = Math.min(Math.abs(x - cx), r - 1);
     const dx = x > cx ? clamped : -clamped;
     const y = cy - Math.sqrt(r * r - dx * dx);
-    const half2 = isMobile ? 16 : 22;
+    const half2 = isMobile ? 14 : 19;
     return {
       left: `calc(${(x / width) * 100}% - ${half2}px)`,
       top: `calc(${(y / height) * 100}% - ${half2}px)`,
@@ -588,16 +590,16 @@ function CurvedDock({
   const next = () => onSelect((activeIndex + 1) % tools.length);
 
   return (
-    <div className="mx-auto mt-10 flex w-full max-w-[820px] items-center gap-1.5 md:gap-3">
+    <div className="mx-auto mt-3 md:mt-5 flex w-full max-w-[820px] items-center gap-1.5 md:gap-3">
       <button
         onClick={prev}
         aria-label="Previous"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/5 bg-white text-zinc-500 shadow-sm transition hover:text-zinc-900"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-black/5 bg-white text-zinc-500 shadow-sm transition hover:text-zinc-900"
       >
         <ChevronLeft className="h-4 w-4" />
       </button>
 
-      <div className="relative flex-1 aspect-[680/110] overflow-visible">
+      <div className="relative flex-1 aspect-[680/90] overflow-visible">
         {/* Arc guide line */}
         <svg viewBox={`0 0 ${width} ${height}`} className="absolute inset-0 w-full h-full block" aria-hidden>
           <path
@@ -647,13 +649,13 @@ function CurvedDock({
                       tool.tint
                     } transition-all duration-300 ${
                       isActive
-                        ? "h-10 w-10 md:h-14 md:w-14 rounded-2xl md:rounded-3xl shadow-[0_18px_36px_-12px_rgba(0,0,0,0.32)]"
-                        : "h-8 w-8 md:h-11 md:w-11 rounded-lg md:rounded-2xl"
+                        ? "h-9 w-9 md:h-12 md:w-12 rounded-2xl shadow-[0_14px_28px_-10px_rgba(0,0,0,0.32)]"
+                        : "h-7 w-7 md:h-9 md:w-9 rounded-lg md:rounded-xl"
                     }`}
                   >
                     <tool.Icon
                       className={`transition-all duration-300 ${
-                        isActive ? `h-5 w-5 md:h-7 md:w-7 ${tool.accent}` : `h-4 w-4 md:h-5 md:w-5 ${tool.accent}`
+                        isActive ? `h-4 w-4 md:h-6 md:w-6 ${tool.accent}` : `h-3.5 w-3.5 md:h-4 md:w-4 ${tool.accent}`
                       }`}
                     />
                   </div>
@@ -670,7 +672,7 @@ function CurvedDock({
       <button
         onClick={next}
         aria-label="Next"
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-black/5 bg-white text-zinc-500 shadow-sm transition hover:text-zinc-900"
+        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-black/5 bg-white text-zinc-500 shadow-sm transition hover:text-zinc-900"
       >
         <ChevronRight className="h-4 w-4" />
       </button>

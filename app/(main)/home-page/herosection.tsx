@@ -1,444 +1,1336 @@
-import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence, useMotionValue, useTransform, animate as mAnimate } from "motion/react";
+// @ts-nocheck
+import React, { useEffect, useRef, useState } from "react";
+import {
+  motion,
+  AnimatePresence,
+  useMotionValue,
+  useTransform,
+  animate as mAnimate,
+} from "motion/react";
 import * as Icons from "lucide-react";
-
-// ─── Design tokens ─────────────────────────────────────────────────────────────
-const BG      = "#dde8ed";
-const HERO_BG = "#f5f7f8";
-const TEAL    = "#2e7175";
-const TEALB   = "#235658";
-const INDIGO  = "#4a4070";
-const SLATE   = "#6b7c87";
-const ORANGE  = "#7a6040";
-const CRIMSON = "#7a4a55";
-const FD      = "'Fraunces', Georgia, serif";
-const FB      = "'DM Sans', system-ui, sans-serif";
-
-const JA="#3d7275", JB="#607080", JC="#8fa0a8", JD="#7a6535", JE="#7a4a55", JF="#7a6050";
-
+const HERO_BG = "linear-gradient(90deg, #E4F0F6 0%, #FAFAFA 45%, #FAFAFA 55%, #FDF6EB 100%)",
+  TEAL = "#2e7175",
+  TEALB = "#235658",
+  INDIGO = "#4a4070",
+  SLATE = "#6b7c87",
+  CRIMSON = "#7a4a55",
+  AMBER = "#7a6535";
+const FD = "'Fraunces', Georgia, serif",
+  FB = "'DM Sans', system-ui, sans-serif";
+const JA = "#3d7275",
+  JB = "#607080",
+  JC = "#8fa0a8",
+  JD = "#7a6535",
+  JE = "#7a4a55",
+  JF = "#7a6050";
 const FIVE_IDS = new Set([1, 10, 11, 15, 22]);
 
-// ─── Jargon data ───────────────────────────────────────────────────────────────
-const JARGON = [
-  {id:0,  text:"I-130",           x:"3%",  y:"7%",  sz:13,rot:-5,  col:JA,op:1,   w:"700"},
-  {id:1,  text:"USCIS",           x:"11%", y:"16%", sz:26,rot:-12, col:JB,op:.80, w:"800"},
-  {id:2,  text:"Petitioner",      x:"5%",  y:"28%", sz:11,rot:8,   col:JC,op:.85, w:"500"},
-  {id:3,  text:"RFE",             x:"77%", y:"5%",  sz:24,rot:11,  col:JD,op:.95, w:"900"},
-  {id:4,  text:"NOA1",            x:"68%", y:"17%", sz:14,rot:6,   col:JC,op:.85, w:"600"},
-  {id:5,  text:"NOA",             x:"6%",  y:"87%", sz:17,rot:13,  col:JA,op:.90, w:"700"},
-  {id:6,  text:"Green Card",      x:"20%", y:"86%", sz:19,rot:-14, col:JB,op:.80, w:"700"},
-  {id:7,  text:"DACA",            x:"68%", y:"90%", sz:21,rot:-11, col:JA,op:.95, w:"800"},
-  {id:8,  text:"Embassy",         x:"89%", y:"90%", sz:14,rot:-7,  col:JD,op:.85, w:"600"},
-  {id:9,  text:"I-485",           x:"87%", y:"13%", sz:12,rot:-9,  col:JA,op:.80, w:"600"},
-  {id:10, text:"NVC",             x:"29%", y:"4%",  sz:30,rot:-5,  col:JB,op:.65, w:"900"},
-  {id:11, text:"DS-260",          x:"48%", y:"8%",  sz:15,rot:9,   col:JA,op:.85, w:"700"},
-  {id:12, text:"I-140",           x:"38%", y:"14%", sz:11,rot:-11, col:JD,op:.75, w:"600"},
-  {id:13, text:"I-864",           x:"14%", y:"40%", sz:17,rot:-6,  col:JA,op:.95, w:"700"},
-  {id:14, text:"Biometrics",      x:"3%",  y:"52%", sz:11,rot:12,  col:JC,op:.75, w:"500"},
-  {id:15, text:"PERM",            x:"9%",  y:"63%", sz:21,rot:-13, col:JD,op:.90, w:"900"},
-  {id:16, text:"I-693",           x:"82%", y:"26%", sz:19,rot:-14, col:JB,op:.75, w:"700"},
-  {id:17, text:"AP / EAD",        x:"78%", y:"42%", sz:13,rot:16,  col:JD,op:.85, w:"600"},
-  {id:18, text:"485J",            x:"92%", y:"47%", sz:18,rot:-8,  col:JA,op:.90, w:"800"},
-  {id:19, text:"I-797",           x:"87%", y:"58%", sz:12,rot:11,  col:JD,op:.80, w:"600"},
-  {id:20, text:"EB-2",            x:"85%", y:"78%", sz:17,rot:-17, col:JA,op:.85, w:"700"},
-  {id:21, text:"I-751",           x:"4%",  y:"80%", sz:13,rot:9,   col:JD,op:.90, w:"600"},
-  {id:22, text:"EAD",             x:"7%",  y:"46%", sz:22,rot:10,  col:JA,op:.95, w:"900"},
-  {id:23, text:"I-539",           x:"2%",  y:"36%", sz:15,rot:-18, col:JD,op:.85, w:"600"},
-  {id:24, text:"Advance Parole",  x:"4%",  y:"74%", sz:10,rot:5,   col:JC,op:.75, w:"500"},
-  {id:25, text:"NOA2",            x:"93%", y:"64%", sz:15,rot:-13, col:JB,op:.85, w:"700"},
-  {id:26, text:"Joint Sponsor",   x:"91%", y:"36%", sz:11,rot:-5,  col:JC,op:.80, w:"500"},
-  {id:27, text:"Affidavit",       x:"18%", y:"33%", sz:12,rot:9,   col:JA,op:.60, w:"500"},
-  {id:28, text:"I-212",           x:"14%", y:"82%", sz:16,rot:-8,  col:JA,op:.85, w:"700"},
-  {id:29, text:"F-1",             x:"48%", y:"82%", sz:19,rot:-18, col:JB,op:.75, w:"800"},
-  {id:30, text:"Tax Returns",     x:"46%", y:"93%", sz:10,rot:-10, col:JC,op:.70, w:"500"},
-  {id:31, text:"Interview",       x:"72%", y:"55%", sz:14,rot:12,  col:JB,op:.55, w:"600"},
-  {id:32, text:"Priority Date",   x:"54%", y:"3%",  sz:10,rot:7,   col:JC,op:.80, w:"500"},
-  {id:33, text:"?",               x:"18%", y:"22%", sz:58,rot:-11, col:JB,op:.05, w:"700"},
-  {id:34, text:"?",               x:"78%", y:"34%", sz:44,rot:17,  col:JA,op:.07, w:"700"},
-  {id:35, text:"Medical Exam",    x:"22%", y:"57%", sz:13,rot:-10, col:JC,op:.55, w:"500"},
-  {id:36, text:"DS-5540",         x:"16%", y:"72%", sz:11,rot:5,   col:JD,op:.65, w:"600"},
-  {id:37, text:"I-94",            x:"80%", y:"67%", sz:17,rot:-9,  col:JD,op:.65, w:"700"},
-  {id:38, text:"Vaccinations",    x:"82%", y:"83%", sz:11,rot:9,   col:JC,op:.75, w:"500"},
-  {id:39, text:"CR-1",            x:"36%", y:"76%", sz:12,rot:10,  col:JC,op:.65, w:"500"},
-  {id:40, text:"BIA",             x:"61%", y:"64%", sz:14,rot:-8,  col:JD,op:.60, w:"600"},
-  {id:41, text:"Civil Documents", x:"42%", y:"19%", sz:9, rot:-3,  col:JC,op:.65, w:"500"},
-  {id:42, text:"AOS Fee",         x:"57%", y:"19%", sz:9, rot:-7,  col:JC,op:.60, w:"500"},
-  {id:43, text:"Sponsor",         x:"34%", y:"90%", sz:12,rot:7,   col:JA,op:.80, w:"600"},
-  {id:44, text:"Appeal",          x:"38%", y:"5%",  sz:13,rot:14,  col:JA,op:.75, w:"600"},
-  {id:45, text:"K-1 Visa",        x:"64%", y:"11%", sz:12,rot:10,  col:JD,op:.70, w:"600"},
-  {id:46, text:"?",               x:"35%", y:"48%", sz:80,rot:-6,  col:JB,op:.04, w:"700"},
-  {id:47, text:"?",               x:"68%", y:"28%", sz:50,rot:13,  col:JD,op:.07, w:"700"},
-  {id:48, text:"?",               x:"8%",  y:"55%", sz:64,rot:-19, col:JA,op:.06, w:"700"},
-  {id:49, text:"?",               x:"90%", y:"72%", sz:40,rot:9,   col:JB,op:.09, w:"700"},
-  {id:50, text:"CBP",             x:"44%", y:"56%", sz:13,rot:-11, col:JB,op:.50, w:"600"},
-  {id:51, text:"IR-1",            x:"26%", y:"46%", sz:10,rot:13,  col:JA,op:.55, w:"500"},
-  {id:52, text:"Case Review",     x:"76%", y:"81%", sz:12,rot:7,   col:JB,op:.70, w:"500"},
-  {id:53, text:"Marriage Cert",   x:"10%", y:"23%", sz:10,rot:12,  col:JC,op:.65, w:"500"},
-  {id:54, text:"Pay Stubs",       x:"93%", y:"22%", sz:10,rot:-12, col:JC,op:.65, w:"500"},
-  {id:55, text:"I-797C",          x:"28%", y:"77%", sz:11,rot:9,   col:JD,op:.70, w:"500"},
-  {id:56, text:"Employer Letter", x:"65%", y:"85%", sz:9, rot:-4,  col:JC,op:.60, w:"500"},
-  {id:57, text:"?",               x:"58%", y:"80%", sz:60,rot:10,  col:JB,op:.04, w:"700"},
-  {id:58, text:"?",               x:"25%", y:"62%", sz:46,rot:-13, col:JA,op:.06, w:"700"},
-  {id:59, text:"?",               x:"74%", y:"48%", sz:68,rot:-5,  col:JB,op:.05, w:"700"},
-  {id:60, text:"Wait Times",      x:"40%", y:"30%", sz:11,rot:-8,  col:JC,op:.62, w:"500"},
-  {id:61, text:"Processing",      x:"55%", y:"45%", sz:13,rot:6,   col:JE,op:.68, w:"600"},
-  {id:62, text:"Denied",          x:"63%", y:"38%", sz:16,rot:-15, col:JE,op:.72, w:"700"},
-  {id:63, text:"Approved",        x:"32%", y:"58%", sz:14,rot:11,  col:TEAL,op:.58,w:"600"},
-  {id:64, text:"Pending",         x:"50%", y:"68%", sz:12,rot:-7,  col:JF,op:.64, w:"500"},
-  {id:65, text:"I-90",            x:"42%", y:"38%", sz:10,rot:13,  col:JA,op:.58, w:"500"},
-  {id:66, text:"Status Check",    x:"59%", y:"25%", sz:9, rot:-9,  col:JC,op:.52, w:"500"},
-  {id:67, text:"Timeline",        x:"25%", y:"50%", sz:15,rot:8,   col:JD,op:.66, w:"600"},
-  {id:68, text:"Citizenship",     x:"70%", y:"60%", sz:11,rot:-12, col:JB,op:.60, w:"500"},
-  {id:69, text:"Naturalization",  x:"15%", y:"58%", sz:10,rot:14,  col:JC,op:.54, w:"500"},
-  {id:70, text:"I-20",            x:"45%", y:"15%", sz:12,rot:-6,  col:JA,op:.58, w:"600"},
-  {id:100,text:"Spouse Visa Requirements",x:"30%",y:"35%",sz:12,rot:0,col:INDIGO,op:.92,w:"600",result:true},
-  {id:101,text:"NVC Case Processing",     x:"30%",y:"42%",sz:12,rot:0,col:INDIGO,op:.92,w:"600",result:true},
-  {id:102,text:"DS-260 Form Guide",       x:"30%",y:"49%",sz:12,rot:0,col:INDIGO,op:.92,w:"600",result:true},
-  {id:103,text:"Interview Preparation",   x:"30%",y:"56%",sz:12,rot:0,col:INDIGO,op:.92,w:"600",result:true},
-];
-
-const WAVE_IDS = {
-  1:[0,1,2,3,4,5,6,7,8,9,10,11,12],
-  2:[13,14,15,16,17,18,19,20,21,22,23,24],
-  3:[25,26,27,28,29,30,31,32,33,34,35,36,37,38,60,61,62,63],
-  4:[39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,64,65,66,67,68,69,70],
-  5:[100,101,102,103],
+const IMG = {
+  standing: "/assets/images/illustartions/standing.png",
+  thinking: "/assets/images/illustartions/thinking.png",
+  walking: "/assets/images/illustartions/walking.png",
+  reading: "/assets/images/illustartions/reading.png",
+  sitting: "/assets/images/illustartions/sitting.png",
+  sittingHeadDown: "/assets/images/illustartions/sittingwithheaddown.png",
+  carryingBooks: "/assets/images/illustartions/carryingbooks.png",
+  stressed: "/assets/images/illustartions/stressed.png",
+  confused: "/assets/images/illustartions/confusedshrugging.png",
 };
 
+// Every named pose — distinct image, distinct motion
+const POSES = {
+  standing: {
+    src: IMG.standing,
+    flipX: false,
+    scale: 0.8,
+    yOffset: 0,
+    enter: { x: 0, y: 24, scale: 0.82, rotate: 0, opacity: 0 },
+    exit: { x: 0, y: 10, scale: 0.88, rotate: 0, opacity: 0 },
+    spring: { type: "spring", stiffness: 240, damping: 24, mass: 0.9 },
+  },
+  thinking: {
+    src: IMG.thinking,
+    flipX: false,
+    scale: 1.0,
+    yOffset: 0,
+    enter: { x: 0, y: 14, scale: 0.88, rotate: -4, opacity: 0 },
+    exit: { x: 0, y: 8, scale: 0.9, rotate: 2, opacity: 0 },
+    spring: { type: "spring", stiffness: 280, damping: 20, mass: 0.8 },
+  },
+  walking: {
+    src: IMG.walking,
+    flipX: false,
+    scale: 1.0,
+    yOffset: 0,
+    enter: { x: -55, y: 0, scale: 0.86, rotate: 0, opacity: 0 },
+    exit: { x: 44, y: 0, scale: 0.88, rotate: 0, opacity: 0 },
+    spring: { type: "spring", stiffness: 320, damping: 26, mass: 0.8 },
+  },
+  reading: {
+    src: IMG.reading,
+    flipX: false,
+    scale: 0.96,
+    yOffset: 0,
+    enter: { x: 0, y: 20, scale: 0.88, rotate: 0, opacity: 0 },
+    exit: { x: 0, y: 10, scale: 0.9, rotate: 0, opacity: 0 },
+    spring: { type: "spring", stiffness: 240, damping: 24, mass: 0.9 },
+  },
+  carryingBooks: {
+    src: IMG.carryingBooks,
+    flipX: false,
+    scale: 1.0,
+    yOffset: 0,
+    enter: { x: -52, y: 8, scale: 0.84, rotate: 0, opacity: 0 },
+    exit: { x: 38, y: 0, scale: 0.88, rotate: 0, opacity: 0 },
+    spring: { type: "spring", stiffness: 300, damping: 24, mass: 0.8 },
+  },
+  stressed: {
+    src: IMG.stressed,
+    flipX: false,
+    scale: 1.0,
+    yOffset: 0,
+    enter: { x: 0, y: 0, scale: 0.7, rotate: -7, opacity: 0 },
+    exit: { x: 0, y: -10, scale: 0.76, rotate: 4, opacity: 0 },
+    spring: { type: "spring", stiffness: 500, damping: 14, mass: 0.6 },
+  },
+  confused: {
+    src: IMG.confused,
+    flipX: false,
+    scale: 0.94,
+    yOffset: 0,
+    enter: { x: 0, y: 0, scale: 0.78, rotate: 9, opacity: 0 },
+    exit: { x: 0, y: 0, scale: 0.82, rotate: -4, opacity: 0 },
+    spring: { type: "spring", stiffness: 420, damping: 18, mass: 0.7 },
+  },
+  sittingDown: {
+    src: IMG.sittingHeadDown,
+    flipX: false,
+    scale: 1.1,
+    yOffset: 20,
+    enter: { x: 0, y: -24, scale: 0.84, rotate: 0, opacity: 0 },
+    exit: { x: 0, y: 16, scale: 0.84, rotate: 0, opacity: 0 },
+    spring: { type: "spring", stiffness: 180, damping: 28, mass: 1.2 },
+  },
+  sittingUp: {
+    src: IMG.sitting,
+    flipX: false,
+    scale: 1.1,
+    yOffset: 20,
+    enter: { x: 0, y: 32, scale: 0.76, rotate: 0, opacity: 0 },
+    exit: { x: 0, y: -18, scale: 0.82, rotate: 0, opacity: 0 },
+    spring: { type: "spring", stiffness: 220, damping: 26, mass: 1.0 },
+  },
+};
+
+const FX = { position: "absolute", inset: 0, pointerEvents: "none", zIndex: 10 };
+
+function PoseEffect({ pose }) {
+  if (pose === "standing")
+    return (
+      <div style={FX}>
+        <motion.div
+          animate={{ opacity: [0.05, 0.16, 0.05], scale: [0.9, 1.06, 0.9] }}
+          transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            position: "absolute",
+            left: "54%",
+            top: "30%",
+            width: 46,
+            height: 46,
+            marginLeft: -23,
+            marginTop: -23,
+            borderRadius: "50%",
+            background: `radial-gradient(circle,${TEAL}33,transparent 70%)`,
+          }}
+        />
+        <motion.div
+          animate={{ opacity: [0, 0.7, 0], scale: [0.6, 1, 0.6] }}
+          transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.4 }}
+          style={{
+            position: "absolute",
+            left: "66%",
+            top: "14%",
+            width: 5,
+            height: 5,
+            borderRadius: "50%",
+            background: TEAL,
+            boxShadow: `0 0 8px ${TEAL}`,
+          }}
+        />
+      </div>
+    );
+  if (pose === "confused")
+    return (
+      <div style={FX}>
+        {[
+          { k: 1, l: "74%", t: "8%", d: 0.0, s: 20 },
+          { k: 2, l: "16%", t: "14%", d: 0.55, s: 16 },
+          { k: 3, l: "52%", t: "2%", d: 0.95, s: 24 },
+        ].map((p) => (
+          <motion.span
+            key={p.k}
+            initial={{ opacity: 0, y: 10, scale: 0 }}
+            animate={{
+              opacity: [0, 1, 1, 0],
+              y: [0, -52],
+              scale: [0, 1, 1, 0],
+              rotate: [0, -12, 12, 0],
+            }}
+            transition={{ duration: 2.0, repeat: Infinity, delay: p.d, ease: "easeOut" }}
+            style={{
+              position: "absolute",
+              left: p.l,
+              top: p.t,
+              fontSize: p.s,
+              fontWeight: 900,
+              color: INDIGO,
+              fontFamily: FD,
+            }}
+          >
+            ?
+          </motion.span>
+        ))}
+        <motion.div
+          animate={{ rotate: [0, 360] }}
+          transition={{ duration: 9, repeat: Infinity, ease: "linear" }}
+          style={{
+            position: "absolute",
+            left: "50%",
+            top: "50%",
+            width: 80,
+            height: 80,
+            marginLeft: -40,
+            marginTop: -40,
+            border: "1.5px dashed rgba(74,64,112,0.18)",
+            borderRadius: "50%",
+          }}
+        />
+      </div>
+    );
+  if (pose === "thinking")
+    return (
+      <div style={FX}>
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            animate={{ opacity: [0, 0.72, 0], scale: [0.4, 1, 0.4], y: [0, -4, 0] }}
+            transition={{ duration: 1.2, repeat: Infinity, delay: i * 0.22, ease: "easeInOut" }}
+            style={{
+              position: "absolute",
+              left: `${62 + i * 8}%`,
+              top: `${26 - i * 6}%`,
+              width: 6 + i * 2,
+              height: 6 + i * 2,
+              background: "rgba(255,255,255,0.9)",
+              border: "1px solid rgba(0,0,0,0.08)",
+              borderRadius: "50%",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+            }}
+          />
+        ))}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: [0, 0.9, 0.9, 0], y: [8, -4] }}
+          transition={{ duration: 2.6, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            position: "absolute",
+            left: "60%",
+            top: "16%",
+            background: "rgba(255,255,255,0.95)",
+            border: "1px solid rgba(0,0,0,0.07)",
+            borderRadius: 10,
+            padding: "3px 9px",
+            fontSize: 11,
+            fontFamily: FB,
+            fontWeight: 600,
+            color: SLATE,
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Hmm…
+        </motion.div>
+      </div>
+    );
+  if (pose === "reading")
+    return (
+      <div style={FX}>
+        {[
+          { k: 1, l: "I-130", t: "22%", d: 0 },
+          { k: 2, l: "DS-260", t: "36%", d: 0.7 },
+          { k: 3, l: "NOA2", t: "50%", d: 1.3 },
+          { k: 4, l: "I-864", t: "64%", d: 1.9 },
+        ].map((p) => (
+          <motion.div
+            key={p.k}
+            initial={{ opacity: 0, x: 12 }}
+            animate={{ opacity: [0, 0.8, 0.8, 0], x: [12, 0, 0, -8] }}
+            transition={{ duration: 2.2, repeat: Infinity, delay: p.d, ease: "easeOut" }}
+            style={{
+              position: "absolute",
+              left: "64%",
+              top: p.t,
+              fontSize: 10,
+              fontFamily: FB,
+              fontWeight: 700,
+              color: TEAL,
+              background: "rgba(46,113,117,0.09)",
+              border: "1px solid rgba(46,113,117,0.22)",
+              borderRadius: 8,
+              padding: "2px 7px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {p.l}
+          </motion.div>
+        ))}
+        <motion.div
+          animate={{ y: ["80%", "10%"], opacity: [0, 0.3, 0] }}
+          transition={{ duration: 2.0, repeat: Infinity, ease: "linear", repeatDelay: 0.4 }}
+          style={{
+            position: "absolute",
+            left: "52%",
+            right: "4%",
+            height: 1,
+            background: `linear-gradient(to right,transparent,${TEAL})`,
+          }}
+        />
+      </div>
+    );
+  if (pose === "walking")
+    return (
+      <div style={FX}>
+        <motion.div
+          animate={{ scaleX: [0, 1], opacity: [0, 0.3] }}
+          transition={{ duration: 1.8, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }}
+          style={{
+            position: "absolute",
+            left: "6%",
+            right: "14%",
+            bottom: "9%",
+            height: 1,
+            background: `repeating-linear-gradient(to right,${SLATE} 0 6px,transparent 6px 14px)`,
+            transformOrigin: "left",
+          }}
+        />
+        {[0, 1, 2].map((i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, scaleX: 0 }}
+            animate={{ opacity: [0, 0.38, 0], scaleX: [0, 1, 0] }}
+            transition={{ duration: 0.65, repeat: Infinity, delay: i * 0.16 }}
+            style={{
+              position: "absolute",
+              left: `${10 + i * 7}%`,
+              bottom: "6%",
+              width: 14 - i * 3,
+              height: 2.5,
+              background: SLATE,
+              borderRadius: 2,
+              transformOrigin: "right",
+            }}
+          />
+        ))}
+        <motion.div
+          animate={{ opacity: [0, 0.6, 0], scale: [0.6, 1.2, 0.6] }}
+          transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            position: "absolute",
+            right: "8%",
+            bottom: "14%",
+            width: 8,
+            height: 8,
+            borderRadius: "50%",
+            background: TEAL,
+            boxShadow: `0 0 12px ${TEAL}`,
+          }}
+        />
+      </div>
+    );
+  if (pose === "carryingBooks")
+    return (
+      <div style={FX}>
+        {[
+          { k: 1, l: "+ 3 tabs", t: "18%", d: 0 },
+          { k: 2, l: "+ 5 more", t: "30%", d: 0.9 },
+          { k: 3, l: "+ 7 more", t: "42%", d: 1.8 },
+        ].map((p) => (
+          <motion.div
+            key={p.k}
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: [0, 0.85, 0.85, 0], y: [6, 0, 0, -4] }}
+            transition={{ duration: 1.6, repeat: Infinity, delay: p.d }}
+            style={{
+              position: "absolute",
+              left: "58%",
+              top: p.t,
+              fontSize: 10,
+              fontFamily: FB,
+              fontWeight: 700,
+              color: AMBER,
+              background: "rgba(122,101,53,0.1)",
+              border: "1px solid rgba(122,101,53,0.22)",
+              borderRadius: 8,
+              padding: "2px 7px",
+              whiteSpace: "nowrap",
+            }}
+          >
+            {p.l}
+          </motion.div>
+        ))}
+        <motion.div
+          animate={{ scaleY: [1, 0.87, 1], opacity: [0.35, 0.65, 0.35] }}
+          transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            position: "absolute",
+            left: "56%",
+            bottom: "10%",
+            width: 30,
+            height: 6,
+            background: "rgba(46,113,117,0.25)",
+            borderRadius: 3,
+            transformOrigin: "bottom",
+          }}
+        />
+      </div>
+    );
+  if (pose === "stressed")
+    return (
+      <div style={FX}>
+        {[
+          { k: 1, l: "18%", t: "38%", d: 0 },
+          { k: 2, l: "78%", t: "32%", d: 0.65 },
+          { k: 3, l: "50%", t: "22%", d: 1.1 },
+        ].map((p) => (
+          <motion.div
+            key={p.k}
+            initial={{ opacity: 0, y: -8, scale: 0.6 }}
+            animate={{ opacity: [0, 0.9, 0], y: [-8, 18], scale: [0.6, 1, 0.6] }}
+            transition={{ duration: 1.2, repeat: Infinity, delay: p.d, ease: "easeIn" }}
+            style={{ position: "absolute", left: p.l, top: p.t, fontSize: 14 }}
+          >
+            💦
+          </motion.div>
+        ))}
+        <motion.span
+          animate={{ opacity: [0, 1, 1, 0], scale: [0.5, 1.15, 1.15, 0.5], y: [4, -24] }}
+          transition={{ duration: 1.1, repeat: Infinity, delay: 0.3 }}
+          style={{
+            position: "absolute",
+            left: "46%",
+            top: "12%",
+            fontSize: 22,
+            fontWeight: 900,
+            color: CRIMSON,
+            fontFamily: FD,
+          }}
+        >
+          !
+        </motion.span>
+        <motion.div
+          animate={{ rotate: [0, 360] }}
+          transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          style={{
+            position: "absolute",
+            right: "10%",
+            top: "6%",
+            width: 18,
+            height: 18,
+            borderRadius: "50%",
+            border: "1.5px solid rgba(122,74,85,0.3)",
+          }}
+        >
+          <motion.div
+            style={{
+              position: "absolute",
+              left: "50%",
+              top: "50%",
+              width: 1.5,
+              height: 7,
+              background: CRIMSON,
+              transformOrigin: "bottom",
+              marginLeft: -0.75,
+              marginTop: -7,
+            }}
+          />
+        </motion.div>
+      </div>
+    );
+  if (pose === "sittingDown")
+    return (
+      <div style={FX}>
+        {[
+          { k: 1, l: "18%", t: "18%", lb: "Form 1", r: -18, d: 0 },
+          { k: 2, l: "70%", t: "12%", lb: "Form 2", r: 12, d: 0.4 },
+          { k: 3, l: "55%", t: "52%", lb: "I-130", r: -8, d: 0.7 },
+          { k: 4, l: "12%", t: "58%", lb: "DS-260", r: 15, d: 1.0 },
+        ].map((p) => (
+          <motion.div
+            key={p.k}
+            initial={{ opacity: 0, y: -20, rotate: 0 }}
+            animate={{ opacity: [0, 0.65, 0.65, 0], y: [-20, 0, 0, 8], rotate: [0, p.r] }}
+            transition={{ duration: 2.0, repeat: Infinity, delay: p.d }}
+            style={{
+              position: "absolute",
+              left: p.l,
+              top: p.t,
+              fontSize: 9,
+              fontFamily: FB,
+              fontWeight: 600,
+              color: JB,
+              background: "rgba(255,255,255,0.9)",
+              border: "1px solid rgba(0,0,0,0.09)",
+              borderRadius: 5,
+              padding: "2px 6px",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
+            }}
+          >
+            {p.lb}
+          </motion.div>
+        ))}
+        <motion.div
+          animate={{ rotate: [0, 300] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut", repeatDelay: 0.8 }}
+          style={{
+            position: "absolute",
+            right: "12%",
+            top: "18%",
+            width: 20,
+            height: 20,
+            border: "2px solid rgba(107,124,135,0.15)",
+            borderTop: "2px solid rgba(107,124,135,0.6)",
+            borderRadius: "50%",
+          }}
+        />
+      </div>
+    );
+  if (pose === "sittingUp")
+    return (
+      <div style={FX}>
+        <motion.div
+          animate={{ opacity: [0, 0.22, 0.22, 0], scaleX: [0.6, 1, 1, 0.6] }}
+          transition={{ duration: 2.4, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            position: "absolute",
+            left: "35%",
+            top: 0,
+            width: "30%",
+            height: "55%",
+            background: "linear-gradient(to bottom,rgba(46,113,117,0.28),transparent)",
+            borderRadius: "0 0 50% 50%",
+            transformOrigin: "top",
+          }}
+        />
+        <motion.div
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ opacity: [0, 1, 1, 0], scale: [0, 1.1, 1, 0], y: [10, -10] }}
+          transition={{ duration: 2.2, repeat: Infinity, delay: 0.4 }}
+          style={{ position: "absolute", left: "58%", top: "8%", fontSize: 22 }}
+        >
+          🗺️
+        </motion.div>
+        {[
+          { k: 1, l: "20%", t: "12%", d: 0.2 },
+          { k: 2, l: "74%", t: "20%", d: 0.7 },
+        ].map((p) => (
+          <motion.span
+            key={p.k}
+            animate={{ opacity: [0, 1, 0], scale: [0, 1.1, 0], y: [0, -16] }}
+            transition={{ duration: 1.0, repeat: Infinity, delay: p.d }}
+            style={{ position: "absolute", left: p.l, top: p.t, fontSize: 16 }}
+          >
+            ✨
+          </motion.span>
+        ))}
+      </div>
+    );
+  return null;
+}
+
+function CharacterSprite({ pose, size = 200, style: extra = {} }) {
+  const cfg = POSES[pose] ?? POSES.standing;
+  return (
+    <div style={{ position: "relative", width: size, height: size, flexShrink: 0, ...extra }}>
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={pose}
+          initial={cfg.enter}
+          animate={{ opacity: 1, x: 0, y: 0, scale: cfg.scale, rotate: 0 }}
+          exit={cfg.exit}
+          transition={cfg.spring}
+          style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "flex-end",
+            justifyContent: "center",
+            transformOrigin: "bottom center",
+            backfaceVisibility: "hidden",
+            WebkitBackfaceVisibility: "hidden",
+          }}
+        >
+          <img
+            src={cfg.src}
+            alt=""
+            draggable={false}
+            style={{
+              width: size,
+              height: size,
+              objectFit: "contain",
+              objectPosition: "bottom center",
+              userSelect: "none",
+              display: "block",
+              transform: `translateY(${cfg.yOffset * (size / 200)}px) scaleX(${cfg.flipX ? -1 : 1}) translateZ(0)`,
+              backfaceVisibility: "hidden",
+              WebkitBackfaceVisibility: "hidden",
+              willChange: "transform",
+            }}
+          />
+        </motion.div>
+      </AnimatePresence>
+      <PoseEffect pose={pose} />
+    </div>
+  );
+}
+
+const JARGON = [
+  { id: 0, text: "I-130", x: "3%", y: "7%", sz: 13, rot: -5, col: JA, op: 1, w: "700" },
+  { id: 1, text: "USCIS", x: "11%", y: "16%", sz: 26, rot: -12, col: JB, op: 0.8, w: "800" },
+  { id: 2, text: "Petitioner", x: "5%", y: "28%", sz: 11, rot: 8, col: JC, op: 0.85, w: "500" },
+  { id: 3, text: "RFE", x: "77%", y: "5%", sz: 24, rot: 11, col: JD, op: 0.95, w: "900" },
+  { id: 4, text: "NOA1", x: "68%", y: "17%", sz: 14, rot: 6, col: JC, op: 0.85, w: "600" },
+  { id: 5, text: "NOA", x: "6%", y: "87%", sz: 17, rot: 13, col: JA, op: 0.9, w: "700" },
+  { id: 6, text: "Green Card", x: "20%", y: "86%", sz: 19, rot: -14, col: JB, op: 0.8, w: "700" },
+  { id: 7, text: "DACA", x: "68%", y: "90%", sz: 21, rot: -11, col: JA, op: 0.95, w: "800" },
+  { id: 8, text: "Embassy", x: "89%", y: "90%", sz: 14, rot: -7, col: JD, op: 0.85, w: "600" },
+  { id: 9, text: "I-485", x: "87%", y: "13%", sz: 12, rot: -9, col: JA, op: 0.8, w: "600" },
+  { id: 10, text: "NVC", x: "29%", y: "4%", sz: 30, rot: -5, col: JB, op: 0.65, w: "900" },
+  { id: 11, text: "DS-260", x: "48%", y: "8%", sz: 15, rot: 9, col: JA, op: 0.85, w: "700" },
+  { id: 12, text: "I-140", x: "38%", y: "14%", sz: 11, rot: -11, col: JD, op: 0.75, w: "600" },
+  { id: 13, text: "I-864", x: "14%", y: "40%", sz: 17, rot: -6, col: JA, op: 0.95, w: "700" },
+  { id: 14, text: "Biometrics", x: "3%", y: "52%", sz: 11, rot: 12, col: JC, op: 0.75, w: "500" },
+  { id: 15, text: "PERM", x: "9%", y: "63%", sz: 21, rot: -13, col: JD, op: 0.9, w: "900" },
+  { id: 16, text: "I-693", x: "82%", y: "26%", sz: 19, rot: -14, col: JB, op: 0.75, w: "700" },
+  { id: 17, text: "AP / EAD", x: "78%", y: "42%", sz: 13, rot: 16, col: JD, op: 0.85, w: "600" },
+  { id: 18, text: "485J", x: "92%", y: "47%", sz: 18, rot: -8, col: JA, op: 0.9, w: "800" },
+  { id: 19, text: "I-797", x: "87%", y: "58%", sz: 12, rot: 11, col: JD, op: 0.8, w: "600" },
+  { id: 20, text: "EB-2", x: "85%", y: "78%", sz: 17, rot: -17, col: JA, op: 0.85, w: "700" },
+  { id: 21, text: "I-751", x: "4%", y: "80%", sz: 13, rot: 9, col: JD, op: 0.9, w: "600" },
+  { id: 22, text: "EAD", x: "7%", y: "46%", sz: 22, rot: 10, col: JA, op: 0.95, w: "900" },
+  { id: 23, text: "I-539", x: "2%", y: "36%", sz: 15, rot: -18, col: JD, op: 0.85, w: "600" },
+  {
+    id: 24,
+    text: "Advance Parole",
+    x: "4%",
+    y: "74%",
+    sz: 10,
+    rot: 5,
+    col: JC,
+    op: 0.75,
+    w: "500",
+  },
+  { id: 25, text: "NOA2", x: "93%", y: "64%", sz: 15, rot: -13, col: JB, op: 0.85, w: "700" },
+  {
+    id: 26,
+    text: "Joint Sponsor",
+    x: "91%",
+    y: "36%",
+    sz: 11,
+    rot: -5,
+    col: JC,
+    op: 0.8,
+    w: "500",
+  },
+  { id: 27, text: "Affidavit", x: "18%", y: "33%", sz: 12, rot: 9, col: JA, op: 0.6, w: "500" },
+  { id: 28, text: "I-212", x: "14%", y: "82%", sz: 16, rot: -8, col: JA, op: 0.85, w: "700" },
+  { id: 29, text: "F-1", x: "48%", y: "82%", sz: 19, rot: -18, col: JB, op: 0.75, w: "800" },
+  { id: 30, text: "Tax Returns", x: "46%", y: "93%", sz: 10, rot: -10, col: JC, op: 0.7, w: "500" },
+  { id: 31, text: "Interview", x: "72%", y: "55%", sz: 14, rot: 12, col: JB, op: 0.55, w: "600" },
+  { id: 32, text: "Priority Date", x: "54%", y: "3%", sz: 10, rot: 7, col: JC, op: 0.8, w: "500" },
+  { id: 33, text: "?", x: "18%", y: "22%", sz: 58, rot: -11, col: JB, op: 0.05, w: "700" },
+  { id: 34, text: "?", x: "78%", y: "34%", sz: 44, rot: 17, col: JA, op: 0.07, w: "700" },
+  {
+    id: 35,
+    text: "Medical Exam",
+    x: "22%",
+    y: "57%",
+    sz: 13,
+    rot: -10,
+    col: JC,
+    op: 0.55,
+    w: "500",
+  },
+  { id: 36, text: "DS-5540", x: "16%", y: "72%", sz: 11, rot: 5, col: JD, op: 0.65, w: "600" },
+  { id: 37, text: "I-94", x: "80%", y: "67%", sz: 17, rot: -9, col: JD, op: 0.65, w: "700" },
+  { id: 38, text: "Vaccinations", x: "82%", y: "83%", sz: 11, rot: 9, col: JC, op: 0.75, w: "500" },
+  { id: 39, text: "CR-1", x: "36%", y: "76%", sz: 12, rot: 10, col: JC, op: 0.65, w: "500" },
+  { id: 40, text: "BIA", x: "61%", y: "64%", sz: 14, rot: -8, col: JD, op: 0.6, w: "600" },
+  {
+    id: 41,
+    text: "Civil Documents",
+    x: "42%",
+    y: "19%",
+    sz: 9,
+    rot: -3,
+    col: JC,
+    op: 0.65,
+    w: "500",
+  },
+  { id: 42, text: "AOS Fee", x: "57%", y: "19%", sz: 9, rot: -7, col: JC, op: 0.6, w: "500" },
+  { id: 43, text: "Sponsor", x: "34%", y: "90%", sz: 12, rot: 7, col: JA, op: 0.8, w: "600" },
+  { id: 44, text: "Appeal", x: "38%", y: "5%", sz: 13, rot: 14, col: JA, op: 0.75, w: "600" },
+  { id: 45, text: "K-1 Visa", x: "64%", y: "11%", sz: 12, rot: 10, col: JD, op: 0.7, w: "600" },
+  { id: 46, text: "?", x: "35%", y: "48%", sz: 80, rot: -6, col: JB, op: 0.04, w: "700" },
+  { id: 47, text: "?", x: "68%", y: "28%", sz: 50, rot: 13, col: JD, op: 0.07, w: "700" },
+  { id: 48, text: "?", x: "8%", y: "55%", sz: 64, rot: -19, col: JA, op: 0.06, w: "700" },
+  { id: 49, text: "?", x: "90%", y: "72%", sz: 40, rot: 9, col: JB, op: 0.09, w: "700" },
+  { id: 50, text: "CBP", x: "44%", y: "56%", sz: 13, rot: -11, col: JB, op: 0.5, w: "600" },
+  { id: 51, text: "IR-1", x: "26%", y: "46%", sz: 10, rot: 13, col: JA, op: 0.55, w: "500" },
+  { id: 52, text: "Case Review", x: "76%", y: "81%", sz: 12, rot: 7, col: JB, op: 0.7, w: "500" },
+  {
+    id: 53,
+    text: "Marriage Cert",
+    x: "10%",
+    y: "23%",
+    sz: 10,
+    rot: 12,
+    col: JC,
+    op: 0.65,
+    w: "500",
+  },
+  { id: 54, text: "Pay Stubs", x: "93%", y: "22%", sz: 10, rot: -12, col: JC, op: 0.65, w: "500" },
+  { id: 55, text: "I-797C", x: "28%", y: "77%", sz: 11, rot: 9, col: JD, op: 0.7, w: "500" },
+  {
+    id: 56,
+    text: "Employer Letter",
+    x: "65%",
+    y: "85%",
+    sz: 9,
+    rot: -4,
+    col: JC,
+    op: 0.6,
+    w: "500",
+  },
+  { id: 57, text: "?", x: "58%", y: "80%", sz: 60, rot: 10, col: JB, op: 0.04, w: "700" },
+  { id: 58, text: "?", x: "25%", y: "62%", sz: 46, rot: -13, col: JA, op: 0.06, w: "700" },
+  { id: 59, text: "?", x: "74%", y: "48%", sz: 68, rot: -5, col: JB, op: 0.05, w: "700" },
+  { id: 60, text: "Wait Times", x: "40%", y: "30%", sz: 11, rot: -8, col: JC, op: 0.62, w: "500" },
+  { id: 61, text: "Processing", x: "55%", y: "45%", sz: 13, rot: 6, col: JE, op: 0.68, w: "600" },
+  { id: 62, text: "Denied", x: "63%", y: "38%", sz: 16, rot: -15, col: JE, op: 0.72, w: "700" },
+  { id: 63, text: "Approved", x: "32%", y: "58%", sz: 14, rot: 11, col: TEAL, op: 0.58, w: "600" },
+  { id: 64, text: "Pending", x: "50%", y: "68%", sz: 12, rot: -7, col: JF, op: 0.64, w: "500" },
+  { id: 65, text: "I-90", x: "42%", y: "38%", sz: 10, rot: 13, col: JA, op: 0.58, w: "500" },
+  { id: 66, text: "Status Check", x: "59%", y: "25%", sz: 9, rot: -9, col: JC, op: 0.52, w: "500" },
+  { id: 67, text: "Timeline", x: "25%", y: "50%", sz: 15, rot: 8, col: JD, op: 0.66, w: "600" },
+  { id: 68, text: "Citizenship", x: "70%", y: "60%", sz: 11, rot: -12, col: JB, op: 0.6, w: "500" },
+  {
+    id: 69,
+    text: "Naturalization",
+    x: "15%",
+    y: "58%",
+    sz: 10,
+    rot: 14,
+    col: JC,
+    op: 0.54,
+    w: "500",
+  },
+  { id: 70, text: "I-20", x: "45%", y: "15%", sz: 12, rot: -6, col: JA, op: 0.58, w: "600" },
+  {
+    id: 100,
+    text: "Spouse Visa Requirements",
+    x: "30%",
+    y: "35%",
+    sz: 12,
+    rot: 0,
+    col: INDIGO,
+    op: 0.92,
+    w: "600",
+    result: true,
+  },
+  {
+    id: 101,
+    text: "NVC Case Processing",
+    x: "30%",
+    y: "42%",
+    sz: 12,
+    rot: 0,
+    col: INDIGO,
+    op: 0.92,
+    w: "600",
+    result: true,
+  },
+  {
+    id: 102,
+    text: "DS-260 Form Guide",
+    x: "30%",
+    y: "49%",
+    sz: 12,
+    rot: 0,
+    col: INDIGO,
+    op: 0.92,
+    w: "600",
+    result: true,
+  },
+  {
+    id: 103,
+    text: "Interview Preparation",
+    x: "30%",
+    y: "56%",
+    sz: 12,
+    rot: 0,
+    col: INDIGO,
+    op: 0.92,
+    w: "600",
+    result: true,
+  },
+];
+const WAVE_IDS = {
+  1: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+  2: [13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24],
+  3: [25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 60, 61, 62, 63],
+  4: [
+    39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 64, 65, 66,
+    67, 68, 69, 70,
+  ],
+  5: [100, 101, 102, 103],
+};
 const NARR_BEATS = [
   {
     eyebrow: "You just wanted a simple answer.",
     lines: [{ text: "WHERE TO START?" }],
-    sub: "Spouse Visa  ·  IR-1  ·  K-1",
-    accent: "#1e293b",
+    sub: "Spouse Visa  ·  IR-1",
   },
   {
     eyebrow: "But one thing leads to ten others.",
     lines: [{ text: "IT NEVER" }, { text: "STOPS." }],
-    accent: "#1e293b",
   },
   {
     eyebrow: "The information is out there, sure.",
     lines: [{ text: "HOW DOES IT" }, { text: "APPLY TO YOU?" }],
-    accent: "#1e293b",
   },
   {
     eyebrow: "You don't need a list of forms.",
     lines: [{ text: "YOU NEED" }, { text: "A CLEAR PATH." }],
     sub: "and that's exactly what we built.",
-    accent: "#1e293b",
   },
 ];
-
-// ─── Cinematic slides — slide 0 holds 2800ms, slide 1 (last) holds 4800ms ────
 const CIN_SLIDES = [
   {
     eyebrow: "Stop piecing it together yourself.",
     lines: [{ text: "SEE EXACTLY" }, { text: "WHAT'S NEXT." }],
-    accent: "#1e293b",
-    holdMs: 2800,
+    holdMs: 3800, // was 2800
   },
   {
     eyebrow: "Because immigration isn't a search.",
     lines: [{ text: "IT'S A" }, { text: "PROCESS." }],
     sub: "and every process needs a map.",
-    accent: "#1e293b",
-    holdMs: 4800, // ← much longer hold for the last slide
+    holdMs: 5800, // was 4800
   },
 ];
 
-const sleep = (ms) => new Promise(r => setTimeout(r, ms));
-const rand  = (a, b) => a + Math.random() * (b - a);
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const rand = (a, b) => a + Math.random() * (b - a);
+const clampNum = (v, min, max) => Math.min(max, Math.max(min, v));
+const lerp = (v0, v1, vw, w0, w1) =>
+  clampNum(v0 + (v1 - v0) * ((vw - w0) / (w1 - w0)), Math.min(v0, v1), Math.max(v0, v1));
 
-export default function App() {
-  const [query,         setQuery]         = useState("");
-  const [submitted,     setSubmit]        = useState(false);
-  const [tabs,          setTabs]          = useState([]);
-  const [subTabs,       setSubTabs]       = useState({});
-  const [activeTab,     setActive]        = useState(null);
-  const [visibleJ,      setVisibleJ]      = useState(new Set());
-  const [content,       setContent]       = useState({kind:"search"});
-  const [endPhase,      setEndPhase]      = useState(null);
-  const [listWords,     setListWords]     = useState([]);
-  const [convergingIdx, setConvergingIdx] = useState(-1);
-  const [fade,          setFade]          = useState(0);
-  const [typeText,      setTypeText]      = useState("");
-  const [narrPhase,     setNarrPhase]     = useState(null);
-  const [seqHl,         setSeqHl]         = useState(null);
-  const [cVis,          setCVis]          = useState(new Set());
+export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
+  const [query, setQuery] = useState("");
+  const [submitted, setSubmit] = useState(false);
+  const [tabs, setTabs] = useState([]);
+  const [subTabs, setSubTabs] = useState({});
+  const [activeTab, setActive] = useState(null);
+  const [visibleJ, setVisibleJ] = useState(new Set());
+  const [content, setContent] = useState({ kind: "search" });
+  const [endPhase, setEndPhase] = useState(null);
+  const [listWords, setListWords] = useState([]);
+  const [convergingIdx, setConverging] = useState(-1);
+  const [fade, setFade] = useState(0);
+  const [typeText, setTypeText] = useState("");
+  const [narrPhase, setNarrPhase] = useState(null);
+  const [seqHl, setSeqHl] = useState(null);
+  const [cVis, setCVis] = useState(new Set());
+  const [charPose, setCharPose] = useState("standing");
 
-  // Responsive: track viewport width
-  const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
+  // Tracks whether the running async sequence should keep going. Kept as a
+  // ref (not state) so the sequence can check it synchronously on every
+  // tick without waiting for a re-render, and so an external "skip" call
+  // can stop it immediately.
+  const aliveRef = useRef(true);
+
+  // Preload all pose images to prevent rendering/loading delays
   useEffect(() => {
-    const onResize = () => setVw(window.innerWidth);
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
+    Object.values(IMG).forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+    // Also preload map image
+    const mapImg = new Image();
+    mapImg.src = "/assets/images/illustartions/map.png";
   }, []);
-  const isMobile  = vw < 640;
-  const isTablet  = vw >= 640 && vw < 1024;
-  const browserW  = isMobile ? Math.min(vw - 24, 420) : isTablet ? Math.min(vw - 48, 600) : 720;
 
+  const [vw, setVw] = useState(typeof window !== "undefined" ? window.innerWidth : 1200);
+  const [vh, setVh] = useState(typeof window !== "undefined" ? window.innerHeight : 800);
   useEffect(() => {
-    if (typeof document !== "undefined") {
-      if (endPhase !== "hero") {
-        document.body.style.overflow = "hidden";
-        document.documentElement.style.overflow = "hidden";
-      } else {
-        document.body.style.overflow = "";
-        document.documentElement.style.overflow = "";
-      }
-    }
-    return () => {
-      if (typeof document !== "undefined") {
-        document.body.style.overflow = "";
-        document.documentElement.style.overflow = "";
-      }
+    const f = () => {
+      setVw(window.innerWidth);
+      setVh(window.innerHeight);
     };
-  }, [endPhase]);
+    window.addEventListener("resize", f);
+    return () => window.removeEventListener("resize", f);
+  }, []);
 
-  const camZoom = useMotionValue(0.80);
-  const camX    = useMotionValue(0);
-  const camY    = useMotionValue(0);
-  const camRot  = useMotionValue(-2);
-  const shakeX  = useMotionValue(0);
-  const shakeY  = useMotionValue(0);
+  // ---- Fluid, continuous responsive scale (no hard breakpoint jumps) ----
+  // jScale: 0..1 used to scale jargon/typography fonts smoothly between a
+  // small phone (~340px) and a large desktop (~1440px).
+  const jScale = lerp(0.62, 1, vw, 340, 1440);
+  const isMobile = vw < 640,
+    isTablet = vw >= 640 && vw < 1024; // layout-structure breakpoints only
+  const isSmallPhone = vw < 380; // extra-small tier for clipping safety
 
+  // Browser frame + character scale continuously with viewport width,
+  // clamped so it never gets comically large or unreadably small.
+  const browserW = clampNum(vw * 0.7, 260, 780);
+  const browserAR = isMobile ? 1.05 : isTablet ? 0.52 : 0.5; // taller mockup on mobile
+  const browserInnerH = clampNum(browserW * browserAR, isMobile ? 220 : 115, 375);
+  const charSize = isMobile
+    ? clampNum(browserW * 0.28, 70, 95)
+    : clampNum(browserInnerH * 0.92, 100, 235);
+
+  const camZoom = useMotionValue(0.8),
+    camX = useMotionValue(0),
+    camY = useMotionValue(0),
+    camRot = useMotionValue(-2),
+    shakeX = useMotionValue(0),
+    shakeY = useMotionValue(0);
   const stageT = useTransform(
     [camZoom, camX, camY, camRot, shakeX, shakeY],
-    v => {
-      const [z, x, y, r, sx, sy] = v;
-      return `translate3d(${x+sx}px,${y+sy}px,0) scale(${z}) rotate(${r}deg)`;
-    }
+    ([z, x, y, r, sx, sy]) => `translate3d(${x + sx}px,${y + sy}px,0) scale(${z}) rotate(${r}deg)`
   );
+  // Camera pan distances below were tuned against a desktop-width stage.
+  // Scale them down proportionally on narrow viewports so the browser
+  // frame never pans/zooms itself off-screen (which is what reads as
+  // "cut off", since the section clips with overflow:hidden).
+  const panScale = clampNum(vw / 1700, 0.28, 1);
+  const zoomDampen = clampNum(0.55 + vw / 1800, 0.55, 1); // pulls zoom targets toward 1 on small screens
 
   useEffect(() => {
-    if (narrPhase !== 3) { setSeqHl(null); return; }
-    const ids = Array.from(visibleJ).filter(id => JARGON[id]?.text !== "?");
+    if (narrPhase !== 3) {
+      setSeqHl(null);
+      return;
+    }
+    const ids = Array.from(visibleJ).filter((id) => JARGON[id]?.text !== "?");
     if (!ids.length) return;
     let i = 0;
-    const iv = setInterval(() => { setSeqHl(ids[i % ids.length]); i++; }, 180);
+    const iv = setInterval(() => {
+      setSeqHl(ids[i % ids.length]);
+      i++;
+    }, 250); // slowed down seq highlight interval slightly
     return () => clearInterval(iv);
   }, [narrPhase, visibleJ]);
 
   useEffect(() => {
-    let active = true;
-    const cam = (to, dur = 1.1) => {
+    let isAlive = true;
+    aliveRef.current = true;
+    const cam = (to, dur = 1.4) => { // slightly slower camera duration default
       const ease = [0.22, 1, 0.36, 1];
-      if (to.zoom   !== undefined) mAnimate(camZoom, to.zoom,   { duration: dur, ease });
-      if (to.x      !== undefined) mAnimate(camX,    to.x,      { duration: dur, ease });
-      if (to.y      !== undefined) mAnimate(camY,    to.y,      { duration: dur, ease });
-      if (to.rotate !== undefined) mAnimate(camRot,  to.rotate, { duration: dur, ease });
+      if (to.zoom != null)
+        mAnimate(camZoom, 1 + (to.zoom - 1) * zoomDampen, { duration: dur, ease });
+      if (to.x != null) mAnimate(camX, to.x * panScale, { duration: dur, ease });
+      if (to.y != null) mAnimate(camY, to.y * panScale, { duration: dur, ease });
+      if (to.rotate != null) mAnimate(camRot, to.rotate, { duration: dur, ease });
     };
     const shake = async () => {
-      for (let i = 0; i < 16; i++) { if (!active) return; shakeX.set(rand(-12, 12)); shakeY.set(rand(-8, 8)); await sleep(32); }
-      shakeX.set(0); shakeY.set(0);
+      for (let i = 0; i < 16; i++) {
+        if (!isAlive || !aliveRef.current) return;
+        shakeX.set(rand(-12, 12) * panScale);
+        shakeY.set(rand(-8, 8) * panScale);
+        await sleep(40); // was 32
+      }
+      shakeX.set(0);
+      shakeY.set(0);
     };
-    const narrate = async (sceneIdx, holdMs, level) => {
-      setNarrPhase(level);
-      setContent({ kind: "narration", sceneIdx });
+    const narrate = async (idx, holdMs, lvl) => {
+      setNarrPhase(lvl);
+      setContent({ kind: "narration", sceneIdx: idx });
       await sleep(holdMs);
-      if (!active) return;
+      if (!isAlive || !aliveRef.current) return;
       setContent({ kind: "search" });
       setNarrPhase(null);
-      await sleep(300);
+      await sleep(500); // was 300
     };
-    const wave  = w => setVisibleJ(p => { const n = new Set(p); (WAVE_IDS[w] || []).forEach(id => n.add(id)); return n; });
-    const show  = i => setCVis(p => new Set([...p, i]));
-    const clearC = () => setCVis(new Set());
-
+    const wave = (w) =>
+      setVisibleJ((p) => {
+        const n = new Set(p);
+        (WAVE_IDS[w] || []).forEach((id) => n.add(id));
+        return n;
+      });
     (async () => {
+      setTabs([]);
+      setSubTabs({});
+      setQuery("");
+      setSubmit(false);
+      setCharPose("standing");
+      
       cam({ zoom: 0.58, x: 30, y: 40, rotate: -8 }, 0.01);
-      await sleep(300);
-      cam({ zoom: 0.75, x: -15, y: 10, rotate: 3 }, 2.2);
-      await sleep(600);
+      await sleep(400); // was 200
+      cam({ zoom: 0.75, x: -15, y: 10, rotate: 3 }, 2.2); // was 1.8
+      await sleep(600); // was 400
 
       setSubmit(false);
+      setCharPose("standing");
       const q1 = "how do I bring my spouse to the US";
       for (let i = 0; i < q1.length; i++) {
-        if (!active) return;
+        if (!isAlive || !aliveRef.current) return;
+        if (i === 3) setCharPose("thinking");
         setQuery(q1.slice(0, i + 1));
-        await sleep(q1[i] === " " ? rand(80, 180) : rand(35, 90));
-        if (Math.random() < 0.15 && q1[i] === " ") { await sleep(rand(200, 500)); }
+        await sleep(q1[i] === " " ? rand(120, 240) : rand(50, 110)); // was rand(75, 170) : rand(32, 85)
+        if (Math.random() < 0.11 && q1[i] === " ") await sleep(rand(250, 500)); // was rand(180, 400)
       }
-      await sleep(400); setSubmit(true);
-      cam({ zoom: 1.05, x: 10, y: -30, rotate: -1.5 }, 0.9);
-      setTabs(p => [...p, { id: "spouse", label: "Spouse Visa" }]);
+      await sleep(600); // was 360
+      setSubmit(true);
+      setCharPose("walking");
+      cam({ zoom: 1.05, x: 10, y: -30, rotate: -1.5 }, 1.2); // was 0.9
+      setTabs((p) => [...p, { id: "spouse", label: "Spouse Visa" }]);
       setActive("spouse");
       wave(1);
-      await sleep(800);
-      await narrate(0, 2400, 1);
+      await sleep(1200); // was 800
 
-      let len = 0; setQuery(q => { len = q.length; return q; }); await sleep(0);
-      for (let i = 0; i < len; i++) { if (!active) return; setQuery(q => q.slice(0, -1)); await sleep(12); }
-      setSubmit(false); await sleep(500);
+      setCharPose("reading");
+      await sleep(1000); // was 600
+
+      setCharPose("confused");
+      await narrate(0, 3600, 1); // was 2400
+      if (!isAlive || !aliveRef.current) return;
+
+      setCharPose("standing");
+      let len = 0;
+      setQuery((q) => {
+        len = q.length;
+        return q;
+      });
+      await sleep(0);
+      for (let i = 0; i < len; i++) {
+        if (!isAlive || !aliveRef.current) return;
+        setQuery((q) => q.slice(0, -1));
+        await sleep(15); // was 10
+      }
+      setSubmit(false);
+      await sleep(500); // was 360
+      if (!isAlive || !aliveRef.current) return;
+
+      setCharPose("thinking");
       const typo = "what is NCV";
-      for (const ch of typo) { if (!active) return; setQuery(q => q + ch); await sleep(rand(40, 75)); }
-      await sleep(600);
-      for (let i = 0; i < 3; i++) { if (!active) return; setQuery(q => q.slice(0, -1)); await sleep(90); }
-      await sleep(200);
-      for (const ch of "NVC") { if (!active) return; setQuery(q => q + ch); await sleep(60); }
-      await sleep(350); setSubmit(true);
-      setTabs(p => [...p, { id: "nvc", label: "NVC" }]); setActive("nvc");
-      await sleep(700);
+      for (const ch of typo) {
+        if (!isAlive || !aliveRef.current) return;
+        setQuery((q) => q + ch);
+        await sleep(rand(50, 90)); // was rand(36, 70)
+      }
+      await sleep(700); // was 560
+      for (let i = 0; i < 3; i++) {
+        if (!isAlive || !aliveRef.current) return;
+        setQuery((q) => q.slice(0, -1));
+        await sleep(120); // was 85
+      }
+      await sleep(300); // was 200
+      for (const ch of "NVC") {
+        if (!isAlive || !aliveRef.current) return;
+        setQuery((q) => q + ch);
+        await sleep(80); // was 55
+      }
+      await sleep(400); // was 300
+      setSubmit(true);
+      setTabs((p) => [...p, { id: "nvc", label: "NVC" }]);
+      setActive("nvc");
+      await sleep(900); // was 620
 
-      setSubTabs({ nvc: [
-        { id: "ds260",     label: "DS-260" },
-        { id: "civdocs",   label: "Civil Documents" },
-        { id: "interview", label: "Interview" },
-        { id: "fees",      label: "Fees" },
-        { id: "medical",   label: "Medical Exam" },
-        { id: "police",    label: "Police Certificate" },
-        { id: "affidavit", label: "Affidavit of Support" },
-      ]});
+      setSubTabs({
+        nvc: [
+          { id: "ds260", label: "DS-260" },
+          { id: "civdocs", label: "Civil Documents" },
+          { id: "interview", label: "Interview" },
+          { id: "fees", label: "Fees" },
+          { id: "medical", label: "Medical Exam" },
+          { id: "police", label: "Police Certificate" },
+          { id: "affidavit", label: "Affidavit of Support" },
+        ],
+      });
       setActive("ds260");
-      cam({ zoom: 1.25, x: 120, y: -50, rotate: -4.5 }, 1.0);
+      setCharPose("carryingBooks");
+      cam({ zoom: 1.25, x: 120, y: -50, rotate: -4.5 }, 1.4); // was 1.0
       wave(2);
-      await sleep(800);
-      await narrate(1, 2600, 2);
+      await sleep(1000); // was 680
 
+      setCharPose("stressed");
+      await narrate(1, 3800, 2); // was 2600
+      if (!isAlive || !aliveRef.current) return;
+
+      setCharPose("walking");
       wave(3);
-      cam({ zoom: 0.88, x: -40, y: 15, rotate: 2.8 }, 1.4);
-      await sleep(500);
-      await narrate(2, 2400, 3);
+      cam({ zoom: 0.88, x: -40, y: 15, rotate: 2.8 }, 1.8); // was 1.4
+      await sleep(700); // was 480
+
+      setCharPose("carryingBooks");
+      await narrate(2, 3600, 3); // was 2400
+      if (!isAlive || !aliveRef.current) return;
 
       wave(4);
       await shake();
-      cam({ zoom: 0.72, x: 20, y: 35, rotate: -5.2 }, 1.3);
-      await sleep(700);
-      await narrate(3, 3000, 4);
+      if (!isAlive || !aliveRef.current) return;
+      setCharPose("sittingDown");
+      cam({ zoom: 0.72, x: 20, y: 35, rotate: -5.2 }, 1.8); // was 1.3
+      await sleep(1000); // was 680
 
-      let len2 = 0; setQuery(q => { len2 = q.length; return q; }); await sleep(0);
-      for (let i = 0; i < len2; i++) { if (!active) return; setQuery(q => q.slice(0, -1)); await sleep(12); }
-      setSubmit(false); await sleep(400);
+      setCharPose("reading");
+      await narrate(3, 4200, 4); // was 3000
+      if (!isAlive || !aliveRef.current) return;
+
+      let len2 = 0;
+      setQuery((q) => {
+        len2 = q.length;
+        return q;
+      });
+      await sleep(0);
+      for (let i = 0; i < len2; i++) {
+        if (!isAlive || !aliveRef.current) return;
+        setQuery((q) => q.slice(0, -1));
+        await sleep(15); // was 10
+      }
+      setSubmit(false);
+      await sleep(500); // was 360
+      if (!isAlive || !aliveRef.current) return;
       const q3 = "what am i missing???????";
-      for (const ch of q3) { if (!active) return; setQuery(q => q + ch); await sleep(rand(40, 75)); }
-      await sleep(500); setSubmit(true);
-      await sleep(800);
+      for (const ch of q3) {
+        if (!isAlive || !aliveRef.current) return;
+        setQuery((q) => q + ch);
+        await sleep(rand(50, 90)); // was rand(36, 70)
+      }
+      await sleep(700); // was 460
+      setSubmit(true);
+      await sleep(1000); // was 720
+      if (!isAlive || !aliveRef.current) return;
 
       setEndPhase("list");
-      const words = ["Forms.", "Documents.", "Deadlines.", "Interviews.", "Requirements.", "Fees.", "Translations.", "Proofs."];
+      setCharPose("sittingDown");
+      const words = [
+        "Forms.",
+        "Documents.",
+        "Deadlines.",
+        "Interviews.",
+        "Requirements.",
+        "Fees.",
+        "Translations.",
+        "Proofs.",
+      ];
       for (let i = 0; i < words.length; i++) {
-        if (!active) return; setListWords(words.slice(0, i + 1)); await sleep(280);
+        if (!isAlive || !aliveRef.current) return;
+        setListWords(words.slice(0, i + 1));
+        await sleep(350); // was 220
       }
-      await sleep(2000);
+      await sleep(2200); // was 1800
       for (let i = 0; i < words.length; i++) {
-        if (!active) return; setConvergingIdx(i); await sleep(60);
+        if (!isAlive || !aliveRef.current) return;
+        setConverging(i);
+        await sleep(75); // was 52
       }
-      await sleep(600);
+      await sleep(700); // was 520
       setListWords([]);
-      await sleep(100);
+      await sleep(150); // was 100
+      if (!isAlive || !aliveRef.current) return;
 
       setEndPhase("cinematic");
-      // Show slide 0, hold for its own holdMs, then slide 1 for its holdMs
-      show(0); await sleep(CIN_SLIDES[0].holdMs);
-      show(1); await sleep(CIN_SLIDES[1].holdMs);  // ← 4800ms for the last slide
-      clearC(); await sleep(400);
+      setCharPose("sittingUp");
+      setCVis(new Set([0]));
+      await sleep(CIN_SLIDES[0].holdMs);
+      if (!isAlive || !aliveRef.current) return;
+      setCVis(new Set([0, 1]));
+      await sleep(CIN_SLIDES[1].holdMs);
+      if (!isAlive || !aliveRef.current) return;
+      setCVis(new Set());
+      await sleep(600); // was 400
+      if (!isAlive || !aliveRef.current) return;
 
       setEndPhase("fade");
-      for (let i = 1; i <= 30; i++) { if (!active) return; setFade(i / 30); await sleep(20); }
-      await sleep(100);
+      for (let i = 1; i <= 30; i++) {
+        if (!isAlive || !aliveRef.current) return;
+        setFade(i / 30);
+        await sleep(22); // was 18
+      }
+      await sleep(150); // was 100
+      if (!isAlive || !aliveRef.current) return;
+      setFade(0);
       setEndPhase("hero");
+      onComplete?.();
 
       const full = "Let's map it out.";
-      for (let i = 0; i <= full.length; i++) { if (!active) return; setTypeText(full.slice(0, i)); await sleep(rand(38, 82)); }
+      for (let i = 0; i <= full.length; i++) {
+        if (!isAlive || !aliveRef.current) return;
+        setTypeText(full.slice(0, i));
+        await sleep(rand(45, 95)); // was rand(34, 76)
+      }
     })();
+    return () => {
+      isAlive = false;
+      aliveRef.current = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-    return () => { active = false; };
-  }, [camZoom, camX, camY, camRot, shakeX, shakeY]);
+  // External skip: stop the sequence wherever it is and jump straight to
+  // the finished hero frame, fully typed out.
+  useEffect(() => {
+    if (skipToEnd) {
+      aliveRef.current = false;
+      setEndPhase("hero");
+      setFade(0);
+      setTypeText("Let's map it out.");
+      onComplete?.();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [skipToEnd]);
 
-  const showStage    = endPhase === null;
-  const isN          = content.kind === "narration";
+  const showStage = endPhase === null;
+  const isN = content.kind === "narration";
   const narrSceneIdx = isN ? content.sceneIdx : null;
 
   return (
-    <section style={{
-      position: "relative", zIndex: 50,
-      height: "100vh", width: "100%", overflow: "hidden",
-      fontFamily: FB,
-      background: "linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 40%, #94a3b8 100%)",
-    }}>
-      {/* Fade overlay */}
+    <section
+      style={{
+        position: "relative",
+        zIndex: 50,
+        height: "100dvh",
+        minHeight: 380,
+        width: "100%",
+        overflow: "hidden",
+        fontFamily: FB,
+        background: "linear-gradient(135deg,#e2e8f0 0%,#cbd5e1 40%,#94a3b8 100%)",
+      }}
+    >
       {fade > 0 && (
-        <div style={{ position: "absolute", inset: 0, background: HERO_BG, opacity: fade, zIndex: 60, pointerEvents: "none" }} />
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            background: HERO_BG,
+            opacity: fade,
+            zIndex: 60,
+            pointerEvents: "none",
+          }}
+        />
       )}
 
-      {/* ── Jargon scatter ── */}
       {endPhase !== "hero" && (
         <div style={{ position: "absolute", inset: 0, zIndex: 10, pointerEvents: "none" }}>
-          {JARGON.map(j => {
+          {JARGON.map((j) => {
             if (!visibleJ.has(j.id)) return null;
-            const isPill   = j.text !== "?";
-            const isResult = j.result;
-            const isHl5    = narrPhase === 2 && FIVE_IDS.has(j.id);
-            const isSeqH   = narrPhase === 3 && seqHl === j.id;
+            const isPill = j.text !== "?",
+              isResult = j.result;
+            const isHl5 = narrPhase === 2 && FIVE_IDS.has(j.id);
+            const isSeqH = narrPhase === 3 && seqHl === j.id;
             const isJitter = narrPhase === 4 && isPill;
-
-            let dx = 0, dy = 0, dop = j.op;
-            if (isN) {
-              dop = j.op * (isHl5 ? 0.7 : 0.15);
-            } else if (endPhase === "list" || endPhase === "cinematic" || endPhase === "fade") {
-              dop = 0;
-            }
-
-            // Scale down font sizes on mobile
-            const scaledSz = isMobile ? Math.max(j.sz * 0.65, 8) : isTablet ? Math.max(j.sz * 0.82, 9) : j.sz;
-
-            const animX = isJitter ? [dx, dx + ((j.id * 7) % 13) - 6, dx - ((j.id * 13) % 11) + 5, dx + ((j.id * 13) % 11) - 5, dx] : dx;
-            const animY = isJitter ? [dy, dy + ((j.id * 11) % 9) - 4, dy - ((j.id * 5) % 13) + 6, dy + ((j.id * 5) % 13) - 6, dy] : dy;
-
-            if (isResult) {
+            let dop = j.op;
+            if (isN) dop = j.op * (isHl5 ? 0.7 : 0.15);
+            else if (["list", "cinematic", "fade"].includes(endPhase)) dop = 0;
+            const ssz = Math.max(j.sz * jScale, isResult ? 9 : isPill ? 8 : 18);
+            const ax = isJitter
+              ? [0, ((j.id * 7) % 13) - 6, -((j.id * 13) % 11) + 5, ((j.id * 13) % 11) - 5, 0]
+              : 0;
+            const ay = isJitter
+              ? [0, ((j.id * 11) % 9) - 4, -((j.id * 5) % 13) + 6, ((j.id * 5) % 13) - 6, 0]
+              : 0;
+            if (isResult)
               return (
-                <div key={j.id} style={{ position: "absolute", left: j.x, top: j.y, transform: "translate(-50%,-50%)" }}>
+                <div
+                  key={j.id}
+                  style={{
+                    position: "absolute",
+                    left: j.x,
+                    top: j.y,
+                    transform: "translate(-50%,-50%)",
+                  }}
+                >
                   <motion.div
                     initial={{ opacity: 0, y: 20, scale: 0.9 }}
                     animate={{ opacity: dop, y: 0, scale: 1 }}
                     transition={{ duration: 0.5, delay: j.id * 0.08 }}
                     style={{
-                      background: "rgba(255,255,255,0.92)",
+                      background: "rgba(255,255,255,0.98)",
                       border: "1px solid rgba(74,64,112,0.18)",
                       borderLeft: "3px solid rgba(74,64,112,0.45)",
-                      borderRadius: 6, padding: isMobile ? "5px 10px" : "8px 14px",
-                      fontSize: scaledSz, fontWeight: j.w, color: j.col,
-                      boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
-                      backdropFilter: "blur(6px)", minWidth: isMobile ? 130 : 200, fontFamily: FB,
+                      borderRadius: 6,
+                      padding: `${clampNum(5 * jScale, 4, 8)}px ${clampNum(12 * jScale, 8, 14)}px`,
+                      fontSize: ssz,
+                      fontWeight: j.w,
+                      color: j.col,
+                      boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+                      minWidth: clampNum(130 * jScale, 110, 200),
+                      fontFamily: FB,
                     }}
-                  >{j.text}</motion.div>
+                  >
+                    {j.text}
+                  </motion.div>
                 </div>
               );
-            }
-
             return (
-              <div key={j.id} style={{
-                position: "absolute", left: j.x, top: j.y,
-                transform: `translate(-50%,-50%) rotate(${j.rot}deg)`,
-              }}>
+              <div
+                key={j.id}
+                style={{
+                  position: "absolute",
+                  left: j.x,
+                  top: j.y,
+                  transform: `translate(-50%,-50%) rotate(${j.rot}deg)`,
+                }}
+              >
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.4, filter: "blur(8px)", rotate: rand(-20, 20) }}
+                  initial={{ opacity: 0, scale: 0.4, rotate: rand(-20, 20) }}
                   animate={{
-                    opacity: isHl5 && !isN ? Math.min(1, dop + 0.3) : isSeqH && !isN ? Math.min(1, dop + 0.25) : dop,
-                    scale: isHl5 && !isN ? 1.22 : isSeqH && !isN ? 1.16 : 1,
-                    filter: "blur(0px)",
-                    x: animX, y: animY, rotate: 0,
+                    opacity: dop,
+                    scale: isHl5 ? 1.22 : isSeqH ? 1.16 : 1,
+                    x: ax,
+                    y: ay,
+                    rotate: 0,
                   }}
                   transition={{
-                    opacity: { duration: 0.6 },
+                    opacity: { duration: 0.55 },
                     scale: { duration: isHl5 || isSeqH ? 0.18 : 0.6 },
-                    filter: { duration: 0.6 }, rotate: { duration: 0.6 },
-                    x: isJitter ? { duration: 0.52 + (j.id % 3) * 0.18, ease: "easeInOut", repeat: Infinity } : { duration: 1.8, ease: [0.22, 1, 0.36, 1] },
-                    y: isJitter ? { duration: 0.60 + (j.id % 4) * 0.15, ease: "easeInOut", repeat: Infinity } : { duration: 1.8, ease: [0.22, 1, 0.36, 1] },
+                    x: isJitter
+                      ? { duration: 0.52 + (j.id % 3) * 0.18, ease: "easeInOut", repeat: Infinity }
+                      : { duration: 1.8, ease: [0.22, 1, 0.36, 1] },
+                    y: isJitter
+                      ? { duration: 0.6 + (j.id % 4) * 0.15, ease: "easeInOut", repeat: Infinity }
+                      : { duration: 1.8, ease: [0.22, 1, 0.36, 1] },
                   }}
                 >
-                  <span style={{
-                    display: "block",
-                    fontSize: scaledSz, fontWeight: j.w, color: j.col,
-                    letterSpacing: "0.04em", whiteSpace: "nowrap", fontFamily: FB,
-                    transition: "background 0.28s, border-color 0.28s",
-                    ...(isPill ? {
-                      background: isHl5 ? "rgba(46,113,117,0.12)" : isSeqH ? "rgba(46,113,117,0.07)" : "rgba(0,0,0,0.03)",
-                      border: isHl5 ? "1.5px solid rgba(46,113,117,0.40)" : isSeqH ? "1.5px solid rgba(46,113,117,0.25)" : "1px solid rgba(0,0,0,0.08)",
-                      borderRadius: 20, padding: isMobile ? "2px 6px" : "3px 9px", backdropFilter: "blur(4px)",
-                    } : {}),
-                  }}>{j.text}</span>
+                  <span
+                    style={{
+                      display: "block",
+                      fontSize: ssz,
+                      fontWeight: j.w,
+                      color: j.col,
+                      letterSpacing: "0.04em",
+                      whiteSpace: "nowrap",
+                      fontFamily: FB,
+                      ...(isPill
+                        ? {
+                            background: isHl5
+                              ? "rgba(46,113,117,0.15)"
+                              : isSeqH
+                                ? "rgba(46,113,117,0.08)"
+                                : "rgba(255,255,255,0.96)",
+                            border: isHl5
+                              ? "1.5px solid rgba(46,113,117,0.40)"
+                              : isSeqH
+                                ? "1.5px solid rgba(46,113,117,0.25)"
+                                : "1px solid rgba(0,0,0,0.08)",
+                            borderRadius: 20,
+                            padding: `${clampNum(3 * jScale, 2, 3)}px ${clampNum(9 * jScale, 5, 9)}px`,
+                            boxShadow: "0 1px 3px rgba(0,0,0,0.02)",
+                          }
+                        : {}),
+                    }}
+                  >
+                    {j.text}
+                  </span>
                 </motion.div>
               </div>
             );
@@ -446,565 +1338,774 @@ export default function App() {
         </div>
       )}
 
-      {/* ── Browser stage ── */}
       {showStage && (
         <motion.div
           animate={{ opacity: 1 }}
-          transition={{ duration: 0.5, ease: [0.4, 0, 0.6, 1] }}
+          transition={{ duration: 0.5 }}
           style={{
-            position: "absolute", inset: 0, zIndex: 20, display: "flex",
-            alignItems: "center", justifyContent: "center", perspective: 1800,
+            position: "absolute",
+            inset: 0,
+            zIndex: 20,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            perspective: 1800,
+            padding: isMobile ? "0 12px" : "0 24px",
           }}
         >
-          <motion.div style={{ transform: stageT, transformOrigin: "50% 50%", willChange: "transform" }}>
-            <div style={{
-              width: browserW, flexShrink: 0, overflow: "hidden", borderRadius: isMobile ? 10 : 16,
-              background: "linear-gradient(145deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.5) 100%)",
-              backdropFilter: "blur(40px) saturate(150%)",
-              boxShadow: "inset 0 1px 1px rgba(255,255,255,1), 0 24px 64px rgba(0,0,0,0.08), 0 0 0 1px rgba(255,255,255,0.4)",
-            }}>
-              {/* Chrome bar */}
-              <div style={{
-                display: "flex", alignItems: "center", gap: 8, padding: isMobile ? "8px 12px" : "10px 16px",
-                borderBottom: "1px solid #e8e8ec",
-                background: "linear-gradient(to bottom, #f4f4f7, #ededf1)",
-              }}>
-                <Dot c="#ff5f57" /><Dot c="#ffbd2e" /><Dot c="#28c840" />
-                <div style={{ flex: 1, margin: "0 10px" }}><URLBar activeTab={activeTab} isMobile={isMobile} /></div>
-                <Dot c="#c5c5cc" /><Dot c="#c5c5cc" /><Dot c="#c5c5cc" />
+          <motion.div
+            style={{
+              transform: stageT,
+              transformOrigin: "50% 50%",
+              willChange: "transform",
+              width: "100%",
+              display: "flex",
+              justifyContent: "center",
+            }}
+          >
+            <div
+              style={{
+                width: browserW,
+                maxWidth: "100%",
+                flexShrink: 0,
+                overflow: "hidden",
+                borderRadius: isSmallPhone ? 8 : isMobile ? 10 : 16,
+                background:
+                  "linear-gradient(145deg,rgba(255,255,255,0.9) 0%,rgba(255,255,255,0.5) 100%)",
+                backdropFilter: "blur(40px) saturate(150%)",
+                boxShadow:
+                  "inset 0 1px 1px rgba(255,255,255,1),0 24px 64px rgba(0,0,0,0.08),0 0 0 1px rgba(255,255,255,0.4)",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: clampNum(8 * jScale, 5, 8),
+                  padding: `${clampNum(10 * jScale, 6, 10)}px ${clampNum(16 * jScale, 10, 16)}px`,
+                  borderBottom: "1px solid #e8e8ec",
+                  background: "linear-gradient(to bottom,#f4f4f7,#ededf1)",
+                }}
+              >
+                <Dot c="#ff5f57" jScale={jScale} />
+                <Dot c="#ffbd2e" jScale={jScale} />
+                <Dot c="#28c840" jScale={jScale} />
+                <div style={{ flex: 1, margin: "0 10px", minWidth: 0 }}>
+                  <URLBar browserW={browserW} jScale={jScale} />
+                </div>
+                {!isSmallPhone && (
+                  <>
+                    <Dot c="#c5c5cc" jScale={jScale} />
+                    <Dot c="#c5c5cc" jScale={jScale} />
+                    <Dot c="#c5c5cc" jScale={jScale} />
+                  </>
+                )}
               </div>
-              <TabBar tabs={tabs} subTabs={subTabs} activeTab={activeTab} isMobile={isMobile} />
-              {/* Content */}
-              <div style={{
-                width: "100%", height: isMobile ? 220 : 320, display: "flex",
-                alignItems: "center", justifyContent: "center",
-                padding: isMobile ? "0 16px" : "0 40px",
-                background: "#fcfcfd",
-                boxShadow: "inset 0 4px 20px rgba(0,0,0,0.03)",
-                position: "relative",
-              }}>
-                <AnimatePresence mode="wait">
-                  {isN && narrSceneIdx !== null ? (
-                    <InnerNarration key={`narr-${narrSceneIdx}`} beatIdx={narrSceneIdx} isMobile={isMobile} />
-                  ) : (
-                    <motion.div key="search" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ width: "100%", maxWidth: isMobile ? "100%" : 500 }}>
-                      <div style={{
-                        display: "flex", alignItems: "center", gap: 10,
-                        padding: isMobile ? "11px 16px" : "15px 22px",
-                        borderRadius: 999, background: "#fff",
-                        boxShadow: "inset 0 0 0 1.5px #d1d5db, 0 2px 12px rgba(0,0,0,0.05)",
-                      }}>
-                        <SearchIcon />
-                        <div style={{
-                          flex: 1, fontSize: isMobile ? 12 : 14, color: "#1a202c",
-                          whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis",
-                          minHeight: "1.4em", lineHeight: 1.4, fontFamily: FB,
-                        }}>
-                          {query.length === 0 && !submitted
-                            ? <span style={{ color: "#9ca3af" }}>Ask anything about immigration…</span>
-                            : query}
-                          {!submitted && <Blink />}
+              <TabBar tabs={tabs} subTabs={subTabs} activeTab={activeTab} jScale={jScale} />
+              <div
+                style={{
+                  width: "100%",
+                  height: browserInnerH,
+                  background: "#fcfcfd",
+                  boxShadow: "inset 0 4px 20px rgba(0,0,0,0.03)",
+                  position: "relative",
+                  overflow: "hidden",
+                }}
+              >
+                <div
+                  style={{
+                    position: "absolute",
+                    left: clampNum(-charSize * 0.08, -20, -6),
+                    bottom: 0,
+                    zIndex: 5,
+                    pointerEvents: "none",
+                    width: charSize,
+                    height: charSize,
+                    display: "flex",
+                    alignItems: "flex-end",
+                    justifyContent: "center",
+                  }}
+                >
+                  <CharacterSprite
+                    pose={charPose}
+                    size={charSize}
+                    style={{ filter: "drop-shadow(0 8px 22px rgba(46,113,117,0.14))" }}
+                  />
+                </div>
+                <div
+                  style={{
+                    position: "absolute",
+                    inset: 0,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: isMobile ? "0 12px" : "0 32px",
+                    pointerEvents: "none",
+                  }}
+                >
+                  <AnimatePresence mode="wait">
+                    {isN && narrSceneIdx != null ? (
+                      <InnerNarration
+                        key={`n${narrSceneIdx}`}
+                        beatIdx={narrSceneIdx}
+                        jScale={jScale}
+                        isMobile={isMobile}
+                      />
+                    ) : (
+                      <motion.div
+                        key="search"
+                        initial={{ opacity: 0, y: 8 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -6 }}
+                        transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
+                        style={{
+                          width: "100%",
+                          maxWidth: isMobile
+                            ? clampNum(browserW * 0.6, 150, 440)
+                            : clampNum(browserW * 0.58, 230, 440),
+                          pointerEvents: "auto",
+                          zIndex: 6,
+                        }}
+                      >
+                        <div
+                          style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 10,
+                            padding: `${clampNum(13 * jScale, 9, 15)}px ${clampNum(20 * jScale, 14, 22)}px`,
+                            borderRadius: 999,
+                            background: "#fff",
+                            boxShadow: "inset 0 0 0 1.5px #d1d5db,0 2px 12px rgba(0,0,0,0.05)",
+                          }}
+                        >
+                          <SearchIcon />
+                          <div
+                            style={{
+                              flex: 1,
+                              fontSize: clampNum(13 * jScale, 11, 14),
+                              color: "#1a202c",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              minHeight: "1.4em",
+                              lineHeight: 1.4,
+                              fontFamily: FB,
+                            }}
+                          >
+                            {query.length === 0 && !submitted ? (
+                              <span style={{ color: "#9ca3af" }}>
+                                Ask anything about immigration…
+                              </span>
+                            ) : (
+                              query
+                            )}
+                            {!submitted && <Blink />}
+                          </div>
+                          {submitted && (
+                            <span
+                              style={{ fontSize: 11, color: "#9ca3af", letterSpacing: "0.1em" }}
+                            >
+                              ↵
+                            </span>
+                          )}
                         </div>
-                        {submitted && <span style={{ fontSize: 11, color: "#9ca3af", letterSpacing: "0.1em" }}>↵</span>}
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
               </div>
             </div>
           </motion.div>
         </motion.div>
       )}
 
-      {/* ── List cascade ── */}
       {endPhase === "list" && (
-        <div style={{
-          position: "absolute", inset: 0, zIndex: 50, background: "transparent",
-          display: "flex", flexDirection: "column", alignItems: "center",
-          justifyContent: "center", padding: "0 8vw", gap: 2,
-        }}>
+        <div
+          style={{
+            position: "absolute",
+            inset: 0,
+            zIndex: 50,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            overflow: "hidden",
+          }}
+        >
           {listWords.map((w, i) => {
-            const entryX = [-180, 200, -220, 160, -240, 190, -170, 210][i] ?? (i % 2 === 0 ? -180 : 180);
-            const entryY = [-60, -40, 20, -30, 40, -50, 30, -20][i] ?? 0;
-            const entryRot = [-22, 18, -28, 14, -20, 25, -16, 22][i] ?? 0;
-            const yOff = (i - (listWords.length - 1) / 2) * (isMobile ? 48 : 74);
-            const isConverging = convergingIdx >= i;
-            const convDelay = [0, 0.04, 0.02, 0.06, 0.01, 0.05, 0.03, 0.07][i] ?? 0;
+            /* Settled positions — deliberately crowded, nothing centred or tidy */
+            const SX = [-0.24, 0.16, -0.06, 0.28, -0.32, 0.08, -0.18, 0.22];
+            const SY = [-0.2, 0.14, -0.32, -0.04, 0.22, -0.26, 0.1, 0.28];
+            const ROT = [-9, 5, -14, 7, -5, 11, -7, 4];
+            const sx = vw * SX[i],
+              sy = vh * SY[i],
+              rot = ROT[i];
+
+            /* Words fly in from outside, each from a distinct angle            */
+            const θ = (i / 8) * Math.PI * 2;
+            const d = Math.max(vw, vh) * 0.7;
+            const ex = Math.cos(θ) * d,
+              ey = Math.sin(θ) * d;
+            const initRot = [-16, 10, -20, 9, -12, 17, -9, 13][i];
+
+            /* Size: wildly uneven — the process feels unscalable               */
+            const BASE = [82, 54, 38, 72, 34, 96, 42, 64][i];
+            const sz = clampNum(BASE * jScale, BASE * 0.42, BASE);
+            const fw = ["900", "700", "500", "800", "500", "900", "600", "800"][i];
+
+            /* Colour: not a single palette — stress-testing the eye             */
+            const col = ["#0f172a", TEAL, CRIMSON, "#334155", "#64748b", AMBER, "#475569", TEAL][i];
+
+            const conv = convergingIdx >= i;
+            const cd = [0, 0.04, 0.02, 0.06, 0.01, 0.05, 0.03, 0.07][i] ?? 0;
             return (
-              <motion.div key={w}
-                initial={{ opacity: 0, x: entryX, y: entryY, scale: 0.6, rotate: entryRot, filter: "blur(12px)" }}
-                animate={isConverging ? {
-                  opacity: 0, x: 0, y: -yOff, scale: 0.04, rotate: 0, filter: "blur(24px)",
-                } : {
-                  opacity: 1, x: 0, y: 0, scale: 1, rotate: 0, filter: "blur(0px)",
-                }}
-                transition={isConverging ? {
-                  duration: 0.42, ease: [0.7, 0, 1, 0.3], delay: convDelay,
-                  rotate: { duration: 0.38, ease: [0.7, 0, 1, 0.2] },
-                } : {
-                  duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: i * 0.07,
-                  rotate: { duration: 0.5, ease: [0.16, 1, 0.3, 1] },
-                  filter: { duration: 0.4 },
-                }}
+              <motion.div
+                key={w}
+                initial={{ opacity: 0, x: ex, y: ey, rotate: initRot, scale: 0.55 }}
+                animate={
+                  conv
+                    ? { opacity: 0, x: 0, y: 0, rotate: 0, scale: 0.04, filter: "blur(28px)" }
+                    : { opacity: 1, x: sx, y: sy, rotate: rot, scale: 1, filter: "blur(0px)" }
+                }
+                transition={
+                  conv
+                    ? { duration: 0.44, ease: [0.72, 0, 1, 0.28], delay: cd }
+                    : { duration: 0.58, ease: [0.16, 1, 0.3, 1], delay: i * 0.11 }
+                }
                 style={{
-                  fontSize: isMobile ? "clamp(20px,7vw,40px)" : "clamp(26px,4.5vw,62px)",
-                  fontWeight: 900,
-                  color: i % 2 === 0 ? TEAL : "#1e293b",
-                  letterSpacing: "-0.05em", lineHeight: 1.02,
-                  alignSelf: i % 3 === 0 ? "flex-start" : i % 3 === 1 ? "flex-end" : "center",
+                  position: "absolute",
+                  fontSize: sz,
+                  fontWeight: fw,
                   fontFamily: FD,
-                  textShadow: isConverging ? "none" : "0 2px 18px rgba(0,0,0,0.08)",
+                  color: col,
+                  letterSpacing: "-0.04em",
+                  lineHeight: 1,
+                  whiteSpace: "nowrap",
+                  WebkitFontSmoothing: "antialiased",
+                  textShadow: "0 4px 24px rgba(0,0,0,0.10)",
                 }}
-              >{w}</motion.div>
+              >
+                {w}
+              </motion.div>
             );
           })}
         </div>
       )}
 
-      {/* ── Cinematic editorial phase ── */}
       {endPhase === "cinematic" && (
         <>
-          <div style={{
-            position: "absolute", inset: 0, zIndex: 25, pointerEvents: "none",
-            background: "radial-gradient(ellipse at 50% 50%, rgba(255,255,255,0.6) 0%, rgba(226,232,240,0.2) 100%)",
-          }} />
+          <div
+            style={{
+              position: "absolute",
+              inset: 0,
+              zIndex: 25,
+              pointerEvents: "none",
+              background:
+                "radial-gradient(ellipse at 50% 50%,rgba(255,255,255,0.6) 0%,rgba(226,232,240,0.2) 100%)",
+            }}
+          />
           <div style={{ position: "absolute", inset: 0, zIndex: 30, pointerEvents: "none" }}>
             <AnimatePresence mode="wait">
-              {cVis.size > 0 && (() => {
-                const idx = Math.max(...Array.from(cVis));
-                const slide = CIN_SLIDES[idx];
-                return slide ? <EditorialSlide key={idx} slide={slide} isMobile={isMobile} /> : null;
-              })()}
+              {cVis.size > 0 &&
+                (() => {
+                  const idx = Math.max(...Array.from(cVis));
+                  const slide = CIN_SLIDES[idx];
+                  return slide ? <EditorialSlide key={idx} slide={slide} /> : null;
+                })()}
             </AnimatePresence>
           </div>
         </>
       )}
 
-      {/* ── Hero ── */}
-      {endPhase === "hero" && <HeroFrame typeText={typeText} isMobile={isMobile} isTablet={isTablet} />}
+      {endPhase === "hero" && (
+        <HeroFrame
+          typeText={typeText}
+          isMobile={isMobile}
+          isTablet={isTablet}
+          vw={vw}
+          onSkip={() => {
+            aliveRef.current = false;
+            setTypeText("Let's map it out.");
+          }}
+        />
+      )}
+
+      {typeText !== "Let's map it out." && (
+        <button
+          type="button"
+          onClick={() => {
+            aliveRef.current = false;
+            setEndPhase("hero");
+            setFade(0);
+            setTypeText("Let's map it out.");
+            onComplete?.();
+          }}
+          className="hero-skip-button"
+          style={{
+            position: "fixed",
+            bottom: "max(16px, env(safe-area-inset-bottom))",
+            right: 16,
+            zIndex: 120,
+            transform: "none",
+            border: "1px solid rgba(12,18,42,0.08)",
+            borderRadius: 999,
+            background: "rgba(255,255,255,0.42)",
+            color: "rgba(12,18,42,0.42)",
+            fontFamily: FB,
+            fontSize: 11,
+            fontWeight: 600,
+            letterSpacing: "0.12em",
+            textTransform: "uppercase",
+            padding: "7px 12px",
+            cursor: "pointer",
+            boxShadow: "0 4px 14px rgba(12,18,42,0.05)",
+            backdropFilter: "blur(10px)",
+            WebkitBackdropFilter: "blur(10px)",
+            opacity: 0.7,
+            transition: "opacity 160ms ease, background-color 160ms ease, transform 160ms ease",
+          }}
+          onMouseEnter={(event) => {
+            event.currentTarget.style.opacity = "1";
+            event.currentTarget.style.backgroundColor = "rgba(255,255,255,0.62)";
+            event.currentTarget.style.transform = "translateY(-1px)";
+          }}
+          onMouseLeave={(event) => {
+            event.currentTarget.style.opacity = "0.7";
+            event.currentTarget.style.backgroundColor = "rgba(255,255,255,0.42)";
+            event.currentTarget.style.transform = "none";
+          }}
+        >
+          Skip
+        </button>
+      )}
 
       <style>{`@keyframes _blink{50%{opacity:0}}`}</style>
     </section>
   );
 }
 
-// ─── Inner Narration ───────────────────────────────────────────────────────────
-function InnerNarration({ beatIdx, isMobile }) {
-  const beat = NARR_BEATS[beatIdx];
-  if (!beat) return null;
-  return (
-    <motion.div
-      initial={{ opacity: 0, scale: 0.95, filter: "blur(8px)" }}
-      animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-      exit={{ opacity: 0 }}
-      transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-      style={{
-        position: "absolute", inset: 0, zIndex: 45,
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        textAlign: "center", padding: isMobile ? "0 16px" : "0 4vw", pointerEvents: "none",
-      }}
-    >
-      <motion.p
-        initial={{ opacity: 0, y: 15 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.06, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-        style={{
-          fontSize: isMobile ? 9 : "clamp(10px,1vw,12px)",
-          fontWeight: 600, letterSpacing: "0.15em", textTransform: "uppercase",
-          color: SLATE, margin: "0 0 1.2em", fontFamily: FB,
-        }}
-      >{beat.eyebrow}</motion.p>
-
-      <div style={{ position: "relative" }}>
-        {beat.lines.map((line, li) => (
-          <motion.div
-            key={li}
-            initial={{ opacity: 0, y: 30, filter: "blur(12px)", scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)", scale: 1 }}
-            transition={{ delay: 0.14 + li * 0.16, duration: 0.9, ease: [0.16, 1, 0.3, 1] }}
-            style={{
-              display: "block",
-              fontSize: isMobile ? "clamp(20px,7vw,38px)" : "clamp(24px,4vw,56px)",
-              fontWeight: 900, lineHeight: 0.95, letterSpacing: "-0.03em",
-              fontFamily: FD, WebkitFontSmoothing: "antialiased", MozOsxFontSmoothing: "grayscale",
-              background: line.outline ? "transparent" : "linear-gradient(160deg, #020617 0%, #334155 100%)",
-              WebkitBackgroundClip: line.outline ? "none" : "text",
-              WebkitTextFillColor: "transparent",
-              WebkitTextStroke: line.outline ? "1.5px #020617" : "none",
-              marginBottom: li < beat.lines.length - 1 ? "0.1em" : "0",
-            }}
-          >{line.text}</motion.div>
-        ))}
-      </div>
-
-      {beat.sub && (
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 0.6 }}
-          transition={{ delay: 0.5, duration: 0.8 }}
-          style={{
-            fontSize: isMobile ? 9 : "clamp(11px,1vw,13px)",
-            color: SLATE, fontFamily: FB, fontWeight: 500,
-            letterSpacing: "0.1em", textTransform: "uppercase", margin: "1.2em 0 0",
-          }}
-        >{beat.sub}</motion.p>
-      )}
-    </motion.div>
-  );
-}
-
-// ─── Editorial slide ───────────────────────────────────────────────────────────
-function EditorialSlide({ slide, isMobile }) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 0, filter: "blur(24px)", scale: 0.4 }}
-      animate={{ opacity: 1, y: 0, filter: "blur(0px)", scale: 1 }}
-      exit={{ opacity: 0, y: -20, filter: "blur(8px)", scale: 1.02, transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] } }}
-      transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
-      style={{
-        position: "absolute", inset: 0,
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        textAlign: "center", padding: isMobile ? "0 6vw" : "0 8vw", pointerEvents: "none",
-      }}
-    >
-      {slide.eyebrow && (
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.08, duration: 0.8 }}
-          style={{
-            fontSize: isMobile ? 9 : "clamp(10px,0.9vw,13px)", fontWeight: 500,
-            letterSpacing: "0.24em", textTransform: "uppercase",
-            color: SLATE, margin: "0 0 1.1em", fontFamily: FB,
-          }}
-        >{slide.eyebrow}</motion.p>
-      )}
-      {slide.lines.map((line, li) => (
-        <motion.div
-          key={li}
-          initial={{ opacity: 0, y: 60, filter: "blur(18px)", scale: 0.95 }}
-          animate={{ opacity: 1, y: 0, filter: "blur(0px)", scale: 1 }}
-          transition={{ delay: 0.14 + li * 0.16, duration: 1, ease: [0.16, 1, 0.3, 1] }}
-          style={{
-            display: "block",
-            fontSize: isMobile ? "clamp(28px,9vw,56px)" : "clamp(28px,5vw,64px)",
-            fontWeight: 900, lineHeight: 0.84, letterSpacing: "-0.056em",
-            fontFamily: FD, WebkitFontSmoothing: "antialiased", MozOsxFontSmoothing: "grayscale",
-            background: line.outline ? "transparent" : "linear-gradient(160deg, #020617 0%, #334155 100%)",
-            WebkitBackgroundClip: line.outline ? "none" : "text",
-            WebkitTextFillColor: "transparent",
-            WebkitTextStroke: line.outline ? "2px #020617" : "none",
-            marginBottom: li < slide.lines.length - 1 ? "0.07em" : "0",
-          }}
-        >{line.text}</motion.div>
-      ))}
-      {slide.sub && (
-        <motion.p
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 0.5 }}
-          transition={{ delay: 0.6, duration: 0.85 }}
-          style={{
-            fontSize: isMobile ? 11 : "clamp(12px,1.1vw,16px)", color: SLATE,
-            fontFamily: FB, fontWeight: 400, letterSpacing: "0.08em",
-            margin: "1.2em 0 0",
-          }}
-        >{slide.sub}</motion.p>
-      )}
-    </motion.div>
-  );
-}
-
-// ─── URL bar ───────────────────────────────────────────────────────────────────
-function URLBar({ activeTab, isMobile }) {
-  return (
-    <motion.div key="url" initial={{ opacity: 0, y: -3 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-      <div style={{
-        margin: "0 auto", height: 22, maxWidth: isMobile ? 200 : 340, borderRadius: 6,
-        display: "flex", alignItems: "center", justifyContent: "center",
-        padding: "0 10px", gap: 6,
-        border: "1px solid rgba(0,0,0,0.08)", background: "rgba(255,255,255,0.6)",
-        overflow: "hidden", whiteSpace: "nowrap",
-      }}>
-        <Icons.Lock size={10} color="#9ca3af" />
-        <span style={{
-          fontSize: 10.5, color: "#64748b", letterSpacing: "0.01em",
-          overflow: "hidden", textOverflow: "ellipsis", maxWidth: "100%", fontFamily: FB,
-        }}></span>
-      </div>
-    </motion.div>
-  );
-}
-
-// ─── Tab bar ───────────────────────────────────────────────────────────────────
-function TabBar({ tabs, subTabs, activeTab, isMobile }) {
-  const rowRef = useRef(null);
-  const subRef = useRef(null);
-  useEffect(() => { if (rowRef.current) rowRef.current.scrollLeft = rowRef.current.scrollWidth; }, [tabs]);
-  useEffect(() => { if (subRef.current) subRef.current.scrollLeft = subRef.current.scrollWidth; }, [subTabs]);
-  if (tabs.length === 0) return null;
-  const ep = Object.keys(subTabs)[0] ?? null;
-  return (
-    <div style={{ background: "linear-gradient(to bottom,#f4f4f7,#f1f1f4)", borderBottom: "1px solid #e2e2e6" }}>
-      <div ref={rowRef} style={{
-        display: "flex", alignItems: "flex-end",
-        padding: isMobile ? "5px 8px 0" : "7px 12px 0", gap: 1,
-        overflowX: "auto", scrollbarWidth: "none", width: "100%",
-      }}>
-        {tabs.map(t => {
-          const ca = (subTabs[t.id] ?? []).some(c => c.id === activeTab);
-          const ia = activeTab === t.id || ca;
-          return (
-            <motion.div key={t.id}
-              initial={{ opacity: 0, y: 12, scale: 0.9 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ type: "spring", stiffness: 440, damping: 24, mass: 0.6 }}
-              style={{ flexShrink: 0 }}
-            >
-              <BTab label={t.label} active={ia} small={isMobile} />
-            </motion.div>
-          );
-        })}
-      </div>
-      {ep && subTabs[ep] && (
-        <motion.div
-          initial={{ opacity: 0, height: 0 }}
-          animate={{ opacity: 1, height: "auto" }}
-          transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
-          style={{ overflow: "hidden" }}
-        >
-          <div ref={subRef} style={{
-            display: "flex", alignItems: "flex-end", gap: 1,
-            padding: isMobile ? "2px 8px 0" : "3px 12px 0",
-            borderTop: "1px dashed #d1d5db",
-            overflowX: "auto", scrollbarWidth: "none",
-          }}>
-            {subTabs[ep].map((c, i) => (
-              <motion.div key={c.id}
-                initial={{ opacity: 0, y: 8, scale: 0.9 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                transition={{ type: "spring", stiffness: 380, damping: 22, mass: 0.7, delay: 0.05 * i }}
-                style={{ flexShrink: 0 }}
-              >
-                <BTab label={c.label} active={activeTab === c.id} small />
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
-      )}
-    </div>
-  );
-}
-
-function BTab({ label, active, small }) {
-  return (
-    <div style={{
-      height: small ? 22 : 30, paddingLeft: small ? 9 : 15, paddingRight: small ? 9 : 15,
-      display: "inline-flex", alignItems: "center",
-      fontSize: small ? 9.5 : 11.5,
-      fontWeight: active ? 600 : 400,
-      color: active ? TEALB : "#718096",
-      background: active ? "#fff" : "rgba(255,255,255,0.5)",
-      clipPath: "polygon(6px 0,calc(100% - 6px) 0,100% 100%,0 100%)",
-      boxShadow: active ? "0 1px 0 #fff inset" : "none",
-      marginRight: -4, flexShrink: 0, whiteSpace: "nowrap",
-      transition: "all 180ms", fontFamily: FB,
-    }}>
-      <span style={{
-        width: small ? 4 : 5, height: small ? 4 : 5,
-        borderRadius: "50%", background: active ? TEAL : "#cbd5e0",
-        display: "inline-block", marginRight: small ? 4 : 5, flexShrink: 0,
-      }} />
-      {label}
-    </div>
-  );
-}
-
-// ─── Hero frame ────────────────────────────────────────────────────────────────
-function HeroFrame({ typeText, isMobile, isTablet }) {
-  const done = typeText === "Let's map it out.";
-  const bgJ = [
-    { t: "I-130",      x: "5%",  y: "14%", sz: 17, rot: -6 },
-    { t: "NVC",        x: "88%", y: "11%", sz: 27, rot:  4 },
-    { t: "USCIS",      x: "91%", y: "70%", sz: 21, rot: -5 },
-    { t: "DS-260",     x: "4%",  y: "80%", sz: 15, rot:  7 },
-    { t: "Green Card", x: "7%",  y: "47%", sz: 13, rot: -4 },
-    { t: "I-485",      x: "88%", y: "44%", sz: 14, rot:  6 },
-    { t: "Interview",  x: "78%", y: "87%", sz: 12, rot: -3 },
-    { t: "I-864",      x: "22%", y: "88%", sz: 13, rot:  5 },
-    { t: "PERM",       x: "48%", y: "90%", sz: 19, rot: -8 },
-    { t: "EAD",        x: "60%", y: "8%",  sz: 18, rot:  5 },
-  ];
-
-  const logoScale = isMobile ? 0.55 : isTablet ? 0.75 : 1;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1] }}
-      style={{
-        position: "absolute", inset: 0, zIndex: 70,
-        background: `radial-gradient(ellipse 130% 80% at 50% 40%, #ddeef7 0%, ${HERO_BG} 70%)`,
-        display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center",
-        padding: isMobile ? "0 24px" : "0 8vw", overflow: "hidden",
-        gap: isMobile ? 16 : 0,
-      }}
-    >
-      {bgJ.map(({ t, x, y, sz, rot }, i) => (
-        <motion.span key={t}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.038 }}
-          transition={{ delay: 0.5 + i * 0.06, duration: 1.5 }}
-          style={{
-            position: "absolute", left: x, top: y, fontSize: isMobile ? sz * 0.65 : sz,
-            fontWeight: 700, color: TEAL, letterSpacing: "0.04em",
-            whiteSpace: "nowrap", fontFamily: FB,
-            transform: `translate(-50%,-50%) rotate(${rot}deg)`,
-            background: "rgba(46,113,117,0.05)", border: "1px solid rgba(46,113,117,0.12)",
-            borderRadius: 20, padding: "3px 9px", pointerEvents: "none",
-          }}
-        >{t}</motion.span>
-      ))}
-
-      <motion.div
-        initial={{ scaleX: 0, opacity: 0 }}
-        animate={{ scaleX: 1, opacity: 1 }}
-        transition={{ delay: 0.1, duration: 1.4, ease: [0.22, 1, 0.36, 1] }}
-        style={{
-          position: "absolute", top: "10%", left: "8%", right: "8%", height: 1,
-          background: `linear-gradient(to right, transparent, rgba(46,113,117,0.20), transparent)`,
-          transformOrigin: "left",
-        }}
-      />
-
-      {/* Logo — color now matches TEAL (same as CTA button) */}
-      <motion.div
-        initial={{ opacity: 0, y: -14 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.2, duration: 0.85, ease: [0.22, 1, 0.36, 1] }}
-        style={{ marginBottom: isMobile ? 16 : 32, color: TEAL, transform: `scale(${logoScale})`, transformOrigin: "center" }}
-      >
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          viewBox="152 220 710 215"
-          style={{ height: 40, width: "auto", fill: "currentColor" }}
-        >
-          <path d="M194.478302,411.482117C188.648972,398.666321 181.184067,387.211884 174.078979,375.556946C161.946335,355.654999 154.218430,334.429535 152.466766,310.927032C150.965759,290.787415 151.490814,271.069061 158.657028,251.953415C161.906097,243.286591 167.372574,236.333282 175.068100,231.098938C187.972153,222.321823 212.377777,222.515015 222.031631,242.165817C226.003326,250.250381 232.154404,254.994858 241.386230,255.103607C240.874603,257.700470 239.210571,257.303253 238.057617,257.539734C214.604111,262.350281 200.098267,276.975067 192.363480,299.065857C184.921768,320.319672 187.555267,352.132874 198.628662,372.172211C195.346085,360.736084 194.548477,349.072571 194.585556,337.231354C194.686203,305.091156 209.071442,282.030487 237.587112,267.388245C252.463837,259.749298 268.363953,254.738281 283.791870,248.515182C300.024750,241.967392 315.867065,234.607849 330.889893,225.571030C331.848022,224.994675 332.727417,224.133804 334.330139,224.642090C334.086884,229.016586 332.356110,232.995224 331.110291,237.029678C325.877838,253.974487 319.356995,270.258270 307.731262,284.109070C295.584656,298.580475 279.797791,306.307983 261.751282,310.259583C255.743668,311.575104 249.729248,312.898682 243.795959,314.506500C229.390137,318.410126 220.388382,329.212219 218.286926,343.947327C216.575470,355.947906 217.905655,367.798737 218.737152,379.737518C219.623474,392.463135 221.756760,405.206818 219.303925,418.003387C217.963852,424.994537 214.710114,430.344635 207.688766,433.006439C204.303909,434.289673 202.544754,433.679260 201.368622,430.074707C199.358749,423.914886 196.908096,417.898895 194.478302,411.482117z"></path>
-          <path d="M347.022308,320.000671C347.016052,314.839264 347.105347,310.174835 346.965759,305.517273C346.865234,302.162506 348.128204,300.629364 351.628418,300.734467C356.786560,300.889313 361.960175,300.922363 367.113922,300.699646C370.973633,300.532806 372.427643,301.928192 372.368347,305.879303C372.186157,318.023376 372.301971,330.171936 372.301971,342.083649C373.283447,342.867767 373.819183,342.426117 374.318726,342.006836C383.782745,334.063324 394.575775,332.615875 406.196838,335.633057C415.899536,338.152130 422.744904,346.587646 423.310516,356.622040C424.267090,373.593201 423.737030,390.584991 423.953217,407.566589C423.995270,410.868988 423.022247,412.495087 419.405853,412.347473C414.084778,412.130249 408.740967,412.096069 403.421997,412.329346C399.633331,412.495514 398.561127,410.970825 398.606415,407.354187C398.766998,394.531891 398.675171,381.706299 398.663269,368.881958C398.653717,358.575378 395.399567,354.366302 387.286011,354.116821C377.843262,353.826508 372.628845,358.719452 372.391693,368.828339C372.122253,380.313904 372.349670,391.810638 372.318054,403.302399C372.289795,413.578827 373.113983,412.175079 363.109467,412.274994C359.445770,412.311584 355.772827,412.113037 352.119568,412.309662C348.129639,412.524414 346.894379,410.660309 346.908722,406.924530C346.998840,383.444702 346.970551,359.964386 346.985443,336.484253C346.988831,331.156372 347.007996,325.828522 347.022308,320.000671z"></path>
-          <path d="M320.909363,412.311096C317.090668,412.315186 313.737823,412.059113 310.437317,412.365967C305.318787,412.841858 301.746216,411.882538 302.918549,404.615967C295.871124,410.791656 288.552673,413.763123 280.156006,414.249451C254.958969,415.708740 237.504608,396.636383 239.498611,370.735535C239.781265,367.064178 240.334641,363.492889 241.348862,359.967224C249.310272,332.292297 281.741791,328.266632 299.022125,340.520233C300.048828,341.248291 300.767242,342.583801 302.297913,342.519531C303.777649,335.660950 303.777649,335.661041 311.217407,335.661530C315.046356,335.661774 318.896240,335.913361 322.698822,335.596771C327.228424,335.219635 328.372986,337.188049 328.342041,341.407928C328.185883,362.715698 328.266510,384.025238 328.261688,405.334137C328.260132,412.186127 328.256805,412.186127 320.909363,412.311096M301.669952,365.008423C295.854095,354.320007 283.816345,350.650452 274.124878,356.611633C264.651733,362.438538 261.929047,377.159515 268.562775,386.684814C274.734344,395.546509 288.041443,397.276093 296.853241,389.902008C304.682800,383.349915 304.819550,374.753296 301.669952,365.008423z"></path>
-          <path d="M605.060913,373.000000C605.062988,384.657990 604.973816,395.817139 605.115417,406.973328C605.163574,410.764404 603.888367,412.517792 599.916382,412.297821C596.098145,412.086365 592.258423,412.278320 588.428223,412.263885C581.340210,412.237213 581.340271,412.228333 580.396484,405.534912C578.652649,405.182587 577.723206,406.577301 576.587097,407.410583C564.256653,416.454071 551.032898,416.485992 537.883057,410.164795C525.372864,404.151062 519.815430,393.082336 518.661011,379.565979C517.650513,367.735138 519.446167,356.688538 527.285583,347.204102C539.560242,332.353760 562.272705,329.781647 577.620483,341.553528C578.269348,342.051208 578.930420,342.532898 579.531860,342.981750C579.975769,342.721405 580.485229,342.552582 580.478455,342.407898C580.185974,336.163940 583.752686,335.041809 589.019958,335.614197C592.147156,335.954010 595.341675,335.664795 598.505798,335.677979C604.895813,335.704559 605.023010,335.813751 605.037109,342.023712C605.060242,352.182434 605.053894,362.341248 605.060913,373.000000M560.688660,354.010437C551.697937,354.960571 545.673096,359.988037 543.586243,368.281647C541.270569,377.484711 544.135803,386.858582 550.601074,391.231262C557.524597,395.913879 567.137268,395.721375 574.094788,390.760834C580.548767,386.159302 583.183777,376.489594 580.517395,367.191528C578.133301,358.877991 571.864624,354.512573 560.688660,354.010437z"></path>
-          <path d="M791.203979,365.000000C791.216858,379.151947 791.068298,392.806946 791.330078,406.454102C791.419312,411.109009 789.796753,412.746704 785.268616,412.344116C781.965149,412.050415 778.614258,412.285797 775.284485,412.293915C768.156677,412.311279 768.156677,412.313538 767.357422,405.215393C764.213135,407.193054 761.370483,409.448242 758.167908,410.920929C733.721130,422.162598 707.000671,405.737396 705.710083,378.830902C705.135010,366.839264 706.926270,355.504913 715.175415,346.176605C727.394165,332.359222 748.536804,330.064270 763.725403,340.652008C764.770203,341.380341 765.547607,342.627289 767.044250,342.615326C768.603943,335.673187 768.603943,335.673187 776.271057,335.669495C791.293762,335.662231 791.290283,335.662231 791.225891,350.515137C791.205688,355.176697 791.210022,359.838379 791.203979,365.000000M768.573364,376.996460C769.015320,373.435791 768.214661,370.040833 767.117615,366.707123C764.123230,357.607910 755.689209,352.825104 745.305481,354.289215C737.101746,355.445923 731.056091,363.018951 730.341125,373.034027C729.616272,383.187927 734.786743,391.471527 743.217041,393.662537C755.729126,396.914307 764.723938,391.261047 768.573364,376.996460z"></path>
-          <path d="M697.327026,399.984680C697.339050,412.311646 697.339050,412.311615 685.404663,412.283051C670.974670,412.248474 670.964172,412.248535 670.934204,397.847595C670.912354,387.349304 670.950134,376.850830 670.910339,366.352631C670.877319,357.649750 667.768311,354.120880 660.178406,354.030457C651.960327,353.932495 646.475220,358.640869 646.328003,366.479462C646.090149,379.139923 646.175232,391.806488 646.130127,404.470490C646.102478,412.239929 646.107666,412.248108 638.147339,412.267700C633.814819,412.278351 629.479553,412.159454 625.150574,412.280670C622.015259,412.368408 620.641907,411.190186 620.652283,407.922607C620.723999,385.259857 620.724670,362.596588 620.651917,339.933838C620.641296,336.624023 622.086670,335.543457 625.194092,335.645996C629.355530,335.783325 633.524902,335.671936 637.690918,335.677185C645.251038,335.686707 645.251038,335.689728 646.772644,342.860565C652.933044,338.273254 659.430969,334.844513 667.182312,334.359741C685.805542,333.194977 696.572632,343.763824 697.123047,358.999908C697.610107,372.480835 697.291077,385.990845 697.327026,399.984680z"></path>
-          <path d="M462.865234,349.315674C466.810211,360.099579 470.616516,370.517090 474.916962,382.287018C479.384949,370.264709 483.446716,359.611023 487.304840,348.884125C492.050720,335.688873 491.977295,335.663025 505.813934,335.672577C509.450104,335.675079 513.086243,335.672974 516.388855,335.672974C517.832825,337.670685 516.935730,339.029816 516.375854,340.352936C506.968994,362.584229 497.464996,384.774902 488.184998,407.058929C486.539337,411.010712 484.388458,412.776581 479.977966,412.379303C475.350067,411.962463 470.655884,412.190247 465.993652,412.284424C463.688049,412.331024 462.271484,411.462463 461.363007,409.333313C451.367401,385.906311 441.325592,362.499023 431.328247,339.072754C431.024841,338.361816 431.069000,337.502533 430.862396,336.117645C439.559174,335.296478 447.964783,335.637482 456.359894,335.899841C458.206085,335.957550 458.559937,337.773163 459.088776,339.116821C460.368408,342.367920 461.522064,345.668579 462.865234,349.315674z"></path>
-        </svg>
-      </motion.div>
-
-      <div style={{ textAlign: "center", maxWidth: isMobile ? "100%" : 980 }}>
-        <motion.h1
-          animate={{ letterSpacing: done ? "-0.055em" : "-0.03em" }}
-          transition={{ duration: 0.95, ease: [0.22, 1, 0.36, 1] }}
-          style={{
-            fontSize: isMobile ? "clamp(28px,8vw,48px)" : "clamp(32px,5vw,72px)",
-            fontWeight: 900, lineHeight: 1.0, margin: 0, color: "#020617",
-            fontFamily: FD, WebkitFontSmoothing: "antialiased", MozOsxFontSmoothing: "grayscale",
-          }}
-        >
-          {typeText}
-          {!done && (
-            <span style={{
-              display: "inline-block", width: "0.06em", height: "0.82em",
-              background: TEAL, marginLeft: "0.06em", verticalAlign: "middle",
-              borderRadius: 2, animation: "_blink 1s step-start infinite",
-            }} />
-          )}
-        </motion.h1>
-      </div>
-
-      {done && (
-        <>
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            style={{ textAlign: "center", maxWidth: isMobile ? "100%" : 500, marginTop: isMobile ? 8 : 0 }}
-          >
-            <p style={{
-              fontSize: isMobile ? "clamp(13px,3.5vw,16px)" : "clamp(15px,1.45vw,19px)",
-              color: SLATE, lineHeight: 1.88, fontWeight: 300, margin: 0, fontFamily: FB,
-            }}>
-              See every step, requirement, and milestone in one place.
-            </p>
-          </motion.div>
-          <motion.button
-            initial={{ opacity: 0, y: 20, scale: 0.94 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            transition={{ delay: 0.6, duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-            style={{
-              marginTop: isMobile ? 20 : 28,
-              display: "inline-flex", alignItems: "center", gap: 10,
-              padding: isMobile ? "12px 28px" : "15px 36px",
-              borderRadius: 999, background: TEAL, color: "#fff",
-              fontSize: isMobile ? 13 : 14, fontWeight: 600, letterSpacing: "0.02em",
-              cursor: "pointer", border: "none", fontFamily: FB,
-              boxShadow: "0 4px 24px rgba(46,113,117,0.35), 0 1px 4px rgba(0,0,0,0.1)",
-            }}
-          >
-            Start your journey
-            <motion.span
-              animate={{ x: [0, 4, 0] }}
-              transition={{ delay: 1.4, duration: 1.2, repeat: Infinity, ease: "easeInOut" }}
-              style={{ display: "inline-block", fontSize: 16 }}
-            >→</motion.span>
-          </motion.button>
-
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 1.8, duration: 1.0, ease: [0.22, 1, 0.36, 1] }}
-            style={{
-              position: "absolute", bottom: 36, left: "50%", transform: "translateX(-50%)",
-              display: "flex", flexDirection: "column", alignItems: "center", gap: 4, pointerEvents: "none",
-            }}
-          >
-            <motion.div
-              animate={{ opacity: [0.25, 0.65, 0.25], y: [0, 5, 0] }}
-              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <svg width="20" height="12" viewBox="0 0 20 12" fill="none">
-                <path d="M2 2l8 8 8-8" stroke={TEAL} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </motion.div>
-            <motion.div
-              animate={{ opacity: [0.1, 0.35, 0.1], y: [0, 5, 0] }}
-              transition={{ duration: 2.2, repeat: Infinity, ease: "easeInOut", delay: 0.3 }}
-            >
-              <svg width="14" height="8" viewBox="0 0 14 8" fill="none">
-                <path d="M1 1l6 6 6-6" stroke={TEAL} strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            </motion.div>
-          </motion.div>
-        </>
-      )}
-    </motion.div>
-  );
-}
-
-// ─── Micro components ──────────────────────────────────────────────────────────
-function Dot({ c }) {
-  return <span style={{ width: 10, height: 10, borderRadius: "50%", background: c, display: "inline-block", flexShrink: 0 }} />;
+function Dot({ c, jScale }) {
+  const s = clampNum(10 * jScale, 7, 10);
+  return <div style={{ width: s, height: s, borderRadius: "50%", background: c, flexShrink: 0 }} />;
 }
 function SearchIcon() {
   return (
-    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" style={{ color: "#9ca3af", flexShrink: 0 }}>
-      <circle cx="7" cy="7" r="5" stroke="currentColor" strokeWidth="1.5" />
-      <path d="m11 11 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <svg
+      width="16"
+      height="16"
+      fill="none"
+      stroke="#9ca3af"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      viewBox="0 0 24 24"
+    >
+      <circle cx="11" cy="11" r="8" />
+      <path d="m21 21-4.35-4.35" />
     </svg>
   );
 }
 function Blink() {
-  return <span style={{
-    display: "inline-block", width: 2, height: "1em", background: TEALB,
-    marginLeft: 2, verticalAlign: "middle", borderRadius: 1,
-    animation: "_blink 1s step-start infinite",
-  }} />;
+  return (
+    <span
+      style={{
+        display: "inline-block",
+        width: 1.5,
+        height: "1.2em",
+        background: "#2e7175",
+        marginLeft: 2,
+        animation: "_blink 1.0s step-start infinite",
+        verticalAlign: "text-top",
+      }}
+    />
+  );
+}
+
+function TabBar({ tabs, subTabs, activeTab, jScale }) {
+  const activeSubs = activeTab && subTabs[activeTab] ? subTabs[activeTab] : [];
+  if (!tabs.length) return null;
+  return (
+    <div style={{ display: "flex", flexDirection: "column", borderBottom: "1px solid #e8e8ec" }}>
+      <style>{`
+        .subtabs-scroll::-webkit-scrollbar {
+          display: none !important;
+        }
+        .subtabs-scroll {
+          -ms-overflow-style: none !important;  /* IE and Edge */
+          scrollbar-width: none !important;  /* Firefox */
+        }
+      `}</style>
+      <div
+        style={{
+          display: "flex",
+          gap: clampNum(2 * jScale, 1, 2),
+          padding: `${clampNum(6 * jScale, 4, 6)}px ${clampNum(8 * jScale, 5, 8)}px 0`,
+          background: "#f9f9fb",
+        }}
+      >
+        {tabs.map((t) => (
+          <div
+            key={t.id}
+            style={{
+              padding: `${clampNum(5 * jScale, 3, 5)}px ${clampNum(12 * jScale, 7, 12)}px`,
+              background: activeTab === t.id ? "#fff" : "transparent",
+              borderRadius: clampNum(6 * jScale, 4, 6),
+              fontSize: clampNum(11 * jScale, 9, 11),
+              fontWeight: 500,
+              color: activeTab === t.id ? "#1a202c" : "#6b7280",
+              borderTop: activeTab === t.id ? "1px solid #e8e8ec" : "1px solid transparent",
+              borderLeft: activeTab === t.id ? "1px solid #e8e8ec" : "1px solid transparent",
+              borderRight: activeTab === t.id ? "1px solid #e8e8ec" : "1px solid transparent",
+              borderBottom: "none",
+              boxShadow: activeTab === t.id ? "0 -1px 4px rgba(0,0,0,0.03)" : "none",
+            }}
+          >
+            {t.label}
+          </div>
+        ))}
+      </div>
+      {activeSubs.length > 0 && (
+        <div
+          className="subtabs-scroll"
+          style={{
+            display: "flex",
+            gap: clampNum(6 * jScale, 4, 6),
+            padding: `${clampNum(6 * jScale, 4, 6)}px ${clampNum(10 * jScale, 6, 10)}px`,
+            background: "#fff",
+            overflowX: "auto",
+            overflowY: "hidden",
+            WebkitOverflowScrolling: "touch",
+          }}
+        >
+          {activeSubs.map((s) => (
+            <div
+              key={s.id}
+              style={{
+                fontSize: clampNum(9 * jScale, 7, 9),
+                color: "#6b7280",
+                whiteSpace: "nowrap",
+                flexShrink: 0,
+              }}
+            >
+              {s.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+function URLBar({ browserW, jScale }) {
+  const w = clampNum(browserW * 0.45, 160, 360);
+  return (
+    <div
+      style={{
+        width: w,
+        height: clampNum(22 * jScale, 16, 24),
+        borderRadius: clampNum(5 * jScale, 3, 5),
+        background: "rgba(255,255,255,0.6)",
+        border: "1px solid rgba(0,0,0,0.06)",
+        display: "flex",
+        alignItems: "center",
+        padding: `0 ${clampNum(8 * jScale, 5, 8)}px`,
+        fontSize: clampNum(10 * jScale, 8, 10),
+        color: "#6b7280",
+        overflow: "hidden",
+      }}
+    >
+      <span style={{ opacity: 0.5, marginRight: 4 }}>🔒</span>
+      <span style={{ whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
+        immigration-help.gov
+      </span>
+    </div>
+  );
+}
+function InnerNarration({ beatIdx, jScale, isMobile }) {
+  const b = NARR_BEATS[beatIdx];
+  if (!b) return null;
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.92 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.88 }}
+      transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+      style={{ textAlign: "center", maxWidth: isMobile ? "70%" : "90%" }}
+    >
+      <div
+        style={{
+          fontSize: clampNum(14 * jScale, 12, 16),
+          letterSpacing: "0.15em",
+          textTransform: "uppercase",
+          color: "rgba(46,113,117,0.7)",
+          fontWeight: 600,
+          marginBottom: clampNum(8 * jScale, 5, 8),
+          fontFamily: FB,
+        }}
+      >
+        {b.eyebrow}
+      </div>
+      {b.lines.map((ln, i) => (
+        <div
+          key={i}
+          style={{
+            fontSize: clampNum(36 * jScale, 28, 48),
+            fontWeight: 900,
+            lineHeight: 1.1,
+            letterSpacing: "-0.02em",
+            color: "#1e293b",
+            fontFamily: FD,
+          }}
+        >
+          {ln.text}
+        </div>
+      ))}
+      {b.sub && (
+        <div
+          style={{
+            fontSize: clampNum(11 * jScale, 9, 11),
+            color: "#6b7280",
+            marginTop: clampNum(10 * jScale, 6, 10),
+            fontFamily: FB,
+          }}
+        >
+          {b.sub}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+function EditorialSlide({ slide }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, scale: 0.9, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      exit={{ opacity: 0, scale: 0.88, y: -20 }}
+      transition={{ duration: 0.7, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        position: "absolute",
+        inset: 0,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "0 8vw",
+        textAlign: "center",
+      }}
+    >
+      <div
+        style={{
+          fontSize: "clamp(12px,1.6vw,16px)",
+          letterSpacing: "0.22em",
+          textTransform: "uppercase",
+          color: "rgba(46,113,117,0.65)",
+          fontWeight: 600,
+          marginBottom: "clamp(14px,2vw,24px)",
+          fontFamily: FB,
+        }}
+      >
+        {slide.eyebrow}
+      </div>
+      {slide.lines.map((ln, i) => (
+        <div
+          key={i}
+          style={{
+            fontSize: "clamp(42px,10vw,110px)",
+            fontWeight: 900,
+            lineHeight: 0.96,
+            letterSpacing: "-0.04em",
+            color: "#1e293b",
+            fontFamily: FD,
+          }}
+        >
+          {ln.text}
+        </div>
+      ))}
+      {slide.sub && (
+        <div
+          style={{
+            fontSize: "clamp(10px,1.8vw,20px)",
+            color: "#6b7280",
+            marginTop: "clamp(16px,2.4vw,32px)",
+            fontFamily: FB,
+          }}
+        >
+          {slide.sub}
+        </div>
+      )}
+    </motion.div>
+  );
+}
+function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
+  const isLine2Started = typeText.length > 5;
+  const line1Text = typeText.slice(0, 5);
+  const line2Text = typeText.slice(5).trimStart();
+  const isDone = typeText === "Let's map it out.";
+
+  return (
+    <div
+      style={{
+        position: "absolute",
+        inset: 0,
+        overflow: "visible",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: isMobile ? "24px 6vw" : "32px 8vw",
+        background: HERO_BG,
+      }}
+    >
+      <motion.div
+        initial={{ opacity: 0, y: 16, scale: 0.98 }}
+        animate={{ opacity: 1, y: 0, scale: 1 }}
+        transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          position: "relative",
+          width: "min(760px, 100%)",
+          padding: isMobile ? "10px 0" : "14px 0",
+          textAlign: "center",
+          marginTop: isMobile ? 16 : 28,
+        }}
+      >
+        <div
+          style={{
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            textAlign: "center",
+            gap: 0,
+            position: "relative",
+            zIndex: 2,
+          }}
+        >
+          <motion.h1
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
+            style={{
+              fontSize: isMobile
+                ? "clamp(42px, 10vw, 56px)"
+                : isTablet
+                  ? "clamp(56px, 7vw, 72px)"
+                  : "96px", // Completely fixed font size on desktop
+              fontWeight: 900,
+              lineHeight: 1.05,
+              letterSpacing: "-0.04em",
+              color: "#0b131f",
+              margin: 0,
+              fontFamily: FD,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
+            <span style={{ display: "inline-block" }}>
+              {line1Text}
+              {!isLine2Started && !isDone && <Blink />}
+            </span>
+            {isLine2Started && (
+              <span
+                style={{
+                  position: "relative",
+                  display: "inline-block",
+                  whiteSpace: "nowrap",
+                  marginTop: "4px",
+                }}
+              >
+                {line2Text}
+                {!isDone && <Blink />}
+              </span>
+            )}
+          </motion.h1>
+
+          <div
+            style={{
+              marginTop: isMobile ? 11 : 7,
+              maxWidth: 420,
+              fontSize: isMobile ? 12 : 18,
+              lineHeight: 1.5,
+              color: JB,
+              fontFamily: FB,
+              textAlign: "left",
+              position: "relative",
+              left: isMobile ? "0px" : "-45px",
+            }}
+          >
+            One view of every step, every <br />
+            <span style={{ display: "inline-block", width: isMobile ? "0px" : "90px" }} />
+            dependency, and everything in between.
+          </div>
+
+          <motion.button
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
+            whileHover={{ y: -2, scale: 1.02, backgroundColor: "#000000" }}
+            whileTap={{ scale: 0.98 }}
+            style={{
+              marginTop: isMobile ? 16 : 20,
+              padding: "12px 28px",
+              background: TEAL,
+              color: "#ffffff",
+              fontSize: 15,
+              fontWeight: 500,
+              borderRadius: 9999,
+              border: "none",
+              cursor: "pointer",
+              fontFamily: FB,
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              boxShadow: "0 4px 12px rgba(11, 19, 31, 0.15)",
+            }}
+          >
+            Start your journey
+            {/* <Icons.ArrowRight size={16} /> */}
+          </motion.button>
+        </div>
+
+        {/* Map illustration — positioned relative to the centered text container */}
+        <motion.img
+          src="/assets/images/illustartions/map.png"
+          alt="Map illustration"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: typeText === "Let's map it out." ? 1 : 0 }}
+          transition={{ duration: 0.4 }}
+          style={{
+            position: "absolute",
+            pointerEvents: "none",
+            zIndex: 1,
+            ...(isMobile ? {
+              marginTop: 36,
+              marginBottom: 36,
+              top: "11%",
+              left: "35%",
+              width: "75%",
+            } : {
+              // Values selected to look identical to 80% screen zoom layout proportions
+              top: "36%",
+              left: "34.5%",
+              width: "76%",
+              maxWidth: "none",
+            })
+          }}
+        />
+      </motion.div>
+
+      <div
+        style={{
+          position: "absolute",
+          bottom: 24,
+          left: "50%",
+          transform: "translateX(-50%)",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          pointerEvents: "none",
+        }}
+      >
+        <Icons.ChevronDown size={28} style={{ color: "#0b131f", opacity: 0.6 }} />
+      </div>
+    </div>
+  );
 }
