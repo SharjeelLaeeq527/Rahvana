@@ -13,6 +13,21 @@ import { ConfigLoader } from "@/lib/journey/config-loader";
 import { E, msg } from "@/lib/errors";
 import * as db from "@/lib/journey/data-access";
 
+function normType(t: string) {
+  return t.toLowerCase().replace(/-/g, "");
+}
+
+function configTypeFromJourneyType(journeyType: string) {
+  const normalized = normType(journeyType);
+
+  const map: Record<string, string> = {
+    ir1: "ir-1",
+    ir5: "ir-5",
+  };
+
+  return map[normalized] ?? journeyType.toLowerCase();
+}
+
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const journeyId = (await params).id;
@@ -24,7 +39,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     }
 
     // Load the config JSON
-    const configPath = `data/visa-category/ir-1.json`;
+    const configType = configTypeFromJourneyType(journey.journey_type);
+    const configPath = `data/visa-category/${configType}.json`;
     const rawJSON = ConfigLoader.loadJourneyJSON(configPath);
 
     // Get existing chapters from DB

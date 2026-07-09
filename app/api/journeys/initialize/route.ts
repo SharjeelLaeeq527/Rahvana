@@ -26,6 +26,17 @@ function normType(t: string) {
   return t.toLowerCase().replace(/-/g, "");
 }
 
+function configTypeFromJourneyType(journeyType: string) {
+  const normalized = normType(journeyType);
+
+  const map: Record<string, string> = {
+    ir1: "ir-1",
+    ir5: "ir-5",
+  };
+
+  return map[normalized] ?? journeyType.toLowerCase();
+}
+
 // Runs AFTER response is sent — never blocks the user
 async function syncStepsBackground(journeyId: string, configType: string) {
   try {
@@ -102,7 +113,7 @@ export async function POST(req: NextRequest) {
     const existing = allJourneys.find((j) => normType(j.journey_type) === normalizedQuery);
 
     let journeyId: string;
-    const configType = normalizedQuery === "ir1" ? "ir-1" : journey_type.toLowerCase();
+    const configType = configTypeFromJourneyType(journey_type);
 
     if (existing) {
       journeyId = existing.id;

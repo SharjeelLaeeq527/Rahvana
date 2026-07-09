@@ -787,7 +787,7 @@ export class CaseDataValidationEngine {
     },
 
     visa_category: (value) => {
-      const valid = ["IR-1"];
+      const valid = ["IR-1", "IR-5"];
       return !valid.includes(value)
         ? [`Must be a valid visa category from: ${valid.join(", ")}`]
         : [];

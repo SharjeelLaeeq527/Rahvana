@@ -195,6 +195,7 @@ export interface StepUpdate {
   started_at?: string;
   completed_at?: string;
   due_date?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface CaseDataUpdate {

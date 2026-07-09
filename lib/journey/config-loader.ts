@@ -243,12 +243,18 @@ export class ConfigLoader {
 
     // Add visa-type-specific keys
     const visaType = rawJSON.journey_type;
-    if (visaType === "IR1" || visaType === "IR-1") {
+    if (visaType === "IR1" || visaType === "IR-1" || visaType === "IR5" || visaType === "IR-5") {
       keys.add("filing_method");
       keys.add("visa_category");
       keys.add("beneficiary_age");
       keys.add("beneficiary_country_of_residence");
       keys.add("case_status");
+    }
+
+    if (visaType === "IR5" || visaType === "IR-5") {
+      keys.add("petitioner_age");
+      keys.add("petitioner_citizenship_status");
+      keys.add("parent_relationship_type");
     }
 
     // Extract from visible_when conditions
@@ -336,6 +342,8 @@ export class ConfigLoader {
     const mapping: Record<string, string> = {
       IR1: "IR-1",
       "IR-1": "IR-1",
+      IR5: "IR-5",
+      "IR-5": "IR-5",
     };
 
     return mapping[journeyType] || journeyType;
