@@ -26,6 +26,57 @@ import { ConfigLoader } from "./config-loader";
 import { detectDataType } from "./data-access";
 import { CaseStrengthEngine } from "./CaseStrengthEngine";
 
+function caseDataRowsToValues(rows: CaseData[]) {
+  return rows.reduce(
+    (acc, item) => {
+      acc[item.data_key] = item.data_value;
+      return acc;
+    },
+    {} as Record<string, unknown>
+  );
+}
+
+function isStepActiveForFilingMethod(
+  step: Step,
+  filingMethod: string,
+  caseData: Record<string, unknown> = {}
+) {
+  const metadata = (step.metadata || {}) as Record<string, unknown>;
+  const branch = metadata.branch;
+
+  if (typeof branch === "string" && branch !== "both") {
+    return branch === filingMethod;
+  }
+
+  const visibleWhen = (step.visible_when || {}) as Record<string, unknown>;
+  const methodCondition = visibleWhen.filingMethod ?? visibleWhen.filing_method;
+
+  if (Array.isArray(methodCondition) && !methodCondition.includes(filingMethod)) {
+    return false;
+  }
+
+  if (typeof methodCondition === "string" && methodCondition !== filingMethod) {
+    return false;
+  }
+
+  for (const [key, expectedValue] of Object.entries(visibleWhen)) {
+    if (key === "filingMethod" || key === "filing_method" || key === "filingMethodConfirmed") {
+      continue;
+    }
+
+    const actualValue = caseData[key];
+
+    if (Array.isArray(expectedValue)) {
+      if (!expectedValue.includes(actualValue)) return false;
+      continue;
+    }
+
+    if (actualValue !== expectedValue) return false;
+  }
+
+  return true;
+}
+
 /**
  * PROGRESS CALCULATION SERVICE
  * Responsible for:
@@ -42,16 +93,15 @@ export class ProgressCalculationService {
         throw new Error("Journey not found");
       }
 
-      // Get all chapters for journey (with their step counts)
-      const chapters = await db.getChaptersForJourneyDB(journeyId);
-
-      // Sum all steps across all chapters
-      const totalSteps = chapters.reduce((sum, chapter) => sum + chapter.total_steps_count, 0);
-
-      const completedSteps = chapters.reduce(
-        (sum, chapter) => sum + chapter.completed_steps_count,
-        0
+      const allSteps = await db.getStepsForJourneyDB(journeyId);
+      const caseData = caseDataRowsToValues(await db.getCaseDataForJourneyDB(journeyId));
+      const filingMethod = journey.filing_method || "online";
+      const activeSteps = allSteps.filter((step) =>
+        isStepActiveForFilingMethod(step, filingMethod, caseData)
       );
+
+      const totalSteps = activeSteps.length;
+      const completedSteps = activeSteps.filter((step) => step.status === "completed").length;
 
       const completionPercentage =
         totalSteps === 0 ? 0 : Math.round((completedSteps / totalSteps) * 100);
@@ -97,12 +147,13 @@ export class ProgressCalculationService {
       // Get journey to check filing method for filtering
       const journey = await db.getJourneyDB(chapter.journey_id);
       const filingMethod = journey?.filing_method || "online";
+      const caseData = caseDataRowsToValues(await db.getCaseDataForJourneyDB(chapter.journey_id));
 
-      // Filter steps based on branch/filing method
-      const activeSteps = steps.filter((step) => {
-        const branch = (step.metadata as any)?.branch;
-        return !branch || branch === "both" || branch === filingMethod;
-      });
+      // Filter steps based on branch/filing method.
+      // Prefer metadata.branch when available; fall back to visible_when for older seeded steps.
+      const activeSteps = steps.filter((step) =>
+        isStepActiveForFilingMethod(step, filingMethod, caseData)
+      );
 
       // Count completed steps
       const totalSteps = activeSteps.length;
@@ -146,6 +197,9 @@ export class ProgressCalculationService {
 
       const chapters = await db.getChaptersForJourneyDB(journeyId, undefined, client);
       const filingMethod = journey.filing_method || "online";
+      const caseData = caseDataRowsToValues(
+        await db.getCaseDataForJourneyDB(journeyId, undefined, client)
+      );
 
       // Optimized: Fetch ALL steps for the journey in ONE query instead of N (chapters) queries
       const allSteps = await db.getStepsForJourneyDB(journeyId, undefined, client);
@@ -163,10 +217,9 @@ export class ProgressCalculationService {
       // Build per-chapter progress from memory-grouped steps
       const chapterProgress = chapters.map((ch) => {
         const steps = stepsByChapter[ch.id] || [];
-        const activeSteps = steps.filter((s) => {
-          const branch = (s.metadata as any)?.branch;
-          return !branch || branch === "both" || branch === filingMethod;
-        });
+        const activeSteps = steps.filter((s) =>
+          isStepActiveForFilingMethod(s, filingMethod, caseData)
+        );
         const completedCount = activeSteps.filter((s) => s.status === "completed").length;
         const total = activeSteps.length;
         const pct = total === 0 ? 0 : Math.round((completedCount / total) * 100);
@@ -189,10 +242,14 @@ export class ProgressCalculationService {
         activeStepIdx = firstIncompleteIdx === -1 ? 0 : firstIncompleteIdx;
       }
 
+      const totalSteps = chapterProgress.reduce((sum, c) => sum + c.total, 0);
+      const completedSteps = chapterProgress.reduce((sum, c) => sum + c.completedCount, 0);
+      const totalPct = totalSteps === 0 ? 0 : Math.round((completedSteps / totalSteps) * 100);
+
       return {
         journey_id: journeyId,
         journey_type: journey.journey_type,
-        total_completion_percentage: journey.completion_percentage,
+        total_completion_percentage: totalPct,
         total_chapters: chapters.length,
         completed_chapters: completedChapters,
         chapters_remaining: chapters.length - completedChapters,
@@ -220,14 +277,14 @@ export class ProgressCalculationService {
 
       const journey = await db.getJourneyDB(chapter.journey_id);
       const filingMethod = journey?.filing_method || "online";
+      const caseData = caseDataRowsToValues(await db.getCaseDataForJourneyDB(chapter.journey_id));
 
       const steps = await db.getStepsForChapterDB(chapterId);
 
-      // Filter by branch
-      const activeSteps = steps.filter((s) => {
-        const branch = (s.metadata as any)?.branch;
-        return !branch || branch === "both" || branch === filingMethod;
-      });
+      // Filter by branch/filing method.
+      const activeSteps = steps.filter((s) =>
+        isStepActiveForFilingMethod(s, filingMethod, caseData)
+      );
 
       const currentStep = activeSteps.find((step) => step.status !== "completed");
       return currentStep || null;
