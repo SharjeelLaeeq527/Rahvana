@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { JourneyDetailPage } from "../components/journey-detail";
+import { isJourneySlug } from "../data/journeys";
 
 // ── Static JSON imports — zero runtime network cost ───────────────────────────
 // IR-1 is 314 KB of JSON, so we import it statically as it is the primary
@@ -86,6 +88,10 @@ export default function IR1JourneyPage() {
   const { t, language } = useLanguage();
   const params = useParams();
   const visaJourneyParam = (params?.["visa-journey"] as string) || "ir-1";
+
+  if (isJourneySlug(visaJourneyParam)) {
+    return <JourneyDetailPage slug={visaJourneyParam} />;
+  }
 
   const journeyMapping: Record<string, string> = {
     "ir1-journey": "ir-1",

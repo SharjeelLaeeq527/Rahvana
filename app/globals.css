@@ -658,6 +658,32 @@
   }
 }
 
+/* Homepage journey — animated bird background illustrations */
+.bird-bg-img {
+  mix-blend-mode: multiply;
+  animation: bird-float 7s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes bird-float {
+  0%,
+  100% {
+    transform: translateY(0) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-9px) rotate(-1.2deg);
+  }
+  66% {
+    transform: translateY(4px) rotate(0.8deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bird-bg-img {
+    animation: none;
+  }
+}
+
 .text-gradient-primary {
   background: linear-gradient(135deg, hsl(168 80% 30%), hsl(168 70% 42%));
   -webkit-background-clip: text;
