@@ -36,9 +36,12 @@ import {
   Shield,
   FileText,
   Heart,
+  HeartOff,
+  // Star,
+  // StarOff,
   Syringe,
   Pin,
-  PinOff,
+  // PinOff,
   List,
   LayoutGrid,
 } from "lucide-react";
@@ -1277,7 +1280,7 @@ export function SiteHeader({
                 </div>
               )}
 
-          {/* ── Pinned Items Button ── */}
+          {/* ── Favorite Items Button ── */}
           {isSignedIn && (
             <div className="relative" ref={quickAccessRef}>
               <HydrationSafeButton
@@ -1306,8 +1309,8 @@ export function SiteHeader({
                 }}
               >
                 <div className="relative inline-flex">
-                  <Pin
-                    className={`h-5 w-5 transition-all duration-200 ${quickAccessOpen ? "fill-[#0d7377] text-[#0d7377] rotate-45" : ""}`}
+                  <Heart
+                    className={`h-5 w-5 transition-all duration-200 ${quickAccessOpen ? "fill-[#0d7377] text-[#0d7377]" : ""}`}
                     style={isHomeHeroP2State || isHomeHeroState ? { color: "#fff" } : {}}
                   />
                   {quickAccessItems.length > 0 && (
@@ -1330,8 +1333,8 @@ export function SiteHeader({
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/30 rounded-t-xl">
                       <div className="flex items-center gap-2">
-                        <Pin className="w-4 h-4 text-[#0d7377] fill-[#0d7377] rotate-45" />
-                        <span className="text-sm font-bold text-foreground">Quick Access List</span>
+                        <Heart className="w-4 h-4 text-[#0d7377] fill-[#0d7377]" />
+                        <span className="text-sm font-bold text-foreground">Favorite List</span>
                       </div>
 
                       <div className="flex items-center gap-2">
@@ -1373,14 +1376,14 @@ export function SiteHeader({
                       {quickAccessItems.length === 0 ? (
                         <div className="flex flex-col items-center justify-center px-6 py-10 gap-3">
                           <div className="w-12 h-12 rounded-2xl bg-[#0d7377]/8 flex items-center justify-center">
-                            <Pin className="w-5 h-5 text-[#0d7377]/40" />
+                            <Heart className="w-5 h-5 text-[#0d7377]/40" />
                           </div>
                           <div className="text-center space-y-1">
                             <p className="text-sm font-semibold text-foreground">
-                              Nothing pinned yet
+                              No favorites yet
                             </p>
                             <p className="text-xs text-muted-foreground max-w-[200px] mx-auto leading-relaxed">
-                              Pin any tool, guide, or service card to access it here.
+                              Favorite any tool, guide, or service card to access it here.
                             </p>
                           </div>
                         </div>
@@ -1412,13 +1415,13 @@ export function SiteHeader({
                                   </div>
                                 </Link>
 
-                                {/* Unpin button - appears on hover */}
+                                {/* Unfavorite button - appears on hover */}
                                 <button
                                   onClick={() => removeQuickAccessItem(item.id)}
                                   className="absolute -top-1.5 -right-1.5 p-1 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm text-muted-foreground hover:text-red-500 hover:border-red-200 transition-opacity opacity-0 group-hover:opacity-100 z-10"
-                                  title="Unpin"
+                                  title="Unfavorite"
                                 >
-                                  <PinOff className="w-2.5 h-2.5" />
+                                  <HeartOff className="w-2.5 h-2.5" />
                                 </button>
                               </div>
                             );
@@ -1458,9 +1461,9 @@ export function SiteHeader({
                                   <button
                                     onClick={() => removeQuickAccessItem(item.id)}
                                     className="p-1.5 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors"
-                                    title="Unpin"
+                                    title="Unfavorite"
                                   >
-                                    <PinOff className="w-3.5 h-3.5" />
+                                    <HeartOff className="w-3.5 h-3.5" />
                                   </button>
                                 </div>
                               </div>
@@ -1489,7 +1492,7 @@ export function SiteHeader({
                             }
                           }}
                         >
-                          Unpin all
+                          Unfavorite all
                         </button>
                       )}
                     </div>

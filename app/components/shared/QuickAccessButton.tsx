@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { Pin, PinOff } from "lucide-react";
+import { Star, StarOff, Heart, HeartOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuickAccess, QuickAccessItem } from "@/app/context/QuickAccessContext";
 import { useAuth } from "@/app/context/AuthContext";
@@ -67,8 +67,8 @@ export function QuickAccessButton({
         whileTap={{ scale: 0.95 }}
         onClick={handleToggle}
         disabled={isPending}
-        title={pinned ? "Remove from Quick Access List" : "Add to Quick Access List"}
-        aria-label={pinned ? "Remove from Quick Access List" : "Add to Quick Access List"}
+        title={pinned ? "Remove from Favorite List" : "Add to Favorite List"}
+        aria-label={pinned ? "Remove from Favorite List" : "Add to Favorite List"}
         className={`group relative flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
           pinned
             ? "bg-[#0d7377]/10 text-[#0d7377] hover:bg-red-50 hover:text-red-500 border border-[#0d7377]/20 hover:border-red-200"
@@ -85,7 +85,7 @@ export function QuickAccessButton({
               transition={{ duration: 0.15 }}
               className="flex"
             >
-              <Pin className="w-4.5 h-4.5 fill-current rotate-45" />
+              <Heart className="w-4.5 h-4.5 fill-current" />
             </motion.span>
           ) : (
             <motion.span
@@ -96,7 +96,7 @@ export function QuickAccessButton({
               transition={{ duration: 0.15 }}
               className="flex"
             >
-              <Pin className="w-4 h-4" />
+              <Heart className="w-4 h-4" />
             </motion.span>
           )}
         </AnimatePresence>
@@ -110,7 +110,7 @@ export function QuickAccessButton({
       whileTap={{ scale: 0.97 }}
       onClick={handleToggle}
       disabled={isPending}
-      aria-label={pinned ? "Remove from Quick Access List" : "Add to Quick Access List"}
+      aria-label={pinned ? "Remove from Favorite List" : "Add to Favorite List"}
       className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
         pinned
           ? "bg-[#0d7377]/10 text-[#0d7377] hover:bg-red-50 hover:text-red-500 border border-[#0d7377]/20 hover:border-red-200"
@@ -127,7 +127,7 @@ export function QuickAccessButton({
             transition={{ duration: 0.15 }}
             className="flex shrink-0"
           >
-            <PinOff className="w-3.5 h-3.5" />
+            <HeartOff className="w-3.5 h-3.5" />
           </motion.span>
         ) : (
           <motion.span
@@ -138,7 +138,7 @@ export function QuickAccessButton({
             transition={{ duration: 0.15 }}
             className="flex shrink-0"
           >
-            <Pin className="w-3.5 h-3.5" />
+            <Heart className="w-3.5 h-3.5" />
           </motion.span>
         )}
       </AnimatePresence>
@@ -151,7 +151,7 @@ export function QuickAccessButton({
           transition={{ duration: 0.1 }}
           className="whitespace-nowrap"
         >
-          {pinned ? "Remove from Quick Access List" : "Add to Quick Access List"}
+          {pinned ? "Remove from Favorite List" : "Add to Favorite List"}
         </motion.span>
       </AnimatePresence>
     </motion.button>
