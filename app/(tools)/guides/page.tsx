@@ -738,9 +738,10 @@ function GuideCard({
       className={`group relative flex flex-col bg-card rounded-2xl p-8 pt-8 mt-6
       transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
       ${
-        isPinned
-          ? "border-[3px] border-[#0d7377] dark:border-[#32e0c4] shadow-md hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-          : featureLocked
+        // isPinned
+        //   ? "border-[3px] border-[#0d7377] dark:border-[#32e0c4] shadow-md hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+        //   : 
+          featureLocked
             ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
             : isNavigable
               ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
