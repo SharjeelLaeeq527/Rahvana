@@ -71,8 +71,8 @@ export function QuickAccessButton({
         aria-label={pinned ? "Remove from Favorite List" : "Add to Favorite List"}
         className={`group relative flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
           pinned
-            ? "bg-[#0d7377]/10 text-[#0d7377] hover:bg-red-50 hover:text-red-500 border border-[#0d7377]/20 hover:border-red-200"
-            : "bg-transparent text-muted-foreground hover:bg-[#0d7377]/10 hover:text-[#0d7377] border border-slate-200/80 dark:border-slate-800 hover:border-[#0d7377]/30"
+            ? "text-[#0d7377] hover:text-red-500"
+            : "bg-transparent text-muted-foreground hover:text-[#0d7377] "
         } ${isPending ? "opacity-60 cursor-wait" : "cursor-pointer"} ${className}`}
       >
         <AnimatePresence mode="wait" initial={false}>
@@ -85,7 +85,7 @@ export function QuickAccessButton({
               transition={{ duration: 0.15 }}
               className="flex"
             >
-              <Heart className="w-4.5 h-4.5 fill-current" />
+              <Heart className="w-5.5 h-5.5 fill-current" />
             </motion.span>
           ) : (
             <motion.span
@@ -96,7 +96,7 @@ export function QuickAccessButton({
               transition={{ duration: 0.15 }}
               className="flex"
             >
-              <Heart className="w-4 h-4" />
+              <Heart className="w-5 h-5" />
             </motion.span>
           )}
         </AnimatePresence>
