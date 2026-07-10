@@ -416,7 +416,7 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
     },
     ctaPrimary: {
       label: "Start IR-5 assessment",
-      href: "#",
+      href: "/visa-category/ir-category/ir5-journey",
     },
     ctaSecondary: {
       label: "Talk to an expert",

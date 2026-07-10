@@ -51,10 +51,89 @@ async function withTimeout<T>(
   }
 }
 
-function getTotalSteps(filingMethod?: string) {
+function getFallbackTotalSteps(filingMethod?: string) {
   if (filingMethod === "online") return 31;
   if (filingMethod === "paper") return 27;
   return 34;
+}
+
+function resolveTotalSteps(record: { total_steps_count?: number | null; filing_method?: string }) {
+  return record.total_steps_count && record.total_steps_count > 0
+    ? record.total_steps_count
+    : getFallbackTotalSteps(record.filing_method);
+}
+
+function caseDataRowsToValues(rows: Array<{ data_key: string; data_value: unknown }> = []) {
+  return rows.reduce(
+    (acc, item) => {
+      acc[item.data_key] = item.data_value;
+      return acc;
+    },
+    {} as Record<string, unknown>
+  );
+}
+
+function isStepActiveForJourney(
+  step: { visible_when?: Record<string, unknown> | null },
+  filingMethod: string,
+  caseData: Record<string, unknown>
+) {
+  const visibleWhen = (step.visible_when || {}) as Record<string, unknown>;
+  const methodCondition = visibleWhen.filingMethod ?? visibleWhen.filing_method;
+
+  if (Array.isArray(methodCondition) && !methodCondition.includes(filingMethod)) {
+    return false;
+  }
+
+  if (typeof methodCondition === "string" && methodCondition !== filingMethod) {
+    return false;
+  }
+
+  for (const [key, expectedValue] of Object.entries(visibleWhen)) {
+    if (key === "filingMethod" || key === "filing_method" || key === "filingMethodConfirmed") {
+      continue;
+    }
+
+    const actualValue = caseData[key];
+
+    if (Array.isArray(expectedValue)) {
+      if (!expectedValue.includes(actualValue)) return false;
+      continue;
+    }
+
+    if (actualValue !== expectedValue) return false;
+  }
+
+  return true;
+}
+
+async function calculateActiveProgressFromSteps(
+  supabase: ReturnType<typeof createClient>,
+  journeyId: string,
+  filingMethod: string
+) {
+  const [{ data: steps, error: stepsError }, { data: caseData, error: caseDataError }] =
+    await Promise.all([
+      supabase
+        .from("steps")
+        .select("id, status, visible_when, chapters!inner(journey_id)")
+        .eq("chapters.journey_id", journeyId),
+      supabase.from("case_data").select("data_key, data_value").eq("journey_id", journeyId),
+    ]);
+
+  if (stepsError || caseDataError) {
+    throw stepsError || caseDataError;
+  }
+
+  const caseDataValues = caseDataRowsToValues(caseData || []);
+  const activeSteps = (steps || []).filter((step: any) =>
+    isStepActiveForJourney(step, filingMethod, caseDataValues)
+  );
+
+  return {
+    completed_steps_count: activeSteps.filter((step: any) => step.status === "completed").length,
+    total_steps_count: activeSteps.length,
+  };
 }
 
 /**
@@ -85,6 +164,21 @@ export async function loadJourneyProgress(
 
     if (!data) return null;
 
+    let activeProgress = {
+      completed_steps_count: data.completed_steps_count || 0,
+      total_steps_count: resolveTotalSteps(data),
+    };
+
+    try {
+      activeProgress = await calculateActiveProgressFromSteps(
+        supabase,
+        data.id,
+        data.filing_method || "online"
+      );
+    } catch (progressError) {
+      console.warn("[Journey] Failed to calculate active progress, using stored counts:", progressError);
+    }
+
     // Map new table structure to JourneyProgressRecord interface
     const mapped: JourneyProgressRecord = {
       id: data.id,
@@ -92,9 +186,9 @@ export async function loadJourneyProgress(
       journey_id: data.journey_type, // Map journey_type to journey_id
       current_stage: 0,
       current_step: 0,
-      completed_steps: Array(data.completed_steps_count || 0).fill(""),
-      completed_steps_count: data.completed_steps_count || 0,
-      total_steps_count: getTotalSteps(data.filing_method),
+      completed_steps: Array(activeProgress.completed_steps_count || 0).fill(""),
+      completed_steps_count: activeProgress.completed_steps_count || 0,
+      total_steps_count: activeProgress.total_steps_count || resolveTotalSteps(data),
       collapsed_steps: {},
       role: "both",
       filing_type: data.filing_method || "online",
@@ -138,26 +232,48 @@ export async function listUserJourneys(userId: string): Promise<JourneyProgressR
     }
 
     // Map new table structure to JourneyProgressRecord interface
-    const mappedData = (data || []).map((record: any) => ({
-      id: record.id,
-      user_id: userId,
-      journey_id: record.journey_type, // Map journey_type to journey_id for backward compatibility
-      current_stage: 0,
-      current_step: 0,
-      completed_steps: Array(record.completed_steps_count).fill(""), // Create array of appropriate length
-      completed_steps_count: record.completed_steps_count, // Include actual count
-      total_steps_count: getTotalSteps(record.filing_method),
-      collapsed_steps: {},
-      role: "both" as const,
-      filing_type: "online" as const,
-      document_checklist: {},
-      notes: {},
-      started: true,
-      started_at: new Date().toISOString(),
-      last_updated_at: record.updated_at, // Map updated_at to last_updated_at for compatibility
-      updated_at: record.updated_at,
-      doc_uploads: {},
-    }));
+    const mappedData = await Promise.all(
+      (data || []).map(async (record: any) => {
+        let activeProgress = {
+          completed_steps_count: record.completed_steps_count || 0,
+          total_steps_count: resolveTotalSteps(record),
+        };
+
+        try {
+          activeProgress = await calculateActiveProgressFromSteps(
+            supabase,
+            record.id,
+            record.filing_method || "online"
+          );
+        } catch (progressError) {
+          console.warn(
+            "[Journey] Failed to calculate active progress, using stored counts:",
+            progressError
+          );
+        }
+
+        return {
+          id: record.id,
+          user_id: userId,
+          journey_id: record.journey_type, // Map journey_type to journey_id for backward compatibility
+          current_stage: 0,
+          current_step: 0,
+          completed_steps: Array(activeProgress.completed_steps_count || 0).fill(""), // Create array of appropriate length
+          completed_steps_count: activeProgress.completed_steps_count || 0, // Include actual count
+          total_steps_count: activeProgress.total_steps_count || resolveTotalSteps(record),
+          collapsed_steps: {},
+          role: "both" as const,
+          filing_type: (record.filing_method || "online") as JourneyProgressRecord["filing_type"],
+          document_checklist: {},
+          notes: {},
+          started: true,
+          started_at: new Date().toISOString(),
+          last_updated_at: record.updated_at, // Map updated_at to last_updated_at for compatibility
+          updated_at: record.updated_at,
+          doc_uploads: {},
+        };
+      })
+    );
 
     return mappedData as JourneyProgressRecord[];
   } catch (error) {
@@ -222,7 +338,7 @@ export async function saveJourneyProgress(
 
     // Calculate progress metrics
     const completedCount = state.completedSteps.size || 0;
-    const totalCount = getTotalSteps(state.filingType);
+    const totalCount = getFallbackTotalSteps(state.filingType);
     const completionPercentage = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
     const payload = {
