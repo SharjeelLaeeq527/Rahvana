@@ -822,7 +822,7 @@ export default function VisaFormSelector() {
                           <div className="flex flex-col gap-2">
                             {[
                               { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
-                              // { id: "IR5", label: "IR-5 (Parent)" },
+                              { id: "IR5", label: "IR-5 (Parent)" },
                               // { id: "K1", label: "K-1 (Fiancé)" },
                               // { id: "AOS", label: "Adjustment of Status" },
                               // { id: "Naturalization", label: "Naturalization" },

@@ -40,6 +40,7 @@ import { Caveat } from "next/font/google";
 import { ToolsDock } from "./(main)/home-page/ToolDock";
 import HeroSection from "./(main)/home-page/herosection";
 import AnimationCard from "./(main)/home-page/AnimationCard";
+import Intro from "./(main)/home-page/intro";
 import ConsultationSection from "./components/home-page/ConsultationSection";
 
 export const journeyHref = "/visa-category/ir-category/ir1-journey";
@@ -792,7 +793,7 @@ function HomePageContent() {
             {/* Use the new styled hero, but keep the same CTA and header logic */}
 
             <div className={`w-full min-h-screen bg-slate-50/50 pb-20 ${caveat.variable}`}>
-              <HeroSection />
+              <Intro />
 
               <RoadmapProvider>
                 <div className="max-w-5xl mx-auto px-6 mt-12 relative">

@@ -749,21 +749,21 @@ export function SiteHeader({
           <nav className="hidden lg:flex items-center gap-1">
             <div className="relative pt-2 pb-0">
               <Link
-                href="/visa-category/ir-category/ir1-journey"
-                onClick={(e) => handleNav("ir1-journey", e)}
+                href="/visa-category/ir-category"
+                onClick={(e) => handleNav("journeys", e)}
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isHomeHeroState
-                    ? isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
+                    ? isActive("journeys", "/visa-category/ir-category")
                       ? "bg-white/20 text-white"
                       : "text-white/90 hover:bg-white/15 hover:text-white"
                     : isHomeHeroP2State
                       ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
+                      : isActive("journeys", "/visa-category/ir-category")
                         ? "bg-muted text-[#0d7377]"
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
-                IR-1 Journey
+                Explore Journeys
               </Link>
             </div>
 

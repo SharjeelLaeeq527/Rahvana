@@ -505,6 +505,7 @@ export async function createStepDB(chapterId: string, stepData: StepInput): Prom
         started_at: null,
         completed_at: null,
         due_date: stepData.due_date || null,
+        metadata: stepData.metadata || {},
       },
     ])
     .select()
@@ -712,6 +713,7 @@ export async function updateStepDB(stepId: string, updates: StepUpdate): Promise
       ...(updates.started_at && { started_at: updates.started_at }),
       ...(updates.completed_at && { completed_at: updates.completed_at }),
       ...(updates.due_date && { due_date: updates.due_date }),
+      ...(updates.metadata !== undefined && { metadata: updates.metadata }),
       updated_at: new Date().toISOString(),
     })
     .eq("id", stepId)

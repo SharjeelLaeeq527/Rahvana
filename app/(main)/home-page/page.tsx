@@ -4,8 +4,9 @@ import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from
 import { Caveat } from "next/font/google";
 import * as Icons from "lucide-react";
 import { ToolsDock } from "./ToolDock";
-import HeroSection from "./herosection";
+import Intro from "./intro";
 import AnimationCard from "./AnimationCard";
+import SectionBird from "./SectionBird";
 
 const caveat = Caveat({
   subsets: ["latin"],
@@ -425,12 +426,13 @@ const CARD_OFFSET_CLASS = "md:-ml-12";
 
 export default function RoadmapPage() {
   return (
-    <div className={`w-full min-h-screen bg-slate-50/50 pb-20 ${caveat.variable}`}>
-      <HeroSection />
+    <div className={`w-full min-h-screen overflow-x-hidden bg-slate-50/50 pb-20 ${caveat.variable}`}>
+      <Intro />
 
       <RoadmapProvider>
         <div className="max-w-5xl mx-auto px-6 mt-12 relative">
           <div className="py-16 md:py-24 flex items-center justify-center text-center relative">
+            <SectionBird n={1} side="right" pos="top-1/2 -translate-y-1/2" />
             <ScrollReveal>
               <div className="max-w-xl mx-auto">
                 <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mt-2 mb-4 leading-tight tracking-tight">
@@ -445,6 +447,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 2 — leaf start node (anchor "01") */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+            <SectionBird n={2} side="left" pos="top-[60%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
@@ -473,6 +476,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 3 — Petition node (anchor "02") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+            <SectionBird n={3} side="right" pos="top-[40%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
@@ -494,6 +498,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 4 — card placeholder (anchor "03") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+            <SectionBird n={4} side="left" pos="top-[64%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
@@ -527,6 +532,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 5 — card placeholder (anchor "04") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+            <SectionBird n={5} side="left" pos="top-[60%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
@@ -560,6 +566,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 6 — Check node (anchor "05") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+            <SectionBird n={6} side="left" pos="top-[62%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
@@ -588,6 +595,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 7 — Documents node (anchor "06") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+            <SectionBird n={7} side="right" pos="top-[14%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
@@ -609,6 +617,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 8 — card placeholder (anchor "07") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+            <SectionBird n={8} side="left" pos="top-[66%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
@@ -643,6 +652,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 9 — card placeholder (anchor "08") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+            <SectionBird n={9} side="left" pos="top-[62%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
@@ -677,6 +687,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 10 — FolderCheck node (anchor "09") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+            <SectionBird n={10} side="left" pos="top-[60%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
@@ -705,6 +716,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 11 — Finance node (anchor "10") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+            <SectionBird n={11} side="right" pos="top-[14%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
@@ -726,6 +738,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 12 — card placeholder (anchor "11") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+            <SectionBird n={12} side="left" pos="top-[64%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
@@ -760,6 +773,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 13 — card placeholder (anchor "12") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+            <SectionBird n={13} side="left" pos="top-[60%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
@@ -793,6 +807,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 14 — Interview node (anchor "13") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+            <SectionBird n={14} side="right" pos="top-[40%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
@@ -814,6 +829,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 15 — card placeholder (anchor "14") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+            <SectionBird n={15} side="right" pos="top-[38%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
@@ -848,6 +864,7 @@ export default function RoadmapPage() {
 
           {/* SECTION 16 — card placeholder (anchor "15") — shifted left */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+            <SectionBird n={16} side="left" pos="top-[66%]" />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
@@ -881,6 +898,12 @@ export default function RoadmapPage() {
 
           {/* SECTION 17 — Visa Approval node (anchor "16") — centered */}
           <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+            <SectionBird
+              n={17}
+              side="right"
+              pos="top-1/2 -translate-y-1/2"
+              size="w-44 lg:w-60 xl:w-72"
+            />
             <div className="md:col-span-5 min-w-0">
               <ScrollReveal>
                 <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
