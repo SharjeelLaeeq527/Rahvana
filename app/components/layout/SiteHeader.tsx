@@ -1334,7 +1334,7 @@ export function SiteHeader({
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/30 rounded-t-xl">
                       <div className="flex items-center gap-2">
                         <Heart className="w-4 h-4 text-[#0d7377] fill-[#0d7377]" />
-                        <span className="text-sm font-bold text-foreground">Favorite List</span>
+                        <span className="text-sm font-bold text-foreground">Favorites</span>
                       </div>
 
                       <div className="flex items-center gap-2">
