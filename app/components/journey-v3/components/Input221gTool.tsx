@@ -25,7 +25,17 @@ export const Input221gTool: React.FC<Input221gToolProps> = ({ tool, state, actio
   const handleSave = () => {
     if (guard && !guard()) return;
     setIsSaved(true);
-    actions.updateMetadata({ twentyTwoOneGSelections: selectedItems });
+    const updates: Record<string, any> = { twentyTwoOneGSelections: selectedItems };
+    if (selectedItems.admin_processing) {
+      if (state.metadata?.outcome221gSubtype === "docs_requested" || !state.metadata?.outcome221gSubtype) {
+        updates.outcome221gSubtype = "both";
+      }
+    } else {
+      if (state.metadata?.outcome221gSubtype === "both") {
+        updates.outcome221gSubtype = "docs_requested";
+      }
+    }
+    actions.updateMetadata(updates);
   };
 
   const handleEdit = () => {

@@ -8,7 +8,7 @@ import { getActiveStepsForStage, getStageProgress } from "./journeyHelpersV3";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
-import Image from "next/image";
+// import Image from "next/image";
 
 interface ChapterViewProps {
   data: RoadmapDataV3;

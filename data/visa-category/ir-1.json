@@ -909,7 +909,9 @@
           "step_description": "Decide between Online vs. Paper filing",
           "who": "Decision required",
           "where": "Rahvana tool",
-          "dependencies": ["step_1_2"],
+          "dependencies": [
+            "step_1_2"
+          ],
           "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
@@ -1085,9 +1087,19 @@
               "source_basis": "USCIS processing times — uscis.gov/processing-times. Operational notes from USCIS published guidance."
             }
           },
-          "tool_data":{
-            "disclaimer":"Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
-          }
+          "tool_data": {
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
+          },
+          "citations": [
+            {
+              "text": "Submit your petition through your USCIS online account",
+              "link": "https://www.uscis.gov/file-online"
+            },
+            {
+              "text": "USCIS mailing addresses",
+              "link": "https://www.uscis.gov/i-130-addresses"
+            }
+          ]
         },
         {
           "step_key": "step_1_4",
@@ -1155,7 +1167,9 @@
           "who": "via Rahvana wizard",
           "where": "my.uscis.gov",
           "timeline": "2-4 hours",
-          "dependencies": ["step_1_3"],
+          "dependencies": [
+            "step_1_3"
+          ],
           "estimated_duration_days": 2,
           "is_required": true,
           "display_order": 4,
@@ -1175,6 +1189,12 @@
               "href": "/visa-forms",
               "type": "tool"
             }
+          ],
+          "citations": [
+            {
+              "text": "Official form link",
+              "link": "https://www.uscis.gov/i-130"
+            }
           ]
         },
         {
@@ -1186,7 +1206,9 @@
           "step_type": "tool",
           "visible_when": {},
           "who": "via Rahvana wizard",
-          "dependencies": ["step_1_4"],
+          "dependencies": [
+            "step_1_4"
+          ],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 5,
@@ -1251,7 +1273,13 @@
             "age_threshold": 16,
             "duration_threshold_months": 6,
             "lookback_years": 5
-          }
+          },
+          "citations": [
+            {
+              "text": "Official form link",
+              "link": "https://www.uscis.gov/sites/default/files/document/forms/i-130a.pdf"
+            }
+          ]
         },
         {
           "step_key": "step_1_6",
@@ -1266,7 +1294,9 @@
           },
           "step_description": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
           "who": "myaccount.uscis.gov",
-          "dependencies": ["step_1_3"],
+          "dependencies": [
+            "step_1_3"
+          ],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 6,
@@ -1340,7 +1370,9 @@
           "step_description": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form and enter your prepared information.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
-          "dependencies": ["step_1_6"],
+          "dependencies": [
+            "step_1_6"
+          ],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 7,
@@ -1600,7 +1632,9 @@
           "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase — your documents become part of the official I-130 filing record.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
-          "dependencies": ["step_1_7"],
+          "dependencies": [
+            "step_1_7"
+          ],
           "visible_when": {
             "filingMethodConfirmed": true,
             "filingMethod": "online"
@@ -1732,7 +1766,13 @@
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify current requirements at uscis.gov before submitting.",
             "quality_requirements": {
               "max_file_size_mb": 12,
-              "accepted_formats": ["PDF", "JPG", "JPEG", "TIF", "TIFF"],
+              "accepted_formats": [
+                "PDF",
+                "JPG",
+                "JPEG",
+                "TIF",
+                "TIFF"
+              ],
               "guidance": [
                 "Each individual file must be 12 MB or smaller (USCIS portal limit)",
                 "Scans must be clear and legible — USCIS commonly issues RFEs for unreadable documents",
@@ -1758,7 +1798,9 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / pay.gov",
           "timeline": "Same session as submission",
-          "dependencies": ["step_1_8"],
+          "dependencies": [
+            "step_1_8"
+          ],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 9,
@@ -1917,7 +1959,9 @@
           "who": "Petitioner",
           "where": "my.uscis.gov",
           "timeline": "Same session as payment",
-          "dependencies": ["step_1_9"],
+          "dependencies": [
+            "step_1_9"
+          ],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 10,
@@ -2104,7 +2148,9 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": ["step_1_3"],
+          "dependencies": [
+            "step_1_3"
+          ],
           "is_required": true,
           "display_order": 11,
           "action_data": {
@@ -2235,7 +2281,9 @@
           "who": "Petitioner",
           "where": "uscis.gov/g-1055?form=i-130",
           "timeline": "1-2 hours",
-          "dependencies": ["step_1_11"],
+          "dependencies": [
+            "step_1_11"
+          ],
           "is_required": true,
           "display_order": 12,
           "action_data": {
@@ -2347,7 +2395,17 @@
                 "note": "Payment preparation must be complete before you build the final paper packet. Do not skip this — the packet checklist step depends on it."
               }
             ]
-          }
+          },
+          "citations": [
+            {
+              "text": "USCIS Filing Fees Guide",
+              "link": "https://www.uscis.gov/forms/filing-fees"
+            },
+            {
+              "text": "USCIS Form G-1055 Fee Schedule",
+              "link": "https://www.uscis.gov/g-1055"
+            }
+          ]
         },
         {
           "step_key": "step_1_13",
@@ -2365,7 +2423,9 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": ["step_1_12"],
+          "dependencies": [
+            "step_1_12"
+          ],
           "is_required": true,
           "display_order": 13,
           "action_data": {
@@ -2523,7 +2583,9 @@
           "who": "Petitioner",
           "where": "uscis.gov/mailing-addresses",
           "timeline": "1-2 hours",
-          "dependencies": ["step_1_13"],
+          "dependencies": [
+            "step_1_13"
+          ],
           "is_required": true,
           "display_order": 14,
           "action_data": {
@@ -2616,7 +2678,13 @@
                 "note": "After delivery, the paper path rejoins the same receipt-notice and case-tracking flow used in the online branch."
               }
             ]
-          }
+          },
+          "citations": [
+            {
+              "text": "USCIS Direct Filing Addresses",
+              "link": "https://www.uscis.gov/i-130-addresses"
+            }
+          ]
         },
         {
           "step_key": "step_1_15",
@@ -2629,7 +2697,10 @@
           "who": "Petitioner",
           "where": "ceac.state.gov",
           "timeline": "1-2 days after receipt",
-          "dependencies": ["step_1_10", "step_1_14"],
+          "dependencies": [
+            "step_1_10",
+            "step_1_14"
+          ],
           "is_required": true,
           "display_order": 15,
           "tool_data": {
@@ -2826,7 +2897,9 @@
           "who": "Petitioner",
           "where": "ceac.state.gov",
           "timeline": "Ongoing after registration",
-          "dependencies": ["step_1_15"],
+          "dependencies": [
+            "step_1_15"
+          ],
           "is_required": true,
           "display_order": 16,
           "tool_data": {
@@ -2967,13 +3040,19 @@
                 "icon": "green",
                 "title": "Add new evidence entries",
                 "copy": "Log visits, upload new photos, and keep a clean timeline of the relationship as it continues.",
-                "buttons": ["Add note", "Mark planned"]
+                "buttons": [
+                  "Add note",
+                  "Mark planned"
+                ]
               },
               {
                 "icon": "rose",
                 "title": "Track household or income changes",
                 "copy": "If finances, employment, or household size change while waiting, keeping that organized now can make later sponsorship steps easier.",
-                "buttons": ["Save reminder", "Open notes"]
+                "buttons": [
+                  "Save reminder",
+                  "Open notes"
+                ]
               }
             ],
             "community": [
@@ -2997,18 +3076,27 @@
                 "kicker": "Official USCIS tracking",
                 "head": "Case Status Online",
                 "copy": "Track your case using the 13-character receipt number.",
-                "pills": ["Receipt number required", "Last action shown", "Official USCIS tool"],
+                "pills": [
+                  "Receipt number required",
+                  "Last action shown",
+                  "Official USCIS tool"
+                ],
                 "note": "A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet."
               },
               {
                 "label": "Step 2 of 4 — Understand common pending statuses",
                 "heading": "Learn the difference between waiting and action-required states",
-                "instruction": "Most of the time, a pending case is in a waiting state like \"Case Was Received\" or \"Case Is Being Actively Reviewed.\" The important distinction is whether USCIS is simply processing or has asked for something.",
+                "instruction": "Most of the time, a pending case is in a waiting state like “Case Was Received” or “Case Is Being Actively Reviewed.” The important distinction is whether USCIS is simply processing or has asked for something.",
                 "url": "rahvana.local/status-map",
                 "kicker": "Status guide",
                 "head": "Status meanings",
                 "copy": "Separate passive waiting from states that require action.",
-                "pills": ["Received", "Actively reviewed", "RFE", "Approved"],
+                "pills": [
+                  "Received",
+                  "Actively reviewed",
+                  "RFE",
+                  "Approved"
+                ],
                 "note": "Use this guide to understand whether you need to act now or simply stay prepared."
               },
               {
@@ -3019,7 +3107,11 @@
                 "kicker": "While-you-wait tools",
                 "head": "Stay prepared while waiting",
                 "copy": "A prep checklist, next-step preview, and useful modules for this waiting period.",
-                "pills": ["Prep checklist", "Coming next", "Useful right now"],
+                "pills": [
+                  "Prep checklist",
+                  "Coming next",
+                  "Useful right now"
+                ],
                 "note": "A few small tasks now can make the next phase feel much easier when the case moves forward."
               },
               {
@@ -3030,12 +3122,22 @@
                 "kicker": "Next-step guide",
                 "head": "Pivot when USCIS changes the status",
                 "copy": "RFE and approval should each unlock their own dedicated next-step experiences.",
-                "pills": ["Conditional branches", "Next step unlocks", "Action clarity"],
+                "pills": [
+                  "Conditional branches",
+                  "Next step unlocks",
+                  "Action clarity"
+                ],
                 "note": "Your next task should match the actual update USCIS gives you."
               }
             ],
             "footer_note": "Rahvana will keep this case visible, explain major updates clearly, and help you stay prepared while USCIS reviews the petition."
-          }
+          },
+          "citations": [
+            {
+              "text": "USCIS Case Status Tracker",
+              "link": "https://egov.uscis.gov/"
+            }
+          ]
         },
         {
           "step_key": "step_1_17",
@@ -3067,7 +3169,9 @@
           "visible_when": {},
           "is_required": true,
           "who": "Petitioner",
-          "dependencies": ["step_1_16"]
+          "dependencies": [
+            "step_1_16"
+          ]
         }
       ]
     },
@@ -3592,7 +3696,13 @@
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nReview all answers carefully. DS-260 availability depends on NVC fee processing."
-          }
+          },
+          "citations": [
+            {
+              "text": "Consular Electronic Application Center (CEAC)",
+              "link": "https://ceac.state.gov/IV"
+            }
+          ]
         },
         {
           "step_key": "step_2_4",
@@ -3638,7 +3748,10 @@
                       "icon": "passport",
                       "title": "Beneficiary Passport Biographic Page",
                       "sub": "Current passport page showing photo and personal details",
-                      "tags": ["bene", "govt"],
+                      "tags": [
+                        "bene",
+                        "govt"
+                      ],
                       "external_href": "/guides/passport-guide",
                       "status": "not-started",
                       "required": true
@@ -3648,7 +3761,10 @@
                       "icon": "birth",
                       "title": "Birth Certificate",
                       "sub": "Beneficiary's civil birth record",
-                      "tags": ["bene", "govt"],
+                      "tags": [
+                        "bene",
+                        "govt"
+                      ],
                       "external_href": "/guides/birth-certificate-guide",
                       "status": "not-started",
                       "required": true
@@ -3658,7 +3774,10 @@
                       "icon": "marriage",
                       "title": "Marriage Certificate / Marriage Registration Record",
                       "sub": "Official civil proof of the marriage — Nikah Nama and NADRA MRC",
-                      "tags": ["both", "govt"],
+                      "tags": [
+                        "both",
+                        "govt"
+                      ],
                       "external_href": "/guides/nikah-nama-guide",
                       "status": "not-started",
                       "required": true,
@@ -3686,7 +3805,10 @@
                       "icon": "police",
                       "title": "Police Certificate",
                       "sub": "Pakistan Police Character Certificate (PCC) for the beneficiary",
-                      "tags": ["bene", "govt"],
+                      "tags": [
+                        "bene",
+                        "govt"
+                      ],
                       "external_href": "/guides/police-verification-guide",
                       "status": "not-started",
                       "required": true
@@ -3696,7 +3818,10 @@
                       "icon": "translations",
                       "title": "Certified English Translations",
                       "sub": "Required for all non-English civil documents",
-                      "tags": ["bene", "3p"],
+                      "tags": [
+                        "bene",
+                        "3p"
+                      ],
                       "status": "not-started",
                       "required": true,
                       "sections": [
@@ -3730,7 +3855,10 @@
                       "icon": "prior-marriage",
                       "title": "Prior Marriage Termination Documents",
                       "sub": "Required if either spouse was previously married",
-                      "tags": ["both", "govt"],
+                      "tags": [
+                        "both",
+                        "govt"
+                      ],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3757,7 +3885,10 @@
                       "icon": "death-cert",
                       "title": "Death Certificate of Former Spouse",
                       "sub": "Only if prior marriage ended by death",
-                      "tags": ["both", "govt"],
+                      "tags": [
+                        "both",
+                        "govt"
+                      ],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3776,7 +3907,10 @@
                       "icon": "name-change",
                       "title": "Name Change Documents",
                       "sub": "Legal proof of any name change used in the case",
-                      "tags": ["bene", "govt"],
+                      "tags": [
+                        "bene",
+                        "govt"
+                      ],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3795,7 +3929,10 @@
                       "icon": "help",
                       "title": "Missing Document / Record Unavailability Evidence",
                       "sub": "When a required record genuinely does not exist",
-                      "tags": ["bene", "3p"],
+                      "tags": [
+                        "bene",
+                        "3p"
+                      ],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3825,7 +3962,9 @@
                       "icon": "folder",
                       "title": "Organized Translation Set",
                       "sub": "All translations paired and labeled with their originals",
-                      "tags": ["bene"],
+                      "tags": [
+                        "bene"
+                      ],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3844,7 +3983,9 @@
                       "icon": "save",
                       "title": "Upload-Ready File Copies",
                       "sub": "Clean, legible, properly formatted scan set",
-                      "tags": ["both"],
+                      "tags": [
+                        "both"
+                      ],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -3867,7 +4008,9 @@
                       "icon": "message",
                       "title": "Relationship Evidence Backup Set",
                       "sub": "Supporting bona fide marriage evidence for later use",
-                      "tags": ["both"],
+                      "tags": [
+                        "both"
+                      ],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4561,7 +4704,17 @@
               ]
             },
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Relationship-proof requirements may vary — confirm with your attorney or NVC guidance."
-          }
+          },
+          "citations": [
+            {
+              "text": "Affidavit of Support (Department of State)",
+              "link": "https://travel.state.gov/content/travel/en/us-visas/immigrate/the-immigrant-visa-process/step-1-submit-a-petition/affidavit-of-support.html"
+            },
+            {
+              "text": "USCIS Affidavit of Support Guidance",
+              "link": "https://www.uscis.gov/green-card/green-card-processes-and-procedures/affidavit-of-support"
+            }
+          ]
         },
         {
           "step_key": "step_2_8",
@@ -4776,7 +4929,13 @@
             "type": "medical_exam",
             "title": "Schedule Medical Examination",
             "subtitle": "Every immigrant visa applicant must complete a medical exam with an embassy-approved physician before their interview."
-          }
+          },
+          "citations": [
+            {
+              "text": "Medical Exam Instructions (Department of State)",
+              "link": "https://travel.state.gov/content/travel/en/us-visas/Supplements/Supplements_by_Post/ISL-Islamabad.html"
+            }
+          ]
         },
         {
           "step_key": "step_3_2",
@@ -4791,7 +4950,17 @@
           "tool_data": {
             "type": "polio_certificate",
             "disclaimer": "Rahvana provides structured guidance only. Confirm current polio documentation requirements directly with your embassy before attending the medical exam."
-          }
+          },
+          "citations": [
+            {
+              "text": "Pakistan Polio Vaccination Certificate Information",
+              "link": "https://www.poliofreepakistan.gov.pk/certificate/vaccination-certificate"
+            },
+            {
+              "text": "NADRA NIMS Portal (certificate access)",
+              "link": "https://nims.nadra.gov.pk/nims/"
+            }
+          ]
         },
         {
           "step_key": "step_3_3",
@@ -5752,7 +5921,10 @@
           "display_order": 11,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": ["docs_requested", "both"]
+            "outcome221gSubtype": [
+              "docs_requested",
+              "both"
+            ]
           },
           "actions": [
             "Read your 221(g) letter thoroughly",
@@ -5863,7 +6035,10 @@
           "display_order": 12,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": ["further_review", "both"]
+            "outcome221gSubtype": [
+              "further_review",
+              "both"
+            ]
           },
           "actions": [
             "Check CEAC status weekly",
@@ -5966,7 +6141,10 @@
           "display_order": 13,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": ["docs_requested", "both"]
+            "outcome221gSubtype": [
+              "docs_requested",
+              "both"
+            ]
           },
           "actions": [
             "Confirm submission was received",
