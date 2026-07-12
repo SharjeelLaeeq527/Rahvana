@@ -5297,31 +5297,13 @@
               "paths": [
                 {
                   "id": "service",
-                  "icon": {
-                    "type": {},
-                    "key": null,
-                    "props": {
-                      "size": 28,
-                      "className": "text-teal-400"
-                    },
-                    "_owner": null,
-                    "_store": {}
-                  },
+                  "icon": "hospital",
                   "title": "Use Rahvana's booking service",
                   "sub": "Rahvana assists with booking an embassy-approved physician for your location"
                 },
                 {
                   "id": "guide",
-                  "icon": {
-                    "type": {},
-                    "key": null,
-                    "props": {
-                      "size": 28,
-                      "className": "text-blue-400"
-                    },
-                    "_owner": null,
-                    "_store": {}
-                  },
+                  "icon": "stethoscope",
                   "title": "I'll book it myself",
                   "sub": "Follow the step-by-step guide to find and book an approved physician yourself"
                 }
@@ -5586,32 +5568,14 @@
               "paths": [
                 {
                   "id": "service",
-                  "icon": {
-                    "type": {},
-                    "key": null,
-                    "props": {
-                      "size": 28,
-                      "className": "text-purple-400"
-                    },
-                    "_owner": null,
-                    "_store": {}
-                  },
+                  "icon": "briefcase",
                   "title": "Rahvana submits the application",
                   "sub": "Rahvana handles the application submission on your behalf",
                   "note": "Sindh only · You must still collect the certificate"
                 },
                 {
                   "id": "guide",
-                  "icon": {
-                    "type": {},
-                    "key": null,
-                    "props": {
-                      "size": 28,
-                      "className": "text-blue-400"
-                    },
-                    "_owner": null,
-                    "_store": {}
-                  },
+                  "icon": "police",
                   "title": "I'll apply myself",
                   "sub": "Follow the step-by-step guide to apply for the PCC yourself"
                 }
