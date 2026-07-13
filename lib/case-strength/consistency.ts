@@ -42,27 +42,74 @@ export const BASELINE_FIELDS: { field: BaselineField; label: string }[] = [
 ];
 
 /**
- * Compare a DS-260 baseline against the I-130 baseline.
+ * ─── Generic, category-agnostic comparator ──────────────────────────────────
+ *
+ * This is the REUSABLE core. The IR-1 spouse case compares {marriageDate, both
+ * DOBs}; the IR-5 parent case compares {petitioner DOB, parent DOB} and has no
+ * marriage date at all. Instead of writing that diff twice, every category
+ * passes its own `fields` list and this one function does the comparison.
+ *
+ * A "field config" is just `{ field, label }`:
+ *   - `field` = the property name on the captured baseline object
+ *   - `label` = the human text shown in the advisory
+ */
+export interface CrossFormField {
+  field: string;
+  label: string;
+}
+
+export interface CrossFormMismatch {
+  field: string;
+  label: string;
+  /** Value recorded on the earlier form (e.g. the I-130 baseline) */
+  aValue: string;
+  /** Value recorded on the later form (e.g. the DS-260) */
+  bValue: string;
+}
+
+/**
+ * Compare two captured form-baselines field-by-field.
  *
  * Only fields present on BOTH sides are compared — a value the user hasn't
  * entered yet is not a "mismatch", it's simply not captured. Returns one entry
- * per differing field.
+ * per differing field. Values are coerced to trimmed strings so date pickers,
+ * numbers, and text inputs all compare cleanly.
+ */
+export function compareFields(
+  a: Record<string, unknown> | undefined | null,
+  b: Record<string, unknown> | undefined | null,
+  fields: CrossFormField[]
+): CrossFormMismatch[] {
+  if (!a || !b) return [];
+  const out: CrossFormMismatch[] = [];
+  for (const { field, label } of fields) {
+    const av = a[field] != null ? String(a[field]).trim() : "";
+    const bv = b[field] != null ? String(b[field]).trim() : "";
+    if (!av || !bv) continue; // need both sides to compare
+    if (av !== bv) out.push({ field, label, aValue: av, bValue: bv });
+  }
+  return out;
+}
+
+/**
+ * IR-1 convenience wrapper — kept so every existing spouse-flow caller (the
+ * DS-260 capture component and the step_2_3 checker) works unchanged. It just
+ * delegates to the generic `compareFields` with the IR-1 field list and maps
+ * the generic result back onto the older `{i130Value, ds260Value}` shape.
+ *
+ * Only fields present on BOTH sides are compared. Returns one entry per
+ * differing field.
  */
 export function compareBaselines(
   i130: BaselineDates | undefined | null,
   ds260: BaselineDates | undefined | null
 ): BaselineMismatch[] {
-  if (!i130 || !ds260) return [];
-  const mismatches: BaselineMismatch[] = [];
-
-  for (const { field, label } of BASELINE_FIELDS) {
-    const a = (i130[field] ?? "").trim();
-    const b = (ds260[field] ?? "").trim();
-    if (!a || !b) continue; // need both sides to compare
-    if (a !== b) {
-      mismatches.push({ field, label, i130Value: a, ds260Value: b });
-    }
-  }
-
-  return mismatches;
+  return compareFields(i130 as Record<string, unknown>, ds260 as Record<string, unknown>, BASELINE_FIELDS).map(
+    (m) => ({
+      field: m.field as BaselineField,
+      label: m.label,
+      i130Value: m.aValue,
+      ds260Value: m.bValue,
+    })
+  );
 }

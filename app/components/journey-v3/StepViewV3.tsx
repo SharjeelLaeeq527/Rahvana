@@ -82,6 +82,7 @@ import { DocActionModal } from "./components/DocActionModal";
 import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
 // import { EligibilityRiskBanner } from "./components/EligibilityRiskBanner";
 import { Chapter1HealthPanel } from "./components/Chapter1HealthPanel";
+import type { StepChecker } from "@/lib/case-strength/step-checkers";
 import { FloatingSidePanel } from "./components/FloatingSidePanel";
 import {
   ConsistencyBaselineCapture,
@@ -193,6 +194,8 @@ function findVaultDocForItem<T extends { documentDefId: string }>(
 interface StepViewProps {
   data: RoadmapDataV3;
   state: WizardState;
+  /** Category-specific step-checker registry (resolved from journey_type). */
+  registry?: Record<string, StepChecker>;
   actions: {
     toggleComplete: (id: string) => void;
     setCurrentStep: (idx: number | null) => void;
@@ -214,6 +217,7 @@ interface StepViewProps {
 export const StepViewV3: React.FC<StepViewProps> = ({
   data,
   state,
+  registry,
   actions,
   onBack,
   onSelectChapter,
@@ -1137,6 +1141,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
           chapters={chapters}
           state={state}
           uploadedDocuments={uploadedDocuments}
+          checkerRegistry={registry}
         />
 
         {/* Page Shell */}

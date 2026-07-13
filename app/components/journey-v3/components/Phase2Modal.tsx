@@ -4,51 +4,62 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, ClipboardList, ChevronDown } from "lucide-react";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { PHASE2_QUESTIONS } from "@/lib/case-strength";
+import { PHASE2_QUESTIONS, type Phase2Question } from "@/lib/case-strength";
 
 export interface Phase2ModalProps {
   isOpen: boolean;
   onClose: () => void;
   responses: Record<string, boolean>;
   onSave: (responses: Record<string, boolean>) => void;
+  /**
+   * Category-specific questionnaire items. Defaults to the full IR-1 set so
+   * existing (spouse) callers are unchanged; IR-5 passes the common-only set.
+   */
+  questions?: readonly Phase2Question[];
 }
 
-export function Phase2Modal({ isOpen, onClose, responses, onSave }: Phase2ModalProps) {
+export function Phase2Modal({
+  isOpen,
+  onClose,
+  responses,
+  onSave,
+  questions = PHASE2_QUESTIONS,
+}: Phase2ModalProps) {
   const [local, setLocal] = useState<Record<string, boolean>>(responses);
 
   // Initialize expanded groups: expand groups with answers, or first group if none answered
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
     const initial = new Set<string>();
-    for (const q of PHASE2_QUESTIONS) {
+    for (const q of questions) {
       if (responses[q.id]) {
         initial.add(q.group);
       }
     }
     // If no answers yet, expand the first group by default
-    if (initial.size === 0 && PHASE2_QUESTIONS.length > 0) {
-      initial.add(PHASE2_QUESTIONS[0].group);
+    if (initial.size === 0 && questions.length > 0) {
+      initial.add(questions[0].group);
     }
     return initial;
   });
 
-  const grouped: Record<string, (typeof PHASE2_QUESTIONS)[number][]> = {};
-  for (const q of PHASE2_QUESTIONS) {
+  const grouped: Record<string, Phase2Question[]> = {};
+  for (const q of questions) {
     if (!grouped[q.group]) grouped[q.group] = [];
     grouped[q.group].push(q);
   }
 
-  const isVisible = (q: (typeof PHASE2_QUESTIONS)[number]): boolean => {
-    if (!("dependsOn" in q) || !q.dependsOn) return true;
-    return !!local[q.dependsOn as string];
+  const isVisible = (q: Phase2Question): boolean => {
+    if (!q.dependsOn) return true;
+    return !!local[q.dependsOn];
   };
 
   const toggle = (id: string) => {
     setLocal((prev) => {
       const next = { ...prev, [id]: !prev[id] };
-      const question = PHASE2_QUESTIONS.find((q) => q.id === id);
+      const question = questions.find((q) => q.id === id);
       if (question && !next[id]) {
-        for (const child of PHASE2_QUESTIONS) {
-          if ("dependsOn" in child && child.dependsOn === id) next[child.id] = false;
+        for (const child of questions) {
+          if (child.dependsOn === id) next[child.id] = false;
         }
       }
       return next;
@@ -66,7 +77,7 @@ export function Phase2Modal({ isOpen, onClose, responses, onSave }: Phase2ModalP
 
   // Count answered questions
   const answeredCount = Object.values(local).filter(Boolean).length;
-  const totalQuestions = PHASE2_QUESTIONS.length;
+  const totalQuestions = questions.length;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>

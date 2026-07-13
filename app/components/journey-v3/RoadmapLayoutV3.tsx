@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect, Suspense } from "react";
+import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { RoadmapDataV3 } from "./types";
 import { DashboardViewV3 } from "./DashboardViewV3";
 import { ChapterViewV3 } from "./ChapterViewV3";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage } from "./journeyHelpersV3";
+import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
 import { ChevronRight, ArrowLeft, Check, X, LayoutDashboard } from "lucide-react";
 import { useToast } from "@/app/components/shared/ToastProvider";
 
@@ -48,6 +49,15 @@ type ViewType = "dashboard" | "chapter" | "step";
 export default function RoadmapLayoutV3({ data, state, actions }: RoadmapLayoutV3Props) {
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
+
+  // Resolve the case-strength profile ONCE from the journey's category. Every
+  // case-strength surface (dashboard alerts, per-step health panel) gets this
+  // profile's step-checker registry — so IR-5 renders parent-child checks while
+  // IR-1 keeps its spouse checks, with no per-category branching in the UI.
+  const csProfile = useMemo(
+    () => resolveCaseStrengthProfile(data.journey_type),
+    [data.journey_type]
+  );
 
   const { showToast } = useToast();
 
@@ -236,6 +246,9 @@ export default function RoadmapLayoutV3({ data, state, actions }: RoadmapLayoutV
           <DashboardViewV3
             data={data}
             state={state}
+            registry={csProfile.stepCheckers}
+            consistency={csProfile.consistency}
+            evidence={csProfile.evidence}
             onSelectChapter={handleSelectChapter}
             onSelectStep={handleSelectStep}
             actions={{
@@ -261,6 +274,7 @@ export default function RoadmapLayoutV3({ data, state, actions }: RoadmapLayoutV
             <LazyStepViewV3
               data={data}
               state={state}
+              registry={csProfile.stepCheckers}
               onBack={handleBackToChapter}
               onSelectChapter={handleSelectChapter}
               onSelectStep={handleSelectStep}
