@@ -6,15 +6,13 @@ import {
   MessageSquare,
   Instagram,
   Linkedin,
-  Youtube,
-  CheckCircle2,
-  AlertCircle,
   Facebook,
 } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import { submitContactForm } from "./contact-action";
 import { useLanguage } from "../../context/LanguageContext";
 import * as Errors from "@/lib/errors";
+import { useToast } from "@/app/components/shared/ToastProvider";
 const XIcon = ({ size = 20 }: { size?: number }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
     <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932L18.901 1.153zM17.61 20.644h2.039L6.486 3.24H4.298l13.312 17.403z" />
@@ -23,31 +21,30 @@ const XIcon = ({ size = 20 }: { size?: number }) => (
 
 export default function GetInTouch() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
-  const [errorMessage, setErrorMessage] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
   const { t } = useLanguage();
+  const { showToast } = useToast();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
-    setStatus("idle");
-    setErrorMessage("");
 
     const formData = new FormData(event.currentTarget);
 
     try {
       const result = await submitContactForm(formData);
       if (result.success) {
-        setStatus("success");
+        showToast(
+          t("homePage.contactSection.success") ||
+            "Thank you! Your message has been sent successfully. We'll get back to you soon.",
+          "success"
+        );
         formRef.current?.reset();
       } else {
-        setStatus("error");
-        setErrorMessage(result.error || Errors.msg(Errors.E.CONTACT_SUBMIT_FAILED));
+        showToast(result.error || Errors.msg(Errors.E.CONTACT_SUBMIT_FAILED), "error");
       }
     } catch {
-      setStatus("error");
-      setErrorMessage(Errors.msg(Errors.E.CONTACT_SUBMIT_FAILED));
+      showToast(Errors.msg(Errors.E.CONTACT_SUBMIT_FAILED), "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -126,23 +123,6 @@ export default function GetInTouch() {
             <h3 className="text-xl font-semibold text-foreground mb-6">
               {t("homePage.contactSection.sendMessage") || "Send a Message"}
             </h3>
-
-            {status === "success" && (
-              <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3 text-green-600 dark:text-green-400">
-                <CheckCircle2 size={20} className="shrink-0" />
-                <p className="text-sm font-medium">
-                  {t("homePage.contactSection.success") ||
-                    "Thank you! Your message has been sent successfully. We'll get back to you soon."}
-                </p>
-              </div>
-            )}
-
-            {status === "error" && (
-              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3 text-red-600 dark:text-red-400">
-                <AlertCircle size={20} className="shrink-0" />
-                <p className="text-sm font-medium">{errorMessage}</p>
-              </div>
-            )}
 
             <form
               className="flex flex-col gap-4"

@@ -1935,10 +1935,41 @@ function EditorialSlide({ slide }) {
   );
 }
 function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
+  const [hasJourney, setHasJourney] = useState(false);
   const isLine2Started = typeText.length > 5;
   const line1Text = typeText.slice(0, 5);
   const line2Text = typeText.slice(5).trimStart();
   const isDone = typeText === "Let's map it out.";
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    async function fetchExistingJourney() {
+      try {
+        const response = await fetch("/api/journeys?limit=1", {
+          method: "GET",
+          credentials: "include",
+          signal: controller.signal,
+        });
+
+        if (!response.ok) {
+          setHasJourney(false);
+          return;
+        }
+
+        const result = await response.json();
+        setHasJourney(Array.isArray(result?.data) && result.data.length > 0);
+      } catch (error) {
+        if (error?.name !== "AbortError") {
+          setHasJourney(false);
+        }
+      }
+    }
+
+    fetchExistingJourney();
+
+    return () => controller.abort();
+  }, []);
 
   return (
     <div
@@ -2036,6 +2067,10 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
           </div>
 
           <motion.button
+            type="button"
+            onClick={() => {
+              window.location.href = "/visa-category/ir-category/ir1-journey";
+            }}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
@@ -2059,7 +2094,7 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
               boxShadow: "0 4px 12px rgba(11, 19, 31, 0.15)",
             }}
           >
-            Start your journey
+            {hasJourney ? "Resume your journey" : "Start your journey"}
             {/* <Icons.ArrowRight size={16} /> */}
           </motion.button>
         </div>
