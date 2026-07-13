@@ -1597,14 +1597,14 @@ export function SiteHeader({
 
                     {/* Section 1 */}
                     <div className="py-2 border-b border-border">
-                      <button
+                      {/* <button
                         id="my-dashboard-menu-item"
                         onClick={() => handleNav("dashboard")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <Layout className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                         My Dashboard
-                      </button>
+                      </button> */}
                       <button
                         onClick={() => handleNav("profile")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
@@ -1657,13 +1657,13 @@ export function SiteHeader({
                         <Shield className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                         My Credentials
                       </button> */}
-                      <button
+                      {/* <button
                         onClick={() => {}} // Placeholder
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <HelpCircle className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
                         Help Center
-                      </button>
+                      </button> */}
                     </div>
 
                     {/* Footer - Sign Out */}
