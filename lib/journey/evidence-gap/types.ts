@@ -372,3 +372,27 @@ export const EVIDENCE_QUESTIONNAIRE: EvidenceQuestion[] = [
     group: "Immigration History",
   },
 ];
+
+/**
+ * IR-5 (parent) questionnaire. A parent case has no marriage, so every
+ * bona-fide-marriage question (wedding photos, cohabitation, couple
+ * communication, shared children) is irrelevant. We KEEP the category-agnostic
+ * questions — financial documents and the beneficiary's immigration history —
+ * plus the one parent–child bond question (family photos).
+ *
+ * Derived by filtering the full list (single source of truth) instead of
+ * re-declaring the question objects, so wording/description edits made above
+ * automatically flow through to IR-5.
+ */
+const IR5_QUESTION_IDS = new Set<string>([
+  "has_i864",
+  "has_tax_returns",
+  "has_bank_statements",
+  "has_family_photos",
+  "has_prior_visas",
+  "has_i94",
+]);
+
+export const IR5_EVIDENCE_QUESTIONNAIRE: EvidenceQuestion[] = EVIDENCE_QUESTIONNAIRE.filter((q) =>
+  IR5_QUESTION_IDS.has(q.id)
+);

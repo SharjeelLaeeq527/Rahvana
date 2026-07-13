@@ -2,11 +2,11 @@
 
 import React, { useEffect, useRef, useState } from "react";
 
-// Ghost line-art bird that lives in the margin of a journey section.
-// The PNGs sit on a white box, so .bird-bg-img uses mix-blend multiply to
-// melt the white into the light page background. z-0 keeps the bird under
-// the anchored nodes/labels (z-10/z-20); negative z would paint it behind
-// the page's own background layer, so z-0 + low opacity is the floor here.
+// Teal duotone bird that lives in the margin of a journey section.
+// Uses the pre-tinted transparent PNGs (public/homepage/bird{n}-teal.png,
+// generated from the original white-bg line art), so no blend-mode tricks
+// are needed. z-0 keeps the bird under the anchored nodes/labels (z-10/z-20)
+// and pointer-events are disabled so it never intercepts clicks.
 export default function SectionBird({
   n,
   side,
@@ -49,14 +49,30 @@ export default function SectionBird({
         visible ? "opacity-55" : "opacity-0"
       } ${className || sideClass} ${pos}`}
     >
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={`/homepage/bird${n}.png`}
-        alt=""
-        loading="lazy"
-        className={`bird-bg-img h-auto ${size}`}
-        style={{ animationDelay: `${(n % 4) * -1.7}s` }}
-      />
+      <div
+        className={`relative transition-all duration-1000 ease-out ${
+          visible ? "opacity-85 translate-y-0 scale-100" : "opacity-0 translate-y-6 scale-95"
+        }`}
+      >
+        <div className="bird-glow" />
+        <span className="bird-sparkle" style={{ top: "6%", left: "4%" }} />
+        <span
+          className="bird-sparkle"
+          style={{ top: "26%", right: "8%", animationDelay: "1.4s" }}
+        />
+        <span
+          className="bird-sparkle"
+          style={{ bottom: "12%", left: "16%", animationDelay: "2.6s" }}
+        />
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={`/homepage/bird${n}-teal.png`}
+          alt=""
+          loading="lazy"
+          className={`bird-bg-img relative h-auto ${size}`}
+          style={{ animationDelay: `${(n % 4) * -1.7}s` }}
+        />
+      </div>
     </div>
   );
 }

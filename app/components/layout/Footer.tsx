@@ -22,6 +22,8 @@ export default function Footer() {
     router.push(targetRoute);
   };
 
+  const showToggle = process.env.NEXT_PUBLIC_ENVIRONMENT === "development";
+
   // Hide footer on admin, login and signup pages
   if (
     pathname?.startsWith("/admin") ||
@@ -110,12 +112,14 @@ export default function Footer() {
               >
                 IR-1 Journey
               </Link>
-              <Link
-                href="/visa-category/ir-category/ir-5"
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                IR-5 Journey
-              </Link>
+              {showToggle && (
+                <Link
+                  href="/visa-category/ir-category/ir-5"
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  IR-5 Journey
+                </Link>
+              )}
             </nav>
           </div>
 

@@ -12,202 +12,293 @@ import type {
   EvidenceType,
   RequiredDocumentsSummary,
   CoverageLevel,
+  EvidenceQuestion,
 } from "./types";
 
 // Evidence Requirements by Category
-// Based on IR-1/CR-1 visa requirements from NVC, USCIS, and Department of State
+// Based on IR-1/CR-1 (spouse) and IR-5 (parent) visa requirements from NVC,
+// USCIS, and Department of State.
+//
+// The engine used to hardcode ONE spouse-shaped `EVIDENCE_REQUIREMENTS`. To make
+// it visa-category-aware without duplicating logic, the requirements are now
+// broken into per-category building blocks and assembled into one config per
+// category (IR-1 spouse, IR-5 parent). Categories that are identical across
+// visa types (FINANCIAL, IMMIGRATION_HISTORY) are shared — declared once, reused
+// in both configs. Categories that differ (IDENTITY drops the marriage
+// certificates for a parent; FAMILY_INTEGRATION drops "children together") get a
+// per-category override. Spouse-only bona-fide-marriage categories
+// (RELATIONSHIP / COHABITATION / COMMUNICATION) simply aren't listed for IR-5.
 
-const EVIDENCE_REQUIREMENTS: Record<EvidenceCategory, EvidenceRequirement> = {
-  // RELATIONSHIP - All SUPPORTING (bona fide marriage evidence)
-  // USCIS does not mandate these, but they prove genuine relationship
-  RELATIONSHIP: {
-    category: "RELATIONSHIP",
-    label: "Relationship Evidence",
-    description: "Proof of bona fide marriage and genuine relationship",
-    items: [
-      { id: "wedding_photos", name: "Wedding Photos", evidenceType: "SUPPORTING", weight: 2 },
-      { id: "engagement_photos", name: "Engagement Photos", evidenceType: "SUPPORTING", weight: 1 },
-      {
-        id: "travel_together",
-        name: "Travel Records Together",
-        evidenceType: "SUPPORTING",
-        weight: 2,
-      },
-      {
-        id: "affidavits_from_friends",
-        name: "Affidavits from Friends/Family",
-        evidenceType: "SUPPORTING",
-        weight: 1,
-      },
-      {
-        id: "social_media_evidence",
-        name: "Social Media Evidence",
-        evidenceType: "SUPPORTING",
-        weight: 1,
-      },
-    ],
-  },
+// ── Shared building blocks (identical for every visa category) ────────────────
 
-  // FINANCIAL - Mix of REQUIRED and SUPPORTING
-  // Required: I-864, Tax Returns (NVC requirement)
-  // Supporting: W2, Pay Stubs, Employment Letter, Bank Statements
-  FINANCIAL: {
-    category: "FINANCIAL",
-    label: "Financial Evidence",
-    description: "Proof of financial support and sponsorship",
-    items: [
-      {
-        id: "i864_affidavit",
-        name: "I-864 Affidavit of Support",
-        evidenceType: "REQUIRED",
-        weight: 3,
-      },
-      { id: "tax_returns", name: "Tax Returns (3 years)", evidenceType: "REQUIRED", weight: 3 },
-      { id: "w2_forms", name: "W-2 Forms", evidenceType: "SUPPORTING", weight: 2 },
-      { id: "pay_stubs", name: "Pay Stubs (6 months)", evidenceType: "SUPPORTING", weight: 2 },
-      {
-        id: "employment_letter",
-        name: "Employment Verification Letter",
-        evidenceType: "SUPPORTING",
-        weight: 2,
-      },
-      { id: "bank_statements", name: "Bank Statements", evidenceType: "SUPPORTING", weight: 1 },
-    ],
-  },
-
-  // COHABITATION - All SUPPORTING (strong marriage evidence but not required)
-  COHABITATION: {
-    category: "COHABITATION",
-    label: "Cohabitation Evidence",
-    description: "Proof of shared residence and living together",
-    items: [
-      {
-        id: "lease_agreement",
-        name: "Joint Lease Agreement",
-        evidenceType: "SUPPORTING",
-        weight: 3,
-      },
-      {
-        id: "mortgage_document",
-        name: "Joint Mortgage Document",
-        evidenceType: "SUPPORTING",
-        weight: 3,
-      },
-      {
-        id: "utility_bills",
-        name: "Utility Bills (shared)",
-        evidenceType: "SUPPORTING",
-        weight: 2,
-      },
-      {
-        id: "mail_same_address",
-        name: "Mail to Same Address",
-        evidenceType: "SUPPORTING",
-        weight: 1,
-      },
-    ],
-  },
-
-  // FAMILY INTEGRATION - All SUPPORTING
-  FAMILY_INTEGRATION: {
-    category: "FAMILY_INTEGRATION",
-    label: "Family Integration",
-    description: "Evidence of family ties and integration",
-    items: [
-      {
-        id: "children_birth_certs",
-        name: "Children's Birth Certificates",
-        evidenceType: "SUPPORTING",
-        weight: 3,
-      },
-      {
-        id: "family_photos",
-        name: "Family Photos Together",
-        evidenceType: "SUPPORTING",
-        weight: 2,
-      },
-      // {
-      //   id: "school_records",
-      //   name: "School Records (if applicable)",
-      //   evidenceType: "SUPPORTING",
-      //   weight: 1,
-      // },
-      // {
-      //   id: "medical_records",
-      //   name: "Medical Records (shared)",
-      //   evidenceType: "SUPPORTING",
-      //   weight: 1,
-      // },
-    ],
-  },
-
-  // COMMUNICATION - All SUPPORTING (never required by USCIS)
-  COMMUNICATION: {
-    category: "COMMUNICATION",
-    label: "Communication Records",
-    description: "Evidence of ongoing communication",
-    items: [
-      { id: "phone_records", name: "Phone Call Records", evidenceType: "SUPPORTING", weight: 1 },
-      { id: "chat_logs", name: "Chat/Messaging Logs", evidenceType: "SUPPORTING", weight: 1 },
-      { id: "email_exchanges", name: "Email Exchanges", evidenceType: "SUPPORTING", weight: 1 },
-      {
-        id: "video_call_records",
-        name: "Video Call Records",
-        evidenceType: "SUPPORTING",
-        weight: 1,
-      },
-    ],
-  },
-
-  // IDENTITY - Mix of REQUIRED and SUPPORTING
-  // Required: Passports, Birth Certificate, Marriage Certificates (NVC requirement)
-  IDENTITY: {
-    category: "IDENTITY",
-    label: "Identity & Civil Documents",
-    description: "Core identity and civil documentation",
-    items: [
-      {
-        id: "passport_beneficiary",
-        name: "Beneficiary Passport",
-        evidenceType: "REQUIRED",
-        weight: 3,
-      },
-      {
-        id: "passport_petitioner",
-        name: "Petitioner Passport/US Citizenship",
-        evidenceType: "REQUIRED",
-        weight: 3,
-      },
-      { id: "birth_certificate", name: "Birth Certificate", evidenceType: "REQUIRED", weight: 3 },
-      { id: "nikah_nama", name: "Nikah Nama", evidenceType: "REQUIRED", weight: 3 },
-      { id: "nadra_mrc", name: "NADRA MRC", evidenceType: "REQUIRED", weight: 3 },
-    ],
-  },
-
-  // IMMIGRATION HISTORY - Mix of REQUIRED and SUPPORTING
-  // Required: Police Certificate (for applicants 16+)
-  // Supporting: I-94, Prior Visas, Prior Petitions
-  IMMIGRATION_HISTORY: {
-    category: "IMMIGRATION_HISTORY",
-    label: "Immigration History",
-    description: "Prior immigration interactions and compliance",
-    items: [
-      {
-        id: "police_certificate",
-        name: "Police Character Certificate",
-        evidenceType: "REQUIRED",
-        weight: 3,
-      },
-      {
-        id: "prior_visa_approvals",
-        name: "Prior Visa Approvals",
-        evidenceType: "SUPPORTING",
-        weight: 2,
-      },
-      { id: "i94_records", name: "I-94 Travel History", evidenceType: "SUPPORTING", weight: 1 },
-    ],
-  },
+// FINANCIAL - Mix of REQUIRED and SUPPORTING
+// Required: I-864, Tax Returns (NVC requirement)
+// Supporting: W2, Pay Stubs, Employment Letter, Bank Statements
+const FINANCIAL_REQUIREMENT: EvidenceRequirement = {
+  category: "FINANCIAL",
+  label: "Financial Evidence",
+  description: "Proof of financial support and sponsorship",
+  items: [
+    {
+      id: "i864_affidavit",
+      name: "I-864 Affidavit of Support",
+      evidenceType: "REQUIRED",
+      weight: 3,
+    },
+    { id: "tax_returns", name: "Tax Returns (3 years)", evidenceType: "REQUIRED", weight: 3 },
+    { id: "w2_forms", name: "W-2 Forms", evidenceType: "SUPPORTING", weight: 2 },
+    { id: "pay_stubs", name: "Pay Stubs (6 months)", evidenceType: "SUPPORTING", weight: 2 },
+    {
+      id: "employment_letter",
+      name: "Employment Verification Letter",
+      evidenceType: "SUPPORTING",
+      weight: 2,
+    },
+    { id: "bank_statements", name: "Bank Statements", evidenceType: "SUPPORTING", weight: 1 },
+  ],
 };
+
+// IMMIGRATION HISTORY - Mix of REQUIRED and SUPPORTING
+// Required: Police Certificate (for applicants 16+)
+// Supporting: I-94, Prior Visas, Prior Petitions
+const IMMIGRATION_HISTORY_REQUIREMENT: EvidenceRequirement = {
+  category: "IMMIGRATION_HISTORY",
+  label: "Immigration History",
+  description: "Prior immigration interactions and compliance",
+  items: [
+    {
+      id: "police_certificate",
+      name: "Police Character Certificate",
+      evidenceType: "REQUIRED",
+      weight: 3,
+    },
+    {
+      id: "prior_visa_approvals",
+      name: "Prior Visa Approvals",
+      evidenceType: "SUPPORTING",
+      weight: 2,
+    },
+    { id: "i94_records", name: "I-94 Travel History", evidenceType: "SUPPORTING", weight: 1 },
+  ],
+};
+
+// ── Spouse-only building blocks (bona-fide-marriage evidence) ─────────────────
+
+// RELATIONSHIP - All SUPPORTING (bona fide marriage evidence)
+// USCIS does not mandate these, but they prove genuine relationship
+const RELATIONSHIP_REQUIREMENT: EvidenceRequirement = {
+  category: "RELATIONSHIP",
+  label: "Relationship Evidence",
+  description: "Proof of bona fide marriage and genuine relationship",
+  items: [
+    { id: "wedding_photos", name: "Wedding Photos", evidenceType: "SUPPORTING", weight: 2 },
+    { id: "engagement_photos", name: "Engagement Photos", evidenceType: "SUPPORTING", weight: 1 },
+    {
+      id: "travel_together",
+      name: "Travel Records Together",
+      evidenceType: "SUPPORTING",
+      weight: 2,
+    },
+    {
+      id: "affidavits_from_friends",
+      name: "Affidavits from Friends/Family",
+      evidenceType: "SUPPORTING",
+      weight: 1,
+    },
+    {
+      id: "social_media_evidence",
+      name: "Social Media Evidence",
+      evidenceType: "SUPPORTING",
+      weight: 1,
+    },
+  ],
+};
+
+// COHABITATION - All SUPPORTING (strong marriage evidence but not required)
+const COHABITATION_REQUIREMENT: EvidenceRequirement = {
+  category: "COHABITATION",
+  label: "Cohabitation Evidence",
+  description: "Proof of shared residence and living together",
+  items: [
+    {
+      id: "lease_agreement",
+      name: "Joint Lease Agreement",
+      evidenceType: "SUPPORTING",
+      weight: 3,
+    },
+    {
+      id: "mortgage_document",
+      name: "Joint Mortgage Document",
+      evidenceType: "SUPPORTING",
+      weight: 3,
+    },
+    {
+      id: "utility_bills",
+      name: "Utility Bills (shared)",
+      evidenceType: "SUPPORTING",
+      weight: 2,
+    },
+    {
+      id: "mail_same_address",
+      name: "Mail to Same Address",
+      evidenceType: "SUPPORTING",
+      weight: 1,
+    },
+  ],
+};
+
+// COMMUNICATION - All SUPPORTING (never required by USCIS)
+const COMMUNICATION_REQUIREMENT: EvidenceRequirement = {
+  category: "COMMUNICATION",
+  label: "Communication Records",
+  description: "Evidence of ongoing communication",
+  items: [
+    { id: "phone_records", name: "Phone Call Records", evidenceType: "SUPPORTING", weight: 1 },
+    { id: "chat_logs", name: "Chat/Messaging Logs", evidenceType: "SUPPORTING", weight: 1 },
+    { id: "email_exchanges", name: "Email Exchanges", evidenceType: "SUPPORTING", weight: 1 },
+    {
+      id: "video_call_records",
+      name: "Video Call Records",
+      evidenceType: "SUPPORTING",
+      weight: 1,
+    },
+  ],
+};
+
+// ── Category-specific building blocks (same category, different items) ─────────
+
+// IDENTITY (IR-1 spouse) - includes the marriage certificates (Nikah Nama, MRC)
+// Required: Passports, Birth Certificate, Marriage Certificates (NVC requirement)
+const IR1_IDENTITY_REQUIREMENT: EvidenceRequirement = {
+  category: "IDENTITY",
+  label: "Identity & Civil Documents",
+  description: "Core identity and civil documentation",
+  items: [
+    {
+      id: "passport_beneficiary",
+      name: "Beneficiary Passport",
+      evidenceType: "REQUIRED",
+      weight: 3,
+    },
+    {
+      id: "passport_petitioner",
+      name: "Petitioner Passport/US Citizenship",
+      evidenceType: "REQUIRED",
+      weight: 3,
+    },
+    { id: "birth_certificate", name: "Birth Certificate", evidenceType: "REQUIRED", weight: 3 },
+    { id: "nikah_nama", name: "Nikah Nama", evidenceType: "REQUIRED", weight: 3 },
+    { id: "nadra_mrc", name: "NADRA MRC", evidenceType: "REQUIRED", weight: 3 },
+  ],
+};
+
+// IDENTITY (IR-5 parent) - NO marriage certificates. The parent-child link is
+// proven by the birth certificates, so those stay REQUIRED; Nikah Nama / MRC are
+// dropped entirely (a parent case has no marriage to document).
+const IR5_IDENTITY_REQUIREMENT: EvidenceRequirement = {
+  category: "IDENTITY",
+  label: "Identity & Civil Documents",
+  description: "Core identity and civil documents that establish the parent–child link",
+  items: [
+    {
+      id: "passport_beneficiary",
+      name: "Parent's Passport",
+      evidenceType: "REQUIRED",
+      weight: 3,
+    },
+    {
+      id: "passport_petitioner",
+      name: "Petitioner Passport/US Citizenship",
+      evidenceType: "REQUIRED",
+      weight: 3,
+    },
+    {
+      id: "birth_certificate",
+      name: "Birth Certificate (names the parent)",
+      evidenceType: "REQUIRED",
+      weight: 3,
+    },
+  ],
+};
+
+// FAMILY INTEGRATION (IR-1 spouse) - children the couple share + family photos
+const IR1_FAMILY_INTEGRATION_REQUIREMENT: EvidenceRequirement = {
+  category: "FAMILY_INTEGRATION",
+  label: "Family Integration",
+  description: "Evidence of family ties and integration",
+  items: [
+    {
+      id: "children_birth_certs",
+      name: "Children's Birth Certificates",
+      evidenceType: "SUPPORTING",
+      weight: 3,
+    },
+    {
+      id: "family_photos",
+      name: "Family Photos Together",
+      evidenceType: "SUPPORTING",
+      weight: 2,
+    },
+  ],
+};
+
+// FAMILY INTEGRATION (IR-5 parent) - "children together" makes no sense for a
+// parent case; the supporting bond evidence is family photos with the parent.
+const IR5_FAMILY_INTEGRATION_REQUIREMENT: EvidenceRequirement = {
+  category: "FAMILY_INTEGRATION",
+  label: "Family Integration",
+  description: "Evidence of the ongoing parent–child bond",
+  items: [
+    {
+      id: "family_photos",
+      name: "Family Photos with Parent",
+      evidenceType: "SUPPORTING",
+      weight: 2,
+    },
+  ],
+};
+
+// ── Assembled per-category configs ────────────────────────────────────────────
+
+// IR-1 / CR-1 (spouse): the full original set — unchanged behavior.
+export const IR1_EVIDENCE_REQUIREMENTS: Record<EvidenceCategory, EvidenceRequirement> = {
+  RELATIONSHIP: RELATIONSHIP_REQUIREMENT,
+  FINANCIAL: FINANCIAL_REQUIREMENT,
+  COHABITATION: COHABITATION_REQUIREMENT,
+  FAMILY_INTEGRATION: IR1_FAMILY_INTEGRATION_REQUIREMENT,
+  COMMUNICATION: COMMUNICATION_REQUIREMENT,
+  IDENTITY: IR1_IDENTITY_REQUIREMENT,
+  IMMIGRATION_HISTORY: IMMIGRATION_HISTORY_REQUIREMENT,
+};
+
+// IR-5 (parent): reuses FINANCIAL + IMMIGRATION_HISTORY verbatim, overrides
+// IDENTITY (no marriage docs) and FAMILY_INTEGRATION (no "children together"),
+// and OMITS the three spouse-only bona-fide-marriage categories entirely. Being
+// a Partial means those categories never render on a parent's dashboard.
+export const IR5_EVIDENCE_REQUIREMENTS: Partial<Record<EvidenceCategory, EvidenceRequirement>> = {
+  IDENTITY: IR5_IDENTITY_REQUIREMENT,
+  FINANCIAL: FINANCIAL_REQUIREMENT,
+  FAMILY_INTEGRATION: IR5_FAMILY_INTEGRATION_REQUIREMENT,
+  IMMIGRATION_HISTORY: IMMIGRATION_HISTORY_REQUIREMENT,
+};
+
+/** Requirements config the engine runs against. IR-1 is the safe default. */
+export type EvidenceRequirementsConfig = Partial<
+  Record<EvidenceCategory, EvidenceRequirement>
+>;
+
+/**
+ * The complete per-category evidence config a `CaseStrengthProfile` carries.
+ *   - `requirements`: what the engine assesses (drives the dashboard cards/score).
+ *   - `questionnaire`: which optional "do you have…?" questions the modal SHOWS.
+ * Both must agree on categories so we never ask about evidence we don't score
+ * (and never score a category we never asked about). IR-1 = full spouse set;
+ * IR-5 = marriage-free parent set.
+ */
+export interface EvidenceGapConfig {
+  requirements: EvidenceRequirementsConfig;
+  questionnaire: EvidenceQuestion[];
+}
 
 // Vault Document Key to Evidence Category Mapping
 const VAULT_KEY_TO_EVIDENCE: Record<string, EvidenceCategory> = {
@@ -326,6 +417,19 @@ const VAULT_CATEGORY_TO_EVIDENCE: Record<string, EvidenceCategory> = {
 // Main Engine Class
 export class EvidenceGapEngine {
   /**
+   * The requirement set this engine assesses against. Injected so the same
+   * engine serves every visa category: IR-1 (spouse) passes the full set (the
+   * default), IR-5 (parent) passes a marriage-free subset. Only the categories
+   * present here are ever assessed or rendered — so a parent never sees
+   * "Cohabitation Evidence: Missing".
+   */
+  private readonly requirements: EvidenceRequirementsConfig;
+
+  constructor(requirements: EvidenceRequirementsConfig = IR1_EVIDENCE_REQUIREMENTS) {
+    this.requirements = requirements;
+  }
+
+  /**
    * Run the evidence gap analysis
    */
   analyze(input: EvidenceGapInput): EvidenceGapAnalysis {
@@ -437,7 +541,7 @@ export class EvidenceGapEngine {
    * Get evidence type (REQUIRED or SUPPORTING) for an item
    */
   private getEvidenceType(docId: string, category: EvidenceCategory): EvidenceType {
-    const requirement = EVIDENCE_REQUIREMENTS[category];
+    const requirement = this.requirements[category];
     if (!requirement) return "SUPPORTING";
 
     const normalizedId = docId.toLowerCase().replace(/[-_\s]/g, "");
@@ -610,7 +714,11 @@ export class EvidenceGapEngine {
   ): Record<EvidenceCategory, EvidenceCategoryAssessment> {
     const assessments = {} as Record<EvidenceCategory, EvidenceCategoryAssessment>;
 
-    for (const [categoryKey, requirement] of Object.entries(EVIDENCE_REQUIREMENTS)) {
+    // Only iterate the categories present in THIS category's config. For IR-5
+    // that's 4 categories; the spouse-only ones are absent, so no empty
+    // "marriage" cards are ever produced.
+    for (const [categoryKey, requirement] of Object.entries(this.requirements)) {
+      if (!requirement) continue;
       const category = categoryKey as EvidenceCategory;
       const categoryItems = items.filter((item) => item.category === category);
 
@@ -990,7 +1098,8 @@ export class EvidenceGapEngine {
     let found = 0;
 
     for (const [category, assessment] of Object.entries(assessments)) {
-      const requirement = EVIDENCE_REQUIREMENTS[category as EvidenceCategory];
+      const requirement = this.requirements[category as EvidenceCategory];
+      if (!requirement) continue;
       const requiredReqItems = requirement.items.filter((r) => r.evidenceType === "REQUIRED");
 
       for (const reqItem of requiredReqItems) {

@@ -707,6 +707,34 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   ],
 };
 
+/**
+ * ─── Category-specific vs shared checkers ────────────────────────────────────
+ *
+ * Of all the checkers above, only these five encode SPOUSE-specific meaning —
+ * marriage dates, the I-130↔DS-260 cross-form baseline, and the prior-marriage
+ * disclosures. Every OTHER step (filing method, fees, uploads, receipts,
+ * mailing, NVC fees, civil docs, I-864, medical, police, polio, interview…) is
+ * identical for any family-based category.
+ *
+ * So instead of copy-pasting the whole registry for IR-5, we derive the shared
+ * subset once by removing these five keys. IR-5 then only has to supply its own
+ * five parent-oriented replacements — see `lib/case-strength/categories/ir5.ts`.
+ */
+export const CATEGORY_SPECIFIC_STEP_KEYS = [
+  "step_1_4", // relationship / marriage + DOB baseline capture
+  "step_1_9", // unresolved eligibility blockers
+  "step_1_10", // final pre-submission consistency check
+  "step_2_3", // DS-260 ↔ I-130 cross-form consistency + disclosures
+  "step_3_7", // interview-readiness disclosures
+] as const;
+
+/** The checkers shared by every visa category (IR-1's registry minus the 5 above). */
+export const COMMON_STEP_CHECKERS: Record<string, StepChecker> = Object.fromEntries(
+  Object.entries(IR1_STEP_CHECKERS).filter(
+    ([key]) => !CATEGORY_SPECIFIC_STEP_KEYS.includes(key as (typeof CATEGORY_SPECIFIC_STEP_KEYS)[number])
+  )
+);
+
 // ─── Chapter 2 helper: DS-260 mandatory-disclosure reminders ────────────────
 
 /**
@@ -714,7 +742,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
  * Omitting it is treated as misrepresentation (INA 212(a)(6)(C)) — a far more
  * common cause of trouble than the underlying issue itself.
  */
-function ds260Disclosures(
+export function sharedDs260Disclosures(
   answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined
 ): StepCheck[] {
   if (!answers) return [];
@@ -724,14 +752,6 @@ function ds260Disclosures(
     return typeof v === "string" ? v : undefined;
   };
 
-  const q3s1 = get("q3", "q3s1");
-  if (q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both") {
-    checks.push({
-      level: "warning",
-      title: "Declare the prior marriage on DS-260",
-      hint: "List every prior marriage and how it ended. It must match your I-130 and the termination documents.",
-    });
-  }
   if (get("q5", "q5s1") === "yes") {
     checks.push({
       level: "warning",
@@ -756,6 +776,27 @@ function ds260Disclosures(
   return checks;
 }
 
+/**
+ * IR-1 (spouse) DS-260 disclosures = the spouse-only prior-marriage reminder
+ * plus the shared ones. IR-5 reuses `sharedDs260Disclosures` directly.
+ */
+function ds260Disclosures(
+  answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined
+): StepCheck[] {
+  if (!answers) return [];
+  const checks: StepCheck[] = [];
+  const q3s1 = typeof answers?.q3?.q3s1 === "string" ? (answers.q3!.q3s1 as string) : undefined;
+  if (q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both") {
+    checks.push({
+      level: "warning",
+      title: "Declare the prior marriage on DS-260",
+      hint: "List every prior marriage and how it ended. It must match your I-130 and the termination documents.",
+    });
+  }
+  checks.push(...sharedDs260Disclosures(answers));
+  return checks;
+}
+
 // ─── Chapter 3 helper: interview-readiness disclosure reminders ─────────────
 
 /**
@@ -764,7 +805,7 @@ function ds260Disclosures(
  * bring originals) rather than the DS-260 disclosure framing in
  * `ds260Disclosures`. Consistency with the filed DS-260 is the goal.
  */
-function interviewDisclosureReminders(
+export function sharedInterviewDisclosures(
   answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined
 ): StepCheck[] {
   if (!answers) return [];
@@ -774,14 +815,6 @@ function interviewDisclosureReminders(
     return typeof v === "string" ? v : undefined;
   };
 
-  const q3s1 = get("q3", "q3s1");
-  if (q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both") {
-    checks.push({
-      level: "info",
-      title: "Be ready to explain the prior marriage",
-      hint: "Expect questions about how a prior marriage ended. Your answer must match the dates and termination documents in your DS-260 and civil records.",
-    });
-  }
   if (get("q5", "q5s1") === "yes") {
     checks.push({
       level: "info",
@@ -803,6 +836,27 @@ function interviewDisclosureReminders(
       hint: "If you disclosed unlawful presence, be prepared to explain it. Confirm whether a waiver applies to your case before the interview.",
     });
   }
+  return checks;
+}
+
+/**
+ * IR-1 (spouse) interview reminders = spouse-only prior-marriage reminder plus
+ * the shared ones. IR-5 reuses `sharedInterviewDisclosures` directly.
+ */
+function interviewDisclosureReminders(
+  answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined
+): StepCheck[] {
+  if (!answers) return [];
+  const checks: StepCheck[] = [];
+  const q3s1 = typeof answers?.q3?.q3s1 === "string" ? (answers.q3!.q3s1 as string) : undefined;
+  if (q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both") {
+    checks.push({
+      level: "info",
+      title: "Be ready to explain the prior marriage",
+      hint: "Expect questions about how a prior marriage ended. Your answer must match the dates and termination documents in your DS-260 and civil records.",
+    });
+  }
+  checks.push(...sharedInterviewDisclosures(answers));
   return checks;
 }
 

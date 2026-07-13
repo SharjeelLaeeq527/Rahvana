@@ -6,6 +6,7 @@
 import { CaseProfile, CaseData, Journey } from "./types";
 import { CaseDataService } from "./service";
 import * as db from "./data-access";
+import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
 
 export interface StrengthScore {
   total_score: number; // 0-100%
@@ -27,6 +28,11 @@ export class CaseStrengthEngine {
       const caseProfile = await this.caseDataService.getCaseProfile(journeyId);
       const documents = await db.getJourneyDocumentsDB(journeyId);
       const journey = await db.getJourneyDB(journeyId);
+
+      // Resolve the visa-category profile so the relationship signal is
+      // category-aware. Unknown/missing types fall back to IR-1 (spouse), which
+      // preserves the original behavior exactly.
+      const profile = resolveCaseStrengthProfile(journey?.journey_type);
 
       const positive_signals: string[] = [];
       const risk_flags: StrengthScore["risk_flags"] = [];
@@ -79,53 +85,35 @@ export class CaseStrengthEngine {
       }
 
       // ─────────────────────────────────────────────────────────────
-      // SIGNAL 3: Relationship Evidence
+      // SIGNAL 3+4: Relationship Evidence + Age Gap (category-specific)
       // ─────────────────────────────────────────────────────────────
+      // Primitives computed here; the category profile decides how they score
+      // (see profile.strengthSignals.relationship — spouse vs parent).
       const hasChildren = caseProfile.all_data?.children_together?.data_value === true;
       const marriageYears = this.calculateYearsElapsed(
         caseProfile.all_data?.marriage_date?.data_value
       );
 
-      if (hasChildren) {
-        baseScore += 10;
-        positive_signals.push("Strong relationship evidence (children together documented).");
-      }
-
-      if (marriageYears >= 2) {
-        baseScore += 5;
-        positive_signals.push(
-          `Long-term marriage stability (> ${Math.floor(marriageYears)} years documented).`
-        );
-      } else if (marriageYears < 0.5 && marriageYears > 0) {
-        risk_flags.push({
-          code: "SHORT_MARRIAGE",
-          severity: "MEDIUM",
-          message:
-            "Short marriage duration (< 6 months) may trigger additional relationship scrutiny.",
-        });
-        baseScore -= 5;
-      }
-
-      // ─────────────────────────────────────────────────────────────
-      // SIGNAL 4: Age Gap Assessment (§13.1)
-      // ─────────────────────────────────────────────────────────────
+      // Age gap: computed here, scored by the category signal below. Spouse
+      // flags a gap > 15 yrs; parent ignores it (parent↔child gaps are normal).
       const sponsorDob = caseProfile.all_data?.sponsor_dob?.data_value;
       const beneficiaryDob = caseProfile.all_data?.beneficiary_dob?.data_value;
-
+      let ageGapYears: number | null = null;
       if (sponsorDob && beneficiaryDob) {
         const sponsorAge = Math.floor(this.calculateYearsElapsed(sponsorDob));
         const beneficiaryAge = Math.floor(this.calculateYearsElapsed(beneficiaryDob));
-        const ageGap = Math.abs(sponsorAge - beneficiaryAge);
-
-        if (ageGap > 15) {
-          risk_flags.push({
-            code: "HIGH_AGE_GAP",
-            severity: "MEDIUM",
-            message: `Large age gap (${ageGap} years) between sponsor and beneficiary may trigger requests for additional bona-fide evidence.`,
-          });
-          baseScore -= 5;
-        }
+        ageGapYears = Math.abs(sponsorAge - beneficiaryAge);
       }
+
+      // Category-specific scoring for the relationship + age-gap signals.
+      const relationship = profile.strengthSignals.relationship({
+        hasChildrenTogether: hasChildren,
+        marriageYears,
+        ageGapYears,
+      });
+      baseScore += relationship.scoreDelta;
+      positive_signals.push(...relationship.positiveSignals);
+      risk_flags.push(...relationship.riskFlags);
 
       // ─────────────────────────────────────────────────────────────
       // SIGNAL 5: Roadmap Progress
