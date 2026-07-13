@@ -43,8 +43,8 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
   // Measure rail size to calculate maximum drag distance
   const measure = () => {
     if (railRef.current) {
-      const HANDLE_SIZE = 44;
-      const PAD = 6;
+      const HANDLE_SIZE = 56;
+      const PAD = 0;
       const calculatedMax = Math.max(railRef.current.offsetWidth - HANDLE_SIZE - PAD * 2, 0);
       setMaxX(calculatedMax);
       maxXRef.current = calculatedMax;
@@ -154,8 +154,8 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
   };
 
   // Drag progress styles
-  const HANDLE_SIZE = 44;
-  const PAD = 6;
+  const HANDLE_SIZE = 56;
+  const PAD = 0;
   const stretch = maxX > 0 ? 1 + (currentX / maxX) * 0.16 : 1;
   const transformStyle = reduceMotion
     ? `translateX(${currentX}px)`
@@ -273,7 +273,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
                   aria-valuemax={100}
                   aria-valuenow={maxX > 0 ? Math.round((currentX / maxX) * 100) : 0}
                   aria-label="Slide to answer the consultation call, or press Enter"
-                  className={`handle absolute left-[6px] top-[6px] w-11 h-11 rounded-full bg-[var(--teal-deep)] text-white flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-shadow ${
+                  className={`handle absolute left-0 top-0 w-14 h-14 rounded-full bg-[var(--teal-deep)] text-white flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-shadow ${
                     isSnapping ? "snapping" : ""
                   } ${isNudging ? "nudging" : ""} ${isPulsing ? "pulsing" : ""} ${
                     phase === "connecting" || phase === "opening" || phase === "answered"
@@ -295,7 +295,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
                       />
                     </>
                   )}
-                  <Icons.Phone size={16} className="shrink-0" />
+                  <Icons.Phone size={20} className="shrink-0" />
                 </div>
               </div>
             </div>
