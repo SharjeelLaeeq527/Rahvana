@@ -160,7 +160,8 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
   const transformStyle = reduceMotion
     ? `translateX(${currentX}px)`
     : `translateX(${currentX}px) scaleX(${stretch})`;
-  const fillWidth = currentX + HANDLE_SIZE / 2 + PAD;
+  const fillWidth =
+    maxX > 0 ? currentX + HANDLE_SIZE + PAD + (currentX / maxX) * PAD : HANDLE_SIZE + PAD;
   const hintOpacity = maxX > 0 ? Math.max(0, 1 - currentX / (maxX * 0.4)) : 1;
 
   // React component key for remounting and running the CSS animations from scratch
@@ -168,7 +169,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
 
   return (
     <section className="consult-container relative overflow-hidden pt-10 pb-20 md:pt-14 md:pb-24 px-6 sm:px-10 lg:px-16 text-[var(--ink)]">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-12 items-center">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.10fr_0.90fr] gap-16 lg:gap-8 items-center">
         {/* Left Column */}
         <div className="order-2 lg:order-1 flex flex-col items-start">
           <div className="animate-fade-in-up">
