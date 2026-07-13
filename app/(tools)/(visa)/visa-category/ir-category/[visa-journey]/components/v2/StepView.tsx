@@ -1078,6 +1078,13 @@ export const StepView: React.FC<StepViewProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sId, isApprovalSaved]);
 
+  // Show doc questionnaire automatically when user visits step_1_2 and it is not completed yet
+  useEffect(() => {
+    if (sId === "step_1_2" && !isDocQuestionnaireCompleted) {
+      setShowDocQuestionnaire(true);
+    }
+  }, [sId, isDocQuestionnaireCompleted]);
+
   const handleNavigate = (stepId: string) => {
     // Sequential navigation guard: Step 1.1 -> Step 1.2
     if (stepId === "step_1_2" && !state.completedSteps.has("step_1_1")) {
@@ -3037,8 +3044,8 @@ export const StepView: React.FC<StepViewProps> = ({
                   />
                 )}
                 <div className="w-full flex flex-col items-center px-3 sm:px-4 pt-5 md:px-0 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                  {/* Questionnaire CTA */}
-                  {/* {currentStep.step_key === "step_1_2" && !isDocQuestionnaireCompleted && ( */}
+                  {/* Questionnaire CTA - Commented out (dev option) */}
+                  {/* {currentStep.step_key === "step_1_2" && !isDocQuestionnaireCompleted && (
                   <div className="max-w-3xl w-full mx-auto px-0 sm:px-2 md:px-4 pt-5 sm:pt-8 md:pt-14 pb-4 sm:pb-8 md:pb-12 flex flex-col gap-3">
                     <button
                       onClick={() => setShowDocQuestionnaire(true)}
@@ -3060,7 +3067,7 @@ export const StepView: React.FC<StepViewProps> = ({
                       </div>
                     </button>
                   </div>
-                  {/* )} */}
+                  )} */}
 
                   {/* Case Strength Tool — fixed right panel at xl; inline below xl */}
                   {currentStep.step_key === "step_1_2" && (
