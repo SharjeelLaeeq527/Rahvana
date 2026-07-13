@@ -12,11 +12,13 @@ export default function SectionBird({
   side,
   pos = "top-[12%]",
   size = "w-36 lg:w-48 xl:w-56",
+  className = "",
 }: {
   n: number;
   side: "left" | "right";
   pos?: string;
   size?: string;
+  className?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -44,8 +46,8 @@ export default function SectionBird({
       ref={ref}
       aria-hidden="true"
       className={`hidden md:block absolute z-0 pointer-events-none select-none transition-opacity duration-1000 ease-out ${
-        visible ? "opacity-40" : "opacity-0"
-      } ${sideClass} ${pos}`}
+        visible ? "opacity-55" : "opacity-0"
+      } ${className || sideClass} ${pos}`}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
