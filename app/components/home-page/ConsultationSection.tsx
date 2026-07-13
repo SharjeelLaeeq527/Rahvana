@@ -156,10 +156,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
   // Drag progress styles
   const HANDLE_SIZE = 56;
   const PAD = 0;
-  const stretch = maxX > 0 ? 1 + (currentX / maxX) * 0.16 : 1;
-  const transformStyle = reduceMotion
-    ? `translateX(${currentX}px)`
-    : `translateX(${currentX}px) scaleX(${stretch})`;
+  const transformStyle = `translateX(${currentX}px)`;
   const fillWidth =
     maxX > 0 ? currentX + HANDLE_SIZE + PAD + (currentX / maxX) * PAD : HANDLE_SIZE + PAD;
   const hintOpacity = maxX > 0 ? Math.max(0, 1 - currentX / (maxX * 0.4)) : 1;
@@ -243,26 +240,29 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
                 )}
               </div>
 
-              {/* Drag/Swipe Rail */}
-              <div
-                ref={railRef}
-                className="rail relative h-14 w-full rounded-full overflow-hidden bg-[var(--cream-deep)] select-none touch-none"
-              >
-                {/* Colored Fill Behind Drag handle */}
+              {/* Drag/Swipe Rail Container */}
+              <div className="relative h-14 w-full">
+                {/* Rail (with overflow-hidden for the background fill) */}
                 <div
-                  className="fill absolute top-0 bottom-0 left-0 rounded-full bg-[var(--fill-tint)]"
-                  style={{ width: `${fillWidth}px` }}
-                />
-
-                {/* Hint Text */}
-                <span
-                  className="hint absolute inset-0 flex items-center justify-center text-sm font-semibold tracking-wide text-[var(--sub)] pointer-events-none select-none"
-                  style={{ opacity: hintOpacity }}
+                  ref={railRef}
+                  className="rail absolute inset-0 rounded-full overflow-hidden bg-[var(--cream-deep)] select-none touch-none"
                 >
-                  Slide to book
-                </span>
+                  {/* Colored Fill Behind Drag handle */}
+                  <div
+                    className="fill absolute top-0 bottom-0 left-0 rounded-full bg-[var(--fill-tint)]"
+                    style={{ width: `${fillWidth}px` }}
+                  />
 
-                {/* Drag Handle */}
+                  {/* Hint Text */}
+                  <span
+                    className="hint absolute inset-0 flex items-center justify-center text-sm font-semibold tracking-wide text-[var(--sub)] pointer-events-none select-none"
+                    style={{ opacity: hintOpacity }}
+                  >
+                    Slide to book
+                  </span>
+                </div>
+
+                {/* Drag Handle (outside rail to prevent shadow/border clipping) */}
                 <div
                   ref={handleRef}
                   onPointerDown={onPointerDown}
