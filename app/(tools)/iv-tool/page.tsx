@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { Loader } from "@/components/ui/spinner";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 interface SchedulingResult {
   Post: string;
@@ -304,8 +305,20 @@ export default function Home() {
   return (
     <div className="bg-linear-to-b from-primary/10 to-white site-main-px site-main-py mt-[55px]">
       <div className="">
-        <h1 className="text-3xl font-bold text-primary mb-2">{t("ivTool.title")}</h1>
-        <p className="text-gray-600 mb-6">{t("ivTool.subtitle")}</p>
+        <div className="flex justify-between items-start gap-4 mb-6">
+          <div>
+            <h1 className="text-3xl font-bold text-primary mb-2">{t("ivTool.title")}</h1>
+            <p className="text-gray-600">{t("ivTool.subtitle")}</p>
+          </div>
+          <QuickAccessButton
+            item={{
+              id: "queue-watch",
+              title: "DQ Status Check",
+              href: "/iv-tool",
+              icon_name: "Clock",
+            }}
+          />
+        </div>
 
         <div className="bg-white p-6 rounded-lg shadow-md mb-8 text-gray-700 text-sm leading-relaxed">
           <p className="mb-3">{t("ivTool.description.p1")}</p>

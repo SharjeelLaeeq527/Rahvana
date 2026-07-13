@@ -21,6 +21,8 @@ import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader"
 import StatCard from "@/app/components/shared/StatCard";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Loader } from "@/components/ui/spinner";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { useQuickAccess } from "@/app/context/QuickAccessContext";
 
 // --- Types ---
 interface Service {
@@ -571,6 +573,25 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                     countLabel={bookingData.countLabel}
                     description={bookingData.description}
                     extraContent={bookingData.extraContent}
+                    quickAccessButton={
+                      <QuickAccessButton
+                        item={{
+                          id: `service-${service.id}`,
+                          title: service.title,
+                          href: service.href,
+                          icon_name: (() => {
+                            const mapping: Record<string, string> = {
+                              "book-a-consultation": "Briefcase",
+                              "pcc-filing-service-—-sindh": "Shield",
+                              "book-medical-appointment": "Clock",
+                              "urdu-→-english-translation": "Files",
+                            };
+                            return mapping[service.id] || "Briefcase";
+                          })(),
+                        }}
+                        mode="icon"
+                      />
+                    }
                     actionButton={bookingData.actionButton}
                     onClick={() => {
                       if (bookingData.onClick) {
@@ -725,9 +746,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                             </div>
                           )}
                         </div>
-                        {req.admin_notes && (
-                          <CollapsibleAdminNotes notes={req.admin_notes} />
-                        )}
+                        {req.admin_notes && <CollapsibleAdminNotes notes={req.admin_notes} />}
                       </div>
                     ))}
                   </div>
@@ -811,22 +830,31 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                             {appointment.passport_number || "N/A"}
                           </div>
                           <div>
-                            {appointment.preferred_date
-                              ? <><span className="font-medium">Appointment Date:</span>{" "}
-                              {new Date(appointment.preferred_date).toLocaleDateString(undefined, {
-                                  month: "short",
-                                  day: "numeric",
-                                  year: "numeric",
-                                })}
+                            {appointment.preferred_date ? (
+                              <>
+                                <span className="font-medium">Appointment Date:</span>{" "}
+                                {new Date(appointment.preferred_date).toLocaleDateString(
+                                  undefined,
+                                  {
+                                    month: "short",
+                                    day: "numeric",
+                                    year: "numeric",
+                                  }
+                                )}
                               </>
-                              : "N/A"}
+                            ) : (
+                              "N/A"
+                            )}
                           </div>
                           <div>
-                            {appointment.preferred_time
-                              ? <><span className="font-medium">Appointment Time:</span>{" "}
-                              {appointment.preferred_time}
+                            {appointment.preferred_time ? (
+                              <>
+                                <span className="font-medium">Appointment Time:</span>{" "}
+                                {appointment.preferred_time}
                               </>
-                              : "N/A"}
+                            ) : (
+                              "N/A"
+                            )}
                           </div>
                         </div>
                         {appointment.notes && (
@@ -859,6 +887,8 @@ const CATEGORY_STYLES: Record<
     innerBox: string;
     link: string;
     borderGradient: string;
+    hoverBg: string;
+    hoverBorder: string;
   }
 > = {
   "expert-help": {
@@ -866,24 +896,32 @@ const CATEGORY_STYLES: Record<
     innerBox: "bg-white/20",
     link: "text-indigo-600 dark:text-indigo-400",
     borderGradient: "from-indigo-400 to-indigo-300 dark:from-indigo-400 dark:to-indigo-300",
+    hoverBg: "group-hover:bg-indigo-100 dark:group-hover:bg-indigo-950/10",
+    hoverBorder: "group-hover:border-indigo-500/30 dark:group-hover:border-indigo-500/20",
   },
   "pakistan-docs-services": {
     iconBox: "bg-emerald-600 text-white border-transparent dark:bg-emerald-500",
     innerBox: "bg-white/20",
     link: "text-emerald-600 dark:text-emerald-400",
     borderGradient: "from-emerald-400 to-emerald-300 dark:from-emerald-400 dark:to-emerald-300",
+    hoverBg: "group-hover:bg-emerald-100 dark:group-hover:bg-emerald-950/10",
+    hoverBorder: "group-hover:border-emerald-500/30 dark:group-hover:border-emerald-500/20",
   },
   medical: {
     iconBox: "bg-rose-600 text-white border-transparent dark:bg-rose-500",
     innerBox: "bg-white/20",
     link: "text-rose-600 dark:text-rose-400",
     borderGradient: "from-rose-400 to-rose-300 dark:from-rose-400 dark:to-rose-300",
+    hoverBg: "group-hover:bg-rose-100 dark:group-hover:bg-rose-950/10",
+    hoverBorder: "group-hover:border-rose-500/30 dark:group-hover:border-rose-500/20",
   },
   documents: {
     iconBox: "bg-amber-600 text-white border-transparent dark:bg-amber-500",
     innerBox: "bg-white/20",
     link: "text-amber-600 dark:text-amber-400",
     borderGradient: "from-amber-300 to-amber-200 dark:from-amber-300 dark:to-amber-200",
+    hoverBg: "group-hover:bg-amber-100 dark:group-hover:bg-amber-950/10",
+    hoverBorder: "group-hover:border-amber-500/30 dark:group-hover:border-amber-500/20",
   },
   // Fallback for any other categories
   Default: {
@@ -891,6 +929,8 @@ const CATEGORY_STYLES: Record<
     innerBox: "bg-white/20",
     link: "text-slate-600 dark:text-slate-400",
     borderGradient: "from-slate-400 to-slate-300 dark:from-slate-400 dark:to-slate-300",
+    hoverBg: "group-hover:bg-slate-100 dark:group-hover:bg-slate-950/10",
+    hoverBorder: "group-hover:border-slate-500/30 dark:group-hover:border-slate-500/20",
   },
 };
 
@@ -906,11 +946,15 @@ function ServiceCard({
   const { t } = useLanguage();
   const plan = usePlan();
   const styles = CATEGORY_STYLES[service.categoryId] || CATEGORY_STYLES["Default"];
+  const { isInQuickAccess } = useQuickAccess();
 
   // Entitlement check
   const featureLocked =
     !!service.entitlementFeature && !plan.isLoading && plan.isLocked(service.entitlementFeature);
   const isNavigable = !service.disabled;
+
+  const isPinned = isInQuickAccess(`service-${service.id}`);
+
   const CardWrapper = isNavigable ? Link : "div";
 
   const handleClick = (e: React.MouseEvent) => {
@@ -927,11 +971,14 @@ function ServiceCard({
       className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
       transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
       ${
-        featureLocked
-          ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
-          : isNavigable
-            ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-            : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
+        // isPinned
+        //   ? "border-[3px] border-[#0d7377] dark:border-[#32e0c4] shadow-md hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+        //   : 
+          featureLocked
+            ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
+            : isNavigable
+              ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+              : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
       }
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
@@ -968,10 +1015,10 @@ function ServiceCard({
 
       {/* (Removed tier badge — ribbon now indicates locked state) */}
 
-      {/* Border gradient on hover (category color) */}
+      {/* Hover overlay with light category-specific background & border */}
       {!featureLocked && (
         <div
-          className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
+          className={`absolute inset-0 rounded-[30px] border border-transparent transition-all duration-400 pointer-events-none z-0 ${styles.hoverBg} ${styles.hoverBorder}`}
         />
       )}
 
@@ -980,9 +1027,32 @@ function ServiceCard({
 
       {/* Content */}
       <div className="relative z-10 flex flex-col grow pt-2">
-        <h3 className="text-xl font-bold text-foreground mb-1 transition-colors">
-          {service.title}
-        </h3>
+        <div className="flex justify-between items-start gap-3">
+          <h3 className="text-xl font-bold text-foreground mb-1 transition-colors">
+            {service.title}
+          </h3>
+          {!featureLocked && (
+            <div className="relative z-50 shrink-0">
+              <QuickAccessButton
+                item={{
+                  id: `service-${service.id}`,
+                  title: service.title,
+                  href: service.href,
+                  icon_name: (() => {
+                    const mapping: Record<string, string> = {
+                      "book-a-consultation": "Briefcase",
+                      "pcc-filing-service-—-sindh": "Shield",
+                      "book-medical-appointment": "Clock",
+                      "urdu-→-english-translation": "Files",
+                    };
+                    return mapping[service.id] || "Briefcase";
+                  })(),
+                }}
+                mode="icon"
+              />
+            </div>
+          )}
+        </div>
         <div className="mb-3">
           <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground/80 bg-muted px-2 py-0.5 rounded">
             {service.categoryLabel}
@@ -1026,7 +1096,9 @@ function CollapsibleAdminNotes({ notes }: { notes: string }) {
         className="w-full flex items-center justify-between px-3 py-2 bg-teal-50/70 hover:bg-teal-50 text-xs font-bold text-teal-800 transition-colors focus:outline-none"
       >
         <span>Admin Message</span>
-        <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`} />
+        <ChevronDown
+          className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+        />
       </button>
       {isOpen && (
         <div className="px-3 py-2.5 bg-white text-xs text-slate-700 border-t border-teal-50 leading-relaxed">

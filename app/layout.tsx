@@ -12,6 +12,7 @@ import { PlanProvider } from "./context/PlanContext";
 import { UserProfileProvider } from "./context/UserProfileContext";
 import { PlanTierDevToggle } from "./components/entitlements/PlanTierDevToggle"; // DEV ONLY — uncomment for local testing
 import { ToolsGuard } from "./(tools)/ToolsGuard";
+import { QuickAccessProvider } from "./context/QuickAccessContext";
 
 export const metadata: Metadata = {
   title: "Rahvana",
@@ -71,6 +72,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AuthProvider>
             <PlanProvider>
               <UserProfileProvider>
+                <QuickAccessProvider>
                 <LanguageProvider>
                   {/* <ThemeProvider
               attribute="class"
@@ -84,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Footer />
                   {/* </ThemeProvider> */}
                 </LanguageProvider>
+                </QuickAccessProvider>
                 <PlanTierDevToggle />
                 {/* DEV ONLY — uncomment for local testing */}
               </UserProfileProvider>

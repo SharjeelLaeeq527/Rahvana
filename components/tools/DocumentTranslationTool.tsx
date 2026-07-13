@@ -18,6 +18,7 @@ import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { CreditCard, ShoppingBag, Sparkles, Crown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 interface DocumentTranslationToolProps {
   showHeader?: boolean;
@@ -431,8 +432,19 @@ export default function DocumentTranslationTool({
           <p className="mt-3 text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
             {t("documentTranslation.uploadPage.subtitle")}
           </p>
+          <div className="flex justify-center mt-4">
+            <QuickAccessButton
+              item={{
+                id: "service-urdu-→-english-translation",
+                title: t("documentTranslation.uploadPage.title") || "Certified Document Translation",
+                href: "/document-translation",
+                icon_name: "Files",
+              }}
+            />
+          </div>
         </header>
       )}
+
 
       {!uploadSuccess ? (
         currentStep === 1 ? (

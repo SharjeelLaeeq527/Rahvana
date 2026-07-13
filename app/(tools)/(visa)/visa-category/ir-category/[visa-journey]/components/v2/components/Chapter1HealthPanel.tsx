@@ -1,5 +1,6 @@
 "use client";
 
+
 /**
  * Chapter1HealthPanel — side panel showing the current step's case-strength checks.
  *

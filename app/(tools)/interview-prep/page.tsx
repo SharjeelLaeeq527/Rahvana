@@ -22,6 +22,7 @@ import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import type { InterviewFormData } from "@/app/components/interview-prep/types";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { NarrativeModal } from "../(visa)/221g-action-planner/components/NarrativeModal";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 import type {
   InterviewCategoryConfig,
@@ -1099,6 +1100,16 @@ export default function InterviewPreparation() {
               ? selectedCategory.description
               : "Prepare for your visa interview with personalized questions"}
           </p>
+          <div className="flex justify-center mt-4">
+            <QuickAccessButton
+              item={{
+                id: "interview-prep",
+                title: "Interview Prep",
+                href: "/interview-prep",
+                icon_name: "MessageSquare",
+              }}
+            />
+          </div>
         </div>
 
         {renderProgressSections()}

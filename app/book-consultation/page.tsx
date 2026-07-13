@@ -30,6 +30,7 @@ import { PageGate } from "@/app/components/entitlements/PageGate";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 interface Booking {
   id: string;
@@ -2871,31 +2872,42 @@ const ConsultationBookingPageContent = () => {
                 </div>
               )}
             </div>
-            <div className="flex gap-3">
-              <Button
-                onClick={() => {
-                  setActiveView("booking");
+            <div className="flex flex-col items-start md:items-end gap-4 shrink-0">
+              <QuickAccessButton
+                item={{
+                  id: "book-a-consultation",
+                  title: "Book Consultation",
+                  href: "/book-consultation",
+                  icon_name: "Briefcase",
                 }}
-                className={cn(
-                  "px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2",
-                  activeView === ("booking" as "booking" | "requests")
-                    ? "bg-white text-teal-800 shadow-lg"
-                    : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
-                )}
-              >
-                Book New
-              </Button>
-              <Button
-                onClick={() => setActiveView("requests")}
-                className={cn(
-                  "px-6 py-2 rounded-full text-sm font-bold transition-all",
-                  activeView === ("requests" as "booking" | "requests")
-                    ? "bg-white text-teal-800 shadow-lg"
-                    : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
-                )}
-              >
-                My Requests
-              </Button>
+                className="!text-white !border-white/25 hover:!bg-white/20 focus-visible:ring-white/50"
+              />
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => {
+                    setActiveView("booking");
+                  }}
+                  className={cn(
+                    "px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2",
+                    activeView === ("booking" as "booking" | "requests")
+                      ? "bg-white text-teal-800 shadow-lg"
+                      : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                  )}
+                >
+                  Book New
+                </Button>
+                <Button
+                  onClick={() => setActiveView("requests")}
+                  className={cn(
+                    "px-6 py-2 rounded-full text-sm font-bold transition-all",
+                    activeView === ("requests" as "booking" | "requests")
+                      ? "bg-white text-teal-800 shadow-lg"
+                      : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                  )}
+                >
+                  My Requests
+                </Button>
+              </div>
             </div>
           </div>
         </div>

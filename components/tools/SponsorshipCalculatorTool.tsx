@@ -21,6 +21,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 // --- CONSTANTS ---
 const I864_URL = "https://www.uscis.gov/sites/default/files/document/forms/i-864.pdf";
@@ -330,6 +331,15 @@ export default function SponsorshipCalculatorTool({
         <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
           {stepIdx + 1} / 11
         </div>
+        <QuickAccessButton
+          item={{
+            id: "sponsorship-calculator",
+            title: "Sponsorship Calculator",
+            href: "/affidavit-support-calculator",
+            icon_name: "Calculator",
+          }}
+          mode="icon"
+        />
       </div>
 
       {/* Body */}

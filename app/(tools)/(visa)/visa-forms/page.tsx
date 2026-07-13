@@ -11,6 +11,7 @@ import {
   ExternalLink,
   Filter,
 } from "lucide-react";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 interface VisaForm {
   id?: string;
@@ -704,6 +705,16 @@ export default function VisaFormSelector() {
             Browse all forms organized by your journey stage, or search instantly to find exactly
             what you need.
           </p>
+          <div className="flex justify-center mt-4">
+            <QuickAccessButton
+              item={{
+                id: "form-forge",
+                title: "Smart Form Filler",
+                href: "/visa-forms",
+                icon_name: "Wand2",
+              }}
+            />
+          </div>
           {/* <p className="text-gray-500 max-w-2xl mx-auto">
             Fill out official U.S. visa forms with helpful guidance at every
             step

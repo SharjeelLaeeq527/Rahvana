@@ -81,6 +81,7 @@ import { RoadmapData } from "./components/types";
 import ScenarioSelectionModal from "./components/ScenarioSelectionModal";
 import VisaCategoryTooltip from "./components/VisaCategoryToolTip";
 import RoadmapLayoutV2 from "./components/v2/RoadmapLayoutV2";
+import RoadmapLayoutV3 from "@/app/components/journey-v3/RoadmapLayoutV3";
 
 export default function IR1JourneyPage() {
   const { user } = useAuth();
@@ -232,6 +233,11 @@ export default function IR1JourneyPage() {
   // Use V2 for IR-1/CR-1 journeys
   if (visaJourney === "ir-1" || visaJourney === "cr-1") {
     return <RoadmapLayoutV2 data={roadmapData} state={state} actions={actions as any} />;
+  }
+
+  // Use V3 for IR-5 parent journey (JSON-driven)
+  if (visaJourney === "ir-5") {
+    return <RoadmapLayoutV3 data={roadmapData as any} state={state} actions={actions as any} />;
   }
 
   // Fallback for other journeys (Old UI)

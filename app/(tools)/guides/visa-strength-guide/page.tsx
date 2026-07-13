@@ -368,6 +368,8 @@ const CATEGORY_STYLES: Record<
     innerBox: string;
     link: string;
     borderGradient: string;
+    hoverBg: string;
+    hoverBorder: string;
   }
 > = {
   "Pakistan Docs": {
@@ -375,42 +377,56 @@ const CATEGORY_STYLES: Record<
     innerBox: "bg-white/20",
     link: "text-green-600 dark:text-green-400",
     borderGradient: "from-green-400 to-green-300 dark:from-green-400 dark:to-green-300",
+    hoverBg: "group-hover:bg-green-50/40 dark:group-hover:bg-green-950/10",
+    hoverBorder: "group-hover:border-green-500/30 dark:group-hover:border-green-500/20",
   },
   "Embassy Logistics": {
     iconBox: "bg-blue-600 text-white border-transparent dark:bg-blue-500",
     innerBox: "bg-white/20",
     link: "text-blue-600 dark:text-blue-400",
     borderGradient: "from-blue-400 to-blue-300 dark:from-blue-400 dark:to-blue-300",
+    hoverBg: "group-hover:bg-blue-50/40 dark:group-hover:bg-blue-950/10",
+    hoverBorder: "group-hover:border-blue-500/30 dark:group-hover:border-blue-500/20",
   },
   "Arrival & Travel": {
     iconBox: "bg-sky-600 text-white border-transparent dark:bg-sky-500",
     innerBox: "bg-white/20",
     link: "text-sky-600 dark:text-sky-400",
     borderGradient: "from-sky-400 to-sky-300 dark:from-sky-400 dark:to-sky-300",
+    hoverBg: "group-hover:bg-sky-50/40 dark:group-hover:bg-sky-950/10",
+    hoverBorder: "group-hover:border-sky-500/30 dark:group-hover:border-sky-500/20",
   },
   "Financial & Sponsorship": {
     iconBox: "bg-emerald-600 text-white border-transparent dark:bg-emerald-500",
     innerBox: "bg-white/20",
     link: "text-emerald-600 dark:text-emerald-400",
     borderGradient: "from-emerald-400 to-emerald-300 dark:from-emerald-400 dark:to-emerald-300",
+    hoverBg: "group-hover:bg-emerald-50/40 dark:group-hover:bg-emerald-950/10",
+    hoverBorder: "group-hover:border-emerald-500/30 dark:group-hover:border-emerald-500/20",
   },
   "Medical & Exam": {
     iconBox: "bg-teal-600 text-white border-transparent dark:bg-teal-500",
     innerBox: "bg-white/20",
     link: "text-teal-600 dark:text-teal-400",
     borderGradient: "from-teal-400 to-teal-300 dark:from-teal-400 dark:to-teal-300",
+    hoverBg: "group-hover:bg-teal-50/40 dark:group-hover:bg-teal-950/10",
+    hoverBorder: "group-hover:border-teal-500/30 dark:group-hover:border-teal-500/20",
   },
   "Relationship Evidence": {
     iconBox: "bg-rose-600 text-white border-transparent dark:bg-rose-500",
     innerBox: "bg-white/20",
     link: "text-rose-600 dark:text-rose-400",
     borderGradient: "from-rose-400 to-rose-300 dark:from-rose-400 dark:to-rose-300",
+    hoverBg: "group-hover:bg-rose-50/40 dark:group-hover:bg-rose-950/10",
+    hoverBorder: "group-hover:border-rose-500/30 dark:group-hover:border-rose-500/20",
   },
   "Visa Strategy": {
     iconBox: "bg-violet-600 text-white border-transparent dark:bg-violet-500",
     innerBox: "bg-white/20",
     link: "text-violet-600 dark:text-violet-400",
     borderGradient: "from-violet-400 to-violet-300 dark:from-violet-400 dark:to-violet-300",
+    hoverBg: "group-hover:bg-violet-50/40 dark:group-hover:bg-violet-950/10",
+    hoverBorder: "group-hover:border-violet-500/30 dark:group-hover:border-violet-500/20",
   },
 };
 
@@ -446,9 +462,9 @@ function GuideCard({ guide, index }: { guide: Guide; index: number }) {
         <Icon className="w-6 h-6 stroke-2" />
       </div>
 
-      {/* Floating Border Gradient (Pseudo-element emulation) */}
+      {/* Hover overlay with light category-specific background & border */}
       <div
-        className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
+        className={`absolute inset-0 rounded-[30px] border border-transparent transition-all duration-400 pointer-events-none z-0 ${styles.hoverBg} ${styles.hoverBorder}`}
       />
 
       {/* Radial Glow Effect */}

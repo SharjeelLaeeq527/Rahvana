@@ -23,6 +23,7 @@ const MultiFormatConverter = dynamic(
 );
 import { useLanguage } from "@/app/context/LanguageContext";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 export default function PDFProcessingPage() {
   const { t } = useLanguage();
@@ -60,6 +61,24 @@ export default function PDFProcessingPage() {
       {/* Normal UI - Tabs + Content */}
       {!pdfFile && (
         <>
+          {/* Header */}
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">PDF Tool Kit</h1>
+            <p className="text-gray-600 mb-4">
+              Merge, compress, convert, and edit your PDF files easily.
+            </p>
+            <div className="flex justify-center">
+              <QuickAccessButton
+                item={{
+                  id: "pdf-toolkit",
+                  title: "PDF Tool Kit",
+                  href: "/pdf-processing",
+                  icon_name: "Files",
+                }}
+              />
+            </div>
+          </div>
+
           {/* Tabs */}
           <div className="flex flex-wrap gap-2 md:gap-4 mb-8 bg-white shadow-md rounded-full p-2 justify-center">
             <button
