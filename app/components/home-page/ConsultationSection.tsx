@@ -95,9 +95,10 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
     const handlePointerUp = () => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
 
       setIsSnapping(true);
-      if (maxXRef.current > 0 && currentXRef.current > maxXRef.current * 0.7) {
+      if (maxXRef.current > 0 && currentXRef.current > maxXRef.current * 0.5) {
         updateX(maxXRef.current);
         runCompletion();
       } else {
@@ -110,6 +111,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
 
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
   };
 
   // Keyboard accessibility
@@ -168,7 +170,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
     <section className="consult-container relative overflow-hidden pt-10 pb-20 md:pt-14 md:pb-24 px-6 sm:px-10 lg:px-16 text-[var(--ink)]">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.10fr_0.90fr] gap-16 lg:gap-8 items-center">
         {/* Left Column */}
-        <div className="order-2 lg:order-1 flex flex-col items-start">
+        <div className="order-1 lg:order-1 flex flex-col items-start">
           <div className="animate-fade-in-up">
             <span className="badge inline-flex items-center gap-2 px-3 py-1 border border-[var(--line)] bg-white/60 text-[var(--teal-deep)] rounded-full text-xs font-semibold tracking-wider uppercase shadow-sm">
               <span className="dot w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
@@ -199,7 +201,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
         </div>
 
         {/* Right Column */}
-        <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
+        <div className="order-2 lg:order-2 flex justify-center lg:justify-end">
           <div className="card-wrap relative w-full max-w-sm">
             {/* Ambient background glow */}
             <div className="glow" aria-hidden="true" />
@@ -273,7 +275,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
                   aria-valuemax={100}
                   aria-valuenow={maxX > 0 ? Math.round((currentX / maxX) * 100) : 0}
                   aria-label="Slide to answer the consultation call, or press Enter"
-                  className={`handle absolute left-0 top-0 w-14 h-14 rounded-full bg-[var(--teal-deep)] text-white flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-shadow ${
+                  className={`handle touch-none absolute left-0 top-0 w-14 h-14 rounded-full bg-[var(--teal-deep)] text-white flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-shadow ${
                     isSnapping ? "snapping" : ""
                   } ${isNudging ? "nudging" : ""} ${isPulsing ? "pulsing" : ""} ${
                     phase === "connecting" || phase === "opening" || phase === "answered"
