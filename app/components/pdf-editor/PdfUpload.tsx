@@ -106,7 +106,7 @@ export function PDFUpload() {
 
   return (
     <div className="w-full">
-      <div className="bg-primary/90 p-6 md:p-10 text-white rounded-t-2xl">
+      <div className="bg-gradient-to-r from-rahvana-primary to-rahvana-primary-dark p-6 md:p-10 text-white rounded-t-2xl">
         <h1 className="text-3xl md:text-5xl font-bold text-center mb-2 md:mb-3">
           {t("pdfProcessing.editor.title")}
         </h1>
@@ -137,15 +137,15 @@ export function PDFUpload() {
             className={`block border-2 border-dashed rounded-xl p-8 text-center transition-all ${
               loading
                 ? "border-gray-300 bg-gray-50 cursor-not-allowed"
-                : "border-primary/90 hover:border-primary hover:bg-primary/10 cursor-pointer"
+                : "border-rahvana-primary/40 hover:border-rahvana-primary hover:bg-rahvana-primary-pale/50 cursor-pointer"
             }`}
           >
             <Upload
-              className={`mx-auto h-16 w-16 mb-3 ${result ? "text-primary/90" : "text-gray-400"}`}
+              className={`mx-auto h-16 w-16 mb-3 ${result ? "text-rahvana-primary" : "text-gray-400"}`}
             />
             {result ? (
               <div>
-                <p className="text-primary/90 font-semibold text-lg mb-1">
+                <p className="text-rahvana-primary font-semibold text-lg mb-1">
                   {t("pdfProcessing.editor.successUpload")}
                 </p>
                 <p className="text-sm text-gray-500">
@@ -171,7 +171,7 @@ export function PDFUpload() {
         <Button
           onClick={handleButtonClick}
           disabled={loading}
-          className="w-full lg:w-1/2 lg:mx-auto bg-primary/90 text-white py-4 lg:py-7 rounded-xl font-semibold text-lg hover:bg-primary disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          className="w-full lg:w-1/2 lg:mx-auto bg-rahvana-primary text-white py-4 lg:py-7 rounded-xl font-semibold text-lg hover:bg-rahvana-primary-dark disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:shadow-none transition-all flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
         >
           {loading ? (
             <>{t("pdfProcessing.editor.loading")}</>
@@ -198,25 +198,34 @@ export function PDFUpload() {
 
         {/* Success Result */}
         {result && (
-          <div className="mt-6 p-6 bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-lg shadow-sm">
-            <div className="flex items-center text-green-700 mb-4">
-              <FileCheck className="h-6 w-6 mr-3" />
-              <span className="font-bold text-lg">{t("pdfProcessing.editor.successUpload")}</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="text-gray-500 text-xs font-medium mb-1">
-                  {t("pdfProcessing.compress.originalSize")}
-                </p>
-                <p className="text-gray-800 font-bold text-xl">
-                  {formatBytes(result.originalSize)}
-                </p>
+          <div className="mt-8 bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
+            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 flex items-center gap-3">
+              <div className="bg-white/20 p-2 rounded-full">
+                <FileCheck className="h-6 w-6 text-white" />
               </div>
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="text-gray-500 text-xs font-medium mb-1">
-                  {t("pdfProcessing.merge.pages")}
-                </p>
-                <p className="text-gray-800 font-bold text-xl">{result.totalPages}</p>
+              <div>
+                <h3 className="text-white font-bold text-lg">
+                  {t("pdfProcessing.editor.successUpload")}
+                </h3>
+                <p className="text-white/80 text-sm">Your PDF is ready to edit</p>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
+                  <p className="text-gray-500 text-xs font-medium mb-1">
+                    {t("pdfProcessing.compress.originalSize")}
+                  </p>
+                  <p className="text-gray-800 font-bold text-lg">
+                    {formatBytes(result.originalSize)}
+                  </p>
+                </div>
+                <div className="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100">
+                  <p className="text-emerald-600 text-xs font-medium mb-1">
+                    {t("pdfProcessing.merge.pages")}
+                  </p>
+                  <p className="text-emerald-700 font-bold text-2xl">{result.totalPages}</p>
+                </div>
               </div>
             </div>
           </div>

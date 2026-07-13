@@ -23,6 +23,7 @@ const MultiFormatConverter = dynamic(
 );
 import { useLanguage } from "@/app/context/LanguageContext";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 export default function PDFProcessingPage() {
   const { t } = useLanguage();
@@ -44,7 +45,7 @@ export default function PDFProcessingPage() {
           <div className="flex justify-between items-center p-4 border-b border-gray-200">
             <button
               onClick={handleCloseEditor}
-              className="bg-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-primary/90 transition"
+              className="bg-rahvana-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-rahvana-primary-dark transition"
             >
               ← {t("pdfProcessing.back")}
             </button>
@@ -60,12 +61,32 @@ export default function PDFProcessingPage() {
       {/* Normal UI - Tabs + Content */}
       {!pdfFile && (
         <>
+          {/* Header */}
+          <div className="text-center mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">PDF Tool Kit</h1>
+            <p className="text-gray-600 mb-4">
+              Merge, compress, convert, and edit your PDF files easily.
+            </p>
+            <div className="flex justify-center">
+              <QuickAccessButton
+                item={{
+                  id: "pdf-toolkit",
+                  title: "PDF Tool Kit",
+                  href: "/pdf-processing",
+                  icon_name: "Files",
+                }}
+              />
+            </div>
+          </div>
+
           {/* Tabs */}
           <div className="flex flex-wrap gap-2 md:gap-4 mb-8 bg-white shadow-md rounded-full p-2 justify-center">
             <button
               onClick={() => setActiveTab("upload")}
               className={`px-4 py-2.5 md:px-6 md:py-3 rounded-full font-semibold transition text-sm md:text-base ${
-                activeTab === "upload" ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-100"
+                activeTab === "upload"
+                  ? "bg-rahvana-primary text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-100"
               }`}
             >
               {t("pdfProcessing.tabs.edit")}
@@ -73,7 +94,9 @@ export default function PDFProcessingPage() {
             <button
               onClick={() => setActiveTab("merge")}
               className={`px-4 py-2.5 md:px-6 md:py-3 rounded-full font-semibold transition text-sm md:text-base ${
-                activeTab === "merge" ? "bg-primary text-white" : "text-gray-600 hover:bg-gray-100"
+                activeTab === "merge"
+                  ? "bg-rahvana-primary text-white shadow-md"
+                  : "text-gray-600 hover:bg-gray-100"
               }`}
             >
               {t("pdfProcessing.tabs.merge")}
@@ -82,7 +105,7 @@ export default function PDFProcessingPage() {
               onClick={() => setActiveTab("compress")}
               className={`px-4 py-2.5 md:px-6 md:py-3 rounded-full font-semibold transition text-sm md:text-base ${
                 activeTab === "compress"
-                  ? "bg-primary text-white"
+                  ? "bg-rahvana-primary text-white shadow-md"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >
@@ -92,7 +115,7 @@ export default function PDFProcessingPage() {
               onClick={() => setActiveTab("convert")}
               className={`px-4 py-2.5 md:px-6 md:py-3 rounded-full font-semibold transition text-sm md:text-base ${
                 activeTab === "convert"
-                  ? "bg-primary text-white"
+                  ? "bg-rahvana-primary text-white shadow-md"
                   : "text-gray-600 hover:bg-gray-100"
               }`}
             >

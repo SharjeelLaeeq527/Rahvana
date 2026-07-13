@@ -34,6 +34,9 @@ const FIELD_LABELS: Record<keyof PassportFields, string> = {
   sex: "Sex",
   nationality: "Nationality",
   passportNumber: "Passport number",
+  passportIssueDate: "Passport issue date",
+  passportPlaceOfIssue: "Place of issue",
+  passportBookNumber: "Passport book number",
   passportExpiry: "Passport expiry",
   passportCountry: "Issuing country",
 };
@@ -42,6 +45,7 @@ const FIELD_LABELS: Record<keyof PassportFields, string> = {
 const DATE_KEYS: ReadonlySet<keyof PassportFields> = new Set([
   "dateOfBirth",
   "passportExpiry",
+  "passportIssueDate",
 ]);
 
 /** Treat "M" / "Male" (and "F" / "Female") as the same value. */

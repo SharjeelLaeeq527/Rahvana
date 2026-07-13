@@ -2642,6 +2642,15 @@ export const DOCUMENTS_BY_KEY = ALL_DOCUMENTS.reduce(
   {} as Record<string, DocumentDefinition>
 );
 
+// Index by id for quick lookup
+export const DOCUMENTS_BY_ID = ALL_DOCUMENTS.reduce(
+  (acc, doc) => {
+    acc[doc.id] = doc;
+    return acc;
+  },
+  {} as Record<string, DocumentDefinition>
+);
+
 // Index by category
 export const DOCUMENTS_BY_CATEGORY = ALL_DOCUMENTS.reduce(
   (acc, doc) => {

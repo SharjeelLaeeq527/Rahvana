@@ -3,6 +3,7 @@ import { ConsultationRequest } from "@/types/consultation";
 import { consultationService } from "@/lib/services/consultationService";
 import { E, msg } from "@/lib/errors";
 import { triggerConsultationNotification } from "@/lib/notifications";
+import { createClient } from "@/lib/supabase/server";
 
 // Helper function to handle service errors (returns localized messages)
 const handleServiceError = (error: unknown, defaultMessage: string) => {
@@ -64,6 +65,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Retrieve authenticated user from session if any
+    let userId: string | null = null;
+    try {
+      const authClient = await createClient();
+      const { data: { user } } = await authClient.auth.getUser();
+      if (user) {
+        userId = user.id;
+      }
+    } catch (authError) {
+      console.warn("Could not retrieve session for consultation booking:", authError);
+    }
+
     // Create new booking
     const newBooking = await consultationService.createBooking({
       issue_category: data.issue_category,
@@ -82,10 +95,18 @@ export async function POST(request: NextRequest) {
         : undefined,
       payment_status: data.payment_status || "paid",
       status: data.status || "pending_approval",
+      user_id: userId,
     });
 
     // In a real app, you would send an email/SMS notification here
     console.log(`New consultation request created: ${newBooking.reference_id}`);
+
+    // Trigger admin notification for the new request
+    try {
+      await triggerConsultationNotification(newBooking.id);
+    } catch (notifError) {
+      console.error("Failed to trigger consultation notification:", notifError);
+    }
 
     return NextResponse.json(newBooking, { status: 201 });
   } catch (error) {
@@ -123,6 +144,7 @@ export async function PUT(request: NextRequest) {
           status: "confirmed",
           selected_slot: data.selected_slot ? new Date(data.selected_slot) : undefined,
           expires_at: undefined, // Remove expiration since it's confirmed
+          admin_notes: adminNotes || "",
         });
         break;
 
@@ -142,7 +164,7 @@ export async function PUT(request: NextRequest) {
                 return new Date(`${s.replace(" ", "T")}-05:00`);
               })
             : undefined,
-          admin_notes: adminNotes,
+          admin_notes: adminNotes || "",
         });
         break;
 
@@ -155,13 +177,14 @@ export async function PUT(request: NextRequest) {
         }
         await consultationService.updateBooking(id, {
           status: "needs_more_info",
-          admin_notes: adminNotes,
+          admin_notes: adminNotes || "",
         });
         break;
 
       case "cancel":
         await consultationService.updateBooking(id, {
           status: "canceled",
+          admin_notes: adminNotes || "",
         });
         break;
 

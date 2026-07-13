@@ -3,7 +3,7 @@
 import React from "react";
 import { CheckCircle2, Lock } from "lucide-react";
 import { getStepIcon } from "../StepIcon";
-import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
+import { mapDocumentNameToId, isDocUploadedInVault } from "@/lib/document-vault/journey-mapping";
 
 export const SCENARIOS: Record<string, any> = {
   "pet-only": {
@@ -428,8 +428,10 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
                   {group.items.map((doc: any) => {
                     const st = financialDocsStatus[doc.id] || "not-started";
                     const defId = mapDocumentNameToId(doc.title);
-                    const isUploadedInVault = uploadedDocuments.some(
-                      (ud) => ud.documentDefId === defId
+                    const isUploadedInVault = isDocUploadedInVault(
+                      doc.title,
+                      defId,
+                      uploadedDocuments
                     );
                     const uploadedDoc = uploadedDocuments.find((ud) => ud.documentDefId === defId);
                     const isReviewed = st === "reviewed";

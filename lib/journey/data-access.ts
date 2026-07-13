@@ -208,6 +208,15 @@ export async function deleteJourneyDB(
   const existing = await getJourneyDB(journeyId, { supabase, user });
   if (!existing) throw new Error("Journey not found or not owned");
 
+  // Delete associated interview sessions BEFORE deleting journey
+  // (FK ON DELETE SET NULL would nullify journey_id, making cleanup impossible)
+  try {
+    const { deleteJourneySessions } = await import("@/lib/interview-prep/data-access");
+    await deleteJourneySessions(journeyId);
+  } catch (e) {
+    console.warn("[deleteJourneyDB] Could not delete interview sessions:", e);
+  }
+
   const { error } = await supabase
     .from("journeys")
     .delete()
@@ -233,6 +242,16 @@ export async function deleteAllJourneysDB(client?: { supabase: any; user: any })
 
   if (!journeys || journeys.length === 0) {
     return 0; // No journeys to delete
+  }
+
+  // Delete associated interview sessions BEFORE deleting journeys
+  try {
+    const { deleteJourneySessions } = await import("@/lib/interview-prep/data-access");
+    for (const journey of journeys) {
+      await deleteJourneySessions(journey.id);
+    }
+  } catch (e) {
+    console.warn("[deleteAllJourneysDB] Could not delete interview sessions:", e);
   }
 
   const { error: deleteError, count } = await supabase
@@ -486,6 +505,7 @@ export async function createStepDB(chapterId: string, stepData: StepInput): Prom
         started_at: null,
         completed_at: null,
         due_date: stepData.due_date || null,
+        metadata: stepData.metadata || {},
       },
     ])
     .select()
@@ -693,6 +713,7 @@ export async function updateStepDB(stepId: string, updates: StepUpdate): Promise
       ...(updates.started_at && { started_at: updates.started_at }),
       ...(updates.completed_at && { completed_at: updates.completed_at }),
       ...(updates.due_date && { due_date: updates.due_date }),
+      ...(updates.metadata !== undefined && { metadata: updates.metadata }),
       updated_at: new Date().toISOString(),
     })
     .eq("id", stepId)

@@ -70,8 +70,7 @@ import ir1Data from "@/data/visa-category/ir-1.json";
 import { StepQuestDemo } from "./StepQuestDemo";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 
-export const journeyHref = "/visa-category/ir-category/ir1-journey";
-export const toolsHref = "/tools";
+import { ir1journeyHref, toolsHref } from "@/lib/constants/routes";
 
 function getToolAccentClass(icon: React.ReactNode) {
   if (!isValidElement(icon)) return "bg-slate-700";
@@ -1122,7 +1121,7 @@ export const twoWaysPaths = [
       "Stay ahead with built-in requirements, checklists, and deadline alerts.",
     ],
     cta: "Start the Roadmap",
-    href: journeyHref,
+    href: ir1journeyHref,
     supportEyebrow: "GUIDED ROADMAP",
     supportLead: "A structured path from start to finish.",
     supportText:
@@ -1197,12 +1196,15 @@ export function TwoWaysSection() {
   const [showChoiceModal, setShowChoiceModal] = useState(false);
   const [signpostStyle, setSignpostStyle] = useState<"A" | "B">("A");
 
-  const journeyHref = "/visa-category/ir-category/ir1-journey";
-  const toolsHref = "/tools";
+  const handleSetHoveredSide = (side: "left" | "right" | null) => {
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+      setHoveredSide(side);
+    }
+  };
 
   const roadmapImages = [
     "/assets/images/guided_roadmap_image.png",
-    // "/assets/images/guided_roadmap_image2.png"
+    // "/assets/images/guided_roadmap_image_with_bg.png"
   ];
 
   return (
@@ -1227,44 +1229,65 @@ export function TwoWaysSection() {
 
             {/* Arrow Split Layout */}
             <div className="w-full bg-white/70 backdrop-blur-md border border-slate-200/60 rounded-3xl p-6 sm:px-55 sm:py-6 lg:px-5 shadow-xl shadow-slate-100/40 flex flex-col items-center justify-center relative">
-              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 lg:gap-8 items-center w-full max-w-7xl">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 lg:gap-8 items-center lg:items-stretch w-full max-w-7xl">
                 {/* Left Side Option: Follow Roadmap */}
                 <motion.div
-                  className={`flex flex-col items-center text-center lg:items-end lg:text-right transition-all duration-300 p-4 rounded-2xl border ${
+                  className={`flex flex-col items-center text-center lg:items-end lg:text-right transition-all duration-300 p-2 sm:p-4 rounded-2xl border ${
                     hoveredSide === "left"
-                      ? "border-teal-500/30 bg-teal-50/20 shadow-md shadow-teal-500/5"
-                      : "border-transparent bg-transparent"
+                      ? "border-[#0d7377] bg-gradient-to-br from-[#0d7377] to-[#14a0a6] shadow-lg shadow-teal-500/20 text-white"
+                      : "border-teal-500/30 bg-teal-50/20 shadow-md shadow-teal-500/5"
                   }`}
-                  onMouseEnter={() => setHoveredSide("left")}
-                  onMouseLeave={() => setHoveredSide(null)}
+                  onMouseEnter={() => handleSetHoveredSide("left")}
+                  onMouseLeave={() => handleSetHoveredSide(null)}
                   animate={
-                    hoveredSide === "right"
-                      ? { opacity: 0.5, scale: 0.98 }
-                      : { opacity: 1, scale: 1 }
+                    hoveredSide === "left"
+                      ? { opacity: 1, scale: 1.01 }
+                      : hoveredSide === "right"
+                        ? { opacity: 0.5, scale: 0.98 }
+                        : { opacity: 1, scale: 1 }
                   }
                 >
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#0d7377] mb-1.5 px-2 py-0.5 bg-teal-50 border border-teal-100 rounded-full">
+                  <span
+                    className={`text-[9px] font-extrabold uppercase tracking-widest mb-1.5 px-2 py-0.5 rounded-full border transition-all duration-300 ${
+                      hoveredSide === "left"
+                        ? "text-white bg-white/20 border-white/25"
+                        : "text-[#0d7377] bg-teal-50 border-teal-100"
+                    }`}
+                  >
                     Beginners
                   </span>
-                  <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug mb-2">
+                  <h3
+                    className={`text-lg sm:text-xl font-black leading-snug mb-2 transition-all duration-300 ${
+                      hoveredSide === "left" ? "text-white" : "text-slate-900"
+                    }`}
+                  >
                     Follow IR-1 Roadmap
                   </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed mb-4 max-w-[280px]">
+                  <p
+                    className={`text-xs leading-relaxed mb-4 max-w-[280px] transition-all duration-300 ${
+                      hoveredSide === "left" ? "text-teal-50/90" : "text-slate-500"
+                    }`}
+                  >
                     Ideal for beginners seeking structured, step-by-step guidance and progress
                     tracking.
                   </p>
                   <Link
-                    href={journeyHref}
-                    className="inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold bg-teal-600 hover:bg-teal-700 shadow-md shadow-teal-600/10 hover:shadow-lg hover:shadow-teal-600/20 text-white transition-all duration-200 no-underline mb-5"
+                    href={ir1journeyHref}
+                    className={`inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all duration-200 no-underline mb-5 ${
+                      hoveredSide === "left"
+                        ? "bg-white text-[#0d7377] hover:bg-teal-50 shadow-lg shadow-black/10"
+                        : "bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-600/10 hover:shadow-lg hover:shadow-teal-600/20"
+                    }`}
                   >
                     Start Roadmap
                     <ArrowRight size={14} />
                   </Link>
 
                   {/* Image Preview Block with Cycle controls */}
-                  <div className="w-full max-w-[300px] flex flex-col items-center lg:items-end">
-                    <div className="relative w-full aspect-video flex items-center justify-center">
+                  <div className="w-full max-w-[480px] flex flex-col items-center lg:items-end">
+                    <div className="relative w-full h-[220px] sm:h-[280px] lg:h-[340px] flex items-center justify-center">
                       <Image
+                        // src={hoveredSide === "left" ? roadmapImages[1] : roadmapImages[0]}
                         src={roadmapImages[roadmapImageIdx]}
                         alt="Guided Roadmap Preview"
                         fill
@@ -1277,7 +1300,7 @@ export function TwoWaysSection() {
 
                 {/* Center Split SVG Graphic */}
                 {/* Center Split Signpost Graphic */}
-                <div className="relative flex justify-center items-center w-full max-w-[320px] lg:max-w-none mx-auto py-2 h-[180px]">
+                <div className="relative flex justify-center items-center w-full max-w-[320px] lg:max-w-none mx-auto py-2 h-[180px] lg:self-center">
                   {/* Vertical Pole */}
                   {/* <div className="absolute top-0 bottom-0 w-2.5 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-300 border-x border-slate-400/20 rounded-full left-1/2 -translate-x-1/2 z-0" /> */}
 
@@ -1286,9 +1309,9 @@ export function TwoWaysSection() {
                     {/* Top Arrow: Points Left (Roadmap) */}
                     <motion.div
                       className="relative w-[230px] h-[52px] cursor-pointer drop-shadow-md select-none"
-                      onClick={() => (window.location.href = journeyHref)}
-                      onMouseEnter={() => setHoveredSide("left")}
-                      onMouseLeave={() => setHoveredSide(null)}
+                      onClick={() => (window.location.href = ir1journeyHref)}
+                      onMouseEnter={() => handleSetHoveredSide("left")}
+                      onMouseLeave={() => handleSetHoveredSide(null)}
                       animate={
                         hoveredSide === "left"
                           ? { x: -8, scale: 1.02 }
@@ -1342,8 +1365,8 @@ export function TwoWaysSection() {
                     <motion.div
                       className="relative w-[230px] h-[52px] cursor-pointer drop-shadow-md select-none"
                       onClick={() => (window.location.href = toolsHref)}
-                      onMouseEnter={() => setHoveredSide("right")}
-                      onMouseLeave={() => setHoveredSide(null)}
+                      onMouseEnter={() => handleSetHoveredSide("right")}
+                      onMouseLeave={() => handleSetHoveredSide(null)}
                       animate={
                         hoveredSide === "right"
                           ? { x: 8, scale: 1.02 }
@@ -1418,32 +1441,52 @@ export function TwoWaysSection() {
 
                 {/* Right Side Option: Use Tools */}
                 <motion.div
-                  className={`flex flex-col items-center text-center lg:items-start lg:text-left transition-all duration-300 p-4 rounded-2xl border ${
+                  className={`flex flex-col items-center text-center lg:items-start lg:text-left transition-all duration-300 p-2 sm:p-4 rounded-2xl border ${
                     hoveredSide === "right"
-                      ? "border-orange-500/30 bg-orange-50/10 shadow-md shadow-orange-500/5"
-                      : "border-transparent bg-transparent"
+                      ? "border-[#b5451b] bg-gradient-to-br from-[#b5451b] to-[#d96b43] shadow-lg shadow-orange-500/20 text-white"
+                      : "border-orange-500/30 bg-orange-50/10 shadow-md shadow-orange-500/5"
                   }`}
-                  onMouseEnter={() => setHoveredSide("right")}
-                  onMouseLeave={() => setHoveredSide(null)}
+                  onMouseEnter={() => handleSetHoveredSide("right")}
+                  onMouseLeave={() => handleSetHoveredSide(null)}
                   animate={
-                    hoveredSide === "left"
-                      ? { opacity: 0.5, scale: 0.98 }
-                      : { opacity: 1, scale: 1 }
+                    hoveredSide === "right"
+                      ? { opacity: 1, scale: 1.01 }
+                      : hoveredSide === "left"
+                        ? { opacity: 0.5, scale: 0.98 }
+                        : { opacity: 1, scale: 1 }
                   }
                 >
-                  <span className="text-[9px] font-extrabold uppercase tracking-widest text-[#b5451b] mb-1.5 px-2 py-0.5 bg-orange-50 border border-orange-100 rounded-full">
+                  <span
+                    className={`text-[9px] font-extrabold uppercase tracking-widest mb-1.5 px-2 py-0.5 rounded-full border transition-all duration-300 ${
+                      hoveredSide === "right"
+                        ? "text-white bg-white/20 border-white/25"
+                        : "text-[#b5451b] bg-orange-50 border-orange-100"
+                    }`}
+                  >
                     Experienced
                   </span>
-                  <h3 className="text-lg sm:text-xl font-black text-slate-900 leading-snug mb-2">
+                  <h3
+                    className={`text-lg sm:text-xl font-black leading-snug mb-2 transition-all duration-300 ${
+                      hoveredSide === "right" ? "text-white" : "text-slate-900"
+                    }`}
+                  >
                     Use Independent Tools
                   </h3>
-                  <p className="text-xs text-slate-500 leading-relaxed mb-4 max-w-[280px]">
+                  <p
+                    className={`text-xs leading-relaxed mb-4 max-w-[280px] transition-all duration-300 ${
+                      hoveredSide === "right" ? "text-orange-50/90" : "text-slate-500"
+                    }`}
+                  >
                     Suitable for experienced users who prefer flexibility and focused
                     self-direction.
                   </p>
                   <Link
                     href={toolsHref}
-                    className="inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold bg-slate-800 hover:bg-slate-900 shadow-md shadow-slate-800/10 hover:shadow-lg hover:shadow-slate-800/20 text-white transition-all duration-200 no-underline mb-5"
+                    className={`inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all duration-200 no-underline mb-5 ${
+                      hoveredSide === "right"
+                        ? "bg-white text-[#b5451b] hover:bg-orange-50 shadow-lg shadow-black/10"
+                        : "bg-slate-800 hover:bg-slate-900 text-white shadow-md shadow-slate-800/10 hover:shadow-lg hover:shadow-slate-800/20"
+                    }`}
                   >
                     Browse Resources
                     <ArrowRight size={14} />
@@ -1651,7 +1694,7 @@ export function TwoWaysMobile({
 
       <div className="mt-6 flex flex-wrap gap-3">
         <Link
-          href={journeyHref}
+          href={ir1journeyHref}
           className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#0d7377] px-5 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/25"
         >
           Start the Roadmap
@@ -1833,7 +1876,7 @@ export function GuidedRoadmapScene() {
                       <div className="rounded-lg bg-[#f0f9f6] p-2.5 border border-[#d1e7e2]">
                         <div className="text-[10px] font-black text-[#0d7377] uppercase mb-1 flex items-center gap-1.5">
                           <div className="size-1.5 rounded-full bg-[#0d7377]" />
-                          Live Case Tracking
+                          Case Tracking Center
                         </div>
                         <div className="text-[11px] leading-snug text-[#4a5c62]">
                           Automated alerts for USCIS/NVC status changes and priority date movements.
@@ -2347,7 +2390,7 @@ export function GuidedRoadmapScene() {
               }}
             >
               <a
-                href={journeyHref}
+                href={ir1journeyHref}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -4302,16 +4345,88 @@ function LeftArrowSvg({ color }: { color: string }) {
   );
 }
 
-function ToolCard({ tool, position }: any) {
-  const positionClasses =
-    position === "left"
-      ? "left-[35px] top-[90px]"
-      : position === "right"
-        ? "left-[405px] top-[90px]"
-        : "left-[220px] top-[255px]";
+function OrbitToolCard({
+  tool,
+  indexMV,
+  cardIndex,
+  totalTools,
+}: {
+  tool: any;
+  indexMV: any;
+  cardIndex: number;
+  totalTools: number;
+}) {
+  const offset = useTransform(indexMV, (val) => {
+    const mod = (n: number, m: number) => ((n % m) + m) % m;
+    let diff = mod(cardIndex - (val as number), totalTools);
+    if (diff > totalTools / 2) {
+      diff -= totalTools;
+    }
+    return diff;
+  });
+
+  // Interpolate properties based on offset
+  const getCardProperties = (off: number) => {
+    const lerp = (start: number, end: number, amt: number) => (1 - amt) * start + amt * end;
+
+    let angle = 0;
+    let opacity = 0;
+    let scale = 0;
+
+    if (off >= 0 && off <= 1) {
+      // Between Right (0) and Bottom (1)
+      const t = off;
+      angle = lerp(0, 0.5 * Math.PI, t);
+      opacity = 1;
+      scale = 1;
+    } else if (off >= 1 && off <= 2) {
+      // Between Bottom (1) and Left (2)
+      const t = off - 1;
+      angle = lerp(0.5 * Math.PI, Math.PI, t);
+      opacity = 1;
+      scale = 1;
+    } else if (off >= 2 && off <= 3) {
+      // Between Left (2) and Entry (3)
+      const t = off - 2;
+      angle = lerp(Math.PI, 1.3 * Math.PI, t);
+      opacity = lerp(1, 0, t);
+      scale = lerp(1, 0.8, t);
+    } else if (off >= -1 && off <= 0) {
+      // Between Exit (-1) and Right (0)
+      const t = off + 1;
+      angle = lerp(-0.3 * Math.PI, 0, t);
+      opacity = lerp(0, 1, t);
+      scale = lerp(0.8, 1, t);
+    } else {
+      // Offscreen
+      opacity = 0;
+      scale = 0.8;
+      angle = off > 3 ? 1.3 * Math.PI : -0.3 * Math.PI;
+    }
+
+    const x = 220 + 185 * Math.cos(angle);
+    const y = 121.25 + 102.5 * Math.sin(angle) - 31.25 * Math.cos(2 * angle);
+
+    return { x, y, opacity, scale };
+  };
+
+  const x = useTransform(offset, (off) => getCardProperties(off).x);
+  const y = useTransform(offset, (off) => getCardProperties(off).y);
+  const opacity = useTransform(offset, (off) => getCardProperties(off).opacity);
+  const scale = useTransform(offset, (off) => getCardProperties(off).scale);
+  const zIndex = useTransform(offset, (off) => {
+    // Front half of orbit: between -0.2 and 2.2
+    if (off >= -0.2 && off <= 2.2) {
+      return 20;
+    }
+    return 5;
+  });
+  const pointerEvents = useTransform(opacity, (op) =>
+    op > 0.15 ? ("auto" as const) : ("none" as const)
+  );
 
   const iconNode = isValidElement(tool.icon)
-    ? cloneElement(tool.icon as React.ReactElement, {
+    ? cloneElement(tool.icon as React.ReactElement<any>, {
         className: "h-5 w-5 text-white",
         style: { color: "#fff" },
       })
@@ -4319,30 +4434,44 @@ function ToolCard({ tool, position }: any) {
 
   return (
     <motion.div
-      layout
-      layoutId={tool.id}
-      initial={{ opacity: 0, scale: 0.96, y: 6 }}
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.92, y: -6 }}
-      transition={{ duration: 0.35, ease: "easeOut" }}
-      className={`absolute ${positionClasses} -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-20`}
+      style={{
+        position: "absolute",
+        left: 0,
+        top: 0,
+        x,
+        y,
+        opacity,
+        scale,
+        zIndex,
+        pointerEvents,
+        translateX: "-50%",
+        translateY: "-50%",
+      }}
+      className="flex flex-col items-center select-none"
     >
       {/* Badge */}
       <div className="relative w-14 h-14 flex items-center justify-center">
+        <div className="absolute inset-0 rounded-full bg-white border border-white/60 shadow-sm" />
         <div
-          className={`absolute inset-0 rounded-full bg-white border border-white/60 shadow-sm`}
-        />
-        <motion.div
           className={`z-10 flex size-10 items-center justify-center rounded-full ${tool.accentClass ?? "bg-slate-700"} shadow-md text-white`}
         >
           {iconNode}
-        </motion.div>
+        </div>
       </div>
 
       {/* Card */}
-      <motion.div className="mt-3 w-[135px] bg-white border border-slate-100 rounded-xl p-2.5 flex flex-col items-center text-center">
-        <h4 className="text-[11px] font-black leading-tight">{tool.title}</h4>
-        <p className="text-[9.5px] text-slate-500 mt-1 leading-snug">{tool.desc}</p>
+      <motion.div
+        whileHover={{ y: -3, scale: 1.03, boxShadow: "0 10px 20px rgba(0,0,0,0.06)" }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        className="mt-3 w-[135px] bg-white border border-slate-100 rounded-xl p-2.5 flex flex-col items-center text-center shadow-[0_4px_10px_rgba(0,0,0,0.04)]"
+      >
+        <h4 className="text-[11px] font-black leading-tight text-slate-800">{tool.title}</h4>
+        <p
+          className="text-[9.5px] text-slate-500 mt-1 leading-snug overflow-hidden line-clamp-3"
+          title={tool.desc}
+        >
+          {tool.desc}
+        </p>
         <Link
           href={tool.href}
           className="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-[9px] font-black text-slate-700 no-underline hover:bg-slate-50"
@@ -4358,6 +4487,7 @@ export function ToolsBucketDiagram() {
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
+  const [isHovered, setIsHovered] = useState(false);
 
   const tools = useMemo(
     () =>
@@ -4379,16 +4509,29 @@ export function ToolsBucketDiagram() {
   );
 
   const [startIndex, setStartIndex] = useState(0);
+  const indexMV = useMotionValue(0);
 
+  // Stepped rotation timer - pauses when user hovers over the container
   useEffect(() => {
-    if (!tools.length) return;
+    if (!tools.length || isHovered) return;
 
     const interval = setInterval(() => {
-      setStartIndex((prev) => (prev + 1) % tools.length);
-    }, 3500);
+      setStartIndex((prev) => prev + 1);
+    }, 4500); // 4.5 seconds rest on each tool card
 
     return () => clearInterval(interval);
-  }, [tools.length]);
+  }, [tools.length, isHovered]);
+
+  // Spring animation to transition between steps smoothly
+  useEffect(() => {
+    const controls = animate(indexMV, startIndex, {
+      type: "spring",
+      stiffness: 85,
+      damping: 18,
+      mass: 0.8,
+    });
+    return () => controls.stop();
+  }, [startIndex, indexMV]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -4413,13 +4556,11 @@ export function ToolsBucketDiagram() {
     return () => observer.disconnect();
   }, []);
 
-  const rightTool = tools[startIndex % tools.length];
-  const bottomTool = tools[(startIndex + 1) % tools.length];
-  const leftTool = tools[(startIndex + 2) % tools.length];
-
   return (
     <div
       ref={containerRef}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       className="relative w-full max-w-[510px] mx-auto select-none mt-6 overflow-hidden"
       style={{
         height: `${Math.round(450 * scale)}px`,
@@ -4498,8 +4639,8 @@ export function ToolsBucketDiagram() {
           />
 
           {/* Green Checkpoint Dots on Paths */}
-          <circle cx="81.9" cy="233.8" r="3.5" fill="#22c55e" />
-          <circle cx="358.1" cy="233.8" r="3.5" fill="#22c55e" />
+          {/* <circle cx="81.9" cy="233.8" r="3.5" fill="#22c55e" />
+          <circle cx="358.1" cy="233.8" r="3.5" fill="#22c55e" /> */}
         </svg>
 
         {/* 1. Center Bucket & Everything You Need Card */}
@@ -4507,7 +4648,8 @@ export function ToolsBucketDiagram() {
         <div className="absolute left-[220px] top-[40px] -translate-x-1/2 -translate-y-1/2 w-[130px] h-[130px] rounded-full bg-gradient-to-tr from-blue-50/50 via-indigo-50/30 to-white/10 border border-blue-100/40 z-0 shadow-inner pointer-events-none" />
 
         <div
-          className="absolute left-[220px] top-[60px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center z-10"
+          style={{ zIndex: 15 }}
+          className="absolute left-[220px] top-[60px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
           onMouseEnter={() => setHoveredNode("center")}
           onMouseLeave={() => setHoveredNode(null)}
         >
@@ -4548,24 +4690,16 @@ export function ToolsBucketDiagram() {
           </motion.div>
         </div>
 
-        {/* 2. Left Tool: Photo Booth */}
-        <AnimatePresence mode="popLayout">
-          <ToolCard key={`left-${leftTool?.id ?? "left"}`} tool={leftTool} position="left" />
-        </AnimatePresence>
-
-        {/* 3. Right Tool: PDF Tool Kit */}
-        <AnimatePresence mode="popLayout">
-          <ToolCard key={`right-${rightTool?.id ?? "right"}`} tool={rightTool} position="right" />
-        </AnimatePresence>
-
-        {/* 4. Bottom Tool: 221(g) Action Planner */}
-        <AnimatePresence mode="popLayout">
-          <ToolCard
-            key={`bottom-${bottomTool?.id ?? "bottom"}`}
-            tool={bottomTool}
-            position="bottom"
+        {/* 2. Rotating Tool Cards */}
+        {tools.map((tool, idx) => (
+          <OrbitToolCard
+            key={tool.id}
+            tool={tool}
+            indexMV={indexMV}
+            cardIndex={idx}
+            totalTools={tools.length}
           />
-        </AnimatePresence>
+        ))}
       </div>
     </div>
   );

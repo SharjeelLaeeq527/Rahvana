@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Rahvana — Affidavit of Support Calculator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background: #f3f4f6;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .card {
+    background: #f9fafb;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    padding: 1.75rem;
+    width: 100%;
+    max-width: 420px;
+    min-height: 380px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* ── Scenes ── */
+  .scene {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 1.75rem;
+    opacity: 0;
+    transition: opacity 0.6s ease;
+    pointer-events: none;
+  }
+  .scene.active { opacity: 1; pointer-events: auto; }
+
+  .scene-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #534AB7;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+
+  /* ── Form card ── */
+  .form-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .form-row {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .form-row.show { opacity: 1; transform: translateY(0); }
+
+  .form-row label {
+    font-size: 10px;
+    color: #6b7280;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .form-val {
+    font-size: 15px;
+    font-weight: 500;
+    color: #111827;
+    padding: 8px 12px;
+    background: #f9fafb;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .form-check {
+    width: 16px;
+    height: 16px;
+    background: #22c55e;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease 0.2s;
+  }
+  .form-check.show { opacity: 1; }
+  .form-check svg { width: 8px; height: 8px; stroke: white; stroke-width: 2.5; fill: none; }
+
+  .calc-btn {
+    margin-top: 0.35rem;
+    background: #534AB7;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 11px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+    cursor: pointer;
+    opacity: 0;
+    transform: translateY(4px);
+    transition: opacity 0.4s ease, transform 0.4s ease, background 0.15s;
+  }
+  .calc-btn.show { opacity: 1; transform: translateY(0); }
+  .calc-btn.pressed { background: #3C3489; transform: scale(0.98); }
+
+  /* ── Calculation scene ── */
+  .calc-scene {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.25rem;
+    text-align: center;
+  }
+
+  .spinner-wrap { position: relative; width: 72px; height: 72px; }
+  .spinner-svg {
+    position: absolute; inset: 0;
+    animation: spin 1.5s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .spinner-inner {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: #EEEDFE;
+    position: absolute;
+    top: 10px; left: 10px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .spinner-inner i { font-size: 20px; color: #534AB7; }
+
+  .calc-step {
+    font-size: 14px;
+    font-weight: 500;
+    color: #111827;
+    min-height: 24px;
+    transition: opacity 0.25s ease;
+  }
+  .calc-step-sub { font-size: 12px; color: #6b7280; }
+
+  /* ── Result card ── */
+  .result-card {
+    background: #ffffff;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    padding: 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+  }
+
+  .result-header { display: flex; align-items: center; gap: 10px; }
+
+  .result-badge {
+    width: 28px; height: 28px;
+    background: #22c55e;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .result-badge svg { width: 14px; height: 14px; stroke: white; stroke-width: 2.5; fill: none; }
+
+  .result-title { font-size: 20px; font-weight: 600; color: #22c55e; }
+
+  .compare-row {
+    display: flex; flex-direction: column; gap: 6px;
+    opacity: 0; transform: translateY(4px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+  }
+  .compare-row.show { opacity: 1; transform: translateY(0); }
+
+  .compare-label {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: #6b7280;
+  }
+  .compare-label strong { color: #111827; font-weight: 500; }
+
+  .bar-bg {
+    height: 10px; background: #f3f4f6;
+    border-radius: 20px; overflow: hidden;
+    border: 1px solid #e5e7eb;
+  }
+  .bar-fill { height: 100%; border-radius: 20px; width: 0; transition: width 1.2s cubic-bezier(0.4,0,0.2,1); }
+  .bar-income { background: #534AB7; }
+  .bar-req    { background: #d1d5db; }
+
+  .summary-pills {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    opacity: 0; transition: opacity 0.4s ease;
+  }
+  .summary-pills.show { opacity: 1; }
+
+  .pill {
+    font-size: 11px; font-weight: 500;
+    padding: 5px 10px; border-radius: 20px;
+    display: flex; align-items: center; gap: 5px;
+    background: #f0fdf4; color: #166534;
+  }
+  .pill svg { width: 10px; height: 10px; stroke: #166534; stroke-width: 2.5; fill: none; }
+
+  .confidence-badge {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 14px;
+    background: #EEEDFE;
+    border-radius: 8px;
+    border: 1px solid #AFA9EC;
+    opacity: 0; transform: translateY(4px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  .confidence-badge.show { opacity: 1; transform: translateY(0); }
+  .confidence-badge i { font-size: 16px; color: #534AB7; }
+  .confidence-badge span { font-size: 13px; font-weight: 500; color: #3C3489; }
+</style>
+</head>
+<body>
+
+<div class="card">
+
+  <!-- Scene 1: Form -->
+  <div class="scene active" id="s1">
+    <div class="scene-label">Enter your information</div>
+    <div class="form-card">
+      <div class="form-row" id="r1">
+        <label>Annual income</label>
+        <div class="form-val">
+          <div class="form-check" id="c1"><svg viewBox="0 0 8 8"><polyline points="1,4 3,6 7,2"/></svg></div>
+          <span>$48,000</span>
+        </div>
+      </div>
+      <div class="form-row" id="r2">
+        <label>Household size</label>
+        <div class="form-val">
+          <div class="form-check" id="c2"><svg viewBox="0 0 8 8"><polyline points="1,4 3,6 7,2"/></svg></div>
+          <span>3 people</span>
+        </div>
+      </div>
+      <div class="form-row" id="r3">
+        <label>Petitioner status</label>
+        <div class="form-val">
+          <div class="form-check" id="c3"><svg viewBox="0 0 8 8"><polyline points="1,4 3,6 7,2"/></svg></div>
+          <span>U.S. Citizen</span>
+        </div>
+      </div>
+      <button class="calc-btn" id="calcBtn">Calculate my eligibility</button>
+    </div>
+  </div>
+
+  <!-- Scene 2: Calculating -->
+  <div class="scene" id="s2">
+    <div class="calc-scene">
+      <div class="spinner-wrap">
+        <svg class="spinner-svg" width="72" height="72" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r="30" fill="none" stroke="#EEEDFE" stroke-width="4"/>
+          <circle cx="36" cy="36" r="30" fill="none" stroke="#534AB7" stroke-width="4"
+                  stroke-linecap="round" stroke-dasharray="80 110" stroke-dashoffset="0"/>
+        </svg>
+        <div class="spinner-inner">
+          <i class="ti ti-calculator"></i>
+        </div>
+      </div>
+      <div class="calc-step" id="calcStep">Checking household size...</div>
+      <div class="calc-step-sub">Personalizing your calculation</div>
+    </div>
+  </div>
+
+  <!-- Scene 3: Result -->
+  <div class="scene" id="s3">
+    <div class="scene-label">Your result</div>
+    <div class="result-card">
+      <div class="result-header">
+        <div class="result-badge"><svg viewBox="0 0 14 14"><polyline points="2,7 5,10 12,3"/></svg></div>
+        <div class="result-title">You qualify</div>
+      </div>
+      <div class="compare-row" id="cr1">
+        <div class="compare-label"><span>Your income</span><strong>$48,000</strong></div>
+        <div class="bar-bg"><div class="bar-fill bar-income" id="barIncome"></div></div>
+      </div>
+      <div class="compare-row" id="cr2">
+        <div class="compare-label"><span>Required income</span><strong>$39,000</strong></div>
+        <div class="bar-bg"><div class="bar-fill bar-req" id="barReq"></div></div>
+      </div>
+      <div class="summary-pills" id="pills">
+        <div class="pill"><svg viewBox="0 0 10 10"><polyline points="1,5 3.5,7.5 9,2"/></svg>Household size: 3</div>
+        <div class="pill"><svg viewBox="0 0 10 10"><polyline points="1,5 3.5,7.5 9,2"/></svg>Income requirement met</div>
+        <div class="pill"><svg viewBox="0 0 10 10"><polyline points="1,5 3.5,7.5 9,2"/></svg>Affidavit satisfied</div>
+      </div>
+      <div class="confidence-badge" id="confBadge">
+        <i class="ti ti-shield-check"></i>
+        <span>You know exactly where you stand</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const delay = ms => new Promise(r => setTimeout(r, ms));
+const show = id => document.getElementById(id)?.classList.add('show');
+const hide = id => document.getElementById(id)?.classList.remove('show');
+
+function activate(id) {
+  document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function resetScene1() {
+  ['r1','r2','r3','c1','c2','c3','calcBtn'].forEach(hide);
+  document.getElementById('calcBtn').classList.remove('pressed');
+}
+
+function resetScene3() {
+  ['cr1','cr2','pills','confBadge'].forEach(hide);
+  document.getElementById('barIncome').style.width = '0';
+  document.getElementById('barReq').style.width = '0';
+}
+
+const calcSteps = [
+  'Checking household size...',
+  'Reviewing income requirement...',
+  'Calculating sponsorship threshold...',
+  'Finalizing your result...'
+];
+
+async function runAnimation() {
+  resetScene1();
+  resetScene3();
+  activate('s1');
+
+  await delay(500);
+  show('r1'); await delay(600);
+  show('c1'); await delay(600);
+  show('r2'); await delay(600);
+  show('c2'); await delay(600);
+  show('r3'); await delay(600);
+  show('c3'); await delay(500);
+  show('calcBtn'); await delay(900);
+
+  document.getElementById('calcBtn').classList.add('pressed');
+  await delay(350);
+  activate('s2');
+
+  const stepEl = document.getElementById('calcStep');
+  for (let i = 0; i < calcSteps.length; i++) {
+    stepEl.style.opacity = '0';
+    await delay(200);
+    stepEl.textContent = calcSteps[i];
+    stepEl.style.opacity = '1';
+    await delay(750);
+  }
+
+  await delay(300);
+  resetScene3();
+  activate('s3');
+
+  await delay(350);
+  show('cr1'); await delay(120);
+  document.getElementById('barIncome').style.width = '82%';
+  await delay(450); show('cr2'); await delay(120);
+  document.getElementById('barReq').style.width = '66%';
+  await delay(900); show('pills');
+  await delay(750); show('confBadge');
+  await delay(3200);
+
+  runAnimation();
+}
+
+runAnimation();
+</script>
+</body>
+</html>

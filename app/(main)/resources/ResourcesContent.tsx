@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import ToolsPage from "@/app/(tools)/tools/page";
 import GuidesPage from "@/app/(tools)/guides/page";
 import ServicesPage from "@/app/(main)/services/page";
 import { Wrench, BookOpen, Briefcase } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useAuth } from "@/app/context/AuthContext";
 
 export type ResourceTab = "toolbox" | "guides" | "services";
 
@@ -18,7 +19,54 @@ const tabs: { id: ResourceTab; icon: React.ElementType; label: string }[] = [
 
 export default function ResourcesContent({ initialTab }: { initialTab: ResourceTab }) {
   const router = useRouter();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<ResourceTab>(initialTab);
+  const [hasActiveRequests, setHasActiveRequests] = useState(false);
+  const [hasStartedGuides, setHasStartedGuides] = useState(false);
+
+  useEffect(() => {
+    setActiveTab(initialTab);
+  }, [initialTab]);
+
+  useEffect(() => {
+    if (!user) {
+      setHasActiveRequests(false);
+      setHasStartedGuides(false);
+      return;
+    }
+
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch("/api/user-dashboard/services-status");
+        if (res.ok) {
+          const data = await res.json();
+          const active =
+            (data.pccRequests && data.pccRequests.length > 0) ||
+            (data.medicalAppointments && data.medicalAppointments.length > 0) ||
+            (data.consultationBookings && data.consultationBookings.length > 0) ||
+            (data.translationDocuments && data.translationDocuments.length > 0);
+          setHasActiveRequests(active);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    const fetchGuidesStatus = async () => {
+      try {
+        const res = await fetch("/api/guides/my-guides");
+        if (res.ok) {
+          const data = await res.json();
+          setHasStartedGuides(data.sessions && data.sessions.length > 0);
+        }
+      } catch (e) {
+        console.error(e);
+      }
+    };
+
+    fetchStatus();
+    fetchGuidesStatus();
+  }, [user]);
 
   const handleTabChange = (tab: ResourceTab) => {
     setActiveTab(tab);
@@ -39,7 +87,7 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
           My Resources
         </h1>
         <p className="mt-3 text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
-          Everything you own in one place — your tools, guides, and services. Add more anytime.
+          Everything you&apos;ve added — plus the full catalog to browse and try anytime.
         </p>
       </div>
 
@@ -82,6 +130,14 @@ export default function ResourcesContent({ initialTab }: { initialTab: ResourceT
                   </motion.div>
                   {tab.label}
                 </span>
+
+                {/* animate-pulse */}
+                {tab.id === "services" && hasActiveRequests && (
+                  <span className="absolute top-1.5 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border border-white" />
+                )}
+                {tab.id === "guides" && hasStartedGuides && (
+                  <span className="absolute top-1.5 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border border-white" />
+                )}
               </button>
             );
           })}

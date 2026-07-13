@@ -33,6 +33,7 @@ import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { E, msg } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 interface CheckoutStepProps {
   formData: any;
@@ -260,7 +261,7 @@ function PoliceApplyContent() {
           receive a confirmation once the process is completed.
         </p>
         <div className="flex justify-center gap-4">
-          <Link href={"/user-dashboard"}>
+          <Link href={"/resources?tab=services"}>
             <Button onClick={() => {}} className="bg-teal-600 hover:bg-teal-700 text-white">
               Check Status
             </Button>
@@ -668,13 +669,23 @@ function PoliceApplyContent() {
         {/* Header */}
         <div className="p-6 md:p-8 pb-4 md:pb-6 border-b border-gray-100 bg-white/80 backdrop-blur-md sticky top-0 z-20">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-6 mb-6">
-            <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-3">
-              <div className="p-2 sm:p-2.5 bg-primary/10 rounded-xl sm:rounded-2xl shrink-0">
-                <ShieldCheck className="text-primary" size={28} />
-              </div>
-              {/* {province} */}
-              Sindh Police Verification Form
-            </h1>
+            <div className="flex flex-wrap items-center gap-6">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 flex items-center gap-3">
+                <div className="p-2 sm:p-2.5 bg-primary/10 rounded-xl sm:rounded-2xl shrink-0">
+                  <ShieldCheck className="text-primary" size={28} />
+                </div>
+                {/* {province} */}
+                Sindh Police Verification Form
+              </h1>
+              <QuickAccessButton
+                item={{
+                  id: "service-pcc-filing-service-—-sindh",
+                  title: "Sindh Police Verification Service",
+                  href: "/police-verification/apply",
+                  icon_name: "Shield",
+                }}
+              />
+            </div>
             <div className="flex items-center gap-2 shrink-0">
               {[1, 2, 3, 4].map((s) => (
                 <div

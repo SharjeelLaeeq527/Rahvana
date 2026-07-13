@@ -25,7 +25,7 @@ import { APPOINTMENT_RECEIVED_DATA } from "./AppointmentReceivedData";
 import { MEDICAL_EXAM_DATA } from "./MedicalExamData";
 import { POLIO_CERTIFICATE_DATA } from "./PolioCertificateData";
 import { POLICE_CLEARANCE_DATA } from "./PoliceClearanceData";
-import { toast } from "sonner";
+import {useToast} from "@/app/components/shared/ToastProvider";
 import Link from "next/link";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
@@ -307,6 +307,8 @@ export const AppointmentReceivedTool: React.FC<{
   const [errors, setErrors] = React.useState<Record<string, string>>({});
   const data = APPOINTMENT_RECEIVED_DATA;
 
+  const {showToast} = useToast();
+
   const validateAppointmentFields = () => {
     const newErrors: Record<string, string> = {};
     const today = new Date();
@@ -400,7 +402,7 @@ export const AppointmentReceivedTool: React.FC<{
               const validationErrors = validateAppointmentFields();
               if (Object.keys(validationErrors).length > 0) {
                 setErrors(validationErrors);
-                toast.error("Please fix the errors before saving.");
+                showToast("Please fix the errors before saving.", "error" );
                 return;
               }
               setIsSaving(true);
@@ -412,7 +414,7 @@ export const AppointmentReceivedTool: React.FC<{
                   consulateLocation,
                   letterDate,
                 });
-                toast.success("Appointment saved!");
+                showToast("Appointment saved!", "success");
               } finally {
                 setIsSaving(false);
               }
@@ -470,6 +472,8 @@ export const MedicalExamTool: React.FC<{
   const [isSaving, setIsSaving] = React.useState(false);
   const [medErrors, setMedErrors] = React.useState<Record<string, string>>({});
   const data = MEDICAL_EXAM_DATA;
+
+  const {showToast} = useToast();
 
   const handleMedTimeChange = (input: string) => {
     const upper = input.toUpperCase();
@@ -727,7 +731,7 @@ export const MedicalExamTool: React.FC<{
 
                       if (Object.keys(saveErrors).length > 0) {
                         setMedErrors(saveErrors);
-                        toast.error("Please fix the errors before saving.");
+                        showToast("Please fix the errors before saving.", "error");
                         return;
                       }
                       setIsSaving(true);
@@ -740,7 +744,7 @@ export const MedicalExamTool: React.FC<{
                           med_clinic: medClinic,
                         });
                         setIsMedWizardOpen(false);
-                        toast.success("Medical appointment saved!");
+                        showToast("Medical appointment saved!", "success");
                       } finally {
                         setIsSaving(false);
                       }
@@ -784,6 +788,8 @@ export const PolioCertificateTool: React.FC<{
   } = polioState;
   const [isSaving, setIsSaving] = React.useState(false);
   const data = POLIO_CERTIFICATE_DATA;
+
+  const {showToast} = useToast();
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
@@ -910,7 +916,7 @@ export const PolioCertificateTool: React.FC<{
                           polio_launched: "true",
                         });
                         setIsPolioGuideOpen(false);
-                        toast.success("Guide completed!");
+                        showToast("Guide completed!", "success");
                       } finally {
                         setIsSaving(false);
                       }
@@ -968,6 +974,8 @@ export const PoliceClearanceTool: React.FC<{
   } = pccState;
   const [isSaving, setIsSaving] = React.useState(false);
   const [errors, setErrors] = React.useState<Record<string, string>>({});
+
+  const {showToast} = useToast();
 
   const validatePccField = (id: string, value: string) => {
     if (!value) return "";
@@ -1095,19 +1103,19 @@ export const PoliceClearanceTool: React.FC<{
 
             if (receiptErr || trackErr) {
               setErrors({ receipt: receiptErr, track: trackErr });
-              toast.error("Please fix format errors before saving.");
+              showToast("Please fix format errors before saving.", "error");
               return;
             }
 
             if (!pccData.date) {
-              toast.error("Please enter the application date.");
+              showToast("Please enter the application date.", "error");
               return;
             }
 
             const today = new Date();
             today.setHours(0, 0, 0, 0);
             if (new Date(pccData.date) > today) {
-              toast.error("Application date cannot be in the future.");
+              showToast("Application date cannot be in the future.", "error");
               return;
             }
 
@@ -1120,7 +1128,7 @@ export const PoliceClearanceTool: React.FC<{
                 pcc_track: pccData.track,
                 pcc_date: pccData.date,
               });
-              toast.success("Tracking saved!");
+              showToast("Tracking saved!", "success");
             } finally {
               setIsSaving(false);
             }
@@ -1145,7 +1153,7 @@ export const PoliceClearanceTool: React.FC<{
               try {
                 setPccReceived(true);
                 await actions.updateMetadata({ pcc_received: "true" });
-                toast.success("Marked as Received!");
+                showToast("Marked as Received!", "success");
               } finally {
                 setIsSaving(false);
               }
@@ -1180,7 +1188,7 @@ export const PoliceClearanceTool: React.FC<{
                     setActiveUploadType("doc");
                     openUploadModal("police-certificate-pakistan");
                   } else {
-                    toast.error("Document vault is not available");
+                    showToast("Document vault is not available", "error");
                   }
                 }}
                 className="w-full bg-emerald-600/10 text-emerald-700 py-3 rounded-xl font-bold flex items-center justify-center gap-2 border border-emerald-200 transition-all hover:bg-emerald-600/20 active:scale-[0.98]"
@@ -1197,7 +1205,7 @@ export const PoliceClearanceTool: React.FC<{
                   setActiveUploadType("doc");
                   openUploadModal("police-certificate-pakistan");
                 } else {
-                  toast.error("Document vault is not available");
+                  showToast("Document vault is not available", "error");
                 }
               }}
               className="w-full bg-emerald-600 text-white py-3 rounded-xl font-bold flex items-center justify-center gap-2 transition-all hover:bg-emerald-700 active:scale-[0.98]"

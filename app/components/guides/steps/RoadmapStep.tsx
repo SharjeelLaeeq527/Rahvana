@@ -150,7 +150,7 @@ const RoadmapStep = ({ checkedDocuments, onToggleDocument, data }: RoadmapStepPr
 
       <div className="h-14 sm:h-10"></div>
       {/* Checklist Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-8 pt-5">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-0 md:-mt-4 pt-4">
         <div
           className="cursor-pointer group flex-1"
           onClick={() => setShowDocuments(!showDocuments)}
@@ -380,7 +380,7 @@ const TimelinePhases = ({
 
       <div className="overflow-x-auto custom-scrollbar pt-10 pb-6 -mx-3 px-3">
         <div
-          className={`flex justify-start items-stretch gap-2 sm:gap-4 min-w-max ${isUrdu ? "flex-row-reverse" : ""}`}
+          className={`flex justify-center items-stretch gap-2 sm:gap-4 min-w-max ${isUrdu ? "flex-row-reverse" : ""}`}
         >
           {phases.map((phase, i) => (
             <div

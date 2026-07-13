@@ -1,0 +1,799 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Rahvana — Split Screen Guided Form Animation</title>
+<style>
+  :root{
+    --teal:#0f7d82;
+    --teal-deep:#0a5458;
+    --teal-light:#cfe8e9;
+    --teal-wash:#eaf5f5;
+    --teal-faint:#f3f9f9;
+    --ink:#22282a;
+    --ink-soft:#6b7577;
+    --ink-faint:#9aa3a4;
+    --line:#e3e7e7;
+    --line-soft:#edf0f0;
+    --paper:#ffffff;
+    --card-bg:#f4f6f6;
+    --dur:35s;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:#eef1f1;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh;
+  }
+
+  /* ===================== CARD ===================== */
+  .rahvana-card{
+    position:relative;
+    width:660px;
+    height:430px;
+    background:var(--card-bg);
+    border-radius:24px;
+    overflow:hidden;
+    box-shadow:0 30px 60px -20px rgba(15,40,42,0.25), 0 2px 8px rgba(15,40,42,0.06);
+  }
+  .stage{
+    position:absolute; inset:0; overflow:hidden;
+    animation:stageZoom var(--dur) cubic-bezier(.45,.05,.35,1) infinite;
+    transform-origin:62% 50%;
+  }
+  @keyframes stageZoom{
+    0%,90%{ transform:scale(1); }
+    95%,98%{ transform:scale(1.06); }
+    100%{ transform:scale(1); }
+  }
+
+  .ambient-glow{
+    position:absolute;
+    width:420px; height:420px;
+    left:62%; top:50%;
+    transform:translate(-50%,-50%);
+    background:radial-gradient(circle, rgba(15,125,130,0.13) 0%, rgba(15,125,130,0) 70%);
+    pointer-events:none; z-index:0;
+    animation:glowPulse var(--dur) ease-in-out infinite;
+  }
+  @keyframes glowPulse{
+    0%,100%{opacity:.5; transform:translate(-50%,-50%) scale(1);}
+    50%{opacity:.9; transform:translate(-50%,-50%) scale(1.05);}
+  }
+
+  /* ===================== PANEL DIVIDER ===================== */
+  .seam{
+    position:absolute;
+    left:54%;
+    top:28px; bottom:28px;
+    width:1px;
+    background:linear-gradient(180deg, transparent, var(--line) 15%, var(--line) 85%, transparent);
+    z-index:5;
+  }
+
+  .panel-label{
+    position:absolute;
+    top:18px;
+    font-size:10.5px;
+    font-weight:700;
+    letter-spacing:.6px;
+    text-transform:uppercase;
+    color:var(--ink-faint);
+    z-index:6;
+  }
+  .panel-label.left{ left:32px; }
+  .panel-label.right{ left:calc(54% + 24px); }
+
+  /* ===================== LEFT PANEL — WIZARD ===================== */
+  .left-panel{
+    position:absolute;
+    left:0; top:0;
+    width:54%;
+    height:100%;
+    padding:46px 30px 30px 32px;
+    z-index:10;
+  }
+
+  .progress-row{ display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;}
+  .progress-pct{ font-size:12px; font-weight:700; color:var(--teal); }
+  .progress-track{
+    height:5px; background:var(--line-soft); border-radius:4px;
+    margin-bottom:10px; overflow:hidden;
+  }
+  .progress-fill{
+    height:100%;
+    background:linear-gradient(90deg, var(--teal) 0%, #15999e 100%);
+    border-radius:4px;
+    width:7%;
+    animation:progressFill var(--dur) cubic-bezier(.45,.05,.35,1) infinite;
+  }
+  /*
+    New scene timing (% of 42s):
+    Scene 1  (DOB):      0  – 18%   (~7.5s)
+    Scene 2  (address): 17  – 35%   (~7.5s)
+    Scene 3a (country): 34  – 50%   (~6.7s)
+    Scene 3b (married): 49  – 63%   (~5.9s)
+    Scene 3c (phone):   62  – 74%   (~5s)
+    Scene 3d (city):    73  – 83%   (~4.2s)
+    Review:             82  – 96%
+    Finale:             95  – 100%
+  */
+  @keyframes progressFill{
+    0%{    width:7%; }
+    15%{   width:7%; }
+    18%{   width:15%; }
+    34%{   width:15%; }
+    36%{   width:35%; }
+    49%{   width:35%; }
+    51%{   width:60%; }
+    63%{   width:60%; }
+    65%{   width:80%; }
+    74%{   width:80%; }
+    76%{   width:92%; }
+    83%{   width:92%; }
+    85%{   width:100%; }
+    97%,100%{ width:100%; }
+  }
+  .progress-pct .num{ position:relative; height:14px; overflow:hidden; display:inline-block; min-width:32px; text-align:right;}
+  .progress-pct .num span{ position:absolute; right:0; top:0; opacity:0; }
+  @keyframes pNum1{ 0%,15%{opacity:1;} 16%,100%{opacity:0;} }
+  @keyframes pNum2{ 0%,17%{opacity:0;} 18%,34%{opacity:1;} 35%,100%{opacity:0;} }
+  @keyframes pNum3{ 0%,35%{opacity:0;} 36%,49%{opacity:1;} 50%,100%{opacity:0;} }
+  @keyframes pNum4{ 0%,50%{opacity:0;} 51%,62%{opacity:1;} 63%,100%{opacity:0;} }
+  @keyframes pNum5{ 0%,64%{opacity:0;} 65%,73%{opacity:1;} 74%,100%{opacity:0;} }
+  @keyframes pNum6{ 0%,75%{opacity:0;} 76%,97%{opacity:1;} 98%,100%{opacity:0;} }
+  .progress-pct .n1{ animation:pNum1 var(--dur) steps(1) infinite; }
+  .progress-pct .n2{ animation:pNum2 var(--dur) steps(1) infinite; }
+  .progress-pct .n3{ animation:pNum3 var(--dur) steps(1) infinite; }
+  .progress-pct .n4{ animation:pNum4 var(--dur) steps(1) infinite; }
+  .progress-pct .n5{ animation:pNum5 var(--dur) steps(1) infinite; }
+  .progress-pct .n6{ animation:pNum6 var(--dur) steps(1) infinite; }
+
+  .reassure-row{ height:18px; position:relative; margin-bottom:18px; }
+  .reassure{
+    position:absolute; left:0; top:0;
+    font-size:11.5px; font-weight:600; color:var(--teal-deep);
+    display:flex; align-items:center; gap:5px;
+    opacity:0;
+  }
+  .reassure svg{ width:11px; height:11px; flex-shrink:0; }
+  .r1{ animation:rShow1 var(--dur) ease-out infinite; }
+  .r2{ animation:rShow2 var(--dur) ease-out infinite; }
+  .r3{ animation:rShow3 var(--dur) ease-out infinite; }
+  /* Reassure badges: show briefly after each answer is confirmed */
+  @keyframes rShow1{ 0%,49%{opacity:0; transform:translateY(4px);} 51%,58%{opacity:1; transform:translateY(0);} 62%{opacity:0;} 100%{opacity:0;} }
+  @keyframes rShow2{ 0%,62%{opacity:0; transform:translateY(4px);} 64%,71%{opacity:1; transform:translateY(0);} 75%{opacity:0;} 100%{opacity:0;} }
+  @keyframes rShow3{ 0%,75%{opacity:0; transform:translateY(4px);} 77%,83%{opacity:1; transform:translateY(0);} 87%{opacity:0;} 100%{opacity:0;} }
+
+  .qcard-wrap{ position:relative; height:210px; overflow:visible; }
+  .qcard{
+    position:absolute; inset:0;
+    opacity:0;
+  }
+  .q-text{ font-size:18px; font-weight:600; color:var(--ink); line-height:1.4; margin-bottom:16px; letter-spacing:-.1px; max-width:260px;}
+
+  .input-field{
+    height:42px; border:1.4px solid var(--line); border-radius:10px;
+    display:flex; align-items:center; padding:0 14px;
+    font-size:13px; color:var(--ink); margin-bottom:10px;
+    background:var(--paper); position:relative; max-width:260px;
+  }
+  .typed-wrap{
+    display:flex; align-items:center;
+    overflow:hidden;
+    white-space:nowrap;
+  }
+  .typed-text{
+    display:inline-block;
+    overflow:hidden;
+    white-space:nowrap;
+    width:0;
+    color:var(--ink);
+    font-weight:600;
+  }
+  .typed-cursor{
+    display:inline-block;
+    width:1.4px;
+    height:15px;
+    background:var(--teal);
+    margin-left:1px;
+    flex-shrink:0;
+    opacity:0;
+  }
+  .input-field .check-pop{
+    position:absolute; right:12px; width:18px;height:18px; border-radius:50%;
+    background:var(--teal); display:flex;align-items:center;justify-content:center;
+    opacity:0; transform:scale(.4);
+  }
+  .input-field .check-pop svg{ width:10px;height:10px; }
+  .helper-text{ font-size:11.5px; color:var(--ink-faint); margin-top:2px; }
+
+  .pill-row{ display:flex; gap:8px; flex-wrap:wrap; max-width:260px; }
+  .pill{
+    padding:8px 14px; border:1.4px solid var(--line); border-radius:20px;
+    font-size:12.5px; color:var(--ink-soft); font-weight:500;
+  }
+
+  /* ================================================================
+     SCENE TIMING REFERENCE (all % of 42s):
+     Scene 1  visible: 0–18%    type: 1–8%    check: 9–16%
+     Scene 2  visible: 17–35%   type: 20–28%  check: 29–33%
+     Scene 3a visible: 34–50%   type: 37–43%  check: 44–49%
+     Scene 3b visible: 49–63%   type: 52–58%  check: 59–62%
+     Scene 3c visible: 62–74%   type: 65–71%  check: 72–73%
+     Scene 3d visible: 73–83%   type: 75–80%  check: 81–82%
+     Review:           82–96%
+  ================================================================ */
+
+  /* ---- Scene 1: date of birth (14 characters) ---- */
+  .qc1{ animation:qc1T var(--dur) cubic-bezier(.45,.05,.35,1) infinite; }
+  @keyframes qc1T{
+    0%{    opacity:1; transform:translateX(0); }
+    14%{   opacity:1; transform:translateX(0); }
+    17%{   opacity:0; transform:translateX(-20px); }
+    98%{   opacity:0; transform:translateX(20px); }
+    100%{  opacity:1; transform:translateX(0); }
+  }
+  .qc1 .typed-text{ animation:type1 var(--dur) steps(14,end) infinite; }
+  @keyframes type1{ 0%,1%{width:0;} 8%{width:14ch;} 16%{width:14ch;} 17%{width:0;} 100%{width:0;} }
+  .qc1 .typed-cursor{ animation:cursor1 var(--dur) steps(1) infinite; }
+  @keyframes cursor1{
+    0%,1%{opacity:0;}
+    1.5%,2%{opacity:1;} 2.5%,3%{opacity:0;} 3.5%,4%{opacity:1;} 4.5%,5%{opacity:0;}
+    5.5%,6%{opacity:1;} 6.5%,7%{opacity:0;} 7.5%,8%{opacity:1;}
+    8%{opacity:0;}
+    100%{opacity:0;}
+  }
+  .qc1 .check-pop{ animation:cp1 var(--dur) cubic-bezier(.34,1.5,.64,1) infinite; }
+  @keyframes cp1{ 0%,9%{opacity:0; transform:scale(.4);} 11%{opacity:1; transform:scale(1.15);} 13%{transform:scale(1);} 15%{opacity:1;} 17%{opacity:0;} 100%{opacity:0;} }
+
+  /* ---- Scene 2: address ---- */
+  .qc2{ animation:qc2T var(--dur) cubic-bezier(.45,.05,.35,1) infinite; }
+  @keyframes qc2T{
+    0%,17%{  opacity:0; transform:translateX(20px); }
+    20%{     opacity:1; transform:translateX(0); }
+    33%{     opacity:1; transform:translateX(0); }
+    36%{     opacity:0; transform:translateX(-20px); }
+    100%{    opacity:0; transform:translateX(-20px); }
+  }
+  .qc2 .typed-text{ animation:type2 var(--dur) steps(34,end) infinite; }
+  @keyframes type2{ 0%,21%{width:0;} 29%{width:34ch;} 33%{width:34ch;} 34%{width:0;} 100%{width:0;} }
+  .qc2 .typed-cursor{ animation:cursor2 var(--dur) steps(1) infinite; }
+  @keyframes cursor2{
+    0%,21%{opacity:0;}
+    21.5%,22%{opacity:1;} 22.5%,23%{opacity:0;} 23.5%,24%{opacity:1;} 24.5%,25%{opacity:0;}
+    25.5%,26%{opacity:1;} 26.5%,27%{opacity:0;} 27.5%,29%{opacity:1;}
+    29%{opacity:0;}
+    100%{opacity:0;}
+  }
+  .qc2 .check-pop{ animation:cp2 var(--dur) cubic-bezier(.34,1.5,.64,1) infinite; }
+  @keyframes cp2{ 0%,29.5%{opacity:0; transform:scale(.4);} 31%{opacity:1; transform:scale(1.15);} 32.5%{transform:scale(1);} 33.5%{opacity:1;} 35.5%{opacity:0;} 100%{opacity:0;} }
+
+  /* ---- Scene 3: four sequential question cards ---- */
+  .qc3a{ animation:qc3aT var(--dur) cubic-bezier(.45,.05,.35,1) infinite; }
+  .qc3b{ animation:qc3bT var(--dur) cubic-bezier(.45,.05,.35,1) infinite; }
+  .qc3c{ animation:qc3cT var(--dur) cubic-bezier(.45,.05,.35,1) infinite; }
+  .qc3d{ animation:qc3dT var(--dur) cubic-bezier(.45,.05,.35,1) infinite; }
+
+  /* Scene 3a: country of birth (8 chars) — visible 34–50% */
+  @keyframes qc3aT{
+    0%,35%{  opacity:0; transform:translateX(20px); }
+    38%{     opacity:1; transform:translateX(0); }
+    48%{     opacity:1; transform:translateX(0); }
+    51%{     opacity:0; transform:translateX(-20px); }
+    100%{    opacity:0; transform:translateX(-20px); }
+  }
+
+  /* Scene 3b: marriage date (14 chars) — visible 49–63% */
+  @keyframes qc3bT{
+    0%,50%{  opacity:0; transform:translateX(20px); }
+    53%{     opacity:1; transform:translateX(0); }
+    61%{     opacity:1; transform:translateX(0); }
+    64%{     opacity:0; transform:translateX(-20px); }
+    100%{    opacity:0; transform:translateX(-20px); }
+  }
+
+  /* Scene 3c: phone number (15 chars) — visible 62–74% */
+  @keyframes qc3cT{
+    0%,63%{  opacity:0; transform:translateX(20px); }
+    66%{     opacity:1; transform:translateX(0); }
+    72%{     opacity:1; transform:translateX(0); }
+    75%{     opacity:0; transform:translateX(-20px); }
+    100%{    opacity:0; transform:translateX(-20px); }
+  }
+
+  /* Scene 3d: city (9 chars) — visible 73–83% */
+  @keyframes qc3dT{
+    0%,74%{  opacity:0; transform:translateX(20px); }
+    77%{     opacity:1; transform:translateX(0); }
+    81%{     opacity:1; transform:translateX(0); }
+    84%{     opacity:0; transform:translateX(-20px); }
+    100%{    opacity:0; transform:translateX(-20px); }
+  }
+
+  .qc3a .typed-text{ animation:type3a var(--dur) steps(8,end) infinite; }
+  .qc3b .typed-text{ animation:type3b var(--dur) steps(14,end) infinite; }
+  .qc3c .typed-text{ animation:type3c var(--dur) steps(15,end) infinite; }
+  .qc3d .typed-text{ animation:type3d var(--dur) steps(9,end) infinite; }
+
+  /* 3a: type 39–44%, check 44–49% */
+  @keyframes type3a{ 0%,39%{width:0;} 44%{width:8ch;} 50%{width:8ch;} 51%{width:0;} 100%{width:0;} }
+  /* 3b: type 54–59%, check 59–63% */
+  @keyframes type3b{ 0%,54%{width:0;} 59%{width:14ch;} 63%{width:14ch;} 64%{width:0;} 100%{width:0;} }
+  /* 3c: type 67–72%, check 72–74% */
+  @keyframes type3c{ 0%,67%{width:0;} 72%{width:15ch;} 74%{width:15ch;} 75%{width:0;} 100%{width:0;} }
+  /* 3d: type 78–81%, check 81–83% */
+  @keyframes type3d{ 0%,78%{width:0;} 81%{width:9ch;} 83%{width:9ch;} 84%{width:0;} 100%{width:0;} }
+
+  .qc3a .typed-cursor{ animation:tc3a var(--dur) steps(1) infinite; }
+  .qc3b .typed-cursor{ animation:tc3b var(--dur) steps(1) infinite; }
+  .qc3c .typed-cursor{ animation:tc3c var(--dur) steps(1) infinite; }
+  .qc3d .typed-cursor{ animation:tc3d var(--dur) steps(1) infinite; }
+
+  @keyframes tc3a{
+    0%,39%{opacity:0;}
+    39.5%,40%{opacity:1;} 40.5%,41%{opacity:0;} 41.5%,42%{opacity:1;} 42.5%,43%{opacity:0;}
+    43.5%,44%{opacity:1;}
+    44%{opacity:0;}
+    100%{opacity:0;}
+  }
+  @keyframes tc3b{
+    0%,54%{opacity:0;}
+    54.5%,55%{opacity:1;} 55.5%,56%{opacity:0;} 56.5%,57%{opacity:1;} 57.5%,58%{opacity:0;}
+    58.5%,59%{opacity:1;}
+    59%{opacity:0;}
+    100%{opacity:0;}
+  }
+  @keyframes tc3c{
+    0%,67%{opacity:0;}
+    67.5%,68%{opacity:1;} 68.5%,69%{opacity:0;} 69.5%,70%{opacity:1;} 70.5%,71%{opacity:0;}
+    71.5%,72%{opacity:1;}
+    72%{opacity:0;}
+    100%{opacity:0;}
+  }
+  @keyframes tc3d{
+    0%,78%{opacity:0;}
+    78.5%,79%{opacity:1;} 79.5%,80%{opacity:0;} 80.5%,81%{opacity:1;}
+    81%{opacity:0;}
+    100%{opacity:0;}
+  }
+
+  .qc3a .check-pop{ animation:cp3a var(--dur) cubic-bezier(.34,1.5,.64,1) infinite; }
+  .qc3b .check-pop{ animation:cp3b var(--dur) cubic-bezier(.34,1.5,.64,1) infinite; }
+  .qc3c .check-pop{ animation:cp3c var(--dur) cubic-bezier(.34,1.5,.64,1) infinite; }
+  .qc3d .check-pop{ animation:cp3d var(--dur) cubic-bezier(.34,1.5,.64,1) infinite; }
+
+  @keyframes cp3a{ 0%,44.5%{opacity:0; transform:scale(.4);} 46%{opacity:1; transform:scale(1.15);} 47.5%{transform:scale(1);} 49%{opacity:1;} 50.5%{opacity:0;} 100%{opacity:0;} }
+  @keyframes cp3b{ 0%,59.5%{opacity:0; transform:scale(.4);} 61%{opacity:1; transform:scale(1.15);} 62%{transform:scale(1);} 63%{opacity:1;} 64%{opacity:0;} 100%{opacity:0;} }
+  @keyframes cp3c{ 0%,72.5%{opacity:0; transform:scale(.4);} 73.5%{opacity:1; transform:scale(1.15);} 74%{transform:scale(1);} 74.5%{opacity:1;} 75%{opacity:0;} 100%{opacity:0;} }
+  @keyframes cp3d{ 0%,81.5%{opacity:0; transform:scale(.4);} 82.5%{opacity:1; transform:scale(1.15);} 83%{transform:scale(1);} 83.5%{opacity:1;} 84%{opacity:0;} 100%{opacity:0;} }
+
+  /* ---- Review screen: visible 83–97% ---- */
+  .review{
+    position:absolute; inset:0;
+    opacity:0;
+    animation:reviewT var(--dur) cubic-bezier(.45,.05,.35,1) infinite;
+  }
+  @keyframes reviewT{
+    0%,83%{   opacity:0; transform:translateY(12px); }
+    85%{      opacity:1; transform:translateY(0); }
+    95%{      opacity:1; transform:translateY(0); }
+    97%{      opacity:0; transform:translateY(-8px); }
+    100%{     opacity:0; }
+  }
+  .review-title{ font-size:17px; font-weight:700; color:var(--ink); margin-bottom:14px; }
+  .review-item{
+    display:flex; align-items:center; gap:10px;
+    padding:9px 0; border-bottom:1px solid var(--line-soft);
+    font-size:13.5px; color:var(--ink); font-weight:500;
+    opacity:0; transform:translateX(-10px); max-width:262px;
+  }
+  .review-item:last-child{ border-bottom:none; }
+  .review-check{
+    width:20px;height:20px;border-radius:50%; background:var(--line-soft);
+    display:flex;align-items:center;justify-content:center; flex-shrink:0;
+  }
+  .review-check svg{ width:11px;height:11px; opacity:0; }
+
+  .ri1{ animation:riIn1 var(--dur) cubic-bezier(.34,1.4,.64,1) infinite; }
+  .ri2{ animation:riIn2 var(--dur) cubic-bezier(.34,1.4,.64,1) infinite; }
+  .ri3{ animation:riIn3 var(--dur) cubic-bezier(.34,1.4,.64,1) infinite; }
+  .ri4{ animation:riIn4 var(--dur) cubic-bezier(.34,1.4,.64,1) infinite; }
+  @keyframes riIn1{ 0%,85.5%{opacity:0; transform:translateX(-10px);} 87%,95%{opacity:1; transform:translateX(0);} 97%{opacity:0;} 100%{opacity:0; transform:translateX(-10px);} }
+  @keyframes riIn2{ 0%,87%{opacity:0; transform:translateX(-10px);} 88.5%,95%{opacity:1; transform:translateX(0);} 97%{opacity:0;} 100%{opacity:0; transform:translateX(-10px);} }
+  @keyframes riIn3{ 0%,88.5%{opacity:0; transform:translateX(-10px);} 90%,95%{opacity:1; transform:translateX(0);} 97%{opacity:0;} 100%{opacity:0; transform:translateX(-10px);} }
+  @keyframes riIn4{ 0%,90%{opacity:0; transform:translateX(-10px);} 91.5%,95%{opacity:1; transform:translateX(0);} 97%{opacity:0;} 100%{opacity:0; transform:translateX(-10px);} }
+
+  .ri1 .review-check{ animation:rc1 var(--dur) steps(1) infinite; }
+  .ri2 .review-check{ animation:rc2 var(--dur) steps(1) infinite; }
+  .ri3 .review-check{ animation:rc3 var(--dur) steps(1) infinite; }
+  .ri4 .review-check{ animation:rc4 var(--dur) steps(1) infinite; }
+  @keyframes rc1{ 0%,87%{background:var(--line-soft);} 87.5%,97%{background:var(--teal);} 100%{background:var(--line-soft);} }
+  @keyframes rc2{ 0%,88.5%{background:var(--line-soft);} 89%,97%{background:var(--teal);} 100%{background:var(--line-soft);} }
+  @keyframes rc3{ 0%,90%{background:var(--line-soft);} 90.5%,97%{background:var(--teal);} 100%{background:var(--line-soft);} }
+  @keyframes rc4{ 0%,91.5%{background:var(--line-soft);} 92%,97%{background:var(--teal);} 100%{background:var(--line-soft);} }
+  .ri1 .review-check svg{ animation:rcv1 var(--dur) steps(1) infinite; }
+  .ri2 .review-check svg{ animation:rcv2 var(--dur) steps(1) infinite; }
+  .ri3 .review-check svg{ animation:rcv3 var(--dur) steps(1) infinite; }
+  .ri4 .review-check svg{ animation:rcv4 var(--dur) steps(1) infinite; }
+  @keyframes rcv1{ 0%,87.5%{opacity:0;} 88%,97%{opacity:1;} 100%{opacity:0;} }
+  @keyframes rcv2{ 0%,89%{opacity:0;} 89.5%,97%{opacity:1;} 100%{opacity:0;} }
+  @keyframes rcv3{ 0%,90.5%{opacity:0;} 91%,97%{opacity:1;} 100%{opacity:0;} }
+  @keyframes rcv4{ 0%,92%{opacity:0;} 92.5%,97%{opacity:1;} 100%{opacity:0;} }
+
+  /* ===================== RIGHT PANEL — LIVE FORM ===================== */
+  .right-panel{
+    position:absolute;
+    left:54%; top:0;
+    width:46%; height:100%;
+    z-index:8;
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .stack-page{
+    position:absolute;
+    width:220px; height:280px;
+    background:var(--paper);
+    border-radius:7px;
+    box-shadow:0 10px 22px rgba(20,40,42,0.10);
+    border:1px solid var(--line-soft);
+  }
+  .sp1{ transform:translate(10px,10px) rotate(2deg); opacity:.7; }
+  .sp2{ transform:translate(6px,6px) rotate(1deg); opacity:.85; }
+
+  .form-wrap{
+    position:relative;
+    width:220px;
+    z-index:10;
+    transform-origin:50% 50%;
+    animation:formZoom var(--dur) cubic-bezier(.45,.05,.35,1) infinite;
+  }
+  @keyframes formZoom{
+    0%,18%{   transform:scale(1) translateY(0); }
+    20%,37%{  transform:scale(1.04) translateY(-4px); }
+    40%,100%{ transform:scale(1) translateY(0); }
+  }
+
+  .paper-mini{
+    width:220px; background:var(--paper); border-radius:8px;
+    box-shadow:0 16px 32px -8px rgba(15,40,42,0.18);
+    border:1px solid var(--line-soft);
+    overflow:hidden; position:relative;
+  }
+  .pm-header{
+    display:flex; align-items:flex-start; justify-content:space-between;
+    padding:10px 11px 6px; border-bottom:2px solid var(--ink);
+  }
+  .pm-seal{ width:19px;height:19px;border-radius:50%; border:1.3px solid var(--ink-faint); flex-shrink:0; display:flex;align-items:center;justify-content:center;}
+  .pm-seal svg{ width:11px;height:11px; }
+  .pm-title{ text-align:center; flex:1; padding:0 4px; }
+  .pm-title .t1{ font-size:7.4px; font-weight:700; color:var(--ink); }
+  .pm-title .t2{ font-size:4.8px; color:var(--ink-soft); margin-top:1px;}
+  .pm-meta{ text-align:right; font-size:4.6px; color:var(--ink-soft); line-height:1.4; min-width:38px;}
+  .pm-meta .bold{ font-weight:700; color:var(--ink); font-size:4.9px;}
+
+  .pm-body{ padding:7px 10px 11px; }
+  .pm-part{ background:#eef0f0; border:1px solid var(--line); padding:3px 5px; font-size:5.4px; font-weight:700; color:var(--ink); margin-top:6px;}
+  .pm-label{ font-size:4.6px; color:var(--ink); margin:5px 0 2px; line-height:1.3;}
+  .pm-field{
+    height:11px; border:0.6px solid var(--line); border-radius:2px;
+    background:var(--paper); position:relative;
+    display:flex; align-items:center; padding:0 4px;
+    font-size:4.9px; color:transparent; font-weight:600;
+  }
+  .pm-trio{ display:flex; gap:4px; margin-top:6px; }
+  .pm-trio .col{ flex:1; }
+  .pm-trio .pm-label{ font-size:4.3px; }
+  .pm-row3{ display:grid; grid-template-columns:1.3fr 1fr 0.9fr; gap:4px; margin-top:6px; }
+
+  .pm-field span.val{ opacity:0; }
+
+  /* Right-panel fields fire in sync with each scene's check moment */
+  .pm-field.fa{ animation:fillA var(--dur) steps(1) infinite; }
+  .pm-field.fb{ animation:fillB var(--dur) steps(1) infinite; }
+  .pm-field.fc{ animation:fillC var(--dur) steps(1) infinite; }
+  .pm-field.fd{ animation:fillD var(--dur) steps(1) infinite; }
+  .pm-field.fe{ animation:fillE var(--dur) steps(1) infinite; }
+  .pm-field.ff{ animation:fillF var(--dur) steps(1) infinite; }
+
+  /* fa: DOB field — highlight at 9%, settle at 13% */
+  @keyframes fillA{
+    0%,8%{ background:var(--paper); border-color:var(--line); box-shadow:none;}
+    10%{ background:var(--teal-wash); border-color:var(--teal); box-shadow:0 0 0 3px rgba(15,125,130,0.2);}
+    14%,99%{ background:var(--teal-faint); border-color:var(--teal-light); box-shadow:none;}
+    100%{ background:var(--paper); border-color:var(--line); box-shadow:none;}
+  }
+  /* fb: address fields — highlight at 30%, settle at 34% */
+  @keyframes fillB{
+    0%,29%{ background:var(--paper); border-color:var(--line); box-shadow:none;}
+    31%{ background:var(--teal-wash); border-color:var(--teal); box-shadow:0 0 0 3px rgba(15,125,130,0.2);}
+    35%,99%{ background:var(--teal-faint); border-color:var(--teal-light); box-shadow:none;}
+    100%{ background:var(--paper); border-color:var(--line); box-shadow:none;}
+  }
+  /* fc: country of birth — highlight at 45%, settle at 49% */
+  @keyframes fillC{
+    0%,44%{ background:var(--paper); border-color:var(--line); box-shadow:none;}
+    46%{ background:var(--teal-wash); border-color:var(--teal); box-shadow:0 0 0 3px rgba(15,125,130,0.2);}
+    50%,99%{ background:var(--teal-faint); border-color:var(--teal-light); box-shadow:none;}
+    100%{ background:var(--paper); border-color:var(--line); box-shadow:none;}
+  }
+  /* fd: marriage date — highlight at 60%, settle at 63% */
+  @keyframes fillD{
+    0%,59%{ background:var(--paper); border-color:var(--line); box-shadow:none;}
+    61%{ background:var(--teal-wash); border-color:var(--teal); box-shadow:0 0 0 3px rgba(15,125,130,0.2);}
+    64%,99%{ background:var(--teal-faint); border-color:var(--teal-light); box-shadow:none;}
+    100%{ background:var(--paper); border-color:var(--line); box-shadow:none;}
+  }
+  /* fe: phone — highlight at 72%, settle at 74% */
+  @keyframes fillE{
+    0%,71%{ background:var(--paper); border-color:var(--line); box-shadow:none;}
+    73%{ background:var(--teal-wash); border-color:var(--teal); box-shadow:0 0 0 3px rgba(15,125,130,0.2);}
+    75%,99%{ background:var(--teal-faint); border-color:var(--teal-light); box-shadow:none;}
+    100%{ background:var(--paper); border-color:var(--line); box-shadow:none;}
+  }
+  /* ff: city — highlight at 81%, settle at 83% */
+  @keyframes fillF{
+    0%,80%{ background:var(--paper); border-color:var(--line); box-shadow:none;}
+    82%{ background:var(--teal-wash); border-color:var(--teal); box-shadow:0 0 0 3px rgba(15,125,130,0.2);}
+    84%,99%{ background:var(--teal-faint); border-color:var(--teal-light); box-shadow:none;}
+    100%{ background:var(--paper); border-color:var(--line); box-shadow:none;}
+  }
+
+  .pm-field span.val.va{ animation:valA var(--dur) steps(1) infinite; }
+  .pm-field span.val.vb{ animation:valB var(--dur) steps(1) infinite; }
+  .pm-field span.val.vc{ animation:valC var(--dur) steps(1) infinite; }
+  .pm-field span.val.vd{ animation:valD var(--dur) steps(1) infinite; }
+  .pm-field span.val.ve{ animation:valE var(--dur) steps(1) infinite; }
+  .pm-field span.val.vf{ animation:valF var(--dur) steps(1) infinite; }
+  @keyframes valA{ 0%,13%{opacity:0; color:transparent;} 14%,99%{opacity:1; color:var(--teal-deep);} 100%{opacity:0;} }
+  @keyframes valB{ 0%,34%{opacity:0; color:transparent;} 35%,99%{opacity:1; color:var(--teal-deep);} 100%{opacity:0;} }
+  @keyframes valC{ 0%,49%{opacity:0; color:transparent;} 50%,99%{opacity:1; color:var(--teal-deep);} 100%{opacity:0;} }
+  @keyframes valD{ 0%,63%{opacity:0; color:transparent;} 64%,99%{opacity:1; color:var(--teal-deep);} 100%{opacity:0;} }
+  @keyframes valE{ 0%,74%{opacity:0; color:transparent;} 75%,99%{opacity:1; color:var(--teal-deep);} 100%{opacity:0;} }
+  @keyframes valF{ 0%,83%{opacity:0; color:transparent;} 84%,99%{opacity:1; color:var(--teal-deep);} 100%{opacity:0;} }
+
+  /* badges for finale */
+  .badge-row{
+    position:absolute; bottom:-14px; left:0; right:0;
+    display:flex; justify-content:center; gap:8px;
+    z-index:30;
+  }
+  .badge{
+    background:var(--teal); color:#fff; font-size:9.5px; font-weight:700;
+    padding:6px 11px; border-radius:18px;
+    box-shadow:0 8px 16px -4px rgba(15,125,130,0.5);
+    display:flex; align-items:center; gap:4px;
+    opacity:0; white-space:nowrap;
+  }
+  .badge.outline{ background:var(--paper); color:var(--teal); border:1.3px solid var(--teal); box-shadow:0 8px 16px -6px rgba(15,40,42,0.18);}
+  .badge svg{ width:9px; height:9px; }
+  .b1{ animation:badgeIn1 var(--dur) cubic-bezier(.34,1.4,.64,1) infinite; }
+  .b2{ animation:badgeIn2 var(--dur) cubic-bezier(.34,1.4,.64,1) infinite; }
+  @keyframes badgeIn1{ 0%,94%{opacity:0; transform:translateY(6px);} 95.5%,99%{opacity:1; transform:translateY(0);} 100%{opacity:0;} }
+  @keyframes badgeIn2{ 0%,95.5%{opacity:0; transform:translateY(6px);} 97%,99%{opacity:1; transform:translateY(0);} 100%{opacity:0;} }
+
+  /* ===================== CONNECTION TRACE ===================== */
+  .trace-wrap{
+    position:absolute;
+    z-index:25;
+    pointer-events:none;
+  }
+  .trace-line{
+    position:absolute;
+    height:1.6px;
+    background:linear-gradient(90deg, rgba(15,125,130,0) 0%, var(--teal) 50%, rgba(15,125,130,0) 100%);
+    opacity:0;
+  }
+  .trace-chip{
+    position:absolute;
+    background:var(--paper);
+    border:1px solid var(--teal-light);
+    color:var(--teal-deep);
+    font-size:9.5px;
+    font-weight:600;
+    padding:4px 9px;
+    border-radius:12px;
+    box-shadow:0 6px 14px -4px rgba(15,125,130,0.25);
+    opacity:0;
+    white-space:nowrap;
+    display:flex; align-items:center; gap:4px;
+  }
+  .trace-chip svg{ width:9px; height:9px; flex-shrink:0; }
+
+  /* trace 1: fires after qc1 checkmark */
+  .t1{ top:140px; left:300px; width:90px; }
+  .t1 .trace-line{ left:0; top:50%; width:100%; animation:tline1 var(--dur) ease-in-out infinite; }
+  .t1 .trace-chip{ left:50%; top:-26px; transform:translateX(-50%); animation:tchip1 var(--dur) ease-out infinite; }
+  @keyframes tline1{ 0%,9%{opacity:0; transform:scaleX(0); transform-origin:left;} 11%,15%{opacity:1; transform:scaleX(1);} 18%{opacity:0;} 100%{opacity:0;} }
+  @keyframes tchip1{ 0%,9%{opacity:0; transform:translate(-50%,4px);} 11%,15%{opacity:1; transform:translate(-50%,0);} 18%{opacity:0;} 100%{opacity:0;} }
+
+  /* trace 2: address question */
+  .t2{ top:185px; left:300px; width:90px; }
+  .t2 .trace-line{ left:0; top:50%; width:100%; animation:tline2 var(--dur) ease-in-out infinite; }
+  .t2 .trace-chip{ left:50%; top:-26px; transform:translateX(-50%); animation:tchip2 var(--dur) ease-out infinite; }
+  @keyframes tline2{ 0%,30%{opacity:0; transform:scaleX(0); transform-origin:left;} 32%,34%{opacity:1; transform:scaleX(1);} 37%{opacity:0;} 100%{opacity:0;} }
+  @keyframes tchip2{ 0%,30%{opacity:0; transform:translate(-50%,4px);} 32%,34%{opacity:1; transform:translate(-50%,0);} 37%{opacity:0;} 100%{opacity:0;} }
+
+  .reduced-motion-note{ display:none; }
+  @media (prefers-reduced-motion: reduce){
+    *{ animation-duration:0.001ms !important; animation-iteration-count:1 !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="rahvana-card" role="img" aria-label="Split screen animation: a simple guided question wizard on the left automatically fills the official immigration form shown on the right in real time, ending with a completed form ready to download">
+  <div class="stage">
+    <div class="ambient-glow"></div>
+    <div class="seam"></div>
+    <div class="panel-label left">Rahvana</div>
+    <div class="panel-label right">Official Form</div>
+
+    <!-- ============ LEFT PANEL: WIZARD ============ -->
+    <div class="left-panel">
+
+      <div class="progress-row">
+        <div style="font-size:11px; color:var(--ink-faint); font-weight:600;">Petition Progress</div>
+        <div class="progress-pct">
+          <span class="num">
+            <span class="n1">7%</span><span class="n2">15%</span><span class="n3">35%</span>
+            <span class="n4">60%</span><span class="n5">80%</span><span class="n6">100%</span>
+          </span>
+        </div>
+      </div>
+      <div class="progress-track"><div class="progress-fill"></div></div>
+
+      <div class="reassure-row">
+        <div class="reassure r1"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#0a5458" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Saved automatically</div>
+        <div class="reassure r2"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#0a5458" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>No paperwork required</div>
+        <div class="reassure r3"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#0a5458" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/></svg>You're almost done</div>
+      </div>
+
+      <div class="qcard-wrap">
+
+        <!-- Scene 1 -->
+        <div class="qcard qc1">
+          <div class="q-text">What is your spouse's date of birth?</div>
+          <div class="input-field">
+            <div class="typed-wrap"><span class="typed-text">08 / 15 / 1995</span><span class="typed-cursor"></span></div>
+            <div class="check-pop"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="helper-text">Enter the date exactly as shown on their passport.</div>
+        </div>
+
+        <!-- Scene 2 -->
+        <div class="qcard qc2">
+          <div class="q-text">What is your spouse's current address?</div>
+          <div class="input-field">
+            <div class="typed-wrap"><span class="typed-text">House 14, Street 7, F-8, Islamabad</span><span class="typed-cursor"></span></div>
+            <div class="check-pop"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="helper-text">We'll use this for the address history section.</div>
+        </div>
+
+        <!-- Scene 3a -->
+        <div class="qcard qc3a">
+          <div class="q-text">What country was your spouse born in?</div>
+          <div class="input-field">
+            <div class="typed-wrap"><span class="typed-text">Pakistan</span><span class="typed-cursor"></span></div>
+            <div class="check-pop"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="helper-text">This should match their birth certificate or passport.</div>
+        </div>
+
+        <!-- Scene 3b -->
+        <div class="qcard qc3b">
+          <div class="q-text">When did you get married?</div>
+          <div class="input-field">
+            <div class="typed-wrap"><span class="typed-text">06 / 14 / 2022</span><span class="typed-cursor"></span></div>
+            <div class="check-pop"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="helper-text">Enter the date shown on your marriage certificate.</div>
+        </div>
+
+        <!-- Scene 3c -->
+        <div class="qcard qc3c">
+          <div class="q-text">What is your spouse's phone number?</div>
+          <div class="input-field">
+            <div class="typed-wrap"><span class="typed-text">+92 300 1234567</span><span class="typed-cursor"></span></div>
+            <div class="check-pop"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="helper-text">Include the country code if calling from abroad.</div>
+        </div>
+
+        <!-- Scene 3d -->
+        <div class="qcard qc3d">
+          <div class="q-text">What city does your spouse currently live in?</div>
+          <div class="input-field">
+            <div class="typed-wrap"><span class="typed-text">Islamabad</span><span class="typed-cursor"></span></div>
+            <div class="check-pop"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+          </div>
+          <div class="helper-text">We'll match this to your address history.</div>
+        </div>
+
+        <!-- Scene 5: Review -->
+        <div class="review">
+          <div class="review-title">Review Your Answers</div>
+          <div class="review-item ri1"><div class="review-check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Personal Information</div>
+          <div class="review-item ri2"><div class="review-check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Marriage Information</div>
+          <div class="review-item ri3"><div class="review-check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Address History</div>
+          <div class="review-item ri4"><div class="review-check"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>Beneficiary Information</div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ============ RIGHT PANEL: LIVE FORM ============ -->
+    <div class="right-panel">
+      <div class="stack-page sp1"></div>
+      <div class="stack-page sp2"></div>
+
+      <div class="form-wrap">
+        <div class="paper-mini">
+          <div class="pm-header">
+            <div class="pm-seal"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="#9aa3a4" stroke-width="1.1"/><path d="M12 5 L12 19 M5 12 L19 12" stroke="#9aa3a4" stroke-width="0.8"/></svg></div>
+            <div class="pm-title">
+              <div class="t1">Petition for Alien Relative</div>
+              <div class="t2">USCIS Form I-130</div>
+            </div>
+            <div class="pm-meta"><div class="bold">I-130</div>Page 1 of 12</div>
+          </div>
+          <div class="pm-body">
+            <div class="pm-part">Part 1. Relationship</div>
+            <div class="pm-label">1. I am filing this petition for my spouse</div>
+            <div class="pm-field"></div>
+
+            <div class="pm-part">Part 2. Information About You</div>
+            <div class="pm-trio">
+              <div class="col"><div class="pm-label">4.a. Family Name</div><div class="pm-field"></div></div>
+              <div class="col"><div class="pm-label">4.b. Given Name</div><div class="pm-field"></div></div>
+              <div class="col"><div class="pm-label">4.c. Middle Name</div><div class="pm-field"></div></div>
+            </div>
+
+            <div class="pm-label">Spouse's Date of Birth</div>
+            <div class="pm-field fa"><span class="val va">08 / 15 / 1995</span></div>
+
+            <div class="pm-row3">
+              <div><div class="pm-label">Street</div><div class="pm-field fb"><span class="val vb">House 14, St. 7</span></div></div>
+              <div><div class="pm-label">City</div><div class="pm-field fb"><span class="val vb">Islamabad</span></div></div>
+              <div><div class="pm-label">Country</div><div class="pm-field fb"><span class="val vb">Pakistan</span></div></div>
+            </div>
+
+            <div class="pm-part">Part 3. Biographic Information</div>
+            <div class="pm-row3">
+              <div><div class="pm-label">Country of Birth</div><div class="pm-field fc"><span class="val vc">Pakistan</span></div></div>
+              <div><div class="pm-label">Marriage Date</div><div class="pm-field fd"><span class="val vd">06/14/2022</span></div></div>
+              <div><div class="pm-label">Phone</div><div class="pm-field fe"><span class="val ve">+92 300...</span></div></div>
+            </div>
+
+            <div class="pm-part">Address History</div>
+            <div class="pm-label">City of Residence</div>
+            <div class="pm-field ff"><span class="val vf">Islamabad</span></div>
+          </div>
+
+          <div class="badge-row">
+            <div class="badge b1"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>Form Ready</div>
+            <div class="badge outline b2"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 21h14" stroke="#0f7d82" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>Download PDF</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- connection traces -->
+    <div class="trace-wrap t1">
+      <div class="trace-line"></div>
+      <div class="trace-chip">Your answer → Official form</div>
+    </div>
+    <div class="trace-wrap t2">
+      <div class="trace-line"></div>
+      <div class="trace-chip">Your answer → Official form</div>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>

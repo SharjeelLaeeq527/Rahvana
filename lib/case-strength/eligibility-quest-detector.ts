@@ -48,29 +48,23 @@ function get(answers: EligibilityAnswers, quest: string, screen: string): string
 }
 
 /**
- * Evaluates the eligibility-quest answers and returns advisory risk flags.
+ * Category-agnostic eligibility risks.
+ *
+ * These four patterns — past visa refusal/fraud, criminal history, unlawful
+ * presence, and income concern — apply to EVERY family-based category (spouse,
+ * parent, child, sibling). They are keyed to the shared q5 screens of the
+ * eligibility quest. Pulling them out of the IR-1 function lets IR-5 (and any
+ * future category) reuse them without copy-pasting, and layer its own
+ * category-specific patterns on top.
+ *
  * Patterns whose required answers are not present are silently skipped.
  */
-export function detectRiskFlagsFromEligibilityQuest(
+export function detectCommonEligibilityRisks(
   answers: EligibilityAnswers | null | undefined,
   stepRefs: StepRefs = IR1_STEP_REFS
 ): RiskFlag[] {
   const flags: RiskFlag[] = [];
   if (!answers) return flags;
-
-  // ── Missing prior-marriage termination evidence ─────────────────────────────
-  const q3s1 = get(answers, "q3", "q3s1");
-  const q3s3 = get(answers, "q3", "q3s3");
-  const hadPriorMarriage = q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both";
-  if (hadPriorMarriage && (q3s3 === "no" || q3s3 === "partial")) {
-    flags.push({
-      id: "missing_prior_marriage_termination",
-      title: "Old marriage proof missing",
-      severity: "critical",
-      advisory: `You said there was a previous marriage. Add the divorce papers or death certificate in ${stepRefs.documents}.`,
-      source_basis: "8 CFR 204.2(a)(2)",
-    });
-  }
 
   // ── Prior visa refusal / fraud ──────────────────────────────────────────────
   if (get(answers, "q5", "q5s1") === "yes") {
@@ -116,6 +110,40 @@ export function detectRiskFlagsFromEligibilityQuest(
       source_basis: "INA 213A — Form I-864",
     });
   }
+
+  return flags;
+}
+
+/**
+ * IR-1 (spouse) eligibility detector = spouse-only patterns + the common ones.
+ *
+ * The one spouse-specific pattern is missing prior-marriage termination
+ * evidence (q3). Everything else is shared, so we just append the common flags.
+ * The signature is unchanged, so every existing caller keeps working.
+ */
+export function detectRiskFlagsFromEligibilityQuest(
+  answers: EligibilityAnswers | null | undefined,
+  stepRefs: StepRefs = IR1_STEP_REFS
+): RiskFlag[] {
+  const flags: RiskFlag[] = [];
+  if (!answers) return flags;
+
+  // ── Missing prior-marriage termination evidence (SPOUSE-ONLY) ───────────────
+  const q3s1 = get(answers, "q3", "q3s1");
+  const q3s3 = get(answers, "q3", "q3s3");
+  const hadPriorMarriage = q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both";
+  if (hadPriorMarriage && (q3s3 === "no" || q3s3 === "partial")) {
+    flags.push({
+      id: "missing_prior_marriage_termination",
+      title: "Old marriage proof missing",
+      severity: "critical",
+      advisory: `You said there was a previous marriage. Add the divorce papers or death certificate in ${stepRefs.documents}.`,
+      source_basis: "8 CFR 204.2(a)(2)",
+    });
+  }
+
+  // ── Shared, category-agnostic patterns ──────────────────────────────────────
+  flags.push(...detectCommonEligibilityRisks(answers, stepRefs));
 
   return flags;
 }

@@ -224,11 +224,11 @@ export function PDFEditor() {
                 setActiveTool(activeTool === "text" ? null : "text");
                 setShowShapesDropdown(false);
               }}
-              className={`p-2 rounded transition-colors ${activeTool === "text" ? "bg-blue-100" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded transition-colors ${activeTool === "text" ? "bg-rahvana-primary/10" : "hover:bg-gray-100"}`}
               title={t("pdfProcessing.editor.addText")}
             >
               <Type
-                className={`w-5 h-5 ${activeTool === "text" ? "text-blue-600" : "text-gray-700"}`}
+                className={`w-5 h-5 ${activeTool === "text" ? "text-rahvana-primary" : "text-gray-700"}`}
               />
             </button>
 
@@ -245,13 +245,13 @@ export function PDFEditor() {
               <DropdownMenuTrigger asChild>
                 <button
                   className={`p-2 rounded transition-colors ${
-                    activeTool === "shapes" ? "bg-blue-100" : "hover:bg-gray-100"
+                    activeTool === "shapes" ? "bg-rahvana-primary/10" : "hover:bg-gray-100"
                   }`}
                   title={t("pdfProcessing.editor.shapes.title")}
                 >
                   <Stamp
                     className={`w-5 h-5 ${
-                      activeTool === "shapes" ? "text-blue-600" : "text-gray-700"
+                      activeTool === "shapes" ? "text-rahvana-primary" : "text-gray-700"
                     }`}
                   />
                 </button>
@@ -312,7 +312,7 @@ export function PDFEditor() {
             <Button
               onClick={handleDownload}
               disabled={isDownloading}
-              className="bg-primary hover:bg-primary/90 text-white text-xs md:text-sm px-3 md:px-4"
+              className="bg-rahvana-primary hover:bg-rahvana-primary-dark text-white text-xs md:text-sm px-3 md:px-4"
             >
               <Download className="h-4 w-4 mr-1 md:mr-2" />
               {isDownloading ? (

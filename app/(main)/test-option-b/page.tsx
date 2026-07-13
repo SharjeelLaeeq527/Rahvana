@@ -6,8 +6,7 @@ import { ArrowRight, Sparkles, CheckCircle2, LayoutGrid, Layers } from "lucide-r
 import { motion, AnimatePresence } from "framer-motion";
 import { TwoWaysVisual } from "../../components/home-page/Components";
 
-export const journeyHref = "/visa-category/ir-category/ir1-journey";
-export const toolsHref = "/resources";
+import { ir1journeyHref, resourcesHref as toolsHref } from "@/lib/constants/routes";
 
 type TwoWaysIndex = 0 | 1;
 
@@ -28,7 +27,7 @@ const updatedWaysPaths = [
       "Stay ahead with built-in requirements, checklists, and deadline alerts.",
     ],
     cta: "Start the Roadmap",
-    href: journeyHref,
+    href: ir1journeyHref,
   },
   {
     title: "Tools & Resources",
@@ -68,9 +67,9 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
   const visualHeight = index === 0 ? 560 : 460;
 
   return (
-    <div 
-      ref={wrapRef} 
-      className="w-full overflow-hidden" 
+    <div
+      ref={wrapRef}
+      className="w-full overflow-hidden"
       style={{ height: Math.round(visualHeight * scale) }}
     >
       <div
@@ -123,10 +122,8 @@ export default function TestOptionBPage() {
       <div className="mx-auto max-w-[1300px] px-6 md:px-12">
         {/* 2-Column Split-View Grid - Styled to match the original 380px/1fr layout */}
         <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-12 lg:gap-16 xl:gap-24 items-start">
-          
           {/* Left Column: Headings, Selectors, and CTAs */}
           <div className="flex flex-col">
-            
             {/* Header Block */}
             <div className="mb-8">
               <p className="text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377] mb-2">
@@ -136,16 +133,17 @@ export default function TestOptionBPage() {
                 Choose how you want to use Rahvana
               </h1>
               <p className="text-[14px] text-[#4a5c62] leading-relaxed font-medium">
-                Follow the guided IR-1 roadmap, use focused tools and resources independently, and choose the support style that fits what you need right now.
+                Follow the guided IR-1 roadmap, use focused tools and resources independently, and
+                choose the support style that fits what you need right now.
               </p>
             </div>
-            
+
             {/* Options Selector Container */}
             <div className="flex flex-col gap-3">
               {updatedWaysPaths.map((path, i) => {
                 const isActive = activeIndex === i;
                 const isJourney = i === 0;
-                
+
                 return (
                   <button
                     key={path.title}
@@ -163,31 +161,39 @@ export default function TestOptionBPage() {
                   >
                     {/* Top Row: Eyebrow + Pill */}
                     <div className="flex items-center justify-between gap-3 w-full mb-2">
-                      <span className={`text-[9px] font-black uppercase tracking-wider ${isActive ? "text-teal-600" : "text-slate-400"}`}>
+                      <span
+                        className={`text-[9px] font-black uppercase tracking-wider ${isActive ? "text-teal-600" : "text-slate-400"}`}
+                      >
                         {path.eyebrow}
                       </span>
-                      <span className={`text-[8.5px] px-2 py-0.5 rounded-full font-bold border transition-colors ${
-                        isActive
-                          ? isJourney
-                            ? "bg-teal-100 text-teal-800 border-teal-200"
-                            : "bg-indigo-100 text-indigo-800 border-indigo-200"
-                          : "bg-slate-100 text-slate-500 border-slate-200"
-                      }`}>
+                      <span
+                        className={`text-[8.5px] px-2 py-0.5 rounded-full font-bold border transition-colors ${
+                          isActive
+                            ? isJourney
+                              ? "bg-teal-100 text-teal-800 border-teal-200"
+                              : "bg-indigo-100 text-indigo-800 border-indigo-200"
+                            : "bg-slate-100 text-slate-500 border-slate-200"
+                        }`}
+                      >
                         {isJourney ? "Beginners" : "Experienced"}
                       </span>
                     </div>
 
                     {/* Title */}
-                    <h3 className={`text-base font-black transition-colors ${
-                      isActive ? "text-slate-900" : "text-slate-700 group-hover:text-slate-950"
-                    }`}>
+                    <h3
+                      className={`text-base font-black transition-colors ${
+                        isActive ? "text-slate-900" : "text-slate-700 group-hover:text-slate-950"
+                      }`}
+                    >
                       {path.title}
                     </h3>
 
                     {/* Subtitle / Teaser */}
-                    <p className={`text-xs mt-1 leading-relaxed transition-colors ${
-                      isActive ? "text-slate-600" : "text-slate-400 group-hover:text-slate-500"
-                    }`}>
+                    <p
+                      className={`text-xs mt-1 leading-relaxed transition-colors ${
+                        isActive ? "text-slate-600" : "text-slate-400 group-hover:text-slate-500"
+                      }`}
+                    >
                       {path.teaser}
                     </p>
                   </button>
@@ -222,7 +228,6 @@ export default function TestOptionBPage() {
                 </motion.div>
               </AnimatePresence>
             </div>
-
           </div>
 
           {/* Right Column: Dynamic Visual & Bullet Benefits */}
@@ -236,7 +241,6 @@ export default function TestOptionBPage() {
                 exit={{ opacity: 0, y: -10 }}
                 transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
               >
-                
                 {/* Descriptive content header */}
                 <div className="flex flex-col gap-2">
                   <span className="text-[10px] font-black tracking-widest text-teal-600 uppercase">
@@ -248,7 +252,9 @@ export default function TestOptionBPage() {
                 </div>
 
                 {/* Best for box */}
-                <div className={`flex items-start gap-2.5 rounded-2xl px-4 py-3 border text-slate-900 ${activePath.bestForColor}`}>
+                <div
+                  className={`flex items-start gap-2.5 rounded-2xl px-4 py-3 border text-slate-900 ${activePath.bestForColor}`}
+                >
                   <span className="font-extrabold text-sm text-teal-600 mt-0.5">•</span>
                   <p className="text-[11px] leading-relaxed font-semibold">
                     <strong>Best for:</strong> {activePath.bestFor}
@@ -261,7 +267,10 @@ export default function TestOptionBPage() {
                 {/* Bullet Features list - Shifted below the visual section */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 border-t border-slate-100 pt-5 mt-2">
                   {activePath.bullets.map((bullet, idx) => (
-                    <div key={idx} className="flex flex-col gap-2 p-4 rounded-xl border border-slate-100 bg-white shadow-[0_4px_12px_rgba(15,23,42,0.02)]">
+                    <div
+                      key={idx}
+                      className="flex flex-col gap-2 p-4 rounded-xl border border-slate-100 bg-white shadow-[0_4px_12px_rgba(15,23,42,0.02)]"
+                    >
                       <CheckCircle2 size={16} className={`${activePath.bulletColor} shrink-0`} />
                       <p className="text-[12px] leading-relaxed text-slate-500 font-semibold">
                         {bullet}
@@ -269,11 +278,9 @@ export default function TestOptionBPage() {
                     </div>
                   ))}
                 </div>
-
               </motion.div>
             </AnimatePresence>
           </div>
-
         </div>
       </div>
     </div>

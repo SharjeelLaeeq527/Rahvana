@@ -21,6 +21,7 @@ import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
 
 import TranslationQueueTable from "./components/translation-queue/TranslationQueueTable";
+import { AdminNotificationBell } from "@/lib/AdminNotificationBell";
 import PoliceVerificationTable from "./components/police-verifications/PoliceVerificationTable";
 import BookAppointmentTable from "./components/book-appointment/BookAppointmentTable";
 import ConsultationRequestsTable from "./components/consultation-requests/ConsultationRequestsTable";
@@ -123,6 +124,7 @@ export default function AdminPanel() {
               >
                 Logout
               </Button>
+              <AdminNotificationBell adminUserId={user.id} />
             </div>
           </div>
         </div>
@@ -156,13 +158,13 @@ export default function AdminPanel() {
             description="Manage consultation bookings and appointment availability"
           >
             <div className="space-y-6">
-              <div>
+              {/* <div>
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   Availability Schedule
                 </h3>
                 <AvailabilityGrid />
-              </div>
+              </div> */}
               <div>
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
@@ -179,7 +181,16 @@ export default function AdminPanel() {
             icon={<MessageSquare className="h-5 w-5" />}
             description="Review and manage user consultation requests"
           >
-            <ConsultationRequestsTable />
+            <div className="space-y-6">
+              <div className="mt-4">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  Availability Schedule
+                </h3>
+                <AvailabilityGrid />
+              </div>
+              <ConsultationRequestsTable />
+            </div>
           </CollapsibleSection>
 
           {/* Section 4: Translation Queue */}

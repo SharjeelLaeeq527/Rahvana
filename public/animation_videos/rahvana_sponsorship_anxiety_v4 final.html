@@ -1,0 +1,1203 @@
+<style>
+  :root {
+    --color-background-primary: #ffffff;
+    --color-background-secondary: transparent;
+  }
+  .scene {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .scene.active {
+    opacity: 1;
+    pointer-events: auto;
+  }
+  @keyframes breathe {
+    0%,
+    100% {
+      transform: scale(1);
+    }
+    50% {
+      transform: scale(1.05);
+    }
+  }
+  @keyframes qFloat {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    30%,
+    70% {
+      opacity: 0.55;
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-28px);
+    }
+  }
+  @keyframes warnPulse {
+    0%,
+    100% {
+      opacity: 0.5;
+      transform: scale(0.96);
+    }
+    50% {
+      opacity: 1;
+      transform: scale(1.04);
+    }
+  }
+  @keyframes slideFromLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-40px) rotate(-3deg);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) rotate(-3deg);
+    }
+  }
+  @keyframes slideFromRight {
+    from {
+      opacity: 0;
+      transform: translateX(40px) rotate(2.5deg);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0) rotate(2.5deg);
+    }
+  }
+  @keyframes slideFromTop {
+    from {
+      opacity: 0;
+      transform: translateY(-35px) rotate(1.5deg);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) rotate(1.5deg);
+    }
+  }
+  @keyframes slideFromBottom {
+    from {
+      opacity: 0;
+      transform: translateY(35px) rotate(-2deg);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) rotate(-2deg);
+    }
+  }
+  @keyframes floatU {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-3deg);
+    }
+    50% {
+      transform: translateY(-7px) rotate(-3deg);
+    }
+  }
+  @keyframes floatD {
+    0%,
+    100% {
+      transform: translateY(0) rotate(2.5deg);
+    }
+    50% {
+      transform: translateY(7px) rotate(2.5deg);
+    }
+  }
+  @keyframes floatUL {
+    0%,
+    100% {
+      transform: translateY(0) rotate(1.5deg);
+    }
+    50% {
+      transform: translateY(-6px) rotate(1.5deg);
+    }
+  }
+  @keyframes floatUR {
+    0%,
+    100% {
+      transform: translateY(0) rotate(-2deg);
+    }
+    50% {
+      transform: translateY(6px) rotate(-2deg);
+    }
+  }
+
+  /* Scene 3 calc animations */
+  @keyframes typeIn {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  @keyframes strikeThrough {
+    from {
+      width: 0;
+    }
+    to {
+      width: 100%;
+    }
+  }
+  @keyframes fadeInCalc {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes cursorBlink {
+    0%,
+    100% {
+      opacity: 1;
+    }
+    50% {
+      opacity: 0;
+    }
+  }
+  @keyframes scribbleShake {
+    0%,
+    100% {
+      transform: translateX(0) rotate(0deg);
+    }
+    20% {
+      transform: translateX(-2px) rotate(-1deg);
+    }
+    40% {
+      transform: translateX(2px) rotate(1deg);
+    }
+    60% {
+      transform: translateX(-1px) rotate(-0.5deg);
+    }
+    80% {
+      transform: translateX(1px) rotate(0.5deg);
+    }
+  }
+  @keyframes questionPop {
+    0% {
+      opacity: 0;
+      transform: scale(0.5) rotate(-10deg);
+    }
+    70% {
+      transform: scale(1.15) rotate(3deg);
+    }
+    100% {
+      opacity: 1;
+      transform: scale(1) rotate(0deg);
+    }
+  }
+
+  .card {
+    background: var(--color-background-primary);
+    border: 1px solid #e8d5a0;
+    border-radius: 10px;
+    padding: 0.65rem 0.9rem;
+    font-size: 12.5px;
+    color: #6b4e10;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  }
+  .thought {
+    background: var(--color-background-primary);
+    border: 1.5px solid #e8d5a0;
+    border-radius: 16px;
+    padding: 0.55rem 1.15rem;
+    font-size: 15px;
+    font-weight: 500;
+    color: #7a5c1a;
+    position: relative;
+    box-shadow: 0 2px 12px rgba(186, 117, 23, 0.08);
+  }
+
+  /* Calc panel styles */
+  .calc-panel {
+    background: var(--color-background-primary);
+    border: 1px solid #e8d5a0;
+    border-radius: 12px;
+    padding: 16px 18px;
+    width: 270px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    position: relative;
+  }
+  .calc-title {
+    font-size: 10px;
+    font-weight: 600;
+    color: #b89040;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .calc-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 7px;
+    font-size: 12px;
+    color: #5a4010;
+    opacity: 0;
+    position: relative;
+    min-height: 22px;
+  }
+  .calc-label {
+    color: #888;
+    font-size: 11px;
+    min-width: 100px;
+  }
+  .calc-val {
+    font-weight: 600;
+    color: #7a5c1a;
+    font-family: "SF Mono", "Fira Mono", monospace;
+    font-size: 12px;
+  }
+  .calc-op {
+    color: #c9a84c;
+    font-weight: 700;
+    font-size: 13px;
+    margin: 0 2px;
+  }
+  .calc-divider {
+    height: 1px;
+    background: #e8d5a0;
+    margin: 6px 0 8px;
+    opacity: 0;
+  }
+  .calc-result-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    opacity: 0;
+    position: relative;
+  }
+  .calc-result-label {
+    font-size: 11px;
+    color: #888;
+    min-width: 100px;
+  }
+  .calc-result-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: #ba7517;
+    font-family: "SF Mono", "Fira Mono", monospace;
+  }
+  .strike-wrap {
+    position: relative;
+    display: inline-block;
+  }
+  .strike-line {
+    position: absolute;
+    top: 50%;
+    left: -2px;
+    height: 2px;
+    background: #e24b4a;
+    border-radius: 1px;
+    width: 0;
+    transform: translateY(-50%);
+  }
+  .cursor {
+    display: inline-block;
+    width: 1.5px;
+    height: 12px;
+    background: #c9a84c;
+    margin-left: 1px;
+    vertical-align: middle;
+    animation: cursorBlink 0.9s ease-in-out infinite;
+  }
+  .qmark-bubble {
+    position: absolute;
+    background: #faeeda;
+    border: 1px solid #e8d5a0;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    color: #ba7517;
+    opacity: 0;
+  }
+  .alt-row {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 10.5px;
+    color: #a07030;
+    margin-top: 4px;
+    opacity: 0;
+  }
+  .alt-label {
+    font-size: 9.5px;
+    color: #bbb;
+    font-style: italic;
+  }
+</style>
+
+<div
+  style="
+    width: 100%;
+    background: var(--color-background-secondary);
+    border-radius: 16px;
+    overflow: hidden;
+    position: relative;
+    height: 360px;
+  "
+>
+  <!-- Scene 1: The Question -->
+  <div id="scene1" class="scene">
+    <div
+      style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+      "
+    >
+      <div class="thought" style="animation: breathe 3.5s ease-in-out infinite">
+        Do I qualify?
+      </div>
+      <div style="display: flex; gap: 28px; margin-top: 8px">
+        <span
+          style="
+            font-size: 24px;
+            font-weight: 300;
+            color: #c9a84c;
+            animation: qFloat 3.5s ease-in-out 0s infinite;
+          "
+          >?</span
+        >
+        <span
+          style="
+            font-size: 30px;
+            font-weight: 300;
+            color: #c9a84c;
+            animation: qFloat 4s ease-in-out 1.2s infinite;
+          "
+          >?</span
+        >
+        <span
+          style="
+            font-size: 20px;
+            font-weight: 300;
+            color: #c9a84c;
+            animation: qFloat 3.8s ease-in-out 0.6s infinite;
+          "
+          >?</span
+        >
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene 2: Conflicting Rules -->
+  <div id="scene2" class="scene">
+    <div style="position: relative; width: 340px; height: 300px">
+      <div
+        id="c1"
+        class="card"
+        style="
+          position: absolute;
+          top: 14px;
+          left: 8px;
+          max-width: 148px;
+          transform: rotate(-3deg);
+          opacity: 0;
+        "
+      >
+        <div style="font-size: 9.5px; margin-bottom: 4px">
+          <span
+            style="
+              background: #e6f1fb;
+              color: #185fa5;
+              border-radius: 4px;
+              padding: 1px 5px;
+            "
+            >USCIS</span
+          >
+        </div>
+        125% of federal poverty guidelines
+      </div>
+      <div
+        id="c2"
+        class="card"
+        style="
+          position: absolute;
+          top: 24px;
+          right: 8px;
+          max-width: 148px;
+          transform: rotate(2.5deg);
+          opacity: 0;
+        "
+      >
+        <div style="font-size: 9.5px; margin-bottom: 4px">
+          <span
+            style="
+              background: #eaf3de;
+              color: #3b6d11;
+              border-radius: 4px;
+              padding: 1px 5px;
+            "
+            >Visa Forum</span
+          >
+        </div>
+        Some say 4× the poverty level
+      </div>
+      <div
+        id="c3"
+        class="card"
+        style="
+          position: absolute;
+          bottom: 60px;
+          left: 12px;
+          max-width: 148px;
+          transform: rotate(1.5deg);
+          opacity: 0;
+        "
+      >
+        <div style="font-size: 9.5px; margin-bottom: 4px">
+          <span
+            style="
+              background: #faeeda;
+              color: #854f0b;
+              border-radius: 4px;
+              padding: 1px 5px;
+            "
+            >Attorney Blog</span
+          >
+        </div>
+        It depends on your situation
+      </div>
+      <div
+        id="c4"
+        class="card"
+        style="
+          position: absolute;
+          bottom: 48px;
+          right: 8px;
+          max-width: 148px;
+          transform: rotate(-2deg);
+          opacity: 0;
+        "
+      >
+        <div style="font-size: 9.5px; margin-bottom: 4px">
+          <span
+            style="
+              background: #fcebeb;
+              color: #a32d2d;
+              border-radius: 4px;
+              padding: 1px 5px;
+            "
+            >Reddit</span
+          >
+        </div>
+        It varies by case
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene 3: Manual Calculation Confusion -->
+  <div id="scene3" class="scene">
+    <div style="position: relative">
+      <div class="calc-panel" id="calc-panel">
+        <div class="calc-title">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <rect
+              x="0.5"
+              y="0.5"
+              width="11"
+              height="11"
+              rx="2"
+              stroke="#c9a84c"
+              stroke-width="1"
+            />
+            <line
+              x1="3"
+              y1="4"
+              x2="9"
+              y2="4"
+              stroke="#c9a84c"
+              stroke-width="1"
+            />
+            <line
+              x1="3"
+              y1="6.5"
+              x2="7"
+              y2="6.5"
+              stroke="#c9a84c"
+              stroke-width="1"
+            />
+            <line
+              x1="3"
+              y1="9"
+              x2="8"
+              y2="9"
+              stroke="#c9a84c"
+              stroke-width="1"
+            />
+          </svg>
+          Income Requirement Calc
+        </div>
+
+        <!-- Row 1: Poverty line -->
+        <div class="calc-row" id="cr1">
+          <span class="calc-label">Federal poverty line</span>
+          <span class="calc-op">=</span>
+          <span class="calc-val">$15,060</span>
+          <span class="cursor" id="cur1"></span>
+        </div>
+
+        <!-- Row 2: ×125% -->
+        <div class="calc-row" id="cr2">
+          <span class="calc-label">× 125%</span>
+          <span class="calc-op">=</span>
+          <div class="strike-wrap" id="sw1">
+            <span class="calc-val">$18,825</span>
+            <div class="strike-line" id="sl1"></div>
+          </div>
+          <span class="cursor" id="cur2" style="display: none"></span>
+        </div>
+
+        <!-- Row 2b: correction -->
+        <div class="alt-row" id="cr2b">
+          <span class="alt-label">wait — is it per person?</span>
+          <div class="strike-wrap" id="sw1b">
+            <span
+              style="
+                font-family: monospace;
+                font-size: 11px;
+                color: #ba7517;
+                font-weight: 600;
+              "
+              >$24,650</span
+            >
+            <div class="strike-line" id="sl1b"></div>
+          </div>
+        </div>
+
+        <!-- Divider -->
+        <div class="calc-divider" id="cdiv1"></div>
+
+        <!-- Row 3: Household size -->
+        <div class="calc-row" id="cr3">
+          <span class="calc-label">Household size</span>
+          <span class="calc-op">×</span>
+          <div class="strike-wrap" id="sw2">
+            <span class="calc-val">2</span>
+            <div class="strike-line" id="sl2"></div>
+          </div>
+          <span
+            id="hs-correction"
+            style="
+              font-family: monospace;
+              font-size: 12px;
+              color: #e24b4a;
+              font-weight: 700;
+              opacity: 0;
+              margin-left: 4px;
+            "
+            >3?</span
+          >
+        </div>
+
+        <!-- Divider 2 -->
+        <div class="calc-divider" id="cdiv2"></div>
+
+        <!-- Result -->
+        <div class="calc-result-row" id="cr-result">
+          <span class="calc-result-label">Min. required income</span>
+          <span class="calc-op">=</span>
+          <div class="strike-wrap" id="sw-result">
+            <span class="calc-result-val" id="result-val">$37,650</span>
+            <div class="strike-line" id="sl-result"></div>
+          </div>
+          <span
+            id="result-q"
+            class="cursor"
+            style="display: none; background: #e24b4a"
+          ></span>
+        </div>
+
+        <!-- Confusion row -->
+        <div class="alt-row" id="cr-confused">
+          <span style="font-size: 10px; color: #e24b4a">⚠</span>
+          <span style="font-size: 10px; color: #a32d2d; font-style: italic"
+            >or is it $40,000 with joint sponsor?</span
+          >
+        </div>
+
+        <!-- Question marks -->
+        <div class="qmark-bubble" id="qb1" style="top: -12px; right: -10px">
+          ?
+        </div>
+        <div class="qmark-bubble" id="qb2" style="bottom: -10px; left: -10px">
+          ?
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene 4: Growing Uncertainty -->
+  <div id="scene4" class="scene">
+    <div style="position: relative; width: 340px; height: 280px">
+      <div
+        id="t1"
+        style="
+          position: absolute;
+          top: 6px;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-size: 12.5px;
+          color: #ba7517;
+          background: var(--color-background-primary);
+          border: 1px solid #e8d5a0;
+          border-radius: 20px;
+          padding: 5px 14px;
+          width: fit-content;
+          margin: 0 auto;
+          opacity: 0;
+        "
+      >
+        Not sure if I qualify
+      </div>
+      <div
+        id="t2"
+        style="
+          position: absolute;
+          top: 50px;
+          left: 4px;
+          font-size: 12px;
+          color: #7a5c1a;
+          background: var(--color-background-primary);
+          border: 1px solid #e8d5a0;
+          border-radius: 20px;
+          padding: 5px 12px;
+          opacity: 0;
+        "
+      >
+        Confusing requirements
+      </div>
+      <div
+        id="t3"
+        style="
+          position: absolute;
+          top: 50px;
+          right: 4px;
+          font-size: 12px;
+          color: #7a5c1a;
+          background: var(--color-background-primary);
+          border: 1px solid #e8d5a0;
+          border-radius: 20px;
+          padding: 5px 12px;
+          opacity: 0;
+        "
+      >
+        Different rules everywhere
+      </div>
+      <div
+        id="t4"
+        style="
+          position: absolute;
+          bottom: 58px;
+          left: 4px;
+          font-size: 12px;
+          color: #ba7517;
+          background: var(--color-background-primary);
+          border: 1px solid #e8d5a0;
+          border-radius: 20px;
+          padding: 5px 12px;
+          opacity: 0;
+        "
+      >
+        Will my case get refused?
+      </div>
+      <div
+        id="t5"
+        style="
+          position: absolute;
+          bottom: 18px;
+          left: 0;
+          right: 0;
+          text-align: center;
+          font-size: 12.5px;
+          color: #888780;
+          background: var(--color-background-primary);
+          border: 1px solid #e8d5a0;
+          border-radius: 20px;
+          padding: 5px 14px;
+          width: fit-content;
+          margin: 0 auto;
+          opacity: 0;
+        "
+      >
+        I just want a clear answer
+      </div>
+    </div>
+  </div>
+
+  <!-- Scene 5: Fear of Rejection -->
+  <div id="scene5" class="scene">
+    <div
+      style="
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+      "
+    >
+      <div
+        style="
+          position: relative;
+          background: var(--color-background-primary);
+          border: 1px solid #e8d5a0;
+          border-radius: 12px;
+          padding: 1.2rem 1.5rem;
+          width: 210px;
+        "
+      >
+        <div
+          style="
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 10px;
+          "
+        >
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="3" width="18" height="18" rx="2" fill="#F1EFE8" />
+            <line
+              x1="7"
+              y1="8"
+              x2="17"
+              y2="8"
+              stroke="#B89040"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+            <line
+              x1="7"
+              y1="12"
+              x2="15"
+              y2="12"
+              stroke="#B89040"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+            <line
+              x1="7"
+              y1="16"
+              x2="13"
+              y2="16"
+              stroke="#B89040"
+              stroke-width="1.5"
+              stroke-linecap="round"
+            />
+          </svg>
+          <span style="font-size: 11px; font-weight: 500; color: #7a5c1a"
+            >Application</span
+          >
+        </div>
+        <div
+          style="
+            height: 5px;
+            background: #f1efe8;
+            border-radius: 3px;
+            margin-bottom: 5px;
+            width: 90%;
+          "
+        ></div>
+        <div
+          style="
+            height: 5px;
+            background: #f1efe8;
+            border-radius: 3px;
+            margin-bottom: 5px;
+            width: 70%;
+          "
+        ></div>
+        <div
+          style="
+            height: 5px;
+            background: #f1efe8;
+            border-radius: 3px;
+            width: 80%;
+          "
+        ></div>
+        <div
+          id="stamp"
+          style="
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            border-radius: 12px;
+          "
+        >
+          <div
+            style="
+              border: 3px solid #e24b4a;
+              border-radius: 6px;
+              padding: 6px 14px;
+              transform: rotate(-12deg);
+              animation: warnPulse 2.5s ease-in-out infinite;
+            "
+          >
+            <span
+              style="
+                font-size: 18px;
+                font-weight: 700;
+                color: #e24b4a;
+                letter-spacing: 2px;
+              "
+              >REFUSED</span
+            >
+          </div>
+        </div>
+      </div>
+      <div
+        id="reason"
+        style="
+          background: var(--color-background-primary);
+          border: 1px solid #f7c1c1;
+          border-radius: 10px;
+          padding: 0.6rem 1rem;
+          font-size: 12px;
+          color: #a32d2d;
+          opacity: 0;
+          text-align: center;
+          max-width: 200px;
+        "
+      >
+        ⚠️ Reason: Insufficient Financial Support
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const TOTAL = 23000;
+  const FADE = 500;
+
+  const scenes = [
+    { id: "scene1", start: 0, end: 3000 },
+    { id: "scene2", start: 3000, end: 7000 },
+    { id: "scene3", start: 7000, end: 14000 },
+    { id: "scene4", start: 14000, end: 19000 },
+    { id: "scene5", start: 19000, end: 23000 },
+  ];
+
+  const scene2items = [
+    { id: "c1", delay: 300, anim: "slideFromLeft 0.6s ease-out forwards" },
+    { id: "c2", delay: 800, anim: "slideFromRight 0.6s ease-out forwards" },
+    { id: "c3", delay: 1400, anim: "slideFromTop 0.6s ease-out forwards" },
+    { id: "c4", delay: 2000, anim: "slideFromBottom 0.6s ease-out forwards" },
+  ];
+  const scene2float = [
+    { id: "c1", anim: "floatU 4s ease-in-out infinite" },
+    { id: "c2", anim: "floatD 4.4s ease-in-out 0.5s infinite" },
+    { id: "c3", anim: "floatUL 4.2s ease-in-out 1s infinite" },
+    { id: "c4", anim: "floatUR 4.6s ease-in-out 0.3s infinite" },
+  ];
+
+  const tags = [
+    { id: "t1", delay: 300 },
+    { id: "t2", delay: 800 },
+    { id: "t3", delay: 1300 },
+    { id: "t4", delay: 1800 },
+    { id: "t5", delay: 2400 },
+  ];
+
+  // Scene 3 step timings (ms after scene3 start)
+  const CALC_STEPS = [
+    { ms: 200, fn: "showRow", arg: "cr1" }, // Row 1 appears
+    { ms: 700, fn: "hideCursor", arg: "cur1" }, // cursor done
+    { ms: 900, fn: "showRow", arg: "cr2" }, // Row 2 appears (×125%)
+    { ms: 1500, fn: "showCursor", arg: "cur2" },
+    { ms: 1800, fn: "strike", arg: "sl1" }, // cross it out
+    { ms: 2100, fn: "hideCursor", arg: "cur2" },
+    { ms: 2200, fn: "showAlt", arg: "cr2b" }, // "wait — per person?"
+    { ms: 2700, fn: "strike", arg: "sl1b" }, // cross that too
+    { ms: 3000, fn: "showDiv", arg: "cdiv1" },
+    { ms: 3100, fn: "showRow", arg: "cr3" }, // Household row
+    { ms: 3700, fn: "strike", arg: "sl2" }, // cross out "2"
+    { ms: 3900, fn: "showEl", arg: "hs-correction" }, // "3?"
+    { ms: 4200, fn: "showDiv", arg: "cdiv2" },
+    { ms: 4400, fn: "showResult", arg: "cr-result" }, // result row
+    { ms: 4900, fn: "strike", arg: "sl-result" }, // cross out result
+    { ms: 5100, fn: "showEl", arg: "result-q" }, // red cursor blink
+    { ms: 5300, fn: "showAlt", arg: "cr-confused" }, // "or is it $40k?"
+    { ms: 5600, fn: "showQmark", arg: "qb1" },
+    { ms: 5900, fn: "showQmark", arg: "qb2" },
+  ];
+
+  let floated = {};
+  let stamped = false;
+  let reasoned = false;
+  let calcDone = {};
+  let lastScene3Since = -1;
+
+  function easeInOut(t) {
+    return t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+  }
+
+  function getSceneOpacity(sc, elapsed) {
+    const since = elapsed - sc.start;
+    const remaining = sc.end - elapsed;
+    if (since < FADE) return easeInOut(since / FADE);
+    if (remaining < FADE) return easeInOut(remaining / FADE);
+    return 1;
+  }
+
+  function showRow(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.transition = "opacity 0.4s ease";
+      el.style.opacity = "1";
+    }
+  }
+  function hideCursor(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "none";
+  }
+  function showCursor(id) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = "inline-block";
+  }
+  function strike(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.transition = "width 0.35s ease";
+      el.style.width = "calc(100% + 4px)";
+    }
+  }
+  function showAlt(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.transition = "opacity 0.4s ease";
+      el.style.opacity = "1";
+    }
+  }
+  function showDiv(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.transition = "opacity 0.4s ease";
+      el.style.opacity = "1";
+    }
+  }
+  function showEl(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.transition = "opacity 0.35s ease";
+      el.style.opacity = "1";
+    }
+  }
+  function showResult(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.transition = "opacity 0.45s ease";
+      el.style.opacity = "1";
+    }
+  }
+  function showQmark(id) {
+    const el = document.getElementById(id);
+    if (el) {
+      el.style.transition = "opacity 0.3s ease";
+      el.style.animation =
+        "questionPop 0.4s cubic-bezier(0.34,1.5,0.64,1) forwards";
+      el.style.opacity = "1";
+    }
+  }
+
+  const fnMap = {
+    showRow,
+    hideCursor,
+    showCursor,
+    strike,
+    showAlt,
+    showDiv,
+    showEl,
+    showResult,
+    showQmark,
+  };
+
+  function animScene3(since) {
+    CALC_STEPS.forEach((step, i) => {
+      if (since >= step.ms && !calcDone[i]) {
+        calcDone[i] = true;
+        fnMap[step.fn](step.arg);
+      }
+    });
+  }
+
+  function animScene2(since) {
+    scene2items.forEach((item) => {
+      const el = document.getElementById(item.id);
+      if (!el) return;
+      if (since >= item.delay) {
+        if (el.style.opacity === "0" || el.style.opacity === "") {
+          el.style.animation = item.anim;
+          el.style.opacity = "1";
+          setTimeout(() => {
+            if (!floated[item.id]) {
+              floated[item.id] = true;
+              const fa = scene2float.find((f) => f.id === item.id);
+              if (fa) el.style.animation = fa.anim;
+            }
+          }, 700);
+        }
+      }
+    });
+  }
+
+  function animScene4(since) {
+    tags.forEach((t) => {
+      const el = document.getElementById(t.id);
+      if (!el) return;
+      if (
+        since >= t.delay &&
+        (el.style.opacity === "0" || el.style.opacity === "")
+      ) {
+        el.style.transition = "opacity 0.5s ease";
+        el.style.opacity = "1";
+      }
+    });
+  }
+
+  function animScene5(since) {
+    const stamp = document.getElementById("stamp");
+    const reason = document.getElementById("reason");
+    if (stamp && since > 800 && !stamped) {
+      stamped = true;
+      stamp.style.transition = "opacity 0.6s ease";
+      stamp.style.opacity = "1";
+    }
+    if (reason && since > 1800 && !reasoned) {
+      reasoned = true;
+      reason.style.transition = "opacity 0.6s ease";
+      reason.style.opacity = "1";
+    }
+  }
+
+  function resetAll() {
+    ["c1", "c2", "c3", "c4"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.opacity = "0";
+        el.style.animation = "";
+        el.style.transition = "";
+      }
+    });
+    ["t1", "t2", "t3", "t4", "t5"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.opacity = "0";
+        el.style.transition = "";
+      }
+    });
+    const stamp = document.getElementById("stamp");
+    const reason = document.getElementById("reason");
+    if (stamp) {
+      stamp.style.opacity = "0";
+      stamp.style.transition = "";
+    }
+    if (reason) {
+      reason.style.opacity = "0";
+      reason.style.transition = "";
+    }
+
+    // Reset scene 3 calc elements
+    ["cr1", "cr2", "cr3", "cr-result"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.opacity = "0";
+        el.style.transition = "";
+      }
+    });
+    ["cr2b", "cr-confused"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.opacity = "0";
+        el.style.transition = "";
+      }
+    });
+    ["cdiv1", "cdiv2"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.opacity = "0";
+        el.style.transition = "";
+      }
+    });
+    ["sl1", "sl1b", "sl2", "sl-result"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.width = "0";
+        el.style.transition = "";
+      }
+    });
+    ["cur2", "hs-correction", "result-q", "qb1", "qb2"].forEach((id) => {
+      const el = document.getElementById(id);
+      if (el) {
+        el.style.opacity = "0";
+        el.style.transition = "";
+        el.style.animation = "";
+      }
+    });
+    const cur1 = document.getElementById("cur1");
+    if (cur1) cur1.style.display = "inline-block";
+    const cur2 = document.getElementById("cur2");
+    if (cur2) cur2.style.display = "none";
+
+    floated = {};
+    stamped = false;
+    reasoned = false;
+    calcDone = {};
+    lastScene3Since = -1;
+  }
+
+  let startTime = null;
+
+  function loop(ts) {
+    if (!startTime) startTime = ts;
+    const elapsed = (ts - startTime) % TOTAL;
+
+    if (elapsed < 100 && startTime !== ts) resetAll();
+
+    let activeIdx = -1;
+    scenes.forEach((sc, i) => {
+      if (elapsed >= sc.start && elapsed < sc.end) activeIdx = i;
+    });
+
+    scenes.forEach((sc, i) => {
+      const el = document.getElementById(sc.id);
+      if (!el) return;
+      if (i === activeIdx) {
+        el.style.opacity = getSceneOpacity(sc, elapsed);
+        el.classList.add("active");
+      } else {
+        el.style.opacity = 0;
+        el.classList.remove("active");
+      }
+    });
+
+    if (activeIdx === 1) animScene2(elapsed - scenes[1].start);
+    if (activeIdx === 2) animScene3(elapsed - scenes[2].start);
+    if (activeIdx === 3) animScene4(elapsed - scenes[3].start);
+    if (activeIdx === 4) animScene5(elapsed - scenes[4].start);
+
+    requestAnimationFrame(loop);
+  }
+
+  requestAnimationFrame(loop);
+</script>

@@ -17,6 +17,8 @@ export interface StepCheck {
   level: "info" | "warning" | "critical";
   title: string;
   hint?: string;
+  /** When true, the item stays visible but shows as resolved (checkmark + disabled action) */
+  resolved?: boolean;
 }
 
 export interface StepCheckContext {
@@ -130,11 +132,20 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   step_1_6: ({ state }) => {
     const checks: StepCheck[] = [];
     const fm = state.metadata?.filingMethod as string | undefined;
-    if (fm === "online" && !state.metadata?.uscisAccountReady) {
+    const done = (key: string) => state.completedSteps?.has?.(key);
+    const uscisSaved = done("step_1_6") || state.metadata?.uscisPortalSaved === "true";
+    if (fm === "online" && !uscisSaved) {
       checks.push({
         level: "warning",
         title: "USCIS online account not confirmed",
         hint: "Create a myUSCIS account before submitting online",
+      });
+    } else if (fm === "online" && uscisSaved) {
+      checks.push({
+        level: "info",
+        title: "USCIS online account confirmed",
+        hint: "Your myUSCIS credentials are saved",
+        resolved: true,
       });
     }
     if (fm === "paper" && !state.metadata?.mailingAddressConfirmed) {
@@ -150,11 +161,21 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   // Step 1.7 — Fee preparation
   step_1_7: ({ state }) => {
     const checks: StepCheck[] = [];
-    if (!state.metadata?.feePaymentReady) {
+    const done = (key: string) => state.completedSteps?.has?.(key);
+    const feeReady =
+      done("step_1_7") || !!state.metadata?.filingFeeDate || !!state.metadata?.feePaymentReady;
+    if (!feeReady) {
       checks.push({
         level: "info",
         title: "Payment method ready?",
         hint: "USCIS accepts credit/debit card (online) or check/money order (paper)",
+      });
+    } else {
+      checks.push({
+        level: "info",
+        title: "Payment method ready",
+        hint: "Filing fee payment has been addressed",
+        resolved: true,
       });
     }
     return checks;
@@ -231,6 +252,27 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     return checks;
   },
 
+  // Step 1.12 — Prepare Filing Fee (paper path payment method)
+  step_1_12: ({ state }) => {
+    const checks: StepCheck[] = [];
+    const savedMethod = state.metadata?.paper_payment_method as string | undefined;
+    if (!savedMethod) {
+      checks.push({
+        level: "info",
+        title: "Save payment method",
+        hint: "Store the payment method you plan to use for the USCIS filing fee",
+      });
+    } else {
+      checks.push({
+        level: "info",
+        title: `Payment method saved: ${savedMethod}`,
+        hint: "Your chosen payment method is recorded",
+        resolved: true,
+      });
+    }
+    return checks;
+  },
+
   // Step 1.13 — Mailing (packet checklist)
   step_1_13: ({ state }) => {
     const checks: StepCheck[] = [];
@@ -245,15 +287,25 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     return checks;
   },
 
-  // Step 1.14 — Tracking & receipt
+  // Step 1.14 — Tracking & mailing details
   step_1_14: ({ state }) => {
     const checks: StepCheck[] = [];
     const fm = state.metadata?.filingMethod as string | undefined;
-    if (fm === "paper" && !state.metadata?.mailingTrackingNumber) {
+    const savedCarrier = state.metadata?.paper_mailing_carrier as string | undefined;
+    const savedTracking = state.metadata?.paper_mailing_tracking as string | undefined;
+    const mailingSaved = !!(savedCarrier && savedTracking);
+    if (fm === "paper" && !mailingSaved && !state.metadata?.mailingTrackingNumber) {
       checks.push({
         level: "info",
-        title: "Save USPS tracking number",
-        hint: "You'll use it to confirm USCIS received your packet",
+        title: "Save mailing details & tracking number",
+        hint: "Record the carrier and tracking number after mailing your packet to USCIS",
+      });
+    } else if (fm === "paper" && mailingSaved) {
+      checks.push({
+        level: "info",
+        title: `Mailing details saved: ${savedCarrier}`,
+        hint: `Carrier and tracking number (${savedTracking}) are recorded`,
+        resolved: true,
       });
     }
     return checks;
@@ -296,10 +348,8 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       // I-130 baseline exists but the DS-260 values haven't been confirmed here.
       const parts: string[] = [];
       if (i130.marriageDate) parts.push(`marriage date ${i130.marriageDate}`);
-      if (i130.petitionerDateOfBirth)
-        parts.push(`petitioner DOB ${i130.petitionerDateOfBirth}`);
-      if (i130.beneficiaryDateOfBirth)
-        parts.push(`beneficiary DOB ${i130.beneficiaryDateOfBirth}`);
+      if (i130.petitionerDateOfBirth) parts.push(`petitioner DOB ${i130.petitionerDateOfBirth}`);
+      if (i130.beneficiaryDateOfBirth) parts.push(`beneficiary DOB ${i130.beneficiaryDateOfBirth}`);
       checks.push({
         level: "info",
         title: "Match these on your DS-260",
@@ -339,7 +389,12 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       uploadedDocuments,
       eligibilityAnswers,
     });
-    const checks: StepCheck[] = issues.map((i) => ({ level: i.level, title: i.title, hint: i.hint }));
+    const checks: StepCheck[] = issues.map((i) => ({
+      level: i.level,
+      title: i.title,
+      hint: i.hint,
+      resolved: i.resolved,
+    }));
 
     // While civil-doc work is still pending, surface the foreign-document
     // guidance that applies to every overseas case (the #1 here being a
@@ -372,7 +427,9 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
 
     if (result.isEligible === false) {
       const shortfall =
-        typeof result.shortfall === "number" ? `$${result.shortfall.toLocaleString()}` : "an amount";
+        typeof result.shortfall === "number"
+          ? `$${result.shortfall.toLocaleString()}`
+          : "an amount";
       const required =
         typeof result.requiredIncome === "number"
           ? `$${result.requiredIncome.toLocaleString()}`
@@ -479,8 +536,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   // Step 3.1 — Schedule Medical Examination (completeness + timeline)
   step_3_1: ({ state }) => {
     const checks: StepCheck[] = [];
-    const scheduled =
-      state.metadata?.med_appt_saved === "true" || !!state.metadata?.med_date;
+    const scheduled = state.metadata?.med_appt_saved === "true" || !!state.metadata?.med_date;
     const interviewDate = state.metadata?.interviewDate as string | undefined;
     if (!scheduled) {
       checks.push({
@@ -498,9 +554,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   step_3_2: ({ state }) => {
     const checks: StepCheck[] = [];
     const launched = state.metadata?.polio_launched === "true";
-    const polioChecks = state.metadata?.polio_checks as
-      | Record<string, boolean>
-      | undefined;
+    const polioChecks = state.metadata?.polio_checks as Record<string, boolean> | undefined;
     const anyChecked = polioChecks && Object.values(polioChecks).some(Boolean);
     if (!launched && !anyChecked) {
       checks.push({
@@ -556,11 +610,13 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     const requiredGroups = Array.isArray(groups)
       ? groups
           .filter(
-            (g) =>
-              typeof g?.badge === "string" &&
-              g.badge.toLowerCase().startsWith("required")
+            (g) => typeof g?.badge === "string" && g.badge.toLowerCase().startsWith("required")
           )
-          .map((g) => String(g?.label || "").replace(/^Bring\s*[—-]\s*/i, "").trim())
+          .map((g) =>
+            String(g?.label || "")
+              .replace(/^Bring\s*[—-]\s*/i, "")
+              .trim()
+          )
           .filter(Boolean)
       : [];
     if (requiredGroups.length > 0) {
@@ -651,6 +707,34 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
   ],
 };
 
+/**
+ * ─── Category-specific vs shared checkers ────────────────────────────────────
+ *
+ * Of all the checkers above, only these five encode SPOUSE-specific meaning —
+ * marriage dates, the I-130↔DS-260 cross-form baseline, and the prior-marriage
+ * disclosures. Every OTHER step (filing method, fees, uploads, receipts,
+ * mailing, NVC fees, civil docs, I-864, medical, police, polio, interview…) is
+ * identical for any family-based category.
+ *
+ * So instead of copy-pasting the whole registry for IR-5, we derive the shared
+ * subset once by removing these five keys. IR-5 then only has to supply its own
+ * five parent-oriented replacements — see `lib/case-strength/categories/ir5.ts`.
+ */
+export const CATEGORY_SPECIFIC_STEP_KEYS = [
+  "step_1_4", // relationship / marriage + DOB baseline capture
+  "step_1_9", // unresolved eligibility blockers
+  "step_1_10", // final pre-submission consistency check
+  "step_2_3", // DS-260 ↔ I-130 cross-form consistency + disclosures
+  "step_3_7", // interview-readiness disclosures
+] as const;
+
+/** The checkers shared by every visa category (IR-1's registry minus the 5 above). */
+export const COMMON_STEP_CHECKERS: Record<string, StepChecker> = Object.fromEntries(
+  Object.entries(IR1_STEP_CHECKERS).filter(
+    ([key]) => !CATEGORY_SPECIFIC_STEP_KEYS.includes(key as (typeof CATEGORY_SPECIFIC_STEP_KEYS)[number])
+  )
+);
+
 // ─── Chapter 2 helper: DS-260 mandatory-disclosure reminders ────────────────
 
 /**
@@ -658,11 +742,8 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
  * Omitting it is treated as misrepresentation (INA 212(a)(6)(C)) — a far more
  * common cause of trouble than the underlying issue itself.
  */
-function ds260Disclosures(
-  answers:
-    | Record<string, Record<string, string | string[]> | undefined>
-    | null
-    | undefined
+export function sharedDs260Disclosures(
+  answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined
 ): StepCheck[] {
   if (!answers) return [];
   const checks: StepCheck[] = [];
@@ -671,14 +752,6 @@ function ds260Disclosures(
     return typeof v === "string" ? v : undefined;
   };
 
-  const q3s1 = get("q3", "q3s1");
-  if (q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both") {
-    checks.push({
-      level: "warning",
-      title: "Declare the prior marriage on DS-260",
-      hint: "List every prior marriage and how it ended. It must match your I-130 and the termination documents.",
-    });
-  }
   if (get("q5", "q5s1") === "yes") {
     checks.push({
       level: "warning",
@@ -703,6 +776,27 @@ function ds260Disclosures(
   return checks;
 }
 
+/**
+ * IR-1 (spouse) DS-260 disclosures = the spouse-only prior-marriage reminder
+ * plus the shared ones. IR-5 reuses `sharedDs260Disclosures` directly.
+ */
+function ds260Disclosures(
+  answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined
+): StepCheck[] {
+  if (!answers) return [];
+  const checks: StepCheck[] = [];
+  const q3s1 = typeof answers?.q3?.q3s1 === "string" ? (answers.q3!.q3s1 as string) : undefined;
+  if (q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both") {
+    checks.push({
+      level: "warning",
+      title: "Declare the prior marriage on DS-260",
+      hint: "List every prior marriage and how it ended. It must match your I-130 and the termination documents.",
+    });
+  }
+  checks.push(...sharedDs260Disclosures(answers));
+  return checks;
+}
+
 // ─── Chapter 3 helper: interview-readiness disclosure reminders ─────────────
 
 /**
@@ -711,11 +805,8 @@ function ds260Disclosures(
  * bring originals) rather than the DS-260 disclosure framing in
  * `ds260Disclosures`. Consistency with the filed DS-260 is the goal.
  */
-function interviewDisclosureReminders(
-  answers:
-    | Record<string, Record<string, string | string[]> | undefined>
-    | null
-    | undefined
+export function sharedInterviewDisclosures(
+  answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined
 ): StepCheck[] {
   if (!answers) return [];
   const checks: StepCheck[] = [];
@@ -724,14 +815,6 @@ function interviewDisclosureReminders(
     return typeof v === "string" ? v : undefined;
   };
 
-  const q3s1 = get("q3", "q3s1");
-  if (q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both") {
-    checks.push({
-      level: "info",
-      title: "Be ready to explain the prior marriage",
-      hint: "Expect questions about how a prior marriage ended. Your answer must match the dates and termination documents in your DS-260 and civil records.",
-    });
-  }
   if (get("q5", "q5s1") === "yes") {
     checks.push({
       level: "info",
@@ -756,6 +839,27 @@ function interviewDisclosureReminders(
   return checks;
 }
 
+/**
+ * IR-1 (spouse) interview reminders = spouse-only prior-marriage reminder plus
+ * the shared ones. IR-5 reuses `sharedInterviewDisclosures` directly.
+ */
+function interviewDisclosureReminders(
+  answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined
+): StepCheck[] {
+  if (!answers) return [];
+  const checks: StepCheck[] = [];
+  const q3s1 = typeof answers?.q3?.q3s1 === "string" ? (answers.q3!.q3s1 as string) : undefined;
+  if (q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both") {
+    checks.push({
+      level: "info",
+      title: "Be ready to explain the prior marriage",
+      hint: "Expect questions about how a prior marriage ended. Your answer must match the dates and termination documents in your DS-260 and civil records.",
+    });
+  }
+  checks.push(...sharedInterviewDisclosures(answers));
+  return checks;
+}
+
 // ─── Shared helper ──────────────────────────────────────────────────────────
 
 function receiptChecks(state: WizardState): StepCheck[] {
@@ -770,11 +874,10 @@ function receiptChecks(state: WizardState): StepCheck[] {
   if (receiptStepDone) return [];
 
   // Also check any metadata paths that some flows may write
-  const num = (
+  const num =
     (state.metadata?.receiptNum as string) ||
     (state.metadata?.receiptNumber as string) ||
-    (state.metadata?.uscis_receipt_number as string)
-  );
+    (state.metadata?.uscis_receipt_number as string);
   if (num) return [];
 
   return [

@@ -9,7 +9,8 @@
       "Bash(echo \"---exit:$?---\")",
       "Bash(python *)",
       "Bash(npx jest *)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "mcp__ide__getDiagnostics"
     ]
   }
 }

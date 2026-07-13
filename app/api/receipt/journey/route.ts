@@ -1,6 +1,6 @@
 // POST/GET /api/receipt/journey?journeyId=...  (store/fetch receipt in case_data)
 import { NextRequest, NextResponse } from "next/server";
-import { E, msg } from '@/lib/errors';
+import { E, msg } from "@/lib/errors";
 import { upsertCaseDataDB, getCaseDataByKeyDB } from "@/lib/journey/data-access";
 import { isValidReceiptNumber, normalizeReceipt } from "@/lib/register-receipt";
 

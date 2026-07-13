@@ -63,7 +63,7 @@ export async function PUT(req: NextRequest) {
     );
 
     const body = await req.json();
-    const { id, status } = body;
+    const { id, status, adminNotes } = body;
 
     if (!id || !status) {
       return Response.json({ error: "Missing id or status" }, { status: 400 });
@@ -71,7 +71,7 @@ export async function PUT(req: NextRequest) {
 
     const { data, error } = await supabase
       .from("police_verification_requests")
-      .update({ status, updated_at: new Date().toISOString() })
+      .update({ status, admin_notes: adminNotes || "", updated_at: new Date().toISOString() })
       .eq("id", id)
       .select()
       .single();

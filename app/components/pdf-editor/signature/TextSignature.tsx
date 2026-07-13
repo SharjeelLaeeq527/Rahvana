@@ -54,7 +54,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
 
   const handleGenerate = () => {
     if (!name.trim()) {
-      showToast(t("editor.signature.enterName"), "error");
+      showToast(t("pdfProcessing.editor.signature.enterName"), "error");
       return;
     }
 
@@ -95,8 +95,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
       }
     } catch (error) {
       console.error("Error generating signature:", error);
-      alert(t("editor.signature.failed"));
-      showToast(t("editor.signature.failed"), "error");
+      showToast(t("pdfProcessing.editor.signature.failed"), "error");
     }
   };
 
@@ -106,10 +105,10 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
       <div>
         <input
           type="text"
-          placeholder={t("editor.signature.typePlaceholder")}
+          placeholder={t("pdfProcessing.editor.signature.typePlaceholder")}
           value={name}
           onChange={(e) => setName(e.target.value)}
-          className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-lg focus:border-blue-500 focus:outline-none transition"
+          className="w-full border-2 border-gray-200 rounded-lg px-4 py-3 text-lg focus:border-rahvana-primary focus:outline-none transition"
           onKeyPress={(e) => e.key === "Enter" && handleGenerate()}
           autoFocus
         />
@@ -123,7 +122,7 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
             onClick={() => setSelectedFont(index)}
             className={`p-3 border-2 rounded-lg transition-all text-center ${
               selectedFont === index
-                ? "border-blue-500 bg-blue-50 ring-2 ring-blue-200"
+                ? "border-rahvana-primary bg-rahvana-primary-pale ring-2 ring-rahvana-primary/20"
                 : "border-gray-200 hover:border-gray-300 hover:bg-gray-50"
             }`}
           >
@@ -132,10 +131,10 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
               style={{
                 fontFamily: font.value,
                 fontWeight: font.weight,
-                color: selectedFont === index ? "#1E40AF" : "#000000",
+                color: selectedFont === index ? "#0d7377" : "#000000",
               }}
             >
-              {name || t("editor.signature.preview")}
+              {name || t("pdfProcessing.editor.signature.preview")}
             </div>
             <div className="text-xs text-gray-500">{font.style}</div>
           </button>
@@ -146,11 +145,11 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
       {name && (
         <div className="bg-white border-2 border-gray-200 rounded-lg p-6 text-center">
           <p className="text-xs text-gray-500 mb-3 uppercase tracking-wide">
-            {t("editor.signature.preview")}
+            {t("pdfProcessing.editor.signature.preview")}
           </p>
           <div className="bg-gray-50 rounded-lg p-8 border border-gray-100 relative overflow-hidden">
             {/* Bottom indicator line */}
-            <div className="absolute bottom-8 left-0 right-0 h-0.5 bg-blue-400" />
+            <div className="absolute bottom-8 left-0 right-0 h-0.5 bg-rahvana-primary/60" />
             <div
               className="text-5xl"
               style={{
@@ -175,14 +174,14 @@ export default function TextSignature({ onGenerate, closeModal }: Props) {
           }}
           className="flex-1 px-4 py-2.5 bg-white text-gray-700 border-2 border-gray-300 rounded-lg hover:bg-gray-50 transition font-semibold"
         >
-          {t("editor.signature.cancel")}
+          {t("pdfProcessing.editor.signature.cancel")}
         </button>
         <button
           onClick={handleGenerate}
           disabled={!name.trim()}
-          className="flex-1 px-4 py-2.5 bg-primary text-white rounded-lg hover:bg-primary/90 transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="flex-1 px-4 py-2.5 bg-rahvana-primary text-white rounded-lg hover:bg-rahvana-primary-dark transition font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {t("editor.signature.create")}
+          {t("pdfProcessing.editor.signature.create")}
         </button>
       </div>
     </div>

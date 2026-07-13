@@ -23,7 +23,7 @@ import {
   Lock,
   ScanLine,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { DocumentPreviewModal } from "./DocumentPreviewModal";
 import { UploadedDocument } from "@/lib/document-vault/types";
@@ -90,6 +90,7 @@ export function MultipleDocumentUploadModal({
     addNamedDynamicSlot,
   } = useDocumentVaultStore();
   const { t } = useLanguage();
+  const { showToast } = useToast();
   const { profile, refreshProfile, updateProfile } = useUserProfile();
 
   // ── Inline OCR auto-fill (passport) ──
@@ -98,6 +99,9 @@ export function MultipleDocumentUploadModal({
   // and offer to auto-fill the profile. Target ("self" / "beneficiary") comes
   // from the selected type's OCR config — nothing is saved until the user confirms.
   const [ocrPhase, setOcrPhase] = useState<"idle" | "reading" | "confirm">("idle");
+  // Hold the just-read file so the confirm screen can offer a "Re-read" retry
+  // (e.g. when the extracted values look wrong) without re-uploading.
+  const [ocrFile, setOcrFile] = useState<File | null>(null);
   const [ocrFields, setOcrFields] = useState<PassportFields>({});
   const [ocrConfidence, setOcrConfidence] = useState<
     Partial<Record<keyof PassportFields, number>>
@@ -158,6 +162,7 @@ export function MultipleDocumentUploadModal({
   // Reset OCR panel and leave a fresh blank upload row so the user can continue.
   const dismissOcr = () => {
     setOcrPhase("idle");
+    setOcrFile(null);
     setOcrFields({});
     setOcrConfidence({});
     setOcrWarnings([]);
@@ -167,6 +172,7 @@ export function MultipleDocumentUploadModal({
 
   const runOcr = async (file: File, target: OcrTarget) => {
     setOcrTarget(target);
+    setOcrFile(file);
     setOcrPhase("reading");
     try {
       const prepared = await resizeImageIfNeeded(file);
@@ -178,7 +184,7 @@ export function MultipleDocumentUploadModal({
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json) {
-        toast.info("Uploaded. We couldn't auto-read this document — you can fill details manually.");
+        showToast("Uploaded. We couldn't auto-read this document — you can fill details manually.", "info");
         dismissOcr();
         return;
       }
@@ -187,7 +193,7 @@ export function MultipleDocumentUploadModal({
       setOcrWarnings(json.warnings || []);
       setOcrPhase("confirm");
     } catch {
-      toast.info("Uploaded. We couldn't auto-read this document — you can fill details manually.");
+      showToast("Uploaded. We couldn't auto-read this document — you can fill details manually.", "info");
       dismissOcr();
     }
   };
@@ -206,7 +212,7 @@ export function MultipleDocumentUploadModal({
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json?.success) {
-        toast.error(json?.error || "Could not save details to your profile.");
+        showToast(json?.error || "Could not save details to your profile.", "error");
         return;
       }
 
@@ -245,10 +251,10 @@ export function MultipleDocumentUploadModal({
         await refreshProfile();
       }
 
-      toast.success("Details saved to your profile.");
+      showToast("Details saved to your profile.", "success");
       dismissOcr();
     } catch {
-      toast.error("Something went wrong while saving.");
+      showToast("Something went wrong while saving.", "error");
     } finally {
       setOcrSaving(false);
     }
@@ -408,12 +414,12 @@ export function MultipleDocumentUploadModal({
 
   const processFile = (id: string, file: File) => {
     if (file.size > 10 * 1024 * 1024) {
-      toast.error(msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: 10 }));
+      showToast(msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: 10 }), "error");
       return;
     }
     const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
-      toast.error(msg(E.TOOL_FILE_TYPE_UNSUPPORTED));
+      showToast(msg(E.TOOL_FILE_TYPE_UNSUPPORTED), "error");
       return;
     }
     updatePendingUpload(id, { file });
@@ -466,12 +472,12 @@ export function MultipleDocumentUploadModal({
     const validUploads = pendingUploads.filter((p) => p.file && p.type);
     if (validUploads.length === 0) return;
     if (!config) {
-      toast.error(`${msg(E.VAULT_NOT_CONFIGURED)}`);
+      showToast(`${msg(E.VAULT_NOT_CONFIGURED)}`, "error");
       return;
     }
 
     setUploading(true);
-    toast.loading(`Uploading ${validUploads.length} document(s)...`, {
+    showToast(`Uploading ${validUploads.length} document(s)...`, "loading", {
       id: "multi-upload-progress",
     });
 
@@ -585,12 +591,12 @@ export function MultipleDocumentUploadModal({
         });
 
         if (!response.ok) {
-          toast.error(`${msg(E.UPLOAD_FAILED)}`, { id: "multi-upload-progress" });
+          showToast(`${msg(E.UPLOAD_FAILED)}`, "error", { id: "multi-upload-progress" });
           return;
         }
       }
 
-      toast.success(`Successfully uploaded ${validUploads.length} document(s)`, {
+      showToast(`Successfully uploaded ${validUploads.length} document(s)`, "success", {
         id: "multi-upload-progress",
       });
 
@@ -619,7 +625,7 @@ export function MultipleDocumentUploadModal({
       }
     } catch (error) {
       console.error("Multi-upload error:", error);
-      toast.error(`${msg(E.UPLOAD_NETWORK_ERROR)}`, { id: "multi-upload-progress" });
+      showToast(`${msg(E.UPLOAD_NETWORK_ERROR)}`, "error", { id: "multi-upload-progress" });
     } finally {
       setUploading(false);
     }
@@ -639,11 +645,11 @@ export function MultipleDocumentUploadModal({
     try {
       setDeleteLoading(true);
       await deleteDocument(selectedDeleteId);
-      toast.success("Document deleted successfully");
+      showToast("Document deleted successfully", "success");
       setDeleteModalOpen(false);
       setSelectedDeleteId(null);
     } catch (error) {
-      toast.error(`${msg(E.VAULT_DELETE_FAILED)}`);
+      showToast(`${msg(E.VAULT_DELETE_FAILED)}`, "error");
     } finally {
       setDeleteLoading(false);
     }
@@ -684,7 +690,7 @@ export function MultipleDocumentUploadModal({
                 <div className="w-9 h-9 rounded-xl bg-[#e8f1fb] text-brand flex items-center justify-center">
                   <ScanLine className="w-5 h-5" />
                 </div>
-                <div>
+                <div className="flex-1">
                   <p className="font-bold text-sm">
                     {ocrPhase === "reading"
                       ? "Reading your document…"
@@ -702,6 +708,19 @@ export function MultipleDocumentUploadModal({
                         : "These will be saved to your profile."}
                   </p>
                 </div>
+                {/* Re-read shortcut — retry the auto-read if the values look off. */}
+                {ocrPhase === "confirm" && ocrFile && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => runOcr(ocrFile, ocrTarget)}
+                    disabled={ocrSaving}
+                    className="rounded-xl border-[#d0e4f7] text-[#6b8097] hover:bg-slate-50 text-xs font-semibold gap-1.5"
+                  >
+                    <ScanLine className="w-3.5 h-3.5" />
+                    Re-read
+                  </Button>
+                )}
               </div>
 
               {ocrPhase === "reading" && (

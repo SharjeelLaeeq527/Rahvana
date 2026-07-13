@@ -6,8 +6,7 @@ import { ArrowRight, Sparkles, CheckCircle2, ChevronRight, LayoutGrid, Layers } 
 import { motion, AnimatePresence } from "framer-motion";
 import { TwoWaysVisual } from "../../components/home-page/Components";
 
-export const journeyHref = "/visa-category/ir-category/ir1-journey";
-export const toolsHref = "/resources";
+import { ir1journeyHref, resourcesHref as toolsHref } from "@/lib/constants/routes";
 
 type TwoWaysIndex = 0 | 1;
 
@@ -27,13 +26,17 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
   }, []);
 
   return (
-    <div ref={wrapRef} className="w-full relative overflow-hidden rounded-2xl bg-slate-50/50 border border-slate-100 flex items-center justify-center" style={{ height: Math.max(160, Math.round(340 * scale)) }}>
+    <div
+      ref={wrapRef}
+      className="w-full relative overflow-hidden rounded-2xl bg-slate-50/50 border border-slate-100 flex items-center justify-center"
+      style={{ height: Math.max(160, Math.round(340 * scale)) }}
+    >
       <div
         className="origin-top-left shrink-0"
         style={{
           width: 680,
           height: 560,
-          transform: `scale(${scale * 0.88}) translate(${(el => el ? (el.offsetWidth - 680 * scale * 0.88) / 2 : 0)()}px, 10px)`,
+          transform: `scale(${scale * 0.88}) translate(${((el) => (el ? (el.offsetWidth - 680 * scale * 0.88) / 2 : 0))()}px, 10px)`,
           transformOrigin: "top left",
         }}
       >
@@ -82,17 +85,16 @@ export default function TestOptionAPage() {
             Choose how you want to use Rahvana
           </h1>
           <p className="text-[15px] md:text-base text-slate-500 leading-relaxed font-medium">
-            Whether you want end-to-end guided visa navigation or focused access to individual forms and tools, select the path that matches what you need today.
+            Whether you want end-to-end guided visa navigation or focused access to individual forms
+            and tools, select the path that matches what you need today.
           </p>
         </div>
 
         {/* 2-Card Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 items-stretch">
-          
           {/* Card 1: Guided Visa Journey */}
           <div className="group relative flex flex-col justify-between rounded-3xl border border-teal-100/80 bg-gradient-to-b from-teal-50/20 via-white to-white p-6 sm:p-8 shadow-sm hover:shadow-[0_24px_50px_rgba(13,115,119,0.06)] hover:border-teal-300 transition-all duration-300 transform hover:-translate-y-1">
             <div className="flex flex-col gap-6">
-              
               {/* Badge & Title */}
               <div className="flex flex-col gap-2">
                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider text-teal-700 bg-teal-100/60 w-fit">
@@ -116,7 +118,8 @@ export default function TestOptionAPage() {
               <div className="flex items-start gap-2.5 rounded-2xl px-4 py-3.5 border border-teal-100 bg-teal-50/30 text-teal-950">
                 <span className="font-extrabold text-sm text-teal-600 mt-0.5">•</span>
                 <p className="text-[12px] leading-relaxed font-semibold">
-                  <strong>Best for:</strong> Beginners wanting a clear, stress-free step-by-step plan.
+                  <strong>Best for:</strong> Beginners wanting a clear, stress-free step-by-step
+                  plan.
                 </p>
               </div>
 
@@ -139,18 +142,20 @@ export default function TestOptionAPage() {
 
             {/* CTA Button */}
             <Link
-              href={journeyHref}
+              href={ir1journeyHref}
               className="mt-8 inline-flex items-center justify-center gap-2 w-full py-4 px-6 rounded-2xl text-[14px] font-black text-white bg-teal-600 hover:bg-teal-700 shadow-[0_8px_20px_rgba(13,115,119,0.2)] hover:shadow-[0_12px_28px_rgba(13,115,119,0.35)] transition-all duration-200 no-underline"
             >
               Start the Roadmap
-              <ArrowRight size={15} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+              <ArrowRight
+                size={15}
+                className="transition-transform duration-200 group-hover:translate-x-0.5"
+              />
             </Link>
           </div>
 
           {/* Card 2: Tools & Resources */}
           <div className="group relative flex flex-col justify-between rounded-3xl border border-slate-200 bg-gradient-to-b from-slate-50/20 via-white to-white p-6 sm:p-8 shadow-sm hover:shadow-[0_24px_50px_rgba(15,23,42,0.06)] hover:border-indigo-300 transition-all duration-300 transform hover:-translate-y-1">
             <div className="flex flex-col gap-6">
-              
               {/* Badge & Title */}
               <div className="flex flex-col gap-2">
                 <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[9px] font-black uppercase tracking-wider text-indigo-700 bg-indigo-100/60 w-fit">
@@ -174,7 +179,8 @@ export default function TestOptionAPage() {
               <div className="flex items-start gap-2.5 rounded-2xl px-4 py-3.5 border border-indigo-100/60 bg-indigo-50/10 text-slate-950">
                 <span className="font-extrabold text-sm text-indigo-600 mt-0.5">•</span>
                 <p className="text-[12px] leading-relaxed font-semibold">
-                  <strong>Best for:</strong> Anyone wanting immediate, targeted help with a specific task.
+                  <strong>Best for:</strong> Anyone wanting immediate, targeted help with a specific
+                  task.
                 </p>
               </div>
 
@@ -201,10 +207,12 @@ export default function TestOptionAPage() {
               className="mt-8 inline-flex items-center justify-center gap-2 w-full py-4 px-6 rounded-2xl text-[14px] font-black text-white bg-slate-800 hover:bg-slate-900 shadow-[0_8px_20px_rgba(30,41,59,0.12)] hover:shadow-[0_12px_28px_rgba(30,41,59,0.25)] transition-all duration-200 no-underline"
             >
               Browse Resources
-              <ArrowRight size={15} className="transition-transform duration-200 group-hover:translate-x-0.5" />
+              <ArrowRight
+                size={15}
+                className="transition-transform duration-200 group-hover:translate-x-0.5"
+              />
             </Link>
           </div>
-
         </div>
       </div>
     </div>

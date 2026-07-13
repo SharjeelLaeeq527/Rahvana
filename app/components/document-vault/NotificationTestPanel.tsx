@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { TestTube, RefreshCw, Calendar, Clock, AlertCircle } from "lucide-react";
 
 /**
@@ -14,6 +14,7 @@ import { TestTube, RefreshCw, Calendar, Clock, AlertCircle } from "lucide-react"
  * Allows you to simulate different expiry scenarios
  */
 export function NotificationTestPanel() {
+  const { showToast } = useToast();
   const { t } = useLanguage();
   const [isOpen, setIsOpen] = useState(false);
   const { uploadedDocuments, updateDocument, refreshNotifications, getNotifications } =
@@ -67,7 +68,7 @@ export function NotificationTestPanel() {
     });
 
     refreshNotifications(t);
-    toast.success(t("documentVaultPage.components.notificationTestPanel.testExpiryApplied"));
+    showToast(t("documentVaultPage.components.notificationTestPanel.testExpiryApplied"), "success");
   };
 
   const resetExpiryDates = () => {
@@ -84,12 +85,15 @@ export function NotificationTestPanel() {
     });
 
     refreshNotifications(t);
-    toast.success(t("documentVaultPage.components.notificationTestPanel.expiryResetSuccess"));
+    showToast(
+      t("documentVaultPage.components.notificationTestPanel.expiryResetSuccess"),
+      "success"
+    );
   };
 
   const setSpecificExpiry = (days: number) => {
     if (uploadedDocuments.length === 0) {
-      toast.error(t("documentVaultPage.components.notificationTestPanel.noDocsError"));
+      showToast(t("documentVaultPage.components.notificationTestPanel.noDocsError"), "error");
       return;
     }
 
@@ -102,13 +106,17 @@ export function NotificationTestPanel() {
     if (docWithExpiry) {
       updateDocument(docWithExpiry.id, { expirationDate: newExpiry });
       refreshNotifications(t);
-      toast.success(
+      showToast(
         t("documentVaultPage.components.notificationTestPanel.setExpirySuccess", {
           days: days.toString(),
-        })
+        }),
+        "success"
       );
     } else {
-      toast.error(t("documentVaultPage.components.notificationTestPanel.noDocsWithExpiryError"));
+      showToast(
+        t("documentVaultPage.components.notificationTestPanel.noDocsWithExpiryError"),
+        "error"
+      );
     }
   };
 

@@ -4,6 +4,8 @@ import { createClient } from "@supabase/supabase-js";
 import { sendEmail, getEmailConfirmationHtml } from "@/lib/email/resend";
 import crypto from "crypto";
 import { E, msg } from "@/lib/errors";
+import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
+import { auditLog, auditBlocked } from "@/lib/security/audit-log";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -31,6 +33,13 @@ function safeCompare(a: string, b: string) {
 }
 
 export async function POST(request: NextRequest) {
+  // ── Rate Limit ──
+  const rl = checkRateLimit(request, "auth-signup", { maxAttempts: 5 });
+  if (!rl.allowed) {
+    auditBlocked(request, "auth.signup", { reason: "rate_limited" });
+    return rateLimitResponse(rl);
+  }
+
   try {
     const body = await request.json();
     const email = String(body.email || "")
@@ -170,6 +179,16 @@ export async function POST(request: NextRequest) {
       to: email,
       subject: "Confirm Your Email - Rahvana",
       html: emailHtml,
+    });
+
+    // Audit log — successful signup
+    auditLog({
+      userId: newUser?.user?.id,
+      action: "auth.signup",
+      resource: "profiles",
+      request,
+      metadata: { email },
+      status: "success",
     });
 
     // Return success

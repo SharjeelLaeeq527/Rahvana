@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import crypto from "crypto";
+import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
+import { auditLog, auditBlocked } from "@/lib/security/audit-log";
 
 // Create admin client
 const supabaseAdmin = createClient(
@@ -16,6 +18,13 @@ const supabaseAdmin = createClient(
 );
 
 export async function GET(request: NextRequest) {
+  // ── Rate Limit ──
+  const rl = checkRateLimit(request, "auth-confirm-email", { maxAttempts: 10 });
+  if (!rl.allowed) {
+    auditBlocked(request, "auth.confirm_email", { reason: "rate_limited" });
+    return rateLimitResponse(rl);
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams;
     const token = searchParams.get("token");
@@ -75,6 +84,16 @@ export async function GET(request: NextRequest) {
       console.error("Error confirming email:", updateError);
       return NextResponse.redirect(new URL("/login?error=confirmation_failed", request.url));
     }
+
+    // Audit log — successful email confirmation
+    auditLog({
+      userId: user.id,
+      action: "auth.confirm_email",
+      resource: "auth",
+      request,
+      metadata: { email },
+      status: "success",
+    });
 
     // Redirect to login with success message
     return NextResponse.redirect(new URL("/login?confirmed=true", request.url));

@@ -84,6 +84,7 @@ export const consultationService = {
       updated_at: new Date(booking.updated_at),
       expires_at: booking.expires_at ? new Date(booking.expires_at) : undefined,
       payment_status: booking.payment_status ?? null,
+      user_id: booking.user_id ?? null,
     })) as ConsultationBooking[];
   },
 
@@ -134,6 +135,7 @@ export const consultationService = {
       status: bookingStatus,
       payment_status: bookingPaymentStatus,
       payment_id: bookingData.payment_id || null,
+      user_id: bookingData.user_id || null,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
       expires_at: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString(), // Expires in 24 hours if not approved
@@ -191,6 +193,7 @@ export const consultationService = {
       admin_notes: result.admin_notes,
       payment_status: result.payment_status ?? null,
       payment_id: result.payment_id ?? null,
+      user_id: result.user_id ?? null,
       created_at: new Date(result.created_at),
       updated_at: new Date(result.updated_at),
       expires_at: result.expires_at ? new Date(result.expires_at) : undefined,
@@ -202,6 +205,14 @@ export const consultationService = {
     if (!supabase) {
       console.error("Supabase client not initialized");
       throw new Error(Errors.msg(Errors.E.CONSULTATION_SUPABASE_NOT_INITIALIZED));
+    }
+
+    // Fetch the current booking before applying updates to check for rescheduled slot or cancellation
+    let currentBooking: ConsultationBooking | null = null;
+    try {
+      currentBooking = await consultationService.getBookingById(id);
+    } catch (fetchErr) {
+      console.warn("Could not retrieve current booking for slot status sync:", fetchErr);
     }
 
     // Map camelCase to snake_case for Supabase
@@ -243,7 +254,7 @@ export const consultationService = {
 
     // Map the snake_case fields from Supabase to camelCase for the frontend
     const result = data;
-    return {
+    const updatedBooking = {
       ...result,
       id: result.id,
       reference_id: result.reference_id,
@@ -261,10 +272,75 @@ export const consultationService = {
         : undefined,
       admin_notes: result.admin_notes,
       payment_status: result.payment_status ?? null,
+      user_id: result.user_id ?? null,
       created_at: new Date(result.created_at),
       updated_at: new Date(result.updated_at),
       expires_at: result.expires_at ? new Date(result.expires_at) : undefined,
     } as ConsultationBooking;
+
+    // Automatically sync slot status in time_slots table
+    if (currentBooking) {
+      try {
+        const oldStatus = currentBooking.status;
+        const newStatus = updatedBooking.status;
+        const oldSlot = currentBooking.selected_slot;
+        const newSlot = updatedBooking.selected_slot;
+
+        // Helper to format slot for DB query
+        const getSlotParts = (dateObj: Date) => {
+          const slotDateStr = dateObj.toISOString().split("T")[0];
+          const slotTimeStr = dateObj.toISOString().split("T")[1].substring(0, 8);
+          return { date: slotDateStr, time: slotTimeStr };
+        };
+
+        // Case 1: Booking is canceled -> Free the slot
+        if ((newStatus === "canceled" || newStatus === "cancelled") && oldStatus !== "canceled" && oldStatus !== "cancelled") {
+          const parts = getSlotParts(newSlot);
+          await supabase
+            .from("time_slots")
+            .update({ status: "available" })
+            .eq("date", parts.date)
+            .eq("start_time", parts.time);
+          console.log(`Freed slot ${parts.date} ${parts.time} due to cancellation`);
+        }
+        // Case 2: Booking is reactivated / approved / confirmed from a canceled status
+        else if ((oldStatus === "canceled" || oldStatus === "cancelled") && newStatus !== "canceled" && newStatus !== "cancelled") {
+          const parts = getSlotParts(newSlot);
+          await supabase
+            .from("time_slots")
+            .update({ status: "confirmed" })
+            .eq("date", parts.date)
+            .eq("start_time", parts.time);
+          console.log(`Re-booked slot ${parts.date} ${parts.time} due to reactivation`);
+        }
+        // Case 3: Slot was rescheduled (selected_slot changed)
+        else if (oldSlot.getTime() !== newSlot.getTime()) {
+          // Free the old slot
+          const oldParts = getSlotParts(oldSlot);
+          await supabase
+            .from("time_slots")
+            .update({ status: "available" })
+            .eq("date", oldParts.date)
+            .eq("start_time", oldParts.time);
+          console.log(`Rescheduled: Freed old slot ${oldParts.date} ${oldParts.time}`);
+
+          // Book the new slot (if the booking is not canceled)
+          if (newStatus !== "canceled" && newStatus !== "cancelled") {
+            const newParts = getSlotParts(newSlot);
+            await supabase
+              .from("time_slots")
+              .update({ status: "confirmed" })
+              .eq("date", newParts.date)
+              .eq("start_time", newParts.time);
+            console.log(`Rescheduled: Marked new slot ${newParts.date} ${newParts.time} as confirmed`);
+          }
+        }
+      } catch (syncErr) {
+        console.error("Error syncing time slot status on booking update:", syncErr);
+      }
+    }
+
+    return updatedBooking;
   },
 
   // Get a single consultation booking by ID
@@ -304,6 +380,7 @@ export const consultationService = {
         : undefined,
       admin_notes: data.admin_notes,
       payment_status: data.payment_status ?? null,
+      user_id: data.user_id ?? null,
       created_at: new Date(data.created_at),
       updated_at: new Date(data.updated_at),
       expires_at: data.expires_at ? new Date(data.expires_at) : undefined,

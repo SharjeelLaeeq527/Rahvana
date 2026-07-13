@@ -25,6 +25,7 @@ import {
   PenTool,
   Wand2,
 } from "lucide-react";
+import { ir1journeyHref } from "@/lib/constants/routes";
 
 export interface NavItem {
   icon: React.ReactNode;
@@ -78,7 +79,7 @@ export const NAV_DATA: Record<string, NavSection> = {
                 icon: <Heart className="h-5 w-5" />,
                 title: "IR-1 / CR-1",
                 description: "Spouse of U.S. Citizen",
-                href: "/visa-category/ir-category/ir1-journey",
+                href: ir1journeyHref,
                 // badge: "Live",
               },
               {
@@ -552,13 +553,13 @@ export const NAV_DATA: Record<string, NavSection> = {
             href: "/221g-action-planner",
             // badge: "Live",
           },
-          {
-            icon: <Compass className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
-            title: "Visa Path Finder",
-            description: "Quick quiz that points you to the right visa path + next steps.",
-            href: "/visa-eligibility",
-            // badge: "Live",
-          },
+          // {
+          //   icon: <Compass className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
+          //   title: "Visa Path Finder",
+          //   description: "Quick quiz that points you to the right visa path + next steps.",
+          //   href: "/visa-eligibility",
+          //   // badge: "Live",
+          // },
           {
             icon: <MessageSquare className="h-5 w-5 text-violet-600 dark:text-violet-400" />,
             title: "Interview Prep",

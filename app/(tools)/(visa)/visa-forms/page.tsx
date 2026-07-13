@@ -11,6 +11,7 @@ import {
   ExternalLink,
   Filter,
 } from "lucide-react";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 interface VisaForm {
   id?: string;
@@ -704,6 +705,16 @@ export default function VisaFormSelector() {
             Browse all forms organized by your journey stage, or search instantly to find exactly
             what you need.
           </p>
+          <div className="flex justify-center mt-4">
+            <QuickAccessButton
+              item={{
+                id: "form-forge",
+                title: "Smart Form Filler",
+                href: "/visa-forms",
+                icon_name: "Wand2",
+              }}
+            />
+          </div>
           {/* <p className="text-gray-500 max-w-2xl mx-auto">
             Fill out official U.S. visa forms with helpful guidance at every
             step
@@ -811,7 +822,7 @@ export default function VisaFormSelector() {
                           <div className="flex flex-col gap-2">
                             {[
                               { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
-                              // { id: "IR5", label: "IR-5 (Parent)" },
+                              { id: "IR5", label: "IR-5 (Parent)" },
                               // { id: "K1", label: "K-1 (Fiancé)" },
                               // { id: "AOS", label: "Adjustment of Status" },
                               // { id: "Naturalization", label: "Naturalization" },

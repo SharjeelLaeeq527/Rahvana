@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { createPortal } from "react-dom";
 import { X, Check, Zap, ShoppingCart, Loader2, BookOpen, Mic } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { useAuth } from "@/app/context/AuthContext";
+import { getDetailsHref } from "@/lib/entitlements/resourceLinks";
 import {
   getEntitlement,
   TIER_NAMES,
@@ -225,6 +227,7 @@ const scrollbarHideStyle: React.CSSProperties = {
 export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: UpgradeModalProps) {
   const { tier: currentTier } = usePlan();
   const e = getEntitlement(feature, currentTier);
+  const detailsHref = getDetailsHref(feature);
 
   const upgradeTiers = TIER_ORDER.filter(
     (t) => t !== "free" && TIER_ORDER.indexOf(t) > TIER_ORDER.indexOf(currentTier)
@@ -625,6 +628,16 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
               </button>
             </div>
 
+            {detailsHref && (
+              <Link
+                href={detailsHref}
+                onClick={onClose}
+                className="text-center text-[12px] font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
+              >
+                See details & reviews
+              </Link>
+            )}
+
             <p
               className="text-center text-[11px] text-neutral-400"
               style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
@@ -816,6 +829,16 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
               ? "Redirecting to payment..."
               : `Upgrade to ${TIER_NAMES[selectedTier]}`}
           </button>
+
+          {detailsHref && (
+            <Link
+              href={detailsHref}
+              onClick={onClose}
+              className="text-center text-[12px] font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
+            >
+              See details & reviews
+            </Link>
+          )}
 
           {/* FIX: replaced pb-safe (non-existent utility) with inline env() style */}
           <p

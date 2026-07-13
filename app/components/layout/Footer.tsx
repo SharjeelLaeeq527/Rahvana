@@ -4,6 +4,7 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { Instagram, Facebook, Linkedin, ArrowRight, Youtube } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
+import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -21,6 +22,8 @@ export default function Footer() {
     const targetRoute = routes[id] || "/";
     router.push(targetRoute);
   };
+
+  const showToggle = process.env.NEXT_PUBLIC_ENVIRONMENT === "development";
 
   // Hide footer on admin, login and signup pages
   if (
@@ -105,11 +108,19 @@ export default function Footer() {
                 <ArrowRight size={14} className="inline-block ml-1" />
               </Link> */}
               <Link
-                href="/visa-category/ir-category/ir1-journey"
+                href={ir1journeyHref}
                 className="text-slate-400 hover:text-white transition-colors"
               >
                 IR-1 Journey
               </Link>
+              {showToggle && (
+                <Link
+                  href={ir5journeyHref}
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  IR-5 Journey
+                </Link>
+              )}
             </nav>
           </div>
 

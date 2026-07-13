@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Calendar,
   Clock,
@@ -19,6 +19,7 @@ import {
   CreditCard,
   ShoppingBag,
   Sparkles,
+  ChevronDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/spinner";
@@ -29,6 +30,7 @@ import { PageGate } from "@/app/components/entitlements/PageGate";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 interface Booking {
   id: string;
@@ -70,7 +72,7 @@ interface FormData {
   consent: boolean;
 }
 
-const ConsultationBookingPage = () => {
+const ConsultationBookingPageContent = () => {
   const router = useRouter();
 
   // Function to get phone number placeholder based on country code
@@ -159,8 +161,17 @@ const ConsultationBookingPage = () => {
     return summary.trim().length >= 20;
   };
 
+  const searchParams = useSearchParams();
+
   // View state
   const [activeView, setActiveView] = useState<"booking" | "requests">("booking");
+
+  useEffect(() => {
+    const tab = searchParams?.get("tab");
+    if (tab === "requests" || tab === "my-requests") {
+      setActiveView("requests");
+    }
+  }, [searchParams]);
   const [userBookings, setUserBookings] = useState<Booking[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -473,61 +484,61 @@ const ConsultationBookingPage = () => {
   }));
 
   // Load time slots from API
-  useEffect(() => {
-    const fetchTimeSlots = async () => {
-      try {
-        const response = await fetch("/api/consultation/slots");
-        if (response.ok) {
-          const slots = await response.json();
-          interface ApiTimeSlot {
-            id: string;
-            date: string;
-            start_time: string;
-            end_time: string;
-            status: string;
-          }
-
-          const formattedSlots = slots.map((slot: ApiTimeSlot) => {
-            // slot.date is "YYYY-MM-DD", slot.start_time is "HH:mm:ss"
-
-            // Create a combined datetime string in business timezone
-            const slotDateTimeStr = `${slot.date}T${slot.start_time}`;
-            const slotEndDateStr = `${slot.date}T${slot.end_time}`;
-
-            // Convert to user's timezone
-            const slotDate = new Date(slotDateTimeStr + "Z"); // Treat as UTC then convert to user's timezone
-            const slotEndDate = new Date(slotEndDateStr + "Z"); // Treat as UTC then convert to user's timezone
-
-            // Format for user's detected timezone (browser's local TZ by default)
-            const formatOptions: Intl.DateTimeFormatOptions = {
-              hour: "2-digit",
-              minute: "2-digit",
-              hour12: true,
-              timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-            };
-
-            const displayTime = slotDate.toLocaleTimeString([], formatOptions);
-            const displayEndTime = slotEndDate.toLocaleTimeString([], formatOptions);
-
-            return {
-              id: slot.id,
-              date: slotDate,
-              endDate: slotEndDate,
-              time: slot.start_time,
-              formattedTime: `${displayTime} - ${displayEndTime}`,
-              available: slot.status === "available",
-            };
-          });
-          setAvailableSlots(formattedSlots);
-        } else {
-          setAvailableSlots([]);
+  const fetchTimeSlots = async () => {
+    try {
+      const response = await fetch("/api/consultation/slots");
+      if (response.ok) {
+        const slots = await response.json();
+        interface ApiTimeSlot {
+          id: string;
+          date: string;
+          start_time: string;
+          end_time: string;
+          status: string;
         }
-      } catch (error) {
-        console.error("Slot fetch error:", error);
+
+        const formattedSlots = slots.map((slot: ApiTimeSlot) => {
+          // slot.date is "YYYY-MM-DD", slot.start_time is "HH:mm:ss"
+
+          // Create a combined datetime string in business timezone
+          const slotDateTimeStr = `${slot.date}T${slot.start_time}`;
+          const slotEndDateStr = `${slot.date}T${slot.end_time}`;
+
+          // Convert to user's timezone
+          const slotDate = new Date(slotDateTimeStr + "Z"); // Treat as UTC then convert to user's timezone
+          const slotEndDate = new Date(slotEndDateStr + "Z"); // Treat as UTC then convert to user's timezone
+
+          // Format for user's detected timezone (browser's local TZ by default)
+          const formatOptions: Intl.DateTimeFormatOptions = {
+            hour: "2-digit",
+            minute: "2-digit",
+            hour12: true,
+            timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          };
+
+          const displayTime = slotDate.toLocaleTimeString([], formatOptions);
+          const displayEndTime = slotEndDate.toLocaleTimeString([], formatOptions);
+
+          return {
+            id: slot.id,
+            date: slotDate,
+            endDate: slotEndDate,
+            time: slot.start_time,
+            formattedTime: `${displayTime} - ${displayEndTime}`,
+            available: slot.status === "available",
+          };
+        });
+        setAvailableSlots(formattedSlots);
+      } else {
         setAvailableSlots([]);
       }
-    };
+    } catch (error) {
+      console.error("Slot fetch error:", error);
+      setAvailableSlots([]);
+    }
+  };
 
+  useEffect(() => {
     fetchTimeSlots();
   }, []); // Only fetch once, uses browser's local TZ by default via toLocaleTimeString
 
@@ -825,6 +836,7 @@ const ConsultationBookingPage = () => {
           // Free booking -> show confirmation directly!
           setReferenceId(result.reference_id);
           setShowConfirmation(true);
+          fetchTimeSlots();
         } else {
           const errorData = await response.json().catch(() => ({}));
           console.error("Submission failed:", errorData);
@@ -967,6 +979,7 @@ const ConsultationBookingPage = () => {
     setAttachments([]);
     setCurrentStep(1);
     setShowConfirmation(false);
+    fetchTimeSlots();
   };
 
   // Google Calendar Grid & Navigation Helper Functions
@@ -2678,16 +2691,17 @@ const ConsultationBookingPage = () => {
                   {userBookings.map((booking: Booking) => (
                     <div
                       key={booking.id}
-                      className="border border-gray-100 rounded-xl p-5 hover:border-teal-200 hover:shadow-md transition bg-white flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+                      className="border border-gray-100 rounded-2xl p-5 hover:border-teal-200 hover:shadow-md transition bg-white flex flex-col gap-4"
                     >
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-mono text-xs font-bold text-teal-700 bg-teal-50 px-2 py-0.5 rounded">
+                      {/* Top Header Row */}
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-gray-100 pb-3">
+                        <div className="flex items-center gap-2">
+                          <span className="font-mono text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-md">
                             {booking.reference_id}
                           </span>
                           <span
                             className={cn(
-                              "text-[10px] uppercase font-black px-2 py-0.5 rounded flex items-center gap-1",
+                              "text-[10px] uppercase font-black px-2.5 py-1 rounded-md flex items-center gap-1",
                               booking.status === "confirmed"
                                 ? "bg-green-100 text-green-700"
                                 : booking.status === "pending_approval"
@@ -2700,61 +2714,73 @@ const ConsultationBookingPage = () => {
                             {booking.status?.replace("_", " ")}
                           </span>
                         </div>
-                        <h4 className="font-bold text-gray-900">{booking.full_name}</h4>
-                        <p className="text-sm text-gray-500">
-                          {booking.visa_category} • {booking.issue_category}
-                        </p>
-                      </div>
-                      <div className="text-right flex flex-col items-end gap-2">
-                        <div>
-                          <p className="text-xs text-gray-400 mb-1">Requested Date</p>
-                          <p className="text-sm font-medium">
+                        <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                          <span className="font-medium text-gray-400">Requested Date:</span>
+                          <span className="font-semibold text-gray-750 bg-gray-50 px-2 py-0.5 rounded">
                             {new Date(booking.selected_slot).toLocaleString(undefined, {
                               month: "short",
                               day: "numeric",
                               hour: "numeric",
                               minute: "2-digit",
                             })}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Content Row */}
+                      <div className="space-y-3">
+                        <div className="space-y-1">
+                          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider">
+                            Applicant
+                          </p>
+                          <h4 className="font-extrabold text-base text-gray-900 leading-tight">
+                            {booking.full_name}
+                          </h4>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Case Stage:{" "}
+                            <span className="font-semibold text-gray-700">
+                              {booking.visa_category} • {booking.issue_category}
+                            </span>
                           </p>
                         </div>
 
-                        {booking.status === "alternatives_proposed" &&
-                          booking.alternate_slots &&
-                          booking.alternate_slots.length > 0 && (
-                            <div className="mt-4 p-4 bg-teal-50 rounded-xl border border-teal-100 text-left w-full sm:w-auto">
-                              <p className="text-[10px] font-black uppercase text-teal-700 mb-2">
-                                Alternative Slots Proposed:
-                              </p>
-                              <div className="flex flex-wrap gap-2">
-                                {booking.alternate_slots.map((slot: string, idx: number) => (
-                                  <Button
-                                    key={idx}
-                                    onClick={() =>
-                                      handleAcceptAlternative(booking.id, new Date(slot))
-                                    }
-                                    variant="outline"
-                                    className="text-[10px] py-1 h-auto bg-white hover:bg-teal-600 hover:text-white transition-colors"
-                                  >
-                                    {new Date(slot).toLocaleDateString(undefined, {
-                                      month: "short",
-                                      day: "numeric",
-                                    })}{" "}
-                                    @{" "}
-                                    {new Date(slot).toLocaleTimeString([], {
-                                      hour: "2-digit",
-                                      minute: "2-digit",
-                                    })}
-                                  </Button>
-                                ))}
-                              </div>
-                              {booking.admin_notes && (
-                                <p className="mt-2 text-[10px] text-teal-800 italic">
-                                  <strong>Note:</strong> {booking.admin_notes}
-                                </p>
-                              )}
-                            </div>
-                          )}
+                        {booking.admin_notes && (
+                          <CollapsibleAdminNotes notes={booking.admin_notes} />
+                        )}
                       </div>
+
+                      {/* Alternatives Row */}
+                      {booking.status === "alternatives_proposed" &&
+                        booking.alternate_slots &&
+                        booking.alternate_slots.length > 0 && (
+                          <div className="mt-1 p-4 bg-purple-50 rounded-xl border border-purple-100">
+                            <p className="text-[10px] font-black uppercase text-purple-750 mb-2">
+                              Alternative Slots Proposed by Admin:
+                            </p>
+                            <div className="flex flex-wrap gap-2">
+                              {booking.alternate_slots.map((slot: string, idx: number) => (
+                                <Button
+                                  key={idx}
+                                  onClick={() =>
+                                    handleAcceptAlternative(booking.id, new Date(slot))
+                                  }
+                                  variant="outline"
+                                  className="text-[10px] py-1.5 px-3 h-auto bg-white hover:bg-purple-650 hover:text-white hover:border-purple-650 transition-colors border-purple-200 text-purple-755 font-semibold"
+                                >
+                                  {new Date(slot).toLocaleDateString(undefined, {
+                                    month: "short",
+                                    day: "numeric",
+                                  })}{" "}
+                                  @{" "}
+                                  {new Date(slot).toLocaleTimeString([], {
+                                    hour: "2-digit",
+                                    minute: "2-digit",
+                                  })}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                     </div>
                   ))}
                 </div>
@@ -2846,31 +2872,42 @@ const ConsultationBookingPage = () => {
                 </div>
               )}
             </div>
-            <div className="flex gap-3">
-              <Button
-                onClick={() => {
-                  setActiveView("booking");
+            <div className="flex flex-col items-start md:items-end gap-4 shrink-0">
+              <QuickAccessButton
+                item={{
+                  id: "book-a-consultation",
+                  title: "Book Consultation",
+                  href: "/book-consultation",
+                  icon_name: "Briefcase",
                 }}
-                className={cn(
-                  "px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2",
-                  activeView === ("booking" as "booking" | "requests")
-                    ? "bg-white text-teal-800 shadow-lg"
-                    : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
-                )}
-              >
-                Book New
-              </Button>
-              <Button
-                onClick={() => setActiveView("requests")}
-                className={cn(
-                  "px-6 py-2 rounded-full text-sm font-bold transition-all",
-                  activeView === ("requests" as "booking" | "requests")
-                    ? "bg-white text-teal-800 shadow-lg"
-                    : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
-                )}
-              >
-                My Requests
-              </Button>
+                className="!text-white !border-white/25 hover:!bg-white/20 focus-visible:ring-white/50"
+              />
+              <div className="flex gap-3">
+                <Button
+                  onClick={() => {
+                    setActiveView("booking");
+                  }}
+                  className={cn(
+                    "px-6 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2",
+                    activeView === ("booking" as "booking" | "requests")
+                      ? "bg-white text-teal-800 shadow-lg"
+                      : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                  )}
+                >
+                  Book New
+                </Button>
+                <Button
+                  onClick={() => setActiveView("requests")}
+                  className={cn(
+                    "px-6 py-2 rounded-full text-sm font-bold transition-all",
+                    activeView === ("requests" as "booking" | "requests")
+                      ? "bg-white text-teal-800 shadow-lg"
+                      : "bg-white/10 text-white hover:bg-white/20 border border-white/20"
+                  )}
+                >
+                  My Requests
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -2986,7 +3023,22 @@ const ConsultationBookingPage = () => {
   );
 };
 
-export default ConsultationBookingPage;
+export default function ConsultationBookingPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-gray-50">
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-12 h-12 border-4 border-teal-600 border-t-transparent rounded-full animate-spin"></div>
+            <p className="text-gray-500 font-medium">Loading Booking System...</p>
+          </div>
+        </div>
+      }
+    >
+      <ConsultationBookingPageContent />
+    </React.Suspense>
+  );
+}
 
 // Helper components for consistency
 const Info = ({ className }: { className?: string }) => <AlertCircle className={className} />;
@@ -3028,3 +3080,27 @@ const Button: React.FC<ButtonProps> = ({
     </button>
   );
 };
+
+// --- Collapsible Admin Notes component ---
+function CollapsibleAdminNotes({ notes }: { notes: string }) {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="mt-2 border border-teal-100 rounded-lg overflow-hidden">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-3 py-2 bg-teal-50/70 hover:bg-teal-50 text-xs font-bold text-teal-800 transition-colors focus:outline-none"
+      >
+        <span>Admin Note</span>
+        <ChevronDown
+          className={`w-3.5 h-3.5 transition-transform duration-200 ${isOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+      {isOpen && (
+        <div className="px-3 py-2.5 bg-white text-xs text-slate-700 border-t border-teal-50 leading-relaxed">
+          {notes}
+        </div>
+      )}
+    </div>
+  );
+}

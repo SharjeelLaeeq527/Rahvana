@@ -87,7 +87,13 @@ export const FIELD_MAPPINGS: Record<string, string[]> = {
   "placeOfBirth.state": ["S01-Q008", "state_of_birth", "province_of_birth", "birth_state"],
   "placeOfBirth.country": ["S01-Q009", "country_of_birth", "birth_country"],
   sex: ["S01-Q004", "sex", "gender", "applicant_sex", "sponsor_sex", "applicant_gender", "Gender"],
-  nationality: ["nationality", "country_of_citizenship", "citizenship_country", "citizen_of"],
+  nationality: [
+    "S01-Q010", // DS-260 "current nationality or citizenship"
+    "nationality",
+    "country_of_citizenship",
+    "citizenship_country",
+    "citizen_of",
+  ],
   maritalStatus: ["S01-Q005", "marital_status", "civil_status", "current_marital_status"],
 
   // --- Contact ---
@@ -169,25 +175,48 @@ export const FIELD_MAPPINGS: Record<string, string[]> = {
   ],
 
   // --- Identifiers ---
-  passportNumber: ["passport_number", "passportNumber", "passport"],
+  // S01-Q012/13/14/15 are the DS-260 "Passport and Citizenship" fields.
+  passportNumber: ["S01-Q012", "passport_number", "passportNumber", "passport"],
   passportIssueDate: [
+    "S01-Q014",
     "passport_issue_date",
     "passportIssueDate",
     "passportIssue",
     "passport_issue",
     "date_of_issue",
   ],
+  passportPlaceOfIssue: [
+    "passport_place_of_issue",
+    "passportPlaceOfIssue",
+    "place_of_issue",
+    "passport_issue_city",
+  ],
+  passportBookNumber: [
+    "passport_book_number",
+    "passportBookNumber",
+    "book_number",
+    "passport_booklet_number",
+  ],
   passportExpiry: [
+    "S01-Q015",
     "passport_expiry",
     "passportExpiryDate",
     "passport_expiration_date",
     "passport_expiry_date",
   ],
   passportCountry: [
+    "S01-Q013",
     "passport_country",
     "passportCountry",
     "country_of_passport",
     "issuing_country",
+  ],
+  nativeFullName: [
+    "S01-Q003", // DS-260 full name in native alphabet (Urdu)
+    "native_name",
+    "full_name_native",
+    "nativeFullName",
+    "name_native_alphabet",
   ],
   ssn: ["ssn", "social_security_number"],
   alienNumber: ["p1_alien_number", "a_number", "alien_registration_number", "alien_number"],
@@ -202,7 +231,52 @@ export const FIELD_MAPPINGS: Record<string, string[]> = {
   // --- Relationship ---
   "relationship.type": ["relationship_type", "spousal_relationship_type", "relationshipType"],
   "relationship.startDate": ["relationship_start_date", "relationshipStartDate"],
-  "relationship.marriageDate": ["marriage_date", "date_of_marriage", "wedding_date"],
+  // The beneficiary's current spouse IS the petitioner, so the marriage date/place
+  // is the SAME marriage I-130 Part 2 (spouse1_*) records — one OCR'd value fills both.
+  "relationship.marriageDate": [
+    "marriage_date",
+    "date_of_marriage",
+    "wedding_date",
+    "spouse1_date_marriage",
+  ],
+  "relationship.marriagePlace.city": [
+    "spouse1_place_city",
+    "marriage_place_city",
+    "place_of_marriage_city",
+  ],
+  "relationship.marriagePlace.state": [
+    "spouse1_place_state",
+    "spouse1_place_province",
+    "marriage_place_state",
+    "marriage_place_province",
+  ],
+  "relationship.marriagePlace.country": [
+    "spouse1_place_country",
+    "marriage_place_country",
+    "place_of_marriage_country",
+  ],
+  "relationship.marriageRegistrationNumber": [
+    "marriage_registration_number",
+    "mrc_number",
+    "registration_number",
+  ],
+  // Prior marriage (from a divorce decree / death cert) → I-130 "Spouse 2" section.
+  "relationship.priorMarriage.spouseName": [
+    "prior_spouse_name",
+    "previous_spouse_name",
+  ],
+  "relationship.priorMarriage.dateMarriageEnded": [
+    // The prior-marriage proof belongs to the account holder = the BENEFICIARY, so on
+    // the I-130 it is the beneficiary's prior spouse (Part 4 "Names of Prior Spouses"),
+    // not the petitioner's (Part 2 spouse2_*). Keep spouse2_* too for forms that only
+    // model one prior spouse.
+    "priorMarriageEndDate",
+    "spouse2_marriage_end_date",
+    "prior_marriage_end_date",
+    "date_marriage_ended",
+  ],
+  "relationship.priorMarriage.howEnded": ["prior_marriage_end_reason", "how_marriage_ended"],
+  "relationship.priorMarriage.country": ["prior_marriage_country"],
   "relationship.howDidYouMeet": ["how_did_you_meet", "meeting_story"],
   "relationship.numberOfInPersonVisits": ["number_of_in_person_visits", "visit_count"],
 
@@ -288,15 +362,19 @@ export const FIELD_MAPPINGS: Record<string, string[]> = {
   "documents.hasPhotos": ["passport_photos_2x2"],
 
   // --- Parents ---
-  "father.name.first": ["p1_parent1_given_name", "parent1_given_name", "father_first_name"],
+  // I-130A uses the p1_parent1_* / parent1_* ids; DS-260 Section 2 "Father's
+  // Information" uses S02-Q001..Q006. Both are listed so parent data (e.g. from the
+  // birth-certificate OCR) autofills the I-130A AND the DS-260.
+  "father.name.first": ["p1_parent1_given_name", "parent1_given_name", "father_first_name", "S02-Q002"],
   "father.name.middle": ["p1_parent1_middle_name", "parent1_middle_name", "father_middle_name"],
-  "father.name.last": ["p1_parent1_family_name", "parent1_family_name", "father_last_name"],
-  "father.dateOfBirth": ["p1_parent1_dob", "parent1_date_of_birth", "father_dob"],
-  "father.placeOfBirth.city": ["p1_parent1_city_birth", "parent1_city_birth", "father_birth_city"],
+  "father.name.last": ["p1_parent1_family_name", "parent1_family_name", "father_last_name", "S02-Q001"],
+  "father.dateOfBirth": ["p1_parent1_dob", "parent1_date_of_birth", "father_dob", "S02-Q003"],
+  "father.placeOfBirth.city": ["p1_parent1_city_birth", "parent1_city_birth", "father_birth_city", "S02-Q004"],
   "father.placeOfBirth.country": [
     "p1_parent1_country_birth",
     "parent1_country_birth",
     "father_birth_country",
+    "S02-Q006",
   ],
   "father.cityOfResidence": ["parent1_city_residence", "father_current_city"],
   "father.countryOfResidence": [
@@ -305,15 +383,17 @@ export const FIELD_MAPPINGS: Record<string, string[]> = {
     "father_current_country",
   ],
 
-  "mother.name.first": ["p1_parent2_given_name", "parent2_given_name", "mother_first_name"],
+  // DS-260 Section 2 "Mother's Information" uses S02-Q008..Q013.
+  "mother.name.first": ["p1_parent2_given_name", "parent2_given_name", "mother_first_name", "S02-Q009"],
   "mother.name.middle": ["p1_parent2_middle_name", "parent2_middle_name", "mother_middle_name"],
-  "mother.name.last": ["p1_parent2_family_name", "parent2_family_name", "mother_last_name"],
-  "mother.dateOfBirth": ["p1_parent2_dob", "parent2_date_of_birth", "mother_dob"],
-  "mother.placeOfBirth.city": ["p1_parent2_city_birth", "parent2_city_birth", "mother_birth_city"],
+  "mother.name.last": ["p1_parent2_family_name", "parent2_family_name", "mother_last_name", "S02-Q008"],
+  "mother.dateOfBirth": ["p1_parent2_dob", "parent2_date_of_birth", "mother_dob", "S02-Q010"],
+  "mother.placeOfBirth.city": ["p1_parent2_city_birth", "parent2_city_birth", "mother_birth_city", "S02-Q011"],
   "mother.placeOfBirth.country": [
     "p1_parent2_country_birth",
     "parent2_country_birth",
     "mother_birth_country",
+    "S02-Q013",
   ],
   "mother.cityOfResidence": [
     "parent2_city_residence",
@@ -612,12 +692,23 @@ export const autoFillForm = (
  */
 export const mapFormToProfile = (
   formData: Record<string, unknown>,
-  existingProfile: Partial<MasterProfile> = {}
+  existingProfile: Partial<MasterProfile> = {},
+  // Per-form overrides (lib/autoFill/formOverrides.ts): when a form key is
+  // overridden, the value belongs to a DIFFERENT person than the global map
+  // assumes (e.g. I-130 Part 1 name = the sponsor, not the account holder), so
+  // it is written to the override's primary path instead.
+  overrides?: Record<string, string[]>
 ): Partial<MasterProfile> => {
   const newProfile = { ...existingProfile } as Record<string, unknown>; // Shallow copy base
 
   for (const [formKey, formValue] of Object.entries(formData)) {
     if (formValue === undefined || formValue === "" || formValue === null) continue;
+
+    const overridePaths = overrides?.[formKey];
+    if (overridePaths && overridePaths.length > 0) {
+      setNestedProperty(newProfile, overridePaths[0], formValue);
+      continue;
+    }
 
     // Find which profile path this form key belongs to
     for (const [profilePath, variations] of Object.entries(FIELD_MAPPINGS)) {

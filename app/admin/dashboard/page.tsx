@@ -9,12 +9,15 @@ import {
   Activity,
   ArrowLeft,
   TrendingUp,
+  Bell,
   Clock,
   Globe,
   Calendar,
-  UserPlus,
+  UserPlus, // Bell is not used directly here, AdminNotificationBell uses BellIcon internally
 } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/app/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/spinner";
@@ -38,7 +41,7 @@ import {
   // Bar,
   // Legend,
 } from "recharts";
-
+import { AdminNotificationBell } from "@/lib/AdminNotificationBell";
 interface AnalyticsData {
   realtime: {
     activeUsers: string;
@@ -57,6 +60,7 @@ export default function AnalyticsDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState("this-week");
 
+  const { user, isAdmin } = useAuth();
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -209,6 +213,9 @@ export default function AnalyticsDashboard() {
               >
                 <Clock className={`h-4 w-4 text-teal-600 ${isRefreshing ? "animate-spin" : ""}`} />
               </Button>
+
+              {/* Admin Notification Bell */}
+              {user?.id && isAdmin && <AdminNotificationBell adminUserId={user.id} />}
             </div>
 
             {/* Live Indicator */}

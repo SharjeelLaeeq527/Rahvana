@@ -7,12 +7,12 @@ import { AuthProvider } from "./context/AuthContext";
 import { ClientWidgets } from "./components/layout/ClientWidgets";
 import Footer from "./components/layout/Footer";
 import { ToastProvider } from "./components/shared/ToastProvider";
-import { Toaster } from "sonner";
 import { LanguageProvider } from "./context/LanguageContext";
 import { PlanProvider } from "./context/PlanContext";
 import { UserProfileProvider } from "./context/UserProfileContext";
 import { PlanTierDevToggle } from "./components/entitlements/PlanTierDevToggle"; // DEV ONLY — uncomment for local testing
 import { ToolsGuard } from "./(tools)/ToolsGuard";
+import { QuickAccessProvider } from "./context/QuickAccessContext";
 
 export const metadata: Metadata = {
   title: "Rahvana",
@@ -68,11 +68,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             })();
           `}
         </Script>
-        <Toaster richColors position="top-right" />
         <ToastProvider>
           <AuthProvider>
             <PlanProvider>
               <UserProfileProvider>
+                <QuickAccessProvider>
                 <LanguageProvider>
                   {/* <ThemeProvider
               attribute="class"
@@ -86,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   <Footer />
                   {/* </ThemeProvider> */}
                 </LanguageProvider>
+                </QuickAccessProvider>
                 <PlanTierDevToggle />
                 {/* DEV ONLY — uncomment for local testing */}
               </UserProfileProvider>

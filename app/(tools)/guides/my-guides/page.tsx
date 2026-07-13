@@ -169,10 +169,10 @@ export default function MyGuidesPage() {
                 className="group bg-white rounded-3xl border border-slate-200 p-6 shadow-sm hover:shadow-xl hover:border-teal-200 transition-all flex flex-col relative overflow-hidden"
               >
                 {/* Progress bar accent */}
-                <div
+                {/* <div
                   className="absolute top-0 left-0 h-1.5 bg-teal-500 transition-all duration-1000"
                   style={{ width: `${session.progress_percent}%` }}
-                />
+                /> */}
 
                 <div className="flex justify-between items-start mb-4">
                   <div className="p-3 bg-teal-50 rounded-2xl text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">

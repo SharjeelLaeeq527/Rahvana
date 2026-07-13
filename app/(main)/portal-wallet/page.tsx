@@ -9,7 +9,7 @@ import PortalCard from "./components/PortalCard";
 import CredentialFormModal from "./components/CredentialFormModal";
 import ViewCredentialModal from "./components/ViewCredentialModal";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 type PortalType = "USCIS" | "NVC" | "COURIER";
 
@@ -87,6 +87,9 @@ const PortalWallet: React.FC = () => {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [deletePortal, setDeletePortal] = useState<PortalType | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [processingPortal, setProcessingPortal] = useState<PortalType | null>(null);
+
+  const { showToast } = useToast();
 
   const fetchCredentials = useCallback(async () => {
     try {
@@ -109,6 +112,8 @@ const PortalWallet: React.FC = () => {
 
   const handleAddOrEdit = async (data: any) => {
     setIsSubmitting(true);
+    setProcessingPortal(data.portalType);
+
     try {
       const res = await fetch(API_BASE, {
         method: "POST",
@@ -116,12 +121,13 @@ const PortalWallet: React.FC = () => {
         body: JSON.stringify(data),
       });
       if (!res.ok) throw new Error("Failed to save");
-      toast.success("Credentials saved successfully!");
+      showToast("Credentials saved successfully!", "success");
       setFormModal((prev) => ({ ...prev, open: false }));
       await fetchCredentials();
     } catch {
-      toast.error(msg(E.VAULT_CREDENTIAL_SAVE_FAILED));
+      showToast(msg(E.VAULT_CREDENTIAL_SAVE_FAILED), "error");
     } finally {
+      setProcessingPortal(null);
       setIsSubmitting(false);
     }
   };
@@ -132,6 +138,7 @@ const PortalWallet: React.FC = () => {
 
   const confirmDelete = async (portalType: PortalType) => {
     setIsSubmitting(true);
+    setProcessingPortal(portalType);
 
     try {
       const res = await fetch(`${API_BASE}/${portalType}/delete`, {
@@ -140,15 +147,16 @@ const PortalWallet: React.FC = () => {
 
       if (!res.ok) throw new Error("Failed to delete");
 
-      toast.success("Credentials deleted successfully!");
+      showToast("Credentials deleted successfully!", "success");
 
       setShowConfirmation(false);
       setDeletePortal(null);
 
       await fetchCredentials();
     } catch {
-      toast.error(msg(E.VAULT_CREDENTIAL_DELETE_FAILED));
+      showToast(msg(E.VAULT_CREDENTIAL_DELETE_FAILED), "error");
     } finally {
+      setProcessingPortal(null);
       setIsSubmitting(false);
     }
   };
@@ -287,7 +295,7 @@ const PortalWallet: React.FC = () => {
         </div>
 
         {/* Portal Cards */}
-        <div className="flex flex-col md:flex-row items-stretch justify-center gap-6">
+        <div className="flex flex-col md:flex-row items-center md:items-stretch justify-center gap-6">
           {portals.map((portal) => {
             const cred = getCredential(portal.type);
             return (
@@ -299,6 +307,7 @@ const PortalWallet: React.FC = () => {
                 portalUrl={portal.url}
                 hasCredentials={!!cred}
                 iconBgColor={portal.iconBgColor}
+                loading={processingPortal === portal.type}
                 onAction={() => {
                   if (cred) {
                     setViewModal({ open: true, portalType: portal.type });
@@ -338,6 +347,8 @@ const PortalWallet: React.FC = () => {
             ? {
                 username: formCredential.username,
                 password: "",
+                nvcCaseNumber: formCredential.nvc_case_number || "",
+                nvcInvoiceId: formCredential.nvc_invoice_id || "",
                 securityQuestions: formCredential.security_questions.map((sq) => ({
                   id: sq.id,
                   question: sq.question,

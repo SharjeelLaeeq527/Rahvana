@@ -58,6 +58,34 @@ import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/spinner";
 import { useToast } from "@/app/components/shared/ToastProvider";
 
+const CANCELLATION_TEMPLATES = [
+  {
+    value: "Dear Client, your consultation request has been cancelled because the case details or stage description provided was incomplete or invalid. Please submit a new request with detailed and clear information about your case.",
+    label: "Invalid Case Info",
+  },
+  {
+    value: "Dear Client, we were unable to verify the payment for your consultation request. As a result, the request has been cancelled. Please submit a new request and verify that the payment is completed.",
+    label: "Payment Failed",
+  },
+  {
+    value: "Dear Client, as per your request, your consultation booking has been cancelled. If you need any assistance in the future, feel free to schedule another session.",
+    label: "Client Requested Cancellation",
+  },
+  {
+    value: "Dear Client, your consultation request has been cancelled because a duplicate booking was detected in our system for the same topic. Please refer to your primary booking.",
+    label: "Duplicate Request",
+  },
+  {
+    value: "Dear Client, we were unable to schedule your consultation at the preferred slot, and did not receive a response to the alternative slots proposed within the required timeframe. Your request has been cancelled. Please re-schedule at your convenience.",
+    label: "No Response to Alternatives",
+  },
+  {
+    value: "Dear Client, your consultation request has been cancelled due to incorrect or invalid information provided in the request form. Please re-apply with accurate information.",
+    label: "Incorrect/Invalid Information",
+  },
+  { value: "other", label: "Other (Custom note)" },
+];
+
 const ConsultationRequestsTable = () => {
   const { showToast } = useToast();
   const [requests, setRequests] = useState<ConsultationBooking[]>([]);
@@ -72,6 +100,7 @@ const ConsultationRequestsTable = () => {
   >(null);
   const [loading, setLoading] = useState(true);
   const [adminNote, setAdminNote] = useState("");
+  const [cancellationReason, setCancellationReason] = useState("");
   const [availableSlots, setAvailableSlots] = useState<TimeSlot[]>([]);
   const [selectedAlternativeSlots, setSelectedAlternativeSlots] = useState<string[]>([]);
   const [fetchingSlots, setFetchingSlots] = useState(false);
@@ -229,6 +258,7 @@ const ConsultationRequestsTable = () => {
     setSelectedRequest(request);
     setActionType(action);
     setAdminNote("");
+    setCancellationReason("");
     setSelectedAlternativeSlots([]);
     setShowActionModal(true);
     if (action === "propose") {
@@ -254,7 +284,7 @@ const ConsultationRequestsTable = () => {
 
       switch (actionType) {
         case "approve":
-          actionPayload = { action: "approve" };
+          actionPayload = { action: "approve", adminNotes: adminNote };
           break;
         case "propose":
           actionPayload = {
@@ -270,7 +300,7 @@ const ConsultationRequestsTable = () => {
           };
           break;
         case "cancel":
-          actionPayload = { action: "cancel" };
+          actionPayload = { action: "cancel", adminNotes: adminNote };
           break;
         default:
           actionPayload = { action: "" };
@@ -690,7 +720,17 @@ const ConsultationRequestsTable = () => {
       </Sheet>
 
       {/* Action Dialog */}
-      <Dialog open={showActionModal} onOpenChange={setShowActionModal}>
+      <Dialog
+        open={showActionModal}
+        onOpenChange={(open) => {
+          setShowActionModal(open);
+          if (!open) {
+            setActionType(null);
+            setAdminNote("");
+            setCancellationReason("");
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
@@ -718,19 +758,65 @@ const ConsultationRequestsTable = () => {
           </DialogHeader>
 
           <div className="py-4">
-            {(actionType === "more-info" || actionType === "propose") && (
+            {actionType === "cancel" ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cancellation Reason <span className="text-red-500">*</span>
+                  </label>
+                  <Select
+                    value={cancellationReason}
+                    onValueChange={(val) => {
+                      setCancellationReason(val);
+                      if (val !== "other") {
+                        setAdminNote(val);
+                      } else {
+                        setAdminNote("");
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Select cancellation reason" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CANCELLATION_TEMPLATES.map((tpl) => (
+                        <SelectItem key={tpl.value} value={tpl.value}>
+                          {tpl.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {cancellationReason === "other" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Admin Notes (Custom Cancellation Reason) <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      className="w-full min-h-25 p-3 border rounded-md text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none"
+                      placeholder="Add custom reason for cancellation..."
+                      value={adminNote}
+                      onChange={(e) => setAdminNote(e.target.value)}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
               <textarea
                 className="w-full min-h-25 p-3 border rounded-md text-sm focus:ring-2 focus:ring-teal-500 focus:outline-none"
                 placeholder={
                   actionType === "more-info"
-                    ? "What info do you need? (User will see this)"
-                    : "Notes for the user regarding alternatives..."
+                    ? "What info do you need? (Optional - User will see this)"
+                    : actionType === "propose"
+                      ? "Notes for the user regarding alternatives... (Optional)"
+                      : actionType === "approve"
+                        ? "Notes for the user regarding confirmation... (Optional)"
+                        : "Notes for the user regarding cancellation... (Optional)"
                 }
                 value={adminNote}
                 onChange={(e) => setAdminNote(e.target.value)}
               />
             )}
-
             {actionType === "approve" && selectedRequest && (
               <div className="bg-muted p-4 rounded-lg flex items-center gap-4">
                 <Calendar className="h-10 w-10 text-muted-foreground" />
@@ -822,7 +908,15 @@ const ConsultationRequestsTable = () => {
           </div>
 
           <DialogFooter className="flex gap-2 sm:gap-0">
-            <Button variant="ghost" onClick={() => setShowActionModal(false)}>
+            <Button
+              variant="ghost"
+              onClick={() => {
+                setShowActionModal(false);
+                setActionType(null);
+                setAdminNote("");
+                setCancellationReason("");
+              }}
+            >
               Cancel
             </Button>
             <Button
@@ -835,6 +929,9 @@ const ConsultationRequestsTable = () => {
                     : "bg-teal-600 hover:bg-teal-700"
               )}
               onClick={confirmAction}
+              disabled={
+                actionType === "cancel" && (!cancellationReason || (cancellationReason === "other" && !adminNote.trim()))
+              }
             >
               Confirm
             </Button>

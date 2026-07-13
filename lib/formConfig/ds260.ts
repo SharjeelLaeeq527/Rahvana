@@ -539,7 +539,7 @@ export const formFields: Field[] = [
     pdfKey: "S02-Q008",
     label: "What was your mother's last name at birth? (her maiden name)",
     originalLabel: "Mother's Surnames at Birth",
-    type: "date",
+    type: "text",
     section: "SECTION 2: Mother's Information",
     tooltip: `- Use her surname before marriage - Check birth certificate if available - If unknown, enter 'DO NOT KNOW'`,
   },

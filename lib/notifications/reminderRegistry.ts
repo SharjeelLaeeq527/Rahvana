@@ -11,6 +11,7 @@
 // ─────────────────────────────────────────────────────────────
 // TYPES
 // ─────────────────────────────────────────────────────────────
+import { ir1journeyHref } from "@/lib/constants/routes";
 
 export type ReminderOrigin = "ceac" | "journey";
 export type ReminderPriority = "critical" | "high" | "normal" | "low";
@@ -116,7 +117,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Save your USCIS account to Portal Wallet",
     body: "You created your USCIS account a few days ago. Save your login credentials to your Portal Wallet so you can access your case quickly at any time.",
     actionLabel: "Save to Wallet",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   {
@@ -134,7 +135,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "USCIS Receipt Number not recorded",
     body: "Your I-130 was submitted. Once USCIS processes it (usually 2–4 weeks), you will receive a receipt notice with a case number. Record it in Chapter 1 → Step 9 to activate case tracking.",
     actionLabel: "Enter Receipt Number",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   {
@@ -291,7 +292,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Record your DQ date — Step 10 is waiting",
     body: "NVC has had your documents for over a month. Once they mark your case as Documentarily Qualified (DQ), go to Chapter 2 → Step 10 and record your DQ date to activate interview queue tracking.",
     actionLabel: "Go to Step 10",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   {
@@ -309,7 +310,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Sync embassy scheduling month for your interview estimate",
     body: "Your DQ date is recorded. Go to Chapter 2 → Step 11 and sync the current embassy scheduling month from the official IV Status Tool. This activates your estimated interview window.",
     actionLabel: "Go to Step 11",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   // ══════════════════════════════════════════════════════════
@@ -331,7 +332,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Check your passport validity before your interview",
     body: "Your case is DQ'd and in the scheduling queue. Make sure your passport is valid for at least 6 months beyond your expected interview date. If it expires soon, renew it now — the embassy requires a valid passport on interview day.",
     actionLabel: "Go to Step 11",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   {
@@ -348,7 +349,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Use this waiting time — organize your original documents now",
     body: "While you wait for your interview letter, gather and organize all original documents (birth certificates, marriage certificate, sponsor's financial docs, I-864). Having them ready early means zero last-minute panic.",
     actionLabel: "View Document Checklist",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   {
@@ -383,7 +384,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Ask your US sponsor to prepare fresh financial documents",
     body: "Contact your US-based petitioner/sponsor now. They need recent tax returns, pay stubs, and a current I-864 Affidavit of Support ready for your interview. Financial documents more than 12 months old are usually not accepted.",
     actionLabel: "Go to Step 11",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   // ══════════════════════════════════════════════════════════
@@ -408,7 +409,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Book your medical exam — do this TODAY",
     body: "Your interview is scheduled. Medical exam spots at approved panel physicians fill up very quickly — sometimes weeks out. Book immediately. The exam must be completed before your interview date.",
     actionLabel: "Book Medical Exam",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   // Phase B: medicalDate confirmed → countdown reminders relative to the appointment
@@ -428,7 +429,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Medical exam in 14 days — start preparing",
     body: "Your medical exam is in 2 weeks. Start gathering: original passport, 2 passport photos (35×45mm), polio vaccination certificate, COVID-19 vaccination record, and any existing medical records. Book fasting blood tests in the morning slot if possible.",
     actionLabel: "View Medical Prep",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   {
@@ -445,7 +446,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Medical exam in 7 days — confirm you have everything",
     body: "One week to go. Confirm you have: ✓ Original passport ✓ 2 passport photos (35×45mm) ✓ Polio certificate ✓ Vaccination records ✓ Glasses/contact lens prescription if needed ✓ Payment for physician fee. Avoid alcohol 24 hours before.",
     actionLabel: "View Checklist",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   {
@@ -462,7 +463,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Medical exam in 3 days — final checklist",
     body: "Three days to go. Items to bring on the day: Original passport · 2 passport photos · Vaccination records (polio + COVID-19) · Glasses if worn · Any existing medical records · Physician fee. Fast for 8 hours before blood tests. Arrive 15 minutes early.",
     actionLabel: "View Final Checklist",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   {
@@ -479,7 +480,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Medical exam is TOMORROW — are you ready?",
     body: "Your medical exam is tomorrow. Pack your bag tonight: passport + photos + vaccination records + glasses + medical records + fee. Set an alarm. Fast from midnight if blood tests are included. Sleep well.",
     actionLabel: "View Final Checklist",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   // ── Step 2: Polio Vaccination Certificate ─────────────────
@@ -500,7 +501,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Get your Polio Vaccination Certificate — required for Pakistan",
     body: "Pakistan applicants must obtain a polio vaccination certificate before the medical exam. Visit a government vaccination post or WHO-approved site. Take the original certificate to your medical exam appointment.",
     actionLabel: "Go to Step 2",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   // ── Step 3: Police Clearance Certificate ──────────────────
@@ -521,7 +522,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Apply for Police Clearance Certificate NOW — can take 2 weeks",
     body: "A fresh PCC is required for your interview. Apply immediately at your nearest Police Khidmat Markaz or through Rahvana's Sindh service. PCCs can take 3–14 days. Do not leave this for the last minute.",
     actionLabel: "Apply for PCC",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   {
@@ -541,7 +542,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "PCC status — have you received it yet?",
     body: "Check the status of your Police Clearance Certificate. If not received yet, follow up with the issuing authority. The original PCC is mandatory — do not attend the interview without it.",
     actionLabel: "Update PCC Status",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   // ── Step 4: Gather Original Documents ─────────────────────
@@ -560,7 +561,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Start gathering your original documents now",
     body: "Open Chapter 3 → Step 4 and go through the full document checklist. Collect originals for: passport, civil documents (birth/marriage certificates), sponsor's I-864 + financial docs, DS-260 confirmation, and NVC letter. Make 2 copies of each.",
     actionLabel: "Open Document Checklist",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   {
@@ -577,7 +578,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "7 days to interview — confirm ALL documents are in hand",
     body: "Final document check: ✓ Original passport  ✓ Birth certificate (original + copy)  ✓ Marriage certificate if applicable  ✓ I-864 Affidavit of Support  ✓ Sponsor tax returns + pay stubs  ✓ DS-260 confirmation page  ✓ NVC appointment letter  ✓ Medical exam results  ✓ PCC original  ✓ Passport photos (35×45mm). Mark Step 4 done once everything is confirmed.",
     actionLabel: "Confirm Documents Ready",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   // ══════════════════════════════════════════════════════════
@@ -600,7 +601,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Your journey will be locked in 14 days",
     body: "Your CEAC status has been marked as Issued. This journey will automatically enter read-only mode in 14 days. Complete any remaining steps before then — no edits will be possible once it is locked.",
     actionLabel: "View Roadmap",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   {
@@ -617,7 +618,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Journey locks in 3 days — complete any pending steps",
     body: "Your journey will enter read-only mode in 3 days. After that, no edits or step completions will be possible. Review your roadmap now and finish any outstanding items before the deadline.",
     actionLabel: "Review Roadmap",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 
   {
@@ -634,7 +635,7 @@ export const REMINDER_REGISTRY: JourneyReminderDef[] = [
     title: "Journey locks TOMORROW",
     body: "This is your final reminder. Your journey will enter read-only mode tomorrow. Complete any remaining steps today — no changes will be possible after it is locked.",
     actionLabel: "Complete Remaining Steps",
-    actionUrl: "/visa-category/ir-category/ir1-journey",
+    actionUrl: ir1journeyHref,
   },
 ];
 

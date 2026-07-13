@@ -1,20 +1,100 @@
 // lib/notifications.ts
+"use server";
+
 import { createClient } from "@/lib/supabase/server";
+import { supabaseAdmin } from "@/lib/supabase/admin";
 import { Resend } from "resend";
 import * as Errors from "@/lib/errors";
+import { Notification } from "@/types/notifications";
+import {
+  NotificationType,
+  NOTIFICATION_TEMPLATES,
+  CreateNotificationBody,
+} from "@/types/notifications";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+
+const LOGO_IMAGE = `
+  <img 
+    src="${process.env.NEXT_PUBLIC_APP_URL || 'https://rahvana.com'}/assets/images/RahvanaLogo.png"
+    alt="Rahvana Logo" 
+    style="width:120px; height:auto;" 
+  />
+`;
+
+function getEmailWrapperHtml(title: string, bodyHtml: string): string {
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>${title}</title>
+  </head>
+  <body style="margin:0; padding:0; background-color:#e8f6f6; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
+      <tr>
+        <td align="center">
+
+          <!-- Main Card -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; background:#ffffff; border-radius:18px; box-shadow:0 8px 24px rgba(13,115,119,0.08); overflow:hidden;">
+            
+            <!-- Top Accent Bar -->
+            <tr>
+              <td style="height:4px; background:linear-gradient(90deg,#0d7377,#14a0a6,#32e0c4);"></td>
+            </tr>
+
+            <tr>
+              <td style="padding:48px 40px; text-align:left;">
+
+                <!-- Logo -->
+                <div style="text-align:center; margin-bottom:32px;">
+                  <div style="display:inline-block; padding:18px;">
+                    <!-- Logo Image -->
+                    ${LOGO_IMAGE}
+                  </div>
+                </div>
+
+                <!-- Heading -->
+                <h1 style="margin:0 0 24px; font-size:24px; font-weight:700; color:#0d7377; text-align:center;">
+                  ${title}
+                </h1>
+
+                <!-- Body Text -->
+                <div style="font-size:16px; line-height:1.7; color:#475569;">
+                  ${bodyHtml}
+                </div>
+
+              </td>
+            </tr>
+          </table>
+
+          <!-- Bottom Footer -->
+          <p style="margin-top:28px; font-size:12px; color:#94a3b8; text-align:center;">
+            © ${new Date().getFullYear()} Rahvana. All rights reserved.
+          </p>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+  </html>
+  `;
+}
 
 interface AppointmentNotificationData {
   email: string;
   fullName: string;
   medicalWebsite: string;
-  appointmentType: string;
+  appointmentLocation: string;
   bookingReference?: string;
   appointmentDate?: string;
   appointmentTime?: string;
   status: string;
   message?: string;
+  adminNotes?: string;
 }
 
 export async function sendAppointmentNotification(data: AppointmentNotificationData) {
@@ -23,82 +103,141 @@ export async function sendAppointmentNotification(data: AppointmentNotificationD
       email,
       fullName,
       medicalWebsite,
-      appointmentType,
-      bookingReference,
+      appointmentLocation,
       appointmentDate,
       appointmentTime,
       status,
       message,
+      adminNotes,
     } = data;
 
-    let subject = "";
-    let htmlContent = "";
+    // Format date nicely: "Wednesday, June 17, 2026"
+    const formatAppointmentDate = (dateStr?: string) => {
+      if (!dateStr) return "To be scheduled";
+      try {
+        const parts = dateStr.split("-");
+        if (parts.length === 3) {
+          const year = parseInt(parts[0], 10);
+          const month = parseInt(parts[1], 10) - 1;
+          const day = parseInt(parts[2], 10);
+          const d = new Date(year, month, day);
+          if (!isNaN(d.getTime())) {
+            return d.toLocaleDateString("en-US", {
+              weekday: "long",
+              year: "numeric",
+              month: "long",
+              day: "numeric",
+            });
+          }
+        }
+      } catch {}
+      return dateStr;
+    };
 
-    if (status === "confirmed") {
+    // Format time nicely: "2:30 PM"
+    const formatAppointmentTime = (timeStr?: string) => {
+      if (!timeStr) return "To be scheduled";
+      try {
+        const parts = timeStr.split(":");
+        if (parts.length >= 2) {
+          const hours = parseInt(parts[0], 10);
+          const minutes = parseInt(parts[1], 10);
+          const ampm = hours >= 12 ? "PM" : "AM";
+          const formattedHours = hours % 12 || 12;
+          const formattedMinutes = minutes < 10 ? `0${minutes}` : minutes;
+          return `${formattedHours}:${formattedMinutes} ${ampm}`;
+        }
+      } catch {}
+      return timeStr;
+    };
+
+    let subject = "";
+    let bodyHtml = "";
+
+    if (status === "completed") {
       subject = "Your Appointment Has Been Confirmed!";
-      htmlContent = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #1f2937;">Appointment Confirmed!</h1>
-          <p>Dear ${fullName},</p>
-          <p>Your appointment request has been processed successfully. Here are the details:</p>
-          
-          <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="color: #374151; margin-top: 0;">Appointment Details</h2>
-            <p><strong>Medical Website:</strong> ${medicalWebsite}</p>
-            <p><strong>Appointment Type:</strong> ${appointmentType}</p>
-            <p><strong>Booking Reference:</strong> ${bookingReference || "N/A"}</p>
-            <p><strong>Date:</strong> ${appointmentDate || "To be scheduled"}</p>
-            <p><strong>Time:</strong> ${appointmentTime || "To be scheduled"}</p>
-          </div>
-          
-          <p>Our team has successfully booked your appointment. Please make sure to arrive on time with all required documents.</p>
-          
-          <p>If you have any questions, please contact our support team.</p>
-          
-          <p>Best regards,<br/>The Rahvana Team</p>
+      bodyHtml = `
+        <p>Dear ${fullName},</p>
+        <p>Your appointment request has been processed successfully. Here are the details:</p>
+        
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 24px 0;">
+          <h2 style="color: #0d7377; margin-top: 0; font-size: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Appointment Details</h2>
+          <p style="margin: 8px 0;"><strong>Medical Website:</strong> ${medicalWebsite}</p>
+          <p style="margin: 8px 0;"><strong>Appointment Location:</strong> ${appointmentLocation}</p>
+          <p style="margin: 8px 0;"><strong>Confirmed Date:</strong> <span style="color: #0d7377; font-weight: 600;">${formatAppointmentDate(appointmentDate)}</span></p>
+          <p style="margin: 8px 0;"><strong>Confirmed Time:</strong> <span style="color: #0d7377; font-weight: 600;">${formatAppointmentTime(appointmentTime)}</span></p>
         </div>
+        
+        ${
+          adminNotes
+            ? `
+        <div style="background-color: #e8f6f6; border-left: 4px solid #0d7377; padding: 16px; border-radius: 0 12px 12px 0; margin: 24px 0;">
+          <strong style="display: block; color: #0a5a5d; font-size: 14px; margin-bottom: 6px;">Important Admin Notes:</strong>
+          <p style="margin: 0; font-style: italic; color: #0f766e;">${adminNotes}</p>
+        </div>
+        `
+            : ""
+        }
+        
+        <p>Our team has successfully booked your appointment. Please make sure to arrive on time with all required documents.</p>
+        <p>If you have any questions, please contact our support team.</p>
+        <p style="margin-top: 24px;">Best regards,<br/><strong>The Rahvana Team</strong></p>
       `;
     } else if (status === "in_progress") {
       subject = "Your Appointment Request is Being Processed";
-      htmlContent = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #1f2937;">Appointment in Progress</h1>
-          <p>Dear ${fullName},</p>
-          <p>Your appointment request is currently being processed by our team.</p>
-          
-          <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="color: #374151; margin-top: 0;">Request Details</h2>
-            <p><strong>Medical Website:</strong> ${medicalWebsite}</p>
-            <p><strong>Appointment Type:</strong> ${appointmentType}</p>
-          </div>
-          
-          <p>You will receive another email once your appointment is confirmed with the exact date and time.</p>
-          
-          <p>Thank you for your patience.</p>
-          
-          <p>Best regards,<br/>The Rahvana Team</p>
+      bodyHtml = `
+        <p>Dear ${fullName},</p>
+        <p>Your appointment request is currently being processed by our team.</p>
+        
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 24px 0;">
+          <h2 style="color: #0d7377; margin-top: 0; font-size: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Request Details</h2>
+          <p style="margin: 8px 0;"><strong>Medical Website:</strong> ${medicalWebsite}</p>
+          <p style="margin: 8px 0;"><strong>Appointment Location:</strong> ${appointmentLocation}</p>
         </div>
+        
+        ${
+          adminNotes
+            ? `
+        <div style="background-color: #e8f6f6; border-left: 4px solid #0d7377; padding: 16px; border-radius: 0 12px 12px 0; margin: 24px 0;">
+          <strong style="display: block; color: #0a5a5d; font-size: 14px; margin-bottom: 6px;">Admin Notes:</strong>
+          <p style="margin: 0; font-style: italic; color: #0f766e;">${adminNotes}</p>
+        </div>
+        `
+            : ""
+        }
+        
+        <p>You will receive another email once your appointment is confirmed with the exact date and time.</p>
+        <p>Thank you for your patience.</p>
+        <p style="margin-top: 24px;">Best regards,<br/><strong>The Rahvana Team</strong></p>
       `;
     } else if (status === "cancelled") {
       subject = "Your Appointment Request Has Been Cancelled";
-      htmlContent = `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h1 style="color: #dc2626;">Appointment Cancelled</h1>
-          <p>Dear ${fullName},</p>
-          <p>Your appointment request has been cancelled.</p>
-          
-          <div style="background-color: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <h2 style="color: #374151; margin-top: 0;">Request Details</h2>
-            <p><strong>Medical Website:</strong> ${medicalWebsite}</p>
-            <p><strong>Appointment Type:</strong> ${appointmentType}</p>
-          </div>
-          
-          <p>${message || "If you believe this was done in error, please contact our support team."}</p>
-          
-          <p>Best regards,<br/>The Rahvana Team</p>
+      bodyHtml = `
+        <p>Dear ${fullName},</p>
+        <p>Your appointment request has been cancelled.</p>
+        
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 24px 0;">
+          <h2 style="color: #0d7377; margin-top: 0; font-size: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Request Details</h2>
+          <p style="margin: 8px 0;"><strong>Medical Website:</strong> ${medicalWebsite}</p>
+          <p style="margin: 8px 0;"><strong>Appointment Location:</strong> ${appointmentLocation}</p>
         </div>
+        
+        ${
+          adminNotes
+            ? `
+        <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 16px; border-radius: 0 12px 12px 0; margin: 24px 0; color: #991b1b;">
+          <strong style="display: block; font-size: 14px; margin-bottom: 6px;">Cancellation Reason:</strong>
+          <p style="margin: 0; font-style: italic;">${adminNotes}</p>
+        </div>
+        `
+            : `<p>${message || "If you believe this was done in error, please contact our support team."}</p>`
+        }
+        
+        <p style="margin-top: 24px;">Best regards,<br/><strong>The Rahvana Team</strong></p>
       `;
     }
+
+    const htmlContent = getEmailWrapperHtml(subject, bodyHtml);
 
     if (!subject || !htmlContent) {
       console.error("Invalid notification data");
@@ -144,10 +283,12 @@ interface InAppNotificationContent {
  */
 function getAppointmentNotificationContent(
   status: string,
-  appointmentType: string,
+  appointmentLocation: string,
   medicalWebsite: string
 ): InAppNotificationContent | null {
-  const service = appointmentType ? `${appointmentType} (${medicalWebsite})` : medicalWebsite;
+  const service = appointmentLocation
+    ? `${appointmentLocation} (${medicalWebsite})`
+    : medicalWebsite;
 
   switch (status) {
     case "in_progress":
@@ -155,8 +296,8 @@ function getAppointmentNotificationContent(
         title: "Appointment In Progress",
         body: `Your ${service} appointment request is now being processed by our team. You'll be notified once it's confirmed.`,
         priority: "normal",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "confirmed":
     case "completed":
@@ -164,8 +305,8 @@ function getAppointmentNotificationContent(
         title: "Appointment Confirmed",
         body: `Great news! Your ${service} appointment has been confirmed. Please check your email for full details and make sure to arrive on time with all required documents.`,
         priority: "high",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "cancelled":
       return {
@@ -180,11 +321,19 @@ function getAppointmentNotificationContent(
   }
 }
 
+interface AppointmentDbRecord {
+  user_id?: string | null;
+  email?: string | null;
+  status: string;
+  appointment_type?: string | null;
+  medical_website?: string | null;
+}
+
 /**
  * Create an in-app notification for the user who owns the appointment.
  * Looks up user_id from the appointment row, or falls back to email-based lookup.
  */
-async function createInAppNotification(appointmentId: string, appointment: Record<string, any>) {
+async function createInAppNotification(appointmentId: string, appointment: AppointmentDbRecord) {
   try {
     const { createServerClient } = await import("@supabase/ssr");
 
@@ -253,7 +402,7 @@ async function createInAppNotification(appointmentId: string, appointment: Recor
       console.error("[InAppNotif] Error inserting notification:", error);
     } else {
       console.log(
-        `[InAppNotif] ✅ Created in-app notification for user ${userId} (status: ${appointment.status})`
+        `[InAppNotif] Created in-app notification for user ${userId} (status: ${appointment.status})`
       );
     }
   } catch (err) {
@@ -295,11 +444,12 @@ export async function triggerAppointmentNotification(appointmentId: string) {
       email: appointment.email,
       fullName: appointment.full_name,
       medicalWebsite: appointment.medical_website,
-      appointmentType: appointment.appointment_type,
+      appointmentLocation: appointment.location,
       bookingReference: appointment.booking_reference,
       appointmentDate: appointment.preferred_date,
       appointmentTime: appointment.preferred_time,
       status: appointment.status,
+      adminNotes: appointment.admin_notes,
     };
 
     // Create in-app notification (non-blocking — don't let it fail the email)
@@ -307,7 +457,24 @@ export async function triggerAppointmentNotification(appointmentId: string) {
       console.error("[InAppNotif] Background error:", err);
     });
 
-    return await sendAppointmentNotification(notificationData);
+    const result = await sendAppointmentNotification(notificationData);
+
+    // Admin Connection: Notify admin specifically WHO booked WHAT
+    if (
+      appointment.status === "scheduled" ||
+      appointment.status === "pending_confirmation" ||
+      appointment.status === "pending"
+    ) {
+      await notifyAdmins(
+        "admin_new_appointment",
+        appointment.journey_id || undefined, // Handle potential null journey_id
+        `${appointment.full_name} has booked a medical appointment.`,
+        undefined,
+        "New Medical Appointment"
+      );
+    }
+
+    return result;
   } catch (error) {
     console.error("Error triggering notification:", error);
     return { error: Errors.msg(Errors.E.APPOINTMENT_TRIGGER_FAILED) };
@@ -333,7 +500,6 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
       fullName,
       referenceId,
       issueCategory,
-      visaCategory,
       selectedSlot,
       alternateSlots,
       status,
@@ -350,64 +516,41 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
             timeStyle: "short",
           }) + " (ET)"
         );
-      } catch (err) {
+      } catch {
         return String(date);
       }
     };
 
     let subject = "";
-    let htmlContent = "";
-
-    const headerHtml = `
-      <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
-        <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Rahvana Consultation</h1>
-        <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: white;">Appointment Status Update</p>
-      </div>
-    `;
-
-    const footerHtml = `
-      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #6b7280;">
-        <p>This is an automated notification from Rahvana. Please do not reply to this email.</p>
-        <p>&copy; ${new Date().getFullYear()} Rahvana. All rights reserved.</p>
-      </div>
-    `;
-
-    const cardStyles = `background-color: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; margin: 20px 0;`;
+    let bodyHtml = "";
 
     if (status === "confirmed") {
       subject = `Consultation Confirmed - Ref: ${referenceId}`;
-      htmlContent = `
-        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
-          ${headerHtml}
-          <div style="padding: 30px 20px;">
-            <h2 style="color: #111827; margin-top: 0; font-size: 20px;">Consultation Confirmed!</h2>
-            <p>Dear ${fullName},</p>
-            <p>We are pleased to inform you that your consultation request has been approved and confirmed. Please find the finalized details below:</p>
-            
-            <div style="${cardStyles}">
-              <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Booking Summary</h3>
-              <p style="margin: 8px 0;"><strong>Reference ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${referenceId}</span></p>
-              <p style="margin: 8px 0;"><strong>Confirmed Date & Time:</strong> <span style="color: #4f46e5; font-weight: 600;">${formatSlotDate(selectedSlot)}</span></p>
-              <p style="margin: 8px 0;"><strong>Issue Category:</strong> ${issueCategory}</p>
-            </div>
-            
-            <p>Our consultation experts look forward to speaking with you. Please ensure you are online and ready at the scheduled time.</p>
-            
-            ${
-              adminNotes
-                ? `
-            <div style="background-color: #f3f4f6; border-left: 4px solid #4f46e5; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
-              <strong style="display: block; color: #374151; font-size: 14px; margin-bottom: 5px;">Important Notes:</strong>
-              <p style="margin: 0; font-style: italic; color: #4b5563;">${adminNotes}</p>
-            </div>
-            `
-                : ""
-            }
-            
-            <p>If you need to make changes or have any urgent questions, please feel free to reach out to us.</p>
-            ${footerHtml}
-          </div>
+      bodyHtml = `
+        <p>Dear ${fullName},</p>
+        <p>We are pleased to inform you that your consultation request has been approved and confirmed. Please find the finalized details below:</p>
+        
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 24px 0;">
+          <h3 style="color: #0d7377; margin-top: 0; font-size: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Booking Summary</h3>
+          <p style="margin: 8px 0;"><strong>Reference ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${referenceId}</span></p>
+          <p style="margin: 8px 0;"><strong>Confirmed Date & Time:</strong> <span style="color: #0d7377; font-weight: 600;">${formatSlotDate(selectedSlot)}</span></p>
+          <p style="margin: 8px 0;"><strong>Issue Category:</strong> ${issueCategory}</p>
         </div>
+        
+        <p>Our consultation experts look forward to speaking with you. Please ensure you are online and ready at the scheduled time.</p>
+        
+        ${
+          adminNotes
+            ? `
+        <div style="background-color: #e8f6f6; border-left: 4px solid #0d7377; padding: 16px; border-radius: 0 12px 12px 0; margin: 24px 0;">
+          <strong style="display: block; color: #0a5a5d; font-size: 14px; margin-bottom: 6px;">Important Notes:</strong>
+          <p style="margin: 0; font-style: italic; color: #0f766e;">${adminNotes}</p>
+        </div>
+        `
+            : ""
+        }
+        
+        <p>If you need to make changes or have any urgent questions, please feel free to reach out to us.</p>
       `;
     } else if (status === "alternatives_proposed") {
       subject = `Alternative Consultation Slots Proposed - Ref: ${referenceId}`;
@@ -417,94 +560,72 @@ export async function sendConsultationNotification(data: ConsultationNotificatio
           ? alternateSlots
               .map(
                 (slot) =>
-                  `<li style="margin: 8px 0; font-weight: 600; color: #4f46e5;">${formatSlotDate(slot)}</li>`
+                  `<li style="margin: 8px 0; font-weight: 600; color: #0d7377;">${formatSlotDate(slot)}</li>`
               )
               .join("")
           : `<li style="margin: 8px 0; font-style: italic; color: #6b7280;">No explicit alternative slots proposed</li>`;
 
-      htmlContent = `
-        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
-          ${headerHtml}
-          <div style="padding: 30px 20px;">
-            <h2 style="color: #111827; margin-top: 0; font-size: 20px;">Alternative Slots Proposed</h2>
-            <p>Dear ${fullName},</p>
-            <p>Your requested time slot is currently unavailable. However, our admin team has proposed the following alternative slot options for your consultation:</p>
-            
-            <div style="${cardStyles}">
-              <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Proposed Alternative Slots</h3>
-              <ul style="margin: 12px 0; padding-left: 20px;">
-                ${slotsList}
-              </ul>
-            </div>
-
-            ${
-              adminNotes
-                ? `
-            <div style="background-color: #fef3c7; border-left: 4px solid #d97706; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0; color: #92400e;">
-              <strong style="display: block; font-size: 14px; margin-bottom: 5px;">Message from Admin:</strong>
-              <p style="margin: 0; font-style: italic;">${adminNotes}</p>
-            </div>
-            `
-                : ""
-            }
-            
-            <p>Please visit your booking portal to select one of these preferred slots or propose different times.</p>
-            ${footerHtml}
-          </div>
+      bodyHtml = `
+        <p>Dear ${fullName},</p>
+        <p>Your requested time slot is currently unavailable. However, our admin team has proposed the following alternative slot options for your consultation:</p>
+        
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 24px 0;">
+          <h3 style="color: #0d7377; margin-top: 0; font-size: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Proposed Alternative Slots</h3>
+          <ul style="margin: 12px 0; padding-left: 20px;">
+            ${slotsList}
+          </ul>
         </div>
+
+        ${
+          adminNotes
+            ? `
+        <div style="background-color: #fef3c7; border-left: 4px solid #d97706; padding: 16px; border-radius: 0 12px 12px 0; margin: 24px 0; color: #92400e;">
+          <strong style="display: block; font-size: 14px; margin-bottom: 6px;">Message from Admin:</strong>
+          <p style="margin: 0; font-style: italic;">${adminNotes}</p>
+        </div>
+        `
+            : ""
+        }
+        
+        <p>Please visit your booking portal to select one of these preferred slots or propose different times.</p>
       `;
     } else if (status === "needs_more_info") {
       subject = `Information Requested for Consultation - Ref: ${referenceId}`;
-      htmlContent = `
-        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
-          ${headerHtml}
-          <div style="padding: 30px 20px;">
-            <h2 style="color: #111827; margin-top: 0; font-size: 20px;">Action Required: More Info Needed</h2>
-            <p>Dear ${fullName},</p>
-            <p>To properly review and prepare for your consultation, our team requires some additional details regarding your case.</p>
-            
-            <div style="background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 20px; border-radius: 0 8px 8px 0; margin: 20px 0; color: #1e3a8a;">
-              <strong style="display: block; font-size: 14px; margin-bottom: 8px;">Details Requested:</strong>
-              <p style="margin: 0; font-style: italic; line-height: 1.6;">${adminNotes || "Please check your portal/dashboard for more details or contact support."}</p>
-            </div>
-            
-            <p>Please log in to your account or visit the consultation portal to provide this information so we can finalize your booking.</p>
-            ${footerHtml}
-          </div>
+      bodyHtml = `
+        <p>Dear ${fullName},</p>
+        <p>To properly review and prepare for your consultation, our team requires some additional details regarding your case.</p>
+        
+        <div style="background-color: #eff6ff; border-left: 4px solid #2563eb; padding: 20px; border-radius: 0 12px 12px 0; margin: 24px 0; color: #1e3a8a;">
+          <strong style="display: block; font-size: 14px; margin-bottom: 8px;">Details Requested:</strong>
+          <p style="margin: 0; font-style: italic; line-height: 1.6;">${adminNotes || "Please check your portal/dashboard for more details or contact support."}</p>
         </div>
+        
+        <p>Please log in to your account or visit the consultation portal to provide this information so we can finalize your booking.</p>
       `;
     } else if (status === "canceled") {
       subject = `Consultation Request Cancelled - Ref: ${referenceId}`;
-      htmlContent = `
-        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
-          <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
-            <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Consultation Cancelled</h1>
-            <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: white;">Appointment Status Update</p>
-          </div>
-          <div style="padding: 30px 20px;">
-            <h2 style="color: #111827; margin-top: 0; font-size: 20px;">Consultation Request Cancelled</h2>
-            <p>Dear ${fullName},</p>
-            <p>We are writing to let you know that your consultation request with reference <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${referenceId}</span> has been cancelled.</p>
-            
-            ${
-              adminNotes
-                ? `
-            <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0; color: #991b1b;">
-              <strong style="display: block; font-size: 14px; margin-bottom: 5px;">Cancellation Note:</strong>
-              <p style="margin: 0; font-style: italic;">${adminNotes}</p>
-            </div>
-            `
-                : `
-            <p>If you believe this was done in error or if you would like to reschedule, please visit our website and submit a new request.</p>
-            `
-            }
-            
-            <p>Best regards,<br/>The Rahvana Team</p>
-            ${footerHtml}
-          </div>
+      bodyHtml = `
+        <p>Dear ${fullName},</p>
+        <p>We are writing to let you know that your consultation request with reference <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${referenceId}</span> has been cancelled.</p>
+        
+        ${
+          adminNotes
+            ? `
+        <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 16px; border-radius: 0 12px 12px 0; margin: 24px 0; color: #991b1b;">
+          <strong style="display: block; font-size: 14px; margin-bottom: 6px;">Cancellation Reason:</strong>
+          <p style="margin: 0; font-style: italic;">${adminNotes}</p>
         </div>
+        `
+            : `
+        <p>If you believe this was done in error or if you would like to reschedule, please visit our website and submit a new request.</p>
+        `
+        }
+        
+        <p style="margin-top: 24px;">Best regards,<br/><strong>The Rahvana Team</strong></p>
       `;
     }
+
+    const htmlContent = getEmailWrapperHtml(subject, bodyHtml);
 
     if (!subject || !htmlContent) {
       console.warn(`No notification email layout implemented for status: ${status}`);
@@ -549,24 +670,24 @@ function getConsultationNotificationContent(
         title: "Consultation Confirmed",
         body: `Your consultation for "${category}" has been confirmed! Please check your email for full details and schedule.`,
         priority: "high",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "alternatives_proposed":
       return {
         title: "New Slots Proposed",
         body: `Alternative slots have been proposed for your "${category}" consultation. Please check your email to review and select a slot.`,
         priority: "normal",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "needs_more_info":
       return {
         title: "Consultation Info Required",
         body: `More information is needed for your "${category}" consultation. Details: ${adminNotes || "Please check your email or contact support."}`,
         priority: "high",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "canceled":
       return {
@@ -581,13 +702,22 @@ function getConsultationNotificationContent(
   }
 }
 
+interface ConsultationDbRecord {
+  email?: string | null;
+  status: string;
+  issue_category?: string | null;
+  admin_notes?: string | null;
+  reference_id?: string | null;
+  visa_category?: string | null;
+}
+
 /**
  * Create an in-app notification for the user who owns the consultation.
  * Looks up user_id by matching the booking email to profiles.
  */
 async function createConsultationInAppNotification(
   bookingId: string,
-  booking: Record<string, any>
+  booking: ConsultationDbRecord
 ) {
   try {
     const { createServerClient } = await import("@supabase/ssr");
@@ -658,7 +788,7 @@ async function createConsultationInAppNotification(
       console.error("[ConsultationInAppNotif] Error inserting notification:", error);
     } else {
       console.log(
-        `[ConsultationInAppNotif] ✅ Created in-app notification for user ${userId} (status: ${booking.status})`
+        `[ConsultationInAppNotif] Created in-app notification for user ${userId} (status: ${booking.status})`
       );
     }
   } catch (err) {
@@ -711,10 +841,259 @@ export async function triggerConsultationNotification(bookingId: string) {
       console.error("[ConsultationInAppNotif] Background error:", err);
     });
 
-    return await sendConsultationNotification(notificationData);
+    const result = await sendConsultationNotification(notificationData);
+
+    // Admin Connection: Notify admin of new consultation requests
+    if (booking.status === "pending_approval") {
+      await notifyAdmins(
+        "admin_new_consultation",
+        undefined,
+        `${booking.full_name} has requested a consultation regarding ${booking.issue_category}.`,
+        undefined,
+        "New Consultation Request"
+      );
+    }
+
+    return result;
   } catch (error) {
     console.error("Error triggering consultation notification:", error);
     return { error: "Failed to trigger consultation notification" };
+  }
+}
+
+/**
+ * Triggered when a user confirms and accepts a completed translation.
+ */
+export async function triggerTranslationConfirmedNotification(
+  journeyId: string | null | undefined,
+  userName: string,
+  docLabel: string
+) {
+  try {
+    return await notifyAdmins(
+      "admin_new_translation",
+      journeyId || undefined,
+      `${userName} has confirmed and accepted the translation for: ${docLabel}`,
+      undefined,
+      "Translation Accepted"
+    );
+  } catch (error) {
+    console.error("Error triggering translation confirmation notification:", error);
+    return { error: "Failed to notify admins of translation confirmation" };
+  }
+}
+
+/**
+ * Triggered when a user requests a Police Clearance Certificate verification.
+ */
+export async function triggerPCCNotification(
+  requestId: string,
+  journeyId: string | null | undefined, // Allow null or undefined journeyId
+  userName: string,
+  customBody?: string
+) {
+  try {
+    return await notifyAdmins(
+      "admin_new_pcc",
+      journeyId || undefined, // Pass undefined if journeyId is null
+      customBody || `PCC verification request from ${userName}`,
+      undefined,
+      "PCC Verification Request"
+    );
+  } catch (error) {
+    console.error("Error triggering PCC notification:", error);
+    return { error: "Failed to notify admins of PCC request" };
+  }
+}
+
+/**
+ * Triggered when a user submits feedback or a feature request.
+ */
+export async function triggerFeedbackNotification(userName: string, feedbackType: string) {
+  try {
+    return await notifyAdmins(
+      "admin_feedback_received",
+      undefined,
+      `New ${feedbackType} received from ${userName}`,
+      undefined,
+      "New User Feedback"
+    );
+  } catch (error) {
+    console.error("Error triggering feedback notification:", error);
+    return { error: "Failed to notify admins of feedback" };
+  }
+}
+
+/**
+ * Broadcasts an in-app notification to all users with the 'admin' role.
+ * Used for events like new consultation bookings, document translations, etc.
+ */
+export async function notifyAdmins(
+  type: NotificationType,
+  journeyId?: string,
+  customBody?: string,
+  customUrl?: string,
+  customTitle?: string
+) {
+  try {
+    console.log(`🔔 notifyAdmins triggered for type: ${type}`);
+    const template = NOTIFICATION_TEMPLATES[type];
+    if (!template) throw new Error(`Template not found for type: ${type}`);
+
+    // 1. Fetch all admin users from the profiles table
+    const { data: admins, error: adminError } = await supabaseAdmin
+      .from("profiles")
+      .select("id")
+      .eq("role", "admin");
+
+    if (adminError || !admins) {
+      console.error("Error fetching admin users:", adminError);
+      return { error: "Failed to fetch admin users" };
+    }
+
+    console.log(`👥 Found ${admins.length} admin(s) to notify.`);
+
+    if (admins.length === 0) {
+      console.warn("⚠️ No admin users found in profiles table with role='admin'");
+      return { success: true, count: 0 };
+    }
+
+    // 2. Prepare the notification records
+    // journeyId is optional as some events (like feedback) aren't tied to a specific journey
+    const notifications = admins.map((admin) => ({
+      user_id: admin.id,
+      journey_id: journeyId || null,
+      type,
+      priority: template.priority,
+      title: customTitle || template.title,
+      body: customBody || template.body,
+      action_url: customUrl || template.action_url,
+      action_label: template.action_label,
+      status: "unread",
+      created_at: new Date().toISOString(),
+    }));
+
+    // 3. Batch insert into the notifications table
+    const { error: insertError } = await supabaseAdmin.from("notifications").insert(notifications);
+
+    if (insertError) {
+      console.error("Error inserting admin notifications:", insertError);
+      return { error: "Failed to create admin notifications" };
+    }
+
+    console.log(`✅ Successfully created ${notifications.length} notification records.`);
+    return { success: true, count: admins.length };
+  } catch (error) {
+    console.error("Error in notifyAdmins:", error);
+    return { error: "Failed to broadcast notification to admins" };
+  }
+}
+
+/**
+ * Fetches admin notifications for a specific user.
+ * @param adminUserId The ID of the admin user.
+ */
+export async function fetchAdminNotifications(adminUserId: string): Promise<{
+  notifications: Notification[];
+  unreadCount: number;
+  error: string | null;
+}> {
+  try {
+    const { data, error } = await supabaseAdmin
+      .from("notifications")
+      .select("*")
+      .eq("user_id", adminUserId)
+      .order("created_at", { ascending: false });
+
+    if (error) {
+      console.error("Error fetching admin notifications:", error);
+      return { notifications: [], unreadCount: 0, error: error.message };
+    }
+
+    const unreadCount = data.filter((n) => n.status === "unread").length;
+    return { notifications: data as Notification[], unreadCount, error: null };
+  } catch (err) {
+    console.error("Exception in fetchAdminNotifications:", err);
+    return { notifications: [], unreadCount: 0, error: "An unexpected error occurred." };
+  }
+}
+
+/**
+ * Marks a specific notification as read.
+ * @param notificationId The ID of the notification to mark as read.
+ * @param adminUserId The ID of the admin user (for authorization).
+ */
+export async function markNotificationAsRead(
+  notificationId: string,
+  adminUserId: string
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const { error } = await supabaseAdmin
+      .from("notifications")
+      .update({ status: "read", read_at: new Date().toISOString() })
+      .eq("id", notificationId)
+      .eq("user_id", adminUserId); // Ensure only the owner can mark as read
+
+    if (error) {
+      console.error("Error marking notification as read:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, error: null };
+  } catch (err) {
+    console.error("Exception in markNotificationAsRead:", err);
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+/**
+ * Dismisses a specific notification.
+ * @param notificationId The ID of the notification to dismiss.
+ * @param adminUserId The ID of the admin user (for authorization).
+ */
+export async function dismissNotification(
+  notificationId: string,
+  adminUserId: string
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const { error } = await supabaseAdmin
+      .from("notifications")
+      .update({ status: "dismissed", dismissed_at: new Date().toISOString() })
+      .eq("id", notificationId)
+      .eq("user_id", adminUserId); // Ensure only the owner can dismiss
+
+    if (error) {
+      console.error("Error dismissing notification:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, error: null };
+  } catch (err) {
+    console.error("Exception in dismissNotification:", err);
+    return { success: false, error: "An unexpected error occurred." };
+  }
+}
+
+/**
+ * Marks all unread notifications for a specific user as read.
+ * @param adminUserId The ID of the admin user.
+ */
+export async function markAllNotificationsAsRead(
+  adminUserId: string
+): Promise<{ success: boolean; error: string | null }> {
+  try {
+    const { error } = await supabaseAdmin
+      .from("notifications")
+      .update({ status: "read", read_at: new Date().toISOString() })
+      .eq("user_id", adminUserId)
+      .eq("status", "unread");
+
+    if (error) {
+      console.error("Error marking all notifications as read:", error);
+      return { success: false, error: error.message };
+    }
+    return { success: true, error: null };
+  } catch (err) {
+    console.error("Exception in markAllNotificationsAsRead:", err);
+    return { success: false, error: "An unexpected error occurred." };
   }
 }
 
@@ -749,112 +1128,81 @@ export async function sendTranslationNotification(data: TranslationNotificationD
     } = data;
 
     let subject = "";
-    let htmlContent = "";
+    let bodyHtml = "";
 
-    const headerHtml = `
-      <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
-        <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Rahvana Translation</h1>
-        <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: white;">Document Translation Status Update</p>
-      </div>
-    `;
-
-    const footerHtml = `
-      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #6b7280;">
-        <p>This is an automated notification from Rahvana. Please do not reply to this email.</p>
-        <p>&copy; ${new Date().getFullYear()} Rahvana. All rights reserved.</p>
-      </div>
-    `;
-
-    const cardStyles = `background-color: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; margin: 20px 0;`;
-
-    // Map documentType key to pretty label
     const docTypeLabel = documentType.charAt(0).toUpperCase() + documentType.slice(1);
 
     if (status === "TRANSLATED") {
       subject = `Your Translation is Ready for Review - V${version}`;
-      htmlContent = `
-        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
-          ${headerHtml}
-          <div style="padding: 30px 20px;">
-            <h2 style="color: #111827; margin-top: 0; font-size: 20px;">Translation Ready for Review</h2>
-            <p>Dear ${fullName},</p>
-            <p>Great news! The English translation for your Urdu document has been uploaded and is ready for your review. Please see details below:</p>
-            
-            <div style="${cardStyles}">
-              <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Document Details</h3>
-              <p style="margin: 8px 0;"><strong>Request ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${documentId}</span></p>
-              <p style="margin: 8px 0;"><strong>Document Type:</strong> ${docTypeLabel}</p>
-              <p style="margin: 8px 0;"><strong>Original File:</strong> ${originalFilename || "Urdu PDF"}</p>
-              <p style="margin: 8px 0;"><strong>Translated Proof:</strong> <span style="color: #4f46e5; font-weight: 600;">${translatedFilename || `Proof_V${version}.pdf`}</span></p>
-              <p style="margin: 8px 0;"><strong>Version:</strong> V${version}</p>
-            </div>
-            
-            ${
-              adminNotes
-                ? `
-            <div style="background-color: #f3f4f6; border-left: 4px solid #4f46e5; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
-              <strong style="display: block; color: #374151; font-size: 14px; margin-bottom: 5px;">Admin Notes:</strong>
-              <p style="margin: 0; font-style: italic; color: #4b5563;">${adminNotes}</p>
-            </div>
-            `
-                : ""
-            }
-            
-            <p>Please click the button below to view the request, download the proof, and either approve it or request modifications.</p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/document-translation/request/${documentId}" 
-                 style="background-color: #4f46e5; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
-                Review Translation Proof
-              </a>
-            </div>
-            
-            ${footerHtml}
-          </div>
+      bodyHtml = `
+        <p>Dear ${fullName},</p>
+        <p>Great news! The English translation for your Urdu document has been uploaded and is ready for your review. Please see details below:</p>
+        
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 24px 0;">
+          <h3 style="color: #0d7377; margin-top: 0; font-size: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Document Details</h3>
+          <p style="margin: 8px 0;"><strong>Request ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${documentId}</span></p>
+          <p style="margin: 8px 0;"><strong>Document Type:</strong> ${docTypeLabel}</p>
+          <p style="margin: 8px 0;"><strong>Original File:</strong> ${originalFilename || "Urdu PDF"}</p>
+          <p style="margin: 8px 0;"><strong>Translated Proof:</strong> <span style="color: #0d7377; font-weight: 600;">${translatedFilename || `Proof_V${version}.pdf`}</span></p>
+          <p style="margin: 8px 0;"><strong>Version:</strong> V${version}</p>
+        </div>
+        
+        ${
+          adminNotes
+            ? `
+        <div style="background-color: #e8f6f6; border-left: 4px solid #0d7377; padding: 16px; border-radius: 0 12px 12px 0; margin: 24px 0;">
+          <strong style="display: block; color: #0a5a5d; font-size: 14px; margin-bottom: 6px;">Admin Notes:</strong>
+          <p style="margin: 0; font-style: italic; color: #0f766e;">${adminNotes}</p>
+        </div>
+        `
+            : ""
+        }
+        
+        <p>Please click the button below to view the request, download the proof, and either approve it or request modifications.</p>
+        
+        <div style="text-align: center; margin: 36px 0;">
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/document-translation/request/${documentId}" 
+             style="background-color: #0d7377; color: white; padding: 16px 40px; border-radius: 14px; text-decoration: none; font-weight: 600; display: inline-block; box-shadow:0 6px 18px rgba(13,115,119,0.25);">
+            Review Translation Proof
+          </a>
         </div>
       `;
     } else if (status === "VERIFIED") {
       subject = `Your Translation Has Been Certified and Verified!`;
-      htmlContent = `
-        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
-          ${headerHtml}
-          <div style="padding: 30px 20px;">
-            <h2 style="color: #111827; margin-top: 0; font-size: 20px; color: #16a34a;">Translation Certified & Verified!</h2>
-            <p>Dear ${fullName},</p>
-            <p>We are pleased to inform you that your Urdu to English document translation has been officially certified and verified by our team. It is now ready for use!</p>
-            
-            <div style="${cardStyles}">
-              <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Completed Request</h3>
-              <p style="margin: 8px 0;"><strong>Request ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${documentId}</span></p>
-              <p style="margin: 8px 0;"><strong>Document Type:</strong> ${docTypeLabel}</p>
-              <p style="margin: 8px 0;"><strong>Certified File:</strong> <span style="color: #16a34a; font-weight: 600;">${translatedFilename || `Certified_Translation.pdf`}</span></p>
-            </div>
-            
-            ${
-              adminNotes
-                ? `
-            <div style="background-color: #f3f4f6; border-left: 4px solid #16a34a; padding: 15px; border-radius: 0 8px 8px 0; margin: 20px 0;">
-              <strong style="display: block; color: #374151; font-size: 14px; margin-bottom: 5px;">Verification Notes:</strong>
-              <p style="margin: 0; font-style: italic; color: #4b5563;">${adminNotes}</p>
-            </div>
-            `
-                : ""
-            }
-            
-            <p>You can access and download your certified translation anytime by logging into your dashboard or clicking the link below.</p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/document-translation/request/${documentId}" 
-                 style="background-color: #16a34a; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
-                Download Certified Document
-              </a>
-            </div>
-            
-            ${footerHtml}
-          </div>
+      bodyHtml = `
+        <p>Dear ${fullName},</p>
+        <p>We are pleased to inform you that your Urdu to English document translation has been officially certified and verified by our team. It is now ready for use!</p>
+        
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 24px 0;">
+          <h3 style="color: #0d7377; margin-top: 0; font-size: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Completed Request</h3>
+          <p style="margin: 8px 0;"><strong>Request ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${documentId}</span></p>
+          <p style="margin: 8px 0;"><strong>Document Type:</strong> ${docTypeLabel}</p>
+          <p style="margin: 8px 0;"><strong>Certified File:</strong> <span style="color: #16a34a; font-weight: 600;">${translatedFilename || `Certified_Translation.pdf`}</span></p>
+        </div>
+        
+        ${
+          adminNotes
+            ? `
+        <div style="background-color: #f0fdf4; border-left: 4px solid #16a34a; padding: 16px; border-radius: 0 12px 12px 0; margin: 24px 0;">
+          <strong style="display: block; color: #14532d; font-size: 14px; margin-bottom: 6px;">Verification Notes:</strong>
+          <p style="margin: 0; font-style: italic; color: #166534;">${adminNotes}</p>
+        </div>
+        `
+            : ""
+        }
+        
+        <p>You can access and download your certified translation anytime by logging into your dashboard or clicking the link below.</p>
+        
+        <div style="text-align: center; margin: 36px 0;">
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/document-translation/request/${documentId}" 
+             style="background-color: #16a34a; color: white; padding: 16px 40px; border-radius: 14px; text-decoration: none; font-weight: 600; display: inline-block; box-shadow:0 6px 18px rgba(22,163,74,0.25);">
+            Download Certified Document
+          </a>
         </div>
       `;
     }
+
+    const htmlContent = getEmailWrapperHtml(subject, bodyHtml);
 
     if (!subject || !htmlContent) {
       console.warn(`No notification email layout implemented for status: ${status}`);
@@ -889,8 +1237,7 @@ export async function sendTranslationNotification(data: TranslationNotificationD
 function getTranslationNotificationContent(
   status: string,
   documentType: string,
-  version: number,
-  adminNotes?: string
+  version: number
 ): InAppNotificationContent | null {
   const docTypeLabel = documentType.charAt(0).toUpperCase() + documentType.slice(1);
 
@@ -898,7 +1245,7 @@ function getTranslationNotificationContent(
     case "TRANSLATED":
       return {
         title: "Translation Ready for Review",
-        body: `Your Urdu to English translation for "${docTypeLabel}" (Version ${version}) is ready. Please review and approve it.`,
+        body: `Your Urdu to English translation for "${docTypeLabel} Certificate" (Version ${version}) is ready. Please review and approve it.`,
         priority: "high",
         actionLabel: "Review Translation",
         actionUrl: `/document-translation/request`,
@@ -924,13 +1271,22 @@ function getTranslationNotificationContent(
   }
 }
 
+interface TranslationDbRecord {
+  user_id?: string | null;
+  user_email?: string | null;
+  status: string;
+  document_type?: string | null;
+  version?: string | number | null;
+  admin_notes?: string | null;
+}
+
 /**
  * Create an in-app notification for the user who owns the translation document.
  * Looks up user_id from the document row, or falls back to email-based lookup.
  */
 async function createTranslationInAppNotification(
   documentId: string,
-  document: Record<string, any>
+  document: TranslationDbRecord
 ) {
   try {
     const { createServerClient } = await import("@supabase/ssr");
@@ -972,8 +1328,7 @@ async function createTranslationInAppNotification(
     const content = getTranslationNotificationContent(
       document.status,
       document.document_type || "document",
-      Number(document.version) || 1.0,
-      document.admin_notes || ""
+      Number(document.version) || 1.0
     );
 
     if (!content) {
@@ -1005,7 +1360,7 @@ async function createTranslationInAppNotification(
       console.error("[TranslationInAppNotif] Error inserting notification:", error);
     } else {
       console.log(
-        `[TranslationInAppNotif] ✅ Created in-app notification for user ${userId} (status: ${document.status})`
+        `[TranslationInAppNotif] Created in-app notification for user ${userId} (status: ${document.status})`
       );
     }
   } catch (err) {
@@ -1083,6 +1438,17 @@ export async function triggerTranslationNotification(documentId: string) {
       console.error("[TranslationInAppNotif] Background error:", err);
     });
 
+    // Notify admins of a brand-new translation document submission
+    if (document.status === "PENDING") {
+      await notifyAdmins(
+        "admin_new_translation",
+        document.journey_id || undefined,
+        `${fullName} has uploaded a ${document.document_type} certificate for translation.`,
+        undefined,
+        "New Translation Request"
+      );
+    }
+
     return { success: true };
   } catch (error) {
     console.error("Error triggering translation notification:", error);
@@ -1102,136 +1468,119 @@ interface PoliceVerificationNotificationData {
   status: string;
   province?: string;
   district?: string;
+  adminNotes?: string;
 }
 
 export async function sendPoliceVerificationNotification(data: PoliceVerificationNotificationData) {
   try {
-    const {
-      email,
-      fullName,
-      id,
-      requestId,
-      status,
-      province,
-      district,
-    } = data;
+    const { email, fullName, requestId, status, district, adminNotes } = data;
 
     let subject = "";
-    let htmlContent = "";
-
-    const headerHtml = `
-      <div style="background: linear-gradient(135deg, #0f766e 0%, #115e59 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
-        <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Sindh Police Character Certificate</h1>
-        <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: white;">Request Status Update</p>
-      </div>
-    `;
-
-    const footerHtml = `
-      <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 12px; color: #6b7280;">
-        <p>This is an automated notification from Arachnie. Please do not reply to this email.</p>
-        <p>&copy; ${new Date().getFullYear()} Arachnie. All rights reserved.</p>
-      </div>
-    `;
-
-    const cardStyles = `background-color: #f9fafb; padding: 20px; border-radius: 8px; border: 1px solid #e5e7eb; margin: 20px 0;`;
+    let bodyHtml = "";
 
     if (status === "completed") {
       subject = `Your Sindh PCC Request Has Been Completed!`;
-      htmlContent = `
-        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
-          ${headerHtml}
-          <div style="padding: 30px 20px;">
-            <h2 style="color: #111827; margin-top: 0; font-size: 20px; color: #0f766e;">Character Certificate Ready!</h2>
-            <p>Dear ${fullName},</p>
-            <p>We are pleased to inform you that your Sindh Police Character Certificate (PCC) request has been successfully processed and completed.</p>
-            
-            <div style="${cardStyles}">
-              <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Request Summary</h3>
-              <p style="margin: 8px 0;"><strong>Tracking ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${requestId || "N/A"}</span></p>
-              <p style="margin: 8px 0;"><strong>Province:</strong> ${province || "Sindh"}</p>
-              <p style="margin: 8px 0;"><strong>District:</strong> ${district || "N/A"}</p>
-              <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #0f766e; font-weight: 600;">COMPLETED</span></p>
-            </div>
-            
-            <p>You can retrieve and download your official Police Character Certificate from your user dashboard by clicking the button below.</p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://arachnie.com"}/user-dashboard" 
-                 style="background-color: #0f766e; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
-                Go to Dashboard
-              </a>
-            </div>
-            
-            ${footerHtml}
-          </div>
+      bodyHtml = `
+        <p>Dear ${fullName},</p>
+        <p>We are pleased to inform you that your Sindh Police Character Certificate (PCC) request has been successfully processed and completed.</p>
+        
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 24px 0;">
+          <h3 style="color: #0d7377; margin-top: 0; font-size: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Request Summary</h3>
+          <p style="margin: 8px 0;"><strong>Tracking ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${requestId || "N/A"}</span></p>
+          <p style="margin: 8px 0;"><strong>Province:</strong> Sindh</p>
+          <p style="margin: 8px 0;"><strong>District:</strong> ${district || "N/A"}</p>
+          <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #0d7377; font-weight: 600;">COMPLETED</span></p>
+        </div>
+        
+        ${
+          adminNotes
+            ? `
+        <div style="background-color: #e8f6f6; border-left: 4px solid #0d7377; padding: 16px; border-radius: 0 12px 12px 0; margin: 24px 0;">
+          <strong style="display: block; color: #0a5a5d; font-size: 14px; margin-bottom: 6px;">Admin Notes:</strong>
+          <p style="margin: 0; font-style: italic; color: #0f766e;">${adminNotes}</p>
+        </div>
+        `
+            : ""
+        }
+        
+        <p>You can retrieve and download your official Police Character Certificate from your user dashboard by clicking the button below.</p>
+        
+        <div style="text-align: center; margin: 36px 0;">
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/user-dashboard" 
+             style="background-color: #0d7377; color: white; padding: 16px 40px; border-radius: 14px; text-decoration: none; font-weight: 600; display: inline-block; box-shadow:0 6px 18px rgba(13,115,119,0.25);">
+            Go to Dashboard
+          </a>
         </div>
       `;
     } else if (status === "in_progress") {
       subject = `Your Sindh PCC Request is Now In Progress`;
-      htmlContent = `
-        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
-          ${headerHtml}
-          <div style="padding: 30px 20px;">
-            <h2 style="color: #111827; margin-top: 0; font-size: 20px;">Filing Request In Progress</h2>
-            <p>Dear ${fullName},</p>
-            <p>Your Sindh Police Character Certificate (PCC) request is now actively being processed and filed by our admin team.</p>
-            
-            <div style="${cardStyles}">
-              <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Request Summary</h3>
-              <p style="margin: 8px 0;"><strong>Tracking ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${requestId || "N/A"}</span></p>
-              <p style="margin: 8px 0;"><strong>Province:</strong> ${province || "Sindh"}</p>
-              <p style="margin: 8px 0;"><strong>District:</strong> ${district || "N/A"}</p>
-              <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #0284c7; font-weight: 600;">IN PROGRESS</span></p>
-            </div>
-            
-            <p>Our team is handling the documentation and coordinating with the relevant department. We will notify you as soon as the certificate is finalized or if any further details are required.</p>
-            
-            <p>You can track the progress of your application on your user dashboard.</p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://arachnie.com"}/user-dashboard" 
-                 style="background-color: #0f766e; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
-                Track Request
-              </a>
-            </div>
-            
-            ${footerHtml}
-          </div>
+      bodyHtml = `
+        <p>Dear ${fullName},</p>
+        <p>Your Sindh Police Character Certificate (PCC) request is now actively being processed and filed by our admin team.</p>
+        
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 24px 0;">
+          <h3 style="color: #0d7377; margin-top: 0; font-size: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Request Summary</h3>
+          <p style="margin: 8px 0;"><strong>Tracking ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${requestId || "N/A"}</span></p>
+          <p style="margin: 8px 0;"><strong>Province:</strong> Sindh</p>
+          <p style="margin: 8px 0;"><strong>District:</strong> ${district || "N/A"}</p>
+          <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #0284c7; font-weight: 600;">IN PROGRESS</span></p>
+        </div>
+        
+        ${
+          adminNotes
+            ? `
+        <div style="background-color: #e8f6f6; border-left: 4px solid #0d7377; padding: 16px; border-radius: 0 12px 12px 0; margin: 24px 0;">
+          <strong style="display: block; color: #0a5a5d; font-size: 14px; margin-bottom: 6px;">Admin Notes:</strong>
+          <p style="margin: 0; font-style: italic; color: #0f766e;">${adminNotes}</p>
+        </div>
+        `
+            : ""
+        }
+        
+        <p>Our team is handling the documentation and coordinating with the relevant department. We will notify you as soon as the certificate is finalized or if any further details are required.</p>
+        
+        <div style="text-align: center; margin: 36px 0;">
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/user-dashboard" 
+             style="background-color: #0d7377; color: white; padding: 16px 40px; border-radius: 14px; text-decoration: none; font-weight: 600; display: inline-block; box-shadow:0 6px 18px rgba(13,115,119,0.25);">
+            Track Request
+          </a>
         </div>
       `;
     } else if (status === "cancelled") {
       subject = `Action Required: Sindh PCC Request Issue`;
-      htmlContent = `
-        <div style="font-family: 'Inter', system-ui, -apple-system, sans-serif; max-width: 600px; margin: 0 auto; color: #1f2937; line-height: 1.5;">
-          <div style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%); padding: 30px; border-radius: 12px 12px 0 0; text-align: center; color: white;">
-            <h1 style="margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.025em; color: white;">Sindh Police Character Certificate</h1>
-            <p style="margin: 5px 0 0 0; opacity: 0.9; font-size: 14px; color: white;">Action Required</p>
-          </div>
-          <div style="padding: 30px 20px;">
-            <h2 style="color: #111827; margin-top: 0; font-size: 20px; color: #dc2626;">Request Discrepancy / Action Needed</h2>
-            <p>Dear ${fullName},</p>
-            <p>We encountered an issue while processing your Sindh Police Character Certificate (PCC) request.</p>
-            
-            <div style="${cardStyles}">
-              <h3 style="color: #374151; margin-top: 0; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 8px;">Request Summary</h3>
-              <p style="margin: 8px 0;"><strong>Tracking ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${requestId || "N/A"}</span></p>
-              <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #dc2626; font-weight: 600;">ACTION REQUIRED / CANCELLED</span></p>
-            </div>
-            
-            <p>Please log in to your user dashboard to review the specific notes from the admin, update any incorrect details or uploads, and re-submit the request for filing.</p>
-            
-            <div style="text-align: center; margin: 30px 0;">
-              <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://arachnie.com"}/user-dashboard" 
-                 style="background-color: #dc2626; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600; display: inline-block;">
-                Review Request Details
-              </a>
-            </div>
-            
-            ${footerHtml}
-          </div>
+      bodyHtml = `
+        <p>Dear ${fullName},</p>
+        <p>We encountered an issue while processing your Sindh Police Character Certificate (PCC) request.</p>
+        
+        <div style="background-color: #f9fafb; padding: 20px; border-radius: 12px; border: 1px solid #e2e8f0; margin: 24px 0;">
+          <h3 style="color: #0d7377; margin-top: 0; font-size: 18px; border-bottom: 1px solid #e2e8f0; padding-bottom: 8px;">Request Summary</h3>
+          <p style="margin: 8px 0;"><strong>Tracking ID:</strong> <span style="font-family: monospace; font-size: 14px; background: #f3f4f6; padding: 2px 6px; border-radius: 4px;">${requestId || "N/A"}</span></p>
+          <p style="margin: 8px 0;"><strong>Status:</strong> <span style="color: #dc2626; font-weight: 600;">ACTION REQUIRED / CANCELLED</span></p>
+        </div>
+        
+        ${
+          adminNotes
+            ? `
+        <div style="background-color: #fef2f2; border-left: 4px solid #dc2626; padding: 16px; border-radius: 0 12px 12px 0; margin: 24px 0; color: #991b1b;">
+          <strong style="display: block; font-size: 14px; margin-bottom: 6px;">Discrepancy Notes:</strong>
+          <p style="margin: 0; font-style: italic;">${adminNotes}</p>
+        </div>
+        `
+            : ""
+        }
+        
+        <p>Please log in to your user dashboard to review the specific notes from the admin, update any incorrect details or uploads, and re-submit the request for filing.</p>
+        
+        <div style="text-align: center; margin: 36px 0;">
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/user-dashboard" 
+             style="background-color: #dc2626; color: white; padding: 16px 40px; border-radius: 14px; text-decoration: none; font-weight: 600; display: inline-block; box-shadow:0 6px 18px rgba(220,38,38,0.25);">
+            Review Request Details
+          </a>
         </div>
       `;
     }
+
+    const htmlContent = getEmailWrapperHtml(subject, bodyHtml);
 
     if (!subject || !htmlContent) {
       console.warn(`No notification email layout implemented for status: ${status}`);
@@ -1272,42 +1621,46 @@ function getPoliceVerificationNotificationContent(
         title: "PCC Sindh Request Received",
         body: `Your Sindh Police Character Certificate request (${displayId}) has been received and is pending admin review.`,
         priority: "normal",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "in_progress":
       return {
         title: "PCC Sindh In Progress",
         body: `Your Sindh Police Character Certificate request (${displayId}) is now in progress.`,
         priority: "high",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "completed":
       return {
         title: "PCC Sindh Completed",
         body: `Your Sindh Police Character Certificate request (${displayId}) has been successfully completed.`,
         priority: "high",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     case "cancelled":
       return {
         title: "PCC Sindh Action Required",
         body: `Action required: There is an issue with your Sindh Police Character Certificate request (${displayId}). Please review admin notes.`,
         priority: "critical",
-        actionLabel: "View Dashboard",
-        actionUrl: "/user-dashboard",
+        actionLabel: "View Details",
+        actionUrl: "/resources?tab=services",
       };
     default:
       return null;
   }
 }
 
-async function createPoliceVerificationInAppNotification(
-  id: string,
-  request: Record<string, any>
-) {
+interface PoliceVerificationDbRecord {
+  user_id?: string | null;
+  email?: string | null;
+  status: string;
+  request_id?: string | null;
+}
+
+async function createPoliceVerificationInAppNotification(id: string, request: PoliceVerificationDbRecord) {
   try {
     const { createServerClient } = await import("@supabase/ssr");
 
@@ -1369,7 +1722,7 @@ async function createPoliceVerificationInAppNotification(
       console.error("[PCCInAppNotif] Error inserting notification:", error);
     } else {
       console.log(
-        `[PCCInAppNotif] ✅ Created in-app notification for user ${userId} (status: ${request.status})`
+        `[PCCInAppNotif] Created in-app notification for user ${userId} (status: ${request.status})`
       );
     }
   } catch (err) {
@@ -1416,6 +1769,7 @@ export async function triggerPoliceVerificationNotification(id: string) {
         status: request.status,
         province: request.province,
         district: request.district,
+        adminNotes: request.admin_notes,
       };
 
       sendPoliceVerificationNotification(notificationData).catch((err) => {
@@ -1433,4 +1787,3 @@ export async function triggerPoliceVerificationNotification(id: string) {
     return { error: Errors.msg(Errors.E.POLICE_VERIFICATION_TRIGGER_FAILED) };
   }
 }
-

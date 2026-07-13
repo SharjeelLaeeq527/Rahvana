@@ -3,6 +3,11 @@ import { createClient } from "@/lib/supabase/server";
 import { decrypt } from "@/lib/encryption";
 import { E, msg } from "@/lib/errors";
 
+const revealEncryptedValue = (value: string | null) => {
+  if (!value) return "";
+  return value.startsWith("gcm:") ? decrypt(value) : value;
+};
+
 export async function POST(req: Request) {
   try {
     const supabase = await createClient();
@@ -56,21 +61,21 @@ export async function POST(req: Request) {
     if (type === "all_details") {
       return NextResponse.json({
         details: {
-          nvcCaseNum: decrypt(credential.nvc_case_number),
-          nvcInvoice: decrypt(credential.nvc_invoice_id),
+          nvcCaseNum: revealEncryptedValue(credential.nvc_case_number),
+          nvcInvoice: revealEncryptedValue(credential.nvc_invoice_id),
         },
       });
     }
 
     // NVC case number reveal
     if (type === "nvc_case_number") {
-      const value = decrypt(credential.nvc_case_number);
+      const value = revealEncryptedValue(credential.nvc_case_number);
       return NextResponse.json({ value });
     }
 
     // NVC invoice ID reveal
     if (type === "nvc_invoice_id") {
-      const value = decrypt(credential.nvc_invoice_id);
+      const value = revealEncryptedValue(credential.nvc_invoice_id);
       return NextResponse.json({ value });
     }
 

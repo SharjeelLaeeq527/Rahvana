@@ -21,20 +21,41 @@ import {
   BookOpen,
   FolderLock,
   Wand2,
-  Sparkles,
   HelpCircleIcon,
   ToolCase,
   Wrench,
   Info,
+  LifeBuoy,
+  MessageSquare,
+  Calculator,
+  Clock,
+  Camera,
+  Files,
+  PenTool,
+  Globe,
+  Shield,
+  FileText,
+  Heart,
+  HeartOff,
+  // Star,
+  // StarOff,
+  Syringe,
+  Pin,
+  // PinOff,
+  List,
+  LayoutGrid,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useQuickAccess } from "@/app/context/QuickAccessContext";
 import MegaMenu from "./MegaMenu";
 import { User } from "@supabase/supabase-js";
 import { useAuth, UserProfile } from "@/app/context/AuthContext";
 // import { useLanguage } from "@/app/context/LanguageContext";
 import { NAV_DATA } from "./navigationData";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
+import { requestNavigation } from "@/lib/guides/navigationGuardStore";
 // import { useTheme } from "next-themes";
+import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 
 interface HeaderProps {
   activeSection?: string;
@@ -90,6 +111,140 @@ const useExtensionCleanup = () => {
     return () => clearTimeout(timer);
   }, []);
 };
+
+const QUICK_ACCESS_ICON_MAP: Record<string, React.ComponentType<any>> = {
+  LifeBuoy,
+  MessageSquare,
+  Calculator,
+  Clock,
+  Camera,
+  Files,
+  PenTool,
+  Wand2,
+  Zap,
+  Globe,
+  Shield,
+  FileText,
+  Heart,
+  Syringe,
+  Briefcase,
+  BookOpen,
+};
+
+interface QuickAccessItemStyle {
+  bg: string;
+  lightBg: string;
+  hoverBorder: string;
+  hoverText: string;
+}
+
+const QUICK_ACCESS_ITEM_STYLES: Record<string, QuickAccessItemStyle> = {
+  violet: {
+    bg: "bg-violet-600 text-white dark:bg-violet-500",
+    lightBg: "bg-violet-600/10 dark:bg-violet-500/10 text-violet-600 dark:text-violet-400",
+    hoverBorder: "hover:border-violet-600/30 hover:bg-violet-600/5",
+    hoverText: "group-hover:text-violet-600 dark:group-hover:text-violet-400",
+  },
+  emerald: {
+    bg: "bg-emerald-600 text-white dark:bg-emerald-500",
+    lightBg: "bg-emerald-600/10 dark:bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    hoverBorder: "hover:border-emerald-600/30 hover:bg-emerald-600/5",
+    hoverText: "group-hover:text-emerald-600 dark:group-hover:text-emerald-400",
+  },
+  amber: {
+    bg: "bg-amber-600 text-white dark:bg-amber-500",
+    lightBg: "bg-amber-600/10 dark:bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    hoverBorder: "hover:border-amber-600/30 hover:bg-amber-600/5",
+    hoverText: "group-hover:text-amber-600 dark:group-hover:text-amber-400",
+  },
+  rose: {
+    bg: "bg-rose-600 text-white dark:bg-rose-500",
+    lightBg: "bg-rose-600/10 dark:bg-rose-500/10 text-rose-600 dark:text-rose-400",
+    hoverBorder: "hover:border-rose-600/30 hover:bg-rose-600/5",
+    hoverText: "group-hover:text-rose-600 dark:group-hover:text-rose-400",
+  },
+  cyan: {
+    bg: "bg-cyan-600 text-white dark:bg-cyan-500",
+    lightBg: "bg-cyan-600/10 dark:bg-cyan-500/10 text-cyan-600 dark:text-cyan-400",
+    hoverBorder: "hover:border-cyan-600/30 hover:bg-cyan-600/5",
+    hoverText: "group-hover:text-cyan-600 dark:group-hover:text-cyan-400",
+  },
+  green: {
+    bg: "bg-green-600 text-white dark:bg-green-500",
+    lightBg: "bg-green-600/10 dark:bg-green-500/10 text-green-600 dark:text-green-400",
+    hoverBorder: "hover:border-green-600/30 hover:bg-green-600/5",
+    hoverText: "group-hover:text-green-600 dark:group-hover:text-green-400",
+  },
+  teal: {
+    bg: "bg-teal-600 text-white dark:bg-teal-500",
+    lightBg: "bg-teal-600/10 dark:bg-teal-500/10 text-teal-600 dark:text-teal-400",
+    hoverBorder: "hover:border-teal-600/30 hover:bg-teal-600/5",
+    hoverText: "group-hover:text-teal-600 dark:group-hover:text-teal-400",
+  },
+  indigo: {
+    bg: "bg-indigo-600 text-white dark:bg-indigo-500",
+    lightBg: "bg-indigo-600/10 dark:bg-indigo-500/10 text-indigo-600 dark:text-indigo-400",
+    hoverBorder: "hover:border-indigo-600/30 hover:bg-indigo-600/5",
+    hoverText: "group-hover:text-indigo-600 dark:group-hover:text-indigo-400",
+  },
+  default: {
+    bg: "bg-[#0d7377] text-white",
+    lightBg: "bg-[#0d7377]/10 text-[#0d7377] dark:bg-[#0d7377]/20 dark:text-[#32e0c4]",
+    hoverBorder: "hover:border-[#0d7377]/30 hover:bg-[#0d7377]/5",
+    hoverText: "group-hover:text-[#0d7377] dark:group-hover:text-[#32e0c4]",
+  },
+};
+
+function getQuickAccessItemStyle(item: any): QuickAccessItemStyle {
+  if (item.id.startsWith("guide-")) {
+    const guideId = item.id.replace("guide-", "");
+    const isPakDoc = [
+      "passport",
+      "police-verification",
+      "cnic",
+      "birth-certificate",
+      "frc",
+      "marriage-certificate",
+    ].includes(guideId);
+    return isPakDoc ? QUICK_ACCESS_ITEM_STYLES.green : QUICK_ACCESS_ITEM_STYLES.teal;
+  }
+
+  if (item.id.startsWith("service-")) {
+    const serviceId = item.id.replace("service-", "");
+    if (serviceId === "book-a-consultation") {
+      return QUICK_ACCESS_ITEM_STYLES.indigo;
+    }
+    if (serviceId.includes("pcc-filing-service")) {
+      return QUICK_ACCESS_ITEM_STYLES.emerald;
+    }
+    if (serviceId === "book-medical-appointment") {
+      return QUICK_ACCESS_ITEM_STYLES.rose;
+    }
+    if (serviceId.includes("translation")) {
+      return QUICK_ACCESS_ITEM_STYLES.amber;
+    }
+    return QUICK_ACCESS_ITEM_STYLES.indigo;
+  }
+
+  const toolId = item.id;
+  if (["221g-action-planner", "221g-planner", "interview-prep"].includes(toolId)) {
+    return QUICK_ACCESS_ITEM_STYLES.violet;
+  }
+  if (["sponsorship-calculator"].includes(toolId)) {
+    return QUICK_ACCESS_ITEM_STYLES.emerald;
+  }
+  if (["queue-watch", "photo-booth"].includes(toolId)) {
+    return QUICK_ACCESS_ITEM_STYLES.amber;
+  }
+  if (["pdf-toolkit", "snap-sign"].includes(toolId)) {
+    return QUICK_ACCESS_ITEM_STYLES.rose;
+  }
+  if (["form-forge"].includes(toolId)) {
+    return QUICK_ACCESS_ITEM_STYLES.cyan;
+  }
+
+  return QUICK_ACCESS_ITEM_STYLES.default;
+}
 
 export function SiteHeader({
   activeSection,
@@ -155,6 +310,26 @@ export function SiteHeader({
   const [expandedSections, setExpandedSections] = useState<string[]>([]);
   const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
+  const [quickAccessOpen, setQuickAccessOpen] = useState(false);
+  const quickAccessRef = useRef<HTMLDivElement>(null);
+  const [viewMode, setViewMode] = useState<"list" | "grid">("list");
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem("rahvana_quick_access_view");
+      if (saved === "grid" || saved === "list") {
+        setViewMode(saved);
+      }
+    } catch {}
+  }, []);
+
+  const handleViewModeChange = (mode: "list" | "grid") => {
+    setViewMode(mode);
+    try {
+      localStorage.setItem("rahvana_quick_access_view", mode);
+    } catch {}
+  };
+
   const [readIds, setReadIds] = useState<Set<string>>(() => {
     try {
       const saved = localStorage.getItem("rahvana_notif_read");
@@ -164,6 +339,9 @@ export function SiteHeader({
     }
   });
   const notifRef = useRef<HTMLDivElement>(null);
+
+  // Quick Access context
+  const { items: quickAccessItems, removeItem: removeQuickAccessItem } = useQuickAccess();
 
   // Real notification data
   const [notifList, setNotifList] = useState<any[]>([]);
@@ -180,6 +358,16 @@ export function SiteHeader({
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [arrowOffset, setArrowOffset] = useState(40);
+
+  const showToggle = process.env.NEXT_PUBLIC_ENVIRONMENT === "development";
+
+  const journeyButtonText = showToggle ? "Explore Journeys" : "IR-1 Journey";
+
+  const journeyButtonHref = showToggle
+    ? "/visa-category/ir-category"
+    : ir1journeyHref;
+
+  const journeyNavigationId = showToggle ? "journeys" : "ir1-journey";
 
   // Refs for each nav button wrapper — used to calculate arrow position
   const navRefs = useRef<Record<string, HTMLDivElement | null>>({
@@ -210,6 +398,10 @@ export function SiteHeader({
       // Notification
       if (notifRef.current && !notifRef.current.contains(target)) {
         setNotificationsOpen(false);
+      }
+      // Quick Access
+      if (quickAccessRef.current && !quickAccessRef.current.contains(target)) {
+        setQuickAccessOpen(false);
       }
       // Mega Menus or Profile Menu
       if (activeMenu) {
@@ -244,6 +436,7 @@ export function SiteHeader({
     setActiveMenu(null);
     setIsMenuOpen(false);
     setNotificationsOpen(false);
+    setQuickAccessOpen(false);
   }, [pathname]);
 
   const { profile, isLoading, user: authUser } = useAuth();
@@ -290,8 +483,7 @@ export function SiteHeader({
 
       // 3. Merge and sort by created_at descending
       const merged = [...journeyReminders, ...appNotifications].sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       );
 
       setNotifList(merged);
@@ -339,9 +531,7 @@ export function SiteHeader({
         body: JSON.stringify({ id, action: "read" }),
       }).catch(() => {});
       // Update local state immediately
-      setNotifList((prev) =>
-        prev.map((n: any) => (n.id === id ? { ...n, is_read: true } : n))
-      );
+      setNotifList((prev) => prev.map((n: any) => (n.id === id ? { ...n, is_read: true } : n)));
     } else {
       // Journey reminders: use localStorage-based tracking
       setReadIds((prev) => {
@@ -425,8 +615,8 @@ export function SiteHeader({
         journeys: "/visa-category/ir-category",
         "my-journeys": "/my-journeys",
         "my-guides": "/guides/my-guides",
-        "ir1-journey": "/visa-category/ir-category/ir1-journey",
-        "ir5-journey": "/visa-category/ir-category/ir5-journey",
+        "ir1-journey": ir1journeyHref,
+        "ir5-journey": ir5journeyHref,
         "k1-journey": "/visa-category/ir-category/k1-journey",
         services: "/resources?tab=services",
         tools: "/resources?tab=toolbox",
@@ -464,6 +654,10 @@ export function SiteHeader({
       };
 
       const targetRoute = routes[id] || "/";
+
+      // If a navigation guard is active, defer to it (opens confirmation modal)
+      if (requestNavigation(targetRoute)) return;
+
       router.push(targetRoute);
     }
   };
@@ -474,7 +668,6 @@ export function SiteHeader({
     return false;
   };
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [scrolled, setScrolled] = useState(false);
   const [heroTransitioned, setHeroTransitioned] = useState(false);
   useEffect(() => {
@@ -497,15 +690,17 @@ export function SiteHeader({
 
   const isHomeHeroState = pathname === "/" && !scrolled && !heroTransitioned;
   const isHomeHeroP2State = pathname === "/" && !scrolled && heroTransitioned;
+  // /home-page has a light gradient hero — transparent header but teal text (not white)
+  const isHomepageHeroState = pathname === "/" && !scrolled;
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-100 w-full transition-all duration-300 ${
-        isHomeHeroState || isHomeHeroP2State
+        isHomeHeroState || isHomeHeroP2State || isHomepageHeroState
           ? "bg-transparent border-none shadow-none py-4"
           : "bg-background shadow-lg py-2"
       }`}
       style={
-        isHomeHeroState || isHomeHeroP2State
+        isHomeHeroState || isHomeHeroP2State || isHomepageHeroState
           ? { background: "rgba(0,0,0,0)", boxShadow: "none", border: "none" }
           : {}
       }
@@ -521,7 +716,7 @@ export function SiteHeader({
           {/* Mobile Menu Trigger */}
           <HydrationSafeButton
             className={`lg:hidden p-1 rounded-md transition-colors ${
-              isHomeHeroState ? "text-TEAL hover:bg-white/15" : "text-foreground hover:bg-muted"
+              isHomeHeroState ? "text-TEAL hover:bg-white/15" : isHomepageHeroState ? "text-[#0d7377] hover:bg-[#0d7377]/10" : "text-foreground hover:bg-muted"
             }`}
             onClick={() => setIsMenuOpen(true)}
             aria-label="Open menu"
@@ -548,11 +743,11 @@ export function SiteHeader({
               className={`h-8 w-auto fill-current ${
                 isHomeHeroState
                   ? "text-white drop-shadow-sm"
-                  : isHomeHeroP2State
+                  : isHomeHeroP2State || isHomepageHeroState
                     ? "!text-[#0d7377]"
                     : "text-rahvana-primary"
               }`}
-              style={isHomeHeroP2State ? { color: "#0d7377", fill: "#0d7377" } : {}}
+              style={isHomeHeroP2State || isHomepageHeroState ? { color: "#0d7377", fill: "#0d7377/20" } : {}}
             >
               <path d="M194.478302,411.482117C188.648972,398.666321 181.184067,387.211884 174.078979,375.556946C161.946335,355.654999 154.218430,334.429535 152.466766,310.927032C150.965759,290.787415 151.490814,271.069061 158.657028,251.953415C161.906097,243.286591 167.372574,236.333282 175.068100,231.098938C187.972153,222.321823 212.377777,222.515015 222.031631,242.165817C226.003326,250.250381 232.154404,254.994858 241.386230,255.103607C240.874603,257.700470 239.210571,257.303253 238.057617,257.539734C214.604111,262.350281 200.098267,276.975067 192.363480,299.065857C184.921768,320.319672 187.555267,352.132874 198.628662,372.172211C195.346085,360.736084 194.548477,349.072571 194.585556,337.231354C194.686203,305.091156 209.071442,282.030487 237.587112,267.388245C252.463837,259.749298 268.363953,254.738281 283.791870,248.515182C300.024750,241.967392 315.867065,234.607849 330.889893,225.571030C331.848022,224.994675 332.727417,224.133804 334.330139,224.642090C334.086884,229.016586 332.356110,232.995224 331.110291,237.029678C325.877838,253.974487 319.356995,270.258270 307.731262,284.109070C295.584656,298.580475 279.797791,306.307983 261.751282,310.259583C255.743668,311.575104 249.729248,312.898682 243.795959,314.506500C229.390137,318.410126 220.388382,329.212219 218.286926,343.947327C216.575470,355.947906 217.905655,367.798737 218.737152,379.737518C219.623474,392.463135 221.756760,405.206818 219.303925,418.003387C217.963852,424.994537 214.710114,430.344635 207.688766,433.006439C204.303909,434.289673 202.544754,433.679260 201.368622,430.074707C199.358749,423.914886 196.908096,417.898895 194.478302,411.482117z"></path>
               <path d="M347.022308,320.000671C347.016052,314.839264 347.105347,310.174835 346.965759,305.517273C346.865234,302.162506 348.128204,300.629364 351.628418,300.734467C356.786560,300.889313 361.960175,300.922363 367.113922,300.699646C370.973633,300.532806 372.427643,301.928192 372.368347,305.879303C372.186157,318.023376 372.301971,330.171936 372.301971,342.083649C373.283447,342.867767 373.819183,342.426117 374.318726,342.006836C383.782745,334.063324 394.575775,332.615875 406.196838,335.633057C415.899536,338.152130 422.744904,346.587646 423.310516,356.622040C424.267090,373.593201 423.737030,390.584991 423.953217,407.566589C423.995270,410.868988 423.022247,412.495087 419.405853,412.347473C414.084778,412.130249 408.740967,412.096069 403.421997,412.329346C399.633331,412.495514 398.561127,410.970825 398.606415,407.354187C398.766998,394.531891 398.675171,381.706299 398.663269,368.881958C398.653717,358.575378 395.399567,354.366302 387.286011,354.116821C377.843262,353.826508 372.628845,358.719452 372.391693,368.828339C372.122253,380.313904 372.349670,391.810638 372.318054,403.302399C372.289795,413.578827 373.113983,412.175079 363.109467,412.274994C359.445770,412.311584 355.772827,412.113037 352.119568,412.309662C348.129639,412.524414 346.894379,410.660309 346.908722,406.924530C346.998840,383.444702 346.970551,359.964386 346.985443,336.484253C346.988831,331.156372 347.007996,325.828522 347.022308,320.000671z"></path>
@@ -567,21 +762,21 @@ export function SiteHeader({
           <nav className="hidden lg:flex items-center gap-1">
             <div className="relative pt-2 pb-0">
               <Link
-                href="/visa-category/ir-category/ir1-journey"
-                onClick={(e) => handleNav("ir1-journey", e)}
+                href={journeyButtonHref}
+                onClick={(e) => handleNav(journeyNavigationId, e)}
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isHomeHeroState
-                    ? isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
+                    ? isActive(journeyNavigationId, journeyButtonHref)
                       ? "bg-white/20 text-white"
-                      : "text-white/90 hover:bg-white/15 hover:text-white"
-                    : isHomeHeroP2State
+                      : "text-[#6ba3a0]/60 hover:bg-[#6ba3a0]/20 hover:text-white"
+                    : isHomeHeroP2State || isHomepageHeroState
                       ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
+                      : isActive(journeyNavigationId, journeyButtonHref)
                         ? "bg-muted text-[#0d7377]"
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
-                IR-1 Journey
+                {journeyButtonText}
               </Link>
             </div>
 
@@ -631,12 +826,12 @@ export function SiteHeader({
                   isHomeHeroState
                     ? isActive("resources") || activeMenu === "resources"
                       ? "bg-white/20 text-white"
-                      : "text-white/90 hover:bg-white/15 hover:text-white"
-                    : isHomeHeroP2State
-                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                      : "text-[#6ba3a0]/60 hover:bg-[#6ba3a0]/20 hover:text-white"
+                    : isHomeHeroP2State || isHomepageHeroState
+                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                       : isActive("resources") || activeMenu === "resources"
                         ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                        : "text-[#3fb8bc] hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 My Resources
@@ -747,12 +942,12 @@ export function SiteHeader({
                   isHomeHeroState
                     ? isActive("about", "/about")
                       ? "bg-white/20 text-white"
-                      : "text-white/90 hover:bg-white/15 hover:text-white"
-                    : isHomeHeroP2State
-                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                      : "text-[#6ba3a0]/60 hover:bg-[#6ba3a0]/20 hover:text-white"
+                    : isHomeHeroP2State || isHomepageHeroState
+                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                       : isActive("about", "/about")
                         ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                        : "text-[#3fb8bc] hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 About
@@ -767,12 +962,12 @@ export function SiteHeader({
                   isHomeHeroState
                     ? isActive("pricing", "/pricing")
                       ? "bg-white/20 text-white"
-                      : "text-white/90 hover:bg-white/15 hover:text-white"
-                    : isHomeHeroP2State
-                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                      : "text-[#6ba3a0]/60 hover:bg-[#6ba3a0]/20 hover:text-white"
+                    : isHomeHeroP2State || isHomepageHeroState
+                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                       : isActive("pricing", "/pricing")
                         ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                        : "text-[#3fb8bc] hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Pricing
@@ -787,12 +982,12 @@ export function SiteHeader({
                     isHomeHeroState
                       ? isActive("faq")
                         ? "bg-white/20 text-white"
-                        : "text-white/90 hover:bg-white/15 hover:text-white"
-                      : isHomeHeroP2State
-                        ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                        : "text-[#6ba3a0]/60 hover:bg-[#6ba3a0]/20 hover:text-white"
+                      : isHomeHeroP2State || isHomepageHeroState
+                        ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                         : isActive("faq")
                           ? "bg-muted text-[#0d7377]"
-                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                          : "text-[#3fb8bc] hover:bg-muted hover:text-[#0d7377]"
                   }`}
                 >
                   FAQ
@@ -807,12 +1002,12 @@ export function SiteHeader({
                   isHomeHeroState
                     ? isActive("contact")
                       ? "bg-white/20 text-white"
-                      : "text-white/90 hover:bg-white/15 hover:text-white"
-                    : isHomeHeroP2State
-                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                      : "text-[#6ba3a0]/60 hover:bg-[#6ba3a0]/20 hover:text-white"
+                    : isHomeHeroP2State || isHomepageHeroState
+                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                       : isActive("contact")
                         ? "bg-muted text-[#0d7377]"
-                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                        : "text-[#3fb8bc] hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Contact
@@ -934,7 +1129,7 @@ export function SiteHeader({
                       isHomeHeroState
                         ? "text-white"
                         : isHomeHeroP2State
-                          ? "text-white"
+                          ? "text-[#0d7377]"
                           : "text-rahvana-primary"
                     }`}
                     style={{
@@ -952,15 +1147,15 @@ export function SiteHeader({
                         className="h-5 w-5"
                         aria-hidden="true"
                         style={
-                          isHomeHeroP2State
-                            ? { color: "#fff" }
-                            : isHomeHeroState
-                              ? { color: "#fff" }
+                          isHomeHeroState
+                            ? { color: "#305d5aff" }
+                            : isHomeHeroP2State
+                              ? { color: "#0d7377" }
                               : { color: "var(--rahvana-primary, #0d7377)" }
                         }
                       />
                       {unreadCount > 0 && (
-                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-black flex items-center justify-center border border-white/50">
+                        <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-medium flex items-center justify-center border border-white/50">
                           {unreadCount > 9 ? "9+" : unreadCount}
                         </span>
                       )}
@@ -1008,7 +1203,8 @@ export function SiteHeader({
                               {notifList.slice(0, 8).map((n: any) => {
                                 const isExpanded = expandedNotifs.has(n.id);
                                 const bodyLong = n.body && n.body.length > 80;
-                                const isRead = n._source === "app" ? !!n.is_read : readIds.has(n.id);
+                                const isRead =
+                                  n._source === "app" ? !!n.is_read : readIds.has(n.id);
                                 return (
                                   <div
                                     key={n.id}
@@ -1097,6 +1293,228 @@ export function SiteHeader({
                 </div>
               )}
 
+          {/* ── Favorite Items Button ── */}
+          {isSignedIn && (
+            <div className="relative" ref={quickAccessRef}>
+              <HydrationSafeButton
+                aria-label="Quick Access List"
+                onClick={() => {
+                  setQuickAccessOpen((prev) => !prev);
+                  setNotificationsOpen(false);
+                }}
+                className={`relative rounded-md transition-colors shadow-none border-0 ${
+                  isHomeHeroState
+                    ? "text-white"
+                    : isHomeHeroP2State
+                      ? "text-[#0d7377]"
+                      : quickAccessOpen
+                        ? "text-[#0d7377]"
+                        : "text-rahvana-primary"
+                }`}
+                style={{
+                  padding: 0,
+                  width: 40,
+                  height: 40,
+                  background: "none",
+                  boxShadow: "none",
+                  border: "none",
+                  borderRadius: "50%",
+                }}
+              >
+                <div className="relative inline-flex">
+                  <Heart
+                    className={`h-5 w-5 transition-all duration-200 ${quickAccessOpen ? "fill-[#0d7377] text-[#0d7377]" : ""}`}
+                    style={isHomeHeroState ? { color: "#305d5aff" } : isHomeHeroP2State ? { color: "#0d7377" } : {}}
+                  />
+                  {quickAccessItems.length > 0 && (
+                    <span className="absolute top-[-9px] -right-1.5 w-4 h-4 rounded-full bg-[#0d7377] text-white text-[9px] font-medium flex items-center justify-center border border-white/50">
+                      {quickAccessItems.length > 9 ? "9+" : quickAccessItems.length}
+                    </span>
+                  )}
+                </div>
+              </HydrationSafeButton>
+
+              <AnimatePresence>
+                {quickAccessOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 8 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 8 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                    className="absolute right-0 top-full mt-1 w-72 rounded-xl shadow-xl border border-slate-200 bg-white z-[9999] overflow-visible origin-top-right"
+                  >
+                    {/* Header */}
+                    <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/30 rounded-t-xl">
+                      <div className="flex items-center gap-2">
+                        <Heart className="w-4 h-4 text-[#0d7377] fill-[#0d7377]" />
+                        <span className="text-sm font-bold text-foreground">Favorites</span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        {/* View Toggle */}
+                        {quickAccessItems.length > 0 && (
+                          <div className="flex items-center bg-slate-100 dark:bg-slate-800 p-0.5 rounded-lg border border-slate-200/60">
+                            <button
+                              onClick={() => handleViewModeChange("list")}
+                              className={`p-1 rounded-md transition-all ${
+                                viewMode === "list"
+                                  ? "bg-white dark:bg-slate-700 text-[#0d7377] shadow-xs"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                              title="List View"
+                            >
+                              <List className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              onClick={() => handleViewModeChange("grid")}
+                              className={`p-1 rounded-md transition-all ${
+                                viewMode === "grid"
+                                  ? "bg-white dark:bg-slate-700 text-[#0d7377] shadow-xs"
+                                  : "text-muted-foreground hover:text-foreground"
+                              }`}
+                              title="Grid View"
+                            >
+                              <LayoutGrid className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        )}
+                        <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground bg-muted px-2 py-0.5 rounded-full">
+                          {quickAccessItems.length}
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Body */}
+                    <div className="max-h-[320px] overflow-y-auto">
+                      {quickAccessItems.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center px-6 py-10 gap-3">
+                          <div className="w-12 h-12 rounded-2xl bg-[#0d7377]/8 flex items-center justify-center">
+                            <Heart className="w-5 h-5 text-[#0d7377]/40" />
+                          </div>
+                          <div className="text-center space-y-1">
+                            <p className="text-sm font-semibold text-foreground">
+                              No favorites yet
+                            </p>
+                            <p className="text-xs text-muted-foreground max-w-[200px] mx-auto leading-relaxed">
+                              Favorite any tool, guide, or service card to access it here.
+                            </p>
+                          </div>
+                        </div>
+                      ) : viewMode === "grid" ? (
+                        <div className="grid grid-cols-3 gap-3 p-4">
+                          {quickAccessItems.map((item) => {
+                            const style = getQuickAccessItemStyle(item);
+                            return (
+                              <div
+                                key={item.id}
+                                className={`relative group flex flex-col items-center justify-center aspect-square rounded-xl border border-slate-100 dark:border-slate-800 transition-all duration-200 ${style.hoverBorder}`}
+                                title={item.title}
+                              >
+                                <Link
+                                  href={item.href}
+                                  onClick={() => setQuickAccessOpen(false)}
+                                  className="w-full h-full flex flex-col items-center justify-center p-2 text-center"
+                                >
+                                  <div
+                                    className={`relative w-10 h-10 rounded-lg flex items-center justify-center transition-transform duration-200 group-hover:scale-110 shadow-xs overflow-hidden ${style.bg}`}
+                                  >
+                                    <div className="absolute inset-0.5 rounded-[9px] bg-white/15" />
+                                    {(() => {
+                                      const IconComponent =
+                                        (item.icon_name && QUICK_ACCESS_ICON_MAP[item.icon_name]) ||
+                                        Pin;
+                                      return <IconComponent className="relative w-5 h-5 z-10" />;
+                                    })()}
+                                  </div>
+                                </Link>
+
+                                {/* Unfavorite button - appears on hover */}
+                                <button
+                                  onClick={() => removeQuickAccessItem(item.id)}
+                                  className="absolute -top-1.5 -right-1.5 p-1 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 shadow-sm text-muted-foreground hover:text-red-500 hover:border-red-200 transition-opacity opacity-0 group-hover:opacity-100 z-10"
+                                  title="Unfavorite"
+                                >
+                                  <HeartOff className="w-2.5 h-2.5" />
+                                </button>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-border">
+                          {quickAccessItems.map((item) => {
+                            const style = getQuickAccessItemStyle(item);
+                            return (
+                              <div
+                                key={item.id}
+                                className="flex items-center gap-3 px-4 py-3 hover:bg-muted/40 transition-colors group"
+                              >
+                                <div
+                                  className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 ${style.lightBg}`}
+                                >
+                                  {(() => {
+                                    const IconComponent =
+                                      (item.icon_name && QUICK_ACCESS_ICON_MAP[item.icon_name]) ||
+                                      Pin;
+                                    return <IconComponent className="w-3.5 h-3.5" />;
+                                  })()}
+                                </div>
+                                <Link
+                                  href={item.href}
+                                  onClick={() => setQuickAccessOpen(false)}
+                                  className="flex-1 min-w-0"
+                                >
+                                  <p
+                                    className={`text-sm font-medium text-foreground truncate ${style.hoverText} transition-colors`}
+                                  >
+                                    {item.title}
+                                  </p>
+                                </Link>
+                                <div className="flex items-center gap-1 shrink-0">
+                                  <button
+                                    onClick={() => removeQuickAccessItem(item.id)}
+                                    className="p-1.5 rounded-md text-muted-foreground hover:text-red-500 hover:bg-red-50 transition-colors"
+                                    title="Unfavorite"
+                                  >
+                                    <HeartOff className="w-3.5 h-3.5" />
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-4 py-2.5 border-t border-border bg-muted/20 flex items-center justify-between rounded-b-xl">
+                      <Link
+                        href="/resources"
+                        onClick={() => setQuickAccessOpen(false)}
+                        className="text-xs text-[#0d7377] hover:underline font-medium flex items-center gap-1 transition-colors"
+                      >
+                        <Wrench className="w-3 h-3" />
+                        Browse all resources
+                      </Link>
+                      {quickAccessItems.length > 0 && (
+                        <button
+                          className="text-xs text-muted-foreground hover:text-red-400 font-medium transition-colors"
+                          onClick={async () => {
+                            for (const item of quickAccessItems) {
+                              await removeQuickAccessItem(item.id);
+                            }
+                          }}
+                        >
+                          Unfavorite all
+                        </button>
+                      )}
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
+
           {/* LOGIN / PROFILE toggle */}
           {isLoading && !resolvedUser ? (
             <div className="w-22 h-10 rounded-lg bg-[#0d7377]/10 animate-pulse" />
@@ -1121,7 +1539,7 @@ export function SiteHeader({
                   isHomeHeroState
                     ? "text-white"
                     : isHomeHeroP2State
-                      ? "text-white"
+                      ? "text-[#0d7377]"
                       : "text-rahvana-primary"
                 }`}
                 style={{
@@ -1136,10 +1554,10 @@ export function SiteHeader({
               >
                 <span
                   style={
-                    isHomeHeroP2State
-                      ? { color: "#fff" }
-                      : isHomeHeroState
-                        ? { color: "#fff" }
+                    isHomeHeroState
+                      ? { color: "#305d5aff" }
+                      : isHomeHeroP2State
+                        ? { color: "#0d7377" }
                         : { color: "var(--rahvana-primary, #0d7377)" }
                   }
                   // className={`flex items-center justify-center w-[34px] h-[34px] rounded-full border-[1.5px] text-[15px] font-bold transition-colors ${
@@ -1182,14 +1600,14 @@ export function SiteHeader({
 
                     {/* Section 1 */}
                     <div className="py-2 border-b border-border">
-                      <button
+                      {/* <button
                         id="my-dashboard-menu-item"
                         onClick={() => handleNav("dashboard")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <Layout className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                         My Dashboard
-                      </button>
+                      </button> */}
                       <button
                         onClick={() => handleNav("profile")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
@@ -1242,13 +1660,13 @@ export function SiteHeader({
                         <Shield className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                         My Credentials
                       </button> */}
-                      <button
+                      {/* <button
                         onClick={() => {}} // Placeholder
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <HelpCircle className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
                         Help Center
-                      </button>
+                      </button> */}
                     </div>
 
                     {/* Footer - Sign Out */}
@@ -1354,7 +1772,7 @@ export function SiteHeader({
               <HydrationSafeButton
                 onClick={() => handleNav("ir1-journey")}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                  isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
+                  isActive("ir1-journey", ir1journeyHref)
                     ? "bg-[#0d7377]/10 text-[#0d7377]"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
