@@ -21,6 +21,7 @@ import {
 import { Playfair_Display, DM_Sans } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
+import { ir1journeyHref } from "@/lib/constants/routes";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -129,7 +130,7 @@ export default function AboutPage() {
                 className="flex flex-wrap items-center gap-6 mt-2"
               >
                 <Link
-                  href="/visa-category/ir-category/ir-1"
+                  href={ir1journeyHref}
                   className="inline-flex items-center gap-2.5 bg-[#0d7a75] text-white px-8 py-4 2xl:px-10 2xl:py-5 rounded-full text-sm 2xl:text-base font-medium hover:bg-[#0a5c58] transition-all transform hover:-translate-y-0.5 shadow-lg shadow-[#0d7a75]/20"
                 >
                   Start your journey <ArrowRight size={16} />
@@ -465,7 +466,7 @@ export default function AboutPage() {
               forward — toward clarity, toward submission, toward reunion.
             </p>
             <Link
-              href="/visa-category/ir-category/ir-1"
+              href={ir1journeyHref}
               className="inline-flex items-center gap-2.5 bg-[#0d7a75] text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-[#0a5c58] transition-all transform hover:-translate-y-0.5"
             >
               Start the IR-1 journey <ArrowRight size={16} />
@@ -635,7 +636,7 @@ export default function AboutPage() {
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
           <Link
-            href="/visa-category/ir-category/ir-1"
+            href={ir1journeyHref}
             className="bg-white text-[#0d7a75] px-8 py-3.5 rounded-full text-sm font-semibold hover:shadow-xl transition-all transform hover:-translate-y-0.5"
           >
             Start your IR-1 journey →

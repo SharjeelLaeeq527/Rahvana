@@ -44,8 +44,7 @@ import Intro from "./(main)/home-page/intro";
 import SectionBird from "./(main)/home-page/SectionBird";
 import ConsultationSection from "./components/home-page/ConsultationSection";
 
-export const journeyHref = "/visa-category/ir-category/ir1-journey";
-export const toolsHref = "/tools";
+import { ir1journeyHref, toolsHref } from "@/lib/constants/routes";
 
 const renderWithAbbr = (text: string) => {
   if (!text || typeof text !== "string" || !text.includes("PCC")) return text;
@@ -838,7 +837,12 @@ function HomePageContent() {
               <RoadmapProvider>
                 <div className="w-full bg-white relative">
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <SectionBird n={1} side="right" pos="top-[82%] -translate-y-1/2" size="w-40 lg:w-52 xl:w-64" />
+                    <SectionBird
+                      n={1}
+                      side="right"
+                      pos="top-[82%] -translate-y-1/2"
+                      size="w-40 lg:w-52 xl:w-64"
+                    />
                     <div className="py-16 md:py-24 flex items-center justify-center text-center relative">
                       <ScrollReveal>
                         <div className="max-w-xl mx-auto">
@@ -855,7 +859,13 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 2 — leaf start node (anchor "01") */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <SectionBird n={2} side="left" pos="top-[48%]" size="w-22 lg:w-32 xl:w-40" />
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
@@ -880,9 +890,9 @@ function HomePageContent() {
                           color="teal"
                           className="hidden md:block absolute top-[30%] md:left-[29%] right-[35%] md:right-auto transform md:-translate-x-1/2 z-10"
                         >
-                        <div className="relative w-8 h-8 rounded-full bg-[#7fb8b4] border border-[#5f9d98] flex items-center justify-center">
-                          <div className="absolute top-1.5 left-1.5 w-1.5 h-1.5 rounded-full bg-white/60" />
-                        </div>                        
+                          <div className="relative w-8 h-8 rounded-full bg-[#7fb8b4] border border-[#5f9d98] flex items-center justify-center">
+                            <div className="absolute top-1.5 left-1.5 w-1.5 h-1.5 rounded-full bg-white/60" />
+                          </div>
                         </RoadmapAnchor>
                       </div>
                     </div>
@@ -916,7 +926,13 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 4 — card placeholder (anchor "03") — shifted left */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
                       <SectionBird n={4} side="left" pos="top-[72%]" />
@@ -992,8 +1008,20 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 6 — Check node (anchor "05") — centered */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)' }}>
-                  <SectionBird n={6} side="left" className="left-0" pos="top-[54%]" size="w-36 lg:w-48 xl:w-56" />
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)",
+                  }}
+                >
+                  <SectionBird
+                    n={6}
+                    side="left"
+                    className="left-0"
+                    pos="top-[54%]"
+                    size="w-36 lg:w-48 xl:w-56"
+                  />
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
                       <div className="md:col-span-5 min-w-0">
@@ -1051,7 +1079,13 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 8 — card placeholder (anchor "07") — shifted left */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #fffcf6 4%, #fffcf6 96%, #ffffff 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #fffcf6 4%, #fffcf6 96%, #ffffff 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
                       <SectionBird n={8} side="left" pos="top-[74%]" />
@@ -1100,8 +1134,8 @@ function HomePageContent() {
                             Rahvana tells you exactly what documents you need.
                           </h3>
                           <p className="text-slate-500 text-base md:text-lg leading-relaxed">
-                            Track required documents, upload your files, and keep everything organized
-                            in one place.
+                            Track required documents, upload your files, and keep everything
+                            organized in one place.
                           </p>
                         </ScrollReveal>
                       </div>
@@ -1129,7 +1163,13 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 10 — FolderCheck node (anchor "09") — centered */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #fffcf6 4%, #fffcf6 90%, #ffffff 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #fffcf6 4%, #fffcf6 90%, #ffffff 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
                       <SectionBird n={10} side="right" pos="top-[50%]" />
@@ -1188,7 +1228,13 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 12 — card placeholder (anchor "11") — shifted left */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f5f1f9 4%, #f5f1f9 90%, #ffffff 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #f5f1f9 4%, #f5f1f9 90%, #ffffff 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
                       <SectionBird n={12} side="left" pos="top-[64%]" />
@@ -1265,7 +1311,13 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 14 — Interview node (anchor "13") — centered */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #fef6f7 4%, #fef6f7 90%, #ffffff 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #fef6f7 4%, #fef6f7 90%, #ffffff 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
                       <SectionBird n={14} side="right" pos="top-[60%]" />
@@ -1301,7 +1353,8 @@ function HomePageContent() {
                             The interview makes me nervous.
                           </h3>
                           <p className="text-slate-500 text-base md:text-lg leading-relaxed">
-                            What if they ask something I don&apos;t know? What if I forget everything?
+                            What if they ask something I don&apos;t know? What if I forget
+                            everything?
                           </p>
                         </ScrollReveal>
                       </div>
@@ -1330,7 +1383,13 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 16 — card placeholder (anchor "15") — shifted left */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #fef6f7 4%, #fef6f7 90%, #ffffff 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #fef6f7 4%, #fef6f7 90%, #ffffff 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
                       <SectionBird n={16} side="left" pos="top-[66%]" />
@@ -1383,8 +1442,8 @@ function HomePageContent() {
                             Visa Approved
                           </h3>
                           <p className="text-slate-500 text-base md:text-lg leading-relaxed font-medium">
-                            The final milestone in your journey. Your passport is stamped, and you are
-                            officially ready to begin your new life together.
+                            The final milestone in your journey. Your passport is stamped, and you
+                            are officially ready to begin your new life together.
                           </p>
                         </ScrollReveal>
                       </div>
@@ -1404,7 +1463,12 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 18 — final Welcome node (anchor "17") — centered */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f7fcf9 6%, #f7fcf9 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background: "linear-gradient(to bottom, #ffffff 0%, #f7fcf9 6%, #f7fcf9 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
                       <div className="md:col-span-6 md:pr-6 min-w-0">
@@ -1414,8 +1478,8 @@ function HomePageContent() {
                           </h3>
                           <p className="text-slate-600 text-base md:text-lg leading-relaxed font-medium">
                             Whether you&apos;re completing your application, gathering documents,
-                            preparing for an interview, or moving to the next step, Rahvana helps you
-                            understand where you are, what to do and what comes next.
+                            preparing for an interview, or moving to the next step, Rahvana helps
+                            you understand where you are, what to do and what comes next.
                           </p>
                         </ScrollReveal>
                       </div>
@@ -1438,7 +1502,6 @@ function HomePageContent() {
 
             <JourneyConsultationBand>
               <ConsultationSection onConsultationClick={handleConsultationClick} />
-
 
               {/* TESTIMONIALS (moved from About page) */}
               <section className="py-24 px-8 md:px-20 text-center">

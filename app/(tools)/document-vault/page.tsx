@@ -52,6 +52,7 @@ import { Plus, Info, LayoutTemplate } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import Link from "next/link";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
+import { ir1journeyHref } from "@/lib/constants/routes";
 
 export default function DocumentVaultPage() {
   const { showToast } = useToast();
@@ -1142,7 +1143,7 @@ export default function DocumentVaultPage() {
               </ul>
               {/* Actions */}
               <div className="relative z-10 w-full space-y-3">
-                <Link href="/visa-category/ir-category/ir-1">
+                <Link href={ir1journeyHref}>
                   {" "}
                   <Button
                     // onClick={() => router.push("/visa-category/ir-category/ir-1")}

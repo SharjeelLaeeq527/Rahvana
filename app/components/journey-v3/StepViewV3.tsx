@@ -50,6 +50,7 @@ import {
   RoadmapDataV3,
   QuestSuiteV3,
   TutorialStepV3,
+  DocumentGatheringItemV3,
   // ActionCardV3,
   // DocumentGatheringItemV3,
 } from "./types";
@@ -607,7 +608,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
   });
 
   const [isGatheringGuideOpen, setIsGatheringGuideOpen] = useState(false);
-  const [selectedGatheringItem, setSelectedGatheringItem] = useState<DocumentGatheringItem | null>(
+  const [selectedGatheringItem, setSelectedGatheringItem] = useState<DocumentGatheringItemV3 | null>(
     null
   );
   const [gatheringGuideStep, setGatheringGuideStep] = useState(0);

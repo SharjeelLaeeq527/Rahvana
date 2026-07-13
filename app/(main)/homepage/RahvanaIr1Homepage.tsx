@@ -36,9 +36,7 @@ import { AuthRequiredModal } from "@/app/components/shared/AuthRequiredModal";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { FAQS } from "@/data/home-page-data";
-
-const journeyHref = "/visa-category/ir-category/ir1-journey";
-const toolsHref = "/tools";
+import { ir1journeyHref, toolsHref } from "@/lib/constants/routes";
 const heroI130PreviewDisplay = {
   width: 520,
   height: 673,
@@ -1030,7 +1028,7 @@ const twoWaysPaths = [
       "Move step by step through the IR-1 process with clear milestones, built-in guidance, and the right next action always surfaced. It is designed to reduce uncertainty and keep your case moving with confidence.",
     bestFor: "Best for people who want end-to-end guidance.",
     cta: "Explore the Roadmap",
-    href: journeyHref,
+    href: ir1journeyHref,
   },
   {
     title: "Tools & Resources",
@@ -1293,7 +1291,7 @@ function TwoWaysSection() {
                 }}
               >
                 <Link
-                  href={journeyHref}
+                  href={ir1journeyHref}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -1576,7 +1574,7 @@ function TwoWaysMobile({
 
       <div className="mt-6 flex flex-wrap gap-3">
         <Link
-          href={journeyHref}
+          href={ir1journeyHref}
           className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#0d7377] px-5 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/25"
         >
           Start the Roadmap
@@ -2565,7 +2563,7 @@ export default function RahvanaIr1Homepage() {
             </p>
             <div className="flex shrink-0 items-center gap-3.5">
               <Link
-                href={journeyHref}
+                href={ir1journeyHref}
                 className="inline-flex min-h-[57px] items-center justify-center gap-2 rounded-[18px] bg-[linear-gradient(135deg,#0d7377,#18a6a2)] px-8 text-base font-black text-white shadow-[0_18px_44px_rgba(13,115,119,0.38)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_54px_rgba(13,115,119,0.46)]"
               >
                 Start IR-1 Journey
@@ -2618,7 +2616,7 @@ export default function RahvanaIr1Homepage() {
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
-                href={journeyHref}
+                href={ir1journeyHref}
                 className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-[18px] bg-[linear-gradient(135deg,#0d7377,#18a6a2)] px-8 text-base font-black text-white shadow-[0_18px_44px_rgba(13,115,119,0.34)] transition hover:-translate-y-0.5"
               >
                 Start IR-1 Journey

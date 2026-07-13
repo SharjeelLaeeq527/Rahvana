@@ -4,6 +4,7 @@ const eiffelBg = "/assets/images/heroimage.png";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { ir1journeyHref } from "@/lib/constants/routes";
 
 export function CinematicHeroHtmlStyle() {
   // Auth/journey state (must be inside component)
@@ -278,7 +279,7 @@ export function CinematicHeroHtmlStyle() {
             <div className="btn-row">
               {/* Robust CTA logic, now using Next.js Link and translation for resume journey */}
               {(!user || journeysLoading) && (
-                <Link href="/visa-category/ir-category/ir1-journey" className="btn-dark">
+                <Link href={ir1journeyHref} className="btn-dark">
                   Start your journey
                   <svg className="btn-arrow" viewBox="0 0 14 14" fill="none">
                     <path
@@ -301,7 +302,7 @@ export function CinematicHeroHtmlStyle() {
                 </Link>
               )}
               {user && journeys && journeys.length === 0 && !journeysLoading && (
-                <Link href="/visa-category/ir-category/ir1-journey" className="btn-dark">
+                <Link href={ir1journeyHref} className="btn-dark">
                   Start my journey
                   <svg className="btn-arrow" viewBox="0 0 14 14" fill="none">
                     <path
