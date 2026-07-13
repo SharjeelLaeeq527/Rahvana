@@ -95,9 +95,10 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
     const handlePointerUp = () => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
 
       setIsSnapping(true);
-      if (maxXRef.current > 0 && currentXRef.current > maxXRef.current * 0.7) {
+      if (maxXRef.current > 0 && currentXRef.current > maxXRef.current * 0.5) {
         updateX(maxXRef.current);
         runCompletion();
       } else {
@@ -110,6 +111,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
 
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
   };
 
   // Keyboard accessibility
@@ -273,7 +275,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
                   aria-valuemax={100}
                   aria-valuenow={maxX > 0 ? Math.round((currentX / maxX) * 100) : 0}
                   aria-label="Slide to answer the consultation call, or press Enter"
-                  className={`handle absolute left-0 top-0 w-14 h-14 rounded-full bg-[var(--teal-deep)] text-white flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-shadow ${
+                  className={`handle touch-none absolute left-0 top-0 w-14 h-14 rounded-full bg-[var(--teal-deep)] text-white flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-shadow ${
                     isSnapping ? "snapping" : ""
                   } ${isNudging ? "nudging" : ""} ${isPulsing ? "pulsing" : ""} ${
                     phase === "connecting" || phase === "opening" || phase === "answered"
