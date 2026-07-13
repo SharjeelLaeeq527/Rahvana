@@ -319,12 +319,12 @@ export function ToolsDock() {
       <div className="mx-auto flex w-full max-w-5xl flex-col justify-center">
         {/* Eyebrow + headline */}
         <div className="mx-auto mb-4 md:mb-6 max-w-2xl text-center shrink-0">
-          <span className="mb-2 block font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400">
+          <span className="mb-2 block font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-600">
             Do it yourself
           </span>
-          <h2 className="text-balance text-2xl md:text-4xl font-medium leading-[1.1] tracking-tight text-zinc-900">
+          <h2 className="text-balance text-2xl md:text-4xl font-medium leading-[1.1] tracking-tight text-zinc-400">
             Already know what you're doing?{" "}
-            <span className="text-zinc-400">You just need the right tools.</span>
+            <span className="text-zinc-900">You just need the right tools.</span>
           </h2>
           <p className="mx-auto mt-2 md:mt-3 max-w-lg text-[13px] md:text-[15px] leading-relaxed text-zinc-500">
             Tools, expert services, and country-specific guides — all in one place.
