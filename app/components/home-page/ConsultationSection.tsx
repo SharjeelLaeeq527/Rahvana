@@ -168,7 +168,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
     <section className="consult-container relative overflow-hidden pt-10 pb-20 md:pt-14 md:pb-24 px-6 sm:px-10 lg:px-16 text-[var(--ink)]">
       <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.10fr_0.90fr] gap-16 lg:gap-8 items-center">
         {/* Left Column */}
-        <div className="order-2 lg:order-1 flex flex-col items-start">
+        <div className="order-1 lg:order-1 flex flex-col items-start">
           <div className="animate-fade-in-up">
             <span className="badge inline-flex items-center gap-2 px-3 py-1 border border-[var(--line)] bg-white/60 text-[var(--teal-deep)] rounded-full text-xs font-semibold tracking-wider uppercase shadow-sm">
               <span className="dot w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
@@ -199,7 +199,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
         </div>
 
         {/* Right Column */}
-        <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
+        <div className="order-2 lg:order-2 flex justify-center lg:justify-end">
           <div className="card-wrap relative w-full max-w-sm">
             {/* Ambient background glow */}
             <div className="glow" aria-hidden="true" />
