@@ -46,7 +46,7 @@ export default function SectionBird({
       ref={ref}
       aria-hidden="true"
       className={`hidden md:block absolute z-0 pointer-events-none select-none transition-opacity duration-1000 ease-out ${
-        visible ? "opacity-55" : "opacity-0"
+        visible ? "opacity-60" : "opacity-0"
       } ${className || sideClass} ${pos}`}
     >
         {/* eslint-disable-next-line @next/next/no-img-element */}
