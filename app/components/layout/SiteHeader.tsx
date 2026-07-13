@@ -358,6 +358,16 @@ export function SiteHeader({
   const menuTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const [arrowOffset, setArrowOffset] = useState(40);
 
+  const showToggle = process.env.NEXT_PUBLIC_ENVIRONMENT === "development";
+
+  const journeyButtonText = showToggle ? "Explore Journeys" : "IR-1 Journey";
+
+  const journeyButtonHref = showToggle
+    ? "/visa-category/ir-category"
+    : "/visa-category/ir-category/ir1-journey";
+
+  const journeyNavigationId = showToggle ? "journeys" : "ir1-journey";
+
   // Refs for each nav button wrapper — used to calculate arrow position
   const navRefs = useRef<Record<string, HTMLDivElement | null>>({
     journeys: null,
@@ -751,21 +761,21 @@ export function SiteHeader({
           <nav className="hidden lg:flex items-center gap-1">
             <div className="relative pt-2 pb-0">
               <Link
-                href="/visa-category/ir-category"
-                onClick={(e) => handleNav("journeys", e)}
+                href={journeyButtonHref}
+                onClick={(e) => handleNav(journeyNavigationId, e)}
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isHomeHeroState
-                    ? isActive("journeys", "/visa-category/ir-category")
+                    ? isActive(journeyNavigationId, journeyButtonHref)
                       ? "bg-white/20 text-white"
                       : "text-[#6ba3a0]/40 hover:bg-[#6ba3a0]/20 hover:text-white"
                     : isHomeHeroP2State || isHomepageHeroState
                       ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
-                      : isActive("journeys", "/visa-category/ir-category")
+                      : isActive(journeyNavigationId, journeyButtonHref)
                         ? "bg-muted text-[#0d7377]"
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
-                Explore Journeys
+                {journeyButtonText}
               </Link>
             </div>
 

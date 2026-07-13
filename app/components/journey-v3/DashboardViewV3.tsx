@@ -16,7 +16,7 @@ import { CaseStatusHero } from "./components/CaseStatusHero";
 import { CaseHealthOverview } from "./components/CaseHealthOverview";
 import { CSADrawer } from "./components/CSADrawer";
 import { AlertCenter } from "./components/AlertCenter";
-import { EvidenceGapEngine } from "@/lib/journey/evidence-gap";
+import { EvidenceGapEngine, EVIDENCE_QUESTIONNAIRE } from "@/lib/journey/evidence-gap";
 import type { EvidenceGapAnalysis } from "@/lib/journey/evidence-gap";
 import { DOCUMENTS_BY_ID } from "@/lib/document-vault/document-definitions";
 import {
@@ -25,14 +25,18 @@ import {
   computeOverallCaseScore,
   computeConsistencyScore,
   runFullConsistencyAnalysis,
+  runPhase2Checks,
+  PHASE2_QUESTIONS,
   type Phase2Responses,
 } from "@/lib/case-strength";
+import type { CaseStrengthProfile } from "@/lib/case-strength/categories";
 import {
   aggregateChapter1Issues,
   aggregateChapter2Issues,
   aggregateChapter3Issues,
   type AggregatedIssue,
 } from "@/lib/case-strength/aggregate-issues";
+import type { StepChecker } from "@/lib/case-strength/step-checkers";
 import type { ConsistencyFinding } from "@/lib/case-strength/consistency-intelligence";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { usePlan } from "@/app/context/PlanContext";
@@ -52,6 +56,19 @@ import {
 interface DashboardViewProps {
   data: RoadmapDataV3;
   state: WizardState;
+  /** Category-specific step-checker registry (resolved from journey_type). */
+  registry?: Record<string, StepChecker>;
+  /**
+   * Category-specific Consistency Intelligence config (Phase 2 questions + runner).
+   * Resolved from journey_type; falls back to IR-1 when absent.
+   */
+  consistency?: CaseStrengthProfile["consistency"];
+  /**
+   * Category-specific Evidence Gap config (requirements + questionnaire).
+   * Resolved from journey_type; falls back to IR-1 when absent so a parent
+   * (IR-5) never sees spouse marriage evidence.
+   */
+  evidence?: CaseStrengthProfile["evidence"];
   onSelectChapter: (idx: number) => void;
   onSelectStep?: (cIdx: number, sIdx: number) => void;
   actions: {
@@ -67,12 +84,27 @@ const dashboardBg = "/assets/images/dashboard.png";
 export function DashboardViewV3({
   data,
   state,
+  registry,
+  consistency,
+  evidence,
   onSelectChapter,
   onSelectStep,
   actions,
 }: DashboardViewProps) {
   const plan = usePlan();
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+
+  // Category-specific Consistency Intelligence config. Falls back to IR-1 (the
+  // full spouse+common runner/questions) so the dashboard is safe even if a
+  // caller forgets to pass it — matching how `registry` defaults to IR-1.
+  const phase2Runner = consistency?.runPhase2Checks ?? runPhase2Checks;
+  const phase2Questions = consistency?.phase2Questions ?? PHASE2_QUESTIONS;
+
+  // Category-specific Evidence Gap config. `requirements` is passed straight to
+  // the engine (undefined => engine's IR-1 default); the questionnaire falls
+  // back to the full IR-1 list so the modal is safe even without a profile.
+  const evidenceRequirements = evidence?.requirements;
+  const evidenceQuestionnaire = evidence?.questionnaire ?? EVIDENCE_QUESTIONNAIRE;
 
   // Pull uploaded docs from vault for DocCaseStrengthMeter
   const { uploadedDocuments } = useDocumentVaultStore();
@@ -129,7 +161,7 @@ export function DashboardViewV3({
 
       setEvidenceLoading(true);
       try {
-        const engine = new EvidenceGapEngine();
+        const engine = new EvidenceGapEngine(evidenceRequirements);
 
         // Build journey documents from chapters/steps document_items
         const chapters = (data as any).chapters || (data as any).stages || [];
@@ -203,7 +235,14 @@ export function DashboardViewV3({
     };
 
     runAnalysis();
-  }, [state.backendId, uploadedDocuments, data, state.metadata, questionnaireResponses]);
+  }, [
+    state.backendId,
+    uploadedDocuments,
+    data,
+    state.metadata,
+    questionnaireResponses,
+    evidenceRequirements,
+  ]);
 
   // Refresh evidence analysis
   const refreshEvidenceAnalysis = () => {
@@ -214,7 +253,7 @@ export function DashboardViewV3({
     setEvidenceLoading(true);
     setTimeout(() => {
       // Trigger re-run by updating a dependency
-      const engine = new EvidenceGapEngine();
+      const engine = new EvidenceGapEngine(evidenceRequirements);
       const chapters = (data as any).chapters || (data as any).stages || [];
       const journeyDocs: Array<{
         document_type: string;
@@ -281,14 +320,15 @@ export function DashboardViewV3({
     const consistencyFindings = runFullConsistencyAnalysis(
       { state, eligibilityAnswers },
       (phase2Responses as Phase2Responses) ?? null,
-      uploadedDocuments
+      uploadedDocuments,
+      phase2Runner
     );
 
     return generateCaseNarrative({
       evidenceAnalysis,
       consistencyFindings,
     });
-  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
+  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments, phase2Runner]);
 
   // Health status badge for the CaseSummaryCard header
   const caseHealthStatus = useMemo(() => {
@@ -299,14 +339,15 @@ export function DashboardViewV3({
     const consistencyFindings = runFullConsistencyAnalysis(
       { state, eligibilityAnswers },
       (phase2Responses as Phase2Responses) ?? null,
-      uploadedDocuments
+      uploadedDocuments,
+      phase2Runner
     );
 
     return getCaseHealthStatus({
       evidenceAnalysis,
       consistencyFindings,
     });
-  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
+  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments, phase2Runner]);
 
   // ── CSA Drawer State ─────────────────────────────────────────────────────
   const [isCSADrawerOpen, setIsCSADrawerOpen] = useState(false);
@@ -317,9 +358,9 @@ export function DashboardViewV3({
   // Compute issues for the AlertCenter (critical + warning only)
   const alertCenterIssues = useMemo(() => {
     const chapters = (data as any).chapters || (data as any).stages || [];
-    const ch1 = aggregateChapter1Issues({ chapters, state, uploadedDocuments });
-    const ch2 = aggregateChapter2Issues({ chapters, state, uploadedDocuments });
-    const ch3 = aggregateChapter3Issues({ chapters, state, uploadedDocuments });
+    const ch1 = aggregateChapter1Issues({ chapters, state, uploadedDocuments, registry });
+    const ch2 = aggregateChapter2Issues({ chapters, state, uploadedDocuments, registry });
+    const ch3 = aggregateChapter3Issues({ chapters, state, uploadedDocuments, registry });
 
     const eligibilityAnswers =
       (state.answers?.["eligibility-suite"] as any) ??
@@ -328,7 +369,8 @@ export function DashboardViewV3({
     const consistencyFindings = runFullConsistencyAnalysis(
       { state, eligibilityAnswers },
       (phase2Responses as Phase2Responses) ?? null,
-      uploadedDocuments
+      uploadedDocuments,
+      phase2Runner
     );
 
     const existingKeys = new Set([...ch1, ...ch2, ...ch3].map((i) => `${i.stepKey}:${i.title}`));
@@ -382,7 +424,7 @@ export function DashboardViewV3({
       if (order[a.level] !== order[b.level]) return order[a.level] - order[b.level];
       return a.chapterIdx - b.chapterIdx;
     });
-  }, [data, state, uploadedDocuments, phase2Responses]);
+  }, [data, state, uploadedDocuments, phase2Responses, registry, phase2Runner]);
 
   // Counts for the CaseHealthOverview
   const critIssueCount = alertCenterIssues.filter(
@@ -400,10 +442,11 @@ export function DashboardViewV3({
     const consistencyFindings = runFullConsistencyAnalysis(
       { state, eligibilityAnswers },
       (phase2Responses as Phase2Responses) ?? null,
-      uploadedDocuments
+      uploadedDocuments,
+      phase2Runner
     );
     return computeOverallCaseScore({ evidenceAnalysis, consistencyFindings });
-  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
+  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments, phase2Runner]);
 
   // Sub-scores for the CaseHealthOverview popover breakdown
   const evidenceSubScore = evidenceAnalysis?.overallScore ?? 50;
@@ -414,10 +457,11 @@ export function DashboardViewV3({
     const consistencyFindings = runFullConsistencyAnalysis(
       { state, eligibilityAnswers },
       (phase2Responses as Phase2Responses) ?? null,
-      uploadedDocuments
+      uploadedDocuments,
+      phase2Runner
     );
     return computeConsistencyScore(consistencyFindings);
-  }, [state, phase2Responses, uploadedDocuments]);
+  }, [state, phase2Responses, uploadedDocuments, phase2Runner]);
 
   // Compact summary text for CaseHealthOverview (truncated executive summary)
   const compactSummary = caseNarrative?.executiveSummary
@@ -1653,6 +1697,7 @@ export function DashboardViewV3({
         onClose={() => setShowPhase2Modal(false)}
         responses={phase2Responses}
         onSave={handlePhase2Save}
+        questions={phase2Questions}
       />
 
       {/* ── Evidence Questionnaire Modal ── */}
@@ -1661,6 +1706,7 @@ export function DashboardViewV3({
         onClose={() => setShowEvidenceQuestionnaireModal(false)}
         responses={questionnaireResponses}
         onSave={handleQuestionnaireSave}
+        questions={evidenceQuestionnaire}
       />
     </div>
   );

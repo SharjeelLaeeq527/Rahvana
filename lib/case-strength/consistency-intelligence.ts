@@ -151,12 +151,16 @@ function checkVisaCategoryConsistency(state: WizardState): ConsistencyFinding[] 
   const interviewCategory = meta(state, "interviewCategory");
 
   const categories = [dqCategory, scenarioType, interviewCategory].filter(Boolean);
-  // Normalize: extract IR-1 or CR-1 from values like "ir-1", "IR-1", "immediate-relative", etc.
+  // Normalize spelling variants so only a GENUINE category disagreement flags.
+  // Collapse "ir-1"/"IR1"/"immediate-relative" → IR-1, "cr-1"/"CR1" → CR-1, and
+  // "ir-5"/"IR5" → IR-5. Category-agnostic: without the IR-5 rule, records that
+  // spell it "ir-5" vs "IR5" would falsely trip this on a parent case.
   const normalized = categories.map((c: string) => {
     const upper = c.toUpperCase().trim();
     if (upper.includes("IR-1") || upper.includes("IR1") || upper === "IMMEDIATE-RELATIVE")
       return "IR-1";
     if (upper.includes("CR-1") || upper.includes("CR1")) return "CR-1";
+    if (upper.includes("IR-5") || upper.includes("IR5")) return "IR-5";
     return upper;
   });
   const unique = [...new Set(normalized)];
@@ -169,7 +173,7 @@ function checkVisaCategoryConsistency(state: WizardState): ConsistencyFinding[] 
       title: "Visa category inconsistency detected",
       description: `Different visa categories found across records: ${unique.join(", ")}. This could cause NVC to process your case under the wrong category.`,
       resolution:
-        "Verify the correct visa category (IR-1 vs CR-1 depends on marriage duration at time of petition filing). Ensure all forms and records agree.",
+        "Verify the correct visa category and ensure all forms and records agree. (For a spouse case, IR-1 vs CR-1 depends on marriage duration when the petition was filed.)",
       sources: ["9 FAM 504.1"],
       actionableStepKey: "step_2_3",
     });
@@ -519,10 +523,35 @@ export function getConsistencySummary(findings: ConsistencyFinding[]): {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 /**
- * Phase 2 questionnaire questions — minimal, high-value only.
- * These collect information NOT available from existing journey data.
+ * Phase 2 questionnaire — split into two groups so each visa category shows only
+ * the questions that apply to it (Strategy pattern, same idea as the step-checker
+ * COMMON/override split):
+ *
+ *   - SPOUSE_PHASE2_QUESTIONS  → marriage-history questions. Only meaningful for a
+ *     spouse case (IR-1/CR-1). A parent (IR-5) petition has no marriage to vet, so
+ *     these must NOT be shown or checked — otherwise the parent applicant sees
+ *     irrelevant "prior spouse" prompts.
+ *   - COMMON_PHASE2_QUESTIONS  → immigration / employment / address questions that
+ *     apply to EVERY category.
+ *
+ * A category profile (see categories/) picks which set to use. IR-1 uses both;
+ * IR-5 uses COMMON only. `PHASE2_QUESTIONS` = spouse + common preserves the exact
+ * order (and IDs) IR-1 has always shown, so nothing about IR-1 changes.
  */
-export const PHASE2_QUESTIONS = [
+
+/** Shape of one Phase 2 questionnaire item. */
+export interface Phase2Question {
+  id: string;
+  question: string;
+  description: string;
+  group: string;
+  type: "boolean";
+  /** When set, the question is only shown once its parent answer is `true`. */
+  dependsOn?: string;
+}
+
+/** Marriage-history questions — spouse categories (IR-1/CR-1) only. */
+export const SPOUSE_PHASE2_QUESTIONS = [
   {
     id: "prior_marriage_either",
     question: "Has either spouse been previously married?",
@@ -538,6 +567,10 @@ export const PHASE2_QUESTIONS = [
     type: "boolean" as const,
     dependsOn: "prior_marriage_either",
   },
+] as const;
+
+/** Immigration / employment / address questions — apply to EVERY category. */
+export const COMMON_PHASE2_QUESTIONS = [
   {
     id: "prior_us_visa_application",
     question: "Has the beneficiary previously applied for any U.S. visa?",
@@ -573,7 +606,7 @@ export const PHASE2_QUESTIONS = [
   },
   {
     id: "multiple_residences",
-    question: "Has either spouse lived at multiple addresses in the last 5 years?",
+    question: "Has the beneficiary lived at multiple addresses in the last 5 years?",
     description: "Multiple addresses require consistent address history across forms.",
     group: "Address History",
     type: "boolean" as const,
@@ -587,16 +620,34 @@ export const PHASE2_QUESTIONS = [
   },
 ] as const;
 
+/**
+ * Full IR-1 questionnaire = spouse + common, in the original order/IDs.
+ * Kept as the default so every existing IR-1 caller is unchanged.
+ */
+export const PHASE2_QUESTIONS = [
+  ...SPOUSE_PHASE2_QUESTIONS,
+  ...COMMON_PHASE2_QUESTIONS,
+] as const;
+
 export type Phase2QuestionId = (typeof PHASE2_QUESTIONS)[number]["id"];
 export type Phase2Responses = Record<Phase2QuestionId, boolean>;
+
+/** A category's Phase 2 checker: responses → findings. */
+export type Phase2Runner = (
+  responses: Phase2Responses | undefined | null,
+  state: WizardState,
+  uploadedDocuments?: UploadedDocument[]
+) => ConsistencyFinding[];
 
 // ─── Phase 2 Checks ─────────────────────────────────────────────────────────────
 
 /**
- * Run Phase 2 consistency checks using questionnaire responses.
- * These checks complement Phase 1 by using information not available in journey data.
+ * SPOUSE-only Phase 2 checks — prior-marriage consistency.
+ *
+ * Split out of the old monolithic `runPhase2Checks` so a parent case (IR-5) can
+ * skip it entirely. Only IR-1/CR-1 profiles wire this in.
  */
-export function runPhase2Checks(
+export function runSpousePhase2Checks(
   responses: Phase2Responses | undefined | null,
   state: WizardState,
   uploadedDocuments?: UploadedDocument[]
@@ -681,6 +732,21 @@ export function runPhase2Checks(
       resolved: eligDeclaredPrior,
     });
   }
+
+  return findings;
+}
+
+/**
+ * COMMON Phase 2 checks — apply to EVERY visa category (prior visa refusals,
+ * employment changes, address history, immigration violations). No marriage
+ * assumptions, so IR-5 (parent) uses exactly this as its full Phase 2.
+ */
+export function runCommonPhase2Checks(
+  responses: Phase2Responses | undefined | null,
+  state: WizardState
+): ConsistencyFinding[] {
+  if (!responses) return [];
+  const findings: ConsistencyFinding[] = [];
 
   // ── Prior Visa Consistency ──
   if (responses.prior_us_visa_application) {
@@ -797,15 +863,39 @@ export function runPhase2Checks(
 }
 
 /**
+ * Full IR-1 Phase 2 = spouse + common, in the original order.
+ *
+ * This is the default `Phase2Runner`. Keeping spouse findings first preserves the
+ * exact output IR-1 has always produced. IR-5 wires `runCommonPhase2Checks`
+ * instead (via its category profile), so it never emits the spouse findings.
+ */
+export function runPhase2Checks(
+  responses: Phase2Responses | undefined | null,
+  state: WizardState,
+  uploadedDocuments?: UploadedDocument[]
+): ConsistencyFinding[] {
+  return [
+    ...runSpousePhase2Checks(responses, state, uploadedDocuments),
+    ...runCommonPhase2Checks(responses, state),
+  ];
+}
+
+/**
  * Run BOTH Phase 1 and Phase 2 checks, returning unified findings.
+ *
+ * `phase2Checks` selects WHICH Phase 2 runner to use. It defaults to the full
+ * IR-1 runner, so every existing caller keeps today's behavior. Category-aware
+ * callers pass their profile's runner (e.g. IR-5 passes `runCommonPhase2Checks`)
+ * so a parent case never surfaces spouse-only findings.
  */
 export function runFullConsistencyAnalysis(
   input: ConsistencyIntelligenceInput,
   phase2Responses?: Phase2Responses | null,
-  uploadedDocuments?: UploadedDocument[]
+  uploadedDocuments?: UploadedDocument[],
+  phase2Checks: Phase2Runner = runPhase2Checks
 ): ConsistencyFinding[] {
   const phase1 = runConsistencyIntelligence(input);
-  const phase2 = runPhase2Checks(phase2Responses, input.state, uploadedDocuments);
+  const phase2 = phase2Checks(phase2Responses, input.state, uploadedDocuments);
 
   // Merge and deduplicate
   const all = [...phase1, ...phase2];

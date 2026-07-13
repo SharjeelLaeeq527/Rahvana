@@ -12,6 +12,11 @@ export interface EvidenceQuestionnaireModalProps {
   onClose: () => void;
   responses: Record<string, boolean>;
   onSave: (responses: Record<string, boolean>) => void;
+  /**
+   * Category-specific questionnaire items. Defaults to the full IR-1 set so
+   * existing (spouse) callers are unchanged; IR-5 passes the marriage-free set.
+   */
+  questions?: readonly EvidenceQuestion[];
 }
 
 export function EvidenceQuestionnaireModal({
@@ -19,22 +24,23 @@ export function EvidenceQuestionnaireModal({
   onClose,
   responses,
   onSave,
+  questions = EVIDENCE_QUESTIONNAIRE,
 }: EvidenceQuestionnaireModalProps) {
   const [local, setLocal] = useState<Record<string, boolean>>(responses);
 
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(() => {
     const initial = new Set<string>();
-    for (const q of EVIDENCE_QUESTIONNAIRE) {
+    for (const q of questions) {
       if (responses[q.id]) initial.add(q.group);
     }
-    if (initial.size === 0 && EVIDENCE_QUESTIONNAIRE.length > 0) {
-      initial.add(EVIDENCE_QUESTIONNAIRE[0].group);
+    if (initial.size === 0 && questions.length > 0) {
+      initial.add(questions[0].group);
     }
     return initial;
   });
 
   const grouped: Record<string, EvidenceQuestion[]> = {};
-  for (const q of EVIDENCE_QUESTIONNAIRE) {
+  for (const q of questions) {
     if (!grouped[q.group]) grouped[q.group] = [];
     grouped[q.group].push(q);
   }
@@ -53,7 +59,7 @@ export function EvidenceQuestionnaireModal({
   };
 
   const answeredCount = Object.values(local).filter(Boolean).length;
-  const totalQuestions = EVIDENCE_QUESTIONNAIRE.length;
+  const totalQuestions = questions.length;
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
