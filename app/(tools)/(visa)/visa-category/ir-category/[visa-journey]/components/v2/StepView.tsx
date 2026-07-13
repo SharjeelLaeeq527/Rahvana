@@ -735,7 +735,7 @@ export const StepView: React.FC<StepViewProps> = ({
   // Sync household counts and relationships back to metadata
   useEffect(() => {
     actions.updateMetadata({ jsCount, hhCount, hhRelationships });
-  }, [jsCount, hhCount, hhRelationships, actions]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [jsCount, hhCount, hhRelationships, actions]);
 
   // --- SYNC TOOL STATES FROM METADATA ---
 
@@ -2094,9 +2094,7 @@ export const StepView: React.FC<StepViewProps> = ({
                 petitionerDateOfBirth:
                   prof?.dateOfBirth || savedI130?.petitionerDateOfBirth || undefined,
                 beneficiaryDateOfBirth:
-                  prof?.beneficiary?.dateOfBirth ||
-                  savedI130?.beneficiaryDateOfBirth ||
-                  undefined,
+                  prof?.beneficiary?.dateOfBirth || savedI130?.beneficiaryDateOfBirth || undefined,
               };
               const savedDs260 = state.metadata?.ds260Baseline as Ds260Baseline | undefined;
               const ds260Derived: Ds260Baseline = {
@@ -2106,9 +2104,7 @@ export const StepView: React.FC<StepViewProps> = ({
                 petitionerDateOfBirth:
                   prof?.dateOfBirth || savedDs260?.petitionerDateOfBirth || undefined,
                 beneficiaryDateOfBirth:
-                  prof?.beneficiary?.dateOfBirth ||
-                  savedDs260?.beneficiaryDateOfBirth ||
-                  undefined,
+                  prof?.beneficiary?.dateOfBirth || savedDs260?.beneficiaryDateOfBirth || undefined,
               };
               return (
                 <Ds260BaselineCapture

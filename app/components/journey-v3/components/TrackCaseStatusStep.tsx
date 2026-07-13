@@ -90,8 +90,8 @@ const TrackCaseStatusStep: React.FC<any> = ({
   // Chapter 1 accent (this component is for Chapter 1)
   const launchAccentColor = "var(--rv-ch1)";
 
-  // Tutorial steps (copied from StepView)
-  const USCIS_STATUS_TUTORIAL_STEPS = [
+  // Tutorial steps loaded dynamically from json, fallback to static defaults
+  const USCIS_STATUS_TUTORIAL_STEPS = tool?.tutorial_steps || [
     {
       label: "Step 1 of 4 — Open official USCIS status tools",
       heading: "Start with the official case-status view",

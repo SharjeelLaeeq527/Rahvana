@@ -38,7 +38,14 @@ export function getActiveStepsForStage(
         if (key === "filingMethod") {
           if (value !== method) isVisible = false;
         } else {
-          const stateValue = metadata?.[key];
+          let stateValue = metadata?.[key];
+          if (key === "outcome221gSubtype") {
+            if (metadata?.twentyTwoOneGSelections?.admin_processing) {
+              if (stateValue === "docs_requested" || !stateValue) {
+                stateValue = "both";
+              }
+            }
+          }
           if (Array.isArray(value)) {
             if (!value.includes(stateValue)) isVisible = false;
           } else {

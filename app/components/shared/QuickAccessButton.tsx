@@ -67,8 +67,8 @@ export function QuickAccessButton({
         whileTap={{ scale: 0.95 }}
         onClick={handleToggle}
         disabled={isPending}
-        title={pinned ? "Remove from Favorite List" : "Add to Favorite List"}
-        aria-label={pinned ? "Remove from Favorite List" : "Add to Favorite List"}
+        title={pinned ? "Remove from Favorites" : "Add to Favorites"}
+        aria-label={pinned ? "Remove from Favorites" : "Add to Favorites"}
         className={`group relative flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
           pinned
             ? "text-[#0d7377] hover:text-red-500"
@@ -110,7 +110,7 @@ export function QuickAccessButton({
       whileTap={{ scale: 0.97 }}
       onClick={handleToggle}
       disabled={isPending}
-      aria-label={pinned ? "Remove from Favorite List" : "Add to Favorite List"}
+      aria-label={pinned ? "Remove from Favorites" : "Add to Favorites"}
       className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
         pinned
           ? "bg-[#0d7377]/10 text-[#0d7377] hover:bg-red-50 hover:text-red-500 border border-[#0d7377]/20 hover:border-red-200"
@@ -151,7 +151,7 @@ export function QuickAccessButton({
           transition={{ duration: 0.1 }}
           className="whitespace-nowrap"
         >
-          {pinned ? "Remove from Favorite List" : "Add to Favorite List"}
+          {pinned ? "Remove from Favorites" : "Add to Favorites"}
         </motion.span>
       </AnimatePresence>
     </motion.button>

@@ -315,7 +315,7 @@ export function ToolsDock() {
   }, []);
 
   return (
-    <section className="relative flex w-full flex-col justify-center overflow-hidden bg-slate-50/50 px-6 py-10 md:py-14">
+    <section className="relative flex w-full flex-col justify-center overflow-hidden bg-slate-50/50 px-6 pt-2 pb-6 md:pt-4 md:pb-8">
       <div className="mx-auto flex w-full max-w-5xl flex-col justify-center">
         {/* Eyebrow + headline */}
         <div className="mx-auto mb-4 md:mb-6 max-w-2xl text-center shrink-0">

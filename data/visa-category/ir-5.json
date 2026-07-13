@@ -1089,7 +1089,17 @@
           },
           "tool_data": {
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Consult a licensed immigration attorney for case-specific decisions."
-          }
+          },
+          "citations": [
+            {
+              "text": "Submit your petition through your USCIS online account",
+              "link": "https://www.uscis.gov/file-online"
+            },
+            {
+              "text": "USCIS mailing addresses",
+              "link": "https://www.uscis.gov/i-130-addresses"
+            }
+          ]
         },
         {
           "step_key": "step_1_4",
@@ -1179,6 +1189,12 @@
               "href": "/visa-forms",
               "type": "tool"
             }
+          ],
+          "citations": [
+            {
+              "text": "Official form link",
+              "link": "https://www.uscis.gov/i-130"
+            }
           ]
         },
         {
@@ -1257,7 +1273,13 @@
             "age_threshold": 16,
             "duration_threshold_months": 6,
             "lookback_years": 5
-          }
+          },
+          "citations": [
+            {
+              "text": "Official form link",
+              "link": "https://www.uscis.gov/sites/default/files/document/forms/i-130a.pdf"
+            }
+          ]
         },
         {
           "step_key": "step_1_6",
@@ -2373,7 +2395,17 @@
                 "note": "Payment preparation must be complete before you build the final paper packet. Do not skip this — the packet checklist step depends on it."
               }
             ]
-          }
+          },
+          "citations": [
+            {
+              "text": "USCIS Filing Fees Guide",
+              "link": "https://www.uscis.gov/forms/filing-fees"
+            },
+            {
+              "text": "USCIS Form G-1055 Fee Schedule",
+              "link": "https://www.uscis.gov/g-1055"
+            }
+          ]
         },
         {
           "step_key": "step_1_13",
@@ -2646,7 +2678,13 @@
                 "note": "After delivery, the paper path rejoins the same receipt-notice and case-tracking flow used in the online branch."
               }
             ]
-          }
+          },
+          "citations": [
+            {
+              "text": "USCIS Direct Filing Addresses",
+              "link": "https://www.uscis.gov/i-130-addresses"
+            }
+          ]
         },
         {
           "step_key": "step_1_15",
@@ -3048,7 +3086,7 @@
               {
                 "label": "Step 2 of 4 — Understand common pending statuses",
                 "heading": "Learn the difference between waiting and action-required states",
-                "instruction": "Most of the time, a pending case is in a waiting state like \"Case Was Received\" or \"Case Is Being Actively Reviewed.\" The important distinction is whether USCIS is simply processing or has asked for something.",
+                "instruction": "Most of the time, a pending case is in a waiting state like “Case Was Received” or “Case Is Being Actively Reviewed.” The important distinction is whether USCIS is simply processing or has asked for something.",
                 "url": "rahvana.local/status-map",
                 "kicker": "Status guide",
                 "head": "Status meanings",
@@ -3093,7 +3131,13 @@
               }
             ],
             "footer_note": "Rahvana will keep this case visible, explain major updates clearly, and help you stay prepared while USCIS reviews the petition."
-          }
+          },
+          "citations": [
+            {
+              "text": "USCIS Case Status Tracker",
+              "link": "https://egov.uscis.gov/"
+            }
+          ]
         },
         {
           "step_key": "step_1_17",
@@ -3839,7 +3883,13 @@
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nReview all answers carefully. DS-260 availability depends on NVC fee processing."
-          }
+          },
+          "citations": [
+            {
+              "text": "Consular Electronic Application Center (CEAC)",
+              "link": "https://ceac.state.gov/IV"
+            }
+          ]
         },
         {
           "step_key": "step_2_4",
@@ -4841,7 +4891,17 @@
               ]
             },
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Relationship-proof requirements may vary — confirm with your attorney or NVC guidance."
-          }
+          },
+          "citations": [
+            {
+              "text": "Affidavit of Support (Department of State)",
+              "link": "https://travel.state.gov/content/travel/en/us-visas/immigrate/the-immigrant-visa-process/step-1-submit-a-petition/affidavit-of-support.html"
+            },
+            {
+              "text": "USCIS Affidavit of Support Guidance",
+              "link": "https://www.uscis.gov/green-card/green-card-processes-and-procedures/affidavit-of-support"
+            }
+          ]
         },
         {
           "step_key": "step_2_8",
@@ -5398,7 +5458,13 @@
             "id": "step_3_1",
             "type": "medical_exam",
             "subtitle": "Every immigrant visa applicant must complete a medical exam with an embassy-approved physician before their interview."
-          }
+          },
+          "citations": [
+            {
+              "text": "Medical Exam Instructions (Department of State)",
+              "link": "https://travel.state.gov/content/travel/en/us-visas/Supplements/Supplements_by_Post/ISL-Islamabad.html"
+            }
+          ]
         },
         {
           "step_key": "step_3_2",
@@ -5523,7 +5589,17 @@
               }
             ],
             "type": "polio_certificate"
-          }
+          },
+          "citations": [
+            {
+              "text": "Pakistan Polio Vaccination Certificate Information",
+              "link": "https://www.poliofreepakistan.gov.pk/certificate/vaccination-certificate"
+            },
+            {
+              "text": "NADRA NIMS Portal (certificate access)",
+              "link": "https://nims.nadra.gov.pk/nims/"
+            }
+          ]
         },
         {
           "step_key": "step_3_3",
