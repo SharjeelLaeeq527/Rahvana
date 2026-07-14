@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -900,11 +901,15 @@ function SkipIntroButton({ onClick, compact = false, IconCmp, screenHovered = fa
           WebkitTapHighlightColor: "transparent",
         }}
       >
-        Skip intro
+        Skip
         <motion.span
           className="skip-intro-arrow"
-          animate={{ x: screenHovered ? 3 : 0 }}
-          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+          animate={{ x: screenHovered ? [0, 5, 0] : [0, 2, 0] }}
+          transition={{
+            duration: screenHovered ? 0.9 : 1.8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
           style={{ display: "inline-flex" }}
         >
           <Chevron size={15} strokeWidth={2.75} />
@@ -931,6 +936,26 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
   const [seqHl, setSeqHl] = useState(null);
   const [cVis, setCVis] = useState(new Set());
   const [charPose, setCharPose] = useState("standing");
+
+  // Tracks whether the pointer has been active anywhere on the screen
+  // recently. Used to make the skip button visibly "wake up" whenever the
+  // user is engaged with the page — not just hovering the button itself.
+  const [pointerActive, setPointerActive] = useState(false);
+  useEffect(() => {
+    let idleTimer;
+    const markActive = () => {
+      setPointerActive(true);
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => setPointerActive(false), 1400);
+    };
+    window.addEventListener("mousemove", markActive);
+    window.addEventListener("touchstart", markActive, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", markActive);
+      window.removeEventListener("touchstart", markActive);
+      clearTimeout(idleTimer);
+    };
+  }, []);
 
   // Tracks whether the running async sequence should keep going. Kept as a
   // ref (not state) so the sequence can check it synchronously on every
@@ -1725,6 +1750,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
         <SkipIntroButton
           compact={isMobile}
           IconCmp={Icons.ChevronsRight}
+          screenHovered={pointerActive}
           onClick={() => {
             aliveRef.current = false;
             setEndPhase("hero");

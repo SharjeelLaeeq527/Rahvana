@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useEffect, useRef } from "react";
@@ -25,13 +26,20 @@ type IntroProps = {
 
 /* ─── Shared skip control — identical look & behaviour everywhere it's used ───
    Text link (no pill), but always-underlined + a soft corner vignette so it
-   stays clearly legible/clickable against the paper/sketch behind it. */
+   stays clearly legible/clickable against the paper/sketch behind it.
+   `screenActive` reflects pointer/touch activity ANYWHERE on the page (not
+   just hovering the button itself) so the control visibly "wakes up" the
+   moment the person engages with the intro, instead of waiting for them to
+   find the corner. No pill, no glow — just a subtle brighten + a slightly
+   quicker arrow nudge. */
 function SkipIntroButton({
   onClick,
   compact = false,
+  screenActive = false,
 }: {
   onClick: () => void;
   compact?: boolean;
+  screenActive?: boolean;
 }) {
   return (
     <div
@@ -51,10 +59,14 @@ function SkipIntroButton({
         type="button"
         onClick={onClick}
         initial={{ opacity: 0, y: 6 }}
-        animate={{ opacity: 1, y: 0 }}
-        whileHover={{ scale: 1.03 }}
+        animate={{
+          opacity: 1,
+          y: screenActive ? -3 : 0,
+          scale: screenActive ? 1.06 : 1,
+        }}
+        whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.96 }}
-        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.32, ease: [0.34, 1.4, 0.64, 1] }}
         style={{
           position: "absolute",
           bottom: compact
@@ -65,9 +77,9 @@ function SkipIntroButton({
           alignItems: "center",
           gap: 6,
           border: "none",
-          borderBottom: `1.5px solid ${INK(0.55)}`,
+          borderBottom: `1.5px solid ${INK(screenActive ? 0.75 : 0.55)}`,
           background: "transparent",
-          color: INK(0.75),
+          color: INK(screenActive ? 0.9 : 0.75),
           fontFamily: FB,
           fontSize: compact ? 11 : 13,
           fontWeight: 700,
@@ -80,8 +92,17 @@ function SkipIntroButton({
           WebkitTapHighlightColor: "transparent",
         }}
       >
-        Skip intro
-        <motion.span className="skip-intro-arrow" style={{ display: "inline-flex" }}>
+        Skip
+        <motion.span
+          className="skip-intro-arrow"
+          animate={{ x: screenActive ? [0, 5, 0] : [0, 2, 0] }}
+          transition={{
+            duration: screenActive ? 0.9 : 1.8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          style={{ display: "inline-flex" }}
+        >
           <ChevronsRight size={15} strokeWidth={2.75} />
         </motion.span>
       </motion.button>
@@ -454,6 +475,26 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
   const [heroSkip, setHeroSkip] = useState(skipToEnd);
   const skipRef = useRef(skipToEnd);
 
+  // Tracks whether the pointer/touch has been active anywhere on screen
+  // recently — used so the skip control visibly wakes up the moment the
+  // person engages with the page, not just when hovering the button.
+  const [pointerActive, setPointerActive] = useState(false);
+  useEffect(() => {
+    let idleTimer: ReturnType<typeof setTimeout>;
+    const markActive = () => {
+      setPointerActive(true);
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => setPointerActive(false), 1400);
+    };
+    window.addEventListener("mousemove", markActive);
+    window.addEventListener("touchstart", markActive, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", markActive);
+      window.removeEventListener("touchstart", markActive);
+      clearTimeout(idleTimer);
+    };
+  }, []);
+
   const handleSkip = () => {
     skipRef.current = true;
     setHeroSkip(true);
@@ -641,7 +682,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
       {/* ── Paper + sketch + text overlay — all dissolve together ─── */}
       <AnimatePresence>
         {!isDone && (
-          <SkipIntroButton onClick={handleSkip} compact={vw < 640} />
+          <SkipIntroButton onClick={handleSkip} compact={vw < 640} screenActive={pointerActive} />
         )}
 
         {!isDone && (
