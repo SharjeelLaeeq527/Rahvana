@@ -830,7 +830,7 @@ export function SiteHeader({
                       ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                       : isActive("resources") || activeMenu === "resources"
                         ? "bg-muted text-[#0d7377]"
-                        : "text-[#3fb8bc] hover:bg-muted hover:text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 My Resources
@@ -946,7 +946,7 @@ export function SiteHeader({
                       ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                       : isActive("about", "/about")
                         ? "bg-muted text-[#0d7377]"
-                        : "text-[#3fb8bc] hover:bg-muted hover:text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 About
@@ -966,7 +966,7 @@ export function SiteHeader({
                       ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                       : isActive("pricing", "/pricing")
                         ? "bg-muted text-[#0d7377]"
-                        : "text-[#3fb8bc] hover:bg-muted hover:text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Pricing
@@ -986,7 +986,7 @@ export function SiteHeader({
                         ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                         : isActive("faq")
                           ? "bg-muted text-[#0d7377]"
-                          : "text-[#3fb8bc] hover:bg-muted hover:text-[#0d7377]"
+                          : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                   }`}
                 >
                   FAQ
@@ -1006,7 +1006,7 @@ export function SiteHeader({
                       ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                       : isActive("contact")
                         ? "bg-muted text-[#0d7377]"
-                        : "text-[#3fb8bc] hover:bg-muted hover:text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
                 Contact
@@ -1772,7 +1772,7 @@ export function SiteHeader({
                 onClick={() => handleNav("ir1-journey")}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
                   isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
-                    ? "bg-[#0d7377]/60 text-[#0d7377]"
+                    ? "bg-[#6ba3a0]/60 text-[#0d7377]"
                     : "text-muted-foreground hover:bg-muted"
                 }`}
               >

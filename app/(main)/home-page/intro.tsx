@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { ChevronsRight } from "lucide-react";
 import HeroAnimation from "./herosection";
 
 const TEAL = "#2e7175";
@@ -21,6 +22,72 @@ type IntroProps = {
   skipToEnd?: boolean;
   onSkip?: () => void;
 };
+
+/* ─── Shared skip control — identical look & behaviour everywhere it's used ───
+   Text link (no pill), but always-underlined + a soft corner vignette so it
+   stays clearly legible/clickable against the paper/sketch behind it. */
+function SkipIntroButton({
+  onClick,
+  compact = false,
+}: {
+  onClick: () => void;
+  compact?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        bottom: 0,
+        right: 0,
+        zIndex: 45,
+        width: compact ? 140 : 180,
+        height: compact ? 90 : 110,
+        pointerEvents: "none",
+        background:
+          "radial-gradient(ellipse at 100% 100%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 70%)",
+      }}
+    >
+      <motion.button
+        type="button"
+        onClick={onClick}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{ opacity: 1, y: 0 }}
+        whileHover={{ scale: 1.03 }}
+        whileTap={{ scale: 0.96 }}
+        transition={{ duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+        style={{
+          position: "absolute",
+          bottom: compact
+            ? "max(16px, env(safe-area-inset-bottom))"
+            : "max(22px, env(safe-area-inset-bottom))",
+          right: compact ? 16 : 24,
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          border: "none",
+          borderBottom: `1.5px solid ${INK(0.55)}`,
+          background: "transparent",
+          color: INK(0.75),
+          fontFamily: FB,
+          fontSize: compact ? 11 : 13,
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          padding: "10px 1px 6px",
+          minHeight: 40,
+          cursor: "pointer",
+          pointerEvents: "all",
+          WebkitTapHighlightColor: "transparent",
+        }}
+      >
+        Skip intro
+        <motion.span className="skip-intro-arrow" style={{ display: "inline-flex" }}>
+          <ChevronsRight size={15} strokeWidth={2.75} />
+        </motion.span>
+      </motion.button>
+    </div>
+  );
+}
 
 /* ─── Pre-computed hatching paths (SVG 1440×900 coordinate space) ──────────── */
 
@@ -376,11 +443,6 @@ function Cur() {
   );
 }
 
-/* ─── Chunk grid — pre-computed stable randoms ─────────────────────────────── */
-/*
-  Vertical wipe reveal — top to bottom curtain that uncovers the animation
-*/
-
 /* ─── Root ─────────────────────────────────────────────────────────────────── */
 export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
   const [stage, setStage] = useState<Stage>("typing");
@@ -480,6 +542,12 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
 
   const isDissolving = stage === "dissolving";
   const isDone = stage === "done";
+  
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("hero-animation-playing", { detail: { playing: !isDone } })
+    );
+  }, [isDone]);
 
   /*
    * Mirror the FullPageSketch scale formula so text layout and SVG sketch
@@ -504,8 +572,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
       style={{
         position: "relative",
         width: "100%",
-        height: "100dvh",
-        overflow: "hidden",
+        minHeight: "100dvh",
         overflowX: "clip",
         background: "#f5f7f8",
       }}
@@ -554,7 +621,9 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
         </motion.div>
       )}
 
-      {/* Background color transition from paper to hero UI */}
+      {/* Background color transition from paper to hero UI.
+          Absolute (not fixed) so it scrolls away with the rest of the
+          intro instead of staying pinned over the whole viewport. */}
       <motion.div
         animate={{
           background: isDone
@@ -563,7 +632,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
         }}
         transition={{ duration: 1.2, ease: "easeInOut" }}
         style={{
-          position: "fixed",
+          position: "absolute",
           inset: 0,
           zIndex: -1,
         }}
@@ -572,49 +641,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
       {/* ── Paper + sketch + text overlay — all dissolve together ─── */}
       <AnimatePresence>
         {!isDone && (
-          <button
-            type="button"
-            onClick={handleSkip}
-            className="intro-skip-button"
-            style={{
-              position: "fixed",
-              bottom: "max(16px, env(safe-area-inset-bottom))",
-              right: 16,
-              zIndex: 120,
-              transform: "none",
-              border: "1px solid rgba(12,18,42,0.08)",
-              borderRadius: 999,
-              background: "rgba(255,255,255,0.42)",
-              color: INK(0.42),
-              fontFamily: FB,
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              padding: "10px 16px",
-              minHeight: 44,
-              minWidth: 44,
-              cursor: "pointer",
-              boxShadow: "0 4px 14px rgba(12,18,42,0.05)",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-              opacity: 0.7,
-              transition: "opacity 160ms ease, background-color 160ms ease, transform 160ms ease",
-              WebkitTapHighlightColor: "transparent",
-            }}
-            onMouseEnter={(event) => {
-              event.currentTarget.style.opacity = "1";
-              event.currentTarget.style.backgroundColor = "rgba(255,255,255,0.62)";
-              event.currentTarget.style.transform = "translateY(-1px)";
-            }}
-            onMouseLeave={(event) => {
-              event.currentTarget.style.opacity = "0.7";
-              event.currentTarget.style.backgroundColor = "rgba(255,255,255,0.42)";
-              event.currentTarget.style.transform = "none";
-            }}
-          >
-            Skip
-          </button>
+          <SkipIntroButton onClick={handleSkip} compact={vw < 640} />
         )}
 
         {!isDone && (
@@ -629,9 +656,12 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
             }}
             exit={{ opacity: 0, transition: { duration: 0.12 } }}
             style={{
-              position: "fixed",
+              /* Absolute (not fixed): anchors to the outer `position: relative`
+                 wrapper above, so this overlay scrolls away with the page
+                 instead of staying pinned over the viewport while scrolling. */
+              position: "absolute",
               inset: 0,
-              zIndex: 100,
+              zIndex: 40,
               pointerEvents: isDissolving ? "none" : "all",
             }}
           >
@@ -778,12 +808,11 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
       <style>{`
         @keyframes _twc { 50% { opacity: 0 } }
 
-        @media (max-width: 640px) {
-          .intro-skip-button {
-            bottom: max(16px, env(safe-area-inset-bottom)) !important;
-            right: 16px !important;
-            font-size: 10px !important;
-          }
+        .skip-intro-arrow {
+          transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);
+        }
+        button:hover .skip-intro-arrow {
+          transform: translateX(3px);
         }
       `}</style>
     </div>
