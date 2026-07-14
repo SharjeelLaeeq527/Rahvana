@@ -4688,7 +4688,349 @@
                 "label": "Recommended to Strengthen Readiness",
                 "badge": "badge-rec"
               }
-            ]
+            ],
+            "scenarios": {
+              "pet-only": {
+                "label": "Petitioner only (qualifies alone)",
+                "sponsors": [
+                  "Petitioner"
+                ],
+                "householdMembers": [],
+                "jointSponsors": [],
+                "forms": "I-864EZ",
+                "taxYears": 3
+              },
+              "pet-hm": {
+                "label": "Petitioner + Household Member",
+                "sponsors": [
+                  "Petitioner"
+                ],
+                "householdMembers": [
+                  "Household Member 1"
+                ],
+                "jointSponsors": [],
+                "forms": "I-864, I-864A",
+                "taxYears": 3
+              },
+              "pet-js1": {
+                "label": "Petitioner + 1 Joint Sponsor",
+                "sponsors": [
+                  "Petitioner"
+                ],
+                "householdMembers": [],
+                "jointSponsors": [
+                  "Joint Sponsor 1"
+                ],
+                "forms": "I-864 (×2)",
+                "taxYears": 3
+              },
+              "pet-js2": {
+                "label": "Petitioner + 2 Joint Sponsors",
+                "sponsors": [
+                  "Petitioner"
+                ],
+                "householdMembers": [],
+                "jointSponsors": [
+                  "Joint Sponsor 1",
+                  "Joint Sponsor 2"
+                ],
+                "forms": "I-864 (×3)",
+                "taxYears": 3
+              },
+              "pet-hm-js": {
+                "label": "Petitioner + HM + Joint Sponsor",
+                "sponsors": [
+                  "Petitioner"
+                ],
+                "householdMembers": [
+                  "Household Member 1"
+                ],
+                "jointSponsors": [
+                  "Joint Sponsor 1"
+                ],
+                "forms": "I-864, I-864A, I-864",
+                "taxYears": 3
+              }
+            },
+            "templates": {
+              "sponsor_required": [
+                {
+                  "id": "tax-${sp}",
+                  "icon": "receipt",
+                  "title": "Federal Tax Return — ${sp}",
+                  "sub": "${taxNote} · Aligns with affidavit income statement",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "3 Years"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "The federal tax return (Form 1040) is the primary income evidence for ${sp}. It must align with the income figure reported in the affidavit of support.",
+                    "sections": [
+                      {
+                        "title": "What is needed",
+                        "body": "Most recent ${taxNote} of federal tax returns. Ensure the income figures are consistent with what was stated in the affidavit form."
+                      },
+                      {
+                        "title": "Organization",
+                        "body": "Group ${sp}'s tax documents together in one clearly labeled packet."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "w2-${sp}",
+                  "icon": "file-text",
+                  "title": "W-2 Forms — ${sp}",
+                  "sub": "${taxNote} · Wage and salary income documentation",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "3 Years"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "W-2 forms report annual wages and are issued by employers. They support the income figures shown on the tax return.",
+                    "sections": [
+                      {
+                        "title": "What is needed",
+                        "body": "W-2 forms for each year of tax evidence gathered. Group with the matching tax year materials."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "transcript-${sp}",
+                  "icon": "landmark",
+                  "title": "IRS Tax Transcripts — ${sp}",
+                  "sub": "Official IRS verification of filed tax information",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "3 Years"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "IRS Tax Transcripts are official IRS-issued records confirming what was filed for a given tax year. They are a strong verification tool.",
+                    "sections": [
+                      {
+                        "title": "How to obtain",
+                        "body": "Request transcripts at IRS.gov (Get Transcript tool) or via mail using Form 4506-T. Processing time varies."
+                      },
+                      {
+                        "title": "Why it matters",
+                        "body": "Transcripts confirm the authenticity of the tax filing and are particularly useful if the original return is unavailable."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "sponsor_conditional": [
+                {
+                  "id": "paystubs-${sp}",
+                  "icon": "banknote",
+                  "title": "Pay Stubs — ${sp}",
+                  "sub": "Current income evidence — most recent 2–3 months",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Current Income"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Recent pay stubs support current employment status and ongoing income. They are especially valuable when showing present income is important.",
+                    "sections": [
+                      {
+                        "title": "What to include",
+                        "body": "Most recent 2–3 months of pay stubs. Must show gross pay, employer name, and pay period."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "employment-${sp}",
+                  "icon": "building",
+                  "title": "Employment Letter — ${sp}",
+                  "sub": "Confirms current employment and compensation",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Current Income"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "An employment verification letter supports consistent employment and current salary information.",
+                    "sections": [
+                      {
+                        "title": "What it should include",
+                        "body": "Employer letterhead, current position, start date, employment type (full-time/part-time), and current annual salary."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "assets-${sp}",
+                  "icon": "wallet",
+                  "title": "Asset Evidence — ${sp}",
+                  "sub": "Bank statements, property, or investment documentation",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Assets"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Asset documentation is relevant when assets are being used to supplement income. Assets must be available to the sponsor and convertible to cash within 12 months.",
+                    "sections": [
+                      {
+                        "title": "What to include",
+                        "body": "Recent bank statements, investment account statements, real estate ownership documents, or other liquid asset evidence."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "sponsor_recommended": [
+                {
+                  "id": "packet-${sp}",
+                  "icon": "folder",
+                  "title": "Organized Income Packet — ${sp}",
+                  "sub": "All documents grouped cleanly by sponsor for upload readiness",
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Each sponsor's financial documents should be grouped clearly and separately. This improves upload readiness and makes review cleaner.",
+                    "sections": [
+                      {
+                        "title": "How to organize",
+                        "body": "Group tax returns, W-2s, transcripts, pay stubs, and any asset evidence for ${sp} into a single clearly labeled folder or file set."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "household_conditional": [
+                {
+                  "id": "hm-income-${i}",
+                  "icon": "user",
+                  "title": "Proof of Household Member Income — ${hm}",
+                  "sub": "Income evidence for household member contributing to sponsorship",
+                  "tags": [
+                    {
+                      "cls": "tag-hm",
+                      "label": "${hm}"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "If a household member's income is being included in the sponsorship, that person's income evidence must match their I-864A filing.",
+                    "sections": [
+                      {
+                        "title": "What is needed",
+                        "body": "Tax returns, W-2s, and current pay stubs for the household member. Must be consistent with the I-864A form answers."
+                      },
+                      {
+                        "title": "Consistency",
+                        "body": "Household member income evidence must align with what was stated in Form I-864A."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "hm-residence-${i}",
+                  "icon": "home",
+                  "title": "Proof of Shared Residence — ${hm}",
+                  "sub": "Evidence of household connection between sponsor and household member",
+                  "tags": [
+                    {
+                      "cls": "tag-hm",
+                      "label": "${hm}"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Household member sponsorship support may require evidence that the household member and the petitioner share the same household or have a qualifying relationship.",
+                    "sections": [
+                      {
+                        "title": "What to include",
+                        "body": "Lease agreement or property ownership document showing shared address, utility bills in both names, or other evidence of shared household."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "general_recommended": [
+                {
+                  "id": "prior-year-backup",
+                  "icon": "clipboard",
+                  "title": "Backup Prior-Year Tax Evidence",
+                  "sub": "Additional years of tax evidence for extra reassurance",
+                  "tags": [
+                    {
+                      "cls": "tag-tax",
+                      "label": "Tax Evidence"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Having an extra year of tax evidence beyond the required amount can provide additional reassurance during processing.",
+                    "sections": [
+                      {
+                        "title": "Why it helps",
+                        "body": "An extra year of consistent income history strengthens the overall financial picture and can smooth over any single year anomalies."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "upload-packet",
+                  "icon": "hard-drive",
+                  "title": "Upload-Ready Financial Packet",
+                  "sub": "Clean, compressed, properly named files ready for CEAC upload",
+                  "tags": [
+                    {
+                      "cls": "tag-cur",
+                      "label": "Upload Ready"
+                    }
+                  ],
+                  "guide": {
+                    "intro": "Preparing an upload-ready financial packet reduces errors and delays during the CEAC document upload phase.",
+                    "sections": [
+                      {
+                        "title": "File preparation",
+                        "body": "Ensure all files are clearly scanned, under 4 MB each, in PDF or JPG format, properly named, and organized by sponsor."
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         },
         {
