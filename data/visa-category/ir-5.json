@@ -4074,10 +4074,7 @@
                       "icon": "passport",
                       "title": "Parent Beneficiary Passport Biographic Page",
                       "sub": "Current passport page showing the parent's photo, name, date of birth, and passport details",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/passport-guide",
                       "status": "not-started",
                       "required": true,
@@ -4101,10 +4098,7 @@
                       "icon": "birth",
                       "title": "Parent Beneficiary Birth Certificate",
                       "sub": "The parent's official civil birth record",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/birth-certificate-guide",
                       "status": "not-started",
                       "required": true,
@@ -4128,10 +4122,7 @@
                       "icon": "relationship",
                       "title": "Petitioner's Birth Certificate",
                       "sub": "Core IR-5 relationship record identifying the parent beneficiary",
-                      "tags": [
-                        "pet",
-                        "govt"
-                      ],
+                      "tags": ["pet", "govt"],
                       "external_href": "/guides/birth-certificate-guide",
                       "status": "not-started",
                       "required": true,
@@ -4155,10 +4146,7 @@
                       "icon": "police",
                       "title": "Police Certificate",
                       "sub": "Pakistan Character Certificate and any other required police certificates for the parent",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/police-verification-guide",
                       "status": "not-started",
                       "required": true,
@@ -4189,10 +4177,7 @@
                       "icon": "marriage",
                       "title": "Parent Beneficiary Marriage Certificate",
                       "sub": "Official civil proof of the parent's current or relevant marriage",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/nikah-nama-guide",
                       "status": "not-started",
                       "required": false,
@@ -4216,10 +4201,7 @@
                       "icon": "prior-marriage",
                       "title": "Prior Marriage Termination Documents",
                       "sub": "Required if the parent beneficiary had a prior marriage that legally ended",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4242,10 +4224,7 @@
                       "icon": "death-cert",
                       "title": "Death Certificate of Former Spouse",
                       "sub": "Only if the parent's prior marriage ended by death",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4264,10 +4243,7 @@
                       "icon": "relationship",
                       "title": "Father-Child Relationship Evidence",
                       "sub": "Additional proof for certain biological-father cases",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4290,10 +4266,7 @@
                       "icon": "marriage",
                       "title": "Stepparent Relationship Records",
                       "sub": "Marriage and prior-marriage records establishing a qualifying step-relationship",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4312,10 +4285,7 @@
                       "icon": "adoption",
                       "title": "Adoption, Legal Custody, and Joint Residence Records",
                       "sub": "Required in a qualifying adoptive-parent case",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4334,10 +4304,7 @@
                       "icon": "name-change",
                       "title": "Name Change or Identity Discrepancy Documents",
                       "sub": "Legal or supporting proof for different names, spellings, dates, or identities",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4356,10 +4323,7 @@
                       "icon": "court",
                       "title": "Court and Prison Records",
                       "sub": "Required if the parent was arrested, charged, convicted, or imprisoned",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4378,10 +4342,7 @@
                       "icon": "military",
                       "title": "Military or Service Records",
                       "sub": "Required if the parent served in the military or armed forces",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4400,10 +4361,7 @@
                       "icon": "translations",
                       "title": "Certified English Translations",
                       "sub": "Required for documents that must be translated under NVC or post instructions",
-                      "tags": [
-                        "both",
-                        "3p"
-                      ],
+                      "tags": ["both", "3p"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4430,10 +4388,7 @@
                       "icon": "help",
                       "title": "Missing Document / Record Unavailability Evidence",
                       "sub": "When a required civil record genuinely cannot be obtained",
-                      "tags": [
-                        "both",
-                        "3p"
-                      ],
+                      "tags": ["both", "3p"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4463,9 +4418,7 @@
                       "icon": "folder",
                       "title": "IR-5 Relationship Evidence Backup Set",
                       "sub": "Originals and supporting evidence proving the qualifying parent-child relationship",
-                      "tags": [
-                        "both"
-                      ],
+                      "tags": ["both"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4484,9 +4437,7 @@
                       "icon": "folder",
                       "title": "Organized Translation Set",
                       "sub": "Each required translation clearly paired with its source document",
-                      "tags": [
-                        "both"
-                      ],
+                      "tags": ["both"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4501,9 +4452,7 @@
                       "icon": "save",
                       "title": "Upload-Ready File Copies",
                       "sub": "Clear, color, properly formatted scans prepared for CEAC",
-                      "tags": [
-                        "both"
-                      ],
+                      "tags": ["both"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4526,9 +4475,7 @@
                       "icon": "briefcase",
                       "title": "Interview Originals and Certified Copies Set",
                       "sub": "Original or certified civil records corresponding to the CEAC uploads",
-                      "tags": [
-                        "both"
-                      ],
+                      "tags": ["both"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -5019,7 +4966,396 @@
                 "label": "Recommended to Strengthen Readiness",
                 "badge": "badge-rec"
               }
-            ]
+            ],
+            "scenarios": {
+              "pet-only": {
+                "label": "Petitioner only (qualifies alone)",
+                "sponsors": ["Petitioner"],
+                "householdMembers": [],
+                "jointSponsors": [],
+                "forms": "I-864",
+                "taxYears": 1,
+                "taxEvidenceLabel": "Most recent tax year"
+              },
+              "pet-hm": {
+                "label": "Petitioner + Household Member",
+                "sponsors": ["Petitioner"],
+                "householdMembers": ["Household Member 1"],
+                "jointSponsors": [],
+                "forms": "I-864, I-864A",
+                "taxYears": 1,
+                "taxEvidenceLabel": "Most recent tax year"
+              },
+              "pet-js1": {
+                "label": "Petitioner + 1 Joint Sponsor",
+                "sponsors": ["Petitioner"],
+                "householdMembers": [],
+                "jointSponsors": ["Joint Sponsor 1"],
+                "forms": "I-864 (×2)",
+                "taxYears": 1,
+                "taxEvidenceLabel": "Most recent tax year for each sponsor"
+              },
+              "pet-hm-js": {
+                "label": "Petitioner + Household Member + Joint Sponsor",
+                "sponsors": ["Petitioner"],
+                "householdMembers": ["Household Member 1"],
+                "jointSponsors": ["Joint Sponsor 1"],
+                "forms": "I-864, I-864A, separate Joint Sponsor I-864",
+                "taxYears": 1,
+                "taxEvidenceLabel": "Most recent tax year for each contributor"
+              }
+            },
+            "templates": {
+              "sponsor_required": [
+                {
+                  "id": "i864-${sp}",
+                  "icon": "file-text",
+                  "title": "Form I-864 — ${sp}",
+                  "sub": "Completed Affidavit of Support for the IR-5 parent beneficiary",
+                  "tags": [
+                    { "cls": "${tagClass}", "label": "${sp}" },
+                    { "cls": "tag-tax", "label": "Required Form" }
+                  ],
+                  "guide": {
+                    "intro": "Each sponsor must submit a separate, properly completed Form I-864. The petitioner must submit Form I-864 even when a joint sponsor is used.",
+                    "sections": [
+                      {
+                        "title": "What to verify",
+                        "body": "Confirm the current form edition, signature, sponsor household size, income figures, intending immigrant information, and all required pages before upload."
+                      },
+                      {
+                        "title": "IR-5 rule",
+                        "body": "Form I-864EZ should not be used as the default form for an IR-5 parent case."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "transcript-${sp}",
+                  "icon": "landmark",
+                  "title": "Most Recent IRS Tax Transcript — ${sp}",
+                  "sub": "Preferred official tax evidence for the most recent tax year",
+                  "tags": [
+                    { "cls": "${tagClass}", "label": "${sp}" },
+                    { "cls": "tag-tax", "label": "Most Recent Year" }
+                  ],
+                  "guide": {
+                    "intro": "An IRS tax transcript from the most recent tax year is the preferred tax evidence because it can be reviewed more efficiently than a copy of a tax return.",
+                    "sections": [
+                      {
+                        "title": "How to obtain",
+                        "body": "Request the most recent available transcript through the IRS Get Transcript service or another current IRS-approved method."
+                      },
+                      {
+                        "title": "Alternative",
+                        "body": "If a transcript is unavailable, use the complete filed federal income tax return option listed under Required if Applicable."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "status-${sp}",
+                  "icon": "shield",
+                  "title": "Proof of U.S. Status — ${sp}",
+                  "sub": "Evidence that the sponsor has qualifying U.S. immigration status",
+                  "tags": [
+                    { "cls": "${tagClass}", "label": "${sp}" },
+                    { "cls": "tag-cur", "label": "Sponsor Eligibility" }
+                  ],
+                  "guide": {
+                    "intro": "The IR-5 petitioner must be a U.S. citizen. A joint sponsor may be a U.S. citizen, U.S. national, or lawful permanent resident, as permitted by the current Form I-864 rules.",
+                    "sections": [
+                      {
+                        "title": "Examples",
+                        "body": "Examples include a U.S. passport, U.S. birth certificate, Certificate of Naturalization, Certificate of Citizenship, or lawful permanent resident card where applicable."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "domicile-${sp}",
+                  "icon": "home",
+                  "title": "Proof of U.S. Domicile — ${sp}",
+                  "sub": "Evidence of domicile in the United States or qualifying steps to re-establish it",
+                  "tags": [
+                    { "cls": "${tagClass}", "label": "${sp}" },
+                    { "cls": "tag-cur", "label": "Domicile" }
+                  ],
+                  "guide": {
+                    "intro": "Every Form I-864 sponsor must be domiciled in the United States or demonstrate qualifying steps to re-establish U.S. domicile no later than the intending immigrant's admission.",
+                    "sections": [
+                      {
+                        "title": "Possible evidence",
+                        "body": "Evidence may include U.S. residence, employment, lease or property records, tax filings, voting records, bank accounts, driver's license, or documented plans and actions to re-establish domicile."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "sponsor_conditional": [
+                {
+                  "id": "tax-${sp}",
+                  "icon": "receipt",
+                  "title": "Complete Federal Tax Return — ${sp}",
+                  "sub": "Alternative when the most recent IRS tax transcript is unavailable or specifically requested",
+                  "tags": [
+                    { "cls": "${tagClass}", "label": "${sp}" },
+                    { "cls": "tag-tax", "label": "Alternative Tax Evidence" }
+                  ],
+                  "guide": {
+                    "intro": "A complete copy of the most recent filed federal income tax return may be used instead of an IRS transcript or when NVC specifically requests the complete return.",
+                    "sections": [
+                      {
+                        "title": "What to include",
+                        "body": "Include the complete filed return with every relevant W-2, 1099, schedule, statement, and attachment needed to establish the income relied upon."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "w2-${sp}",
+                  "icon": "file-text",
+                  "title": "W-2, 1099, and Relevant Tax Schedules — ${sp}",
+                  "sub": "Supporting records when needed to establish the sponsor's individual income",
+                  "tags": [
+                    { "cls": "${tagClass}", "label": "${sp}" },
+                    { "cls": "tag-tax", "label": "If Applicable" }
+                  ],
+                  "guide": {
+                    "intro": "These records may be needed when a complete tax return is submitted, the sponsor filed jointly, or the transcript does not clearly establish the sponsor's individual qualifying income.",
+                    "sections": [
+                      {
+                        "title": "What to include",
+                        "body": "Include only the W-2s, 1099s, schedules, and supporting attachments relevant to the income being used for the Affidavit of Support."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "paystubs-${sp}",
+                  "icon": "banknote",
+                  "title": "Current Pay Records — ${sp}",
+                  "sub": "Current income evidence when ongoing earnings must be established",
+                  "tags": [
+                    { "cls": "${tagClass}", "label": "${sp}" },
+                    { "cls": "tag-cur", "label": "Current Income" }
+                  ],
+                  "guide": {
+                    "intro": "Recent pay records can establish that the sponsor's qualifying income is current and continuing, especially when income changed after the most recent tax filing.",
+                    "sections": [
+                      {
+                        "title": "What to include",
+                        "body": "Provide recent pay records sufficient to show the employer, pay period, gross income, and continuing employment. Follow any case-specific NVC request rather than relying on a fixed number of months."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "employment-${sp}",
+                  "icon": "building",
+                  "title": "Employment Verification Letter — ${sp}",
+                  "sub": "Supporting proof of current employment and compensation",
+                  "tags": [
+                    { "cls": "${tagClass}", "label": "${sp}" },
+                    { "cls": "tag-cur", "label": "Current Income" }
+                  ],
+                  "guide": {
+                    "intro": "An employment verification letter may support current qualifying income where employment evidence is needed.",
+                    "sections": [
+                      {
+                        "title": "What it should include",
+                        "body": "The letter should identify the employer, position, start date, employment status, and current salary or rate of pay, and should be reasonably current."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "assets-${sp}",
+                  "icon": "wallet",
+                  "title": "Asset Evidence — ${sp}",
+                  "sub": "Required only when qualifying assets are used to cover an income shortfall",
+                  "tags": [
+                    { "cls": "${tagClass}", "label": "${sp}" },
+                    { "cls": "tag-cur", "label": "Assets" }
+                  ],
+                  "guide": {
+                    "intro": "Qualifying assets may be used when income alone is insufficient. For an IR-5 parent case, the net value of qualifying assets generally must equal at least five times the income shortfall.",
+                    "sections": [
+                      {
+                        "title": "What to establish",
+                        "body": "Provide evidence of ownership, current value, outstanding loans or liens, and that the asset can be converted to cash within one year without undue hardship or financial loss."
+                      },
+                      {
+                        "title": "Examples",
+                        "body": "Possible evidence includes bank statements, investment statements, property ownership and valuation records, and loan or lien statements."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "nonfiling-${sp}",
+                  "icon": "help",
+                  "title": "Tax Non-Filing Explanation — ${sp}",
+                  "sub": "Required if the sponsor was not legally required to file the most recent federal tax return",
+                  "tags": [
+                    { "cls": "${tagClass}", "label": "${sp}" },
+                    { "cls": "tag-tax", "label": "If No Return Filed" }
+                  ],
+                  "guide": {
+                    "intro": "A sponsor who did not file a federal tax return must explain why filing was not legally required.",
+                    "sections": [
+                      {
+                        "title": "What to include",
+                        "body": "Provide a signed explanation identifying the applicable tax year and the reason the sponsor was not required to file, together with any supporting evidence requested by NVC."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "sponsor_recommended": [
+                {
+                  "id": "packet-${sp}",
+                  "icon": "folder",
+                  "title": "Organized Sponsorship Packet — ${sp}",
+                  "sub": "Affidavit form and supporting evidence grouped clearly by sponsor",
+                  "tags": [{ "cls": "${tagClass}", "label": "${sp}" }],
+                  "guide": {
+                    "intro": "Each sponsor's records should be kept separate and clearly labeled so the correct form and evidence are uploaded under the correct sponsor in CEAC.",
+                    "sections": [
+                      {
+                        "title": "How to organize",
+                        "body": "Group Form I-864, tax evidence, status evidence, domicile evidence, current-income evidence, and asset evidence for ${sp} into one clearly labeled folder structure."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "household_conditional": [
+                {
+                  "id": "i864a-${i}",
+                  "icon": "file-text",
+                  "title": "Form I-864A — ${hm}",
+                  "sub": "Contract for a qualifying household member contributing income or assets",
+                  "tags": [{ "cls": "tag-hm", "label": "${hm}" }],
+                  "guide": {
+                    "intro": "A qualifying household member whose income or assets are used generally completes and signs Form I-864A with the petitioning sponsor.",
+                    "sections": [
+                      {
+                        "title": "Consistency",
+                        "body": "The household size, income, and asset information must match the petitioner's Form I-864 and the household member's supporting evidence."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "hm-tax-${i}",
+                  "icon": "landmark",
+                  "title": "Most Recent Tax Evidence — ${hm}",
+                  "sub": "IRS transcript or applicable federal return evidence for the household member",
+                  "tags": [
+                    { "cls": "tag-hm", "label": "${hm}" },
+                    { "cls": "tag-tax", "label": "Most Recent Year" }
+                  ],
+                  "guide": {
+                    "intro": "The household member must document the income or assets contributed through Form I-864A.",
+                    "sections": [
+                      {
+                        "title": "What is needed",
+                        "body": "Provide the most recent applicable IRS transcript or complete federal return evidence, with relevant W-2s, 1099s, schedules, and current-income records where needed."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "hm-income-${i}",
+                  "icon": "user",
+                  "title": "Current Income Evidence — ${hm}",
+                  "sub": "Proof that the household member's contributed income is current and continuing",
+                  "tags": [
+                    { "cls": "tag-hm", "label": "${hm}" },
+                    { "cls": "tag-cur", "label": "Current Income" }
+                  ],
+                  "guide": {
+                    "intro": "Current income evidence should support the amount contributed by the household member on Form I-864A.",
+                    "sections": [
+                      {
+                        "title": "What to include",
+                        "body": "Use appropriate current pay records, employment verification, self-employment evidence, retirement or benefit records, or other evidence matching the income source."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "hm-relationship-${i}",
+                  "icon": "users",
+                  "title": "Proof of Household Relationship or Shared Residence — ${hm}",
+                  "sub": "Evidence establishing eligibility to contribute through Form I-864A",
+                  "tags": [{ "cls": "tag-hm", "label": "${hm}" }],
+                  "guide": {
+                    "intro": "Depending on the household member category, evidence of a qualifying family relationship, shared residence, or both may be required.",
+                    "sections": [
+                      {
+                        "title": "Examples",
+                        "body": "Examples may include birth or marriage certificates, lease or property records, government identification, utility records, or other evidence showing the qualifying relationship or common residence."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "hm-assets-${i}",
+                  "icon": "wallet",
+                  "title": "Household Member Asset Evidence — ${hm}",
+                  "sub": "Required only when the household member's assets are included",
+                  "tags": [
+                    { "cls": "tag-hm", "label": "${hm}" },
+                    { "cls": "tag-cur", "label": "Assets" }
+                  ],
+                  "guide": {
+                    "intro": "Include asset evidence only when the household member's qualifying assets are being used in the sponsorship calculation.",
+                    "sections": [
+                      {
+                        "title": "What to establish",
+                        "body": "Show ownership, net value after liabilities, and convertibility to cash within one year without undue hardship."
+                      }
+                    ]
+                  }
+                }
+              ],
+              "general_recommended": [
+                {
+                  "id": "prior-year-backup",
+                  "icon": "clipboard",
+                  "title": "Prior-Year Tax Evidence Backup",
+                  "sub": "Additional prior-year records available if NVC requests them",
+                  "tags": [{ "cls": "tag-tax", "label": "Backup Evidence" }],
+                  "guide": {
+                    "intro": "The most recent tax year is the normal core evidence, but earlier records may be useful when income history is irregular or NVC requests additional documentation.",
+                    "sections": [
+                      {
+                        "title": "When it may help",
+                        "body": "Keep prior-year transcripts or returns available when recent income changed substantially, a filing extension or non-filing issue exists, or additional income history is requested."
+                      }
+                    ]
+                  }
+                },
+                {
+                  "id": "upload-packet",
+                  "icon": "hard-drive",
+                  "title": "Upload-Ready Financial Packet",
+                  "sub": "Clear, properly named files organized for CEAC upload",
+                  "tags": [{ "cls": "tag-cur", "label": "Upload Ready" }],
+                  "guide": {
+                    "intro": "Preparing an upload-ready packet reduces classification, readability, and submission errors.",
+                    "sections": [
+                      {
+                        "title": "File preparation",
+                        "body": "Keep each file within CEAC's current size limit, use an accepted file type, make every page legible, and organize files separately for the petitioner, each joint sponsor, and each household member."
+                      }
+                    ]
+                  }
+                }
+              ]
+            }
           }
         },
         {
@@ -6255,16 +6591,16 @@
           "step_number": 6,
           "step_name": "Gather Original Documents",
           "step_short_description": "Official document compilation",
-          "step_description": "Assemble the original hard-copy documents needed for your consular interview. Review each item and organize your packet carefully before interview day.",
+          "step_description": "Assemble the original or certified hard-copy documents needed for the parent beneficiary's IR-5 consular interview. Review each item and organize the packet carefully before interview day.",
           "step_type": "tool",
-          "who": "Beneficiary",
+          "who": "Parent Beneficiary",
           "where": "Document compilation",
           "timeline": "2-3 days",
           "actions": [
-            "Collect all original documents",
-            "Make 2 sets of copies",
-            "Organize in folders",
-            "Label clearly"
+            "Collect all original or certified documents",
+            "Make one complete photocopy set",
+            "Organize documents by category",
+            "Verify translations and updated records"
           ],
           "tool_data": {
             "type": "gathering_checklist",
@@ -6278,48 +6614,72 @@
                     {
                       "id": "passport",
                       "icon": "passport",
-                      "title": "Passport (current + any prior passports)",
-                      "sub": "Bring originals of all passports — current and expired — that contain U.S. visa history",
+                      "title": "Current Passport and Relevant Prior Passports",
+                      "sub": "Current unexpired passport plus prior passports containing relevant U.S. visa or travel history",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original current passport with at least 6 months validity beyond the interview date. Also bring any prior passports that may contain relevant U.S. visa history.</p>"
+                          "c": "<p>Bring the parent beneficiary's current unexpired passport, valid for at least six months beyond the intended date of entry into the United States. Also bring any prior passport containing relevant U.S. visas, refusals, entries, or immigration history.</p>"
                         },
                         {
-                          "t": "Photocopies",
-                          "c": "<p>Bring one photocopy of the biographic page of each passport in a separate section from the originals.</p>"
+                          "t": "Photocopy",
+                          "c": "<p>Bring one clear photocopy of the current passport biographic page. Keep photocopies separate from the original passport.</p>"
                         }
                       ]
                     },
                     {
-                      "id": "birth-cert",
+                      "id": "parent-birth-cert",
                       "icon": "birth",
-                      "title": "Original Birth Certificate",
-                      "sub": "Beneficiary's official civil birth record",
+                      "title": "Parent Beneficiary's Original Birth Certificate",
+                      "sub": "Original or certified civil birth record, translation, and photocopy",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>The original NADRA-issued CBRC or other official birth certificate. If you have an older Union Council record, bring both the original and the NADRA CBRC if available.</p>"
+                          "c": "<p>Bring the parent beneficiary's original birth certificate or a certified copy issued by the competent civil authority.</p>"
                         },
                         {
-                          "t": "Translation",
-                          "c": "<p>Bring the original Urdu certificate and the certified English translation together in the same tab.</p>"
+                          "t": "Translation and copy",
+                          "c": "<p>Bring a complete certified English translation if required, together with one photocopy.</p>"
+                        },
+                        {
+                          "t": "Consistency",
+                          "c": "<p>Confirm that the parent's name, date of birth, place of birth, and parents' names match the passport, DS-260, and CEAC records.</p>"
                         }
                       ]
                     },
                     {
-                      "id": "marriage-cert",
-                      "icon": "marriage",
-                      "title": "Original Marriage Certificate / Nikah Nama",
-                      "sub": "Original Nikah Nama and NADRA MRC, plus translations",
+                      "id": "petitioner-birth-cert",
+                      "icon": "relationship",
+                      "title": "Petitioner's Original or Certified Birth Certificate",
+                      "sub": "Core IR-5 record showing the parent-child relationship",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original Nikah Nama and the NADRA Marriage Registration Certificate. Both should be accompanied by their certified English translations.</p>"
+                          "c": "<p>Bring the U.S. citizen petitioner's original birth certificate or a certified copy showing the parent beneficiary as the petitioner's mother or father.</p>"
+                        },
+                        {
+                          "t": "Translation and copy",
+                          "c": "<p>If the petitioner's birth certificate is not in English, bring a complete certified English translation. Also bring one clear photocopy.</p>"
                         },
                         {
                           "t": "Important",
-                          "c": "<p>Do not submit photocopies at the window unless asked. Bring originals first and let the consular officer direct you.</p>"
+                          "c": "<div class=\"note-box\"><p>Do not rely only on the copy previously uploaded to CEAC.</p></div>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "children-birth-certs",
+                      "icon": "family",
+                      "title": "Birth Certificates for All of the Parent Beneficiary's Children",
+                      "sub": "Original or certified copies for every child, including children not immigrating",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring original or certified copies of the birth certificates for all children of the parent beneficiary, including adult children and children who are not immigrating.</p>"
+                        },
+                        {
+                          "t": "Translation and copies",
+                          "c": "<p>Bring required certified English translations and one photocopy of each record.</p>"
                         }
                       ]
                     },
@@ -6342,12 +6702,12 @@
                     {
                       "id": "interview-letter",
                       "icon": "mail",
-                      "title": "Interview Appointment Letter",
-                      "sub": "The original printed NVC interview appointment letter",
+                      "title": "NVC Interview Appointment Letter",
+                      "sub": "Printed copy of the interview appointment notice",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Print and bring the original interview appointment letter received from NVC. This is your primary identification for entry into the embassy grounds.</p>"
+                          "c": "<p>Print and bring a copy of the NVC interview appointment letter for the parent beneficiary.</p>"
                         }
                       ]
                     }
@@ -6359,14 +6719,66 @@
                   "badge": "Required",
                   "items": [
                     {
-                      "id": "i864-original",
+                      "id": "i864-petitioner",
                       "icon": "banknote",
-                      "title": "Original Affidavit of Support — Petitioner",
-                      "sub": "Original signed I-864 or I-864EZ from the petitioner",
+                      "title": "Form I-864 — Petitioner",
+                      "sub": "The petitioner's completed Affidavit of Support package",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original signed Affidavit of Support. This must be the wet-ink signed original, not a photocopy.</p>"
+                          "c": "<p>Bring the appropriate completed and signed Form I-864 for the petitioner. For an IR-5 parent case, Form I-864 is the standard affidavit.</p>"
+                        },
+                        {
+                          "t": "Petitioner remains required",
+                          "c": "<p>The petitioner must provide Form I-864 even when a joint sponsor is used.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "tax-docs-petitioner",
+                      "icon": "calculator",
+                      "title": "Most Recent Tax Evidence — Petitioner",
+                      "sub": "IRS transcript or most recent federal return with related income records",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring a photocopy of the petitioner's most recent IRS tax transcript or most recent U.S. federal income tax return, together with related W-2s and applicable schedules.</p>"
+                        },
+                        {
+                          "t": "Current income",
+                          "c": "<p>If income or employment changed after NVC submission, bring updated current-income evidence.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "petitioner-status-domicile",
+                      "icon": "home",
+                      "title": "Petitioner's U.S. Citizenship and Domicile Evidence",
+                      "sub": "Proof of U.S. citizenship and U.S. domicile or re-establishment of domicile",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring copies of evidence showing that the petitioner is a U.S. citizen and is domiciled in the United States or has taken qualifying steps to re-establish U.S. domicile.</p>"
+                        },
+                        {
+                          "t": "Examples",
+                          "c": "<ul><li>U.S. passport, U.S. birth certificate, Certificate of Naturalization, or Certificate of Citizenship</li><li>U.S. residence, employment, lease, tax, voting, banking, or driver's-license evidence</li></ul>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "joint-sponsor-package",
+                      "icon": "users",
+                      "title": "Joint Sponsor or Household Member Package",
+                      "sub": "Required only if a joint sponsor or household member is used",
+                      "sections": [
+                        {
+                          "t": "Joint sponsor",
+                          "c": "<p>Bring the joint sponsor's separate signed Form I-864, most recent tax evidence, proof of status, and proof of U.S. domicile.</p>"
+                        },
+                        {
+                          "t": "Household member",
+                          "c": "<p>If household-member income or assets are used, bring Form I-864A and the applicable supporting evidence.</p>"
                         }
                       ]
                     },
@@ -6374,43 +6786,15 @@
                       "id": "ds260-original",
                       "icon": "file-text",
                       "title": "DS-260 Confirmation Page",
-                      "sub": "Online Immigrant Visa Application Confirmation",
+                      "sub": "Printed Immigrant Visa Application confirmation page",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the printed DS-260 confirmation page with barcode. This confirms you have successfully submitted your online immigrant visa application.</p>"
+                          "c": "<p>Bring the printed DS-260 confirmation page with its barcode for the parent beneficiary.</p>"
                         },
                         {
-                          "t": "Important notes",
-                          "c": "<p>Make sure all information in your DS-260 form is accurate and matches your supporting documents such as passport and civil records.</p>"
-                        },
-                        {
-                          "t": "Where to get it",
-                          "c": "<p>You can download and print the confirmation page after submitting your DS-260 form from the Consular Electronic Application Center (CEAC) website.</p>"
-                        }
-                      ]
-                    },
-                    {
-                      "id": "tax-docs",
-                      "icon": "calculator",
-                      "title": "Most Recent Tax Evidence — Petitioner",
-                      "sub": "Federal tax return or IRS transcript copies",
-                      "sections": [
-                        {
-                          "t": "What to bring",
-                          "c": "<p>Bring copies of the most recent year's tax return or IRS transcript. Originals are not always required — copies are generally acceptable, but bring them organized.</p>"
-                        }
-                      ]
-                    },
-                    {
-                      "id": "employment-letter",
-                      "icon": "briefcase",
-                      "title": "Employment Letter — Petitioner",
-                      "sub": "Current employment confirmation letter if available",
-                      "sections": [
-                        {
-                          "t": "What to bring",
-                          "c": "<p>If the petitioner's current employer can provide an employment letter, bring it as supporting evidence of current income. Not always required but useful to have.</p>"
+                          "t": "Review before interview",
+                          "c": "<p>Review the submitted DS-260 and be prepared to explain any changes or corrections.</p>"
                         }
                       ]
                     }
@@ -6418,62 +6802,170 @@
                 },
                 {
                   "id": "interview-day",
-                  "label": "Bring — Interview Day Items",
+                  "label": "Bring — Interview Day and Conditional Documents",
                   "badge": "Required if applicable",
                   "items": [
                     {
                       "id": "photos",
                       "icon": "camera",
-                      "title": "Passport-Style Photos",
-                      "sub": "2–4 recent passport-style photos meeting embassy specifications",
+                      "title": "Two Recent Visa Photographs",
+                      "sub": "Two identical 5 cm × 5 cm color photographs",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring 2–4 recent passport-style photos. Check your specific embassy's photo requirements for size and background specifications. US Embassy Pakistan typically requires standard 2x2 inch photos.</p>"
-                        }
-                      ]
-                    },
-                    {
-                      "id": "polio-cert",
-                      "icon": "polio",
-                      "title": "Polio Vaccination Certificate (Original)",
-                      "sub": "The original polio vaccination certificate from an approved site",
-                      "sections": [
-                        {
-                          "t": "What to bring",
-                          "c": "<p>Bring the original polio vaccination certificate obtained in Step 2. The panel physician should have already reviewed it, but bring the original in case it is requested at the window.</p>"
+                          "c": "<p>Bring two recent identical color photographs measuring 5 cm × 5 cm that comply with current U.S. visa photo requirements.</p>"
                         }
                       ]
                     },
                     {
                       "id": "medical-packet",
                       "icon": "medical",
-                      "title": "Medical Examination Results Packet Reference",
-                      "sub": "Not brought by you — sealed by physician — but confirm it was sent",
+                      "title": "Medical Examination Results",
+                      "sub": "Sealed medical envelope only if the panel physician gives it to the parent",
                       "sections": [
                         {
                           "t": "How this works",
-                          "c": "<p>The medical examination results are sealed by the panel physician and sent directly to the embassy. You do not carry the medical packet yourself. Confirm with your physician that the results were submitted before your interview date.</p>"
+                          "c": "<p>The panel physician will either transmit the medical results directly to U.S. Embassy Islamabad or give the parent beneficiary a sealed envelope.</p>"
+                        },
+                        {
+                          "t": "If an envelope is provided",
+                          "c": "<p>Do not open it. Bring the sealed envelope to the interview.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "parent-marriage-cert",
+                      "icon": "marriage",
+                      "title": "Parent Beneficiary's Marriage Certificate",
+                      "sub": "Required if the parent is married or the marriage is relevant to the relationship history",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the original marriage certificate or a certified copy, together with any required English translation and one photocopy.</p>"
+                        },
+                        {
+                          "t": "Pakistan records",
+                          "c": "<p>For a Pakistani Muslim marriage, bring the Nikah Nama and official Marriage Registration Certificate where applicable.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "prior-marriage-termination",
+                      "icon": "prior-marriage",
+                      "title": "Prior Marriage Termination Records",
+                      "sub": "Required if the parent beneficiary was previously married",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the original or certified final divorce record, annulment order, or former spouse's death certificate for every prior marriage.</p>"
+                        },
+                        {
+                          "t": "Translation and copy",
+                          "c": "<p>Include any required certified English translation and one photocopy.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "father-relationship",
+                      "icon": "relationship",
+                      "title": "Additional Father-Child Relationship Evidence",
+                      "sub": "Required in certain biological-father cases",
+                      "sections": [
+                        {
+                          "t": "When needed",
+                          "c": "<p>Bring the original evidence used in the approved I-130 if the case required legitimation or proof of a bona fide father-child relationship.</p>"
+                        },
+                        {
+                          "t": "Examples",
+                          "c": "<ul><li>Parents' marriage or legitimation records</li><li>Financial support and co-residence evidence</li><li>School, medical, religious, or government records</li><li>Correspondence and photographs</li></ul>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "stepparent-records",
+                      "icon": "marriage",
+                      "title": "Stepparent Relationship Records",
+                      "sub": "Required for an IR-5 stepparent case",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the original marriage certificate showing that the marriage creating the step-relationship occurred before the petitioner turned 18.</p>"
+                        },
+                        {
+                          "t": "Prior marriages",
+                          "c": "<p>Also bring records proving that all prior marriages of the biological parent and stepparent legally ended.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "adoption-records",
+                      "icon": "adoption",
+                      "title": "Adoption, Custody, and Joint Residence Records",
+                      "sub": "Required for a qualifying adoptive-parent case",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the original or certified adoption decree, legal custody records, and evidence of the required joint residence used to establish the approved relationship.</p>"
+                        },
+                        {
+                          "t": "Pakistan caution",
+                          "c": "<p>Pakistani guardianship documentation does not automatically establish an adoption qualifying under U.S. immigration law.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "name-change",
+                      "icon": "name-change",
+                      "title": "Name Change or Identity-Linking Records",
+                      "sub": "Required when names or identity details differ across records",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring original or certified records linking different names, spellings, dates, or identities appearing across the case documents.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "court-prison-records",
+                      "icon": "court",
+                      "title": "Court and Criminal Records",
+                      "sub": "Required if the parent was arrested, charged, convicted, or imprisoned",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring original or certified court and criminal records for each applicable incident, with certified English translations and photocopies.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "military-records",
+                      "icon": "military",
+                      "title": "Military Records",
+                      "sub": "Required if the parent served in any country's military",
+                      "sections": [
+                        {
+                          "t": "What to bring",
+                          "c": "<p>Bring the available original or certified military service, discharge, or retirement records, together with required English translations and photocopies.</p>"
                         }
                       ]
                     },
                     {
                       "id": "courier-registration-certificate",
                       "icon": "truck",
-                      "title": "Courier Registration Certificate",
-                      "sub": "Proof of courier service registration for passport delivery",
+                      "title": "Passport Delivery Registration Confirmation",
+                      "sub": "Printed proof of online passport return or pickup registration",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring a printed copy of your courier registration confirmation. This shows where your passport and visa will be delivered after approval.</p>"
+                          "c": "<p>Bring a printed copy of the registration confirmation showing the parent beneficiary's selected passport return or pickup location.</p>"
                         },
                         {
-                          "t": "Important notes",
-                          "c": "<p>Ensure the selected courier location and contact details are correct. Any mistake may delay the delivery of your passport.</p>"
+                          "t": "Important",
+                          "c": "<p>Verify that the parent's passport number and contact information are correct.</p>"
                         },
                         {
-                          "t": "Where to get it",
-                          "c": "<p>You can register and download your courier confirmation from the official portal: <a href=\"https://atlasauth.b2clogin.com/f50ebcfb-eadd-41d8-9099-a7049d073f5c/b2c_1a_atoproduction_atlas_susi/oauth2/v2.0/authorize?client_id=607d08d6-b63b-4735-ad82-05dfcff7efa4&redirect_uri=https%3A%2F%2Fwww.usvisascheduling.com%2Fsignin-aad-b2c_1&response_type=code%20id_token&scope=openid&state=OpenIdConnect.AuthenticationProperties%3D2K23hD4xKzVe12jbVwjyqaABq8BvO9XR4dhxyvhM7SW5r2pLF5Rw4GpLbGg1SrhKGKcppBq4KNWDndIYuM863mlKn1fzE2KBfWVp3CNydelGJjAMx8mKVWAGq8ejU1j_os42RN93Egg5pqqgb_DUyiyluHJiUekQEK3ejCf2cGnJox-DigSRszd4RuUOOihD0Y6c1Hpe6GOOk41Y0gIIquzA9zzqTcrjWjMwx0-VXDCqUcH2fmr6qPDD75ogQTvjDKt9bnqWuV4cvfGquOOyqo0gAVtBE3cfF2JUvI4eP60Ktla_mMBiyIaYOdRC6Nkw3gs-5mKXMz-0ZBpSs8plZLBPAXyRKtKkFntQdtGUjz3OpzjMFUQySSZYlg4KAqk9m6_QhSee5b0ZmVV7hf6r2ocvBlfdHQIJKpjRz6eLgJDzmfKbZWFYxce-gPpLxmcwxOC4za80kv0torvGvZAyDyeY_RONVFzmYFXyMQsGHtua9Ll6wHxDN4ZPF9lEPTsThtgrrfydnrVxWu-BWZVaGzwovnUp3hQzNoa3c8jtS11JAtMC780rjr2dNDAv9EpHWr6ISfsO-Syu-4IdVGizjsHkwqQRLNUZoqKW7YtlTUkWn80R4tDfH3WkcMLRS-4D&response_mode=form_post&nonce=639086504989774135.NDYwYmEzMGMtYjI4Yi00MDBiLTg5ZGItZmU0MTM1ZjVhYTMyNTM0YWI0ZDAtNzI5NC00OGMxLWIxYjctNjZlMzcxYjM3ODk5&ui_locales=en-US&x-client-SKU=ID_NET472&x-client-ver=6.35.0.0\" target=\"_blank\">Register Courier Service</a>.</p>"
+                          "t": "Where to register",
+                          "c": "<p>Use the current registration portal linked from the official U.S. Embassy Islamabad immigrant visa instructions.</p>"
                         }
                       ]
                     }
@@ -6487,28 +6979,44 @@
                     {
                       "id": "folders",
                       "icon": "folder",
-                      "title": "Labeled Folder System or Document Binder",
-                      "sub": "Organized tabs separating each document group",
+                      "title": "Labeled Folder System",
+                      "sub": "Simple sections separating originals, translations, and photocopies",
                       "sections": [
                         {
                           "t": "Why this matters",
-                          "c": "<p>A well-organized packet makes it easier to quickly produce any document the officer requests. Disorganized packets slow down the interview and create unnecessary stress.</p>"
+                          "c": "<p>A clearly organized packet helps the parent beneficiary produce each requested document quickly.</p>"
                         },
                         {
                           "t": "Suggested approach",
-                          "c": "<ul><li>Use a clear-pocket binder or labeled folder tabs</li><li>Label each section clearly: Passport / Civil / Financial / Extras</li><li>Keep originals in one section, copies in another</li></ul>"
+                          "c": "<ul><li>Use lightweight labeled folders</li><li>Separate Passport and Appointment / Civil Records / IR-5 Relationship / Financial Sponsor / Conditional Records</li><li>Keep each original together with its translation and photocopy</li></ul>"
                         }
                       ]
                     },
                     {
                       "id": "copies-set",
                       "icon": "copy",
-                      "title": "Full Photocopy Set of All Documents",
-                      "sub": "One complete photocopy set kept separate from originals",
+                      "title": "Complete Photocopy Set",
+                      "sub": "One clear copy of each civil and relationship document",
                       "sections": [
                         {
                           "t": "Why bring copies",
-                          "c": "<p>Consular officers may retain copies of certain documents. Having a pre-prepared copy set means you don't risk giving away originals unnecessarily.</p>"
+                          "c": "<p>The embassy may retain photocopies while returning original civil documents after the interview.</p>"
+                        }
+                      ]
+                    },
+                    {
+                      "id": "ceac-match-check",
+                      "icon": "check",
+                      "title": "CEAC-to-Original Match Check",
+                      "sub": "Verify that interview originals match the documents uploaded to CEAC",
+                      "sections": [
+                        {
+                          "t": "Final review",
+                          "c": "<p>Compare each original or certified document against the file uploaded to CEAC. Upload any required updated document before the interview when instructed.</p>"
+                        },
+                        {
+                          "t": "Check carefully",
+                          "c": "<p>Confirm names, dates, issuing authorities, translations, page completeness, and police-certificate validity.</p>"
                         }
                       ]
                     }
@@ -6516,7 +7024,7 @@
                 }
               ]
             },
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. The parent beneficiary must follow the current U.S. Embassy Islamabad pre-interview checklist, CEAC instructions, Department of State reciprocity schedule, and any case-specific instructions in the appointment letter."
           }
         },
         {
@@ -6526,14 +7034,14 @@
           "step_name": "Prepare for Interview",
           "step_description": "Use Rahvana's interview prep tool to practice questions, review your case history, and build confidence before interview day.",
           "step_short_description": "Practice questions and build confidence",
-          "who": "Beneficiary",
+          "who": "Parent Beneficiary",
           "where": "Home preparation",
           "actions": [
             "Review DS-260 answers",
             "Practice common questions",
-            "Study relationship details",
+            "Review parent-child relationship details",
             "Check document checklist",
-            "Plan outfit (professional)",
+            "Plan appropriate interview clothing",
             "Arrange travel to Islamabad if needed"
           ],
           "tool_data": {
@@ -6559,7 +7067,7 @@
               "cues": [
                 "Review likely interview questions and ideal answers",
                 "Review your DS-260 responses for consistency",
-                "Strengthen recall of your relationship timeline",
+                "Review the parent-child relationship and family history",
                 "Practice concise, truthful, confident answers"
               ]
             },
@@ -6568,19 +7076,21 @@
                 "title": "Review before your interview",
                 "items": [
                   "DS-260 answers — know every section you completed",
-                  "Relationship timeline — dates, meetings, visits",
-                  "Sponsor income and financial details",
-                  "Civil document details — names, dates, record history",
-                  "Travel history and prior U.S. visa history if any"
+                  "Parent-child relationship — petitioner's birth, upbringing, family history, and current relationship",
+                  "Petitioner's identity, U.S. address, occupation, and household details",
+                  "Sponsor income, joint sponsor, and Affidavit of Support details",
+                  "Parent's marriage history, children, residences, employment, and travel history",
+                  "Civil documents — names, dates, issuing authorities, and any discrepancies",
+                  "Prior U.S. visits, visa refusals, overstays, petitions, or immigration history"
                 ]
               },
               {
                 "title": "Mindset and approach",
                 "items": [
-                  "Answer only what is asked — do not volunteer extra information",
+                  "Answer the question directly and completely without adding unrelated information",
                   "Answer truthfully and consistently with your filed documents",
                   "Stay calm — the officer is doing their job, not targeting you",
-                  "If unsure, say so calmly — do not guess",
+                  "If you do not remember an exact detail, say so honestly rather than guessing",
                   "Practice out loud, not just in your head"
                 ]
               }
@@ -6595,7 +7105,7 @@
           "step_name": "Attend Visa Interview",
           "step_description": "Your interview day has arrived. Know exactly what to bring, how to prepare at the door, and what to expect inside the consular window.",
           "step_short_description": "What to expect on interview day",
-          "who": "Beneficiary",
+          "who": "Parent Beneficiary",
           "where": "U.S. Embassy Islamabad",
           "timeline": "5-20 minutes interview",
           "actions": [
@@ -6606,7 +7116,7 @@
             "Wait for consular officer call",
             "Take oath",
             "Answer questions honestly",
-            "Receive decision"
+            "Receive the officer's instructions or case outcome"
           ],
           "tool_data": {
             "type": "interview_day",
@@ -6649,7 +7159,7 @@
                 "instruction": "Arrive at the embassy at least 20–30 minutes before your scheduled appointment time. Embassy security queues can be slow. Latecomers may not be admitted for their scheduled slot.",
                 "vlabel": "Arrival Timing",
                 "note": "Do not carry electronics beyond what is permitted by the embassy. Check the specific embassy's guidelines on phones and devices before arrival.",
-                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Arrival guidance</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Plan for 20–30 minutes of buffer time. Factor in traffic, parking, and security queue length — especially at high-volume posts like Islamabad or Karachi.\n      </div>\n      <div class=\"hl-box\" style=\"margin-top:12px\">Earlier is always safer than exactly on time</div>\n    </div>"
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Arrival guidance</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Plan for 20–30 minutes of buffer time. Factor in travel to the Diplomatic Enclave, transport arrangements, and security screening at U.S. Embassy Islamabad.\n      </div>\n      <div class=\"hl-box\" style=\"margin-top:12px\">Earlier is always safer than exactly on time</div>\n    </div>"
               },
               {
                 "label": "Step 3 of 8",
@@ -6668,17 +7178,17 @@
               {
                 "label": "Step 5 of 8",
                 "heading": "The consular interview window",
-                "instruction": "You will be called to a consular window. The officer will review your documents, ask questions about your relationship, background, and immigration history. Answer concisely and truthfully. Do not volunteer information beyond what is asked.",
+                "instruction": "You will be called to a consular window. The officer may ask about the parent-child relationship, family history, civil records, financial sponsorship, intended U.S. residence, medical admissibility, and prior immigration or travel history. Answer each question truthfully and directly.",
                 "vlabel": "Interview at the Window",
                 "note": "Consistency is critical. Your answers must align with your DS-260 responses and the documents you submitted during NVC processing.",
-                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Common interview questions</div>\n      <div class=\"mock-row\">How did you meet your spouse?</div>\n      <div class=\"mock-row\">When and where was your marriage?</div>\n      <div class=\"mock-row\">What does your petitioner do for work?</div>\n      <div class=\"mock-row\">Have you visited the United States before?</div>\n      <div class=\"mock-row\">Where will you live in the United States?</div>\n    </div>"
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Common IR-5 interview topics</div>\n      <div class=\"mock-row\">What is your relationship to the petitioner?</div>\n      <div class=\"mock-row\">When and where was the petitioner born?</div>\n      <div class=\"mock-row\">Where does the petitioner live and what do they do?</div>\n      <div class=\"mock-row\">Where will you live in the United States?</div>\n      <div class=\"mock-row\">Do you have any other children?</div>\n      <div class=\"mock-row\">Have you visited or applied for a visa to the United States before?</div>\n    </div>"
               },
               {
                 "label": "Step 6 of 8",
                 "heading": "Document review at the window",
                 "instruction": "The officer may ask you to produce specific original documents. Present them calmly and in the order requested. Having a well-organized packet makes this faster and smoother.",
                 "vlabel": "Document Review",
-                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Be ready to produce</div>\n      <div class=\"mock-row\">Original passport(s)</div>\n      <div class=\"mock-row\">Marriage certificate / Nikah Nama</div>\n      <div class=\"mock-row\">Birth certificate</div>\n      <div class=\"mock-row\">Police clearance certificate</div>\n      <div class=\"mock-row\">Affidavit of Support</div>\n      <div class=\"mock-row\">Passport photos</div>\n    </div>"
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Be ready to produce</div>\n      <div class=\"mock-row\">Current passport and relevant prior passports</div>\n      <div class=\"mock-row\">Parent beneficiary's birth certificate</div>\n      <div class=\"mock-row\">Petitioner's original or certified birth certificate</div>\n      <div class=\"mock-row\">Birth certificates for the parent's children</div>\n      <div class=\"mock-row\">Original valid police certificate</div>\n      <div class=\"mock-row\">Form I-864 and financial evidence</div>\n      <div class=\"mock-row\">Relationship-specific records if applicable</div>\n      <div class=\"mock-row\">Two visa photographs</div>\n    </div>"
               },
               {
                 "label": "Step 7 of 8",
@@ -6690,9 +7200,9 @@
               {
                 "label": "Step 8 of 8",
                 "heading": "Possible outcomes after the interview",
-                "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track and manage the AP process.",
+                "instruction": "After the interview, the officer may approve the visa, refuse the application under INA 221(g) for missing documents or administrative processing, or refuse it under another legal ground. Follow the written instructions provided by the officer.",
                 "vlabel": "Interview Outcomes",
-                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">What you may hear</div>\n      <div class=\"mock-row\">Approved — passport retained, visa to be delivered <span class=\"mock-badge-green\">Best</span></div>\n      <div class=\"mock-row\">Administrative Processing — more time needed <span class=\"mock-badge-amber\">Step 9</span></div>\n      <div class=\"mock-row\">Refused — written reason provided <span class=\"mock-badge-blue\">Consult attorney</span></div>\n    </div>"
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Possible case outcomes</div>\n      <div class=\"mock-row\">Approved — visa issuance processing begins <span class=\"mock-badge-green\">Approved</span></div>\n      <div class=\"mock-row\">221(g) refusal — documents or administrative processing required <span class=\"mock-badge-amber\">Further action</span></div>\n      <div class=\"mock-row\">Refused under another legal ground — review the written notice <span class=\"mock-badge-blue\">Legal ground</span></div>\n    </div>"
               }
             ],
             "checklists": [
@@ -6700,13 +7210,19 @@
                 "type": "bring",
                 "title": "What to bring",
                 "items": [
-                  "Interview appointment letter (printed original)",
-                  "Current passport (original)",
-                  "All prior passports",
-                  "Original civil documents (organized packet)",
-                  "Passport-style photos (2–4)",
-                  "Petitioner's original Affidavit of Support",
-                  "Tax evidence and employment letter if applicable"
+                  "Printed NVC interview appointment letter",
+                  "Parent beneficiary's current passport",
+                  "Relevant prior passports containing U.S. visa or immigration history",
+                  "Parent beneficiary's original or certified civil documents",
+                  "Petitioner's original or certified birth certificate",
+                  "Birth certificates for all of the parent's children",
+                  "Original valid police certificates",
+                  "Two recent 5 cm × 5 cm visa photographs",
+                  "Form I-864 and current sponsor evidence",
+                  "Joint sponsor or household member package if applicable",
+                  "Relationship-specific father, stepparent, adoption, or identity records if applicable",
+                  "Sealed medical envelope only if provided by the panel physician",
+                  "Passport delivery registration confirmation"
                 ]
               },
               {
@@ -6717,8 +7233,12 @@
                   "Bringing electronic devices that are prohibited beyond security",
                   "Disorganized packet — makes document retrieval slow and stressful",
                   "Inconsistent answers — not matching DS-260 responses",
-                  "Volunteering extra information that was not asked",
-                  "Arriving late — embassy entry is strictly time-controlled"
+                  "Giving incomplete, inconsistent, or speculative answers instead of answering directly and truthfully",
+                  "Arriving late — embassy entry is strictly time-controlled",
+                  "Failing to bring the petitioner's original or certified birth certificate",
+                  "Bringing only CEAC printouts instead of required original or certified civil records",
+                  "Using an expired or no-longer-valid police certificate",
+                  "Opening a sealed medical envelope"
                 ]
               }
             ],
@@ -6735,7 +7255,7 @@
                 "label": "Visa approved",
                 "type": "approved",
                 "icon": "check-circle",
-                "sub": "The officer approves the visa. Your passport will be held and the visa will be delivered via the courier service you registered."
+                "sub": "The officer approved the application. The passport may be retained for visa printing and returned through the registered passport delivery or pickup process."
               },
               {
                 "label": "Administrative Processing (AP / 221g)",
@@ -6761,7 +7281,7 @@
           "step_name": "Confirm Interview Outcome",
           "step_description": "Record what happened at your consular interview. Your selection unlocks the correct next steps for your specific situation.",
           "step_short_description": "Record your interview result",
-          "who": "Beneficiary",
+          "who": "Parent Beneficiary",
           "where": "Post-interview",
           "estimated_duration_days": 1,
           "is_required": true,
@@ -6791,7 +7311,7 @@
               {
                 "id": "approved",
                 "label": "Approved",
-                "description": "The officer approved your visa. Your passport will be held and delivered via the courier service you registered.",
+                "description": "The officer indicated that the visa application was approved. The passport may be retained for visa issuance and returned through the registered passport delivery or pickup process. Continue monitoring the case until CEAC shows 'Issued' and the passport is returned.",
                 "icon": "check-circle"
               },
               {
@@ -6927,7 +7447,7 @@
           "step_name": "Track Visa Issuance",
           "step_description": "Your visa has been approved. Track the delivery of your passport and visa packet via your registered courier service.",
           "step_short_description": "Passport delivery and visa issuance",
-          "who": "Beneficiary",
+          "who": "Parent Beneficiary",
           "where": "USVisaScheduling courier portal",
           "estimated_duration_days": 7,
           "is_required": true,
@@ -6980,7 +7500,7 @@
           "step_name": "Review Your 221(g) Letter",
           "step_description": "Open your 221(g) letter and select every item the embassy requested. This generates your personalized action plan for the next step.",
           "step_short_description": "Select what the embassy requested from your letter",
-          "who": "Beneficiary",
+          "who": "Parent Beneficiary",
           "where": "Your 221(g) letter",
           "estimated_duration_days": 1,
           "is_required": true,
@@ -7016,10 +7536,10 @@
           "step_name": "Submit Your 221(g) Documents",
           "step_description": "Gather exactly what the embassy requested, submit your packet via the specified method, and log your submission to stay organized.",
           "step_short_description": "Gather, submit, and track your requested documents",
-          "who": "Beneficiary",
+          "who": "Parent Beneficiary",
           "where": "Embassy / CEAC",
           "estimated_duration_days": 14,
-          "is_required": true,
+          "is_required": false,
           "display_order": 11,
           "visible_when": {
             "interviewOutcome": "221g",
@@ -7028,7 +7548,7 @@
           "actions": [
             "Read your 221(g) letter thoroughly",
             "Gather every item that was requested — exactly as specified",
-            "Submit your packet via the method stated in the notice",
+            "Submit through the exact method, location, portal, email address, or courier channel stated in the refusal notice",
             "Log your submission date and method in the tracker below"
           ],
           "tool_data": {
@@ -7056,13 +7576,13 @@
               "title": "Log Your Document Submission",
               "subtitle": "Record the date and method you used to submit your packet",
               "ceac_options": [
-                "In Transit",
                 "Ready",
-                "Administrative Processing",
+                "Approved",
                 "Issued",
                 "Refused",
-                "Pending",
-                "Not Available"
+                "Administrative Processing, if displayed",
+                "Case Status Not Available",
+                "Other"
               ],
               "docs_requested_options": [
                 {
@@ -7101,7 +7621,7 @@
                   "If the notice specifies a method (drop box, mail, email), use that method",
                   "If the notice specifies a deadline, meet it — do not delay",
                   "Keep a complete copy of everything you submit",
-                  "After submission, check CEAC weekly for status changes",
+                  "Check CEAC periodically and monitor the registered email address for status changes or follow-up instructions",
                   "Monitor the email registered with the consulate for any follow-up"
                 ]
               },
@@ -7112,8 +7632,8 @@
                 "items": [
                   "After submission, the case typically moves to Administrative Processing while the consulate reviews what you sent",
                   "CEAC may show 'Administrative Processing' during this period",
-                  "Resolution timelines vary — from days to several months depending on the case",
-                  "If approved after 221(g) review, your passport will be delivered via the courier you registered"
+                  "Processing time varies according to the individual circumstances of the case, and no fixed completion date can be guaranteed.",
+                  "If the refusal is overcome and the visa is issued, the passport will be returned through the registered passport delivery or pickup process."
                 ]
               }
             ],
@@ -7127,21 +7647,21 @@
           "step_name": "Track Post-Interview Review",
           "step_description": "Your case has been placed in further review or administrative processing after the interview. Use this step to monitor CEAC status and stay organized during the wait.",
           "step_short_description": "Administrative processing and review tracker",
-          "who": "Beneficiary",
+          "who": "Parent Beneficiary",
           "where": "ceac.state.gov",
           "estimated_duration_days": 90,
-          "is_required": true,
+          "is_required": false,
           "display_order": 12,
           "visible_when": {
             "interviewOutcome": "221g",
             "outcome221gSubtype": ["further_review", "both"]
           },
           "actions": [
-            "Check CEAC status weekly",
-            "Monitor registered email for correspondence",
-            "Log each status check in the update log",
-            "Respond immediately if contacted by consulate",
-            "Be patient — AP timelines are outside your control"
+            "Monitor CEAC periodically",
+            "Monitor the registered email address for embassy correspondence",
+            "Record meaningful status changes",
+            "Respond promptly if the embassy requests information or documents",
+            "Keep the passport and supporting records valid and accessible"
           ],
           "tool_data": {
             "type": "adm_processing",
@@ -7168,13 +7688,13 @@
               "title": "Record your AP/review details",
               "subtitle": "Save this so Rahvana can track and remind you",
               "ceac_options": [
-                "In Transit",
                 "Ready",
-                "Administrative Processing",
+                "Approved",
                 "Issued",
                 "Refused",
-                "Pending",
-                "Not Available"
+                "Administrative Processing, if displayed",
+                "Case Status Not Available",
+                "Other"
               ],
               "docs_requested_options": [
                 {
@@ -7205,7 +7725,7 @@
                   "Monitor the email registered with the consulate — correspondence may arrive at any time",
                   "Respond immediately if the consulate contacts you",
                   "Ensure your passport remains valid throughout the review period",
-                  "If review exceeds 180 days with no update, consider a congressional inquiry or attorney consultation"
+                  "If processing is substantially longer than expected, review the embassy's current inquiry instructions and consider qualified legal advice where appropriate."
                 ]
               },
               {
@@ -7213,10 +7733,11 @@
                 "type": "teal",
                 "icon": "check",
                 "items": [
-                  "Review is not a visa refusal — your case is still active",
-                  "It does not mean there is a problem with your relationship or documents",
-                  "Most cases in administrative processing eventually result in approval",
-                  "Contacting the embassy repeatedly does not speed up the process"
+                  "A 221(g) administrative-processing case is legally refused at that time, but the refusal may later be overcome",
+                  "A CEAC status of 'Refused' does not necessarily mean the case is permanently denied",
+                  "The written refusal notice and embassy instructions provide the most reliable explanation of the case",
+                  "Administrative processing does not have a guaranteed completion time",
+                  "Repeated inquiries generally do not accelerate required government processing"
                 ]
               }
             ],
@@ -7230,10 +7751,10 @@
           "step_name": "Monitor Case Status",
           "step_description": "Your documents have been submitted in response to the 221(g). Now monitor CEAC for updates and stay organized as the consulate reviews your submission.",
           "step_short_description": "Post-submission case monitoring",
-          "who": "Beneficiary",
+          "who": "Parent Beneficiary",
           "where": "ceac.state.gov",
           "estimated_duration_days": 60,
-          "is_required": true,
+          "is_required": false,
           "display_order": 13,
           "visible_when": {
             "interviewOutcome": "221g",
@@ -7271,13 +7792,13 @@
               "title": "Record status updates",
               "subtitle": "Log each CEAC check to track progress over time",
               "ceac_options": [
-                "In Transit",
                 "Ready",
-                "Administrative Processing",
+                "Approved",
                 "Issued",
                 "Refused",
-                "Pending",
-                "Not Available"
+                "Administrative Processing, if displayed",
+                "Case Status Not Available",
+                "Other"
               ],
               "docs_requested_options": [
                 {
@@ -7305,10 +7826,10 @@
                 "icon": "info",
                 "items": [
                   "Check CEAC weekly and log each check — note the status and any changes",
-                  "Watch for 'Issued' status on CEAC — that signals the visa has been approved and processed",
+                  "Watch for an 'Issued' status, which indicates that the visa has been printed or issued; wait until the passport is returned before making irreversible travel arrangements",
                   "Monitor your registered email for any additional requests from the consulate",
                   "If CEAC changes from AP to 'Refused', read your written notice carefully before drawing conclusions",
-                  "If 180 days pass with no update, consider a congressional inquiry or attorney consultation"
+                  "If the case remains unresolved for an extended period, follow the current U.S. Embassy Islamabad inquiry instructions and consider qualified legal advice where appropriate."
                 ]
               },
               {
@@ -7330,25 +7851,34 @@
     }
   ],
   "documents": [
-    "U.S. Passport or Birth Certificate (Petitioner)",
-    "Pakistani Passport (Beneficiary)",
-    "NADRA Birth Certificate (Beneficiary)",
-    "Nikah Nama (Original)",
-    "English Translation of Nikah Nama (Certified)",
-    "Union Council Marriage Registration",
-    "Police Certificate - Pakistan (Original)",
-    "Passport Photos (2x2 inches, white background)",
-    "Tax Returns (IRS Transcripts - 3 years)",
-    "Employment Verification Letter",
-    "Pay Stubs (6 months)",
-    "W-2 Forms",
-    "Bank Statements",
-    "I-864 Affidavit of Support (Signed)",
-    "Marriage Photos (throughout relationship)",
-    "Communication Records (WhatsApp, email samples)",
-    "Visit Evidence (flight tickets, stamps)",
-    "Divorce Decrees (if applicable)",
-    "Death Certificates (if widowed)"
+    "U.S. Passport, Birth Certificate, Naturalization Certificate, or Citizenship Certificate (Petitioner)",
+    "Petitioner's Original or Certified Birth Certificate Showing the Parent Beneficiary",
+    "Pakistani Passport (Parent Beneficiary)",
+    "Parent Beneficiary's Official Birth Certificate",
+    "Birth Certificates for All Children of the Parent Beneficiary",
+    "Police Certificate - Pakistan (Original and Valid)",
+    "Police Certificates from Other Countries (if applicable)",
+    "Marriage Certificate / Nikah Nama of Parent Beneficiary (if applicable)",
+    "Marriage Registration Certificate and Certified English Translation (if applicable)",
+    "Divorce Decrees or Annulment Records for Prior Marriages (if applicable)",
+    "Death Certificate of Former Spouse (if applicable)",
+    "Certified English Translations of Non-English Documents (if required)",
+    "Passport Photos (Two Identical 2x2 Inch Photos)",
+    "Form I-864 Affidavit of Support - Petitioner",
+    "Most Recent IRS Tax Transcript or Complete Federal Tax Return - Petitioner",
+    "W-2, 1099, and Relevant Tax Schedules (if applicable)",
+    "Current Pay Stubs and Employment Verification Letter (if current income must be documented)",
+    "Proof of U.S. Domicile - Petitioner",
+    "Proof of U.S. Citizenship or Lawful Permanent Resident Status - Joint Sponsor (if applicable)",
+    "Form I-864 and Financial Evidence - Joint Sponsor (if applicable)",
+    "Form I-864A and Household Member Financial Evidence (if applicable)",
+    "Asset Evidence (if assets are used to meet the income requirement)",
+    "Father-Child Relationship Evidence (if applicable)",
+    "Stepparent Marriage and Prior-Marriage Termination Records (if applicable)",
+    "Adoption, Legal Custody, and Joint Residence Records (if applicable)",
+    "Name Change or Identity-Linking Documents (if applicable)",
+    "Court and Prison Records (if applicable)",
+    "Military Records (if applicable)"
   ],
   "uscis_tutorial_steps": [
     {
