@@ -43,8 +43,8 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
   // Measure rail size to calculate maximum drag distance
   const measure = () => {
     if (railRef.current) {
-      const HANDLE_SIZE = 44;
-      const PAD = 6;
+      const HANDLE_SIZE = 56;
+      const PAD = 0;
       const calculatedMax = Math.max(railRef.current.offsetWidth - HANDLE_SIZE - PAD * 2, 0);
       setMaxX(calculatedMax);
       maxXRef.current = calculatedMax;
@@ -95,9 +95,10 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
     const handlePointerUp = () => {
       window.removeEventListener("pointermove", handlePointerMove);
       window.removeEventListener("pointerup", handlePointerUp);
+      window.removeEventListener("pointercancel", handlePointerUp);
 
       setIsSnapping(true);
-      if (maxXRef.current > 0 && currentXRef.current > maxXRef.current * 0.7) {
+      if (maxXRef.current > 0 && currentXRef.current > maxXRef.current * 0.5) {
         updateX(maxXRef.current);
         runCompletion();
       } else {
@@ -110,6 +111,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
 
     window.addEventListener("pointermove", handlePointerMove);
     window.addEventListener("pointerup", handlePointerUp);
+    window.addEventListener("pointercancel", handlePointerUp);
   };
 
   // Keyboard accessibility
@@ -154,23 +156,21 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
   };
 
   // Drag progress styles
-  const HANDLE_SIZE = 44;
-  const PAD = 6;
-  const stretch = maxX > 0 ? 1 + (currentX / maxX) * 0.16 : 1;
-  const transformStyle = reduceMotion
-    ? `translateX(${currentX}px)`
-    : `translateX(${currentX}px) scaleX(${stretch})`;
-  const fillWidth = currentX + HANDLE_SIZE / 2 + PAD;
+  const HANDLE_SIZE = 56;
+  const PAD = 0;
+  const transformStyle = `translateX(${currentX}px)`;
+  const fillWidth =
+    maxX > 0 ? currentX + HANDLE_SIZE + PAD + (currentX / maxX) * PAD : HANDLE_SIZE + PAD;
   const hintOpacity = maxX > 0 ? Math.max(0, 1 - currentX / (maxX * 0.4)) : 1;
 
   // React component key for remounting and running the CSS animations from scratch
   const animationKey = phase === "idle" || phase === "dragging" ? "active" : "status";
 
   return (
-    <section className="consult-container relative overflow-hidden pt-10 pb-20 md:pt-14 md:pb-24 px-6 sm:px-10 lg:px-16 text-[var(--ink)]">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-12 items-center">
+    <section className="consult-container relative overflow-hidden pt-20 pb-20 md:pt-28 md:pb-24 px-6 sm:px-10 lg:px-16 text-[var(--ink)]">
+      <div className="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-[1.10fr_0.90fr] gap-16 lg:gap-8 items-center">
         {/* Left Column */}
-        <div className="order-2 lg:order-1 flex flex-col items-start">
+        <div className="order-1 lg:order-1 flex flex-col items-start">
           <div className="animate-fade-in-up">
             <span className="badge inline-flex items-center gap-2 px-3 py-1 border border-[var(--line)] bg-white/60 text-[var(--teal-deep)] rounded-full text-xs font-semibold tracking-wider uppercase shadow-sm">
               <span className="dot w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
@@ -201,7 +201,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
         </div>
 
         {/* Right Column */}
-        <div className="order-1 lg:order-2 flex justify-center lg:justify-end">
+        <div className="order-2 lg:order-2 flex justify-center lg:justify-end">
           <div className="card-wrap relative w-full max-w-sm">
             {/* Ambient background glow */}
             <div className="glow" aria-hidden="true" />
@@ -242,26 +242,29 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
                 )}
               </div>
 
-              {/* Drag/Swipe Rail */}
-              <div
-                ref={railRef}
-                className="rail relative h-14 w-full rounded-full overflow-hidden bg-[var(--cream-deep)] select-none touch-none"
-              >
-                {/* Colored Fill Behind Drag handle */}
+              {/* Drag/Swipe Rail Container */}
+              <div className="relative h-14 w-full">
+                {/* Rail (with overflow-hidden for the background fill) */}
                 <div
-                  className="fill absolute top-0 bottom-0 left-0 rounded-full bg-[var(--fill-tint)]"
-                  style={{ width: `${fillWidth}px` }}
-                />
-
-                {/* Hint Text */}
-                <span
-                  className="hint absolute inset-0 flex items-center justify-center text-sm font-semibold tracking-wide text-[var(--sub)] pointer-events-none select-none"
-                  style={{ opacity: hintOpacity }}
+                  ref={railRef}
+                  className="rail absolute inset-0 rounded-full overflow-hidden bg-[var(--cream-deep)] select-none touch-none"
                 >
-                  Slide to book
-                </span>
+                  {/* Colored Fill Behind Drag handle */}
+                  <div
+                    className="fill absolute top-0 bottom-0 left-0 rounded-full bg-[var(--fill-tint)]"
+                    style={{ width: `${fillWidth}px` }}
+                  />
 
-                {/* Drag Handle */}
+                  {/* Hint Text */}
+                  <span
+                    className="hint absolute inset-0 flex items-center justify-center text-sm font-semibold tracking-wide text-[var(--sub)] pointer-events-none select-none"
+                    style={{ opacity: hintOpacity }}
+                  >
+                    Slide to book
+                  </span>
+                </div>
+
+                {/* Drag Handle (outside rail to prevent shadow/border clipping) */}
                 <div
                   ref={handleRef}
                   onPointerDown={onPointerDown}
@@ -272,7 +275,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
                   aria-valuemax={100}
                   aria-valuenow={maxX > 0 ? Math.round((currentX / maxX) * 100) : 0}
                   aria-label="Slide to answer the consultation call, or press Enter"
-                  className={`handle absolute left-[6px] top-[6px] w-11 h-11 rounded-full bg-[var(--teal-deep)] text-white flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-shadow ${
+                  className={`handle touch-none absolute left-0 top-0 w-14 h-14 rounded-full bg-[var(--teal-deep)] text-white flex items-center justify-center cursor-grab active:cursor-grabbing shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary transition-shadow ${
                     isSnapping ? "snapping" : ""
                   } ${isNudging ? "nudging" : ""} ${isPulsing ? "pulsing" : ""} ${
                     phase === "connecting" || phase === "opening" || phase === "answered"
@@ -294,7 +297,7 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
                       />
                     </>
                   )}
-                  <Icons.Phone size={16} className="shrink-0" />
+                  <Icons.Phone size={20} className="shrink-0" />
                 </div>
               </div>
             </div>

@@ -70,8 +70,7 @@ import ir1Data from "@/data/visa-category/ir-1.json";
 import { StepQuestDemo } from "./StepQuestDemo";
 import { NAV_DATA } from "@/app/components/layout/navigationData";
 
-export const journeyHref = "/visa-category/ir-category/ir1-journey";
-export const toolsHref = "/tools";
+import { ir1journeyHref, toolsHref } from "@/lib/constants/routes";
 
 function getToolAccentClass(icon: React.ReactNode) {
   if (!isValidElement(icon)) return "bg-slate-700";
@@ -1122,7 +1121,7 @@ export const twoWaysPaths = [
       "Stay ahead with built-in requirements, checklists, and deadline alerts.",
     ],
     cta: "Start the Roadmap",
-    href: journeyHref,
+    href: ir1journeyHref,
     supportEyebrow: "GUIDED ROADMAP",
     supportLead: "A structured path from start to finish.",
     supportText:
@@ -1203,9 +1202,6 @@ export function TwoWaysSection() {
     }
   };
 
-  const journeyHref = "/visa-category/ir-category/ir1-journey";
-  const toolsHref = "/tools";
-
   const roadmapImages = [
     "/assets/images/guided_roadmap_image.png",
     // "/assets/images/guided_roadmap_image_with_bg.png"
@@ -1276,7 +1272,7 @@ export function TwoWaysSection() {
                     tracking.
                   </p>
                   <Link
-                    href={journeyHref}
+                    href={ir1journeyHref}
                     className={`inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all duration-200 no-underline mb-5 ${
                       hoveredSide === "left"
                         ? "bg-white text-[#0d7377] hover:bg-teal-50 shadow-lg shadow-black/10"
@@ -1313,7 +1309,7 @@ export function TwoWaysSection() {
                     {/* Top Arrow: Points Left (Roadmap) */}
                     <motion.div
                       className="relative w-[230px] h-[52px] cursor-pointer drop-shadow-md select-none"
-                      onClick={() => (window.location.href = journeyHref)}
+                      onClick={() => (window.location.href = ir1journeyHref)}
                       onMouseEnter={() => handleSetHoveredSide("left")}
                       onMouseLeave={() => handleSetHoveredSide(null)}
                       animate={
@@ -1698,7 +1694,7 @@ export function TwoWaysMobile({
 
       <div className="mt-6 flex flex-wrap gap-3">
         <Link
-          href={journeyHref}
+          href={ir1journeyHref}
           className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#0d7377] px-5 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/25"
         >
           Start the Roadmap
@@ -2394,7 +2390,7 @@ export function GuidedRoadmapScene() {
               }}
             >
               <a
-                href={journeyHref}
+                href={ir1journeyHref}
                 style={{
                   display: "flex",
                   alignItems: "center",

@@ -13,6 +13,7 @@
 
 import { SupabaseClient } from "@supabase/supabase-js";
 import type { ReminderCandidate } from "./types";
+import { ir1journeyHref } from "@/lib/constants/routes";
 
 export class ReminderEngine {
   constructor(private supabase: SupabaseClient) {}
@@ -99,7 +100,7 @@ export class ReminderEngine {
         title: `Next Step: ${currentStep.step_name}`,
         body: `Ready for the next phase? Begin ${currentStep.step_name} to keep your case moving.`,
         action_label: "Start Now",
-        action_url: `/visa-category/ir-category/ir1-journey`,
+        action_url: ir1journeyHref,
         dedup_key: `${journeyId}:step_available:${currentStep.id}`,
       });
     }
@@ -133,7 +134,7 @@ export class ReminderEngine {
       body: `Your "${doc.document_label || doc.document_type}" is required but has not been uploaded yet. Upload it to keep your case on track.`,
       step_key: doc.step_key ?? undefined,
       reference_id: doc.id,
-      action_url: "/visa-category/ir-category/ir1-journey",
+      action_url: ir1journeyhref,
       action_label: "Upload Document",
       dedup_key: `${journeyId}:missing_document:${doc.document_type}`,
     }));
@@ -213,7 +214,7 @@ export class ReminderEngine {
         title,
         body,
         step_key: "step_3_3",
-        action_url: "/visa-category/ir-category/ir1-journey",
+        action_url: ir1journeyhref,
         action_label: "Update PCC Status",
         // dedup_key changes each week — so a fresh escalated notification appears
         dedup_key: `${journeyId}:pcc_tracking:week${week}`,
@@ -268,7 +269,7 @@ export class ReminderEngine {
         body: `Your ${typeLabel.toLowerCase()} is scheduled for ${dateStr}${appt.location ? ` at ${appt.location}` : ""}. Make sure everything is ready.`,
         step_key: appt.step_key ?? undefined,
         reference_id: appt.id,
-        action_url: "/visa-category/ir-category/ir1-journey",
+        action_url: ir1journeyhref,
         action_label: "View Details",
         dedup_key: `${journeyId}:appointment_approaching:${appt.id}:${diffDays}d`,
       };
@@ -311,7 +312,7 @@ export class ReminderEngine {
         title: "USCIS Receipt Number Not Recorded",
         body: "Once USCIS processes your petition, you will receive a receipt notice with a case number. Enter it here to track your case and activate waiting-state guidance.",
         step_key: "I.9",
-        action_url: "/visa-category/ir-category/ir1-journey",
+        action_url: ir1journeyhref,
         action_label: "Enter Receipt Number",
         dedup_key: `${journeyId}:receipt_not_captured`,
       },
@@ -351,7 +352,7 @@ export class ReminderEngine {
         title: "NVC Fee Payment Not Confirmed",
         body: "Your NVC fee payment has not yet been confirmed as posted in CEAC. DS-260 becomes available only after fees are marked as posted. Check CEAC and update your status.",
         step_key: "II.2",
-        action_url: "/visa-category/ir-category/ir1-journey",
+        action_url: ir1journeyhref,
         action_label: "Check CEAC Status",
         dedup_key: `${journeyId}:nvc_fee_not_confirmed`,
       },
@@ -390,7 +391,7 @@ export class ReminderEngine {
         title: "USCIS Account Not Saved to Portal Wallet",
         body: "Save your USCIS account credentials to your Portal Wallet so you can quickly access your case online whenever you need to.",
         step_key: "I.5",
-        action_url: "/visa-category/ir-category/ir1-journey",
+        action_url: ir1journeyhref,
         action_label: "Save to Wallet",
         dedup_key: `${journeyId}:account_setup_incomplete`,
       },
@@ -436,7 +437,7 @@ export class ReminderEngine {
         body: `You started the ${label} but left at ${pct}% completion. Return to pick up where you left off — your progress is saved.`,
         step_key: session.step_key,
         reference_id: session.id,
-        action_url: "/visa-category/ir-category/ir1-journey",
+        action_url: ir1journeyhref,
         action_label: "Resume Tool",
         dedup_key: `${journeyId}:tool_session_abandoned:${session.tool_key}`,
       };
@@ -477,7 +478,7 @@ export class ReminderEngine {
         title: "Medical Exam Date Not Recorded",
         body: "You are in Chapter III but your medical exam appointment date has not been saved. Record it so Rahvana can remind you as it approaches.",
         step_key: "III.1",
-        action_url: "/visa-category/ir-category/ir1-journey",
+        action_url: ir1journeyhref,
         action_label: "Record Date",
         dedup_key: `${journeyId}:appointment_not_recorded:medical`,
       });
@@ -490,7 +491,7 @@ export class ReminderEngine {
         title: "Interview Date Not Recorded",
         body: "Your consular interview date has not been saved. Add it to receive timely reminders and preparation guidance.",
         step_key: "III.4",
-        action_url: "/visa-category/ir-category/ir1-journey",
+        action_url: ir1journeyhref,
         action_label: "Record Date",
         dedup_key: `${journeyId}:appointment_not_recorded:interview`,
       });
@@ -558,7 +559,7 @@ export class ReminderEngine {
         priority,
         title,
         body,
-        action_url: "/visa-category/ir-category/ir1-journey",
+        action_url: ir1journeyhref,
         action_label: "View Tracking",
         dedup_key: `${journeyId}:tracking_status:${status}`,
       },
@@ -639,7 +640,7 @@ export class ReminderEngine {
         title: `Complete your documents — ${count} item${count !== 1 ? "s" : ""} pending`,
         body: `Your document checklist for Chapter 1, Step 2 is incomplete. Still needed: ${pendingLabels.join(", ")}. Mark each document as ready to keep your case on track.`,
         step_key: "step_1_2",
-        action_url: "/visa-category/ir-category/ir-1-journey",
+        action_url: ir1journeyHref,
         action_label: "Complete Documents",
         dedup_key: DEDUP_KEY,
       },

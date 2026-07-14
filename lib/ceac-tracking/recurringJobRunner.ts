@@ -25,6 +25,7 @@ import { CeacReminderEngine } from "./CeacReminderEngine";
 import { UnifiedReminderEngine } from "@/lib/notifications/UnifiedReminderEngine";
 import { getReminderById } from "@/lib/notifications/reminderRegistry";
 import type { CeacScheduledNotification } from "./types";
+import { ir1journeyHref } from "@/lib/constants/routes";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -211,7 +212,7 @@ async function _deliverNotification(
       title: notif.title,
       body: notif.message,
       step_key: stepKey,
-      action_url: def?.actionUrl ?? "/visa-category/ir-category/ir1-journey",
+      action_url: def?.actionUrl ?? ir1journeyHref,
       action_label: def?.actionLabel ?? "View in Journey",
       is_dismissed: false,
       dedup_key: `${notif.journey_id}:${isJourneyOrigin ? "journey" : "ceac"}:${notif.reminder_id}:${notif.recurrence_count}`,

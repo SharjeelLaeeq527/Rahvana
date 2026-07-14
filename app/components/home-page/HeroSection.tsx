@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "motion/react";
 import { ArrowUpRight, ArrowRight } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { ir1journeyHref } from "@/lib/constants/routes";
 
 const heroImage = "/assets/images/herobg.png";
 
@@ -251,7 +252,7 @@ export function CinematicHero() {
                     {/* CTA Button Logic */}
                     {(!user || journeysLoading) && (
                       <Link
-                        href="/visa-category/ir-category/ir1-journey"
+                        href={ir1journeyHref}
                         className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 bg-transparent px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-200 ease-out hover:-translate-y-0.5 sm:px-6 sm:py-3 sm:text-[13px]"
                         style={{
                           borderColor: "#cfa3b9",
@@ -270,7 +271,7 @@ export function CinematicHero() {
                     )}
                     {user && journeys && journeys.length > 0 && (
                       <Link
-                        href="/visa-category/ir-category/ir1-journey"
+                        href={ir1journeyHref}
                         className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 bg-transparent px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-200 ease-out hover:-translate-y-0.5 sm:px-6 sm:py-3 sm:text-[13px]"
                         style={{
                           borderColor: "#cfa3b9",
@@ -289,7 +290,7 @@ export function CinematicHero() {
                     )}
                     {user && journeys && journeys.length === 0 && !journeysLoading && (
                       <Link
-                        href="/visa-category/ir-category/ir1-journey"
+                        href={ir1journeyHref}
                         className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 bg-transparent px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-200 ease-out hover:-translate-y-0.5 sm:px-6 sm:py-3 sm:text-[13px]"
                         style={{
                           borderColor: "#cfa3b9",

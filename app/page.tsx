@@ -44,8 +44,7 @@ import Intro from "./(main)/home-page/intro";
 import SectionBird from "./(main)/home-page/SectionBird";
 import ConsultationSection from "./components/home-page/ConsultationSection";
 
-export const journeyHref = "/visa-category/ir-category/ir1-journey";
-export const toolsHref = "/tools";
+import { ir1journeyHref } from "@/lib/constants/routes";
 
 const renderWithAbbr = (text: string) => {
   if (!text || typeof text !== "string" || !text.includes("PCC")) return text;
@@ -220,48 +219,6 @@ const LiveBackground = () => {
   );
 };
 
-// function ConsultationBanner({
-//   onConsultationClick,
-// }: {
-//   onConsultationClick: () => void;
-// }) {
-//   return (
-//     <section className="w-full px-3 py-6 sm:px-4 md:px-6 md:py-8">
-//       <div className="relative flex min-h-[280px] w-full items-center overflow-hidden rounded-2xl bg-[#0d7377] shadow-[0_20px_40px_rgba(13,115,119,0.25)] sm:min-h-[300px] sm:rounded-[1.4rem]">
-//         <LiveBackground />
-
-//         <div className="pointer-events-none relative z-10 flex w-full flex-col justify-center p-5 sm:p-7 md:w-[68%] md:p-9 lg:w-3/5 lg:p-10">
-//           <BannerMotion.div
-//             className="pointer-events-auto"
-//             initial={{ opacity: 0, x: -20 }}
-//             whileInView={{ opacity: 1, x: 0 }}
-//             viewport={{ once: true }}
-//             transition={{ duration: 0.6, ease: "easeOut" }}
-//           >
-//             <h2 className="mb-2 text-2xl font-bold tracking-tight text-white drop-shadow-sm sm:mb-3 sm:text-3xl lg:mb-4 lg:text-5xl">
-//               Book a Consultation
-//             </h2>
-
-//             <p className="mb-4 max-w-[60ch] text-[15px] font-light leading-relaxed text-white/95 drop-shadow-sm sm:mb-5 sm:text-base lg:mb-6 lg:text-lg">
-//               Get personalized advice from specialists who understand your
-//               journey.
-//             </p>
-
-//             <BannerMotion.button
-//               type="button"
-//               onClick={onConsultationClick}
-//               className="flex w-full items-center justify-center gap-2 rounded-xl px-6 py-3 text-sm font-bold shadow-lg transition-colors sm:w-auto sm:px-7 sm:py-3.5 sm:text-base"
-//               style={{ backgroundColor: "#db8090", color: "#ffffff" }}
-//               whileHover={{ scale: 1.02, backgroundColor: "#e294a2" }}
-//               whileTap={{ scale: 0.98 }}
-//             >
-//               Book a Consultation
-//             </BannerMotion.button>
-//           </BannerMotion.div>
-//         </div>
-//       </div>
-//     </section>
-//   );
 const caveat = Caveat({
   subsets: ["latin"],
   weight: ["400", "700"],
@@ -292,11 +249,40 @@ function useRoadmapAnchor(id: string, color: AnchorColor) {
   return ref;
 }
 
+// Anchor ids where the copy is Rahvana speaking (guiding/answering/narrating),
+// as opposed to the user's worry or relief. A segment renders solid when it
+// ARRIVES at a Rahvana-voiced anchor — dashed otherwise — so the path itself
+// carries the back-and-forth rhythm of the conversation, no per-line marker needed.
+// Headings at these ids also carry the "sender" typography (bold, upright);
+// the complementary ids (03, 05, 07, 09, 11, 14) carry the "receiver" voice —
+// smaller, lighter, slightly tilted, colored to match that section's path —
+// see the heading className on each section.
+// 01 "Let's take it one step at a time..."      — Rahvana
+// 02 "Everything starts with the petition..."    — Rahvana
+// 03 "Wait... these forms look complicated"      — User
+// 04 "Rahvana breaks it down for you"            — Rahvana
+// 05 "That wasn't so bad"                        — User
+// 06 "What's next?... your documents"            — Rahvana
+// 07 "So many documents... what if I miss..."    — User
+// 08 "Rahvana tells you exactly..."              — Rahvana
+// 09 "Finally, I know I have everything"         — User
+// 10 "Next up, the financial part"               — Rahvana
+// 11 "Do I qualify?..."                          — User
+// 12 "Rahvana gives you a clear answer"          — Rahvana
+// 13 "Almost there... ready for the interview"   — Rahvana
+// 14 "The interview makes me nervous"            — User
+// 15 "Rahvana helps you prepare with confidence" — Rahvana
+// 16 "Visa Approved..."                          — Rahvana
+// 17 closing statement                           — neutral
+const RAHVANA_NODE_IDS = new Set([
+  "01", "02", "04", "06", "08", "10", "12", "13", "15", "16",
+]);
+
 function RoadmapProvider({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const anchorsRef = useRef<Map<string, AnchorEntry>>(new Map());
   const [pathSegments, setPathSegments] = useState<
-    { d: string; color: AnchorColor; yStart: number; yEnd: number }[]
+    { d: string; color: AnchorColor; yStart: number; yEnd: number; isAnswer: boolean }[]
   >([]);
   const [svgHeight, setSvgHeight] = useState(0);
   const rafRef = useRef<number | null>(null);
@@ -342,6 +328,7 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
       const { el, color } = anchorsRef.current.get(id)!;
       const r = el.getBoundingClientRect();
       return {
+        id,
         x: r.left + r.width / 2 - containerRect.left,
         y: r.top + r.height / 2 - containerRect.top,
         color,
@@ -353,7 +340,7 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const segments: { d: string; color: AnchorColor; yStart: number; yEnd: number }[] = [];
+    const segments: { d: string; color: AnchorColor; yStart: number; yEnd: number; isAnswer: boolean }[] = [];
     for (let i = 0; i < points.length - 1; i++) {
       const p0 = points[i === 0 ? i : i - 1];
       const p1 = points[i];
@@ -366,7 +353,13 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
       const cp2y = p2.y - (p3.y - p1.y) / 6;
 
       const d = `M ${p1.x},${p1.y} C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
-      segments.push({ d, color: p1.color, yStart: p1.y, yEnd: p2.y });
+      segments.push({
+        d,
+        color: p1.color,
+        yStart: p1.y,
+        yEnd: p2.y,
+        isAnswer: RAHVANA_NODE_IDS.has(p2.id),
+      });
     }
 
     setPathSegments(segments);
@@ -429,35 +422,44 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
     green: "#15744f",
   };
 
+  // Compute each segment's scroll progress once and reuse it for the SVG
+  // path reveal below. (The cursor-dot HTML layer that used to consume
+  // `progress` for a per-frame indicator was removed — the mask/dashoffset
+  // reveal on the path itself is enough of a "presence" cue on scroll.)
+  const segmentProgress = pathSegments.map((seg, i) => {
+    const length = pathLengths[i] || 0;
+    // Trigger point sits at the vertical middle of the viewport rather than
+    // near the bottom — anchoring reveal position to roughly where the eye
+    // is reading, instead of letting it race ahead to whatever has merely
+    // scrolled into the bottom edge of the screen.
+    const revealY = scrollY + (windowHeightRef.current || 800) * 0.5;
+    const currentY = revealY - containerTopRef.current;
+
+    let progress = 0;
+    if (currentY >= seg.yEnd) {
+      progress = 1;
+    } else if (currentY <= seg.yStart) {
+      progress = 0;
+    } else if (seg.yEnd > seg.yStart) {
+      progress = (currentY - seg.yStart) / (seg.yEnd - seg.yStart);
+    }
+
+    const activeLength = length || 1000;
+    const dashOffset = activeLength * (1 - progress);
+    return { progress, activeLength, dashOffset };
+  });
+
   return (
     <RoadmapContext.Provider value={{ register }}>
       <div ref={containerRef} className="relative">
         <svg
-          className="absolute inset-0 w-full pointer-events-none z-10 hidden md:block"
+          className="absolute inset-0 w-full pointer-events-none z-[2] hidden md:block"
           style={{ height: svgHeight }}
           width="100%"
           preserveAspectRatio="none"
         >
           {pathSegments.map((seg, i) => {
-            const length = pathLengths[i] || 0;
-            const yStart = seg.yStart;
-            const yEnd = seg.yEnd;
-
-            // Calculate progress based on scroll
-            const revealY = scrollY + (windowHeightRef.current || 800) - 80;
-            const currentY = revealY - containerTopRef.current;
-
-            let progress = 0;
-            if (currentY >= yEnd) {
-              progress = 1;
-            } else if (currentY <= yStart) {
-              progress = 0;
-            } else if (yEnd > yStart) {
-              progress = (currentY - yStart) / (yEnd - yStart);
-            }
-
-            const activeLength = length || 1000;
-            const dashOffset = activeLength * (1 - progress);
+            const { activeLength, dashOffset } = segmentProgress[i];
 
             return (
               <React.Fragment key={i}>
@@ -483,7 +485,8 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
                   className="opacity-[0.12] blur-[1px]"
                   mask={`url(#roadmap-mask-${i})`}
                 />
-                {/* Main dotted path */}
+                {/* Main path — solid when this segment arrives at a Rahvana-voiced
+                    anchor (a reply), dotted when it arrives at a user line */}
                 <path
                   ref={(el) => {
                     pathRefs.current[i] = el;
@@ -496,39 +499,11 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
                   className="opacity-75"
                   mask={`url(#roadmap-mask-${i})`}
                 />
-                {/* Interactive cursor tracking the path progress */}
-                {progress > 0 && progress < 1 && (
-                  <div
-                    className="absolute pointer-events-none z-20"
-                    style={{
-                      offsetPath: `path('${seg.d}')`,
-                      offsetDistance: `${progress * 100}%`,
-                      left: 0,
-                      top: 0,
-                      width: "8px",
-                      height: "8px",
-                      transform: "translate(-50%, -50%)",
-                    }}
-                  >
-                    <div
-                      className="w-full h-full rounded-full animate-ping absolute opacity-75 animate-duration-1000"
-                      style={{
-                        backgroundColor: strokeColors[seg.color],
-                      }}
-                    />
-                    <div
-                      className="w-full h-full rounded-full relative"
-                      style={{
-                        backgroundColor: strokeColors[seg.color],
-                        boxShadow: `0 0 8px 3px ${strokeColors[seg.color]}`,
-                      }}
-                    />
-                  </div>
-                )}
               </React.Fragment>
             );
           })}
         </svg>
+
         {children}
       </div>
     </RoadmapContext.Provider>
@@ -654,11 +629,15 @@ function NodeCircle({
   icon: Icon,
   label,
   color,
+  onClick,
+  href,
 }: {
   icon: React.ComponentType<any>;
   label?: string;
   badgeNum?: string;
   color: "teal" | "amber" | "purple" | "rose" | "green";
+  onClick?: () => void;
+  href?: string;
 }) {
   const colorClasses = {
     teal: { bg: "bg-[#0d7377]" },
@@ -668,22 +647,132 @@ function NodeCircle({
     green: { bg: "bg-[#15744f]" },
   };
 
+  const isInteractive = !!(onClick || href);
+
+  // Interactive nodes (the final CTA) get the richer gradient + lift
+  // treatment so the finish line feels like an arrival, not just another
+  // step. Teal-green, picked from the swatch grid to sit well against the
+  // mint-tinted section background. Static roadmap markers stay flat solid.
+  const circleBg =
+    isInteractive && color === "green"
+      ? "bg-gradient-to-br from-[#0e6b52] to-[#0a5240] group-hover:from-[#149470] group-hover:to-[#0e6b52]"
+      : colorClasses[color].bg;
+
+  // href takes precedence and renders a real navigable link; onClick without
+  // href renders a button; neither renders a plain illustrative marker.
+  const Wrapper: React.ElementType = href ? Link : onClick ? "button" : "div";
+  const wrapperProps: Record<string, unknown> = href
+    ? { href }
+    : onClick
+    ? { onClick, type: "button" as const }
+    : {};
+
   return (
     <div className="flex flex-col items-center justify-center relative py-12 z-10">
-      <div className="relative group flex items-center justify-center">
+      <Wrapper
+        {...wrapperProps}
+        className={`relative group flex items-center justify-center ${
+          isInteractive
+            ? "focus:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-current rounded-full"
+            : ""
+        }`}
+      >
         <div
-          className={`w-25 h-25 rounded-full ${colorClasses[color].bg} text-white flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110 cursor-pointer relative z-10`}
+          className={`w-25 h-25 rounded-full ${circleBg} text-white flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110 ${
+            isInteractive
+              ? "group-hover:-translate-y-1 group-hover:shadow-[0_10px_40px_-8px_rgba(14,107,82,0.5)] group-active:scale-100 group-active:translate-y-0"
+              : ""
+          } cursor-pointer relative z-10`}
         >
           <Icon className="w-10 h-10" />
         </div>
-      </div>
+      </Wrapper>
       {label && (
         <div className="mt-3 text-center relative z-20">
-          <h4 className="font-bold text-slate-800 text-lg px-4 py-1.5 rounded-full bg-white/95 backdrop-blur-md shadow-sm border border-slate-200/50 inline-block relative z-20">
+          <h4 className="font-bold text-lg px-4 py-1.5 rounded-full inline-block relative z-20 text-slate-800 bg-white/95 backdrop-blur-md shadow-sm border border-slate-200/50">
             {label}
           </h4>
         </div>
       )}
+    </div>
+  );
+}
+
+// Renders the "user voice" lines that punctuate the roadmap — no bubble, no
+// box, no icon. Uses the same handwritten font as the margin Annotations
+// (kept modest in size, not oversized), with a faint leading ellipsis as the
+// only graphic touch — echoing the hesitation already written into these
+// lines ("Wait...", "So many documents...", "Almost there."). Color is
+// passed per-section to match that segment's path.
+function VoiceLine({
+  children,
+  colorClassName,
+}: {
+  children: React.ReactNode;
+  colorClassName: string;
+}) {
+  return (
+    <h3
+      className={`${caveat.className} text-2xl md:text-3xl font-normal leading-snug mb-1.5 max-w-sm ${colorClassName}`}
+    >
+      <span className="opacity-30 mr-1">...</span>
+      {children}
+    </h3>
+  );
+}
+
+// The supporting line under a VoiceLine heading is the same voice, just
+// trailing off — same handwritten font, smaller and lighter, no separate
+// styling language from the paragraph copy used in Rahvana's sections.
+function VoiceSubtext({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <p className={`${caveat.className} text-lg md:text-xl leading-relaxed max-w-sm text-slate-500`}>
+      {children}
+    </p>
+  );
+}
+
+// A softer, delayed sibling of ScrollReveal used only for voice lines — it
+// settles at 85% opacity with a short pause before easing in, so the line
+// lands like a beat of hesitation rather than snapping in at full strength.
+function VoiceReveal({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) setVisible(true);
+      },
+      { threshold: 0.1, rootMargin: "0px 0px -80px 0px" }
+    );
+    observer.observe(el);
+    return () => observer.unobserve(el);
+  }, []);
+
+  return (
+    <div
+      ref={ref}
+      className={className}
+      style={{
+        opacity: visible ? 0.85 : 0,
+        transform: visible ? "translateY(0)" : "translateY(6px)",
+        transition: "opacity 900ms ease-out 220ms, transform 900ms ease-out 220ms",
+      }}
+    >
+      {children}
     </div>
   );
 }
@@ -838,7 +927,12 @@ function HomePageContent() {
               <RoadmapProvider>
                 <div className="w-full bg-white relative">
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <SectionBird n={1} side="right" pos="top-[82%] -translate-y-1/2" size="w-40 lg:w-52 xl:w-64" />
+                    <SectionBird
+                      n={1}
+                      side="right"
+                      pos="top-[82%] -translate-y-1/2"
+                      size="w-40 lg:w-52 xl:w-64"
+                    />
                     <div className="py-16 md:py-24 flex items-center justify-center text-center relative">
                       <ScrollReveal>
                         <div className="max-w-xl mx-auto">
@@ -854,14 +948,14 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 2 — leaf start node (anchor "01") */}
+                {/* SECTION 2 — leaf start node (anchor "01") — Rahvana */}
                 <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)' }}>
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <SectionBird n={2} side="left" pos="top-[48%]" size="w-22 lg:w-32 xl:w-40" />
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
+                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight tracking-tight">
                             Let&apos;s take it one step at a time.
                           </h3>
                           <p className="text-slate-500 text-base md:text-lg leading-relaxed">
@@ -880,23 +974,23 @@ function HomePageContent() {
                           color="teal"
                           className="hidden md:block absolute top-[30%] md:left-[29%] right-[35%] md:right-auto transform md:-translate-x-1/2 z-10"
                         >
-                        <div className="relative w-8 h-8 rounded-full bg-[#7fb8b4] border border-[#5f9d98] flex items-center justify-center">
-                          <div className="absolute top-1.5 left-1.5 w-1.5 h-1.5 rounded-full bg-white/60" />
-                        </div>                        
+                          <div className="relative w-8 h-8 rounded-full bg-[#7fb8b4] border border-[#5f9d98] flex items-center justify-center">
+                            <div className="absolute top-1.5 left-1.5 w-1.5 h-1.5 rounded-full bg-white/60" />
+                          </div>
                         </RoadmapAnchor>
                       </div>
                     </div>
                   </div>
                 </div>
 
-                {/* SECTION 3 — Petition node (anchor "02") — centered */}
+                {/* SECTION 3 — Petition node (anchor "02") — Rahvana — centered */}
                 <div className="w-full bg-white relative">
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
                       <SectionBird n={3} side="right" pos="top-[54%]" />
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
+                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight tracking-tight">
                             Everything starts with the petition.
                           </h3>
                           <p className="text-slate-500 text-base md:text-lg leading-relaxed">
@@ -915,19 +1009,21 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 4 — card placeholder (anchor "03") — shifted left */}
+                {/* SECTION 4 — card placeholder (anchor "03") — User voice — shifted left */}
                 <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)' }}>
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
                       <SectionBird n={4} side="left" pos="top-[72%]" />
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
-                            Wait... these forms look complicated.
-                          </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
-                            Long. Confusing. Full of questions I don&apos;t understand.
-                          </p>
+                          <VoiceReveal>
+                            <VoiceLine colorClassName="text-primary/70">
+                              Wait... these forms look complicated.
+                            </VoiceLine>
+                            <VoiceSubtext>
+                              Long. Confusing. Full of questions I don&apos;t understand.
+                            </VoiceSubtext>
+                          </VoiceReveal>
                         </ScrollReveal>
                       </div>
                       <div className="md:col-span-7 flex justify-center min-w-0">
@@ -953,14 +1049,14 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 5 — card placeholder (anchor "04") — shifted left */}
+                {/* SECTION 5 — card placeholder (anchor "04") — Rahvana — shifted left */}
                 <div className="w-full bg-white relative">
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
                       <SectionBird n={5} side="left" pos="top-[68%]" />
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
+                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight tracking-tight">
                             Rahvana breaks it down for you.
                           </h3>
                           <p className="text-slate-500 text-base md:text-lg leading-relaxed">
@@ -991,19 +1087,21 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 6 — Check node (anchor "05") — centered */}
+                {/* SECTION 6 — Check node (anchor "05") — User voice — centered */}
                 <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)' }}>
-                  <SectionBird n={6} side="left" className="left-0" pos="top-[54%]" size="w-36 lg:w-48 xl:w-56" />
+                  <SectionBird n={6} side="left" className="left-0" pos="top-[54%]" size="w-34 lg:w-486 xl:w-54" />
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
-                            That wasn&apos;t so bad.
-                          </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
-                            Petition submitted! One step down. Many more to go.
-                          </p>
+                          <VoiceReveal>
+                            <VoiceLine colorClassName="text-primary/70">
+                              That wasn&apos;t so bad.
+                            </VoiceLine>
+                            <VoiceSubtext>
+                              Petition submitted! One step down. Many more to go.
+                            </VoiceSubtext>
+                          </VoiceReveal>
                         </ScrollReveal>
                       </div>
                       <div className="md:col-span-7 relative flex justify-center min-w-0">
@@ -1024,14 +1122,14 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 7 — Documents node (anchor "06") — centered */}
+                {/* SECTION 7 — Documents node (anchor "06") — Rahvana — centered */}
                 <div className="w-full bg-white relative">
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
                       <SectionBird n={7} side="right" pos="top-[63%]" size="w-44 lg:w-56 xl:w-64" />
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
+                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight tracking-tight">
                             What&apos;s next?
                           </h3>
                           <p className="text-slate-500 text-base md:text-lg leading-relaxed">
@@ -1050,19 +1148,21 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 8 — card placeholder (anchor "07") — shifted left */}
+                {/* SECTION 8 — card placeholder (anchor "07") — User voice — shifted left */}
                 <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #fffcf6 4%, #fffcf6 96%, #ffffff 100%)' }}>
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
                       <SectionBird n={8} side="left" pos="top-[74%]" />
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
-                            So many documents... what if I miss something important?
-                          </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
-                            I don&apos;t want to get delayed later.
-                          </p>
+                          <VoiceReveal>
+                            <VoiceLine colorClassName="text-[#8a6200]/70">
+                              So many documents... what if I miss something important?
+                            </VoiceLine>
+                            <VoiceSubtext>
+                              I don&apos;t want to get delayed later.
+                            </VoiceSubtext>
+                          </VoiceReveal>
                         </ScrollReveal>
                       </div>
                       <div className="md:col-span-7 flex justify-center min-w-0">
@@ -1089,19 +1189,19 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 9 — card placeholder (anchor "08") — shifted left */}
+                {/* SECTION 9 — card placeholder (anchor "08") — Rahvana — shifted left */}
                 <div className="w-full bg-white relative">
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
                       <SectionBird n={9} side="left" pos="top-[68%]" />
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
+                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight tracking-tight">
                             Rahvana tells you exactly what documents you need.
                           </h3>
                           <p className="text-slate-500 text-base md:text-lg leading-relaxed">
-                            Track required documents, upload your files, and keep everything organized
-                            in one place.
+                            Track required documents, upload your files, and keep everything
+                            organized in one place.
                           </p>
                         </ScrollReveal>
                       </div>
@@ -1128,19 +1228,21 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 10 — FolderCheck node (anchor "09") — centered */}
+                {/* SECTION 10 — FolderCheck node (anchor "09") — User voice — centered */}
                 <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #fffcf6 4%, #fffcf6 90%, #ffffff 100%)' }}>
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
                       <SectionBird n={10} side="right" pos="top-[50%]" />
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
-                            Finally, I know I have everything.
-                          </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
-                            One less thing to worry about.
-                          </p>
+                          <VoiceReveal>
+                            <VoiceLine colorClassName="text-[#8a6200]/70">
+                              Finally, I know I have everything.
+                            </VoiceLine>
+                            <VoiceSubtext>
+                              One less thing to worry about.
+                            </VoiceSubtext>
+                          </VoiceReveal>
                         </ScrollReveal>
                       </div>
                       <div className="md:col-span-7 relative flex justify-center min-w-0">
@@ -1161,14 +1263,14 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 11 — Finance node (anchor "10") — centered */}
+                {/* SECTION 11 — Finance node (anchor "10") — Rahvana — centered */}
                 <div className="w-full bg-white relative">
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
                       <SectionBird n={11} side="right" pos="top-[54%]" />
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
+                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight tracking-tight">
                             Next up, the financial part.
                           </h3>
                           <p className="text-slate-500 text-base md:text-lg leading-relaxed">
@@ -1187,19 +1289,21 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 12 — card placeholder (anchor "11") — shifted left */}
+                {/* SECTION 12 — card placeholder (anchor "11") — User voice — shifted left */}
                 <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f5f1f9 4%, #f5f1f9 90%, #ffffff 100%)' }}>
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
                       <SectionBird n={12} side="left" pos="top-[64%]" />
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
-                            Do I qualify? What if I don&apos;t make enough?
-                          </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
-                            The rules are confusing and everyone says something different.
-                          </p>
+                          <VoiceReveal>
+                            <VoiceLine colorClassName="text-[#4a2d8a]/70">
+                              Do I qualify? What if I don&apos;t make enough?
+                            </VoiceLine>
+                            <VoiceSubtext>
+                              The rules are confusing and everyone says something different.
+                            </VoiceSubtext>
+                          </VoiceReveal>
                         </ScrollReveal>
                       </div>
                       <div className="md:col-span-7 flex justify-center min-w-0">
@@ -1226,14 +1330,14 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 13 — card placeholder (anchor "12") — shifted left */}
+                {/* SECTION 13 — card placeholder (anchor "12") — Rahvana — shifted left */}
                 <div className="w-full bg-white relative">
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
                       <SectionBird n={13} side="left" pos="top-[68%]" />
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
+                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight tracking-tight">
                             Rahvana gives you a clear answer.
                           </h3>
                           <p className="text-slate-500 text-base md:text-lg leading-relaxed">
@@ -1264,14 +1368,14 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 14 — Interview node (anchor "13") — centered */}
+                {/* SECTION 14 — Interview node (anchor "13") — Rahvana — centered */}
                 <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #fef6f7 4%, #fef6f7 90%, #ffffff 100%)' }}>
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
                       <SectionBird n={14} side="right" pos="top-[60%]" />
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
+                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight tracking-tight">
                             Almost there.
                           </h3>
                           <p className="text-slate-500 text-base md:text-lg leading-relaxed">
@@ -1290,19 +1394,21 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 15 — card placeholder (anchor "14") — shifted left */}
+                {/* SECTION 15 — card placeholder (anchor "14") — User voice — shifted left */}
                 <div className="w-full bg-white relative">
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
                       <SectionBird n={15} side="left" pos="top-[80%]" />
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
-                            The interview makes me nervous.
-                          </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
-                            What if they ask something I don&apos;t know? What if I forget everything?
-                          </p>
+                          <VoiceReveal>
+                            <VoiceLine colorClassName="text-[#c0596a]/70">
+                              The interview makes me nervous.
+                            </VoiceLine>
+                            <VoiceSubtext>
+                              What if they ask something I don&apos;t know? What if I forget everything?
+                            </VoiceSubtext>
+                          </VoiceReveal>
                         </ScrollReveal>
                       </div>
                       <div className="md:col-span-7 flex justify-center min-w-0">
@@ -1329,14 +1435,14 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 16 — card placeholder (anchor "15") — shifted left */}
+                {/* SECTION 16 — card placeholder (anchor "15") — Rahvana — shifted left */}
                 <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #fef6f7 4%, #fef6f7 90%, #ffffff 100%)' }}>
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
                       <SectionBird n={16} side="left" pos="top-[66%]" />
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
+                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight tracking-tight">
                             Rahvana helps you prepare with confidence.
                           </h3>
                           <p className="text-slate-500 text-base md:text-lg leading-relaxed">
@@ -1367,10 +1473,10 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 17 — Visa Approval node (anchor "16") — centered */}
+                {/* SECTION 17 — Visa Approval node (anchor "16") — Rahvana — centered */}
                 <div className="w-full bg-white relative">
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
                       <SectionBird
                         n={17}
                         side="right"
@@ -1379,12 +1485,12 @@ function HomePageContent() {
                       />
                       <div className="md:col-span-5 min-w-0">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
+                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight tracking-tight">
                             Visa Approved
                           </h3>
                           <p className="text-slate-500 text-base md:text-lg leading-relaxed font-medium">
-                            The final milestone in your journey. Your passport is stamped, and you are
-                            officially ready to begin your new life together.
+                            The final milestone in your journey. Your passport is stamped, and you
+                            are officially ready to begin your new life together.
                           </p>
                         </ScrollReveal>
                       </div>
@@ -1403,10 +1509,10 @@ function HomePageContent() {
                   </div>
                 </div>
 
-                {/* SECTION 18 — final Welcome node (anchor "17") — centered */}
+                {/* SECTION 18 — final Welcome node (anchor "17") — neutral — centered */}
                 <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f7fcf9 6%, #f7fcf9 100%)' }}>
                   <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
                       <div className="md:col-span-6 md:pr-6 min-w-0">
                         <ScrollReveal>
                           <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-4 leading-tight">
@@ -1414,15 +1520,20 @@ function HomePageContent() {
                           </h3>
                           <p className="text-slate-600 text-base md:text-lg leading-relaxed font-medium">
                             Whether you&apos;re completing your application, gathering documents,
-                            preparing for an interview, or moving to the next step, Rahvana helps you
-                            understand where you are, what to do and what comes next.
+                            preparing for an interview, or moving to the next step, Rahvana helps
+                            you understand where you are, what to do and what comes next.
                           </p>
                         </ScrollReveal>
                       </div>
                       <div className="md:col-span-6 relative flex justify-center min-w-0">
                         <ScrollReveal>
                           <RoadmapAnchor id="17" color="green" className="inline-block">
-                            <NodeCircle icon={Icons.ThumbsUp} color="green" />
+                            <NodeCircle
+                              icon={Icons.ArrowRight}
+                              label="Start Your Journey"
+                              color="green"
+                              href={ir1journeyHref}
+                            />
                           </RoadmapAnchor>
                           {/* <Annotation text="Reunited at last!" direction="left" /> */}
                         </ScrollReveal>
@@ -1438,7 +1549,6 @@ function HomePageContent() {
 
             <JourneyConsultationBand>
               <ConsultationSection onConsultationClick={handleConsultationClick} />
-
 
               {/* TESTIMONIALS (moved from About page) */}
               <section className="py-24 px-8 md:px-20 text-center">

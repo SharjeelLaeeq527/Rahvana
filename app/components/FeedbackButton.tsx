@@ -32,6 +32,7 @@ export default function FeedbackButton({
 }: FeedbackButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inHero, setInHero] = useState(false);
+  const [hideForHeroAnim, setHideForHeroAnim] = useState(false);
   const [bottomOffset, setBottomOffset] = useState(16);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
@@ -180,6 +181,21 @@ export default function FeedbackButton({
     };
   }, []);
 
+  // Listen for hero animation playing state — hides the button entirely
+  // while the intro cinematic sequence is still running.
+  useEffect(() => {
+    const handleHeroAnimPlaying = (event: Event) => {
+      if (event instanceof CustomEvent) {
+        setHideForHeroAnim(event.detail.playing);
+      }
+    };
+
+    window.addEventListener("hero-animation-playing", handleHeroAnimPlaying);
+    return () => {
+      window.removeEventListener("hero-animation-playing", handleHeroAnimPlaying);
+    };
+  }, []);
+
   // Update step if it changes externally while modal is open
   useEffect(() => {
     if (currentStepName && !feedback.step) {
@@ -321,11 +337,12 @@ export default function FeedbackButton({
 
   return (
     <>
-      {/* Sticky Feedback Button */}
-      <button
-        ref={buttonRef}
-        onClick={() => setIsOpen(true)}
-        className="
+      {/* Sticky Feedback Button — hidden while the hero intro animation is playing */}
+      {!hideForHeroAnim && (
+        <button
+          ref={buttonRef}
+          onClick={() => setIsOpen(true)}
+          className="
     group fixed right-3 sm:right-6 z-40
 
     inline-flex h-12 w-12
@@ -353,21 +370,21 @@ export default function FeedbackButton({
     [will-change:transform]
     [backface-visibility:hidden]
   "
-        style={{
-          bottom: "calc(16px + env(safe-area-inset-bottom))",
-          backgroundColor: inHero
-            ? "var(--feedback-button-hero, #71a1a1)"
-            : "var(--feedback-button-bg, #0d7377)",
-          boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
-          transform: "translate3d(0,0,0)",
-        }}
-      >
-        <span className="pointer-events-none flex shrink-0 items-center justify-center">
-          <MessageSquareWarning className="h-5 w-5" />
-        </span>
+          style={{
+            bottom: "calc(16px + env(safe-area-inset-bottom))",
+            backgroundColor: inHero
+              ? "var(--feedback-button-hero, #71a1a1)"
+              : "var(--feedback-button-bg, #0d7377)",
+            boxShadow: "0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1)",
+            transform: "translate3d(0,0,0)",
+          }}
+        >
+          <span className="pointer-events-none flex shrink-0 items-center justify-center">
+            <MessageSquareWarning className="h-5 w-5" />
+          </span>
 
-        <span
-          className="
+          <span
+            className="
       pointer-events-none max-w-0 whitespace-nowrap
       text-sm font-semibold opacity-0
       transition-all duration-200
@@ -381,10 +398,11 @@ export default function FeedbackButton({
       sm:group-active:max-w-[136px]
       sm:group-active:opacity-100
     "
-        >
-          Provide Feedback
-        </span>
-      </button>
+          >
+            Provide Feedback
+          </span>
+        </button>
+      )}
 
       {/* Feedback Modal */}
       <Dialog open={isOpen} onOpenChange={setIsOpen}>

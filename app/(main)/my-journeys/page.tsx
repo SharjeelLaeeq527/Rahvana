@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { ir1journeyHref } from "@/lib/constants/routes";
+
 // Aliases: map any known DB variant → canonical ID
 // Handles cases like "ir-1" vs "ir1", "ir1-spouse-visa" vs "ir1", etc.
 const JOURNEY_ALIASES: Record<string, string> = {
@@ -49,12 +51,12 @@ const JOURNEY_META: Record<string, JourneyMeta> = {
   ir1: {
     name: "IR-1 Spouse Visa",
     description: "Immigration journey for a spouse of a U.S. citizen.",
-    route: "/visa-category/ir-category/ir1-journey",
+    route: ir1journeyHref,
   },
   ir5: {
     name: "IR-5 Parents Visa",
     description: "Immigration journey for parents of U.S. citizens.",
-    route: "/visa-category/ir-category/ir5-journey",
+    route: ir1journeyHref,
   },
 };
 

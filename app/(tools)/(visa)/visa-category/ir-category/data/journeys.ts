@@ -1,3 +1,5 @@
+import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
+
 export const JOURNEY_SLUGS = ["ir-1", "ir-5"] as const;
 
 export type JourneySlug = (typeof JOURNEY_SLUGS)[number];
@@ -92,9 +94,8 @@ export const EXPLORER_CARDS: ExplorerJourneyCard[] = [
     successRate: "92%",
     status: "Live",
     featured: true,
-    href: "/visa-category/ir-category/ir-1",
-    image:
-      "/assets/images/ir1_spouse_visa.png",
+    href: ir1journeyHref,
+    image: "/assets/images/ir1_spouse_visa.png",
     highlights: ["Immediate relative", "Consular processing", "Work authorization on arrival"],
   },
   {
@@ -109,9 +110,8 @@ export const EXPLORER_CARDS: ExplorerJourneyCard[] = [
     successRate: "96%",
     status: "Live",
     featured: true,
-    href: "/visa-category/ir-category/ir-5",
-    image:
-      "/assets/images/ir5_parent_visa.png",
+    href: ir5journeyHref,
+    image: "/assets/images/ir5_parent_visa.png",
     highlights: ["Age 21+ petitioner", "No annual quota", "Permanent residency outcome"],
   },
   {
@@ -124,8 +124,7 @@ export const EXPLORER_CARDS: ExplorerJourneyCard[] = [
     timeline: "Coming soon",
     successRate: "--",
     status: "Coming soon",
-    image:
-      "/assets/images/k1_fiance_visa.png",
+    image: "/assets/images/k1_fiance_visa.png",
     highlights: ["Planned release", "Marriage-based", "Pre-marriage planning"],
   },
 ];
@@ -139,37 +138,40 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
     summary:
       "A focused, immediate-relative pathway for spouses pursuing lawful permanent residency through consular processing.",
     heroEyebrow: "Family-based journey",
-    heroImage:
-      "/assets/images/ir1_spouse_visa.png",
+    heroImage: "/assets/images/ir1_spouse_visa.png",
     heroOverlay: "linear-gradient(180deg, rgba(4, 67, 73, 0.12) 0%, rgba(4, 67, 73, 0.72) 100%)",
     quickFacts: [
-        { label: "Green card type", value: "10-year if married 2+ years" },
-        { label: "Est. total time", value: "22 - 31 months" },
-        { label: "Work authorization", value: "Immediate" },
-        { label: "Stay limit", value: "Indefinite" },
-      ],
+      { label: "Green card type", value: "10-year if married 2+ years" },
+      { label: "Est. total time", value: "22 - 31 months" },
+      { label: "Work authorization", value: "Immediate" },
+      { label: "Stay limit", value: "Indefinite" },
+    ],
     timeline: [
       {
         stage: "Stage 1",
         title: "USCIS Petition (I-130)",
-        summary: "The U.S. citizen spouse files the petition and establishes the legal marriage relationship.",
+        summary:
+          "The U.S. citizen spouse files the petition and establishes the legal marriage relationship.",
         detail:
           "This is the foundation of the case. Clean civil records, matching names, and strong bona fide marriage evidence reduce avoidable delays.",
         metric: "Typical duration: 12 - 18 months",
         duration: "12 - 18 months",
-        outcome: "A USCIS decision that recognizes the qualifying marriage and moves the case to the National Visa Center.",
+        outcome:
+          "A USCIS decision that recognizes the qualifying marriage and moves the case to the National Visa Center.",
         rahvanaSupport:
           "Rahvana starts with eligibility screens, builds the Pakistan-specific document checklist, guides I-130/I-130A preparation, and keeps evidence uploads organized before USCIS submission.",
       },
       {
         stage: "Stage 2",
         title: "NVC Processing",
-        summary: "The National Visa Center collects fees, civil documents, and the affidavit of support.",
+        summary:
+          "The National Visa Center collects fees, civil documents, and the affidavit of support.",
         detail:
           "The pacing here is usually driven by document completeness. Organize translations, tax records, and the DS-260 before you upload anything.",
         metric: "Focus: financial and civil documentation",
         duration: "2 - 3 months after USCIS approval",
-        outcome: "Documentarily qualified status once fees, DS-260, civil documents, and financial support are accepted.",
+        outcome:
+          "Documentarily qualified status once fees, DS-260, civil documents, and financial support are accepted.",
         rahvanaSupport:
           "Rahvana helps users access CEAC, prepare DS-260 answers, scan civil documents, calculate sponsorship needs, gather financial evidence, and run a final NVC quality check before submission.",
       },
@@ -188,12 +190,14 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
       {
         stage: "Stage 4",
         title: "U.S. Entry and Green Card",
-        summary: "The spouse enters the United States and receives permanent resident status on arrival.",
+        summary:
+          "The spouse enters the United States and receives permanent resident status on arrival.",
         detail:
           "The passport stamp acts as temporary proof of residency and the green card is mailed to the U.S. address after arrival processing.",
         metric: "Outcome: 10-year permanent residency",
         duration: "Green card typically follows after U.S. entry",
-        outcome: "The spouse enters as a permanent resident and can begin life and work in the United States.",
+        outcome:
+          "The spouse enters as a permanent resident and can begin life and work in the United States.",
         rahvanaSupport:
           "Rahvana records the interview outcome, unlocks the correct next steps for approval or 221(g), tracks visa issuance or post-interview review, and keeps delivery and arrival tasks visible.",
       },
@@ -242,7 +246,8 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
     supportingResources: [
       {
         title: "Relationship proof organizer",
-        description: "Group marriage evidence by time period and proof type before the case is reviewed.",
+        description:
+          "Group marriage evidence by time period and proof type before the case is reviewed.",
       },
       {
         title: "NVC upload checklist",
@@ -265,12 +270,11 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
     callout: {
       eyebrow: "Expert tip",
       title: "IR-1 is cleaner than CR-1 when the marriage is already two years old.",
-      body:
-        "If the marriage is under two years at issuance, the case can land in CR-1 territory and later require removal of conditions. Planning the timing carefully can change the experience at the finish line.",
+      body: "If the marriage is under two years at issuance, the case can land in CR-1 territory and later require removal of conditions. Planning the timing carefully can change the experience at the finish line.",
     },
     ctaPrimary: {
       label: "Start IR-1 assessment",
-      href: "/visa-category/ir-category/ir1-journey",
+      href: ir1journeyHref,
     },
     ctaSecondary: {
       label: "Talk to an expert",
@@ -285,15 +289,14 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
     summary:
       "A direct immediate-relative route for parents who qualify under U.S. citizen sponsorship and consular processing.",
     heroEyebrow: "Immediate relative category",
-    heroImage:
-      "/assets/images/ir5_parent_visa.png",
+    heroImage: "/assets/images/ir5_parent_visa.png",
     heroOverlay: "linear-gradient(180deg, rgba(4, 67, 73, 0.08) 0%, rgba(48, 63, 63, 0.74) 100%)",
     quickFacts: [
-        { label: "Petitioner age", value: "U.S. citizen 21+" },
-        { label: "Relationship type", value: "Parent of U.S. citizen" },
-        { label: "Financial support", value: "I-864 / 125% FPL" },
-        { label: "Quota", value: "No annual cap" },
-      ],
+      { label: "Petitioner age", value: "U.S. citizen 21+" },
+      { label: "Relationship type", value: "Parent of U.S. citizen" },
+      { label: "Financial support", value: "I-864 / 125% FPL" },
+      { label: "Quota", value: "No annual cap" },
+    ],
     timeline: [
       {
         stage: "Stage 1",
@@ -315,7 +318,8 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
           "The parent case often moves quickly when tax transcripts, income evidence, and civil records are ready at the same time.",
         metric: "Focus: I-864 and civil evidence",
         duration: "2 - 3 months after USCIS approval",
-        outcome: "NVC accepts the sponsor and parent documents and places the case in line for interview scheduling.",
+        outcome:
+          "NVC accepts the sponsor and parent documents and places the case in line for interview scheduling.",
         rahvanaSupport:
           "Rahvana separates sponsor financial proof from parent civil records and keeps each required upload tied to the NVC stage.",
       },
@@ -327,19 +331,22 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
           "Carry originals, translations, and proof of family relationship. If the parent has a complex history, organize the file around dates and documents.",
         metric: "Location: embassy or consulate",
         duration: "8 - 10 months after DQ",
-        outcome: "The parent receives an interview decision or clear instructions for any missing items.",
+        outcome:
+          "The parent receives an interview decision or clear instructions for any missing items.",
         rahvanaSupport:
           "Rahvana creates an interview-ready file, tracks medical and police certificate timing, and highlights documents the parent should carry.",
       },
       {
         stage: "Stage 4",
         title: "Arrival in the United States",
-        summary: "The parent enters the U.S. as a permanent resident and continues life with the family.",
+        summary:
+          "The parent enters the U.S. as a permanent resident and continues life with the family.",
         detail:
           "The immigrant packet and passport stay with the traveler. After arrival, the green card arrives by mail to the U.S. address.",
         metric: "Outcome: permanent residency",
         duration: "Green card typically follows after U.S. entry",
-        outcome: "The parent enters the United States as a permanent resident with post-arrival tasks clearly defined.",
+        outcome:
+          "The parent enters the United States as a permanent resident with post-arrival tasks clearly defined.",
         rahvanaSupport:
           "Rahvana keeps final travel, immigrant fee, U.S. address, and post-approval document tasks organized through arrival.",
       },
@@ -388,7 +395,8 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
     supportingResources: [
       {
         title: "Parent civil file checklist",
-        description: "Keep relationship records, translations, and identity documents ready by stage.",
+        description:
+          "Keep relationship records, translations, and identity documents ready by stage.",
       },
       {
         title: "Sponsor support tracker",
@@ -411,12 +419,11 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
     callout: {
       eyebrow: "Expert tip",
       title: "IR-5 is strongest when the parent-child paper trail is built early.",
-      body:
-        "Age, domicile, and relationship evidence should be organized before filing. That keeps the case from stalling later when the NVC or embassy asks for proof.",
+      body: "Age, domicile, and relationship evidence should be organized before filing. That keeps the case from stalling later when the NVC or embassy asks for proof.",
     },
     ctaPrimary: {
       label: "Start IR-5 assessment",
-      href: "/visa-category/ir-category/ir5-journey",
+      href: ir5journeyHref,
     },
     ctaSecondary: {
       label: "Talk to an expert",

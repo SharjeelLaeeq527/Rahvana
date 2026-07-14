@@ -315,16 +315,16 @@ export function ToolsDock() {
   }, []);
 
   return (
-    <section className="relative flex w-full flex-col justify-center overflow-hidden bg-slate-50/50 px-6 pt-2 pb-6 md:pt-4 md:pb-8">
+    <section className="relative flex w-full flex-col justify-center overflow-hidden bg-slate-50/50 px-6 pt-2 pb-20 md:pt-4 md:pb-14">
       <div className="mx-auto flex w-full max-w-5xl flex-col justify-center">
         {/* Eyebrow + headline */}
         <div className="mx-auto mb-4 md:mb-6 max-w-2xl text-center shrink-0">
-          <span className="mb-2 block font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-400">
+          <span className="mb-2 block font-mono text-[10px] uppercase tracking-[0.22em] text-zinc-600">
             Do it yourself
           </span>
-          <h2 className="text-balance text-2xl md:text-4xl font-medium leading-[1.1] tracking-tight text-zinc-900">
+          <h2 className="text-balance text-2xl md:text-4xl font-medium leading-[1.1] tracking-tight text-zinc-400">
             Already know what you're doing?{" "}
-            <span className="text-zinc-400">You just need the right tools.</span>
+            <span className="text-zinc-900">You just need the right tools.</span>
           </h2>
           <p className="mx-auto mt-2 md:mt-3 max-w-lg text-[13px] md:text-[15px] leading-relaxed text-zinc-500">
             Tools, expert services, and country-specific guides — all in one place.
@@ -348,10 +348,10 @@ export function ToolsDock() {
             {/* Icon card — full-bleed icon, no wasted space */}
             <motion.div
               animate={{
-                x: isMobile ? 0 : (iconInFront ? -85 : 70),
-                y: isMobile ? (iconInFront ? 10 : -10) : (iconInFront ? 8 : -8),
-                rotate: isMobile ? (iconInFront ? -2 : 2) : (iconInFront ? -5 : 4),
-                scale: isMobile ? (iconInFront ? 1 : 0.9) : (iconInFront ? 1 : 0.9),
+                x: isMobile ? 0 : iconInFront ? -85 : 70,
+                y: isMobile ? (iconInFront ? 10 : -10) : iconInFront ? 8 : -8,
+                rotate: isMobile ? (iconInFront ? -2 : 2) : iconInFront ? -5 : 4,
+                scale: isMobile ? (iconInFront ? 1 : 0.9) : iconInFront ? 1 : 0.9,
                 zIndex: iconInFront ? 20 : 10,
               }}
               transition={{ type: "spring", stiffness: 50, damping: 18 }}
@@ -376,7 +376,10 @@ export function ToolsDock() {
                       transition={{ type: "spring", stiffness: 180, damping: 18 }}
                       className="flex flex-1 items-center justify-center"
                     >
-                      <active.Icon className={`h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 ${active.accent}`} strokeWidth={1.4} />
+                      <active.Icon
+                        className={`h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 ${active.accent}`}
+                        strokeWidth={1.4}
+                      />
                     </motion.div>
                     {/* Label strip at bottom */}
                     <div className="border-t border-black/5 bg-white/70 px-3 py-2 backdrop-blur-sm">
@@ -408,7 +411,10 @@ export function ToolsDock() {
                     transition={{ type: "spring", stiffness: 180, damping: 18 }}
                     className="flex flex-1 items-center justify-center"
                   >
-                    <active.Icon className={`h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 ${active.accent}`} strokeWidth={1.4} />
+                    <active.Icon
+                      className={`h-14 w-14 sm:h-16 sm:w-16 md:h-20 md:w-20 ${active.accent}`}
+                      strokeWidth={1.4}
+                    />
                   </motion.div>
                   {/* Label strip at bottom */}
                   <div className="border-t border-black/5 bg-white/70 px-3 py-2 backdrop-blur-sm">
@@ -426,10 +432,10 @@ export function ToolsDock() {
             {/* Scenario card — tight, animated text */}
             <motion.div
               animate={{
-                x: isMobile ? 0 : (iconInFront ? 85 : -70),
-                y: isMobile ? (iconInFront ? -10 : 10) : (iconInFront ? -8 : 8),
-                rotate: isMobile ? (iconInFront ? 2 : -2) : (iconInFront ? 4 : -5),
-                scale: isMobile ? (iconInFront ? 0.9 : 1) : (iconInFront ? 0.92 : 1),
+                x: isMobile ? 0 : iconInFront ? 85 : -70,
+                y: isMobile ? (iconInFront ? -10 : 10) : iconInFront ? -8 : 8,
+                rotate: isMobile ? (iconInFront ? 2 : -2) : iconInFront ? 4 : -5,
+                scale: isMobile ? (iconInFront ? 0.9 : 1) : iconInFront ? 0.92 : 1,
                 zIndex: iconInFront ? 10 : 20,
               }}
               transition={{ type: "spring", stiffness: 50, damping: 18 }}
@@ -469,7 +475,10 @@ export function ToolsDock() {
                     {/* Always visible CTA at bottom of card text */}
                     <div className="mt-2 flex items-center gap-1.5 text-[11px] font-semibold text-zinc-950 group-hover:text-zinc-700 transition-colors">
                       <span>Open Tool</span>
-                      <ArrowRight className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-0.5" strokeWidth={2.5} />
+                      <ArrowRight
+                        className="h-3 w-3 transition-transform duration-300 group-hover:translate-x-0.5"
+                        strokeWidth={2.5}
+                      />
                     </div>
                   </div>
                 </Link>
@@ -563,9 +572,7 @@ function CurvedDock({
     const x = cx + offset * slot;
     const dx = x - cx;
     const y = cy - Math.sqrt(r * r - dx * dx);
-    const half2 = isActive
-      ? (isMobile ? 18 : 24)
-      : (isMobile ? 14 : 19);
+    const half2 = isActive ? (isMobile ? 18 : 24) : isMobile ? 14 : 19;
     return {
       left: `calc(${(x / width) * 100}% - ${half2}px)`,
       top: `calc(${(y / height) * 100}% - ${half2}px)`,
@@ -601,7 +608,11 @@ function CurvedDock({
 
       <div className="relative flex-1 aspect-[680/90] overflow-visible">
         {/* Arc guide line */}
-        <svg viewBox={`0 0 ${width} ${height}`} className="absolute inset-0 w-full h-full block" aria-hidden>
+        <svg
+          viewBox={`0 0 ${width} ${height}`}
+          className="absolute inset-0 w-full h-full block"
+          aria-hidden
+        >
           <path
             d={`M 40 ${cy - Math.sqrt(r * r - (cx - 40) * (cx - 40))} A ${r} ${r} 0 0 1 ${width - 40} ${
               cy - Math.sqrt(r * r - (cx - (width - 40)) * (cx - (width - 40)))
@@ -655,7 +666,9 @@ function CurvedDock({
                   >
                     <tool.Icon
                       className={`transition-all duration-300 ${
-                        isActive ? `h-4 w-4 md:h-6 md:w-6 ${tool.accent}` : `h-3.5 w-3.5 md:h-4 md:w-4 ${tool.accent}`
+                        isActive
+                          ? `h-4 w-4 md:h-6 md:w-6 ${tool.accent}`
+                          : `h-3.5 w-3.5 md:h-4 md:w-4 ${tool.accent}`
                       }`}
                     />
                   </div>

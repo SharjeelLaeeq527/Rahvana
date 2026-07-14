@@ -24,6 +24,7 @@ const JA = "#3d7275",
   JE = "#7a4a55",
   JF = "#7a6050";
 const FIVE_IDS = new Set([1, 10, 11, 15, 22]);
+const INK = (a: number) => `rgba(12,18,42,${a})`;
 
 const IMG = {
   standing: "/assets/images/illustartions/standing.png",
@@ -929,6 +930,18 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
     return () => clearInterval(iv);
   }, [narrPhase, visibleJ]);
 
+  // Tell the rest of the page whether the intro sequence is still running.
+  // endPhase starts as `null` (animation actively playing) and only
+  // becomes "hero" once the sequence finishes naturally or is skipped —
+  // so this fires `playing: false` at exactly the moment the real hero
+  // frame (headline + CTA) takes over.
+  useEffect(() => {
+    const playing = endPhase !== "hero";
+    window.dispatchEvent(
+      new CustomEvent("hero-animation-playing", { detail: { playing } })
+    );
+  }, [endPhase]);
+
   useEffect(() => {
     let isAlive = true;
     aliveRef.current = true;
@@ -1642,26 +1655,29 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
           className="hero-skip-button"
           style={{
             position: "fixed",
-            bottom: "max(16px, env(safe-area-inset-bottom))",
-            right: 16,
-            zIndex: 120,
-            transform: "none",
-            border: "1px solid rgba(12,18,42,0.08)",
-            borderRadius: 999,
-            background: "rgba(255,255,255,0.42)",
-            color: "rgba(12,18,42,0.42)",
-            fontFamily: FB,
-            fontSize: 11,
-            fontWeight: 600,
-            letterSpacing: "0.12em",
-            textTransform: "uppercase",
-            padding: "7px 12px",
-            cursor: "pointer",
-            boxShadow: "0 4px 14px rgba(12,18,42,0.05)",
-            backdropFilter: "blur(10px)",
-            WebkitBackdropFilter: "blur(10px)",
-            opacity: 0.7,
-            transition: "opacity 160ms ease, background-color 160ms ease, transform 160ms ease",
+              bottom: "max(16px, env(safe-area-inset-bottom))",
+              right: 16,
+              zIndex: 120,
+              transform: "none",
+              border: "1px solid rgba(12,18,42,0.08)",
+              borderRadius: 999,
+              background: "rgba(255,255,255,0.42)",
+              color: INK(0.42),
+              fontFamily: FB,
+              fontSize: 11,
+              fontWeight: 600,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              padding: "10px 16px",
+              minHeight: 44,
+              minWidth: 44,
+              cursor: "pointer",
+              boxShadow: "0 4px 14px rgba(12,18,42,0.05)",
+              backdropFilter: "blur(10px)",
+              WebkitBackdropFilter: "blur(10px)",
+              opacity: 0.7,
+              transition: "opacity 160ms ease, background-color 160ms ease, transform 160ms ease",
+              WebkitTapHighlightColor: "transparent",
           }}
           onMouseEnter={(event) => {
             event.currentTarget.style.opacity = "1";
@@ -2061,9 +2077,9 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
               left: isMobile ? "0px" : "-45px",
             }}
           >
-            One view of every step, every <br />
-            <span style={{ display: "inline-block", width: isMobile ? "0px" : "90px" }} />
-            dependency, and everything in between.
+            Every step, every requirement,<br />
+            <span style={{ display: "inline-block", width: isMobile ? "0px" : "100px" }} />
+            connected in one clear timeline.
           </div>
 
           <motion.button

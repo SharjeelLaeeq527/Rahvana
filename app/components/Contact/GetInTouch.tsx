@@ -154,7 +154,7 @@ export default function GetInTouch() {
                     type="text"
                     id="lastName"
                     name="lastName"
-                    placeholder={t("homePage.contactSection.placeholderLastName") || "Doe"}
+                    placeholder="Smith"
                     required
                     disabled={isSubmitting}
                     className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"

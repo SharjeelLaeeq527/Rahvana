@@ -46,33 +46,17 @@ export default function SectionBird({
       ref={ref}
       aria-hidden="true"
       className={`hidden md:block absolute z-0 pointer-events-none select-none transition-opacity duration-1000 ease-out ${
-        visible ? "opacity-55" : "opacity-0"
+        visible ? "opacity-60" : "opacity-0"
       } ${className || sideClass} ${pos}`}
     >
-      <div
-        className={`relative transition-all duration-1000 ease-out ${
-          visible ? "opacity-85 translate-y-0 scale-100" : "opacity-0 translate-y-6 scale-95"
-        }`}
-      >
-        <div className="bird-glow" />
-        <span className="bird-sparkle" style={{ top: "6%", left: "4%" }} />
-        <span
-          className="bird-sparkle"
-          style={{ top: "26%", right: "8%", animationDelay: "1.4s" }}
-        />
-        <span
-          className="bird-sparkle"
-          style={{ bottom: "12%", left: "16%", animationDelay: "2.6s" }}
-        />
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`/homepage/bird${n}-teal.png`}
+          src={`/homepage/bird${n}.png`}
           alt=""
           loading="lazy"
           className={`bird-bg-img relative h-auto ${size}`}
           style={{ animationDelay: `${(n % 4) * -1.7}s` }}
         />
       </div>
-    </div>
   );
 }
