@@ -2,6 +2,7 @@
 // types/notifications.ts
 // Notification types for admin tracking status updates
 // ============================================================
+import { ir1journeyHref } from "@/lib/constants/routes";
 
 export type NotificationType =
   | "nvc_review_complete"
@@ -72,21 +73,21 @@ export const NOTIFICATION_TEMPLATES: Record<
     body: "Great news! The NVC has completed their review of your documents. Your case is now being processed for Documentarily Qualified status.",
     priority: "high",
     action_label: "View Dashboard",
-    action_url: "/visa-category/ir-category/ir-1-journey",
+    action_url: ir1journeyHref,
   },
   dq_qualified: {
     title: "You Are Documentarily Qualified!",
     body: "Congratulations! NVC has confirmed your case is Documentarily Qualified. Your interview will be scheduled based on visa bulletin availability.",
     priority: "critical",
     action_label: "View Dashboard",
-    action_url: "/visa-category/ir-category/ir-1-journey",
+    action_url: ir1journeyHref,
   },
   interview_scheduled: {
     title: "Interview Scheduled",
     body: "Your visa interview has been scheduled. Please review the interview preparation guide and ensure all documents are ready.",
     priority: "critical",
     action_label: "View Details",
-    action_url: "/visa-category/ir-category/ir-1-journey",
+    action_url: ir1journeyHref,
   },
   administrative_processing: {
     title: "Administrative Processing",
@@ -100,14 +101,14 @@ export const NOTIFICATION_TEMPLATES: Record<
     body: "Your administrative processing is complete. Your case is now moving forward for final visa issuance.",
     priority: "high",
     action_label: "View Dashboard",
-    action_url: "/visa-category/ir-category/ir-1-journey",
+    action_url: ir1journeyHref,
   },
   admin_status_update: {
     title: "Case Status Update",
     body: "Your visa case status has been updated by our admin team. Check your dashboard for the latest information.",
     priority: "normal",
     action_label: "View Dashboard",
-    action_url: "/visa-category/ir-category/ir-1-journey",
+    action_url: ir1journeyHref,
   },
   nvc_check_reminder: {
     title: "Daily Reminder: Check NVC Inbox",

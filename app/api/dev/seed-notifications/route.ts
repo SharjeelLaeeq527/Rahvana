@@ -7,6 +7,7 @@ import { createClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { E, msg } from "@/lib/errors";
+import { ir1journeyHref } from "@/lib/constants/routes";
 
 function getAdminClient() {
   return createClient(
@@ -23,7 +24,7 @@ const SAMPLE_NOTIFICATIONS = [
     title: "🔴 Interview in 3 days — Final checklist",
     body: "Your visa interview is in 3 days. Make sure all original documents are ready: passport, birth certificate, I-864, DS-260 confirmation, medical results, and PCC. Arrive 30 minutes early.",
     action_label: "View Interview Checklist",
-    action_url: "/visa-category/ir-category/ir1-journey",
+    action_url: ir1journeyHref,
     step_key: "step_2_12",
   },
   {
@@ -32,7 +33,7 @@ const SAMPLE_NOTIFICATIONS = [
     title: "Medical exam in 7 days — confirm you have everything",
     body: "One week to your medical exam. Confirm you have: ✓ Original passport ✓ 2 passport photos (35×45mm) ✓ Polio certificate ✓ Vaccination records ✓ Payment for physician fee.",
     action_label: "View Medical Checklist",
-    action_url: "/visa-category/ir-category/ir1-journey",
+    action_url: ir1journeyHref,
     step_key: "step_3_1",
   },
   {
@@ -41,7 +42,7 @@ const SAMPLE_NOTIFICATIONS = [
     title: "Apply for Police Clearance Certificate NOW",
     body: "A fresh PCC is required for your interview. Apply immediately at your nearest Police Khidmat Markaz. PCCs can take 3–14 days — do not leave this for the last minute.",
     action_label: "Apply for PCC",
-    action_url: "/visa-category/ir-category/ir1-journey",
+    action_url: ir1journeyHref,
     step_key: "step_3_3",
   },
   {
@@ -59,7 +60,7 @@ const SAMPLE_NOTIFICATIONS = [
     title: "Ask your US sponsor to prepare fresh financial documents",
     body: "Contact your US-based petitioner/sponsor now. They need recent tax returns, pay stubs, and a current I-864 Affidavit of Support ready for your interview.",
     action_label: "Go to Step 11",
-    action_url: "/visa-category/ir-category/ir1-journey",
+    action_url: ir1journeyHref,
     step_key: "step_2_11",
   },
   {

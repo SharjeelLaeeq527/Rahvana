@@ -22,6 +22,7 @@ import StatCard from "@/app/components/shared/StatCard";
 import { Loader } from "@/components/ui/spinner";
 import { useAuth } from "@/app/context/AuthContext";
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { ir1journeyHref } from "@/lib/constants/routes";
 
 type Analytics = {
   journeys: { total: number };
@@ -262,7 +263,7 @@ const UserDashboardV2 = () => {
             </div>
 
             <button
-              onClick={() => router.push("/visa-category/ir-category/ir1-journey")}
+              onClick={() => router.push({ ir1journeyHref })}
               className="shrink-0 inline-flex items-center justify-center gap-2 px-6 py-3 bg-white hover:bg-teal-50 text-[#0d7377] font-semibold rounded-xl transition duration-200 shadow-md group cursor-pointer"
             >
               Go to IR-1 Roadmap

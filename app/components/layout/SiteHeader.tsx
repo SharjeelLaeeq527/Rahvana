@@ -55,6 +55,7 @@ import { NAV_DATA } from "./navigationData";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
 import { requestNavigation } from "@/lib/guides/navigationGuardStore";
 // import { useTheme } from "next-themes";
+import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 
 interface HeaderProps {
   activeSection?: string;
@@ -362,9 +363,7 @@ export function SiteHeader({
 
   const journeyButtonText = showToggle ? "Explore Journeys" : "IR-1 Journey";
 
-  const journeyButtonHref = showToggle
-    ? "/visa-category/ir-category"
-    : "/visa-category/ir-category/ir1-journey";
+  const journeyButtonHref = showToggle ? "/visa-category/ir-category" : ir1journeyHref;
 
   const journeyNavigationId = showToggle ? "journeys" : "ir1-journey";
 
@@ -614,8 +613,8 @@ export function SiteHeader({
         journeys: "/visa-category/ir-category",
         "my-journeys": "/my-journeys",
         "my-guides": "/guides/my-guides",
-        "ir1-journey": "/visa-category/ir-category/ir1-journey",
-        "ir5-journey": "/visa-category/ir-category/ir5-journey",
+        "ir1-journey": ir1journeyHref,
+        "ir5-journey": ir5journeyHref,
         "k1-journey": "/visa-category/ir-category/k1-journey",
         services: "/resources?tab=services",
         tools: "/resources?tab=toolbox",
@@ -715,7 +714,11 @@ export function SiteHeader({
           {/* Mobile Menu Trigger */}
           <HydrationSafeButton
             className={`lg:hidden p-1 rounded-md transition-colors ${
-              isHomeHeroState ? "text-TEAL hover:bg-white/15" : isHomepageHeroState ? "text-[#0d7377] hover:bg-[#0d7377]/10" : "text-foreground hover:bg-muted"
+              isHomeHeroState
+                ? "text-TEAL hover:bg-white/15"
+                : isHomepageHeroState
+                  ? "text-[#0d7377] hover:bg-[#0d7377]/10"
+                  : "text-foreground hover:bg-muted"
             }`}
             onClick={() => setIsMenuOpen(true)}
             aria-label="Open menu"
@@ -746,7 +749,11 @@ export function SiteHeader({
                     ? "!text-[#0d7377]"
                     : "text-rahvana-primary"
               }`}
-              style={isHomeHeroP2State || isHomepageHeroState ? { color: "#0d7377", fill: "#0d7377/20" } : {}}
+              style={
+                isHomeHeroP2State || isHomepageHeroState
+                  ? { color: "#0d7377", fill: "#0d7377/20" }
+                  : {}
+              }
             >
               <path d="M194.478302,411.482117C188.648972,398.666321 181.184067,387.211884 174.078979,375.556946C161.946335,355.654999 154.218430,334.429535 152.466766,310.927032C150.965759,290.787415 151.490814,271.069061 158.657028,251.953415C161.906097,243.286591 167.372574,236.333282 175.068100,231.098938C187.972153,222.321823 212.377777,222.515015 222.031631,242.165817C226.003326,250.250381 232.154404,254.994858 241.386230,255.103607C240.874603,257.700470 239.210571,257.303253 238.057617,257.539734C214.604111,262.350281 200.098267,276.975067 192.363480,299.065857C184.921768,320.319672 187.555267,352.132874 198.628662,372.172211C195.346085,360.736084 194.548477,349.072571 194.585556,337.231354C194.686203,305.091156 209.071442,282.030487 237.587112,267.388245C252.463837,259.749298 268.363953,254.738281 283.791870,248.515182C300.024750,241.967392 315.867065,234.607849 330.889893,225.571030C331.848022,224.994675 332.727417,224.133804 334.330139,224.642090C334.086884,229.016586 332.356110,232.995224 331.110291,237.029678C325.877838,253.974487 319.356995,270.258270 307.731262,284.109070C295.584656,298.580475 279.797791,306.307983 261.751282,310.259583C255.743668,311.575104 249.729248,312.898682 243.795959,314.506500C229.390137,318.410126 220.388382,329.212219 218.286926,343.947327C216.575470,355.947906 217.905655,367.798737 218.737152,379.737518C219.623474,392.463135 221.756760,405.206818 219.303925,418.003387C217.963852,424.994537 214.710114,430.344635 207.688766,433.006439C204.303909,434.289673 202.544754,433.679260 201.368622,430.074707C199.358749,423.914886 196.908096,417.898895 194.478302,411.482117z"></path>
               <path d="M347.022308,320.000671C347.016052,314.839264 347.105347,310.174835 346.965759,305.517273C346.865234,302.162506 348.128204,300.629364 351.628418,300.734467C356.786560,300.889313 361.960175,300.922363 367.113922,300.699646C370.973633,300.532806 372.427643,301.928192 372.368347,305.879303C372.186157,318.023376 372.301971,330.171936 372.301971,342.083649C373.283447,342.867767 373.819183,342.426117 374.318726,342.006836C383.782745,334.063324 394.575775,332.615875 406.196838,335.633057C415.899536,338.152130 422.744904,346.587646 423.310516,356.622040C424.267090,373.593201 423.737030,390.584991 423.953217,407.566589C423.995270,410.868988 423.022247,412.495087 419.405853,412.347473C414.084778,412.130249 408.740967,412.096069 403.421997,412.329346C399.633331,412.495514 398.561127,410.970825 398.606415,407.354187C398.766998,394.531891 398.675171,381.706299 398.663269,368.881958C398.653717,358.575378 395.399567,354.366302 387.286011,354.116821C377.843262,353.826508 372.628845,358.719452 372.391693,368.828339C372.122253,380.313904 372.349670,391.810638 372.318054,403.302399C372.289795,413.578827 373.113983,412.175079 363.109467,412.274994C359.445770,412.311584 355.772827,412.113037 352.119568,412.309662C348.129639,412.524414 346.894379,410.660309 346.908722,406.924530C346.998840,383.444702 346.970551,359.964386 346.985443,336.484253C346.988831,331.156372 347.007996,325.828522 347.022308,320.000671z"></path>
@@ -1168,7 +1175,7 @@ export function SiteHeader({
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 8 }}
                         transition={{ duration: 0.18, ease: "easeOut" }}
-                        className="absolute right-0 top-full mt-1 w-80 rounded-xl shadow-xl border border-slate-200 bg-white z-9999 overflow-hidden origin-top-right"
+                        className="fixed left-1/2 -translate-x-1/2 md:-translate-x-0 md:left-auto md:absolute right-0 md:right-0 top-[76px] md:top-full mt-1 w-[calc(100vw-32px)] max-w-sm md:w-80 rounded-xl shadow-xl border border-slate-200 bg-white z-9999 overflow-hidden origin-top md:origin-top-right"
                       >
                         {/* Header */}
                         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted/30">
@@ -1323,10 +1330,16 @@ export function SiteHeader({
                 <div className="relative inline-flex">
                   <Heart
                     className={`h-5 w-5 transition-all duration-200 ${quickAccessOpen ? "fill-[#0d7377] text-[#0d7377]" : ""}`}
-                    style={isHomeHeroState ? { color: "#305d5aff" } : isHomeHeroP2State ? { color: "#0d7377" } : {}}
+                    style={
+                      isHomeHeroState
+                        ? { color: "#305d5aff" }
+                        : isHomeHeroP2State
+                          ? { color: "#0d7377" }
+                          : {}
+                    }
                   />
                   {quickAccessItems.length > 0 && (
-                    <span className="absolute top-[-9px] -right-1.5 w-4 h-4 rounded-full bg-[#0d7377] text-white text-[9px] font-medium flex items-center justify-center border border-white/50">
+                    <span className="absolute -top-1.5 -right-1.5 w-4 h-4 rounded-full bg-[#0d7377] text-white text-[9px] font-medium flex items-center justify-center border border-white/50">
                       {quickAccessItems.length > 9 ? "9+" : quickAccessItems.length}
                     </span>
                   )}
@@ -1340,7 +1353,7 @@ export function SiteHeader({
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.95, y: 8 }}
                     transition={{ duration: 0.18, ease: "easeOut" }}
-                    className="absolute right-0 top-full mt-1 w-72 rounded-xl shadow-xl border border-slate-200 bg-white z-[9999] overflow-visible origin-top-right"
+                    className="fixed left-1/2 -translate-x-1/2 md:-translate-x-0 md:left-auto md:absolute right-0 md:right-0 top-[76px] md:top-full mt-1 w-[calc(100vw-32px)] max-w-sm md:w-72 rounded-xl shadow-xl border border-slate-200 bg-white z-[9999] overflow-visible origin-top md:origin-top-right"
                   >
                     {/* Header */}
                     <div className="flex items-center justify-between px-4 py-2.5 border-b border-border bg-muted/30 rounded-t-xl">
@@ -1599,14 +1612,14 @@ export function SiteHeader({
 
                     {/* Section 1 */}
                     <div className="py-2 border-b border-border">
-                      <button
+                      {/* <button
                         id="my-dashboard-menu-item"
                         onClick={() => handleNav("dashboard")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <Layout className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                         My Dashboard
-                      </button>
+                      </button> */}
                       <button
                         onClick={() => handleNav("profile")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
@@ -1659,13 +1672,13 @@ export function SiteHeader({
                         <Shield className="w-4 h-4 text-emerald-500 dark:text-emerald-400" />
                         My Credentials
                       </button> */}
-                      <button
+                      {/* <button
                         onClick={() => {}} // Placeholder
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <HelpCircle className="w-4 h-4 text-cyan-500 dark:text-cyan-400" />
                         Help Center
-                      </button>
+                      </button> */}
                     </div>
 
                     {/* Footer - Sign Out */}

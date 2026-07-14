@@ -1078,6 +1078,13 @@ export const StepView: React.FC<StepViewProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sId, isApprovalSaved]);
 
+  // Show doc questionnaire automatically when user visits step_1_2 and it is not completed yet
+  useEffect(() => {
+    if (sId === "step_1_2" && !isDocQuestionnaireCompleted) {
+      setShowDocQuestionnaire(true);
+    }
+  }, [sId, isDocQuestionnaireCompleted]);
+
   const handleNavigate = (stepId: string) => {
     // Sequential navigation guard: Step 1.1 -> Step 1.2
     if (stepId === "step_1_2" && !state.completedSteps.has("step_1_1")) {
@@ -1124,38 +1131,21 @@ export const StepView: React.FC<StepViewProps> = ({
 
     return (
       <div className="mt-4 mb-7 w-full max-w-[660px] mx-auto animate-in fade-in duration-500">
-        <div className="bg-[#fafcff]/80 backdrop-blur-xs border border-[#d0e4f7] rounded-[20px] p-5 sm:p-6 shadow-xs flex flex-col gap-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-[#e1eefc]">
-            <Book className="h-[16px] w-[16px] text-primary shrink-0" strokeWidth={2.5} />
-            <span className="text-[12px] font-bold uppercase tracking-wider text-[#3a4f63]">
+        <button
+          onClick={() => setIsCitationsModalOpen(true)}
+          className="w-full bg-[#fafcff]/80 backdrop-blur-xs border border-[#d0e4f7] rounded-[20px] p-5 sm:p-6 shadow-xs flex items-center justify-between hover:border-primary hover:bg-[#fafcff] group transition-all text-left cursor-pointer"
+        >
+          <div className="flex items-center gap-2">
+            <Book className="h-[16px] w-[16px] text-primary shrink-0 group-hover:scale-110 transition-transform" strokeWidth={2.5} />
+            <span className="text-[12px] font-bold uppercase tracking-wider text-[#3a4f63] group-hover:text-primary transition-colors">
               Official References & Citations
             </span>
           </div>
-          <div className="flex flex-col gap-3">
-            {citations.map((cite, index) => (
-              <a
-                key={index}
-                href={cite.link}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex items-center justify-between p-3.5 sm:p-4 rounded-[14px] bg-white border border-[#e1eefc] hover:border-primary hover:shadow-xs group transition-all"
-              >
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-[13.5px] sm:text-[14px] font-bold text-[#0f1f38] group-hover:text-primary transition-colors">
-                    {cite.text}
-                  </span>
-                  {/* <span className="text-[11px] sm:text-[11.5px] text-[#6b8097] font-medium break-all">
-                    {cite.link}
-                  </span> */}
-                </div>
-                <ExternalLink
-                  className="h-4 w-4 text-[#6b8097] group-hover:text-primary transition-colors shrink-0 ml-3"
-                  strokeWidth={2}
-                />
-              </a>
-            ))}
-          </div>
-        </div>
+          <ExternalLink
+            className="h-4 w-4 text-[#6b8097] group-hover:text-primary transition-colors shrink-0 ml-3"
+            strokeWidth={2}
+          />
+        </button>
       </div>
     );
   };
@@ -3054,8 +3044,8 @@ export const StepView: React.FC<StepViewProps> = ({
                   />
                 )}
                 <div className="w-full flex flex-col items-center px-3 sm:px-4 pt-5 md:px-0 animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                  {/* Questionnaire CTA */}
-                  {/* {currentStep.step_key === "step_1_2" && !isDocQuestionnaireCompleted && ( */}
+                  {/* Questionnaire CTA - Commented out (dev option) */}
+                  {/* {currentStep.step_key === "step_1_2" && !isDocQuestionnaireCompleted && (
                   <div className="max-w-3xl w-full mx-auto px-0 sm:px-2 md:px-4 pt-5 sm:pt-8 md:pt-14 pb-4 sm:pb-8 md:pb-12 flex flex-col gap-3">
                     <button
                       onClick={() => setShowDocQuestionnaire(true)}
@@ -3077,7 +3067,7 @@ export const StepView: React.FC<StepViewProps> = ({
                       </div>
                     </button>
                   </div>
-                  {/* )} */}
+                  )} */}
 
                   {/* Case Strength Tool — fixed right panel at xl; inline below xl */}
                   {currentStep.step_key === "step_1_2" && (
