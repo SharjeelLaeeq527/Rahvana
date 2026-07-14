@@ -5,7 +5,7 @@ import { CheckCircle2, Lock } from "lucide-react";
 import { getStepIcon } from "../StepIcon";
 import { mapDocumentNameToId, isDocUploadedInVault } from "@/lib/document-vault/journey-mapping";
 
-export const SCENARIOS: Record<string, any> = {
+export const DEFAULT_SCENARIOS: Record<string, any> = {
   "pet-only": {
     label: "Petitioner only (qualifies alone)",
     sponsors: ["Petitioner"],
@@ -48,69 +48,64 @@ export const SCENARIOS: Record<string, any> = {
   },
 };
 
-export const getFinancialDocs = (scKey: string) => {
-  const sc = SCENARIOS[scKey] || SCENARIOS["pet-only"];
-  const docs: any = { required: [], conditional: [], recommended: [] };
-
-  const taxNote = `${sc.taxYears} most recent years`;
-  const allSponsors = [...sc.sponsors, ...sc.jointSponsors];
-
-  allSponsors.forEach((sp) => {
-    const isPet = sp === "Petitioner";
-    const tagClass = isPet ? "tag-pet" : "tag-js";
-    docs.required.push({
-      id: `tax-${sp}`,
+export const DEFAULT_TEMPLATES = {
+  sponsor_required: [
+    {
+      id: "tax-${sp}",
       icon: "receipt",
-      title: `Federal Tax Return — ${sp}`,
-      sub: `${taxNote} · Aligns with affidavit income statement`,
+      title: "Federal Tax Return — ${sp}",
+      sub: "${taxNote} · Aligns with affidavit income statement",
       tags: [
-        { cls: tagClass, label: sp },
+        { cls: "${tagClass}", label: "${sp}" },
         { cls: "tag-tax", label: "3 Years" },
       ],
       guide: {
-        intro: `The federal tax return (Form 1040) is the primary income evidence for ${sp}. It must align with the income figure reported in the affidavit of support.`,
+        intro:
+          "The federal tax return (Form 1040) is the primary income evidence for ${sp}. It must align with the income figure reported in the affidavit of support.",
         sections: [
           {
             title: "What is needed",
-            body: `Most recent ${taxNote} of federal tax returns. Ensure the income figures are consistent with what was stated in the affidavit form.`,
+            body: "Most recent ${taxNote} of federal tax returns. Ensure the income figures are consistent with what was stated in the affidavit form.",
           },
           {
             title: "Organization",
-            body: `Group ${sp}'s tax documents together in one clearly labeled packet.`,
+            body: "Group ${sp}'s tax documents together in one clearly labeled packet.",
           },
         ],
       },
-    });
-    docs.required.push({
-      id: `w2-${sp}`,
+    },
+    {
+      id: "w2-${sp}",
       icon: "file-text",
-      title: `W-2 Forms — ${sp}`,
-      sub: `${taxNote} · Wage and salary income documentation`,
+      title: "W-2 Forms — ${sp}",
+      sub: "${taxNote} · Wage and salary income documentation",
       tags: [
-        { cls: tagClass, label: sp },
+        { cls: "${tagClass}", label: "${sp}" },
         { cls: "tag-tax", label: "3 Years" },
       ],
       guide: {
-        intro: `W-2 forms report annual wages and are issued by employers. They support the income figures shown on the tax return.`,
+        intro:
+          "W-2 forms report annual wages and are issued by employers. They support the income figures shown on the tax return.",
         sections: [
           {
             title: "What is needed",
-            body: `W-2 forms for each year of tax evidence gathered. Group with the matching tax year materials.`,
+            body: "W-2 forms for each year of tax evidence gathered. Group with the matching tax year materials.",
           },
         ],
       },
-    });
-    docs.required.push({
-      id: `transcript-${sp}`,
+    },
+    {
+      id: "transcript-${sp}",
       icon: "landmark",
-      title: `IRS Tax Transcripts — ${sp}`,
+      title: "IRS Tax Transcripts — ${sp}",
       sub: "Official IRS verification of filed tax information",
       tags: [
-        { cls: tagClass, label: sp },
+        { cls: "${tagClass}", label: "${sp}" },
         { cls: "tag-tax", label: "3 Years" },
       ],
       guide: {
-        intro: `IRS Tax Transcripts are official IRS-issued records confirming what was filed for a given tax year. They are a strong verification tool.`,
+        intro:
+          "IRS Tax Transcripts are official IRS-issued records confirming what was filed for a given tax year. They are a strong verification tool.",
         sections: [
           {
             title: "How to obtain",
@@ -122,18 +117,21 @@ export const getFinancialDocs = (scKey: string) => {
           },
         ],
       },
-    });
-    docs.conditional.push({
-      id: `paystubs-${sp}`,
+    },
+  ],
+  sponsor_conditional: [
+    {
+      id: "paystubs-${sp}",
       icon: "banknote",
-      title: `Pay Stubs — ${sp}`,
+      title: "Pay Stubs — ${sp}",
       sub: "Current income evidence — most recent 2–3 months",
       tags: [
-        { cls: tagClass, label: sp },
+        { cls: "${tagClass}", label: "${sp}" },
         { cls: "tag-cur", label: "Current Income" },
       ],
       guide: {
-        intro: `Recent pay stubs support current employment status and ongoing income. They are especially valuable when showing present income is important.`,
+        intro:
+          "Recent pay stubs support current employment status and ongoing income. They are especially valuable when showing present income is important.",
         sections: [
           {
             title: "What to include",
@@ -141,18 +139,19 @@ export const getFinancialDocs = (scKey: string) => {
           },
         ],
       },
-    });
-    docs.conditional.push({
-      id: `employment-${sp}`,
+    },
+    {
+      id: "employment-${sp}",
       icon: "building",
-      title: `Employment Letter — ${sp}`,
+      title: "Employment Letter — ${sp}",
       sub: "Confirms current employment and compensation",
       tags: [
-        { cls: tagClass, label: sp },
+        { cls: "${tagClass}", label: "${sp}" },
         { cls: "tag-cur", label: "Current Income" },
       ],
       guide: {
-        intro: `An employment verification letter supports consistent employment and current salary information.`,
+        intro:
+          "An employment verification letter supports consistent employment and current salary information.",
         sections: [
           {
             title: "What it should include",
@@ -160,19 +159,19 @@ export const getFinancialDocs = (scKey: string) => {
           },
         ],
       },
-    });
-
-    docs.conditional.push({
-      id: `assets-${sp}`,
+    },
+    {
+      id: "assets-${sp}",
       icon: "wallet",
-      title: `Asset Evidence — ${sp}`,
+      title: "Asset Evidence — ${sp}",
       sub: "Bank statements, property, or investment documentation",
       tags: [
-        { cls: tagClass, label: sp },
+        { cls: "${tagClass}", label: "${sp}" },
         { cls: "tag-cur", label: "Assets" },
       ],
       guide: {
-        intro: `Asset documentation is relevant when assets are being used to supplement income. Assets must be available to the sponsor and convertible to cash within 12 months.`,
+        intro:
+          "Asset documentation is relevant when assets are being used to supplement income. Assets must be available to the sponsor and convertible to cash within 12 months.",
         sections: [
           {
             title: "What to include",
@@ -180,35 +179,37 @@ export const getFinancialDocs = (scKey: string) => {
           },
         ],
       },
-    });
-
-    docs.recommended.push({
-      id: `packet-${sp}`,
+    },
+  ],
+  sponsor_recommended: [
+    {
+      id: "packet-${sp}",
       icon: "folder",
-      title: `Organized Income Packet — ${sp}`,
+      title: "Organized Income Packet — ${sp}",
       sub: "All documents grouped cleanly by sponsor for upload readiness",
-      tags: [{ cls: isPet ? "tag-pet" : "tag-js", label: sp }],
+      tags: [{ cls: "${tagClass}", label: "${sp}" }],
       guide: {
-        intro: `Each sponsor's financial documents should be grouped clearly and separately. This improves upload readiness and makes review cleaner.`,
+        intro:
+          "Each sponsor's financial documents should be grouped clearly and separately. This improves upload readiness and makes review cleaner.",
         sections: [
           {
             title: "How to organize",
-            body: `Group tax returns, W-2s, transcripts, pay stubs, and any asset evidence for ${sp} into a single clearly labeled folder or file set.`,
+            body: "Group tax returns, W-2s, transcripts, pay stubs, and any asset evidence for ${sp} into a single clearly labeled folder or file set.",
           },
         ],
       },
-    });
-  });
-
-  sc.householdMembers.forEach((hm: string, i: number) => {
-    docs.conditional.push({
-      id: `hm-income-${i}`,
+    },
+  ],
+  household_conditional: [
+    {
+      id: "hm-income-${i}",
       icon: "user",
-      title: `Proof of Household Member Income — ${hm}`,
+      title: "Proof of Household Member Income — ${hm}",
       sub: "Income evidence for household member contributing to sponsorship",
-      tags: [{ cls: "tag-hm", label: hm }],
+      tags: [{ cls: "tag-hm", label: "${hm}" }],
       guide: {
-        intro: `If a household member's income is being included in the sponsorship, that person's income evidence must match their I-864A filing.`,
+        intro:
+          "If a household member's income is being included in the sponsorship, that person's income evidence must match their I-864A filing.",
         sections: [
           {
             title: "What is needed",
@@ -220,15 +221,16 @@ export const getFinancialDocs = (scKey: string) => {
           },
         ],
       },
-    });
-    docs.conditional.push({
-      id: `hm-residence-${i}`,
+    },
+    {
+      id: "hm-residence-${i}",
       icon: "home",
-      title: `Proof of Shared Residence — ${hm}`,
+      title: "Proof of Shared Residence — ${hm}",
       sub: "Evidence of household connection between sponsor and household member",
-      tags: [{ cls: "tag-hm", label: hm }],
+      tags: [{ cls: "tag-hm", label: "${hm}" }],
       guide: {
-        intro: `Household member sponsorship support may require evidence that the household member and the petitioner share the same household or have a qualifying relationship.`,
+        intro:
+          "Household member sponsorship support may require evidence that the household member and the petitioner share the same household or have a qualifying relationship.",
         sections: [
           {
             title: "What to include",
@@ -236,43 +238,127 @@ export const getFinancialDocs = (scKey: string) => {
           },
         ],
       },
-    });
+    },
+  ],
+  general_recommended: [
+    {
+      id: "prior-year-backup",
+      icon: "clipboard",
+      title: "Backup Prior-Year Tax Evidence",
+      sub: "Additional years of tax evidence for extra reassurance",
+      tags: [{ cls: "tag-tax", label: "Tax Evidence" }],
+      guide: {
+        intro:
+          "Having an extra year of tax evidence beyond the required amount can provide additional reassurance during processing.",
+        sections: [
+          {
+            title: "Why it helps",
+            body: "An extra year of consistent income history strengthens the overall financial picture and can smooth over any single year anomalies.",
+          },
+        ],
+      },
+    },
+    {
+      id: "upload-packet",
+      icon: "hard-drive",
+      title: "Upload-Ready Financial Packet",
+      sub: "Clean, compressed, properly named files ready for CEAC upload",
+      tags: [{ cls: "tag-cur", label: "Upload Ready" }],
+      guide: {
+        intro:
+          "Preparing an upload-ready financial packet reduces errors and delays during the CEAC document upload phase.",
+        sections: [
+          {
+            title: "File preparation",
+            body: "Ensure all files are clearly scanned, under 4 MB each, in PDF or JPG format, properly named, and organized by sponsor.",
+          },
+        ],
+      },
+    },
+  ],
+};
+
+// Exporting SCENARIOS to preserve exports (in case of other files importing it)
+export const SCENARIOS = DEFAULT_SCENARIOS;
+
+export const getFinancialDocs = (scKey: string, toolData?: any) => {
+  const scenarios = toolData?.scenarios || DEFAULT_SCENARIOS;
+  const templates = toolData?.templates || DEFAULT_TEMPLATES;
+
+  const sc = scenarios[scKey] || scenarios["pet-only"];
+  const docs: any = { required: [], conditional: [], recommended: [] };
+
+  const taxNote =
+    sc.taxEvidenceLabel ||
+    (sc.taxYears === 1 ? "most recent tax year" : `${sc.taxYears} most recent tax years`);
+  const allSponsors = [...(sc.sponsors || []), ...(sc.jointSponsors || [])];
+
+  const subst = (str: string, vars: Record<string, string>) => {
+    if (!str) return str;
+    return str.replace(/\$\{(\w+)\}/g, (_, key) => vars[key] ?? "");
+  };
+
+  const interpolateDoc = (template: any, vars: Record<string, string>) => {
+    const clone = JSON.parse(JSON.stringify(template));
+    clone.id = subst(clone.id, vars);
+    clone.title = subst(clone.title, vars);
+    clone.sub = subst(clone.sub, vars);
+    if (Array.isArray(clone.tags)) {
+      clone.tags = clone.tags.map((tag: any) => ({
+        cls: subst(tag.cls, vars),
+        label: subst(tag.label, vars),
+      }));
+    }
+    if (clone.guide) {
+      clone.guide.intro = subst(clone.guide.intro, vars);
+      if (Array.isArray(clone.guide.sections)) {
+        clone.guide.sections = clone.guide.sections.map((sec: any) => ({
+          title: subst(sec.title, vars),
+          body: subst(sec.body, vars),
+        }));
+      }
+    }
+    return clone;
+  };
+
+  allSponsors.forEach((sp) => {
+    const isPet = sp === "Petitioner";
+    const tagClass = isPet ? "tag-pet" : "tag-js";
+    const vars = { sp, taxNote, tagClass };
+
+    if (Array.isArray(templates.sponsor_required)) {
+      templates.sponsor_required.forEach((t: any) => {
+        docs.required.push(interpolateDoc(t, vars));
+      });
+    }
+    if (Array.isArray(templates.sponsor_conditional)) {
+      templates.sponsor_conditional.forEach((t: any) => {
+        docs.conditional.push(interpolateDoc(t, vars));
+      });
+    }
+    if (Array.isArray(templates.sponsor_recommended)) {
+      templates.sponsor_recommended.forEach((t: any) => {
+        docs.recommended.push(interpolateDoc(t, vars));
+      });
+    }
   });
 
-  docs.recommended.push({
-    id: `prior-year-backup`,
-    icon: "clipboard",
-    title: "Backup Prior-Year Tax Evidence",
-    sub: "Additional years of tax evidence for extra reassurance",
-    tags: [{ cls: "tag-tax", label: "Tax Evidence" }],
-    guide: {
-      intro:
-        "Having an extra year of tax evidence beyond the required amount can provide additional reassurance during processing.",
-      sections: [
-        {
-          title: "Why it helps",
-          body: "An extra year of consistent income history strengthens the overall financial picture and can smooth over any single year anomalies.",
-        },
-      ],
-    },
-  });
-  docs.recommended.push({
-    id: `upload-packet`,
-    icon: "hard-drive",
-    title: "Upload-Ready Financial Packet",
-    sub: "Clean, compressed, properly named files ready for CEAC upload",
-    tags: [{ cls: "tag-cur", label: "Upload Ready" }],
-    guide: {
-      intro:
-        "Preparing an upload-ready financial packet reduces errors and delays during the CEAC document upload phase.",
-      sections: [
-        {
-          title: "File preparation",
-          body: "Ensure all files are clearly scanned, under 4 MB each, in PDF or JPG format, properly named, and organized by sponsor.",
-        },
-      ],
-    },
-  });
+  if (Array.isArray(sc.householdMembers)) {
+    sc.householdMembers.forEach((hm: string, i: number) => {
+      const vars = { hm, i: String(i) };
+      if (Array.isArray(templates.household_conditional)) {
+        templates.household_conditional.forEach((t: any) => {
+          docs.conditional.push(interpolateDoc(t, vars));
+        });
+      }
+    });
+  }
+
+  if (Array.isArray(templates.general_recommended)) {
+    templates.general_recommended.forEach((t: any) => {
+      docs.recommended.push(interpolateDoc(t, {}));
+    });
+  }
 
   return docs;
 };
@@ -292,6 +378,7 @@ interface FinancialChecklistToolProps {
   setActiveFinancialDoc: (doc: any) => void;
   setIsFinancialDocGuideOpen: (open: boolean) => void;
   guard?: () => boolean;
+  tool?: any;
 }
 
 export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
@@ -309,7 +396,10 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
   setActiveFinancialDoc,
   setIsFinancialDocGuideOpen,
   guard,
+  tool,
 }) => {
+  const scenarios = tool?.scenarios || DEFAULT_SCENARIOS;
+
   return (
     <div className="flex flex-col mt-3">
       {/* Scenario switcher */}
@@ -322,7 +412,7 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
           value={selectedScenario}
           onChange={(e) => setSelectedScenario(e.target.value)}
         >
-          {Object.entries(SCENARIOS).map(([key, sc]) => (
+          {Object.entries(scenarios).map(([key, sc]: [string, any]) => (
             <option key={key} value={key}>
               {sc.label}
             </option>
@@ -332,7 +422,7 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
 
       {/* Sponsorship Summary Card */}
       {(() => {
-        const sc = SCENARIOS[selectedScenario] || SCENARIOS["pet-only"];
+        const sc = scenarios[selectedScenario] || scenarios["pet-only"];
         return (
           <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-[10px] p-[18px_20px] mb-[20px]">
             <div className="text-[10px] font-bold uppercase tracking-widest text-[#2f6fd4] mb-[10px]">
@@ -344,7 +434,13 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
                 ["Affidavit forms", sc.forms],
                 ["Joint sponsors", sc.jointSponsors.length || "None"],
                 ["Household members", sc.householdMembers.length || "None"],
-                ["Tax evidence needed", "3 most recent years"],
+                [
+                  "Tax evidence needed",
+                  sc.taxEvidenceLabel ||
+                    (sc.taxYears === 1
+                      ? "Most recent tax year"
+                      : `${sc.taxYears} most recent tax years`),
+                ],
               ].map(([k, v], i) => (
                 <div
                   key={i}
@@ -363,7 +459,7 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
 
       {/* Progress Bar */}
       {(() => {
-        const docs = getFinancialDocs(selectedScenario);
+        const docs = getFinancialDocs(selectedScenario, tool);
         const allItems = [...docs.required, ...docs.conditional, ...docs.recommended];
         const reviewedCount = allItems.filter(
           (d) => financialDocsStatus[d.id] === "reviewed"
@@ -391,7 +487,7 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
       {/* Document Groups */}
       <div className="flex flex-col gap-[36px]">
         {(() => {
-          const docs = getFinancialDocs(selectedScenario);
+          const docs = getFinancialDocs(selectedScenario, tool);
           const groups = [
             {
               id: "required",
