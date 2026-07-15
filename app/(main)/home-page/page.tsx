@@ -8,6 +8,9 @@ import Intro from "./intro";
 import AnimationCard from "./AnimationCard";
 import SectionBird from "./SectionBird";
 
+// Load the "Caveat" handwriting-style Google font. It is used for the
+// little handwritten notes/annotations on the page. We expose it as a
+// CSS variable so any child element can use it.
 const caveat = Caveat({
   subsets: ["latin"],
   weight: ["400", "700"],
@@ -36,45 +39,64 @@ const caveat = Caveat({
 // curve needs to actually curve, matching the reference screenshot.
 // ----------------------------------------------------------------------------
 
+// The five color themes a roadmap section (and its line segment) can use.
 type AnchorColor = "teal" | "amber" | "purple" | "rose" | "green";
 
+// One registered anchor = a DOM element the line passes through + its color.
 type AnchorEntry = {
   el: HTMLElement;
   color: AnchorColor;
 };
 
+// Context that lets any anchor deep in the tree register itself with the
+// single provider that draws the connecting line.
 const RoadmapContext = React.createContext<{
   register: (id: string, entry: AnchorEntry | null) => void;
 } | null>(null);
 
+// Hook used by each anchor. It grabs a ref to its own <div>, then tells the
+// provider "here I am" (register) when mounted, and "I'm gone" (unregister)
+// when unmounted. The provider uses these refs to measure screen positions.
 function useRoadmapAnchor(id: string, color: AnchorColor) {
   const ctx = React.useContext(RoadmapContext);
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!ctx || !ref.current) return;
+    // Register this element when it appears on screen...
     ctx.register(id, { el: ref.current, color });
+    // ...and remove it again when the component is destroyed.
     return () => ctx.register(id, null);
   }, [ctx, id, color]);
 
   return ref;
 }
 
+// The single provider that wraps the whole roadmap. It collects every
+// anchor's position and draws the curved dashed line that connects them,
+// then reveals that line progressively as the user scrolls down.
 function RoadmapProvider({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  // All currently-registered anchors, keyed by their id ("01", "02", ...).
   const anchorsRef = useRef<Map<string, AnchorEntry>>(new Map());
+  // The computed curve, split into one bezier segment per pair of anchors.
   const [pathSegments, setPathSegments] = useState<
     { d: string; color: AnchorColor; yStart: number; yEnd: number }[]
   >([]);
   const [svgHeight, setSvgHeight] = useState(0);
+  // Holds the pending animation-frame id so we can cancel/debounce recomputes.
   const rafRef = useRef<number | null>(null);
 
   const [scrollY, setScrollY] = useState(0);
+  // Distance from the top of the page to the top of the roadmap container.
   const containerTopRef = useRef(0);
   const windowHeightRef = useRef(0);
+  // Refs to each rendered <path>, used to measure their pixel length.
   const pathRefs = useRef<(SVGPathElement | null)[]>([]);
   const [pathLengths, setPathLengths] = useState<number[]>([]);
 
+  // Called by anchors (via context) to add or remove themselves. Any change
+  // to the anchor set triggers a recompute of the line.
   const register = useCallback((id: string, entry: AnchorEntry | null) => {
     if (entry) {
       anchorsRef.current.set(id, entry);
@@ -85,27 +107,36 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Debounce recomputes to once per animation frame so many anchors
+  // registering at once only cause a single measurement pass.
   function scheduleRecompute() {
     if (rafRef.current) cancelAnimationFrame(rafRef.current);
     rafRef.current = requestAnimationFrame(recompute);
   }
 
+  // Measure every anchor and rebuild the curve.
   function recompute() {
     const container = containerRef.current;
     if (!container) return;
 
+    // The connecting line is a desktop-only decoration. On mobile the
+    // sections just stack vertically, so we clear the line and bail out.
     const isDesktop = window.matchMedia("(min-width: 768px)").matches;
     if (!isDesktop) {
       setPathSegments([]);
       return;
     }
 
+    // Remember where the container sits so scroll math below is relative to it.
     const containerRect = container.getBoundingClientRect();
     containerTopRef.current = containerRect.top + window.scrollY;
     windowHeightRef.current = window.innerHeight;
 
+    // Sort anchors by their numeric id so the line goes 01 -> 02 -> 03 ...
     const ids = Array.from(anchorsRef.current.keys()).sort((a, b) => parseFloat(a) - parseFloat(b));
 
+    // Convert each anchor into an (x, y) point at its center, expressed
+    // relative to the top-left of the container.
     const points = ids.map((id) => {
       const { el, color } = anchorsRef.current.get(id)!;
       const r = el.getBoundingClientRect();
@@ -116,31 +147,40 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
       };
     });
 
+    // Need at least two points to draw a line between them.
     if (points.length < 2) {
       setPathSegments([]);
       return;
     }
 
+    // Build one smooth curve segment between each consecutive pair of points
+    // using a Catmull-Rom -> cubic-bezier conversion. p0 and p3 are the
+    // neighbouring points that control how the curve leans in/out, giving a
+    // continuous snake-like line rather than sharp corners.
     const segments: { d: string; color: AnchorColor; yStart: number; yEnd: number }[] = [];
     for (let i = 0; i < points.length - 1; i++) {
-      const p0 = points[i === 0 ? i : i - 1];
-      const p1 = points[i];
-      const p2 = points[i + 1];
-      const p3 = points[i + 2 < points.length ? i + 2 : i + 1];
+      const p0 = points[i === 0 ? i : i - 1];   // point before the segment (clamped at start)
+      const p1 = points[i];                       // segment start
+      const p2 = points[i + 1];                   // segment end
+      const p3 = points[i + 2 < points.length ? i + 2 : i + 1]; // point after (clamped at end)
 
+      // Two bezier control points derived from the neighbours' slopes.
       const cp1x = p1.x + (p2.x - p0.x) / 6;
       const cp1y = p1.y + (p2.y - p0.y) / 6;
       const cp2x = p2.x - (p3.x - p1.x) / 6;
       const cp2y = p2.y - (p3.y - p1.y) / 6;
 
+      // SVG path: Move to p1, then Cubic-curve through the control points to p2.
       const d = `M ${p1.x},${p1.y} C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
       segments.push({ d, color: p1.color, yStart: p1.y, yEnd: p2.y });
     }
 
     setPathSegments(segments);
+    // Make the SVG as tall as the whole scrollable container.
     setSvgHeight(container.scrollHeight);
   }
 
+  // First measurement + keep the line in sync whenever the layout changes.
   useLayoutEffect(() => {
     if (typeof window !== "undefined") {
       setScrollY(window.scrollY);
@@ -148,14 +188,19 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
     }
     recompute();
 
+    // Recompute if the container's size changes (e.g. images/animations load).
     const ro = new ResizeObserver(() => scheduleRecompute());
     if (containerRef.current) ro.observe(containerRef.current);
 
+    // Recompute on window resize too.
     window.addEventListener("resize", scheduleRecompute);
 
+    // Extra recomputes after a delay to catch late-loading content (fonts,
+    // iframe animations) that can shift anchor positions after first paint.
     const t1 = setTimeout(scheduleRecompute, 300);
     const t2 = setTimeout(scheduleRecompute, 1000);
 
+    // Clean up all listeners/timers when the provider unmounts.
     return () => {
       ro.disconnect();
       window.removeEventListener("resize", scheduleRecompute);
@@ -166,6 +211,8 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Track the scroll position (throttled to one update per frame). This value
+  // drives how much of the line is revealed.
   useEffect(() => {
     let rafId: number;
     function handleScroll() {
@@ -181,6 +228,8 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // After the paths are rendered, measure each one's total pixel length.
+  // We need this to animate the dashed "draw-on" reveal accurately.
   useLayoutEffect(() => {
     const lengths = pathSegments.map((_, i) => {
       const path = pathRefs.current[i];
@@ -189,6 +238,7 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
     setPathLengths(lengths);
   }, [pathSegments]);
 
+  // Hex value used to stroke each segment, chosen by the segment's color.
   const strokeColors: Record<AnchorColor, string> = {
     teal: "#0d7377",
     amber: "#8a6200",
@@ -199,6 +249,8 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <RoadmapContext.Provider value={{ register }}>
+      {/* Positioned container: the SVG line sits absolutely on top of it,
+          and all the roadmap sections (children) flow inside it. */}
       <div ref={containerRef} className="relative">
         <svg
           className="absolute inset-0 w-full pointer-events-none z-10 hidden md:block"
@@ -211,24 +263,34 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
             const yStart = seg.yStart;
             const yEnd = seg.yEnd;
 
-            // Calculate progress based on scroll
+            // Work out how far the user has scrolled into this segment.
+            // revealY = the y-position on the page we treat as "revealed up
+            // to here" (current scroll + most of the viewport height).
             const revealY = scrollY + (windowHeightRef.current || 800) - 80;
+            // Convert that to a position relative to the container.
             const currentY = revealY - containerTopRef.current;
 
+            // progress = 0 (segment fully hidden) .. 1 (fully drawn).
             let progress = 0;
             if (currentY >= yEnd) {
-              progress = 1;
+              progress = 1;                                   // scrolled past it -> fully shown
             } else if (currentY <= yStart) {
-              progress = 0;
+              progress = 0;                                   // not reached yet -> hidden
             } else if (yEnd > yStart) {
-              progress = (currentY - yStart) / (yEnd - yStart);
+              progress = (currentY - yStart) / (yEnd - yStart); // in between -> partial
             }
 
+            // Use a dash the length of the whole path, then offset it by the
+            // un-revealed portion. As progress -> 1 the offset -> 0 and the
+            // line appears to "draw" itself from top to bottom.
             const activeLength = length || 1000;
             const dashOffset = activeLength * (1 - progress);
 
             return (
               <React.Fragment key={i}>
+                {/* A mask that reveals only the "drawn so far" part of the
+                    segment. The white stroke here defines what is visible;
+                    its dash offset shrinks as you scroll, uncovering more. */}
                 <mask id={`roadmap-mask-${i}`}>
                   <path
                     d={seg.d}
@@ -242,6 +304,8 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
                     }}
                   />
                 </mask>
+                {/* The actual visible dashed line. It's clipped by the mask
+                    above, so it only shows up to the current scroll progress. */}
                 <path
                   ref={(el) => {
                     pathRefs.current[i] = el;
@@ -264,13 +328,15 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
   );
 }
 
+// Thin wrapper you put around anything the line should pass through. It just
+// attaches the anchor ref (so the provider can measure it) to a plain <div>.
 function RoadmapAnchor({
   id,
   color,
   className = "",
   children,
 }: {
-  id: string;
+  id: string;      // ordering key, e.g. "01", "02" — controls line direction
   color: AnchorColor;
   className?: string;
   children: React.ReactNode;
@@ -283,6 +349,10 @@ function RoadmapAnchor({
   );
 }
 
+// Fade/slide-in-on-scroll wrapper. Its content starts hidden (via the
+// "reveal" CSS class) and gets the "visible" class the first time it scrolls
+// into view, triggering the CSS animation. `delayClass` lets you stagger
+// multiple reveals in the same section.
 function ScrollReveal({
   children,
   delayClass = "",
@@ -299,12 +369,15 @@ function ScrollReveal({
     const el = ref.current;
     if (!el) return;
 
+    // Watch for the element entering the viewport. Once seen, mark it visible
+    // and stop caring (we only animate in once, never back out).
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setVisible(true);
         }
       },
+      // Trigger when 10% is showing, and 80px before the true bottom edge.
       { threshold: 0.1, rootMargin: "0px 0px -80px 0px" }
     );
 
@@ -319,6 +392,9 @@ function ScrollReveal({
   );
 }
 
+// A small handwritten-style note with a curved arrow, floated next to a node
+// (e.g. "Progress feels good."). `direction` decides which side it sits on and
+// which way it tilts/arrows; `className` can override its default position.
 function Annotation({
   text,
   direction = "left",
@@ -330,6 +406,7 @@ function Annotation({
   className?: string;
   arrowRotation?: string;
 }) {
+  // Default placement depends on the side the annotation points from.
   const defaultPos =
     direction === "left"
       ? "left-[10%] md:left-[15%] top-[10%]"
@@ -346,6 +423,7 @@ function Annotation({
       >
         {text}
       </p>
+      {/* Curved arrow SVG. Same icon, just mirrored/rotated per direction. */}
       {direction === "left" ? (
         <svg
           className={`w-10 h-10 text-slate-400/80 -mt-1 ml-6 ${arrowRotation || "rotate-[-25deg]"}`}
@@ -379,6 +457,8 @@ function Annotation({
   );
 }
 
+// A big colored circle with an icon inside and an optional pill label under
+// it — the milestone markers on the roadmap (Petition, Documents, etc.).
 function NodeCircle({
   icon: Icon,
   label,
@@ -389,6 +469,7 @@ function NodeCircle({
   badgeNum?: string;
   color: "teal" | "amber" | "purple" | "rose" | "green";
 }) {
+  // Background color for the circle, keyed by the milestone's theme color.
   const colorClasses = {
     teal: { bg: "bg-[#0d7377]" },
     amber: { bg: "bg-[#8a6200]" },
@@ -424,12 +505,26 @@ function NodeCircle({
 // line. Direction is fixed (not alternating) per your last request.
 const CARD_OFFSET_CLASS = "md:-ml-12";
 
+// The full home page: an intro, then a vertical scroll-through "journey"
+// roadmap (each numbered section below is one story beat, connected by the
+// animated line), and finally the tools dock at the bottom.
+//
+// Structure of every roadmap section is the same 12-column grid:
+//   - left column  = the story text (heading + subtext)
+//   - right column = either a NodeCircle milestone or an AnimationCard demo,
+//                     wrapped in a RoadmapAnchor so the line threads through it.
+// Anchor ids run "01" -> "17" in order and set the path direction.
 export default function RoadmapPage() {
   return (
     <div className={`w-full min-h-screen overflow-x-hidden bg-slate-50/50 pb-20 ${caveat.variable}`}>
+      {/* Hero / intro at the very top. */}
       <Intro />
 
+      {/* Everything inside the provider is connected by the animated line. */}
       <RoadmapProvider>
+        {/* Opening beat: the user's "I'm lost" question. No anchor here —
+            just a full-width centered prompt. SectionBird is the little
+            decorative bird illustration that floats in most sections. */}
         <div className="w-full bg-white relative">
           <SectionBird n={1} side="right" className="right-0" pos="top-[58%] -translate-y-1/2" size="w-40 lg:w-52 xl:w-64" />
           <div className="max-w-5xl mx-auto px-6 relative">
