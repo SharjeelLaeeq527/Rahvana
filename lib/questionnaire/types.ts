@@ -53,7 +53,7 @@ export interface ConditionalDocument {
   /** Brief description */
   subtitle: string;
   /** Who provides this document */
-  tag: "petitioner" | "beneficiary" | "both" | "third party" | "joint_sponsor";
+  tag: "petitioner" | "beneficiary" | "both" | "joint_sponsor";
   /** Guide URL for the document */
   guideUrl: string;
   /** Icon name (Lucide icon) */

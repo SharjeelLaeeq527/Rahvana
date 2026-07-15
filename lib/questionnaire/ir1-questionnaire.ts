@@ -251,7 +251,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       id: "doc_translations",
       name: "Translations",
       subtitle: "Certified English translations of non-English documents",
-      tag: "third party",
+      tag: "both",
       guideUrl: "/guides",
       icon: "Globe",
       group: "Required if Applicable",

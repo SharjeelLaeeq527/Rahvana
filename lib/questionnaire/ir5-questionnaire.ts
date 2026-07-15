@@ -190,7 +190,7 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       name: "Certified English Translations",
       subtitle:
         "Complete English translations of every submitted non-English document",
-      tag: "third party",
+      tag: "both",
       guideUrl: "/document-translation",
       icon: "Globe",
       group: "Required if Applicable",
@@ -220,6 +220,29 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       group: "Gather Now for Later",
       required: false,
     },
+    {
+      id: "doc_police_cert",
+      name: "Police Character Certificate",
+      subtitle:
+        "Pakistan Character Certificate — required later under NVC age and residence rules",
+      tag: "beneficiary",
+      guideUrl: "/guides/police-verification-guide",
+      icon: "Lock",
+      group: "Gather Now for Later",
+      required: false,
+    },
+    {
+      id: "doc_passport_photos",
+      name: "Passport-Style Photos",
+      subtitle:
+        "Needed later for medical and immigrant visa processing, not for the standard online I-130 evidence packet",
+      tag: "beneficiary",
+      guideUrl: "/passport",
+      icon: "Camera",
+      group: "Gather Now for Later",
+      required: false,
+    },
+
   ],
 
   // ──────────────────────────────────────────────────────────────────
@@ -383,7 +406,7 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
           name: "Record Unavailability Evidence",
           subtitle:
             "Official explanation when a required primary civil record genuinely cannot be obtained",
-          tag: "third party",
+          tag: "both",
           guideUrl: "/guides",
           icon: "FileWarning",
           group: "Required if Applicable",
