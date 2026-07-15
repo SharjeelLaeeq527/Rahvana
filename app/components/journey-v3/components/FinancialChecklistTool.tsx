@@ -288,7 +288,9 @@ export const getFinancialDocs = (scKey: string, toolData?: any) => {
   const sc = scenarios[scKey] || scenarios["pet-only"];
   const docs: any = { required: [], conditional: [], recommended: [] };
 
-  const taxNote = `${sc.taxYears} most recent years`;
+  const taxNote =
+    sc.taxEvidenceLabel ||
+    (sc.taxYears === 1 ? "most recent tax year" : `${sc.taxYears} most recent tax years`);
   const allSponsors = [...(sc.sponsors || []), ...(sc.jointSponsors || [])];
 
   const subst = (str: string, vars: Record<string, string>) => {
@@ -432,7 +434,13 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
                 ["Affidavit forms", sc.forms],
                 ["Joint sponsors", sc.jointSponsors.length || "None"],
                 ["Household members", sc.householdMembers.length || "None"],
-                ["Tax evidence needed", "3 most recent years"],
+                [
+                  "Tax evidence needed",
+                  sc.taxEvidenceLabel ||
+                    (sc.taxYears === 1
+                      ? "Most recent tax year"
+                      : `${sc.taxYears} most recent tax years`),
+                ],
               ].map(([k, v], i) => (
                 <div
                   key={i}
