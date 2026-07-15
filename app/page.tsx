@@ -44,7 +44,7 @@ import Intro from "./(main)/home-page/intro";
 import SectionBird from "./(main)/home-page/SectionBird";
 import ConsultationSection from "./components/home-page/ConsultationSection";
 
-import { ir1journeyHref, toolsHref } from "@/lib/constants/routes";
+import { ir1journeyHref } from "@/lib/constants/routes";
 
 const renderWithAbbr = (text: string) => {
   if (!text || typeof text !== "string" || !text.includes("PCC")) return text;
@@ -1532,7 +1532,7 @@ function HomePageContent() {
                               icon={Icons.ArrowRight}
                               label="Start Your Journey"
                               color="green"
-                              href="/visa-category/ir-category"
+                              href={ir1journeyHref}
                             />
                           </RoadmapAnchor>
                           {/* <Annotation text="Reunited at last!" direction="left" /> */}
