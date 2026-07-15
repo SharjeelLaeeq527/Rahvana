@@ -97,8 +97,8 @@ import {
 import { FileQualityPreCheck } from "./components/FileQualityPreCheck";
 import { PreSubmissionSnapshot } from "./components/PreSubmissionSnapshot";
 import { PacketSectionChecklist } from "./components/PacketSectionChecklist";
-import { IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire/ir1-questionnaire";
-import { computeDocumentList, deriveDocAnswersFromEligibility } from "@/lib/questionnaire/engine";
+import { getQuestionnaireConfig, IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire";
+import { computeDocumentList, deriveDocAnswers } from "@/lib/questionnaire/engine";
 import type { QuestionnaireResult, ConditionalDocument } from "@/lib/questionnaire/types";
 import { StepHeader } from "./StepHeader";
 import { CeacCredsModal, NvcFeeModal } from "./PortalWalletManager";
@@ -284,14 +284,21 @@ export const StepViewV3: React.FC<StepViewProps> = ({
 
   const { showToast } = useToast();
 
+  // Resolve the questionnaire config for the current category.
+  // Falls back to IR-1 if the journey_type has no questionnaire yet.
+  const questionnaireConfig = useMemo(
+    () => getQuestionnaireConfig(data.journey_type) ?? IR1_QUESTIONNAIRE_CONFIG,
+    [data.journey_type]
+  );
+
   // Derive document-questionnaire answers from Step 1 eligibility quest answers
   // so duplicate questions (prior marriage, criminal history) don't need to be asked again.
   const derivedDocAnswers = useMemo(() => {
     const eligibilityAnswers = state.answers?.["eligibility-suite"] as
       | Record<string, Record<string, string | string[]>>
       | undefined;
-    return deriveDocAnswersFromEligibility(eligibilityAnswers);
-  }, [state.answers]);
+    return deriveDocAnswers(eligibilityAnswers, questionnaireConfig);
+  }, [state.answers, questionnaireConfig]);
 
   // Compute effective document items: use engine-finalized list if questionnaire done,
   // otherwise fall back to the raw JSON data
@@ -304,7 +311,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
     // Merge derived Step 1 answers underneath saved answers
     // (saved answers take priority if both exist)
     const mergedAnswers = { ...derivedDocAnswers, ...savedAnswers };
-    const computed = computeDocumentList(IR1_QUESTIONNAIRE_CONFIG, mergedAnswers);
+    const computed = computeDocumentList(questionnaireConfig, mergedAnswers);
     // Map ConditionalDocument shape to the document_items shape the UI uses
     return computed.map((doc: ConditionalDocument) => ({
       id: doc.id,
@@ -2961,7 +2968,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                 {/* Document Questionnaire Overlay — shown once for step_1_2 */}
                 {showDocQuestionnaire && currentStep.step_key === "step_1_2" && (
                   <DocumentQuestionnaire
-                    config={IR1_QUESTIONNAIRE_CONFIG}
+                    config={questionnaireConfig}
                     initialAnswers={derivedDocAnswers}
                     onComplete={(result: QuestionnaireResult) => {
                       // Persist answers + completion flag via backend
