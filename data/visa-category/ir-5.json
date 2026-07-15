@@ -19,7 +19,7 @@
           "step_short_description": "Confirm IR-5 parent visa qualification",
           "step_description": "Check whether the petitioner and parent relationship qualify for an IR-5 immigrant visa petition",
           "step_type": "quest",
-          "who": "Petitioner and parent beneficiary",
+          "who": "Petitioner and Parent beneficiary",
           "where": "Self-assessment",
           "dependencies": [],
           "visible_when": {},
@@ -934,7 +934,7 @@
           "step_short_description": "Pakistan-specific IR-5 parent checklist",
           "step_type": "docs",
           "step_description": "Prepare the documents needed for the IR-5 parent petition. The exact relationship evidence depends on whether the beneficiary is the petitioner's mother, father, stepparent, or adoptive parent. Open each item to see what is needed, where to obtain it, and what issues to address before filing.",
-          "who": "Petitioner and parent beneficiary",
+          "who": "Petitioner and Parent beneficiary",
           "where": "USCIS, U.S. vital-record offices, Pakistani civil authorities, and other issuing authorities",
           "timeline": "4-8 weeks",
           "actions": [
@@ -973,7 +973,7 @@
               "id": "doc_parent_identity_match",
               "name": "Parent Identity and Name-Match Evidence",
               "subtitle": "Links the parent named on the petitioner's birth record to the current beneficiary",
-              "tag": "beneficiary",
+              "tag": "parent beneficiary",
               "guideUrl": "/guides",
               "icon": "UserCheck",
               "group": "Required if Applicable",
@@ -1072,7 +1072,7 @@
               "id": "doc_record_unavailability",
               "name": "Record Unavailability Evidence",
               "subtitle": "Official explanation when a required primary civil record genuinely cannot be obtained",
-              "tag": "third party",
+              "tag": "both",
               "guideUrl": "/guides",
               "icon": "FileWarning",
               "group": "Required if Applicable",
@@ -1083,7 +1083,7 @@
               "id": "doc_translations",
               "name": "Certified English Translations",
               "subtitle": "Complete English translations of every submitted non-English document",
-              "tag": "third party",
+              "tag": "both",
               "guideUrl": "/document-translation",
               "icon": "Globe",
               "group": "Required if Applicable",
@@ -1094,7 +1094,7 @@
               "id": "doc_parent_passport",
               "name": "Parent Beneficiary Passport",
               "subtitle": "Current Pakistani passport — primarily required during NVC and consular processing",
-              "tag": "beneficiary",
+              "tag": "parent beneficiary",
               "guideUrl": "/guides/passport-guide",
               "icon": "BookOpen",
               "group": "Gather Now for Later",
@@ -1105,7 +1105,7 @@
               "id": "doc_parent_birth_cert",
               "name": "Parent Beneficiary Birth Certificate",
               "subtitle": "Parent's Pakistan civil birth record — required during NVC and interview processing",
-              "tag": "beneficiary",
+              "tag": "parent beneficiary",
               "guideUrl": "/guides/birth-certificate-guide",
               "icon": "ClipboardList",
               "group": "Gather Now for Later",
@@ -1116,7 +1116,7 @@
               "id": "doc_parent_marriage_history",
               "name": "Parent's Marriage and Prior-Marriage Records",
               "subtitle": "Marriage, divorce, annulment, or former-spouse death records needed later when applicable",
-              "tag": "beneficiary",
+              "tag": "parent beneficiary",
               "guideUrl": "/guides",
               "icon": "FileText",
               "group": "Gather Now for Later",
@@ -1127,7 +1127,7 @@
               "id": "doc_police_cert",
               "name": "Police Character Certificate",
               "subtitle": "Pakistan Character Certificate — required later under NVC age and residence rules",
-              "tag": "beneficiary",
+              "tag": "parent beneficiary",
               "guideUrl": "/guides/police-verification-guide",
               "icon": "Lock",
               "group": "Prepare for Later — Do Not Obtain Too Early",
@@ -1138,7 +1138,7 @@
               "id": "doc_passport_photos",
               "name": "Passport-Style Photos",
               "subtitle": "Needed later for medical and immigrant visa processing, not for the standard online I-130 evidence packet",
-              "tag": "beneficiary",
+              "tag": "parent beneficiary",
               "guideUrl": "/passport",
               "icon": "Camera",
               "group": "Gather Later",
@@ -2875,7 +2875,7 @@
           ]
         },
         {
-          "step_key": "step_1_14",
+          "step_key": "step_1_15",
           "step_number": 10,
           "step_name": "Register Receipt in CEAC Portal",
           "step_short_description": "Register your USCIS receipt in CEAC",
@@ -2889,7 +2889,7 @@
           "is_required": true,
           "display_order": 14,
           "tool_data": {
-            "id": "step_1_14",
+            "id": "step_1_15",
             "title": "Register Receipt Notice & Track Case",
             "subtitle": "Once USCIS accepts the filing, bring the receipt notice back into Rahvana so the case can be registered, tracked, and monitored for meaningful status changes.",
             "chips": [
@@ -3072,7 +3072,7 @@
           }
         },
         {
-          "step_key": "step_1_15",
+          "step_key": "step_1_16",
           "step_number": 11,
           "step_name": "Track Case Status in CEAC",
           "step_short_description": "Monitor your case status and updates",
@@ -3082,11 +3082,11 @@
           "who": "Petitioner",
           "where": "ceac.state.gov",
           "timeline": "Ongoing after registration",
-          "dependencies": ["step_1_14"],
+          "dependencies": ["step_1_15"],
           "is_required": true,
           "display_order": 15,
           "tool_data": {
-            "id": "step_1_15",
+            "id": "step_1_16",
             "title": "Monitor USCIS Case Status",
             "subtitle": "Stay prepared while USCIS reviews your case. Rahvana keeps the tracking context in one place, explains what the current status means, and gives you useful next-step prep so the waiting period does not become dead time.",
             "chips": [
@@ -3300,7 +3300,7 @@
           ]
         },
         {
-          "step_key": "step_1_16",
+          "step_key": "step_1_17",
           "step_number": 16,
           "step_name": "Receive Approval Notice (I-797)",
           "step_short_description": "I-130 petition approved",
@@ -3483,7 +3483,7 @@
                 "note": "Use live NVC timeframes for timing context instead of assuming one fixed waiting window."
               }
             ],
-            "id": "step_1_16",
+            "id": "step_1_17",
             "type": "approval_notice",
             "disclaimer": "USCIS approval is a major milestone. Save the notice, keep the original safe, and use the waiting period to get ready for the NVC stage."
           },
@@ -3505,7 +3505,7 @@
           "visible_when": {},
           "is_required": true,
           "who": "Petitioner",
-          "dependencies": ["step_1_15"]
+          "dependencies": ["step_1_16"]
         }
       ]
     },
@@ -6128,7 +6128,7 @@
           "step_name": "Obtain Polio Vaccination Certificate",
           "step_short_description": "Required for Pakistan applicants",
           "step_description": "Pakistan-origin applicants must obtain a polio vaccination certificate before the consular interview. This is a required compliance step for all immigrant visa applicants.",
-          "who": "Beneficiary",
+          "who": "Parent beneficiary",
           "where": "Government vaccination post / WHO site",
           "timeline": "1-2 days",
           "step_type": "tool",
