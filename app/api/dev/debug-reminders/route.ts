@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { E, msg } from "@/lib/errors";
+import { getAuthenticatedUser, getServiceRoleClient } from "@/lib/api/authGuards";
 
 export async function GET(request: NextRequest) {
+  // Debug endpoint — never expose in production.
+  if (process.env.NODE_ENV === "production") {
+    return NextResponse.json({ error: "Not found" }, { status: 404 });
+  }
+
   const { searchParams } = new URL(request.url);
   const journeyId = searchParams.get("journeyId");
 
@@ -13,11 +18,27 @@ export async function GET(request: NextRequest) {
     );
   }
 
-  const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { auth: { persistSession: false } }
-  );
+  // AUTH: caller must be logged in
+  const user = await getAuthenticatedUser();
+  if (!user) {
+    return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+  }
+
+  const supabase = getServiceRoleClient();
+
+  // AUTHZ: caller must own this journey before we return its data
+  const { data: ownerRow, error: ownerError } = await supabase
+    .from("journeys")
+    .select("user_id")
+    .eq("id", journeyId)
+    .maybeSingle();
+
+  if (ownerError || !ownerRow) {
+    return NextResponse.json({ error: "Journey not found" }, { status: 404 });
+  }
+  if (ownerRow.user_id !== user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const [scheduledRes, remindersRes, journeysRes, caseDataRes] = await Promise.all([
     supabase

@@ -208,7 +208,7 @@ export default function DocumentTranslationTool({
       if (!canUseTranslation && user?.id) {
         try {
           // The upload API returns { documentId } (not id). Send that to Stripe.
-          const payload = { documentTranslationId: String(result.documentId), userId: user.id };
+          const payload = { documentTranslationId: String(result.documentId) };
           console.debug("/api/stripe/checkout payload:", payload);
 
           const stripeRes = await fetch("/api/stripe/checkout", {

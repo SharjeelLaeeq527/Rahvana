@@ -58,7 +58,6 @@ export default function CheckoutButton({
           addons,
           visaCategory,
           consultationId,
-          userId,
         }),
       });
 
