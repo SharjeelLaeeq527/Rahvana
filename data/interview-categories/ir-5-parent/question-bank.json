@@ -1,397 +1,1164 @@
 {
   "categorySlug": "ir-5-parent",
   "version": "1.0.0",
-  "lastUpdated": "2026-03-26",
+  "lastUpdated": "2026-07-16",
+  "description": "IR-5 parent immigrant visa interview question bank - NO placeholders, generic samples only",
   "questions": [
     {
-      "id": "basic-full-name",
-      "category": "Identity",
-      "question": "What is your full name?",
-      "suggestedAnswer": "My full name is {{full_name}}.",
-      "guidance": "State your full name exactly as it appears on official documents.",
-      "tooltip": "Used to verify identity against official records.",
+      "id": "petitioner-identity-relationship",
+      "category": "Petitioner & Case Information",
+      "tier": "free",
       "priority": "high",
-      "variations": [
-        "Could you please state your full legal name?",
-        "What is your complete name as it appears on official documents?",
-        "Please provide your full given name and surname.",
-        "Could you confirm your full name for the record?"
-      ]
+      "mockInterviewOrder": 1,
+      "question": "Who petitioned for you, and what is your exact relationship to the petitioner?",
+      "sampleAnswer": "My daughter, Aisha Khan, filed the petition for me. I am her biological mother.",
+      "guidance": "State the petitioner's full legal name and the exact legal parent-child relationship used in the petition.",
+      "tooltip": "Confirms the petitioner and the qualifying IR-5 relationship.",
+      "conditions": {
+        "requireIntake": ["parent_relationship_type"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "State the petitioner's name and your relationship",
+      "minLength": 20,
+      "maxLength": 400
     },
     {
-      "id": "basic-age",
-      "category": "Identity",
-      "question": "How old are you?",
-      "suggestedAnswer": "I am {{current_age}} years old.",
-      "guidance": "Answer clearly and confidently.",
-      "tooltip": "Confirms applicant profile consistency.",
+      "id": "petitioner-name-dob",
+      "category": "Petitioner & Case Information",
+      "tier": "free",
       "priority": "high",
-      "variations": [
-        "What is your current age?",
-        "How many years old are you?",
-        "Could you tell me your age?",
-        "Please state your age in years."
-      ]
+      "mockInterviewOrder": 2,
+      "question": "What is the petitioner's full legal name and date of birth?",
+      "sampleAnswer": "Her full legal name is Aisha Noor Khan, and she was born on March 12, 1990.",
+      "guidance": "Use the name and date of birth shown on the petitioner's official records.",
+      "tooltip": "Checks identity details against the I-130 and civil documents.",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "State the petitioner's full name and date of birth",
+      "minLength": 15,
+      "maxLength": 300
     },
     {
-      "id": "basic-date-of-birth",
-      "category": "Identity",
-      "question": "When is your date of birth?",
-      "suggestedAnswer": "My date of birth is {{date_of_birth}}.",
-      "guidance": "Ensure consistency with your passport.",
-      "tooltip": "Cross-checks official identity records.",
+      "id": "petitioner-birth-citizenship",
+      "category": "Petitioner & Case Information",
       "priority": "high",
-      "variations": [
-        "Could you please tell me your date of birth?",
-        "What is your birth date?",
-        "When were you born?",
-        "Please state your full date of birth."
-      ]
+      "mockInterviewOrder": 3,
+      "question": "Where was the petitioner born, and how did the petitioner become a U.S. citizen?",
+      "sampleAnswer": "She was born in Lahore, Pakistan, and later became a U.S. citizen through naturalization.",
+      "guidance": "State the place of birth and the correct basis of U.S. citizenship, such as birth in the United States, naturalization, acquisition, or derivation.",
+      "tooltip": "Confirms that the petitioner meets the U.S.-citizen requirement for an IR-5 petition.",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe the petitioner's birthplace and citizenship basis",
+      "minLength": 20,
+      "maxLength": 400
     },
     {
-      "id": "basic-country",
-      "category": "Identity",
-      "question": "Where do you currently live?",
-      "suggestedAnswer": "I currently live in {{current_country}}.",
-      "guidance": "Mention country clearly.",
-      "tooltip": "Establishes current residence.",
+      "id": "petitioner-current-residence",
+      "category": "Petitioner & Case Information",
+      "tier": "free",
       "priority": "high",
-      "variations": [
-        "In which country do you currently reside?",
-        "What is your country of current residence?",
-        "Which country are you living in right now?",
-        "Could you please tell me where you currently reside?"
-      ]
+      "mockInterviewOrder": 4,
+      "question": "Where does the petitioner currently live?",
+      "sampleAnswer": "She currently lives in Houston, Texas, United States.",
+      "guidance": "Provide the current city, state, and country. Give the full address if the officer requests it.",
+      "tooltip": "Checks consistency with the petitioner's residence and domicile evidence.",
+      "conditions": {
+        "requireIntake": ["planned_us_living_arrangement"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "State the petitioner's current city, state, and country",
+      "minLength": 10,
+      "maxLength": 300
     },
     {
-      "id": "petitioner-identity",
-      "category": "Petitioner",
-      "question": "Who is petitioning for you?",
-      "suggestedAnswer": "My {{petitioner_relationship}}, {{petitioner_name}}, is petitioning for me.",
-      "guidance": "Mention both relationship and name.",
-      "tooltip": "Confirms petitioner identity.",
-      "priority": "high",
-      "variations": [
-        "Who is sponsoring your visa application?",
-        "Could you tell me the name of the person who filed the petition on your behalf?",
-        "Who is your petitioner?",
-        "Who is the individual sponsoring your immigration to the U.S.?"
-      ]
+      "id": "petitioner-household-family",
+      "category": "Petitioner & Case Information",
+      "priority": "medium",
+      "mockInterviewOrder": 5,
+      "question": "Who currently lives in the petitioner's household, and is the petitioner married or responsible for any children?",
+      "sampleAnswer": "She lives with her husband and two children.",
+      "guidance": "Identify the petitioner's spouse, children, dependents, and other household members accurately.",
+      "tooltip": "Household composition may be compared with the Affidavit of Support.",
+      "conditions": {
+        "requireIntake": ["sponsorship_structure"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe the petitioner's household",
+      "minLength": 15,
+      "maxLength": 500
     },
     {
       "id": "petitioner-employment",
-      "category": "Petitioner",
-      "question": "What does your son or daughter do?",
-      "suggestedAnswer": "My child works as {{petitioner_employment}}.",
-      "guidance": "Keep it simple and factual.",
-      "tooltip": "Shows financial stability of sponsor.",
+      "category": "Petitioner & Case Information",
       "priority": "high",
-      "variations": [
-        "What is your child's occupation?",
-        "What kind of work does your son or daughter do?",
-        "Could you describe your child's employment?",
-        "What is your child's profession?"
-      ]
+      "mockInterviewOrder": 6,
+      "question": "What does the petitioner do for work, who is the employer, and how long has the petitioner worked there?",
+      "sampleAnswer": "She is a registered nurse at a hospital and has worked there for four years.",
+      "guidance": "State the petitioner's occupation, employer or business type, location if known, and approximate length of employment.",
+      "tooltip": "Employment information may be checked against the financial sponsorship evidence.",
+      "conditions": {
+        "requireIntake": ["sponsorship_structure"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe the petitioner's occupation and employment",
+      "minLength": 25,
+      "maxLength": 500
     },
     {
-      "id": "petitioner-location",
-      "category": "Petitioner",
-      "question": "Where does your child live in the USA?",
-      "suggestedAnswer": "My child lives in {{petitioner_location}}.",
-      "guidance": "Mention city and state.",
-      "tooltip": "Verifies petitioner's residence.",
-      "priority": "high",
-      "variations": [
-        "Where in the United States does your child reside?",
-        "Could you tell me your child's address in the U.S.?",
-        "What is your child's residential location in America?",
-        "In which U.S. state or city does your child live?"
-      ]
-    },
-    {
-      "id": "petitioner-status",
-      "category": "Petitioner",
-      "question": "Is your child a U.S. citizen?",
-      "suggestedAnswer": "Yes, my child is a U.S. citizen.",
-      "guidance": "Answer truthfully.",
-      "tooltip": "Determines eligibility category.",
-      "priority": "high",
-      "variations": [
-        "Does your child hold U.S. citizenship?",
-        "What is your child's citizenship status?",
-        "Is your son or daughter a citizen of the United States?",
-        "Can you confirm if your child is a U.S. citizen?"
-      ]
-    },
-    {
-      "id": "petitioner-duration",
-      "category": "Petitioner",
-      "question": "How long has your child been in the USA?",
-      "suggestedAnswer": "My child has been living in the United States for {{petitioner_us_duration}}.",
-      "guidance": "Approximate duration is acceptable.",
-      "tooltip": "Confirms stability of petitioner's residence.",
+      "id": "petition-timing-reason",
+      "category": "Petitioner & Case Information",
       "priority": "medium",
-      "variations": [
-        "For how long has your child resided in the United States?",
-        "What is the duration of your child's stay in America?",
-        "When did your child first come to the U.S. to live?",
-        "How many years has your child been living in the USA?"
-      ]
+      "mockInterviewOrder": 7,
+      "question": "When did the petitioner file the petition for you, and why did the petitioner decide to sponsor you at this time?",
+      "sampleAnswer": "She filed the petition in 2025 because she wanted me to live near her family permanently.",
+      "guidance": "Give the approximate filing period and the genuine family reason for filing. Do not guess an exact date if you do not remember it.",
+      "tooltip": "Assesses familiarity with the case history and purpose of the petition.",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Explain when and why the petition was filed",
+      "minLength": 30,
+      "maxLength": 600
     },
     {
-      "id": "relationship-last-meeting",
-      "category": "Relationship",
-      "question": "When was the last time you saw your child?",
-      "suggestedAnswer": "I last saw my child {{last_seen_child}}.",
-      "guidance": "Approximate answer is acceptable.",
-      "tooltip": "Evaluates relationship continuity.",
+      "id": "relationship-raised-petitioner",
+      "category": "Parent-Child Relationship",
       "priority": "high",
-      "variations": [
-        "Could you tell me the date of your most recent in-person meeting with your child?",
-        "When did you last have a face-to-face encounter with your child?",
-        "What was the last occasion you physically saw your son/daughter?",
-        "Could you specify when you last met your child in person?"
-      ]
+      "mockInterviewOrder": 8,
+      "question": "Did you raise the petitioner?",
+      "sampleAnswer": "Yes. I raised her from birth until she moved away as an adult.",
+      "guidance": "Answer directly, then briefly explain the period during which you cared for the petitioner.",
+      "tooltip": "Confirms the factual parent-child history.",
+      "conditions": {
+        "requireIntake": ["co_residence_history", "parent_relationship_type"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Explain whether and when you raised the petitioner",
+      "minLength": 15,
+      "maxLength": 500
     },
     {
-      "id": "relationship-frequency",
-      "category": "Relationship",
-      "question": "How often do you talk to your child?",
-      "suggestedAnswer": "We communicate {{communication_frequency}}.",
-      "guidance": "Answer naturally.",
-      "tooltip": "Measures relationship strength.",
+      "id": "relationship-childhood-residence",
+      "category": "Parent-Child Relationship",
       "priority": "high",
-      "variations": [
-        "With what frequency do you communicate with your child?",
-        "How regularly do you speak with your son/daughter?",
-        "Could you describe how often you've been in contact with your child?",
-        "What is the typical frequency of your conversations with your child?"
-      ]
+      "mockInterviewOrder": 9,
+      "question": "Did the petitioner live with you while growing up? If not, who cared for the petitioner and where did the petitioner grow up?",
+      "sampleAnswer": "Yes. She lived with me and our family in Lahore until she left for university.",
+      "guidance": "Describe the childhood residence accurately. If you did not live together, identify the caregiver and explain the arrangement truthfully.",
+      "tooltip": "Living history may be important in biological-father, stepparent, and adoptive-parent cases.",
+      "conditions": {
+        "requireIntake": ["co_residence_history"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe the petitioner's childhood living arrangement",
+      "minLength": 25,
+      "maxLength": 700
     },
     {
-      "id": "relationship-method",
-      "category": "Relationship",
-      "question": "How do you communicate with them?",
-      "suggestedAnswer": "We usually communicate through {{communication_method}}.",
-      "guidance": "Mention communication method clearly.",
-      "tooltip": "Verifies ongoing relationship.",
+      "id": "relationship-history-quality",
+      "category": "Parent-Child Relationship",
       "priority": "high",
-      "variations": [
-        "What methods do you use to communicate with your child?",
-        "Through what channels do you typically stay in touch with them?",
-        "Could you explain the ways in which you communicate?",
-        "What are your usual means of contacting your son/daughter?"
-      ]
+      "mockInterviewOrder": 10,
+      "question": "How would you describe your relationship with the petitioner while the petitioner was growing up and today?",
+      "sampleAnswer": "We had a close parent-child relationship while she was growing up, and we remain in regular contact today.",
+      "guidance": "Describe the relationship factually, including caregiving, support, major life events, and current contact where relevant.",
+      "tooltip": "Helps the officer understand the continuity of the parent-child relationship.",
+      "conditions": {
+        "requireIntake": ["communication_frequency", "co_residence_history"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe your past and current relationship",
+      "minLength": 40,
+      "maxLength": 800
     },
     {
-      "id": "relationship-visit",
-      "category": "Relationship",
-      "question": "Has your child visited you recently?",
-      "suggestedAnswer": "{{recent_visit_by_child ? 'Yes, my child has visited me recently.' : 'No, but we stay in regular contact.'}}",
-      "guidance": "Answer honestly.",
-      "tooltip": "Supports relationship authenticity.",
+      "id": "petitioner-us-move",
+      "category": "Parent-Child Relationship",
       "priority": "medium",
-      "variations": [
-        "Has your child traveled to visit you in your home country recently?",
-        "Have there been any recent visits from your child to your location?",
-        "Did your son/daughter come to see you at any point in the near past?",
-        "In recent times, has your child made a trip to visit you?"
-      ]
+      "mockInterviewOrder": 11,
+      "question": "When did the petitioner move to the United States, and why did the petitioner move?",
+      "sampleAnswer": "She moved to the United States in 2014 for employment and later became a permanent resident and citizen.",
+      "guidance": "Give the approximate year and reason, such as study, employment, marriage, or family immigration.",
+      "tooltip": "Tests knowledge of the petitioner's immigration and residence history.",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe when and why the petitioner moved to the U.S.",
+      "minLength": 20,
+      "maxLength": 500
     },
     {
-      "id": "financial-support",
-      "category": "Financial",
-      "question": "Who will support you in the United States?",
-      "suggestedAnswer": "My child, {{petitioner_name}}, will support me financially.",
-      "guidance": "Clearly mention sponsor.",
-      "tooltip": "Confirms financial sponsorship.",
+      "id": "last-in-person-meeting",
+      "category": "Parent-Child Relationship",
       "priority": "high",
-      "variations": [
-        "Who will be responsible for your financial support while you are in the United States?",
-        "Who will provide for your financial needs during your stay in America?",
-        "Which individual or entity will be covering your expenses in the U.S.?",
-        "Could you name the person who will be financially assisting you in the United States?"
-      ]
+      "mockInterviewOrder": 12,
+      "question": "When and where did you last see the petitioner in person, and how long did you spend together?",
+      "sampleAnswer": "I last saw her in Karachi in December 2025, and we spent three weeks together.",
+      "guidance": "State the most recent meeting, location, and approximate duration. Keep the answer consistent with travel records.",
+      "tooltip": "Confirms recent in-person contact and visit history.",
+      "conditions": {
+        "requireIntake": ["last_in_person_contact"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe your most recent in-person meeting",
+      "minLength": 20,
+      "maxLength": 500
     },
     {
-      "id": "financial-support-confirmation",
-      "category": "Financial",
-      "question": "Does your child support you financially?",
-      "suggestedAnswer": "{{financial_support_from_child ? 'Yes, my child supports me financially.' : 'No, I am financially independent.'}}",
-      "guidance": "Answer truthfully.",
-      "tooltip": "Checks dependency status.",
+      "id": "communication-routine",
+      "category": "Parent-Child Relationship",
       "priority": "high",
-      "variations": [
-        "Does your son/daughter provide you with financial assistance?",
-        "Is your child a source of financial support for you?",
-        "Does your child contribute financially to your upkeep?",
-        "Are you financially supported by your child?"
-      ]
+      "mockInterviewOrder": 13,
+      "question": "How often do you communicate with the petitioner, which methods do you use, and what language do you normally speak?",
+      "sampleAnswer": "We speak several times each week by video call and messages, usually in Urdu and English.",
+      "guidance": "Describe the normal frequency, communication methods, and language without exaggeration.",
+      "tooltip": "Shows the current pattern of contact between parent and petitioner.",
+      "conditions": {
+        "requireIntake": ["communication_frequency"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe your normal communication routine",
+      "minLength": 25,
+      "maxLength": 600
     },
     {
-      "id": "financial-employment",
-      "category": "Financial",
-      "question": "What does your child do for a living?",
-      "suggestedAnswer": "My child works as {{petitioner_employment}}.",
-      "guidance": "Keep answer consistent.",
-      "tooltip": "Assesses financial capability.",
-      "priority": "high",
-      "variations": [
-        "What is your child's profession?",
-        "Could you describe your child's employment or line of work?",
-        "What sort of work does your son/daughter do?",
-        "What is your child's current occupation?"
-      ]
-    },
-    {
-      "id": "living-location",
-      "category": "Living Plan",
-      "question": "Where will you live in the United States?",
-      "suggestedAnswer": "I will live in {{us_living_location}}.",
-      "guidance": "Mention location clearly.",
-      "tooltip": "Confirms residence plan.",
-      "priority": "high",
-      "variations": [
-        "Could you please specify your intended address in the U.S.?",
-        "What is your planned place of residence in America?",
-        "Where do you intend to reside during your stay in the United States?",
-        "Can you tell us your prospective living arrangements in the U.S.?"
-      ]
-    },
-    {
-      "id": "living-with",
-      "category": "Living Plan",
-      "question": "Who will you live with?",
-      "suggestedAnswer": "I will live with my child, {{petitioner_name}}.",
-      "guidance": "Answer clearly.",
-      "tooltip": "Ensures support system.",
-      "priority": "high",
-      "variations": [
-        "With whom do you plan to share your accommodation?",
-        "Who will be your housemates or co-residents?",
-        "Can you tell us about the individuals who will be living with you?",
-        "Who will be residing at that address alongside you?"
-      ]
-    },
-    {
-      "id": "living-household",
-      "category": "Living Plan",
-      "question": "How many people live in that house?",
-      "suggestedAnswer": "There are approximately {{household_size}} people in the household.",
-      "guidance": "Approximate answer is fine.",
-      "tooltip": "Assesses living conditions.",
+      "id": "last-conversation",
+      "category": "Parent-Child Relationship",
       "priority": "medium",
-      "variations": [
-        "What is the total number of occupants at that residence?",
-        "Could you confirm the total household size for that address?",
-        "How many individuals currently reside at the intended living location?",
-        "Including yourself, how many people will be living in that dwelling?"
-      ]
+      "mockInterviewOrder": 14,
+      "question": "When did you last speak with the petitioner, and what did you discuss?",
+      "sampleAnswer": "We spoke yesterday by phone about my interview documents and family matters.",
+      "guidance": "Give the approximate time, method, and a brief truthful summary of the conversation.",
+      "tooltip": "Recent contact details help test familiarity and consistency.",
+      "conditions": {
+        "requireIntake": ["communication_frequency"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe your most recent conversation",
+      "minLength": 20,
+      "maxLength": 500
     },
     {
-      "id": "intent-reason",
-      "category": "Intent",
-      "question": "Why do you want to go to the United States?",
-      "suggestedAnswer": "I want to go to the United States to live with my child and be reunited as a family.",
-      "guidance": "Focus on family reunification.",
-      "tooltip": "Core purpose of IR-5 visa.",
-      "priority": "high",
-      "variations": [
-        "What is the purpose of your intended trip to the U.S.?",
-        "Could you elaborate on your reasons for wishing to visit America?",
-        "What is your primary motivation for traveling to the United States?",
-        "Please explain your objectives for seeking entry into the U.S."
-      ]
-    },
-    {
-      "id": "intent-travel-time",
-      "category": "Intent",
-      "question": "When do you plan to travel?",
-      "suggestedAnswer": "I plan to travel {{travel_plan}}.",
-      "guidance": "Approximate timeframe is acceptable.",
-      "tooltip": "Shows preparedness.",
+      "id": "us-visits-with-petitioner",
+      "category": "Parent-Child Relationship",
       "priority": "medium",
-      "variations": [
-        "What is your anticipated travel date?",
-        "When do you intend to commence your journey?",
-        "Could you specify your planned departure date for the U.S.?",
-        "What is your expected timeframe for traveling to the United States?"
-      ]
+      "mockInterviewOrder": 15,
+      "question": "Have you visited the petitioner in the United States? If yes, when did you visit, how long did you stay, where did you stay, and what did you do together?",
+      "sampleAnswer": "Yes. I visited in 2023 for six weeks, stayed at her home, and spent time with her family.",
+      "guidance": "If you visited, summarize the dates, duration, address or city, and main family activities. If not, say no directly.",
+      "tooltip": "Prior visits may be verified through visa and travel records.",
+      "conditions": {
+        "requireIntake": ["us_immigration_history"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe any visits to the petitioner in the U.S.",
+      "minLength": 10,
+      "maxLength": 800
     },
     {
-      "id": "intent-plans",
-      "category": "Intent",
-      "question": "What will you do when you arrive in the USA?",
-      "suggestedAnswer": "After arriving, I will {{post_arrival_plan}} and live with my child.",
-      "guidance": "Keep answer realistic.",
-      "tooltip": "Evaluates future plans.",
-      "priority": "high",
-      "variations": [
-        "Can you describe your planned activities upon reaching the U.S.?",
-        "What are your immediate intentions once you arrive in America?",
-        "Could you outline your agenda after your arrival in the United States?",
-        "What do you intend to do once you have entered the U.S.?"
-      ]
-    },
-    {
-      "id": "travel-history",
-      "category": "Background",
-      "question": "Have you been to the United States before?",
-      "suggestedAnswer": "{{previous_us_visit ? 'Yes, I have visited before.' : 'No, I have never been to the United States.'}}",
-      "guidance": "Answer honestly.",
-      "tooltip": "Checks immigration history.",
-      "priority": "high",
-      "variations": [
-        "Have you previously visited the United States?",
-        "Do you have any prior travel history to America?",
-        "Is this your first time applying to travel to the U.S., or have you been before?",
-        "Have you made any previous trips to the United States?"
-      ]
-    },
-    {
-      "id": "visa-refusal",
-      "category": "Background",
-      "question": "Have you ever been denied a visa?",
-      "suggestedAnswer": "{{visa_refusal ? 'Yes, and I have disclosed it honestly.' : 'No, I have never been denied a visa.'}}",
-      "guidance": "Honesty is critical.",
-      "tooltip": "Previous refusals are reviewed carefully.",
-      "priority": "high",
-      "variations": [
-        "Have you ever experienced a visa refusal?",
-        "Has a visa application ever been denied to you?",
-        "Have you previously been refused a visa for any country?",
-        "Have you ever received an unfavorable decision on a visa application?"
-      ]
-    },
-    {
-      "id": "long-stay",
-      "category": "Background",
-      "question": "Have you stayed in another country for more than 6 months?",
-      "suggestedAnswer": "{{long_stay_history ? 'Yes, and the details are provided in my application.' : 'No, I have not stayed in another country for more than 6 months.'}}",
-      "guidance": "Answer truthfully.",
-      "tooltip": "Travel history verification.",
+      "id": "limited-contact-explanation",
+      "category": "Parent-Child Relationship",
       "priority": "medium",
-      "variations": [
-        "Have you ever resided in a foreign country for a continuous period exceeding six months?",
-        "At any time, have you remained in a country other than your country of origin for a duration longer than half a year?",
-        "Have you spent more than six months living in any single country outside of your nationality?",
-        "Is there any instance where your presence in a foreign nation extended beyond a six-month period?"
-      ]
+      "mockInterviewOrder": 16,
+      "question": "Why have your communication or in-person visits been limited?",
+      "sampleAnswer": "Travel distance, work schedules, and visa limitations reduced our visits, but we remained in contact by phone.",
+      "guidance": "Explain practical reasons honestly, such as distance, health, finances, work, family obligations, or immigration restrictions.",
+      "tooltip": "Provides context where the questionnaire shows limited contact.",
+      "conditions": {
+        "requireIntake": ["communication_frequency", "last_in_person_contact"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Explain any limited contact or long visit gap",
+      "minLength": 25,
+      "maxLength": 700
     },
     {
-      "id": "criminal-record",
-      "category": "Background",
-      "question": "Do you have any criminal record?",
-      "suggestedAnswer": "{{criminal_record ? 'Yes, and it has been disclosed.' : 'No, I do not have any criminal record.'}}",
-      "guidance": "Always answer truthfully.",
-      "tooltip": "Security clearance requirement.",
+      "id": "parent-all-children",
+      "category": "Family & Marital History",
       "priority": "high",
-      "variations": [
-        "Do you have any prior criminal convictions?",
-        "Have you ever been found guilty of a criminal offense?",
-        "Is there any official record of criminal activity pertaining to you?",
-        "Do you have any documented criminal history?"
-      ]
+      "mockInterviewOrder": 17,
+      "question": "How many children do you have, where does each child live, and which child filed this petition?",
+      "sampleAnswer": "I have three children. Two live in Pakistan, and my daughter in Texas filed this petition.",
+      "guidance": "Include all biological, adopted, and legally recognized children, including adults and children not immigrating.",
+      "tooltip": "Checks family composition against the DS-260 and civil records.",
+      "conditions": {
+        "requireIntake": ["parent_has_other_children"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe all children and identify the petitioner",
+      "minLength": 25,
+      "maxLength": 800
+    },
+    {
+      "id": "other-us-family",
+      "category": "Family & Marital History",
+      "priority": "medium",
+      "mockInterviewOrder": 18,
+      "question": "Do you have any other children or close family members living in the United States?",
+      "sampleAnswer": "Yes. My son also lives in New Jersey.",
+      "guidance": "Identify close relatives in the United States and state the relationship and location. If none, say no.",
+      "tooltip": "Checks U.S. family ties and consistency with the DS-260.",
+      "conditions": {
+        "requireIntake": ["parent_has_other_children"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe any other close family in the U.S.",
+      "minLength": 5,
+      "maxLength": 500
+    },
+    {
+      "id": "parent-current-marital-status",
+      "category": "Family & Marital History",
+      "priority": "high",
+      "mockInterviewOrder": 19,
+      "question": "What is your current marital status? If married, what is your spouse's full name and where does your spouse live?",
+      "sampleAnswer": "I am married. My husband's name is Imran Khan, and he lives with me in Lahore.",
+      "guidance": "State the current legal marital status and spouse details exactly as reported in the DS-260.",
+      "tooltip": "Verifies current family status and spouse information.",
+      "conditions": {
+        "requireIntake": ["parent_marital_history"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "State your marital status and spouse details",
+      "minLength": 10,
+      "maxLength": 500
+    },
+    {
+      "id": "parent-prior-marriages",
+      "category": "Family & Marital History",
+      "priority": "high",
+      "mockInterviewOrder": 20,
+      "question": "Have you been married before? If yes, when and how did each prior marriage legally end?",
+      "sampleAnswer": "Yes. My first marriage ended by a final divorce decree in 1998.",
+      "guidance": "Include every prior marriage and the legal termination method, such as divorce, annulment, or death.",
+      "tooltip": "Checks marital history against civil records and the DS-260.",
+      "conditions": {
+        "requireIntake": ["parent_marital_history"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe each prior marriage and how it ended",
+      "minLength": 5,
+      "maxLength": 800
+    },
+    {
+      "id": "spouse-separate-immigration",
+      "category": "Family & Marital History",
+      "priority": "medium",
+      "mockInterviewOrder": 21,
+      "question": "Does your spouse have a separate U.S. immigration petition or visa case? If not, why is your spouse not immigrating now, and does your spouse plan to immigrate later?",
+      "sampleAnswer": "My spouse does not have a current case because our daughter has not yet filed a separate petition for him.",
+      "guidance": "Explain the spouse's separate immigration situation accurately. An IR-5 beneficiary's spouse is not a derivative beneficiary of the same petition.",
+      "tooltip": "Clarifies why a married parent may be immigrating separately.",
+      "conditions": {
+        "requireIntake": ["parent_marital_history"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Explain your spouse's separate immigration situation",
+      "minLength": 15,
+      "maxLength": 700
+    },
+    {
+      "id": "father-marriage-to-mother",
+      "category": "Biological Father Relationship",
+      "priority": "high",
+      "mockInterviewOrder": 22,
+      "question": "Were you married to the petitioner's mother when the petitioner was born or before the petitioner turned 18?",
+      "sampleAnswer": "Yes. We were married before the petitioner was born.",
+      "guidance": "Answer with the correct marital timing and be prepared to identify the supporting marriage record.",
+      "tooltip": "Marriage timing may affect the evidence used to establish a biological-father relationship.",
+      "conditions": {
+        "requireIntake": ["parent_relationship_type"],
+        "requireCaseTypes": ["parent"],
+        "requireIntakeValues": {
+          "parent_relationship_type": "Biological Father"
+        }
+      },
+      "inputPlaceholder": "Explain the marital timing",
+      "minLength": 5,
+      "maxLength": 400
+    },
+    {
+      "id": "father-legal-relationship",
+      "category": "Biological Father Relationship",
+      "priority": "high",
+      "mockInterviewOrder": 23,
+      "question": "If you were not married to the petitioner's mother, how was your legal father-child relationship established or recognized?",
+      "sampleAnswer": "My name was recorded on the birth certificate, and I formally acknowledged paternity.",
+      "guidance": "Describe legitimation, acknowledgment, court recognition, registration, or another applicable legal basis without guessing.",
+      "tooltip": "Helps prepare for questions where the parents were not married.",
+      "conditions": {
+        "requireIntake": ["parent_relationship_type"],
+        "requireCaseTypes": ["parent"],
+        "requireIntakeValues": {
+          "parent_relationship_type": "Biological Father"
+        }
+      },
+      "inputPlaceholder": "Explain how the legal father-child relationship was established",
+      "minLength": 15,
+      "maxLength": 700
+    },
+    {
+      "id": "father-bona-fide-relationship",
+      "category": "Biological Father Relationship",
+      "priority": "high",
+      "mockInterviewOrder": 24,
+      "question": "What evidence shows that you maintained a genuine father-child relationship while the petitioner was growing up?",
+      "sampleAnswer": "I lived with and supported my child, paid school expenses, attended family events, and remained involved in major decisions.",
+      "guidance": "Discuss emotional involvement, financial support, co-residence, caregiving, education, medical care, communication, and other genuine parental involvement.",
+      "tooltip": "Prepares biological fathers for relationship-history questions where additional evidence is relevant.",
+      "conditions": {
+        "requireIntake": ["parent_relationship_type"],
+        "requireCaseTypes": ["parent"],
+        "requireIntakeValues": {
+          "parent_relationship_type": "Biological Father"
+        }
+      },
+      "inputPlaceholder": "Describe your involvement in the petitioner's upbringing",
+      "minLength": 40,
+      "maxLength": 900
+    },
+    {
+      "id": "stepparent-marriage-timing",
+      "category": "Stepparent Relationship",
+      "priority": "high",
+      "mockInterviewOrder": 25,
+      "question": "When did you marry the petitioner's biological parent, and how old was the petitioner at that time?",
+      "sampleAnswer": "I married the petitioner's mother in 2005, when the petitioner was 12 years old.",
+      "guidance": "State the marriage date and the petitioner's age at that time using the civil records.",
+      "tooltip": "The age and marriage timing are central to establishing a qualifying stepparent relationship.",
+      "conditions": {
+        "requireIntake": ["parent_relationship_type"],
+        "requireCaseTypes": ["parent"],
+        "requireIntakeValues": {
+          "parent_relationship_type": "Stepparent"
+        }
+      },
+      "inputPlaceholder": "State the marriage date and petitioner's age",
+      "minLength": 15,
+      "maxLength": 400
+    },
+    {
+      "id": "stepparent-prior-marriages",
+      "category": "Stepparent Relationship",
+      "priority": "high",
+      "mockInterviewOrder": 26,
+      "question": "Were all prior marriages of you and the petitioner's biological parent legally terminated before your marriage?",
+      "sampleAnswer": "Yes. All prior marriages ended through final divorce decrees before our marriage.",
+      "guidance": "Identify any prior marriages and confirm the legal termination records accurately.",
+      "tooltip": "Checks whether the marriage creating the step-relationship was legally valid.",
+      "conditions": {
+        "requireIntake": ["parent_relationship_type"],
+        "requireCaseTypes": ["parent"],
+        "requireIntakeValues": {
+          "parent_relationship_type": "Stepparent"
+        }
+      },
+      "inputPlaceholder": "Explain the termination of prior marriages",
+      "minLength": 10,
+      "maxLength": 700
+    },
+    {
+      "id": "stepparent-relationship-history",
+      "category": "Stepparent Relationship",
+      "priority": "high",
+      "mockInterviewOrder": 27,
+      "question": "What was your relationship with the petitioner after you married the petitioner's biological parent, and did you live together?",
+      "sampleAnswer": "We lived together as a family, and I helped raise and support the petitioner through school.",
+      "guidance": "Describe co-residence, caregiving, financial support, family activities, and the current relationship truthfully.",
+      "tooltip": "Provides context for the step-parent relationship and family history.",
+      "conditions": {
+        "requireIntake": ["parent_relationship_type"],
+        "requireCaseTypes": ["parent"],
+        "requireIntakeValues": {
+          "parent_relationship_type": "Stepparent"
+        }
+      },
+      "inputPlaceholder": "Describe your relationship and living history",
+      "minLength": 40,
+      "maxLength": 900
+    },
+    {
+      "id": "adoption-finalization-age",
+      "category": "Adoptive Parent Relationship",
+      "priority": "high",
+      "mockInterviewOrder": 28,
+      "question": "When was the adoption finalized, and how old was the petitioner at that time?",
+      "sampleAnswer": "The adoption was finalized in 2002, when the petitioner was 10 years old.",
+      "guidance": "Use the date shown on the final adoption decree and calculate the petitioner's age accurately.",
+      "tooltip": "Adoption timing is central to determining the qualifying relationship.",
+      "conditions": {
+        "requireIntake": ["parent_relationship_type"],
+        "requireCaseTypes": ["parent"],
+        "requireIntakeValues": {
+          "parent_relationship_type": "Adoptive Parent"
+        }
+      },
+      "inputPlaceholder": "State the adoption date and petitioner's age",
+      "minLength": 15,
+      "maxLength": 400
+    },
+    {
+      "id": "adoption-legal-custody",
+      "category": "Adoptive Parent Relationship",
+      "priority": "high",
+      "mockInterviewOrder": 29,
+      "question": "Was the adoption full and final, and for how long did you have legal custody of the petitioner?",
+      "sampleAnswer": "Yes. It was a full and final adoption, and I had legal custody for more than two years.",
+      "guidance": "Describe the legal adoption and custody history using the court or government records. Do not treat guardianship alone as an adoption.",
+      "tooltip": "Prepares the applicant to explain adoption and legal-custody evidence.",
+      "conditions": {
+        "requireIntake": ["parent_relationship_type"],
+        "requireCaseTypes": ["parent"],
+        "requireIntakeValues": {
+          "parent_relationship_type": "Adoptive Parent"
+        }
+      },
+      "inputPlaceholder": "Describe the adoption and legal custody period",
+      "minLength": 25,
+      "maxLength": 800
+    },
+    {
+      "id": "adoption-joint-residence",
+      "category": "Adoptive Parent Relationship",
+      "priority": "high",
+      "mockInterviewOrder": 30,
+      "question": "For how long and where did you and the petitioner live together as parent and child?",
+      "sampleAnswer": "We lived together in Islamabad for six years after the adoption.",
+      "guidance": "State the locations and approximate dates of joint residence and identify records that support the history.",
+      "tooltip": "Joint residence may be important in an adoptive-parent case.",
+      "conditions": {
+        "requireIntake": ["parent_relationship_type", "co_residence_history"],
+        "requireCaseTypes": ["parent"],
+        "requireIntakeValues": {
+          "parent_relationship_type": "Adoptive Parent"
+        }
+      },
+      "inputPlaceholder": "Describe the period and location of joint residence",
+      "minLength": 20,
+      "maxLength": 700
+    },
+    {
+      "id": "immigration-reason-now",
+      "category": "Immigration & Settlement Plans",
+      "tier": "free",
+      "priority": "high",
+      "mockInterviewOrder": 31,
+      "question": "Why do you want to immigrate to the United States now?",
+      "sampleAnswer": "I want to live near my daughter and her family permanently and support one another as a family.",
+      "guidance": "Give the genuine family and settlement reasons. Do not present temporary tourism as the purpose of an immigrant visa.",
+      "tooltip": "Confirms the applicant's purpose and timing for permanent immigration.",
+      "conditions": {
+        "requireIntake": ["planned_us_living_arrangement"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Explain why you want to immigrate now",
+      "minLength": 30,
+      "maxLength": 700
+    },
+    {
+      "id": "permanent-residence-intent",
+      "category": "Immigration & Settlement Plans",
+      "priority": "high",
+      "mockInterviewOrder": 32,
+      "question": "Do you intend to make the United States your permanent residence?",
+      "sampleAnswer": "Yes. I intend to live permanently in the United States as a lawful permanent resident.",
+      "guidance": "Answer clearly. An IR-5 visa is for permanent immigration, not a temporary visit.",
+      "tooltip": "Confirms immigrant intent.",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Explain your permanent residence intent",
+      "minLength": 10,
+      "maxLength": 400
+    },
+    {
+      "id": "planned-us-home",
+      "category": "Immigration & Settlement Plans",
+      "tier": "free",
+      "priority": "high",
+      "mockInterviewOrder": 33,
+      "question": "Where will you live after arriving in the United States, and who will live with you?",
+      "sampleAnswer": "I will initially live with my daughter, her husband, and their children in Houston, Texas.",
+      "guidance": "State the city, state, planned household, and address if known. Keep it consistent with the DS-260 and sponsorship records.",
+      "tooltip": "Checks the applicant's settlement plan and intended U.S. address.",
+      "conditions": {
+        "requireIntake": ["planned_us_living_arrangement"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe your planned U.S. home and household",
+      "minLength": 20,
+      "maxLength": 600
+    },
+    {
+      "id": "post-arrival-plans",
+      "category": "Immigration & Settlement Plans",
+      "priority": "medium",
+      "mockInterviewOrder": 34,
+      "question": "What do you plan to do after arriving, including whether you plan to work, retire, help family members, or pursue other activities?",
+      "sampleAnswer": "I plan to live with my family, settle into the community, and remain retired.",
+      "guidance": "Describe realistic initial plans. Avoid claiming guaranteed employment or arrangements that have not been made.",
+      "tooltip": "Assesses whether the applicant understands the practical settlement plan.",
+      "conditions": {
+        "requireIntake": ["parent_employment_status", "planned_us_living_arrangement"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe your plans after arrival",
+      "minLength": 30,
+      "maxLength": 700
+    },
+    {
+      "id": "financial-sponsor-identity",
+      "category": "Financial Sponsorship",
+      "priority": "high",
+      "mockInterviewOrder": 35,
+      "question": "Who is financially sponsoring you?",
+      "sampleAnswer": "My daughter, who filed the petition, is my financial sponsor.",
+      "guidance": "Identify the petitioner and every joint sponsor or contributing household member.",
+      "tooltip": "Confirms familiarity with the Affidavit of Support package.",
+      "conditions": {
+        "requireIntake": ["sponsorship_structure"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Identify each financial sponsor",
+      "minLength": 10,
+      "maxLength": 500
+    },
+    {
+      "id": "sponsorship-structure",
+      "category": "Financial Sponsorship",
+      "priority": "high",
+      "mockInterviewOrder": 36,
+      "question": "Is the petitioner sponsoring you alone, or are you using a household member or joint sponsor?",
+      "sampleAnswer": "The petitioner is sponsoring me with a separate joint sponsor.",
+      "guidance": "Use the exact sponsorship arrangement shown in the Form I-864 and I-864A package.",
+      "tooltip": "Checks consistency with the selected sponsorship structure.",
+      "conditions": {
+        "requireIntake": ["sponsorship_structure"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe the sponsorship arrangement",
+      "minLength": 10,
+      "maxLength": 400
+    },
+    {
+      "id": "joint-sponsor-details",
+      "category": "Financial Sponsorship",
+      "priority": "high",
+      "mockInterviewOrder": 37,
+      "question": "Who is the joint sponsor, how is the joint sponsor related to you or the petitioner, and what does the joint sponsor do for work?",
+      "sampleAnswer": "The joint sponsor is my daughter's family friend, and he works as an accountant.",
+      "guidance": "If a joint sponsor is used, know the person's full name, relationship, U.S. status, residence, and occupation. Otherwise state that no joint sponsor is used.",
+      "tooltip": "Prepares applicants for questions about a separate Form I-864 sponsor.",
+      "conditions": {
+        "requireIntake": ["sponsorship_structure"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe the joint sponsor, if any",
+      "minLength": 5,
+      "maxLength": 700
+    },
+    {
+      "id": "household-member-contributor",
+      "category": "Financial Sponsorship",
+      "priority": "high",
+      "mockInterviewOrder": 38,
+      "question": "Who is contributing income as a household member, and how is that person related to the petitioner?",
+      "sampleAnswer": "The petitioner's spouse is contributing household income through Form I-864A.",
+      "guidance": "If household-member income is used, identify the contributor and qualifying relationship. Otherwise say that no household member contributes income.",
+      "tooltip": "Prepares the applicant for questions about Form I-864A.",
+      "conditions": {
+        "requireIntake": ["sponsorship_structure"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe the household member contributor, if any",
+      "minLength": 5,
+      "maxLength": 600
+    },
+    {
+      "id": "sponsor-work-income",
+      "category": "Financial Sponsorship",
+      "priority": "high",
+      "mockInterviewOrder": 39,
+      "question": "What does the petitioner or primary sponsor do for work, and what is the sponsor's approximate income?",
+      "sampleAnswer": "She works as a registered nurse and earns approximately $75,000 per year.",
+      "guidance": "State the occupation and an approximate current income consistent with the submitted financial evidence.",
+      "tooltip": "Financial sponsorship is a core part of a family-based immigrant visa case.",
+      "conditions": {
+        "requireIntake": ["sponsorship_structure"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "State the sponsor's work and approximate income",
+      "minLength": 20,
+      "maxLength": 500
+    },
+    {
+      "id": "sponsor-household-size",
+      "category": "Financial Sponsorship",
+      "priority": "high",
+      "mockInterviewOrder": 40,
+      "question": "What is the sponsor's household size, and who else does the sponsor financially support?",
+      "sampleAnswer": "The household size is five: the sponsor, spouse, two children, and me as the intending immigrant.",
+      "guidance": "Use the household-size calculation shown on Form I-864 and identify dependents or previously sponsored immigrants where applicable.",
+      "tooltip": "Household size affects the financial-support calculation.",
+      "conditions": {
+        "requireIntake": ["sponsorship_structure"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Explain the sponsor's household size",
+      "minLength": 20,
+      "maxLength": 700
+    },
+    {
+      "id": "living-expense-support",
+      "category": "Financial Sponsorship",
+      "priority": "high",
+      "mockInterviewOrder": 41,
+      "question": "How will your housing and normal living expenses be paid after you arrive?",
+      "sampleAnswer": "I will initially live with my daughter, and she will help cover housing and normal household expenses.",
+      "guidance": "Explain the actual plan, including sponsor support and any pension, savings, or personal resources.",
+      "tooltip": "Assesses practical financial arrangements after immigration.",
+      "conditions": {
+        "requireIntake": ["planned_us_living_arrangement", "sponsorship_structure"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Explain how housing and living expenses will be covered",
+      "minLength": 25,
+      "maxLength": 700
+    },
+    {
+      "id": "medical-expense-plan",
+      "category": "Financial Sponsorship",
+      "priority": "medium",
+      "mockInterviewOrder": 42,
+      "question": "How do you expect to pay for health insurance, medication, and other medical expenses in the United States?",
+      "sampleAnswer": "My family and I are reviewing private insurance options, and the sponsor will initially assist with eligible expenses.",
+      "guidance": "Describe the current plan honestly. Do not claim confirmed insurance coverage unless it has actually been arranged.",
+      "tooltip": "Older parent applicants may be asked about realistic medical and financial planning.",
+      "conditions": {
+        "requireIntake": ["planned_us_living_arrangement"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe your plan for insurance and medical costs",
+      "minLength": 25,
+      "maxLength": 700
+    },
+    {
+      "id": "parent-own-financial-resources",
+      "category": "Financial Sponsorship",
+      "priority": "medium",
+      "mockInterviewOrder": 43,
+      "question": "Do you receive a pension, retirement benefits, savings, property income, business income, or support from another source?",
+      "sampleAnswer": "Yes. I receive a monthly pension and have personal savings.",
+      "guidance": "Identify genuine personal resources without confusing them with the sponsor's Form I-864 income.",
+      "tooltip": "Provides context about the parent's financial circumstances.",
+      "conditions": {
+        "requireIntake": ["parent_employment_status"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe your pension, savings, income, or support",
+      "minLength": 5,
+      "maxLength": 700
+    },
+    {
+      "id": "sponsor-changes-since-nvc",
+      "category": "Financial Sponsorship",
+      "priority": "high",
+      "mockInterviewOrder": 44,
+      "question": "Has anything changed in the petitioner's or sponsor's employment, income, household size, sponsorship arrangement, or U.S. domicile since the documents were submitted to NVC?",
+      "sampleAnswer": "No material information has changed since the financial documents were submitted.",
+      "guidance": "Identify any changes accurately and be prepared with updated evidence if circumstances have changed.",
+      "tooltip": "Current information may be required when the financial package is no longer accurate.",
+      "conditions": {
+        "requireIntake": ["sponsorship_structure"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe any changes since NVC submission",
+      "minLength": 10,
+      "maxLength": 800
+    },
+    {
+      "id": "ds260-preparation-help",
+      "category": "DS-260 & Civil Documents",
+      "priority": "medium",
+      "mockInterviewOrder": 45,
+      "question": "Did you personally review your DS-260, and did anyone help you complete or translate it?",
+      "sampleAnswer": "I reviewed it myself, and my daughter helped me enter the information and translate some questions.",
+      "guidance": "Identify any preparer or translator and confirm that you reviewed the answers before submission.",
+      "tooltip": "Applicants remain responsible for the accuracy of the DS-260.",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Explain who completed, reviewed, or translated the DS-260",
+      "minLength": 15,
+      "maxLength": 600
+    },
+    {
+      "id": "ds260-accuracy-changes",
+      "category": "DS-260 & Civil Documents",
+      "priority": "high",
+      "mockInterviewOrder": 46,
+      "question": "Is all the information in your DS-260 true and complete, and has anything changed since it was submitted?",
+      "sampleAnswer": "Yes. The information was true and complete when submitted, and my address has not changed.",
+      "guidance": "Review the DS-260 before the interview and disclose material updates honestly.",
+      "tooltip": "The officer may compare oral answers against the submitted application.",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Confirm accuracy and describe any changes",
+      "minLength": 15,
+      "maxLength": 700
+    },
+    {
+      "id": "ds260-family-address-employment",
+      "category": "DS-260 & Civil Documents",
+      "priority": "high",
+      "mockInterviewOrder": 47,
+      "question": "Did you disclose all of your children, marriages, prior addresses, and employment history in the DS-260?",
+      "sampleAnswer": "Yes. I listed all children, marriages, prior addresses, and employment history.",
+      "guidance": "Confirm completeness. If something was omitted or entered incorrectly, explain it truthfully and be prepared to correct the record.",
+      "tooltip": "Incomplete family or residence history can lead to document and credibility questions.",
+      "conditions": {
+        "requireIntake": [
+          "parent_has_other_children",
+          "parent_marital_history",
+          "parent_employment_status"
+        ],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Confirm whether all required history was disclosed",
+      "minLength": 10,
+      "maxLength": 700
+    },
+    {
+      "id": "other-names-passports-nationalities",
+      "category": "DS-260 & Civil Documents",
+      "priority": "high",
+      "mockInterviewOrder": 48,
+      "question": "Have you ever used another name, passport, nationality, or identity document?",
+      "sampleAnswer": "No. I have used only the name and nationality shown in my current passport.",
+      "guidance": "Include maiden names, previous married names, alternate spellings, aliases, prior passports, dual nationality, and other official identities.",
+      "tooltip": "Identity history is checked against civil, security, and travel records.",
+      "conditions": {
+        "requireIntake": ["civil_record_issue"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe any other names or identity documents",
+      "minLength": 5,
+      "maxLength": 700
+    },
+    {
+      "id": "civil-record-discrepancies",
+      "category": "DS-260 & Civil Documents",
+      "priority": "high",
+      "mockInterviewOrder": 49,
+      "question": "Are there any differences in names, dates of birth, places of birth, or family relationships across your documents?",
+      "sampleAnswer": "My name is spelled slightly differently on an older record, and I have supporting documents connecting both spellings.",
+      "guidance": "Identify every known discrepancy and explain the corrective or identity-linking evidence.",
+      "tooltip": "Civil-record inconsistencies may require clarification at interview.",
+      "conditions": {
+        "requireIntake": ["civil_record_issue"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe any discrepancies across your records",
+      "minLength": 5,
+      "maxLength": 800
+    },
+    {
+      "id": "parent-child-proof-documents",
+      "category": "DS-260 & Civil Documents",
+      "priority": "high",
+      "mockInterviewOrder": 50,
+      "question": "Which documents establish that you are the petitioner's parent?",
+      "sampleAnswer": "The petitioner's birth certificate lists me as the mother, and our identity documents are consistent.",
+      "guidance": "Identify the petitioner's birth certificate and any additional biological-father, stepparent, or adoption records used in the case.",
+      "tooltip": "Confirms familiarity with the primary IR-5 relationship evidence.",
+      "conditions": {
+        "requireIntake": ["parent_relationship_type", "civil_record_issue"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Identify the documents proving the relationship",
+      "minLength": 20,
+      "maxLength": 700
+    },
+    {
+      "id": "secondary-civil-evidence",
+      "category": "DS-260 & Civil Documents",
+      "priority": "high",
+      "mockInterviewOrder": 51,
+      "question": "If a birth record was registered late, is unavailable, or contains a discrepancy, what secondary or corrected evidence do you have?",
+      "sampleAnswer": "I have the corrected civil record, school records, family registration records, and affidavits supporting the relationship.",
+      "guidance": "Identify only genuine available evidence, such as corrected records, school, medical, religious, census, family registration, or other contemporaneous records.",
+      "tooltip": "Prepares cases with weak, delayed, missing, or inconsistent civil records.",
+      "conditions": {
+        "requireIntake": ["civil_record_issue"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe secondary or corrected civil evidence",
+      "minLength": 10,
+      "maxLength": 900
+    },
+    {
+      "id": "original-document-readiness",
+      "category": "DS-260 & Civil Documents",
+      "priority": "high",
+      "mockInterviewOrder": 52,
+      "question": "Do you have the required original or certified civil documents, translations, police certificates, and any applicable court or military records?",
+      "sampleAnswer": "Yes. I have organized the originals, certified translations, police certificate, and photocopies for the interview.",
+      "guidance": "Review the current Islamabad checklist and bring the originals or certified copies corresponding to the CEAC submissions.",
+      "tooltip": "Checks interview-document readiness.",
+      "conditions": {
+        "requireIntake": ["criminal_history", "military_service", "foreign_residence_history"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Confirm which original documents you have prepared",
+      "minLength": 15,
+      "maxLength": 800
+    },
+    {
+      "id": "parent-current-employment-status",
+      "category": "Employment & Foreign Residence",
+      "priority": "medium",
+      "mockInterviewOrder": 53,
+      "question": "What is your current employment status and occupation?",
+      "sampleAnswer": "I am retired. Before retirement, I worked as a schoolteacher.",
+      "guidance": "State the selected employment status and current occupation accurately.",
+      "tooltip": "Confirms the applicant's current circumstances against the DS-260.",
+      "conditions": {
+        "requireIntake": ["parent_employment_status"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "State your current employment status and occupation",
+      "minLength": 10,
+      "maxLength": 500
+    },
+    {
+      "id": "parent-current-work-details",
+      "category": "Employment & Foreign Residence",
+      "priority": "medium",
+      "mockInterviewOrder": 54,
+      "question": "If you are employed or self-employed, where do you work, what work do you perform, and how long have you worked there?",
+      "sampleAnswer": "I operate a small retail business in Lahore and have managed it for eight years.",
+      "guidance": "Describe the employer or business, position, duties, location, and approximate dates. If not applicable, state that clearly.",
+      "tooltip": "Current work information may be compared with the DS-260.",
+      "conditions": {
+        "requireIntake": ["parent_employment_status"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe current employment or business details",
+      "minLength": 5,
+      "maxLength": 700
+    },
+    {
+      "id": "parent-retirement-history",
+      "category": "Employment & Foreign Residence",
+      "priority": "medium",
+      "mockInterviewOrder": 55,
+      "question": "When did you retire, where did you work before retirement, and what were your main responsibilities?",
+      "sampleAnswer": "I retired in 2021 after working for 25 years as a government schoolteacher.",
+      "guidance": "Give the retirement date, former employer, occupation, duties, and any pension information if asked.",
+      "tooltip": "Prepares retired applicants to explain prior employment history.",
+      "conditions": {
+        "requireIntake": ["parent_employment_status"],
+        "requireCaseTypes": ["parent"],
+        "requireIntakeValues": {
+          "parent_employment_status": "Retired"
+        }
+      },
+      "inputPlaceholder": "Describe your retirement and prior employment",
+      "minLength": 20,
+      "maxLength": 700
+    },
+    {
+      "id": "parent-unemployed-support",
+      "category": "Employment & Foreign Residence",
+      "priority": "medium",
+      "mockInterviewOrder": 56,
+      "question": "If you are not employed or retired, how are your current expenses supported?",
+      "sampleAnswer": "My living expenses are covered by family support and personal savings.",
+      "guidance": "Describe the actual source of support, such as family assistance, savings, property income, or benefits.",
+      "tooltip": "Clarifies the applicant's present financial circumstances.",
+      "conditions": {
+        "requireIntake": ["parent_employment_status"],
+        "requireCaseTypes": ["parent"],
+        "requireIntakeValues": {
+          "parent_employment_status": "Not Currently Employed"
+        }
+      },
+      "inputPlaceholder": "Explain how your current expenses are supported",
+      "minLength": 15,
+      "maxLength": 600
+    },
+    {
+      "id": "sensitive-employment-history",
+      "category": "Employment & Foreign Residence",
+      "priority": "high",
+      "mockInterviewOrder": 57,
+      "question": "Have you ever worked for a government agency, military, police, security service, intelligence organization, or another sensitive industry?",
+      "sampleAnswer": "No. I have not worked for any military, police, intelligence, or security organization.",
+      "guidance": "Answer comprehensively and include formal, reserve, civilian, contract, and mandatory service where applicable.",
+      "tooltip": "Sensitive employment may lead to additional security and background questions.",
+      "conditions": {
+        "requireIntake": ["military_service", "parent_employment_status"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe any government, security, or sensitive work",
+      "minLength": 5,
+      "maxLength": 900
+    },
+    {
+      "id": "foreign-residence-details",
+      "category": "Employment & Foreign Residence",
+      "priority": "high",
+      "mockInterviewOrder": 58,
+      "question": "Have you ever lived or worked outside Pakistan? If yes, where, for how long, why were you there, and what immigration or residence status did you hold?",
+      "sampleAnswer": "Yes. I lived in the United Arab Emirates for five years on an employment residence visa.",
+      "guidance": "List every relevant country, residence period, purpose, status, employer if applicable, and whether a police certificate is required.",
+      "tooltip": "Foreign residence affects address history, employment history, and police-certificate requirements.",
+      "conditions": {
+        "requireIntake": ["foreign_residence_history"],
+        "requireCaseTypes": ["parent"],
+        "requireIntakeValues": {
+          "foreign_residence_history": true
+        }
+      },
+      "inputPlaceholder": "Describe each period of foreign residence",
+      "minLength": 20,
+      "maxLength": 1000
+    },
+    {
+      "id": "prior-us-visits",
+      "category": "Immigration, Criminal & Security History",
+      "priority": "high",
+      "mockInterviewOrder": 59,
+      "question": "Have you visited the United States before? If yes, what visa did you use, when did you travel, why did you travel, how long did you stay, and did you leave on time?",
+      "sampleAnswer": "Yes. I visited in 2023 on a B-2 visa for six weeks and left before my authorized stay expired.",
+      "guidance": "Give the visa type, travel dates, purpose, duration, and compliance history accurately.",
+      "tooltip": "Travel records are checked electronically and against the DS-260.",
+      "conditions": {
+        "requireIntake": ["us_immigration_history"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe prior U.S. travel and compliance",
+      "minLength": 5,
+      "maxLength": 900
+    },
+    {
+      "id": "prior-us-visa-refusal",
+      "category": "Immigration, Criminal & Security History",
+      "priority": "high",
+      "mockInterviewOrder": 60,
+      "question": "Have you ever been refused a U.S. visa or withdrawn a U.S. visa application? If yes, what type of visa was involved and what reason were you given?",
+      "sampleAnswer": "Yes. A visitor visa application was refused in 2018 under section 214(b).",
+      "guidance": "State every refusal or withdrawal truthfully, including approximate date, visa type, location, and stated reason.",
+      "tooltip": "Prior visa outcomes are available to the consular officer.",
+      "conditions": {
+        "requireIntake": ["us_immigration_history"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe any prior U.S. visa refusal or withdrawal",
+      "minLength": 5,
+      "maxLength": 800
+    },
+    {
+      "id": "prior-us-immigrant-petitions",
+      "category": "Immigration, Criminal & Security History",
+      "priority": "high",
+      "mockInterviewOrder": 61,
+      "question": "Has anyone previously filed a U.S. immigration petition or immigrant visa application for you?",
+      "sampleAnswer": "No. This is the first immigrant petition filed for me.",
+      "guidance": "Identify any prior I-130, I-140, diversity visa, fiancé visa, or other immigrant process and its outcome.",
+      "tooltip": "Prior petitions and applications must be consistent with the DS-260.",
+      "conditions": {
+        "requireIntake": ["us_immigration_history"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe any prior U.S. immigration petition or case",
+      "minLength": 5,
+      "maxLength": 800
+    },
+    {
+      "id": "immigration-violations-removal",
+      "category": "Immigration, Criminal & Security History",
+      "priority": "high",
+      "mockInterviewOrder": 62,
+      "question": "Have you ever overstayed a visa, worked without authorization, violated immigration status, been denied entry, or been deported or removed from any country?",
+      "sampleAnswer": "No. I have always complied with the immigration conditions of the countries I visited.",
+      "guidance": "Include U.S. and non-U.S. violations, refusals at a border, voluntary departure, removal, deportation, and unauthorized employment.",
+      "tooltip": "Immigration violations may affect admissibility and must be disclosed accurately.",
+      "conditions": {
+        "requireIntake": ["us_immigration_history", "foreign_residence_history"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe any immigration violation, entry denial, or removal",
+      "minLength": 5,
+      "maxLength": 1000
+    },
+    {
+      "id": "criminal-case-details",
+      "category": "Immigration, Criminal & Security History",
+      "priority": "high",
+      "mockInterviewOrder": 63,
+      "question": "Have you ever been arrested, charged, convicted, detained, or involved in a criminal case? If yes, what happened and how was the case resolved?",
+      "sampleAnswer": "No. I have never been arrested, charged, convicted, or detained in a criminal matter.",
+      "guidance": "Disclose all incidents accurately, including dismissed, expunged, juvenile, and old matters, and identify the final disposition.",
+      "tooltip": "Criminal history is directly relevant to visa eligibility and document requirements.",
+      "conditions": {
+        "requireIntake": ["criminal_history"],
+        "requireCaseTypes": ["parent"],
+        "requireIntakeValues": {
+          "criminal_history": true
+        }
+      },
+      "inputPlaceholder": "Describe each incident and final disposition",
+      "minLength": 20,
+      "maxLength": 1200
+    },
+    {
+      "id": "military-security-service-details",
+      "category": "Immigration, Criminal & Security History",
+      "priority": "high",
+      "mockInterviewOrder": 64,
+      "question": "Have you ever served or worked in the military, police, paramilitary, government security, intelligence, or another armed organization? If yes, describe your role, rank, duties, locations, and dates of service.",
+      "sampleAnswer": "Yes. I completed mandatory military service from 1985 to 1987 in an administrative role.",
+      "guidance": "Describe all service accurately, including mandatory service, reserves, civilian roles, unit, rank, duties, weapons training, deployments, and discharge.",
+      "tooltip": "Military and security history may require records and additional administrative review.",
+      "conditions": {
+        "requireIntake": ["military_service"],
+        "requireCaseTypes": ["parent"],
+        "requireIntakeValues": {
+          "military_service": true
+        }
+      },
+      "inputPlaceholder": "Describe all military, police, or security service",
+      "minLength": 25,
+      "maxLength": 1400
+    },
+    {
+      "id": "misrepresentation-false-documents",
+      "category": "Immigration, Criminal & Security History",
+      "priority": "high",
+      "mockInterviewOrder": 65,
+      "question": "Have you ever provided false information, concealed a material fact, or used a false document in a visa, immigration, passport, or government application?",
+      "sampleAnswer": "No. I have never knowingly provided false information or used a false document.",
+      "guidance": "Answer truthfully. Include false names, altered documents, omitted material facts, fraudulent records, and assistance provided to another person where relevant.",
+      "tooltip": "Misrepresentation and document fraud may have serious immigration consequences.",
+      "conditions": {
+        "requireIntake": ["us_immigration_history", "civil_record_issue"],
+        "requireCaseTypes": ["parent"]
+      },
+      "inputPlaceholder": "Describe any false information or document issue",
+      "minLength": 5,
+      "maxLength": 1200
     }
   ]
 }
