@@ -8,12 +8,13 @@
     "questionnaireVersion": "1.0.0",
     "questionBankVersion": "1.0.0",
     "estimatedDurationMinutes": 15,
-    "totalQuestions": 26,
-    "totalIntakeQuestions": 32
+    "totalQuestions": 0,
+    "totalIntakeQuestions": 0
   },
   "features": {
     "hasRapidFire": true,
-    "hasProfileAutoFill": true
+    "hasProfileAutoFill": true,
+    "hasMockInterview": true
   },
   "ui": {
     "themeColor": "teal",
