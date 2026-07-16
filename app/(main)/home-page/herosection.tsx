@@ -799,7 +799,7 @@ const NARR_BEATS = [
   {
     eyebrow: "You just wanted a simple answer.",
     lines: [{ text: "WHERE TO START?" }],
-    sub: "Spouse Visa  ·  IR-1",
+    sub: "Family Visas  ·  IR-1  . IR-5",
   },
   {
     eyebrow: "But one thing leads to ten others.",
@@ -992,7 +992,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
 
       setSubmit(false);
       setCharPose("standing");
-      const q1 = "how do I bring my spouse to the US";
+      const q1 = "how do I bring my family to the US";
       for (let i = 0; i < q1.length; i++) {
         if (!isAlive || !aliveRef.current) return;
         if (i === 3) setCharPose("thinking");
@@ -1004,7 +1004,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       setSubmit(true);
       setCharPose("walking");
       cam({ zoom: 1.05, x: 10, y: -30, rotate: -1.5 }, 1.2); // was 0.9
-      setTabs((p) => [...p, { id: "spouse", label: "Spouse Visa" }]);
+      setTabs((p) => [...p, { id: "spouse", label: "Family Visa" }]);
       setActive("spouse");
       wave(1);
       await sleep(1200); // was 800
