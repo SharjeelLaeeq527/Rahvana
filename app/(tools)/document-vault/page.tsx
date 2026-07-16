@@ -64,20 +64,26 @@ const JOURNEY_TYPE_TO_VISA: Record<string, VisaCategory> = {
   IR1: "IR-1",
   "IR-1": "IR-1",
   ir1: "IR-1",
+  "ir-1": "IR-1",
   IR5: "IR-5",
   "IR-5": "IR-5",
   ir5: "IR-5",
+  "ir-5": "IR-5",
 };
 
 function journeyTypeToVisaCategory(journeyType: string): VisaCategory | null {
+  if (!journeyType) return null;
+  const clean = journeyType.toUpperCase().replace(/[^A-Z0-9]/g, ""); // e.g., "ir-5" -> "IR5"
+  if (clean === "IR1") return "IR-1";
+  if (clean === "IR5") return "IR-5";
   return JOURNEY_TYPE_TO_VISA[journeyType] ?? null;
 }
 
 // Human-friendly label for a journey
 function journeyLabel(j: Journey): string {
   if (j.journey_name) return j.journey_name;
-  const visa = journeyTypeToVisaCategory(j.journey_type)?.toUpperCase;
-  return visa ? `${visa} Journey` : `${j.journey_type} Journey`;
+  const visa = journeyTypeToVisaCategory(j.journey_type);
+  return visa ? `${visa.toUpperCase()} Journey` : `${j.journey_type} Journey`;
 }
 
 // Session-storage key for persisted journey choice (Case 3)
@@ -145,7 +151,8 @@ export default function DocumentVaultPage() {
   }, [userJourneys, activeJourneyId]);
 
   const journeyRoadmapHref = useMemo(() => {
-    if (activeJourney?.journey_type === "IR5" || activeJourney?.journey_type === "ir5") {
+    const type = activeJourney?.journey_type?.toLowerCase().replace(/[^a-z0-9]/g, "");
+    if (type === "ir5") {
       return ir5journeyHref;
     }
     return ir1journeyHref;
@@ -388,6 +395,12 @@ export default function DocumentVaultPage() {
     setJourneyPickerOpen(false);
     setJourneyGateReady(true);
   }, []);
+
+  // Reset tab and search query when active journey changes
+  useEffect(() => {
+    setActiveTab("required");
+    setSearchQuery("");
+  }, [activeJourneyId]);
 
   useEffect(() => {
     if (
