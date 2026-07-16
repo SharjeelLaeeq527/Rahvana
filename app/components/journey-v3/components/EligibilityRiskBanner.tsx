@@ -2,11 +2,17 @@
 
 import React, { useState } from "react";
 import { ShieldAlert, AlertTriangle, Info, ChevronDown } from "lucide-react";
-import { detectRiskFlagsFromEligibilityQuest } from "@/lib/case-strength";
 import type { RiskFlag } from "@/lib/case-strength";
+import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
 
 interface EligibilityRiskBannerProps {
   answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined;
+  /**
+   * Visa journey type (e.g. "IR1", "IR5"). Selects the correct eligibility
+   * detector — IR-5's quest uses different question ids/polarity than IR-1, so
+   * using the wrong one produces false alerts. Defaults to IR-1 when omitted.
+   */
+  journeyType?: string;
   /** If true, renders as a compact side-panel card (narrower, no disclaimer footer) */
   compact?: boolean;
 }
@@ -117,8 +123,12 @@ function FlagRow({ flag, defaultOpen }: { flag: RiskFlag; defaultOpen: boolean }
   );
 }
 
-export function EligibilityRiskBanner({ answers, compact = false }: EligibilityRiskBannerProps) {
-  const flags = detectRiskFlagsFromEligibilityQuest(answers);
+export function EligibilityRiskBanner({
+  answers,
+  journeyType,
+  compact = false,
+}: EligibilityRiskBannerProps) {
+  const flags = resolveCaseStrengthProfile(journeyType).detectEligibilityRisks(answers);
   if (flags.length === 0) return null;
 
   const order: Record<RiskFlag["severity"], number> = { critical: 0, warning: 1, advisory: 2 };

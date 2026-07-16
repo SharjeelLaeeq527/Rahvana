@@ -98,6 +98,10 @@ import { FileQualityPreCheck } from "./components/FileQualityPreCheck";
 import { PreSubmissionSnapshot } from "./components/PreSubmissionSnapshot";
 import { PacketSectionChecklist } from "./components/PacketSectionChecklist";
 import { IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire/ir1-questionnaire";
+import {
+  buildIr5QuestionnaireConfig,
+  deriveIr5DocAnswersFromEligibility,
+} from "@/lib/questionnaire/ir5-questionnaire";
 import { computeDocumentList, deriveDocAnswersFromEligibility } from "@/lib/questionnaire/engine";
 import type { QuestionnaireResult, ConditionalDocument } from "@/lib/questionnaire/types";
 import { StepHeader } from "./StepHeader";
@@ -284,14 +288,31 @@ export const StepViewV3: React.FC<StepViewProps> = ({
 
   const { showToast } = useToast();
 
+  // Which visa category is this? Selects the correct document questionnaire so
+  // IR-5 (parent) never shows IR-1 (spouse) documents. Tolerant of spellings.
+  const isIr5Journey = (data.journey_type || "").toUpperCase().replace(/[-_]/g, "") === "IR5";
+
+  // The document questionnaire config. IR-1 uses its hard-coded config; IR-5 is
+  // built from THIS step's own `document_items` (ir-5.json is the source of
+  // truth) plus IR-5's authored questions/rules — no spouse docs, no duplication.
+  const docQuestionnaireConfig = useMemo(
+    () =>
+      isIr5Journey
+        ? buildIr5QuestionnaireConfig((currentStep as any)?.document_items)
+        : IR1_QUESTIONNAIRE_CONFIG,
+    [isIr5Journey, currentStep]
+  );
+
   // Derive document-questionnaire answers from Step 1 eligibility quest answers
   // so duplicate questions (prior marriage, criminal history) don't need to be asked again.
   const derivedDocAnswers = useMemo(() => {
     const eligibilityAnswers = state.answers?.["eligibility-suite"] as
       | Record<string, Record<string, string | string[]>>
       | undefined;
-    return deriveDocAnswersFromEligibility(eligibilityAnswers);
-  }, [state.answers]);
+    return isIr5Journey
+      ? deriveIr5DocAnswersFromEligibility(eligibilityAnswers)
+      : deriveDocAnswersFromEligibility(eligibilityAnswers);
+  }, [state.answers, isIr5Journey]);
 
   // Compute effective document items: use engine-finalized list if questionnaire done,
   // otherwise fall back to the raw JSON data
@@ -304,7 +325,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
     // Merge derived Step 1 answers underneath saved answers
     // (saved answers take priority if both exist)
     const mergedAnswers = { ...derivedDocAnswers, ...savedAnswers };
-    const computed = computeDocumentList(IR1_QUESTIONNAIRE_CONFIG, mergedAnswers);
+    const computed = computeDocumentList(docQuestionnaireConfig, mergedAnswers);
     // Map ConditionalDocument shape to the document_items shape the UI uses
     return computed.map((doc: ConditionalDocument) => ({
       id: doc.id,
@@ -317,7 +338,12 @@ export const StepViewV3: React.FC<StepViewProps> = ({
       status: "not-started",
       required: doc.required,
     }));
-  }, [isDocQuestionnaireCompleted, state.metadata?.docQuestionnaireAnswers, derivedDocAnswers]);
+  }, [
+    isDocQuestionnaireCompleted,
+    state.metadata?.docQuestionnaireAnswers,
+    derivedDocAnswers,
+    docQuestionnaireConfig,
+  ]);
 
   const [multipleUploadModalState, setMultipleUploadModalState] = useState<{
     isOpen: boolean;
@@ -2085,6 +2111,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                   | Record<string, Record<string, string | string[]> | undefined>
                   | undefined)
               }
+              journeyType={data.journey_type}
             />
           )}
 
@@ -2901,6 +2928,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                   isChapter1={isChapter1}
                   isChapter2={isChapter2}
                   isChapter3={isChapter3}
+                  journeyType={data.journey_type}
                 />
               </div>
             ) : currentStep.step_type === "tool" ? (
@@ -2961,7 +2989,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                 {/* Document Questionnaire Overlay — shown once for step_1_2 */}
                 {showDocQuestionnaire && currentStep.step_key === "step_1_2" && (
                   <DocumentQuestionnaire
-                    config={IR1_QUESTIONNAIRE_CONFIG}
+                    config={docQuestionnaireConfig}
                     initialAnswers={derivedDocAnswers}
                     onComplete={(result: QuestionnaireResult) => {
                       // Persist answers + completion flag via backend
