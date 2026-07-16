@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { ChevronsRight } from "lucide-react";
 import HeroAnimation from "./herosection";
 
 const TEAL = "#2e7175";
@@ -16,11 +17,126 @@ const INK = (a: number) => `rgba(12,18,42,${a})`;
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 const rnd = (a: number, b: number) => a + Math.random() * (b - a);
 
+// A drop-in replacement for `sleep` that can be paused mid-wait and resumed
+// later without losing progress. While `pausedRef.current` is true it just
+// keeps re-checking every ~120ms (not consuming any of the remaining wait
+// time), so the whole sequence freezes exactly where it was and continues
+// from that same point once unpaused. No indicator is shown — this is a
+// pure timing effect.
+function pausableSleep(pausedRef: { current: boolean }, ms: number) {
+  return new Promise<void>((resolve) => {
+    let remaining = ms;
+    let timer: ReturnType<typeof setTimeout>;
+    const tick = () => {
+      if (pausedRef.current) {
+        timer = setTimeout(tick, 120);
+        return;
+      }
+      const chunk = Math.min(remaining, 120);
+      const start = Date.now();
+      timer = setTimeout(() => {
+        remaining -= Date.now() - start;
+        if (remaining <= 0) resolve();
+        else tick();
+      }, chunk);
+    };
+    tick();
+  });
+}
+
 type Stage = "typing" | "sketch" | "dissolving" | "done";
 type IntroProps = {
   skipToEnd?: boolean;
   onSkip?: () => void;
 };
+
+/* ─── Shared skip control — identical look & behaviour everywhere it's used ───
+   Text link (no pill), but always-underlined + a soft corner vignette so it
+   stays clearly legible/clickable against the paper/sketch behind it.
+   `screenActive` reflects pointer/touch activity ANYWHERE on the page (not
+   just hovering the button itself) so the control visibly "wakes up" the
+   moment the person engages with the intro, instead of waiting for them to
+   find the corner. No pill, no glow — just a subtle brighten + a slightly
+   quicker arrow nudge. */
+function SkipIntroButton({
+  onClick,
+  compact = false,
+  screenActive = false,
+  isVisible = true,
+}: {
+  onClick: () => void;
+  compact?: boolean;
+  screenActive?: boolean;
+  isVisible?: boolean;
+}) {
+  return (
+    <div
+      style={{
+        position: "absolute",
+        bottom: 0,
+        right: 0,
+        zIndex: 45,
+        width: compact ? 140 : 180,
+        height: compact ? 90 : 110,
+        pointerEvents: "none",
+        background:
+          "radial-gradient(ellipse at 100% 100%, rgba(255,255,255,0.85) 0%, rgba(255,255,255,0) 70%)",
+      }}
+    >
+      <motion.button
+        type="button"
+        onClick={onClick}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{
+          opacity: 1,
+          y: screenActive ? -3 : 0,
+          scale: screenActive ? 1.06 : 1,
+        }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.96 }}
+        transition={{ duration: 0.32, ease: [0.34, 1.4, 0.64, 1] }}
+        style={{
+          position: "absolute",
+          bottom: compact
+            ? "max(16px, env(safe-area-inset-bottom))"
+            : "max(22px, env(safe-area-inset-bottom))",
+          right: compact ? 16 : 24,
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          border: "none",
+          borderBottom: `1.5px solid ${INK(screenActive ? 0.75 : 0.55)}`,
+          background: "transparent",
+          color: INK(screenActive ? 0.9 : 0.75),
+          fontFamily: FB,
+          fontSize: compact ? 11 : 13,
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          padding: "10px 1px 6px",
+          minHeight: 40,
+          cursor: "pointer",
+          pointerEvents: "all",
+          WebkitTapHighlightColor: "transparent",
+        }}
+      >
+        Skip
+        <motion.span
+          className="skip-intro-arrow"
+          animate={{ x: !isVisible ? 0 : screenActive ? [0, 5, 0] : [0, 2, 0] }}
+          transition={{
+            duration: screenActive ? 0.9 : 1.8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          style={{ display: "inline-flex" }}
+        >
+          <ChevronsRight size={15} strokeWidth={2.75} />
+        </motion.span>
+      </motion.button>
+    </div>
+  );
+}
 
 /* ─── Pre-computed hatching paths (SVG 1440×900 coordinate space) ──────────── */
 
@@ -93,6 +209,11 @@ function FullPageSketch({ go, vw, vh }: { go: boolean; vw: number; vh: number })
     Responsive: all paths live in a 1440×900 design space. We compute a
     uniform scale so the artwork fits the real viewport, then translate to
     center it — so the browser frame is always fully visible on any screen.
+
+    `go` also doubles as the pause/resume switch: when it flips to false
+    (section scrolled out of view) every path's animate target collapses to
+    `{}`, which holds the path exactly at its current draw progress instead
+    of animating further. Flipping back to true resumes drawing from there.
   */
 
   /*
@@ -106,9 +227,9 @@ function FullPageSketch({ go, vw, vh }: { go: boolean; vw: number; vh: number })
   const FRAME_W = 819; /* browser frame width in design space (x 309–1128) */
   const FRAME_H = 435; /* browser frame height in design space (y 250–685)  */
   const isPortrait = vh > vw;
-  const scaleFill  = Math.max(vw / 1440, vh / 900); /* original slice scale  */
+  const scaleFill = Math.max(vw / 1440, vh / 900); /* original slice scale  */
   const scale = isPortrait
-    ? Math.min(scaleFill, (vw * 0.90) / FRAME_W, (vh * 0.78) / FRAME_H)
+    ? Math.min(scaleFill, (vw * 0.9) / FRAME_W, (vh * 0.78) / FRAME_H)
     : scaleFill;
   /* Center-offset so the scaled content sits in the middle of the viewport    */
   const tx = (vw - 1440 * scale) / 2;
@@ -117,7 +238,9 @@ function FullPageSketch({ go, vw, vh }: { go: boolean; vw: number; vh: number })
   /* Outline path: draws in via pathLength animation                            */
   const seg = (delay: number, dur: number, stroke: string, sw: number) => ({
     stroke,
-    strokeWidth: String(sw / scale), /* compensate stroke for scale so width stays visually consistent */
+    strokeWidth: String(
+      sw / scale
+    ) /* compensate stroke for scale so width stays visually consistent */,
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
     fill: "none",
@@ -157,130 +280,130 @@ function FullPageSketch({ go, vw, vh }: { go: boolean; vw: number; vh: number })
       >
         {/* Single transform group: scales 1440×900 artwork to fit any viewport */}
         <g transform={`translate(${tx},${ty}) scale(${scale})`}>
-        <defs>
-          {/*
+          <defs>
+            {/*
             Pencil-ink filter — VERY subtle displacement for organic quality.
             High baseFrequency = fine grain (not large wobble).
             Low scale = strokes barely move, just enough to look hand-drawn.
           */}
-          <filter id="pen-ink" x="-5%" y="-5%" width="110%" height="110%">
-            <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="3" result="n" />
-            <feDisplacementMap
-              in="SourceGraphic"
-              in2="n"
-              scale="0.55"
-              xChannelSelector="R"
-              yChannelSelector="G"
-            />
-          </filter>
-        </defs>
+            <filter id="pen-ink" x="-5%" y="-5%" width="110%" height="110%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.055" numOctaves="3" result="n" />
+              <feDisplacementMap
+                in="SourceGraphic"
+                in2="n"
+                scale="0.55"
+                xChannelSelector="R"
+                yChannelSelector="G"
+              />
+            </filter>
+          </defs>
 
-        {/* ━━ LAYER A: SHADING (no filter — stays crisp) ━━━━━━━━━━━━━━━━━━━━ */}
-        <g>
-          {/* Page margins */}
-          <motion.path {...sh(0.28, INK(0.08), 1.3)} d={BG_L} />
-          <motion.path {...sh(0.38, INK(0.08), 1.3)} d={BG_R} />
-          <motion.path {...sh(0.44, INK(0.1), 1.4)} d={BG_TL} />
-          <motion.path {...sh(0.52, INK(0.1), 1.4)} d={BG_BR} />
+          {/* ━━ LAYER A: SHADING (no filter — stays crisp) ━━━━━━━━━━━━━━━━━━━━ */}
+          <g>
+            {/* Page margins */}
+            <motion.path {...sh(0.28, INK(0.08), 1.3)} d={BG_L} />
+            <motion.path {...sh(0.38, INK(0.08), 1.3)} d={BG_R} />
+            <motion.path {...sh(0.44, INK(0.1), 1.4)} d={BG_TL} />
+            <motion.path {...sh(0.52, INK(0.1), 1.4)} d={BG_BR} />
 
-          {/* Browser shading — inside rotation group */}
-          <g transform="rotate(-5, 720, 460)">
-            {/* Titlebar cross-hatch then horizontal lines (x before h = darker feel) */}
-            <motion.path {...sh(0.66, INK(0.13), 1.0)} d={TB_X} />
-            <motion.path {...sh(0.72, INK(0.2), 1.1)} d={TB_H} />
-            {/* Drop shadows */}
-            <motion.path {...sh(1.04, INK(0.28), 1.2)} d={SHADOW_R} />
-            <motion.path {...sh(1.1, INK(0.28), 1.2)} d={SHADOW_B} />
-            {/* Content area texture */}
-            <motion.path {...sh(2.38, INK(0.1), 1.0)} d={CONTENT_RULES} />
-            <motion.path {...sh(2.44, INK(0.07), 0.9)} d={CONTENT_MARKS} />
+            {/* Browser shading — inside rotation group */}
+            <g transform="rotate(-5, 720, 460)">
+              {/* Titlebar cross-hatch then horizontal lines (x before h = darker feel) */}
+              <motion.path {...sh(0.66, INK(0.13), 1.0)} d={TB_X} />
+              <motion.path {...sh(0.72, INK(0.2), 1.1)} d={TB_H} />
+              {/* Drop shadows */}
+              <motion.path {...sh(1.04, INK(0.28), 1.2)} d={SHADOW_R} />
+              <motion.path {...sh(1.1, INK(0.28), 1.2)} d={SHADOW_B} />
+              {/* Content area texture */}
+              <motion.path {...sh(2.38, INK(0.1), 1.0)} d={CONTENT_RULES} />
+              <motion.path {...sh(2.44, INK(0.07), 0.9)} d={CONTENT_MARKS} />
+            </g>
           </g>
-        </g>
 
-        {/* ━━ LAYER B: OUTLINES (pencil-ink filter) ━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-        <g filter="url(#pen-ink)">
-          {/* ── Top nav ── */}
-          <motion.path {...seg(0, 0.44, INK(0.4), 1.1)} d="M 44 52 C 400 50 920 53 1396 51" />
-          <motion.path
-            {...seg(0.02, 0.26, INK(0.48), 1.7)}
-            d="M 44 18 L 162 18 C 168 18 173 23 173 28 L 173 44
+          {/* ━━ LAYER B: OUTLINES (pencil-ink filter) ━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+          <g filter="url(#pen-ink)">
+            {/* ── Top nav ── */}
+            <motion.path {...seg(0, 0.44, INK(0.4), 1.1)} d="M 44 52 C 400 50 920 53 1396 51" />
+            <motion.path
+              {...seg(0.02, 0.26, INK(0.48), 1.7)}
+              d="M 44 18 L 162 18 C 168 18 173 23 173 28 L 173 44
                C 173 49 168 52 162 52 L 44 52 C 38 52 35 48 35 43
                L 35 28 C 35 22 38 18 44 18"
-          />
-          <motion.path {...seg(0.1, 0.14, INK(0.3), 1.2)} d="M 1104 33 L 1170 33" />
-          <motion.path {...seg(0.17, 0.14, INK(0.3), 1.2)} d="M 1196 33 L 1262 33" />
-          <motion.path {...seg(0.23, 0.12, INK(0.3), 1.2)} d="M 1286 33 L 1338 33" />
-          <motion.path
-            {...seg(0.14, 0.24, INK(0.36), 1.4)}
-            d="M 1356 24 L 1400 24 C 1409 24 1413 29 1413 35
+            />
+            <motion.path {...seg(0.1, 0.14, INK(0.3), 1.2)} d="M 1104 33 L 1170 33" />
+            <motion.path {...seg(0.17, 0.14, INK(0.3), 1.2)} d="M 1196 33 L 1262 33" />
+            <motion.path {...seg(0.23, 0.12, INK(0.3), 1.2)} d="M 1286 33 L 1338 33" />
+            <motion.path
+              {...seg(0.14, 0.24, INK(0.36), 1.4)}
+              d="M 1356 24 L 1400 24 C 1409 24 1413 29 1413 35
                C 1413 41 1409 45 1400 45 L 1356 45
                C 1347 45 1342 41 1342 35 C 1342 29 1347 24 1356 24"
-          />
+            />
 
-          {/* ── Jargon pills — scattered across the page ── */}
-          <motion.path
-            {...seg(0.07, 0.2, INK(0.24), 1.3)}
-            d="M 80 130 L 176 130 C 188 130 193 156 176 156 L 80 156 C 66 156 62 130 80 130"
-          />
-          <motion.path
-            {...seg(0.18, 0.18, INK(0.17), 1.2)}
-            d="M 56 246 L 116 246 C 128 246 133 270 116 270 L 56 270 C 42 270 38 246 56 246"
-          />
-          <motion.path
-            {...seg(0.3, 0.18, INK(0.2), 1.2)}
-            d="M 88 374 L 164 374 C 177 374 182 398 164 398 L 88 398 C 74 398 70 374 88 374"
-          />
-          <motion.path
-            {...seg(0.41, 0.2, INK(0.16), 1.2)}
-            d="M 36 532 L 110 532 C 124 532 130 558 110 558 L 36 558 C 22 558 18 532 36 532"
-          />
-          <motion.path
-            {...seg(0.51, 0.22, INK(0.22), 1.2)}
-            d="M 70 686 L 212 686 C 227 686 233 712 212 712 L 70 712 C 56 712 50 686 70 686"
-          />
-          <motion.path
-            {...seg(0.11, 0.18, INK(0.24), 1.3)}
-            d="M 1258 118 L 1334 118 C 1348 118 1354 144 1334 144 L 1258 144 C 1242 144 1236 118 1258 118"
-          />
-          <motion.path
-            {...seg(0.23, 0.2, INK(0.16), 1.2)}
-            d="M 1222 228 L 1372 228 C 1388 228 1394 256 1372 256 L 1222 256 C 1206 256 1200 228 1222 228"
-          />
-          <motion.path
-            {...seg(0.37, 0.2, INK(0.19), 1.2)}
-            d="M 1290 472 L 1390 472 C 1406 472 1413 498 1390 498 L 1290 498 C 1274 498 1268 472 1290 472"
-          />
-          <motion.path
-            {...seg(0.48, 0.22, INK(0.16), 1.2)}
-            d="M 1172 652 L 1314 652 C 1331 652 1337 678 1314 678 L 1172 678 C 1156 678 1150 652 1172 652"
-          />
-          <motion.path
-            {...seg(0.06, 0.17, INK(0.2), 1.2)}
-            d="M 580 62 L 652 62 C 666 62 672 88 652 88 L 580 88 C 566 88 560 62 580 62"
-          />
-          <motion.path
-            {...seg(0.15, 0.19, INK(0.16), 1.2)}
-            d="M 754 68 L 866 68 C 880 68 887 94 866 94 L 754 94 C 740 94 733 68 754 68"
-          />
-          <motion.path
-            {...seg(0.54, 0.2, INK(0.16), 1.2)}
-            d="M 436 840 L 578 840 C 595 840 601 864 578 864 L 436 864 C 420 864 413 840 436 840"
-          />
-          <motion.path
-            {...seg(0.6, 0.18, INK(0.16), 1.2)}
-            d="M 728 852 L 828 852 C 843 852 849 878 828 878 L 728 878 C 714 878 707 852 728 852"
-          />
-          <motion.path
-            {...seg(0.66, 0.2, INK(0.16), 1.2)}
-            d="M 918 842 L 1060 842 C 1077 842 1083 868 1060 868 L 918 868 C 902 868 895 842 918 842"
-          />
-
-          {/* ── Browser window — rotated –5° around its center ── */}
-          <g transform="rotate(-5, 720, 460)">
-            {/* Outer frame — one long continuous pen stroke */}
+            {/* ── Jargon pills — scattered across the page ── */}
             <motion.path
-              {...seg(0.24, 1.84, main, 2.9)}
-              d="M 336 250
+              {...seg(0.07, 0.2, INK(0.24), 1.3)}
+              d="M 80 130 L 176 130 C 188 130 193 156 176 156 L 80 156 C 66 156 62 130 80 130"
+            />
+            <motion.path
+              {...seg(0.18, 0.18, INK(0.17), 1.2)}
+              d="M 56 246 L 116 246 C 128 246 133 270 116 270 L 56 270 C 42 270 38 246 56 246"
+            />
+            <motion.path
+              {...seg(0.3, 0.18, INK(0.2), 1.2)}
+              d="M 88 374 L 164 374 C 177 374 182 398 164 398 L 88 398 C 74 398 70 374 88 374"
+            />
+            <motion.path
+              {...seg(0.41, 0.2, INK(0.16), 1.2)}
+              d="M 36 532 L 110 532 C 124 532 130 558 110 558 L 36 558 C 22 558 18 532 36 532"
+            />
+            <motion.path
+              {...seg(0.51, 0.22, INK(0.22), 1.2)}
+              d="M 70 686 L 212 686 C 227 686 233 712 212 712 L 70 712 C 56 712 50 686 70 686"
+            />
+            <motion.path
+              {...seg(0.11, 0.18, INK(0.24), 1.3)}
+              d="M 1258 118 L 1334 118 C 1348 118 1354 144 1334 144 L 1258 144 C 1242 144 1236 118 1258 118"
+            />
+            <motion.path
+              {...seg(0.23, 0.2, INK(0.16), 1.2)}
+              d="M 1222 228 L 1372 228 C 1388 228 1394 256 1372 256 L 1222 256 C 1206 256 1200 228 1222 228"
+            />
+            <motion.path
+              {...seg(0.37, 0.2, INK(0.19), 1.2)}
+              d="M 1290 472 L 1390 472 C 1406 472 1413 498 1390 498 L 1290 498 C 1274 498 1268 472 1290 472"
+            />
+            <motion.path
+              {...seg(0.48, 0.22, INK(0.16), 1.2)}
+              d="M 1172 652 L 1314 652 C 1331 652 1337 678 1314 678 L 1172 678 C 1156 678 1150 652 1172 652"
+            />
+            <motion.path
+              {...seg(0.06, 0.17, INK(0.2), 1.2)}
+              d="M 580 62 L 652 62 C 666 62 672 88 652 88 L 580 88 C 566 88 560 62 580 62"
+            />
+            <motion.path
+              {...seg(0.15, 0.19, INK(0.16), 1.2)}
+              d="M 754 68 L 866 68 C 880 68 887 94 866 94 L 754 94 C 740 94 733 68 754 68"
+            />
+            <motion.path
+              {...seg(0.54, 0.2, INK(0.16), 1.2)}
+              d="M 436 840 L 578 840 C 595 840 601 864 578 864 L 436 864 C 420 864 413 840 436 840"
+            />
+            <motion.path
+              {...seg(0.6, 0.18, INK(0.16), 1.2)}
+              d="M 728 852 L 828 852 C 843 852 849 878 828 878 L 728 878 C 714 878 707 852 728 852"
+            />
+            <motion.path
+              {...seg(0.66, 0.2, INK(0.16), 1.2)}
+              d="M 918 842 L 1060 842 C 1077 842 1083 868 1060 868 L 918 868 C 902 868 895 842 918 842"
+            />
+
+            {/* ── Browser window — rotated –5° around its center ── */}
+            <g transform="rotate(-5, 720, 460)">
+              {/* Outer frame — one long continuous pen stroke */}
+              <motion.path
+                {...seg(0.24, 1.84, main, 2.9)}
+                d="M 336 250
                  C 522 246 822 247 1106 249
                  C 1119 249 1129 258 1128 268
                  L 1129 666
@@ -289,77 +412,78 @@ function FullPageSketch({ go, vw, vh }: { go: boolean; vw: number; vh: number })
                  C 303 685 310 676 310 666
                  L 309 268
                  C 309 258 322 250 336 250"
-            />
-            {/* Titlebar separator */}
-            <motion.path
-              {...seg(1.04, 0.48, INK(0.54), 1.8)}
-              d="M 310 302 C 560 299 862 302 1128 300"
-            />
-            {/* Traffic lights */}
-            <motion.path
-              {...seg(1.44, 0.22, main, 2.1)}
-              d="M 352 276 C 344 269 344 284 352 284 C 360 284 360 269 352 276"
-            />
-            <motion.path
-              {...seg(1.59, 0.22, main, 2.1)}
-              d="M 374 276 C 366 269 366 284 374 284 C 382 284 382 269 374 276"
-            />
-            <motion.path
-              {...seg(1.74, 0.22, main, 2.1)}
-              d="M 396 276 C 388 269 388 284 396 284 C 404 284 404 269 396 276"
-            />
-            {/* URL bar */}
-            <motion.path
-              {...seg(1.9, 0.44, INK(0.56), 1.8)}
-              d="M 462 260 L 989 259 C 999 259 1005 266 1005 274
+              />
+              {/* Titlebar separator */}
+              <motion.path
+                {...seg(1.04, 0.48, INK(0.54), 1.8)}
+                d="M 310 302 C 560 299 862 302 1128 300"
+              />
+              {/* Traffic lights */}
+              <motion.path
+                {...seg(1.44, 0.22, main, 2.1)}
+                d="M 352 276 C 344 269 344 284 352 284 C 360 284 360 269 352 276"
+              />
+              <motion.path
+                {...seg(1.59, 0.22, main, 2.1)}
+                d="M 374 276 C 366 269 366 284 374 284 C 382 284 382 269 374 276"
+              />
+              <motion.path
+                {...seg(1.74, 0.22, main, 2.1)}
+                d="M 396 276 C 388 269 388 284 396 284 C 404 284 404 269 396 276"
+              />
+              {/* URL bar */}
+              <motion.path
+                {...seg(1.9, 0.44, INK(0.56), 1.8)}
+                d="M 462 260 L 989 259 C 999 259 1005 266 1005 274
                  C 1005 282 999 290 989 291 L 462 292
                  C 452 292 446 285 446 277 C 446 269 452 260 462 260"
-            />
-            {/* Tab bar */}
-            <motion.path
-              {...seg(2.06, 0.38, INK(0.46), 1.5)}
-              d="M 310 328 C 560 326 862 329 1128 327"
-            />
-            <motion.path
-              {...seg(2.14, 0.22, INK(0.44), 1.4)}
-              d="M 334 309 L 440 309 C 450 309 456 320 449 327 L 334 327 C 325 327 319 318 326 310 Z"
-            />
-            <motion.path
-              {...seg(2.24, 0.19, INK(0.34), 1.4)}
-              d="M 455 311 L 540 311 C 549 311 554 321 548 328 L 455 328 C 446 328 441 320 447 312 Z"
-            />
-          </g>
+              />
+              {/* Tab bar */}
+              <motion.path
+                {...seg(2.06, 0.38, INK(0.46), 1.5)}
+                d="M 310 328 C 560 326 862 329 1128 327"
+              />
+              <motion.path
+                {...seg(2.14, 0.22, INK(0.44), 1.4)}
+                d="M 334 309 L 440 309 C 450 309 456 320 449 327 L 334 327 C 325 327 319 318 326 310 Z"
+              />
+              <motion.path
+                {...seg(2.24, 0.19, INK(0.34), 1.4)}
+                d="M 455 311 L 540 311 C 549 311 554 321 548 328 L 455 328 C 446 328 441 320 447 312 Z"
+              />
+            </g>
 
-          {/* ── Late jargon — appears after browser is drawn ── */}
-          <motion.path
-            {...seg(2.48, 0.2, INK(0.24), 1.2)}
-            d="M 164 140 L 254 140 C 268 140 274 164 254 164 L 164 164 C 148 164 142 140 164 140"
-          />
-          <motion.path
-            {...seg(2.6, 0.18, INK(0.16), 1.2)}
-            d="M 38 428 L 112 428 C 127 428 133 454 112 454 L 38 454 C 24 454 18 428 38 428"
-          />
-          <motion.path
-            {...seg(2.72, 0.2, INK(0.19), 1.2)}
-            d="M 1312 336 L 1402 336 C 1419 336 1425 362 1402 362 L 1312 362 C 1296 362 1289 336 1312 336"
-          />
-          <motion.path
-            {...seg(2.82, 0.22, INK(0.16), 1.2)}
-            d="M 1148 758 L 1300 758 C 1317 758 1323 784 1300 784 L 1148 784 C 1132 784 1125 758 1148 758"
-          />
-          <motion.path
-            {...seg(2.9, 0.2, INK(0.16), 1.2)}
-            d="M 222 772 L 358 772 C 375 772 381 798 358 798 L 222 798 C 205 798 198 772 222 772"
-          />
+            {/* ── Late jargon — appears after browser is drawn ── */}
+            <motion.path
+              {...seg(2.48, 0.2, INK(0.24), 1.2)}
+              d="M 164 140 L 254 140 C 268 140 274 164 254 164 L 164 164 C 148 164 142 140 164 140"
+            />
+            <motion.path
+              {...seg(2.6, 0.18, INK(0.16), 1.2)}
+              d="M 38 428 L 112 428 C 127 428 133 454 112 454 L 38 454 C 24 454 18 428 38 428"
+            />
+            <motion.path
+              {...seg(2.72, 0.2, INK(0.19), 1.2)}
+              d="M 1312 336 L 1402 336 C 1419 336 1425 362 1402 362 L 1312 362 C 1296 362 1289 336 1312 336"
+            />
+            <motion.path
+              {...seg(2.82, 0.22, INK(0.16), 1.2)}
+              d="M 1148 758 L 1300 758 C 1317 758 1323 784 1300 784 L 1148 784 C 1132 784 1125 758 1148 758"
+            />
+            <motion.path
+              {...seg(2.9, 0.2, INK(0.16), 1.2)}
+              d="M 222 772 L 358 772 C 375 772 381 798 358 798 L 222 798 C 205 798 198 772 222 772"
+            />
           </g>
-        </g>{/* end responsive scale group */}
+        </g>
+        {/* end responsive scale group */}
       </svg>
     </div>
   );
 }
 
 /* ─── Cursor ────────────────────────────────────────────────────────────────── */
-function Cur() {
+function Cur({ paused = false }: { paused?: boolean }) {
   return (
     <span
       style={{
@@ -371,15 +495,11 @@ function Cur() {
         verticalAlign: "middle",
         borderRadius: 1,
         animation: "_twc 0.9s step-start infinite",
+        animationPlayState: paused ? "paused" : "running",
       }}
     />
   );
 }
-
-/* ─── Chunk grid — pre-computed stable randoms ─────────────────────────────── */
-/*
-  Vertical wipe reveal — top to bottom curtain that uncovers the animation
-*/
 
 /* ─── Root ─────────────────────────────────────────────────────────────────── */
 export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
@@ -391,6 +511,49 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
   const [cur, setCur] = useState<"ti" | "sb" | "l1" | "l2" | "off">("ti");
   const [heroSkip, setHeroSkip] = useState(skipToEnd);
   const skipRef = useRef(skipToEnd);
+
+  // ---- Pause / resume the whole intro sequence when scrolled out of view ----
+  // `pausedRef` is read synchronously inside pausableSleep, so the sequence
+  // (typing, the sketch draw-in, the hold, the dissolve) freezes at exactly
+  // the point it's at — no rewind, no restart, no visible indicator — and
+  // picks back up the instant the section is visible again.
+  const rootRef = useRef<HTMLDivElement | null>(null);
+  const pausedRef = useRef(false);
+  const [isVisible, setIsVisible] = useState(true);
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        const vis = entry.isIntersecting;
+        pausedRef.current = !vis;
+        setIsVisible(vis);
+      },
+      { threshold: 0.2 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // Tracks whether the pointer/touch has been active anywhere on screen
+  // recently — used so the skip control visibly wakes up the moment the
+  // person engages with the page, not just when hovering the button.
+  const [pointerActive, setPointerActive] = useState(false);
+  useEffect(() => {
+    let idleTimer: ReturnType<typeof setTimeout>;
+    const markActive = () => {
+      setPointerActive(true);
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => setPointerActive(false), 1400);
+    };
+    window.addEventListener("mousemove", markActive);
+    window.addEventListener("touchstart", markActive, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", markActive);
+      window.removeEventListener("touchstart", markActive);
+      clearTimeout(idleTimer);
+    };
+  }, []);
 
   const handleSkip = () => {
     skipRef.current = true;
@@ -422,6 +585,9 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
 
   useEffect(() => {
     let alive = true;
+    // Local `sleep` shadows the module-level one for this whole sequence,
+    // so every await (typing, holds, dissolve) honours the pause state.
+    const sleep = (ms: number) => pausableSleep(pausedRef, ms);
     (async () => {
       await sleep(420);
 
@@ -481,6 +647,12 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
   const isDissolving = stage === "dissolving";
   const isDone = stage === "done";
 
+  useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent("hero-animation-playing", { detail: { playing: !isDone } })
+    );
+  }, [isDone]);
+
   /*
    * Mirror the FullPageSketch scale formula so text layout and SVG sketch
    * always agree about where the browser frame sits on screen.
@@ -488,24 +660,24 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
   const _FRAME_W = 819; /* frame width in design space  */
   const _FRAME_H = 435; /* frame height in design space */
   const _portrait = vh > vw;
-  const _sFill     = Math.max(vw / 1440, vh / 900);
-  const _sketchS   = _portrait
-    ? Math.min(_sFill, (vw * 0.90) / _FRAME_W, (vh * 0.78) / _FRAME_H)
+  const _sFill = Math.max(vw / 1440, vh / 900);
+  const _sketchS = _portrait
+    ? Math.min(_sFill, (vw * 0.9) / _FRAME_W, (vh * 0.78) / _FRAME_H)
     : _sFill;
   /* Frame content-area center Y as a % of viewport height.
      Design-space Y of tab-bar ≈ 328, frame bottom = 685 → center = 506.5
      Screen Y = 506.5 * s + (vh - 900*s)/2  →  as % = 50 + 56.5*s/vh * 100 */
-  const _sketchTopPct = `${Math.round((0.5 + 56.5 * _sketchS / vh) * 100)}%`;
+  const _sketchTopPct = `${Math.round((0.5 + (56.5 * _sketchS) / vh) * 100)}%`;
   /* Text container: 82% of the frame pixel width (88% on mobile portrait to reduce wrapping), clamped 220–500px */
   const _textW = `${Math.min(500, Math.max(220, Math.floor(_FRAME_W * _sketchS * (_portrait ? 0.88 : 0.82))))}px`;
 
   return (
     <div
+      ref={rootRef}
       style={{
         position: "relative",
         width: "100%",
-        height: "100dvh",
-        overflow: "hidden",
+        minHeight: "100dvh",
         overflowX: "clip",
         background: "#f5f7f8",
       }}
@@ -554,7 +726,9 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
         </motion.div>
       )}
 
-      {/* Background color transition from paper to hero UI */}
+      {/* Background color transition from paper to hero UI.
+          Absolute (not fixed) so it scrolls away with the rest of the
+          intro instead of staying pinned over the whole viewport. */}
       <motion.div
         animate={{
           background: isDone
@@ -563,7 +737,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
         }}
         transition={{ duration: 1.2, ease: "easeInOut" }}
         style={{
-          position: "fixed",
+          position: "absolute",
           inset: 0,
           zIndex: -1,
         }}
@@ -572,49 +746,12 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
       {/* ── Paper + sketch + text overlay — all dissolve together ─── */}
       <AnimatePresence>
         {!isDone && (
-          <button
-            type="button"
+          <SkipIntroButton
             onClick={handleSkip}
-            className="intro-skip-button"
-            style={{
-              position: "fixed",
-              bottom: "max(16px, env(safe-area-inset-bottom))",
-              right: 16,
-              zIndex: 120,
-              transform: "none",
-              border: "1px solid rgba(12,18,42,0.08)",
-              borderRadius: 999,
-              background: "rgba(255,255,255,0.42)",
-              color: INK(0.42),
-              fontFamily: FB,
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              padding: "10px 16px",
-              minHeight: 44,
-              minWidth: 44,
-              cursor: "pointer",
-              boxShadow: "0 4px 14px rgba(12,18,42,0.05)",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-              opacity: 0.7,
-              transition: "opacity 160ms ease, background-color 160ms ease, transform 160ms ease",
-              WebkitTapHighlightColor: "transparent",
-            }}
-            onMouseEnter={(event) => {
-              event.currentTarget.style.opacity = "1";
-              event.currentTarget.style.backgroundColor = "rgba(255,255,255,0.62)";
-              event.currentTarget.style.transform = "translateY(-1px)";
-            }}
-            onMouseLeave={(event) => {
-              event.currentTarget.style.opacity = "0.7";
-              event.currentTarget.style.backgroundColor = "rgba(255,255,255,0.42)";
-              event.currentTarget.style.transform = "none";
-            }}
-          >
-            Skip
-          </button>
+            compact={vw < 640}
+            screenActive={pointerActive}
+            isVisible={isVisible}
+          />
         )}
 
         {!isDone && (
@@ -629,9 +766,12 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
             }}
             exit={{ opacity: 0, transition: { duration: 0.12 } }}
             style={{
-              position: "fixed",
+              /* Absolute (not fixed): anchors to the outer `position: relative`
+                 wrapper above, so this overlay scrolls away with the page
+                 instead of staying pinned over the viewport while scrolling. */
+              position: "absolute",
               inset: 0,
-              zIndex: 100,
+              zIndex: 40,
               pointerEvents: isDissolving ? "none" : "all",
             }}
           >
@@ -680,7 +820,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
                   }}
                 >
                   {title}
-                  {cur === "ti" && <Cur />}
+                  {cur === "ti" && <Cur paused={!isVisible} />}
                 </div>
               )}
 
@@ -694,11 +834,13 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
                     letterSpacing: "0.22em",
                     textTransform: "uppercase",
                     color: INK(0.4),
-                    marginTop: _portrait ? `${Math.round(6 * _sketchS)}px` : "clamp(6px, 1.2vw, 9px)",
+                    marginTop: _portrait
+                      ? `${Math.round(6 * _sketchS)}px`
+                      : "clamp(6px, 1.2vw, 9px)",
                   }}
                 >
                   {sub}
-                  {cur === "sb" && <Cur />}
+                  {cur === "sb" && <Cur paused={!isVisible} />}
                 </div>
               )}
 
@@ -709,7 +851,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
                     width: 24,
                     height: 1,
                     background: INK(0.18),
-                    margin: _portrait 
+                    margin: _portrait
                       ? `${Math.round(10 * _sketchS)}px 0 ${Math.round(8 * _sketchS)}px`
                       : "clamp(14px, 2.4vw, 20px) 0 clamp(12px, 2vw, 17px)",
                     alignSelf: "center",
@@ -730,7 +872,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
                   }}
                 >
                   {line1}
-                  {cur === "l1" && <Cur />}
+                  {cur === "l1" && <Cur paused={!isVisible} />}
                 </div>
               )}
 
@@ -742,11 +884,13 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
                     fontSize: _portrait ? "clamp(9px, 2.5vw, 18px)" : "clamp(14px, 3vw, 18px)",
                     fontWeight: 700,
                     color: TEAL,
-                    marginTop: _portrait ? `${Math.round(2 * _sketchS)}px` : "clamp(2px, 0.4vw, 4px)",
+                    marginTop: _portrait
+                      ? `${Math.round(2 * _sketchS)}px`
+                      : "clamp(2px, 0.4vw, 4px)",
                   }}
                 >
                   {line2}
-                  {cur === "l2" && <Cur />}
+                  {cur === "l2" && <Cur paused={!isVisible} />}
                 </div>
               )}
             </motion.div>
@@ -768,7 +912,7 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
                   inset: 0,
                 }}
               >
-                <FullPageSketch go={true} vw={vw} vh={vh} />
+                <FullPageSketch go={isVisible} vw={vw} vh={vh} />
               </motion.div>
             )}
           </motion.div>
@@ -778,12 +922,11 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
       <style>{`
         @keyframes _twc { 50% { opacity: 0 } }
 
-        @media (max-width: 640px) {
-          .intro-skip-button {
-            bottom: max(16px, env(safe-area-inset-bottom)) !important;
-            right: 16px !important;
-            font-size: 10px !important;
-          }
+        .skip-intro-arrow {
+          transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);
+        }
+        button:hover .skip-intro-arrow {
+          transform: translateX(3px);
         }
       `}</style>
     </div>

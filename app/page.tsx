@@ -274,9 +274,7 @@ function useRoadmapAnchor(id: string, color: AnchorColor) {
 // 15 "Rahvana helps you prepare with confidence" — Rahvana
 // 16 "Visa Approved..."                          — Rahvana
 // 17 closing statement                           — neutral
-const RAHVANA_NODE_IDS = new Set([
-  "01", "02", "04", "06", "08", "10", "12", "13", "15", "16",
-]);
+const RAHVANA_NODE_IDS = new Set(["01", "02", "04", "06", "08", "10", "12", "13", "15", "16"]);
 
 function RoadmapProvider({ children }: { children: React.ReactNode }) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -340,7 +338,13 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    const segments: { d: string; color: AnchorColor; yStart: number; yEnd: number; isAnswer: boolean }[] = [];
+    const segments: {
+      d: string;
+      color: AnchorColor;
+      yStart: number;
+      yEnd: number;
+      isAnswer: boolean;
+    }[] = [];
     for (let i = 0; i < points.length - 1; i++) {
       const p0 = points[i === 0 ? i : i - 1];
       const p1 = points[i];
@@ -664,8 +668,8 @@ function NodeCircle({
   const wrapperProps: Record<string, unknown> = href
     ? { href }
     : onClick
-    ? { onClick, type: "button" as const }
-    : {};
+      ? { onClick, type: "button" as const }
+      : {};
 
   return (
     <div className="flex flex-col items-center justify-center relative py-12 z-10">
@@ -682,8 +686,21 @@ function NodeCircle({
             isInteractive
               ? "group-hover:-translate-y-1 group-hover:shadow-[0_10px_40px_-8px_rgba(14,107,82,0.5)] group-active:scale-100 group-active:translate-y-0"
               : ""
-          } cursor-pointer relative z-10`}
+          } cursor-pointer relative z-10 border border-white/20`}
         >
+          {isInteractive && (
+            <>
+              <span
+                className="pointer-events-none absolute -inset-5 rounded-full bg-[#0e6b52]/[0.08]"
+                aria-hidden="true"
+              />
+              <span
+                className="pointer-events-none absolute -inset-2.5 rounded-full bg-[#0e6b52]/[0.12]"
+                aria-hidden="true"
+              />
+            </>
+          )}
+
           <Icon className="w-10 h-10" />
         </div>
       </Wrapper>
@@ -724,11 +741,7 @@ function VoiceLine({
 // The supporting line under a VoiceLine heading is the same voice, just
 // trailing off — same handwritten font, smaller and lighter, no separate
 // styling language from the paragraph copy used in Rahvana's sections.
-function VoiceSubtext({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+function VoiceSubtext({ children }: { children: React.ReactNode }) {
   return (
     <p className={`${caveat.className} text-lg md:text-xl leading-relaxed max-w-sm text-slate-500`}>
       {children}
@@ -949,7 +962,13 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 2 — leaf start node (anchor "01") — Rahvana */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <SectionBird n={2} side="left" pos="top-[48%]" size="w-22 lg:w-32 xl:w-40" />
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
@@ -1010,7 +1029,13 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 4 — card placeholder (anchor "03") — User voice — shifted left */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
                       <SectionBird n={4} side="left" pos="top-[72%]" />
@@ -1088,8 +1113,20 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 6 — Check node (anchor "05") — User voice — centered */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)' }}>
-                  <SectionBird n={6} side="left" className="left-0" pos="top-[54%]" size="w-34 lg:w-486 xl:w-54" />
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)",
+                  }}
+                >
+                  <SectionBird
+                    n={6}
+                    side="left"
+                    className="left-0"
+                    pos="top-[54%]"
+                    size="w-34 lg:w-486 xl:w-54"
+                  />
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
                       <div className="md:col-span-5 min-w-0">
@@ -1149,7 +1186,13 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 8 — card placeholder (anchor "07") — User voice — shifted left */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #fffcf6 4%, #fffcf6 96%, #ffffff 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #fffcf6 4%, #fffcf6 96%, #ffffff 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
                       <SectionBird n={8} side="left" pos="top-[74%]" />
@@ -1159,9 +1202,7 @@ function HomePageContent() {
                             <VoiceLine colorClassName="text-[#8a6200]/70">
                               So many documents... what if I miss something important?
                             </VoiceLine>
-                            <VoiceSubtext>
-                              I don&apos;t want to get delayed later.
-                            </VoiceSubtext>
+                            <VoiceSubtext>I don&apos;t want to get delayed later.</VoiceSubtext>
                           </VoiceReveal>
                         </ScrollReveal>
                       </div>
@@ -1229,7 +1270,13 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 10 — FolderCheck node (anchor "09") — User voice — centered */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #fffcf6 4%, #fffcf6 90%, #ffffff 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #fffcf6 4%, #fffcf6 90%, #ffffff 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
                       <SectionBird n={10} side="right" pos="top-[50%]" />
@@ -1239,9 +1286,7 @@ function HomePageContent() {
                             <VoiceLine colorClassName="text-[#8a6200]/70">
                               Finally, I know I have everything.
                             </VoiceLine>
-                            <VoiceSubtext>
-                              One less thing to worry about.
-                            </VoiceSubtext>
+                            <VoiceSubtext>One less thing to worry about.</VoiceSubtext>
                           </VoiceReveal>
                         </ScrollReveal>
                       </div>
@@ -1290,7 +1335,13 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 12 — card placeholder (anchor "11") — User voice — shifted left */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f5f1f9 4%, #f5f1f9 90%, #ffffff 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #f5f1f9 4%, #f5f1f9 90%, #ffffff 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
                       <SectionBird n={12} side="left" pos="top-[64%]" />
@@ -1369,7 +1420,13 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 14 — Interview node (anchor "13") — Rahvana — centered */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #fef6f7 4%, #fef6f7 90%, #ffffff 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #fef6f7 4%, #fef6f7 90%, #ffffff 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
                       <SectionBird n={14} side="right" pos="top-[60%]" />
@@ -1406,7 +1463,8 @@ function HomePageContent() {
                               The interview makes me nervous.
                             </VoiceLine>
                             <VoiceSubtext>
-                              What if they ask something I don&apos;t know? What if I forget everything?
+                              What if they ask something I don&apos;t know? What if I forget
+                              everything?
                             </VoiceSubtext>
                           </VoiceReveal>
                         </ScrollReveal>
@@ -1436,7 +1494,13 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 16 — card placeholder (anchor "15") — Rahvana — shifted left */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #fef6f7 4%, #fef6f7 90%, #ffffff 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background:
+                      "linear-gradient(to bottom, #ffffff 0%, #fef6f7 4%, #fef6f7 90%, #ffffff 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
                       <SectionBird n={16} side="left" pos="top-[66%]" />
@@ -1510,7 +1574,12 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 18 — final Welcome node (anchor "17") — neutral — centered */}
-                <div className="w-full relative" style={{ background: 'linear-gradient(to bottom, #ffffff 0%, #f7fcf9 6%, #f7fcf9 100%)' }}>
+                <div
+                  className="w-full relative"
+                  style={{
+                    background: "linear-gradient(to bottom, #ffffff 0%, #f7fcf9 6%, #f7fcf9 100%)",
+                  }}
+                >
                   <div className="max-w-5xl mx-auto px-6 relative">
                     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
                       <div className="md:col-span-6 md:pr-6 min-w-0">
