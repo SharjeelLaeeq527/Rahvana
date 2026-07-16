@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -24,7 +25,7 @@ const JA = "#3d7275",
   JE = "#7a4a55",
   JF = "#7a6050";
 const FIVE_IDS = new Set([1, 10, 11, 15, 22]);
-const INK = (a: number) => `rgba(12,18,42,${a})`;
+const INK = (a) => `rgba(12,18,42,${a})`;
 
 const IMG = {
   standing: "/assets/images/illustartions/standing.png",
@@ -835,6 +836,89 @@ const clampNum = (v, min, max) => Math.min(max, Math.max(min, v));
 const lerp = (v0, v1, vw, w0, w1) =>
   clampNum(v0 + (v1 - v0) * ((vw - w0) / (w1 - w0)), Math.min(v0, v1), Math.max(v0, v1));
 
+/* ─── Shared skip control — identical look & behaviour everywhere it's used ───
+   Text link (no pill), always-underlined + a corner vignette for contrast.
+   Also nudges/brightens whenever the pointer is anywhere on screen (not just
+   over the button itself), so it stays noticeable during a full-bleed
+   animation where the person may never move toward the corner. */
+function SkipIntroButton({ onClick, compact = false, IconCmp, screenHovered = false }) {
+  const Chevron = IconCmp;
+  return (
+    <motion.div
+      animate={{
+        opacity: screenHovered ? 1 : 0.82,
+      }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      style={{
+        position: "absolute",
+        bottom: 0,
+        right: 0,
+        zIndex: 45,
+        width: compact ? 140 : 180,
+        height: compact ? 90 : 110,
+        pointerEvents: "none",
+        background:
+          "radial-gradient(ellipse at 100% 100%, rgba(12,18,42,0.28) 0%, rgba(12,18,42,0) 70%)",
+      }}
+    >
+      <motion.button
+        type="button"
+        onClick={onClick}
+        initial={{ opacity: 0, y: 6 }}
+        animate={{
+          opacity: 1,
+          y: screenHovered ? -4 : 0,
+          scale: screenHovered ? 1.06 : 1,
+        }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.96 }}
+        transition={{ duration: 0.38, ease: [0.34, 1.4, 0.64, 1] }}
+        style={{
+          position: "absolute",
+          bottom: compact
+            ? "max(16px, env(safe-area-inset-bottom))"
+            : "max(22px, env(safe-area-inset-bottom))",
+          right: compact ? 16 : 24,
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          border: "none",
+          borderBottom: `1.5px solid rgba(255,255,255,0.85)`,
+          background: "transparent",
+          color: "#fff",
+          fontFamily: FB,
+          fontSize: compact ? 11 : 13,
+          fontWeight: 700,
+          letterSpacing: "0.1em",
+          textTransform: "uppercase",
+          padding: "10px 1px 6px",
+          minHeight: 40,
+          cursor: "pointer",
+          pointerEvents: "all",
+          textShadow: screenHovered
+            ? "0 1px 10px rgba(0,0,0,0.55)"
+            : "0 1px 8px rgba(0,0,0,0.4)",
+          WebkitTapHighlightColor: "transparent",
+        }}
+      >
+        Skip
+        <motion.span
+          className="skip-intro-arrow"
+          animate={{ x: screenHovered ? [0, 5, 0] : [0, 2, 0] }}
+          transition={{
+            duration: screenHovered ? 0.9 : 1.8,
+            repeat: Infinity,
+            ease: "easeInOut",
+          }}
+          style={{ display: "inline-flex" }}
+        >
+          <Chevron size={15} strokeWidth={2.75} />
+        </motion.span>
+      </motion.button>
+    </motion.div>
+  );
+}
+
 export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
   const [query, setQuery] = useState("");
   const [submitted, setSubmit] = useState(false);
@@ -852,6 +936,26 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
   const [seqHl, setSeqHl] = useState(null);
   const [cVis, setCVis] = useState(new Set());
   const [charPose, setCharPose] = useState("standing");
+
+  // Tracks whether the pointer has been active anywhere on the screen
+  // recently. Used to make the skip button visibly "wake up" whenever the
+  // user is engaged with the page — not just hovering the button itself.
+  const [pointerActive, setPointerActive] = useState(false);
+  useEffect(() => {
+    let idleTimer;
+    const markActive = () => {
+      setPointerActive(true);
+      clearTimeout(idleTimer);
+      idleTimer = setTimeout(() => setPointerActive(false), 1400);
+    };
+    window.addEventListener("mousemove", markActive);
+    window.addEventListener("touchstart", markActive, { passive: true });
+    return () => {
+      window.removeEventListener("mousemove", markActive);
+      window.removeEventListener("touchstart", markActive);
+      clearTimeout(idleTimer);
+    };
+  }, []);
 
   // Tracks whether the running async sequence should keep going. Kept as a
   // ref (not state) so the sequence can check it synchronously on every
@@ -1643,8 +1747,10 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       )}
 
       {typeText !== "Let's map it out." && (
-        <button
-          type="button"
+        <SkipIntroButton
+          compact={isMobile}
+          IconCmp={Icons.ChevronsRight}
+          screenHovered={pointerActive}
           onClick={() => {
             aliveRef.current = false;
             setEndPhase("hero");
@@ -1652,49 +1758,19 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
             setTypeText("Let's map it out.");
             onComplete?.();
           }}
-          className="hero-skip-button"
-          style={{
-            position: "fixed",
-              bottom: "max(16px, env(safe-area-inset-bottom))",
-              right: 16,
-              zIndex: 120,
-              transform: "none",
-              border: "1px solid rgba(12,18,42,0.08)",
-              borderRadius: 999,
-              background: "rgba(255,255,255,0.42)",
-              color: INK(0.42),
-              fontFamily: FB,
-              fontSize: 11,
-              fontWeight: 600,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              padding: "10px 16px",
-              minHeight: 44,
-              minWidth: 44,
-              cursor: "pointer",
-              boxShadow: "0 4px 14px rgba(12,18,42,0.05)",
-              backdropFilter: "blur(10px)",
-              WebkitBackdropFilter: "blur(10px)",
-              opacity: 0.7,
-              transition: "opacity 160ms ease, background-color 160ms ease, transform 160ms ease",
-              WebkitTapHighlightColor: "transparent",
-          }}
-          onMouseEnter={(event) => {
-            event.currentTarget.style.opacity = "1";
-            event.currentTarget.style.backgroundColor = "rgba(255,255,255,0.62)";
-            event.currentTarget.style.transform = "translateY(-1px)";
-          }}
-          onMouseLeave={(event) => {
-            event.currentTarget.style.opacity = "0.7";
-            event.currentTarget.style.backgroundColor = "rgba(255,255,255,0.42)";
-            event.currentTarget.style.transform = "none";
-          }}
-        >
-          Skip
-        </button>
+        />
       )}
 
-      <style>{`@keyframes _blink{50%{opacity:0}}`}</style>
+      <style>{`
+        @keyframes _blink{50%{opacity:0}}
+
+        .skip-intro-arrow {
+          transition: transform 0.28s cubic-bezier(0.22,1,0.36,1);
+        }
+        button:hover .skip-intro-arrow {
+          transform: translateX(3px);
+        }
+      `}</style>
     </section>
   );
 }
@@ -2090,7 +2166,7 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            whileHover={{ y: -2, scale: 1.02, backgroundColor: "#000000" }}
+            whileHover={{ y: -3, scale: 1.04, backgroundColor: "#000000", boxShadow: "0 8px 20px rgba(11,19,31,0.22)" }}
             whileTap={{ scale: 0.98 }}
             style={{
               marginTop: isMobile ? 16 : 20,

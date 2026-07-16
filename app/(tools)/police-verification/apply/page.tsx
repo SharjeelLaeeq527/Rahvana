@@ -527,7 +527,6 @@ function PoliceApplyContent() {
           },
           body: JSON.stringify({
             policeVerificationId: id,
-            userId: user.id,
           }),
         });
 
@@ -611,7 +610,6 @@ function PoliceApplyContent() {
               },
               body: JSON.stringify({
                 policeVerificationId: id,
-                userId: user.id,
               }),
             });
 

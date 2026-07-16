@@ -1,6 +1,6 @@
 import { NextRequest } from "next/server";
 import { msg, E } from "@/lib/errors";
-import { createServerClient } from "@supabase/ssr";
+import { getAuthenticatedUser, getServiceRoleClient } from "@/lib/api/authGuards";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,21 +22,34 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: msg(E.UPLOAD_INVALID_FILE_TYPE) }, { status: 400 });
     }
 
-    // Use service role client to bypass RLS policies
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!, // Use service role key
-      {
-        cookies: {
-          getAll() {
-            return [];
-          },
-          setAll() {
-            // Do nothing for server-side operations
-          },
-        },
-      }
-    );
+    // Validate file size (max 20MB) — prevent storage-fill abuse
+    const maxSize = 20 * 1024 * 1024;
+    if (file.size > maxSize) {
+      return Response.json({ error: msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: 20 }) }, { status: 400 });
+    }
+
+    // AUTH: caller must be logged in
+    const user = await getAuthenticatedUser();
+    if (!user) {
+      return Response.json({ error: "Authentication required" }, { status: 401 });
+    }
+
+    // Service role bypasses RLS — used only AFTER verifying ownership below.
+    const supabase = getServiceRoleClient();
+
+    // AUTHZ: caller must own the target appointment
+    const { data: appt, error: apptError } = await supabase
+      .from("appointments")
+      .select("user_id")
+      .eq("id", appointmentId)
+      .maybeSingle();
+
+    if (apptError || !appt) {
+      return Response.json({ error: "Appointment not found" }, { status: 404 });
+    }
+    if (appt.user_id !== user.id) {
+      return Response.json({ error: "Forbidden" }, { status: 403 });
+    }
 
     // Convert File to ArrayBuffer for upload
     const buffer = Buffer.from(await file.arrayBuffer());

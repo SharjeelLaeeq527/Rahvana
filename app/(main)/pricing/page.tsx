@@ -527,7 +527,6 @@ function PricingContent() {
             addons: addonsOverride || Array.from(selectedAddons),
             visaCategory: visa,
             billing,
-            userId: uid,
           }),
         });
         const data = await res.json();

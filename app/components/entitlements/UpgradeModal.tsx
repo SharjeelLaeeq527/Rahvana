@@ -272,7 +272,6 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
       const isUpgrade = action === "upgrade" && currentTier !== "free";
 
       const payload = {
-        userId: user.id,
         isUpgrade,
         currentTier: currentTier !== "free" ? currentTier : undefined,
         productTier: action === "upgrade" ? target : undefined,

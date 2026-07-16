@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { triggerTranslationNotification } from "@/lib/notifications";
+import { requireAdmin } from "@/lib/api/authGuards";
 
 function getStorageSupabase() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -15,6 +16,12 @@ function getStorageSupabase() {
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    // AUTHZ: admin only (this route uses the service role → bypasses RLS)
+    const { isAdmin, error: authError } = await requireAdmin();
+    if (!isAdmin) {
+      return NextResponse.json({ error: authError || "Admin access required" }, { status: 403 });
+    }
+
     const { id } = await params;
     const body = await request.json();
     const { verificationNotes } = body;
