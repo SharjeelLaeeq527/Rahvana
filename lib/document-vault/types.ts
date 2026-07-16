@@ -76,6 +76,13 @@ export interface ScenarioFlags {
   military_service?: boolean;
   previous_immigration_violations?: boolean;
   criminal_history?: boolean;
+
+  // Parent / IR-5 Specific
+  relationship_type?: "biological_mother" | "father_married" | "father_unmarried" | "stepparent" | "adoptive";
+  stepparent_bio_parent_prior_marriages?: boolean;
+  name_discrepancy?: boolean;
+  primary_record_available?: boolean;
+  parent_prior_marriages?: boolean;
 }
 
 export interface DocumentDefinition {

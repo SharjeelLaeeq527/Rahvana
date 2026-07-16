@@ -68,6 +68,19 @@ export function mapDocumentNameToId(name: string): string {
     "interview letter": "interview-letter",
     "sealed medical envelope": "medical-results-envelope",
 
+    // Parent / IR-5 Specific Mappings
+    "petitioner's birth certificate": "birth-cert-petitioner",
+    "parent identity and name-match evidence": "parent-identity-match",
+    "parents' marriage certificate": "parents-marriage-cert",
+    "evidence of a bona fide father-child relationship": "father-child-bona-fide",
+    "marriage certificate creating the step-relationship": "stepparent-marriage-cert",
+    "termination of prior marriages for step-relationship": "stepparent-prior-marriages",
+    "final adoption decree": "adoption-decree",
+    "legal custody and joint residence evidence": "adoption-custody-residence",
+    "secondary parent-child relationship evidence": "secondary-relationship-evidence",
+    "record unavailability evidence": "record-unavailability-evidence",
+    "parent's marriage and prior-marriage records": "parent-marriage-history",
+
     // Exact matches from IR-1 journey JSON (lowercased for matching)
     "proof of u.s. citizenship": "citizenship-proof-petitioner",
     "beneficiary passport": "passport-beneficiary",

@@ -97,7 +97,8 @@ import {
 import { FileQualityPreCheck } from "./components/FileQualityPreCheck";
 import { PreSubmissionSnapshot } from "./components/PreSubmissionSnapshot";
 import { PacketSectionChecklist } from "./components/PacketSectionChecklist";
-import { getQuestionnaireConfig, IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire";
+import { getQuestionnaireConfig, IR1_QUESTIONNAIRE_CONFIG, normalizeJourneyType } from "@/lib/questionnaire";
+import type { VisaCategory } from "@/lib/document-vault/types";
 import { computeDocumentList, deriveDocAnswers } from "@/lib/questionnaire/engine";
 import type { QuestionnaireResult, ConditionalDocument } from "@/lib/questionnaire/types";
 import { StepHeader } from "./StepHeader";
@@ -908,12 +909,16 @@ export const StepViewV3: React.FC<StepViewProps> = ({
   // The API uses the session cookie to get real user_id, so userId here is just a local label
   useEffect(() => {
     const initVault = async () => {
+      // Dynamically derive visa category from journey_type
+      const journeyType = data?.journey_type || "ir-1";
+      const visaCategory = normalizeJourneyType(journeyType).toUpperCase() as VisaCategory;
+
       // Run these in parallel to speed up initialization
       Promise.all([
         setConfigVault({
           userId: user?.id || "session",
-          visaCategory: "IR-1",
-          caseId: (state.metadata.caseId as string) || "ARACHNIE-IR1",
+          visaCategory,
+          caseId: (state.metadata.caseId as string) || `ARACHNIE-${visaCategory.replace("-", "")}`,
           petitionerName: (state.metadata.petitionerName as string) || "Petitioner",
           beneficiaryName: (state.metadata.beneficiaryName as string) || "Beneficiary",
           jointSponsorName: (state.metadata.jointSponsorName as string) || "",

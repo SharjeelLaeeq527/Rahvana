@@ -247,6 +247,113 @@ export function ConfigurationWizard({ userId, onComplete }: ConfigurationWizardP
                   </div>
                 )}
 
+                {/* Parent / IR-5 flags */}
+                {visaCategory === "IR-5" && (
+                  <div className="space-y-4">
+                    <div className="space-y-3">
+                      <h4 className="font-medium text-sm text-slate-900 dark:text-white">Petitioner-Parent Relationship Type</h4>
+                      <div className="grid grid-cols-1 gap-2 mt-1">
+                        {[
+                          { label: "Biological mother — the petitioner's birth mother", value: "biological_mother" },
+                          { label: "Biological father — parents were legally married to each other", value: "father_married" },
+                          { label: "Biological father — parents were never married to each other", value: "father_unmarried" },
+                          { label: "Stepparent — a stepfather or stepmother", value: "stepparent" },
+                          { label: "Adoptive parent", value: "adoptive" },
+                        ].map((opt) => (
+                          <label
+                            key={opt.value}
+                            className={`flex items-center p-2 border rounded-lg cursor-pointer transition-all ${
+                              scenarioFlags.relationship_type === opt.value
+                                ? "border-primary bg-primary/5 ring-1 ring-primary/10 dark:border-primary dark:bg-primary/10"
+                                : "border-border hover:bg-muted/10"
+                            }`}
+                          >
+                            <input
+                              type="radio"
+                              name="relationship_type"
+                              value={opt.value}
+                              checked={scenarioFlags.relationship_type === opt.value}
+                              onChange={(e) => handleFlagChange("relationship_type", e.target.value as any)}
+                              className="mr-3 accent-primary"
+                            />
+                            <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{opt.label}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 pt-2 border-t border-border">
+                      <h4 className="font-medium text-sm text-slate-900 dark:text-white">Additional Situations</h4>
+
+                      {scenarioFlags.relationship_type === "stepparent" && (
+                        <label className="flex items-start space-x-3 cursor-pointer">
+                          <Checkbox
+                            className="mt-1"
+                            checked={scenarioFlags.stepparent_bio_parent_prior_marriages || false}
+                            onCheckedChange={(checked) =>
+                              handleFlagChange("stepparent_bio_parent_prior_marriages", checked as boolean)
+                            }
+                          />
+                          <div>
+                            <div className="font-medium text-slate-800 dark:text-slate-200">Biological Parent Prior Marriages</div>
+                            <div className="text-sm text-muted-foreground">
+                              The biological parent who married the stepparent had prior marriages.
+                            </div>
+                          </div>
+                        </label>
+                      )}
+
+                      <label className="flex items-start space-x-3 cursor-pointer">
+                        <Checkbox
+                          className="mt-1"
+                          checked={scenarioFlags.name_discrepancy || false}
+                          onCheckedChange={(checked) =>
+                            handleFlagChange("name_discrepancy", checked as boolean)
+                          }
+                        />
+                        <div>
+                          <div className="font-medium text-slate-800 dark:text-slate-200">Name or Identity Discrepancies</div>
+                          <div className="text-sm text-muted-foreground">
+                            There are name variations or spelling differences across the records.
+                          </div>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start space-x-3 cursor-pointer">
+                        <Checkbox
+                          className="mt-1"
+                          checked={scenarioFlags.primary_record_available === false}
+                          onCheckedChange={(checked) =>
+                            handleFlagChange("primary_record_available", !checked)
+                          }
+                        />
+                        <div>
+                          <div className="font-medium text-slate-800 dark:text-slate-200">Primary Birth Record Unavailable</div>
+                          <div className="text-sm text-muted-foreground">
+                            The primary birth certificate is unavailable, late-registered, or has inconsistencies.
+                          </div>
+                        </div>
+                      </label>
+
+                      <label className="flex items-start space-x-3 cursor-pointer">
+                        <Checkbox
+                          className="mt-1"
+                          checked={scenarioFlags.parent_prior_marriages || false}
+                          onCheckedChange={(checked) =>
+                            handleFlagChange("parent_prior_marriages", checked as boolean)
+                          }
+                        />
+                        <div>
+                          <div className="font-medium text-slate-800 dark:text-slate-200">Parent's Prior Marriages</div>
+                          <div className="text-sm text-muted-foreground">
+                            The parent has prior marriages, divorces, or is widowed.
+                          </div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
                 {/* Financial flags */}
                 <div className="space-y-3">
                   <h4 className="font-medium text-sm">

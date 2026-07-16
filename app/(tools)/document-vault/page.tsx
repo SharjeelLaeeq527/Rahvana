@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useRouter } from "next/navigation";
@@ -12,7 +12,7 @@ import {
   getDocumentsByCategory,
 } from "@/lib/document-vault/personalization-engine";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
-import type { UploadedDocument } from "@/lib/document-vault/types";
+import type { UploadedDocument, VisaCategory } from "@/lib/document-vault/types";
 import { DocumentCard } from "@/app/components/document-vault/DocumentCard";
 import { DocumentTableView } from "@/app/components/document-vault/DocumentTableView";
 import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPreviewModal";
@@ -42,6 +42,10 @@ import {
   AlertCircle,
   List,
   LayoutGrid,
+  ArrowLeftRight,
+  Compass,
+  MapPin,
+  Route,
 } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
@@ -52,7 +56,32 @@ import { Plus, Info, LayoutTemplate } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import Link from "next/link";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
-import { ir1journeyHref } from "@/lib/constants/routes";
+import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
+import type { Journey } from "@/lib/journey/types";
+
+// ── Journey → Visa Category mapping ──────────────────────────────────────────
+const JOURNEY_TYPE_TO_VISA: Record<string, VisaCategory> = {
+  IR1: "IR-1",
+  "IR-1": "IR-1",
+  ir1: "IR-1",
+  IR5: "IR-5",
+  "IR-5": "IR-5",
+  ir5: "IR-5",
+};
+
+function journeyTypeToVisaCategory(journeyType: string): VisaCategory | null {
+  return JOURNEY_TYPE_TO_VISA[journeyType] ?? null;
+}
+
+// Human-friendly label for a journey
+function journeyLabel(j: Journey): string {
+  if (j.journey_name) return j.journey_name;
+  const visa = journeyTypeToVisaCategory(j.journey_type)?.toUpperCase;
+  return visa ? `${visa} Journey` : `${j.journey_type} Journey`;
+}
+
+// Session-storage key for persisted journey choice (Case 3)
+const SESSION_KEY = "doc_vault_active_journey";
 
 export default function DocumentVaultPage() {
   const { showToast } = useToast();
@@ -93,7 +122,39 @@ export default function DocumentVaultPage() {
   const [welcomeModalOpen, setWelcomeModalOpen] = useState(false);
   const [hasShownWelcome, setHasShownWelcome] = useState(false);
 
-  const wizard = useWizard({ userId: user?.id });
+  // ── Journey gate state ────────────────────────────────────────────────────
+  const [userJourneys, setUserJourneys] = useState<Journey[]>([]);
+  const [journeysLoading, setJourneysLoading] = useState(true);
+  /** Case 1 — user has zero journeys */
+  const [noJourneyModalOpen, setNoJourneyModalOpen] = useState(false);
+  /** Case 3 — user has multiple journeys; picker is open */
+  const [journeyPickerOpen, setJourneyPickerOpen] = useState(false);
+  /** Case 3 — the currently active journey id selected by the user */
+  const [activeJourneyId, setActiveJourneyId] = useState<string | null>(null);
+  /** Whether journey gate evaluation is complete */
+  const [journeyGateReady, setJourneyGateReady] = useState(false);
+  /**
+   * Ref guard — ensures evaluateJourneyGate() runs exactly once per mount,
+   * regardless of how many times useAuth() re-creates the `user` object reference.
+   */
+  const journeyGateEvaluated = useRef(false);
+
+  // Derive active journey for labelling and wizard loading
+  const activeJourney = useMemo(() => {
+    return userJourneys.find((j) => j.id === activeJourneyId) ?? null;
+  }, [userJourneys, activeJourneyId]);
+
+  const journeyRoadmapHref = useMemo(() => {
+    if (activeJourney?.journey_type === "IR5" || activeJourney?.journey_type === "ir5") {
+      return ir5journeyHref;
+    }
+    return ir1journeyHref;
+  }, [activeJourney]);
+
+  const wizard = useWizard({
+    userId: journeysLoading ? null : user?.id,
+    journeyId: activeJourney?.journey_type || undefined,
+  });
 
   // Filter documents based on search query
   const filteredDocumentsByCategory = useMemo(() => {
@@ -195,12 +256,149 @@ export default function DocumentVaultPage() {
         })
         .catch(() => {
           setIsInitializing(false);
+          // If vault init fails, release the journey loading lock too
+          setJourneysLoading(false);
+          setJourneyGateReady(true);
         });
     }
   }, [user, authLoading, router, initialized, initialize, t]);
 
+  // ── Fetch user journeys & evaluate gate cases ─────────────────────────────
   useEffect(() => {
-    if (initialized && wizard.isLoaded && !hasShownWelcome) {
+    // Guard: only run once per mount. Prevents re-firing when useAuth() creates
+    // a new `user` object reference, which would set journeysLoading=true again.
+    if (!user?.id || !initialized) return;
+    if (journeyGateEvaluated.current) return;
+    journeyGateEvaluated.current = true;
+
+    async function evaluateJourneyGate() {
+      setJourneysLoading(true);
+      try {
+        const res = await fetch("/api/journeys");
+        if (!res.ok) throw new Error("Failed to fetch journeys");
+        const data = await res.json();
+        // data.data is an array of { journey, ... } objects from journeyService.getAllJourneysWithProgress()
+        const journeys: Journey[] = (data.data ?? []).map((item: any) => item.journey ?? item);
+        setUserJourneys(journeys);
+
+        if (journeys.length === 0) {
+          // ── Case 1: No journey at all ──────────────────────────────────
+          setNoJourneyModalOpen(true);
+          setJourneyGateReady(true);
+        } else if (journeys.length === 1) {
+          // ── Case 2: Exactly one journey — auto-configure ───────────────
+          setActiveJourneyId(journeys[0].id);
+          setJourneyGateReady(true);
+        } else {
+          // ── Case 3: Multiple journeys — check session storage ──────────
+          const saved = typeof window !== "undefined" ? sessionStorage.getItem(SESSION_KEY) : null;
+          if (saved && journeys.some((j) => j.id === saved)) {
+            setActiveJourneyId(saved);
+            setJourneyGateReady(true);
+          } else {
+            // Open the picker modal; gate readiness is set after user picks
+            setJourneyPickerOpen(true);
+          }
+        }
+      } catch (err) {
+        console.error("[DocumentVault] Journey gate error:", err);
+        // On error, allow access with generic config
+        setJourneyGateReady(true);
+      } finally {
+        setJourneysLoading(false);
+      }
+    }
+
+    evaluateJourneyGate();
+  }, [user?.id, initialized]); // use user?.id (primitive) not user object to avoid ref-instability re-runs
+
+  // ── Auto-configure vault based on active journey ──────────────────────────
+  const { setConfig: setVaultConfig } = useDocumentVaultStore();
+  useEffect(() => {
+    if (!activeJourneyId || !journeyGateReady || !user || !wizard.isLoaded) return;
+    // Safety check: ensure wizard has loaded the active journey
+    if (wizard.state.backendId !== activeJourneyId) return;
+    const activeJourney = userJourneys.find((j) => j.id === activeJourneyId);
+    if (!activeJourney) return;
+    const visaCategory = journeyTypeToVisaCategory(activeJourney.journey_type);
+    if (!visaCategory) return;
+
+    // Retrieve questionnaire answers from journey metadata if available
+    const metadata = wizard.state?.metadata || {};
+    const hasQuestionnaire = metadata.docQuestionnaireCompleted === true;
+    const questionnaireAnswers = (metadata.docQuestionnaireAnswers as Record<string, string>) || {};
+
+    // Map questionnaire answers to vault scenario flags
+    const mappedFlags: ScenarioFlags = { ...config?.scenarioFlags };
+    if (hasQuestionnaire) {
+      if (visaCategory === "IR-1" || visaCategory === "CR-1") {
+        mappedFlags.prior_marriage_petitioner = questionnaireAnswers.prior_marriage_petitioner === "yes";
+        mappedFlags.prior_marriage_beneficiary = questionnaireAnswers.prior_marriage_beneficiary === "yes";
+        mappedFlags.name_change_any_party = questionnaireAnswers.name_change === "yes";
+        mappedFlags.military_service = questionnaireAnswers.military_service === "yes";
+        mappedFlags.criminal_history = questionnaireAnswers.criminal_history === "yes";
+        mappedFlags.joint_sponsor_used = questionnaireAnswers.joint_sponsor === "yes";
+      } else if (visaCategory === "IR-5") {
+        mappedFlags.relationship_type = questionnaireAnswers.relationship_type as any;
+        mappedFlags.stepparent_bio_parent_prior_marriages = questionnaireAnswers.stepparent_bio_parent_prior_marriages === "yes";
+        mappedFlags.name_discrepancy = questionnaireAnswers.name_discrepancy === "yes";
+        mappedFlags.primary_record_available = questionnaireAnswers.primary_record_available === "yes";
+        mappedFlags.parent_prior_marriages = questionnaireAnswers.parent_prior_marriages === "yes";
+        mappedFlags.military_service = questionnaireAnswers.military_service === "yes";
+        mappedFlags.criminal_history = questionnaireAnswers.criminal_history === "yes";
+      }
+    }
+
+    if (!config) {
+      // No vault config saved yet for this user — create a minimal one from the
+      // journey's visa category so the document list can populate immediately.
+      setVaultConfig({ userId: user.id, visaCategory, scenarioFlags: mappedFlags });
+    } else if (
+      config.visaCategory !== visaCategory ||
+      (hasQuestionnaire && JSON.stringify(config.scenarioFlags) !== JSON.stringify(mappedFlags))
+    ) {
+      // Config exists but points to a different visa category or flags have changed — update it.
+      setVaultConfig({
+        ...config,
+        visaCategory,
+        scenarioFlags: {
+          ...config.scenarioFlags,
+          ...mappedFlags,
+        },
+      });
+    }
+  }, [
+    activeJourneyId,
+    journeyGateReady,
+    userJourneys,
+    config,
+    setVaultConfig,
+    user,
+    wizard.isLoaded,
+    wizard.state?.metadata,
+    wizard.state?.backendId,
+  ]);
+
+  // ── Case 3 picker confirmation handler ────────────────────────────────────
+  const handlePickJourney = useCallback((journeyId: string) => {
+    setActiveJourneyId(journeyId);
+    if (typeof window !== "undefined") {
+      sessionStorage.setItem(SESSION_KEY, journeyId);
+    }
+    setJourneyPickerOpen(false);
+    setJourneyGateReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (
+      initialized &&
+      wizard.isLoaded &&
+      !hasShownWelcome &&
+      journeyGateReady &&
+      !noJourneyModalOpen
+    ) {
+      // Safety check: ensure wizard has loaded the active journey
+      if (wizard.state.backendId !== activeJourneyId) return;
       const isEligibilityDone = wizard.state.completedSteps.has("step_1_1");
       const isPersonalizationDone = wizard.state.metadata?.docQuestionnaireCompleted === true;
 
@@ -214,7 +412,11 @@ export default function DocumentVaultPage() {
     wizard.isLoaded,
     wizard.state.completedSteps,
     wizard.state.metadata,
+    wizard.state?.backendId,
+    activeJourneyId,
     hasShownWelcome,
+    journeyGateReady,
+    noJourneyModalOpen,
   ]);
 
   useEffect(() => {
@@ -250,7 +452,7 @@ export default function DocumentVaultPage() {
     return ["all", "required", "optional", ...cats];
   }, [filteredDocumentsByCategory]);
 
-  if (authLoading || isInitializing) {
+  if (authLoading || isInitializing || journeysLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader size="md" />
@@ -259,6 +461,8 @@ export default function DocumentVaultPage() {
   }
 
   if (!user) return null;
+
+  // activeJourney is already derived at the top
 
   // if ((!config && initialized) || showConfigWizard) {
   //   return (
@@ -478,17 +682,31 @@ export default function DocumentVaultPage() {
                   <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                     {t("documentVaultPage.page.title")}
                   </h1>
-                  <div className="flex items-center gap-2 mt-1">
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
                     <Badge
                       variant="secondary"
                       className="bg-primary/5 hover:bg-primary/5 text-primary border-primary/20 font-bold px-2.5 py-0.5"
                     >
-                      {config?.visaCategory &&
-                        t(`documentVaultPage.visaCategories.${config.visaCategory}`)}
+                      {config?.visaCategory
+                        ? config.visaCategory
+                        : activeJourney
+                          ? journeyLabel(activeJourney)
+                          : ""}
                     </Badge>
                     <span className="text-xs text-slate-500 font-medium">
                       {t("documentVaultPage.page.subtitle")}
                     </span>
+                    {/* Case 3 Journey Switcher */}
+                    {userJourneys.length > 1 && (
+                      <button
+                        onClick={() => setJourneyPickerOpen(true)}
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 hover:bg-primary/5 px-2 py-0.5 rounded-full border border-primary/20 transition-all duration-200 hover:scale-105 active:scale-95"
+                        title="Switch to a different journey"
+                      >
+                        <ArrowLeftRight className="w-3 h-3" />
+                        Switch Journey
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>
@@ -1113,6 +1331,159 @@ export default function DocumentVaultPage() {
         )}
 
         {/* Welcome / Incomplete Progress Modal */}
+        {/* ── Case 1: No Journey Modal (uncloseable) ─────────────────────────── */}
+        <Dialog
+          open={noJourneyModalOpen}
+          onOpenChange={() => {
+            /* intentionally uncloseable */
+          }}
+        >
+          <DialogContent
+            className="max-w-md w-[95%] bg-white dark:bg-slate-900 border-none shadow-2xl rounded-3xl p-0 overflow-hidden"
+            onPointerDownOutside={(e) => e.preventDefault()}
+            onEscapeKeyDown={(e) => e.preventDefault()}
+          >
+            <div className="relative p-8 flex flex-col items-center text-center">
+              {/* Decorative blobs */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-amber-500/10 blur-3xl" />
+                <div className="absolute -bottom-20 -left-20 w-56 h-56 rounded-full bg-primary/10 blur-3xl" />
+              </div>
+
+              {/* Icon */}
+              <div className="relative z-10 w-20 h-20 rounded-3xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center mb-6 shadow-inner">
+                <Compass className="w-10 h-10 text-amber-600 dark:text-amber-400" />
+              </div>
+
+              {/* Text */}
+              <h3 className="relative z-10 text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
+                Journey Required
+              </h3>
+              <p className="relative z-10 text-slate-600 dark:text-slate-400 leading-relaxed text-[15px] mb-2">
+                The{" "}
+                <span className="font-bold text-slate-800 dark:text-slate-200">Document Vault</span>{" "}
+                is a journey-specific tool. It organizes and tracks the exact documents you need
+                based on your immigration journey.
+              </p>
+              <p className="relative z-10 text-slate-500 dark:text-slate-500 text-sm leading-relaxed mb-8">
+                You don&apos;t have an active immigration journey yet. Please start a journey first
+                — then your Document Vault will be automatically set up for you.
+              </p>
+
+              {/* Actions */}
+              <div className="relative z-10 w-full space-y-3">
+                <Link href="/visa-category">
+                  <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-base shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95">
+                    <Route className="w-5 h-5 mr-2" />
+                    Browse Available Journeys
+                  </Button>
+                </Link>
+                <p className="text-xs text-slate-400 dark:text-slate-500">
+                  Once you start a journey, come back here to access your personalized Document
+                  Vault.
+                </p>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* ── Case 3: Journey Picker Modal (uncloseable on first open, closeable when switching) ── */}
+        <Dialog
+          open={journeyPickerOpen}
+          onOpenChange={(open) => {
+            // Allow closing only if a journey is already active (i.e. opened via Switch button)
+            if (!open && activeJourneyId) setJourneyPickerOpen(false);
+          }}
+        >
+          <DialogContent
+            className="max-w-lg w-[95%] bg-white dark:bg-slate-900 border-none shadow-2xl rounded-3xl p-0 overflow-hidden"
+            onPointerDownOutside={(e) => {
+              if (!activeJourneyId) e.preventDefault();
+            }}
+            onEscapeKeyDown={(e) => {
+              if (!activeJourneyId) e.preventDefault();
+            }}
+          >
+            <div className="relative p-8">
+              {/* Conditional X close button — only shown when a journey is already active */}
+              {activeJourneyId && (
+                <button
+                  onClick={() => setJourneyPickerOpen(false)}
+                  className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all duration-200 hover:scale-110 active:scale-95"
+                  aria-label="Close"
+                >
+                  <CloseIcon className="w-4 h-4" />
+                </button>
+              )}
+              {/* Decorative blobs */}
+              <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
+                <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
+              </div>
+
+              {/* Header */}
+              <div className="relative z-10 flex flex-col items-center text-center mb-6">
+                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 shadow-inner">
+                  <MapPin className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
+                  Select Your Active Journey
+                </h3>
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-sm">
+                  You have multiple journeys. Choose the one you want your Document Vault to be
+                  configured for. You can switch at any time.
+                </p>
+              </div>
+
+              {/* Journey cards */}
+              <div className="relative z-10 space-y-3">
+                {userJourneys.map((journey) => {
+                  const visaCategory = journeyTypeToVisaCategory(journey.journey_type);
+                  const isActive = journey.status === "in_progress";
+                  return (
+                    <button
+                      key={journey.id}
+                      onClick={() => handlePickJourney(journey.id)}
+                      className="w-full text-left p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-primary/60 hover:bg-primary/5 transition-all duration-200 group active:scale-[0.98]"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+                          <Compass className="w-5 h-5 text-primary" />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="font-bold text-slate-900 dark:text-white text-sm">
+                              {journeyLabel(journey)}
+                            </span>
+                            {visaCategory && (
+                              <Badge
+                                variant="secondary"
+                                className="text-xs bg-primary/5 text-primary border-primary/20 font-bold"
+                              >
+                                {visaCategory}
+                              </Badge>
+                            )}
+                            {isActive && (
+                              <Badge className="text-xs bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800 font-semibold">
+                                Active
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 capitalize">
+                            Status: {journey.status.replace("_", " ")} ·{" "}
+                            {journey.completion_percentage}% complete
+                          </p>
+                        </div>
+                        <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-primary -rotate-90 transition-colors shrink-0" />
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
+
         <Dialog open={welcomeModalOpen} onOpenChange={setWelcomeModalOpen}>
           <DialogContent className="max-w-md w-[95%] bg-white dark:bg-slate-900 border-none shadow-2xl rounded-3xl p-0 overflow-hidden">
             <div className="relative p-8 flex flex-col items-center">
@@ -1143,7 +1514,7 @@ export default function DocumentVaultPage() {
               </ul>
               {/* Actions */}
               <div className="relative z-10 w-full space-y-3">
-                <Link href={ir1journeyHref}>
+                <Link href={journeyRoadmapHref}>
                   {" "}
                   <Button
                     // onClick={() => router.push("/visa-category/ir-category/ir-1")}
