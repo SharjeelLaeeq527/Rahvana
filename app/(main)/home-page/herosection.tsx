@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 import React, { useEffect, useRef, useState } from "react";
 import {
@@ -549,7 +548,7 @@ function PoseEffect({ pose }) {
   return null;
 }
 
-function CharacterSprite({ pose, size = 200, style: extra = {} }) {
+function CharacterSprite({ pose, size = 200, style: extra = {}, isVisible = true }) {
   const cfg = POSES[pose] ?? POSES.standing;
   return (
     <div style={{ position: "relative", width: size, height: size, flexShrink: 0, ...extra }}>
@@ -590,7 +589,10 @@ function CharacterSprite({ pose, size = 200, style: extra = {} }) {
           />
         </motion.div>
       </AnimatePresence>
-      <PoseEffect pose={pose} />
+      {/* Ambient decorative loops are simply not mounted while off-screen —
+          for continuous, non-narrative loops this reads identically to a
+          pause/resume without needing frame-accurate state tracking. */}
+      {isVisible && <PoseEffect pose={pose} />}
     </div>
   );
 }
@@ -831,6 +833,33 @@ const CIN_SLIDES = [
 ];
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+
+// A drop-in replacement for `sleep` that can be paused mid-wait and resumed
+// later without losing progress. It polls a shared ref every ~120ms; while
+// the ref is true it simply keeps re-checking (not consuming any of the
+// remaining wait time), so the whole sequence freezes exactly where it was
+// and continues from that same point once unpaused. No indicator is shown —
+// the pause is purely a timing effect.
+const pausableSleep = (pausedRef, ms) =>
+  new Promise((resolve) => {
+    let remaining = ms;
+    let timer;
+    const tick = () => {
+      if (pausedRef.current) {
+        timer = setTimeout(tick, 120);
+        return;
+      }
+      const chunk = Math.min(remaining, 120);
+      const start = Date.now();
+      timer = setTimeout(() => {
+        remaining -= Date.now() - start;
+        if (remaining <= 0) resolve();
+        else tick();
+      }, chunk);
+    };
+    tick();
+  });
+
 const rand = (a, b) => a + Math.random() * (b - a);
 const clampNum = (v, min, max) => Math.min(max, Math.max(min, v));
 const lerp = (v0, v1, vw, w0, w1) =>
@@ -841,7 +870,13 @@ const lerp = (v0, v1, vw, w0, w1) =>
    Also nudges/brightens whenever the pointer is anywhere on screen (not just
    over the button itself), so it stays noticeable during a full-bleed
    animation where the person may never move toward the corner. */
-function SkipIntroButton({ onClick, compact = false, IconCmp, screenHovered = false }) {
+function SkipIntroButton({
+  onClick,
+  compact = false,
+  IconCmp,
+  screenHovered = false,
+  isVisible = true,
+}) {
   const Chevron = IconCmp;
   return (
     <motion.div
@@ -895,16 +930,14 @@ function SkipIntroButton({ onClick, compact = false, IconCmp, screenHovered = fa
           minHeight: 40,
           cursor: "pointer",
           pointerEvents: "all",
-          textShadow: screenHovered
-            ? "0 1px 10px rgba(0,0,0,0.55)"
-            : "0 1px 8px rgba(0,0,0,0.4)",
+          textShadow: screenHovered ? "0 1px 10px rgba(0,0,0,0.55)" : "0 1px 8px rgba(0,0,0,0.4)",
           WebkitTapHighlightColor: "transparent",
         }}
       >
         Skip
         <motion.span
           className="skip-intro-arrow"
-          animate={{ x: screenHovered ? [0, 5, 0] : [0, 2, 0] }}
+          animate={{ x: !isVisible ? 0 : screenHovered ? [0, 5, 0] : [0, 2, 0] }}
           transition={{
             duration: screenHovered ? 0.9 : 1.8,
             repeat: Infinity,
@@ -962,6 +995,45 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
   // tick without waiting for a re-render, and so an external "skip" call
   // can stop it immediately.
   const aliveRef = useRef(true);
+
+  // ---- Pause / resume the whole sequence when it scrolls out of view ----
+  // `pausedRef` is read synchronously by pausableSleep, so the sequence
+  // freezes at exactly the point it's at (no rewind, no restart, no
+  // indicator) and continues the instant the section is visible again.
+  const sectionRef = useRef(null);
+  const pausedRef = useRef(false);
+  const [isVisible, setIsVisible] = useState(true);
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        const vis = entry.isIntersecting;
+        pausedRef.current = !vis;
+        setIsVisible(vis);
+      },
+      { threshold: 0.2 }
+    );
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+
+  // Camera pans (mAnimate on motion values) run independently of React
+  // state, so pausing the sequence's sleep loop alone wouldn't stop a pan
+  // that's already in flight. We keep a handle to every camera animation
+  // and pause/resume it in lockstep with visibility — the motion values
+  // hold their exact current position while paused.
+  const camControlsRef = useRef([]);
+  useEffect(() => {
+    camControlsRef.current.forEach((c) => {
+      try {
+        if (isVisible) c.play?.();
+        else c.pause?.();
+      } catch (e) {
+        /* noop */
+      }
+    });
+  }, [isVisible]);
 
   // Preload all pose images to prevent rendering/loading delays
   useEffect(() => {
@@ -1028,6 +1100,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
     if (!ids.length) return;
     let i = 0;
     const iv = setInterval(() => {
+      if (pausedRef.current) return; // freeze the highlight cycle while off-screen
       setSeqHl(ids[i % ids.length]);
       i++;
     }, 250); // slowed down seq highlight interval slightly
@@ -1041,21 +1114,26 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
   // frame (headline + CTA) takes over.
   useEffect(() => {
     const playing = endPhase !== "hero";
-    window.dispatchEvent(
-      new CustomEvent("hero-animation-playing", { detail: { playing } })
-    );
+    window.dispatchEvent(new CustomEvent("hero-animation-playing", { detail: { playing } }));
   }, [endPhase]);
 
   useEffect(() => {
     let isAlive = true;
     aliveRef.current = true;
-    const cam = (to, dur = 1.4) => { // slightly slower camera duration default
+    // Local `sleep` shadows the module-level one for this whole sequence
+    // (including the `shake` and `narrate` helpers defined below, since
+    // they close over this const) so every await in the sequence honours
+    // the pause state.
+    const sleep = (ms) => pausableSleep(pausedRef, ms);
+    const cam = (to, dur = 1.4) => {
+      // slightly slower camera duration default
       const ease = [0.22, 1, 0.36, 1];
+      const record = (c) => c && camControlsRef.current.push(c);
       if (to.zoom != null)
-        mAnimate(camZoom, 1 + (to.zoom - 1) * zoomDampen, { duration: dur, ease });
-      if (to.x != null) mAnimate(camX, to.x * panScale, { duration: dur, ease });
-      if (to.y != null) mAnimate(camY, to.y * panScale, { duration: dur, ease });
-      if (to.rotate != null) mAnimate(camRot, to.rotate, { duration: dur, ease });
+        record(mAnimate(camZoom, 1 + (to.zoom - 1) * zoomDampen, { duration: dur, ease }));
+      if (to.x != null) record(mAnimate(camX, to.x * panScale, { duration: dur, ease }));
+      if (to.y != null) record(mAnimate(camY, to.y * panScale, { duration: dur, ease }));
+      if (to.rotate != null) record(mAnimate(camRot, to.rotate, { duration: dur, ease }));
     };
     const shake = async () => {
       for (let i = 0; i < 16; i++) {
@@ -1088,7 +1166,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       setQuery("");
       setSubmit(false);
       setCharPose("standing");
-      
+
       cam({ zoom: 0.58, x: 30, y: 40, rotate: -8 }, 0.01);
       await sleep(400); // was 200
       cam({ zoom: 0.75, x: -15, y: 10, rotate: 3 }, 2.2); // was 1.8
@@ -1279,7 +1357,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       setEndPhase("hero");
       onComplete?.();
 
-      const full = "Let's map it out.";
+      const full = "Let's map out your visa process.";
       for (let i = 0; i <= full.length; i++) {
         if (!isAlive || !aliveRef.current) return;
         setTypeText(full.slice(0, i));
@@ -1300,7 +1378,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       aliveRef.current = false;
       setEndPhase("hero");
       setFade(0);
-      setTypeText("Let's map it out.");
+      setTypeText("Let's map out your visa process.");
       onComplete?.();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1312,6 +1390,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
 
   return (
     <section
+      ref={sectionRef}
       style={{
         position: "relative",
         zIndex: 50,
@@ -1547,6 +1626,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
                     pose={charPose}
                     size={charSize}
                     style={{ filter: "drop-shadow(0 8px 22px rgba(46,113,117,0.14))" }}
+                    isVisible={isVisible}
                   />
                 </div>
                 <div
@@ -1616,7 +1696,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
                             ) : (
                               query
                             )}
-                            {!submitted && <Blink />}
+                            {!submitted && <Blink paused={!isVisible} />}
                           </div>
                           {submitted && (
                             <span
@@ -1739,23 +1819,25 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
           isMobile={isMobile}
           isTablet={isTablet}
           vw={vw}
+          isVisible={isVisible}
           onSkip={() => {
             aliveRef.current = false;
-            setTypeText("Let's map it out.");
+            setTypeText("Let's map out your visa process.");
           }}
         />
       )}
 
-      {typeText !== "Let's map it out." && (
+      {typeText !== "Let's map out your visa process." && (
         <SkipIntroButton
           compact={isMobile}
           IconCmp={Icons.ChevronsRight}
           screenHovered={pointerActive}
+          isVisible={isVisible}
           onClick={() => {
             aliveRef.current = false;
             setEndPhase("hero");
             setFade(0);
-            setTypeText("Let's map it out.");
+            setTypeText("Let's map out your visa process.");
             onComplete?.();
           }}
         />
@@ -1796,7 +1878,7 @@ function SearchIcon() {
     </svg>
   );
 }
-function Blink() {
+function Blink({ paused = false }) {
   return (
     <span
       style={{
@@ -1806,6 +1888,7 @@ function Blink() {
         background: "#2e7175",
         marginLeft: 2,
         animation: "_blink 1.0s step-start infinite",
+        animationPlayState: paused ? "paused" : "running",
         verticalAlign: "text-top",
       }}
     />
@@ -2026,12 +2109,19 @@ function EditorialSlide({ slide }) {
     </motion.div>
   );
 }
-function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
+function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip, isVisible = true }) {
   const [hasJourney, setHasJourney] = useState(false);
-  const isLine2Started = typeText.length > 5;
-  const line1Text = typeText.slice(0, 5);
-  const line2Text = typeText.slice(5).trimStart();
-  const isDone = typeText === "Let's map it out.";
+  const line1Full = "Let's";
+  const line2Full = "map out your";
+  const line3Full = "visa process.";
+  const line2Start = line1Full.length + 1;
+  const line3Start = line2Start + line2Full.length + 1;
+  const isLine2Started = typeText.length >= line2Start;
+  const isLine3Started = typeText.length >= line3Start;
+  const line1Text = typeText.slice(0, line1Full.length);
+  const line2Text = typeText.slice(line2Start, line2Start + line2Full.length);
+  const line3Text = typeText.slice(line3Start, line3Start + line3Full.length);
+  const isDone = typeText === "Let's map out your visa process.";
 
   useEffect(() => {
     const controller = new AbortController();
@@ -2106,14 +2196,14 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
             transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
             style={{
               fontSize: isMobile
-                ? "clamp(42px, 10vw, 56px)"
+                ? "clamp(34px, 8.6vw, 46px)"
                 : isTablet
-                  ? "clamp(56px, 7vw, 72px)"
-                  : "96px", // Completely fixed font size on desktop
+                  ? "clamp(46px, 6.2vw, 62px)"
+                  : "78px",
               fontWeight: 900,
-              lineHeight: 1.05,
-              letterSpacing: "-0.04em",
-              color: "#0b131f",
+              lineHeight: 0.98,
+              letterSpacing: "-0.035em",
+              color: "#161f2d",
               margin: 0,
               fontFamily: FD,
               display: "flex",
@@ -2121,28 +2211,44 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
               alignItems: "center",
             }}
           >
-            <span style={{ display: "inline-block" }}>
+            <span
+              style={{
+                display: "inline-block",
+                fontSize: isMobile ? "0.9em" : isTablet ? "0.92em" : "0.85em",
+              }}
+            >
               {line1Text}
-              {!isLine2Started && !isDone && <Blink />}
+              {!isLine2Started && !isDone && <Blink paused={!isVisible} />}
             </span>
-            {isLine2Started && (
-              <span
-                style={{
-                  position: "relative",
-                  display: "inline-block",
-                  whiteSpace: "nowrap",
-                  marginTop: "4px",
-                }}
-              >
-                {line2Text}
-                {!isDone && <Blink />}
-              </span>
-            )}
+            <span
+              style={{
+                position: "relative",
+                display: "inline-block",
+                whiteSpace: "nowrap",
+                marginTop: "3px",
+                fontSize: isMobile ? "1.05em" : isTablet ? "1.06em" : "1em",
+              }}
+            >
+              {line2Text}
+              {isLine2Started && !isLine3Started && !isDone && <Blink paused={!isVisible} />}
+            </span>
+            <span
+              style={{
+                position: "relative",
+                display: "inline-block",
+                whiteSpace: "nowrap",
+                marginTop: "3px",
+                fontSize: isMobile ? "0.9em" : isTablet ? "0.92em" : "0.85em",
+              }}
+            >
+              {line3Text}
+              {isLine3Started && !isDone && <Blink paused={!isVisible} />}
+            </span>
           </motion.h1>
 
           <div
             style={{
-              marginTop: isMobile ? 11 : 7,
+              marginTop: isMobile ? 20 : 20,
               maxWidth: 420,
               fontSize: isMobile ? 12 : 18,
               lineHeight: 1.5,
@@ -2150,10 +2256,11 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
               fontFamily: FB,
               textAlign: "left",
               position: "relative",
-              left: isMobile ? "0px" : "-45px",
+              left: isMobile ? "0px" : "-20px",
             }}
           >
-            Every step, every requirement,<br />
+            Every step, every requirement,
+            <br />
             <span style={{ display: "inline-block", width: isMobile ? "0px" : "100px" }} />
             connected in one clear timeline.
           </div>
@@ -2166,7 +2273,12 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.3, ease: [0.22, 1, 0.36, 1] }}
-            whileHover={{ y: -3, scale: 1.04, backgroundColor: "#000000", boxShadow: "0 8px 20px rgba(11,19,31,0.22)" }}
+            whileHover={{
+              y: -3,
+              scale: 1.04,
+              backgroundColor: "#000000",
+              boxShadow: "0 8px 20px rgba(11,19,31,0.22)",
+            }}
             whileTap={{ scale: 0.98 }}
             style={{
               marginTop: isMobile ? 16 : 20,
@@ -2196,25 +2308,27 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip }) {
           src="/assets/images/illustartions/map.png"
           alt="Map illustration"
           initial={{ opacity: 0 }}
-          animate={{ opacity: typeText === "Let's map it out." ? 1 : 0 }}
+          animate={{ opacity: typeText === "Let's map out your visa process." ? 1 : 0 }}
           transition={{ duration: 0.4 }}
           style={{
             position: "absolute",
             pointerEvents: "none",
             zIndex: 1,
-            ...(isMobile ? {
-              marginTop: 36,
-              marginBottom: 36,
-              top: "11%",
-              left: "35%",
-              width: "75%",
-            } : {
-              // Values selected to look identical to 80% screen zoom layout proportions
-              top: "36%",
-              left: "34.5%",
-              width: "76%",
-              maxWidth: "none",
-            })
+            ...(isMobile
+              ? {
+                  marginTop: 36,
+                  marginBottom: 36,
+                  top: "11%",
+                  left: "35%",
+                  width: "75%",
+                }
+              : {
+                  // Values selected to look identical to 80% screen zoom layout proportions
+                  top: "38%",
+                  left: "30%",
+                  width: "73%",
+                  maxWidth: "none",
+                }),
           }}
         />
       </motion.div>
