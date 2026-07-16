@@ -21,6 +21,8 @@ interface QuestRendererProps {
   isChapter1?: boolean;
   isChapter2?: boolean;
   isChapter3?: boolean;
+  /** Visa journey type (e.g. "IR5") — routes eligibility alerts to the right detector. */
+  journeyType?: string;
 }
 
 export function QuestRendererV3({
@@ -31,6 +33,7 @@ export function QuestRendererV3({
   isChapter1 = false,
   isChapter2 = false,
   isChapter3 = false,
+  journeyType,
 }: QuestRendererProps) {
   const [activeQuestId, setActiveQuestId] = useState<string | null>(null);
   const [currentScreenIdx, setCurrentScreenIdx] = useState(0);
@@ -429,6 +432,7 @@ export function QuestRendererV3({
                     ? suiteAnswers
                     : ((state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers)
                 }
+                journeyType={journeyType}
                 compact={true}
               />
             </FloatingSidePanel>
@@ -441,6 +445,7 @@ export function QuestRendererV3({
                     ? suiteAnswers
                     : ((state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers)
                 }
+                journeyType={journeyType}
               />
             </div>
           </>

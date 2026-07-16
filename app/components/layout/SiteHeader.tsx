@@ -773,8 +773,8 @@ export function SiteHeader({
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isHomeHeroState
                     ? isActive(journeyNavigationId, journeyButtonHref)
-                      ? "bg-white/20 text-white"
-                      : "text-[#6ba3a0]/60 hover:bg-[#6ba3a0]/20 hover:text-white"
+                      ? "bg-muted text-[#0d7377]"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                     : isHomeHeroP2State || isHomepageHeroState
                       ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                       : isActive(journeyNavigationId, journeyButtonHref)
@@ -831,8 +831,8 @@ export function SiteHeader({
                 className={`flex items-center gap-1.5 px-4 py-2 text-sm font-semibold rounded-lg transition-all cursor-pointer ${
                   isHomeHeroState
                     ? isActive("resources") || activeMenu === "resources"
-                      ? "bg-white/20 text-white"
-                      : "text-[#6ba3a0]/60 hover:bg-[#6ba3a0]/20 hover:text-white"
+                      ? "bg-muted text-[#0d7377]"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                     : isHomeHeroP2State || isHomepageHeroState
                       ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                       : isActive("resources") || activeMenu === "resources"
@@ -947,10 +947,10 @@ export function SiteHeader({
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isHomeHeroState
                     ? isActive("about", "/about")
-                      ? "bg-white/20 text-white"
-                      : "text-[#6ba3a0]/60 hover:bg-[#6ba3a0]/20 hover:text-white"
+                      ? "bg-muted text-[#0d7377]"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                     : isHomeHeroP2State || isHomepageHeroState
-                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/8 hover:text-[#0d7377]"
                       : isActive("about", "/about")
                         ? "bg-muted text-[#0d7377]"
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
@@ -967,10 +967,10 @@ export function SiteHeader({
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isHomeHeroState
                     ? isActive("pricing", "/pricing")
-                      ? "bg-white/20 text-white"
-                      : "text-[#6ba3a0]/60 hover:bg-[#6ba3a0]/20 hover:text-white"
+                      ? "bg-muted text-[#0d7377]"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                     : isHomeHeroP2State || isHomepageHeroState
-                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                      ? "text-[#3fb8bc] hover:bg-[#0d7377]/8 hover:text-[#0d7377]"
                       : isActive("pricing", "/pricing")
                         ? "bg-muted text-[#0d7377]"
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
@@ -987,8 +987,8 @@ export function SiteHeader({
                   className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                     isHomeHeroState
                       ? isActive("faq")
-                        ? "bg-white/20 text-white"
-                        : "text-[#6ba3a0]/60 hover:bg-[#6ba3a0]/20 hover:text-white"
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                       : isHomeHeroP2State || isHomepageHeroState
                         ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                         : isActive("faq")
@@ -1007,8 +1007,8 @@ export function SiteHeader({
                 className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
                   isHomeHeroState
                     ? isActive("contact")
-                      ? "bg-white/20 text-white"
-                      : "text-[#6ba3a0]/60 hover:bg-[#6ba3a0]/20 hover:text-white"
+                      ? "bg-muted text-[#0d7377]"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                     : isHomeHeroP2State || isHomepageHeroState
                       ? "text-[#3fb8bc] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
                       : isActive("contact")
