@@ -24,7 +24,7 @@ export default function CompleteProfileForm() {
     name: { first: "", last: "", middle: "" },
     dateOfBirth: "",
     placeOfBirth: { city: "", country: "" },
-    sex: "Male",
+    sex: "",
     nationality: "",
     maritalStatus: "Single",
     phone: "",
@@ -51,6 +51,7 @@ export default function CompleteProfileForm() {
       dateOfBirth: "",
       phone: "",
       email: "",
+      sex: "",
       address: { street: "", city: "", state: "", zipCode: "", country: "" },
     },
     beneficiary: {
@@ -175,6 +176,11 @@ export default function CompleteProfileForm() {
           setFormData((prev) => ({
             ...prev,
             ...mappedData,
+            sex: "",
+            sponsor: {
+              ...(mappedData.sponsor || {}),
+              sex: "",
+            },
           }));
           setProfileLoaded(true);
         }

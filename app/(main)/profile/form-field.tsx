@@ -110,7 +110,7 @@ export function FormField({
 
 interface FormSelectProps {
   label: string;
-  value: string;
+  value?: string;
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
   required?: boolean;
@@ -140,7 +140,7 @@ export function FormSelect({
         {required && <span className="text-red-500 ml-0.5">*</span>}
       </Label>
       <select
-        value={value}
+        value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled || readOnly}
         className={cn(
@@ -198,6 +198,7 @@ interface SectionHeaderProps {
   description?: string;
   accent?: SectionAccent;
   isOpen: boolean;
+  badge?: string;
 }
 
 export function SectionHeader({
@@ -206,6 +207,7 @@ export function SectionHeader({
   description,
   accent = "slate",
   isOpen,
+  badge,
 }: SectionHeaderProps) {
   return (
     <div className="flex items-center justify-between gap-3">
@@ -221,6 +223,16 @@ export function SectionHeader({
         <div className="min-w-0">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-semibold text-slate-800 truncate">{title}</h3>
+            {badge && (
+              <span
+                className={cn(
+                  "text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap",
+                  accentStyles[accent]
+                )}
+              >
+                {badge}
+              </span>
+            )}
           </div>
           {description && <p className="text-xs text-slate-500 mt-0.5 truncate">{description}</p>}
         </div>

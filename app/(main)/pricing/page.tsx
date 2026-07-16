@@ -1,6 +1,14 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useMemo, useCallback, Suspense } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+  useLayoutEffect,
+  Suspense,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
@@ -237,6 +245,97 @@ function IcoInfo({ className }: { className?: string }) {
 }
 
 /* ===========================================================================
+   VISA SELECTOR — an animated sliding-pill segmented toggle. Visa category is
+   a required, non-defaultable decision (a user may be browsing pricing for
+   more than one family member's case, and there's no case on file yet to
+   infer it from) so it needs to read as a real control, not a quiet
+   confirmation pill. The active option is tracked by a single absolutely
+   positioned pill that slides between buttons (measured via
+   getBoundingClientRect) with a spring-overshoot easing curve, rather than
+   each button carrying its own background/border. Reused at two sizes:
+   prominent in the hero, compact in the review-step and resources-mode
+   headers.
+   =========================================================================== */
+function VisaSelector({
+  categories,
+  value,
+  onChange,
+  size = "md",
+}: {
+  categories: { id: string; label: string }[];
+  value: string;
+  onChange: (id: string) => void;
+  size?: "md" | "sm";
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const btnRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [pillStyle, setPillStyle] = useState<{ left: number; width: number } | null>(null);
+
+  const placePill = useCallback(() => {
+    const track = trackRef.current;
+    const btn = btnRefs.current[value];
+    if (!track || !btn) return;
+    const tr = track.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    setPillStyle({ left: br.left - tr.left, width: br.width });
+  }, [value]);
+
+  // Re-measure whenever the active value changes, the set of categories
+  // changes (e.g. availability list changes), or the size prop changes the
+  // button dimensions.
+  useLayoutEffect(() => {
+    placePill();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [placePill, categories, size]);
+
+  useEffect(() => {
+    window.addEventListener("resize", placePill);
+    return () => window.removeEventListener("resize", placePill);
+  }, [placePill]);
+
+  return (
+    <div
+      ref={trackRef}
+      role="tablist"
+      aria-label="Visa category"
+      className={`relative inline-flex items-center gap-1 p-1 rounded-full bg-muted/60 border border-border/60 ${
+        size === "sm" ? "text-[11.5px]" : "text-[13px]"
+      }`}
+    >
+      {pillStyle && (
+        <span
+          aria-hidden="true"
+          className="absolute top-1 bottom-1 rounded-full bg-card border border-border shadow-sm"
+          style={{
+            left: pillStyle.left,
+            width: pillStyle.width,
+            transition:
+              "transform 0.45s cubic-bezier(0.34,1.56,0.64,1), left 0.45s cubic-bezier(0.34,1.56,0.64,1), width 0.45s cubic-bezier(0.34,1.56,0.64,1)",
+          }}
+        />
+      )}
+      {categories.map((cat) => (
+        <button
+          key={cat.id}
+          ref={(el) => {
+            btnRefs.current[cat.id] = el;
+          }}
+          type="button"
+          role="tab"
+          aria-selected={value === cat.id}
+          onClick={() => onChange(cat.id)}
+          className={`relative z-[1] rounded-full font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+            size === "sm" ? "px-3 py-[6px]" : "px-4 py-[9px]"
+          } ${value === cat.id ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          {cat.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ===========================================================================
    COMPARISON CELL
    =========================================================================== */
 function ComparisonCell({ value }: { value: string }) {
@@ -469,7 +568,6 @@ function PricingContent() {
   const [purchaseStep, setPurchaseStep] = useState<"browse" | "review">("browse");
 
   const [visa, setVisa] = useState("IR-1 / CR-1");
-  const [visaMenuOpen, setVisaMenuOpen] = useState(false);
   const billing = "monthly";
 
   const [selectedPlan, setSelectedPlan] = useState("premium");
@@ -527,6 +625,7 @@ function PricingContent() {
             addons: addonsOverride || Array.from(selectedAddons),
             visaCategory: visa,
             billing,
+            userId: uid,
           }),
         });
         const data = await res.json();
@@ -682,56 +781,15 @@ function PricingContent() {
   const secBtn =
     "px-4 py-[8px] rounded-full text-[13px] font-medium cursor-pointer transition-colors border border-border bg-card hover:bg-muted/40 text-foreground inline-flex items-center gap-2";
 
-  // Visa pill — now a real selector between available visa categories, not a
-  // static "only IR-1 exists" label. Reused across the plans hero, the order
-  // review step, and the resources-mode header so it's consistent everywhere.
-  const visaPill = (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setVisaMenuOpen((v) => !v)}
-        className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-full bg-muted/70 border border-border/60 text-[12px] cursor-pointer hover:bg-muted transition-colors"
-        aria-haspopup="listbox"
-        aria-expanded={visaMenuOpen}
-      >
-        <span className="font-medium text-foreground/80">Pakistan → US</span>
-        <span className="text-border/80 mx-0.5">|</span>
-        <span className="text-muted-foreground">{activeVisaCategory.label}</span>
-        <IcoChevron
-          className={`w-3 h-3 opacity-50 transition-transform ${visaMenuOpen ? "rotate-180" : ""}`}
-        />
-      </button>
-
-      {visaMenuOpen && (
-        <>
-          {/* click-outside catcher */}
-          <div className="fixed inset-0 z-10" onClick={() => setVisaMenuOpen(false)} />
-          <div
-            role="listbox"
-            className="absolute right-0 top-[calc(100%+6px)] z-20 min-w-[220px] bg-card border border-border rounded-[14px] shadow-lg p-1.5"
-          >
-            {availableVisaCategories.map((cat) => (
-              <button
-                key={cat.id}
-                role="option"
-                aria-selected={visa === cat.id}
-                onClick={() => {
-                  setVisa(cat.id);
-                  setVisaMenuOpen(false);
-                }}
-                className={`w-full text-left px-3 py-2 rounded-[10px] text-[12.5px] font-medium transition-colors cursor-pointer ${
-                  visa === cat.id
-                    ? "bg-primary/10 text-primary"
-                    : "text-foreground hover:bg-muted/60"
-                }`}
-              >
-                {cat.label}
-              </button>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
+  // Visa selectors — a visible segmented toggle (see VisaSelector above),
+  // sized down for the review/resources headers where it's secondary to the
+  // main content, and full-size in the plans hero where the choice needs to
+  // be made first, before anything else on the page is trustworthy.
+  const visaSelectorLg = (
+    <VisaSelector categories={availableVisaCategories} value={visa} onChange={setVisa} size="md" />
+  );
+  const visaSelectorSm = (
+    <VisaSelector categories={availableVisaCategories} value={visa} onChange={setVisa} size="sm" />
   );
 
   // Checkout button (shared)
@@ -771,7 +829,10 @@ function PricingContent() {
     <div className="min-h-[100dvh] overflow-x-hidden text-foreground font-sans selection:bg-primary/20 pb-12 sm:pb-20">
       {/* ── Mode Toggle ──────────────────────────────────────────────────────── */}
       <div className={`${W} pt-[88px] pb-0`}>
-        <nav className="grid grid-cols-2 md:grid-cols-4 items-end gap-1 border-b-2 border-border/40" aria-label="Pricing mode">
+        <nav
+          className="grid grid-cols-2 md:grid-cols-4 items-end gap-1 border-b-2 border-border/40"
+          aria-label="Pricing mode"
+        >
           {(
             [
               {
@@ -858,18 +919,20 @@ function PricingContent() {
         <div className="animate-in fade-in duration-300">
           {/* Hero */}
           <section className={`${W} pt-7 pb-6`}>
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-              <div>
-                <div className={eyebrow}>Journey Plans</div>
-                <h1 className="page-heading m-0">
-                  Choose your Rahvana journey plan
-                </h1>
-                <p className="page-description mt-2 text-muted-foreground">
-                  Pick the level of guidance, tools, and support that fits your case.
-                </p>
+            <div className={eyebrow}>Journey Plans</div>
+            <h1 className="page-heading m-0">Choose your Rahvana journey plan</h1>
+            <p className="page-description mt-2 text-muted-foreground">
+              Pick the level of guidance, tools, and support that fits your case.
+            </p>
+
+            {/* Visa category — a required choice up front, since pricing,
+                checkout, and later the roadmap all key off it and there's no
+                case on file yet to default it from. */}
+            <div className="mt-5">
+              <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                I&apos;m applying for
               </div>
-              {/* Visa pill — top right */}
-              <div className="sm:mt-1 shrink-0 self-start sm:self-auto">{visaPill}</div>
+              {visaSelectorLg}
             </div>
 
             <div className="mt-5 flex items-center gap-3 flex-wrap">
@@ -1159,7 +1222,7 @@ function PricingContent() {
                 <ArrowLeft className="w-4 h-4" />
                 Back to plans
               </button>
-              {visaPill}
+              {visaSelectorSm}
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
@@ -1254,13 +1317,13 @@ function PricingContent() {
                                     <div className="resource-fcard-price">${addon.price}</div>
                                     <div className="resource-fcard-unit">{addon.unit}</div>
                                   </div>
-                                    <button
-                                      disabled={isAnyCheckoutLoading}
-                                      className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
-                                      onClick={() => toggleAddon(addon.id)}
-                                    >
-                                      {isAdded ? "✓ Added to order" : "+ Add to order"}
-                                    </button>
+                                  <button
+                                    disabled={isAnyCheckoutLoading}
+                                    className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
+                                    onClick={() => toggleAddon(addon.id)}
+                                  >
+                                    {isAdded ? "✓ Added to order" : "+ Add to order"}
+                                  </button>
                                 </div>
                               </div>
                             </article>
@@ -1430,7 +1493,7 @@ function PricingContent() {
                   {RESOURCE_TABS[mode].blurb}
                 </p>
               </div>
-              <div className="sm:mt-1 shrink-0 self-start sm:self-auto">{visaPill}</div>
+              <div className="sm:mt-1 shrink-0 self-start sm:self-auto">{visaSelectorSm}</div>
             </div>
           </section>
 

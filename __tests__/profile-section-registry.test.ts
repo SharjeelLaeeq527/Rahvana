@@ -35,4 +35,20 @@ describe("getVisibleProfileSections", () => {
     expect(ids).toContain("affidavit");
     expect(ids).toContain("sponsor");
   });
+
+  it("uses active case types to reveal case-specific sections even when legacy booleans are false", () => {
+    const sections = getVisibleProfileSections({
+      hasAnyCase: false,
+      hasIr1: false,
+      hasIr5: false,
+      cases: [{ caseType: "IR1", status: "current", role: "beneficiary" }],
+      hasSponsorData: false,
+      hasRelationshipData: false,
+      activeCaseTypes: ["IR1"],
+    } as ProfileSectionContext);
+
+    const ids = sections.map((section) => section.id);
+    expect(ids).toContain("relationship");
+    expect(ids).toContain("affidavit");
+  });
 });
