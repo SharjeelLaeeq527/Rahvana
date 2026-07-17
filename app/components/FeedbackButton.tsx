@@ -32,16 +32,32 @@ export default function FeedbackButton({
 }: FeedbackButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inHero, setInHero] = useState(false);
-  const [hideForHeroAnim, setHideForHeroAnim] = useState(false);
   const [bottomOffset, setBottomOffset] = useState(16);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
+  const [hideForHeroAnim, setHideForHeroAnim] = useState(true);
+  const [heroAnimationResolved, setHeroAnimationResolved] = useState(false);
   const [feedback, setFeedback] = useState({
     category: "",
     step: currentStepName || "",
     description: "",
     attachments: [] as File[],
   });
+
+  useEffect(() => {
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+
+    const heroPlaying = document.documentElement.dataset.heroAnimationPlaying;
+    const isHomePage = /^\/(?:home)?$/.test(window.location.pathname);
+
+    if (!isHomePage) {
+      setHideForHeroAnim(false);
+      return;
+    }
+
+    setHideForHeroAnim(heroPlaying !== "false");
+  }, [pathname]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
   const [isDragging, setIsDragging] = useState(false);
@@ -186,9 +202,33 @@ export default function FeedbackButton({
   useEffect(() => {
     const handleHeroAnimPlaying = (event: Event) => {
       if (event instanceof CustomEvent) {
-        setHideForHeroAnim(event.detail.playing);
+        const playing = event.detail.playing;
+        setHideForHeroAnim(Boolean(playing));
+        if (playing === false) setHeroAnimationResolved(true);
       }
     };
+
+    // Read an initial, possibly-persistent flag to avoid race where the
+    // animation dispatches before this component mounts.
+    try {
+      if (typeof window !== "undefined" && typeof document !== "undefined") {
+        const winFlag = (window as any).__heroAnimationPlaying;
+        const dataFlag = document.documentElement.dataset.heroAnimationPlaying;
+        let initPlaying: boolean | null = null;
+
+        if (typeof winFlag === "boolean") initPlaying = winFlag;
+        else if (dataFlag === "true") initPlaying = true;
+        else if (dataFlag === "false") initPlaying = false;
+
+        // Default to hiding while unsure (treat unknown as playing)
+        if (initPlaying === null) initPlaying = true;
+
+        setHideForHeroAnim(initPlaying);
+        if (initPlaying === false) setHeroAnimationResolved(true);
+      }
+    } catch (e) {
+      /* noop */
+    }
 
     window.addEventListener("hero-animation-playing", handleHeroAnimPlaying);
     return () => {
