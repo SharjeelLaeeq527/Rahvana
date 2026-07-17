@@ -1,4 +1,5 @@
 import { ALL_DOCUMENTS } from "./document-definitions";
+import { VisaCategory } from "./types";
 
 /**
  * Check whether any vault document matches a journey doc item,
@@ -149,4 +150,83 @@ export function mapDocumentNameToId(name: string): string {
   }
 
   return "misc-document";
+}
+
+export const FRIENDLY_JOURNEY_NAMES: Record<string, string> = {
+  ir1: "IR-1 Spouse Visa Journey",
+  "ir-1": "IR-1 Spouse Visa Journey",
+  ir5: "IR-5 Parent Visa Journey",
+  "ir-5": "IR-5 Parent Visa Journey",
+};
+
+export function getFriendlyJourneyName(journeyType: string, defaultName?: string): string {
+  if (!journeyType) return defaultName || "Immigration Journey";
+  const key = journeyType.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return FRIENDLY_JOURNEY_NAMES[key] || defaultName || `${journeyType.toUpperCase()} Journey`;
+}
+
+export const JOURNEY_TYPE_TO_VISA: Record<string, string> = {
+  ir1: "IR-1",
+  "ir-1": "IR-1",
+  ir5: "IR-5",
+  "ir-5": "IR-5",
+};
+
+export function journeyTypeToVisaCategory(journeyType: string): VisaCategory | null {
+  if (!journeyType) return null;
+  const key = journeyType.toLowerCase().replace(/[^a-z0-9]/g, "");
+  return (JOURNEY_TYPE_TO_VISA[key] as VisaCategory) || null;
+}
+
+export function isDocumentApplicableToJourney(
+  documentDefId: string,
+  documentName: string,
+  journeyType: string
+): boolean {
+  if (!journeyType) return true;
+
+  const visaCategory = journeyTypeToVisaCategory(journeyType);
+  if (!visaCategory) return true;
+
+  // 1. Resolve document definition from ID or custom name
+  let targetId = documentDefId;
+  if (documentDefId.startsWith("dynamic-")) {
+    const mapped = mapDocumentNameToId(documentName);
+    if (mapped && mapped !== "misc-document") {
+      targetId = mapped;
+    }
+  }
+
+  const doc = ALL_DOCUMENTS.find((d) => d.id === targetId);
+
+  // 2. Check static rules (applicableVisas, requiredWhen)
+  if (doc) {
+    if (doc.applicableVisas && doc.applicableVisas.length > 0) {
+      if (!doc.applicableVisas.includes(visaCategory)) {
+        return false;
+      }
+    }
+
+    if (doc.requiredWhen?.visaCategories && doc.requiredWhen.visaCategories.length > 0) {
+      if (!doc.requiredWhen.visaCategories.includes(visaCategory)) {
+        return false;
+      }
+    }
+
+    // Spouse-relationship specific categories/documents should be hidden for parent (IR-5)
+    if (doc.category === "RELATIONSHIP" && !["IR-1", "CR-1"].includes(visaCategory)) {
+      return false;
+    }
+  }
+
+  // 3. Fallback check for category of dynamic slots
+  if (documentDefId.startsWith("dynamic-")) {
+    const parts = documentDefId.split("-");
+    const category = parts.length >= 2 ? parts[1] : "";
+    if (category === "RELATIONSHIP" && !["IR-1", "CR-1"].includes(visaCategory)) {
+      return false;
+    }
+  }
+
+  return true;
 }

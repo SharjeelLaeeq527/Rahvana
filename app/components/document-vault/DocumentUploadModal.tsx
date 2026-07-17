@@ -15,12 +15,16 @@ import { getOcrConfig, getOcrDocTypeMeta } from "@/lib/document-ocr/registry";
 import { resizeImageIfNeeded } from "@/lib/document-ocr/clientImage";
 import { crossCheckFields } from "@/lib/document-ocr/crossCheck";
 import { useUserProfile } from "@/app/context/UserProfileContext";
+import { Checkbox } from "@/components/ui/checkbox";
+import { getFriendlyJourneyName, isDocumentApplicableToJourney } from "@/lib/document-vault/journey-mapping";
 
 interface DocumentUploadModalProps {
   open: boolean;
   onClose: () => void;
   documentDef: DocumentDefinition;
   onUploadComplete: () => void;
+  userJourneys?: any[];
+  activeJourneyId?: string | null;
 }
 
 /** Read a dot-path value off the in-memory profile, as a trimmed string ("" if absent). */
@@ -38,6 +42,8 @@ export function DocumentUploadModal({
   onClose,
   documentDef,
   onUploadComplete,
+  userJourneys = [],
+  activeJourneyId = null,
 }: DocumentUploadModalProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [role, setRole] = useState<DocumentRole>(documentDef.roles[0]);
@@ -48,6 +54,21 @@ export function DocumentUploadModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { config, replaceDocumentId, deleteDocument } = useDocumentVaultStore();
   const { t } = useLanguage();
+
+  const otherJourneys = useMemo(() => {
+    return userJourneys.filter((j) => {
+      if (j.id === activeJourneyId) return false;
+      return isDocumentApplicableToJourney(documentDef.id, documentDef.name, j.journey_type);
+    });
+  }, [userJourneys, activeJourneyId, documentDef]);
+
+  const [sharedJourneyIds, setSharedJourneyIds] = useState<string[]>([]);
+
+  useEffect(() => {
+    if (open) {
+      setSharedJourneyIds(otherJourneys.map((j) => j.id));
+    }
+  }, [open, otherJourneys]);
   const { refreshProfile, profile } = useUserProfile();
 
   // ── Inline OCR auto-fill (passport, etc.) ──
@@ -96,8 +117,8 @@ export function DocumentUploadModal({
     isDivorceDoc &&
     Boolean(
       ocrFields["relationship.priorMarriage.spouseName"] ||
-        ocrFields["relationship.priorMarriage.dateMarriageEnded"] ||
-        ocrFields["relationship.priorMarriage.howEnded"]
+      ocrFields["relationship.priorMarriage.dateMarriageEnded"] ||
+      ocrFields["relationship.priorMarriage.howEnded"]
     );
   const journeyMarriageClash =
     isDivorceDoc && hasPriorMarriageData && journeyPriorMarriage === "no";
@@ -143,8 +164,7 @@ export function DocumentUploadModal({
     const stored: Record<string, string> = {};
     for (const { key } of OCR_FIELD_ORDER) {
       // Non-self docs store under that person's subsection (sponsor.* / beneficiary.*).
-      const path =
-        ocrConfig && ocrConfig.target !== "self" ? `${ocrConfig.target}.${key}` : key;
+      const path = ocrConfig && ocrConfig.target !== "self" ? `${ocrConfig.target}.${key}` : key;
       const v = readProfilePath(profile, path);
       if (v) stored[key] = v;
     }
@@ -259,7 +279,10 @@ export function DocumentUploadModal({
   const handleUpload = async () => {
     if (!selectedFile) return;
     if (!config) {
-      showToast("Document Vault is not configured. Please refresh the page and try again.", "error");
+      showToast(
+        "Document Vault is not configured. Please refresh the page and try again.",
+        "error"
+      );
       console.error("[DocumentUploadModal] Upload blocked: config is null");
       return;
     }
@@ -299,6 +322,12 @@ export function DocumentUploadModal({
       }
       if (notes) {
         formData.append("notes", notes);
+      }
+      if (activeJourneyId) {
+        formData.append("journeyId", activeJourneyId);
+      }
+      if (sharedJourneyIds.length > 0) {
+        formData.append("shareWithJourneyIds", JSON.stringify(sharedJourneyIds));
       }
 
       const response = await fetch("/api/documents/upload", {
@@ -461,11 +490,13 @@ export function DocumentUploadModal({
               {ocrPhase === "error" && (
                 <>
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-                    <p className="font-semibold mb-1">Your document is saved — we just couldn&apos;t auto-read it.</p>
+                    <p className="font-semibold mb-1">
+                      Your document is saved — we just couldn&apos;t auto-read it.
+                    </p>
                     <p className="leading-relaxed">
-                      The photo may be blurry, cropped, or have glare. For the best result,
-                      use a clear, well-lit photo of the full document, then try again. You
-                      can also fill in the details yourself.
+                      The photo may be blurry, cropped, or have glare. For the best result, use a
+                      clear, well-lit photo of the full document, then try again. You can also fill
+                      in the details yourself.
                     </p>
                   </div>
                   <div className="flex gap-3 pt-2 pb-2">
@@ -503,7 +534,9 @@ export function DocumentUploadModal({
 
                   {journeyMarriageClash && (
                     <div className="bg-red-50 border border-red-300 rounded-xl p-4 text-sm text-red-800">
-                      <p className="font-semibold mb-1">⚠️ Please review — this may not match an earlier answer</p>
+                      <p className="font-semibold mb-1">
+                        ⚠️ Please review — this may not match an earlier answer
+                      </p>
                       <p>
                         This document suggests a <strong>previous marriage</strong>, but earlier in
                         your journey you indicated this is your <strong>first marriage</strong>. If
@@ -706,6 +739,74 @@ export function DocumentUploadModal({
                 className="rounded-lg border-[#d0e4f7] focus:ring-brand/20 resize-none"
               />
             </div>
+
+            {/* Sibling Journeys Cross-Sharing Checkboxes */}
+            {otherJourneys.length > 0 && (
+              <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-inner">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                  Cross-share this document
+                </label>
+                <p className="text-[11px] text-slate-500 leading-normal mb-1">
+                  Select which of your other active immigration journeys should also receive this
+                  uploaded file:
+                </p>
+                <div className="space-y-2.5 pt-1">
+                  {otherJourneys.map((j) => {
+                    const isChecked = sharedJourneyIds.includes(j.id);
+                    return (
+                      <div
+                        key={j.id}
+                        onClick={() => {
+                          if (isChecked) {
+                            setSharedJourneyIds(sharedJourneyIds.filter((id) => id !== j.id));
+                          } else {
+                            setSharedJourneyIds([...sharedJourneyIds, j.id]);
+                          }
+                        }}
+                        className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer select-none transition-all duration-300 ${
+                          isChecked
+                            ? "bg-primary/5 border-primary shadow-xs"
+                            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div
+                            className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all duration-300 ${
+                              isChecked
+                                ? "bg-primary border-primary text-white scale-100"
+                                : "border-slate-300 dark:border-slate-700 bg-transparent"
+                            }`}
+                          >
+                            {isChecked && (
+                              <svg
+                                className="w-3.5 h-3.5 stroke-[3] stroke-white fill-none"
+                                viewBox="0 0 24 24"
+                              >
+                                <polyline points="20 6 9 17 4 12" />
+                              </svg>
+                            )}
+                          </div>
+                          <span
+                            className={`text-xs font-bold transition-colors ${
+                              isChecked
+                                ? "text-slate-900 dark:text-white"
+                                : "text-slate-600 dark:text-slate-400"
+                            }`}
+                          >
+                            {getFriendlyJourneyName(j.journey_type, j.journey_name)}
+                          </span>
+                        </div>
+                        {isChecked && (
+                          <span className="text-[10px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md animate-in fade-in zoom-in-95 duration-200">
+                            Shared
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* USCIS Naming Preview */}
             {selectedFile && config && (

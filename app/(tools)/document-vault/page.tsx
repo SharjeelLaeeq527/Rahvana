@@ -62,6 +62,7 @@ import Link from "next/link";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import type { Journey } from "@/lib/journey/types";
+import { getFriendlyJourneyName } from "@/lib/document-vault/journey-mapping";
 
 // ── Journey → Visa Category mapping ──────────────────────────────────────────
 const JOURNEY_TYPE_TO_VISA: Record<string, VisaCategory> = {
@@ -81,13 +82,6 @@ function journeyTypeToVisaCategory(journeyType: string): VisaCategory | null {
   if (clean === "IR1") return "IR-1";
   if (clean === "IR5") return "IR-5";
   return JOURNEY_TYPE_TO_VISA[journeyType] ?? null;
-}
-
-// Human-friendly label for a journey
-function journeyLabel(j: Journey): string {
-  if (j.journey_name) return j.journey_name;
-  const visa = journeyTypeToVisaCategory(j.journey_type);
-  return visa ? `${visa.toUpperCase()} Journey` : `${j.journey_type} Journey`;
 }
 
 // Session-storage key for persisted journey choice (Case 3)
@@ -116,6 +110,7 @@ export default function DocumentVaultPage() {
     reloadDocuments,
     addDynamicSlot,
     renameDynamicSlot,
+    isReloadingDocs,
   } = useDocumentVaultStore();
 
   const [showConfigWizard, setShowConfigWizard] = useState(false);
@@ -806,7 +801,7 @@ export default function DocumentVaultPage() {
 
                       {/* Journey Details */}
                       <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-primary transition-colors line-clamp-1">
-                        {journeyLabel(journey)}
+                        {getFriendlyJourneyName(journey.journey_type, journey.journey_name)}
                       </h3>
                       <p className="text-xs text-slate-500 dark:text-slate-400 capitalize mb-6">
                         Status: {journey.status.replace("_", " ")}
@@ -872,7 +867,7 @@ export default function DocumentVaultPage() {
                       {config?.visaCategory
                         ? config.visaCategory
                         : activeJourney
-                          ? journeyLabel(activeJourney)
+                          ? getFriendlyJourneyName(activeJourney.journey_type, activeJourney.journey_name)
                           : ""}
                     </Badge>
                     <span className="text-xs text-slate-500 font-medium">
@@ -1159,7 +1154,18 @@ export default function DocumentVaultPage() {
 
                 <TabsContent value={activeTab} className="mt-0 ring-offset-0 focus-visible:ring-0">
                   <ResultGate feature="document_vault">
-                    <div className="space-y-6 sm:space-y-10">
+                    {isReloadingDocs ? (
+                      <div className="flex flex-col items-center justify-center py-20 px-4 bg-white dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800/80 shadow-xs animate-in fade-in duration-300">
+                        <Loader size="md" className="text-primary mb-4" />
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
+                          Loading Documents...
+                        </p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500 mt-1">
+                          Securing database connection
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-6 sm:space-y-10">
                       {searchQuery ? (
                         // Show flat list of search results when searching
                         <div className="space-y-6">
@@ -1470,6 +1476,7 @@ export default function DocumentVaultPage() {
                         </div>
                       )}
                     </div>
+                    )}
                   </ResultGate>
                 </TabsContent>
               </Tabs>
