@@ -1114,7 +1114,8 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
   // frame (headline + CTA) takes over.
   useEffect(() => {
     const playing = endPhase !== "hero";
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      document.documentElement.dataset.heroAnimationPlaying = String(playing);
       (window as any).__heroAnimationPlaying = playing;
       window.dispatchEvent(new CustomEvent("hero-animation-playing", { detail: { playing } }));
     }

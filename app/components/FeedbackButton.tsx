@@ -35,8 +35,8 @@ export default function FeedbackButton({
   const [bottomOffset, setBottomOffset] = useState(16);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
-  const isHomePage = pathname === "/";
   const [hideForHeroAnim, setHideForHeroAnim] = useState(true);
+  const [heroAnimationResolved, setHeroAnimationResolved] = useState(false);
   const [feedback, setFeedback] = useState({
     category: "",
     step: currentStepName || "",
@@ -45,12 +45,18 @@ export default function FeedbackButton({
   });
 
   useEffect(() => {
-    if (isHomePage) {
-      setHideForHeroAnim(true);
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+
+    const heroPlaying = document.documentElement.dataset.heroAnimationPlaying;
+    const isHomePage = /^\/(?:home)?$/.test(window.location.pathname);
+
+    if (!isHomePage) {
+      setHideForHeroAnim(false);
       return;
     }
-    setHideForHeroAnim(false);
-  }, [isHomePage]);
+
+    setHideForHeroAnim(heroPlaying !== "false");
+  }, [pathname]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
@@ -196,7 +202,11 @@ export default function FeedbackButton({
   useEffect(() => {
     const handleHeroAnimPlaying = (event: Event) => {
       if (event instanceof CustomEvent) {
-        setHideForHeroAnim(event.detail.playing);
+        const playing = event.detail.playing;
+        setHideForHeroAnim(playing);
+        if (playing === false) {
+          setHeroAnimationResolved(true);
+        }
       }
     };
 

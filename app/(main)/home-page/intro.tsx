@@ -649,7 +649,8 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
 
   useEffect(() => {
     const playing = !isDone;
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined" && typeof document !== "undefined") {
+      document.documentElement.dataset.heroAnimationPlaying = String(playing);
       (window as any).__heroAnimationPlaying = playing;
       window.dispatchEvent(new CustomEvent("hero-animation-playing", { detail: { playing } }));
     }
