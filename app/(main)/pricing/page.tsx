@@ -1,14 +1,6 @@
 "use client";
 
-import React, {
-  useEffect,
-  useRef,
-  useState,
-  useMemo,
-  useCallback,
-  useLayoutEffect,
-  Suspense,
-} from "react";
+import React, { useEffect, useRef, useState, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
@@ -30,6 +22,7 @@ import {
   ArrowLeft,
   ArrowRight,
   ArrowUpRight,
+  ChevronDown,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { E, msg, errorCode } from "@/lib/errors";
@@ -245,16 +238,9 @@ function IcoInfo({ className }: { className?: string }) {
 }
 
 /* ===========================================================================
-   VISA SELECTOR — an animated sliding-pill segmented toggle. Visa category is
-   a required, non-defaultable decision (a user may be browsing pricing for
-   more than one family member's case, and there's no case on file yet to
-   infer it from) so it needs to read as a real control, not a quiet
-   confirmation pill. The active option is tracked by a single absolutely
-   positioned pill that slides between buttons (measured via
-   getBoundingClientRect) with a spring-overshoot easing curve, rather than
-   each button carrying its own background/border. Reused at two sizes:
-   prominent in the hero, compact in the review-step and resources-mode
-   headers.
+   VISA SELECTOR — a compact dropdown-style picker that scales cleanly as the
+   list of visa categories grows. It is used in the journey-plan flow and stays
+   out of the add-on/resource views so those tabs remain focused on add-ons.
    =========================================================================== */
 function VisaSelector({
   categories,
@@ -267,70 +253,63 @@ function VisaSelector({
   onChange: (id: string) => void;
   size?: "md" | "sm";
 }) {
-  const trackRef = useRef<HTMLDivElement>(null);
-  const btnRefs = useRef<Record<string, HTMLButtonElement | null>>({});
-  const [pillStyle, setPillStyle] = useState<{ left: number; width: number } | null>(null);
-
-  const placePill = useCallback(() => {
-    const track = trackRef.current;
-    const btn = btnRefs.current[value];
-    if (!track || !btn) return;
-    const tr = track.getBoundingClientRect();
-    const br = btn.getBoundingClientRect();
-    setPillStyle({ left: br.left - tr.left, width: br.width });
-  }, [value]);
-
-  // Re-measure whenever the active value changes, the set of categories
-  // changes (e.g. availability list changes), or the size prop changes the
-  // button dimensions.
-  useLayoutEffect(() => {
-    placePill();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [placePill, categories, size]);
+  const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    window.addEventListener("resize", placePill);
-    return () => window.removeEventListener("resize", placePill);
-  }, [placePill]);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const activeLabel =
+    categories.find((cat) => cat.id === value)?.label ?? categories[0]?.label ?? value;
+  const baseClass =
+    size === "sm"
+      ? "w-fit max-w-[280px] text-[12px] py-2 px-3"
+      : "w-fit max-w-[3000px] text-[13.5px] py-2 px-3";
 
   return (
-    <div
-      ref={trackRef}
-      role="tablist"
-      aria-label="Visa category"
-      className={`relative inline-flex items-center gap-1 p-1 rounded-full bg-muted/60 border border-border/60 ${
-        size === "sm" ? "text-[11.5px]" : "text-[13px]"
-      }`}
-    >
-      {pillStyle && (
-        <span
-          aria-hidden="true"
-          className="absolute top-1 bottom-1 rounded-full bg-card border border-border shadow-sm"
-          style={{
-            left: pillStyle.left,
-            width: pillStyle.width,
-            transition:
-              "transform 0.45s cubic-bezier(0.34,1.56,0.64,1), left 0.45s cubic-bezier(0.34,1.56,0.64,1), width 0.45s cubic-bezier(0.34,1.56,0.64,1)",
-          }}
+    <div ref={triggerRef} className={`relative ${baseClass}`}>
+      <button
+        type="button"
+        aria-label="Visa category"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className={`flex w-full max-w-full items-center justify-between rounded-lg border-[1.5px] border-[#4A7772] bg-[#ffff] px-3 py-2 text-left font-semibold text-[#2E5450] shadow-sm ${baseClass}`}
+      >
+        <span className="min-w-0 flex-1 truncate">{activeLabel}</span>
+        <ChevronDown
+          className={`ml-2 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
         />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 top-[calc(100%+6px)] z-[60] w-max min-w-[180px] max-w-[240px] overflow-hidden rounded-lg border border-[#4A7772]/25 bg-white shadow-xl">
+          {categories.map((cat) => {
+            const isSelected = cat.id === value;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => {
+                  onChange(cat.id);
+                  setIsOpen(false);
+                }}
+                className={`flex w-full items-center px-4 py-3 text-left text-sm font-medium transition-colors ${
+                  isSelected ? "bg-[#EAF5F0] text-[#2E5450]" : "text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                {cat.label}
+              </button>
+            );
+          })}
+        </div>
       )}
-      {categories.map((cat) => (
-        <button
-          key={cat.id}
-          ref={(el) => {
-            btnRefs.current[cat.id] = el;
-          }}
-          type="button"
-          role="tab"
-          aria-selected={value === cat.id}
-          onClick={() => onChange(cat.id)}
-          className={`relative z-[1] rounded-full font-semibold transition-colors cursor-pointer whitespace-nowrap ${
-            size === "sm" ? "px-3 py-[6px]" : "px-4 py-[9px]"
-          } ${value === cat.id ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
-        >
-          {cat.label}
-        </button>
-      ))}
     </div>
   );
 }
@@ -929,7 +908,7 @@ function PricingContent() {
                 checkout, and later the roadmap all key off it and there's no
                 case on file yet to default it from. */}
             <div className="mt-5">
-              <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
+              <div className="font-serif italic text-[14px] text-[#2E5450] mb-2">
                 I&apos;m applying for
               </div>
               {visaSelectorLg}
@@ -1493,7 +1472,6 @@ function PricingContent() {
                   {RESOURCE_TABS[mode].blurb}
                 </p>
               </div>
-              <div className="sm:mt-1 shrink-0 self-start sm:self-auto">{visaSelectorSm}</div>
             </div>
           </section>
 
