@@ -36,13 +36,23 @@ export default function FeedbackButton({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const isHomePage = pathname === "/";
-  const [hideForHeroAnim, setHideForHeroAnim] = useState(isHomePage);
+  const getHeroAnimationPlaying = () =>
+    typeof window !== "undefined" && (window as any).__heroAnimationPlaying === true;
+  const [hideForHeroAnim, setHideForHeroAnim] = useState(
+    () => isHomePage || getHeroAnimationPlaying()
+  );
   const [feedback, setFeedback] = useState({
     category: "",
     step: currentStepName || "",
     description: "",
     attachments: [] as File[],
   });
+
+  useEffect(() => {
+    if (isHomePage) {
+      setHideForHeroAnim(true);
+    }
+  }, [isHomePage]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
   const [isDragging, setIsDragging] = useState(false);
