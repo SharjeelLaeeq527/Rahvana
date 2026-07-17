@@ -16,7 +16,7 @@ dotenv.config({ path: ".env.local" });
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Configuration
-const CATEGORIES = ["-student"];
+const CATEGORIES = ["ir-5-parent"];
 const QUESTION_BANK_BASE = path.join(__dirname, "../data/interview-categories");
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
