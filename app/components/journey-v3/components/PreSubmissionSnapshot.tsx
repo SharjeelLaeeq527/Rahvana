@@ -12,11 +12,8 @@ import {
   CircleDashed,
   ChevronDown,
 } from "lucide-react";
-import {
-  detectRiskFlags,
-  detectRiskFlagsFromEligibilityQuest,
-  type RiskFlag,
-} from "@/lib/case-strength";
+import { detectRiskFlags, type RiskFlag } from "@/lib/case-strength";
+import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
 import type { ConsistencyBaseline } from "./ConsistencyBaselineCapture";
 import type { BeneficiaryBaseline } from "./BeneficiaryResidenceCapture";
 
@@ -25,6 +22,8 @@ interface PreSubmissionSnapshotProps {
   beneficiaryBaseline?: BeneficiaryBaseline | null;
   filingMethod?: string;
   eligibilityAnswers?: Record<string, Record<string, string | string[]> | undefined> | null;
+  /** Visa journey type (e.g. "IR5") — routes eligibility alerts to the right detector. */
+  journeyType?: string;
 }
 
 function fmtDate(iso: string | undefined): string {
@@ -143,6 +142,7 @@ export function PreSubmissionSnapshot({
   beneficiaryBaseline,
   filingMethod,
   eligibilityAnswers,
+  journeyType,
 }: PreSubmissionSnapshotProps) {
   const allFlags: RiskFlag[] = useMemo(() => {
     const fromDates = consistencyBaseline?.marriageDate
@@ -152,7 +152,8 @@ export function PreSubmissionSnapshot({
           beneficiary_dob: consistencyBaseline.beneficiaryDateOfBirth,
         })
       : [];
-    const fromQuest = detectRiskFlagsFromEligibilityQuest(eligibilityAnswers);
+    const fromQuest =
+      resolveCaseStrengthProfile(journeyType).detectEligibilityRisks(eligibilityAnswers);
     const seen = new Set<string>();
     const out: RiskFlag[] = [];
     for (const f of [...fromDates, ...fromQuest]) {
@@ -168,6 +169,7 @@ export function PreSubmissionSnapshot({
     consistencyBaseline?.petitionerDateOfBirth,
     consistencyBaseline?.beneficiaryDateOfBirth,
     eligibilityAnswers,
+    journeyType,
   ]);
 
   const criticalCount = allFlags.filter((f) => f.severity === "critical").length;

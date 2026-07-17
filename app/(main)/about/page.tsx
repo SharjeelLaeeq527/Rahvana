@@ -27,7 +27,6 @@ const playfair = Playfair_Display({
   subsets: ["latin"],
   variable: "--font-playfair",
 });
-
 const dmSans = DM_Sans({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
@@ -133,10 +132,10 @@ export default function AboutPage() {
                   href={ir1journeyHref}
                   className="inline-flex items-center gap-2.5 bg-[#0d7a75] text-white px-8 py-4 2xl:px-10 2xl:py-5 rounded-full text-sm 2xl:text-base font-medium hover:bg-[#0a5c58] transition-all transform hover:-translate-y-0.5 shadow-lg shadow-[#0d7a75]/20"
                 >
-                  Start your journey <ArrowRight size={16} />
+                  Choose your journey <ArrowRight size={16} />
                 </Link>
                 <span className="text-xs 2xl:text-sm text-gray-400 tracking-wide uppercase font-medium">
-                  IR-1 · Spouse Visa · Phase 1
+                  IR-1 · IR-5 · Family Visas
                 </span>
               </motion.div>
             </motion.div>
@@ -162,7 +161,7 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <strong className="block text-sm 2xl:text-base text-[#121e2e] font-bold">
-                      IR-1 Journey
+                      IR-1 & IR-5
                     </strong>
                     <span className="text-xs 2xl:text-sm text-gray-500 font-medium">
                       Guiding families home
@@ -259,8 +258,7 @@ export default function AboutPage() {
             </p>
             <p>That&apos;s Rahvana: the space between people who belong together.</p>
             <p>
-              In Phase 1, we are focused exclusively on the IR-1 spouse visa journey — to go deep on
-              one path before expanding further.
+             We're focused on a select set of visa journeys — starting with IR-1 and IR-5 — so we can go deep before expanding further.
             </p>
           </div>
           <div className="mt-10 p-5 md:p-7 bg-white rounded-r-xl border-l-4 border-[#0d7a75] shadow-sm text-lg italic text-[#121e2e] leading-relaxed">
@@ -469,7 +467,7 @@ export default function AboutPage() {
               href={ir1journeyHref}
               className="inline-flex items-center gap-2.5 bg-[#0d7a75] text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-[#0a5c58] transition-all transform hover:-translate-y-0.5"
             >
-              Start the IR-1 journey <ArrowRight size={16} />
+              Start your journey <ArrowRight size={16} />
             </Link>
           </div>
         </div>
@@ -631,7 +629,7 @@ export default function AboutPage() {
           your story too, <em className="italic text-[#a8e8e5] font-normal">we&apos;re here.</em>
         </h2>
         <p className="text-white/75 text-base md:text-lg max-w-lg mx-auto mb-10 leading-relaxed">
-          You don&apos;t have to figure it out alone. Rahvana walks with you through the IR-1
+          You don&apos;t have to figure it out alone. Rahvana walks with you through your visa
           process — one step, one form, one checkpoint at a time.
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
@@ -639,7 +637,7 @@ export default function AboutPage() {
             href={ir1journeyHref}
             className="bg-white text-[#0d7a75] px-8 py-3.5 rounded-full text-sm font-semibold hover:shadow-xl transition-all transform hover:-translate-y-0.5"
           >
-            Start your IR-1 journey →
+            Start your journey →
           </Link>
           <Link
             href="/resources"
@@ -649,7 +647,7 @@ export default function AboutPage() {
           </Link>
         </div>
         <p className="mt-7 text-[14px] text-white/50 tracking-wider">
-          Phase 1 · IR-1 Spouse Visa Journey · U.S. Embassy Islamabad · Karachi · Lahore
+          Currently Supporting · IR-1 & IR-5 · U.S. Embassy Islamabad · Karachi · Lahore
         </p>
       </section>
     </div>

@@ -47,13 +47,20 @@ export interface MasterProfile {
     state?: string; // Province/state — DS-260 S01-Q008 asks it; mapper already maps it
     country: string;
   };
-  sex: "Male" | "Female";
+  sex: "Male" | "Female" | "";
   nationality?: string; // Country of citizenship
   maritalStatus: "Single" | "Married" | "Divorced" | "Widowed" | "Separated" | "Annulled";
 
   // Application Context
   visaType?: string; // Primary visa/case type being applied for (IR-1, CR-1, K-1, etc.)
   visaCategory?: string; // Sub-category if applicable
+  visaCases?: Array<{
+    id?: string;
+    type?: string;
+    caseType?: string;
+    status?: "active" | "past" | "planned" | "current" | "previous" | "future";
+    filedDate?: string;
+  }>;
   fullName?: string; // Full name in single field format (some forms prefer this)
   caseNumber?: string;
   interviewDate?: string;
@@ -139,7 +146,7 @@ export interface MasterProfile {
     name: PersonName;
     dateOfBirth: string;
     placeOfBirth?: { city?: string; state?: string; country?: string };
-    sex?: "Male" | "Female";
+    sex?: "Male" | "Female" | "";
     nationality?: string;
     passportNumber?: string;
     passportIssueDate?: string;
@@ -166,7 +173,7 @@ export interface MasterProfile {
     dateOfBirth: string;
     countryOfResidence?: string;
     nationality?: string; // Country of citizenship (e.g. from passport OCR)
-    sex?: "Male" | "Female";
+    sex?: "Male" | "Female" | "";
     placeOfBirth?: { city?: string; state?: string; country?: string };
     cnic?: string; // National ID (from CNIC OCR)
     nativeFullName?: string; // Full name in native alphabet (Urdu) — DS-260 S01-Q003

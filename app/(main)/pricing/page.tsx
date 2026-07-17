@@ -1,6 +1,14 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useMemo, useCallback, Suspense } from "react";
+import React, {
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+  useCallback,
+  useLayoutEffect,
+  Suspense,
+} from "react";
 import { useSearchParams } from "next/navigation";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
@@ -76,15 +84,22 @@ const TIER = {
 type TierKey = keyof typeof TIER;
 
 /* ===========================================================================
+   VISA CATEGORY AVAILABILITY
+   ===========================================================================
+   Only categories listed here are selectable in the UI, even though more
+   exist in VISA_CATEGORIES (data/pricing.ts). Add an id here once that
+   journey's content/roadmap is actually ready for users to pick. */
+const AVAILABLE_VISA_IDS: string[] = ["IR-1 / CR-1", "IR-5"];
+
+/* ===========================================================================
    ADDON CONFIG — icons + colors matching resources page system
    =========================================================================== */
-const ADDON_CONFIG: Record<
-  string,
-  {
-    icon: React.ComponentType<{ className?: string }>;
-    iconBg: string;
-  }
-> = {
+type AddonConfigEntry = {
+  icon: React.ComponentType<{ className?: string }>;
+  iconBg: string;
+};
+
+const ADDON_CONFIG: Record<string, AddonConfigEntry> = {
   "221g": { icon: LifeBuoy, iconBg: "bg-violet-600 dark:bg-violet-500" },
   // Temporarily hidden — Case Strength Analyzer commented out.
   // "case-strength": { icon: Brain, iconBg: "bg-violet-600 dark:bg-violet-500" },
@@ -115,10 +130,9 @@ type ResourceMode = "tools" | "services" | "guides";
 // tool/service/guide detail page and back. Cleared after a successful checkout.
 const CART_STORAGE_KEY = "rahvana_pricing_cart_addons";
 
-const RESOURCE_TABS: Record<
-  ResourceMode,
-  { label: string; sub: string; heading: string; blurb: string }
-> = {
+type ResourceTabInfo = { label: string; sub: string; heading: string; blurb: string };
+
+const RESOURCE_TABS: Record<ResourceMode, ResourceTabInfo> = {
   tools: {
     label: "Tools",
     sub: "Self-serve tools",
@@ -227,6 +241,97 @@ function IcoInfo({ className }: { className?: string }) {
       <line x1="8" y1="7" x2="8" y2="10.5" />
       <circle cx="8" cy="5.5" r="0.6" fill="currentColor" stroke="none" />
     </svg>
+  );
+}
+
+/* ===========================================================================
+   VISA SELECTOR — an animated sliding-pill segmented toggle. Visa category is
+   a required, non-defaultable decision (a user may be browsing pricing for
+   more than one family member's case, and there's no case on file yet to
+   infer it from) so it needs to read as a real control, not a quiet
+   confirmation pill. The active option is tracked by a single absolutely
+   positioned pill that slides between buttons (measured via
+   getBoundingClientRect) with a spring-overshoot easing curve, rather than
+   each button carrying its own background/border. Reused at two sizes:
+   prominent in the hero, compact in the review-step and resources-mode
+   headers.
+   =========================================================================== */
+function VisaSelector({
+  categories,
+  value,
+  onChange,
+  size = "md",
+}: {
+  categories: { id: string; label: string }[];
+  value: string;
+  onChange: (id: string) => void;
+  size?: "md" | "sm";
+}) {
+  const trackRef = useRef<HTMLDivElement>(null);
+  const btnRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [pillStyle, setPillStyle] = useState<{ left: number; width: number } | null>(null);
+
+  const placePill = useCallback(() => {
+    const track = trackRef.current;
+    const btn = btnRefs.current[value];
+    if (!track || !btn) return;
+    const tr = track.getBoundingClientRect();
+    const br = btn.getBoundingClientRect();
+    setPillStyle({ left: br.left - tr.left, width: br.width });
+  }, [value]);
+
+  // Re-measure whenever the active value changes, the set of categories
+  // changes (e.g. availability list changes), or the size prop changes the
+  // button dimensions.
+  useLayoutEffect(() => {
+    placePill();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [placePill, categories, size]);
+
+  useEffect(() => {
+    window.addEventListener("resize", placePill);
+    return () => window.removeEventListener("resize", placePill);
+  }, [placePill]);
+
+  return (
+    <div
+      ref={trackRef}
+      role="tablist"
+      aria-label="Visa category"
+      className={`relative inline-flex items-center gap-1 p-1 rounded-full bg-muted/60 border border-border/60 ${
+        size === "sm" ? "text-[11.5px]" : "text-[13px]"
+      }`}
+    >
+      {pillStyle && (
+        <span
+          aria-hidden="true"
+          className="absolute top-1 bottom-1 rounded-full bg-card border border-border shadow-sm"
+          style={{
+            left: pillStyle.left,
+            width: pillStyle.width,
+            transition:
+              "transform 0.45s cubic-bezier(0.34,1.56,0.64,1), left 0.45s cubic-bezier(0.34,1.56,0.64,1), width 0.45s cubic-bezier(0.34,1.56,0.64,1)",
+          }}
+        />
+      )}
+      {categories.map((cat) => (
+        <button
+          key={cat.id}
+          ref={(el) => {
+            btnRefs.current[cat.id] = el;
+          }}
+          type="button"
+          role="tab"
+          aria-selected={value === cat.id}
+          onClick={() => onChange(cat.id)}
+          className={`relative z-[1] rounded-full font-semibold transition-colors cursor-pointer whitespace-nowrap ${
+            size === "sm" ? "px-3 py-[6px]" : "px-4 py-[9px]"
+          } ${value === cat.id ? "text-primary" : "text-muted-foreground hover:text-foreground"}`}
+        >
+          {cat.label}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -478,6 +583,13 @@ function PricingContent() {
     () => VISA_CATEGORIES.find((v) => v.id === visa) || VISA_CATEGORIES[0],
     [visa]
   );
+  // Only the categories flagged as ready in AVAILABLE_VISA_IDS are selectable —
+  // VISA_CATEGORIES itself may contain more (F-2A, K-1/K-2, F-1, CR-2, etc.)
+  // that aren't switched on for users yet.
+  const availableVisaCategories = useMemo(
+    () => VISA_CATEGORIES.filter((v) => AVAILABLE_VISA_IDS.includes(v.id)),
+    []
+  );
   const activePlans = activeVisaCategory.plans;
   const paidPlans = activePlans.filter((p) => p.id !== "free");
   const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
@@ -513,6 +625,7 @@ function PricingContent() {
             addons: addonsOverride || Array.from(selectedAddons),
             visaCategory: visa,
             billing,
+            userId: uid,
           }),
         });
         const data = await res.json();
@@ -567,7 +680,7 @@ function PricingContent() {
     // a tool's detail page and adding it should keep items already in the order.
     const urlAddons = (addons || "").split(",").filter(Boolean);
     if (urlAddons.length) setSelectedAddons((prev) => new Set([...prev, ...urlAddons]));
-    if (visaCat) setVisa(visaCat);
+    if (visaCat && AVAILABLE_VISA_IDS.includes(visaCat)) setVisa(visaCat);
     // Restore the order-summary (review) step when deep-linked back to it.
     if (searchParams.get("step") === "review") setPurchaseStep("review");
     // Returning from a canceled Stripe checkout — show a non-blocking notice and
@@ -668,13 +781,15 @@ function PricingContent() {
   const secBtn =
     "px-4 py-[8px] rounded-full text-[13px] font-medium cursor-pointer transition-colors border border-border bg-card hover:bg-muted/40 text-foreground inline-flex items-center gap-2";
 
-  // Visa pill — static display (only IR-1/CR-1 journey available)
-  const visaPill = (
-    <div className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-full bg-muted/70 border border-border/60 text-[12px]">
-      <span className="font-medium text-foreground/80">Pakistan → US</span>
-      <span className="text-border/80 mx-0.5">|</span>
-      <span className="text-muted-foreground">{visa}</span>
-    </div>
+  // Visa selectors — a visible segmented toggle (see VisaSelector above),
+  // sized down for the review/resources headers where it's secondary to the
+  // main content, and full-size in the plans hero where the choice needs to
+  // be made first, before anything else on the page is trustworthy.
+  const visaSelectorLg = (
+    <VisaSelector categories={availableVisaCategories} value={visa} onChange={setVisa} size="md" />
+  );
+  const visaSelectorSm = (
+    <VisaSelector categories={availableVisaCategories} value={visa} onChange={setVisa} size="sm" />
   );
 
   // Checkout button (shared)
@@ -714,7 +829,10 @@ function PricingContent() {
     <div className="min-h-[100dvh] overflow-x-hidden text-foreground font-sans selection:bg-primary/20 pb-12 sm:pb-20">
       {/* ── Mode Toggle ──────────────────────────────────────────────────────── */}
       <div className={`${W} pt-[88px] pb-0`}>
-        <nav className="grid grid-cols-2 md:grid-cols-4 items-end gap-1 border-b-2 border-border/40" aria-label="Pricing mode">
+        <nav
+          className="grid grid-cols-2 md:grid-cols-4 items-end gap-1 border-b-2 border-border/40"
+          aria-label="Pricing mode"
+        >
           {(
             [
               {
@@ -801,18 +919,20 @@ function PricingContent() {
         <div className="animate-in fade-in duration-300">
           {/* Hero */}
           <section className={`${W} pt-7 pb-6`}>
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-              <div>
-                <div className={eyebrow}>Journey Plans</div>
-                <h1 className="page-heading m-0">
-                  Choose your Rahvana journey plan
-                </h1>
-                <p className="page-description mt-2 text-muted-foreground">
-                  Pick the level of guidance, tools, and support that fits your case.
-                </p>
+            <div className={eyebrow}>Journey Plans</div>
+            <h1 className="page-heading m-0">Choose your Rahvana journey plan</h1>
+            <p className="page-description mt-2 text-muted-foreground">
+              Pick the level of guidance, tools, and support that fits your case.
+            </p>
+
+            {/* Visa category — a required choice up front, since pricing,
+                checkout, and later the roadmap all key off it and there's no
+                case on file yet to default it from. */}
+            <div className="mt-5">
+              <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-2">
+                I&apos;m applying for
               </div>
-              {/* Visa pill — top right */}
-              <div className="sm:mt-1 shrink-0 self-start sm:self-auto">{visaPill}</div>
+              {visaSelectorLg}
             </div>
 
             <div className="mt-5 flex items-center gap-3 flex-wrap">
@@ -1090,17 +1210,20 @@ function PricingContent() {
       {mode === "plans" && purchaseStep === "review" && (
         <div className="animate-in fade-in duration-300">
           <div className={`${W} pt-6`}>
-            {/* Back button */}
-            <button
-              className="inline-flex items-center gap-1.5 text-[13.5px] text-muted-foreground hover:text-foreground font-medium cursor-pointer bg-transparent border-0 p-0 mb-6 transition-colors"
-              onClick={() => {
-                setPurchaseStep("browse");
-                window.scrollTo({ top: 0 });
-              }}
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to plans
-            </button>
+            {/* Back button + visa selector */}
+            <div className="flex items-center justify-between gap-3 mb-6">
+              <button
+                className="inline-flex items-center gap-1.5 text-[13.5px] text-muted-foreground hover:text-foreground font-medium cursor-pointer bg-transparent border-0 p-0 transition-colors"
+                onClick={() => {
+                  setPurchaseStep("browse");
+                  window.scrollTo({ top: 0 });
+                }}
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Back to plans
+              </button>
+              {visaSelectorSm}
+            </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
               {/* Left: add-ons */}
@@ -1194,13 +1317,13 @@ function PricingContent() {
                                     <div className="resource-fcard-price">${addon.price}</div>
                                     <div className="resource-fcard-unit">{addon.unit}</div>
                                   </div>
-                                    <button
-                                      disabled={isAnyCheckoutLoading}
-                                      className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
-                                      onClick={() => toggleAddon(addon.id)}
-                                    >
-                                      {isAdded ? "✓ Added to order" : "+ Add to order"}
-                                    </button>
+                                  <button
+                                    disabled={isAnyCheckoutLoading}
+                                    className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
+                                    onClick={() => toggleAddon(addon.id)}
+                                  >
+                                    {isAdded ? "✓ Added to order" : "+ Add to order"}
+                                  </button>
                                 </div>
                               </div>
                             </article>
@@ -1296,7 +1419,7 @@ function PricingContent() {
 
                 <div className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[13px]">
                   <span className="text-muted-foreground">Visa</span>
-                  <strong className="text-[12.5px]">{visa}</strong>
+                  <strong className="text-[12.5px]">{activeVisaCategory.label}</strong>
                 </div>
 
                 {currentPlanData.id !== "free" && (
@@ -1360,13 +1483,18 @@ function PricingContent() {
       {mode !== "plans" && (
         <div className="animate-in fade-in duration-300">
           <section className={`${W} pt-7 pb-5`}>
-            <div className={eyebrow}>{RESOURCE_TABS[mode].label}</div>
-            <h1 className="text-[clamp(24px,3.5vw,42px)] font-bold leading-[1.1] tracking-tight m-0">
-              {RESOURCE_TABS[mode].heading}
-            </h1>
-            <p className="mt-2 text-muted-foreground text-[14.5px] max-w-[520px]">
-              {RESOURCE_TABS[mode].blurb}
-            </p>
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+              <div>
+                <div className={eyebrow}>{RESOURCE_TABS[mode].label}</div>
+                <h1 className="text-[clamp(24px,3.5vw,42px)] font-bold leading-[1.1] tracking-tight m-0">
+                  {RESOURCE_TABS[mode].heading}
+                </h1>
+                <p className="mt-2 text-muted-foreground text-[14.5px] max-w-[520px]">
+                  {RESOURCE_TABS[mode].blurb}
+                </p>
+              </div>
+              <div className="sm:mt-1 shrink-0 self-start sm:self-auto">{visaSelectorSm}</div>
+            </div>
           </section>
 
           <div className={`${W}`}>
