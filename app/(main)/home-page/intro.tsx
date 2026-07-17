@@ -648,12 +648,11 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
   const isDone = stage === "done";
 
   useEffect(() => {
-    const playing = !isDone;
-    if (typeof window !== "undefined" && typeof document !== "undefined") {
-      document.documentElement.dataset.heroAnimationPlaying = String(playing);
-      (window as any).__heroAnimationPlaying = playing;
-      window.dispatchEvent(new CustomEvent("hero-animation-playing", { detail: { playing } }));
-    }
+    if (isDone) return;
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+    document.documentElement.dataset.heroAnimationPlaying = "true";
+    (window as any).__heroAnimationPlaying = true;
+    window.dispatchEvent(new CustomEvent("hero-animation-playing", { detail: { playing: true } }));
   }, [isDone]);
 
   /*

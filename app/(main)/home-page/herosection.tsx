@@ -965,6 +965,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
   const [convergingIdx, setConverging] = useState(-1);
   const [fade, setFade] = useState(0);
   const [typeText, setTypeText] = useState("");
+  const HERO_TEXT = "Let's map out your visa process.";
   const [narrPhase, setNarrPhase] = useState(null);
   const [seqHl, setSeqHl] = useState(null);
   const [cVis, setCVis] = useState(new Set());
@@ -1113,13 +1114,30 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
   // so this fires `playing: false` at exactly the moment the real hero
   // frame (headline + CTA) takes over.
   useEffect(() => {
-    const playing = endPhase !== "hero";
-    if (typeof window !== "undefined" && typeof document !== "undefined") {
-      document.documentElement.dataset.heroAnimationPlaying = String(playing);
-      (window as any).__heroAnimationPlaying = playing;
-      window.dispatchEvent(new CustomEvent("hero-animation-playing", { detail: { playing } }));
+    if (typeof window === "undefined" || typeof document === "undefined") return;
+    if (endPhase !== "hero") {
+      document.documentElement.dataset.heroAnimationPlaying = "true";
+      (window as any).__heroAnimationPlaying = true;
+      window.dispatchEvent(
+        new CustomEvent("hero-animation-playing", { detail: { playing: true } })
+      );
     }
   }, [endPhase]);
+
+  useEffect(() => {
+    if (
+      endPhase === "hero" &&
+      typeText === HERO_TEXT &&
+      typeof window !== "undefined" &&
+      typeof document !== "undefined"
+    ) {
+      document.documentElement.dataset.heroAnimationPlaying = "false";
+      (window as any).__heroAnimationPlaying = false;
+      window.dispatchEvent(
+        new CustomEvent("hero-animation-playing", { detail: { playing: false } })
+      );
+    }
+  }, [endPhase, typeText]);
 
   useEffect(() => {
     let isAlive = true;

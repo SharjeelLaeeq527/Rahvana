@@ -203,12 +203,32 @@ export default function FeedbackButton({
     const handleHeroAnimPlaying = (event: Event) => {
       if (event instanceof CustomEvent) {
         const playing = event.detail.playing;
-        setHideForHeroAnim(playing);
-        if (playing === false) {
-          setHeroAnimationResolved(true);
-        }
+        setHideForHeroAnim(Boolean(playing));
+        if (playing === false) setHeroAnimationResolved(true);
       }
     };
+
+    // Read an initial, possibly-persistent flag to avoid race where the
+    // animation dispatches before this component mounts.
+    try {
+      if (typeof window !== "undefined" && typeof document !== "undefined") {
+        const winFlag = (window as any).__heroAnimationPlaying;
+        const dataFlag = document.documentElement.dataset.heroAnimationPlaying;
+        let initPlaying: boolean | null = null;
+
+        if (typeof winFlag === "boolean") initPlaying = winFlag;
+        else if (dataFlag === "true") initPlaying = true;
+        else if (dataFlag === "false") initPlaying = false;
+
+        // Default to hiding while unsure (treat unknown as playing)
+        if (initPlaying === null) initPlaying = true;
+
+        setHideForHeroAnim(initPlaying);
+        if (initPlaying === false) setHeroAnimationResolved(true);
+      }
+    } catch (e) {
+      /* noop */
+    }
 
     window.addEventListener("hero-animation-playing", handleHeroAnimPlaying);
     return () => {
