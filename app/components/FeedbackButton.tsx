@@ -36,11 +36,7 @@ export default function FeedbackButton({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const isHomePage = pathname === "/";
-  const getHeroAnimationPlaying = () =>
-    typeof window !== "undefined" && (window as any).__heroAnimationPlaying === true;
-  const [hideForHeroAnim, setHideForHeroAnim] = useState(
-    () => isHomePage || getHeroAnimationPlaying()
-  );
+  const [hideForHeroAnim, setHideForHeroAnim] = useState(isHomePage);
   const [feedback, setFeedback] = useState({
     category: "",
     step: currentStepName || "",
