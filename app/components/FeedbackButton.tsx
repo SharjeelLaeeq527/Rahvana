@@ -36,7 +36,7 @@ export default function FeedbackButton({
   const buttonRef = useRef<HTMLButtonElement>(null);
   const pathname = usePathname();
   const isHomePage = pathname === "/";
-  const [hideForHeroAnim, setHideForHeroAnim] = useState(isHomePage);
+  const [hideForHeroAnim, setHideForHeroAnim] = useState(true);
   const [feedback, setFeedback] = useState({
     category: "",
     step: currentStepName || "",
@@ -47,8 +47,11 @@ export default function FeedbackButton({
   useEffect(() => {
     if (isHomePage) {
       setHideForHeroAnim(true);
+      return;
     }
+    setHideForHeroAnim(false);
   }, [isHomePage]);
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { showToast } = useToast();
   const [isDragging, setIsDragging] = useState(false);
