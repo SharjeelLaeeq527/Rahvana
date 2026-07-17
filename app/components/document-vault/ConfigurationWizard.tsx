@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { VisaCategory, ScenarioFlags } from "@/lib/document-vault/types";
+import { VISA_FLAG_REGISTRY } from "@/lib/document-vault/flag-registry";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
@@ -144,215 +145,79 @@ export function ConfigurationWizard({ userId, onComplete }: ConfigurationWizardP
               </p>
 
               <div className="space-y-4">
-                {/* Marriage/Relationship flags */}
-                {(visaCategory === "IR-1" || visaCategory === "CR-1") && (
-                  <>
-                    <div className="space-y-3">
-                      <h4 className="font-medium text-sm">
-                        {t("documentVaultPage.components.configWizard.marriageHistory")}
+                {/* Dynamic Category Specific Flags */}
+                {(VISA_FLAG_REGISTRY[visaCategory] || []).map((group) => {
+                  const visibleFields = group.fields.filter(
+                    (field) => !field.showIf || field.showIf(scenarioFlags)
+                  );
+                  if (visibleFields.length === 0) return null;
+
+                  return (
+                    <div key={group.groupName} className="space-y-3 pt-4 border-t border-border">
+                      <h4 className="font-semibold text-sm text-slate-900 dark:text-white">
+                        {group.groupName}
                       </h4>
-                      <label className="flex items-start space-x-3">
-                        <Checkbox
-                          checked={scenarioFlags.prior_marriage_petitioner || false}
-                          onCheckedChange={(checked) =>
-                            handleFlagChange("prior_marriage_petitioner", checked as boolean)
-                          }
-                        />
-                        <div>
-                          <div className="font-medium">
-                            {t("documentVaultPage.components.configWizard.petitionerMarried")}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {t("documentVaultPage.components.configWizard.petitionerMarriedDesc")}
-                          </div>
-                        </div>
-                      </label>
-
-                      <label className="flex items-start space-x-3">
-                        <Checkbox
-                          checked={scenarioFlags.prior_marriage_beneficiary || false}
-                          onCheckedChange={(checked) =>
-                            handleFlagChange("prior_marriage_beneficiary", checked as boolean)
-                          }
-                        />
-                        <div>
-                          <div className="font-medium">
-                            {t("documentVaultPage.components.configWizard.beneficiaryMarried")}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {t("documentVaultPage.components.configWizard.beneficiaryMarriedDesc")}
-                          </div>
-                        </div>
-                      </label>
-
-                      <label className="flex items-start space-x-3">
-                        <Checkbox
-                          checked={scenarioFlags.name_change_any_party || false}
-                          onCheckedChange={(checked) =>
-                            handleFlagChange("name_change_any_party", checked as boolean)
-                          }
-                        />
-                        <div>
-                          <div className="font-medium">
-                            {t("documentVaultPage.components.configWizard.nameChange")}
-                          </div>
-                          <div className="text-sm text-muted-foreground">
-                            {t("documentVaultPage.components.configWizard.nameChangeDesc")}
-                          </div>
-                        </div>
-                      </label>
-                    </div>
-                  </>
-                )}
-
-                {/* Children flags */}
-                {(visaCategory === "IR-2" || visaCategory === "CR-2") && (
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm">
-                      {t("documentVaultPage.components.configWizard.childInfo")}
-                    </h4>
-                    <label className="flex items-start space-x-3">
-                      <Checkbox
-                        checked={scenarioFlags.child_adopted || false}
-                        onCheckedChange={(checked) =>
-                          handleFlagChange("child_adopted", checked as boolean)
-                        }
-                      />
-                      <div>
-                        <div className="font-medium">
-                          {t("documentVaultPage.components.configWizard.adoptedChild")}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {t("documentVaultPage.components.configWizard.adoptedChildDesc")}
-                        </div>
-                      </div>
-                    </label>
-
-                    <label className="flex items-start space-x-3">
-                      <Checkbox
-                        checked={scenarioFlags.child_stepchild || false}
-                        onCheckedChange={(checked) =>
-                          handleFlagChange("child_stepchild", checked as boolean)
-                        }
-                      />
-                      <div>
-                        <div className="font-medium">
-                          {t("documentVaultPage.components.configWizard.stepchild")}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {t("documentVaultPage.components.configWizard.stepchildDesc")}
-                        </div>
-                      </div>
-                    </label>
-                  </div>
-                )}
-
-                {/* Parent / IR-5 flags */}
-                {visaCategory === "IR-5" && (
-                  <div className="space-y-4">
-                    <div className="space-y-3">
-                      <h4 className="font-medium text-sm text-slate-900 dark:text-white">Petitioner-Parent Relationship Type</h4>
-                      <div className="grid grid-cols-1 gap-2 mt-1">
-                        {[
-                          { label: "Biological mother — the petitioner's birth mother", value: "biological_mother" },
-                          { label: "Biological father — parents were legally married to each other", value: "father_married" },
-                          { label: "Biological father — parents were never married to each other", value: "father_unmarried" },
-                          { label: "Stepparent — a stepfather or stepmother", value: "stepparent" },
-                          { label: "Adoptive parent", value: "adoptive" },
-                        ].map((opt) => (
-                          <label
-                            key={opt.value}
-                            className={`flex items-center p-2 border rounded-lg cursor-pointer transition-all ${
-                              scenarioFlags.relationship_type === opt.value
-                                ? "border-primary bg-primary/5 ring-1 ring-primary/10 dark:border-primary dark:bg-primary/10"
-                                : "border-border hover:bg-muted/10"
-                            }`}
-                          >
-                            <input
-                              type="radio"
-                              name="relationship_type"
-                              value={opt.value}
-                              checked={scenarioFlags.relationship_type === opt.value}
-                              onChange={(e) => handleFlagChange("relationship_type", e.target.value as any)}
-                              className="mr-3 accent-primary"
-                            />
-                            <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{opt.label}</span>
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 pt-2 border-t border-border">
-                      <h4 className="font-medium text-sm text-slate-900 dark:text-white">Additional Situations</h4>
-
-                      {scenarioFlags.relationship_type === "stepparent" && (
-                        <label className="flex items-start space-x-3 cursor-pointer">
-                          <Checkbox
-                            className="mt-1"
-                            checked={scenarioFlags.stepparent_bio_parent_prior_marriages || false}
-                            onCheckedChange={(checked) =>
-                              handleFlagChange("stepparent_bio_parent_prior_marriages", checked as boolean)
-                            }
-                          />
-                          <div>
-                            <div className="font-medium text-slate-800 dark:text-slate-200">Biological Parent Prior Marriages</div>
-                            <div className="text-sm text-muted-foreground">
-                              The biological parent who married the stepparent had prior marriages.
+                      {visibleFields.map((field) => {
+                        if (field.type === "radio") {
+                          return (
+                            <div key={field.key} className="grid grid-cols-1 gap-2 mt-1">
+                              {field.options?.map((opt) => (
+                                <label
+                                  key={String(opt.value)}
+                                  className={`flex items-center p-2 border rounded-lg cursor-pointer transition-all ${
+                                    scenarioFlags[field.key] === opt.value
+                                      ? "border-primary bg-primary/5 ring-1 ring-primary/10 dark:border-primary dark:bg-primary/10"
+                                      : "border-border hover:bg-muted/10"
+                                  }`}
+                                >
+                                  <input
+                                    type="radio"
+                                    name={field.key}
+                                    value={String(opt.value)}
+                                    checked={scenarioFlags[field.key] === opt.value}
+                                    onChange={() => handleFlagChange(field.key, opt.value as any)}
+                                    className="mr-3 accent-primary"
+                                  />
+                                  <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                                    {opt.label}
+                                  </span>
+                                </label>
+                              ))}
                             </div>
-                          </div>
-                        </label>
-                      )}
+                          );
+                        }
 
-                      <label className="flex items-start space-x-3 cursor-pointer">
-                        <Checkbox
-                          className="mt-1"
-                          checked={scenarioFlags.name_discrepancy || false}
-                          onCheckedChange={(checked) =>
-                            handleFlagChange("name_discrepancy", checked as boolean)
-                          }
-                        />
-                        <div>
-                          <div className="font-medium text-slate-800 dark:text-slate-200">Name or Identity Discrepancies</div>
-                          <div className="text-sm text-muted-foreground">
-                            There are name variations or spelling differences across the records.
-                          </div>
-                        </div>
-                      </label>
+                        // Checkbox
+                        const isChecked = field.key === "primary_record_available"
+                          ? scenarioFlags[field.key] === false
+                          : !!scenarioFlags[field.key];
 
-                      <label className="flex items-start space-x-3 cursor-pointer">
-                        <Checkbox
-                          className="mt-1"
-                          checked={scenarioFlags.primary_record_available === false}
-                          onCheckedChange={(checked) =>
-                            handleFlagChange("primary_record_available", !checked)
-                          }
-                        />
-                        <div>
-                          <div className="font-medium text-slate-800 dark:text-slate-200">Primary Birth Record Unavailable</div>
-                          <div className="text-sm text-muted-foreground">
-                            The primary birth certificate is unavailable, late-registered, or has inconsistencies.
-                          </div>
-                        </div>
-                      </label>
-
-                      <label className="flex items-start space-x-3 cursor-pointer">
-                        <Checkbox
-                          className="mt-1"
-                          checked={scenarioFlags.parent_prior_marriages || false}
-                          onCheckedChange={(checked) =>
-                            handleFlagChange("parent_prior_marriages", checked as boolean)
-                          }
-                        />
-                        <div>
-                          <div className="font-medium text-slate-800 dark:text-slate-200">Parent's Prior Marriages</div>
-                          <div className="text-sm text-muted-foreground">
-                            The parent has prior marriages, divorces, or is widowed.
-                          </div>
-                        </div>
-                      </label>
+                        return (
+                          <label key={field.key} className="flex items-start space-x-3 cursor-pointer">
+                            <Checkbox
+                              className="mt-1"
+                              checked={isChecked}
+                              onCheckedChange={(checked) => {
+                                const value = field.key === "primary_record_available" ? !checked : checked;
+                                handleFlagChange(field.key, value);
+                              }}
+                            />
+                            <div>
+                              <div className="font-medium text-slate-800 dark:text-slate-200">
+                                {field.label}
+                              </div>
+                              {field.description && (
+                                <div className="text-sm text-muted-foreground">
+                                  {field.description}
+                                </div>
+                              )}
+                            </div>
+                          </label>
+                        );
+                      })}
                     </div>
-                  </div>
-                )}
+                  );
+                })}
 
                 {/* Financial flags */}
                 <div className="space-y-3">

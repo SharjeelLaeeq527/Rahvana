@@ -12,7 +12,8 @@ import {
   getDocumentsByCategory,
 } from "@/lib/document-vault/personalization-engine";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
-import type { UploadedDocument, VisaCategory } from "@/lib/document-vault/types";
+import type { UploadedDocument, VisaCategory, ScenarioFlags } from "@/lib/document-vault/types";
+import { VISA_FLAG_REGISTRY } from "@/lib/document-vault/flag-registry";
 import { DocumentCard } from "@/app/components/document-vault/DocumentCard";
 import { DocumentTableView } from "@/app/components/document-vault/DocumentTableView";
 import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPreviewModal";
@@ -46,6 +47,9 @@ import {
   Compass,
   MapPin,
   Route,
+  ArrowLeft,
+  Folder,
+  ChevronRight,
 } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import { Input } from "@/components/ui/input";
@@ -131,10 +135,7 @@ export default function DocumentVaultPage() {
   // ── Journey gate state ────────────────────────────────────────────────────
   const [userJourneys, setUserJourneys] = useState<Journey[]>([]);
   const [journeysLoading, setJourneysLoading] = useState(true);
-  /** Case 1 — user has zero journeys */
   const [noJourneyModalOpen, setNoJourneyModalOpen] = useState(false);
-  /** Case 3 — user has multiple journeys; picker is open */
-  const [journeyPickerOpen, setJourneyPickerOpen] = useState(false);
   /** Case 3 — the currently active journey id selected by the user */
   const [activeJourneyId, setActiveJourneyId] = useState<string | null>(null);
   /** Whether journey gate evaluation is complete */
@@ -303,8 +304,7 @@ export default function DocumentVaultPage() {
             setActiveJourneyId(saved);
             setJourneyGateReady(true);
           } else {
-            // Open the picker modal; gate readiness is set after user picks
-            setJourneyPickerOpen(true);
+            setJourneyGateReady(true);
           }
         }
       } catch (err) {
@@ -338,21 +338,39 @@ export default function DocumentVaultPage() {
     // Map questionnaire answers to vault scenario flags
     const mappedFlags: ScenarioFlags = { ...config?.scenarioFlags };
     if (hasQuestionnaire) {
-      if (visaCategory === "IR-1" || visaCategory === "CR-1") {
-        mappedFlags.prior_marriage_petitioner = questionnaireAnswers.prior_marriage_petitioner === "yes";
-        mappedFlags.prior_marriage_beneficiary = questionnaireAnswers.prior_marriage_beneficiary === "yes";
+      const flagGroups = VISA_FLAG_REGISTRY[visaCategory] || [];
+      const registeredKeys = new Set(flagGroups.flatMap((group) => group.fields.map((f) => f.key)));
+
+      // Register general background/financial keys that are universally mapped
+      registeredKeys.add("military_service");
+      registeredKeys.add("criminal_history");
+      registeredKeys.add("joint_sponsor_used");
+
+      Object.entries(questionnaireAnswers).forEach(([key, value]) => {
+        // If the key is registered for this category, synchronize it automatically
+        if (registeredKeys.has(key)) {
+          if (value === "yes") {
+            mappedFlags[key] = true;
+          } else if (value === "no") {
+            mappedFlags[key] = false;
+          } else {
+            mappedFlags[key] = value;
+          }
+        }
+      });
+
+      // Handle minor key name variations between questionnaire and scenario flags
+      if (
+        questionnaireAnswers.name_change !== undefined &&
+        registeredKeys.has("name_change_any_party")
+      ) {
         mappedFlags.name_change_any_party = questionnaireAnswers.name_change === "yes";
-        mappedFlags.military_service = questionnaireAnswers.military_service === "yes";
-        mappedFlags.criminal_history = questionnaireAnswers.criminal_history === "yes";
+      }
+      if (
+        questionnaireAnswers.joint_sponsor !== undefined &&
+        registeredKeys.has("joint_sponsor_used")
+      ) {
         mappedFlags.joint_sponsor_used = questionnaireAnswers.joint_sponsor === "yes";
-      } else if (visaCategory === "IR-5") {
-        mappedFlags.relationship_type = questionnaireAnswers.relationship_type as any;
-        mappedFlags.stepparent_bio_parent_prior_marriages = questionnaireAnswers.stepparent_bio_parent_prior_marriages === "yes";
-        mappedFlags.name_discrepancy = questionnaireAnswers.name_discrepancy === "yes";
-        mappedFlags.primary_record_available = questionnaireAnswers.primary_record_available === "yes";
-        mappedFlags.parent_prior_marriages = questionnaireAnswers.parent_prior_marriages === "yes";
-        mappedFlags.military_service = questionnaireAnswers.military_service === "yes";
-        mappedFlags.criminal_history = questionnaireAnswers.criminal_history === "yes";
       }
     }
 
@@ -392,7 +410,6 @@ export default function DocumentVaultPage() {
     if (typeof window !== "undefined") {
       sessionStorage.setItem(SESSION_KEY, journeyId);
     }
-    setJourneyPickerOpen(false);
     setJourneyGateReady(true);
   }, []);
 
@@ -400,7 +417,10 @@ export default function DocumentVaultPage() {
   useEffect(() => {
     setActiveTab("required");
     setSearchQuery("");
-  }, [activeJourneyId]);
+    if (initialized && activeJourneyId) {
+      reloadDocuments(activeJourneyId);
+    }
+  }, [activeJourneyId, initialized, reloadDocuments]);
 
   useEffect(() => {
     if (
@@ -680,6 +700,141 @@ export default function DocumentVaultPage() {
   //   }
   // };
 
+  if (noJourneyModalOpen) {
+    return (
+      <div className="flex items-center justify-center min-h-[calc(100vh-55px)] bg-slate-50/50 dark:bg-slate-950/50 mt-[55px] p-6">
+        <Card className="max-w-md w-[95%] bg-white dark:bg-slate-900 border-none shadow-2xl rounded-3xl p-0 overflow-hidden relative">
+          <div className="relative p-8 flex flex-col items-center text-center">
+            {/* Decorative blobs */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+              <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-amber-500/10 blur-3xl" />
+              <div className="absolute -bottom-20 -left-20 w-56 h-56 rounded-full bg-primary/10 blur-3xl" />
+            </div>
+
+            {/* Icon */}
+            <div className="relative z-10 w-20 h-20 rounded-3xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center mb-6 shadow-inner">
+              <Compass className="w-10 h-10 text-amber-600 dark:text-amber-400" />
+            </div>
+
+            {/* Text */}
+            <h3 className="relative z-10 text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
+              Journey Required
+            </h3>
+            <p className="relative z-10 text-slate-600 dark:text-slate-400 leading-relaxed text-[15px] mb-2">
+              The{" "}
+              <span className="font-bold text-slate-800 dark:text-slate-200">Document Vault</span>{" "}
+              is a journey-specific tool. It organizes and tracks the exact documents you need based
+              on your immigration journey.
+            </p>
+            <p className="relative z-10 text-slate-500 dark:text-slate-500 text-sm leading-relaxed mb-8">
+              You don&apos;t have an active immigration journey yet. Please start a journey first,
+              then your Document Vault will be automatically set up for you.
+            </p>
+
+            {/* Actions */}
+            <div className="relative z-10 w-full space-y-3">
+              <Link href="/visa-category/ir-category">
+                <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-base shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95">
+                  <Route className="w-5 h-5 mr-2" />
+                  Browse Available Journeys
+                </Button>
+              </Link>
+              <p className="text-xs text-slate-400 dark:text-slate-500 pt-3">
+                Once you start a journey, come back here to access your personalized Document Vault.
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
+  }
+
+  if (userJourneys.length > 1 && !activeJourneyId) {
+    return (
+      <div className="bg-slate-50/50 dark:bg-slate-950/50 mt-[55px] min-h-[calc(100vh-55px)] py-12 px-6">
+        <div className="container mx-auto max-w-5xl">
+          {/* Header */}
+          <div className="mb-10 text-center max-w-2xl mx-auto">
+            <h1 className="text-3xl sm:text-4xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
+              Your Document Vaults
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 text-base leading-relaxed">
+              You have multiple immigration journeys. Select a journey below to open its
+              personalized document vault and manage your checklist.
+            </p>
+          </div>
+
+          {/* Grid of Folders / Journey Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {userJourneys.map((journey) => {
+              const visaCategory = journeyTypeToVisaCategory(journey.journey_type);
+              const isActive = journey.status === "in_progress";
+              const progress = journey.completion_percentage || 0;
+
+              return (
+                <button
+                  key={journey.id}
+                  onClick={() => handlePickJourney(journey.id)}
+                  className="flex flex-col text-left bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 hover:border-primary/40 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group focus:outline-none focus:ring-2 focus:ring-primary/20"
+                >
+                  {/* Folder Accent Bar */}
+                  <div className="h-2 w-full bg-linear-to-r from-primary/80 to-primary" />
+
+                  <div className="p-6 flex-1 flex flex-col justify-between">
+                    <div>
+                      {/* Folder / Compass Icon */}
+                      <div className="flex items-center justify-between mb-5">
+                        <div className="h-12 w-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all duration-300">
+                          <Folder className="w-6 h-6" />
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {visaCategory && (
+                            <Badge
+                              variant="secondary"
+                              className="text-xs bg-primary/5 text-primary border-primary/10 font-bold px-2 py-0.5"
+                            >
+                              {visaCategory}
+                            </Badge>
+                          )}
+                          {isActive && (
+                            <Badge className="text-xs bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900/50 font-semibold px-2 py-0.5">
+                              Active
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Journey Details */}
+                      <h3 className="text-lg font-bold text-slate-900 dark:text-white mb-2 group-hover:text-primary transition-colors line-clamp-1">
+                        {journeyLabel(journey)}
+                      </h3>
+                      <p className="text-xs text-slate-500 dark:text-slate-400 capitalize mb-6">
+                        Status: {journey.status.replace("_", " ")}
+                      </p>
+                    </div>
+
+                    {/* Progress Bar & Footer */}
+                    <div className="space-y-3 pt-4 border-t border-slate-100 dark:border-slate-800/60">
+                      <div className="flex justify-between text-xs font-semibold text-slate-600 dark:text-slate-400">
+                        <span>Checklist Progress</span>
+                        <span>{progress}%</span>
+                      </div>
+                      <Progress value={progress} className="h-2 animate-pulse" />
+                      <div className="flex items-center justify-end text-xs font-bold text-primary group-hover:translate-x-1 transition-transform pt-2">
+                        <span>Open Vault</span>
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <TooltipProvider>
       <div className="bg-slate-50/50 dark:bg-slate-950/50 mt-[55px]">
@@ -688,9 +843,23 @@ export default function DocumentVaultPage() {
           <div className="site-main-px py-4">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
-                  <ShieldCheck className="w-7 h-7" />
-                </div>
+                {userJourneys.length > 1 && activeJourneyId ? (
+                  <Button
+                    variant="ghost"
+                    onClick={() => {
+                      setActiveJourneyId(null);
+                      sessionStorage.removeItem(SESSION_KEY);
+                    }}
+                    className="h-12 w-12 p-0 rounded-2xl border border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all duration-200 shrink-0 flex items-center justify-center animate-in fade-in slide-in-from-left-2 duration-300"
+                    title="Back to Journeys"
+                  >
+                    <ArrowLeft className="w-5 h-5" />
+                  </Button>
+                ) : (
+                  <div className="hidden sm:flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10 text-primary shadow-inner">
+                    <ShieldCheck className="w-7 h-7" />
+                  </div>
+                )}
                 <div>
                   <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                     {t("documentVaultPage.page.title")}
@@ -710,16 +879,19 @@ export default function DocumentVaultPage() {
                       {t("documentVaultPage.page.subtitle")}
                     </span>
                     {/* Case 3 Journey Switcher */}
-                    {userJourneys.length > 1 && (
+                    {/* {userJourneys.length > 1 && (
                       <button
-                        onClick={() => setJourneyPickerOpen(true)}
+                        onClick={() => {
+                          setActiveJourneyId(null);
+                          sessionStorage.removeItem(SESSION_KEY);
+                        }}
                         className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:text-primary/80 hover:bg-primary/5 px-2 py-0.5 rounded-full border border-primary/20 transition-all duration-200 hover:scale-105 active:scale-95"
                         title="Switch to a different journey"
                       >
                         <ArrowLeftRight className="w-3 h-3" />
                         Switch Journey
                       </button>
-                    )}
+                    )} */}
                   </div>
                 </div>
               </div>
@@ -1312,9 +1484,11 @@ export default function DocumentVaultPage() {
               open={uploadModalOpen}
               onClose={closeUploadModal}
               documentDef={selectedDoc}
+              userJourneys={userJourneys}
+              activeJourneyId={activeJourneyId}
               onUploadComplete={async () => {
                 // Reload documents in the store instantly — no full re-init needed
-                await reloadDocuments();
+                await reloadDocuments(activeJourneyId || undefined);
                 refreshNotifications(t);
               }}
             />
@@ -1342,160 +1516,6 @@ export default function DocumentVaultPage() {
             uploadedDoc={previewDoc}
           />
         )}
-
-        {/* Welcome / Incomplete Progress Modal */}
-        {/* ── Case 1: No Journey Modal (uncloseable) ─────────────────────────── */}
-        <Dialog
-          open={noJourneyModalOpen}
-          onOpenChange={() => {
-            /* intentionally uncloseable */
-          }}
-        >
-          <DialogContent
-            className="max-w-md w-[95%] bg-white dark:bg-slate-900 border-none shadow-2xl rounded-3xl p-0 overflow-hidden"
-            onPointerDownOutside={(e) => e.preventDefault()}
-            onEscapeKeyDown={(e) => e.preventDefault()}
-          >
-            <div className="relative p-8 flex flex-col items-center text-center">
-              {/* Decorative blobs */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute -top-20 -right-20 w-56 h-56 rounded-full bg-amber-500/10 blur-3xl" />
-                <div className="absolute -bottom-20 -left-20 w-56 h-56 rounded-full bg-primary/10 blur-3xl" />
-              </div>
-
-              {/* Icon */}
-              <div className="relative z-10 w-20 h-20 rounded-3xl bg-amber-100 dark:bg-amber-900/40 flex items-center justify-center mb-6 shadow-inner">
-                <Compass className="w-10 h-10 text-amber-600 dark:text-amber-400" />
-              </div>
-
-              {/* Text */}
-              <h3 className="relative z-10 text-2xl font-black text-slate-900 dark:text-white mb-3 tracking-tight">
-                Journey Required
-              </h3>
-              <p className="relative z-10 text-slate-600 dark:text-slate-400 leading-relaxed text-[15px] mb-2">
-                The{" "}
-                <span className="font-bold text-slate-800 dark:text-slate-200">Document Vault</span>{" "}
-                is a journey-specific tool. It organizes and tracks the exact documents you need
-                based on your immigration journey.
-              </p>
-              <p className="relative z-10 text-slate-500 dark:text-slate-500 text-sm leading-relaxed mb-8">
-                You don&apos;t have an active immigration journey yet. Please start a journey first
-                — then your Document Vault will be automatically set up for you.
-              </p>
-
-              {/* Actions */}
-              <div className="relative z-10 w-full space-y-3">
-                <Link href="/visa-category">
-                  <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-base shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95">
-                    <Route className="w-5 h-5 mr-2" />
-                    Browse Available Journeys
-                  </Button>
-                </Link>
-                <p className="text-xs text-slate-400 dark:text-slate-500">
-                  Once you start a journey, come back here to access your personalized Document
-                  Vault.
-                </p>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* ── Case 3: Journey Picker Modal (uncloseable on first open, closeable when switching) ── */}
-        <Dialog
-          open={journeyPickerOpen}
-          onOpenChange={(open) => {
-            // Allow closing only if a journey is already active (i.e. opened via Switch button)
-            if (!open && activeJourneyId) setJourneyPickerOpen(false);
-          }}
-        >
-          <DialogContent
-            className="max-w-lg w-[95%] bg-white dark:bg-slate-900 border-none shadow-2xl rounded-3xl p-0 overflow-hidden"
-            onPointerDownOutside={(e) => {
-              if (!activeJourneyId) e.preventDefault();
-            }}
-            onEscapeKeyDown={(e) => {
-              if (!activeJourneyId) e.preventDefault();
-            }}
-          >
-            <div className="relative p-8">
-              {/* Conditional X close button — only shown when a journey is already active */}
-              {activeJourneyId && (
-                <button
-                  onClick={() => setJourneyPickerOpen(false)}
-                  className="absolute top-4 right-4 z-20 w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 dark:text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-all duration-200 hover:scale-110 active:scale-95"
-                  aria-label="Close"
-                >
-                  <CloseIcon className="w-4 h-4" />
-                </button>
-              )}
-              {/* Decorative blobs */}
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <div className="absolute -top-24 -right-24 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
-                <div className="absolute -bottom-24 -left-24 w-64 h-64 rounded-full bg-primary/5 blur-3xl" />
-              </div>
-
-              {/* Header */}
-              <div className="relative z-10 flex flex-col items-center text-center mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4 shadow-inner">
-                  <MapPin className="w-8 h-8 text-primary" />
-                </div>
-                <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                  Select Your Active Journey
-                </h3>
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 max-w-sm">
-                  You have multiple journeys. Choose the one you want your Document Vault to be
-                  configured for. You can switch at any time.
-                </p>
-              </div>
-
-              {/* Journey cards */}
-              <div className="relative z-10 space-y-3">
-                {userJourneys.map((journey) => {
-                  const visaCategory = journeyTypeToVisaCategory(journey.journey_type);
-                  const isActive = journey.status === "in_progress";
-                  return (
-                    <button
-                      key={journey.id}
-                      onClick={() => handlePickJourney(journey.id)}
-                      className="w-full text-left p-4 rounded-2xl border-2 border-slate-200 dark:border-slate-700 hover:border-primary/60 hover:bg-primary/5 transition-all duration-200 group active:scale-[0.98]"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
-                          <Compass className="w-5 h-5 text-primary" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-bold text-slate-900 dark:text-white text-sm">
-                              {journeyLabel(journey)}
-                            </span>
-                            {visaCategory && (
-                              <Badge
-                                variant="secondary"
-                                className="text-xs bg-primary/5 text-primary border-primary/20 font-bold"
-                              >
-                                {visaCategory}
-                              </Badge>
-                            )}
-                            {isActive && (
-                              <Badge className="text-xs bg-emerald-100 text-emerald-700 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-400 dark:border-emerald-800 font-semibold">
-                                Active
-                              </Badge>
-                            )}
-                          </div>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 capitalize">
-                            Status: {journey.status.replace("_", " ")} ·{" "}
-                            {journey.completion_percentage}% complete
-                          </p>
-                        </div>
-                        <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-primary -rotate-90 transition-colors shrink-0" />
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
 
         <Dialog open={welcomeModalOpen} onOpenChange={setWelcomeModalOpen}>
           <DialogContent className="max-w-md w-[95%] bg-white dark:bg-slate-900 border-none shadow-2xl rounded-3xl p-0 overflow-hidden">

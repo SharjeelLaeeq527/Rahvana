@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { VisaCategory, ScenarioFlags } from "@/lib/document-vault/types";
+import { VISA_FLAG_REGISTRY } from "@/lib/document-vault/flag-registry";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -193,190 +194,78 @@ export function LiveConfigPanel() {
             </div>
 
             <div className="space-y-4">
-              {/* Marriage/Relationship flags */}
-              {(localCategory === "IR-1" || localCategory === "CR-1") && (
-                <div className="space-y-3">
-                  <h4 className="font-medium text-sm text-muted-foreground">
-                    {t("documentVaultPage.components.configWizard.marriageHistory")}
-                  </h4>
-                  <label className="flex items-start space-x-3 cursor-pointer">
-                    <Checkbox
-                      checked={localFlags.prior_marriage_petitioner || false}
-                      onCheckedChange={(checked) =>
-                        handleFlagChange("prior_marriage_petitioner", checked as boolean)
-                      }
-                    />
-                    <div className="flex-1">
-                      <span className="text-sm font-medium">
-                        {t("documentVaultPage.components.configWizard.petitionerMarried")}
-                      </span>
-                      <p className="text-xs text-muted-foreground">
-                        {t("documentVaultPage.components.configWizard.petitionerMarriedDesc")}
-                      </p>
-                    </div>
-                  </label>
-                  <label className="flex items-start space-x-3 cursor-pointer">
-                    <Checkbox
-                      checked={localFlags.prior_marriage_beneficiary || false}
-                      onCheckedChange={(checked) =>
-                        handleFlagChange("prior_marriage_beneficiary", checked as boolean)
-                      }
-                    />
-                    <div className="flex-1">
-                      <span className="text-sm font-medium">
-                        {t("documentVaultPage.components.configWizard.beneficiaryMarried")}
-                      </span>
-                      <p className="text-xs text-muted-foreground">
-                        {t("documentVaultPage.components.configWizard.beneficiaryMarriedDesc")}
-                      </p>
-                    </div>
-                  </label>
-                </div>
-              )}
+              {/* Dynamic Category Specific Flags */}
+              {(VISA_FLAG_REGISTRY[localCategory] || []).map((group) => {
+                const visibleFields = group.fields.filter(
+                  (field) => !field.showIf || field.showIf(localFlags)
+                );
+                if (visibleFields.length === 0) return null;
 
-              {/* Parent / IR-5 Specific */}
-              {localCategory === "IR-5" && (
-                <div className="space-y-4">
-                  <div className="space-y-3">
-                    <h4 className="font-medium text-sm text-muted-foreground">Petitioner-Parent Relationship Type</h4>
-                    <div className="grid grid-cols-1 gap-2 mt-1">
-                      {[
-                        { label: "Biological mother", value: "biological_mother" },
-                        { label: "Biological father (married)", value: "father_married" },
-                        { label: "Biological father (unmarried)", value: "father_unmarried" },
-                        { label: "Stepparent", value: "stepparent" },
-                        { label: "Adoptive parent", value: "adoptive" },
-                      ].map((opt) => (
-                        <label
-                          key={opt.value}
-                          className={`flex items-center p-2 border rounded-lg cursor-pointer transition-all ${
-                            localFlags.relationship_type === opt.value
-                              ? "border-brand bg-brand/10 ring-1 ring-brand/20"
-                              : "border-border hover:bg-muted/10"
-                          }`}
-                        >
-                          <input
-                            type="radio"
-                            name="live_relationship_type"
-                            value={opt.value}
-                            checked={localFlags.relationship_type === opt.value}
-                            onChange={(e) => handleFlagChange("relationship_type", e.target.value as any)}
-                            className="mr-3 accent-brand"
+                return (
+                  <div key={group.groupName} className="space-y-3">
+                    <h4 className="font-medium text-sm text-muted-foreground">
+                      {group.groupName}
+                    </h4>
+                    {visibleFields.map((field) => {
+                      if (field.type === "radio") {
+                        return (
+                          <div key={field.key} className="grid grid-cols-1 gap-2 mt-1">
+                            {field.options?.map((opt) => (
+                              <label
+                                key={String(opt.value)}
+                                className={`flex items-center p-2 border rounded-lg cursor-pointer transition-all ${
+                                  localFlags[field.key] === opt.value
+                                    ? "border-brand bg-brand/10 ring-1 ring-brand/20"
+                                    : "border-border hover:bg-muted/10"
+                                }`}
+                              >
+                                <input
+                                  type="radio"
+                                  name={`live_${field.key}`}
+                                  value={String(opt.value)}
+                                  checked={localFlags[field.key] === opt.value}
+                                  onChange={() => handleFlagChange(field.key, opt.value as any)}
+                                  className="mr-3 accent-brand"
+                                />
+                                <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                                  {opt.label}
+                                </span>
+                              </label>
+                            ))}
+                          </div>
+                        );
+                      }
+
+                      // Checkbox
+                      const isChecked = field.key === "primary_record_available"
+                        ? localFlags[field.key] === false
+                        : !!localFlags[field.key];
+
+                      return (
+                        <label key={field.key} className="flex items-start space-x-3 cursor-pointer">
+                          <Checkbox
+                            checked={isChecked}
+                            onCheckedChange={(checked) => {
+                              const value = field.key === "primary_record_available" ? !checked : checked;
+                              handleFlagChange(field.key, value);
+                            }}
                           />
-                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200">{opt.label}</span>
+                          <div className="flex-1">
+                            <span className="text-sm font-medium text-slate-800 dark:text-slate-200">
+                              {field.label}
+                            </span>
+                            {field.description && (
+                              <p className="text-xs text-muted-foreground">
+                                {field.description}
+                              </p>
+                            )}
+                          </div>
                         </label>
-                      ))}
-                    </div>
+                      );
+                    })}
                   </div>
-
-                  <div className="space-y-3 pt-2 border-t border-border">
-                    <h4 className="font-medium text-sm text-muted-foreground">Additional Situations</h4>
-
-                    {localFlags.relationship_type === "stepparent" && (
-                      <label className="flex items-start space-x-3 cursor-pointer">
-                        <Checkbox
-                          checked={localFlags.stepparent_bio_parent_prior_marriages || false}
-                          onCheckedChange={(checked) =>
-                            handleFlagChange("stepparent_bio_parent_prior_marriages", checked as boolean)
-                          }
-                        />
-                        <div className="flex-1">
-                          <span className="text-sm font-medium text-slate-800 dark:text-slate-200">Biological Parent Prior Marriages</span>
-                          <p className="text-xs text-muted-foreground">
-                            The biological parent who married the stepparent had prior marriages.
-                          </p>
-                        </div>
-                      </label>
-                    )}
-
-                    <label className="flex items-start space-x-3 cursor-pointer">
-                      <Checkbox
-                        checked={localFlags.name_discrepancy || false}
-                        onCheckedChange={(checked) =>
-                          handleFlagChange("name_discrepancy", checked as boolean)
-                        }
-                      />
-                      <div className="flex-1">
-                        <span className="text-sm font-medium text-slate-800 dark:text-slate-200">Name or Identity Discrepancies</span>
-                        <p className="text-xs text-muted-foreground">
-                          There are name variations or spelling differences across the records.
-                        </p>
-                      </div>
-                    </label>
-
-                    <label className="flex items-start space-x-3 cursor-pointer">
-                      <Checkbox
-                        checked={localFlags.primary_record_available === false}
-                        onCheckedChange={(checked) =>
-                          handleFlagChange("primary_record_available", !checked)
-                        }
-                      />
-                      <div className="flex-1">
-                        <span className="text-sm font-medium text-slate-800 dark:text-slate-200">Primary Birth Record Unavailable</span>
-                        <p className="text-xs text-muted-foreground">
-                          The primary birth certificate is unavailable, late-registered, or has inconsistencies.
-                        </p>
-                      </div>
-                    </label>
-
-                    <label className="flex items-start space-x-3 cursor-pointer">
-                      <Checkbox
-                        checked={localFlags.parent_prior_marriages || false}
-                        onCheckedChange={(checked) =>
-                          handleFlagChange("parent_prior_marriages", checked as boolean)
-                        }
-                      />
-                      <div className="flex-1">
-                        <span className="text-sm font-medium text-slate-800 dark:text-slate-200">Parent's Prior Marriages</span>
-                        <p className="text-xs text-muted-foreground">
-                          The parent has prior marriages, divorces, or is widowed.
-                        </p>
-                      </div>
-                    </label>
-                  </div>
-                </div>
-              )}
-
-              {/* Children */}
-              {(localCategory === "IR-2" || localCategory === "CR-2") && (
-                <div className="space-y-3">
-                  <h4 className="font-medium text-sm text-muted-foreground">
-                    {t("documentVaultPage.components.configWizard.childInfo")}
-                  </h4>
-                  <label className="flex items-start space-x-3 cursor-pointer">
-                    <Checkbox
-                      checked={localFlags.child_adopted || false}
-                      onCheckedChange={(checked) =>
-                        handleFlagChange("child_adopted", checked as boolean)
-                      }
-                    />
-                    <div className="flex-1">
-                      <span className="text-sm font-medium">
-                        {t("documentVaultPage.components.configWizard.adoptedChild")}
-                      </span>
-                      <p className="text-xs text-muted-foreground">
-                        {t("documentVaultPage.components.configWizard.adoptedChildDesc")}
-                      </p>
-                    </div>
-                  </label>
-                  <label className="flex items-start space-x-3 cursor-pointer">
-                    <Checkbox
-                      checked={localFlags.child_stepchild || false}
-                      onCheckedChange={(checked) =>
-                        handleFlagChange("child_stepchild", checked as boolean)
-                      }
-                    />
-                    <div className="flex-1">
-                      <span className="text-sm font-medium">
-                        {t("documentVaultPage.components.configWizard.stepchild")}
-                      </span>
-                      <p className="text-xs text-muted-foreground">
-                        {t("documentVaultPage.components.configWizard.stepchildDesc")}
-                      </p>
-                    </div>
-                  </label>
-                </div>
-              )}
+                );
+              })}
 
               {/* Financial */}
               <div className="space-y-3">

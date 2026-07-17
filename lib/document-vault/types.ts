@@ -56,6 +56,7 @@ export type DocumentStatus =
   | "EXPIRED"; // Past expiration date
 
 export interface ScenarioFlags {
+  [key: string]: any;
   // Marriage/Relationship
   prior_marriage_petitioner?: boolean;
   prior_marriage_beneficiary?: boolean;
@@ -165,6 +166,7 @@ export interface UploadedDocument {
   // Status
   status: DocumentStatus;
   notes?: string;
+  journeyId?: string | null;
 }
 
 export interface DocumentVaultConfig {
