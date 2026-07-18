@@ -2340,8 +2340,8 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip, isVisible = true 
               ? {
                   marginTop: 36,
                   marginBottom: 36,
-                  top: "11%",
-                  left: "35%",
+                  top: "13%",
+                  left: "33%",
                   width: "75%",
                 }
               : {
