@@ -18,6 +18,7 @@ import { DocumentCard } from "@/app/components/document-vault/DocumentCard";
 import { DocumentTableView } from "@/app/components/document-vault/DocumentTableView";
 import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPreviewModal";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
+import { MultipleDocumentUploadModal } from "@/app/components/document-vault/MultipleDocumentUploadModal";
 import { DocumentWizard } from "@/app/components/document-vault/DocumentWizard";
 // import { ConfigurationWizard } from "@/app/components/document-vault/ConfigurationWizard";
 import { NotificationBell } from "@/app/components/document-vault/NotificationCenter";
@@ -1487,18 +1488,33 @@ export default function DocumentVaultPage() {
         {/* Modals */}
         {selectedDoc && (
           <>
-            <DocumentUploadModal
-              open={uploadModalOpen}
-              onClose={closeUploadModal}
-              documentDef={selectedDoc}
-              userJourneys={userJourneys}
-              activeJourneyId={activeJourneyId}
-              onUploadComplete={async () => {
-                // Reload documents in the store instantly — no full re-init needed
-                await reloadDocuments(activeJourneyId || undefined);
-                refreshNotifications(t);
-              }}
-            />
+            {selectedDoc.multipleFilesAllowed ? (
+              <MultipleDocumentUploadModal
+                open={uploadModalOpen}
+                onClose={closeUploadModal}
+                categoryId={selectedDoc.id}
+                documentName={selectedDoc.name}
+                options={selectedDoc.suggestions || []}
+                onUploadComplete={async () => {
+                  // Reload documents in the store instantly — no full re-init needed
+                  await reloadDocuments(activeJourneyId || undefined);
+                  refreshNotifications(t);
+                }}
+              />
+            ) : (
+              <DocumentUploadModal
+                open={uploadModalOpen}
+                onClose={closeUploadModal}
+                documentDef={selectedDoc}
+                userJourneys={userJourneys}
+                activeJourneyId={activeJourneyId}
+                onUploadComplete={async () => {
+                  // Reload documents in the store instantly — no full re-init needed
+                  await reloadDocuments(activeJourneyId || undefined);
+                  refreshNotifications(t);
+                }}
+              />
+            )}
 
             <DocumentWizard open={wizardOpen} onClose={closeWizard} documentDef={selectedDoc} />
 
