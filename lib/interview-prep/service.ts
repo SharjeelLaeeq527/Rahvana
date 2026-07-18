@@ -265,7 +265,7 @@ export async function createInterviewSession(
 // Called automatically when a journey is initialized
 export async function createJourneyInterviewSession(
   journey_id: string,
-  category_slug: string = "ir-1-spouse" // Default to IR-1 spouse for now
+  category_slug: string
 ): Promise<{
   session: InterviewSession;
   alreadyExists: boolean;
