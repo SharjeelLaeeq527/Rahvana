@@ -26,6 +26,13 @@ export interface WizardState {
   unresolvedTasks: string[];
   backendId?: string;
   stepMap: Record<string, string>;
+  /**
+   * Per-step timestamps (ms epoch) for time-based case-strength gating.
+   * `completedAt` drives the "passed step, deficiency unresolved → escalate"
+   * windows; `startedAt` (reached) drives the current-step grace. Populated from
+   * the DB `steps` rows on load; `completedAt` is stamped locally on completion.
+   */
+  stepTimestamps: Record<string, { completedAt?: number | null; startedAt?: number | null }>;
 }
 
 const DEFAULT_STATE: WizardState = {
@@ -44,6 +51,7 @@ const DEFAULT_STATE: WizardState = {
   metadata: {},
   unresolvedTasks: [],
   stepMap: {},
+  stepTimestamps: {},
 };
 
 interface UseWizardOptions {
@@ -167,10 +175,20 @@ export function useWizard(options: UseWizardOptions = {}) {
 
         const stepMap: Record<string, string> = {};
         const completedSet = new Set<string>();
+        const stepTimestamps: Record<
+          string,
+          { completedAt?: number | null; startedAt?: number | null }
+        > = {};
 
         steps.forEach((s: any) => {
           stepMap[s.step_key] = s.id;
           if (s.status === "completed") completedSet.add(s.step_key);
+          const completedAt = s.completed_at ? Date.parse(s.completed_at) : null;
+          const startedAt = s.started_at ? Date.parse(s.started_at) : null;
+          stepTimestamps[s.step_key] = {
+            completedAt: Number.isFinite(completedAt) ? completedAt : null,
+            startedAt: Number.isFinite(startedAt) ? startedAt : null,
+          };
         });
 
         const metadata: Record<string, any> = {};
@@ -215,6 +233,7 @@ export function useWizard(options: UseWizardOptions = {}) {
           ...prev,
           backendId: journey.id,
           stepMap,
+          stepTimestamps,
           completedSteps: completedSet,
           metadata: {
             ...metadata,
@@ -420,10 +439,21 @@ export function useWizard(options: UseWizardOptions = {}) {
         // Optimistic update
         setState((prev) => {
           const newCompleted = new Set(prev.completedSteps);
-          if (newCompleted.has(stepKey)) newCompleted.delete(stepKey);
-          else newCompleted.add(stepKey);
+          const nowCompleting = !newCompleted.has(stepKey);
+          if (nowCompleting) newCompleted.add(stepKey);
+          else newCompleted.delete(stepKey);
 
-          return { ...prev, completedSteps: newCompleted };
+          // Stamp/clear completed_at locally so the case-strength "behind step"
+          // escalation clock is accurate without waiting for a reload.
+          const prevTs = prev.stepTimestamps[stepKey] || {};
+          return {
+            ...prev,
+            completedSteps: newCompleted,
+            stepTimestamps: {
+              ...prev.stepTimestamps,
+              [stepKey]: { ...prevTs, completedAt: nowCompleting ? Date.now() : null },
+            },
+          };
         });
 
         if (stepUuid) {
@@ -448,12 +478,20 @@ export function useWizard(options: UseWizardOptions = {}) {
             }
           } catch (err) {
             console.error("[useWizard] sync failed:", err);
-            // Rollback
+            // Rollback (including the optimistic completed_at stamp)
             setState((prev) => {
               const newCompleted = new Set(prev.completedSteps);
               if (!isCompleted) newCompleted.delete(stepKey);
               else newCompleted.add(stepKey);
-              return { ...prev, completedSteps: newCompleted };
+              const prevTs = prev.stepTimestamps[stepKey] || {};
+              return {
+                ...prev,
+                completedSteps: newCompleted,
+                stepTimestamps: {
+                  ...prev.stepTimestamps,
+                  [stepKey]: { ...prevTs, completedAt: isCompleted ? prevTs.completedAt ?? null : null },
+                },
+              };
             });
           }
           setIsSyncing(false);

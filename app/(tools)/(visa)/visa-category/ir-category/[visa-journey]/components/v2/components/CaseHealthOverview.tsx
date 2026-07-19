@@ -41,6 +41,11 @@ export interface CaseHealthOverviewProps {
   healthLabel: string;
   healthStatus: "excellent" | "good" | "needs-attention" | "critical";
   loading?: boolean;
+  /**
+   * True when the user hasn't produced any signal to assess yet. Renders a
+   * neutral empty state instead of a fabricated score (NN/g empty states).
+   */
+  notStarted?: boolean;
   onViewFullAnalysis: () => void;
   /** Compact 2–3 line case summary text (shown below metrics) */
   summaryText?: string;
@@ -285,6 +290,7 @@ export function CaseHealthOverview({
   healthLabel,
   healthStatus,
   loading,
+  notStarted,
   onViewFullAnalysis,
   summaryText,
 }: CaseHealthOverviewProps) {
@@ -358,6 +364,79 @@ export function CaseHealthOverview({
           </div>
         </div>
       </div>
+    );
+  }
+
+  // ── Empty state — nothing to assess yet ──
+  // Show a neutral "not started" panel instead of a fabricated score. No number,
+  // no red critical/warning; just status + a learning cue (NN/g empty states,
+  // and no "false precision" from a near-empty case).
+  if (notStarted) {
+    return (
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.1 }}
+        className="relative rounded-2xl overflow-hidden"
+        style={{ boxShadow: ANALYSIS_PANEL.shadow }}
+      >
+        <div
+          className="absolute inset-0 rounded-2xl overflow-hidden border bg-gradient-to-br from-[#121f22] via-[#162629] to-[#1a2e32]"
+          style={{ borderColor: ANALYSIS_PANEL.border }}
+        >
+          <div
+            className="absolute inset-0 opacity-[0.25]"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle, rgba(20,184,166,0.12) 1px, transparent 1px)",
+              backgroundSize: "20px 20px",
+            }}
+          />
+          <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#14b8a6]/80 via-[#0d7377]/50 to-transparent" />
+        </div>
+
+        <div className="relative z-10">
+          {/* Header */}
+          <div className="px-5 py-4 flex items-center justify-between border-b border-white/[0.08] bg-white/[0.03] backdrop-blur-sm">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/[0.08] border border-white/[0.10]">
+                <Shield size={16} className="text-[#5eead4]" />
+              </div>
+              <div>
+                <p className="text-[9px] font-bold uppercase tracking-[0.16em] text-[#5eead4]/70">
+                  Case Analysis
+                </p>
+                <h3 className="text-[15px] font-bold text-white tracking-tight leading-tight">
+                  Case Health Overview
+                </h3>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border text-[10px] font-bold tracking-wide text-white/50 border-white/15 bg-white/[0.04]">
+              Not started
+            </div>
+          </div>
+
+          {/* Body — muted dashed dial + learning cue */}
+          <div className="px-5 py-6 flex items-center gap-5">
+            <div className="shrink-0 w-[104px] h-[104px] rounded-full flex flex-col items-center justify-center border-2 border-dashed border-white/15 bg-white/[0.03]">
+              <span className="text-[34px] font-black leading-none text-white/35">—</span>
+              <span className="text-[9px] font-bold text-white/30 tracking-widest mt-0.5">
+                / 100
+              </span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-[13px] font-semibold text-white/80">
+                We&apos;ll assess your case health as you go
+              </p>
+              <p className="text-[12px] text-white/45 mt-1.5 leading-relaxed">
+                Complete your first step or upload a document, and your evidence,
+                consistency, and critical-issue analysis will appear here — based on what
+                your case actually shows.
+              </p>
+            </div>
+          </div>
+        </div>
+      </motion.div>
     );
   }
 

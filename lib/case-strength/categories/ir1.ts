@@ -7,7 +7,7 @@
  * today's behavior exactly.
  */
 
-import { IR1_STEP_CHECKERS } from "../step-checkers";
+import { IR1_STEP_CHECKERS, COMMON_LOOK_AHEAD } from "../step-checkers";
 import { IR1_STEP_REFS, detectRiskFlagsFromEligibilityQuest } from "../eligibility-quest-detector";
 import { BASELINE_FIELDS } from "../consistency";
 import { PHASE2_QUESTIONS, runPhase2Checks } from "../consistency-intelligence";
@@ -94,4 +94,6 @@ export const IR1_PROFILE: CaseStrengthProfile = {
   strengthSignals: {
     relationship: spouseRelationshipSignal,
   },
+  // Deadline-driven early-warnings (joint sponsor, fresh PCC) — shared family set.
+  lookAhead: COMMON_LOOK_AHEAD,
 };

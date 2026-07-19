@@ -17,6 +17,7 @@ import type { RiskFlag } from "../types";
 import type { CrossFormField } from "../consistency";
 import type { Phase2Question, Phase2Runner } from "../consistency-intelligence";
 import type { EvidenceGapConfig } from "@/lib/journey/evidence-gap/engine";
+import type { LookAheadRule } from "../alert-gating";
 
 export interface CaseStrengthProfile {
   /** Stable slug, e.g. "ir-1" | "ir-5". */
@@ -84,6 +85,13 @@ export interface CaseStrengthProfile {
   strengthSignals: {
     relationship: RelationshipStrengthSignal;
   };
+  /**
+   * Deadline-driven deficiencies this category surfaces one chapter early on the
+   * dashboard ("Plan ahead", never blocking). Family categories reuse
+   * `COMMON_LOOK_AHEAD`; omit (or pass `[]`) for a category with none. Consumed
+   * by the alert-gating engine via `GateContext.lookAheadRules`.
+   */
+  lookAhead?: LookAheadRule[];
 }
 
 /**

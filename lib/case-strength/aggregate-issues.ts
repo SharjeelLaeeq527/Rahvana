@@ -10,7 +10,7 @@ import type { UploadedDocument } from "@/lib/document-vault/types";
 import { runStepChecks, IR1_STEP_CHECKERS, type StepChecker } from "./step-checkers";
 import { detectRiskFlagsFromEligibilityQuest } from "./eligibility-quest-detector";
 import { computeCaseStrength } from "./doc-scoring";
-import { getActiveStepsForStage } from "@/app/(tools)/(visa)/visa-category/ir-category/[visa-journey]/components/v2/journeyHelpers";
+import { getActiveStepsForStage as defaultGetActiveStepsForStage } from "@/app/(tools)/(visa)/visa-category/ir-category/[visa-journey]/components/v2/journeyHelpers";
 import {
   runConsistencyIntelligence,
   runFullConsistencyAnalysis,
@@ -43,6 +43,18 @@ interface AggregateContext {
   state: WizardState;
   uploadedDocuments: UploadedDocument[];
   registry?: Record<string, StepChecker>;
+  /**
+   * visible_when resolver for the caller's dashboard version. IR-1/CR-1 (V2) and
+   * IR-5 (V3) have their OWN journeyHelpers, so the aggregator must not hardcode
+   * one — the dashboard injects its own. Defaults to the V2 helper only as a
+   * back-compat fallback for callers that predate this param.
+   */
+  getActiveStepsForStage?: (
+    data: any,
+    index: number,
+    metadata: any,
+    filingMethodFallback?: string | null
+  ) => any[];
 }
 
 export function aggregateChapter1Issues({
@@ -219,6 +231,7 @@ export function aggregateChapter3Issues({
   state,
   uploadedDocuments,
   registry = IR1_STEP_CHECKERS,
+  getActiveStepsForStage = defaultGetActiveStepsForStage,
 }: AggregateContext): AggregatedIssue[] {
   const issues: AggregatedIssue[] = [];
 

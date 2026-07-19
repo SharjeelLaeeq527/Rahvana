@@ -18,7 +18,8 @@ NODE_OPTIONS="--max-old-space-size=8192" npx tsc --noEmit  # Type check
 ## Key folders
 - `app/` — Next.js routes: `(auth)/`, `(main)/`, `(tools)/`
 - `components/` — Reusable UI (shadcn, layout, chat, tools)
-- `data/roadmap.ts` — Static IR-1 journey config (stages → steps)
+- `data/visa-category/*.json` — Live per-category journeys (IR-1/IR-5/…), source of truth for the V2/V3 dashboards
+- `data/roadmap.ts` — Legacy static IR-1 config (stages → steps); home/marketing pages only, not the live tool
 - `lib/` — Supabase client, entitlements, journey helpers, autoFill
 - `types/` — Shared TypeScript types
 - `backend/` — Python FastAPI, AI services, PDF processing
@@ -35,8 +36,9 @@ Free / basic / premium / executive tiers. Hard-lock rules live in `lib/entitleme
 **State sync is bidirectional**
 `useWizard` (at `app/(main)/dashboard/hooks/useWizard.ts`) syncs to Supabase. Profile data flows both ways via `syncCaseDataToProfile()` / `syncProfileToCaseData()`. If you change journey state shape, check both sync functions.
 
-**roadmap.ts is the source of truth**
-Step visibility, who (petitioner/beneficiary/both), filingType (online/paper/both), and stage order all come from `data/roadmap.ts`. Do not hardcode stage IDs or step IDs anywhere else.
+**The live journey source of truth is `data/visa-category/*.json` — NOT `data/roadmap.ts`**
+Step visibility (`visible_when`), who (petitioner/beneficiary/both), filingType (online/paper/both), and stage order for the real V2/V3 dashboards all come from the per-category JSON journeys in `data/visa-category/` (keyed by `chapter_key`/`step_key`), read via `getActiveStepsForStage`. Do not hardcode stage IDs or step IDs anywhere else.
+`data/roadmap.ts` is **legacy** — it uses a `stages`/`id` shape, has no `visible_when`, and is imported only by the home/marketing components (`home-page/Wizard.tsx`, `Dashboard.tsx`, `ExploreJourneys.tsx`). Do not treat it as the journey source of truth for the live tool.
 
 **Never edit Supabase RLS policies without a migration**
 All policy changes go through `supabase/migrations/`. Direct edits to the dashboard will drift.
