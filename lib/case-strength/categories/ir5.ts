@@ -17,6 +17,7 @@
 
 import {
   COMMON_STEP_CHECKERS,
+  COMMON_LOOK_AHEAD,
   sharedDs260Disclosures,
   sharedInterviewDisclosures,
   type StepCheck,
@@ -198,7 +199,7 @@ const step_1_4: StepChecker = ({ state }) => {
 
   // The IR-5 equivalent of a marriage certificate is the petitioner's birth
   // certificate naming the parent — this is what proves the qualifying
-  // relationship (8 CFR 204.2(d)).
+  // relationship (8 CFR 204.2(f) — Petition for a parent).
   checks.push({
     level: "info",
     title: "Prove the parent–child relationship",
@@ -348,4 +349,6 @@ export const IR5_PROFILE: CaseStrengthProfile = {
   strengthSignals: {
     relationship: parentChildRelationshipSignal,
   },
+  // Same deadline-driven early-warnings as IR-1 (identical financial + PCC steps).
+  lookAhead: COMMON_LOOK_AHEAD,
 };

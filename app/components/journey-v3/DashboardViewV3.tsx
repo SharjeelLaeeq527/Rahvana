@@ -5,7 +5,12 @@ import { ChevronDown, ExternalLink, Clock, Shield } from "lucide-react";
 import { RoadmapDataV3 } from "./types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getJourneyLockStatus } from "@/lib/journey-lock";
-import { getNextBestAction, getStageProgress, isStageUnlocked } from "./journeyHelpersV3";
+import {
+  getNextBestAction,
+  getStageProgress,
+  isStageUnlocked,
+  getActiveStepsForStage,
+} from "./journeyHelpersV3";
 import APTrackingTool from "./APTrackingTool";
 import WaitingStateCard from "./WaitingStateCard";
 // import { JourneyRiskCard } from "./components/JourneyRiskCard";
@@ -29,13 +34,21 @@ import {
   PHASE2_QUESTIONS,
   type Phase2Responses,
 } from "@/lib/case-strength";
-import type { CaseStrengthProfile } from "@/lib/case-strength/categories";
+import {
+  resolveCaseStrengthProfile,
+  type CaseStrengthProfile,
+} from "@/lib/case-strength/categories";
 import {
   aggregateChapter1Issues,
   aggregateChapter2Issues,
   aggregateChapter3Issues,
   type AggregatedIssue,
 } from "@/lib/case-strength/aggregate-issues";
+import {
+  gateAlertIssues,
+  buildGateContext,
+  isMeaningfullyStarted,
+} from "@/lib/case-strength/alert-gating";
 import type { StepChecker } from "@/lib/case-strength/step-checkers";
 import type { ConsistencyFinding } from "@/lib/case-strength/consistency-intelligence";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
@@ -360,7 +373,13 @@ export function DashboardViewV3({
     const chapters = (data as any).chapters || (data as any).stages || [];
     const ch1 = aggregateChapter1Issues({ chapters, state, uploadedDocuments, registry });
     const ch2 = aggregateChapter2Issues({ chapters, state, uploadedDocuments, registry });
-    const ch3 = aggregateChapter3Issues({ chapters, state, uploadedDocuments, registry });
+    const ch3 = aggregateChapter3Issues({
+      chapters,
+      state,
+      uploadedDocuments,
+      registry,
+      getActiveStepsForStage,
+    });
 
     const eligibilityAnswers =
       (state.answers?.["eligibility-suite"] as any) ??
@@ -418,8 +437,26 @@ export function DashboardViewV3({
       .filter((issue) => !existingKeys.has(`${issue.stepKey}:${issue.title}`));
 
     const all = [...ch1, ...ch2, ...ch3, ...consistencyIssues];
+
+    // Progressive reveal: hide alerts for steps the user hasn't reached yet, and
+    // (Phase 2) time-gate current/passed-step warnings. Keeps the dashboard from
+    // dumping every chapter's issues at once. See CASE_STRENGTH_ALERT_PLAN.md.
+    // buildGateContext derives the frontier/active-order (shared with V2); the
+    // look-ahead rules come from the resolved category profile.
+    const gated = gateAlertIssues(
+      all,
+      buildGateContext({
+        chapters,
+        state,
+        getActiveStepsForStage,
+        getNextBestAction,
+        lookAheadRules: resolveCaseStrengthProfile((data as any).journey_type).lookAhead,
+        stepTimestamps: state.stepTimestamps,
+      })
+    );
+
     const order = { critical: 0, warning: 1, info: 2 };
-    return all.sort((a, b) => {
+    return gated.sort((a, b) => {
       if (!!a.resolved !== !!b.resolved) return a.resolved ? 1 : -1;
       if (order[a.level] !== order[b.level]) return order[a.level] - order[b.level];
       return a.chapterIdx - b.chapterIdx;
@@ -433,6 +470,12 @@ export function DashboardViewV3({
   const warnIssueCount = alertCenterIssues.filter(
     (i) => i.level === "warning" && !i.resolved
   ).length;
+
+  // Empty-state gate: case-health appears only once the user has actually
+  // progressed (completed ≥1 step). Before that we must not show a fabricated
+  // score — the wizard pre-fills metadata from profile autofill, so softer
+  // signals would false-trigger. (NN/g empty states — no false precision.)
+  const notStarted = !isMeaningfullyStarted({ completedCount: state.completedSteps.size });
 
   // Overall combined case score (evidence + consistency)
   const overallCaseScore = useMemo(() => {
@@ -935,6 +978,7 @@ export function DashboardViewV3({
             healthLabel={caseHealthStatus?.label ?? "Analyzing"}
             healthStatus={caseHealthStatus?.status ?? "needs-attention"}
             loading={evidenceLoading}
+            notStarted={notStarted}
             onViewFullAnalysis={() => setIsCSADrawerOpen(true)}
             summaryText={compactSummary}
           />
@@ -987,6 +1031,7 @@ export function DashboardViewV3({
           <div className="hidden xl:flex flex-col gap-3">
             <AlertCenter
               issues={alertCenterIssues}
+              notStarted={notStarted}
               onOpenStep={(cIdx, sIdx) => {
                 if (onSelectStep) onSelectStep(cIdx, sIdx);
                 else {
@@ -1007,6 +1052,7 @@ export function DashboardViewV3({
               <div className="xl:hidden flex flex-col gap-4">
                 <AlertCenter
                   issues={alertCenterIssues}
+                  notStarted={notStarted}
                   onOpenStep={(cIdx, sIdx) => {
                     if (onSelectStep) onSelectStep(cIdx, sIdx);
                     else {
