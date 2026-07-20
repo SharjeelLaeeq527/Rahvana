@@ -65,7 +65,11 @@ import { TutorialVideo } from "@/app/components/shared/TutorialVideo";
 import Image from "next/image";
 import Link from "next/link";
 import { SubmissionTutorialOverlay } from "./components/SubmissionTutorialData";
-import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
+import {
+  mapDocumentNameToId,
+  fetchUserJourneysCached,
+  syncQuestionnaireAnswersToFlags,
+} from "@/lib/document-vault/journey-mapping";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
 import { MultipleDocumentUploadModal } from "@/app/components/document-vault/MultipleDocumentUploadModal";
@@ -240,6 +244,10 @@ export const StepViewV3: React.FC<StepViewProps> = ({
 
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
   const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
+
+  useEffect(() => {
+    fetchUserJourneysCached().catch(() => {});
+  }, []);
   // Add Evidence Note modal state
 
   const { user } = useAuth();
@@ -2976,12 +2984,15 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                     config={questionnaireConfig}
                     initialAnswers={derivedDocAnswers}
                     onComplete={(result: QuestionnaireResult) => {
-                      // Persist answers + completion flag via backend
+                      const flags = syncQuestionnaireAnswersToFlags(result.answers);
+                      // Persist answers + completion flag + scenarioFlags via backend
                       actions.updateMetadata({
                         docQuestionnaireCompleted: true,
                         docQuestionnaireAnswers: result.answers,
                         docQuestionnaireCompletedAt: result.completedAt,
+                        scenarioFlags: flags,
                       });
+                      useDocumentVaultStore.getState().updateScenarioFlags(flags);
                       setShowDocQuestionnaire(false);
                     }}
                   />
@@ -5120,6 +5131,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
           categoryId={multipleUploadModalState.categoryId}
           documentName={multipleUploadModalState.documentName}
           options={multipleUploadModalState.options}
+          activeJourneyId={state.backendId || data.journey_type || null}
           onUploadComplete={async () => {
             if (activeUploadId && actions.updateDocumentStatus) {
               await actions.updateDocumentStatus(activeUploadId, "reviewed");
@@ -5137,6 +5149,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
             open={uploadModalOpen}
             onClose={closeUploadModal}
             documentDef={ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId)!}
+            activeJourneyId={state.backendId || data.journey_type || null}
             onUploadComplete={async () => {
               await reloadDocuments();
 

@@ -60,9 +60,11 @@ export interface ScenarioFlags {
   // Marriage/Relationship
   prior_marriage_petitioner?: boolean;
   prior_marriage_beneficiary?: boolean;
+  prior_spouse_death?: boolean;
   name_change_any_party?: boolean;
 
   // Children
+  has_children?: boolean;
   child_adopted?: boolean;
   child_stepchild?: boolean;
   child_legitimation_or_custody_complexity?: boolean;

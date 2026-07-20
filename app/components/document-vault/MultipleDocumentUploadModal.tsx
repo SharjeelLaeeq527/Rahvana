@@ -29,7 +29,15 @@ import { DocumentPreviewModal } from "./DocumentPreviewModal";
 import { UploadedDocument } from "@/lib/document-vault/types";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
-import { mapDocumentNameToId, getFriendlyJourneyName, isDocumentApplicableToJourney } from "@/lib/document-vault/journey-mapping";
+import {
+  mapDocumentNameToId,
+  getFriendlyJourneyName,
+  isDocumentApplicableToJourney,
+  getCachedUserJourneys,
+  setCachedUserJourneys,
+  fetchUserJourneysCached,
+  isSameJourneyType,
+} from "@/lib/document-vault/journey-mapping";
 import { msg, E, errorCode } from "@/lib/errors";
 import { getOcrConfig, type OcrTarget } from "@/lib/document-ocr/registry";
 import { resizeImageIfNeeded } from "@/lib/document-ocr/clientImage";
@@ -62,6 +70,8 @@ interface MultipleDocumentUploadModalProps {
   documentName: string; // e.g. Proof of U.S. Citizenship
   options: string[]; // e.g. ["U.S. passport", "U.S. birth certificate", ...]
   onUploadComplete: () => void;
+  userJourneys?: any[];
+  activeJourneyId?: string | null;
 }
 
 const OTHER_OPTION = "Other";
@@ -73,6 +83,8 @@ export function MultipleDocumentUploadModal({
   documentName,
   options,
   onUploadComplete,
+  userJourneys: userJourneysProp = [],
+  activeJourneyId: activeJourneyIdProp = null,
 }: MultipleDocumentUploadModalProps) {
   const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -94,12 +106,21 @@ export function MultipleDocumentUploadModal({
   const { showToast } = useToast();
   const { profile, refreshProfile, updateProfile } = useUserProfile();
 
-  const [userJourneys, setUserJourneys] = useState<any[]>([]);
-  const [activeJourneyId, setActiveJourneyId] = useState<string | null>(null);
+  const [userJourneys, setUserJourneys] = useState<any[]>(() => {
+    if (userJourneysProp && userJourneysProp.length > 0) return userJourneysProp;
+    return getCachedUserJourneys() || [];
+  });
+  const [activeJourneyId, setActiveJourneyId] = useState<string | null>(
+    activeJourneyIdProp || currentJourneyId || null
+  );
   const [sharedJourneyIds, setSharedJourneyIds] = useState<string[]>([]);
 
   const otherJourneys = useMemo(() => {
-    return userJourneys.filter((j) => j.id !== activeJourneyId);
+    return userJourneys.filter((j) => {
+      if (j.id === activeJourneyId) return false;
+      if (isSameJourneyType(j.journey_type, activeJourneyId)) return false;
+      return true;
+    });
   }, [userJourneys, activeJourneyId]);
 
   const [manuallyUncheckedIds, setManuallyUncheckedIds] = useState<string[]>([]);
@@ -120,25 +141,42 @@ export function MultipleDocumentUploadModal({
 
   useEffect(() => {
     if (!open) return;
-    
-    // Set active journey ID from store if available
-    if (currentJourneyId) {
-      setActiveJourneyId(currentJourneyId);
+
+    const resolvedActiveId = activeJourneyIdProp || currentJourneyId;
+    if (resolvedActiveId) {
+      setActiveJourneyId(resolvedActiveId);
     }
-    
-    async function fetchJourneys() {
-      try {
-        const res = await fetch("/api/journeys");
-        if (!res.ok) throw new Error("Failed to fetch journeys");
-        const data = await res.json();
-        const journeys: any[] = (data.data ?? []).map((item: any) => item.journey ?? item);
-        setUserJourneys(journeys);
-        
-        // If not in store, fallback to resolving from page context or storage
-        if (!currentJourneyId && journeys.length > 0) {
-          if (journeys.length === 1) {
-            setActiveJourneyId(journeys[0].id);
-          } else {
+
+    if (userJourneysProp && userJourneysProp.length > 0) {
+      setUserJourneys(userJourneysProp);
+      setCachedUserJourneys(userJourneysProp);
+      if (!resolvedActiveId && userJourneysProp.length > 0) {
+        setActiveJourneyId(userJourneysProp[0].id);
+      }
+      return;
+    }
+
+    // Check in-memory synchronous cache first
+    const cached = getCachedUserJourneys();
+    if (cached && cached.length > 0) {
+      setUserJourneys(cached);
+      if (!resolvedActiveId) {
+        const saved = typeof window !== "undefined" ? sessionStorage.getItem("doc_vault_active_journey") : null;
+        if (saved && cached.some((j) => j.id === saved)) {
+          setActiveJourneyId(saved);
+        } else {
+          const active = cached.find((j) => j.status === "in_progress") || cached[0];
+          setActiveJourneyId(active.id);
+        }
+      }
+    }
+
+    // Fetch / revalidate cached journeys
+    fetchUserJourneysCached()
+      .then((journeys) => {
+        if (journeys && journeys.length > 0) {
+          setUserJourneys(journeys);
+          if (!resolvedActiveId) {
             const saved = typeof window !== "undefined" ? sessionStorage.getItem("doc_vault_active_journey") : null;
             if (saved && journeys.some((j) => j.id === saved)) {
               setActiveJourneyId(saved);
@@ -148,13 +186,11 @@ export function MultipleDocumentUploadModal({
             }
           }
         }
-      } catch (err) {
+      })
+      .catch((err) => {
         console.error("MultipleDocumentUploadModal failed to fetch journeys:", err);
-      }
-    }
-
-    fetchJourneys();
-  }, [open, currentJourneyId]);
+      });
+  }, [open, userJourneysProp, activeJourneyIdProp, currentJourneyId]);
 
   const visibleOtherJourneysKey = useMemo(
     () => visibleOtherJourneys.map((j) => j.id).join(","),

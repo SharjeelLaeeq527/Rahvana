@@ -16,7 +16,14 @@ import { resizeImageIfNeeded } from "@/lib/document-ocr/clientImage";
 import { crossCheckFields } from "@/lib/document-ocr/crossCheck";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { Checkbox } from "@/components/ui/checkbox";
-import { getFriendlyJourneyName, isDocumentApplicableToJourney } from "@/lib/document-vault/journey-mapping";
+import {
+  getFriendlyJourneyName,
+  isDocumentApplicableToJourney,
+  getCachedUserJourneys,
+  setCachedUserJourneys,
+  fetchUserJourneysCached,
+  isSameJourneyType,
+} from "@/lib/document-vault/journey-mapping";
 
 interface DocumentUploadModalProps {
   open: boolean;
@@ -55,47 +62,74 @@ export function DocumentUploadModal({
   const { config, replaceDocumentId, deleteDocument, currentJourneyId } = useDocumentVaultStore();
   const { t } = useLanguage();
 
-  const [fetchedJourneys, setFetchedJourneys] = useState<any[]>([]);
-  const [fetchedActiveJourneyId, setFetchedActiveJourneyId] = useState<string | null>(null);
+  const [internalUserJourneys, setInternalUserJourneys] = useState<any[]>(() => {
+    if (userJourneys && userJourneys.length > 0) return userJourneys;
+    return getCachedUserJourneys() || [];
+  });
+  const [internalActiveJourneyId, setInternalActiveJourneyId] = useState<string | null>(
+    activeJourneyId || currentJourneyId || null
+  );
 
-  const effectiveUserJourneys = userJourneys.length > 0 ? userJourneys : fetchedJourneys;
-  const effectiveActiveJourneyId = activeJourneyId || fetchedActiveJourneyId || currentJourneyId;
+  const effectiveUserJourneys = userJourneys.length > 0 ? userJourneys : internalUserJourneys;
+  const effectiveActiveJourneyId = activeJourneyId || internalActiveJourneyId || currentJourneyId;
 
   useEffect(() => {
     if (!open) return;
 
-    if (currentJourneyId && !fetchedActiveJourneyId) {
-      setFetchedActiveJourneyId(currentJourneyId);
+    const resolvedActiveId = activeJourneyId || currentJourneyId;
+    if (resolvedActiveId) {
+      setInternalActiveJourneyId(resolvedActiveId);
     }
 
-    async function fetchJourneys() {
-      try {
-        const res = await fetch("/api/journeys");
-        if (!res.ok) return;
-        const data = await res.json();
-        const journeys: any[] = (data.data ?? []).map((item: any) => item.journey ?? item);
-        setFetchedJourneys(journeys);
+    if (userJourneys && userJourneys.length > 0) {
+      setInternalUserJourneys(userJourneys);
+      setCachedUserJourneys(userJourneys);
+      if (!resolvedActiveId && userJourneys.length > 0) {
+        setInternalActiveJourneyId(userJourneys[0].id);
+      }
+      return;
+    }
 
-        if (!activeJourneyId && !currentJourneyId && journeys.length > 0) {
-          const saved = typeof window !== "undefined" ? sessionStorage.getItem("doc_vault_active_journey") : null;
-          if (saved && journeys.some((j) => j.id === saved)) {
-            setFetchedActiveJourneyId(saved);
-          } else {
-            const active = journeys.find((j) => j.status === "in_progress") || journeys[0];
-            setFetchedActiveJourneyId(active.id);
-          }
+    // Check synchronous in-memory cache first
+    const cached = getCachedUserJourneys();
+    if (cached && cached.length > 0) {
+      setInternalUserJourneys(cached);
+      if (!resolvedActiveId) {
+        const saved = typeof window !== "undefined" ? sessionStorage.getItem("doc_vault_active_journey") : null;
+        if (saved && cached.some((j) => j.id === saved)) {
+          setInternalActiveJourneyId(saved);
+        } else {
+          const active = cached.find((j) => j.status === "in_progress") || cached[0];
+          setInternalActiveJourneyId(active.id);
         }
-      } catch (err) {
-        console.error("DocumentUploadModal failed to fetch journeys:", err);
       }
     }
 
-    fetchJourneys();
-  }, [open, userJourneys.length, activeJourneyId, currentJourneyId, fetchedActiveJourneyId]);
+    // Background revalidate / fetch
+    fetchUserJourneysCached()
+      .then((journeys) => {
+        if (journeys && journeys.length > 0) {
+          setInternalUserJourneys(journeys);
+          if (!resolvedActiveId) {
+            const saved = typeof window !== "undefined" ? sessionStorage.getItem("doc_vault_active_journey") : null;
+            if (saved && journeys.some((j) => j.id === saved)) {
+              setInternalActiveJourneyId(saved);
+            } else {
+              const active = journeys.find((j) => j.status === "in_progress") || journeys[0];
+              setInternalActiveJourneyId(active.id);
+            }
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("DocumentUploadModal failed to fetch journeys:", err);
+      });
+  }, [open, userJourneys, activeJourneyId, currentJourneyId]);
 
   const otherJourneys = useMemo(() => {
     return effectiveUserJourneys.filter((j) => {
       if (j.id === effectiveActiveJourneyId) return false;
+      if (isSameJourneyType(j.journey_type, effectiveActiveJourneyId)) return false;
       return isDocumentApplicableToJourney(documentDef.id, documentDef.name, j.journey_type);
     });
   }, [effectiveUserJourneys, effectiveActiveJourneyId, documentDef]);

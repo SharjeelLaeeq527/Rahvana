@@ -64,7 +64,11 @@ import Image from "next/image";
 import { PageGate } from "@/app/components/entitlements/PageGate";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import type { Journey } from "@/lib/journey/types";
-import { getFriendlyJourneyName } from "@/lib/document-vault/journey-mapping";
+import {
+  getFriendlyJourneyName,
+  setCachedUserJourneys,
+  syncQuestionnaireAnswersToFlags,
+} from "@/lib/document-vault/journey-mapping";
 
 // ── Journey → Visa Category mapping ──────────────────────────────────────────
 const JOURNEY_TYPE_TO_VISA: Record<string, VisaCategory> = {
@@ -285,6 +289,7 @@ export default function DocumentVaultPage() {
         // data.data is an array of { journey, ... } objects from journeyService.getAllJourneysWithProgress()
         const journeys: Journey[] = (data.data ?? []).map((item: any) => item.journey ?? item);
         setUserJourneys(journeys);
+        setCachedUserJourneys(journeys);
 
         if (journeys.length === 0) {
           // ── Case 1: No journey at all ──────────────────────────────────
@@ -333,43 +338,10 @@ export default function DocumentVaultPage() {
     const questionnaireAnswers = (metadata.docQuestionnaireAnswers as Record<string, string>) || {};
 
     // Map questionnaire answers to vault scenario flags
-    const mappedFlags: ScenarioFlags = { ...config?.scenarioFlags };
-    if (hasQuestionnaire) {
-      const flagGroups = VISA_FLAG_REGISTRY[visaCategory] || [];
-      const registeredKeys = new Set(flagGroups.flatMap((group) => group.fields.map((f) => f.key)));
-
-      // Register general background/financial keys that are universally mapped
-      registeredKeys.add("military_service");
-      registeredKeys.add("criminal_history");
-      registeredKeys.add("joint_sponsor_used");
-
-      Object.entries(questionnaireAnswers).forEach(([key, value]) => {
-        // If the key is registered for this category, synchronize it automatically
-        if (registeredKeys.has(key)) {
-          if (value === "yes") {
-            mappedFlags[key] = true;
-          } else if (value === "no") {
-            mappedFlags[key] = false;
-          } else {
-            mappedFlags[key] = value;
-          }
-        }
-      });
-
-      // Handle minor key name variations between questionnaire and scenario flags
-      if (
-        questionnaireAnswers.name_change !== undefined &&
-        registeredKeys.has("name_change_any_party")
-      ) {
-        mappedFlags.name_change_any_party = questionnaireAnswers.name_change === "yes";
-      }
-      if (
-        questionnaireAnswers.joint_sponsor !== undefined &&
-        registeredKeys.has("joint_sponsor_used")
-      ) {
-        mappedFlags.joint_sponsor_used = questionnaireAnswers.joint_sponsor === "yes";
-      }
-    }
+    const mappedFlags: ScenarioFlags = {
+      ...config?.scenarioFlags,
+      ...(hasQuestionnaire ? syncQuestionnaireAnswersToFlags(questionnaireAnswers) : {}),
+    };
 
     if (!config) {
       // No vault config saved yet for this user — create a minimal one from the
@@ -860,7 +832,7 @@ export default function DocumentVaultPage() {
       <div className="bg-slate-50/50 dark:bg-slate-950/50 mt-[55px] min-h-[calc(100vh-55px)] flex flex-col">
         {isReloadingDocs ? (
           <div className="flex-1 flex flex-col items-center justify-center py-20 px-4 min-h-[400px]">
-            <div className="flex flex-col items-center justify-center py-20 px-8 dark:bg-slate-900 rounded-3xl border border-slate-100 dark:border-slate-800/80 shadow-xs animate-in fade-in duration-300">
+            <div className="flex flex-col items-center justify-center py-20 px-8 dark:bg-slate-900 animate-in fade-in duration-300">
               <Loader size="md" className="text-primary mb-4" />
               <p className="text-sm font-bold text-slate-800 dark:text-slate-200">
                 Loading Documents...
@@ -1511,7 +1483,7 @@ export default function DocumentVaultPage() {
                             </div>
                           )}
                         </div>
-                       </PageGate>
+                      </PageGate>
                     </TabsContent>
                   </Tabs>
                 </div>
@@ -1531,6 +1503,8 @@ export default function DocumentVaultPage() {
               categoryId={selectedDoc.id}
               documentName={selectedDoc.name}
               options={selectedDoc.suggestions || []}
+              userJourneys={userJourneys}
+              activeJourneyId={activeJourneyId}
               onUploadComplete={async () => {
                 // Reload documents in the store instantly — no full re-init needed
                 await reloadDocuments(activeJourneyId || undefined);

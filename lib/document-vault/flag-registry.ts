@@ -36,6 +36,12 @@ export const VISA_FLAG_REGISTRY: Record<string, FlagGroup[]> = {
           type: "checkbox",
           label: "Prior Marriage (Beneficiary)",
           description: "Beneficiary was previously married"
+        },
+        {
+          key: "prior_spouse_death",
+          type: "checkbox",
+          label: "Former Spouse Deceased",
+          description: "Prior marriage ended due to death of spouse"
         }
       ]
     },
@@ -47,78 +53,84 @@ export const VISA_FLAG_REGISTRY: Record<string, FlagGroup[]> = {
           type: "checkbox",
           label: "Name Change",
           description: "Any party changed their name"
-        }
-      ]
-    }
-  ],
-  "CR-1": [
-    {
-      groupName: "Marriage History",
-      fields: [
-        {
-          key: "prior_marriage_petitioner",
-          type: "checkbox",
-          label: "Prior Marriage (Petitioner)",
-          description: "Petitioner was previously married"
         },
         {
-          key: "prior_marriage_beneficiary",
+          key: "has_children",
           type: "checkbox",
-          label: "Prior Marriage (Beneficiary)",
-          description: "Beneficiary was previously married"
-        }
-      ]
-    },
-    {
-      groupName: "Additional Info",
-      fields: [
-        {
-          key: "name_change_any_party",
-          type: "checkbox",
-          label: "Name Change",
-          description: "Any party changed their name"
+          label: "Children Under 21",
+          description: "Has unmarried children under 21"
         }
       ]
     }
   ],
-  "IR-2": [
-    {
-      groupName: "Child Information",
-      fields: [
-        {
-          key: "child_adopted",
-          type: "checkbox",
-          label: "Adopted Child",
-          description: "Child is adopted"
-        },
-        {
-          key: "child_stepchild",
-          type: "checkbox",
-          label: "Stepchild",
-          description: "Child is a stepchild"
-        }
-      ]
-    }
-  ],
-  "CR-2": [
-    {
-      groupName: "Child Information",
-      fields: [
-        {
-          key: "child_adopted",
-          type: "checkbox",
-          label: "Adopted Child",
-          description: "Child is adopted"
-        },
-        {
-          key: "child_stepchild",
-          type: "checkbox",
-          label: "Stepchild",
-          description: "Child is a stepchild"
-        }
-      ]
-    }
-  ],
+  // "CR-1": [
+  //   {
+  //     groupName: "Marriage History",
+  //     fields: [
+  //       {
+  //         key: "prior_marriage_petitioner",
+  //         type: "checkbox",
+  //         label: "Prior Marriage (Petitioner)",
+  //         description: "Petitioner was previously married"
+  //       },
+  //       {
+  //         key: "prior_marriage_beneficiary",
+  //         type: "checkbox",
+  //         label: "Prior Marriage (Beneficiary)",
+  //         description: "Beneficiary was previously married"
+  //       }
+  //     ]
+  //   },
+  //   {
+  //     groupName: "Additional Info",
+  //     fields: [
+  //       {
+  //         key: "name_change_any_party",
+  //         type: "checkbox",
+  //         label: "Name Change",
+  //         description: "Any party changed their name"
+  //       }
+  //     ]
+  //   }
+  // ],
+  // "IR-2": [
+  //   {
+  //     groupName: "Child Information",
+  //     fields: [
+  //       {
+  //         key: "child_adopted",
+  //         type: "checkbox",
+  //         label: "Adopted Child",
+  //         description: "Child is adopted"
+  //       },
+  //       {
+  //         key: "child_stepchild",
+  //         type: "checkbox",
+  //         label: "Stepchild",
+  //         description: "Child is a stepchild"
+  //       }
+  //     ]
+  //   }
+  // ],
+  // "CR-2": [
+  //   {
+  //     groupName: "Child Information",
+  //     fields: [
+  //       {
+  //         key: "child_adopted",
+  //         type: "checkbox",
+  //         label: "Adopted Child",
+  //         description: "Child is adopted"
+  //       },
+  //       {
+  //         key: "child_stepchild",
+  //         type: "checkbox",
+  //         label: "Stepchild",
+  //         description: "Child is a stepchild"
+  //       }
+  //     ]
+  //   }
+  // ],
   "IR-5": [
     {
       groupName: "Petitioner-Parent Relationship Type",
