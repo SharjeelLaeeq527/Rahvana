@@ -154,6 +154,11 @@ export function MultipleDocumentUploadModal({
     fetchJourneys();
   }, [open, currentJourneyId]);
 
+  const visibleOtherJourneysKey = useMemo(
+    () => visibleOtherJourneys.map((j) => j.id).join(","),
+    [visibleOtherJourneys]
+  );
+
   useEffect(() => {
     if (!open) {
       setManuallyUncheckedIds([]);
@@ -167,7 +172,8 @@ export function MultipleDocumentUploadModal({
       const newToCheck = visibleIds.filter((id) => !currentFiltered.includes(id) && !manuallyUncheckedIds.includes(id));
       return [...currentFiltered, ...newToCheck];
     });
-  }, [open, visibleOtherJourneys, manuallyUncheckedIds]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, visibleOtherJourneysKey, manuallyUncheckedIds]);
 
   // ── Inline OCR auto-fill (passport) ──
   // When one of the uploaded items is a passport (e.g. the petitioner picks

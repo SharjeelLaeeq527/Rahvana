@@ -419,6 +419,9 @@ export default function DocumentVaultPage() {
     }
   }, [activeJourneyId, initialized, reloadDocuments]);
 
+  const isEligibilityDone = wizard.state?.completedSteps?.has("step_1_1");
+  const isPersonalizationDone = wizard.state?.metadata?.docQuestionnaireCompleted === true;
+
   useEffect(() => {
     if (
       initialized &&
@@ -429,8 +432,6 @@ export default function DocumentVaultPage() {
     ) {
       // Safety check: ensure wizard has loaded the active journey
       if (wizard.state.backendId !== activeJourneyId) return;
-      const isEligibilityDone = wizard.state.completedSteps.has("step_1_1");
-      const isPersonalizationDone = wizard.state.metadata?.docQuestionnaireCompleted === true;
 
       if (!isEligibilityDone || !isPersonalizationDone) {
         setWelcomeModalOpen(true);
@@ -440,8 +441,8 @@ export default function DocumentVaultPage() {
   }, [
     initialized,
     wizard.isLoaded,
-    wizard.state.completedSteps,
-    wizard.state.metadata,
+    isEligibilityDone,
+    isPersonalizationDone,
     wizard.state?.backendId,
     activeJourneyId,
     hasShownWelcome,

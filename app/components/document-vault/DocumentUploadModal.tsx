@@ -64,11 +64,17 @@ export function DocumentUploadModal({
 
   const [sharedJourneyIds, setSharedJourneyIds] = useState<string[]>([]);
 
+  const otherJourneysKey = useMemo(
+    () => otherJourneys.map((j) => j.id).join(","),
+    [otherJourneys]
+  );
+
   useEffect(() => {
     if (open) {
       setSharedJourneyIds(otherJourneys.map((j) => j.id));
     }
-  }, [open, otherJourneys]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, otherJourneysKey]);
   const { refreshProfile, profile } = useUserProfile();
 
   // ── Inline OCR auto-fill (passport, etc.) ──
