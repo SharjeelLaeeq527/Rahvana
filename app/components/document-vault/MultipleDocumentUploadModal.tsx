@@ -107,14 +107,16 @@ export function MultipleDocumentUploadModal({
   const visibleOtherJourneys = useMemo(() => {
     return otherJourneys.filter((j) => {
       return pendingUploads.some((p) => {
-        if (!p.type) return false;
+        if (!p.type) {
+          return isDocumentApplicableToJourney(categoryId, documentName, j.journey_type);
+        }
         const targetId = p.type === OTHER_OPTION && p.customName
           ? "dynamic-OTHER"
           : mapDocumentNameToId(p.type);
         return isDocumentApplicableToJourney(targetId, p.type, j.journey_type);
-      });
+      }) || isDocumentApplicableToJourney(categoryId, documentName, j.journey_type);
     });
-  }, [otherJourneys, pendingUploads]);
+  }, [otherJourneys, pendingUploads, categoryId, documentName]);
 
   useEffect(() => {
     if (!open) return;
