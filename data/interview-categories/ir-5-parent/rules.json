@@ -1,7 +1,7 @@
 {
   "categorySlug": "ir-5-parent",
-  "version": "1.0.0",
-  "lastUpdated": "2026-07-16",
+  "version": "1.1.0",
+  "lastUpdated": "2026-07-20",
   "description": "IR-5 parent interview preparation rules using the current IR-5 questionnaire keys and question-bank categories.",
   "designPrinciples": {
     "philosophy": "Select parent-visa questions by legal relationship, family/civil-record complexity, sponsorship structure, settlement plan, and background risk.",
@@ -12,7 +12,7 @@
   "selectionStrategy": {
     "approach": "Layered category filtering with risk-based priority boosts.",
     "baselineQuestionCount": 51,
-    "maxQuestionsPerSession": 65,
+    "maxQuestionsPerSession": 66,
     "priorityHierarchy": ["critical", "high", "medium", "low"]
   },
   "questionSelectionRules": [

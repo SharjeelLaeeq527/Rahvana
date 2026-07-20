@@ -1,7 +1,7 @@
 {
   "categorySlug": "ir-5-parent",
-  "version": "1.0.0",
-  "lastUpdated": "2026-07-16",
+  "version": "1.1.0",
+  "lastUpdated": "2026-07-20",
   "sections": [
     {
       "id": "parent_relationship_and_family",
@@ -123,7 +123,8 @@
             "With the Petitioner",
             "With Another Family Member",
             "In a Separate Residence",
-            "Not Yet Decided"
+            "Not Yet Decided",
+            "Family Friend / Another Person"
           ]
         },
         {
@@ -136,7 +137,8 @@
             "Employed",
             "Self-Employed or Business Owner",
             "Retired",
-            "Not Currently Employed"
+            "Not Currently Employed",
+            "Unable to work"
           ]
         }
       ]
