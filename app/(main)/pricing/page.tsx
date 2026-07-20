@@ -382,7 +382,7 @@ function CompareModal({
             </div>
 
             {/* Comparison table groups */}
-            <div className="flex-1">
+            <div className="flex-1 pb-2">
               {COMPARISON_GROUPS.map((group, gi) => {
                 const rows = differencesOnly
                   ? group.rows.filter((r) => new Set(r.slice(1)).size > 1)
@@ -416,34 +416,36 @@ function CompareModal({
                 );
               })}
             </div>
+          </div>
+        </div>
 
-            {/* CTA footer inside horizontal scroll container */}
-            <div className="px-4 sm:px-6 py-4 border-t border-border shrink-0 bg-gradient-to-t from-muted/15 to-transparent">
-              <p className="text-[10px] sm:text-[11px] font-bold tracking-[0.1em] uppercase text-muted-foreground text-center mb-3">
-                Select a plan to get started
-              </p>
-              <div className="grid grid-cols-[minmax(140px,180px)_repeat(3,minmax(0,1fr))] gap-2 sm:gap-3 items-center">
-                <div className="hidden sm:block text-[12px] font-medium text-muted-foreground">
-                  Choose your plan:
-                </div>
-                <div className="sm:hidden" />
-                {paidPlans.map((plan) => {
-                  const tc = TIER[plan.id as TierKey];
-                  return (
-                    <button
-                      key={plan.id}
-                      className={`w-full py-2.5 sm:py-[11px] px-2 sm:px-4 rounded-full text-[12px] sm:text-[13.5px] font-bold tracking-tight transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-px whitespace-nowrap text-center ${tc.btn}`}
-                      onClick={() => {
-                        onSelectPlan(plan.id);
-                        onClose();
-                      }}
-                    >
-                      {plan.cta} →
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+        {/* Fixed CTA Footer with centered text, balanced padding, and aligned icons */}
+        <div className="px-4 sm:px-8 py-4 sm:py-5 border-t border-border shrink-0 bg-card/95 backdrop-blur-md rounded-b-[20px] sm:rounded-b-[28px]">
+          <p className="text-[10.5px] sm:text-[11.5px] font-extrabold tracking-[0.12em] uppercase text-muted-foreground text-center mb-3 sm:mb-4">
+            Select a plan to get started
+          </p>
+          <div className="grid grid-cols-3 gap-2.5 sm:gap-4 max-w-[720px] mx-auto">
+            {paidPlans.map((plan) => {
+              const tc = TIER[plan.id as TierKey];
+              return (
+                <button
+                  key={plan.id}
+                  className={`group inline-flex w-full items-center justify-center gap-1 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 rounded-full text-[11.5px] min-[380px]:text-[12.5px] sm:text-[14px] font-bold transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 text-center leading-none ${tc.btn}`}
+                  onClick={() => {
+                    onSelectPlan(plan.id);
+                    onClose();
+                  }}
+                >
+                  <span>
+                    <span className="hidden sm:inline">Choose </span>
+                    {plan.name}
+                  </span>
+                  <span className="text-[13px] sm:text-[15px] leading-none shrink-0 transition-transform duration-150 group-hover:translate-x-0.5">
+                    →
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
