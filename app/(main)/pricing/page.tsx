@@ -300,88 +300,89 @@ function CompareModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[1000] overflow-y-auto animate-in fade-in duration-150"
+      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1000] p-2 sm:p-6 md:p-10 flex items-center justify-center animate-in fade-in duration-150"
       onClick={onClose}
     >
-      <div className="flex min-h-full items-center justify-center p-4 sm:p-6 md:p-10">
-        <div
-          className="w-full max-w-[960px] max-h-[calc(100vh-40px)] md:max-h-[calc(100vh-80px)] bg-card border border-border rounded-[28px] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
-          onClick={(e) => e.stopPropagation()}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="cmp-title"
-        >
-          {/* Header */}
-          <div className="px-6 py-5 border-b border-border flex justify-between items-start gap-4 shrink-0 bg-gradient-to-b from-muted/30 to-transparent">
-            <div>
-              <h2
-                id="cmp-title"
-                className="text-[20px] font-bold m-0 leading-tight text-foreground"
-              >
-                Compare Rahvana plans
-              </h2>
-              <p className="text-muted-foreground text-[13px] mt-1 m-0">
-                See exactly what&apos;s included in Basic, Premium, and Executive.
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-[7px] rounded-full border border-border bg-card hover:bg-muted/60 transition-colors cursor-pointer shrink-0"
-              aria-label="Close"
+      <div
+        className="w-full max-w-[960px] h-[92vh] sm:h-auto sm:max-h-[calc(100vh-48px)] md:max-h-[calc(100vh-80px)] bg-card border border-border rounded-[20px] sm:rounded-[28px] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cmp-title"
+      >
+        {/* Header */}
+        <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-border flex justify-between items-start sm:items-center gap-3 shrink-0 bg-gradient-to-b from-muted/30 to-transparent">
+          <div>
+            <h2
+              id="cmp-title"
+              className="text-[17px] sm:text-[20px] font-bold m-0 leading-tight text-foreground"
             >
-              <IconX className="w-[15px] h-[15px]" />
-            </button>
+              Compare Rahvana plans
+            </h2>
+            <p className="text-muted-foreground text-[12px] sm:text-[13px] mt-0.5 m-0">
+              See exactly what&apos;s included in Basic, Premium, and Executive.
+            </p>
           </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 sm:p-[7px] rounded-full border border-border bg-card hover:bg-muted/60 transition-colors cursor-pointer shrink-0 mt-0.5 sm:mt-0"
+            aria-label="Close"
+          >
+            <IconX className="w-4 h-4 sm:w-[15px] sm:h-[15px]" />
+          </button>
+        </div>
 
-          {/* Plan headers + toggle */}
-          <div className="px-6 py-4 border-b border-border bg-card/50 shrink-0">
-            <div className="grid grid-cols-[minmax(0,180px)_repeat(3,minmax(0,1fr))] gap-3 items-center">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={differencesOnly}
-                  onClick={() => setDifferencesOnly(!differencesOnly)}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${differencesOnly ? "bg-primary" : "bg-muted"}`}
-                >
-                  <span className="sr-only">Differences only</span>
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ${differencesOnly ? "translate-x-4" : "translate-x-0"}`}
-                  />
-                </button>
-                <span className="text-[12px] font-medium text-muted-foreground leading-tight">
-                  Differences
-                  <br />
-                  only
-                </span>
-              </div>
-              {paidPlans.map((plan) => {
-                const tc = TIER[plan.id as TierKey];
-                return (
-                  <div
-                    key={plan.id}
-                    className={`rounded-[16px] px-3 py-2.5 text-center border ${tc.border} ${tc.cardBg} ${tc.glow} shadow-sm`}
+        {/* Scrollable area — unified container for headers, table rows, and CTAs */}
+        <div className="overflow-auto flex-1 scrollbar-premium bg-card">
+          <div className="min-w-[580px] w-full flex flex-col min-h-full">
+            {/* Sticky plan headers bar */}
+            <div className="sticky top-0 z-20 bg-card/95 backdrop-blur-md px-4 sm:px-6 py-3 border-b border-border shadow-xs shrink-0">
+              <div className="grid grid-cols-[minmax(140px,180px)_repeat(3,minmax(0,1fr))] gap-2 sm:gap-3 items-center">
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={differencesOnly}
+                    onClick={() => setDifferencesOnly(!differencesOnly)}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${differencesOnly ? "bg-primary" : "bg-muted"}`}
                   >
+                    <span className="sr-only">Differences only</span>
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ${differencesOnly ? "translate-x-4" : "translate-x-0"}`}
+                    />
+                  </button>
+                  <span className="text-[11px] sm:text-[12px] font-medium text-muted-foreground leading-tight select-none">
+                    Differences
+                    <br />
+                    only
+                  </span>
+                </div>
+                {paidPlans.map((plan) => {
+                  const tc = TIER[plan.id as TierKey];
+                  return (
                     <div
-                      className={`text-[10px] font-extrabold tracking-widest uppercase mb-0.5 ${tc.textAccent}`}
+                      key={plan.id}
+                      className={`rounded-[14px] sm:rounded-[16px] px-2.5 sm:px-3 py-2 sm:py-2.5 text-center border ${tc.border} ${tc.cardBg} ${tc.glow} shadow-sm`}
                     >
-                      {plan.name}
+                      <div
+                        className={`text-[9.5px] sm:text-[10px] font-extrabold tracking-wider sm:tracking-widest uppercase mb-0.5 ${tc.textAccent}`}
+                      >
+                        {plan.name}
+                      </div>
+                      <div className="text-[13.5px] sm:text-[15px] font-bold leading-tight">
+                        ${planDisplayPrice(plan)}
+                        <span className="text-[10px] sm:text-[11px] font-normal text-muted-foreground ml-0.5">
+                          /mo
+                        </span>
+                      </div>
                     </div>
-                    <div className="text-[15px] font-bold leading-tight">
-                      ${planDisplayPrice(plan)}
-                      <span className="text-[11px] font-normal text-muted-foreground ml-0.5">
-                        /mo
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
-          </div>
 
-          {/* Table — always expanded, alternating rows */}
-          <div className="overflow-y-auto overflow-x-auto flex-1 scrollbar-premium bg-card">
-            <div className="min-w-[540px]">
+            {/* Comparison table groups */}
+            <div className="flex-1">
               {COMPARISON_GROUPS.map((group, gi) => {
                 const rows = differencesOnly
                   ? group.rows.filter((r) => new Set(r.slice(1)).size > 1)
@@ -389,21 +390,23 @@ function CompareModal({
                 if (!rows.length) return null;
                 return (
                   <div key={gi} className="border-b border-border/50 last:border-0">
-                    <div className="px-6 py-2.5 bg-muted/30">
-                      <span className="text-[10.5px] font-extrabold tracking-[0.12em] uppercase text-primary">
+                    <div className="px-4 sm:px-6 py-2 bg-muted/30 border-y border-border/30">
+                      <span className="text-[10px] sm:text-[10.5px] font-extrabold tracking-[0.12em] uppercase text-primary">
                         {group.label}
                       </span>
                     </div>
                     {rows.map((row, ri) => (
                       <div
                         key={ri}
-                        className={`grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(0,1fr))] gap-3 px-6 py-[11px] border-t border-border/20 items-center ${
+                        className={`grid grid-cols-[minmax(140px,180px)_repeat(3,minmax(0,1fr))] gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-[11px] border-t border-border/20 items-center ${
                           ri % 2 === 0 ? "bg-card" : "bg-muted/[0.04]"
                         }`}
                       >
-                        <span className="text-[13px] font-medium text-foreground">{row[0]}</span>
+                        <span className="text-[12px] sm:text-[13px] font-medium text-foreground leading-snug">
+                          {row[0]}
+                        </span>
                         {row.slice(1).map((val, vi) => (
-                          <div key={vi} className="flex justify-center">
+                          <div key={vi} className="flex justify-center text-center">
                             <ComparisonCell value={val} />
                           </div>
                         ))}
@@ -413,29 +416,33 @@ function CompareModal({
                 );
               })}
             </div>
-          </div>
 
-          {/* CTA footer */}
-          <div className="px-6 py-5 border-t border-border shrink-0 rounded-b-[28px] bg-gradient-to-t from-muted/15 to-transparent">
-            <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-muted-foreground text-center mb-3">
-              Select a plan to get started
-            </p>
-            <div className="grid grid-cols-3 gap-3">
-              {paidPlans.map((plan) => {
-                const tc = TIER[plan.id as TierKey];
-                return (
-                  <button
-                    key={plan.id}
-                    className={`py-[11px] px-4 rounded-full text-[13.5px] font-bold tracking-tight transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-px ${tc.btn}`}
-                    onClick={() => {
-                      onSelectPlan(plan.id);
-                      onClose();
-                    }}
-                  >
-                    {plan.cta} →
-                  </button>
-                );
-              })}
+            {/* CTA footer inside horizontal scroll container */}
+            <div className="px-4 sm:px-6 py-4 border-t border-border shrink-0 bg-gradient-to-t from-muted/15 to-transparent">
+              <p className="text-[10px] sm:text-[11px] font-bold tracking-[0.1em] uppercase text-muted-foreground text-center mb-3">
+                Select a plan to get started
+              </p>
+              <div className="grid grid-cols-[minmax(140px,180px)_repeat(3,minmax(0,1fr))] gap-2 sm:gap-3 items-center">
+                <div className="hidden sm:block text-[12px] font-medium text-muted-foreground">
+                  Choose your plan:
+                </div>
+                <div className="sm:hidden" />
+                {paidPlans.map((plan) => {
+                  const tc = TIER[plan.id as TierKey];
+                  return (
+                    <button
+                      key={plan.id}
+                      className={`w-full py-2.5 sm:py-[11px] px-2 sm:px-4 rounded-full text-[12px] sm:text-[13.5px] font-bold tracking-tight transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-px whitespace-nowrap text-center ${tc.btn}`}
+                      onClick={() => {
+                        onSelectPlan(plan.id);
+                        onClose();
+                      }}
+                    >
+                      {plan.cta} →
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
