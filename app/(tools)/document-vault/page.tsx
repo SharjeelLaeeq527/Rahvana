@@ -61,7 +61,7 @@ import { Plus, Info, LayoutTemplate } from "lucide-react";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import Link from "next/link";
 import Image from "next/image";
-import { ResultGate } from "@/app/components/entitlements/ResultGate";
+import { PageGate } from "@/app/components/entitlements/PageGate";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
 import type { Journey } from "@/lib/journey/types";
 import { getFriendlyJourneyName } from "@/lib/document-vault/journey-mapping";
@@ -1175,7 +1175,11 @@ export default function DocumentVaultPage() {
                       value={activeTab}
                       className="mt-0 ring-offset-0 focus-visible:ring-0"
                     >
-                      <ResultGate feature="document_vault">
+                      <PageGate
+                        feature="document_vault"
+                        title="Document Vault Locked"
+                        description="Upgrade your plan to organize, track, and securely store your required immigration documents."
+                      >
                         <div className="space-y-6 sm:space-y-10">
                           {searchQuery ? (
                             // Show flat list of search results when searching
@@ -1507,7 +1511,7 @@ export default function DocumentVaultPage() {
                             </div>
                           )}
                         </div>
-                      </ResultGate>
+                       </PageGate>
                     </TabsContent>
                   </Tabs>
                 </div>
