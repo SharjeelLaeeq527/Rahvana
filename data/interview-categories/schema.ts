@@ -3,6 +3,7 @@
 
 // Category Configuration
 export interface InterviewCategoryConfig {
+  categoryName: any;
   visaCountry: string;
   categorySlug: string;
   displayName: string;

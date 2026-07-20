@@ -8,6 +8,7 @@ interface InterviewPrepToolProps {
   isPrepLaunched: boolean;
   setIsPrepLaunched: (launched: boolean) => void;
   guard?: () => boolean;
+  journeyId?: string;
 }
 
 export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
@@ -15,6 +16,7 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
   isPrepLaunched,
   setIsPrepLaunched,
   guard,
+  journeyId,
 }) => {
   return (
     <div className="flex flex-col mt-4">
@@ -55,11 +57,10 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
             onClick={() => {
               if (guard && !guard()) return;
               setIsPrepLaunched(true);
-              window.open(
-                "https://www.rahvana.com/interview-prep",
-                "_blank",
-                "noopener,noreferrer"
-              );
+              // Build URL with journey_id if available
+              const baseUrl = "https://www.rahvana.com/interview-prep";
+              const url = journeyId ? `${baseUrl}?journey_id=${journeyId}` : baseUrl;
+              window.open(url, "_blank", "noopener,noreferrer");
             }}
             className="w-full p-4 bg-[#3b7dd8] text-white rounded-xl font-bold flex items-center justify-center gap-2 hover:bg-[#3b7dd8] transition-all shadow-[0_4px_20px_rgba(47,111,212,0.35)] hover:-translate-y-0.5 active:translate-y-0"
           >

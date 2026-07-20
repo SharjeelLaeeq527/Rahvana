@@ -1,26 +1,36 @@
 /**
- * API Route: Check Active Journey Session
+ * API Route: Get Journey Interview Session
  *
- * GET /api/interview-prep/active-journey-session
+ * GET /api/interview-prep/active-journey-session?journey_id=<uuid>
  *
- * Checks if the user has an active IR-1 journey with an associated interview session.
- * Used by the Interview Prep Tool to determine which session to use.
+ * Retrieves the interview session for a specific journey.
+ * Requires journey_id parameter to identify which journey.
+ * Authentication handled by data-access layer.
  *
  * Returns:
- * - { hasActiveJourney: true, session, journey_id } if active journey session exists
- * - { hasActiveJourney: false } if no active journey or no session
+ * - { hasActiveJourney: true, session, journey_id } if session exists
+ * - { hasActiveJourney: false } if no session found
  */
 
 import { NextResponse, NextRequest } from "next/server";
-import { getActiveJourneyInterviewSession } from "@/lib/interview-prep/service";
+import { getInterviewSessionByJourney } from "@/lib/interview-prep/service";
 import { E, msg } from "@/lib/errors";
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const journey_type = searchParams.get("journey_type") || "IR1";
+    const journey_id = searchParams.get("journey_id");
 
-    const result = await getActiveJourneyInterviewSession(journey_type);
+    // Require journey_id parameter
+    if (!journey_id) {
+      return NextResponse.json(
+        { error: 'journey_id query parameter is required' },
+        { status: 400 }
+      );
+    }
+
+    // Get session by specific journey ID (not journey type)
+    const result = await getInterviewSessionByJourney(journey_id);
 
     if (!result) {
       return NextResponse.json({
@@ -28,16 +38,14 @@ export async function GET(request: NextRequest) {
         hasActiveJourney: false,
         session: null,
         journey_id: null,
-        journey_status: null,
       });
     }
 
     return NextResponse.json({
       success: true,
       hasActiveJourney: true,
-      session: result.session,
-      journey_id: result.session.journey_id,
-      journey_status: result.journey_status,
+      session: result,
+      journey_id: result.journey_id,
       source: "journey",
     });
   } catch (error) {
