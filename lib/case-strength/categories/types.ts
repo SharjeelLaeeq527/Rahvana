@@ -17,7 +17,7 @@ import type { RiskFlag } from "../types";
 import type { CrossFormField } from "../consistency";
 import type { Phase2Question, Phase2Runner } from "../consistency-intelligence";
 import type { EvidenceGapConfig } from "@/lib/journey/evidence-gap/engine";
-import type { LookAheadRule } from "../alert-gating";
+import type { LookAheadRule, DocumentEscalationConfig } from "../alert-gating";
 
 export interface CaseStrengthProfile {
   /** Stable slug, e.g. "ir-1" | "ir-5". */
@@ -86,12 +86,38 @@ export interface CaseStrengthProfile {
     relationship: RelationshipStrengthSignal;
   };
   /**
+   * Which Case Health headline-score model this category uses.
+   *   - omitted → legacy 50/50 evidence+consistency score (`computeOverallCaseScore`).
+   *     IR-1/CR-1 stay here, unchanged.
+   *   - `{ model: "weighted" }` → the 4-ingredient weighted meter
+   *     (`computeWeightedCaseScore`): Evidence 40 / Consistency 30 /
+   *     Completeness 20 / Risk 10, using user-provided-only evidence. Weights
+   *     live in `CASE_SCORE_WEIGHTS` (single tuning point). See
+   *     CASE_STRENGTH_ALERT_ESCALATION_PLAN.md §6. IR-5 opts in first.
+   */
+  caseScore?: CaseScoreProfileConfig;
+  /**
+   * Opt-in document-checklist escalation (§4–§5). When set, a missing required
+   * document moves through the 3-stage lifecycle (to-do → due-soon → critical)
+   * driven by proximity to the filing step (deadline-relative when a target date
+   * is known, fixed-days fallback otherwise) instead of showing an instant red
+   * critical. Omitted → legacy instant-critical behavior (IR-1). Thresholds
+   * default to `DEFAULT_DOCUMENT_ESCALATION`; a category may override any of them.
+   */
+  documentEscalation?: DocumentEscalationConfig;
+  /**
    * Deadline-driven deficiencies this category surfaces one chapter early on the
    * dashboard ("Plan ahead", never blocking). Family categories reuse
    * `COMMON_LOOK_AHEAD`; omit (or pass `[]`) for a category with none. Consumed
    * by the alert-gating engine via `GateContext.lookAheadRules`.
    */
   lookAhead?: LookAheadRule[];
+}
+
+/** Which headline Case Health score model a category uses. */
+export interface CaseScoreProfileConfig {
+  /** "weighted" = the 4-ingredient meter (§6). Presence enables opt-in. */
+  model: "weighted";
 }
 
 /**

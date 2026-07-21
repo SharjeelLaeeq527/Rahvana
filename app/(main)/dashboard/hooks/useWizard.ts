@@ -323,6 +323,12 @@ export function useWizard(options: UseWizardOptions = {}) {
           if (!stage) return prev;
           const stepId = stage.steps[idx]?.step_key || stage.steps[idx]?.id;
 
+          // Stamp started_at the FIRST time the user opens a step. This is the
+          // origin the case-strength active-step grace window keys off of
+          // (alert-gating.ts). Without it, `startedAt` stays null and current-step
+          // warnings surface immediately instead of after the grace period.
+          const alreadyStarted = prev.stepTimestamps[stepId]?.startedAt != null;
+
           if (prev.backendId && stepId && prev.stepMap[stepId]) {
             const stepUuid = prev.stepMap[stepId];
             fetch(`/api/journeys/${prev.backendId}`, {
@@ -333,12 +339,33 @@ export function useWizard(options: UseWizardOptions = {}) {
                 current_chapter_id: stage?.id,
               }),
             }).catch((err) => console.error("[useWizard] Failed to save step position:", err));
+
+            // Persist started_at once, so the grace clock survives a reload.
+            if (!alreadyStarted) {
+              fetch(`/api/steps/${stepUuid}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ started_at: new Date().toISOString() }),
+              }).catch((err) =>
+                console.error("[useWizard] Failed to save step start time:", err)
+              );
+            }
           }
+
+          // Local stamp (first reach only) so the grace clock starts now without
+          // waiting for a reload — mirrors the completed_at stamp in toggleComplete.
+          const nextStepTimestamps = alreadyStarted
+            ? prev.stepTimestamps
+            : {
+                ...prev.stepTimestamps,
+                [stepId]: { ...(prev.stepTimestamps[stepId] || {}), startedAt: Date.now() },
+              };
 
           return {
             ...prev,
             currentStep: idx,
             collapsedSteps: { ...prev.collapsedSteps, [stepId]: false },
+            stepTimestamps: nextStepTimestamps,
           };
         });
       },

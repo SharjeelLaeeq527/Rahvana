@@ -24,6 +24,7 @@ import {
   type StepChecker,
 } from "../step-checkers";
 import type { StepRefs } from "../eligibility-quest-detector";
+import { DEFAULT_DOCUMENT_ESCALATION } from "../alert-gating";
 import { compareFields, type CrossFormField } from "../consistency";
 import { COMMON_PHASE2_QUESTIONS, runCommonPhase2Checks } from "../consistency-intelligence";
 // UI-free submodule imports (see ir1.ts note).
@@ -349,6 +350,12 @@ export const IR5_PROFILE: CaseStrengthProfile = {
   strengthSignals: {
     relationship: parentChildRelationshipSignal,
   },
+  // IR-5 pilots the 4-ingredient weighted Case Health score (§6). IR-1 stays on
+  // the legacy 50/50 model until this is validated on IR-5.
+  caseScore: { model: "weighted" },
+  // IR-5 pilots the document-checklist escalation (§4–§5): missing docs start as
+  // a calm to-do and only turn red near the filing step, instead of instant red.
+  documentEscalation: DEFAULT_DOCUMENT_ESCALATION,
   // Same deadline-driven early-warnings as IR-1 (identical financial + PCC steps).
   lookAhead: COMMON_LOOK_AHEAD,
 };

@@ -17,6 +17,8 @@ import {
   buildGateContext,
   isMeaningfullyStarted,
   ALERT_TIMING,
+  computeDocumentStage,
+  DEFAULT_DOCUMENT_ESCALATION,
 } from "@/lib/case-strength/alert-gating";
 import { COMMON_LOOK_AHEAD } from "@/lib/case-strength/step-checkers";
 import type { AggregatedIssue } from "@/lib/case-strength/aggregate-issues";
@@ -328,5 +330,96 @@ describe("isMeaningfullyStarted", () => {
 
   it("stays true deeper into the journey", () => {
     expect(isMeaningfullyStarted({ completedCount: 6 })).toBe(true);
+  });
+});
+
+// ── Document-checklist escalation (§4–§5) ─────────────────────────────────────
+
+function missingDoc(stepKey: string, chapterIdx: number, stepIdx: number, name = "Passport"): AggregatedIssue {
+  return {
+    level: "critical",
+    title: `Missing: ${name}`,
+    hint: "upload it",
+    stepKey,
+    stepName: stepKey,
+    stepNumber: stepIdx + 1,
+    chapterIdx,
+    stepIdx,
+    kind: "missing-document",
+    documentName: name,
+  };
+}
+
+describe("computeDocumentStage (pure)", () => {
+  const cfg = DEFAULT_DOCUMENT_ESCALATION;
+
+  it("fixed fallback: calm to-do inside the todo window, amber after, red at criticalDays", () => {
+    expect(computeDocumentStage({ daysOnStep: 0, daysUntilFiling: null, isBehind: false, cfg })).toBe("info");
+    expect(computeDocumentStage({ daysOnStep: cfg.todoDays, daysUntilFiling: null, isBehind: false, cfg })).toBe("warning");
+    expect(computeDocumentStage({ daysOnStep: cfg.criticalDays, daysUntilFiling: null, isBehind: false, cfg })).toBe("critical");
+  });
+
+  it("behind the step (passed it, still missing) is at least amber, red once outstanding long enough", () => {
+    expect(computeDocumentStage({ daysOnStep: 0, daysUntilFiling: null, isBehind: true, cfg })).toBe("warning");
+    expect(computeDocumentStage({ daysOnStep: cfg.criticalDays, daysUntilFiling: null, isBehind: true, cfg })).toBe("critical");
+  });
+
+  it("deadline-relative wins over days-on-step: near filing → red even on day 0", () => {
+    expect(computeDocumentStage({ daysOnStep: 0, daysUntilFiling: cfg.filingCriticalDays, isBehind: false, cfg })).toBe("critical");
+    expect(computeDocumentStage({ daysOnStep: 0, daysUntilFiling: cfg.filingDueSoonDays, isBehind: false, cfg })).toBe("warning");
+    expect(computeDocumentStage({ daysOnStep: 999, daysUntilFiling: cfg.filingDueSoonDays + 60, isBehind: false, cfg })).toBe("info");
+  });
+});
+
+describe("gate — document escalation opt-in", () => {
+  it("WITHOUT the config, a missing doc stays an instant critical (legacy IR-1)", () => {
+    const out = gate([missingDoc("step_1_1", 0, 0)], []); // step_1_1 is ACTIVE
+    expect(out).toHaveLength(1);
+    expect(out[0].level).toBe("critical");
+    expect(out[0].title).toBe("Missing: Passport");
+  });
+
+  it("WITH the config, a freshly-reached missing doc is a calm to-do (info), not red", () => {
+    const out = gate([missingDoc("step_1_1", 0, 0)], [], {
+      documentEscalation: DEFAULT_DOCUMENT_ESCALATION,
+      startedAt: { step_1_1: NOW }, // just reached
+    });
+    expect(out).toHaveLength(1);
+    expect(out[0].level).toBe("info");
+    expect(out[0].title).toBe("To gather: Passport");
+  });
+
+  it("WITH the config, escalates to amber after the todo window on the active step", () => {
+    const out = gate([missingDoc("step_1_1", 0, 0)], [], {
+      documentEscalation: DEFAULT_DOCUMENT_ESCALATION,
+      startedAt: { step_1_1: daysAgo(DEFAULT_DOCUMENT_ESCALATION.todoDays + 1) },
+    });
+    expect(out[0].level).toBe("warning");
+    expect(out[0].title).toBe("Due soon: Passport");
+  });
+
+  it("WITH the config, escalates to red past the critical window", () => {
+    const out = gate([missingDoc("step_1_1", 0, 0)], [], {
+      documentEscalation: DEFAULT_DOCUMENT_ESCALATION,
+      startedAt: { step_1_1: daysAgo(DEFAULT_DOCUMENT_ESCALATION.criticalDays + 1) },
+    });
+    expect(out[0].level).toBe("critical");
+    expect(out[0].title).toBe("Missing: Passport");
+  });
+
+  it("deadline-relative: a near target filing date forces red even on a fresh step", () => {
+    const out = gate([missingDoc("step_1_1", 0, 0)], [], {
+      documentEscalation: DEFAULT_DOCUMENT_ESCALATION,
+      startedAt: { step_1_1: NOW },
+      targetFilingDate: NOW + DEFAULT_DOCUMENT_ESCALATION.filingCriticalDays * DAY,
+    });
+    expect(out[0].level).toBe("critical");
+  });
+
+  it("still hides a missing doc on a FUTURE step (AHEAD suppression unaffected)", () => {
+    const out = gate([missingDoc("step_2_5", 1, 0)], [], {
+      documentEscalation: DEFAULT_DOCUMENT_ESCALATION,
+    });
+    expect(out).toHaveLength(0);
   });
 });

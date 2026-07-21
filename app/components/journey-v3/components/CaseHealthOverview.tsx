@@ -38,6 +38,16 @@ export interface CaseHealthOverviewProps {
   evidenceScore?: number;
   /** Consistency sub-score (0–100) — 100 minus penalties for unresolved findings */
   consistencyScore?: number;
+  /**
+   * Completeness sub-score (0–100) — % of required checklist items the user has
+   * filled. Present only for the weighted score model (IR-5). Omit → not shown.
+   */
+  completenessScore?: number;
+  /**
+   * Risk penalty (0–100, higher = more risk) from detected red flags. Present
+   * only for the weighted score model (IR-5). Omit → not shown.
+   */
+  riskPenalty?: number;
   healthLabel: string;
   healthStatus: "excellent" | "good" | "needs-attention" | "critical";
   loading?: boolean;
@@ -287,6 +297,8 @@ export function CaseHealthOverview({
   overallScore,
   evidenceScore,
   consistencyScore,
+  completenessScore,
+  riskPenalty,
   healthLabel,
   healthStatus,
   loading,
@@ -295,6 +307,10 @@ export function CaseHealthOverview({
   summaryText,
 }: CaseHealthOverviewProps) {
   const colors = STATUS_COLORS[healthStatus];
+
+  // Weighted 4-ingredient model (IR-5) vs legacy 50/50 model (IR-1/CR-1). The
+  // presence of the completeness/risk props is the signal.
+  const isWeighted = completenessScore !== undefined || riskPenalty !== undefined;
 
   // ── Info modal & first-visit education tooltip ──
   const [showInfoModal, setShowInfoModal] = useState(false);
@@ -747,6 +763,40 @@ export function CaseHealthOverview({
 
                       <div className="text-xs text-slate-500 mt-1">Information Accuracy</div>
                     </div>
+
+                    {/* Completeness (weighted model only) */}
+                    {completenessScore !== undefined && (
+                      <div className="rounded-2xl border border-[#cfe8e9] bg-[#f8fcfc] p-5">
+                        <div className="flex items-center gap-2 mb-4">
+                          <CheckCircle2 size={16} className="text-[#0d7377]" />
+                          <span className="text-sm font-semibold text-slate-700">
+                            Completeness
+                          </span>
+                        </div>
+
+                        <div className="text-4xl font-black text-slate-800">
+                          {completenessScore}
+                        </div>
+
+                        <div className="text-xs text-slate-500 mt-1">Checklist Filled</div>
+                      </div>
+                    )}
+
+                    {/* Risk flags (weighted model only) — a penalty, so higher = worse */}
+                    {riskPenalty !== undefined && (
+                      <div className="rounded-2xl border border-[#f0d9d9] bg-[#fdf8f8] p-5">
+                        <div className="flex items-center gap-2 mb-4">
+                          <AlertTriangle size={16} className="text-[#c26b6b]" />
+                          <span className="text-sm font-semibold text-slate-700">Risk Flags</span>
+                        </div>
+
+                        <div className="text-4xl font-black text-slate-800">
+                          {riskPenalty > 0 ? `−${riskPenalty}` : "0"}
+                        </div>
+
+                        <div className="text-xs text-slate-500 mt-1">Penalty Applied</div>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -757,9 +807,21 @@ export function CaseHealthOverview({
                   </div>
 
                   <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                    Your Case Health score is built from two equally-weighted analyses. Each one
-                    examines a different dimension of your case, and together they produce a single
-                    0–100 score that reflects your overall readiness.
+                    {isWeighted ? (
+                      <>
+                        Your Case Health score is a quality meter — a weighted average of four
+                        things: your <strong>evidence strength</strong> (40%),{" "}
+                        <strong>consistency</strong> (30%), <strong>completeness</strong> (20%), and
+                        a <strong>risk-flag penalty</strong> (10%). It reflects how strong your case
+                        looks right now, not any deadline.
+                      </>
+                    ) : (
+                      <>
+                        Your Case Health score is built from two equally-weighted analyses. Each one
+                        examines a different dimension of your case, and together they produce a
+                        single 0–100 score that reflects your overall readiness.
+                      </>
+                    )}
                   </p>
 
                   <div className="space-y-3">
@@ -769,7 +831,7 @@ export function CaseHealthOverview({
 
                         <div>
                           <h4 className="font-semibold text-foreground text-sm">
-                            Evidence Analysis (50%)
+                            Evidence Analysis ({isWeighted ? "40%" : "50%"})
                           </h4>
 
                           <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
@@ -803,7 +865,7 @@ export function CaseHealthOverview({
 
                         <div>
                           <h4 className="font-semibold text-foreground text-sm">
-                            Consistency Analysis (50%)
+                            Consistency Analysis ({isWeighted ? "30%" : "50%"})
                           </h4>
 
                           <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
@@ -831,13 +893,51 @@ export function CaseHealthOverview({
                         </div>
                       </div>
                     </div>
+
+                    {/* Completeness (weighted model only) */}
+                    {isWeighted && (
+                      <div className="p-4 rounded-2xl border border-border bg-muted/30">
+                        <div className="flex items-start gap-3">
+                          <div className="w-2 h-2 rounded-full bg-[#0d7377] mt-2 shrink-0" />
+                          <div>
+                            <h4 className="font-semibold text-foreground text-sm">
+                              Completeness (20%)
+                            </h4>
+                            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                              Of all the documents required for your visa category, how many you have
+                              actually provided so far. Counts only what you&apos;ve added — not
+                              pre-filled placeholders.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Risk flags (weighted model only) */}
+                    {isWeighted && (
+                      <div className="p-4 rounded-2xl border border-border bg-muted/30">
+                        <div className="flex items-start gap-3">
+                          <div className="w-2 h-2 rounded-full bg-[#c26b6b] mt-2 shrink-0" />
+                          <div>
+                            <h4 className="font-semibold text-foreground text-sm">
+                              Risk Flags (−10%)
+                            </h4>
+                            <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
+                              Things a reviewer could reject on — a date conflict, an eligibility
+                              concern. These are the only ingredient that <em>subtracts</em> from
+                              your score.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )}
                   </div>
 
                   {/* Formula visual */}
                   <div className="mt-4 p-3.5 rounded-xl border border-border bg-muted/20">
-                    <div className="flex items-center justify-center gap-2 text-xs font-mono text-muted-foreground">
+                    <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-mono text-muted-foreground">
                       <span className="px-3.5 py-1.5 rounded-full bg-[#0d7377] text-[#e8fbfb] border border-[#afdbdb]/20 font-semibold text-xs tracking-[0.01em] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#afdbdb]/40 hover:shadow-[0_6px_20px_rgba(13,115,119,0.30)]">
-                        Evidence × 50%
+                        Evidence × {isWeighted ? "40%" : "50%"}
                       </span>
 
                       {/* Plus */}
@@ -873,8 +973,26 @@ export function CaseHealthOverview({
       hover:shadow-[0_6px_20px_rgba(205,173,204,0.30)]
     "
                       >
-                        Consistency × 50%
+                        Consistency × {isWeighted ? "30%" : "50%"}
                       </span>
+
+                      {/* Completeness + Risk (weighted model only) */}
+                      {isWeighted && (
+                        <>
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center bg-white/[0.04] border border-white/[0.08] text-[#89a4a0] font-bold text-sm backdrop-blur-sm">
+                            +
+                          </div>
+                          <span className="px-3.5 py-1.5 rounded-full bg-[#cfe8e9] text-[#164e52] border border-white/10 font-semibold text-xs tracking-[0.01em]">
+                            Completeness × 20%
+                          </span>
+                          <div className="w-7 h-7 rounded-full flex items-center justify-center bg-white/[0.04] border border-white/[0.08] text-[#c26b6b] font-bold text-sm backdrop-blur-sm">
+                            −
+                          </div>
+                          <span className="px-3.5 py-1.5 rounded-full bg-[#f0d9d9] text-[#7a3b3b] border border-white/10 font-semibold text-xs tracking-[0.01em]">
+                            Risk × 10%
+                          </span>
+                        </>
+                      )}
 
                       {/* Equals */}
                       <div

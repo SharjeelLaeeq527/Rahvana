@@ -60,6 +60,82 @@ function daysSince(fromMs: number, nowMs: number): number {
   return Math.floor((nowMs - fromMs) / DAY_MS);
 }
 
+function daysUntil(toMs: number, nowMs: number): number {
+  return Math.ceil((toMs - nowMs) / DAY_MS);
+}
+
+// ─── Document-checklist escalation (§4–§5) ───────────────────────────────────
+//
+// Missing required documents should NOT jump straight to red "critical" the
+// moment the user reaches the gathering step — at that stage, missing documents
+// are normal. Instead they move through three calm-to-urgent stages:
+//   to-do (info, calm) → due-soon (warning, amber) → critical (red, blocking).
+//
+// Two drivers, in priority order (user decision 2026-07-20):
+//   1. DEADLINE-RELATIVE — how close the target filing date is. Preferred
+//      whenever a target date is known, because every user works at a different
+//      speed; a fixed "day 21 = red" is meaningless for someone deliberately
+//      slow whose real filing target is still months away.
+//   2. FIXED-DAYS FALLBACK — used only when no target date is known: calm for
+//      `todoDays`, amber until `criticalDays`, red at `criticalDays`+.
+//
+// This is OPT-IN per category. A `CaseStrengthProfile` with no
+// `documentEscalation` keeps the legacy instant-critical behavior (IR-1); IR-5
+// opts in. All thresholds live here so they can be tuned in one place.
+
+export interface DocumentEscalationConfig {
+  /** Fixed fallback: days a new missing doc stays calm (to-do) on its step. */
+  todoDays: number;
+  /** Fixed fallback: day it turns red (critical) if still missing. */
+  criticalDays: number;
+  /** Deadline-relative: days-to-filing at/under which a missing doc is critical. */
+  filingCriticalDays: number;
+  /** Deadline-relative: days-to-filing at/under which a missing doc is due-soon. */
+  filingDueSoonDays: number;
+}
+
+/** Sensible defaults matching §5 of the plan. */
+export const DEFAULT_DOCUMENT_ESCALATION: DocumentEscalationConfig = {
+  todoDays: 7,
+  criticalDays: 21,
+  filingCriticalDays: 7,
+  filingDueSoonDays: 30,
+};
+
+type DocStage = "info" | "warning" | "critical";
+
+/**
+ * Pure stage computation for a missing document. Deadline-relative when
+ * `daysUntilFiling` is provided, otherwise the fixed-days fallback. `isBehind`
+ * = the user has already passed the step this document belongs to.
+ */
+export function computeDocumentStage(params: {
+  daysOnStep: number;
+  daysUntilFiling: number | null;
+  isBehind: boolean;
+  cfg: DocumentEscalationConfig;
+}): DocStage {
+  const { daysOnStep, daysUntilFiling, isBehind, cfg } = params;
+
+  // 1. Deadline-relative (preferred when we know the target filing date).
+  if (daysUntilFiling !== null) {
+    if (daysUntilFiling <= cfg.filingCriticalDays) return "critical";
+    if (daysUntilFiling <= cfg.filingDueSoonDays) return "warning";
+    // Far from filing: calm — unless the user already moved past the step.
+    return isBehind ? "warning" : "info";
+  }
+
+  // 2. Fixed-days fallback.
+  if (isBehind) {
+    // Passed the gathering step with the doc still missing → at least amber,
+    // red once it's been outstanding as long as the fixed critical window.
+    return daysOnStep >= cfg.criticalDays ? "critical" : "warning";
+  }
+  if (daysOnStep >= cfg.criticalDays) return "critical";
+  if (daysOnStep >= cfg.todoDays) return "warning";
+  return "info";
+}
+
 // ─── Engagement gate (empty-state) ───────────────────────────────────────────
 //
 // Case-health is only meaningful once the user has actually progressed through
@@ -80,6 +156,30 @@ export interface EngagementInput {
 
 export function isMeaningfullyStarted(input: EngagementInput): boolean {
   return input.completedCount > 0;
+}
+
+// ─── Case-health score gate (evidence-aware) ─────────────────────────────────
+//
+// The case-health SCORE is evidence-derived (evidence coverage + consistency).
+// `isMeaningfullyStarted` is the right gate for the ALERT stream (one completed
+// step = the user has engaged), but it is too loose for the numeric score:
+// completing a checklist step produces no evidence, so an empty evidence set
+// defaults to ~0 and the ring lands on a misleading ~50% the moment step 1 is
+// done. The score must therefore additionally require a real evidence signal —
+// an uploaded document or an answered evidence question — before it shows a
+// number instead of the neutral "gathering info" state. Visa-agnostic: the
+// caller decides what counts as evidence signal for its category.
+
+export interface CaseHealthGateInput extends EngagementInput {
+  /**
+   * True once the user has produced real evidence to score: e.g. a document in
+   * the vault, a populated evidence analysis, or an answered evidence question.
+   */
+  hasEvidenceSignal: boolean;
+}
+
+export function isCaseHealthScorable(input: CaseHealthGateInput): boolean {
+  return input.completedCount > 0 && input.hasEvidenceSignal;
 }
 
 // ─── Look-ahead allowlist ────────────────────────────────────────────────────
@@ -158,6 +258,80 @@ export interface GateContext {
    * window. Absent (Phase 1) → active items show immediately.
    */
   startedAt?: Record<string, number>;
+  /**
+   * Opt-in document-checklist escalation (§4–§5). When present, issues tagged
+   * `kind: "missing-document"` run through the 3-stage lifecycle instead of the
+   * instant-critical path. Absent → legacy behavior (IR-1). Set from
+   * `profile.documentEscalation`.
+   */
+  documentEscalation?: DocumentEscalationConfig;
+  /**
+   * Optional target filing date (ms epoch). When known, document escalation is
+   * measured against it (deadline-relative); absent → fixed-days fallback.
+   */
+  targetFilingDate?: number;
+}
+
+/**
+ * 3-stage lifecycle for a missing-document issue (§4–§5). Only called when the
+ * category opts in via `ctx.documentEscalation`. Returns the issue re-leveled
+ * (info/warning/critical) with stage-appropriate wording, or null if it's on a
+ * future step (handled by the caller's AHEAD branch, never here).
+ */
+function gateMissingDocument(
+  issue: AggregatedIssue,
+  ord: number,
+  frontierOrd: number,
+  ctx: GateContext,
+  now: number
+): AggregatedIssue {
+  const cfg = ctx.documentEscalation ?? DEFAULT_DOCUMENT_ESCALATION;
+  const isBehind = ord < frontierOrd;
+
+  // Days the doc has been "on the clock": since the step was reached (active) or
+  // since it was completed/passed (behind). Missing timestamp → treat as day 0.
+  const anchorMs = isBehind ? ctx.completedAt?.[issue.stepKey] : ctx.startedAt?.[issue.stepKey];
+  const daysOnStep = anchorMs !== undefined ? Math.max(0, daysSince(anchorMs, now)) : 0;
+
+  const daysUntilFiling =
+    ctx.targetFilingDate !== undefined ? daysUntil(ctx.targetFilingDate, now) : null;
+
+  const stage = computeDocumentStage({ daysOnStep, daysUntilFiling, isBehind, cfg });
+  const name = issue.documentName ?? issue.title.replace(/^Missing:\s*/, "");
+
+  if (stage === "critical") {
+    return {
+      ...issue,
+      level: "critical",
+      title: `Missing: ${name}`,
+      hint: withDocumentNote(issue.hint, "critical"),
+    };
+  }
+  if (stage === "warning") {
+    return {
+      ...issue,
+      level: "warning",
+      title: `Due soon: ${name}`,
+      hint: withDocumentNote(issue.hint, "warning"),
+    };
+  }
+  return {
+    ...issue,
+    level: "info",
+    title: `To gather: ${name}`,
+    hint: withDocumentNote(issue.hint, "info"),
+  };
+}
+
+const DOC_STAGE_NOTE: Record<DocStage, string> = {
+  info: "Recommended to gather before you submit — not urgent yet.",
+  warning: "Your filing step is approaching — please arrange this soon.",
+  critical: "This is required to submit and is now blocking your petition.",
+};
+
+function withDocumentNote(hint: string | undefined, stage: DocStage): string {
+  const note = DOC_STAGE_NOTE[stage];
+  return hint ? `${hint}\n\n${note}` : note;
 }
 
 /**
@@ -188,6 +362,13 @@ function gateOne(
       return asLookAhead(issue);
     }
     return null; // core fix: suppress future-step alerts
+  }
+
+  // Opt-in document-checklist escalation: a missing required doc on the current
+  // or a passed step runs through the 3-stage lifecycle rather than showing an
+  // instant red critical (§4–§5). Only when the category opted in.
+  if (ctx.documentEscalation && issue.kind === "missing-document") {
+    return gateMissingDocument(issue, ord, frontierOrd, ctx, now);
   }
 
   // Criticals block the action they belong to — never grace-delayed.
@@ -270,6 +451,10 @@ export interface BuildGateContextParams {
    * (`completedAt`). Absent → time gating is inert (items show immediately).
    */
   stepTimestamps?: Record<string, { completedAt?: number | null; startedAt?: number | null }>;
+  /** Opt-in document-checklist escalation (from `profile.documentEscalation`). */
+  documentEscalation?: DocumentEscalationConfig;
+  /** Optional target filing date (ms epoch) for deadline-relative escalation. */
+  targetFilingDate?: number;
 }
 
 export function buildGateContext(p: BuildGateContextParams): GateContext {
@@ -302,5 +487,7 @@ export function buildGateContext(p: BuildGateContextParams): GateContext {
     now: p.now,
     completedAt,
     startedAt,
+    documentEscalation: p.documentEscalation,
+    targetFilingDate: p.targetFilingDate,
   };
 }

@@ -31,6 +31,22 @@ export interface AggregatedIssue {
   stepIdx: number;
   /** When true, the item has been addressed — shows checkmark and disables navigation */
   resolved?: boolean;
+  /**
+   * Optional classification used by the alert-gating escalation engine.
+   * `"missing-document"` marks a required-but-not-yet-provided document so the
+   * gate can run it through the 3-stage lifecycle (to-do → due-soon → critical)
+   * instead of showing it as an instant red critical — but only for categories
+   * that opt in via `profile.documentEscalation`. Absent → treated as a plain
+   * alert (legacy behavior, unchanged for IR-1). See CASE_STRENGTH_ALERT_
+   * ESCALATION_PLAN.md §4–§5.
+   *
+   * `"score-drop"` is a synthetic Alert Center entry emitted when the weighted
+   * Case Strength score crosses a band downward (§6C). It is not tied to a step —
+   * its action opens the score breakdown, not a step page.
+   */
+  kind?: "missing-document" | "score-drop";
+  /** For `kind: "missing-document"`: the bare document name (no "Missing:" prefix). */
+  documentName?: string;
 }
 
 /** Extract step number from JSON or fall back to parsing the step_key */
@@ -108,6 +124,10 @@ export function aggregateChapter1Issues({
     );
     for (const m of docResult.completeness.missing) {
       issues.push({
+        // Born critical for legacy (IR-1) callers with no escalation config; the
+        // gate downgrades/escalates this via the 3-stage lifecycle when the
+        // category opts in (`profile.documentEscalation`). The `kind` marker is
+        // what the gate keys off — see alert-gating.ts.
         level: "critical",
         title: `Missing: ${m.name}`,
         hint: m.subtitle,
@@ -116,6 +136,8 @@ export function aggregateChapter1Issues({
         stepNumber: getStepNumber(step_1_2, step_1_2Idx),
         chapterIdx: 0,
         stepIdx: step_1_2Idx >= 0 ? step_1_2Idx : 1,
+        kind: "missing-document",
+        documentName: m.name,
       });
     }
     for (const c of docResult.consistency.checks.filter((c) => !c.passed)) {

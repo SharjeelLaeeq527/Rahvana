@@ -37,6 +37,7 @@ import {
   gateAlertIssues,
   buildGateContext,
   isMeaningfullyStarted,
+  isCaseHealthScorable,
 } from "@/lib/case-strength/alert-gating";
 import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
 import type { ConsistencyFinding } from "@/lib/case-strength/consistency-intelligence";
@@ -466,6 +467,21 @@ export function DashboardView({
 
   // Evidence questionnaire answered count
   const evidenceAnsweredCount = Object.values(questionnaireResponses).filter(Boolean).length;
+
+  // Case-health SCORE gate: the ring/percentage is evidence-derived, so it must
+  // stay in the neutral "gathering info" state until the user has produced real
+  // evidence — not merely completed a checklist step. Without this, an empty
+  // evidence set defaults to ~50% and reads as a real (bad) score the instant
+  // step 1 is done. `notStarted` (alert stream) stays keyed off completion.
+  const hasEvidenceSignal =
+    uploadedDocuments.length > 0 ||
+    evidenceAnsweredCount > 0 ||
+    (evidenceAnalysis?.stats?.totalEvidenceItems ?? 0) > 0 ||
+    (evidenceAnalysis?.requiredDocuments?.found ?? 0) > 0;
+  const healthNotStarted = !isCaseHealthScorable({
+    completedCount: state.completedSteps.size,
+    hasEvidenceSignal,
+  });
 
   // Extract step_1_2 document_items from roadmap data
   const step1_2DocItems = useMemo(() => {
@@ -926,7 +942,7 @@ export function DashboardView({
             healthLabel={caseHealthStatus?.label ?? "Analyzing"}
             healthStatus={caseHealthStatus?.status ?? "needs-attention"}
             loading={evidenceLoading}
-            notStarted={notStarted}
+            notStarted={healthNotStarted}
             onViewFullAnalysis={() => setIsCSADrawerOpen(true)}
             summaryText={compactSummary}
           />
