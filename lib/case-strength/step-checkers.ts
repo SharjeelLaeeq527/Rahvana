@@ -8,6 +8,7 @@
 
 import type { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import type { UploadedDocument } from "@/lib/document-vault/types";
+import type { LookAheadRule } from "./alert-gating";
 import { detectRiskFlagsFromEligibilityQuest } from "./eligibility-quest-detector";
 import { detectRiskFlags } from "./risk-detector";
 import { analyzeCivilDocs } from "./civil-docs";
@@ -734,6 +735,24 @@ export const COMMON_STEP_CHECKERS: Record<string, StepChecker> = Object.fromEntr
     ([key]) => !CATEGORY_SPECIFIC_STEP_KEYS.includes(key as (typeof CATEGORY_SPECIFIC_STEP_KEYS)[number])
   )
 );
+
+/**
+ * Look-ahead allowlist shared by every family-based category (IR-1, IR-5, …).
+ *
+ * These deficiencies are deadline-driven — a joint sponsor or a fresh police
+ * certificate each take weeks — so the dashboard surfaces them one chapter early
+ * (as "Plan ahead", never blocking). They all live on COMMON steps (Affidavit of
+ * Support, joint sponsor, fresh PCC), so a single shared list serves each family
+ * profile; a non-family category can define its own or pass none.
+ * Consumed via `profile.lookAhead` → `GateContext.lookAheadRules`.
+ */
+export const COMMON_LOOK_AHEAD: LookAheadRule[] = [
+  // Affidavit-of-Support income shortfall — lining up a joint sponsor is slow.
+  { stepKey: "step_2_5", match: (t) => /below the requirement|income/i.test(t) },
+  { stepKey: "step_2_7", match: (t) => /joint sponsor/i.test(t) },
+  // Fresh police certificate for the interview — weeks of lead time.
+  { stepKey: "step_3_3", match: (t) => /police certificate/i.test(t) },
+];
 
 // ─── Chapter 2 helper: DS-260 mandatory-disclosure reminders ────────────────
 

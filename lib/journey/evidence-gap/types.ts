@@ -92,6 +92,27 @@ export interface EvidenceGapAnalysis {
   // Required documents summary (across all categories)
   requiredDocuments: RequiredDocumentsSummary;
 
+  // User-provided-only signal (excludes profile-autofilled journey/case_data
+  // placeholders). Feeds the weighted Case Strength score so autofill can't
+  // inflate Evidence Strength / Completeness. Optional for backward-compat with
+  // existing mocks; always populated by EvidenceGapEngine.analyze().
+  userProvided?: {
+    /** Evidence Strength (0–100) from user uploads + questionnaire answers. */
+    score: number;
+    /** Count of real user-uploaded (vault) evidence items. */
+    evidenceCount: number;
+    /** Completeness (0–100) — required checklist items filled by the user. */
+    completionPercentage: number;
+    /** Required-docs summary computed from user-provided items only. */
+    requiredDocuments: RequiredDocumentsSummary;
+    /** Category assessments computed from user-provided items only. */
+    categories: Record<EvidenceCategory, EvidenceCategoryAssessment>;
+    /** Summary stats computed from user-provided items only. */
+    stats: EvidenceGapAnalysis["stats"];
+    /** Recommendations computed from user-provided items only. */
+    recommendations: EvidenceRecommendation[];
+  };
+
   // Category breakdowns (as Record for easy access)
   categories: Record<EvidenceCategory, EvidenceCategoryAssessment>;
 
