@@ -153,6 +153,56 @@ const PLAN_RECS: Record<string, string[]> = {
   executive: ["case-manager", "consultation", "translate"],
 };
 
+const INTERVIEW_PREP_ADDON_PREFIX = "interview-prep:";
+
+const VISA_TO_INTERVIEW_CATEGORY: Record<string, string> = {
+  "IR-1 / CR-1": "ir-1-spouse",
+  "IR-5": "ir-5-parent",
+};
+
+const getCatalogAddonId = (addonId: string): string => {
+  const normalized = addonId.toLowerCase();
+
+  if (normalized.startsWith(INTERVIEW_PREP_ADDON_PREFIX)) {
+    return "interview-prep";
+  }
+
+  return normalized;
+};
+
+const resolveCheckoutAddonId = (addonId: string, interviewCategory: string | null): string => {
+  const normalized = addonId.toLowerCase();
+
+  if (normalized.startsWith(INTERVIEW_PREP_ADDON_PREFIX)) {
+    return normalized;
+  }
+
+  if (normalized === "interview-prep" && interviewCategory) {
+    return `${INTERVIEW_PREP_ADDON_PREFIX}${interviewCategory}`;
+  }
+
+  return normalized;
+};
+
+const mergeAddonSelections = (current: Set<string>, incoming: string[]): Set<string> => {
+  const next = new Set(current);
+
+  for (const incomingId of incoming) {
+    const catalogId = getCatalogAddonId(incomingId);
+
+    // Remove an existing generic/category-specific variant of the same catalog product.
+    for (const existingId of Array.from(next)) {
+      if (getCatalogAddonId(existingId) === catalogId) {
+        next.delete(existingId);
+      }
+    }
+
+    next.add(incomingId);
+  }
+
+  return next;
+};
+
 /* ===========================================================================
    SVG HELPERS
    =========================================================================== */
@@ -552,6 +602,22 @@ function PricingContent() {
   const [selectedPlan, setSelectedPlan] = useState("premium");
   const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
 
+  const requestedInterviewCategory =
+    searchParams.get("interview_category") || VISA_TO_INTERVIEW_CATEGORY[visa] || null;
+
+  const checkoutAddonIds = useMemo(
+    () =>
+      Array.from(selectedAddons).map((addonId) =>
+        resolveCheckoutAddonId(addonId, requestedInterviewCategory)
+      ),
+    [selectedAddons, requestedInterviewCategory]
+  );
+
+  const isAddonSelected = (catalogAddonId: string) =>
+    Array.from(selectedAddons).some(
+      (selectedId) => getCatalogAddonId(selectedId) === catalogAddonId
+    );
+
   const [comparePlansOpen, setComparePlansOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number>(-1);
   const [allAddonsOpen, setAllAddonsOpen] = useState(false);
@@ -572,7 +638,7 @@ function PricingContent() {
   const activePlans = activeVisaCategory.plans;
   const paidPlans = activePlans.filter((p) => p.id !== "free");
   const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
-  const activeAddons = ADDONS.filter((a) => selectedAddons.has(a.id));
+  const activeAddons = ADDONS.filter((addon) => isAddonSelected(addon.id));
   const planDisplayPrice = (plan: PlanData) => plan.monthlyPrice;
   const summaryBase =
     mode === "plans" && currentPlanData.id !== "free" ? currentPlanData.annualPrice : 0;
@@ -601,7 +667,11 @@ function PricingContent() {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             productTier: planOverride || (mode === "plans" ? selectedPlan : undefined),
-            addons: addonsOverride || Array.from(selectedAddons),
+            addons: addonsOverride
+              ? addonsOverride.map((addonId) =>
+                  resolveCheckoutAddonId(addonId, requestedInterviewCategory)
+                )
+              : checkoutAddonIds,
             visaCategory: visa,
             billing,
             userId: uid,
@@ -620,15 +690,37 @@ function PricingContent() {
         setIsProcessingAutoCheckout(false);
       }
     },
-    [selectedPlan, selectedAddons, visa, billing, isProcessingAutoCheckout]
+    [
+      selectedPlan,
+      checkoutAddonIds,
+      requestedInterviewCategory,
+      visa,
+      billing,
+      isProcessingAutoCheckout,
+    ]
   );
 
-  const toggleAddon = (id: string) =>
+  const toggleAddon = (catalogAddonId: string) => {
     setSelectedAddons((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+
+      const matchingSelections = Array.from(next).filter(
+        (selectedId) => getCatalogAddonId(selectedId) === catalogAddonId
+      );
+
+      if (matchingSelections.length > 0) {
+        matchingSelections.forEach((selectedId) => {
+          next.delete(selectedId);
+        });
+
+        return next;
+      }
+
+      next.add(resolveCheckoutAddonId(catalogAddonId, requestedInterviewCategory));
+
       return next;
     });
+  };
 
   // Apply deep-link params (mode / plan / addons / visa) into state. This must
   // run ONLY when the URL actually changes — never when other state (e.g. the
@@ -657,8 +749,17 @@ function PricingContent() {
     if (plan) setSelectedPlan(plan);
     // MERGE deep-linked add-ons into the existing cart (don't replace) — opening
     // a tool's detail page and adding it should keep items already in the order.
-    const urlAddons = (addons || "").split(",").filter(Boolean);
-    if (urlAddons.length) setSelectedAddons((prev) => new Set([...prev, ...urlAddons]));
+    const urlInterviewCategory =
+      searchParams.get("interview_category") || VISA_TO_INTERVIEW_CATEGORY[visaCat || visa] || null;
+
+    const urlAddons = (addons || "")
+      .split(",")
+      .filter(Boolean)
+      .map((addonId) => resolveCheckoutAddonId(addonId, urlInterviewCategory));
+
+    if (urlAddons.length) {
+      setSelectedAddons((prev) => mergeAddonSelections(prev, urlAddons));
+    }
     if (visaCat && AVAILABLE_VISA_IDS.includes(visaCat)) setVisa(visaCat);
     // Restore the order-summary (review) step when deep-linked back to it.
     if (searchParams.get("step") === "review") setPurchaseStep("review");
@@ -783,10 +884,15 @@ function PricingContent() {
         </button>
       ) : userId ? (
         <CheckoutButton
-          productTier={mode === "plans" && selectedPlan !== "free" ? selectedPlan : undefined}
-          addons={Array.from(selectedAddons)}
-          visaCategory={visa}
-          userId={userId}
+  productTier={
+    mode === "plans" &&
+    selectedPlan !== "free"
+      ? selectedPlan
+      : undefined
+  }
+  addons={checkoutAddonIds}
+  visaCategory={visa}
+  userId={userId}
           onLoadingChange={setIsManualCheckoutLoading}
           className="w-full py-[11px] px-5 rounded-full text-[14px] font-semibold bg-primary hover:bg-primary/90 text-white text-center"
         >
@@ -794,7 +900,7 @@ function PricingContent() {
         </CheckoutButton>
       ) : (
         <Link
-          href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${Array.from(selectedAddons).join(",")}&visa=${encodeURIComponent(visa)}`)}`}
+          href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${checkoutAddonIds.join(",")}&visa=${encodeURIComponent(visa)}`)}`}
           className="w-full py-[11px] px-5 rounded-full text-[14px] font-semibold bg-primary hover:bg-primary/90 text-white text-center block"
         >
           Sign in to Checkout →
@@ -1261,7 +1367,7 @@ function PricingContent() {
                       </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                         {reviewAddons.map((addon) => {
-                          const isAdded = selectedAddons.has(addon.id);
+                          const isAdded = isAddonSelected(addon.id);
                           const cfg = ADDON_CONFIG[addon.id];
                           const Icon = cfg?.icon ?? Wand2;
                           return (
@@ -1334,7 +1440,7 @@ function PricingContent() {
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
                         {ADDONS.filter((a) => !(PLAN_RECS[selectedPlan] || []).includes(a.id)).map(
                           (addon) => {
-                            const isAdded = selectedAddons.has(addon.id);
+                            const isAdded = isAddonSelected(addon.id);
                             const cfg = ADDON_CONFIG[addon.id];
                             const Icon = cfg?.icon ?? Wand2;
                             return (
@@ -1484,7 +1590,7 @@ function PricingContent() {
                     <ResourceToolCard
                       key={addon.id}
                       addon={addon}
-                      isAdded={selectedAddons.has(addon.id)}
+                      isAdded={isAddonSelected(addon.id)}
                       disabled={isAnyCheckoutLoading}
                       onToggle={toggleAddon}
                     />

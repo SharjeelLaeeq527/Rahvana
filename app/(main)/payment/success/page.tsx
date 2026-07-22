@@ -264,6 +264,10 @@ function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const [isVerifying, setIsVerifying] = useState(true);
+  const [
+    hasPendingInterviewPurchase,
+    setHasPendingInterviewPurchase,
+  ] = useState(false);
   const [verifyStatus, setVerifyStatus] = useState<"checking" | "confirmed" | "timeout">(
     "checking"
   );
@@ -287,11 +291,34 @@ function PaymentSuccessContent() {
       /* sessionStorage unavailable — non-fatal */
     }
 
+    let pendingInterviewCategory: string | null =
+  null;
+
+try {
+  pendingInterviewCategory =
+    localStorage.getItem(
+      "interview_prep_pending_category"
+    );
+
+  setHasPendingInterviewPurchase(
+    Boolean(pendingInterviewCategory)
+  );
+} catch {
+  pendingInterviewCategory = null;
+}
+
     pollUntilActivated(
       sessionId,
       (_tier) => {
-        // Webhook processed — refresh plan context so UI shows new tier immediately
         refresh();
+      
+        if (pendingInterviewCategory) {
+          router.replace(
+            "/interview-prep?purchase_success=true"
+          );
+          return;
+        }
+      
         setVerifyStatus("confirmed");
         setIsVerifying(false);
       },
@@ -361,19 +388,31 @@ function PaymentSuccessContent() {
           </div>
 
           <div className="flex gap-2">
-            <Link
-              href="/user-dashboard"
-              className="flex-1 px-4 py-2.5 rounded-lg bg-rahvana-primary text-white text-[14px] font-semibold hover:bg-rahvana-primary-dark transition-colors text-center"
-            >
-              Go to Dashboard
-            </Link>
-            <Link
-              href="/"
-              className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 text-slate-700 text-[14px] font-semibold hover:border-rahvana-primary hover:text-rahvana-primary transition-colors text-center"
-            >
-              Back to Home
-            </Link>
-          </div>
+  {hasPendingInterviewPurchase ? (
+    <Link
+      href="/interview-prep?purchase_success=true"
+      className="flex-1 px-4 py-2.5 rounded-lg bg-rahvana-primary text-white text-[14px] font-semibold hover:bg-rahvana-primary-dark transition-colors text-center"
+    >
+      Return to Interview Prep
+    </Link>
+  ) : (
+    <>
+      <Link
+        href="/user-dashboard"
+        className="flex-1 px-4 py-2.5 rounded-lg bg-rahvana-primary text-white text-[14px] font-semibold hover:bg-rahvana-primary-dark transition-colors text-center"
+      >
+        Go to Dashboard
+      </Link>
+
+      <Link
+        href="/"
+        className="flex-1 px-4 py-2.5 rounded-lg border border-slate-200 text-slate-700 text-[14px] font-semibold hover:border-rahvana-primary hover:text-rahvana-primary transition-colors text-center"
+      >
+        Back to Home
+      </Link>
+    </>
+  )}
+</div>
 
           {sessionId && (
             <p className="text-[10px] text-slate-300 mt-3 font-mono">
