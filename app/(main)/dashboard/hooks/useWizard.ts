@@ -26,6 +26,13 @@ export interface WizardState {
   unresolvedTasks: string[];
   backendId?: string;
   stepMap: Record<string, string>;
+  /**
+   * Per-step timestamps (ms epoch) for time-based case-strength gating.
+   * `completedAt` drives the "passed step, deficiency unresolved → escalate"
+   * windows; `startedAt` (reached) drives the current-step grace. Populated from
+   * the DB `steps` rows on load; `completedAt` is stamped locally on completion.
+   */
+  stepTimestamps: Record<string, { completedAt?: number | null; startedAt?: number | null }>;
 }
 
 const DEFAULT_STATE: WizardState = {
@@ -44,6 +51,7 @@ const DEFAULT_STATE: WizardState = {
   metadata: {},
   unresolvedTasks: [],
   stepMap: {},
+  stepTimestamps: {},
 };
 
 interface UseWizardOptions {
@@ -167,10 +175,20 @@ export function useWizard(options: UseWizardOptions = {}) {
 
         const stepMap: Record<string, string> = {};
         const completedSet = new Set<string>();
+        const stepTimestamps: Record<
+          string,
+          { completedAt?: number | null; startedAt?: number | null }
+        > = {};
 
         steps.forEach((s: any) => {
           stepMap[s.step_key] = s.id;
           if (s.status === "completed") completedSet.add(s.step_key);
+          const completedAt = s.completed_at ? Date.parse(s.completed_at) : null;
+          const startedAt = s.started_at ? Date.parse(s.started_at) : null;
+          stepTimestamps[s.step_key] = {
+            completedAt: Number.isFinite(completedAt) ? completedAt : null,
+            startedAt: Number.isFinite(startedAt) ? startedAt : null,
+          };
         });
 
         const metadata: Record<string, any> = {};
@@ -215,6 +233,7 @@ export function useWizard(options: UseWizardOptions = {}) {
           ...prev,
           backendId: journey.id,
           stepMap,
+          stepTimestamps,
           completedSteps: completedSet,
           metadata: {
             ...metadata,
@@ -304,6 +323,12 @@ export function useWizard(options: UseWizardOptions = {}) {
           if (!stage) return prev;
           const stepId = stage.steps[idx]?.step_key || stage.steps[idx]?.id;
 
+          // Stamp started_at the FIRST time the user opens a step. This is the
+          // origin the case-strength active-step grace window keys off of
+          // (alert-gating.ts). Without it, `startedAt` stays null and current-step
+          // warnings surface immediately instead of after the grace period.
+          const alreadyStarted = prev.stepTimestamps[stepId]?.startedAt != null;
+
           if (prev.backendId && stepId && prev.stepMap[stepId]) {
             const stepUuid = prev.stepMap[stepId];
             fetch(`/api/journeys/${prev.backendId}`, {
@@ -314,12 +339,33 @@ export function useWizard(options: UseWizardOptions = {}) {
                 current_chapter_id: stage?.id,
               }),
             }).catch((err) => console.error("[useWizard] Failed to save step position:", err));
+
+            // Persist started_at once, so the grace clock survives a reload.
+            if (!alreadyStarted) {
+              fetch(`/api/steps/${stepUuid}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ started_at: new Date().toISOString() }),
+              }).catch((err) =>
+                console.error("[useWizard] Failed to save step start time:", err)
+              );
+            }
           }
+
+          // Local stamp (first reach only) so the grace clock starts now without
+          // waiting for a reload — mirrors the completed_at stamp in toggleComplete.
+          const nextStepTimestamps = alreadyStarted
+            ? prev.stepTimestamps
+            : {
+                ...prev.stepTimestamps,
+                [stepId]: { ...(prev.stepTimestamps[stepId] || {}), startedAt: Date.now() },
+              };
 
           return {
             ...prev,
             currentStep: idx,
             collapsedSteps: { ...prev.collapsedSteps, [stepId]: false },
+            stepTimestamps: nextStepTimestamps,
           };
         });
       },
@@ -420,10 +466,21 @@ export function useWizard(options: UseWizardOptions = {}) {
         // Optimistic update
         setState((prev) => {
           const newCompleted = new Set(prev.completedSteps);
-          if (newCompleted.has(stepKey)) newCompleted.delete(stepKey);
-          else newCompleted.add(stepKey);
+          const nowCompleting = !newCompleted.has(stepKey);
+          if (nowCompleting) newCompleted.add(stepKey);
+          else newCompleted.delete(stepKey);
 
-          return { ...prev, completedSteps: newCompleted };
+          // Stamp/clear completed_at locally so the case-strength "behind step"
+          // escalation clock is accurate without waiting for a reload.
+          const prevTs = prev.stepTimestamps[stepKey] || {};
+          return {
+            ...prev,
+            completedSteps: newCompleted,
+            stepTimestamps: {
+              ...prev.stepTimestamps,
+              [stepKey]: { ...prevTs, completedAt: nowCompleting ? Date.now() : null },
+            },
+          };
         });
 
         if (stepUuid) {
@@ -448,12 +505,20 @@ export function useWizard(options: UseWizardOptions = {}) {
             }
           } catch (err) {
             console.error("[useWizard] sync failed:", err);
-            // Rollback
+            // Rollback (including the optimistic completed_at stamp)
             setState((prev) => {
               const newCompleted = new Set(prev.completedSteps);
               if (!isCompleted) newCompleted.delete(stepKey);
               else newCompleted.add(stepKey);
-              return { ...prev, completedSteps: newCompleted };
+              const prevTs = prev.stepTimestamps[stepKey] || {};
+              return {
+                ...prev,
+                completedSteps: newCompleted,
+                stepTimestamps: {
+                  ...prev.stepTimestamps,
+                  [stepKey]: { ...prevTs, completedAt: isCompleted ? prevTs.completedAt ?? null : null },
+                },
+              };
             });
           }
           setIsSyncing(false);

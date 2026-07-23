@@ -202,7 +202,7 @@
       </div>
       <div class="question-box">
         <div class="question-label">Question 1 of 12</div>
-        <div class="question-text" id="q1text">When did you first meet your spouse?</div>
+        <div class="question-text" id="q1text">Take me through the timeline.</div>
       </div>
       <div class="answer-box">
         <div class="answer-text" id="typedAnswer"><span class="cursor"></span></div>
@@ -227,12 +227,12 @@
       </div>
       <div class="answer-box" style="border-color:var(--border,rgba(0,0,0,0.1));min-height:auto;">
         <div style="font-size:11px;color:var(--text-muted,#999);margin-bottom:5px;font-weight:500;">Your answer</div>
-        <div style="font-size:13px;color:var(--text-secondary,#555);line-height:1.6;">We met in 2018 at a mutual friend's birthday party in Chicago. We exchanged numbers that evening.</div>
+        <div style="font-size:13px;color:var(--text-secondary,#555);line-height:1.6;">We submitted everything and then waited for the interview.</div>
       </div>
       <div class="feedback-grid">
         <div class="fb-item good"><span class="icon" aria-hidden="true">✓</span> Clear answer</div>
         <div class="fb-item good"><span class="icon" aria-hidden="true">✓</span> Complete details</div>
-        <div class="fb-item warn" style="grid-column:1/-1;"><span class="icon" aria-hidden="true">⚠</span> Add more context about how you stayed in touch</div>
+        <div class="fb-item warn" style="grid-column:1/-1;"><span class="icon" aria-hidden="true">⚠</span> Add specific dates and key milestones.</div>
       </div>
       <div>
         <div class="progress-bar-wrap"><div class="progress-bar" id="pb1" style="--w:62%;width:62%;"></div></div>
@@ -251,7 +251,7 @@
       </div>
       <div class="answer-box" style="border-color:#1D9E75;">
         <div style="font-size:11px;color:var(--text-muted,#999);margin-bottom:5px;font-weight:500;">Improved answer</div>
-        <div style="font-size:13px;color:var(--text-secondary,#555);line-height:1.6;" id="improvedText">We met in June 2018 at a birthday party in Chicago through a mutual friend. We stayed in touch via messages and went on our first date three weeks later.<span class="cursor"></span></div>
+        <div style="font-size:13px;color:var(--text-secondary,#555);line-height:1.6;" id="improvedText">We filed our petition in March 2023, completed document submission in November, and received our interview appointment in June 2025.<span class="cursor"></span></div>
       </div>
       <div style="display:flex;flex-direction:column;gap:8px;">
         <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;padding:8px 12px;border-radius:10px;background:#fdf6ec;border:0.5px solid #FAC775;">
@@ -435,7 +435,7 @@ function runScene1() {
     timerEl.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
   }, 1000);
 
-  const txt = "We met in 2018 at a birthday party in Chicago through a mutual friend.";
+  const txt = "We submitted everything and then waited for the interview.";
   let i = 0;
   function typeChar() {
     if (i <= txt.length) {

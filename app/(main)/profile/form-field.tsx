@@ -110,7 +110,7 @@ export function FormField({
 
 interface FormSelectProps {
   label: string;
-  value: string;
+  value?: string;
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
   required?: boolean;
@@ -140,7 +140,7 @@ export function FormSelect({
         {required && <span className="text-red-500 ml-0.5">*</span>}
       </Label>
       <select
-        value={value}
+        value={value ?? ""}
         onChange={(e) => onChange(e.target.value)}
         disabled={disabled || readOnly}
         className={cn(

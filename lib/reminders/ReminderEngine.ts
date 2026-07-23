@@ -12,8 +12,32 @@
 // ============================================================
 
 import { SupabaseClient } from "@supabase/supabase-js";
-import type { ReminderCandidate } from "./types";
+import type { ReminderCandidate, ReminderPriority } from "./types";
 import { ir1journeyHref } from "@/lib/constants/routes";
+import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
+import {
+  computeDocumentStage,
+  type DocumentEscalationConfig,
+} from "@/lib/case-strength/alert-gating";
+
+const DAY_MS = 86_400_000;
+
+/**
+ * Server-side twin of the dashboard's document-checklist escalation. When a
+ * category opts in (`profile.documentEscalation`), a missing-document reminder
+ * is derived from the SAME `computeDocumentStage` the Alert Center uses, so the
+ * bell/email can never contradict the dashboard (§2, §4–§5 of
+ * CASE_STRENGTH_ALERT_ESCALATION_PLAN.md). The calm "to-do" (info) stage is NOT
+ * pushed — it lives only on the dashboard checklist; the bell is the escalation
+ * delivery layer for due-soon (→ normal) and critical (→ high).
+ */
+interface DocEscalationContext {
+  cfg: DocumentEscalationConfig;
+  /** ms epoch, or null when the user hasn't set a target filing date. */
+  targetFilingDate: number | null;
+  /** step_key → status + timestamps, for stage computation. */
+  steps: Map<string, { status: string; startedAt: number | null; completedAt: number | null }>;
+}
 
 export class ReminderEngine {
   constructor(private supabase: SupabaseClient) {}
@@ -127,17 +151,110 @@ export class ReminderEngine {
 
     if (!docs || docs.length === 0) return [];
 
-    return docs.map((doc) => ({
-      reminder_type: "missing_document" as const,
-      priority: "high" as const,
-      title: `Document Required: ${doc.document_label || doc.document_type}`,
-      body: `Your "${doc.document_label || doc.document_type}" is required but has not been uploaded yet. Upload it to keep your case on track.`,
-      step_key: doc.step_key ?? undefined,
-      reference_id: doc.id,
-      action_url: ir1journeyhref,
-      action_label: "Upload Document",
-      dedup_key: `${journeyId}:missing_document:${doc.document_type}`,
-    }));
+    // Opt-in escalation: when the category enables it, derive urgency from the
+    // shared stage engine so the bell matches the dashboard. No config → legacy
+    // instant-"high" behavior (IR-1), byte-for-byte unchanged.
+    const ctx = await this.getDocEscalationContext(journeyId);
+    if (!ctx) {
+      return docs.map((doc) => ({
+        reminder_type: "missing_document" as const,
+        priority: "high" as const,
+        title: `Document Required: ${doc.document_label || doc.document_type}`,
+        body: `Your "${doc.document_label || doc.document_type}" is required but has not been uploaded yet. Upload it to keep your case on track.`,
+        step_key: doc.step_key ?? undefined,
+        reference_id: doc.id,
+        action_url: ir1journeyHref,
+        action_label: "Upload Document",
+        dedup_key: `${journeyId}:missing_document:${doc.document_type}`,
+      }));
+    }
+
+    const now = Date.now();
+    const out: ReminderCandidate[] = [];
+    for (const doc of docs) {
+      const stage = this.resolveDocStage(doc.step_key ?? null, ctx, now);
+      if (stage === "info") continue; // calm to-do stays on the dashboard only
+      const name = doc.document_label || doc.document_type;
+      const critical = stage === "critical";
+      out.push({
+        reminder_type: "missing_document",
+        priority: (critical ? "high" : "normal") as ReminderPriority,
+        title: critical ? `Document Required: ${name}` : `Document Due Soon: ${name}`,
+        body: critical
+          ? `Your "${name}" is required to submit and is now blocking your petition. Please upload it as soon as possible.`
+          : `Your "${name}" will be needed as your filing step approaches. Uploading it soon keeps your case on track.`,
+        step_key: doc.step_key ?? undefined,
+        reference_id: doc.id,
+        action_url: ir1journeyHref,
+        action_label: "Upload Document",
+        dedup_key: `${journeyId}:missing_document:${doc.document_type}`,
+      });
+    }
+    return out;
+  }
+
+  /**
+   * Load the document-escalation context for a journey, or null when the
+   * category hasn't opted in (→ callers keep legacy behavior). Only queried when
+   * a checker actually has missing documents, so IR-1 pays nothing.
+   */
+  private async getDocEscalationContext(journeyId: string): Promise<DocEscalationContext | null> {
+    const { data: journey } = await this.supabase
+      .from("journeys")
+      .select("journey_type")
+      .eq("id", journeyId)
+      .single();
+
+    const profile = resolveCaseStrengthProfile(journey?.journey_type);
+    if (!profile.documentEscalation) return null;
+
+    const [{ data: caseRows }, { data: stepRows }] = await Promise.all([
+      this.supabase
+        .from("case_data")
+        .select("data_value")
+        .eq("journey_id", journeyId)
+        .eq("data_key", "targetFilingDate"),
+      this.supabase
+        .from("steps")
+        .select("step_key, status, started_at, completed_at, chapters!inner(journey_id)")
+        .eq("chapters.journey_id", journeyId),
+    ]);
+
+    const rawFiling = caseRows?.[0]?.data_value;
+    const parsedFiling = rawFiling != null ? new Date(String(rawFiling).replace(/^"|"$/g, "")) : null;
+    const targetFilingDate =
+      parsedFiling && !Number.isNaN(parsedFiling.getTime()) ? parsedFiling.getTime() : null;
+
+    const steps = new Map<
+      string,
+      { status: string; startedAt: number | null; completedAt: number | null }
+    >();
+    for (const s of stepRows ?? []) {
+      const key = (s as any).step_key as string | null;
+      if (!key) continue;
+      const startedAt = (s as any).started_at ? new Date((s as any).started_at).getTime() : null;
+      const completedAt = (s as any).completed_at
+        ? new Date((s as any).completed_at).getTime()
+        : null;
+      steps.set(key, { status: (s as any).status, startedAt, completedAt });
+    }
+
+    return { cfg: profile.documentEscalation, targetFilingDate, steps };
+  }
+
+  /** Compute the escalation stage for one document's owning step. */
+  private resolveDocStage(
+    stepKey: string | null,
+    ctx: DocEscalationContext,
+    now: number
+  ): "info" | "warning" | "critical" {
+    const step = stepKey ? ctx.steps.get(stepKey) : undefined;
+    const isBehind = step?.status === "completed";
+    const anchor = isBehind ? step?.completedAt : step?.startedAt;
+    const daysOnStep = anchor ? Math.max(0, Math.floor((now - anchor) / DAY_MS)) : 0;
+    const daysUntilFiling =
+      ctx.targetFilingDate !== null ? Math.ceil((ctx.targetFilingDate - now) / DAY_MS) : null;
+    return computeDocumentStage({ daysOnStep, daysUntilFiling, isBehind, cfg: ctx.cfg });
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -214,7 +331,7 @@ export class ReminderEngine {
         title,
         body,
         step_key: "step_3_3",
-        action_url: ir1journeyhref,
+        action_url: ir1journeyHref,
         action_label: "Update PCC Status",
         // dedup_key changes each week — so a fresh escalated notification appears
         dedup_key: `${journeyId}:pcc_tracking:week${week}`,
@@ -269,7 +386,7 @@ export class ReminderEngine {
         body: `Your ${typeLabel.toLowerCase()} is scheduled for ${dateStr}${appt.location ? ` at ${appt.location}` : ""}. Make sure everything is ready.`,
         step_key: appt.step_key ?? undefined,
         reference_id: appt.id,
-        action_url: ir1journeyhref,
+        action_url: ir1journeyHref,
         action_label: "View Details",
         dedup_key: `${journeyId}:appointment_approaching:${appt.id}:${diffDays}d`,
       };
@@ -312,7 +429,7 @@ export class ReminderEngine {
         title: "USCIS Receipt Number Not Recorded",
         body: "Once USCIS processes your petition, you will receive a receipt notice with a case number. Enter it here to track your case and activate waiting-state guidance.",
         step_key: "I.9",
-        action_url: ir1journeyhref,
+        action_url: ir1journeyHref,
         action_label: "Enter Receipt Number",
         dedup_key: `${journeyId}:receipt_not_captured`,
       },
@@ -352,7 +469,7 @@ export class ReminderEngine {
         title: "NVC Fee Payment Not Confirmed",
         body: "Your NVC fee payment has not yet been confirmed as posted in CEAC. DS-260 becomes available only after fees are marked as posted. Check CEAC and update your status.",
         step_key: "II.2",
-        action_url: ir1journeyhref,
+        action_url: ir1journeyHref,
         action_label: "Check CEAC Status",
         dedup_key: `${journeyId}:nvc_fee_not_confirmed`,
       },
@@ -391,7 +508,7 @@ export class ReminderEngine {
         title: "USCIS Account Not Saved to Portal Wallet",
         body: "Save your USCIS account credentials to your Portal Wallet so you can quickly access your case online whenever you need to.",
         step_key: "I.5",
-        action_url: ir1journeyhref,
+        action_url: ir1journeyHref,
         action_label: "Save to Wallet",
         dedup_key: `${journeyId}:account_setup_incomplete`,
       },
@@ -437,7 +554,7 @@ export class ReminderEngine {
         body: `You started the ${label} but left at ${pct}% completion. Return to pick up where you left off — your progress is saved.`,
         step_key: session.step_key,
         reference_id: session.id,
-        action_url: ir1journeyhref,
+        action_url: ir1journeyHref,
         action_label: "Resume Tool",
         dedup_key: `${journeyId}:tool_session_abandoned:${session.tool_key}`,
       };
@@ -478,7 +595,7 @@ export class ReminderEngine {
         title: "Medical Exam Date Not Recorded",
         body: "You are in Chapter III but your medical exam appointment date has not been saved. Record it so Rahvana can remind you as it approaches.",
         step_key: "III.1",
-        action_url: ir1journeyhref,
+        action_url: ir1journeyHref,
         action_label: "Record Date",
         dedup_key: `${journeyId}:appointment_not_recorded:medical`,
       });
@@ -491,7 +608,7 @@ export class ReminderEngine {
         title: "Interview Date Not Recorded",
         body: "Your consular interview date has not been saved. Add it to receive timely reminders and preparation guidance.",
         step_key: "III.4",
-        action_url: ir1journeyhref,
+        action_url: ir1journeyHref,
         action_label: "Record Date",
         dedup_key: `${journeyId}:appointment_not_recorded:interview`,
       });
@@ -559,7 +676,7 @@ export class ReminderEngine {
         priority,
         title,
         body,
-        action_url: ir1journeyhref,
+        action_url: ir1journeyHref,
         action_label: "View Tracking",
         dedup_key: `${journeyId}:tracking_status:${status}`,
       },
@@ -633,10 +750,21 @@ export class ReminderEngine {
     const pendingLabels = pendingDocs.map((id) => REQUIRED_DOC_LABELS[id]);
     const count = pendingDocs.length;
 
+    // Opt-in escalation: match the dashboard's urgency for step_1_2 instead of an
+    // instant "high". Calm (info) stage → don't push (dashboard shows it). No
+    // config → legacy "high" behavior (IR-1), unchanged.
+    let priority: ReminderPriority = "high";
+    const ctx = await this.getDocEscalationContext(journeyId);
+    if (ctx) {
+      const stage = this.resolveDocStage("step_1_2", ctx, Date.now());
+      if (stage === "info") return [];
+      priority = stage === "critical" ? "high" : "normal";
+    }
+
     return [
       {
         reminder_type: "missing_document" as const,
-        priority: "high" as const,
+        priority,
         title: `Complete your documents — ${count} item${count !== 1 ? "s" : ""} pending`,
         body: `Your document checklist for Chapter 1, Step 2 is incomplete. Still needed: ${pendingLabels.join(", ")}. Mark each document as ready to keep your case on track.`,
         step_key: "step_1_2",

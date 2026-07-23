@@ -13,7 +13,8 @@
   },
   "features": {
     "hasRapidFire": true,
-    "hasProfileAutoFill": true
+    "hasProfileAutoFill": true,
+    "hasMockInterview": true
   },
   "ui": {
     "themeColor": "teal",

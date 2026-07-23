@@ -316,3 +316,111 @@ describe("Numeric strength — relationship signal by category", () => {
     expect(r.riskFlags).toHaveLength(0);
   });
 });
+
+// ── 9. Evidence Gap maps the real IR-5 journey document ids ─────────────────────
+// The engine's document→category map was built for IR-1 ids. IR-5 (ir-5.json)
+// uses different ids; these lock in that the parent docs land in the right
+// category instead of being silently dropped by the keyword fallback.
+
+describe("Evidence Gap — IR-5 journey document mapping", () => {
+  const ir5Reqs = IR5_PROFILE.evidence.requirements;
+  const base = {
+    vaultDocuments: [] as EvidenceGapInput["vaultDocuments"],
+    caseData: {},
+    questionnaireResponses: {},
+  };
+  const journeyDoc = (document_type: string, is_required = false) => ({
+    document_type,
+    status: "uploaded",
+    is_required,
+  });
+
+  it("family photos ('photos' id) count toward FAMILY_INTEGRATION, not dropped", () => {
+    const analysis = new EvidenceGapEngine(ir5Reqs).analyze({
+      ...base,
+      journeyDocuments: [journeyDoc("photos")],
+    });
+    expect(analysis.categories.FAMILY_INTEGRATION.items.length).toBeGreaterThan(0);
+    // and it satisfies the family_photos requirement (no longer "missing")
+    const missing = analysis.categories.FAMILY_INTEGRATION.missingSupporting
+      .map((m) => m.item.toLowerCase())
+      .join(" | ");
+    expect(missing).not.toContain("photos");
+  });
+
+  it("the parent-legitimacy marriage doc lands in IDENTITY (civil), never dropped", () => {
+    const analysis = new EvidenceGapEngine(ir5Reqs).analyze({
+      ...base,
+      journeyDocuments: [journeyDoc("doc_parents_marriage")],
+    });
+    // Present as an IDENTITY item (parent-child legitimacy) — IR-5 has no
+    // RELATIONSHIP card at all, so it must not vanish.
+    expect(analysis.categories.IDENTITY.items.some((i) => i.id.includes("parents_marriage"))).toBe(
+      true
+    );
+  });
+
+  it("parent passport + birth-cert ids satisfy the IR-5 required civil docs", () => {
+    const analysis = new EvidenceGapEngine(ir5Reqs).analyze({
+      ...base,
+      journeyDocuments: [
+        journeyDoc("doc_parent_passport", true),
+        journeyDoc("doc_parent_birth_cert", true),
+        journeyDoc("doc_petitioner_birth_cert", true),
+      ],
+    });
+    const missing = analysis.requiredDocuments.missing.map((m) => m.name.toLowerCase()).join(" | ");
+    // Birth certificate + parent's passport now found; only the petitioner's
+    // passport remains outstanding.
+    expect(missing).not.toMatch(/birth/);
+    expect(missing).toContain("petitioner");
+  });
+});
+
+// ── 10. IR-5 eligibility detector matches IR-5's REAL q5 questionnaire ──────────
+// IR-5's eligibility quest (ir-5.json) renumbered/re-polarized q5 vs IR-1. These
+// lock in that IR-5 reads its own ids/values and never reuses IR-1's polarity.
+
+describe("IR-5 eligibility risk detector (q5 semantics)", () => {
+  const ir5 = IR5_PROFILE.detectEligibilityRisks;
+  const ir1 = IR1_PROFILE.detectEligibilityRisks;
+  const q5 = (screens: Record<string, string>) => ({ q5: screens });
+  const ids = (flags: Array<{ id: string }>) => flags.map((f) => f.id);
+
+  it("does NOT flag income when sponsorship is manageable (q5s5='yes') — the reported bug", () => {
+    expect(ids(ir5(q5({ q5s5: "yes" })))).not.toContain("financial_sponsorship_concern");
+  });
+
+  it("flags income concern only when q5s5 is 'no' / 'possible' / 'unsure'", () => {
+    for (const v of ["no", "possible", "unsure"]) {
+      expect(ids(ir5(q5({ q5s5: v })))).toContain("financial_sponsorship_concern");
+    }
+  });
+
+  it("treats q5s4 as a HEALTH concern, not an unlawful-presence waiver", () => {
+    const flags = ir5(q5({ q5s4: "yes" }));
+    expect(ids(flags)).toContain("medical_vaccination_concern");
+    expect(ids(flags)).not.toContain("unlawful_presence_history");
+  });
+
+  it("reads unlawful presence from q5s3 (IR-5's id), not q5s4", () => {
+    expect(ids(ir5(q5({ q5s3: "yes" })))).toContain("unlawful_presence_history");
+    expect(ids(ir5(q5({ q5s4: "yes" })))).not.toContain("unlawful_presence_history");
+  });
+
+  it("flags immigration (q5s1), criminal (q5s2), domicile (q5s6), separate petition (q5s7)", () => {
+    expect(ids(ir5(q5({ q5s1: "yes" })))).toContain("parent_immigration_or_fraud_history");
+    expect(ids(ir5(q5({ q5s2: "yes" })))).toContain("parent_criminal_history");
+    expect(ids(ir5(q5({ q5s6: "no" })))).toContain("domicile_concern");
+    expect(ids(ir5(q5({ q5s7: "no" })))).toContain("separate_petition_required");
+  });
+
+  it("never emits the spouse-only prior-marriage flag (IR-1's q3 logic)", () => {
+    const flags = ir5({ q3: { q3s1: "petitioner", q3s3: "no" }, q5: { q5s5: "no" } });
+    expect(ids(flags)).not.toContain("missing_prior_marriage_termination");
+  });
+
+  it("IR-1 keeps its original polarity: q5s5='yes' DOES flag income (no regression)", () => {
+    expect(ids(ir1(q5({ q5s5: "yes" })))).toContain("financial_sponsorship_concern");
+  });
+});

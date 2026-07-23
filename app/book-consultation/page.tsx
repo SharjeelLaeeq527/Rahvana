@@ -873,7 +873,6 @@ const ConsultationBookingPageContent = () => {
             },
             body: JSON.stringify({
               consultationDetails,
-              userId: user.id,
             }),
           });
 

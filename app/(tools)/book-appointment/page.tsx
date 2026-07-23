@@ -2595,7 +2595,6 @@ export default function WilcareAppointmentForm() {
             },
             body: JSON.stringify({
               appointmentId: appointmentId,
-              userId: user.id,
             }),
           });
 

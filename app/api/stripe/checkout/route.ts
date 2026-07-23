@@ -8,8 +8,11 @@ import { reconcileUserPlan } from "@/lib/plan/reconcile";
 import * as fs from "fs";
 import * as path from "path";
 import { E, msg } from "@/lib/errors";
+import { getAuthenticatedUser } from "@/lib/api/authGuards";
 
 function logDebug(msg: string, obj?: any) {
+  // Never write request/session details to disk in production (PII hygiene).
+  if (process.env.NODE_ENV === "production") return;
   try {
     const logPath = path.join(process.cwd(), "api-debug.log");
     const time = new Date().toISOString();
@@ -25,11 +28,19 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 export async function POST(request: NextRequest) {
   logDebug("--- NEW CHECKOUT REQUEST ---");
   try {
+    // AUTH: the buyer is always the authenticated user. Never trust a `userId`
+    // from the request body — that allowed anyone to create checkouts/payment
+    // rows for arbitrary accounts.
+    const user = await getAuthenticatedUser();
+    if (!user) {
+      return NextResponse.json({ error: "Authentication required" }, { status: 401 });
+    }
+    const userId = user.id;
+
     const body = await request.json();
-    logDebug("Request body:", body);
+    logDebug("Request body received");
     const {
       productTier,
-      userId,
       consultationId,
       consultationDetails,
       appointmentId,
@@ -37,18 +48,7 @@ export async function POST(request: NextRequest) {
       documentTranslationId,
       addons,
       visaCategory,
-      isUpgrade,
-      currentTier,
     } = body;
-
-    // Validate required fields
-    if (!userId) {
-      logDebug("Returning 400 User ID is required");
-      return NextResponse.json(
-        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[userId]" }) },
-        { status: 400 }
-      );
-    }
 
     // Get user email from Supabase
     const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
@@ -78,6 +78,17 @@ export async function POST(request: NextRequest) {
       profile?.profile_details?.plan_visa_category || profile?.profile_details?.visa_category;
     const effectiveVisaCategory = visaCategory || dbVisaCategory || "IR-1 / CR-1";
     const oldSubscriptionId = profile?.profile_details?.stripe_subscription_id;
+
+    // ── Authoritative upgrade state — derived from the DB, NEVER the client ──
+    // The proration below subtracts the current-tier price from the target
+    // price. If we trusted a client-supplied `currentTier`/`isUpgrade`, a free
+    // user could send { isUpgrade: true, currentTier: "premium" } and pay only
+    // the tier *difference* while still being provisioned the full higher tier.
+    // So both are computed from the DB profile only.
+    const dbTierForUpgrade = (profile?.subscription_tier ?? "free").toLowerCase();
+    const dbActiveForUpgrade = (profile?.subscription_status ?? "inactive") === "active";
+    const serverIsUpgrade = dbActiveForUpgrade && dbTierForUpgrade !== "free";
+    const serverCurrentTier = serverIsUpgrade ? dbTierForUpgrade : undefined;
 
     // ── Server-side downgrade + duplicate-purchase guard ─────────────────────
     // Rejects two scenarios:
@@ -203,21 +214,21 @@ export async function POST(request: NextRequest) {
           const plan = category.plans.find((p) => p.id === tierLower);
           if (plan) targetAnnualPrice = plan.price;
 
-          if (isUpgrade && currentTier) {
-            const cPlan = category.plans.find((p) => p.id === currentTier);
+          if (serverIsUpgrade && serverCurrentTier) {
+            const cPlan = category.plans.find((p) => p.id === serverCurrentTier);
             if (cPlan) currentAnnualPrice = cPlan.price;
           }
         }
-      } else if (isUpgrade && currentTier) {
+      } else if (serverIsUpgrade && serverCurrentTier) {
         let currentProduct: any = null;
-        if (currentTier === "basic") currentProduct = PRODUCTS.BASIC;
-        if (currentTier === "premium") currentProduct = PRODUCTS.PREMIUM;
-        if (currentTier === "executive") currentProduct = PRODUCTS.EXECUTIVE;
+        if (serverCurrentTier === "basic") currentProduct = PRODUCTS.BASIC;
+        if (serverCurrentTier === "premium") currentProduct = PRODUCTS.PREMIUM;
+        if (serverCurrentTier === "executive") currentProduct = PRODUCTS.EXECUTIVE;
         if (currentProduct) currentAnnualPrice = currentProduct.price;
       }
 
       let effectiveAnnualPrice = targetAnnualPrice;
-      if (isUpgrade && currentTier && targetAnnualPrice > currentAnnualPrice) {
+      if (serverIsUpgrade && serverCurrentTier && targetAnnualPrice > currentAnnualPrice) {
         effectiveAnnualPrice = targetAnnualPrice - currentAnnualPrice;
       }
 
@@ -261,10 +272,10 @@ export async function POST(request: NextRequest) {
         stripe_customer_id: stripeCustomerId!,
         product_type: "journey_plan",
         product_id: productTier,
-        product_name: product.name + (isUpgrade ? " (Upgrade)" : ""),
+        product_name: product.name + (serverIsUpgrade ? " (Upgrade)" : ""),
         visa_category: effectiveVisaCategory,
-        is_upgrade: isUpgrade ? "true" : "false",
-        old_subscription_id: isUpgrade ? oldSubscriptionId || "" : "",
+        is_upgrade: serverIsUpgrade ? "true" : "false",
+        old_subscription_id: serverIsUpgrade ? oldSubscriptionId || "" : "",
       };
 
       // Add-ons — one-time items alongside subscription

@@ -400,6 +400,36 @@ const JOURNEY_DOC_ID_TO_EVIDENCE: Record<string, EvidenceCategory> = {
   "prior-marriage": "IDENTITY",
   "death-cert": "IDENTITY",
   namechange: "IDENTITY",
+
+  // ── IR-5 (parent) journey documents ──────────────────────────────────────
+  // Ids come from data/visa-category/ir-5.json. Without these, the map's default
+  // keyword fallback dropped a few: "photos" matched no keyword, and the
+  // parent-legitimacy "marriage" docs contain "marriage" but not "marriage_cert"
+  // so they fell through to null. Explicit entries fix that.
+  //
+  // NOTE: for a parent case the marriage documents are the PETITIONER's parents'
+  // (or a step-parent's) marriage — they establish the parent-child legitimacy
+  // link, so they are IDENTITY (civil documents), NOT spouse RELATIONSHIP
+  // evidence. Family photos / children's birth certs are the parent-child bond →
+  // FAMILY_INTEGRATION.
+  doc_petitioner_birth_cert: "IDENTITY",
+  doc_parent_passport: "IDENTITY",
+  doc_parent_birth_cert: "IDENTITY",
+  doc_parents_marriage: "IDENTITY",
+  doc_stepparent_marriage: "IDENTITY",
+  doc_stepparent_prior_marriages: "IDENTITY",
+  doc_parent_marriage_history: "IDENTITY",
+  "parent-birth": "IDENTITY",
+  "petitioner-birth": "IDENTITY",
+  "parent-birth-cert": "IDENTITY",
+  "petitioner-birth-cert": "IDENTITY",
+  "parent-marriage": "IDENTITY",
+  "parent-marriage-cert": "IDENTITY",
+  "prior-marriage-termination": "IDENTITY",
+  "children-birth-certs": "FAMILY_INTEGRATION",
+  "i864-petitioner": "FINANCIAL",
+  "tax-docs-petitioner": "FINANCIAL",
+  photos: "FAMILY_INTEGRATION",
 };
 
 // Vault Category to Evidence Category Mapping
@@ -440,11 +470,34 @@ export class EvidenceGapEngine {
     const stats = this.calculateStats(assessments, requiredDocsSummary);
     const gapSummary = this.generateGapSummary(requiredDocsSummary, assessments);
 
+    // User-provided-only view. The wizard hydrates journey docs and case_data
+    // from profile autofill, so those sources inflate the evidence signal even
+    // when the user has uploaded nothing. For the weighted Case Strength score
+    // (Evidence Strength + Completeness ingredients) we re-assess counting only
+    // real user signal: uploaded vault documents, plus explicit questionnaire
+    // answers (which assessCategories folds in). See CASE_STRENGTH_ALERT_
+    // ESCALATION_PLAN.md §6E.
+    const userItems = items.filter((i) => i.source === "vault");
+    const userAssessments = this.assessCategories(userItems, input.questionnaireResponses);
+    const userRequiredDocs = this.calculateRequiredDocumentsSummary(userAssessments);
+    const userProvided = {
+      score: this.calculateOverallScore(userAssessments, userRequiredDocs),
+      evidenceCount: userItems.length,
+      completionPercentage: userRequiredDocs.completionPercentage,
+      // Full user-provided sub-view so the Case Analysis drawer and the case
+      // narrative can render honest (autofill-free) numbers, not just the score.
+      requiredDocuments: userRequiredDocs,
+      categories: userAssessments,
+      stats: this.calculateStats(userAssessments, userRequiredDocs),
+      recommendations: this.generateRecommendations(userAssessments),
+    };
+
     return {
       categories: assessments,
       requiredDocuments: requiredDocsSummary,
       recommendations,
       overallScore: this.calculateOverallScore(assessments, requiredDocsSummary),
+      userProvided,
       analyzedAt: new Date(),
       stats,
       gapSummary,
@@ -964,7 +1017,7 @@ export class EvidenceGapEngine {
 
       // Family
       children_birth_certs: ["children", "childrenbirth", "birthcerts", "children_birth"],
-      family_photos: ["familyphotos", "family", "family_photos"],
+      family_photos: ["familyphotos", "family", "family_photos", "photos"],
       school_records: ["school", "schoolrecords", "school_records"],
       medical_records: ["medical", "medicalrecords", "medical_records"],
 

@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { E, msg } from "@/lib/errors";
+import { requireAdmin } from "@/lib/api/authGuards";
 function getStorageSupabase() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -14,6 +15,12 @@ function getStorageSupabase() {
 
 export async function GET(request: NextRequest) {
   try {
+    // AUTHZ: admin only (this route uses the service role → bypasses RLS)
+    const { isAdmin, error: authError } = await requireAdmin();
+    if (!isAdmin) {
+      return NextResponse.json({ error: authError || "Admin access required" }, { status: 403 });
+    }
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get("status");
     const limit = parseInt(searchParams.get("limit") || "50");
