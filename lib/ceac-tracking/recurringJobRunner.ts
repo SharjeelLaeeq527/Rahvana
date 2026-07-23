@@ -25,7 +25,7 @@ import { CeacReminderEngine } from "./CeacReminderEngine";
 import { UnifiedReminderEngine } from "@/lib/notifications/UnifiedReminderEngine";
 import { getReminderById } from "@/lib/notifications/reminderRegistry";
 import type { CeacScheduledNotification } from "./types";
-import { ir1journeyHref } from "@/lib/constants/routes";
+import { getJourneyHrefByType } from "@/lib/constants/routes";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -176,10 +176,10 @@ async function _deliverNotification(
   supabase: ReturnType<typeof getAdminClient>,
   notif: CeacScheduledNotification
 ): Promise<void> {
-  // Fetch user_id + email for this journey in one query
+  // Fetch user_id + email + journey type for this journey in one query
   const { data: journeyRow } = await supabase
     .from("journeys")
-    .select("user_id")
+    .select("user_id, journey_type")
     .eq("id", notif.journey_id)
     .single();
 
@@ -204,6 +204,8 @@ async function _deliverNotification(
         ? "high"
         : (def?.priority ?? "normal");
 
+  const defaultActionUrl = getJourneyHrefByType(journeyRow?.journey_type);
+
   await supabase.from("journey_reminders").upsert(
     {
       journey_id: notif.journey_id,
@@ -212,7 +214,10 @@ async function _deliverNotification(
       title: notif.title,
       body: notif.message,
       step_key: stepKey,
-      action_url: def?.actionUrl ?? ir1journeyHref,
+      action_url:
+        def?.actionUrl === undefined || def?.actionUrl === null
+          ? defaultActionUrl
+          : def?.actionUrl,
       action_label: def?.actionLabel ?? "View in Journey",
       is_dismissed: false,
       dedup_key: `${notif.journey_id}:${isJourneyOrigin ? "journey" : "ceac"}:${notif.reminder_id}:${notif.recurrence_count}`,
@@ -226,7 +231,7 @@ async function _deliverNotification(
       from: "Rahvana <noreply@rahvana.com>",
       to: userEmail,
       subject: notif.title,
-      html: _buildEmailHtml(notif.title, notif.message, notif.reminder_type),
+      html: _buildEmailHtml(notif.title, notif.message, notif.reminder_type, journeyRow?.journey_type),
     });
   }
 }
@@ -235,13 +240,18 @@ async function _deliverNotification(
 // EMAIL HTML BUILDER — minimal, clean template
 // ─────────────────────────────────────────────────────────────
 
-function _buildEmailHtml(title: string, message: string, type: string): string {
+function _buildEmailHtml(title: string, message: string, type: string, journeyType?: string | null): string {
   const urgentColor = type === "URGENT" ? "#dc2626" : "#2563eb";
+  const rawType = journeyType ?? "IR1";
+  const formattedType = rawType.trim().toUpperCase().replace(/^(IR|CR)(\d)$/, "$1-$2");
+  const actionUrl = getJourneyHrefByType(journeyType);
+  const fullUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? "https://rahvana.com"}${actionUrl}`;
+
   return `
     <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px">
       <div style="background:#0c1b33;border-radius:12px;padding:20px 24px;margin-bottom:20px">
         <p style="color:#ffffff80;font-size:11px;font-weight:700;text-transform:uppercase;
-                  letter-spacing:.1em;margin:0 0 6px">Rahvana · IR-1 Journey Update</p>
+                  letter-spacing:.1em;margin:0 0 6px">Rahvana · ${formattedType} Journey Update</p>
         <h1 style="color:#ffffff;font-size:20px;font-weight:900;margin:0;line-height:1.3">
           ${title}
         </h1>
@@ -249,13 +259,13 @@ function _buildEmailHtml(title: string, message: string, type: string): string {
       <p style="color:#3a4f63;font-size:14px;line-height:1.7;margin:0 0 24px">
         ${message}
       </p>
-      <a href="${process.env.NEXT_PUBLIC_APP_URL ?? "https://rahvana.com"}/visa-category/ir-category/ir1-journey"
+      <a href="${fullUrl}"
          style="display:inline-block;background:${urgentColor};color:#fff;font-size:13px;
                 font-weight:700;padding:12px 24px;border-radius:8px;text-decoration:none">
         Open Rahvana →
       </a>
       <p style="color:#9ca3af;font-size:11px;margin-top:32px">
-        You are receiving this because you have an active IR-1 journey on Rahvana.
+        You are receiving this because you have an active ${formattedType} journey on Rahvana.
       </p>
     </div>
   `;

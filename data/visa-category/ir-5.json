@@ -1208,9 +1208,7 @@
           "step_description": "Decide between Online vs. Paper filing",
           "who": "Petitioner",
           "where": "Rahvana tool",
-          "dependencies": [
-            "step_1_2"
-          ],
+          "dependencies": ["step_1_2"],
           "visible_when": {},
           "estimated_duration_days": 1,
           "is_required": true,
@@ -1467,9 +1465,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov",
           "timeline": "2-4 hours",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "estimated_duration_days": 2,
           "is_required": true,
           "display_order": 4,
@@ -1510,9 +1506,7 @@
           },
           "step_description": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
           "who": "Petitioner",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 5,
@@ -1586,9 +1580,7 @@
           "step_description": "Sign in to your USCIS account and begin the online I-130 petition. From your account dashboard, click \"File a Form Online\" to start the form and enter your prepared information.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_5"
-          ],
+          "dependencies": ["step_1_5"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 6,
@@ -1848,9 +1840,7 @@
           "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase — your documents become part of the official I-130 filing record.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
-          "dependencies": [
-            "step_1_6"
-          ],
+          "dependencies": ["step_1_6"],
           "visible_when": {
             "filingMethodConfirmed": true,
             "filingMethod": "online"
@@ -1982,13 +1972,7 @@
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Always verify current requirements at uscis.gov before submitting.",
             "quality_requirements": {
               "max_file_size_mb": 12,
-              "accepted_formats": [
-                "PDF",
-                "JPG",
-                "JPEG",
-                "TIF",
-                "TIFF"
-              ],
+              "accepted_formats": ["PDF", "JPG", "JPEG", "TIF", "TIFF"],
               "guidance": [
                 "Each individual file must be 12 MB or smaller (USCIS portal limit)",
                 "Scans must be clear and legible — USCIS commonly issues RFEs for unreadable documents",
@@ -2014,9 +1998,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov / pay.gov",
           "timeline": "Same session as submission",
-          "dependencies": [
-            "step_1_7"
-          ],
+          "dependencies": ["step_1_7"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 8,
@@ -2175,9 +2157,7 @@
           "who": "Petitioner",
           "where": "my.uscis.gov",
           "timeline": "Same session as payment",
-          "dependencies": [
-            "step_1_8"
-          ],
+          "dependencies": ["step_1_8"],
           "estimated_duration_days": 1,
           "is_required": true,
           "display_order": 9,
@@ -2364,9 +2344,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_3"
-          ],
+          "dependencies": ["step_1_3"],
           "is_required": true,
           "display_order": 10,
           "action_data": {
@@ -2497,9 +2475,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/g-1055?form=i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_10"
-          ],
+          "dependencies": ["step_1_10"],
           "is_required": true,
           "display_order": 11,
           "action_data": {
@@ -2639,9 +2615,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_11"
-          ],
+          "dependencies": ["step_1_11"],
           "is_required": true,
           "display_order": 12,
           "action_data": {
@@ -2799,9 +2773,7 @@
           "who": "Petitioner",
           "where": "uscis.gov/mailing-addresses",
           "timeline": "1-2 hours",
-          "dependencies": [
-            "step_1_12"
-          ],
+          "dependencies": ["step_1_12"],
           "is_required": true,
           "display_order": 13,
           "action_data": {
@@ -2913,10 +2885,7 @@
           "who": "Petitioner",
           "where": "ceac.state.gov",
           "timeline": "1-2 days after receipt",
-          "dependencies": [
-            "step_1_9",
-            "step_1_13"
-          ],
+          "dependencies": ["step_1_9", "step_1_13"],
           "is_required": true,
           "display_order": 14,
           "tool_data": {
@@ -3113,9 +3082,7 @@
           "who": "Petitioner",
           "where": "ceac.state.gov",
           "timeline": "Ongoing after registration",
-          "dependencies": [
-            "step_1_15"
-          ],
+          "dependencies": ["step_1_15"],
           "is_required": true,
           "display_order": 15,
           "tool_data": {
@@ -3256,19 +3223,13 @@
                 "icon": "green",
                 "title": "Add new evidence entries",
                 "copy": "Log visits, upload new photos, and keep a clean timeline of the relationship as it continues.",
-                "buttons": [
-                  "Add note",
-                  "Mark planned"
-                ]
+                "buttons": ["Add note", "Mark planned"]
               },
               {
                 "icon": "rose",
                 "title": "Track household or income changes",
                 "copy": "If finances, employment, or household size change while waiting, keeping that organized now can make later sponsorship steps easier.",
-                "buttons": [
-                  "Save reminder",
-                  "Open notes"
-                ]
+                "buttons": ["Save reminder", "Open notes"]
               }
             ],
             "community": [
@@ -3292,11 +3253,7 @@
                 "kicker": "Official USCIS tracking",
                 "head": "Case Status Online",
                 "copy": "Track your case using the 13-character receipt number.",
-                "pills": [
-                  "Receipt number required",
-                  "Last action shown",
-                  "Official USCIS tool"
-                ],
+                "pills": ["Receipt number required", "Last action shown", "Official USCIS tool"],
                 "note": "A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet."
               },
               {
@@ -3307,12 +3264,7 @@
                 "kicker": "Status guide",
                 "head": "Status meanings",
                 "copy": "Separate passive waiting from states that require action.",
-                "pills": [
-                  "Received",
-                  "Actively reviewed",
-                  "RFE",
-                  "Approved"
-                ],
+                "pills": ["Received", "Actively reviewed", "RFE", "Approved"],
                 "note": "Use this guide to understand whether you need to act now or simply stay prepared."
               },
               {
@@ -3323,11 +3275,7 @@
                 "kicker": "While-you-wait tools",
                 "head": "Stay prepared while waiting",
                 "copy": "A prep checklist, next-step preview, and useful modules for this waiting period.",
-                "pills": [
-                  "Prep checklist",
-                  "Coming next",
-                  "Useful right now"
-                ],
+                "pills": ["Prep checklist", "Coming next", "Useful right now"],
                 "note": "A few small tasks now can make the next phase feel much easier when the case moves forward."
               },
               {
@@ -3338,11 +3286,7 @@
                 "kicker": "Next-step guide",
                 "head": "Pivot when USCIS changes the status",
                 "copy": "RFE and approval should each unlock their own dedicated next-step experiences.",
-                "pills": [
-                  "Conditional branches",
-                  "Next step unlocks",
-                  "Action clarity"
-                ],
+                "pills": ["Conditional branches", "Next step unlocks", "Action clarity"],
                 "note": "Your next task should match the actual update USCIS gives you."
               }
             ],
@@ -3509,10 +3453,7 @@
                   "src": "/assets/images/ir1-journey/c1_step13/approvalnotice.png",
                   "alt": "Approval notice example"
                 },
-                "pills": [
-                  "Save a digital copy",
-                  "Keep the original safe"
-                ],
+                "pills": ["Save a digital copy", "Keep the original safe"],
                 "note": "This is a USCIS milestone notice. The next major handoff is usually to the National Visa Center."
               },
               {
@@ -3524,11 +3465,7 @@
                   "type": "video",
                   "src": "/assets/videos/ir1-journey/c1_step13/savedetails.mp4"
                 },
-                "pills": [
-                  "Approval date",
-                  "Receipt number",
-                  "Priority date if shown"
-                ],
+                "pills": ["Approval date", "Receipt number", "Priority date if shown"],
                 "note": "For IR-1, save the priority date as a record, but do not treat it like the main wait-list driver."
               },
               {
@@ -3542,11 +3479,7 @@
                   "alt": "Approval to NVC flowchart",
                   "frame": false
                 },
-                "pills": [
-                  "Civil documents",
-                  "Financial prep",
-                  "Contact details"
-                ],
+                "pills": ["Civil documents", "Financial prep", "Contact details"],
                 "note": "Use live NVC timeframes for timing context instead of assuming one fixed waiting window."
               }
             ],
@@ -3572,9 +3505,7 @@
           "visible_when": {},
           "is_required": true,
           "who": "Petitioner",
-          "dependencies": [
-            "step_1_16"
-          ]
+          "dependencies": ["step_1_16"]
         }
       ]
     },
@@ -4144,10 +4075,7 @@
                       "icon": "passport",
                       "title": "Parent Beneficiary Passport Biographic Page",
                       "sub": "Current passport page showing the parent's photo, name, date of birth, and passport details",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/passport-guide",
                       "status": "not-started",
                       "required": true,
@@ -4171,10 +4099,7 @@
                       "icon": "birth",
                       "title": "Parent Beneficiary Birth Certificate",
                       "sub": "The parent's official civil birth record",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/birth-certificate-guide",
                       "status": "not-started",
                       "required": true,
@@ -4198,10 +4123,7 @@
                       "icon": "relationship",
                       "title": "Petitioner's Birth Certificate",
                       "sub": "Core IR-5 relationship record identifying the parent beneficiary",
-                      "tags": [
-                        "pet",
-                        "govt"
-                      ],
+                      "tags": ["pet", "govt"],
                       "external_href": "/guides/birth-certificate-guide",
                       "status": "not-started",
                       "required": true,
@@ -4225,10 +4147,7 @@
                       "icon": "police",
                       "title": "Police Certificate",
                       "sub": "Pakistan Character Certificate and any other required police certificates for the parent",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/police-verification-guide",
                       "status": "not-started",
                       "required": true,
@@ -4259,10 +4178,7 @@
                       "icon": "marriage",
                       "title": "Parent Beneficiary Marriage Certificate",
                       "sub": "Official civil proof of the parent's current or relevant marriage",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "external_href": "/guides/nikah-nama-guide",
                       "status": "not-started",
                       "required": false,
@@ -4286,10 +4202,7 @@
                       "icon": "prior-marriage",
                       "title": "Prior Marriage Termination Documents",
                       "sub": "Required if the parent beneficiary had a prior marriage that legally ended",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4312,10 +4225,7 @@
                       "icon": "death-cert",
                       "title": "Death Certificate of Former Spouse",
                       "sub": "Only if the parent's prior marriage ended by death",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4334,10 +4244,7 @@
                       "icon": "relationship",
                       "title": "Father-Child Relationship Evidence",
                       "sub": "Additional proof for certain biological-father cases",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4360,10 +4267,7 @@
                       "icon": "marriage",
                       "title": "Stepparent Relationship Records",
                       "sub": "Marriage and prior-marriage records establishing a qualifying step-relationship",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4382,10 +4286,7 @@
                       "icon": "adoption",
                       "title": "Adoption, Legal Custody, and Joint Residence Records",
                       "sub": "Required in a qualifying adoptive-parent case",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4404,10 +4305,7 @@
                       "icon": "name-change",
                       "title": "Name Change or Identity Discrepancy Documents",
                       "sub": "Legal or supporting proof for different names, spellings, dates, or identities",
-                      "tags": [
-                        "both",
-                        "govt"
-                      ],
+                      "tags": ["both", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4426,10 +4324,7 @@
                       "icon": "court",
                       "title": "Court and Prison Records",
                       "sub": "Required if the parent was arrested, charged, convicted, or imprisoned",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4448,10 +4343,7 @@
                       "icon": "military",
                       "title": "Military or Service Records",
                       "sub": "Required if the parent served in the military or armed forces",
-                      "tags": [
-                        "bene",
-                        "govt"
-                      ],
+                      "tags": ["bene", "govt"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4470,10 +4362,7 @@
                       "icon": "translations",
                       "title": "Certified English Translations",
                       "sub": "Required for documents that must be translated under NVC or post instructions",
-                      "tags": [
-                        "both",
-                        "3p"
-                      ],
+                      "tags": ["both", "3p"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4500,10 +4389,7 @@
                       "icon": "help",
                       "title": "Missing Document / Record Unavailability Evidence",
                       "sub": "When a required civil record genuinely cannot be obtained",
-                      "tags": [
-                        "both",
-                        "3p"
-                      ],
+                      "tags": ["both", "3p"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4533,9 +4419,7 @@
                       "icon": "folder",
                       "title": "IR-5 Relationship Evidence Backup Set",
                       "sub": "Originals and supporting evidence proving the qualifying parent-child relationship",
-                      "tags": [
-                        "both"
-                      ],
+                      "tags": ["both"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4554,9 +4438,7 @@
                       "icon": "folder",
                       "title": "Organized Translation Set",
                       "sub": "Each required translation clearly paired with its source document",
-                      "tags": [
-                        "both"
-                      ],
+                      "tags": ["both"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4571,9 +4453,7 @@
                       "icon": "save",
                       "title": "Upload-Ready File Copies",
                       "sub": "Clear, color, properly formatted scans prepared for CEAC",
-                      "tags": [
-                        "both"
-                      ],
+                      "tags": ["both"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -4596,9 +4476,7 @@
                       "icon": "briefcase",
                       "title": "Interview Originals and Certified Copies Set",
                       "sub": "Original or certified civil records corresponding to the CEAC uploads",
-                      "tags": [
-                        "both"
-                      ],
+                      "tags": ["both"],
                       "status": "not-started",
                       "required": false,
                       "sections": [
@@ -5093,9 +4971,7 @@
             "scenarios": {
               "pet-only": {
                 "label": "Petitioner only (qualifies alone)",
-                "sponsors": [
-                  "Petitioner"
-                ],
+                "sponsors": ["Petitioner"],
                 "householdMembers": [],
                 "jointSponsors": [],
                 "forms": "I-864",
@@ -5104,12 +4980,8 @@
               },
               "pet-hm": {
                 "label": "Petitioner + Household Member",
-                "sponsors": [
-                  "Petitioner"
-                ],
-                "householdMembers": [
-                  "Household Member 1"
-                ],
+                "sponsors": ["Petitioner"],
+                "householdMembers": ["Household Member 1"],
                 "jointSponsors": [],
                 "forms": "I-864, I-864A",
                 "taxYears": 1,
@@ -5117,28 +4989,18 @@
               },
               "pet-js1": {
                 "label": "Petitioner + 1 Joint Sponsor",
-                "sponsors": [
-                  "Petitioner"
-                ],
+                "sponsors": ["Petitioner"],
                 "householdMembers": [],
-                "jointSponsors": [
-                  "Joint Sponsor 1"
-                ],
+                "jointSponsors": ["Joint Sponsor 1"],
                 "forms": "I-864 (×2)",
                 "taxYears": 1,
                 "taxEvidenceLabel": "Most recent tax year for each sponsor"
               },
               "pet-hm-js": {
                 "label": "Petitioner + Household Member + Joint Sponsor",
-                "sponsors": [
-                  "Petitioner"
-                ],
-                "householdMembers": [
-                  "Household Member 1"
-                ],
-                "jointSponsors": [
-                  "Joint Sponsor 1"
-                ],
+                "sponsors": ["Petitioner"],
+                "householdMembers": ["Household Member 1"],
+                "jointSponsors": ["Joint Sponsor 1"],
                 "forms": "I-864, I-864A, separate Joint Sponsor I-864",
                 "taxYears": 1,
                 "taxEvidenceLabel": "Most recent tax year for each contributor"
@@ -7845,10 +7707,7 @@
           "display_order": 11,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": [
-              "docs_requested",
-              "both"
-            ]
+            "outcome221gSubtype": ["docs_requested", "both"]
           },
           "actions": [
             "Read your 221(g) letter thoroughly",
@@ -7959,10 +7818,7 @@
           "display_order": 12,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": [
-              "further_review",
-              "both"
-            ]
+            "outcome221gSubtype": ["further_review", "both"]
           },
           "actions": [
             "Monitor CEAC periodically",
@@ -8066,10 +7922,7 @@
           "display_order": 13,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": [
-              "docs_requested",
-              "both"
-            ]
+            "outcome221gSubtype": ["docs_requested", "both"]
           },
           "actions": [
             "Confirm submission was received",
@@ -8585,19 +8438,19 @@
       "sections": [
         {
           "title": "What this is",
-          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px] last:mb-0\">USCIS needs to be certain that the parent beneficiary you are sponsoring is the exact same parent named on your birth certificate. In Pakistani civil records, names are frequently spelled differently or formatted in varying orders (e.g., adding/omitting \"Begum\", \"Bibi\", \"Khan\", \"Muhammad\", or husband/father names).</p>"
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px] last:mb-0\">USCIS needs to be certain that the parent you're sponsoring is the exact same person named on your birth certificate. Name mismatches across civil documents are common in many countries, especially where naming conventions, honorifics, or transliteration differ from Western formats. In Pakistan, for example, names are frequently written in a different order, or with a title added or dropped.</p>"
         },
         {
-          "title": "Common discrepancies in Pakistan",
-          "htmlContent": "<ul><li><strong>Order swap:</strong> 'Muhammad Aslam' vs 'Aslam Muhammad'</li><li><strong>Honorifics/Titles:</strong> Inclusion or omission of 'Chaudhry', 'Syed', 'Begum', 'Bibi', 'Khan', or 'Sahib'</li><li><strong>Translational spellings:</strong> 'Ghafoor' vs 'Ghafur', 'Qureshi' vs 'Kureshi'</li><li><strong>Husband vs Father names:</strong> CNIC showing husband's name but birth certificate showing father's name.</li></ul>"
+          "title": "Common types of discrepancies",
+          "htmlContent": "<ul><li>A different name order (first/last swapped)</li><li>A title or honorific added or dropped</li><li>A different spelling from transliteration</li><li>One document using a father's name, another using a spouse's name</li></ul>"
         },
         {
-          "title": "Official Correction (NADRA)",
-          "htmlContent": "<p>If the discrepancies are significant (e.g. entirely different names), you should proceed to NADRA to correct the parent's CNIC/NICOP. NADRA will require proof of relationship (like school certificates or older government records) to update the record. Once corrected, obtain a fresh Computerized Family Registration Certificate (FRC) showing the correct links.</p>"
+          "title": "Official Correction",
+          "htmlContent": "<p>If the discrepancy is significant, it's usually best to correct it at the source through your country's civil registry — in Pakistan, this means going to a NADRA office to correct your parent's CNIC/NICOP, using older records like school certificates as proof of the relationship, and then requesting a fresh Family Registration Certificate (FRC) with the correct name.</p>"
         },
         {
           "title": "One-and-the-Same Affidavits",
-          "htmlContent": "<p>For minor spelling differences, you can submit a 'One-and-the-Same Affidavit' (also known as a Name Discrepancy Affidavit). This must be drafted on stamp paper (minimum Rs. 100), signed by a close relative or family friend who has personal knowledge of the family, and notarized by a registered Notary Public in Pakistan. The affidavit must state clearly that both spellings refer to one and the same person.</p>"
+          "htmlContent": "<p>For minor spelling differences, most countries accept a sworn affidavit confirming both spellings refer to the same person, instead of a formal correction. In Pakistan, this needs to be signed by a close relative or family friend who knows your family well, and notarized by a registered Notary Public. Requirements can vary by province, so confirm the current process locally before preparing it.</p>"
         }
       ]
     },
@@ -8608,11 +8461,11 @@
       "sections": [
         {
           "title": "When this is required",
-          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">If you are sponsoring your biological father and your parents were not legally married at the time of your birth, you must prove that a bona fide father-child relationship existed before you turned 21.</p>"
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">If you're sponsoring your biological father and your parents weren't legally married when you were born, you'll need to show a genuine father-child relationship existed before you turned 21 — regardless of which country you're filing from.</p>"
         },
         {
           "title": "Financial support proof",
-          "htmlContent": "<ul><li><strong>Remittances:</strong> Western Union, MoneyGram, or bank transfer receipts showing the father sending money to the child or mother over the years.</li><li><strong>School fees:</strong> Admission sheets, school tuition receipts, or report cards bearing the father's signature or name as guardian.</li><li><strong>Medical bills:</strong> Hospital registration sheets, vaccination cards, or prescription records mentioning the father's name as the responsible parent.</li></ul>"
+          "htmlContent": "<ul><li><strong>Remittances:</strong> Money transfer receipts showing your father sending money to you or your mother over the years</li><li><strong>School fees:</strong> Admission sheets, school tuition receipts, or report cards bearing the father's signature or name as guardian.</li><li><strong>Medical bills:</strong> Hospital registration sheets, vaccination cards, or prescription records mentioning the father's name as the responsible parent.</li></ul>"
         },
         {
           "title": "Social & Emotional proof",
@@ -8631,19 +8484,23 @@
       "sections": [
         {
           "title": "What is required",
-          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">For step-relationship petitions, you must show that any previous marriages of both your biological parent and your stepparent were legally dissolved before their current marriage took place. The step-relationship must have been established before the child turned 18.</p>"
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">For step-relationship petitions, you'll need to show that any earlier marriages of both your biological parent and your stepparent were legally ended before their current marriage. The step-relationship itself must have started before you turned 18. How this is proven depends on which country and legal system the marriage falls under.</p>"
         },
         {
-          "title": "Talaq (Divorce) in Pakistan",
-          "htmlContent": "<p>For Pakistani Muslim divorces, the process is governed by the Muslim Family Laws Ordinance, 1961. You must show the <strong>Divorce Certificate</strong> issued by the local Union Council, Cantonment Board, or Municipal Committee. The certificate is only issued after a mandatory 90-day notification and arbitration period. A notice of Talaq alone or a raw deed (Talaqnama) is NOT accepted by USCIS/Embassy as legal termination.</p>"
+          "title": "Talaq (Divorce)",
+          "htmlContent": "<p>Divorce under the Muslim Family Laws Ordinance, 1961 requires a Divorce Certificate issued by the local Union Council, Cantonment Board, or Municipal Committee. This certificate only comes after a required 90-day notice and arbitration period, so a notice of Talaq alone, or a raw Talaqnama, isn't accepted as proof of legal termination.</p>"
         },
         {
           "title": "Khula / Judicial Dissolution",
-          "htmlContent": "<p>If the divorce was initiated by the wife through Family Court (Khula), you must provide the certified copy of the Court Decree along with the corresponding Union Council-issued Divorce Certificate verifying that the decree was registered and the 90-day iddat period has expired.</p>"
+          "htmlContent": "<p>If the wife initiated the divorce through Family Court (Khula), you'll need the certified Court Decree along with confirmation that the Union Council registered the decree and the waiting period was completed.</p>"
+        },
+        {
+          "title": "If a different personal law applies",
+          "htmlContent": "<p>Some marriages fall under a different law entirely — for example, the Christian Divorce Act, 1869 or the Hindu Marriage Act, 2017. In these cases, the divorce is generally granted directly by a Family Court after a case is filed, and it's usually not registered with a Union Council the way a Talaq or Khula is. What you'll need here is the Family Court decree itself, since a Union Council certificate typically won't exist.</p>"
         },
         {
           "title": "Death Certificates",
-          "htmlContent": "<p>If a prior marriage ended due to death, you must provide a civil death certificate issued by the local Union Council or NADRA. Hospital or cemetery records are generally not sufficient as primary proof of death.</p>"
+          "htmlContent": "<p>If a prior marriage ended in death, provide the civil death certificate from the relevant civil authority. Hospital or cemetery records alone generally aren't sufficient proof, regardless of country.</p>"
         }
       ]
     },
@@ -8654,15 +8511,15 @@
       "sections": [
         {
           "title": "U.S. Immigration Adoption Rules",
-          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">To qualify as an adoptive parent under U.S. immigration law, the adoption must have taken place before the child reached the age of 16 (or 18 if adopting a biological sibling). The adoptive parent must have had legal custody and resided with the child for at least two years.</p>"
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">To qualify as an adoptive parent, the adoption must have taken place before you turned 16 (or 18 if adopting a biological sibling), and your adoptive parent must have had legal custody of you and lived with you for at least two years.</p>"
         },
         {
-          "title": "Islamic Guardianship (Kafalah) vs. Legal Adoption",
-          "htmlContent": "<p>Under Islamic law, traditional adoption (where the child takes the adoptive family's name and inherits legally as a biological child) is not recognized. Instead, the concept of 'Kafalah' (guardianship/custody) is used. However, U.S. immigration law requires a full, final adoption decree that terminates the legal relationship with the biological parents. A standard Pakistani Guardianship Court Order issued under the Guardians and Wards Act, 1890, does not meet the definition of adoption unless it explicitly terminates biological parental rights and grants full adoptive rights equivalent to a biological child.</p>"
+          "title": "When a country doesn't have a legal adoption system",
+          "htmlContent": "<p>Some countries don't have adoption as a legal category at all — instead they use a guardianship or custody arrangement that doesn't fully end the biological parents' rights or make the child a legal heir. U.S. immigration law requires a full, final adoption decree that does both of those things, so a guardianship order from one of these countries — no matter how it's worded — can't be submitted as a final adoption decree.</p><p class=\"mt-[8px]\">Pakistan is a common example: Pakistani courts can only issue a guardianship order under the Guardians and Wards Act, 1890, and this doesn't end a biological parent's legal rights or make the child a legal heir.</p><p class=\"mt-[8px]\"><strong>The orphan petition route (I-600):</strong> In these cases, the orphan petition process is generally the path available instead. To qualify, you generally need to meet the U.S. definition of an \"orphan\" — for example, both parents have died, disappeared, or have irrevocably released the child in writing for emigration and adoption. From there, the adoption can happen abroad (with Form I-600 filed) or after arriving in the U.S.</p>"
         },
         {
           "title": "How to comply",
-          "htmlContent": "<p>Consult an immigration attorney specializing in international adoption. You will need to show that the court order obtained in Pakistan satisfies the legal criteria of a permanent adoption under U.S. federal regulations (such as the Hague Adoption Convention rules if applicable).</p>"
+          "htmlContent": "<p>If your country has a genuine legal adoption process, an immigration attorney can confirm your decree meets U.S. federal adoption criteria. If it doesn't — as in Pakistan — your existing guardianship order isn't wasted; it can still support your case as evidence of who's been caring for you, even though it can't stand in as the adoption decree itself.</p>"
         }
       ]
     },
@@ -8673,7 +8530,7 @@
       "sections": [
         {
           "title": "The Two-Year Rule",
-          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">The petitioner must demonstrate that the adopted parent beneficiary had legal custody of the child and resided with the child for at least two years prior to filing the petition. These two years can be accumulated before, during, or after the final adoption decree, but must be completed before filing.</p>"
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">You need to show your adoptive parent had legal custody of you and lived with you for at least two years before the petition is filed. These two years can happen before, during, or after the final adoption decree, and this requirement is the same regardless of which country you're filing from.</p>"
         },
         {
           "title": "Proof of Legal Custody",
@@ -8692,19 +8549,19 @@
       "sections": [
         {
           "title": "Handling Name Mismatches",
-          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">Discrepancies in birth certificates, CNICs, school records, or passports can trigger Requests for Evidence (RFEs) or delays. All non-matching details must be addressed before filing.</p>"
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">Mismatches across your birth certificate, national ID, school records, or passport can trigger delays or Requests for Evidence in any country, so it's worth sorting these out before you file.</p>"
         },
         {
-          "title": "NADRA Name Correction Process",
-          "htmlContent": "<p>To correct name spellings or dates of birth on NADRA records, the applicant must visit a NADRA Executive Office. They must present supporting documents like matriculation certificates, older passports, or court decrees. NADRA will update the database and issue a revised CNIC/NICOP and FRC.</p>"
+          "title": "Civil Registry Correction",
+          "htmlContent": "<p>To correct a name or date of birth, visit your country's civil registry office with supporting documents like matriculation certificates, older passports, or court decrees. In Pakistan, this means a NADRA office, which will issue a revised CNIC/NICOP and FRC. Note that NADRA generally only corrects English-spelling mistakes through this process — a full name change requires the separate procedure below.</p>"
         },
         {
           "title": "Gazette Notification & Deed Poll",
-          "htmlContent": "<p>For a formal name change, the applicant must publish a name-change notice in a prominent national newspaper and get it registered in the official Government Gazette. A copy of this Gazette publication is considered strong primary evidence of a legal name change.</p>"
+          "htmlContent": "<p>For a full legal name change in Pakistan, you'll need a notarized affidavit, a published notice in local newspapers, and registration with the official Gazette of Pakistan. The published Gazette notice is what carries real legal weight — it's what banks, passport offices, and other institutions will actually ask to see.</p>"
         },
         {
           "title": "Sworn Affidavits",
-          "htmlContent": "<p>In cases where government records cannot be corrected due to administrative reasons, a sworn affidavit drafted on Rs. 100 stamp paper, signed by close relatives (such as uncles or aunts), and notarized, can serve as secondary explanation of the identity mismatch.</p>"
+          "htmlContent": "<p>If your records genuinely can't be corrected, a notarized affidavit from close relatives explaining the mismatch can serve as backup evidence in most jurisdictions.</p>"
         }
       ]
     },
@@ -8719,11 +8576,11 @@
         },
         {
           "title": "Matriculation and School Certificates",
-          "htmlContent": "<p>Certificates issued by the Board of Intermediate and Secondary Education (BISE) in Pakistan (such as Matriculation or Intermediate certificates) that list the father's and mother's names are highly valued by USCIS as reliable secondary evidence.</p>"
+          "htmlContent": "<p>Official school board certificates that list both parents' names are considered strong secondary evidence by USCIS. In Pakistan, this typically means Matriculation or Intermediate certificates from the Board of Intermediate and Secondary Education (BISE).</p>"
         },
         {
           "title": "Civil and Family Certificates",
-          "htmlContent": "<p>NADRA Family Registration Certificates (FRC) or B-Forms (Child Registration Certificates) are official government documents that show parent-child relationships and are acceptable supporting evidence.</p>"
+          "htmlContent": "<p>NGovernment-issued family registration documents showing your parent-child relationship are accepted as supporting evidence — in Pakistan, this includes NADRA Family Registration Certificates (FRC) or B-Forms.</p>"
         },
         {
           "title": "Religious and Local Records",
@@ -8738,7 +8595,7 @@
       "sections": [
         {
           "title": "What is a Non-Availability Certificate (NAC)",
-          "htmlContent": "<p>If you cannot obtain a primary birth or marriage certificate, you must submit a formal <strong>Non-Availability Certificate (NAC)</strong>. This document is issued by the local Union Council, Municipal Committee, Cantonment Board, or Metropolitan Corporation where the event took place.</p>"
+          "htmlContent": "<p>If you can't get a primary birth or marriage certificate, you'll need a certificate confirming no record exists — issued by the relevant local civil authority. In Pakistan, this is issued by the Union Council, Municipal Committee, Cantonment Board, or Metropolitan Corporation.</p>"
         },
         {
           "title": "Key elements of a valid NAC",
@@ -8746,7 +8603,7 @@
         },
         {
           "title": "Important rule",
-          "htmlContent": "<p>An NAC alone is not sufficient. You must always submit secondary evidence (such as school certificates, old FRCs, or affidavits) along with the NAC to prove the relationship.</p>"
+          "htmlContent": "<p>This certificate alone isn't enough anywhere — always pair it with other secondary evidence, like school certificates, old family registration documents, or an affidavit. Some office-level specifics can differ, so it's worth confirming directly with your local authority when you apply.</p>"
         }
       ]
     },
@@ -8757,11 +8614,11 @@
       "sections": [
         {
           "title": "Why this is needed",
-          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">For NVC and consular stages, the parent beneficiary must document their complete marriage history. This includes proving their marriage to your other parent (if applicable) and proving the legal termination of any prior marriages.</p>"
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">At the NVC and consular stages, your parent needs to document their full marriage history — proving their marriage to your other parent (if applicable) and proving any earlier marriages were legally ended. Required documents vary by country and by the specific law that governed the marriage.</p>"
         },
         {
           "title": "Required documents",
-          "htmlContent": "<ul><li><strong>Nikah Nama:</strong> The traditional Islamic marriage contract (in Urdu). Must be fully translated and certified.</li><li><strong>NADRA Marriage Registration Certificate (MRC):</strong> The official bilingual certificate issued by the local Union Council/NADRA registrar. Highly recommended to submit both the Nikah Nama and the MRC to avoid RFEs.</li><li><strong>Divorce Certificates:</strong> Union Council-issued final divorce certificates or court decrees.</li><li><strong>Death Certificates:</strong> Union Council/NADRA-issued death certificates for former spouses.</li></ul>"
+          "htmlContent": "<ul><li><strong>Nikah Nama:</strong> The traditional Islamic marriage contract. It Must be fully translated and certified.</li><li><strong>NADRA Marriage Registration Certificate (MRC):</strong> The official bilingual certificate issued by the local Union Council/NADRA registrar. Highly recommended to submit both the Nikah Nama and the MRC to avoid RFEs.</li><li><strong>Divorce Certificates:</strong> Union Council-issued final divorce certificates or court decrees.</li><li><strong>Death Certificates:</strong> Union Council/NADRA-issued death certificates for former spouses.</li></ul>"
         }
       ]
     }

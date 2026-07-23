@@ -376,6 +376,9 @@ export interface MasterProfile {
     documentsRequested?: string[];
     questionnaire?: Record<string, unknown>;
   };
+
+  // Journey-scoped profile data to prevent multi-journey bleed
+  journeys?: Record<string, Record<string, any>>;
 }
 
 export interface QuestionDefinition {

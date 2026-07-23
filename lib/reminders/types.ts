@@ -91,6 +91,8 @@ export interface ReminderListResponse {
   total: number;
   critical_count: number;
   high_count: number;
+  journey_type?: string;
+  journey_name?: string;
 }
 
 /** PATCH /api/v1/journeys/[id]/reminders/[id] response */

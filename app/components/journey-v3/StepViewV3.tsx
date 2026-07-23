@@ -361,52 +361,40 @@ export const StepViewV3: React.FC<StepViewProps> = ({
 
   const handleToggleComplete = useCallback(() => {
     const stepKey = currentStep.step_key || sId;
-    // Map step keys to correct metadata fields for milestone tracking
+    const isIr5 = isIr5Journey;
+
     const milestoneMetaMap: Record<string, { key: string; value?: () => string }> = {
-      step_1_3: {
-        key: "receiptNum",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_1_6: {
-        key: "uscisPortalSaved",
-        value: () => "true",
-      },
-      step_1_7: {
-        key: "filingFeeDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_1_8: {
-        key: "submissionDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_2_10: {
-        key: "dqDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_3_1: {
-        key: "medicalDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_3_7: {
-        key: "interviewDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
+      ...(isIr5
+        ? {
+            // IR5 Chapter 1 (no I-130A form step, so numbers are shifted down by 1 vs IR1)
+            step_1_5: { key: "uscisAccountCreated", value: () => "true" }, // Create USCIS Account — triggers c1_portal_not_saved reminder
+            step_1_8: { key: "filingFeeDate", value: () => new Date().toISOString().slice(0, 10) }, // Pay Filing Fee
+            step_1_9: { key: "submissionDate", value: () => new Date().toISOString().slice(0, 10) }, // Review & Submit — triggers c1_receipt_missing reminder
+            step_1_15: { key: "approvalDate", value: () => new Date().toISOString().slice(0, 10) }, // Approval
+          }
+        : {
+            // IR1 Chapter 1 (has I-130A form step, so numbers include it)
+            step_1_6: { key: "uscisAccountCreated", value: () => "true" }, // Create USCIS Account — triggers c1_portal_not_saved reminder
+            step_1_9: { key: "filingFeeDate", value: () => new Date().toISOString().slice(0, 10) }, // Pay Filing Fee
+            step_1_10: {
+              key: "submissionDate",
+              value: () => new Date().toISOString().slice(0, 10),
+            }, // Review & Submit — triggers c1_receipt_missing reminder
+            step_1_17: { key: "approvalDate", value: () => new Date().toISOString().slice(0, 10) }, // Approval
+          }),
+      // Shared Chapter 2 & 3 milestones (step numbers align across IR1 and IR5)
+      step_2_10: { key: "dqDate", value: () => new Date().toISOString().slice(0, 10) },
+      step_3_1: { key: "med_date", value: () => new Date().toISOString().slice(0, 10) }, // Medical exam date (if manually entered)
+      step_3_7: { key: "interviewDate", value: () => new Date().toISOString().slice(0, 10) },
       step_2_1: {
         key: "nvcCaseNum",
         value: () => "NVC2026-" + Math.floor(Math.random() * 1000000),
       },
-      step_2_2: {
-        key: "nvcInvoice",
-        value: () => "INVC-" + Math.floor(Math.random() * 1000000),
-      },
+      step_2_2: { key: "nvcInvoice", value: () => "INVC-" + Math.floor(Math.random() * 1000000) },
       step_3_7b: { key: "interviewEmbassy", value: () => "Islamabad" },
-      step_1_17: {
-        key: "approvalDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
     };
+
     actions.toggleComplete(stepKey);
-    // If this step is a milestone, set the metadata field if not already set
     const metaObj = milestoneMetaMap[stepKey];
     if (
       metaObj &&
@@ -634,9 +622,8 @@ export const StepViewV3: React.FC<StepViewProps> = ({
   });
 
   const [isGatheringGuideOpen, setIsGatheringGuideOpen] = useState(false);
-  const [selectedGatheringItem, setSelectedGatheringItem] = useState<DocumentGatheringItemV3 | null>(
-    null
-  );
+  const [selectedGatheringItem, setSelectedGatheringItem] =
+    useState<DocumentGatheringItemV3 | null>(null);
   const [gatheringGuideStep, setGatheringGuideStep] = useState(0);
 
   // --- UTILS & DERIVED ---
@@ -1085,7 +1072,10 @@ export const StepViewV3: React.FC<StepViewProps> = ({
           className="w-full bg-[#fafcff]/80 backdrop-blur-xs border border-[#d0e4f7] rounded-[20px] p-5 sm:p-6 shadow-xs flex items-center justify-between hover:border-primary hover:bg-[#fafcff] group transition-all text-left cursor-pointer"
         >
           <div className="flex items-center gap-2">
-            <Book className="h-[16px] w-[16px] text-primary shrink-0 group-hover:scale-110 transition-transform" strokeWidth={2.5} />
+            <Book
+              className="h-[16px] w-[16px] text-primary shrink-0 group-hover:scale-110 transition-transform"
+              strokeWidth={2.5}
+            />
             <span className="text-[12px] font-bold uppercase tracking-wider text-[#3a4f63] group-hover:text-primary transition-colors">
               Official References & Citations
             </span>
@@ -1209,9 +1199,18 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                       ? "bg-teal-50 text-teal-700 border-teal-200"
                       : chip.type === "pcc" || chip.type === "nvc" || chip.type === "purple"
                         ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
-                        : chip.type === "book" || chip.type === "remind" || chip.type === "compliance" || chip.type === "track" || chip.type === "pending" || chip.type === "timeline" || chip.type === "sky"
+                        : chip.type === "book" ||
+                            chip.type === "remind" ||
+                            chip.type === "compliance" ||
+                            chip.type === "track" ||
+                            chip.type === "pending" ||
+                            chip.type === "timeline" ||
+                            chip.type === "sky"
                           ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
-                          : chip.type === "waiting" || chip.type === "gold" || chip.type === "pay" || chip.type === "amber"
+                          : chip.type === "waiting" ||
+                              chip.type === "gold" ||
+                              chip.type === "pay" ||
+                              chip.type === "amber"
                             ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
                             : chip.type === "role" || chip.role === "role"
                               ? isBeneficiaryTheme

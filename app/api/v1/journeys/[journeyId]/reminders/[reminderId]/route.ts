@@ -5,6 +5,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifyJourneyAccess, errorResponse, successResponse } from "@/lib/api/journey-auth";
 import type { UpdateReminderBody, ReminderUpdateResponse } from "@/lib/reminders/types";
 
+/** RFC-4122 UUID pattern — all Supabase IDs are UUIDs. */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
 interface RouteParams {
   params: Promise<{ journeyId: string; reminderId: string }>;
 }
@@ -18,6 +21,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
   try {
     const { journeyId, reminderId } = await params;
 
+    // Security: validate both path params are well-formed UUIDs before
+    // any auth or DB calls. Rejects injection attempts and malformed inputs.
+    if (!UUID_RE.test(journeyId) || !UUID_RE.test(reminderId)) {
+      return NextResponse.json(
+        errorResponse("VALIDATION_ERROR", "Invalid journey or reminder ID format"),
+        { status: 400 }
+      );
+    }
+
     // Verify auth + ownership
     const auth = await verifyJourneyAccess(journeyId);
     if (auth.error) return auth.error;
@@ -25,7 +37,15 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
     const { supabase } = auth;
 
     // Parse body
-    const body: UpdateReminderBody = await request.json();
+    let body: UpdateReminderBody;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json(
+        errorResponse("VALIDATION_ERROR", "Invalid or missing JSON request body"),
+        { status: 400 }
+      );
+    }
 
     if (!body.action || !["dismiss", "snooze"].includes(body.action)) {
       return NextResponse.json(
