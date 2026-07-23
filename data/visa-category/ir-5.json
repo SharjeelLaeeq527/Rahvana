@@ -4039,6 +4039,7 @@
           ]
         },
         {
+          "step_key": "step_2_4",
           "step_number": 4,
           "step_name": "Prepare Civil Documents",
           "step_short_description": "Gather required parent records",

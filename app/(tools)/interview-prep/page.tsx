@@ -290,9 +290,16 @@ export default function InterviewPreparation() {
         setLoading(true);
         setLoadingMessage("Checking for existing sessions...");
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const journeyId = urlParams.get("journey_id");
+
+        console.log("Journey ID from URL:", journeyId);
+
         // FIRST: Check for active journey session (IR-1)
         // Journey sessions take priority over tool-based sessions
-        const journeyResponse = await fetch(`/api/interview-prep/active-journey-session`);
+        const journeyResponse = await fetch(
+          `/api/interview-prep/active-journey-session?journey_id=${journeyId}`
+        );
         const journeyData = await journeyResponse.json();
 
         if (journeyData.success && journeyData.hasActiveJourney && journeyData.session) {
@@ -320,6 +327,8 @@ export default function InterviewPreparation() {
             // Find and set the category (don't filter by country - journey categories are always available)
             const categoriesResponse = await fetch(`/api/interview-prep/categories`);
             const categoriesData = await categoriesResponse.json();
+
+            console.log(categoriesData);
 
             if (categoriesData.success && categoriesData.categories) {
               const category = categoriesData.categories.find(
@@ -381,7 +390,7 @@ export default function InterviewPreparation() {
         setIsJourneySession(false);
 
         // Check for sessionId query parameter first (for completed session revisit)
-        const urlParams = new URLSearchParams(window.location.search);
+        // const urlParams = new URLSearchParams(window.location.search);
         const sessionIdParam = urlParams.get("sessionId");
 
         if (sessionIdParam) {
