@@ -1540,6 +1540,11 @@ export const StepView: React.FC<StepViewProps> = ({
               setActiveFinancialDoc={setActiveFinancialDoc}
               setIsFinancialDocGuideOpen={guardedSetIsFinancialDocGuideOpen}
               guard={stepEntitlement.guard}
+              onPreview={(uploadedDocId) =>
+                window.open(`/api/documents/${uploadedDocId}/download`, "_blank")
+              }
+              onDelete={(id, name) => setDocumentToDelete({ id, name })}
+              tool={tool}
             />
             // </StepLockedContent>
           )}
@@ -1567,6 +1572,14 @@ export const StepView: React.FC<StepViewProps> = ({
               setActiveUploadType={setActiveUploadType}
               setActiveHhDoc={setActiveHhDoc}
               setIsHhDocGuideOpen={setIsHhDocGuideOpen}
+              setDocActionModal={setDocActionModal}
+              uploadedDocuments={uploadedDocuments}
+              isReloadingDocs={isReloadingDocs}
+              isDeletingIds={isDeletingIds}
+              onPreview={(uploadedDocId) =>
+                window.open(`/api/documents/${uploadedDocId}/download`, "_blank")
+              }
+              onDelete={(id, name) => setDocumentToDelete({ id, name })}
             />
           )}
 
