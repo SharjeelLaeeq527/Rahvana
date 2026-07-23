@@ -197,6 +197,48 @@ function findVaultDocForItem<T extends { documentDefId: string }>(
   return undefined;
 }
 
+export function getEffectiveDocDef(id: string | null) {
+  if (!id) return null;
+  const doc = ALL_DOCUMENTS.find((d) => d.id === id);
+  if (doc) return doc;
+
+  const baseIds = [
+    "joint-i864",
+    "joint-tax-returns",
+    "joint-w2",
+    "joint-employment-letter",
+    "joint-pay-stubs",
+    "joint-assets",
+    "i-864a-contract",
+    "household-member-income",
+    "household-member-residence"
+  ];
+
+  for (const baseId of baseIds) {
+    if (id.startsWith(baseId)) {
+      const baseDoc = ALL_DOCUMENTS.find((d) => d.id === baseId);
+      if (baseDoc) {
+        let customName = baseDoc.name;
+        if (id.includes("-joint-sponsor-")) {
+          const match = id.match(/-joint-sponsor-(\d+)/);
+          const index = match ? match[1] : "1";
+          customName = `${baseDoc.name} — Joint Sponsor ${index}`;
+        } else if (id.includes("-household-member-")) {
+          const match = id.match(/-household-member-(\d+)/);
+          const index = match ? match[1] : "1";
+          customName = `${baseDoc.name} — Household Member ${index}`;
+        }
+        return {
+          ...baseDoc,
+          id,
+          name: customName,
+        };
+      }
+    }
+  }
+  return null;
+}
+
 interface StepViewProps {
   data: RoadmapDataV3;
   state: WizardState;
@@ -522,7 +564,9 @@ export const StepViewV3: React.FC<StepViewProps> = ({
   // Sponsorship Calculator State
 
   // Selected scenario for Step 6 (Gather Financial Documents)
-  const [selectedScenario, setSelectedScenario] = useState<string>("pet-only");
+  const [selectedScenario, setSelectedScenario] = useState<string>(
+    () => (state.metadata.selectedScenario as string) || "pet-only"
+  );
 
   // Step 2.8 Review & Submit States
   const [isSubmissionGuideOpen, setIsSubmissionGuideOpen] = useState(false);
@@ -5141,14 +5185,13 @@ export const StepViewV3: React.FC<StepViewProps> = ({
         />
       )}
 
-      {/* Document Vault Integration */}
       {uploadModalOpen &&
         selectedDocumentDefId &&
-        ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId) && (
+        getEffectiveDocDef(selectedDocumentDefId) && (
           <DocumentUploadModal
             open={uploadModalOpen}
             onClose={closeUploadModal}
-            documentDef={ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId)!}
+            documentDef={getEffectiveDocDef(selectedDocumentDefId)!}
             activeJourneyId={state.backendId || data.journey_type || null}
             onUploadComplete={async () => {
               await reloadDocuments();

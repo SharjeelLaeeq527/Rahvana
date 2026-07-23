@@ -320,7 +320,11 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
         <select
           className="flex-1 min-w-[180px] p-[8px_12px] border-[1.5px] border-[#d0e4f7] rounded-[8px] font-sans text-[13px] text-[#1c2b3a] bg-[#f4f7fb] outline-none cursor-pointer focus:border-primary"
           value={selectedScenario}
-          onChange={(e) => setSelectedScenario(e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value;
+            setSelectedScenario(val);
+            updateMetadata({ selectedScenario: val });
+          }}
         >
           {Object.entries(SCENARIOS).map(([key, sc]) => (
             <option key={key} value={key}>

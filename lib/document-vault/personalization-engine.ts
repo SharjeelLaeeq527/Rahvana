@@ -140,8 +140,23 @@ export function generateRequiredDocuments(
     return ["BENEFICIARY"];
   };
 
+  const sponsorBaseIds = [
+    "joint-i864",
+    "joint-tax-returns",
+    "joint-w2",
+    "joint-employment-letter",
+    "joint-pay-stubs",
+    "joint-assets",
+    "i-864a-contract",
+    "household-member-income",
+    "household-member-residence"
+  ];
+
   // Filter documents based on requirements
   let requiredDocs = ALL_DOCUMENTS.filter((doc) => {
+    if (sponsorBaseIds.includes(doc.id)) {
+      return false; // Skip base templates; will expand dynamically below
+    }
     // Some categories are dynamic BUT should still keep their static definitions
     // (e.g., CIVIL has Nikah Nama, MISC has generic docs, etc.)
     const keepStatic = ["CIVIL", "MISC", "TRANSLATIONS", "CITIZENSHIP_PROOF"];
@@ -150,6 +165,59 @@ export function generateRequiredDocuments(
     }
     return isDocumentRequired(doc, visaCategory, scenarioFlags);
   });
+
+  // Helper to expand a base document with suffix and new display name
+  const expandSponsorDoc = (baseDocId: string, suffix: string, name: string): DocumentDefinition | null => {
+    const baseDoc = ALL_DOCUMENTS.find((d) => d.id === baseDocId);
+    if (!baseDoc) return null;
+    return {
+      ...baseDoc,
+      id: `${baseDoc.id}${suffix}`,
+      name,
+    };
+  };
+
+  // Dynamically generate Joint Sponsor documents if used
+  if (scenarioFlags.joint_sponsor_used) {
+    const jsCount = Math.max(1, Number(scenarioFlags.jsCount || 1));
+    for (let i = 1; i <= jsCount; i++) {
+      const label = `Joint Sponsor ${i}`;
+      const suffix = `-joint-sponsor-${i}`;
+
+      const jsDocs = [
+        expandSponsorDoc("joint-i864", suffix, `Joint Sponsor's Form I-864 — ${label}`),
+        expandSponsorDoc("joint-tax-returns", suffix, `Federal Tax Return — ${label}`),
+        expandSponsorDoc("joint-w2", suffix, `W-2 Forms — ${label}`),
+        expandSponsorDoc("joint-employment-letter", suffix, `Employment Letter — ${label}`),
+        expandSponsorDoc("joint-pay-stubs", suffix, `Pay Stubs — ${label}`),
+        expandSponsorDoc("joint-assets", suffix, `Asset Evidence — ${label}`),
+        expandSponsorDoc("organized-income-packet", suffix, `Organized Income Packet — ${label}`),
+      ];
+
+      jsDocs.forEach((doc) => {
+        if (doc) requiredDocs.push(doc);
+      });
+    }
+  }
+
+  // Dynamically generate Household Member documents if used
+  if (scenarioFlags.household_member_used) {
+    const hhCount = Math.max(1, Number(scenarioFlags.hhCount || 1));
+    for (let i = 1; i <= hhCount; i++) {
+      const label = `Household Member ${i}`;
+      const suffix = `-household-member-${i}`;
+
+      const hmDocs = [
+        expandSponsorDoc("i-864a-contract", suffix, `Form I-864A (Household Member Contract) — ${label}`),
+        expandSponsorDoc("household-member-income", suffix, `Proof of Household Member Income — ${label}`),
+        expandSponsorDoc("household-member-residence", suffix, `Proof of Shared Residence — ${label}`),
+      ];
+
+      hmDocs.forEach((doc) => {
+        if (doc) requiredDocs.push(doc);
+      });
+    }
+  }
 
   // Add dynamic documents from config
   DYNAMIC_CATEGORIES.forEach((category) => {
@@ -265,8 +333,8 @@ export function generateRequiredDocuments(
 
   if (includeOptional) {
     const optionalDocs = ALL_DOCUMENTS.filter((doc) => {
-      // Skip if already in requiredDocs
-      if (requiredDocs.includes(doc)) return false;
+      // Skip if already in requiredDocs or if it's a base template
+      if (requiredDocs.includes(doc) || sponsorBaseIds.includes(doc.id)) return false;
 
       // Check applicableVisas first
       if (doc.applicableVisas && doc.applicableVisas.length > 0) {
@@ -310,7 +378,7 @@ export function generateRequiredDocuments(
   // Ensure documents that have been uploaded are ALWAYS present, even if their scenario flag wasn't set!
   if (uploadedDocIds.length > 0) {
     const forcedUploadDocs = ALL_DOCUMENTS.filter(
-      (doc) => uploadedDocIds.includes(doc.id) && !finalDocs.includes(doc)
+      (doc) => uploadedDocIds.includes(doc.id) && !finalDocs.includes(doc) && !sponsorBaseIds.includes(doc.id)
     );
     finalDocs = [...finalDocs, ...forcedUploadDocs];
   }

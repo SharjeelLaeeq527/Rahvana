@@ -53,6 +53,87 @@ export function isDocUploadedInVault(
 export function mapDocumentNameToId(name: string): string {
   const normalized = name.toLowerCase().trim();
 
+  // Route Joint Sponsor documents first to prevent them from mapping to petitioner's tax/income definitions
+  if (normalized.includes("joint sponsor") || normalized.includes("sponsor 1") || normalized.includes("sponsor 2") || normalized.includes("-js")) {
+    let suffix = "";
+    if (normalized.includes("joint sponsor 1") || normalized.includes("sponsor 1")) suffix = "-joint-sponsor-1";
+    else if (normalized.includes("joint sponsor 2") || normalized.includes("sponsor 2")) suffix = "-joint-sponsor-2";
+    else suffix = "-joint-sponsor-1";
+
+    if (normalized.includes("i-864") || normalized.includes("affidavit")) {
+      return `joint-i864${suffix}`;
+    }
+    if (normalized.includes("w-2") || normalized.includes("w2")) {
+      return `joint-w2${suffix}`;
+    }
+    if (normalized.includes("tax") || normalized.includes("transcript")) {
+      return `joint-tax-returns${suffix}`;
+    }
+    if (normalized.includes("pay") || normalized.includes("stub") || normalized.includes("salary")) {
+      return `joint-pay-stubs${suffix}`;
+    }
+    if (normalized.includes("employment") || normalized.includes("letter") || normalized.includes("employer")) {
+      return `joint-employment-letter${suffix}`;
+    }
+    if (normalized.includes("asset")) {
+      return `joint-assets${suffix}`;
+    }
+    if (normalized.includes("organized income") || normalized.includes("organized packet")) {
+      return `organized-income-packet${suffix}`;
+    }
+  }
+
+  // Route Household Member documents
+  if (normalized.includes("household member") || normalized.includes("hm-")) {
+    let suffix = "";
+    if (normalized.includes("household member 1") || normalized.includes("hm-1")) suffix = "-household-member-1";
+    else if (normalized.includes("household member 2") || normalized.includes("hm-2")) suffix = "-household-member-2";
+    else suffix = "-household-member-1";
+
+    if (normalized.includes("income") || normalized.includes("tax") || normalized.includes("w-2") || normalized.includes("pay")) {
+      return `household-member-income${suffix}`;
+    }
+    if (normalized.includes("residence") || normalized.includes("shared") || normalized.includes("address")) {
+      return `household-member-residence${suffix}`;
+    }
+    if (normalized.includes("i-864a") || normalized.includes("contract")) {
+      return `i-864a-contract${suffix}`;
+    }
+  }
+
+  // Route general/petitioner documents
+  if (normalized.includes("petitioner")) {
+    if (normalized.includes("w-2") || normalized.includes("w2")) {
+      return "w2-forms";
+    }
+    if (normalized.includes("tax") || normalized.includes("transcript")) {
+      return "tax-returns-petitioner";
+    }
+    if (normalized.includes("pay") || normalized.includes("stub") || normalized.includes("salary")) {
+      return "pay-stubs";
+    }
+    if (normalized.includes("employment") || normalized.includes("letter") || normalized.includes("employer")) {
+      return "employment-letter";
+    }
+    if (normalized.includes("asset")) {
+      return "asset-evidence";
+    }
+    if (normalized.includes("organized income") || normalized.includes("organized packet")) {
+      return "organized-income-packet";
+    }
+  }
+
+  // Route packets and backup evidence
+  if (normalized.includes("prior-year") || normalized.includes("prior year") || normalized.includes("backup")) {
+    return "prior-year-backup";
+  }
+  if (normalized.includes("upload-ready") || normalized.includes("upload ready")) {
+    return "upload-packet";
+  }
+  if (normalized.includes("organized income") || normalized.includes("organized packet")) {
+    return "organized-income-packet";
+  }
+
   // Simple hardcoded mapping for common ones
   const mapping: Record<string, string> = {
     // Stage II (NVC) Specific Mappings
@@ -87,6 +168,9 @@ export function mapDocumentNameToId(name: string): string {
     "doc_court_records": "court-records",
     "doc_police_disposition": "police-disposition",
     "name change documents": "name-change-proof",
+    "name change documentation": "name-change-proof",
+    "name change or identity discrepancy evidence": "name-change-proof",
+    "doc_name_change": "name-change-proof",
     "missing document / record unavailability evidence": "missing-document-evidence",
     "organized translation set": "organized-translation-set",
     "upload-ready file copies": "upload-ready-copies",
@@ -375,6 +459,7 @@ export function syncQuestionnaireAnswersToFlags(
   }
   if (answers.name_discrepancy === "yes" || answers.name_discrepancy === true) {
     flags.name_discrepancy = true;
+    flags.name_change_any_party = true;
   }
   if (answers.primary_record_available === "no" || answers.primary_record_available === false) {
     flags.primary_record_available = false;

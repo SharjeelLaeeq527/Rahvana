@@ -50,6 +50,7 @@ import {
   Route,
   ArrowLeft,
   Folder,
+  ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
@@ -343,13 +344,58 @@ export default function DocumentVaultPage() {
       ...(hasQuestionnaire ? syncQuestionnaireAnswersToFlags(questionnaireAnswers) : {}),
     };
 
+    // Integrate Step 2.6 (Financial Checklist) and Step 2.7 (Household builder/calculator) data
+    let jsCount = Number(metadata.jsCount || 0);
+    let hhCount = Number(metadata.hhCount || 0);
+    const sponsorshipResult = metadata.sponsorshipResult as any;
+    const journeyScenario = metadata.selectedScenario as string;
+
+    // Derive counts from selectedScenario if not set by Household Builder
+    if (journeyScenario === "pet-js1") {
+      jsCount = Math.max(jsCount, 1);
+    } else if (journeyScenario === "pet-js2") {
+      jsCount = Math.max(jsCount, 2);
+    } else if (journeyScenario === "pet-hm") {
+      hhCount = Math.max(hhCount, 1);
+    } else if (journeyScenario === "pet-hm-js") {
+      jsCount = Math.max(jsCount, 1);
+      hhCount = Math.max(hhCount, 1);
+    } else if (sponsorshipResult) {
+      if (sponsorshipResult.jointSponsorCount) {
+        jsCount = Math.max(jsCount, sponsorshipResult.jointSponsorCount);
+      }
+      if (sponsorshipResult.needsHouseholdMember) {
+        hhCount = Math.max(hhCount, 1);
+      }
+    }
+
+    const hasJointSponsorFromJourney =
+      jsCount > 0 ||
+      sponsorshipResult?.jointSponsorCount > 0 ||
+      sponsorshipResult?.needsJointSponsor === true ||
+      ["pet-js1", "pet-js2", "pet-hm-js"].includes(journeyScenario);
+
+    mappedFlags.joint_sponsor_used =
+      hasJointSponsorFromJourney ||
+      questionnaireAnswers.joint_sponsor === "yes" ||
+      questionnaireAnswers.joint_sponsor === "unsure";
+
+    const hasHouseholdMemberFromJourney =
+      hhCount > 0 ||
+      sponsorshipResult?.needsHouseholdMember === true ||
+      ["pet-hm", "pet-hm-js"].includes(journeyScenario);
+
+    mappedFlags.household_member_used = hasHouseholdMemberFromJourney;
+    mappedFlags.jsCount = jsCount;
+    mappedFlags.hhCount = hhCount;
+
     if (!config) {
       // No vault config saved yet for this user — create a minimal one from the
       // journey's visa category so the document list can populate immediately.
       setVaultConfig({ userId: user.id, visaCategory, scenarioFlags: mappedFlags });
     } else if (
       config.visaCategory !== visaCategory ||
-      (hasQuestionnaire && JSON.stringify(config.scenarioFlags) !== JSON.stringify(mappedFlags))
+      JSON.stringify(config.scenarioFlags) !== JSON.stringify(mappedFlags)
     ) {
       // Config exists but points to a different visa category or flags have changed — update it.
       setVaultConfig({

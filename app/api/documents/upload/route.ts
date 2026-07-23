@@ -164,6 +164,44 @@ export async function POST(request: NextRequest) {
     // Find document definition
     let documentDef = ALL_DOCUMENTS.find((d) => d.id === documentDefId);
 
+    // If not found in static list, check if it's a dynamic sponsor/household member definition
+    if (!documentDef) {
+      const baseIds = [
+        "joint-i864",
+        "joint-tax-returns",
+        "joint-w2",
+        "joint-employment-letter",
+        "joint-pay-stubs",
+        "joint-assets",
+        "i-864a-contract",
+        "household-member-income",
+        "household-member-residence"
+      ];
+      for (const baseId of baseIds) {
+        if (documentDefId.startsWith(baseId)) {
+          const baseDoc = ALL_DOCUMENTS.find((d) => d.id === baseId);
+          if (baseDoc) {
+            let customName = baseDoc.name;
+            if (documentDefId.includes("-joint-sponsor-")) {
+              const match = documentDefId.match(/-joint-sponsor-(\d+)/);
+              const index = match ? match[1] : "1";
+              customName = `${baseDoc.name} — Joint Sponsor ${index}`;
+            } else if (documentDefId.includes("-household-member-")) {
+              const match = documentDefId.match(/-household-member-(\d+)/);
+              const index = match ? match[1] : "1";
+              customName = `${baseDoc.name} — Household Member ${index}`;
+            }
+            documentDef = {
+              ...baseDoc,
+              id: documentDefId,
+              name: customName,
+            };
+            break;
+          }
+        }
+      }
+    }
+
     // If not found in static list, check if it's a dynamic definition
     if (!documentDef && documentDefId.startsWith("dynamic-")) {
       const dynamicName = formData.get("dynamicName") as string;
