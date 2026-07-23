@@ -25,6 +25,8 @@ interface SessionWithDetails {
   answerCount: number;
   questionCount: number;
   completionPercentage: number;
+  source: "tool" | "journey";
+  journey_id?: string | null;
 }
 
 const CategoryLabel: Record<string, string> = {
@@ -105,13 +107,14 @@ export default function MyInterviewSessions() {
   const [filteredSessions, setFilteredSessions] = useState<SessionWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const { showToast } = useToast();
 
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedTime, setSelectedTime] = useState<TimeFilter>("all");
+  const [selectedSource, setSelectedSource] = useState("all");
 
   // pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -122,27 +125,31 @@ export default function MyInterviewSessions() {
     const fetchUserSessions = async () => {
       try {
         setLoading(true);
-        const response = await fetch(`/api/interview-prep/user-sessions`);
-
+  
+        const response = await fetch("/api/interview-prep/user-sessions");
         const data = await response.json();
-
+  
         if (response.ok) {
           setSessions(data.sessions);
         } else {
-          console.error("Failed to fetch user sessions:", data.error ?? data);
           setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
-          setSessions([]);
         }
-      } catch (error) {
-        console.error("Error fetching user sessions:", error);
+      } catch {
         setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
-        setSessions([]);
       } finally {
         setLoading(false);
       }
     };
-
+  
     fetchUserSessions();
+  
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchUserSessions();
+      }
+    }, 5000);
+  
+    return () => clearInterval(interval);
   }, []);
 
   // Apply filters
@@ -180,9 +187,14 @@ export default function MyInterviewSessions() {
       });
     }
 
+    // Source filter
+    if (selectedSource !== "all") {
+      filtered = filtered.filter((s) => s.source === selectedSource);
+    }
+
     setFilteredSessions(filtered);
     setCurrentPage(1);
-  }, [sessions, selectedCategory, selectedStatus, selectedTime]);
+  }, [sessions, selectedCategory, selectedStatus, selectedTime, selectedSource]);
 
   const hasShownToast = useRef(false);
 
@@ -231,7 +243,7 @@ export default function MyInterviewSessions() {
     {
       key: "category",
       label: "Visa Category",
-      width: "25%",
+      width: "22%",
       render: (session) => {
         const Icon = getCategoryIcon(session.category_slug);
         return (
@@ -247,9 +259,23 @@ export default function MyInterviewSessions() {
       },
     },
     {
+      key: "source",
+      label: "Source",
+      width: "15%",
+      render: (session) => (
+        <span
+          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+            session.source === "tool" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"
+          }`}
+        >
+          {session.source === "tool" ? "Tool" : "Journey"}
+        </span>
+      ),
+    },
+    {
       key: "created",
       label: "Created",
-      width: "25%",
+      width: "23%",
       render: (session) => (
         <div className="flex flex-col">
           <div className="text-base font-medium text-slate-900">
@@ -264,20 +290,18 @@ export default function MyInterviewSessions() {
     {
       key: "status",
       label: "Status",
-      width: "25%",
+      width: "20%",
       render: (session) => <CompletionBadge status={getSessionStatus(session)} />,
     },
     {
       key: "actions",
       label: "Actions",
-      width: "25%",
+      width: "20%",
       className: "text-right",
       render: (session) => (
         <Button
           size="sm"
-          onClick={() =>
-            (window.location.href = `/interview-prep/result?sessionId=${session.id}`)
-          }
+          onClick={() => (window.location.href = `/interview-prep/result?sessionId=${session.id}`)}
           className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white"
         >
           View Session
@@ -347,6 +371,16 @@ export default function MyInterviewSessions() {
                     value: selectedStatus,
                   },
                   {
+                    key: "source",
+                    label: "Source",
+                    options: [
+                      { value: "all", label: "All Sources" },
+                      { value: "tool", label: "Tool" },
+                      { value: "journey", label: "Journey" },
+                    ],
+                    value: selectedSource,
+                  },
+                  {
                     key: "time",
                     label: "Created",
                     options: [
@@ -362,6 +396,7 @@ export default function MyInterviewSessions() {
                   setSelectedCategory(filters.category || "all");
                   setSelectedStatus(filters.status || "all");
                   setSelectedTime((filters.time || "all") as TimeFilter);
+                  setSelectedSource(filters.source || "all");
                 }}
                 itemCount={filteredSessions.length}
                 totalCount={sessions.length}
@@ -369,7 +404,7 @@ export default function MyInterviewSessions() {
             )}
             <Button
               onClick={() => (window.location.href = "/interview-prep")}
-              className={`bg-[#0d7377] hover:bg-[#0a5a5d] text-white py-5 px-6 text-lg ${sessions.length === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`bg-[#0d7377] hover:bg-[#0a5a5d] text-white py-5 px-6 text-lg`}
             >
               <Plus className="w-5 h-5 mr-2" />
               New Session

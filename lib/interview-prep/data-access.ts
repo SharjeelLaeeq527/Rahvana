@@ -252,19 +252,17 @@ export async function getAllUserSessionsDB(
 ): Promise<InterviewSession[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
-  let query = supabase
-    .from("interview_prep_sessions")
-    .select("*")
-    .eq("user_id", user.id)
-    .eq("source", "tool"); // Only return tool-based sessions in list view. Journey sessions are accessed via journey_id or getActiveJourneySession.
+  let query = supabase.from("interview_prep_sessions").select("*").eq("user_id", user.id);
 
   // Optional filter by completion status
   if (completed !== undefined) {
     query = query.eq("completed", completed);
   }
 
-  // Order by most recent first
-  query = query.order("updated_at", { ascending: false });
+  // Order by journey / tool sessions first
+  query = query
+  .order("source", { ascending: false })
+  .order("updated_at", { ascending: false });
 
   // Apply limit if specified
   if (limit) {
