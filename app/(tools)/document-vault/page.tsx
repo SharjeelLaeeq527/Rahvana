@@ -672,8 +672,20 @@ export default function DocumentVaultPage() {
 
   if (noJourneyModalOpen) {
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-55px)] bg-slate-50/50 dark:bg-slate-950/50 mt-[55px] p-6">
-        <Card className="max-w-md w-[95%] bg-white dark:bg-slate-900 border-none shadow-2xl rounded-3xl p-0 overflow-hidden relative">
+      <div
+        className="relative flex items-center justify-center min-h-[calc(100vh-55px)] mt-[55px] p-6 transition-all duration-500 selection:bg-amber-500/20 overflow-hidden"
+        style={{
+          backgroundImage: "url('/assets/images/vault-bg-v6.png')",
+          backgroundSize: "100% 100%",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }}
+      >
+        {/* Subtle dark/light overlay for optimal background contrast & readability */}
+        <div className="absolute inset-0 bg-slate-900/10 dark:bg-slate-950/40 backdrop-blur-[1px] pointer-events-none" />
+
+        {/* Main Journey Required Card */}
+        <Card className="max-w-md w-[95%] bg-white/95 dark:bg-slate-900/95 backdrop-blur-md border border-slate-200/50 dark:border-slate-800/50 shadow-2xl rounded-3xl p-0 overflow-hidden relative z-10">
           <div className="relative p-8 flex flex-col items-center text-center">
             {/* Decorative blobs */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden">
@@ -747,11 +759,11 @@ export default function DocumentVaultPage() {
               if (visaCategory) {
                 const cleanCategory = visaCategory.toUpperCase().replace(/[^A-Z0-9]/g, "");
                 if (cleanCategory === "IR1") {
-                  cardImage = "/assets/images/ir1-image.png";
+                  cardImage = "/assets/images/ir1-doc-vault-image.png";
                   cardDesc =
                     "Spouse of a U.S. Citizen Visa Document Vault. Keep track of marriage certificates, petitioner details, and sponsorship documents.";
                 } else if (cleanCategory === "IR5") {
-                  cardImage = "/assets/images/ir5-image.png";
+                  cardImage = "/assets/images/ir5-doc-vault-image.png";
                   cardDesc =
                     "Parent of a U.S. Citizen Visa Document Vault. Keep track of birth certificates, proof of relationship, and financial sponsor files.";
                 }
