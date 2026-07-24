@@ -289,9 +289,14 @@ export function getEffectiveDocDef(id: string | null) {
     "joint-employment-letter",
     "joint-pay-stubs",
     "joint-assets",
+    "joint-citizenship-proof",
     "i-864a-contract",
     "household-member-income",
-    "household-member-residence"
+    "household-member-residence",
+    "hh-marriage",
+    "hh-id",
+    "hh-birth",
+    "hh-family-link"
   ];
 
   for (const baseId of baseIds) {

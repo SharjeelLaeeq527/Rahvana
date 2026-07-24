@@ -388,6 +388,7 @@ export default function DocumentVaultPage() {
     mappedFlags.household_member_used = hasHouseholdMemberFromJourney;
     mappedFlags.jsCount = jsCount;
     mappedFlags.hhCount = hhCount;
+    mappedFlags.hhRelationships = metadata.hhRelationships || {};
 
     if (!config) {
       // No vault config saved yet for this user — create a minimal one from the

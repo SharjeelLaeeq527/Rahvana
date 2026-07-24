@@ -53,6 +53,11 @@ export function isDocUploadedInVault(
 export function mapDocumentNameToId(name: string): string {
   const normalized = name.toLowerCase().trim();
 
+  // Petitioner birth certificate check
+  if (normalized.includes("birth certificate of petitioner") || normalized.includes("birth certificate (petitioner)")) {
+    return "birth-cert-petitioner";
+  }
+
   // Route Joint Sponsor documents first to prevent them from mapping to petitioner's tax/income definitions
   if (normalized.includes("joint sponsor") || normalized.includes("sponsor 1") || normalized.includes("sponsor 2") || normalized.includes("-js")) {
     let suffix = "";
@@ -78,6 +83,9 @@ export function mapDocumentNameToId(name: string): string {
     if (normalized.includes("asset")) {
       return `joint-assets${suffix}`;
     }
+    if (normalized.includes("citizenship") || normalized.includes("lawful permanent resident") || normalized.includes("status")) {
+      return `joint-citizenship-proof${suffix}`;
+    }
     if (normalized.includes("organized income") || normalized.includes("organized packet")) {
       return `organized-income-packet${suffix}`;
     }
@@ -88,6 +96,7 @@ export function mapDocumentNameToId(name: string): string {
     let suffix = "";
     if (normalized.includes("household member 1") || normalized.includes("hm-1")) suffix = "-household-member-1";
     else if (normalized.includes("household member 2") || normalized.includes("hm-2")) suffix = "-household-member-2";
+    else if (normalized.includes("household member 3") || normalized.includes("hm-3")) suffix = "-household-member-3";
     else suffix = "-household-member-1";
 
     if (normalized.includes("income") || normalized.includes("tax") || normalized.includes("w-2") || normalized.includes("pay")) {
@@ -98,6 +107,18 @@ export function mapDocumentNameToId(name: string): string {
     }
     if (normalized.includes("i-864a") || normalized.includes("contract")) {
       return `i-864a-contract${suffix}`;
+    }
+    if (normalized.includes("marriage")) {
+      return `hh-marriage${suffix}`;
+    }
+    if (normalized.includes("id") || normalized.includes("identity")) {
+      return `hh-id${suffix}`;
+    }
+    if (normalized.includes("birth")) {
+      return `hh-birth${suffix}`;
+    }
+    if (normalized.includes("family") || normalized.includes("link") || normalized.includes("connection")) {
+      return `hh-family-link${suffix}`;
     }
   }
 
@@ -181,6 +202,39 @@ export function mapDocumentNameToId(name: string): string {
 
     // Parent / IR-5 Specific Mappings
     "petitioner's birth certificate": "birth-cert-petitioner",
+    "petitioner's birth certificate showing the parent beneficiary": "birth-cert-petitioner",
+    "petitioner's original or certified birth certificate showing the parent beneficiary": "birth-cert-petitioner",
+    "parent beneficiary passport biographic page": "passport-beneficiary",
+    "pakistani passport (parent beneficiary)": "passport-beneficiary",
+    "parent beneficiary birth certificate": "birth-cert-beneficiary",
+    "parent beneficiary's official birth certificate": "birth-cert-beneficiary",
+    "parent beneficiary's birth certificate": "birth-cert-beneficiary",
+    "parent's official civil birth record": "birth-cert-beneficiary",
+    "parent's birth certificate": "birth-cert-beneficiary",
+    "parent beneficiary marriage certificate": "parent-mrc",
+    "marriage certificate / nikah nama of parent beneficiary (if applicable)": "parent-mrc",
+    "marriage registration certificate and certified english translation (if applicable)": "parent-mrc",
+    "divorce decrees or annulment records for prior marriages (if applicable)": "divorce-decree-beneficiary",
+    // "prior marriage termination documents": "divorce-decree-beneficiary",
+    "death certificate of former spouse (if applicable)": "death-cert-prior-spouse",
+    "father-child relationship evidence (if applicable)": "father-child-bona-fide",
+    "father-child relationship evidence": "father-child-bona-fide",
+    "stepparent marriage and prior-marriage termination records (if applicable)": "stepparent-marriage-cert",
+    "stepparent relationship records": "stepparent-marriage-cert",
+    "adoption, legal custody, and joint residence records (if applicable)": "adoption-decree",
+    "adoption, legal custody, and joint residence records": "adoption-decree",
+    "name change or identity discrepancy documents": "name-change-proof",
+    "name change or identity-linking documents (if applicable)": "name-change-proof",
+    "court and prison records (if applicable)": "court-records",
+    "court and prison records": "court-records",
+    "military or service records (if applicable)": "military-records",
+    "military or service records": "military-records",
+    "certified english translations of non-english documents (if required)": "certified-translations",
+    "certified english translations": "certified-translations",
+    "ir-5 relationship evidence backup set": "relationship-evidence-backup",
+    "interview originals and certified copies set": "interview-originals",
+    "police certificate - pakistan (original and valid)": "police-certificate-pakistan",
+    "police certificates from other countries (if applicable)": "police-certificate-pakistan",
     "parent identity and name-match evidence": "parent-identity-match",
     "parents' marriage certificate": "parents-marriage-cert",
     "evidence of a bona fide father-child relationship": "father-child-bona-fide",
@@ -191,6 +245,13 @@ export function mapDocumentNameToId(name: string): string {
     "secondary parent-child relationship evidence": "secondary-relationship-evidence",
     "record unavailability evidence": "record-unavailability-evidence",
     "parent's marriage and prior-marriage records": "parent-marriage-history",
+    "u.s. passport, birth certificate, naturalization certificate, or citizenship certificate (petitioner)": "citizenship-proof-petitioner",
+    "birth certificates for all children of the parent beneficiary": "children-birth-certs",
+    "w-2, 1099, and relevant tax schedules (if applicable)": "w2-forms",
+    "current pay stubs and employment verification letter (if current income must be documented)": "pay-stubs",
+    "most recent irs tax transcript or complete federal tax return - petitioner": "tax-returns-petitioner",
+    "form i-864 affidavit of support - petitioner": "i864-affidavit",
+    "proof of u.s. domicile - petitioner": "domicile-proof-petitioner",
 
     // Exact matches from IR-1 journey JSON (lowercased for matching)
     "proof of u.s. citizenship": "citizenship-proof-petitioner",
