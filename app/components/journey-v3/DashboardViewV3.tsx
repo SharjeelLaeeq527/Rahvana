@@ -57,6 +57,7 @@ import {
   buildGateContext,
   isMeaningfullyStarted,
   isCaseHealthScorable,
+  hasUserEvidenceSignal,
 } from "@/lib/case-strength/alert-gating";
 import type { StepChecker } from "@/lib/case-strength/step-checkers";
 import type { ConsistencyFinding } from "@/lib/case-strength/consistency-intelligence";
@@ -667,11 +668,14 @@ export function DashboardViewV3({
   // step 1 is done. `notStarted` (alert stream) stays keyed off completion.
   // NOTE: intentionally does NOT count evidenceAnalysis.stats/requiredDocuments,
   // which include profile-autofilled placeholders and would open the gate before
-  // the user has done anything. Only real user signal counts (§6E).
-  const hasEvidenceSignal =
-    uploadedDocuments.length > 0 ||
-    evidenceAnsweredCount > 0 ||
-    (evidenceAnalysis?.userProvided?.evidenceCount ?? 0) > 0;
+  // the user has done anything. Only real user signal counts (§6E). The vault
+  // seeds a "MISSING" placeholder row per required document, so the raw array
+  // length is > 0 on a fresh journey — count only rows with a real uploaded file.
+  const hasEvidenceSignal = hasUserEvidenceSignal({
+    uploadedFileCount: uploadedDocuments.filter((d) => d.status !== "MISSING").length,
+    evidenceAnsweredCount,
+    userProvidedEvidenceCount: evidenceAnalysis?.userProvided?.evidenceCount ?? 0,
+  });
   const healthNotStarted = !isCaseHealthScorable({
     completedCount: state.completedSteps.size,
     hasEvidenceSignal,
@@ -1184,7 +1188,7 @@ export function DashboardViewV3({
             healthLabel={caseHealthStatus?.label ?? "Analyzing"}
             healthStatus={caseHealthStatus?.status ?? "needs-attention"}
             loading={evidenceLoading}
-            notStarted={useWeightedScore ? false : healthNotStarted}
+            notStarted={healthNotStarted}
             onViewFullAnalysis={() => setIsCSADrawerOpen(true)}
             summaryText={compactSummary}
           />
@@ -1932,6 +1936,7 @@ export function DashboardViewV3({
         narrative={caseNarrative}
         evidenceAnalysis={weightedEvidenceView}
         evidenceLoading={evidenceLoading}
+        healthNotStarted={healthNotStarted}
         healthStatus={caseHealthStatus}
         onOpenEvidenceQuestionnaire={() => {
           setIsCSADrawerOpen(false);

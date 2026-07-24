@@ -38,6 +38,7 @@ export interface CSADrawerProps {
   narrative: CaseNarrative | null;
   evidenceAnalysis: EvidenceGapAnalysis | null;
   evidenceLoading?: boolean;
+  healthNotStarted?: boolean;
   healthStatus: {
     status: "excellent" | "good" | "needs-attention" | "critical";
     label: string;
@@ -124,6 +125,7 @@ export function CSADrawer({
   narrative,
   evidenceAnalysis,
   evidenceLoading,
+  healthNotStarted,
   healthStatus,
   onOpenEvidenceQuestionnaire,
   evidenceAnswered = 0,
@@ -135,6 +137,84 @@ export function CSADrawer({
   const healthStyle = healthStatus
     ? HEALTH_STYLES[healthStatus.status]
     : HEALTH_STYLES["needs-attention"];
+
+  // Empty state: journey hasn't started yet
+  if (isOpen && healthNotStarted) {
+    return (
+      <AnimatePresence>
+        <motion.div
+          key="csa-empty"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center backdrop-blur-sm"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.95, y: 10 }}
+            animate={{ scale: 1, y: 0 }}
+            onClick={(e) => e.stopPropagation()}
+            className="relative rounded-2xl overflow-hidden max-w-md w-full mx-4"
+            style={{ boxShadow: "0 20px 60px rgba(0,0,0,0.4)" }}
+          >
+            {/* Dark gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-br from-[#121f22] via-[#162629] to-[#1a2e32] border border-white/10" />
+
+            {/* Accent line */}
+            <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#14b8a6]/60 via-[#0d7377]/30 to-transparent" />
+
+            {/* Content */}
+            <div className="relative z-10 px-6 py-8">
+              {/* Header with icon */}
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-white/[0.08] border border-white/15">
+                  <svg
+                    className="w-5 h-5 text-[#5eead4]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#5eead4]/70">
+                    Case Analysis
+                  </p>
+                  <h3 className="text-[16px] font-bold text-white leading-tight">
+                    Analysis Not Started
+                  </h3>
+                </div>
+              </div>
+
+              {/* Message */}
+              <p className="text-[13px] text-white/70 leading-relaxed">
+                Complete your first step or upload a document to begin your case analysis.
+              </p>
+
+              {/* Secondary text */}
+              <p className="text-[12px] text-white/40 mt-3">
+                Your evidence, consistency, and critical issues will appear here as you progress.
+              </p>
+
+              {/* Close button */}
+              <button
+                onClick={onClose}
+                className="mt-6 w-full px-4 py-2.5 rounded-lg bg-white/[0.08] border border-white/15 text-[13px] font-semibold text-white/80 hover:bg-white/12 hover:border-white/20 transition-all"
+              >
+                Understood
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      </AnimatePresence>
+    );
+  }
 
   return (
     <AnimatePresence>

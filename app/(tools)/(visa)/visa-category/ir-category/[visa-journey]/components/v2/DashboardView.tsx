@@ -42,6 +42,7 @@ import {
   buildGateContext,
   isMeaningfullyStarted,
   isCaseHealthScorable,
+  hasUserEvidenceSignal,
 } from "@/lib/case-strength/alert-gating";
 import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
 import type { ConsistencyFinding } from "@/lib/case-strength/consistency-intelligence";
@@ -230,21 +231,6 @@ export function DashboardView({
     const p = resolveCaseStrengthProfile((data as any).journey_type);
     return p.caseScore?.model === "weighted";
   }, [data]);
-
-  // Band-cross detection: fire alert only on downward cross, recover on rise
-  useEffect(() => {
-    if (!useWeightedScore || healthNotStarted) {
-      prevBandRef.current = null;
-      return;
-    }
-    const t = classifyBandTransition(prevBandRef.current, overallCaseScore);
-    if (t.direction === "drop" && prevBandRef.current) {
-      setScoreDropBand({ from: prevBandRef.current, to: t.band });
-    } else if (t.direction === "rise") {
-      setScoreDropBand(null); // recovered → clear the alert
-    }
-    prevBandRef.current = t.band;
-  }, [overallCaseScore, useWeightedScore, healthNotStarted]);
 
   // User-provided evidence view for the weighted model (autofill excluded),
   // shared by the case narrative AND the Case Analysis drawer. Legacy model → raw analysis.
@@ -598,16 +584,36 @@ export function DashboardView({
   // stay in the neutral "gathering info" state until the user has produced real
   // evidence — not merely completed a checklist step. Without this, an empty
   // evidence set defaults to ~50% and reads as a real (bad) score the instant
-  // step 1 is done. `notStarted` (alert stream) stays keyed off completion.
-  const hasEvidenceSignal =
-    uploadedDocuments.length > 0 ||
-    evidenceAnsweredCount > 0 ||
-    (evidenceAnalysis?.stats?.totalEvidenceItems ?? 0) > 0 ||
-    (evidenceAnalysis?.requiredDocuments?.found ?? 0) > 0;
+  // step 1 is done. Uses userProvided only (not autofill) to avoid fake signals
+  // from journey_documents. `notStarted` (alert stream) stays keyed off completion.
+  // The vault seeds a "MISSING" placeholder row per required document, so the raw
+  // array length is > 0 on a fresh journey — count only rows with a real file.
+  const hasEvidenceSignal = hasUserEvidenceSignal({
+    uploadedFileCount: uploadedDocuments.filter((d) => d.status !== "MISSING").length,
+    evidenceAnsweredCount,
+    userProvidedEvidenceCount: evidenceAnalysis?.userProvided?.evidenceCount ?? 0,
+  });
   const healthNotStarted = !isCaseHealthScorable({
     completedCount: state.completedSteps.size,
     hasEvidenceSignal,
   });
+
+  // Band-cross detection: fire alert only on downward cross, recover on rise.
+  // Declared AFTER overallCaseScore + healthNotStarted so its deps aren't read
+  // in the temporal dead zone (mirrors the ordering in DashboardViewV3).
+  useEffect(() => {
+    if (!useWeightedScore || healthNotStarted) {
+      prevBandRef.current = null;
+      return;
+    }
+    const t = classifyBandTransition(prevBandRef.current, overallCaseScore);
+    if (t.direction === "drop" && prevBandRef.current) {
+      setScoreDropBand({ from: prevBandRef.current, to: t.band });
+    } else if (t.direction === "rise") {
+      setScoreDropBand(null); // recovered → clear the alert
+    }
+    prevBandRef.current = t.band;
+  }, [overallCaseScore, useWeightedScore, healthNotStarted]);
 
   // Extract step_1_2 document_items from roadmap data
   const step1_2DocItems = useMemo(() => {
@@ -1816,6 +1822,7 @@ export function DashboardView({
         narrative={caseNarrative}
         evidenceAnalysis={weightedEvidenceView}
         evidenceLoading={evidenceLoading}
+        healthNotStarted={healthNotStarted}
         healthStatus={caseHealthStatus}
         onOpenEvidenceQuestionnaire={() => {
           setIsCSADrawerOpen(false);

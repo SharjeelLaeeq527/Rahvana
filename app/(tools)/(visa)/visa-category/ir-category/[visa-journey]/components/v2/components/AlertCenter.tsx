@@ -23,6 +23,8 @@ export interface AlertCenterProps {
   /** All issues (will be filtered to critical + warning only) */
   issues: AggregatedIssue[];
   onOpenStep?: (chapterIdx: number, stepIdx: number) => void;
+  /** Opens the Case Strength score breakdown — used by `score-drop` alerts (§6C). */
+  onViewScore?: () => void;
   /** Before the user has started, show a neutral cue instead of "All clear". */
   notStarted?: boolean;
 }
@@ -57,12 +59,15 @@ function AlertRow({
   expanded,
   onToggle,
   onOpenStep,
+  onViewScore,
 }: {
   issue: AggregatedIssue;
   expanded: boolean;
   onToggle: () => void;
   onOpenStep?: () => void;
+  onViewScore?: () => void;
 }) {
+  const isScoreDrop = issue.kind === "score-drop";
   const s = SEV[issue.level as "critical" | "warning"];
   const Icon = s.icon;
   const stepLabel = issue.stepName
@@ -136,22 +141,35 @@ function AlertRow({
               {issue.hint && (
                 <p className="text-[10.5px] text-slate-600 leading-relaxed pt-2">{issue.hint}</p>
               )}
-              {onOpenStep && (
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onOpenStep();
-                  }}
-                  className="inline-flex items-center gap-1.5 text-[10px] font-bold rounded-lg px-2.5 py-1.5 transition-all border hover:brightness-95"
-                  style={{
-                    background: s.chipBg,
-                    color: s.chipFg,
-                    borderColor: s.border,
-                  }}
-                >
-                  Go to step <ChevronRight size={10} />
-                </button>
-              )}
+              {isScoreDrop
+                ? onViewScore && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onViewScore();
+                      }}
+                      className="inline-flex items-center gap-1.5 text-[10px] font-bold rounded-lg px-2.5 py-1.5 transition-all border hover:brightness-95"
+                      style={{ background: s.chipBg, color: s.chipFg, borderColor: s.border }}
+                    >
+                      View breakdown <ChevronRight size={10} />
+                    </button>
+                  )
+                : onOpenStep && (
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onOpenStep();
+                      }}
+                      className="inline-flex items-center gap-1.5 text-[10px] font-bold rounded-lg px-2.5 py-1.5 transition-all border hover:brightness-95"
+                      style={{
+                        background: s.chipBg,
+                        color: s.chipFg,
+                        borderColor: s.border,
+                      }}
+                    >
+                      Go to step <ChevronRight size={10} />
+                    </button>
+                  )}
             </div>
           </motion.div>
         )}
@@ -162,7 +180,7 @@ function AlertRow({
 
 // ─── Main Component ──────────────────────────────────────────────────────────────
 
-export function AlertCenter({ issues, onOpenStep, notStarted }: AlertCenterProps) {
+export function AlertCenter({ issues, onOpenStep, onViewScore, notStarted }: AlertCenterProps) {
   const [expandedIdx, setExpandedIdx] = useState<number | null>(null);
 
   // Filter to critical + warning only, exclude resolved
@@ -276,6 +294,7 @@ export function AlertCenter({ issues, onOpenStep, notStarted }: AlertCenterProps
             expanded={expandedIdx === i}
             onToggle={() => setExpandedIdx((cur) => (cur === i ? null : i))}
             onOpenStep={onOpenStep ? () => onOpenStep(issue.chapterIdx, issue.stepIdx) : undefined}
+            onViewScore={onViewScore}
           />
         ))}
       </div>

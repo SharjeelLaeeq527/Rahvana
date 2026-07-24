@@ -110,7 +110,7 @@ export function generateCaseNarrative(input: NarrativeInput): CaseNarrative {
     else consistencyPenalty += 3;
   }
   const consistencyScore = Math.max(0, 100 - consistencyPenalty);
-  const overallCombinedScore = Math.round(evidenceScore * 0.6 + consistencyScore * 0.4);
+  const overallCombinedScore = Math.round(evidenceScore * 0.5 + consistencyScore * 0.5);
 
   // Build each section. When a weighted score is supplied, drive the summary tone
   // from it (band-based, calmer); otherwise fall back to the legacy blend.
