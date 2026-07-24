@@ -4,6 +4,7 @@ import React from "react";
 import { CheckCircle2, Lock } from "lucide-react";
 import { getStepIcon } from "../StepIcon";
 import { mapDocumentNameToId, isDocUploadedInVault } from "@/lib/document-vault/journey-mapping";
+import { DocListSection } from "./DocListSection";
 
 export const DEFAULT_SCENARIOS: Record<string, any> = {
   "pet-only": {
@@ -379,6 +380,8 @@ interface FinancialChecklistToolProps {
   setIsFinancialDocGuideOpen: (open: boolean) => void;
   guard?: () => boolean;
   tool?: any;
+  onPreview: (uploadedDocId: string) => void;
+  onDelete: (id: string, name: string) => void;
 }
 
 export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
@@ -397,6 +400,8 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
   setIsFinancialDocGuideOpen,
   guard,
   tool,
+  onPreview,
+  onDelete,
 }) => {
   const scenarios = tool?.scenarios || DEFAULT_SCENARIOS;
 
@@ -410,7 +415,11 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
         <select
           className="flex-1 min-w-[180px] p-[8px_12px] border-[1.5px] border-[#d0e4f7] rounded-[8px] font-sans text-[13px] text-[#1c2b3a] bg-[#f4f7fb] outline-none cursor-pointer focus:border-primary"
           value={selectedScenario}
-          onChange={(e) => setSelectedScenario(e.target.value)}
+          onChange={(e) => {
+            const val = e.target.value;
+            setSelectedScenario(val);
+            updateMetadata({ selectedScenario: val });
+          }}
         >
           {Object.entries(scenarios).map(([key, sc]: [string, any]) => (
             <option key={key} value={key}>
@@ -457,213 +466,75 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
         );
       })()}
 
-      {/* Progress Bar */}
-      {(() => {
-        const docs = getFinancialDocs(selectedScenario, tool);
-        const allItems = [...docs.required, ...docs.conditional, ...docs.recommended];
-        const reviewedCount = allItems.filter(
-          (d) => financialDocsStatus[d.id] === "reviewed"
-        ).length;
-        const totalCount = allItems.length;
-        const pct = totalCount > 0 ? Math.round((reviewedCount / totalCount) * 100) : 0;
-
-        return (
-          <div className="flex flex-col mb-[24px]">
-            <div className="flex items-center gap-[12px] mb-[8px]">
-              <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
-                <div
-                  className="h-full bg-linear-to-r from-primary to-primary/70 transition-all duration-500"
-                  style={{ width: `${pct}%` }}
-                />
-              </div>
-              <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
-                {reviewedCount} of {totalCount} reviewed
-              </div>
-            </div>
-          </div>
-        );
-      })()}
-
       {/* Document Groups */}
-      <div className="flex flex-col gap-[36px]">
+      <div className="flex flex-col gap-[36px] mt-2">
         {(() => {
           const docs = getFinancialDocs(selectedScenario, tool);
           const groups = [
             {
               id: "required",
               label: "Required",
-              badge: "badge-req",
+              badge: "req",
               items: docs.required,
             },
             {
               id: "conditional",
               label: "Required if Applicable",
-              badge: "badge-cond",
+              badge: "cond",
               items: docs.conditional,
             },
             {
               id: "recommended",
               label: "Recommended to Strengthen Readiness",
-              badge: "badge-rec",
+              badge: "Recommended",
               items: docs.recommended,
             },
-          ];
+          ].filter((g) => g.items.length > 0);
 
-          return groups.map((group) => {
-            if (group.items.length === 0) return null;
-            return (
-              <div key={group.id} className="flex flex-col">
-                <div className="flex items-center gap-[10px] mb-[14px]">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-[#6b8097]">
-                    {group.label}
-                  </span>
-                  <div className="flex-1 h-px bg-[#d0e4f7]" />
-                </div>
-
-                <div className="flex flex-col gap-[10px]">
-                  {group.items.map((doc: any) => {
-                    const st = financialDocsStatus[doc.id] || "not-started";
-                    const defId = mapDocumentNameToId(doc.title);
-                    const isUploadedInVault = isDocUploadedInVault(
-                      doc.title,
-                      defId,
-                      uploadedDocuments
-                    );
-                    const uploadedDoc = uploadedDocuments.find((ud) => ud.documentDefId === defId);
-                    const isReviewed = st === "reviewed";
-                    const isInProgress = st === "in-progress";
-
-                    return (
-                      <div
-                        key={doc.id}
-                        onClick={() => {
-                          if (guard && !guard()) return;
-                          setDocActionModal({
-                            isOpen: true,
-                            doc,
-                            title: doc.title,
-                            subtitle: doc.sub,
-                            onReadGuide: () => {
-                              if (financialDocsStatus[doc.id] !== "reviewed") {
-                                updateMetadata({
-                                  financialDocsStatus: {
-                                    ...financialDocsStatus,
-                                    [doc.id]: "in-progress",
-                                  },
-                                });
-                              }
-                              setActiveFinancialDoc(doc);
-                              setIsFinancialDocGuideOpen(true);
-                            },
-                            onUpload: () => {
-                              setActiveUploadId(doc.id);
-                              setActiveUploadType("financial");
-                              openUploadModal(defId);
-                            },
-                          });
-                        }}
-                        className={`group flex flex-col sm:flex-row sm:items-center gap-[16px] px-[16px] py-[14px] sm:px-[20px] sm:py-[18px] rounded-[14px] border-[1.5px] transition-all cursor-pointer relative shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] hover:border-primary hover:shadow-[0_8px_32px_rgba(15,31,56,0.12),0_2px_8px_rgba(15,31,56,0.06)] hover:-translate-y-px active:translate-y-0 active:shadow-[0_2px_12px_rgba(15,31,56,0.07),0_1px_3px_rgba(15,31,56,0.04)] mb-[10px]
-                        ${
-                          isReviewed
-                            ? "bg-[#eaf7ff] border-[#b8daff]"
-                            : isInProgress
-                              ? "bg-[#fff9e6] border-[#fde68a]/50"
-                              : "bg-white border-[#d0e4f7]"
-                        }`}
-                      >
-                        <div
-                          className={`w-[40px] h-[40px] rounded-[10px] flex items-center justify-center shrink-0 transition-all duration-300 border text-[18px] relative
-                          ${
-                            isReviewed
-                              ? "bg-[#1a7a5e] text-white border-[#1a7a5e]"
-                              : isInProgress
-                                ? "bg-white border-[#fde68a] text-[#d97706]"
-                                : "bg-[#e8f1fb] border-[#d0e4f7] text-primary/80"
-                          }`}
-                        >
-                          {/* We don't have isLocked easily here without another hook, but StepView passes guard which handles it on click. 
-                              For visual hint, we could pass isLocked too, but guard() is enough for enforcement. */}
-                          {isReviewed ? (
-                            <CheckCircle2 size={18} strokeWidth={2.5} />
-                          ) : (
-                            getStepIcon(doc.icon)
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="text-[15px] sm:text-[15px] font-semibold text-[#0c1b33] mb-[4px]">
-                            {doc.title}
-                          </div>
-                          <div className="text-[13px] sm:text-[13px] text-[#3a4f63] leading-[1.4]">
-                            {doc.sub}
-                          </div>
-                          <div className="flex gap-[6px] mt-[7px] flex-wrap">
-                            {doc.tags.map((tag: any, idx: number) => (
-                              <span
-                                key={idx}
-                                className={`text-[11px] font-semibold px-[9px] py-[3px] rounded-full tracking-[0.04em] ${
-                                  tag.cls === "tag-pet"
-                                    ? "bg-[#e8f1fb] text-[#2d4a6e]"
-                                    : tag.cls === "tag-js"
-                                      ? "bg-[#f3f0fb] text-[#4a2d8a]"
-                                      : tag.cls === "tag-hm"
-                                        ? "bg-[#e8f5ef] text-[#15744f]"
-                                        : tag.cls === "tag-tax"
-                                          ? "bg-[#fff7ed] text-[#b45309]"
-                                          : tag.cls === "tag-cur"
-                                            ? "bg-[#eef3fa] text-[#3a4f63]"
-                                            : "bg-[#f4f7fb] text-[#6b8097]"
-                                }`}
-                              >
-                                {tag.label}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-
-                        <div className="shrink-0 flex items-center gap-2 w-full sm:w-auto">
-                          {(() => {
-                            const isDeleting = uploadedDoc
-                              ? isDeletingIds.includes(uploadedDoc.id)
-                              : false;
-
-                            if (isDeleting) return null;
-
-                            const displayStatus = isUploadedInVault
-                              ? "Uploaded"
-                              : isReloadingDocs
-                                ? "Checking..."
-                                : isReviewed
-                                  ? "Reviewed"
-                                  : isInProgress
-                                    ? "In progress"
-                                    : "Not started";
-
-                            const statusClasses = isUploadedInVault
-                              ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0] font-bold shadow-sm"
-                              : isReloadingDocs
-                                ? "bg-muted/30 text-muted-foreground border-muted-foreground/20 animate-pulse"
-                                : isReviewed
-                                  ? "bg-[#eaf7f2] text-[#1a7a5e] border-[#b5e0d0]"
-                                  : isInProgress
-                                    ? "bg-[#fff9e6] text-[#d97706] border-[#fde68a]"
-                                    : "bg-white text-[#6b8097] border-[#d0e4f7] hover:border-primary hover:text-primary";
-
-                            return (
-                              <div
-                                className={`text-[11px] font-semibold px-[10px] py-[4px] rounded-full border transition-all ${statusClasses}`}
-                              >
-                                {displayStatus}
-                              </div>
-                            );
-                          })()}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            );
-          });
+          return (
+            <DocListSection
+              groups={groups}
+              docsStatus={financialDocsStatus}
+              uploadedDocuments={uploadedDocuments}
+              isDeletingIds={isDeletingIds}
+              isReloadingDocs={isReloadingDocs}
+              getVaultId={(item) => mapDocumentNameToId(item.title)}
+              findVaultDoc={(item, docs) => {
+                const defId = mapDocumentNameToId(item.title);
+                return docs.find((ud) => ud.documentDefId === defId);
+              }}
+              showTags={true}
+              onItemClick={(item) => {
+                if (guard && !guard()) return;
+                setDocActionModal({
+                  isOpen: true,
+                  doc: { ...item, name: item.title },
+                  title: item.title,
+                  subtitle: item.sub,
+                  onReadGuide: () => {
+                    if (financialDocsStatus[item.id] !== "reviewed") {
+                      updateMetadata({
+                        financialDocsStatus: {
+                          ...financialDocsStatus,
+                          [item.id]: "in-progress",
+                        },
+                      });
+                    }
+                    setActiveFinancialDoc(item);
+                    setIsFinancialDocGuideOpen(true);
+                  },
+                  onUpload: () => {
+                    const defId = mapDocumentNameToId(item.title);
+                    setActiveUploadId(item.id);
+                    setActiveUploadType("financial");
+                    openUploadModal(defId);
+                  },
+                });
+              }}
+              onPreview={onPreview}
+              onDelete={onDelete}
+            />
+          );
         })()}
       </div>
     </div>

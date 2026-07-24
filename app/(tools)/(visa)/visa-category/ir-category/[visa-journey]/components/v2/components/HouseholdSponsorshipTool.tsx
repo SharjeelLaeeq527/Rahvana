@@ -5,6 +5,7 @@ import { ArrowRight, BookOpen, Users, Upload } from "lucide-react";
 import { getStepIcon } from "../StepIcon";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { getHhDocItems } from "./HouseholdMemberTool";
+import { DocListSection } from "./DocListSection";
 
 interface HouseholdSponsorshipToolProps {
   // State
@@ -38,6 +39,12 @@ interface HouseholdSponsorshipToolProps {
   setActiveUploadType: (type: "doc" | "hh" | "financial" | null) => void;
   setActiveHhDoc: (doc: any) => void;
   setIsHhDocGuideOpen: (open: boolean) => void;
+  setDocActionModal: (data: any) => void;
+  uploadedDocuments: any[];
+  isReloadingDocs: boolean;
+  isDeletingIds: string[];
+  onPreview: (uploadedDocId: string) => void;
+  onDelete: (id: string, name: string) => void;
 }
 
 export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> = ({
@@ -61,6 +68,12 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
   setActiveUploadType,
   setActiveHhDoc,
   setIsHhDocGuideOpen,
+  setDocActionModal,
+  uploadedDocuments,
+  isReloadingDocs,
+  isDeletingIds,
+  onPreview,
+  onDelete,
 }) => {
   const allItems = getHhDocItems(hhCount, hhRelationships);
   const total = allItems.length;
@@ -84,103 +97,7 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
     },
   ] as const;
 
-  const renderHhDocCard = (item: any) => {
-    const st = hhDocsStatus[item.id] || "not-started";
-    const stLabel =
-      st === "reviewed" ? "✓ Reviewed" : st === "in-progress" ? "In progress" : "Open guide";
 
-    return (
-      <div
-        key={item.id}
-        className={`w-full group bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[17px_20px] flex items-center gap-[15px] text-left transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] ${
-          st === "reviewed"
-            ? "bg-[#e8f5ef] border-[#a8d9be]"
-            : st === "in-progress"
-              ? "bg-[#fef8e8] border-[#f0d98a]"
-              : ""
-        }`}
-      >
-        <div
-          className={`w-[38px] h-[38px] rounded-[9px] bg-[#e8f1fb] border border-[#d0e4f7] flex items-center justify-center shrink-0 text-[16px] transition-all group-hover:bg-primary/10 group-hover:border-primary/30 ${
-            st === "reviewed" ? "bg-[#e8f5ef] border-[#a8d9be]" : ""
-          }`}
-        >
-          {getStepIcon(item.icon)}
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-[14px] font-semibold text-[#0c1b33] mb-0.5 leading-tight">
-            {item.title}
-          </div>
-          <div className="text-[12px] text-[#6b8097] leading-tight">{item.sub}</div>
-          <div className="flex gap-[5px] mt-[6px] flex-wrap">
-            {item.tags.map((tag: any, idx: number) => {
-              const tagMap: Record<string, string> = {
-                "tag-hh": "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]",
-                "tag-js": "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]",
-                "tag-rel": "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]",
-                "tag-res": "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]",
-                "tag-id": "bg-[#eef3fa] text-[#3a4f63] border-[#d0e4f7]",
-                "tag-gov": "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]",
-              };
-              return (
-                <span
-                  key={idx}
-                  className={`text-[10px] font-semibold px-2 py-[2px] rounded-full tracking-wider border ${
-                    tagMap[tag.cls] || "bg-[#f4f7fb] text-[#6b8097]"
-                  }`}
-                >
-                  {tag.label}
-                </span>
-              );
-            })}
-          </div>
-        </div>
-
-        <div className="flex flex-col items-center gap-2">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              if (!guard()) return;
-              const defId = mapDocumentNameToId(item.title);
-              setActiveUploadId(item.id);
-              setActiveUploadType("hh");
-              openUploadModal(defId);
-            }}
-            className="rounded-full bg-white px-[11px] py-[5px] border border-[#d0e4f7] text-[12px] font-medium flex items-center justify-center gap-1 text-[#6b8097] hover:border-primary hover:text-primary transition-all shadow-[0_2px_8px_rgba(0,0,0,0.04)]"
-          >
-            <Upload size={14} strokeWidth={2.5} />
-            <span>Vault</span>
-          </button>
-          <button
-            onClick={() => {
-              if (!guard()) return;
-              if (hhDocsStatus[item.id] === "not-started") {
-                const next = { ...hhDocsStatus, [item.id]: "in-progress" };
-                setHhDocsStatus(next);
-              }
-              updateMetadata({
-                hhDocsStatus: {
-                  ...hhDocsStatus,
-                  [item.id]: "in-progress",
-                },
-              });
-              setActiveHhDoc(item);
-              setIsHhDocGuideOpen(true);
-            }}
-            className={`text-[11px] font-semibold px-2.5 py-1 rounded-full whitespace-nowrap shrink-0 transition-all border ${
-              st === "reviewed"
-                ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-                : st === "in-progress"
-                  ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
-                  : "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]"
-            }`}
-          >
-            {stLabel}
-          </button>
-        </div>
-      </div>
-    );
-  };
 
   return (
     <div className="flex flex-col mt-4">
@@ -400,54 +317,63 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
 
       {/* PROGRESS AND CHECKLIST */}
       {hhCount > 0 ? (
-        <div className="flex flex-col">
-          <div className="flex items-center gap-3 mb-7">
-            <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
-              <div
-                className="h-full bg-linear-to-r from-primary to-[#6aa8f0] transition-all duration-500 rounded-[10px]"
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
-            <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap">
-              {reviewed} of {total} reviewed
-            </div>
-          </div>
-
+        <div className="flex flex-col gap-6 mt-3">
           {(() => {
-            const req = allItems.filter((i) => i.group === "required");
-            const cond = allItems.filter((i) => i.group === "conditional");
+            const groups = [
+              {
+                id: "required",
+                label: "Required",
+                badge: "req",
+                items: allItems.filter((i) => i.group === "required"),
+              },
+              {
+                id: "conditional",
+                label: "Required if Applicable",
+                badge: "cond",
+                items: allItems.filter((i) => i.group === "conditional"),
+              },
+            ].filter((g) => g.items.length > 0);
 
             return (
-              <div className="flex flex-col gap-7">
-                {req.length > 0 && (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-[10px]">
-                      <span className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
-                        Required
-                      </span>
-                      <span className="text-[10px] font-semibold tracking-widest uppercase px-[9px] py-[3px] rounded-full bg-[#ffeaea] text-[#a01c1c] border border-[#f5bebe]">
-                        Required
-                      </span>
-                      <div className="flex-1 h-px bg-[#d0e4f7]" />
-                    </div>
-                    {req.map((item) => renderHhDocCard(item))}
-                  </div>
-                )}
-                {cond.length > 0 && (
-                  <div className="flex flex-col gap-3">
-                    <div className="flex items-center gap-[10px]">
-                      <span className="text-[11px] font-semibold tracking-widest uppercase text-[#6b8097]">
-                        Required if Applicable
-                      </span>
-                      <span className="text-[10px] font-semibold tracking-widest uppercase px-[9px] py-[3px] rounded-full bg-[#fef8e8] text-[#8a6200] border border-[#f0d98a]">
-                        Required if Applicable
-                      </span>
-                      <div className="flex-1 h-px bg-[#d0e4f7]" />
-                    </div>
-                    {cond.map((item) => renderHhDocCard(item))}
-                  </div>
-                )}
-              </div>
+              <DocListSection
+                groups={groups}
+                docsStatus={hhDocsStatus}
+                uploadedDocuments={uploadedDocuments}
+                isDeletingIds={isDeletingIds}
+                isReloadingDocs={isReloadingDocs}
+                getVaultId={(item) => mapDocumentNameToId(item.title)}
+                findVaultDoc={(item, docs) => {
+                  const defId = mapDocumentNameToId(item.title);
+                  return docs.find((ud) => ud.documentDefId === defId);
+                }}
+                showTags={true}
+                onItemClick={(item) => {
+                  if (!guard()) return;
+                  setDocActionModal({
+                    isOpen: true,
+                    doc: { ...item, name: item.title },
+                    title: item.title,
+                    subtitle: item.sub,
+                    onReadGuide: () => {
+                      if (hhDocsStatus[item.id] === "not-started") {
+                        const next = { ...hhDocsStatus, [item.id]: "in-progress" };
+                        setHhDocsStatus(next);
+                        updateMetadata({ hhDocsStatus: next });
+                      }
+                      setActiveHhDoc(item);
+                      setIsHhDocGuideOpen(true);
+                    },
+                    onUpload: () => {
+                      const defId = mapDocumentNameToId(item.title);
+                      setActiveUploadId(item.id);
+                      setActiveUploadType("hh");
+                      openUploadModal(defId);
+                    },
+                  });
+                }}
+                onPreview={onPreview}
+                onDelete={onDelete}
+              />
             );
           })()}
         </div>

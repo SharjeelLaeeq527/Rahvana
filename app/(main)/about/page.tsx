@@ -22,6 +22,7 @@ import { Playfair_Display, DM_Sans } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { ir1journeyHref } from "@/lib/constants/routes";
+import { explorejourneyHref } from "@/lib/constants/routes";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -129,7 +130,7 @@ export default function AboutPage() {
                 className="flex flex-wrap items-center gap-6 mt-2"
               >
                 <Link
-                  href={ir1journeyHref}
+                  href={explorejourneyHref}
                   className="inline-flex items-center gap-2.5 bg-[#0d7a75] text-white px-8 py-4 2xl:px-10 2xl:py-5 rounded-full text-sm 2xl:text-base font-medium hover:bg-[#0a5c58] transition-all transform hover:-translate-y-0.5 shadow-lg shadow-[#0d7a75]/20"
                 >
                   Choose your journey <ArrowRight size={16} />
@@ -258,7 +259,8 @@ export default function AboutPage() {
             </p>
             <p>That&apos;s Rahvana: the space between people who belong together.</p>
             <p>
-             We're focused on a select set of visa journeys — starting with IR-1 and IR-5 — so we can go deep before expanding further.
+              We're focused on a select set of visa journeys — starting with IR-1 and IR-5 — so we
+              can go deep before expanding further.
             </p>
           </div>
           <div className="mt-10 p-5 md:p-7 bg-white rounded-r-xl border-l-4 border-[#0d7a75] shadow-sm text-lg italic text-[#121e2e] leading-relaxed">
@@ -464,7 +466,7 @@ export default function AboutPage() {
               forward — toward clarity, toward submission, toward reunion.
             </p>
             <Link
-              href={ir1journeyHref}
+              href={explorejourneyHref}
               className="inline-flex items-center gap-2.5 bg-[#0d7a75] text-white px-7 py-3.5 rounded-full text-sm font-medium hover:bg-[#0a5c58] transition-all transform hover:-translate-y-0.5"
             >
               Start your journey <ArrowRight size={16} />
@@ -634,7 +636,7 @@ export default function AboutPage() {
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
           <Link
-            href={ir1journeyHref}
+            href={explorejourneyHref}
             className="bg-white text-[#0d7a75] px-8 py-3.5 rounded-full text-sm font-semibold hover:shadow-xl transition-all transform hover:-translate-y-0.5"
           >
             Start your journey →

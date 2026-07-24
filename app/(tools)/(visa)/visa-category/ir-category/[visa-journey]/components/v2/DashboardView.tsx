@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { ChevronDown, ExternalLink, Clock, Shield } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -24,8 +24,12 @@ import {
   getCaseHealthStatus,
   computeOverallCaseScore,
   computeConsistencyScore,
+  computeWeightedCaseScore,
+  classifyBandTransition,
+  SCORE_BAND_LABEL,
   runFullConsistencyAnalysis,
   type Phase2Responses,
+  type ScoreBand,
 } from "@/lib/case-strength";
 import {
   aggregateChapter1Issues,
@@ -33,6 +37,13 @@ import {
   aggregateChapter3Issues,
   type AggregatedIssue,
 } from "@/lib/case-strength/aggregate-issues";
+import {
+  gateAlertIssues,
+  buildGateContext,
+  isMeaningfullyStarted,
+  isCaseHealthScorable,
+} from "@/lib/case-strength/alert-gating";
+import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
 import type { ConsistencyFinding } from "@/lib/case-strength/consistency-intelligence";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { usePlan } from "@/app/context/PlanContext";
@@ -205,6 +216,33 @@ export function DashboardView({
     runAnalysis();
   }, [state.backendId, uploadedDocuments, data, state.metadata, questionnaireResponses]);
 
+  // ── CSA Drawer State ─────────────────────────────────────────────────────
+  const [isCSADrawerOpen, setIsCSADrawerOpen] = useState(false);
+  const [showPhase2Modal, setShowPhase2Modal] = useState(false);
+  const [showEvidenceQuestionnaireModal, setShowEvidenceQuestionnaireModal] = useState(false);
+
+  // Band-cross persistence for score-drop alerts (opt-in weighted model only)
+  const prevBandRef = useRef<ScoreBand | null>(null);
+  const [scoreDropBand, setScoreDropBand] = useState<ScoreBand | null>(null);
+
+  // User-provided evidence view for the weighted model (autofill excluded),
+  // shared by the case narrative AND the Case Analysis drawer. Legacy model → raw analysis.
+  const weightedEvidenceView = useMemo<EvidenceGapAnalysis | null>(() => {
+    const p = resolveCaseStrengthProfile((data as any).journey_type);
+    if (p.caseScore?.model !== "weighted" || !evidenceAnalysis?.userProvided) {
+      return evidenceAnalysis;
+    }
+    const up = evidenceAnalysis.userProvided;
+    return {
+      ...evidenceAnalysis,
+      overallScore: up.score,
+      requiredDocuments: up.requiredDocuments,
+      categories: up.categories,
+      stats: up.stats,
+      recommendations: up.recommendations,
+    };
+  }, [evidenceAnalysis, data]);
+
   // Refresh evidence analysis
   const refreshEvidenceAnalysis = () => {
     setEvidenceAnalysis(null);
@@ -284,11 +322,31 @@ export function DashboardView({
       uploadedDocuments
     );
 
-    return generateCaseNarrative({
-      evidenceAnalysis,
-      consistencyFindings,
-    });
-  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
+    const p = resolveCaseStrengthProfile((data as any).journey_type);
+    // Weighted model: use the same honest evidence view + weighted score so the
+    // drawer's summary matches the gauge and stays calm at the start.
+    if (p.caseScore?.model === "weighted" && evidenceAnalysis?.userProvided) {
+      const up = evidenceAnalysis.userProvided;
+      const metadata = state.metadata as Record<string, unknown> | undefined;
+      const questAnswers = metadata?.["questAnswers_eligibility-suite"] as
+        | Record<string, Record<string, string | string[]>>
+        | undefined;
+      const eligibilityRisks = p.detectEligibilityRisks(questAnswers, p.stepRefs);
+      const weightedScore = computeWeightedCaseScore({
+        evidenceStrength: up.score,
+        consistencyScore: computeConsistencyScore(consistencyFindings),
+        completeness: up.completionPercentage,
+        riskFlags: eligibilityRisks,
+      }).score;
+      return generateCaseNarrative({
+        evidenceAnalysis: weightedEvidenceView,
+        consistencyFindings,
+        overallScoreOverride: weightedScore,
+      });
+    }
+
+    return generateCaseNarrative({ evidenceAnalysis, consistencyFindings });
+  }, [evidenceAnalysis, weightedEvidenceView, state, phase2Responses, uploadedDocuments, data]);
 
   // Health status badge for the CaseSummaryCard header
   const caseHealthStatus = useMemo(() => {
@@ -308,10 +366,6 @@ export function DashboardView({
     });
   }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
 
-  // ── CSA Drawer State ─────────────────────────────────────────────────────
-  const [isCSADrawerOpen, setIsCSADrawerOpen] = useState(false);
-  const [showPhase2Modal, setShowPhase2Modal] = useState(false);
-  const [showEvidenceQuestionnaireModal, setShowEvidenceQuestionnaireModal] = useState(false);
 
   // ── Alert Center Issues ─────────────────────────────────────────────────────
   // Compute issues for the AlertCenter (critical + warning only)
@@ -319,7 +373,12 @@ export function DashboardView({
     const chapters = (data as any).chapters || (data as any).stages || [];
     const ch1 = aggregateChapter1Issues({ chapters, state, uploadedDocuments });
     const ch2 = aggregateChapter2Issues({ chapters, state, uploadedDocuments });
-    const ch3 = aggregateChapter3Issues({ chapters, state, uploadedDocuments });
+    const ch3 = aggregateChapter3Issues({
+      chapters,
+      state,
+      uploadedDocuments,
+      getActiveStepsForStage,
+    });
 
     const eligibilityAnswers =
       (state.answers?.["eligibility-suite"] as any) ??
@@ -376,8 +435,26 @@ export function DashboardView({
       .filter((issue) => !existingKeys.has(`${issue.stepKey}:${issue.title}`));
 
     const all = [...ch1, ...ch2, ...ch3, ...consistencyIssues];
+
+    // Progressive reveal: hide alerts for steps the user hasn't reached yet, and
+    // (Phase 2) time-gate current/passed-step warnings. Keeps the dashboard from
+    // dumping every chapter's issues at once. See CASE_STRENGTH_ALERT_PLAN.md.
+    // buildGateContext derives the frontier/active-order (shared with V3); the
+    // look-ahead rules come from the resolved category profile.
+    const gated = gateAlertIssues(
+      all,
+      buildGateContext({
+        chapters,
+        state,
+        getActiveStepsForStage,
+        getNextBestAction,
+        lookAheadRules: resolveCaseStrengthProfile((data as any).journey_type).lookAhead,
+        stepTimestamps: state.stepTimestamps,
+      })
+    );
+
     const order = { critical: 0, warning: 1, info: 2 };
-    return all.sort((a, b) => {
+    return gated.sort((a, b) => {
       if (!!a.resolved !== !!b.resolved) return a.resolved ? 1 : -1;
       if (order[a.level] !== order[b.level]) return order[a.level] - order[b.level];
       return a.chapterIdx - b.chapterIdx;
@@ -391,6 +468,12 @@ export function DashboardView({
   const warnIssueCount = alertCenterIssues.filter(
     (i) => i.level === "warning" && !i.resolved
   ).length;
+
+  // Empty-state gate: case-health appears only once the user has actually
+  // progressed (completed ≥1 step). Before that we must not show a fabricated
+  // score — the wizard pre-fills metadata from profile autofill, so softer
+  // signals would false-trigger. (NN/g empty states — no false precision.)
+  const notStarted = !isMeaningfullyStarted({ completedCount: state.completedSteps.size });
 
   // Overall combined case score (evidence + consistency)
   const overallCaseScore = useMemo(() => {
@@ -431,6 +514,21 @@ export function DashboardView({
 
   // Evidence questionnaire answered count
   const evidenceAnsweredCount = Object.values(questionnaireResponses).filter(Boolean).length;
+
+  // Case-health SCORE gate: the ring/percentage is evidence-derived, so it must
+  // stay in the neutral "gathering info" state until the user has produced real
+  // evidence — not merely completed a checklist step. Without this, an empty
+  // evidence set defaults to ~50% and reads as a real (bad) score the instant
+  // step 1 is done. `notStarted` (alert stream) stays keyed off completion.
+  const hasEvidenceSignal =
+    uploadedDocuments.length > 0 ||
+    evidenceAnsweredCount > 0 ||
+    (evidenceAnalysis?.stats?.totalEvidenceItems ?? 0) > 0 ||
+    (evidenceAnalysis?.requiredDocuments?.found ?? 0) > 0;
+  const healthNotStarted = !isCaseHealthScorable({
+    completedCount: state.completedSteps.size,
+    hasEvidenceSignal,
+  });
 
   // Extract step_1_2 document_items from roadmap data
   const step1_2DocItems = useMemo(() => {
@@ -891,6 +989,7 @@ export function DashboardView({
             healthLabel={caseHealthStatus?.label ?? "Analyzing"}
             healthStatus={caseHealthStatus?.status ?? "needs-attention"}
             loading={evidenceLoading}
+            notStarted={healthNotStarted}
             onViewFullAnalysis={() => setIsCSADrawerOpen(true)}
             summaryText={compactSummary}
           />
@@ -943,6 +1042,7 @@ export function DashboardView({
           <div className="hidden xl:flex flex-col gap-3">
             <AlertCenter
               issues={alertCenterIssues}
+              notStarted={notStarted}
               onOpenStep={(cIdx, sIdx) => {
                 if (onSelectStep) onSelectStep(cIdx, sIdx);
                 else {
@@ -963,6 +1063,7 @@ export function DashboardView({
               <div className="xl:hidden flex flex-col gap-4">
                 <AlertCenter
                   issues={alertCenterIssues}
+                  notStarted={notStarted}
                   onOpenStep={(cIdx, sIdx) => {
                     if (onSelectStep) onSelectStep(cIdx, sIdx);
                     else {
@@ -1632,7 +1733,7 @@ export function DashboardView({
         isOpen={isCSADrawerOpen}
         onClose={() => setIsCSADrawerOpen(false)}
         narrative={caseNarrative}
-        evidenceAnalysis={evidenceAnalysis}
+        evidenceAnalysis={weightedEvidenceView}
         evidenceLoading={evidenceLoading}
         healthStatus={caseHealthStatus}
         onOpenEvidenceQuestionnaire={() => {

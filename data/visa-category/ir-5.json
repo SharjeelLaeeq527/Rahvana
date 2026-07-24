@@ -5014,19 +5014,29 @@
                   "title": "Form I-864 — ${sp}",
                   "sub": "Completed Affidavit of Support for the IR-5 parent beneficiary",
                   "tags": [
-                    { "cls": "${tagClass}", "label": "${sp}" },
-                    { "cls": "tag-tax", "label": "Required Form" }
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "Required Form"
+                    }
                   ],
                   "guide": {
                     "intro": "Each sponsor must submit a separate, properly completed Form I-864. The petitioner must submit Form I-864 even when a joint sponsor is used.",
                     "sections": [
                       {
-                        "title": "What to verify",
-                        "body": "Confirm the current form edition, signature, sponsor household size, income figures, intending immigrant information, and all required pages before upload."
+                        "title": "USCIS Form Integrity",
+                        "body": "Download the latest version of Form I-864 directly from the USCIS website. Fill out all pages, leave no blank fields (use 'N/A' or 'None' where appropriate), and ensure it is signed. NVC will reject the form if pages are missing, the signature is photocopied/digital instead of wet-ink/original (if required by current post rules), or if the form edition is outdated."
                       },
                       {
-                        "title": "IR-5 rule",
-                        "body": "Form I-864EZ should not be used as the default form for an IR-5 parent case."
+                        "title": "Household size and Income",
+                        "body": "Ensure the household size on Part 5 matches the tax return information or is correctly adjusted. The sponsor's current individual annual income (Part 6) must align with the supporting employment letters, W-2s, and pay stubs. If the petitioner's income is $0, they must still file Form I-864 showing $0 income, and a joint sponsor will file a separate I-864."
+                      },
+                      {
+                        "title": "IR-5 specific rules",
+                        "body": "Form I-864EZ should NOT be used for an IR-5 parent visa case if there are multiple sponsors, joint sponsors, or if the petitioner is combining income. Stick to the standard Form I-864 to avoid administrative processing delays."
                       }
                     ]
                   }
@@ -5037,19 +5047,29 @@
                   "title": "Most Recent IRS Tax Transcript — ${sp}",
                   "sub": "Preferred official tax evidence for the most recent tax year",
                   "tags": [
-                    { "cls": "${tagClass}", "label": "${sp}" },
-                    { "cls": "tag-tax", "label": "Most Recent Year" }
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "Most Recent Year"
+                    }
                   ],
                   "guide": {
                     "intro": "An IRS tax transcript from the most recent tax year is the preferred tax evidence because it can be reviewed more efficiently than a copy of a tax return.",
                     "sections": [
                       {
-                        "title": "How to obtain",
-                        "body": "Request the most recent available transcript through the IRS Get Transcript service or another current IRS-approved method."
+                        "title": "Why IRS Transcripts are Preferred",
+                        "body": "The NVC strongly prefers IRS Tax Transcripts over paper-filed Form 1040 returns because transcripts are verified directly by the IRS, reducing verification delays. It shows the Adjusted Gross Income (AGI), tax liability, and filing status clearly."
+                      },
+                      {
+                        "title": "How to Obtain",
+                        "body": "The sponsor can obtain the transcript instantly by logging into their online IRS account via the 'Get Transcript Online' tool. If they cannot access the online tool, they must request it by mail using IRS Form 4506-T. Ensure you download the 'Tax Return Transcript' (not the Account Transcript)."
                       },
                       {
                         "title": "Alternative",
-                        "body": "If a transcript is unavailable, use the complete filed federal income tax return option listed under Required if Applicable."
+                        "body": "If an IRS transcript is genuinely unavailable, you must submit a complete, signed copy of the federal income tax return (Form 1040) along with all W-2s, 1099s, and supporting schedules."
                       }
                     ]
                   }
@@ -5060,15 +5080,25 @@
                   "title": "Proof of U.S. Status — ${sp}",
                   "sub": "Evidence that the sponsor has qualifying U.S. immigration status",
                   "tags": [
-                    { "cls": "${tagClass}", "label": "${sp}" },
-                    { "cls": "tag-cur", "label": "Sponsor Eligibility" }
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Sponsor Eligibility"
+                    }
                   ],
                   "guide": {
                     "intro": "The IR-5 petitioner must be a U.S. citizen. A joint sponsor may be a U.S. citizen, U.S. national, or lawful permanent resident, as permitted by the current Form I-864 rules.",
                     "sections": [
                       {
-                        "title": "Examples",
-                        "body": "Examples include a U.S. passport, U.S. birth certificate, Certificate of Naturalization, Certificate of Citizenship, or lawful permanent resident card where applicable."
+                        "title": "Accepted Citizenship Evidence",
+                        "body": "Provide a clear color scan of one of the following: <ul><li>A current, unexpired U.S. passport biographic page.</li><li>U.S. birth certificate showing birth in the United States.</li><li>Certificate of Naturalization (Form N-550 or N-570).</li><li>Certificate of Citizenship (Form N-560 or N-561).</li></ul>"
+                      },
+                      {
+                        "title": "Joint Sponsor (LPR Status)",
+                        "body": "If the joint sponsor is a Lawful Permanent Resident (LPR), they must provide a clear color scan of both sides of their Permanent Resident Card (Green Card, Form I-551). The card must be unexpired."
                       }
                     ]
                   }
@@ -5079,15 +5109,25 @@
                   "title": "Proof of U.S. Domicile — ${sp}",
                   "sub": "Evidence of domicile in the United States or qualifying steps to re-establish it",
                   "tags": [
-                    { "cls": "${tagClass}", "label": "${sp}" },
-                    { "cls": "tag-cur", "label": "Domicile" }
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Domicile"
+                    }
                   ],
                   "guide": {
                     "intro": "Every Form I-864 sponsor must be domiciled in the United States or demonstrate qualifying steps to re-establish U.S. domicile no later than the intending immigrant's admission.",
                     "sections": [
                       {
-                        "title": "Possible evidence",
-                        "body": "Evidence may include U.S. residence, employment, lease or property records, tax filings, voting records, bank accounts, driver's license, or documented plans and actions to re-establish domicile."
+                        "title": "What is Domicile?",
+                        "body": "Domicile is the place where a sponsor has their principal, permanent home and intends to maintain it. For petitioners living in the U.S., a driver's license, utility bills, tax history, and employment records are sufficient."
+                      },
+                      {
+                        "title": "Petitioners Residing in Pakistan",
+                        "body": "If the U.S. citizen petitioner is currently living in Pakistan, they must provide strong documentary evidence that they have taken concrete steps to re-establish U.S. domicile before or at the same time the parent enters the U.S. Acceptable evidence includes: <ul><li>A U.S. residential lease agreement or proof of U.S. home ownership.</li><li>A signed employment contract or job offer in the U.S.</li><li>Documentation showing U.S. bank accounts, voter registration, and active driver's license.</li><li>Proof of enrolling children in U.S. schools.</li></ul>"
                       }
                     ]
                   }
@@ -5100,15 +5140,21 @@
                   "title": "Complete Federal Tax Return — ${sp}",
                   "sub": "Alternative when the most recent IRS tax transcript is unavailable or specifically requested",
                   "tags": [
-                    { "cls": "${tagClass}", "label": "${sp}" },
-                    { "cls": "tag-tax", "label": "Alternative Tax Evidence" }
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "Alternative Tax Evidence"
+                    }
                   ],
                   "guide": {
                     "intro": "A complete copy of the most recent filed federal income tax return may be used instead of an IRS transcript or when NVC specifically requests the complete return.",
                     "sections": [
                       {
-                        "title": "What to include",
-                        "body": "Include the complete filed return with every relevant W-2, 1099, schedule, statement, and attachment needed to establish the income relied upon."
+                        "title": "Complete Return Assembly",
+                        "body": "A complete return means you must include: <ul><li>Form 1040 (all pages, signed and dated by the sponsor).</li><li>All W-2 and 1099 statements showing wages and earnings.</li><li>All schedules filed with the IRS (Schedule A, B, C, D, E, etc.).</li></ul> If any schedule is missing, NVC will issue a rejection notice."
                       }
                     ]
                   }
@@ -5119,15 +5165,21 @@
                   "title": "W-2, 1099, and Relevant Tax Schedules — ${sp}",
                   "sub": "Supporting records when needed to establish the sponsor's individual income",
                   "tags": [
-                    { "cls": "${tagClass}", "label": "${sp}" },
-                    { "cls": "tag-tax", "label": "If Applicable" }
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "If Applicable"
+                    }
                   ],
                   "guide": {
                     "intro": "These records may be needed when a complete tax return is submitted, the sponsor filed jointly, or the transcript does not clearly establish the sponsor's individual qualifying income.",
                     "sections": [
                       {
-                        "title": "What to include",
-                        "body": "Include only the W-2s, 1099s, schedules, and supporting attachments relevant to the income being used for the Affidavit of Support."
+                        "title": "Isolating Joint Filing Income",
+                        "body": "If the sponsor filed a joint tax return with their spouse, their individual income must be verified separately. Uploading all individual W-2 and 1099 forms isolates the sponsor's own earnings from their spouse's earnings, ensuring they meet the 125% Federal Poverty Guidelines on their own."
                       }
                     ]
                   }
@@ -5138,15 +5190,21 @@
                   "title": "Current Pay Records — ${sp}",
                   "sub": "Current income evidence when ongoing earnings must be established",
                   "tags": [
-                    { "cls": "${tagClass}", "label": "${sp}" },
-                    { "cls": "tag-cur", "label": "Current Income" }
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Current Income"
+                    }
                   ],
                   "guide": {
                     "intro": "Recent pay records can establish that the sponsor's qualifying income is current and continuing, especially when income changed after the most recent tax filing.",
                     "sections": [
                       {
-                        "title": "What to include",
-                        "body": "Provide recent pay records sufficient to show the employer, pay period, gross income, and continuing employment. Follow any case-specific NVC request rather than relying on a fixed number of months."
+                        "title": "Current Income Proof",
+                        "body": "Provide consecutive pay stubs covering the last 6 months. Pay stubs must show the employer's name, employee name, gross wages, pay period, and year-to-date earnings. This is crucial if the sponsor's income has increased since their last tax filing or if they recently started a new job."
                       }
                     ]
                   }
@@ -5157,15 +5215,21 @@
                   "title": "Employment Verification Letter — ${sp}",
                   "sub": "Supporting proof of current employment and compensation",
                   "tags": [
-                    { "cls": "${tagClass}", "label": "${sp}" },
-                    { "cls": "tag-cur", "label": "Current Income" }
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Current Income"
+                    }
                   ],
                   "guide": {
                     "intro": "An employment verification letter may support current qualifying income where employment evidence is needed.",
                     "sections": [
                       {
-                        "title": "What it should include",
-                        "body": "The letter should identify the employer, position, start date, employment status, and current salary or rate of pay, and should be reasonably current."
+                        "title": "Letter Specifications",
+                        "body": "The letter must be printed on official company letterhead, dated within the last 60 days, and signed by an authorized supervisor or HR manager. It must state: <ul><li>Dates of employment and job title.</li><li>Employment status (full-time, part-time, permanent).</li><li>Annual salary or hourly wage rate and average weekly hours.</li></ul>"
                       }
                     ]
                   }
@@ -5176,19 +5240,25 @@
                   "title": "Asset Evidence — ${sp}",
                   "sub": "Required only when qualifying assets are used to cover an income shortfall",
                   "tags": [
-                    { "cls": "${tagClass}", "label": "${sp}" },
-                    { "cls": "tag-cur", "label": "Assets" }
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Assets"
+                    }
                   ],
                   "guide": {
                     "intro": "Qualifying assets may be used when income alone is insufficient. For an IR-5 parent case, the net value of qualifying assets generally must equal at least five times the income shortfall.",
                     "sections": [
                       {
-                        "title": "What to establish",
-                        "body": "Provide evidence of ownership, current value, outstanding loans or liens, and that the asset can be converted to cash within one year without undue hardship or financial loss."
+                        "title": "Asset Valuation Requirements",
+                        "body": "Provide proof of ownership, current valuation, and evidence that the asset can be converted to cash within 12 months. For real estate, submit the deed, a professional appraisal, and a mortgage statement showing current equity. For bank accounts, submit 12 months of consecutive monthly statements."
                       },
                       {
-                        "title": "Examples",
-                        "body": "Possible evidence includes bank statements, investment statements, property ownership and valuation records, and loan or lien statements."
+                        "title": "Five-Times Rule for Parents",
+                        "body": "For immediate relative categories (which includes the parent of a U.S. citizen), the total net value of assets must equal at least 5 times the difference between the sponsor's income and the 125% poverty guideline line."
                       }
                     ]
                   }
@@ -5199,15 +5269,21 @@
                   "title": "Tax Non-Filing Explanation — ${sp}",
                   "sub": "Required if the sponsor was not legally required to file the most recent federal tax return",
                   "tags": [
-                    { "cls": "${tagClass}", "label": "${sp}" },
-                    { "cls": "tag-tax", "label": "If No Return Filed" }
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "If No Return Filed"
+                    }
                   ],
                   "guide": {
                     "intro": "A sponsor who did not file a federal tax return must explain why filing was not legally required.",
                     "sections": [
                       {
-                        "title": "What to include",
-                        "body": "Provide a signed explanation identifying the applicable tax year and the reason the sponsor was not required to file, together with any supporting evidence requested by NVC."
+                        "title": "Filing Thresholds and Exemptions",
+                        "body": "Sponsors who had no U.S. income or whose income fell below the IRS filing threshold must provide a written, signed statement citing the specific IRS code or threshold limits. If they were living abroad and did not file, they must explain this, keeping in mind that U.S. citizens are required to file taxes on worldwide income."
                       }
                     ]
                   }
@@ -5219,7 +5295,12 @@
                   "icon": "folder",
                   "title": "Organized Sponsorship Packet — ${sp}",
                   "sub": "Affidavit form and supporting evidence grouped clearly by sponsor",
-                  "tags": [{ "cls": "${tagClass}", "label": "${sp}" }],
+                  "tags": [
+                    {
+                      "cls": "${tagClass}",
+                      "label": "${sp}"
+                    }
+                  ],
                   "guide": {
                     "intro": "Each sponsor's records should be kept separate and clearly labeled so the correct form and evidence are uploaded under the correct sponsor in CEAC.",
                     "sections": [
@@ -5237,13 +5318,18 @@
                   "icon": "file-text",
                   "title": "Form I-864A — ${hm}",
                   "sub": "Contract for a qualifying household member contributing income or assets",
-                  "tags": [{ "cls": "tag-hm", "label": "${hm}" }],
+                  "tags": [
+                    {
+                      "cls": "tag-hm",
+                      "label": "${hm}"
+                    }
+                  ],
                   "guide": {
                     "intro": "A qualifying household member whose income or assets are used generally completes and signs Form I-864A with the petitioning sponsor.",
                     "sections": [
                       {
-                        "title": "Consistency",
-                        "body": "The household size, income, and asset information must match the petitioner's Form I-864 and the household member's supporting evidence."
+                        "title": "Form I-864A Contract",
+                        "body": "Form I-864A is a legally binding contract between the sponsor and the household member. The household member agrees to be jointly and severally liable for the financial support of the parent beneficiary. Ensure all pages are submitted and signed in ink."
                       }
                     ]
                   }
@@ -5254,15 +5340,21 @@
                   "title": "Most Recent Tax Evidence — ${hm}",
                   "sub": "IRS transcript or applicable federal return evidence for the household member",
                   "tags": [
-                    { "cls": "tag-hm", "label": "${hm}" },
-                    { "cls": "tag-tax", "label": "Most Recent Year" }
+                    {
+                      "cls": "tag-hm",
+                      "label": "${hm}"
+                    },
+                    {
+                      "cls": "tag-tax",
+                      "label": "Most Recent Year"
+                    }
                   ],
                   "guide": {
                     "intro": "The household member must document the income or assets contributed through Form I-864A.",
                     "sections": [
                       {
-                        "title": "What is needed",
-                        "body": "Provide the most recent applicable IRS transcript or complete federal return evidence, with relevant W-2s, 1099s, schedules, and current-income records where needed."
+                        "title": "Tax Records for Household Members",
+                        "body": "Provide the IRS Tax Transcript for the household member's most recent tax year. If transcripts are not available, submit Form 1040 accompanied by W-2s and schedules."
                       }
                     ]
                   }
@@ -5273,15 +5365,21 @@
                   "title": "Current Income Evidence — ${hm}",
                   "sub": "Proof that the household member's contributed income is current and continuing",
                   "tags": [
-                    { "cls": "tag-hm", "label": "${hm}" },
-                    { "cls": "tag-cur", "label": "Current Income" }
+                    {
+                      "cls": "tag-hm",
+                      "label": "${hm}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Current Income"
+                    }
                   ],
                   "guide": {
                     "intro": "Current income evidence should support the amount contributed by the household member on Form I-864A.",
                     "sections": [
                       {
-                        "title": "What to include",
-                        "body": "Use appropriate current pay records, employment verification, self-employment evidence, retirement or benefit records, or other evidence matching the income source."
+                        "title": "Verifying Continuing Income",
+                        "body": "Provide current pay stubs and employment letters for the household member. The income must be from a lawful source and expected to continue after the parent immigrates."
                       }
                     ]
                   }
@@ -5291,13 +5389,18 @@
                   "icon": "users",
                   "title": "Proof of Household Relationship or Shared Residence — ${hm}",
                   "sub": "Evidence establishing eligibility to contribute through Form I-864A",
-                  "tags": [{ "cls": "tag-hm", "label": "${hm}" }],
+                  "tags": [
+                    {
+                      "cls": "tag-hm",
+                      "label": "${hm}"
+                    }
+                  ],
                   "guide": {
                     "intro": "Depending on the household member category, evidence of a qualifying family relationship, shared residence, or both may be required.",
                     "sections": [
                       {
-                        "title": "Examples",
-                        "body": "Examples may include birth or marriage certificates, lease or property records, government identification, utility records, or other evidence showing the qualifying relationship or common residence."
+                        "title": "Establishing Household Linkage",
+                        "body": "If the household member is the sponsor's spouse, sibling, child, or parent, submit birth certificates, marriage certificates, or adoption decrees. Also submit lease agreements, tax filings, or utility bills showing they share the same physical residence."
                       }
                     ]
                   }
@@ -5308,8 +5411,14 @@
                   "title": "Household Member Asset Evidence — ${hm}",
                   "sub": "Required only when the household member's assets are included",
                   "tags": [
-                    { "cls": "tag-hm", "label": "${hm}" },
-                    { "cls": "tag-cur", "label": "Assets" }
+                    {
+                      "cls": "tag-hm",
+                      "label": "${hm}"
+                    },
+                    {
+                      "cls": "tag-cur",
+                      "label": "Assets"
+                    }
                   ],
                   "guide": {
                     "intro": "Include asset evidence only when the household member's qualifying assets are being used in the sponsorship calculation.",
@@ -5328,7 +5437,12 @@
                   "icon": "clipboard",
                   "title": "Prior-Year Tax Evidence Backup",
                   "sub": "Additional prior-year records available if NVC requests them",
-                  "tags": [{ "cls": "tag-tax", "label": "Backup Evidence" }],
+                  "tags": [
+                    {
+                      "cls": "tag-tax",
+                      "label": "Backup Evidence"
+                    }
+                  ],
                   "guide": {
                     "intro": "The most recent tax year is the normal core evidence, but earlier records may be useful when income history is irregular or NVC requests additional documentation.",
                     "sections": [
@@ -5344,7 +5458,12 @@
                   "icon": "hard-drive",
                   "title": "Upload-Ready Financial Packet",
                   "sub": "Clear, properly named files organized for CEAC upload",
-                  "tags": [{ "cls": "tag-cur", "label": "Upload Ready" }],
+                  "tags": [
+                    {
+                      "cls": "tag-cur",
+                      "label": "Upload Ready"
+                    }
+                  ],
                   "guide": {
                     "intro": "Preparing an upload-ready packet reduces classification, readability, and submission errors.",
                     "sections": [
@@ -6620,11 +6739,15 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the parent beneficiary's current unexpired passport, valid for at least six months beyond the intended date of entry into the United States. Also bring any prior passport containing relevant U.S. visas, refusals, entries, or immigration history.</p>"
+                          "c": "<p>Bring the parent beneficiary's current original passport, which must be valid for at least 6 months beyond the intended date of entry into the United States. Also bring <strong>all prior passports</strong>, especially those containing previous U.S. visas, travel stamps, visa refusals, or immigration history from any country. Do not leave older passports at home — the consular officer will review them to assess full travel history.</p>"
                         },
                         {
                           "t": "Photocopy",
-                          "c": "<p>Bring one clear photocopy of the current passport biographic page. Keep photocopies separate from the original passport.</p>"
+                          "c": "<p>Bring one clear photocopy of the current passport biographic page (the page with the photo, name, DOB, and expiry date). Keep the photocopy in a separate section from the original passport.</p>"
+                        },
+                        {
+                          "t": "Important",
+                          "c": "<div class=\"note-box\"><p>The passport must be signed by the parent in the designated signature field. An unsigned passport may be flagged at the interview window.</p></div>"
                         }
                       ]
                     },
@@ -6636,15 +6759,19 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the parent beneficiary's original birth certificate or a certified copy issued by the competent civil authority.</p>"
+                          "c": "<p>Bring the parent beneficiary's original birth certificate issued by the competent civil authority. For Pakistan, this must be the original <strong>NADRA Computerized Birth Registration Certificate (CBRC)</strong>. Photocopies or printed scans of a digitally-issued CBRC are not accepted as originals — you must bring the physically-issued original certificate.</p>"
                         },
                         {
                           "t": "Translation and copy",
-                          "c": "<p>Bring a complete certified English translation if required, together with one photocopy.</p>"
+                          "c": "<p>If the birth certificate is in Urdu only, bring the original certified English translation alongside it. Also bring one clear photocopy of the full birth certificate (both sides, if stamped on the reverse).</p>"
+                        },
+                        {
+                          "t": "Non-Availability Certificate (NAC)",
+                          "c": "<p>If the birth was never registered and you submitted a Non-Availability Certificate (NAC) to NVC, bring the original signed and stamped NAC from the Union Council, along with all original secondary records (school certificate, B-Form, family affidavits) that were uploaded to CEAC.</p>"
                         },
                         {
                           "t": "Consistency",
-                          "c": "<p>Confirm that the parent's name, date of birth, place of birth, and parents' names match the passport, DS-260, and CEAC records.</p>"
+                          "c": "<div class=\"note-box\"><p>Confirm that the parent's name, date of birth, place of birth, and parents' names match the passport, DS-260, and CEAC records exactly. Any discrepancies must be explained with supporting documents.</p></div>"
                         }
                       ]
                     },
@@ -6656,15 +6783,15 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the U.S. citizen petitioner's original birth certificate or a certified copy showing the parent beneficiary as the petitioner's mother or father.</p>"
+                          "c": "<p>Bring the U.S. citizen petitioner's original birth certificate or a certified copy issued directly by the state/county registrar showing the parent beneficiary named as the petitioner's mother or father. This is the core document establishing the qualifying IR-5 parent-child relationship. A personal printout or photocopy of the document previously uploaded to CEAC is NOT sufficient.</p>"
                         },
                         {
                           "t": "Translation and copy",
-                          "c": "<p>If the petitioner's birth certificate is not in English, bring a complete certified English translation. Also bring one clear photocopy.</p>"
+                          "c": "<p>If the petitioner's birth certificate is not in English, bring a complete certified English translation. Also bring one clear photocopy for the embassy's records.</p>"
                         },
                         {
                           "t": "Important",
-                          "c": "<div class=\"note-box\"><p>Do not rely only on the copy previously uploaded to CEAC.</p></div>"
+                          "c": "<div class=\"note-box\"><p>The parent beneficiary must be clearly listed by name on the petitioner's birth certificate. If the name is abbreviated, differs in spelling, or is missing, bring supporting identity-linking documents (One-and-the-Same Affidavit or corrected NADRA records).</p></div>"
                         }
                       ]
                     },
@@ -6676,11 +6803,15 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring original or certified copies of the birth certificates for all children of the parent beneficiary, including adult children and children who are not immigrating.</p>"
+                          "c": "<p>Bring the original birth certificates for <strong>all children</strong> of the parent beneficiary, including the petitioner and all siblings, regardless of their age, marital status, or immigration status. In Pakistan, each must be an original NADRA Computerized Birth Registration Certificate (CBRC). Do not substitute photocopies.</p>"
+                        },
+                        {
+                          "t": "Why this is required",
+                          "c": "<p>The consular officer reviews these records to verify the parent's complete family structure, confirm sibling relationships, and cross-reference dates of birth with the parent's marital and civil history. Missing children's birth certificates can cause delays at the interview window.</p>"
                         },
                         {
                           "t": "Translation and copies",
-                          "c": "<p>Bring required certified English translations and one photocopy of each record.</p>"
+                          "c": "<p>Bring certified English translations for any Urdu-only certificates, and one photocopy of each record. Keep each original paired with its translation.</p>"
                         }
                       ]
                     },
@@ -6692,11 +6823,15 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original fresh PCC obtained during Chapter 3 Step 3. Do not bring the older PCC submitted during NVC processing — this must be the fresh one.</p>"
+                          "c": "<p>Bring the original fresh Police Character Certificate (PCC) obtained during Chapter 3, Step 3, specifically for this interview cycle. <strong>Do not bring the older PCC</strong> that was submitted to NVC during Chapter 2 processing — U.S. Embassy Islamabad requires a PCC that is no older than 1 year at the time of the interview, and frequently requires one issued specifically for the consular interview stage.</p>"
                         },
                         {
                           "t": "Validity",
-                          "c": "<p>Confirm the PCC is still within the validity window for your embassy. Some posts specify a maximum age for the PCC at interview.</p>"
+                          "c": "<p>Confirm the issue date on the PCC. If the PCC was obtained more than 12 months before the interview date, a fresh one must be obtained from the District Police Officer (DPO) office or Khidmat Markaz before attending the interview.</p>"
+                        },
+                        {
+                          "t": "Other countries",
+                          "c": "<p>If the parent resided in other countries for more than 12 months after age 16, bring the original police certificates from those countries as well. If a foreign PCC was uploaded to CEAC, the embassy may ask to see the original physical document at the interview window.</p>"
                         }
                       ]
                     },
@@ -6727,11 +6862,15 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the appropriate completed and signed Form I-864 for the petitioner. For an IR-5 parent case, Form I-864 is the standard affidavit.</p>"
+                          "c": "<p>Bring a complete photocopy of the signed Form I-864 submitted by the U.S. citizen petitioner. Although NVC reviews this digitally, the consular officer at U.S. Embassy Islamabad frequently asks to see a physical copy of the Form I-864 at the interview window to verify details and confirm that all pages are present.</p>"
                         },
                         {
                           "t": "Petitioner remains required",
-                          "c": "<p>The petitioner must provide Form I-864 even when a joint sponsor is used.</p>"
+                          "c": "<p>The petitioner must provide Form I-864 even when a joint sponsor is used. Both the petitioner's I-864 and the joint sponsor's separate I-864 should be in the packet.</p>"
+                        },
+                        {
+                          "t": "Form edition",
+                          "c": "<div class=\"note-box\"><p>Ensure the copy you bring is the same completed version submitted to NVC — not a blank or revised edition. The form must be signed in ink by the petitioner.</p></div>"
                         }
                       ]
                     },
@@ -6743,11 +6882,15 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring a photocopy of the petitioner's most recent IRS tax transcript or most recent U.S. federal income tax return, together with related W-2s and applicable schedules.</p>"
+                          "c": "<p>Bring a printed copy of the petitioner's IRS Tax Return Transcript for the most recent tax year. If an IRS transcript was not used, bring the complete signed Form 1040 with all W-2s, 1099s, and applicable schedules. Keep these matched and organized as a single packet.</p>"
+                        },
+                        {
+                          "t": "Updated tax year",
+                          "c": "<p>If the NVC submission was in a prior tax year and a new tax year has since ended, bring the tax documents for the more recent year as well. The consular officer will review the most current evidence of income.</p>"
                         },
                         {
                           "t": "Current income",
-                          "c": "<p>If income or employment changed after NVC submission, bring updated current-income evidence.</p>"
+                          "c": "<p>If the petitioner's income or employment changed significantly after NVC submission, bring supporting current-income evidence: recent pay stubs covering the past 3–6 months and an employer verification letter on official letterhead.</p>"
                         }
                       ]
                     },
@@ -6758,12 +6901,16 @@
                       "sub": "Proof of U.S. citizenship and U.S. domicile or re-establishment of domicile",
                       "sections": [
                         {
-                          "t": "What to bring",
-                          "c": "<p>Bring copies of evidence showing that the petitioner is a U.S. citizen and is domiciled in the United States or has taken qualifying steps to re-establish U.S. domicile.</p>"
+                          "t": "What to bring — U.S. Citizenship",
+                          "c": "<p>Bring a clear photocopy of the petitioner's proof of U.S. citizenship: <ul><li>U.S. passport biographic page (current and valid)</li><li>U.S. birth certificate showing birth in the United States</li><li>Certificate of Naturalization (Form N-550 or N-570)</li><li>Certificate of Citizenship (Form N-560 or N-561)</li></ul></p>"
                         },
                         {
-                          "t": "Examples",
-                          "c": "<ul><li>U.S. passport, U.S. birth certificate, Certificate of Naturalization, or Certificate of Citizenship</li><li>U.S. residence, employment, lease, tax, voting, banking, or driver's-license evidence</li></ul>"
+                          "t": "What to bring — U.S. Domicile",
+                          "c": "<p>Bring copies of documents proving that the petitioner maintains a permanent home in the United States: utility bills, lease agreement or mortgage statement, pay stubs, U.S. driver's license, bank account statements, voter registration, or property tax records.</p>"
+                        },
+                        {
+                          "t": "Petitioner living abroad",
+                          "c": "<div class=\"note-box\"><p>If the petitioner is currently residing in Pakistan or another country, bring strong documentary evidence of concrete steps taken to re-establish U.S. domicile — such as a signed U.S. job offer letter, a signed U.S. residential lease, or enrollment of children in U.S. schools.</p></div>"
                         }
                       ]
                     },
@@ -6775,11 +6922,11 @@
                       "sections": [
                         {
                           "t": "Joint sponsor",
-                          "c": "<p>Bring the joint sponsor's separate signed Form I-864, most recent tax evidence, proof of status, and proof of U.S. domicile.</p>"
+                          "c": "<p>If a joint sponsor was used, bring a complete photocopy packet for the joint sponsor: <ul><li>Signed Form I-864 (all pages)</li><li>IRS Tax Transcript or complete tax return for the most recent year (with W-2s and schedules)</li><li>Proof of U.S. citizenship (passport biographic page, Certificate of Naturalization) or LPR status (both sides of the Permanent Resident Card)</li><li>Proof of U.S. domicile (utility bills, lease, driver's license, pay stubs)</li></ul></p>"
                         },
                         {
                           "t": "Household member",
-                          "c": "<p>If household-member income or assets are used, bring Form I-864A and the applicable supporting evidence.</p>"
+                          "c": "<p>If a household member's income or assets were included via Form I-864A, bring the signed Form I-864A together with the household member's tax transcript or return, pay stubs, and employment letter as applicable.</p>"
                         }
                       ]
                     },
@@ -6814,7 +6961,11 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring two recent identical color photographs measuring 5 cm × 5 cm that comply with current U.S. visa photo requirements.</p>"
+                          "c": "<p>Bring exactly <strong>two recent, identical color photographs</strong> of the parent beneficiary taken within the last 6 months. The photos must meet U.S. visa specifications: <ul><li>Size: 2 inches × 2 inches (51 mm × 51 mm)</li><li>Background: plain white or off-white</li><li>Head must be centered, facing the camera, with a neutral expression</li><li>Eyes fully open</li><li>No eyeglasses</li><li>Head coverings permitted only for religious reasons, and must not cast shadows on the face</li></ul></p>"
+                        },
+                        {
+                          "t": "Where to get them",
+                          "c": "<p>Obtain photos at a professional photo studio familiar with U.S. visa standards. Photos taken at local shops may use incorrect dimensions or background colors — confirm specifications before printing.</p>"
                         }
                       ]
                     },
@@ -6826,11 +6977,15 @@
                       "sections": [
                         {
                           "t": "How this works",
-                          "c": "<p>The panel physician will either transmit the medical results directly to U.S. Embassy Islamabad or give the parent beneficiary a sealed envelope.</p>"
+                          "c": "<p>The U.S. Embassy-approved panel physician in Pakistan will either transmit the medical examination results directly and electronically to U.S. Embassy Islamabad, or give the parent beneficiary a <strong>sealed envelope</strong> containing the results. Both are accepted — check with the clinic about which method they use.</p>"
                         },
                         {
-                          "t": "If an envelope is provided",
-                          "c": "<p>Do not open it. Bring the sealed envelope to the interview.</p>"
+                          "t": "If a sealed envelope is provided",
+                          "c": "<div class=\"note-box\"><p><strong>Do not open the envelope under any circumstances.</strong> An opened medical envelope will be rejected at the consular window and the medical examination may need to be repeated. Bring the sealed envelope directly to the interview and hand it to the consular officer.</p></div>"
+                        },
+                        {
+                          "t": "Approved clinics",
+                          "c": "<p>Panel physicians approved by U.S. Embassy Islamabad operate in Islamabad, Lahore, and Karachi. Only results from an approved panel physician are accepted for the immigrant visa interview. Do not use a general clinic or hospital not on the embassy's approved list.</p>"
                         }
                       ]
                     },
@@ -6842,11 +6997,15 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original marriage certificate or a certified copy, together with any required English translation and one photocopy.</p>"
+                          "c": "<p>Bring the original marriage certificate or a certified copy, together with any required certified English translation and one photocopy. Both the original and the translation should be clearly paired in the same section of the folder.</p>"
                         },
                         {
                           "t": "Pakistan records",
-                          "c": "<p>For a Pakistani Muslim marriage, bring the Nikah Nama and official Marriage Registration Certificate where applicable.</p>"
+                          "c": "<p>For a Pakistani Muslim marriage, bring both the original Urdu <strong>Nikah Nama</strong> (with a full certified English translation) and the bilingual <strong>NADRA Marriage Registration Certificate (MRC)</strong>. Both documents are commonly requested by the consular officer to cross-verify dates, names, and witnesses.</p>"
+                        },
+                        {
+                          "t": "Consistency check",
+                          "c": "<div class=\"note-box\"><p>Verify that the names of both spouses and the date of marriage on the Nikah Nama and MRC match all other civil records and the DS-260 exactly.</p></div>"
                         }
                       ]
                     },
@@ -6858,11 +7017,15 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original or certified final divorce record, annulment order, or former spouse's death certificate for every prior marriage.</p>"
+                          "c": "<p>Bring the original or certified final divorce record, annulment order, or former spouse's death certificate for <strong>every prior marriage</strong> of the parent beneficiary. All prior marriages must be accounted for — do not leave out any prior marriage even if it ended many years ago.</p>"
+                        },
+                        {
+                          "t": "Pakistan divorce records",
+                          "c": "<p>For a Pakistani Muslim divorce, the required document is the final computerized <strong>Union Council Divorce Certificate</strong> issued after the 90-day Talaq notification period. A private Talaqnama or notice of Talaq alone is not accepted. If the divorce was court-ordered (Khula), bring the certified court decree and the Union Council registration certificate.</p>"
                         },
                         {
                           "t": "Translation and copy",
-                          "c": "<p>Include any required certified English translation and one photocopy.</p>"
+                          "c": "<p>Include a certified English translation for any Urdu or other non-English records, and bring one photocopy of each document paired with its original.</p>"
                         }
                       ]
                     },
@@ -8265,6 +8428,197 @@
         {
           "title": "U.S. visa photo specifications",
           "htmlContent": "<ul class=\"pl-[20px] mt-[6px] list-disc marker:text-[#6b8097]\">\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">2 × 2 inches (51 × 51 mm)</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">White or off-white plain background</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Taken within the last 6 months</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Full front view, neutral expression, eyes open</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">No glasses (as of 2016 U.S. visa photo rules)</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Head coverings only for religious reasons, and must not obscure the face</li>\n        </ul>\n        <div class=\"bg-[#e8f1fb] border border-[#d0e4f7] rounded-[9px] p-[13px_16px] mt-[14px]\">\n          <p class=\"text-[13px] text-[#3a4f63] leading-[1.6] m-0\">The DS-260 online application accepts a digital photo upload — check the U.S. State Department's photo upload tool and specifications at the time of filing.</p>\n        </div>"
+        }
+      ]
+    },
+    "doc_parent_identity_match": {
+      "title": "Parent Identity & Name-Match Evidence",
+      "sub": "Resolving spelling and name variations for parent beneficiaries",
+      "sourceType": "internal",
+      "sections": [
+        {
+          "title": "What this is",
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px] last:mb-0\">USCIS needs to be certain that the parent you're sponsoring is the exact same person named on your birth certificate. Name mismatches across civil documents are common in many countries, especially where naming conventions, honorifics, or transliteration differ from Western formats. In Pakistan, for example, names are frequently written in a different order, or with a title added or dropped.</p>"
+        },
+        {
+          "title": "Common types of discrepancies",
+          "htmlContent": "<ul><li>A different name order (first/last swapped)</li><li>A title or honorific added or dropped</li><li>A different spelling from transliteration</li><li>One document using a father's name, another using a spouse's name</li></ul>"
+        },
+        {
+          "title": "Official Correction",
+          "htmlContent": "<p>If the discrepancy is significant, it's usually best to correct it at the source through your country's civil registry — in Pakistan, this means going to a NADRA office to correct your parent's CNIC/NICOP, using older records like school certificates as proof of the relationship, and then requesting a fresh Family Registration Certificate (FRC) with the correct name.</p>"
+        },
+        {
+          "title": "One-and-the-Same Affidavits",
+          "htmlContent": "<p>For minor spelling differences, most countries accept a sworn affidavit confirming both spellings refer to the same person, instead of a formal correction. In Pakistan, this needs to be signed by a close relative or family friend who knows your family well, and notarized by a registered Notary Public. Requirements can vary by province, so confirm the current process locally before preparing it.</p>"
+        }
+      ]
+    },
+    "doc_father_bona_fide_relationship": {
+      "title": "Bona Fide Father-Child Relationship Evidence",
+      "sub": "Proving financial and emotional ties if parents were unmarried at birth",
+      "sourceType": "internal",
+      "sections": [
+        {
+          "title": "When this is required",
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">If you're sponsoring your biological father and your parents weren't legally married when you were born, you'll need to show a genuine father-child relationship existed before you turned 21 — regardless of which country you're filing from.</p>"
+        },
+        {
+          "title": "Financial support proof",
+          "htmlContent": "<ul><li><strong>Remittances:</strong> Money transfer receipts showing your father sending money to you or your mother over the years</li><li><strong>School fees:</strong> Admission sheets, school tuition receipts, or report cards bearing the father's signature or name as guardian.</li><li><strong>Medical bills:</strong> Hospital registration sheets, vaccination cards, or prescription records mentioning the father's name as the responsible parent.</li></ul>"
+        },
+        {
+          "title": "Social & Emotional proof",
+          "htmlContent": "<ul><li><strong>Photographs:</strong> Family photographs spanning different ages of the child, showing the father together with the child at birthdays, Eid, school events, or trips.</li><li><strong>Letters/Messages:</strong> Old letters, emails, or chat logs showing communication between father and child.</li><li><strong>Affidavits:</strong> Notarized sworn statements from school teachers, neighbors, or relatives who witnessed the father actively raising and supporting the child.</li></ul>"
+        },
+        {
+          "title": "DNA testing",
+          "htmlContent": "<p>In cases where document proof is weak or questioned, USCIS or the Embassy may suggest DNA testing. Do not obtain DNA testing proactively on your own; wait for an official instruction from the Embassy or USCIS, as they require testing to be conducted through an AABB-accredited lab and follow a strict chain-of-custody protocol.</p>"
+        }
+      ]
+    },
+    "doc_stepparent_prior_marriages": {
+      "title": "Termination of Prior Marriages for Step-Relationship",
+      "sub": "Proving the step-relationship marriage is legally valid",
+      "sourceType": "internal",
+      "sections": [
+        {
+          "title": "What is required",
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">For step-relationship petitions, you'll need to show that any earlier marriages of both your biological parent and your stepparent were legally ended before their current marriage. The step-relationship itself must have started before you turned 18. How this is proven depends on which country and legal system the marriage falls under.</p>"
+        },
+        {
+          "title": "Talaq (Divorce)",
+          "htmlContent": "<p>Divorce under the Muslim Family Laws Ordinance, 1961 requires a Divorce Certificate issued by the local Union Council, Cantonment Board, or Municipal Committee. This certificate only comes after a required 90-day notice and arbitration period, so a notice of Talaq alone, or a raw Talaqnama, isn't accepted as proof of legal termination.</p>"
+        },
+        {
+          "title": "Khula / Judicial Dissolution",
+          "htmlContent": "<p>If the wife initiated the divorce through Family Court (Khula), you'll need the certified Court Decree along with confirmation that the Union Council registered the decree and the waiting period was completed.</p>"
+        },
+        {
+          "title": "If a different personal law applies",
+          "htmlContent": "<p>Some marriages fall under a different law entirely — for example, the Christian Divorce Act, 1869 or the Hindu Marriage Act, 2017. In these cases, the divorce is generally granted directly by a Family Court after a case is filed, and it's usually not registered with a Union Council the way a Talaq or Khula is. What you'll need here is the Family Court decree itself, since a Union Council certificate typically won't exist.</p>"
+        },
+        {
+          "title": "Death Certificates",
+          "htmlContent": "<p>If a prior marriage ended in death, provide the civil death certificate from the relevant civil authority. Hospital or cemetery records alone generally aren't sufficient proof, regardless of country.</p>"
+        }
+      ]
+    },
+    "doc_adoption_decree": {
+      "title": "Final Adoption Decree",
+      "sub": "Legal requirements for adoptive parent petitions",
+      "sourceType": "internal",
+      "sections": [
+        {
+          "title": "U.S. Immigration Adoption Rules",
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">To qualify as an adoptive parent, the adoption must have taken place before you turned 16 (or 18 if adopting a biological sibling), and your adoptive parent must have had legal custody of you and lived with you for at least two years.</p>"
+        },
+        {
+          "title": "When a country doesn't have a legal adoption system",
+          "htmlContent": "<p>Some countries don't have adoption as a legal category at all — instead they use a guardianship or custody arrangement that doesn't fully end the biological parents' rights or make the child a legal heir. U.S. immigration law requires a full, final adoption decree that does both of those things, so a guardianship order from one of these countries — no matter how it's worded — can't be submitted as a final adoption decree.</p><p class=\"mt-[8px]\">Pakistan is a common example: Pakistani courts can only issue a guardianship order under the Guardians and Wards Act, 1890, and this doesn't end a biological parent's legal rights or make the child a legal heir.</p><p class=\"mt-[8px]\"><strong>The orphan petition route (I-600):</strong> In these cases, the orphan petition process is generally the path available instead. To qualify, you generally need to meet the U.S. definition of an \"orphan\" — for example, both parents have died, disappeared, or have irrevocably released the child in writing for emigration and adoption. From there, the adoption can happen abroad (with Form I-600 filed) or after arriving in the U.S.</p>"
+        },
+        {
+          "title": "How to comply",
+          "htmlContent": "<p>If your country has a genuine legal adoption process, an immigration attorney can confirm your decree meets U.S. federal adoption criteria. If it doesn't — as in Pakistan — your existing guardianship order isn't wasted; it can still support your case as evidence of who's been caring for you, even though it can't stand in as the adoption decree itself.</p>"
+        }
+      ]
+    },
+    "doc_adoption_custody_residence": {
+      "title": "Legal Custody & Joint Residence Evidence",
+      "sub": "Establishing the 2-year physical and legal custody requirement",
+      "sourceType": "internal",
+      "sections": [
+        {
+          "title": "The Two-Year Rule",
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">You need to show your adoptive parent had legal custody of you and lived with you for at least two years before the petition is filed. These two years can happen before, during, or after the final adoption decree, and this requirement is the same regardless of which country you're filing from.</p>"
+        },
+        {
+          "title": "Proof of Legal Custody",
+          "htmlContent": "<p>Legal custody is established by a court order, decree, or official government document. Informal custody arrangements or verbal agreements do not count toward the two-year legal custody requirement.</p>"
+        },
+        {
+          "title": "Proof of Joint Residence",
+          "htmlContent": "<p>Provide documents showing a shared household over the two-year period:</p>\n        <ul class=\"pl-[20px] mt-[6px] list-disc marker:text-[#6b8097]\">\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">School enrollment records listing the parent's address and name as guardian</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Immunization or hospital files showing shared address</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Rental deeds or utility invoices naming both parties at the same property</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Government census records or local police registration certificates</li>\n        </ul>"
+        }
+      ]
+    },
+    "doc_name_change": {
+      "title": "Name Change or Identity Discrepancy Evidence",
+      "sub": "Resolving spelling and profile mismatches across records",
+      "sourceType": "internal",
+      "sections": [
+        {
+          "title": "Handling Name Mismatches",
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">Mismatches across your birth certificate, national ID, school records, or passport can trigger delays or Requests for Evidence in any country, so it's worth sorting these out before you file.</p>"
+        },
+        {
+          "title": "Civil Registry Correction",
+          "htmlContent": "<p>To correct a name or date of birth, visit your country's civil registry office with supporting documents like matriculation certificates, older passports, or court decrees. In Pakistan, this means a NADRA office, which will issue a revised CNIC/NICOP and FRC. Note that NADRA generally only corrects English-spelling mistakes through this process — a full name change requires the separate procedure below.</p>"
+        },
+        {
+          "title": "Gazette Notification & Deed Poll",
+          "htmlContent": "<p>For a full legal name change in Pakistan, you'll need a notarized affidavit, a published notice in local newspapers, and registration with the official Gazette of Pakistan. The published Gazette notice is what carries real legal weight — it's what banks, passport offices, and other institutions will actually ask to see.</p>"
+        },
+        {
+          "title": "Sworn Affidavits",
+          "htmlContent": "<p>If your records genuinely can't be corrected, a notarized affidavit from close relatives explaining the mismatch can serve as backup evidence in most jurisdictions.</p>"
+        }
+      ]
+    },
+    "doc_secondary_relationship": {
+      "title": "Secondary Parent-Child Relationship Evidence",
+      "sub": "Alternative evidence when a primary birth record is unavailable",
+      "sourceType": "internal",
+      "sections": [
+        {
+          "title": "When to use secondary evidence",
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">If a primary birth certificate is unavailable (e.g. not registered at birth or destroyed), secondary evidence must be submitted alongside a Non-Availability Certificate from the local authority.</p>"
+        },
+        {
+          "title": "Matriculation and School Certificates",
+          "htmlContent": "<p>Official school board certificates that list both parents' names are considered strong secondary evidence by USCIS. In Pakistan, this typically means Matriculation or Intermediate certificates from the Board of Intermediate and Secondary Education (BISE).</p>"
+        },
+        {
+          "title": "Civil and Family Certificates",
+          "htmlContent": "<p>NGovernment-issued family registration documents showing your parent-child relationship are accepted as supporting evidence — in Pakistan, this includes NADRA Family Registration Certificates (FRC) or B-Forms.</p>"
+        },
+        {
+          "title": "Religious and Local Records",
+          "htmlContent": "<p>Nikah Namas (for parents), baptism certificates, or birth entries in local hospital registers listing parent names are also helpful secondary sources.</p>"
+        }
+      ]
+    },
+    "doc_record_unavailability": {
+      "title": "Record Unavailability Evidence",
+      "sub": "How to prove a civil document genuinely cannot be obtained",
+      "sourceType": "internal",
+      "sections": [
+        {
+          "title": "What is a Non-Availability Certificate (NAC)",
+          "htmlContent": "<p>If you can't get a primary birth or marriage certificate, you'll need a certificate confirming no record exists — issued by the relevant local civil authority. In Pakistan, this is issued by the Union Council, Municipal Committee, Cantonment Board, or Metropolitan Corporation.</p>"
+        },
+        {
+          "title": "Key elements of a valid NAC",
+          "htmlContent": "<p>To be accepted by USCIS/Embassy, the NAC must:</p>\n        <ul class=\"pl-[20px] mt-[6px] list-disc marker:text-[#6b8097]\">\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Be issued on the official letterhead of the local authority</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Explicitly state the name of the child/person, date of birth, place of birth, and parents' names</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">State that the register for that year was searched and no record was found</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Be signed and stamped by the Secretary of the Union Council or the designated registrar</li>\n        </ul>"
+        },
+        {
+          "title": "Important rule",
+          "htmlContent": "<p>This certificate alone isn't enough anywhere — always pair it with other secondary evidence, like school certificates, old family registration documents, or an affidavit. Some office-level specifics can differ, so it's worth confirming directly with your local authority when you apply.</p>"
+        }
+      ]
+    },
+    "doc_parent_marriage_history": {
+      "title": "Parent's Marriage & Prior-Marriage Records",
+      "sub": "Documenting the beneficiary's marital history",
+      "sourceType": "internal",
+      "sections": [
+        {
+          "title": "Why this is needed",
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">At the NVC and consular stages, your parent needs to document their full marriage history — proving their marriage to your other parent (if applicable) and proving any earlier marriages were legally ended. Required documents vary by country and by the specific law that governed the marriage.</p>"
+        },
+        {
+          "title": "Required documents",
+          "htmlContent": "<ul><li><strong>Nikah Nama:</strong> The traditional Islamic marriage contract. It Must be fully translated and certified.</li><li><strong>NADRA Marriage Registration Certificate (MRC):</strong> The official bilingual certificate issued by the local Union Council/NADRA registrar. Highly recommended to submit both the Nikah Nama and the MRC to avoid RFEs.</li><li><strong>Divorce Certificates:</strong> Union Council-issued final divorce certificates or court decrees.</li><li><strong>Death Certificates:</strong> Union Council/NADRA-issued death certificates for former spouses.</li></ul>"
         }
       ]
     }

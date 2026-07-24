@@ -29,7 +29,15 @@ import { DocumentPreviewModal } from "./DocumentPreviewModal";
 import { UploadedDocument } from "@/lib/document-vault/types";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
-import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
+import {
+  mapDocumentNameToId,
+  getFriendlyJourneyName,
+  isDocumentApplicableToJourney,
+  getCachedUserJourneys,
+  setCachedUserJourneys,
+  fetchUserJourneysCached,
+  isSameJourneyType,
+} from "@/lib/document-vault/journey-mapping";
 import { msg, E, errorCode } from "@/lib/errors";
 import { getOcrConfig, type OcrTarget } from "@/lib/document-ocr/registry";
 import { resizeImageIfNeeded } from "@/lib/document-ocr/clientImage";
@@ -62,6 +70,8 @@ interface MultipleDocumentUploadModalProps {
   documentName: string; // e.g. Proof of U.S. Citizenship
   options: string[]; // e.g. ["U.S. passport", "U.S. birth certificate", ...]
   onUploadComplete: () => void;
+  userJourneys?: any[];
+  activeJourneyId?: string | null;
 }
 
 const OTHER_OPTION = "Other";
@@ -73,6 +83,8 @@ export function MultipleDocumentUploadModal({
   documentName,
   options,
   onUploadComplete,
+  userJourneys: userJourneysProp = [],
+  activeJourneyId: activeJourneyIdProp = null,
 }: MultipleDocumentUploadModalProps) {
   const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -88,10 +100,118 @@ export function MultipleDocumentUploadModal({
     deleteDocument,
     isDeletingIds,
     addNamedDynamicSlot,
+    currentJourneyId,
   } = useDocumentVaultStore();
   const { t } = useLanguage();
   const { showToast } = useToast();
   const { profile, refreshProfile, updateProfile } = useUserProfile();
+
+  const [userJourneys, setUserJourneys] = useState<any[]>(() => {
+    if (userJourneysProp && userJourneysProp.length > 0) return userJourneysProp;
+    return getCachedUserJourneys() || [];
+  });
+  const [activeJourneyId, setActiveJourneyId] = useState<string | null>(
+    activeJourneyIdProp || currentJourneyId || null
+  );
+  const [sharedJourneyIds, setSharedJourneyIds] = useState<string[]>([]);
+
+  const otherJourneys = useMemo(() => {
+    return userJourneys.filter((j) => {
+      if (j.id === activeJourneyId) return false;
+      if (isSameJourneyType(j.journey_type, activeJourneyId)) return false;
+      return true;
+    });
+  }, [userJourneys, activeJourneyId]);
+
+  const [manuallyUncheckedIds, setManuallyUncheckedIds] = useState<string[]>([]);
+
+  const visibleOtherJourneys = useMemo(() => {
+    return otherJourneys.filter((j) => {
+      return pendingUploads.some((p) => {
+        if (!p.type) {
+          return isDocumentApplicableToJourney(categoryId, documentName, j.journey_type);
+        }
+        const targetId = p.type === OTHER_OPTION && p.customName
+          ? "dynamic-OTHER"
+          : mapDocumentNameToId(p.type);
+        return isDocumentApplicableToJourney(targetId, p.type, j.journey_type);
+      }) || isDocumentApplicableToJourney(categoryId, documentName, j.journey_type);
+    });
+  }, [otherJourneys, pendingUploads, categoryId, documentName]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const resolvedActiveId = activeJourneyIdProp || currentJourneyId;
+    if (resolvedActiveId) {
+      setActiveJourneyId(resolvedActiveId);
+    }
+
+    if (userJourneysProp && userJourneysProp.length > 0) {
+      setUserJourneys(userJourneysProp);
+      setCachedUserJourneys(userJourneysProp);
+      if (!resolvedActiveId && userJourneysProp.length > 0) {
+        setActiveJourneyId(userJourneysProp[0].id);
+      }
+      return;
+    }
+
+    // Check in-memory synchronous cache first
+    const cached = getCachedUserJourneys();
+    if (cached && cached.length > 0) {
+      setUserJourneys(cached);
+      if (!resolvedActiveId) {
+        const saved = typeof window !== "undefined" ? sessionStorage.getItem("doc_vault_active_journey") : null;
+        if (saved && cached.some((j) => j.id === saved)) {
+          setActiveJourneyId(saved);
+        } else {
+          const active = cached.find((j) => j.status === "in_progress") || cached[0];
+          setActiveJourneyId(active.id);
+        }
+      }
+    }
+
+    // Fetch / revalidate cached journeys
+    fetchUserJourneysCached()
+      .then((journeys) => {
+        if (journeys && journeys.length > 0) {
+          setUserJourneys(journeys);
+          if (!resolvedActiveId) {
+            const saved = typeof window !== "undefined" ? sessionStorage.getItem("doc_vault_active_journey") : null;
+            if (saved && journeys.some((j) => j.id === saved)) {
+              setActiveJourneyId(saved);
+            } else {
+              const active = journeys.find((j) => j.status === "in_progress") || journeys[0];
+              setActiveJourneyId(active.id);
+            }
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("MultipleDocumentUploadModal failed to fetch journeys:", err);
+      });
+  }, [open, userJourneysProp, activeJourneyIdProp, currentJourneyId]);
+
+  const visibleOtherJourneysKey = useMemo(
+    () => visibleOtherJourneys.map((j) => j.id).join(","),
+    [visibleOtherJourneys]
+  );
+
+  useEffect(() => {
+    if (!open) {
+      setManuallyUncheckedIds([]);
+      return;
+    }
+    setSharedJourneyIds((prev) => {
+      const visibleIds = visibleOtherJourneys.map((j) => j.id);
+      // Keep only those that are currently visible
+      const currentFiltered = prev.filter((id) => visibleIds.includes(id));
+      // Add any visible journeys that are NOT manually unchecked and NOT already checked
+      const newToCheck = visibleIds.filter((id) => !currentFiltered.includes(id) && !manuallyUncheckedIds.includes(id));
+      return [...currentFiltered, ...newToCheck];
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, visibleOtherJourneysKey, manuallyUncheckedIds]);
 
   // ── Inline OCR auto-fill (passport) ──
   // When one of the uploaded items is a passport (e.g. the petitioner picks
@@ -584,6 +704,18 @@ export function MultipleDocumentUploadModal({
           notesPayload += `\nNotes: ${uploadItem.notes.trim()}`;
         }
         formData.append("notes", notesPayload);
+        if (activeJourneyId) {
+          formData.append("journeyId", activeJourneyId);
+        }
+        const applicableSharedIds = sharedJourneyIds.filter((targetId) => {
+          const targetJourney = userJourneys.find((j) => j.id === targetId);
+          if (!targetJourney) return false;
+          return isDocumentApplicableToJourney(specificDefId, uploadItem.type, targetJourney.journey_type);
+        });
+
+        if (applicableSharedIds.length > 0) {
+          formData.append("shareWithJourneyIds", JSON.stringify(applicableSharedIds));
+        }
 
         const response = await fetch("/api/documents/upload", {
           method: "POST",
@@ -1196,6 +1328,68 @@ export function MultipleDocumentUploadModal({
             </Button>
             {/* )} */}
           </div>
+
+          {/* Sibling Journeys Cross-Sharing Checkboxes */}
+          {visibleOtherJourneys.length > 0 && (
+            <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-inner mt-6">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                Cross-share these documents
+              </label>
+              <p className="text-[11px] text-slate-500 leading-normal mb-1">
+                Select which of your other active immigration journeys should also receive these uploaded files:
+              </p>
+              <div className="space-y-2.5">
+                {visibleOtherJourneys.map((j) => {
+                  const isChecked = sharedJourneyIds.includes(j.id);
+                  return (
+                    <div
+                      key={j.id}
+                      onClick={() => {
+                        if (isChecked) {
+                          setSharedJourneyIds(sharedJourneyIds.filter((id) => id !== j.id));
+                          if (!manuallyUncheckedIds.includes(j.id)) {
+                            setManuallyUncheckedIds([...manuallyUncheckedIds, j.id]);
+                          }
+                        } else {
+                          setSharedJourneyIds([...sharedJourneyIds, j.id]);
+                          setManuallyUncheckedIds(manuallyUncheckedIds.filter((id) => id !== j.id));
+                        }
+                      }}
+                      className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer select-none transition-all duration-300 ${
+                        isChecked
+                          ? "bg-primary/5 border-primary shadow-xs"
+                          : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all duration-300 ${
+                          isChecked
+                            ? "bg-primary border-primary text-white scale-100"
+                            : "border-slate-300 dark:border-slate-700 bg-transparent"
+                        }`}>
+                          {isChecked && (
+                            <svg className="w-3.5 h-3.5 stroke-[3] stroke-white fill-none" viewBox="0 0 24 24">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </div>
+                        <span className={`text-xs font-bold transition-colors ${
+                          isChecked ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-400"
+                        }`}>
+                          {getFriendlyJourneyName(j.journey_type, j.journey_name)}
+                        </span>
+                      </div>
+                      {isChecked && (
+                        <span className="text-[10px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md animate-in fade-in zoom-in-95 duration-200">
+                          Shared
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Security Guarantee */}
           <div className="flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-50 border border-[#d0e4f7]/40 rounded-xl text-[#3a4f63] text-xs font-semibold shadow-sm mt-4">

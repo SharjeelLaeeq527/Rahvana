@@ -65,7 +65,11 @@ import { TutorialVideo } from "@/app/components/shared/TutorialVideo";
 import Image from "next/image";
 import Link from "next/link";
 import { SubmissionTutorialOverlay } from "./components/SubmissionTutorialData";
-import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
+import {
+  mapDocumentNameToId,
+  fetchUserJourneysCached,
+  syncQuestionnaireAnswersToFlags,
+} from "@/lib/document-vault/journey-mapping";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
 import { MultipleDocumentUploadModal } from "@/app/components/document-vault/MultipleDocumentUploadModal";
@@ -97,12 +101,9 @@ import {
 import { FileQualityPreCheck } from "./components/FileQualityPreCheck";
 import { PreSubmissionSnapshot } from "./components/PreSubmissionSnapshot";
 import { PacketSectionChecklist } from "./components/PacketSectionChecklist";
-import { IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire/ir1-questionnaire";
-import {
-  buildIr5QuestionnaireConfig,
-  deriveIr5DocAnswersFromEligibility,
-} from "@/lib/questionnaire/ir5-questionnaire";
-import { computeDocumentList, deriveDocAnswersFromEligibility } from "@/lib/questionnaire/engine";
+import { getQuestionnaireConfig, IR1_QUESTIONNAIRE_CONFIG, normalizeJourneyType } from "@/lib/questionnaire";
+import type { VisaCategory } from "@/lib/document-vault/types";
+import { computeDocumentList, deriveDocAnswers } from "@/lib/questionnaire/engine";
 import type { QuestionnaireResult, ConditionalDocument } from "@/lib/questionnaire/types";
 import { StepHeader } from "./StepHeader";
 import { CeacCredsModal, NvcFeeModal } from "./PortalWalletManager";
@@ -196,6 +197,53 @@ function findVaultDocForItem<T extends { documentDefId: string }>(
   return undefined;
 }
 
+export function getEffectiveDocDef(id: string | null) {
+  if (!id) return null;
+  const doc = ALL_DOCUMENTS.find((d) => d.id === id);
+  if (doc) return doc;
+
+  const baseIds = [
+    "joint-i864",
+    "joint-tax-returns",
+    "joint-w2",
+    "joint-employment-letter",
+    "joint-pay-stubs",
+    "joint-assets",
+    "joint-citizenship-proof",
+    "i-864a-contract",
+    "household-member-income",
+    "household-member-residence",
+    "hh-marriage",
+    "hh-id",
+    "hh-birth",
+    "hh-family-link"
+  ];
+
+  for (const baseId of baseIds) {
+    if (id.startsWith(baseId)) {
+      const baseDoc = ALL_DOCUMENTS.find((d) => d.id === baseId);
+      if (baseDoc) {
+        let customName = baseDoc.name;
+        if (id.includes("-joint-sponsor-")) {
+          const match = id.match(/-joint-sponsor-(\d+)/);
+          const index = match ? match[1] : "1";
+          customName = `${baseDoc.name} — Joint Sponsor ${index}`;
+        } else if (id.includes("-household-member-")) {
+          const match = id.match(/-household-member-(\d+)/);
+          const index = match ? match[1] : "1";
+          customName = `${baseDoc.name} — Household Member ${index}`;
+        }
+        return {
+          ...baseDoc,
+          id,
+          name: customName,
+        };
+      }
+    }
+  }
+  return null;
+}
+
 interface StepViewProps {
   data: RoadmapDataV3;
   state: WizardState;
@@ -243,6 +291,10 @@ export const StepViewV3: React.FC<StepViewProps> = ({
 
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
   const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
+
+  useEffect(() => {
+    fetchUserJourneysCached().catch(() => {});
+  }, []);
   // Add Evidence Note modal state
 
   const { user } = useAuth();
@@ -257,6 +309,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
     isReloadingDocs,
     isDeletingIds,
     deleteDocument,
+    requiredDocuments,
   } = useDocumentVaultStore();
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [activeUploadType, setActiveUploadType] = useState<"doc" | "hh" | "financial" | null>(null);
@@ -288,19 +341,11 @@ export const StepViewV3: React.FC<StepViewProps> = ({
 
   const { showToast } = useToast();
 
-  // Which visa category is this? Selects the correct document questionnaire so
-  // IR-5 (parent) never shows IR-1 (spouse) documents. Tolerant of spellings.
-  const isIr5Journey = (data.journey_type || "").toUpperCase().replace(/[-_]/g, "") === "IR5";
-
-  // The document questionnaire config. IR-1 uses its hard-coded config; IR-5 is
-  // built from THIS step's own `document_items` (ir-5.json is the source of
-  // truth) plus IR-5's authored questions/rules — no spouse docs, no duplication.
-  const docQuestionnaireConfig = useMemo(
-    () =>
-      isIr5Journey
-        ? buildIr5QuestionnaireConfig((currentStep as any)?.document_items)
-        : IR1_QUESTIONNAIRE_CONFIG,
-    [isIr5Journey, currentStep]
+  // Resolve the questionnaire config for the current category.
+  // Falls back to IR-1 if the journey_type has no questionnaire yet.
+  const questionnaireConfig = useMemo(
+    () => getQuestionnaireConfig(data.journey_type) ?? IR1_QUESTIONNAIRE_CONFIG,
+    [data.journey_type]
   );
 
   // Derive document-questionnaire answers from Step 1 eligibility quest answers
@@ -309,10 +354,8 @@ export const StepViewV3: React.FC<StepViewProps> = ({
     const eligibilityAnswers = state.answers?.["eligibility-suite"] as
       | Record<string, Record<string, string | string[]>>
       | undefined;
-    return isIr5Journey
-      ? deriveIr5DocAnswersFromEligibility(eligibilityAnswers)
-      : deriveDocAnswersFromEligibility(eligibilityAnswers);
-  }, [state.answers, isIr5Journey]);
+    return deriveDocAnswers(eligibilityAnswers, questionnaireConfig);
+  }, [state.answers, questionnaireConfig]);
 
   // Compute effective document items: use engine-finalized list if questionnaire done,
   // otherwise fall back to the raw JSON data
@@ -325,7 +368,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
     // Merge derived Step 1 answers underneath saved answers
     // (saved answers take priority if both exist)
     const mergedAnswers = { ...derivedDocAnswers, ...savedAnswers };
-    const computed = computeDocumentList(docQuestionnaireConfig, mergedAnswers);
+    const computed = computeDocumentList(questionnaireConfig, mergedAnswers);
     // Map ConditionalDocument shape to the document_items shape the UI uses
     return computed.map((doc: ConditionalDocument) => ({
       id: doc.id,
@@ -338,12 +381,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
       status: "not-started",
       required: doc.required,
     }));
-  }, [
-    isDocQuestionnaireCompleted,
-    state.metadata?.docQuestionnaireAnswers,
-    derivedDocAnswers,
-    docQuestionnaireConfig,
-  ]);
+  }, [isDocQuestionnaireCompleted, state.metadata?.docQuestionnaireAnswers, derivedDocAnswers]);
 
   const [multipleUploadModalState, setMultipleUploadModalState] = useState<{
     isOpen: boolean;
@@ -361,52 +399,40 @@ export const StepViewV3: React.FC<StepViewProps> = ({
 
   const handleToggleComplete = useCallback(() => {
     const stepKey = currentStep.step_key || sId;
-    // Map step keys to correct metadata fields for milestone tracking
+    const isIr5 = isIr5Journey;
+
     const milestoneMetaMap: Record<string, { key: string; value?: () => string }> = {
-      step_1_3: {
-        key: "receiptNum",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_1_6: {
-        key: "uscisPortalSaved",
-        value: () => "true",
-      },
-      step_1_7: {
-        key: "filingFeeDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_1_8: {
-        key: "submissionDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_2_10: {
-        key: "dqDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_3_1: {
-        key: "medicalDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_3_7: {
-        key: "interviewDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
+      ...(isIr5
+        ? {
+            // IR5 Chapter 1 (no I-130A form step, so numbers are shifted down by 1 vs IR1)
+            step_1_5: { key: "uscisAccountCreated", value: () => "true" }, // Create USCIS Account — triggers c1_portal_not_saved reminder
+            step_1_8: { key: "filingFeeDate", value: () => new Date().toISOString().slice(0, 10) }, // Pay Filing Fee
+            step_1_9: { key: "submissionDate", value: () => new Date().toISOString().slice(0, 10) }, // Review & Submit — triggers c1_receipt_missing reminder
+            step_1_15: { key: "approvalDate", value: () => new Date().toISOString().slice(0, 10) }, // Approval
+          }
+        : {
+            // IR1 Chapter 1 (has I-130A form step, so numbers include it)
+            step_1_6: { key: "uscisAccountCreated", value: () => "true" }, // Create USCIS Account — triggers c1_portal_not_saved reminder
+            step_1_9: { key: "filingFeeDate", value: () => new Date().toISOString().slice(0, 10) }, // Pay Filing Fee
+            step_1_10: {
+              key: "submissionDate",
+              value: () => new Date().toISOString().slice(0, 10),
+            }, // Review & Submit — triggers c1_receipt_missing reminder
+            step_1_17: { key: "approvalDate", value: () => new Date().toISOString().slice(0, 10) }, // Approval
+          }),
+      // Shared Chapter 2 & 3 milestones (step numbers align across IR1 and IR5)
+      step_2_10: { key: "dqDate", value: () => new Date().toISOString().slice(0, 10) },
+      step_3_1: { key: "med_date", value: () => new Date().toISOString().slice(0, 10) }, // Medical exam date (if manually entered)
+      step_3_7: { key: "interviewDate", value: () => new Date().toISOString().slice(0, 10) },
       step_2_1: {
         key: "nvcCaseNum",
         value: () => "NVC2026-" + Math.floor(Math.random() * 1000000),
       },
-      step_2_2: {
-        key: "nvcInvoice",
-        value: () => "INVC-" + Math.floor(Math.random() * 1000000),
-      },
+      step_2_2: { key: "nvcInvoice", value: () => "INVC-" + Math.floor(Math.random() * 1000000) },
       step_3_7b: { key: "interviewEmbassy", value: () => "Islamabad" },
-      step_1_17: {
-        key: "approvalDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
     };
+
     actions.toggleComplete(stepKey);
-    // If this step is a milestone, set the metadata field if not already set
     const metaObj = milestoneMetaMap[stepKey];
     if (
       metaObj &&
@@ -532,7 +558,9 @@ export const StepViewV3: React.FC<StepViewProps> = ({
   // Sponsorship Calculator State
 
   // Selected scenario for Step 6 (Gather Financial Documents)
-  const [selectedScenario, setSelectedScenario] = useState<string>("pet-only");
+  const [selectedScenario, setSelectedScenario] = useState<string>(
+    () => (state.metadata.selectedScenario as string) || "pet-only"
+  );
 
   // Step 2.8 Review & Submit States
   const [isSubmissionGuideOpen, setIsSubmissionGuideOpen] = useState(false);
@@ -634,9 +662,8 @@ export const StepViewV3: React.FC<StepViewProps> = ({
   });
 
   const [isGatheringGuideOpen, setIsGatheringGuideOpen] = useState(false);
-  const [selectedGatheringItem, setSelectedGatheringItem] = useState<DocumentGatheringItemV3 | null>(
-    null
-  );
+  const [selectedGatheringItem, setSelectedGatheringItem] =
+    useState<DocumentGatheringItemV3 | null>(null);
   const [gatheringGuideStep, setGatheringGuideStep] = useState(0);
 
   // --- UTILS & DERIVED ---
@@ -927,12 +954,16 @@ export const StepViewV3: React.FC<StepViewProps> = ({
   // The API uses the session cookie to get real user_id, so userId here is just a local label
   useEffect(() => {
     const initVault = async () => {
+      // Dynamically derive visa category from journey_type
+      const journeyType = data?.journey_type || "ir-1";
+      const visaCategory = normalizeJourneyType(journeyType).toUpperCase() as VisaCategory;
+
       // Run these in parallel to speed up initialization
       Promise.all([
         setConfigVault({
           userId: user?.id || "session",
-          visaCategory: "IR-1",
-          caseId: (state.metadata.caseId as string) || "ARACHNIE-IR1",
+          visaCategory,
+          caseId: (state.metadata.caseId as string) || `ARACHNIE-${visaCategory.replace("-", "")}`,
           petitionerName: (state.metadata.petitionerName as string) || "Petitioner",
           beneficiaryName: (state.metadata.beneficiaryName as string) || "Beneficiary",
           jointSponsorName: (state.metadata.jointSponsorName as string) || "",
@@ -1085,7 +1116,10 @@ export const StepViewV3: React.FC<StepViewProps> = ({
           className="w-full bg-[#fafcff]/80 backdrop-blur-xs border border-[#d0e4f7] rounded-[20px] p-5 sm:p-6 shadow-xs flex items-center justify-between hover:border-primary hover:bg-[#fafcff] group transition-all text-left cursor-pointer"
         >
           <div className="flex items-center gap-2">
-            <Book className="h-[16px] w-[16px] text-primary shrink-0 group-hover:scale-110 transition-transform" strokeWidth={2.5} />
+            <Book
+              className="h-[16px] w-[16px] text-primary shrink-0 group-hover:scale-110 transition-transform"
+              strokeWidth={2.5}
+            />
             <span className="text-[12px] font-bold uppercase tracking-wider text-[#3a4f63] group-hover:text-primary transition-colors">
               Official References & Citations
             </span>
@@ -1209,9 +1243,18 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                       ? "bg-teal-50 text-teal-700 border-teal-200"
                       : chip.type === "pcc" || chip.type === "nvc" || chip.type === "purple"
                         ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
-                        : chip.type === "book" || chip.type === "remind" || chip.type === "compliance" || chip.type === "track" || chip.type === "pending" || chip.type === "timeline" || chip.type === "sky"
+                        : chip.type === "book" ||
+                            chip.type === "remind" ||
+                            chip.type === "compliance" ||
+                            chip.type === "track" ||
+                            chip.type === "pending" ||
+                            chip.type === "timeline" ||
+                            chip.type === "sky"
                           ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
-                          : chip.type === "waiting" || chip.type === "gold" || chip.type === "pay" || chip.type === "amber"
+                          : chip.type === "waiting" ||
+                              chip.type === "gold" ||
+                              chip.type === "pay" ||
+                              chip.type === "amber"
                             ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
                             : chip.type === "role" || chip.role === "role"
                               ? isBeneficiaryTheme
@@ -1438,6 +1481,11 @@ export const StepViewV3: React.FC<StepViewProps> = ({
               setActiveFinancialDoc={setActiveFinancialDoc}
               setIsFinancialDocGuideOpen={guardedSetIsFinancialDocGuideOpen}
               guard={stepEntitlement.guard}
+              onPreview={(uploadedDocId) =>
+                window.open(`/api/documents/${uploadedDocId}/download`, "_blank")
+              }
+              onDelete={(id, name) => setDocumentToDelete({ id, name })}
+              tool={tool}
             />
             // </StepLockedContent>
           )}
@@ -1465,6 +1513,14 @@ export const StepViewV3: React.FC<StepViewProps> = ({
               setActiveUploadType={setActiveUploadType}
               setActiveHhDoc={setActiveHhDoc}
               setIsHhDocGuideOpen={setIsHhDocGuideOpen}
+              setDocActionModal={setDocActionModal}
+              uploadedDocuments={uploadedDocuments}
+              isReloadingDocs={isReloadingDocs}
+              isDeletingIds={isDeletingIds}
+              onPreview={(uploadedDocId) =>
+                window.open(`/api/documents/${uploadedDocId}/download`, "_blank")
+              }
+              onDelete={(id, name) => setDocumentToDelete({ id, name })}
             />
           )}
 
@@ -1507,18 +1563,28 @@ export const StepViewV3: React.FC<StepViewProps> = ({
           {tool.type === "awaiting_review" && <AwaitingReviewStep data={tool} />}
 
           {/* GATHER ORIGINAL DOCUMENTS (Step 3.6) */}
-          {tool.type === "gathering_checklist" && (
-            <DocListSection
-              groups={tool.doc_gathering?.groups || []}
-              docsStatus={gatheringStatus}
-              uploadedDocuments={uploadedDocuments}
-              isDeletingIds={isDeletingIds}
-              isReloadingDocs={isReloadingDocs}
-              getVaultId={(item) => mapDocumentNameToId(item.title)}
-              findVaultDoc={(item, docs) =>
-                findVaultDocForItem(item.title, mapDocumentNameToId(item.title), docs)
-              }
-              progressLabel="packed"
+          {tool.type === "gathering_checklist" && (() => {
+            const rawGroups = tool.doc_gathering?.groups || [];
+            const personalizedGroups = rawGroups.map((group: any) => {
+              const filteredItems = group.items.filter((item: any) => {
+                const docDefId = mapDocumentNameToId(item.title);
+                return requiredDocuments.some((rd) => rd.id === docDefId);
+              });
+              return { ...group, items: filteredItems };
+            }).filter((group: any) => group.items.length > 0);
+
+            return (
+              <DocListSection
+                groups={personalizedGroups}
+                docsStatus={gatheringStatus}
+                uploadedDocuments={uploadedDocuments}
+                isDeletingIds={isDeletingIds}
+                isReloadingDocs={isReloadingDocs}
+                getVaultId={(item) => mapDocumentNameToId(item.title)}
+                findVaultDoc={(item, docs) =>
+                  findVaultDocForItem(item.title, mapDocumentNameToId(item.title), docs)
+                }
+                progressLabel="packed"
               onItemClick={(item) => {
                 setDocActionModal({
                   isOpen: true,
@@ -1553,7 +1619,8 @@ export const StepViewV3: React.FC<StepViewProps> = ({
               }
               onDelete={(id, name) => setDocumentToDelete({ id, name })}
             />
-          )}
+            );
+          })()}
 
           {/* ATTEND MEDICAL EXAM (Step 3.5 SPECIFIC) */}
           {tool.type === "medical_exam_guide" && (
@@ -1654,18 +1721,28 @@ export const StepViewV3: React.FC<StepViewProps> = ({
           )}
 
           {/* FALLBACK FOR DOC LISTS (Step 2.4) */}
-          {tool.doc_list && (
-            <DocListSection
-              groups={tool.doc_list.groups}
-              docsStatus={civilDocsStatus}
-              uploadedDocuments={uploadedDocuments}
-              isDeletingIds={isDeletingIds}
-              isReloadingDocs={isReloadingDocs}
-              getVaultId={(item) => mapDocumentNameToId(item.title)}
-              findVaultDoc={(item, docs) =>
-                findVaultDocForItem(item.title, mapDocumentNameToId(item.title), docs)
-              }
-              showTags={true}
+          {tool.doc_list && (() => {
+            const rawGroups = tool.doc_list.groups || [];
+            const personalizedGroups = rawGroups.map((group: any) => {
+              const filteredItems = group.items.filter((item: any) => {
+                const docDefId = mapDocumentNameToId(item.title);
+                return requiredDocuments.some((rd) => rd.id === docDefId);
+              });
+              return { ...group, items: filteredItems };
+            }).filter((group: any) => group.items.length > 0);
+
+            return (
+              <DocListSection
+                groups={personalizedGroups}
+                docsStatus={civilDocsStatus}
+                uploadedDocuments={uploadedDocuments}
+                isDeletingIds={isDeletingIds}
+                isReloadingDocs={isReloadingDocs}
+                getVaultId={(item) => mapDocumentNameToId(item.title)}
+                findVaultDoc={(item, docs) =>
+                  findVaultDocForItem(item.title, mapDocumentNameToId(item.title), docs)
+                }
+                showTags={true}
               onItemClick={(item) => {
                 setDocActionModal({
                   isOpen: true,
@@ -1696,7 +1773,8 @@ export const StepViewV3: React.FC<StepViewProps> = ({
               }
               onDelete={(id, name) => setDocumentToDelete({ id, name })}
             />
-          )}
+            );
+          })()}
 
           {/* PRIMARY LAUNCH MODULE */}
           {tool.launch_module &&
@@ -2112,7 +2190,6 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                   | Record<string, Record<string, string | string[]> | undefined>
                   | undefined)
               }
-              journeyType={data.journey_type}
             />
           )}
 
@@ -2929,7 +3006,6 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                   isChapter1={isChapter1}
                   isChapter2={isChapter2}
                   isChapter3={isChapter3}
-                  journeyType={data.journey_type}
                 />
               </div>
             ) : currentStep.step_type === "tool" ? (
@@ -2990,15 +3066,18 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                 {/* Document Questionnaire Overlay — shown once for step_1_2 */}
                 {showDocQuestionnaire && currentStep.step_key === "step_1_2" && (
                   <DocumentQuestionnaire
-                    config={docQuestionnaireConfig}
+                    config={questionnaireConfig}
                     initialAnswers={derivedDocAnswers}
                     onComplete={(result: QuestionnaireResult) => {
-                      // Persist answers + completion flag via backend
+                      const flags = syncQuestionnaireAnswersToFlags(result.answers);
+                      // Persist answers + completion flag + scenarioFlags via backend
                       actions.updateMetadata({
                         docQuestionnaireCompleted: true,
                         docQuestionnaireAnswers: result.answers,
                         docQuestionnaireCompletedAt: result.completedAt,
+                        scenarioFlags: flags,
                       });
+                      useDocumentVaultStore.getState().updateScenarioFlags(flags);
                       setShowDocQuestionnaire(false);
                     }}
                   />
@@ -5137,6 +5216,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
           categoryId={multipleUploadModalState.categoryId}
           documentName={multipleUploadModalState.documentName}
           options={multipleUploadModalState.options}
+          activeJourneyId={state.backendId || data.journey_type || null}
           onUploadComplete={async () => {
             if (activeUploadId && actions.updateDocumentStatus) {
               await actions.updateDocumentStatus(activeUploadId, "reviewed");
@@ -5146,14 +5226,14 @@ export const StepViewV3: React.FC<StepViewProps> = ({
         />
       )}
 
-      {/* Document Vault Integration */}
       {uploadModalOpen &&
         selectedDocumentDefId &&
-        ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId) && (
+        getEffectiveDocDef(selectedDocumentDefId) && (
           <DocumentUploadModal
             open={uploadModalOpen}
             onClose={closeUploadModal}
-            documentDef={ALL_DOCUMENTS.find((d) => d.id === selectedDocumentDefId)!}
+            documentDef={getEffectiveDocDef(selectedDocumentDefId)!}
+            activeJourneyId={state.backendId || data.journey_type || null}
             onUploadComplete={async () => {
               await reloadDocuments();
 

@@ -470,11 +470,34 @@ export class EvidenceGapEngine {
     const stats = this.calculateStats(assessments, requiredDocsSummary);
     const gapSummary = this.generateGapSummary(requiredDocsSummary, assessments);
 
+    // User-provided-only view. The wizard hydrates journey docs and case_data
+    // from profile autofill, so those sources inflate the evidence signal even
+    // when the user has uploaded nothing. For the weighted Case Strength score
+    // (Evidence Strength + Completeness ingredients) we re-assess counting only
+    // real user signal: uploaded vault documents, plus explicit questionnaire
+    // answers (which assessCategories folds in). See CASE_STRENGTH_ALERT_
+    // ESCALATION_PLAN.md §6E.
+    const userItems = items.filter((i) => i.source === "vault");
+    const userAssessments = this.assessCategories(userItems, input.questionnaireResponses);
+    const userRequiredDocs = this.calculateRequiredDocumentsSummary(userAssessments);
+    const userProvided = {
+      score: this.calculateOverallScore(userAssessments, userRequiredDocs),
+      evidenceCount: userItems.length,
+      completionPercentage: userRequiredDocs.completionPercentage,
+      // Full user-provided sub-view so the Case Analysis drawer and the case
+      // narrative can render honest (autofill-free) numbers, not just the score.
+      requiredDocuments: userRequiredDocs,
+      categories: userAssessments,
+      stats: this.calculateStats(userAssessments, userRequiredDocs),
+      recommendations: this.generateRecommendations(userAssessments),
+    };
+
     return {
       categories: assessments,
       requiredDocuments: requiredDocsSummary,
       recommendations,
       overallScore: this.calculateOverallScore(assessments, requiredDocsSummary),
+      userProvided,
       analyzedAt: new Date(),
       stats,
       gapSummary,

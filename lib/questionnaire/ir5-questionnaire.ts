@@ -1,245 +1,566 @@
 // ============================================================================
-// IR-5 (parent of U.S. citizen) Questionnaire Configuration — JSON-DRIVEN
+// IR-5 Questionnaire Configuration
+// Questions, base documents, and decision rules for IR-5 parent immigrant visa
 // ============================================================================
-//
-// SCALABILITY NOTE (Approach B): unlike `ir1-questionnaire.ts`, this file does
-// NOT hard-code the document content. The document DEFINITIONS (name, subtitle,
-// tag, icon, group, required) are the single source of truth in
-// `data/visa-category/ir-5.json` (step_1_2 → `document_items`). Here we only
-// author the LOGIC the json has no place for: the questions and the mapping of
-// "which answer pulls in which document id". `buildIr5QuestionnaireConfig()`
-// stitches the two together at runtime, so editing a document's wording in the
-// json automatically flows into the checklist with no code change.
-//
-// A parent case has NO marriage bona-fides, so none of IR-1's spouse questions
-// (prior marriage, Nikah/MRC, relationship evidence) exist here. The parent
-// relationship instead varies by TYPE (mother / father / step / adoptive), which
-// drives the relationship-proof documents.
 
-import type {
-  QuestionnaireConfig,
-  QuestionnaireQuestion,
-  ConditionalDocument,
-  DocumentDecisionRule,
-  QuestionnaireAnswers,
-} from "./types";
+import type { QuestionnaireConfig } from "./types";
 
-/** Loose shape of one entry in ir-5.json → step_1_2 → document_items. */
-export interface RawJourneyDocItem {
-  id: string;
-  name: string;
-  subtitle?: string;
-  tag?: string;
-  guideUrl?: string;
-  icon?: string;
-  group?: string;
-  required?: boolean;
-}
+export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
+  id: "ir5-doc-questionnaire",
+  title: "IR-5",
+  subtitle:
+    "Answer a few quick questions so we can build a document list tailored to your specific parent-child relationship. This only takes a minute.",
 
-// ── Questions (authored here — the json has no doc-questionnaire section) ──────
-export const IR5_QUESTIONS: QuestionnaireQuestion[] = [
-  {
-    id: "parent_relationship_type",
-    question: "What is your relationship to the parent you are petitioning for?",
-    helper: "This decides which relationship-proof documents your case needs.",
-    options: [
-      { label: "My biological mother", value: "mother" },
-      { label: "My biological father", value: "father" },
-      { label: "My step-parent", value: "stepparent" },
-      { label: "My adoptive parent", value: "adoptive" },
-    ],
-  },
-  {
-    id: "parents_were_married",
-    question: "Were your biological parents legally married to each other when you were born?",
-    helper:
-      "For a father petition, USCIS needs either the parents' marriage certificate or proof of a genuine father-child relationship.",
-    visibleWhen: [{ questionId: "parent_relationship_type", requiredValue: "father" }],
-    options: [
-      { label: "Yes — they were married", value: "yes" },
-      { label: "No — they were not married", value: "no" },
-    ],
-  },
-  {
-    id: "primary_birth_record_ok",
-    question: "Is your (the petitioner's) official birth certificate available and consistent?",
-    helper:
-      "It must correctly name the parent. If it is missing, late-registered, or inconsistent, extra evidence is needed.",
-    options: [
-      { label: "Yes — it is available and correct", value: "yes" },
-      { label: "No — it is missing or inconsistent", value: "no" },
-    ],
-  },
-  {
-    id: "name_discrepancy",
-    question: "Do names, spellings, or dates of birth differ across any of your documents?",
-    helper: "Differences between records should be explained with supporting evidence.",
-    options: [
-      { label: "Yes — there are differences", value: "yes" },
-      { label: "No — everything matches", value: "no" },
-    ],
-  },
-  {
-    id: "parent_prior_marriage",
-    question: "Has the parent (the beneficiary) ever been married?",
-    helper:
-      "Marriage / divorce / former-spouse records may be needed later at the NVC or consular stage.",
-    options: [
-      { label: "Yes", value: "yes" },
-      { label: "No", value: "no" },
-    ],
-  },
-];
+  // ──────────────────────────────────────────────────────────────────
+  // QUESTIONS (shown one at a time, conditionally)
+  // ──────────────────────────────────────────────────────────────────
+  questions: [
+    // Q1 — Relationship type
+    // Primary branching question — drives most conditional documents.
+    {
+      id: "relationship_type",
+      question:
+        "What is the petitioner's relationship to the parent being petitioned for?",
+      helper:
+        "The type of parent-child relationship determines which documents USCIS requires to establish eligibility.",
+      options: [
+        {
+          label: "Biological mother — the petitioner's birth mother",
+          value: "biological_mother",
+          helper:
+            "The birth certificate alone usually establishes this relationship.",
+        },
+        {
+          label:
+            "Biological father — parents were legally married to each other",
+          value: "father_married",
+          helper:
+            "The parents' marriage certificate is generally required to establish the father's status.",
+        },
+        {
+          label: "Biological father — parents were never married to each other",
+          value: "father_unmarried",
+          helper:
+            "Additional bona fide father-child relationship evidence may be required when parents were not married.",
+        },
+        {
+          label: "Stepparent — a stepfather or stepmother",
+          value: "stepparent",
+          helper:
+            "The stepparent must have married the petitioner's biological parent before the petitioner turned 18.",
+        },
+        {
+          label: "Adoptive parent",
+          value: "adoptive",
+          helper:
+            "A qualifying adoption requires two years of legal custody and two years of living together.",
+        },
+      ],
+    },
 
-// ── Base documents: json doc-ids always shown, regardless of answers ──────────
-const IR5_BASE_DOC_IDS: string[] = [
-  "doc_citizenship",
-  "doc_petitioner_birth_cert",
-  "doc_parent_identity_match",
-  "doc_translations",
-  "doc_parent_passport",
-  "doc_parent_birth_cert",
-  "doc_police_cert",
-  "doc_passport_photos",
-];
+    // Q2 — Biological parent's prior marriages (stepparent case only)
+    // Needed to confirm the step-creating marriage is legally valid.
+    {
+      id: "stepparent_bio_parent_prior_marriages",
+      question:
+        "Did the petitioner's biological parent (who married the stepparent) have any prior marriages before that marriage?",
+      helper:
+        "Proof that prior marriages ended — a divorce decree or a death certificate — is required to show the step-creating marriage is legally valid.",
+      visibleWhen: [
+        { questionId: "relationship_type", requiredValue: "stepparent" },
+      ],
+      options: [
+        {
+          label:
+            "Yes — the biological parent had at least one prior marriage before marrying the stepparent",
+          value: "yes",
+        },
+        {
+          label: "No — this was the biological parent's first marriage",
+          value: "no",
+        },
+      ],
+    },
 
-// ── Conditional documents: answer → json doc-id(s) ────────────────────────────
-interface Ir5DocRule {
-  questionId: string;
-  triggerValue: string | string[];
-  docIds: string[];
-  asOptional?: boolean;
-}
+    // Q3 — Name / identity discrepancies across records
+    {
+      id: "name_discrepancy",
+      question:
+        "Are there any name differences, spelling variations, or date discrepancies across the petitioner's or parent's records?",
+      helper:
+        "Even minor differences — a different spelling on a birth certificate vs. a passport, or a slight date-of-birth variation — must be officially explained with supporting documentation.",
+      options: [
+        {
+          label:
+            "Yes — there are name, spelling, or date discrepancies across documents",
+          value: "yes",
+        },
+        {
+          label: "No — all names, spellings, and dates are consistent",
+          value: "no",
+        },
+      ],
+    },
 
-const IR5_CONDITIONAL_DOCS: Ir5DocRule[] = [
-  // Biological father → parents' marriage certificate
-  { questionId: "parent_relationship_type", triggerValue: "father", docIds: ["doc_parents_marriage"] },
-  // Father, parents NOT married → bona-fide father-child relationship evidence
-  {
-    questionId: "parents_were_married",
-    triggerValue: "no",
-    docIds: ["doc_father_bona_fide_relationship"],
-  },
-  // Step-parent → the marriage that created the step-relationship + prior-marriage terminations
-  {
-    questionId: "parent_relationship_type",
-    triggerValue: "stepparent",
-    docIds: ["doc_stepparent_marriage", "doc_stepparent_prior_marriages"],
-  },
-  // Adoptive parent → adoption decree + custody/residence evidence
-  {
-    questionId: "parent_relationship_type",
-    triggerValue: "adoptive",
-    docIds: ["doc_adoption_decree", "doc_adoption_custody_residence"],
-  },
-  // Name/date discrepancy → name-change / identity-discrepancy evidence
-  { questionId: "name_discrepancy", triggerValue: "yes", docIds: ["doc_name_change"] },
-  // Primary birth record unavailable/inconsistent → secondary + unavailability evidence
-  {
-    questionId: "primary_birth_record_ok",
-    triggerValue: "no",
-    docIds: ["doc_secondary_relationship", "doc_record_unavailability"],
-  },
-  // Parent has been married → gather their marriage/prior-marriage records for later
-  {
-    questionId: "parent_prior_marriage",
-    triggerValue: "yes",
-    docIds: ["doc_parent_marriage_history"],
-    asOptional: true,
-  },
-];
+    // Q4 — Primary civil record availability
+    // Determines whether secondary evidence / record-unavailability letters are needed.
+    {
+      id: "primary_record_available",
+      question:
+        "Is the primary civil record establishing the parent-child relationship (e.g., birth certificate) available and consistent?",
+      helper:
+        "If the birth certificate is unavailable, late-registered, or contains inconsistencies, secondary relationship evidence and an official record-unavailability letter may be required.",
+      options: [
+        {
+          label:
+            "Yes — the primary record is available and all information is consistent",
+          value: "yes",
+        },
+        {
+          label:
+            "No — the record is unavailable, late-registered, or has inconsistencies",
+          value: "no",
+        },
+      ],
+    },
 
-// ── json → ConditionalDocument normalizers ────────────────────────────────────
-// The json uses a few extra group/tag labels the engine's union doesn't include.
-function normalizeGroup(group?: string): ConditionalDocument["group"] {
-  if (group === "Required Now") return "Required Now";
-  if (group === "Required if Applicable") return "Required if Applicable";
-  // Everything else ("Gather Now for Later", "Gather Later", "Prepare for
-  // Later — Do Not Obtain Too Early") collapses to the single "later" bucket.
-  return "Gather Now for Later";
-}
+    // Q5 — Parent's marriage history (for NVC / consular stage)
+    {
+      id: "parent_prior_marriages",
+      question:
+        "Has the parent (beneficiary) ever been previously married, divorced, or widowed?",
+      helper:
+        "NVC and the consulate require a complete marriage history for the parent beneficiary. Marriage, divorce, annulment, or former-spouse death records will be needed later in the process.",
+      options: [
+        {
+          label:
+            "Yes — the parent has or had prior marriages, divorces, or is widowed",
+          value: "yes",
+        },
+        {
+          label: "No — the parent has only ever had one marriage (or none)",
+          value: "no",
+        },
+      ],
+    },
+    // Q6 — Name change
+    {
+      id: "name_change",
+      question: "Has the petitioner or parent beneficiary ever legally changed their name (for any reason)?",
+      helper:
+        "If any legal name has changed — through marriage, court order, or other means — official documentation is required.",
+      options: [
+        {
+          label: "Yes — at least one person has had a legal name change",
+          value: "yes",
+        },
+        {
+          label: "No — neither has changed their legal name",
+          value: "no",
+        },
+      ],
+    },
 
-function normalizeTag(tag?: string): ConditionalDocument["tag"] {
-  switch (tag) {
-    case "petitioner":
-    case "beneficiary":
-    case "both":
-    case "third party":
-    case "joint_sponsor":
-      return tag;
-    case "parent beneficiary":
-      return "beneficiary";
-    default:
-      return "both";
-  }
-}
+    // Q7 — Military service
+    {
+      id: "military_service",
+      question: "Has the parent beneficiary ever served in any country's military or armed forces?",
+      helper:
+        "If yes, military service records with a certified English translation are required for the visa application.",
+      options: [
+        {
+          label: "Yes — the parent has military service history",
+          value: "yes",
+        },
+        {
+          label: "No — no military service",
+          value: "no",
+        },
+      ],
+    },
 
-function toConditionalDoc(raw: RawJourneyDocItem): ConditionalDocument {
-  return {
-    id: raw.id,
-    name: raw.name,
-    subtitle: raw.subtitle ?? "",
-    tag: normalizeTag(raw.tag),
-    guideUrl: raw.guideUrl ?? "/guides",
-    icon: raw.icon ?? "FileText",
-    group: normalizeGroup(raw.group),
-    required: raw.required ?? false,
-  };
-}
+    // Q8 — Criminal history
+    {
+      id: "criminal_history",
+      question:
+        "Has the parent beneficiary ever been arrested, charged, or convicted of any crime — anywhere in the world?",
+      helper:
+        "Even minor or old matters can affect eligibility. Court/disposition records will be needed if applicable.",
+      options: [
+        {
+          label: "Yes — there is at least one arrest, charge, or conviction",
+          value: "yes",
+        },
+        {
+          label: "No — no criminal history at all",
+          value: "no",
+        },
+      ],
+    },
+  ],
 
-/**
- * Build the IR-5 questionnaire config from the journey's own document list.
- * `docItems` is `currentStep.document_items` straight out of ir-5.json — so the
- * document content is never duplicated in code. Only ids referenced by
- * IR5_BASE_DOC_IDS / IR5_CONDITIONAL_DOCS are surfaced; anything missing from
- * the json is simply skipped (no crash).
- */
-export function buildIr5QuestionnaireConfig(
-  docItems: RawJourneyDocItem[] | undefined
-): QuestionnaireConfig {
-  const byId = new Map<string, ConditionalDocument>();
-  for (const d of docItems ?? []) {
-    if (d?.id) byId.set(d.id, toConditionalDoc(d));
-  }
+  // ──────────────────────────────────────────────────────────────────
+  // BASE DOCUMENTS (always included for IR-5, regardless of answers)
+  // ──────────────────────────────────────────────────────────────────
+  baseDocuments: [
+    // ── Required Now ─────────────────────────────────────────────────
+    {
+      id: "doc_citizenship",
+      name: "Proof of U.S. Citizenship",
+      subtitle:
+        "Establishes that the petitioner is eligible to file an IR-5 petition for a parent",
+      tag: "petitioner",
+      guideUrl: "/guides",
+      icon: "ShieldCheck",
+      group: "Required Now",
+      required: true,
+    },
+    {
+      id: "doc_petitioner_birth_cert",
+      name: "Petitioner's Birth Certificate",
+      subtitle:
+        "Primary record showing the qualifying parent-child relationship",
+      tag: "petitioner",
+      guideUrl: "/guides/birth-certificate-guide",
+      icon: "ClipboardList",
+      group: "Required Now",
+      required: true,
+    },
 
-  const baseDocuments = IR5_BASE_DOC_IDS.map((id) => byId.get(id)).filter(
-    (d): d is ConditionalDocument => Boolean(d)
-  );
+    // ── Required if Applicable (shown to all — not gated on a question) ──
+    {
+      id: "doc_parent_identity_match",
+      name: "Parent Identity and Name-Match Evidence",
+      subtitle:
+        "Links the parent named on the petitioner's birth record to the current beneficiary",
+      tag: "beneficiary",
+      guideUrl: "/guides",
+      icon: "UserCheck",
+      group: "Required if Applicable",
+      required: false,
+    },
+    {
+      id: "doc_translations",
+      name: "Certified English Translations",
+      subtitle:
+        "Complete English translations of every submitted non-English document",
+      tag: "both",
+      guideUrl: "/document-translation",
+      icon: "Globe",
+      group: "Required if Applicable",
+      required: false,
+    },
 
-  const decisionRules: DocumentDecisionRule[] = IR5_CONDITIONAL_DOCS.map((rule) => ({
-    questionId: rule.questionId,
-    triggerValue: rule.triggerValue,
-    asOptional: rule.asOptional,
-    // A triggered relationship document is genuinely required for that case
-    // (unless explicitly optional), even though the json lists it as
-    // "Required if Applicable" (i.e. false until the condition applies).
-    documents: rule.docIds
-      .map((id) => byId.get(id))
-      .filter((d): d is ConditionalDocument => Boolean(d))
-      .map((d) => ({ ...d, required: rule.asOptional ? false : true })),
-  })).filter((rule) => rule.documents.length > 0);
+    // ── Gather Now for Later ──────────────────────────────────────────
+    {
+      id: "doc_parent_passport",
+      name: "Parent Beneficiary Passport",
+      subtitle:
+        "Current Pakistani passport — primarily required during NVC and consular processing",
+      tag: "beneficiary",
+      guideUrl: "/guides/passport-guide",
+      icon: "BookOpen",
+      group: "Gather Now for Later",
+      required: false,
+    },
+    {
+      id: "doc_parent_birth_cert",
+      name: "Parent Beneficiary Birth Certificate",
+      subtitle:
+        "Parent's Pakistan civil birth record — required during NVC and interview processing",
+      tag: "beneficiary",
+      guideUrl: "/guides/birth-certificate-guide",
+      icon: "ClipboardList",
+      group: "Gather Now for Later",
+      required: false,
+    },
+    {
+      id: "doc_police_cert",
+      name: "Police Character Certificate",
+      subtitle:
+        "Pakistan Character Certificate — required later under NVC age and residence rules",
+      tag: "beneficiary",
+      guideUrl: "/guides/police-verification-guide",
+      icon: "Lock",
+      group: "Gather Now for Later",
+      required: false,
+    },
+    {
+      id: "doc_passport_photos",
+      name: "Passport-Style Photos",
+      subtitle:
+        "Needed later for medical and immigrant visa processing, not for the standard online I-130 evidence packet",
+      tag: "beneficiary",
+      guideUrl: "/passport",
+      icon: "Camera",
+      group: "Gather Now for Later",
+      required: false,
+    },
 
-  return {
-    id: "ir5-doc-questionnaire",
-    title: "Personalize Your Document Checklist",
-    subtitle:
-      "Answer a few quick questions so we can build a document list tailored to your parent (IR-5) case. This only takes a minute.",
-    questions: IR5_QUESTIONS,
-    baseDocuments,
-    decisionRules,
-  };
-}
+  ],
 
-/**
- * IR-5 Step 1 → Step 2 answer derivation.
- *
- * The IR-5 eligibility quest classifies the relationship differently than the
- * doc questionnaire, so we do NOT pre-fill answers here yet — the questionnaire
- * asks the relationship question directly. Kept for parity with the IR-1 API and
- * as the extension point once the eligibility→doc mapping is finalized.
- */
-export function deriveIr5DocAnswersFromEligibility(
-  _eligibilityAnswers: Record<string, Record<string, string | string[]>> | undefined
-): QuestionnaireAnswers {
-  return {};
-}
+  // ──────────────────────────────────────────────────────────────────
+  // DECISION RULES (questionnaire answers → conditional documents)
+  // ──────────────────────────────────────────────────────────────────
+  decisionRules: [
+    // ── Biological father (married parents) → parents' marriage certificate ──
+    {
+      questionId: "relationship_type",
+      triggerValue: "father_married",
+      documents: [
+        {
+          id: "doc_parents_marriage",
+          name: "Parents' Marriage Certificate",
+          subtitle:
+            "Required in many petitions for a biological father and useful where parentage depends on the parents' legal marriage",
+          tag: "both",
+          guideUrl: "/guides/nikah-nama-guide",
+          icon: "FileCheck",
+          group: "Required if Applicable",
+          required: true,
+        },
+      ],
+    },
+
+    // ── Biological father (unmarried parents) → marriage cert (optional) + bona fide evidence ──
+    {
+      questionId: "relationship_type",
+      triggerValue: "father_unmarried",
+      documents: [
+        {
+          id: "doc_parents_marriage",
+          name: "Parents' Marriage Certificate",
+          subtitle:
+            "Include if the parents eventually married — helps support the father's relationship claim",
+          tag: "both",
+          guideUrl: "/guides/nikah-nama-guide",
+          icon: "FileCheck",
+          group: "Required if Applicable",
+          required: false,
+        },
+        {
+          id: "doc_father_bona_fide_relationship",
+          name: "Evidence of a Bona Fide Father-Child Relationship",
+          subtitle:
+            "May be required where the petitioner's parents were not married — shows the father acknowledged and supported the child",
+          tag: "both",
+          guideUrl: "/guides",
+          icon: "Users",
+          group: "Required if Applicable",
+          required: true,
+        },
+      ],
+    },
+
+    // ── Stepparent → marriage certificate that created the step-relationship ──
+    {
+      questionId: "relationship_type",
+      triggerValue: "stepparent",
+      documents: [
+        {
+          id: "doc_stepparent_marriage",
+          name: "Marriage Certificate Creating the Step-Relationship",
+          subtitle:
+            "Shows the stepparent married the petitioner's biological or legal parent before the petitioner turned 18",
+          tag: "both",
+          guideUrl: "/guides/nikah-nama-guide",
+          icon: "HeartHandshake",
+          group: "Required if Applicable",
+          required: true,
+        },
+      ],
+    },
+
+    // ── Stepparent — biological parent had prior marriages → termination proof ──
+    {
+      questionId: "stepparent_bio_parent_prior_marriages",
+      triggerValue: "yes",
+      documents: [
+        {
+          id: "doc_stepparent_prior_marriages",
+          name: "Termination of Prior Marriages for Step-Relationship",
+          subtitle:
+            "Proves prior marriages ended before the marriage that created the qualifying step-relationship",
+          tag: "both",
+          guideUrl: "/guides",
+          icon: "Scale",
+          group: "Required if Applicable",
+          required: true,
+        },
+      ],
+    },
+
+    // ── Adoptive parent → final adoption decree + custody/residence evidence ──
+    {
+      questionId: "relationship_type",
+      triggerValue: "adoptive",
+      documents: [
+        {
+          id: "doc_adoption_decree",
+          name: "Final Adoption Decree",
+          subtitle:
+            "Establishes the legal adoption in a qualifying adoptive-parent case",
+          tag: "both",
+          guideUrl: "/guides",
+          icon: "Gavel",
+          group: "Required if Applicable",
+          required: true,
+        },
+        {
+          id: "doc_adoption_custody_residence",
+          name: "Legal Custody and Joint Residence Evidence",
+          subtitle:
+            "Documents the required two years of legal custody and two years of living together in an adoptive-parent case",
+          tag: "both",
+          guideUrl: "/guides",
+          icon: "Home",
+          group: "Required if Applicable",
+          required: true,
+        },
+      ],
+    },
+
+    // ── Name / identity discrepancies → name-change / discrepancy evidence ──
+    {
+      questionId: "name_discrepancy",
+      triggerValue: "yes",
+      documents: [
+        {
+          id: "doc_name_change",
+          name: "Name Change or Identity Discrepancy Evidence",
+          subtitle:
+            "Explains different names, spellings, dates, or parent details across records",
+          tag: "both",
+          guideUrl: "/guides",
+          icon: "BadgeCheck",
+          group: "Required if Applicable",
+          required: true,
+        },
+      ],
+    },
+
+    // ── Primary record unavailable or inconsistent → secondary + unavailability evidence ──
+    {
+      questionId: "primary_record_available",
+      triggerValue: "no",
+      documents: [
+        {
+          id: "doc_secondary_relationship",
+          name: "Secondary Parent-Child Relationship Evidence",
+          subtitle:
+            "Used when the primary birth or civil record is unavailable, late-registered, or inconsistent",
+          tag: "both",
+          guideUrl: "/guides",
+          icon: "Files",
+          group: "Required if Applicable",
+          required: true,
+        },
+        {
+          id: "doc_record_unavailability",
+          name: "Record Unavailability Evidence",
+          subtitle:
+            "Official explanation when a required primary civil record genuinely cannot be obtained",
+          tag: "both",
+          guideUrl: "/guides",
+          icon: "FileWarning",
+          group: "Required if Applicable",
+          required: true,
+        },
+      ],
+    },
+
+    // ── Parent has prior marriages → marriage history records (gather for later) ──
+    {
+      questionId: "parent_prior_marriages",
+      triggerValue: "yes",
+      documents: [
+        {
+          id: "doc_parent_marriage_history",
+          name: "Parent's Marriage and Prior-Marriage Records",
+          subtitle:
+            "Marriage, divorce, annulment, or former-spouse death records needed later when applicable",
+          tag: "beneficiary",
+          guideUrl: "/guides",
+          icon: "FileText",
+          group: "Gather Now for Later",
+          required: false,
+        },
+      ],
+    },
+
+    // ── Name change ──
+    {
+      questionId: "name_change",
+      triggerValue: "yes",
+      documents: [
+        {
+          id: "doc_name_change",
+          name: "Name Change or Identity Discrepancy Evidence",
+          subtitle:
+            "Explains different names, spellings, dates, or parent details across records",
+          tag: "both",
+          guideUrl: "/guides",
+          icon: "BadgeCheck",
+          group: "Required if Applicable",
+          required: true,
+        },
+      ],
+    },
+
+    // ── Military service ──
+    {
+      questionId: "military_service",
+      triggerValue: "yes",
+      documents: [
+        {
+          id: "doc_military_records",
+          name: "Military Service Records",
+          subtitle: "Complete military service records with certified English translation",
+          tag: "beneficiary",
+          guideUrl: "/guides",
+          icon: "ShieldCheck",
+          group: "Required if Applicable",
+          required: true,
+        },
+      ],
+    },
+
+    // ── Criminal history ──
+    {
+      questionId: "criminal_history",
+      triggerValue: "yes",
+      documents: [
+        {
+          id: "doc_court_records",
+          name: "Court / Disposition Records",
+          subtitle:
+            "Complete records of all arrests, charges, or convictions with English translations",
+          tag: "beneficiary",
+          guideUrl: "/guides",
+          icon: "Scale",
+          group: "Required if Applicable",
+          required: true,
+        },
+        {
+          id: "doc_police_disposition",
+          name: "Police Disposition Letters",
+          subtitle: "Official letters from police showing final disposition of each incident",
+          tag: "beneficiary",
+          guideUrl: "/guides",
+          icon: "FileText",
+          group: "Required if Applicable",
+          required: false,
+        },
+      ],
+    },
+  ],
+
+  // ──────────────────────────────────────────────────────────────────
+  // ELIGIBILITY DERIVATION MAP
+  // Translates Step 1 eligibility-suite answers into pre-filled answers
+  // so duplicate questions are never shown to the user.
+  // Add entries here if/when the eligibility suite captures IR-5
+  // relationship type or other relevant data.
+  // ──────────────────────────────────────────────────────────────────
+  eligibilityDerivationMap: [],
+};

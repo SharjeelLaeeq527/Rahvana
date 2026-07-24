@@ -138,21 +138,18 @@ export function DocumentPreviewModal({
               )}
 
               {isImage && (
-                <div
+                <Image
+                  src={previewUrl}
+                  alt={displayTitle}
+                  width={800}
+                  height={600}
+                  className="max-w-full max-h-full object-contain shadow-lg transition-transform duration-200"
                   style={{
                     transform: `scale(${zoom / 100})`,
                     transformOrigin: "center center",
                   }}
-                >
-                  <Image
-                    src={previewUrl}
-                    alt={displayTitle}
-                    width={800}
-                    height={600}
-                    className="max-w-full max-h-full object-contain shadow-lg"
-                    unoptimized
-                  />
-                </div>
+                  unoptimized
+                />
               )}
 
               {!isPdf && !isImage && (
@@ -177,8 +174,8 @@ export function DocumentPreviewModal({
           )}
         </div>
 
-        {/* Footer with Zoom controls (only for PDF) */}
-        {!isLoading && previewUrl && isPdf && (
+        {/* Footer with Zoom controls */}
+        {!isLoading && previewUrl && (isPdf || isImage) && (
           <div className="flex items-center justify-center gap-2 p-4 border-t bg-slate-50 dark:bg-slate-900 shrink-0">
             <Button variant="outline" size="sm" onClick={handleZoomOut} disabled={zoom <= 50}>
               <ZoomOut className="h-4 w-4" />

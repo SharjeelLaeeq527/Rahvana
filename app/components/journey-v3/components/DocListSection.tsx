@@ -21,7 +21,7 @@ interface DocItem {
   icon?: string;
   title: string;
   sub?: string;
-  tags?: string[];
+  tags?: any[];
   [key: string]: any;
 }
 
@@ -184,7 +184,7 @@ export function DocListSection({
                           : "bg-[#e8f1fb] border-[#d0e4f7]"
                       }`}
                     >
-                      <div className="text-primary/70">{getStepIcon(item.icon || "")}</div>
+                      <div className="text-primary/70">{getStepIcon(item.icon || "") || getStepIcon("file-text")}</div>
                     </div>
 
                     {/* Content */}
@@ -199,7 +199,32 @@ export function DocListSection({
                       )}
                       {showTags && item.tags && item.tags.length > 0 && (
                         <div className="flex gap-[6px] mt-[7px] flex-wrap">
-                          {item.tags.map((t: string) => {
+                          {item.tags.map((t: any, tagIdx: number) => {
+                            if (typeof t === "object" && t !== null) {
+                              const label = t.label;
+                              let cls = "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]";
+                              if (t.cls === "tag-pet" || t.cls === "pet") {
+                                cls = "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]";
+                              } else if (t.cls === "tag-js" || t.cls === "js") {
+                                cls = "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]";
+                              } else if (t.cls === "tag-hm" || t.cls === "hm" || t.cls === "bene" || t.cls === "tag-res") {
+                                cls = "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]";
+                              } else if (t.cls === "tag-tax" || t.cls === "tax" || t.cls === "tag-gov") {
+                                cls = "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]";
+                              } else if (t.cls === "tag-cur" || t.cls === "cur" || t.cls === "tag-id") {
+                                cls = "bg-[#eef3fa] text-[#3a4f63] border-[#d0e4f7]";
+                              } else if (t.cls) {
+                                cls = t.cls;
+                              }
+                              return (
+                                <span
+                                  key={typeof t === "string" ? t : (t.label || "") + "-" + tagIdx}
+                                  className={`text-[10px] sm:text-[11px] font-semibold px-[8px] sm:px-[9px] py-[3px] rounded-full border tracking-[0.04em] ${cls}`}
+                                >
+                                  {label}
+                                </span>
+                              );
+                            }
                             const tag = TAG_MAP[t];
                             if (!tag) return null;
                             return (

@@ -273,8 +273,7 @@ export function DocumentQuestionnaire({
 
               <p className="text-[14px] text-[#3a4f63] mt-2 mb-[28px] text-center max-w-[460px] mx-auto leading-[1.7]">
                 Based on your answers, we&apos;ve built a personalized checklist of{" "}
-                {finalDocuments.length} documents for your{" "}
-                {config.id.startsWith("ir5") ? "IR-5" : "IR-1"} petition.
+                {finalDocuments.length} documents for your {config.title} application.
               </p>
 
               {/* Document Summary */}

@@ -13,21 +13,26 @@ export class DocumentDatabaseStorage {
   constructor(private supabase: SupabaseClient) {}
 
   /**
-   * Gets all documents for a user
+   * Gets all documents for a user, optionally filtered by journey ID
    */
-  async getAllDocuments(userId: string): Promise<UploadedDocument[]> {
-    const { data, error } = await this.supabase
+  async getAllDocuments(userId: string, journeyId?: string): Promise<UploadedDocument[]> {
+    let query = this.supabase
       .from("documents")
       .select("*")
-      .eq("user_id", userId)
-      .order("uploaded_at", { ascending: false });
+      .eq("user_id", userId);
+
+    if (journeyId) {
+      query = query.eq("journey_id", journeyId);
+    }
+
+    const { data, error } = await query.order("uploaded_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching documents:", error);
       throw error;
     }
 
-    return (data || []).map(this.mapDatabaseToDocument);
+    return (data || []).map((row) => this.mapDatabaseToDocument(row));
   }
 
   /**
@@ -118,20 +123,32 @@ export class DocumentDatabaseStorage {
   /**
    * Gets documents by definition ID
    */
-  async getDocumentsByDefId(documentDefId: string, userId: string): Promise<UploadedDocument[]> {
-    const { data, error } = await this.supabase
+  /**
+   * Gets documents by definition ID, optionally filtered by journey ID
+   */
+  async getDocumentsByDefId(
+    documentDefId: string,
+    userId: string,
+    journeyId?: string
+  ): Promise<UploadedDocument[]> {
+    let query = this.supabase
       .from("documents")
       .select("*")
       .eq("user_id", userId)
-      .eq("document_def_id", documentDefId)
-      .order("version", { ascending: true });
+      .eq("document_def_id", documentDefId);
+
+    if (journeyId) {
+      query = query.eq("journey_id", journeyId);
+    }
+
+    const { data, error } = await query.order("version", { ascending: true });
 
     if (error) {
       console.error("Error fetching documents by def ID:", error);
       throw error;
     }
 
-    return (data || []).map(this.mapDatabaseToDocument);
+    return (data || []).map((row) => this.mapDatabaseToDocument(row));
   }
 
   /**
@@ -344,6 +361,7 @@ export class DocumentDatabaseStorage {
       isRead: data.is_read as boolean,
       status: data.status as UploadedDocument["status"],
       notes: data.notes as string | undefined,
+      journeyId: data.journey_id as string | null | undefined,
     };
   }
 
@@ -370,6 +388,7 @@ export class DocumentDatabaseStorage {
       is_read: document.isRead,
       status: document.status,
       notes: document.notes,
+      journey_id: document.journeyId,
     };
 
     // Add compressed file info if available (columns may not exist in DB yet)
