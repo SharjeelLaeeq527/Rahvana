@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { ClipboardList, MapPin, Map, Search, Star, Bookmark } from "lucide-react";
+import { ClipboardList, MapPin, Map, Search, Star, Bookmark, Languages } from "lucide-react";
 import { type WizardStepId } from "@/types/guide-wizard";
 import { ConfirmationModal } from "../shared/ConfirmationModal";
 import { AuthRequiredModal } from "../shared/AuthRequiredModal";
@@ -13,6 +13,7 @@ const STEP_ICONS: Record<string, React.ElementType> = {
   roadmap: Map,
   office_finder: Search,
   validation: Star,
+  translation_standards: Languages,
 };
 
 interface WizardSidebarProps {
