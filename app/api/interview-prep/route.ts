@@ -8,6 +8,11 @@
 import { NextResponse, NextRequest } from "next/server";
 import { createInterviewSession, getInterviewSession } from "@/lib/interview-prep/service";
 import { categoryLoader } from "@/lib/interview-prep/category-loader";
+import {
+  validateToolSessionCreation,
+  getAddonIdForCategory,
+} from "@/lib/interview-prep/purchase-validation";
+import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 
 /**
@@ -41,6 +46,52 @@ export async function POST(request: NextRequest) {
         { error: `Invalid or inactive category slug: ${category_slug}` },
         { status: 400 }
       );
+    }
+
+    // Get user for purchase validation
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    // Validate purchase BEFORE creating session
+    const validation = await validateToolSessionCreation(user.id, category_slug);
+
+    if (!validation.allowed) {
+      if (validation.reason === "NO_PURCHASE") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "PURCHASE_REQUIRED",
+            message: validation.message,
+            addon: {
+              id: getAddonIdForCategory(category_slug),
+              name: `Interview Prep - ${category.categoryName || category_slug}`,
+              price: 200,
+            },
+          },
+          { status: 402 }
+        );
+      }
+
+      if (validation.reason === "PURCHASE_EXHAUSTED") {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "PURCHASE_EXHAUSTED",
+            message: validation.message,
+            repurchase: {
+              addon_id: getAddonIdForCategory(category_slug),
+              message: "Purchase again to create another session",
+            },
+          },
+          { status: 402 }
+        );
+      }
     }
 
     // Create session

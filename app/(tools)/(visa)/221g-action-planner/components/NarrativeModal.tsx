@@ -1202,6 +1202,116 @@ const scenesInterviewPrep: Scene[] = [
   },
 ];
 
+const scenesStepParent: Scene[] = [
+  {
+    id: "welcome",
+    title: "Welcome to Step-Parent Guide",
+    description: "Learn how to qualify and compile documents for your step-parent petition case under U.S. immigration laws.",
+    illustration: "welcome",
+  },
+  {
+    id: "what-is",
+    title: "What is Step-Parent Qualification?",
+    description: "USCIS generally recognizes a step-relationship if the marriage occurred before the child turned 18 and is legally valid.",
+    illustration: "document",
+  },
+  {
+    id: "pitfalls",
+    title: "Avoid Denial Pitfalls",
+    titleLines: ["Avoid", "Denial", "Pitfalls"],
+    description: "Prevent common errors like missing prior marriage termination decrees, self-translation, or timeline issues.",
+    illustration: "warning",
+  },
+  {
+    id: "workflow",
+    title: "Guided Step-Parent Workflow",
+    titleLines: ["Guided", "Step-Parent", "Workflow"],
+    description: "Check eligibility timing, checklist required certificates, review translations, and complete final review.",
+    illustration: "checklist",
+  },
+  {
+    id: "output",
+    title: "USCIS Checklist Ready",
+    titleLines: ["USCIS", "Checklist", "Ready"],
+    description: "Get a clear list of actions, documents, and rules for your petition packet.",
+    illustration: "output",
+  },
+  {
+    id: "wizard",
+    title: "How This Works",
+    extraContent: (
+      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
+        {[
+          "Answer eligibility questions to verify step-parent status.",
+          "Checklist birth, marriage, and termination certificates.",
+          "Verify third-party certified English translations.",
+          "Perform final review and name matching checks.",
+        ].map((text, i) => (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+            key={i}
+            className="flex items-start gap-4 rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+          >
+            <div
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-bold text-white shadow-md"
+              style={{
+                background: `linear-gradient(135deg, ${colors.deepTeal}, ${colors.softAqua})`,
+              }}
+            >
+              {i + 1}
+            </div>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
+              {text}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    ),
+    illustration: "wizard",
+  },
+  {
+    id: "needs",
+    title: "What You'll Need",
+    extraContent: (
+      <div className="mx-auto mt-6 max-w-lg space-y-6 text-left">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {[
+            "Child's long-form birth certificate",
+            "Parents' marriage certificate",
+            "Proof of previous marriage endings",
+            "Certified English translations",
+          ].map((item, i) => (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              key={i}
+              className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
+            >
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
+                {item}
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    ),
+    illustration: "preparation",
+  },
+];
+
 interface NarrativeModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -1217,7 +1327,8 @@ interface NarrativeModalProps {
     | "marriage-registration"
     | "birth-certificate"
     | "polio-vaccination"
-    | "interview-prep";
+    | "interview-prep"
+    | "step-parent";
 }
 
 const SCENE_DURATION = 9000;
@@ -1240,6 +1351,7 @@ export function NarrativeModal({
     "birth-certificate": scenesBirthCertificate,
     "polio-vaccination": scenesPolioVaccination,
     "interview-prep": scenesInterviewPrep,
+    "step-parent": scenesStepParent,
   } as const;
 
   const scenes = scenesByVariant[variant];
@@ -1272,6 +1384,7 @@ export function NarrativeModal({
     "birth-certificate": "Birth",
     "polio-vaccination": "Polio",
     "interview-prep": "Interview",
+    "step-parent": "Step-Parent",
   };
   const docBadgeText = docBadgeTextByVariant[variant];
   const isGuideVariant = variant !== "221g";

@@ -27,32 +27,6 @@ const supabaseAdmin = createClient(
 
 export async function updateSession(request: NextRequest) {
   const response = NextResponse.next();
-
-  // =============================
-  // Supabase Server Client
-  // =============================
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
-        setAll(cookiesToSet) {
-          cookiesToSet.forEach(({ name, value, options }) => {
-            response.cookies.set(name, value, options);
-          });
-        },
-      },
-    }
-  );
-
-  // ⚠️ DO NOT put logic between client creation & getUser
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
   const pathname = request.nextUrl.pathname;
 
   // =============================
@@ -60,7 +34,6 @@ export async function updateSession(request: NextRequest) {
   // =============================
   const protectedRoutes = [
     "/user-dashboard",
-    // "/dashboard",
     "/complete-profile",
     "/profile",
     "/settings",
@@ -96,6 +69,39 @@ export async function updateSession(request: NextRequest) {
   // Admin Route Protection
   // =============================
   const isApiAdminRoute = pathname.startsWith("/api/admin");
+
+  const needsAuthCheck = isProtectedRoute || isAdminRoute || isApiAdminRoute || isAuthRoute || isAdminAuthRoute;
+
+  // Optimize: Skip auth checks and API calls on completely public routes.
+  // This avoids costly network requests to Supabase Auth on every static asset/page and prevents 504 Middleware Timeouts.
+  if (!needsAuthCheck) {
+    return response;
+  }
+
+  // =============================
+  // Supabase Server Client
+  // =============================
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options);
+          });
+        },
+      },
+    }
+  );
+
+  // ⚠️ DO NOT put logic between client creation & getUser
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   if (isAdminRoute || isApiAdminRoute) {
     if (!user) {

@@ -4,11 +4,11 @@
   "description": "Parent-based immigrant visa for parents of US citizens and permanent residents",
   "visaCountry": "United States",
   "metadata": {
-    "version": "1.0.0",
-    "questionnaireVersion": "1.0.0",
-    "questionBankVersion": "1.0.0",
+    "version": "1.1.0",
+    "questionnaireVersion": "1.1.0",
+    "questionBankVersion": "1.1.0",
     "estimatedDurationMinutes": 15,
-    "totalQuestions": 65,
+    "totalQuestions": 66,
     "totalIntakeQuestions": 14
   },
   "features": {

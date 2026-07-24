@@ -1,8 +1,11 @@
 // Dynamic Interview Preparation - TypeScript Schemas.
 // Defines structure for all category configuration files.
 
+import { SectionUIConfig } from "@/types/review";
+
 // Category Configuration
 export interface InterviewCategoryConfig {
+  categoryName: any;
   visaCountry: string;
   categorySlug: string;
   displayName: string;
@@ -67,6 +70,7 @@ export interface QuestionnaireSection {
   title: string;
   description: string;
   order: number;
+  ui?: SectionUIConfig;
   questions: DynamicQuestion[];
 }
 

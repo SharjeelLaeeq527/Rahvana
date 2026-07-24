@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ListChecks } from "lucide-react";
 
 import { useRouter } from "next/navigation";
 import { ResultPage } from "./result/ResultPage";
@@ -15,7 +17,10 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
 import { ReviewStep } from "@/app/components/interview-prep/review-step";
-import { CategorySelectionStep } from "@/app/components/interview-prep/category-selection-step";
+import {
+  CategorySelectionStep,
+  type CategoryWithPurchaseStatus,
+} from "@/app/components/interview-prep/category-selection-step";
 import { DynamicQuestionStep } from "@/app/components/interview-prep/dynamic-question-step";
 import CountrySelectionModal from "../../components/interview-prep/CountrySelectionModal";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
@@ -23,17 +28,35 @@ import type { InterviewFormData } from "@/app/components/interview-prep/types";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { NarrativeModal } from "../(visa)/221g-action-planner/components/NarrativeModal";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
-import type {
-  InterviewCategoryConfig,
-  DynamicQuestionnaire,
-} from "@/data/interview-categories/schema";
+import type { DynamicQuestionnaire } from "@/data/interview-categories/schema";
 import { E, msg } from "@/lib/errors";
 
+type PurchaseRequiredAddon = {
+  id: string;
+  name: string;
+  price: number;
+};
+
+type PurchaseExhaustedData = {
+  addon_id: string;
+  message: string;
+};
+
+type PurchaseErrorResponse = {
+  success: false;
+  error: "PURCHASE_REQUIRED" | "PURCHASE_EXHAUSTED";
+  message?: string;
+  addon?: PurchaseRequiredAddon;
+  repurchase?: PurchaseExhaustedData;
+};
+
 export default function InterviewPreparation() {
-  const [selectedCategory, setSelectedCategory] = useState<InterviewCategoryConfig | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<CategoryWithPurchaseStatus | null>(null);
+
+  const [availableCategories, setAvailableCategories] = useState<CategoryWithPurchaseStatus[]>([]);
   const [questionnaire, setQuestionnaire] = useState<DynamicQuestionnaire | null>(null);
-  const [availableCategories, setAvailableCategories] = useState<InterviewCategoryConfig[]>([]);
   const [showCountryModal, setShowCountryModal] = useState<boolean>(true);
   const [noDataMessage, setNoDataMessage] = useState<string | null>(null);
 
@@ -62,6 +85,12 @@ export default function InterviewPreparation() {
   const [journeyId, setJourneyId] = useState<string | null>(null);
   const [isJourneySession, setIsJourneySession] = useState(false);
 
+  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+
+  const [repurchaseAddonId, setRepurchaseAddonId] = useState<string | null>(null);
+
+  const purchaseReturnHandledRef = useRef(false);
+
   type RestorableSession = {
     id: string;
     category_slug: string;
@@ -81,6 +110,7 @@ export default function InterviewPreparation() {
 
   const { user } = useAuth();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
+  const { showToast } = useToast();
 
   const saveProgressToProfile = (currentFormData = formData) => {
     if (!user) return;
@@ -147,32 +177,43 @@ export default function InterviewPreparation() {
   }, [profile, isProfileLoading, profileLoaded, formData]);
 
   // Load available categories based on selected country
-  const loadCategories = async (country: string) => {
+  const loadCategories = async (country: string): Promise<CategoryWithPurchaseStatus[]> => {
     try {
       setLoadingMessage("Loading visa categories...");
       setLoading(true);
+
       const response = await fetch(
         `/api/interview-prep/categories?country=${encodeURIComponent(country)}`
       );
+
       const data = await response.json();
 
-      if (data.success) {
-        if (data.categories && data.categories.length > 0) {
-          setAvailableCategories(data.categories);
-          setNoDataMessage(null);
-          setShowCountryModal(false);
-        } else {
-          setAvailableCategories([]);
-          setNoDataMessage("No Visa Categories available for your selected country right now.");
-        }
-      } else {
-        setAvailableCategories([]);
-        setNoDataMessage("No Visa Categories available for your selected country right now.");
+      if (
+        response.ok &&
+        data.success &&
+        Array.isArray(data.categories) &&
+        data.categories.length > 0
+      ) {
+        const loadedCategories = data.categories as CategoryWithPurchaseStatus[];
+
+        setAvailableCategories(loadedCategories);
+        setNoDataMessage(null);
+        setShowCountryModal(false);
+
+        return loadedCategories;
       }
+
+      setAvailableCategories([]);
+      setNoDataMessage("No Visa Categories available for your selected country right now.");
+
+      return [];
     } catch (err) {
       console.error("Error loading categories:", err);
+
       setError(msg(E.TOOL_INTERVIEW_CATEGORIES_FAILED));
       setNoDataMessage(null);
+
+      return [];
     } finally {
       setLoading(false);
       setLoadingMessage("");
@@ -181,12 +222,16 @@ export default function InterviewPreparation() {
 
   // Handle country selection from modal
   const handleCountrySelected = (country: string) => {
-    loadCategories(country);
+    setSelectedCountry(country);
+
+    localStorage.setItem("interview_prep_selected_country", country);
+
+    void loadCategories(country);
   };
 
   const restoreSessionData = async (
     session: RestorableSession,
-    getCategoryFn: (slug: string) => InterviewCategoryConfig | undefined
+    getCategoryFn: (slug: string) => CategoryWithPurchaseStatus | undefined
   ) => {
     try {
       setSessionId(session.id);
@@ -249,9 +294,16 @@ export default function InterviewPreparation() {
         setLoading(true);
         setLoadingMessage("Checking for existing sessions...");
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const journeyId = urlParams.get("journey_id");
+
+        console.log("Journey ID from URL:", journeyId);
+
         // FIRST: Check for active journey session (IR-1)
         // Journey sessions take priority over tool-based sessions
-        const journeyResponse = await fetch(`/api/interview-prep/active-journey-session`);
+        const journeyResponse = await fetch(
+          `/api/interview-prep/active-journey-session?journey_id=${journeyId}`
+        );
         const journeyData = await journeyResponse.json();
 
         if (journeyData.success && journeyData.hasActiveJourney && journeyData.session) {
@@ -340,7 +392,7 @@ export default function InterviewPreparation() {
         setIsJourneySession(false);
 
         // Check for sessionId query parameter first (for completed session revisit)
-        const urlParams = new URLSearchParams(window.location.search);
+        // const urlParams = new URLSearchParams(window.location.search);
         const sessionIdParam = urlParams.get("sessionId");
 
         if (sessionIdParam) {
@@ -471,6 +523,65 @@ export default function InterviewPreparation() {
     }
   }, [sessionRestorationAttempted, initialCheckDone]);
 
+  useEffect(() => {
+    if (!initialCheckDone) {
+      return;
+    }
+
+    if (sessionId) {
+      return;
+    }
+
+    if (purchaseReturnHandledRef.current) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const purchaseSuccess = params.get("purchase_success") === "true";
+
+    if (!purchaseSuccess) {
+      return;
+    }
+
+    purchaseReturnHandledRef.current = true;
+
+    const restorePurchasedCategory = async () => {
+      const pendingCategory = localStorage.getItem("interview_prep_pending_category");
+
+      const pendingCountry =
+        localStorage.getItem("interview_prep_pending_country") ||
+        localStorage.getItem("interview_prep_selected_country") ||
+        selectedCountry ||
+        "all";
+
+      if (!pendingCategory) {
+        router.replace("/interview-prep");
+        return;
+      }
+
+      const refreshedCategories = await loadCategories(pendingCountry);
+
+      const purchasedCategory = refreshedCategories.find(
+        (category) => category.categorySlug === pendingCategory
+      );
+
+      if (purchasedCategory) {
+        setSelectedCategory(purchasedCategory);
+        setError(null);
+        setRepurchaseAddonId(null);
+        setStep(0);
+      }
+
+      localStorage.removeItem("interview_prep_pending_category");
+
+      localStorage.removeItem("interview_prep_pending_country");
+
+      router.replace("/interview-prep");
+    };
+
+    void restorePurchasedCategory();
+  }, [initialCheckDone, sessionId, router, selectedCountry]);
+
   const handleCloseIntro = () => {
     if (dontShowAgain && typeof window !== "undefined") {
       localStorage.setItem("dont_show_interview_narrative", "true");
@@ -528,9 +639,55 @@ export default function InterviewPreparation() {
   };
 
   // Handle category selection
-  const handleCategorySelect = (category: InterviewCategoryConfig) => {
+  const handleCategorySelect = (category: CategoryWithPurchaseStatus) => {
     setSelectedCategory(category);
     setError(null);
+    setRepurchaseAddonId(null);
+  };
+
+  const redirectToInterviewPrepPurchase = (categoryAddonId: string) => {
+    if (!selectedCategory) {
+      return;
+    }
+
+    const categorySlug = selectedCategory.categorySlug;
+
+    localStorage.setItem("interview_prep_pending_category", categorySlug);
+
+    if (selectedCountry) {
+      localStorage.setItem("interview_prep_pending_country", selectedCountry);
+    }
+
+    const params = new URLSearchParams({
+      mode: "tools",
+
+      // Keep the category-specific entitlement ID.
+      addons: categoryAddonId,
+
+      step: "review",
+      interview_category: categorySlug,
+    });
+
+    router.push(`/pricing?${params.toString()}`);
+  };
+
+  const handlePurchaseRequired = (addon: PurchaseRequiredAddon) => {
+    setError(null);
+    setRepurchaseAddonId(null);
+
+    redirectToInterviewPrepPurchase(addon.id);
+  };
+
+  const handlePurchaseExhausted = (repurchase: PurchaseExhaustedData) => {
+    setRepurchaseAddonId(repurchase.addon_id);
+    setError(null);
+
+    showToast(
+      "You have already used your purchased interview prep session for this category. Purchase another session to continue.",
+      "info"
+    );
+
+    redirectToInterviewPrepPurchase(repurchase.addon_id);
   };
 
   // Handle progressing from category selection to questions
@@ -541,6 +698,15 @@ export default function InterviewPreparation() {
     }
 
     try {
+      if (selectedCategory.purchaseExhausted && selectedCategory.addonId) {
+        showToast(
+          "You have already used your purchased interview prep session for this category. Purchase another session to continue.",
+          "info"
+        );
+        redirectToInterviewPrepPurchase(selectedCategory.addonId);
+        return;
+      }
+
       setLoading(true);
 
       const categorySlug = selectedCategory.categorySlug;
@@ -559,6 +725,25 @@ export default function InterviewPreparation() {
       });
 
       const sessionResult = await sessionResponse.json();
+
+      // Handle purchase required (402 status)
+      if (sessionResponse.status === 402) {
+        const purchaseError = sessionResult as PurchaseErrorResponse;
+
+        if (purchaseError.error === "PURCHASE_REQUIRED" && purchaseError.addon) {
+          handlePurchaseRequired(purchaseError.addon);
+          return;
+        }
+
+        if (purchaseError.error === "PURCHASE_EXHAUSTED" && purchaseError.repurchase) {
+          handlePurchaseExhausted(purchaseError.repurchase);
+          return;
+        }
+
+        setError(purchaseError.message || msg(E.TOOL_INTERVIEW_SESSION_FAILED));
+
+        return;
+      }
 
       if (!sessionResponse.ok || !sessionResult.success) {
         setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
@@ -788,9 +973,11 @@ export default function InterviewPreparation() {
           onSelectCategory={handleCategorySelect}
           onNext={handleCategorySelectionNext}
           onBack={() => {
-            // Back button on category selection (first step)
             router.push("/");
           }}
+          onPurchaseAgain={
+            repurchaseAddonId ? () => redirectToInterviewPrepPurchase(repurchaseAddonId) : undefined
+          }
           error={error}
         />
       );
@@ -823,6 +1010,7 @@ export default function InterviewPreparation() {
           onSubmit={handleSubmit}
           onBack={prevStep}
           categorySlug={questionnaire.categorySlug}
+          sections={questionnaire.sections}
         />
       );
     }
@@ -1100,7 +1288,7 @@ export default function InterviewPreparation() {
               ? selectedCategory.description
               : "Prepare for your visa interview with personalized questions"}
           </p>
-          <div className="flex justify-center mt-4">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
             <QuickAccessButton
               item={{
                 id: "interview-prep",
@@ -1109,6 +1297,13 @@ export default function InterviewPreparation() {
                 icon_name: "MessageSquare",
               }}
             />
+            <Link
+              href="/interview-prep/my-sessions"
+              className="inline-flex h-8 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:border-[#0d7377]/30 hover:bg-[#f7fffd] hover:text-[#0d7377] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#0d7377]/20"
+            >
+              <ListChecks className="h-4 w-4" />
+              My Sessions
+            </Link>
           </div>
         </div>
 

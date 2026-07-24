@@ -430,7 +430,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
             {/* Questions Sidebar - Only in prep mode */}
             {mode === "prep" && !sidebarCollapsed && (
               <div className="lg:w-1/3 px-4 lg:px-0">
-                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-[0_8px_30px_rgba(13,115,119,0.08)] p-4 h-87.5 sm:h-100 lg:h-112.5 sticky top-6 flex flex-col border border-[rgba(13,115,119,0.08)] transition-shadow duration-200">
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-[0_8px_30px_rgba(13,115,119,0.08)] p-4 h-87.5 sm:h-100 lg:h-126 sticky top-6 flex flex-col border border-[rgba(13,115,119,0.08)] transition-shadow duration-200">
                   <div className="flex justify-between items-center mb-4 pb-3 border-b border-[rgba(13,115,119,0.08)]">
                     <h3 className="font-bold text-base text-slate-800 flex items-center gap-2">
                       <BookOpen className="w-5 h-5 text-[#0d7377]" />
@@ -524,7 +524,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                   sidebarCollapsed ? "lg:flex-1" : "lg:w-2/3"
                 } px-4 lg:px-0 flex flex-col`}
               >
-                <div className="bg-white rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden h-87.5 sm:h-100 lg:h-112.5">
+                <div className="bg-white rounded-2xl shadow-xl border border-slate-200/50 overflow-hidden h-[500px]">
                   {selectedQuestion ? (
                     <div className="w-full h-full flex items-center justify-center p-3 sm:p-4 lg:p-6">
                       <div
@@ -539,7 +539,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                       >
                         {/* Front of Card - Question */}
                         <div
-                          className="absolute inset-0 backface-hidden rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col justify-between text-slate-900 shadow-[0_8px_30px_rgba(13,115,119,0.1)] border border-[rgba(13,115,119,0.08)] relative overflow-hidden"
+                          className="absolute inset-0 backface-hidden rounded-2xl p-4 sm:p-5 lg:p-7 flex flex-col text-slate-900 shadow-[0_8px_30px_rgba(13,115,119,0.1)] border border-[rgba(13,115,119,0.08)] relative overflow-hidden"
                           style={{
                             background:
                               "linear-gradient(145deg, #ffffff 0%, #fdfbf8 35%, #faf6f0 70%, #f7f1e8 100%)",
@@ -573,11 +573,11 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                                 </div>
                               )}
                             </div>
-                            <h3 className="text-lg sm:text-xl lg:text-2xl font-bold leading-snug text-slate-800 line-clamp-5 sm:line-clamp-4">
+                            <h3 className="text-lg sm:text-xl lg:text-2xl font-bold leading-snug text-slate-800">
                               {selectedQuestion.selectedQuestion || selectedQuestion.question}
                             </h3>
                           </div>
-                          <div className="text-center space-y-1 relative z-10 mt-60">
+                          <div className="text-center space-y-1 relative z-10 mt-52 pt-8">
                             <p className="text-[#89a4a0] text-xs">Click to reveal</p>
                             <div className="flex justify-center">
                               <div className="w-4 h-4 border-2 border-[#0d7377]/30 rounded-full animate-bounce flex items-center justify-center">
@@ -588,7 +588,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                         </div>
 
                         {/* Back of Card - Answer & Guidance */}
-                        <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-2xl p-3 sm:p-4 lg:p-6 flex flex-col text-white shadow-2xl border border-teal-500/40 overflow-visible">
+                        <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-2xl p-4 sm:p-5 lg:p-7 flex flex-col text-white shadow-2xl border border-teal-500/40 overflow-visible">
                           <div className="flex justify-between items-start mb-2 sm:mb-3 pb-2 border-b border-white/10">
                             <span className="bg-white/20 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full text-xs font-medium">
                               {savedAnswers[selectedQuestion.id]
@@ -606,7 +606,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                                     <span className="w-1.5 h-1.5 bg-green-200 rounded-full"></span>
                                     Your Saved Answer
                                   </h4>
-                                  <p className="text-slate-100 leading-relaxed text-xs sm:text-sm line-clamp-3">
+                                  <p className="text-slate-100 leading-relaxed text-xs sm:text-sm">
                                     {savedAnswers[selectedQuestion.id]}
                                   </p>
                                 </div>
@@ -621,7 +621,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                                       <span className="w-1.5 h-1.5 bg-teal-200 rounded-full"></span>
                                       Sample
                                     </h4>
-                                    <p className="text-slate-100 leading-snug text-xs sm:text-sm line-clamp-3">
+                                    <p className="text-slate-100 leading-snug text-xs sm:text-sm">
                                       {selectedQuestion.sampleAnswer}
                                     </p>
                                   </div>
@@ -631,7 +631,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                                       <span className="w-1.5 h-1.5 bg-blue-200 rounded-full"></span>
                                       Guidance
                                     </h4>
-                                    <p className="text-slate-200 leading-snug text-xs sm:text-sm line-clamp-3">
+                                    <p className="text-slate-200 leading-snug text-xs sm:text-sm">
                                       {selectedQuestion.guidance}
                                     </p>
                                   </div>
@@ -642,7 +642,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                                         <span className="w-1.5 h-1.5 bg-amber-200 rounded-full"></span>
                                         Tip
                                       </h4>
-                                      <p className="text-slate-300 text-xs sm:text-sm italic line-clamp-2">
+                                      <p className="text-slate-300 text-xs sm:text-sm italic">
                                         {selectedQuestion.tooltip}
                                       </p>
                                     </div>

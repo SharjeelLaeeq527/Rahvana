@@ -4,19 +4,8 @@ import { useRef, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
-import {
-  Heart,
-  Users,
-  Briefcase,
-  Home,
-  Shield,
-  DollarSign,
-  FileText,
-  CheckCircle2,
-  BookOpen,
-  GraduationCap,
-} from "lucide-react";
 import type { DynamicQuestion, QuestionnaireSection } from "@/data/interview-categories/schema";
+import { getSectionUI } from "@/lib/interview-prep/section-ui";
 
 interface DynamicQuestionStepProps {
   section: QuestionnaireSection;
@@ -28,103 +17,9 @@ interface DynamicQuestionStepProps {
   error?: string | null;
 }
 
-// Section-based icon and color mapping
-const SECTION_CONFIG: Record<string, { icon: React.ReactNode; color: string; colorLight: string }> =
-  {
-    marriage_and_basic_info: {
-      icon: <Heart className="w-8 h-8" />,
-      color: "#db8090",
-      colorLight: "#fce8ec",
-    },
-    relationship_origin: {
-      icon: <Heart className="w-8 h-8" />,
-      color: "#db8090",
-      colorLight: "#fce8ec",
-    },
-    relationship_strength: {
-      icon: <Heart className="w-8 h-8" />,
-      color: "#9c6f38",
-      colorLight: "#f3ede7",
-    },
-    financial_profile: {
-      icon: <DollarSign className="w-8 h-8" />,
-      color: "#9c6f38",
-      colorLight: "#f3ede7",
-    },
-    immigration_history: {
-      icon: <Shield className="w-8 h-8" />,
-      color: "#89a4a0",
-      colorLight: "#e8f0ed",
-    },
-    documentation: {
-      icon: <FileText className="w-8 h-8" />,
-      color: "#6b5b7b",
-      colorLight: "#efe8f3",
-    },
-    work_and_education: {
-      icon: <Briefcase className="w-8 h-8" />,
-      color: "#6b5b7b",
-      colorLight: "#efe8f3",
-    },
-    living_situation: {
-      icon: <Home className="w-8 h-8" />,
-      color: "#6b5b7b",
-      colorLight: "#efe8f3",
-    },
-    education_background: {
-      icon: <GraduationCap className="w-8 h-8" />,
-      color: "#89a4a0",
-      colorLight: "#e8f0ed",
-    },
-    visa_and_interview: {
-      icon: <FileText className="w-8 h-8" />,
-      color: "#0d7377",
-      colorLight: "#e8f6f6",
-    },
-    health_and_medical: {
-      icon: <CheckCircle2 className="w-8 h-8" />,
-      color: "#89a4a0",
-      colorLight: "#e8f0ed",
-    },
-    employment_and_income: {
-      icon: <Briefcase className="w-8 h-8" />,
-      color: "#9c6f38",
-      colorLight: "#f3ede7",
-    },
-    family_and_social: {
-      icon: <Users className="w-8 h-8" />,
-      color: "#89a4a0",
-      colorLight: "#e8f0ed",
-    },
-    petitioner_and_plans: {
-      icon: <Briefcase className="w-8 h-8" />,
-      color: "#0d7377",
-      colorLight: "#e8f6f6",
-    },
-    background_check: {
-      icon: <Shield className="w-8 h-8" />,
-      color: "#db8090",
-      colorLight: "#fce8ec",
-    },
-  };
-
-// Fallback icon and color
-const DEFAULT_CONFIG = {
-  icon: <BookOpen className="w-8 h-8" />,
-  color: "#0d7377",
-  colorLight: "#e8f6f6",
-};
-
 // Color Palette
 const COLORS = {
-  primary: "#0d7377",
-  primaryLight: "#0d737720",
-  primaryLightest: "#0d737710",
-  secondary: "#afdbdb",
-  accent: "#cdadcc",
   warning: "#db8090",
-  warningLight: "#db809020",
-  neutral: "#89a4a0",
   border: "#e5e7eb",
 };
 
@@ -141,9 +36,14 @@ export function DynamicQuestionStep({
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   // Get section-specific icon and colors
-  const sectionConfig = SECTION_CONFIG[section.id] || DEFAULT_CONFIG;
-  const sectionColor = sectionConfig.color;
-  const sectionColorLight = sectionConfig.colorLight;
+  const {
+    Icon,
+    primary,
+    primaryLight,
+  } = getSectionUI(section.ui);
+  
+  const sectionColor = primary;
+  const sectionColorLight = primaryLight;
 
   const processTemplate = (template: string): string => {
     if (!template) return template;
@@ -166,9 +66,8 @@ export function DynamicQuestionStep({
 
   const validateQuestion = (question: DynamicQuestion, value: unknown): string | null => {
     const fieldName = formatFieldName(question.key);
-    const shouldValidateRequired = question.type !== "boolean";
 
-    if (question.required && shouldValidateRequired) {
+    if (question.required) {
       if (value === undefined || value === null) {
         return `${fieldName} is required`;
       }
@@ -283,7 +182,7 @@ export function DynamicQuestionStep({
         continue;
       }
 
-      if (question.required && question.type !== "boolean") {
+      if (question.required) {
         const value = formData[question.key];
         const errorMsg = validateQuestion(question, value);
 
@@ -466,7 +365,7 @@ export function DynamicQuestionStep({
             className="w-20 h-20 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg text-white"
             style={{ backgroundColor: sectionColor }}
           >
-            {sectionConfig.icon}
+            <Icon className="w-8 h-8" />
           </div>
 
           <h2 className="text-3xl sm:text-4xl font-bold mb-3" style={{ color: sectionColor }}>

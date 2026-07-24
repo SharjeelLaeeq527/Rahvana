@@ -1,0 +1,80 @@
+{
+  "title": "Step-Parent Relationship Guide",
+  "subtitle": "USCIS Eligibility & Document Compilation",
+  "wizard": {
+    "title": "Step-Parent Relationship Guide",
+    "subtitle": "USCIS Eligibility & Document Compilation",
+    "last_verified": "July 24, 2026",
+    "whats_this": {
+      "heading": "Welcome to Step-Parent Guide",
+      "sub": "USCIS Official Guidelines",
+      "description": "You're sponsoring or being sponsored by a step-parent. USCIS requires additional documents to confirm that the step-parent relationship qualifies under U.S. immigration law.",
+      "quick_instructions": [
+        "Verify step-parent marriage occurred before age 18.",
+        "Checklist all documents you need to gather.",
+        "Review certified translation standards."
+      ],
+      "disclaimer": "Submitting these documents does not automatically guarantee approval. USCIS will review your case and determine whether the step-parent relationship qualifies under U.S. immigration law."
+    },
+    "info_panel": {
+      "document_need": {
+        "tips": [
+          "Double-check that names are spelled identically across the child's birth certificate and the marriage certificate. Any discrepancies delay files by months.",
+          "Capture the entire sheet including empty margins. USCIS automatically rejects scans where outer boundaries are cut off."
+        ],
+        "pitfalls": [
+          "The marriage creating the step-relationship must take place before the child turns 18. This is a strict statutory bar under U.S. immigration law."
+        ],
+        "links": [
+          {
+            "label": "8 CFR § 204.2 Guidelines",
+            "url": "https://www.law.cornell.edu/cfr/text/8/204.2"
+          }
+        ]
+      },
+      "roadmap": {
+        "tips": [
+          "Ensure that the child's birth certificate displays the biological parent's full name to establish the chain of connection.",
+          "Upload clear and complete scans rather than low-resolution photos."
+        ],
+        "pitfalls": [
+          "If either parent was married previously and the termination is not documented, the current marriage is legally void, canceling step-parent status."
+        ],
+        "links": [
+          {
+            "label": "USCIS Policy Manual",
+            "url": "https://www.uscis.gov/policy-manual"
+          }
+        ]
+      },
+      "translation_standards": {
+        "tips": [
+          "Every document not in English must contain both the translation and the signed certification statement to be officially admitted."
+        ],
+        "pitfalls": [
+          "Applicants translating their own family certificates leads to automatic RFEs (Request for Evidence) even if perfectly translated."
+        ],
+        "links": [
+          {
+            "label": "USCIS Translation Requirements",
+            "url": "https://www.uscis.gov/tools/glossary/certificate-of-translation"
+          }
+        ]
+      },
+      "validation": {
+        "tips": [
+          "Make sure names are consistent across all documents. Include legal name change documents if names differ."
+        ],
+        "pitfalls": [
+          "Self-translation and unresolved prior marriages are the most frequent reasons for step-parent petition denials."
+        ],
+        "links": [
+          {
+            "label": "8 CFR § 204.2 Guidelines",
+            "url": "https://www.law.cornell.edu/cfr/text/8/204.2"
+          }
+        ]
+      }
+    }
+  }
+}

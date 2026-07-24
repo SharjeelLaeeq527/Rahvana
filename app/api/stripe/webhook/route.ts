@@ -5,6 +5,7 @@ import { Resend } from "resend";
 import { createClient } from "@supabase/supabase-js";
 import Stripe from "stripe";
 import { consultationService } from "@/lib/services/consultationService";
+import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -153,19 +154,46 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
           (session.customer as string) || session.metadata.stripe_customer_id
         );
 
+        const { data: existingProfile } =
+  await supabase
+    .from("user_profiles")
+    .select("profile_details")
+    .eq("id", userId)
+    .single();
+
+const existingPurchasedAddons =
+  Array.isArray(
+    existingProfile?.profile_details
+      ?.purchased_addons
+  )
+    ? existingProfile.profile_details
+        .purchased_addons
+    : [];
+
+const mergedPlanAddons = [
+  ...new Set([
+    ...existingPurchasedAddons,
+    ...selectedAddons,
+  ]),
+];
+
         // Save active plan details in user_profiles
         await supabase
-          .from("user_profiles")
-          .update({
-            profile_details: {
-              active_plan: productId,
-              plan_visa_category: session.metadata.visa_category,
-              plan_purchase_date: new Date().toISOString(),
-              purchased_addons: selectedAddons,
-              stripe_subscription_id: session.subscription,
-            },
-          })
-          .eq("id", userId);
+  .from("user_profiles")
+  .update({
+    profile_details: {
+      ...(existingProfile?.profile_details || {}),
+      active_plan: productId,
+      plan_visa_category:
+        session.metadata.visa_category,
+      plan_purchase_date:
+        new Date().toISOString(),
+      purchased_addons: mergedPlanAddons,
+      stripe_subscription_id:
+        session.subscription,
+    },
+  })
+  .eq("id", userId);
 
         console.log(`✅ User ${userId} subscribed to ${productId}`);
 
@@ -192,31 +220,43 @@ async function handleCheckoutSessionCompleted(session: Stripe.Checkout.Session) 
       );
     }
     // Standalone Add-on fulfillment
-    else if (productType === "standalone_addon" && selectedAddons.length > 0) {
+    else if (
+      productType === "standalone_addon" &&
+      selectedAddons.length > 0
+    ) {
       try {
-        // Fetch current profile to get existing addons
         const { data: profile } = await supabase
           .from("user_profiles")
           .select("profile_details")
           .eq("id", userId)
           .single();
-
-        const existingAddons = profile?.profile_details?.purchased_addons || [];
-        const mergedAddons = [...new Set([...existingAddons, ...selectedAddons])];
-
-        await supabase
-          .from("user_profiles")
-          .update({
-            profile_details: {
-              ...(profile?.profile_details || {}),
-              purchased_addons: mergedAddons,
-            },
-          })
-          .eq("id", userId);
-
-        console.log(`✅ User ${userId} purchased standalone addons: ${selectedAddons.join(", ")}`);
+    
+        const {
+          alreadyProcessed,
+          profileDetails,
+        } = buildAddonPurchaseUpdate(
+          profile?.profile_details,
+          session.id,
+          selectedAddons
+        );
+    
+        if (!alreadyProcessed) {
+          await supabase
+            .from("user_profiles")
+            .update({
+              profile_details: profileDetails,
+            })
+            .eq("id", userId);
+        }
+    
+        console.log(
+          `✅ User ${userId} purchased standalone addons: ${selectedAddons.join(", ")}`
+        );
       } catch (error) {
-        console.error("Error updating standalone addons:", error);
+        console.error(
+          "Error updating standalone addons:",
+          error
+        );
       }
     }
   }
