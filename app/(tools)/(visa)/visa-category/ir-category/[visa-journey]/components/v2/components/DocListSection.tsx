@@ -184,7 +184,7 @@ export function DocListSection({
                           : "bg-[#e8f1fb] border-[#d0e4f7]"
                       }`}
                     >
-                      <div className="text-primary/70">{getStepIcon(item.icon || "")}</div>
+                      <div className="text-primary/70">{getStepIcon(item.icon || "") || getStepIcon("file-text")}</div>
                     </div>
 
                     {/* Content */}
