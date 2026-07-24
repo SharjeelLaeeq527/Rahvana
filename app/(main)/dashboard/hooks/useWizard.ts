@@ -269,7 +269,7 @@ export function useWizard(options: UseWizardOptions = {}) {
     if (!profile || !isLoaded) return;
 
     try {
-      const profileDelta = syncProfileToCaseData(profile, state.metadata);
+      const profileDelta = syncProfileToCaseData(profile, state.metadata, state.backendId);
       if (Object.keys(profileDelta).length > 0) {
         setState((prev) => ({
           ...prev,
@@ -541,7 +541,7 @@ export function useWizard(options: UseWizardOptions = {}) {
 
         // Client-side synchronization with UserProfileContext
         try {
-          const profileDelta = syncCaseDataToProfile(metadata);
+          const profileDelta = syncCaseDataToProfile(metadata, {}, currentState.backendId);
           if (Object.keys(profileDelta).length > 0) {
             updateProfile(profileDelta, { silent: true });
           }

@@ -1,19 +1,19 @@
 // ============================================================
 // lib/reminders/ReminderEngine.ts
-// Core auto-generation service for IR-1 Roadmap in-app reminders.
+// Core auto-generation service for in-app reminders.
+// Supports all journey types: IR-1, CR-1, IR-5.
 //
 // Usage (from API route):
 //   const engine = new ReminderEngine(supabase)
 //   await engine.generateReminders(journeyId)
 //
-// The engine checks all trigger conditions defined in
-// IR1_Roadmap_Feature_Detail_Document.md (§8.8, §10.3)
-// and upserts reminder records using dedup_key to prevent duplicates.
+// The engine checks all trigger conditions and upserts reminder
+// records using dedup_key to prevent duplicates.
 // ============================================================
 
 import { SupabaseClient } from "@supabase/supabase-js";
 import type { ReminderCandidate, ReminderPriority } from "./types";
-import { ir1journeyHref } from "@/lib/constants/routes";
+import { getJourneyHrefByType } from "@/lib/constants/routes";
 import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
 import {
   computeDocumentStage,
@@ -40,6 +40,8 @@ interface DocEscalationContext {
 }
 
 export class ReminderEngine {
+  private defaultJourneyHref = getJourneyHrefByType(null);
+
   constructor(private supabase: SupabaseClient) {}
 
   // ─────────────────────────────────────────────────────────────
@@ -51,6 +53,14 @@ export class ReminderEngine {
     const candidates: ReminderCandidate[] = [];
 
     // Run all checks in parallel for performance
+    const { data: journey } = await this.supabase
+      .from("journeys")
+      .select("journey_type")
+      .eq("id", journeyId)
+      .single();
+
+    this.defaultJourneyHref = getJourneyHrefByType(journey?.journey_type);
+
     const [
       missingDocReminders,
       appointmentApproachingReminders,
@@ -93,41 +103,24 @@ export class ReminderEngine {
 
     if (candidates.length === 0) return;
 
+    const rawType = journey?.journey_type;
+    const journeyPrefix = rawType
+      ? `[${rawType
+          .trim()
+          .toUpperCase()
+          .replace(/^(IR|CR)(\d)$/, "$1-$2")}] `
+      : "";
+
     // Upsert all candidates using dedup_key (ON CONFLICT DO UPDATE)
     // This refreshes the title/body if logic changes, without creating duplicates
     await this.supabase.from("journey_reminders").upsert(
       candidates.map((c) => ({
         journey_id: journeyId,
         ...c,
+        title: `${journeyPrefix}${c.title}`,
       })),
       { onConflict: "dedup_key", ignoreDuplicates: false }
     );
-  }
-
-  /**
-   * TRIGGER 8: Find the first actionable step that is 'not_started' and prompt the user.
-   */
-  private async checkNewStepsAvailable(journeyId: string, reminders: any[]) {
-    const { data: currentStep } = await this.supabase
-      .from("steps")
-      .select("id, step_name, chapters!inner(journey_id)")
-      .eq("chapters.journey_id", journeyId)
-      .eq("status", "not_started")
-      .order("display_order", { ascending: true })
-      .limit(1)
-      .single();
-
-    if (currentStep) {
-      reminders.push({
-        reminder_type: "step_available",
-        priority: "normal",
-        title: `Next Step: ${currentStep.step_name}`,
-        body: `Ready for the next phase? Begin ${currentStep.step_name} to keep your case moving.`,
-        action_label: "Start Now",
-        action_url: ir1journeyHref,
-        dedup_key: `${journeyId}:step_available:${currentStep.id}`,
-      });
-    }
   }
 
   // ─────────────────────────────────────────────────────────────
@@ -163,7 +156,7 @@ export class ReminderEngine {
         body: `Your "${doc.document_label || doc.document_type}" is required but has not been uploaded yet. Upload it to keep your case on track.`,
         step_key: doc.step_key ?? undefined,
         reference_id: doc.id,
-        action_url: ir1journeyHref,
+        action_url: this.defaultJourneyHref,
         action_label: "Upload Document",
         dedup_key: `${journeyId}:missing_document:${doc.document_type}`,
       }));
@@ -185,7 +178,7 @@ export class ReminderEngine {
           : `Your "${name}" will be needed as your filing step approaches. Uploading it soon keeps your case on track.`,
         step_key: doc.step_key ?? undefined,
         reference_id: doc.id,
-        action_url: ir1journeyHref,
+        action_url: this.defaultJourneyHref,
         action_label: "Upload Document",
         dedup_key: `${journeyId}:missing_document:${doc.document_type}`,
       });
@@ -221,7 +214,8 @@ export class ReminderEngine {
     ]);
 
     const rawFiling = caseRows?.[0]?.data_value;
-    const parsedFiling = rawFiling != null ? new Date(String(rawFiling).replace(/^"|"$/g, "")) : null;
+    const parsedFiling =
+      rawFiling != null ? new Date(String(rawFiling).replace(/^"|"$/g, "")) : null;
     const targetFilingDate =
       parsedFiling && !Number.isNaN(parsedFiling.getTime()) ? parsedFiling.getTime() : null;
 
@@ -331,7 +325,7 @@ export class ReminderEngine {
         title,
         body,
         step_key: "step_3_3",
-        action_url: ir1journeyHref,
+        action_url: this.defaultJourneyHref,
         action_label: "Update PCC Status",
         // dedup_key changes each week — so a fresh escalated notification appears
         dedup_key: `${journeyId}:pcc_tracking:week${week}`,
@@ -386,7 +380,7 @@ export class ReminderEngine {
         body: `Your ${typeLabel.toLowerCase()} is scheduled for ${dateStr}${appt.location ? ` at ${appt.location}` : ""}. Make sure everything is ready.`,
         step_key: appt.step_key ?? undefined,
         reference_id: appt.id,
-        action_url: ir1journeyHref,
+        action_url: this.defaultJourneyHref,
         action_label: "View Details",
         dedup_key: `${journeyId}:appointment_approaching:${appt.id}:${diffDays}d`,
       };
@@ -554,7 +548,7 @@ export class ReminderEngine {
         body: `You started the ${label} but left at ${pct}% completion. Return to pick up where you left off — your progress is saved.`,
         step_key: session.step_key,
         reference_id: session.id,
-        action_url: ir1journeyHref,
+        action_url: this.defaultJourneyHref,
         action_label: "Resume Tool",
         dedup_key: `${journeyId}:tool_session_abandoned:${session.tool_key}`,
       };
@@ -676,7 +670,7 @@ export class ReminderEngine {
         priority,
         title,
         body,
-        action_url: ir1journeyHref,
+        action_url: this.defaultJourneyHref,
         action_label: "View Tracking",
         dedup_key: `${journeyId}:tracking_status:${status}`,
       },
@@ -688,11 +682,92 @@ export class ReminderEngine {
   // Trigger: gathering_status exists in case_data (user opened Step 2)
   //          AND one or more required documents are not "reviewed"
   //          AND it has been 48+ hours since last update (no spam)
-  // Priority: high
+  // Priority: high (or escalated per documentEscalation config)
   // Auto-dismisses when all required docs are marked reviewed
+  //
+  // Journey-type-aware: IR-1 uses spouse/marriage doc IDs; IR-5 uses
+  // parent-petition doc IDs (no marriage docs). Unknown types: skipped.
   // ─────────────────────────────────────────────────────────────
 
+  /**
+   * Per-journey-type config for the Step 2 document gathering checker.
+   * Add an entry here when a new journey type has a Step 2 gathering flow.
+   * IDs must match the `id` values in the journey's `document_items` JSON.
+   */
+  private static readonly STEP2_DOC_CONFIGS: Record<
+    string,
+    { docIds: string[]; labels: Record<string, string> }
+  > = {
+    // IR-1 / CR-1 — spouse of U.S. citizen
+    "ir-1": {
+      docIds: [
+        "doc_citizenship",
+        "doc_passport_ben",
+        "doc_nikah_nama",
+        "doc_mrc",
+        "doc_relationship",
+      ],
+      labels: {
+        doc_citizenship: "Proof of U.S. Citizenship",
+        doc_passport_ben: "Beneficiary Passport",
+        doc_nikah_nama: "Nikah Nama (Original)",
+        doc_mrc: "NADRA Marriage Certificate",
+        doc_relationship: "Relationship Evidence",
+      },
+    },
+    // IR-5 — parent of U.S. citizen (no marriage docs; parent-petition civil docs)
+    // IDs sourced from IR5_BASE_DOC_IDS in lib/questionnaire/ir5-questionnaire.ts
+    "ir-5": {
+      docIds: [
+        "doc_citizenship",
+        "doc_petitioner_birth_cert",
+        "doc_parent_identity_match",
+        "doc_parent_passport",
+        "doc_parent_birth_cert",
+      ],
+      labels: {
+        doc_citizenship: "Proof of U.S. Citizenship",
+        doc_petitioner_birth_cert: "Petitioner Birth Certificate",
+        doc_parent_identity_match: "Parent Identity & Name Match Evidence",
+        doc_parent_passport: "Parent Passport",
+        doc_parent_birth_cert: "Parent Birth Certificate",
+      },
+    },
+  };
+
+  /** Normalize journey_type → config key (tolerant: "IR-5"/"IR5"/"ir5" → "ir-5"). */
+  private static normalizeJourneyType(raw: string | null | undefined): string {
+    return (
+      String(raw ?? "")
+        .trim()
+        .toLowerCase()
+        .replace(/[_\s]+/g, "-")
+        // "ir1" → "ir-1", "cr1" → "cr-1" etc.
+        .replace(/^(ir|cr)(\d)$/, "$1-$2")
+    );
+  }
+
   private async checkStep2GatheringPending(journeyId: string): Promise<ReminderCandidate[]> {
+    // Resolve per-journey-type doc config
+    const norm = ReminderEngine.normalizeJourneyType(
+      // journey_type was already fetched at the top of generateReminders — reuse it
+      // by re-querying (one cheap select, cached by Supabase connection).
+      await this.supabase
+        .from("journeys")
+        .select("journey_type")
+        .eq("id", journeyId)
+        .single()
+        .then((r) => r.data?.journey_type ?? null)
+    );
+
+    // Also accept "cr-1" as the same config as "ir-1" (same document set)
+    const configKey = norm === "cr-1" ? "ir-1" : norm;
+    const typeConfig = ReminderEngine.STEP2_DOC_CONFIGS[configKey];
+
+    // No config for this journey type → skip silently (safe default)
+    if (!typeConfig) return [];
+
+    const { docIds: REQUIRED_DOC_IDS, labels: REQUIRED_DOC_LABELS } = typeConfig;
     const DEDUP_KEY = `${journeyId}:step2_gathering_pending`;
 
     // Fetch gathering status from case_data
@@ -709,7 +784,8 @@ export class ReminderEngine {
     // Parse the gathering status JSON (strip surrounding quotes if present)
     let gatheringStatus: Record<string, string> = {};
     try {
-      const raw = String(gatheringRow.data_value).replace(/^"|"$/g, "");
+      const raw = String(gatheringRow.data_value).trim().replace(/^"|"$/g, "");
+      if (!raw || raw === "null" || raw === "undefined") return [];
       gatheringStatus = JSON.parse(raw);
     } catch {
       return [];
@@ -744,7 +820,7 @@ export class ReminderEngine {
     const hoursSince = (Date.now() - updatedAt.getTime()) / (1000 * 60 * 60);
     if (hoursSince < 48) return [];
 
-    const pendingLabels = pendingDocs.map((doc) => doc.document_label || doc.document_type);
+    const pendingLabels = pendingDocs.map((id) => REQUIRED_DOC_LABELS[id] ?? id);
     const count = pendingDocs.length;
 
     // Opt-in escalation: match the dashboard's urgency for step_1_2 instead of an
@@ -765,7 +841,7 @@ export class ReminderEngine {
         title: `Complete your documents — ${count} item${count !== 1 ? "s" : ""} pending`,
         body: `Your document checklist for Chapter 1, Step 2 is incomplete. Still needed: ${pendingLabels.join(", ")}. Mark each document as ready to keep your case on track.`,
         step_key: "step_1_2",
-        action_url: ir1journeyHref,
+        action_url: this.defaultJourneyHref,
         action_label: "Complete Documents",
         dedup_key: DEDUP_KEY,
       },

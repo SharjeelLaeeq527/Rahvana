@@ -436,35 +436,46 @@ export function SiteHeader({
     setNotificationsOpen(false);
     setQuickAccessOpen(false);
   }, [pathname]);
-
   const { profile, isLoading, user: authUser } = useAuth();
   const resolvedUser = user ?? authUser;
 
   const fetchNotifications = useCallback(async () => {
     try {
-      // 1. Fetch journey reminders (existing logic)
+      // 1. Fetch journey reminders for all journeys in parallel
       let journeyReminders: any[] = [];
-      let jId = notifJourneyId;
-      if (!jId) {
+      try {
         const res = await fetch("/api/journeys");
         if (res.ok) {
           const data = await res.json();
-          const active =
-            data?.data?.find((j: any) => j.journey?.status === "in_progress") || data?.data?.[0];
-          jId = active?.journey?.id ?? null;
-          if (jId) setNotifJourneyId(jId);
+          const journeys = data?.data || [];
+          
+          const promises = journeys.map(async (j: any) => {
+            const journeyId = j?.journey?.id;
+            if (!journeyId) return [];
+            try {
+              const r = await fetch(`/api/v1/journeys/${journeyId}/reminders`);
+              if (r.ok) {
+                const d = await r.json();
+                return (d.reminders ?? []).map((n: any) => ({
+                  ...n,
+                  _source: "journey" as const,
+                }));
+              }
+            } catch {}
+            return [];
+          });
+
+          const results = await Promise.all(promises);
+          journeyReminders = results.flat();
+
+          // Set active journey ID as fallback/context if not already set
+          if (!notifJourneyId && journeys.length > 0) {
+            const active = journeys.find((j: any) => j.journey?.status === "in_progress") || journeys[0];
+            const activeId = active?.journey?.id;
+            if (activeId) setNotifJourneyId(activeId);
+          }
         }
-      }
-      if (jId) {
-        const r = await fetch(`/api/v1/journeys/${jId}/reminders`);
-        if (r.ok) {
-          const d = await r.json();
-          journeyReminders = (d.reminders ?? []).map((n: any) => ({
-            ...n,
-            _source: "journey" as const,
-          }));
-        }
-      }
+      } catch {}
 
       // 2. Fetch in-app notifications (appointment status updates, etc.)
       let appNotifications: any[] = [];
@@ -557,13 +568,16 @@ export function SiteHeader({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id, action: "dismiss" }),
       }).catch(() => {});
-    } else if (notifJourneyId) {
-      // Dismiss via journey reminders API
-      await fetch(`/api/v1/journeys/${notifJourneyId}/reminders/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "dismiss" }),
-      }).catch(() => {});
+    } else {
+      const targetJourneyId = notif?.journey_id || notifJourneyId;
+      if (targetJourneyId) {
+        // Dismiss via journey reminders API
+        await fetch(`/api/v1/journeys/${targetJourneyId}/reminders/${id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ action: "dismiss" }),
+        }).catch(() => {});
+      }
     }
   };
 
