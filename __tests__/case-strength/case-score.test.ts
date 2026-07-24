@@ -183,8 +183,8 @@ describe("caseScore profile opt-in", () => {
     expect(IR5_PROFILE.caseScore).toEqual({ model: "weighted" });
   });
 
-  it("IR-1 stays on the legacy model (no caseScore)", () => {
-    expect(IR1_PROFILE.caseScore).toBeUndefined();
+  it("IR-1 now uses weighted model (caseScore)", () => {
+    expect(IR1_PROFILE.caseScore).toEqual({ model: "weighted" });
   });
 });
 

@@ -60,12 +60,14 @@ async function runMissingDocs(sb: any): Promise<any[]> {
 }
 
 describe("ReminderEngine — document escalation opt-in (Phase 3)", () => {
-  it("legacy (IR-1, no escalation config): instant high, original wording", async () => {
-    const sb = makeSupabase({ journeyType: "IR1", docs: [DOC] });
+  it("IR-1 (now opted-in), freshly reached step: calm to-do is NOT pushed to the bell", async () => {
+    const sb = makeSupabase({
+      journeyType: "IR1",
+      docs: [DOC],
+      steps: [{ step_key: "step_1_2", status: "in_progress", started_at: iso(Date.now()), completed_at: null }],
+    });
     const out = await runMissingDocs(sb);
-    expect(out).toHaveLength(1);
-    expect(out[0].priority).toBe("high");
-    expect(out[0].title).toBe("Document Required: Birth Certificate");
+    expect(out).toHaveLength(0);
   });
 
   it("opted-in (IR-5), freshly reached step: calm to-do is NOT pushed to the bell", async () => {

@@ -18,8 +18,6 @@
 import {
   COMMON_STEP_CHECKERS,
   COMMON_LOOK_AHEAD,
-  sharedDs260Disclosures,
-  sharedInterviewDisclosures,
   type StepCheck,
   type StepChecker,
 } from "../step-checkers";
@@ -183,6 +181,78 @@ export function detectIr5EligibilityRisks(
   return flags;
 }
 
+// ─── IR-5-Specific Disclosure Functions ─────────────────────────────────────
+// IR-5 (parent) has different q5 mapping than IR-1 (spouse):
+//   - IR-1: q5s4 = overstay
+//   - IR-5: q5s3 = overstay, q5s4 = health concern (not overstay)
+// These functions use the correct IR-5 mapping.
+
+function ir5Ds260Disclosures(
+  answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined
+): StepCheck[] {
+  if (!answers) return [];
+  const checks: StepCheck[] = [];
+  const get = (q: string, s: string) => {
+    const v = answers?.[q]?.[s];
+    return typeof v === "string" ? v : undefined;
+  };
+  if (get("q5", "q5s1") === "yes") {
+    checks.push({
+      level: "warning",
+      title: "Disclose the past visa refusal on DS-260",
+      hint: "Every prior U.S. visa refusal or application must be declared. Omitting it risks a misrepresentation finding.",
+    });
+  }
+  if (get("q5", "q5s2") === "yes") {
+    checks.push({
+      level: "warning",
+      title: "Disclose the court/police record on DS-260",
+      hint: "Declare any arrest or charge. Bring certified court and police records to the interview.",
+    });
+  }
+  if (get("q5", "q5s3") === "yes") {
+    checks.push({
+      level: "warning",
+      title: "Disclose the prior U.S. overstay on DS-260",
+      hint: "Declare any unlawful presence. A provisional waiver (I-601A) may be needed before the interview.",
+    });
+  }
+  return checks;
+}
+
+function ir5InterviewDisclosures(
+  answers: Record<string, Record<string, string | string[]> | undefined> | null | undefined
+): StepCheck[] {
+  if (!answers) return [];
+  const checks: StepCheck[] = [];
+  const get = (q: string, s: string) => {
+    const v = answers?.[q]?.[s];
+    return typeof v === "string" ? v : undefined;
+  };
+  if (get("q5", "q5s1") === "yes") {
+    checks.push({
+      level: "info",
+      title: "Be ready to explain the past visa refusal",
+      hint: "The officer can see prior U.S. visa refusals. Answer consistently with what you declared on the DS-260.",
+    });
+  }
+  if (get("q5", "q5s2") === "yes") {
+    checks.push({
+      level: "info",
+      title: "Bring originals for the court/police record",
+      hint: "If you disclosed an arrest or charge, bring the certified court and police records and be ready to explain the outcome briefly and truthfully.",
+    });
+  }
+  if (get("q5", "q5s3") === "yes") {
+    checks.push({
+      level: "info",
+      title: "Be ready to explain the prior U.S. overstay",
+      hint: "If you disclosed unlawful presence, be prepared to explain it. Confirm whether a waiver applies to your case before the interview.",
+    });
+  }
+  return checks;
+}
+
 // ─── Category-specific checkers (the only 5 that differ from IR-1) ────────────
 
 // Step 1.4 — capture the cross-form baseline + prove the parent-child link.
@@ -293,8 +363,8 @@ const step_2_3: StepChecker = ({ state, eligibilityAnswers }) => {
     }
   }
 
-  // Mandatory disclosures — shared across categories (no spouse prior-marriage).
-  for (const d of sharedDs260Disclosures(eligibilityAnswers)) checks.push(d);
+  // Mandatory disclosures — IR-5 specific (q5s3 = overstay, not q5s4).
+  for (const d of ir5Ds260Disclosures(eligibilityAnswers)) checks.push(d);
 
   return checks;
 };
@@ -308,7 +378,7 @@ const step_3_7: StepChecker = ({ eligibilityAnswers }) => {
       hint: "Re-read every DS-260 section before interview day. The officer's questions about your relationship to your parent, dates, and history are checked against your filed answers — inconsistencies are the most common cause of 221(g) holds.",
     },
   ];
-  for (const d of sharedInterviewDisclosures(eligibilityAnswers)) checks.push(d);
+  for (const d of ir5InterviewDisclosures(eligibilityAnswers)) checks.push(d);
   return checks;
 };
 

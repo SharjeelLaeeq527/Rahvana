@@ -11,6 +11,7 @@ import { IR1_STEP_CHECKERS, COMMON_LOOK_AHEAD } from "../step-checkers";
 import { IR1_STEP_REFS, detectRiskFlagsFromEligibilityQuest } from "../eligibility-quest-detector";
 import { BASELINE_FIELDS } from "../consistency";
 import { PHASE2_QUESTIONS, runPhase2Checks } from "../consistency-intelligence";
+import { DEFAULT_DOCUMENT_ESCALATION } from "../alert-gating";
 // Import from the UI-free submodules (not the barrel, which also re-exports the
 // React EvidenceGapCard) so the profile graph stays server/test friendly.
 import { IR1_EVIDENCE_REQUIREMENTS } from "@/lib/journey/evidence-gap/engine";
@@ -94,6 +95,17 @@ export const IR1_PROFILE: CaseStrengthProfile = {
   strengthSignals: {
     relationship: spouseRelationshipSignal,
   },
+  // ──────────────────────────────────────────────────────────────────────────
+  // OPT-IN: Weighted score model (4-ingredient: Evidence 40 / Consistency 30 /
+  // Completeness 20 / Risk 10). This replaces the legacy 50/50 blend. User-
+  // provided-only evidence (no auto-fill) is used. Fixes the fake ~50% floor
+  // (Consistency=100 on empty), the honest score, and calm band-based phrasing.
+  caseScore: { model: "weighted" },
+  // ──────────────────────────────────────────────────────────────────────────
+  // OPT-IN: Document-checklist 3-stage escalation (to-gather → due-soon →
+  // critical). Missing docs now escalate gradually, not instant-red. Deadline-
+  // relative when target filing date is known, fixed-days fallback otherwise.
+  documentEscalation: DEFAULT_DOCUMENT_ESCALATION,
   // Deadline-driven early-warnings (joint sponsor, fresh PCC) — shared family set.
   lookAhead: COMMON_LOOK_AHEAD,
 };

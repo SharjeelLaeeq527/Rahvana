@@ -693,24 +693,9 @@ export class ReminderEngine {
   // ─────────────────────────────────────────────────────────────
 
   private async checkStep2GatheringPending(journeyId: string): Promise<ReminderCandidate[]> {
-    const REQUIRED_DOC_IDS = [
-      "doc_citizenship",
-      "doc_passport_ben",
-      "doc_nikah_nama",
-      "doc_mrc",
-      "doc_relationship",
-    ];
-
-    const REQUIRED_DOC_LABELS: Record<string, string> = {
-      doc_citizenship: "Proof of U.S. Citizenship",
-      doc_passport_ben: "Beneficiary Passport",
-      doc_nikah_nama: "Nikah Nama (Original)",
-      doc_mrc: "NADRA Marriage Certificate",
-      doc_relationship: "Relationship Evidence",
-    };
-
     const DEDUP_KEY = `${journeyId}:step2_gathering_pending`;
 
+    // Fetch gathering status from case_data
     const { data: gatheringRow } = await this.supabase
       .from("case_data")
       .select("data_value, updated_at")
@@ -730,7 +715,19 @@ export class ReminderEngine {
       return [];
     }
 
-    const pendingDocs = REQUIRED_DOC_IDS.filter((id) => gatheringStatus[id] !== "reviewed");
+    // Fetch required documents for this journey dynamically (not hardcoded).
+    // This way, IR-1 gets spouse docs, IR-5 gets parent docs, future categories get theirs.
+    const { data: requiredDocs } = await this.supabase
+      .from("journey_documents")
+      .select("document_type, document_label")
+      .eq("journey_id", journeyId)
+      .eq("is_required", true)
+      .is("deleted_at", null);
+
+    if (!requiredDocs || requiredDocs.length === 0) return [];
+
+    // Filter to docs not yet marked "reviewed" in the gathering status
+    const pendingDocs = requiredDocs.filter((doc) => gatheringStatus[doc.document_type] !== "reviewed");
 
     // All required docs reviewed — auto-dismiss any existing reminder
     if (pendingDocs.length === 0) {
@@ -747,7 +744,7 @@ export class ReminderEngine {
     const hoursSince = (Date.now() - updatedAt.getTime()) / (1000 * 60 * 60);
     if (hoursSince < 48) return [];
 
-    const pendingLabels = pendingDocs.map((id) => REQUIRED_DOC_LABELS[id]);
+    const pendingLabels = pendingDocs.map((doc) => doc.document_label || doc.document_type);
     const count = pendingDocs.length;
 
     // Opt-in escalation: match the dashboard's urgency for step_1_2 instead of an

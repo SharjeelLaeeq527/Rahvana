@@ -1,4 +1,4 @@
-# Arachnie (Rahvana) — IR-1 Visa Journey Tool
+<!-- # Arachnie (Rahvana) — IR-1 Visa Journey Tool
 
 ## Stack
 - **Frontend**: Next.js 15 App Router, React 19, TypeScript, TailwindCSS 4, shadcn-ui, Zustand
@@ -52,4 +52,5 @@ All policy changes go through `supabase/migrations/`. Direct edits to the dashbo
 - `getActiveStepsForStage(stage, filingType, metadata)` — always use this for step filtering
 - `toggleComplete(stepId)` — marks steps done, triggers Supabase update
 - `mapDocumentNameToId()` — scopes documents to the journey
-- Step `who` field: `"petitioner"` | `"beneficiary"` | `"both"` — affects ChapterView display
+- Step `who` field: `"petitioner"` | `"beneficiary"` | `"both"` — affects ChapterView display -->
+    
