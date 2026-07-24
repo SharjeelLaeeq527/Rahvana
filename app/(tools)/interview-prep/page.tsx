@@ -328,8 +328,6 @@ export default function InterviewPreparation() {
             const categoriesResponse = await fetch(`/api/interview-prep/categories`);
             const categoriesData = await categoriesResponse.json();
 
-            console.log(categoriesData);
-
             if (categoriesData.success && categoriesData.categories) {
               const category = categoriesData.categories.find(
                 (c: { categorySlug: string }) => c.categorySlug === categorySlug

@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Loader } from "@/components/ui/spinner";
 
 export interface Column<T> {
   key: string;
@@ -24,6 +25,7 @@ interface DataTableProps<T> {
   rowKey: (item: T, index: number) => string | number;
   emptyState?: React.ReactNode;
   loading?: boolean;
+  refreshing?: boolean; 
   onRowClick?: (item: T, index: number) => void;
   rowClassName?: string;
 }
@@ -34,6 +36,7 @@ export function DataTable<T>({
   rowKey,
   emptyState,
   loading,
+  refreshing = false,
   onRowClick,
   rowClassName = "hover:bg-slate-50 border-b border-slate-100",
 }: DataTableProps<T>) {
@@ -50,7 +53,13 @@ export function DataTable<T>({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-visible">
+    <div className="relative bg-white rounded-xl shadow-lg border border-slate-200 overflow-visible">
+
+  {refreshing && (
+    <div className="absolute top-4 right-4 z-20 pointer-events-none">
+      <Loader size="sm" />
+    </div>
+  )}
       <div className="overflow-x-auto">
         <div className="min-w-full overflow-visible">
           <Table>

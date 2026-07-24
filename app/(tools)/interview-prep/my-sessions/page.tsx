@@ -106,6 +106,7 @@ export default function MyInterviewSessions() {
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
   const [filteredSessions, setFilteredSessions] = useState<SessionWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // background refresh
   const [error, setError] = useState<string | null>(null);
 
   const { showToast } = useToast();
@@ -121,34 +122,42 @@ export default function MyInterviewSessions() {
   const ITEMS_PER_PAGE = 10;
 
   // fetch user sessions
-  useEffect(() => {
-    const fetchUserSessions = async () => {
-      try {
+  const fetchUserSessions = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
         setLoading(true);
-  
-        const response = await fetch("/api/interview-prep/user-sessions");
-        const data = await response.json();
-  
-        if (response.ok) {
-          setSessions(data.sessions);
-        } else {
-          setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
-        }
-      } catch {
+      }
+
+      const response = await fetch("/api/interview-prep/user-sessions");
+      const data = await response.json();
+
+      if (response.ok) {
+        setSessions(data.sessions);
+      } else {
         setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
-      } finally {
+      }
+    } catch {
+      setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
+    } finally {
+      if (isRefresh) {
+        setRefreshing(false);
+      } else {
         setLoading(false);
       }
-    };
-  
-    fetchUserSessions();
-  
+    }
+  };
+
+  useEffect(() => {
+    fetchUserSessions(false);
+
     const interval = setInterval(() => {
       if (document.visibilityState === "visible") {
-        fetchUserSessions();
+        fetchUserSessions(true);
       }
     }, 5000);
-  
+
     return () => clearInterval(interval);
   }, []);
 
@@ -296,8 +305,8 @@ export default function MyInterviewSessions() {
     {
       key: "actions",
       label: "Actions",
-      width: "20%",
-      className: "text-right",
+      width: "15%",
+      className: "text-right pr-16",
       render: (session) => (
         <Button
           size="sm"
@@ -438,7 +447,8 @@ export default function MyInterviewSessions() {
               columns={columns}
               data={currentSessions}
               rowKey={(session) => session.id}
-              loading={false}
+              loading={loading}
+              refreshing={refreshing}
             />
 
             {/* Pagination */}
