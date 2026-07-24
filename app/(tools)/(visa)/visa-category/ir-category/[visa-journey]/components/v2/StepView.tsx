@@ -385,6 +385,7 @@ export const StepView: React.FC<StepViewProps> = ({
     isReloadingDocs,
     isDeletingIds,
     deleteDocument,
+    requiredDocuments,
   } = useDocumentVaultStore();
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [activeUploadType, setActiveUploadType] = useState<"doc" | "hh" | "financial" | null>(null);
@@ -1627,18 +1628,28 @@ export const StepView: React.FC<StepViewProps> = ({
           {tool.type === "awaiting_review" && <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />}
 
           {/* GATHER ORIGINAL DOCUMENTS (Step 3.6) */}
-          {tool.type === "gathering_checklist" && (
-            <DocListSection
-              groups={tool.doc_gathering?.groups || []}
-              docsStatus={gatheringStatus}
-              uploadedDocuments={uploadedDocuments}
-              isDeletingIds={isDeletingIds}
-              isReloadingDocs={isReloadingDocs}
-              getVaultId={(item) => mapDocumentNameToId(item.title)}
-              findVaultDoc={(item, docs) =>
-                findVaultDocForItem(item.title, mapDocumentNameToId(item.title), docs)
-              }
-              progressLabel="packed"
+          {tool.type === "gathering_checklist" && (() => {
+            const rawGroups = tool.doc_gathering?.groups || [];
+            const personalizedGroups = rawGroups.map((group: any) => {
+              const filteredItems = group.items.filter((item: any) => {
+                const docDefId = mapDocumentNameToId(item.title);
+                return requiredDocuments.some((rd) => rd.id === docDefId);
+              });
+              return { ...group, items: filteredItems };
+            }).filter((group: any) => group.items.length > 0);
+
+            return (
+              <DocListSection
+                groups={personalizedGroups}
+                docsStatus={gatheringStatus}
+                uploadedDocuments={uploadedDocuments}
+                isDeletingIds={isDeletingIds}
+                isReloadingDocs={isReloadingDocs}
+                getVaultId={(item) => mapDocumentNameToId(item.title)}
+                findVaultDoc={(item, docs) =>
+                  findVaultDocForItem(item.title, mapDocumentNameToId(item.title), docs)
+                }
+                progressLabel="packed"
               onItemClick={(item) => {
                 setDocActionModal({
                   isOpen: true,
@@ -1673,7 +1684,8 @@ export const StepView: React.FC<StepViewProps> = ({
               }
               onDelete={(id, name) => setDocumentToDelete({ id, name })}
             />
-          )}
+            );
+          })()}
 
           {/* ATTEND MEDICAL EXAM (Step 3.5 SPECIFIC) */}
           {tool.type === "medical_exam_guide" && (
@@ -1773,18 +1785,28 @@ export const StepView: React.FC<StepViewProps> = ({
           )}
 
           {/* FALLBACK FOR DOC LISTS (Step 2.4) */}
-          {tool.doc_list && (
-            <DocListSection
-              groups={tool.doc_list.groups}
-              docsStatus={civilDocsStatus}
-              uploadedDocuments={uploadedDocuments}
-              isDeletingIds={isDeletingIds}
-              isReloadingDocs={isReloadingDocs}
-              getVaultId={(item) => mapDocumentNameToId(item.title)}
-              findVaultDoc={(item, docs) =>
-                findVaultDocForItem(item.title, mapDocumentNameToId(item.title), docs)
-              }
-              showTags={true}
+          {tool.doc_list && (() => {
+            const rawGroups = tool.doc_list.groups || [];
+            const personalizedGroups = rawGroups.map((group: any) => {
+              const filteredItems = group.items.filter((item: any) => {
+                const docDefId = mapDocumentNameToId(item.title);
+                return requiredDocuments.some((rd) => rd.id === docDefId);
+              });
+              return { ...group, items: filteredItems };
+            }).filter((group: any) => group.items.length > 0);
+
+            return (
+              <DocListSection
+                groups={personalizedGroups}
+                docsStatus={civilDocsStatus}
+                uploadedDocuments={uploadedDocuments}
+                isDeletingIds={isDeletingIds}
+                isReloadingDocs={isReloadingDocs}
+                getVaultId={(item) => mapDocumentNameToId(item.title)}
+                findVaultDoc={(item, docs) =>
+                  findVaultDocForItem(item.title, mapDocumentNameToId(item.title), docs)
+                }
+                showTags={true}
               onItemClick={(item) => {
                 setDocActionModal({
                   isOpen: true,
@@ -1815,7 +1837,8 @@ export const StepView: React.FC<StepViewProps> = ({
               }
               onDelete={(id, name) => setDocumentToDelete({ id, name })}
             />
-          )}
+            );
+          })()}
 
           {/* PRIMARY LAUNCH MODULE */}
           {tool.launch_module &&
