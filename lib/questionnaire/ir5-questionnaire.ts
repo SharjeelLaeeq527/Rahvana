@@ -143,6 +143,60 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         },
       ],
     },
+    // Q6 — Name change
+    {
+      id: "name_change",
+      question: "Has the petitioner or parent beneficiary ever legally changed their name (for any reason)?",
+      helper:
+        "If any legal name has changed — through marriage, court order, or other means — official documentation is required.",
+      options: [
+        {
+          label: "Yes — at least one person has had a legal name change",
+          value: "yes",
+        },
+        {
+          label: "No — neither has changed their legal name",
+          value: "no",
+        },
+      ],
+    },
+
+    // Q7 — Military service
+    {
+      id: "military_service",
+      question: "Has the parent beneficiary ever served in any country's military or armed forces?",
+      helper:
+        "If yes, military service records with a certified English translation are required for the visa application.",
+      options: [
+        {
+          label: "Yes — the parent has military service history",
+          value: "yes",
+        },
+        {
+          label: "No — no military service",
+          value: "no",
+        },
+      ],
+    },
+
+    // Q8 — Criminal history
+    {
+      id: "criminal_history",
+      question:
+        "Has the parent beneficiary ever been arrested, charged, or convicted of any crime — anywhere in the world?",
+      helper:
+        "Even minor or old matters can affect eligibility. Court/disposition records will be needed if applicable.",
+      options: [
+        {
+          label: "Yes — there is at least one arrest, charge, or conviction",
+          value: "yes",
+        },
+        {
+          label: "No — no criminal history at all",
+          value: "no",
+        },
+      ],
+    },
   ],
 
   // ──────────────────────────────────────────────────────────────────
@@ -429,6 +483,72 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
           guideUrl: "/guides",
           icon: "FileText",
           group: "Gather Now for Later",
+          required: false,
+        },
+      ],
+    },
+
+    // ── Name change ──
+    {
+      questionId: "name_change",
+      triggerValue: "yes",
+      documents: [
+        {
+          id: "doc_name_change",
+          name: "Name Change or Identity Discrepancy Evidence",
+          subtitle:
+            "Explains different names, spellings, dates, or parent details across records",
+          tag: "both",
+          guideUrl: "/guides",
+          icon: "BadgeCheck",
+          group: "Required if Applicable",
+          required: true,
+        },
+      ],
+    },
+
+    // ── Military service ──
+    {
+      questionId: "military_service",
+      triggerValue: "yes",
+      documents: [
+        {
+          id: "doc_military_records",
+          name: "Military Service Records",
+          subtitle: "Complete military service records with certified English translation",
+          tag: "beneficiary",
+          guideUrl: "/guides",
+          icon: "ShieldCheck",
+          group: "Required if Applicable",
+          required: true,
+        },
+      ],
+    },
+
+    // ── Criminal history ──
+    {
+      questionId: "criminal_history",
+      triggerValue: "yes",
+      documents: [
+        {
+          id: "doc_court_records",
+          name: "Court / Disposition Records",
+          subtitle:
+            "Complete records of all arrests, charges, or convictions with English translations",
+          tag: "beneficiary",
+          guideUrl: "/guides",
+          icon: "Scale",
+          group: "Required if Applicable",
+          required: true,
+        },
+        {
+          id: "doc_police_disposition",
+          name: "Police Disposition Letters",
+          subtitle: "Official letters from police showing final disposition of each incident",
+          tag: "beneficiary",
+          guideUrl: "/guides",
+          icon: "FileText",
+          group: "Required if Applicable",
           required: false,
         },
       ],
