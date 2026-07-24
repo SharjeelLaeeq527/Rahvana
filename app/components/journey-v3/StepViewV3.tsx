@@ -969,7 +969,10 @@ export const StepViewV3: React.FC<StepViewProps> = ({
           jointSponsorName: (state.metadata.jointSponsorName as string) || "",
           scenarioFlags: {},
         }),
-        reloadDocuments(),
+        // Pass this journey's id so the vault loads ONLY this journey's documents
+        // (reloadDocuments re-fetches when the journey differs). Without it the
+        // API returns all journeys' uploads and a fresh journey looks pre-filled.
+        reloadDocuments(state.backendId || undefined),
       ]);
     };
     initVault();

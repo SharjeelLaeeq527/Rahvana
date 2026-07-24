@@ -26,6 +26,127 @@ Score (0 se 100 tak "Case Health" ring) **4 cheezon** se banta hai. Yaad rakho:
 
 ---
 
+## Risk Flag ko detail mein samajho (example ke saath)
+
+### Risk flag hai kya?
+Risk flag = ek **red flag / warning** jo aapke **eligibility jawab** se banti hai. Ye score ke **"Risk" wale 10% hisse** ko kam karti hai. Matlab: jitne zyada red flags, utna Risk score neeche, utna overall score halka sa neeche.
+
+### Kaise kam karti hai (penalty math)
+Risk ingredient **100 se shuru** hota hai, phir minus hota hai:
+- **Critical** flag (bada masla): **−20**
+- **Warning** flag (chhota masla): **−8**
+- **Info** flag: **−3**
+
+Risk score = `100 − (total minus)`. Phir overall mein `Risk × 10%`.
+
+### IR-5 ke asli risk flags (yehi system mein hain)
+**Critical (bade — disclose karna zaroori):**
+- Parent ka **court / police / criminal record** ← aap "crome/blocked" wali baat kar rahe the, ye wahi hai
+- Parent ka **past immigration ya fraud issue**
+- Parent ka **U.S. overstay** (unlawful presence)
+
+**Warning (chhote — plan karna hai):**
+- **Income kam** ho sakti hai (sponsorship)
+- **Medical / vaccination** issue
+- **U.S. domicile** pe dhyan chahiye
+
+### Proper example (numbers ke saath)
+
+**Pehle — koi risk flag nahi:**
+Maan lo user ne 3 document upload kiye + forms bhare:
+```
+Evidence = 60, Consistency = 100, Completeness = 70, Risk flag = 0 → Risk = 100
+
+Score = 60×0.40 + 100×0.30 + 70×0.20 + 100×0.10
+      = 24 + 30 + 14 + 10 = 78  → "Strong" (green)
+```
+
+**Ab — Step 1 mein user select karta hai: "Parent ka court/police record hai"**
+Ye ek **critical** risk flag ban gaya (`parent_criminal_history`).
+```
+Risk = 100 − 20 = 80  →  overall mein 80×0.10 = 8  (pehle 10 tha)
+
+Naya Score = 24 + 30 + 14 + 8 = 76   (sirf 2 point kam)
+
+LEKIN health label badal jaata hai → "Needs Immediate Attention" (RED)
+```
+
+### Ye 2 cheezein demonstrate karta hai (boss ko yehi batao):
+1. **Number pe halka asar:** Risk sirf 10% weight hai, isliye score thoda hi neeche jaata hai (78 → 76). Matlab red flag case ko **khatam nahi** karta.
+2. **Label pe bada asar:** Kyunki ye **critical** flag hai, health status **red "Needs Immediate Attention"** ho jaata hai — chahe number 76 ho. Kyun? Kyunki ye cheez **disclose karna zaroori** hai, warna aage ja kar case reject ho sakta hai. System user ko warn karta hai.
+
+### Kab hota hai / kab dikhta hai (zaroori nuance)
+- Risk flag Step 1 mein jawab dete hi **background mein calculate** ho jaata hai.
+- **Lekin** jab tak koi **document upload (evidence)** na ho, ring/score dikhti hi nahi — to risk ka asar bhi **tab** dikhega jab evidence aayegi aur score active hoga.
+- Us se pehle flag sirf **store** rehta hai, ring pe nahi dikhta.
+
+> Ek line: **Eligibility jawab → risk flag banta hai (background) → document upload → score active → tab risk flag score/label mein dikhta hai.**
+
+---
+
+## Alerts — kaunse, kab, aur kis time aate hain
+
+### Sabse pehle: Alerts kab SHURU hote hain?
+Jab tak aap **kam se kam 1 step complete** na karo, koi alert nahi aata — Alert Center pe **"No alerts yet"** dikhta hai. Ye jaan-boojh kar hai, taake shuru mein 10 fake alerts se user overwhelm na ho.
+
+### Kaunse alerts dikhte hain (Progressive disclosure)
+- **Aapke current step + peeche guzre steps** ke alerts dikhte hain.
+- **Aage wale (future) steps** ke alerts **chhupe** rehte hain — taake jo abhi karna hi nahi, uska tension na ho.
+- **Exception:** kuch cheezein jo waqt leti hain (jaise joint sponsor, police certificate) **1 chapter pehle** "Plan ahead" ke tor pe dikh jaati hain, taake user time se arrange kar le.
+
+### 5 tarah ke alerts
+
+| Alert | Kab aata hai | Rang / level |
+|---|---|---|
+| **Missing Document** | Zaroori document abhi tak nahi diya | Info → Yellow → Red (3 stage, neeche dekho) |
+| **Consistency** | Jawab aur document match na karein (jaise date mismatch) | Warning / Critical |
+| **Risk flag** | Eligibility mein red flag jawab (criminal, overstay, income kam) | Warning / Critical |
+| **Score-drop (Band-drop)** | Score neeche ek band cross kare | Yellow warning |
+| **(Past-step deficiency)** | Guzre step ka koi kaam adhoora chhoot gaya | Warning → Critical over time |
+
+---
+
+### 1) Missing Document alert — 3 stage timing
+
+Missing document **ek dam RED nahi** hota. Dheere dheere serious hota hai. Do tarike:
+
+**A. Agar filing date pata ho (deadline ke hisaab se — ye preferred hai):**
+- Filing mein **30+ din** baaki → **"To gather"** (info, calm — gray)
+- Filing mein **30 din ya kam** → **"Due soon"** (yellow warning)
+- Filing mein **7 din ya kam** → **"Critical"** (red, blocking)
+
+**B. Agar filing date na ho (din ke hisaab se fallback):**
+- **0–7 din** → "To gather" (info)
+- **7–21 din** → "Due soon" (yellow)
+- **21+ din** → "Critical" (red)
+
+### 2) Grace periods (turant nahi, thoda ruk kar)
+- **Current step** ka warning: **3 din** ke baad dikhta hai (turant nahi — taake abhi-abhi pohanche user ko na daraye).
+- **Guzre step** ka adhoora kaam: **7 din** baad warning banta hai, aur **21 din** baad **critical** ho jaata hai.
+- **Recurring reminder:** har **14 din** mein yaad-dahani, **max 3 baar** (spam nahi).
+
+### 3) Consistency alert — kab
+Jab aapka **jawab aur uploaded document contradict** karein — jaise aap ne bola "shaadi 2020", certificate 2019 ka upload kiya. Ye **turant** dikhta hai jab woh document/jawab add karo.
+
+### 4) Risk flag alert — kab
+Jab eligibility mein aisa jawab do jo red flag banaye (criminal record, overstay, income kam). *Note:* ring/score sirf tab active hota hai jab evidence ho — detail upar **"Risk Flag"** section mein hai.
+
+### 5) Score-drop (Band-drop) alert — kab
+- Sirf jab score **neeche** ek band cross kare (Strong→Moderate, ya Moderate→Weak).
+- **Upar** jaane pe **chup** rehta hai (koi alert nahi, bas purana alert clear ho jaata hai).
+- Same band ke andar chhoti upar-neeche → kuch nahi.
+- Reopen/refresh pe dobara nahi nag karta — sirf **live** drop pe aata hai.
+
+---
+
+### 👉 Demo mein escalation kaise dikhao (tip)
+Demo ek hi din mein hota hai, to "7 din / 21 din" wala time naturally nahi dikhega — document bas **"To gather"** pe rahega. Escalation live dikhane ka aasan tarika:
+- Journey ki **filing date paas set kar do** (jaise 5 din baad) → missing docs turant **"Critical" (red)** ho jaayenge (deadline-relative rule).
+- 20 din baad set karo → **"Due soon" (yellow)**.
+- Isse aap boss ko teeno stage (info → yellow → red) live dikha sakte ho, bina time travel ke.
+
+---
+
 ## Demo se pehle Setup (5 min)
 
 1. Do nayi journeys banao:
@@ -70,6 +191,13 @@ Score (0 se 100 tak "Case Health" ring) **4 cheezon** se banta hai. Yaad rakho:
 **Faida:** User samajhta hai ke sirf forms bharne se case strong nahi hota — asli documents chahiye.
 
 **Kab:** Jab sawaal to bhare hon par koi document upload na hua ho.
+
+> ⚠️ **Zaroori note (agar boss pooche):** Chahe Step 1 mein aap koi aisa jawab do
+> jispe **"blocked"/risk** wala warning aaye (jaise criminal record) — tab bhi
+> case strength score **START nahi hoga**, ring "Not started" hi rahegi. Kyunki
+> eligibility jawab "evidence" nahi hai. Wo risk flag background mein ban jaata hai
+> aur baad mein (document upload ke baad, jab score active ho) score/label ko
+> affect karta hai. Detail upar **"Risk Flag"** section mein hai.
 
 ---
 
