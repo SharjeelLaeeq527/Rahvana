@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { DocumentDefinition, UploadedDocument } from "@/lib/document-vault/types";
 
 // import {
@@ -198,8 +198,8 @@ export function DocumentTableView({
                   : doc.description;
 
               return (
-                <>
-                  <TableRow key={doc.id} className="group transition-colors hover:bg-muted/30">
+                <React.Fragment key={doc.id}>
+                  <TableRow className="group transition-colors hover:bg-muted/30">
                     <TableCell>
                       <div className="flex items-center gap-3 py-1">
                         <div
@@ -541,7 +541,7 @@ export function DocumentTableView({
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </React.Fragment>
               );
             })}
           </TableBody>

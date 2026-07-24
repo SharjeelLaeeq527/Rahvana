@@ -151,21 +151,50 @@ export function getProgress(config: QuestionnaireConfig, answers: QuestionnaireA
 }
 
 // ============================================================================
-// Step 1 → Step 2 Answer Derivation
-// Maps eligibility quest answers to document questionnaire answer keys
-// so duplicate questions can be skipped.
+// Eligibility Answer Derivation — Generic, category-driven
 // ============================================================================
 
-/**
- * Eligibility answers shape from QuestRenderer:
- * state.answers["eligibility-suite"] → { [questId]: { [screenId]: value } }
- *
- * Relevant screens:
- *   q3 → q3s1 (prior marriage history): "none" | "petitioner" | "beneficiary" | "both" | "unsure"
- *   q5 → q5s2 (criminal history):       "no" | "yes" | "unsure"
- */
 type EligibilityAnswers = Record<string, Record<string, string | string[]>>;
 
+/**
+ * Generic derivation: reads `config.eligibilityDerivationMap` and converts
+ * Step 1 eligibility answers into pre-filled document-questionnaire answers.
+ *
+ * @param eligibilityAnswers - Raw answers from the eligibility suite.
+ * @param config             - The questionnaire config for the current category.
+ *                             Its `eligibilityDerivationMap` drives the mapping.
+ * @returns Pre-filled answers keyed by document-questionnaire question IDs.
+ */
+export function deriveDocAnswers(
+  eligibilityAnswers: EligibilityAnswers | undefined,
+  config: QuestionnaireConfig
+): QuestionnaireAnswers {
+  const derived: QuestionnaireAnswers = {};
+  if (!eligibilityAnswers || !config.eligibilityDerivationMap) return derived;
+
+  for (const entry of config.eligibilityDerivationMap) {
+    const screenValue = eligibilityAnswers[entry.eligibilityQuestId]?.[
+      entry.eligibilityScreenId
+    ] as string | undefined;
+
+    // Skip if no answer or user said "unsure" (not actionable)
+    if (!screenValue || screenValue === "unsure") continue;
+
+    const mapped = entry.derive(screenValue);
+    Object.assign(derived, mapped);
+  }
+
+  return derived;
+}
+
+/**
+ * @deprecated Use `deriveDocAnswers(eligibilityAnswers, config)` instead.
+ * Kept for backwards compatibility with any call-sites that haven't been
+ * migrated to the config-driven approach yet.
+ *
+ * Maps the IR-1-specific eligibility answers (q3→q3s1, q5→q5s2) to
+ * document-questionnaire pre-filled answers.
+ */
 export function deriveDocAnswersFromEligibility(
   eligibilityAnswers: EligibilityAnswers | undefined
 ): QuestionnaireAnswers {

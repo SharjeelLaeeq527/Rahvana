@@ -1058,7 +1058,8 @@
     "roles": {
       "BENEFICIARY": "Beneficiary",
       "PETITIONER": "Petitioner",
-      "JOINT_SPONSOR": "Joint Sponsor"
+      "JOINT_SPONSOR": "Joint Sponsor",
+      "HOUSEHOLD_MEMBER": "Household Member"
     },
     "stages": {
       "USCIS": "USCIS",

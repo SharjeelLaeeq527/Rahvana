@@ -21,7 +21,7 @@ interface HouseholdMemberToolProps {
 export const getHhDocItems = (count: number, rels: Record<number, string>) => {
   const items: any[] = [];
   for (let i = 1; i <= count; i++) {
-    const relationship = rels[i] || "spouse";
+    const relationship = rels[i] || "other-hh";
     const label = `Household Member ${i}`;
 
     switch (relationship) {

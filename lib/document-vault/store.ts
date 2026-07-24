@@ -44,9 +44,10 @@ interface DocumentVaultStore {
   wizardOpen: boolean;
   uploadModalOpen: boolean;
   notificationCenterOpen: boolean;
+  currentJourneyId: string | null;
 
   // Actions
-  initialize: (userId: string, t?: TranslateFn) => Promise<void>;
+  initialize: (userId: string, t?: TranslateFn, journeyId?: string) => Promise<void>;
   setConfig: (config: DocumentVaultConfig) => Promise<void>;
   updateScenarioFlags: (flags: Partial<ScenarioFlags>) => void;
   setVisaCategory: (category: VisaCategory) => void;
@@ -56,7 +57,7 @@ interface DocumentVaultStore {
   updateDocument: (documentId: string, updates: Partial<UploadedDocument>) => void;
   deleteDocument: (documentId: string) => void;
   refreshDocumentStatuses: () => void;
-  reloadDocuments: () => Promise<void>;
+  reloadDocuments: (journeyId?: string) => Promise<void>;
   addDynamicSlot: (category: string) => void;
   addNamedDynamicSlot: (category: string, name: string) => Promise<string>;
   renameDynamicSlot: (categoryId: string, slotId: string, newName: string) => void;
@@ -126,13 +127,14 @@ const initialState = {
   wizardOpen: false,
   uploadModalOpen: false,
   notificationCenterOpen: false,
+  currentJourneyId: null,
 };
 
 export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => ({
   ...initialState,
 
-  initialize: async (userId: string, t?: TranslateFn) => {
-    set({ isLoading: true });
+  initialize: async (userId: string, t?: TranslateFn, journeyId?: string) => {
+    set({ isLoading: true, currentJourneyId: journeyId || null });
 
     try {
       // Load completed steps from localStorage
@@ -176,8 +178,8 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
       const configData = await configResponse.json();
       const config = configData.config;
 
-      // Fetch documents from API
-      const docsResponse = await fetch("/api/documents/list");
+      // Fetch documents from API (filtered by journey if provided)
+      const docsResponse = await fetch(journeyId ? `/api/documents/list?journeyId=${journeyId}` : "/api/documents/list");
       const docsData = await docsResponse.json();
       const documents = docsData.documents || [];
 
@@ -360,14 +362,17 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
     set({ uploadedDocuments: updatedDocs });
   },
 
-  reloadDocuments: async () => {
-    const { hasLoadedDocsInitial } = get();
-    if (!hasLoadedDocsInitial) {
-      set({ isReloadingDocs: true });
+  reloadDocuments: async (journeyId?: string) => {
+    const { hasLoadedDocsInitial, currentJourneyId } = get();
+    const targetJourneyId = journeyId || currentJourneyId || undefined;
+    const isNewJourney = journeyId && journeyId !== currentJourneyId;
+    if (!hasLoadedDocsInitial || isNewJourney) {
+      set({ isReloadingDocs: true, currentJourneyId: targetJourneyId || null });
     }
     try {
-      // Fetch documents from API
-      const response = await fetch("/api/documents/list");
+      // Fetch documents from API (filtered by journey if provided)
+      const url = targetJourneyId ? `/api/documents/list?journeyId=${targetJourneyId}` : "/api/documents/list";
+      const response = await fetch(url);
       const data = await response.json();
       const documents = (data.documents || []).map((doc: Record<string, unknown>) => ({
         ...doc,

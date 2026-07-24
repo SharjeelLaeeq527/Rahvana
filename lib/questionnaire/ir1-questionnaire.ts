@@ -7,7 +7,7 @@ import type { QuestionnaireConfig } from "./types";
 
 export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
   id: "ir1-doc-questionnaire",
-  title: "Personalize Your Document Checklist",
+  title: "IR-1 / CR-1",
   subtitle:
     "Answer a few quick questions so we can build a document list tailored to your specific situation. This only takes a minute.",
 
@@ -251,7 +251,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       id: "doc_translations",
       name: "Translations",
       subtitle: "Certified English translations of non-English documents",
-      tag: "third party",
+      tag: "both",
       guideUrl: "/guides",
       icon: "Globe",
       group: "Required if Applicable",
@@ -554,6 +554,35 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
           required: true,
         },
       ],
+    },
+  ],
+
+  // ──────────────────────────────────────────────────────────────────
+  // ELIGIBILITY DERIVATION MAP
+  // Translates Step 1 eligibility-suite answers into pre-filled answers
+  // for this questionnaire so duplicate questions are never shown.
+  // ──────────────────────────────────────────────────────────────────
+  eligibilityDerivationMap: [
+    {
+      // q3 → q3s1: prior marriage history
+      // Values: "none" | "petitioner" | "beneficiary" | "both" | "unsure"
+      eligibilityQuestId: "q3",
+      eligibilityScreenId: "q3s1",
+      derive: (v) => ({
+        prior_marriage_petitioner:
+          v === "petitioner" || v === "both" ? "yes" : "no",
+        prior_marriage_beneficiary:
+          v === "beneficiary" || v === "both" ? "yes" : "no",
+      }),
+    },
+    {
+      // q5 → q5s2: criminal history
+      // Values: "no" | "yes" | "unsure"
+      eligibilityQuestId: "q5",
+      eligibilityScreenId: "q5s2",
+      derive: (v) => ({
+        criminal_history: v === "yes" ? "yes" : "no",
+      }),
     },
   ],
 };

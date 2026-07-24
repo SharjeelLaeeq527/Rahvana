@@ -133,6 +133,9 @@ const OCR_DOCS: Record<string, OcrDocConfig> = {
   "passport-petitioner": { docType: "passport", target: "sponsor" },
   // The beneficiary's own passport = the account holder's passport → top-level.
   "passport-beneficiary": { docType: "passport", target: "self" },
+  "birth-cert-petitioner": { docType: "birth", target: "sponsor" },
+  "parents-marriage-cert": { docType: "marriage", target: "self" },
+  "stepparent-marriage-cert": { docType: "marriage", target: "self" },
   // The IR-1 journey surfaces the petitioner's identity doc as the broader
   // "Proof of U.S. Citizenship" (citizenship-proof-petitioner) — it has no
   // separate passport slot. Treat it as a passport for OCR so a petitioner who

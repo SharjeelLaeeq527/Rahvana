@@ -132,6 +132,17 @@ export async function POST(request: NextRequest) {
     const caseId = formData.get("caseId") as string | undefined;
     const expirationDateStr = formData.get("expirationDate") as string | undefined;
     const notes = formData.get("notes") as string | undefined;
+    const journeyId = formData.get("journeyId") as string | undefined;
+    const shareWithJourneyIdsStr = formData.get("shareWithJourneyIds") as string | undefined;
+    
+    let shareWithJourneyIds: string[] = [];
+    if (shareWithJourneyIdsStr) {
+      try {
+        shareWithJourneyIds = JSON.parse(shareWithJourneyIdsStr);
+      } catch (e) {
+        console.error("Failed to parse shareWithJourneyIds:", e);
+      }
+    }
 
     // Validate required fields
     if (!file || !documentDefId || !role || !personName) {
@@ -152,6 +163,49 @@ export async function POST(request: NextRequest) {
 
     // Find document definition
     let documentDef = ALL_DOCUMENTS.find((d) => d.id === documentDefId);
+
+    // If not found in static list, check if it's a dynamic sponsor/household member definition
+    if (!documentDef) {
+      const baseIds = [
+        "joint-i864",
+        "joint-tax-returns",
+        "joint-w2",
+        "joint-employment-letter",
+        "joint-pay-stubs",
+        "joint-assets",
+        "joint-citizenship-proof",
+        "i-864a-contract",
+        "household-member-income",
+        "household-member-residence",
+        "hh-marriage",
+        "hh-id",
+        "hh-birth",
+        "hh-family-link"
+      ];
+      for (const baseId of baseIds) {
+        if (documentDefId.startsWith(baseId)) {
+          const baseDoc = ALL_DOCUMENTS.find((d) => d.id === baseId);
+          if (baseDoc) {
+            let customName = baseDoc.name;
+            if (documentDefId.includes("-joint-sponsor-")) {
+              const match = documentDefId.match(/-joint-sponsor-(\d+)/);
+              const index = match ? match[1] : "1";
+              customName = `${baseDoc.name} — Joint Sponsor ${index}`;
+            } else if (documentDefId.includes("-household-member-")) {
+              const match = documentDefId.match(/-household-member-(\d+)/);
+              const index = match ? match[1] : "1";
+              customName = `${baseDoc.name} — Household Member ${index}`;
+            }
+            documentDef = {
+              ...baseDoc,
+              id: documentDefId,
+              name: customName,
+            };
+            break;
+          }
+        }
+      }
+    }
 
     // If not found in static list, check if it's a dynamic definition
     if (!documentDef && documentDefId.startsWith("dynamic-")) {
@@ -179,14 +233,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid document definition" }, { status: 400 });
     }
 
-    // Get existing documents for this definition
+    // Get existing documents for this definition in this journey
     const dbStorage = new DocumentDatabaseStorage(supabase);
-    let existingDocs = await dbStorage.getDocumentsByDefId(documentDefId, user.id);
+    let existingDocs = await dbStorage.getDocumentsByDefId(documentDefId, user.id, journeyId || undefined);
 
     // Safety check for rapid sequential uploads
     // If the specific query missed a very recent upload, fallback to global list
     if (existingDocs.length === 0) {
-      const allDocs = await dbStorage.getAllDocuments(user.id);
+      const allDocs = await dbStorage.getAllDocuments(user.id, journeyId || undefined);
       const recentDocs = allDocs.filter(
         (d) =>
           d.documentDefId === documentDefId && Date.now() - new Date(d.uploadedAt).getTime() < 10000
@@ -205,7 +259,7 @@ export async function POST(request: NextRequest) {
       : null;
 
     if (documentDefId.startsWith("dynamic-") && currentTypeMatch) {
-      const allDocs = await dbStorage.getAllDocuments(user.id);
+      const allDocs = await dbStorage.getAllDocuments(user.id, journeyId || undefined);
       const docsWithSameType = allDocs.filter((d) => {
         if (!d.notes || !d.notes.startsWith("Type: ")) return false;
         const typeLabel = d.notes.split("\n")[0].replace("Type: ", "").trim().toLowerCase();
@@ -346,10 +400,36 @@ export async function POST(request: NextRequest) {
       isRead: false,
       status: "UPLOADED",
       notes,
+      journeyId: journeyId || null,
     };
 
     // Save document metadata to database
     const savedDocument = await dbStorage.saveDocument(uploadedDocument);
+
+    // Save duplicates for each shared journey (cross-sharing without files duplication)
+    if (shareWithJourneyIds && shareWithJourneyIds.length > 0) {
+      for (const sharedJourneyId of shareWithJourneyIds) {
+        try {
+          // Calculate version for this definition in the target shared journey
+          const sharedExisting = await dbStorage.getDocumentsByDefId(documentDefId, user.id, sharedJourneyId);
+          const sharedVersion = getNextVersionNumber(sharedExisting);
+          
+          const sharedDocId = generateDocumentId();
+          const sharedDocument: UploadedDocument = {
+            ...uploadedDocument,
+            id: sharedDocId,
+            version: sharedVersion,
+            journeyId: sharedJourneyId,
+            isRead: false,
+            status: "UPLOADED", // shared doc starts as fresh upload
+          };
+          await dbStorage.saveDocument(sharedDocument);
+          console.log(`Document cross-shared to journey ${sharedJourneyId} successfully.`);
+        } catch (shareErr) {
+          console.error(`Failed to cross-share document to journey ${sharedJourneyId}:`, shareErr);
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,
