@@ -58,7 +58,8 @@ export const InterviewPrepTool: React.FC<InterviewPrepToolProps> = ({
               if (guard && !guard()) return;
               setIsPrepLaunched(true);
               // Build URL with journey_id if available
-              const baseUrl = "https://www.rahvana.com/interview-prep";
+              // const baseUrl = "https://www.rahvana.com/interview-prep";
+              const baseUrl = "http://localhost:3000/interview-prep";
               const url = journeyId ? `${baseUrl}?journey_id=${journeyId}` : baseUrl;
               window.open(url, "_blank", "noopener,noreferrer");
             }}

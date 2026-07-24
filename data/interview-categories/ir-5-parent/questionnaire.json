@@ -8,6 +8,10 @@
       "title": "Parent Relationship & Family History",
       "description": "Core details about the parent-child relationship and the parent beneficiary's family history.",
       "order": 1,
+      "ui": {
+        "icon": "Users",
+        "theme": "rose"
+      },
       "questions": [
         {
           "key": "parent_relationship_type",
@@ -51,6 +55,10 @@
       "title": "Parent-Child Relationship & Contact",
       "description": "How the parent beneficiary and petitioner have lived together and remained in contact.",
       "order": 2,
+      "ui": {
+        "icon": "PhoneCall",
+        "theme": "amber"
+      },
       "questions": [
         {
           "key": "co_residence_history",
@@ -99,6 +107,10 @@
       "title": "Sponsorship, Employment & Settlement",
       "description": "The financial sponsorship structure, current employment status, and planned living arrangement in the United States.",
       "order": 3,
+      "ui": {
+        "icon": "DollarSign",
+        "theme": "teal"
+      },
       "questions": [
         {
           "key": "sponsorship_structure",
@@ -148,6 +160,10 @@
       "title": "Civil Records & Foreign Residence",
       "description": "Identify civil-document issues and foreign residence history that may lead to additional interview questions.",
       "order": 4,
+      "ui": {
+        "icon": "Globe",
+        "theme": "sage"
+      },
       "questions": [
         {
           "key": "civil_record_issue",
@@ -178,6 +194,10 @@
       "title": "Immigration & Background",
       "description": "Prior U.S. immigration, criminal, military, police, and security history relevant to interview preparation.",
       "order": 5,
+      "ui": {
+        "icon": "Shield",
+        "theme": "rose"
+      },
       "questions": [
         {
           "key": "us_immigration_history",
