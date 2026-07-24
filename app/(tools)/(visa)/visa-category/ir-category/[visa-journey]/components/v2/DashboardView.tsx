@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { ChevronDown, ExternalLink, Clock, Shield } from "lucide-react";
 import { RoadmapData } from "../types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -24,8 +24,12 @@ import {
   getCaseHealthStatus,
   computeOverallCaseScore,
   computeConsistencyScore,
+  computeWeightedCaseScore,
+  classifyBandTransition,
+  SCORE_BAND_LABEL,
   runFullConsistencyAnalysis,
   type Phase2Responses,
+  type ScoreBand,
 } from "@/lib/case-strength";
 import {
   aggregateChapter1Issues,
@@ -212,6 +216,33 @@ export function DashboardView({
     runAnalysis();
   }, [state.backendId, uploadedDocuments, data, state.metadata, questionnaireResponses]);
 
+  // ── CSA Drawer State ─────────────────────────────────────────────────────
+  const [isCSADrawerOpen, setIsCSADrawerOpen] = useState(false);
+  const [showPhase2Modal, setShowPhase2Modal] = useState(false);
+  const [showEvidenceQuestionnaireModal, setShowEvidenceQuestionnaireModal] = useState(false);
+
+  // Band-cross persistence for score-drop alerts (opt-in weighted model only)
+  const prevBandRef = useRef<ScoreBand | null>(null);
+  const [scoreDropBand, setScoreDropBand] = useState<ScoreBand | null>(null);
+
+  // User-provided evidence view for the weighted model (autofill excluded),
+  // shared by the case narrative AND the Case Analysis drawer. Legacy model → raw analysis.
+  const weightedEvidenceView = useMemo<EvidenceGapAnalysis | null>(() => {
+    const p = resolveCaseStrengthProfile((data as any).journey_type);
+    if (p.caseScore?.model !== "weighted" || !evidenceAnalysis?.userProvided) {
+      return evidenceAnalysis;
+    }
+    const up = evidenceAnalysis.userProvided;
+    return {
+      ...evidenceAnalysis,
+      overallScore: up.score,
+      requiredDocuments: up.requiredDocuments,
+      categories: up.categories,
+      stats: up.stats,
+      recommendations: up.recommendations,
+    };
+  }, [evidenceAnalysis, data]);
+
   // Refresh evidence analysis
   const refreshEvidenceAnalysis = () => {
     setEvidenceAnalysis(null);
@@ -291,11 +322,31 @@ export function DashboardView({
       uploadedDocuments
     );
 
-    return generateCaseNarrative({
-      evidenceAnalysis,
-      consistencyFindings,
-    });
-  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
+    const p = resolveCaseStrengthProfile((data as any).journey_type);
+    // Weighted model: use the same honest evidence view + weighted score so the
+    // drawer's summary matches the gauge and stays calm at the start.
+    if (p.caseScore?.model === "weighted" && evidenceAnalysis?.userProvided) {
+      const up = evidenceAnalysis.userProvided;
+      const metadata = state.metadata as Record<string, unknown> | undefined;
+      const questAnswers = metadata?.["questAnswers_eligibility-suite"] as
+        | Record<string, Record<string, string | string[]>>
+        | undefined;
+      const eligibilityRisks = p.detectEligibilityRisks(questAnswers, p.stepRefs);
+      const weightedScore = computeWeightedCaseScore({
+        evidenceStrength: up.score,
+        consistencyScore: computeConsistencyScore(consistencyFindings),
+        completeness: up.completionPercentage,
+        riskFlags: eligibilityRisks,
+      }).score;
+      return generateCaseNarrative({
+        evidenceAnalysis: weightedEvidenceView,
+        consistencyFindings,
+        overallScoreOverride: weightedScore,
+      });
+    }
+
+    return generateCaseNarrative({ evidenceAnalysis, consistencyFindings });
+  }, [evidenceAnalysis, weightedEvidenceView, state, phase2Responses, uploadedDocuments, data]);
 
   // Health status badge for the CaseSummaryCard header
   const caseHealthStatus = useMemo(() => {
@@ -315,10 +366,6 @@ export function DashboardView({
     });
   }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
 
-  // ── CSA Drawer State ─────────────────────────────────────────────────────
-  const [isCSADrawerOpen, setIsCSADrawerOpen] = useState(false);
-  const [showPhase2Modal, setShowPhase2Modal] = useState(false);
-  const [showEvidenceQuestionnaireModal, setShowEvidenceQuestionnaireModal] = useState(false);
 
   // ── Alert Center Issues ─────────────────────────────────────────────────────
   // Compute issues for the AlertCenter (critical + warning only)
@@ -1686,7 +1733,7 @@ export function DashboardView({
         isOpen={isCSADrawerOpen}
         onClose={() => setIsCSADrawerOpen(false)}
         narrative={caseNarrative}
-        evidenceAnalysis={evidenceAnalysis}
+        evidenceAnalysis={weightedEvidenceView}
         evidenceLoading={evidenceLoading}
         healthStatus={caseHealthStatus}
         onOpenEvidenceQuestionnaire={() => {

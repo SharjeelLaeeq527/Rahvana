@@ -16,6 +16,7 @@ import {
   runFullConsistencyAnalysis,
   type ConsistencyFinding,
   type Phase2Responses,
+  type Phase2Runner,
 } from "./consistency-intelligence";
 
 export interface AggregatedIssue {
@@ -326,18 +327,22 @@ export function aggregateConsistencyFindings({
   uploadedDocuments,
   registry = IR1_STEP_CHECKERS,
   phase2Responses,
-}: AggregateContext & { phase2Responses?: Phase2Responses | null }): AggregatedIssue[] {
+  phase2Checks,
+}: AggregateContext & { phase2Responses?: Phase2Responses | null; phase2Checks?: Phase2Runner }): AggregatedIssue[] {
   const issues: AggregatedIssue[] = [];
 
   const eligibilityAnswers =
     (state.answers?.["eligibility-suite"] as any) ??
     (state.metadata?.["questAnswers_eligibility-suite"] as any);
 
-  // Run full consistency intelligence (Phase 1 + Phase 2)
+  // Run full consistency intelligence (Phase 1 + Phase 2). When a category-specific
+  // phase2Checks runner is provided (e.g. runCommonPhase2Checks for IR-5), use it;
+  // otherwise fall back to IR-1's runPhase2Checks (the default).
   const findings = runFullConsistencyAnalysis(
     { state, eligibilityAnswers },
     phase2Responses,
-    uploadedDocuments
+    uploadedDocuments,
+    phase2Checks
   );
 
   // Build a quick lookup for step info from chapters

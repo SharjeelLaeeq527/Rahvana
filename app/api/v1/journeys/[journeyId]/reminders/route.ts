@@ -11,7 +11,11 @@ import { UnifiedReminderEngine } from "@/lib/notifications/UnifiedReminderEngine
 import { REMINDER_PRIORITY_ORDER } from "@/lib/reminders/types";
 import { getReminderById, type ReminderKind } from "@/lib/notifications/reminderRegistry";
 import type { ReminderListResponse, ReminderType } from "@/lib/reminders/types";
+import { getJourneyHrefByType } from "@/lib/constants/routes";
 import { createClient } from "@supabase/supabase-js";
+
+/** RFC-4122 UUID v4 pattern — all IDs from Supabase are UUIDs. */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Maps registry kind → journey_reminders.reminder_type enum value
 // This is the ONLY place this mapping lives — change here to affect all registry notifications
@@ -52,6 +56,15 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     const { journeyId } = await params;
 
+    // Security: validate journeyId is a well-formed UUID before any DB access.
+    // This rejects injection attempts, path traversal, and malformed inputs.
+    if (!UUID_RE.test(journeyId)) {
+      return NextResponse.json(
+        errorResponse("VALIDATION_ERROR", "Invalid journey ID format"),
+        { status: 400 }
+      );
+    }
+
     // Verify auth + journey ownership (uses user client)
     const auth = await verifyJourneyAccess(journeyId);
     if (auth.error) return auth.error;
@@ -64,9 +77,11 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     // Step 1: Check cooldown from DB to prevent heavy generation across all instances
     const { data: journey } = await supabase
       .from("journeys")
-      .select("reminders_last_generated_at")
+      .select("reminders_last_generated_at, journey_type, journey_name")
       .eq("id", journeyId)
       .single();
+
+    const defaultActionUrl = getJourneyHrefByType(journey?.journey_type);
 
     const lastRun = journey?.reminders_last_generated_at
       ? new Date(journey.reminders_last_generated_at).getTime()
@@ -125,7 +140,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
           title: notif.title,
           body: notif.message,
           step_key: notif.step_trigger_key ?? null,
-          action_url: def?.actionUrl ?? null,
+          action_url:
+            def?.actionUrl === undefined || def?.actionUrl === null
+              ? defaultActionUrl
+              : def?.actionUrl,
           action_label: def?.actionLabel ?? null,
           is_dismissed: false,
           dedup_key: `${journeyId}:journey:${notif.reminder_id}:${notif.recurrence_count}`,
@@ -170,6 +188,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       total: sorted.length,
       critical_count: sorted.filter((r) => r.priority === "critical").length,
       high_count: sorted.filter((r) => r.priority === "high").length,
+      journey_type: journey?.journey_type ?? undefined,
+      journey_name: journey?.journey_name ?? undefined,
     };
 
     return NextResponse.json(response, { status: 200 });

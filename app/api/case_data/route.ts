@@ -8,7 +8,8 @@ import type { MasterProfile } from "@/types/profile";
 // SECURE SERVER-SIDE BRIDGE: Mirrors roadmap case_data changes back to standard user_profile fields
 async function syncJourneyMetadataToUserProfile(
   userId: string,
-  updatedMetadata: Record<string, any>
+  updatedMetadata: Record<string, any>,
+  journeyId?: string
 ) {
   try {
     const supabase = await createClient();
@@ -28,7 +29,7 @@ async function syncJourneyMetadataToUserProfile(
     const currentProfile = (profileRow?.profile_details || {}) as Record<string, any>;
 
     // 2. Map the new journey metadata changes to profile paths
-    const profileDelta = syncCaseDataToProfile(updatedMetadata, currentProfile as MasterProfile);
+    const profileDelta = syncCaseDataToProfile(updatedMetadata, currentProfile as MasterProfile, journeyId);
 
     if (Object.keys(profileDelta).length === 0) {
       return; // Nothing mapped
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
             metadataBatch[op.data_key] = op.data_value;
           }
         });
-        syncJourneyMetadataToUserProfile(user.id, metadataBatch);
+        syncJourneyMetadataToUserProfile(user.id, metadataBatch, body.journey_id);
       }
 
       return NextResponse.json({ success: true, data: results }, { status: 201 });
@@ -164,7 +165,7 @@ export async function POST(request: NextRequest) {
       data: { user },
     } = await supabase.auth.getUser();
     if (user) {
-      syncJourneyMetadataToUserProfile(user.id, { [body.data_key]: body.data_value });
+      syncJourneyMetadataToUserProfile(user.id, { [body.data_key]: body.data_value }, body.journey_id);
     }
 
     return NextResponse.json({ success: true, data: result }, { status: 201 });
