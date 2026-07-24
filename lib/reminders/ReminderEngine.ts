@@ -9,7 +9,7 @@
 //
 // The engine checks all trigger conditions and upserts reminder
 // records using dedup_key to prevent duplicates.
-// ============================================================
+
 
 import { SupabaseClient } from "@supabase/supabase-js";
 import type { ReminderCandidate, ReminderPriority } from "./types";
