@@ -1,9 +1,11 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
+import { ListChecks } from "lucide-react";
 
 import { useRouter } from "next/navigation";
 import { ResultPage } from "./result/ResultPage";
@@ -1286,7 +1288,7 @@ export default function InterviewPreparation() {
               ? selectedCategory.description
               : "Prepare for your visa interview with personalized questions"}
           </p>
-          <div className="flex justify-center mt-4">
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
             <QuickAccessButton
               item={{
                 id: "interview-prep",
@@ -1295,6 +1297,13 @@ export default function InterviewPreparation() {
                 icon_name: "MessageSquare",
               }}
             />
+            <Link
+              href="/interview-prep/my-sessions"
+              className="inline-flex h-8 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:border-[#0d7377]/30 hover:bg-[#f7fffd] hover:text-[#0d7377] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#0d7377]/20"
+            >
+              <ListChecks className="h-4 w-4" />
+              My Sessions
+            </Link>
           </div>
         </div>
 

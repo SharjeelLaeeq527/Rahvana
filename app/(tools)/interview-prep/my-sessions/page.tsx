@@ -31,6 +31,7 @@ interface SessionWithDetails {
 
 const CategoryLabel: Record<string, string> = {
   "ir-1-spouse": "IR-1/CR-1 Spouse",
+  "ir-5-parent": "IR-5 Parent",
 };
 
 const getCategoryLabel = (slug: string): string => {
@@ -305,8 +306,8 @@ export default function MyInterviewSessions() {
     {
       key: "actions",
       label: "Actions",
-      width: "15%",
-      className: "text-right pr-16",
+      width: "18%",
+      className: "text-left",
       render: (session) => (
         <Button
           size="sm"

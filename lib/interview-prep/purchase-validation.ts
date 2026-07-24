@@ -12,6 +12,7 @@ export function getAddonIdForCategory(categorySlug: string): string {
   return `interview-prep:${categorySlug}`;
 }
 
+
 //  Parse category slug from addon ID
 export function getCategoryFromAddonId(addonId: string): string | null {
   if (!addonId.startsWith('interview-prep:')) {

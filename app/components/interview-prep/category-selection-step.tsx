@@ -163,7 +163,7 @@ export function CategorySelectionStep({
       )}
 
       {/* Category Cards */}
-      <div className="max-w-[650px] mx-auto space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         {categories.map((category) => {
           const theme = getThemeColor(category.ui.themeColor);
           const isSelected = selectedCategory?.categorySlug === category.categorySlug;
@@ -172,7 +172,7 @@ export function CategorySelectionStep({
             <button
               key={category.categorySlug}
               type="button"
-              className="w-full rounded-2xl px-10 py-14 text-left transition-all cursor-pointer relative overflow-hidden"
+              className="w-full rounded-2xl px-6 py-10 text-left transition-all cursor-pointer relative overflow-hidden"
               style={{
                 background: theme.gradient,
                 border: `2px solid ${isSelected ? theme.borderSelected : theme.border}`,
@@ -196,7 +196,7 @@ export function CategorySelectionStep({
                 {getWatermarkIcon(category.ui.icon)}
               </div>
 
-              <div className="relative z-10 flex items-center gap-5">
+              <div className="relative z-10 flex items-start gap-5">
                 {/* Icon badge */}
                 <div
                   className="flex items-center justify-center w-14 h-14 rounded-xl shrink-0"
