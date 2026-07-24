@@ -26,6 +26,7 @@ import type { InterviewFormData } from "@/app/components/interview-prep/types";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { NarrativeModal } from "../(visa)/221g-action-planner/components/NarrativeModal";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
 import type { DynamicQuestionnaire } from "@/data/interview-categories/schema";
 import { E, msg } from "@/lib/errors";
@@ -107,6 +108,7 @@ export default function InterviewPreparation() {
 
   const { user } = useAuth();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
+  const { showToast } = useToast();
 
   const saveProgressToProfile = (currentFormData = formData) => {
     if (!user) return;
@@ -676,10 +678,14 @@ export default function InterviewPreparation() {
 
   const handlePurchaseExhausted = (repurchase: PurchaseExhaustedData) => {
     setRepurchaseAddonId(repurchase.addon_id);
+    setError(null);
 
-    setError(
-      "You have already used your purchased session for this category. Purchase another session to continue."
+    showToast(
+      "You have already used your purchased interview prep session for this category. Purchase another session to continue.",
+      "info"
     );
+
+    redirectToInterviewPrepPurchase(repurchase.addon_id);
   };
 
   // Handle progressing from category selection to questions
@@ -690,6 +696,15 @@ export default function InterviewPreparation() {
     }
 
     try {
+      if (selectedCategory.purchaseExhausted && selectedCategory.addonId) {
+        showToast(
+          "You have already used your purchased interview prep session for this category. Purchase another session to continue.",
+          "info"
+        );
+        redirectToInterviewPrepPurchase(selectedCategory.addonId);
+        return;
+      }
+
       setLoading(true);
 
       const categorySlug = selectedCategory.categorySlug;
@@ -993,6 +1008,7 @@ export default function InterviewPreparation() {
           onSubmit={handleSubmit}
           onBack={prevStep}
           categorySlug={questionnaire.categorySlug}
+          sections={questionnaire.sections}
         />
       );
     }

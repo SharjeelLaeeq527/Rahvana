@@ -6,7 +6,12 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
-import { checkCategoryPurchase } from '@/lib/interview-prep/purchase-validation';
+import {
+  countCategoryPurchases,
+  countIncompleteToolSessions,
+  countToolSessions,
+  getAddonIdForCategory,
+} from '@/lib/interview-prep/purchase-validation';
 import { categoryLoader } from '@/lib/interview-prep/category-loader';
 
 export async function GET(request: NextRequest) {
@@ -33,15 +38,26 @@ export async function GET(request: NextRequest) {
     // Add purchase status to each category
     const categoriesWithStatus = await Promise.all(
       categories.map(async (category) => {
-        const isPurchased = await checkCategoryPurchase(
-          user.id,
-          category.categorySlug
-        );
+        const [purchaseCount, usedSessionCount, activeSessionCount] = await Promise.all([
+          countCategoryPurchases(user.id, category.categorySlug),
+          countToolSessions(user.id, category.categorySlug),
+          countIncompleteToolSessions(user.id, category.categorySlug),
+        ]);
+
+        const remainingPurchases = Math.max(purchaseCount - usedSessionCount, 0);
+        const hasAvailablePurchase = remainingPurchases > 0 || activeSessionCount > 0;
+        const purchaseExhausted = purchaseCount > 0 && !hasAvailablePurchase;
 
         return {
           ...category,
-          isPurchased,
-          requiresPurchase: !isPurchased,
+          isPurchased: hasAvailablePurchase,
+          requiresPurchase: !hasAvailablePurchase,
+          purchaseExhausted,
+          purchaseCount,
+          usedSessionCount,
+          activeSessionCount,
+          remainingPurchases,
+          addonId: getAddonIdForCategory(category.categorySlug),
           price: 200,
         };
       })

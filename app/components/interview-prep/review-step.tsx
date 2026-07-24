@@ -16,6 +16,7 @@ export function ReviewStep({
   onSubmit,
   onBack,
   categorySlug,
+  sections: liveSections,
 }: ReviewStepProps) {
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([0]));
 
@@ -64,8 +65,9 @@ export function ReviewStep({
   };
 
   const questionnaire = categorySlug ? QUESTIONNAIRES[categorySlug] : undefined;
+  const questionnaireSections = liveSections?.length ? liveSections : questionnaire?.sections;
 
-  if (!questionnaire) {
+  if (!questionnaireSections) {
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-6">
         Questionnaire not found for "{categorySlug}".
@@ -73,7 +75,7 @@ export function ReviewStep({
     );
   }
 
-  const sections = questionnaire.sections
+  const sections = questionnaireSections
     .map((section) => {
       const fields = section.questions
         .map((question) => {

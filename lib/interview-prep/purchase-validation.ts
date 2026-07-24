@@ -117,6 +117,33 @@ export async function countToolSessions(
   return sessions?.length || 0;
 }
 
+/**
+ * Count active, unfinished standalone sessions for a category.
+ * Completed sessions consume a purchase credit, but should not make the
+ * category look "Purchased" on the selection screen.
+ */
+export async function countIncompleteToolSessions(
+  userId: string,
+  categorySlug: string
+): Promise<number> {
+  const supabase = await createClient();
+
+  const { data: sessions, error } = await supabase
+    .from('interview_prep_sessions')
+    .select('id')
+    .eq('user_id', userId)
+    .eq('category_slug', categorySlug)
+    .eq('source', 'tool')
+    .eq('completed', false);
+
+  if (error) {
+    console.error('Failed to count incomplete tool sessions:', error);
+    return 0;
+  }
+
+  return sessions?.length || 0;
+}
+
 //  Validation result type
 export interface ValidationResult {
   allowed: boolean;
@@ -174,6 +201,16 @@ export async function validateToolSessionCreation(
       allowed: false,
       reason: 'NO_PURCHASE',
       message: 'Category not purchased. Please purchase to create session.'
+    };
+  }
+
+  const incompleteSessionCount = await countIncompleteToolSessions(userId, categorySlug);
+
+  if (incompleteSessionCount > 0) {
+    return {
+      allowed: true,
+      reason: 'purchase_available',
+      message: 'Existing purchased session available'
     };
   }
   

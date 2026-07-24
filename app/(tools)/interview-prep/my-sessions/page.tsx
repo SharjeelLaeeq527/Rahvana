@@ -338,6 +338,8 @@ export default function MyInterviewSessions() {
     </div>
   );
 
+  const showInitialLoader = loading && sessions.length === 0;
+
   return (
     <div className="bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-py site-main-px">
       <div className="mt-12">
@@ -423,7 +425,7 @@ export default function MyInterviewSessions() {
 
         {!loading && sessions.length > 0 && null}
 
-        {loading ? (
+        {showInitialLoader ? (
           <div className="flex justify-center items-center h-64">
             <Loader size="md" />
           </div>
@@ -447,7 +449,7 @@ export default function MyInterviewSessions() {
               columns={columns}
               data={currentSessions}
               rowKey={(session) => session.id}
-              loading={loading}
+              loading={false}
               refreshing={refreshing}
             />
 

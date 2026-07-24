@@ -66,9 +66,8 @@ export function DynamicQuestionStep({
 
   const validateQuestion = (question: DynamicQuestion, value: unknown): string | null => {
     const fieldName = formatFieldName(question.key);
-    const shouldValidateRequired = question.type !== "boolean";
 
-    if (question.required && shouldValidateRequired) {
+    if (question.required) {
       if (value === undefined || value === null) {
         return `${fieldName} is required`;
       }
@@ -183,7 +182,7 @@ export function DynamicQuestionStep({
         continue;
       }
 
-      if (question.required && question.type !== "boolean") {
+      if (question.required) {
         const value = formData[question.key];
         const errorMsg = validateQuestion(question, value);
 
