@@ -1,7 +1,7 @@
 {
   "categorySlug": "ir-5-parent",
-  "version": "1.0.0",
-  "lastUpdated": "2026-07-17",
+  "version": "1.1.0",
+  "lastUpdated": "2026-07-20",
   "description": "IR-5 parent immigrant visa interview question bank - NO placeholders, generic samples only",
   "questions": [
     {
@@ -1610,10 +1610,35 @@
       ]
     },
     {
+      "id": "us-work-plans",
+      "category": "Employment & Foreign Residence",
+      "priority": "high",
+      "mockInterviewOrder": 59,
+      "question": "Do you plan to work in the United States? If yes, what type of work do you intend to pursue, and when do you expect to begin working?",
+      "sampleAnswer": "Yes. After I receive lawful authorization to work in the United States, I plan to seek employment in my field of experience.",
+      "guidance": "Explain whether you intend to work in the United States, the type of job or industry you plan to pursue, your relevant qualifications or experience, and when you expect to begin. Do not claim that employment has already been secured unless you have a genuine job offer.",
+      "tooltip": "Future employment plans help establish how you intend to support yourself and settle in the United States.",
+      "conditions": {
+        "requireIntake": [],
+        "requireCaseTypes": [
+          "parent"
+        ]
+      },
+      "inputPlaceholder": "Describe your plans to work in the United States",
+      "minLength": 20,
+      "maxLength": 1000,
+      "variations": [
+        "Do you intend to seek employment after moving to the United States? If so, what kind of work do you plan to pursue?",
+        "Are you planning to work in the United States? If yes, please describe your intended occupation, industry, and expected timeline.",
+        "Once you arrive in the United States, do you expect to obtain employment? If affirmative, explain the type of position you will seek and when you plan to begin working.",
+        "Do you have any plans to become employed in the United States? If yes, provide details about your preferred field, qualifications, and anticipated start date."
+      ]
+    },
+    {
       "id": "prior-us-visits",
       "category": "Immigration, Criminal & Security History",
       "priority": "high",
-      "mockInterviewOrder": 59,
+      "mockInterviewOrder": 60,
       "question": "Have you visited the United States before? If yes, what visa did you use, when did you travel, why did you travel, how long did you stay, and did you leave on time?",
       "sampleAnswer": "Yes. I visited in 2023 on a B-2 visa for six weeks and left before my authorized stay expired.",
       "guidance": "Give the visa type, travel dates, purpose, duration, and compliance history accurately.",
@@ -1640,7 +1665,7 @@
       "id": "prior-us-visa-refusal",
       "category": "Immigration, Criminal & Security History",
       "priority": "high",
-      "mockInterviewOrder": 60,
+      "mockInterviewOrder": 61,
       "question": "Have you ever been refused a U.S. visa or withdrawn a U.S. visa application? If yes, what type of visa was involved and what reason were you given?",
       "sampleAnswer": "Yes. A visitor visa application was refused in 2018 under section 214(b).",
       "guidance": "State every refusal or withdrawal truthfully, including approximate date, visa type, location, and stated reason.",
@@ -1667,7 +1692,7 @@
       "id": "prior-us-immigrant-petitions",
       "category": "Immigration, Criminal & Security History",
       "priority": "high",
-      "mockInterviewOrder": 61,
+      "mockInterviewOrder": 62,
       "question": "Has anyone previously filed a U.S. immigration petition or immigrant visa application for you?",
       "sampleAnswer": "No. This is the first immigrant petition filed for me.",
       "guidance": "Identify any prior I-130, I-140, diversity visa, fiancé visa, or other immigrant process and its outcome.",
@@ -1694,7 +1719,7 @@
       "id": "immigration-violations-removal",
       "category": "Immigration, Criminal & Security History",
       "priority": "high",
-      "mockInterviewOrder": 62,
+      "mockInterviewOrder": 63,
       "question": "Have you ever overstayed a visa, worked without authorization, violated immigration status, been denied entry, or been deported or removed from any country?",
       "sampleAnswer": "No. I have always complied with the immigration conditions of the countries I visited.",
       "guidance": "Include U.S. and non-U.S. violations, refusals at a border, voluntary departure, removal, deportation, and unauthorized employment.",
@@ -1722,7 +1747,7 @@
       "id": "criminal-case-details",
       "category": "Immigration, Criminal & Security History",
       "priority": "high",
-      "mockInterviewOrder": 63,
+      "mockInterviewOrder": 64,
       "question": "Have you ever been arrested, charged, convicted, detained, or involved in a criminal case? If yes, what happened and how was the case resolved?",
       "sampleAnswer": "No. I have never been arrested, charged, convicted, or detained in a criminal matter.",
       "guidance": "Disclose all incidents accurately, including dismissed, expunged, juvenile, and old matters, and identify the final disposition.",
@@ -1752,7 +1777,7 @@
       "id": "military-security-service-details",
       "category": "Immigration, Criminal & Security History",
       "priority": "high",
-      "mockInterviewOrder": 64,
+      "mockInterviewOrder": 65,
       "question": "Have you ever served or worked in the military, police, paramilitary, government security, intelligence, or another armed organization? If yes, describe your role, rank, duties, locations, and dates of service.",
       "sampleAnswer": "Yes. I completed mandatory military service from 1985 to 1987 in an administrative role.",
       "guidance": "Describe all service accurately, including mandatory service, reserves, civilian roles, unit, rank, duties, weapons training, deployments, and discharge.",
@@ -1782,7 +1807,7 @@
       "id": "misrepresentation-false-documents",
       "category": "Immigration, Criminal & Security History",
       "priority": "high",
-      "mockInterviewOrder": 65,
+      "mockInterviewOrder": 66,
       "question": "Have you ever provided false information, concealed a material fact, or used a false document in a visa, immigration, passport, or government application?",
       "sampleAnswer": "No. I have never knowingly provided false information or used a false document.",
       "guidance": "Answer truthfully. Include false names, altered documents, omitted material facts, fraudulent records, and assistance provided to another person where relevant.",

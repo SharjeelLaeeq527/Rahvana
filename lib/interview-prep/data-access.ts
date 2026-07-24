@@ -73,7 +73,8 @@ export async function getInterviewSessionByCategory(
 ): Promise<InterviewSession | null> {
   const { supabase, user } = await getSupabaseWithUser();
 
-  // Only return tool-based sessions for category lookup
+  // Only return unfinished tool-based sessions for category lookup.
+  // Completed paid sessions are historical records and should not block repurchase.
   // Journey sessions should be accessed via journey_id
   const { data, error } = await supabase
     .from("interview_prep_sessions")
@@ -81,13 +82,15 @@ export async function getInterviewSessionByCategory(
     .eq("user_id", user.id)
     .eq("category_slug", category_slug)
     .eq("source", "tool")
-    .maybeSingle();
+    .eq("completed", false)
+    .order("updated_at", { ascending: false })
+    .limit(1);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  return data as InterviewSession | null;
+  return (data?.[0] as InterviewSession | undefined) || null;
 }
 
 // Get session by journey_id - for journey-based sessions
@@ -252,19 +255,17 @@ export async function getAllUserSessionsDB(
 ): Promise<InterviewSession[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
-  let query = supabase
-    .from("interview_prep_sessions")
-    .select("*")
-    .eq("user_id", user.id)
-    .eq("source", "tool"); // Only return tool-based sessions in list view. Journey sessions are accessed via journey_id or getActiveJourneySession.
+  let query = supabase.from("interview_prep_sessions").select("*").eq("user_id", user.id);
 
   // Optional filter by completion status
   if (completed !== undefined) {
     query = query.eq("completed", completed);
   }
 
-  // Order by most recent first
-  query = query.order("updated_at", { ascending: false });
+  // Order by journey / tool sessions first
+  query = query
+  .order("source", { ascending: false })
+  .order("updated_at", { ascending: false });
 
   // Apply limit if specified
   if (limit) {

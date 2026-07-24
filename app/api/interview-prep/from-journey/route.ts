@@ -19,6 +19,7 @@ import {
   createJourneyInterviewSession,
   getInterviewSessionByJourney,
 } from "@/lib/interview-prep/service";
+import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 
 export async function POST(request: NextRequest) {
@@ -27,18 +28,42 @@ export async function POST(request: NextRequest) {
     const { journey_id, category_slug } = body;
 
     // Validate required fields
-    if (!journey_id) {
+    if (!journey_id || !category_slug) {
       return NextResponse.json(
-        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[journey_id]" }) },
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[journey_id, category_slug]" }) },
         { status: 400 }
       );
     }
 
-    // Default to IR-1 spouse category if not specified
-    const effectiveCategory = category_slug || "ir-1-spouse";
+    // Validate journey belongs to current user
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: journey, error: journeyError } = await supabase
+      .from("journeys")
+      .select("id, user_id, journey_type")
+      .eq("id", journey_id)
+      .single();
+
+    if (journeyError || !journey) {
+      return NextResponse.json({ error: "Journey not found" }, { status: 404 });
+    }
+
+    if (journey.user_id !== user.id) {
+      return NextResponse.json(
+        { error: "Unauthorized - journey belongs to another user" },
+        { status: 403 }
+      );
+    }
 
     // Create or get existing journey session
-    const result = await createJourneyInterviewSession(journey_id, effectiveCategory);
+    const result = await createJourneyInterviewSession(journey_id, category_slug);
 
     return NextResponse.json(
       {
@@ -75,14 +100,42 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Validate journey belongs to current user
+    const supabase = await createClient();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
+    const { data: journey, error: journeyError } = await supabase
+      .from("journeys")
+      .select("id, user_id, journey_type, status")
+      .eq("id", journey_id)
+      .single();
+
+    if (journeyError || !journey) {
+      return NextResponse.json({ error: "Journey not found" }, { status: 404 });
+    }
+
+    if (journey.user_id !== user.id) {
+      return NextResponse.json(
+        { error: "Unauthorized - journey belongs to another user" },
+        { status: 403 }
+      );
+    }
+
+    // Get session (authentication handled by data-access)
     const session = await getInterviewSessionByJourney(journey_id);
 
     if (!session) {
-      // Either no session exists or journey is inactive
       return NextResponse.json(
         {
           success: true,
           session: null,
+          journey,
           reason: "No active session found for this journey",
         },
         { status: 200 }
@@ -92,6 +145,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({
       success: true,
       session,
+      journey,
       source: "journey",
     });
   } catch (error) {

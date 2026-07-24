@@ -8,6 +8,10 @@
       "title": "Marriage & Basic Information",
       "description": "Core details about your marriage.",
       "order": 1,
+      "ui": {
+        "icon": "Heart",
+        "theme": "rose"
+      },
       "questions": [
         {
           "key": "previous_marriages",
@@ -24,6 +28,10 @@
       "title": "Relationship Origin",
       "description": "How your relationship started and developed.",
       "order": 2,
+      "ui": {
+        "icon": "Heart",
+        "theme": "rose"
+      },
       "questions": [
         {
           "key": "relationship_origin_type",
@@ -40,6 +48,10 @@
       "title": "Relationship Strength",
       "description": "Your current communication and relationship dynamics.",
       "order": 3,
+      "ui": {
+        "icon": "PhoneCall",
+        "theme": "amber"
+      },
       "questions": [
         {
           "key": "living_arrangement",
@@ -72,6 +84,10 @@
       "title": "Family & Social Proof",
       "description": "Your connection with each other's family and social circle.",
       "order": 4,
+      "ui": {
+        "icon": "Users",
+        "theme": "sage"
+      },
       "questions": [
         {
           "key": "met_spouse_family",
@@ -99,6 +115,10 @@
       "title": "Petitioner & Settlement Plans",
       "description": "Key details about your sponsor and your relocation plan.",
       "order": 5,
+      "ui": {
+        "icon": "DollarSign",
+        "theme": "teal"
+      },
       "questions": [
         {
           "key": "petitioner_status",
@@ -123,6 +143,10 @@
       "title": "Background & Compliance",
       "description": "Mandatory background and immigration compliance checks.",
       "order": 6,
+      "ui": {
+        "icon": "Shield",
+        "theme": "rose"
+      },
       "questions": [
         {
           "key": "previous_visa_refusal",

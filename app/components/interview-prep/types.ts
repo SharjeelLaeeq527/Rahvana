@@ -1,8 +1,11 @@
 // Type definitions for Interview Preparation components
 
+import type { QuestionnaireSection } from "@/data/interview-categories/schema";
+
 export type CaseType = "Spouse";
 
 export interface InterviewFormData {
+  [key: string]: unknown;
   caseType: CaseType | "";
   visaCategory?: string;
   // Basic Case Information
@@ -88,4 +91,5 @@ export interface ReviewStepProps {
   onSubmit: () => void;
   onBack: () => void;
   categorySlug?: string;
+  sections?: QuestionnaireSection[];
 }
