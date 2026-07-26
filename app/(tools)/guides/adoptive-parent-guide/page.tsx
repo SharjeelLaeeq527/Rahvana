@@ -484,12 +484,12 @@ const AdoptionGuidePage = () => {
                         {qualifies ? "Relationship Generally Qualifies" : "Adoptive Parent Ineligibility"}
                       </span>
                       <span className="text-xs leading-relaxed opacity-90">
-                        {qualifies
-                          ? "Based on your selections, the adoptive parent-child relationship meets the timing, custody, and residence requirements under U.S. immigration law."
-                          : answers.childAge === "over16"
-                          ? "U.S. immigration law requires adoptions to be completed before the child turns 16. The continue button has been disabled."
-                          : "You must meet the 2-year legal custody and 2-year co-residence requirements before the relationship qualifies."}
-                      </span>
+                      {qualifies
+                        ? "Based on your selections, the adoptive parent-child relationship meets the timing, custody, and residence requirements under U.S. immigration law."
+                        : answers.childAge === "over16"
+                        ? "Under U.S. immigration law, adoption petitions are ineligible if the adoption was completed after the child turned 16. Because your case does not meet this requirement, the relationship does not qualify, and the continue button has been disabled."
+                        : "U.S. immigration law requires the child to have been in the legal custody of and resided with the adoptive parent for at least 2 years. Since these requirements are not met, the relationship does not qualify, and the continue button has been disabled."}
+                    </span>
                     </div>
                   </div>
                 </motion.div>
