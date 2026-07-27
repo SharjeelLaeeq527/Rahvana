@@ -21,6 +21,18 @@ function logDebug(msg: string, obj?: any) {
   } catch (e) {}
 }
 
+const INTERVIEW_PREP_ADDON_PREFIX = "interview-prep:";
+
+function getCatalogAddonId(addonId: string): string {
+  const normalized = addonId.toLowerCase();
+
+  if (normalized.startsWith(INTERVIEW_PREP_ADDON_PREFIX)) {
+    return "interview-prep";
+  }
+
+  return normalized;
+}
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
@@ -38,6 +50,7 @@ export async function POST(request: NextRequest) {
     const userId = user.id;
 
     const body = await request.json();
+
     logDebug("Request body received");
     const {
       productTier,
@@ -49,6 +62,21 @@ export async function POST(request: NextRequest) {
       addons,
       visaCategory,
     } = body;
+
+    if (Array.isArray(addons)) {
+      const unresolvedInterviewPrep = addons.find(
+        (addonId) => typeof addonId === "string" && addonId.toLowerCase() === "interview-prep"
+      );
+
+      if (unresolvedInterviewPrep) {
+        return NextResponse.json(
+          {
+            error: "Interview Prep purchases must include a category-specific addon ID.",
+          },
+          { status: 400 }
+        );
+      }
+    }
 
     // Get user email from Supabase
     const { data: userData, error: userError } = await supabase.auth.admin.getUserById(userId);
@@ -161,9 +189,14 @@ export async function POST(request: NextRequest) {
         params.set("plan", productTier);
         params.set("step", "review");
       } else if (Array.isArray(addons) && addons.length > 0) {
+        const firstCatalogAddonId = getCatalogAddonId(addons[0]);
+
         const firstKind =
-          (ADDONS.find((a) => a.id === addons[0]) as { kind?: string } | undefined)?.kind ??
-          "tools";
+          (
+            ADDONS.find((addon) => addon.id === firstCatalogAddonId) as
+              | { kind?: string }
+              | undefined
+          )?.kind ?? "tools";
         params.set("mode", firstKind);
       }
       if (Array.isArray(addons) && addons.length > 0) params.set("addons", addons.join(","));
@@ -281,8 +314,9 @@ export async function POST(request: NextRequest) {
       // Add-ons — one-time items alongside subscription
       if (addons && Array.isArray(addons) && addons.length > 0) {
         for (const addonId of addons) {
-          const addonIdLower = addonId.toLowerCase();
-          const addon = (PRODUCTS.ADDONS as any)?.[addonIdLower];
+          const catalogAddonId = getCatalogAddonId(addonId);
+
+          const addon = (PRODUCTS.ADDONS as any)?.[catalogAddonId];
 
           if (addon) {
             // FORCE dynamic price_data to ensure same name/price as UI
@@ -309,8 +343,18 @@ export async function POST(request: NextRequest) {
       sessionParams.mode = "payment";
 
       for (const addonId of addons) {
-        const addonIdLower = addonId.toLowerCase();
-        const addon = (PRODUCTS.ADDONS as any)?.[addonIdLower];
+        const catalogAddonId = getCatalogAddonId(addonId);
+
+        const addon = (PRODUCTS.ADDONS as any)?.[catalogAddonId];
+
+        if (!sessionParams.line_items || sessionParams.line_items.length === 0) {
+          return NextResponse.json(
+            {
+              error: "No valid purchasable add-ons were provided.",
+            },
+            { status: 400 }
+          );
+        }
 
         if (addon) {
           sessionParams.line_items!.push({
@@ -334,8 +378,7 @@ export async function POST(request: NextRequest) {
         addons: JSON.stringify(addons),
         visa_category: effectiveVisaCategory,
       };
-    }
-    else if (consultationDetails) {
+    } else if (consultationDetails) {
       const referenceId = `REQ-${Math.floor(100000 + Math.random() * 900000)}`;
       const consultationPrice = 99; // $99 per consultation
 
@@ -385,11 +428,11 @@ export async function POST(request: NextRequest) {
         c_whatsapp_phone: consultationDetails.whatsapp_phone || "",
         c_embassy_consulate: consultationDetails.embassy_consulate || "",
         c_selected_slot: consultationDetails.selected_slot || "",
-        c_alternate_slots: Array.isArray(consultationDetails.alternate_slots) 
-          ? consultationDetails.alternate_slots.join(",") 
+        c_alternate_slots: Array.isArray(consultationDetails.alternate_slots)
+          ? consultationDetails.alternate_slots.join(",")
           : "",
-        c_attachments: Array.isArray(consultationDetails.attachments) 
-          ? consultationDetails.attachments.join(",") 
+        c_attachments: Array.isArray(consultationDetails.attachments)
+          ? consultationDetails.attachments.join(",")
           : "",
         ...summaryMeta,
       };

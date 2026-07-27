@@ -42,6 +42,7 @@ import {
   buildGateContext,
   isMeaningfullyStarted,
   isCaseHealthScorable,
+  hasUserEvidenceSignal,
 } from "@/lib/case-strength/alert-gating";
 import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
 import type { ConsistencyFinding } from "@/lib/case-strength/consistency-intelligence";
@@ -223,7 +224,13 @@ export function DashboardView({
 
   // Band-cross persistence for score-drop alerts (opt-in weighted model only)
   const prevBandRef = useRef<ScoreBand | null>(null);
-  const [scoreDropBand, setScoreDropBand] = useState<ScoreBand | null>(null);
+  const [scoreDropBand, setScoreDropBand] = useState<{ from: ScoreBand; to: ScoreBand } | null>(null);
+
+  // Detect weighted score (IR-1 just got it via profile flag)
+  const useWeightedScore = useMemo(() => {
+    const p = resolveCaseStrengthProfile((data as any).journey_type);
+    return p.caseScore?.model === "weighted";
+  }, [data]);
 
   // User-provided evidence view for the weighted model (autofill excluded),
   // shared by the case narrative AND the Case Analysis drawer. Legacy model → raw analysis.
@@ -349,6 +356,7 @@ export function DashboardView({
   }, [evidenceAnalysis, weightedEvidenceView, state, phase2Responses, uploadedDocuments, data]);
 
   // Health status badge for the CaseSummaryCard header
+  // Weighted model: uses user-provided evidence + weighted score for label/color.
   const caseHealthStatus = useMemo(() => {
     const eligibilityAnswers =
       (state.answers?.["eligibility-suite"] as any) ??
@@ -360,11 +368,19 @@ export function DashboardView({
       uploadedDocuments
     );
 
+    const p = resolveCaseStrengthProfile((data as any).journey_type);
+    if (p.caseScore?.model === "weighted" && weightedEvidenceView) {
+      return getCaseHealthStatus({
+        evidenceAnalysis: weightedEvidenceView,
+        consistencyFindings,
+      });
+    }
+
     return getCaseHealthStatus({
       evidenceAnalysis,
       consistencyFindings,
     });
-  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
+  }, [evidenceAnalysis, weightedEvidenceView, state, phase2Responses, uploadedDocuments, data]);
 
 
   // ── Alert Center Issues ─────────────────────────────────────────────────────
@@ -469,6 +485,29 @@ export function DashboardView({
     (i) => i.level === "warning" && !i.resolved
   ).length;
 
+  // Score-drop synthetic alert (band-cross detection): when weighted score crosses
+  // a band downward, emit a warning that points the user to the CSA breakdown.
+  const scoreDropIssue = useMemo<AggregatedIssue | null>(() => {
+    if (!scoreDropBand) return null;
+    return {
+      level: "warning",
+      title: `Case strength dropped to ${SCORE_BAND_LABEL[scoreDropBand.to]}`,
+      hint: `Your Case Strength moved from ${SCORE_BAND_LABEL[scoreDropBand.from]} to ${SCORE_BAND_LABEL[scoreDropBand.to]}. Open the breakdown to see which factor fell — evidence, consistency, completeness, or a new risk flag.`,
+      stepKey: "__score__",
+      stepName: "Case Strength",
+      stepNumber: 0,
+      chapterIdx: 0,
+      stepIdx: 0,
+      kind: "score-drop",
+    };
+  }, [scoreDropBand]);
+
+  // The Alert Center list, with the score-drop meta-alert first when present.
+  const displayedAlertIssues = useMemo<AggregatedIssue[]>(
+    () => (scoreDropIssue ? [scoreDropIssue, ...alertCenterIssues] : alertCenterIssues),
+    [scoreDropIssue, alertCenterIssues]
+  );
+
   // Empty-state gate: case-health appears only once the user has actually
   // progressed (completed ≥1 step). Before that we must not show a fabricated
   // score — the wizard pre-fills metadata from profile autofill, so softer
@@ -476,6 +515,8 @@ export function DashboardView({
   const notStarted = !isMeaningfullyStarted({ completedCount: state.completedSteps.size });
 
   // Overall combined case score (evidence + consistency)
+  // Weighted model (IR-1/IR-5): 4-ingredient (Evidence 40 / Consistency 30 / Completeness 20 / Risk 10)
+  // with user-provided-only evidence. Legacy model: 50/50 blend.
   const overallCaseScore = useMemo(() => {
     const eligibilityAnswers =
       (state.answers?.["eligibility-suite"] as any) ??
@@ -485,11 +526,35 @@ export function DashboardView({
       (phase2Responses as Phase2Responses) ?? null,
       uploadedDocuments
     );
+
+    const p = resolveCaseStrengthProfile((data as any).journey_type);
+    if (p.caseScore?.model === "weighted" && evidenceAnalysis?.userProvided) {
+      const up = evidenceAnalysis.userProvided;
+      const metadata = state.metadata as Record<string, unknown> | undefined;
+      const questAnswers = metadata?.["questAnswers_eligibility-suite"] as
+        | Record<string, Record<string, string | string[]>>
+        | undefined;
+      const eligibilityRisks = p.detectEligibilityRisks(questAnswers, p.stepRefs);
+      return computeWeightedCaseScore({
+        evidenceStrength: up.score,
+        consistencyScore: computeConsistencyScore(consistencyFindings),
+        completeness: up.completionPercentage,
+        riskFlags: eligibilityRisks,
+      }).score;
+    }
+
     return computeOverallCaseScore({ evidenceAnalysis, consistencyFindings });
-  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments]);
+  }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments, data]);
 
   // Sub-scores for the CaseHealthOverview popover breakdown
-  const evidenceSubScore = evidenceAnalysis?.overallScore ?? 50;
+  // Weighted model uses user-provided-only view; legacy uses autofill-inclusive.
+  const evidenceSubScore = useMemo(() => {
+    const p = resolveCaseStrengthProfile((data as any).journey_type);
+    if (p.caseScore?.model === "weighted" && weightedEvidenceView?.overallScore !== undefined) {
+      return weightedEvidenceView.overallScore;
+    }
+    return evidenceAnalysis?.overallScore ?? 50;
+  }, [evidenceAnalysis, weightedEvidenceView, data]);
   const consistencySubScore = useMemo(() => {
     const eligibilityAnswers =
       (state.answers?.["eligibility-suite"] as any) ??
@@ -519,16 +584,36 @@ export function DashboardView({
   // stay in the neutral "gathering info" state until the user has produced real
   // evidence — not merely completed a checklist step. Without this, an empty
   // evidence set defaults to ~50% and reads as a real (bad) score the instant
-  // step 1 is done. `notStarted` (alert stream) stays keyed off completion.
-  const hasEvidenceSignal =
-    uploadedDocuments.length > 0 ||
-    evidenceAnsweredCount > 0 ||
-    (evidenceAnalysis?.stats?.totalEvidenceItems ?? 0) > 0 ||
-    (evidenceAnalysis?.requiredDocuments?.found ?? 0) > 0;
+  // step 1 is done. Uses userProvided only (not autofill) to avoid fake signals
+  // from journey_documents. `notStarted` (alert stream) stays keyed off completion.
+  // The vault seeds a "MISSING" placeholder row per required document, so the raw
+  // array length is > 0 on a fresh journey — count only rows with a real file.
+  const hasEvidenceSignal = hasUserEvidenceSignal({
+    uploadedFileCount: uploadedDocuments.filter((d) => d.status !== "MISSING").length,
+    evidenceAnsweredCount,
+    userProvidedEvidenceCount: evidenceAnalysis?.userProvided?.evidenceCount ?? 0,
+  });
   const healthNotStarted = !isCaseHealthScorable({
     completedCount: state.completedSteps.size,
     hasEvidenceSignal,
   });
+
+  // Band-cross detection: fire alert only on downward cross, recover on rise.
+  // Declared AFTER overallCaseScore + healthNotStarted so its deps aren't read
+  // in the temporal dead zone (mirrors the ordering in DashboardViewV3).
+  useEffect(() => {
+    if (!useWeightedScore || healthNotStarted) {
+      prevBandRef.current = null;
+      return;
+    }
+    const t = classifyBandTransition(prevBandRef.current, overallCaseScore);
+    if (t.direction === "drop" && prevBandRef.current) {
+      setScoreDropBand({ from: prevBandRef.current, to: t.band });
+    } else if (t.direction === "rise") {
+      setScoreDropBand(null); // recovered → clear the alert
+    }
+    prevBandRef.current = t.band;
+  }, [overallCaseScore, useWeightedScore, healthNotStarted]);
 
   // Extract step_1_2 document_items from roadmap data
   const step1_2DocItems = useMemo(() => {
@@ -1041,7 +1126,7 @@ export function DashboardView({
           {/* ── LEFT COLUMN — Alert Center (critical + warnings only) ─── */}
           <div className="hidden xl:flex flex-col gap-3">
             <AlertCenter
-              issues={alertCenterIssues}
+              issues={displayedAlertIssues}
               notStarted={notStarted}
               onOpenStep={(cIdx, sIdx) => {
                 if (onSelectStep) onSelectStep(cIdx, sIdx);
@@ -1050,6 +1135,7 @@ export function DashboardView({
                   actions.setCurrentStep(sIdx);
                 }
               }}
+              onViewScore={() => setIsCSADrawerOpen(true)}
             />
           </div>
 
@@ -1062,7 +1148,7 @@ export function DashboardView({
               {/* Mobile/tablet only — Alert Center + analysis cards inline */}
               <div className="xl:hidden flex flex-col gap-4">
                 <AlertCenter
-                  issues={alertCenterIssues}
+                  issues={displayedAlertIssues}
                   notStarted={notStarted}
                   onOpenStep={(cIdx, sIdx) => {
                     if (onSelectStep) onSelectStep(cIdx, sIdx);
@@ -1071,6 +1157,7 @@ export function DashboardView({
                       actions.setCurrentStep(sIdx);
                     }
                   }}
+                  onViewScore={() => setIsCSADrawerOpen(true)}
                 />
                 {/* <JourneyRiskCard
                   metadata={state.metadata}
@@ -1735,6 +1822,7 @@ export function DashboardView({
         narrative={caseNarrative}
         evidenceAnalysis={weightedEvidenceView}
         evidenceLoading={evidenceLoading}
+        healthNotStarted={healthNotStarted}
         healthStatus={caseHealthStatus}
         onOpenEvidenceQuestionnaire={() => {
           setIsCSADrawerOpen(false);

@@ -1654,6 +1654,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
               isPrepLaunched={isPrepLaunched}
               setIsPrepLaunched={setIsPrepLaunched}
               guard={stepEntitlement.guard}
+              journeyId={journeyId}
             />
           )}
 

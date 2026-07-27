@@ -25,10 +25,13 @@ interface SessionWithDetails {
   answerCount: number;
   questionCount: number;
   completionPercentage: number;
+  source: "tool" | "journey";
+  journey_id?: string | null;
 }
 
 const CategoryLabel: Record<string, string> = {
   "ir-1-spouse": "IR-1/CR-1 Spouse",
+  "ir-5-parent": "IR-5 Parent",
 };
 
 const getCategoryLabel = (slug: string): string => {
@@ -104,45 +107,59 @@ export default function MyInterviewSessions() {
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
   const [filteredSessions, setFilteredSessions] = useState<SessionWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false); // background refresh
   const [error, setError] = useState<string | null>(null);
-  
+
   const { showToast } = useToast();
 
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedTime, setSelectedTime] = useState<TimeFilter>("all");
+  const [selectedSource, setSelectedSource] = useState("all");
 
   // pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
   const ITEMS_PER_PAGE = 10;
 
   // fetch user sessions
-  useEffect(() => {
-    const fetchUserSessions = async () => {
-      try {
+  const fetchUserSessions = async (isRefresh = false) => {
+    try {
+      if (isRefresh) {
+        setRefreshing(true);
+      } else {
         setLoading(true);
-        const response = await fetch(`/api/interview-prep/user-sessions`);
+      }
 
-        const data = await response.json();
+      const response = await fetch("/api/interview-prep/user-sessions");
+      const data = await response.json();
 
-        if (response.ok) {
-          setSessions(data.sessions);
-        } else {
-          console.error("Failed to fetch user sessions:", data.error ?? data);
-          setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
-          setSessions([]);
-        }
-      } catch (error) {
-        console.error("Error fetching user sessions:", error);
+      if (response.ok) {
+        setSessions(data.sessions);
+      } else {
         setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
-        setSessions([]);
-      } finally {
+      }
+    } catch {
+      setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
+    } finally {
+      if (isRefresh) {
+        setRefreshing(false);
+      } else {
         setLoading(false);
       }
-    };
+    }
+  };
 
-    fetchUserSessions();
+  useEffect(() => {
+    fetchUserSessions(false);
+
+    const interval = setInterval(() => {
+      if (document.visibilityState === "visible") {
+        fetchUserSessions(true);
+      }
+    }, 5000);
+
+    return () => clearInterval(interval);
   }, []);
 
   // Apply filters
@@ -180,9 +197,14 @@ export default function MyInterviewSessions() {
       });
     }
 
+    // Source filter
+    if (selectedSource !== "all") {
+      filtered = filtered.filter((s) => s.source === selectedSource);
+    }
+
     setFilteredSessions(filtered);
     setCurrentPage(1);
-  }, [sessions, selectedCategory, selectedStatus, selectedTime]);
+  }, [sessions, selectedCategory, selectedStatus, selectedTime, selectedSource]);
 
   const hasShownToast = useRef(false);
 
@@ -231,7 +253,7 @@ export default function MyInterviewSessions() {
     {
       key: "category",
       label: "Visa Category",
-      width: "25%",
+      width: "22%",
       render: (session) => {
         const Icon = getCategoryIcon(session.category_slug);
         return (
@@ -247,9 +269,23 @@ export default function MyInterviewSessions() {
       },
     },
     {
+      key: "source",
+      label: "Source",
+      width: "15%",
+      render: (session) => (
+        <span
+          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+            session.source === "tool" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"
+          }`}
+        >
+          {session.source === "tool" ? "Tool" : "Journey"}
+        </span>
+      ),
+    },
+    {
       key: "created",
       label: "Created",
-      width: "25%",
+      width: "23%",
       render: (session) => (
         <div className="flex flex-col">
           <div className="text-base font-medium text-slate-900">
@@ -264,20 +300,18 @@ export default function MyInterviewSessions() {
     {
       key: "status",
       label: "Status",
-      width: "25%",
+      width: "20%",
       render: (session) => <CompletionBadge status={getSessionStatus(session)} />,
     },
     {
       key: "actions",
       label: "Actions",
-      width: "25%",
-      className: "text-right",
+      width: "18%",
+      className: "text-left",
       render: (session) => (
         <Button
           size="sm"
-          onClick={() =>
-            (window.location.href = `/interview-prep/result?sessionId=${session.id}`)
-          }
+          onClick={() => (window.location.href = `/interview-prep/result?sessionId=${session.id}`)}
           className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white"
         >
           View Session
@@ -304,6 +338,8 @@ export default function MyInterviewSessions() {
       </div>
     </div>
   );
+
+  const showInitialLoader = loading && sessions.length === 0;
 
   return (
     <div className="bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-py site-main-px">
@@ -347,6 +383,16 @@ export default function MyInterviewSessions() {
                     value: selectedStatus,
                   },
                   {
+                    key: "source",
+                    label: "Source",
+                    options: [
+                      { value: "all", label: "All Sources" },
+                      { value: "tool", label: "Tool" },
+                      { value: "journey", label: "Journey" },
+                    ],
+                    value: selectedSource,
+                  },
+                  {
                     key: "time",
                     label: "Created",
                     options: [
@@ -362,6 +408,7 @@ export default function MyInterviewSessions() {
                   setSelectedCategory(filters.category || "all");
                   setSelectedStatus(filters.status || "all");
                   setSelectedTime((filters.time || "all") as TimeFilter);
+                  setSelectedSource(filters.source || "all");
                 }}
                 itemCount={filteredSessions.length}
                 totalCount={sessions.length}
@@ -369,7 +416,7 @@ export default function MyInterviewSessions() {
             )}
             <Button
               onClick={() => (window.location.href = "/interview-prep")}
-              className={`bg-[#0d7377] hover:bg-[#0a5a5d] text-white py-5 px-6 text-lg ${sessions.length === 1 ? "opacity-50 cursor-not-allowed" : ""}`}
+              className={`bg-[#0d7377] hover:bg-[#0a5a5d] text-white py-5 px-6 text-lg`}
             >
               <Plus className="w-5 h-5 mr-2" />
               New Session
@@ -379,7 +426,7 @@ export default function MyInterviewSessions() {
 
         {!loading && sessions.length > 0 && null}
 
-        {loading ? (
+        {showInitialLoader ? (
           <div className="flex justify-center items-center h-64">
             <Loader size="md" />
           </div>
@@ -404,6 +451,7 @@ export default function MyInterviewSessions() {
               data={currentSessions}
               rowKey={(session) => session.id}
               loading={false}
+              refreshing={refreshing}
             />
 
             {/* Pagination */}

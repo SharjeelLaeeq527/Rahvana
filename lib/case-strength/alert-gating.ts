@@ -182,6 +182,38 @@ export function isCaseHealthScorable(input: CaseHealthGateInput): boolean {
   return input.completedCount > 0 && input.hasEvidenceSignal;
 }
 
+// ─── User evidence-signal detector (shared by every dashboard version) ────────
+//
+// `hasEvidenceSignal` above is a boolean the caller supplies; this is the SINGLE
+// definition of how that boolean is derived, so V2 (IR-1) and V3 (IR-5) can't
+// drift apart (which is exactly how a fresh journey started showing a fabricated
+// score). It deliberately excludes profile autofill:
+//   • the document vault seeds a "MISSING" placeholder row for every REQUIRED
+//     document, so the raw `uploadedDocuments.length` is > 0 on a brand-new
+//     journey — callers must pass the count of rows with a REAL uploaded file
+//     (status !== "MISSING"), not the array length;
+//   • the gap engine's `stats.totalEvidenceItems` folds in journey_documents
+//     autofill — callers must pass `userProvided.evidenceCount` (vault-source
+//     only), never `stats`.
+// Only real user signal opens the gate (§6E).
+
+export interface EvidenceSignalInput {
+  /** Vault documents that actually have an uploaded file (status !== "MISSING"). */
+  uploadedFileCount: number;
+  /** Answered ("yes") evidence-questionnaire questions. */
+  evidenceAnsweredCount: number;
+  /** Autofill-free evidence item count from the gap engine (userProvided view). */
+  userProvidedEvidenceCount: number;
+}
+
+export function hasUserEvidenceSignal(input: EvidenceSignalInput): boolean {
+  return (
+    input.uploadedFileCount > 0 ||
+    input.evidenceAnsweredCount > 0 ||
+    input.userProvidedEvidenceCount > 0
+  );
+}
+
 // ─── Look-ahead allowlist ────────────────────────────────────────────────────
 //
 // Curated, deadline-driven deficiencies worth flagging one chapter early so the
