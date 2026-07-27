@@ -1,15 +1,9 @@
 "use client";
 import { useState } from "react";
 import { Bold, Italic, Underline, AlignLeft, AlignCenter, AlignRight } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import ColorPicker from "../tools/ColorPicker";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 export type TextFormat = {
   font: string;
@@ -55,28 +49,16 @@ export function TextFormattingToolbar({
         <label className="text-xs font-medium text-gray-600">
           {t("pdfProcessing.editor.toolbar.font")}
         </label>
-        <Select
+        <CustomDropdown
           value={format.font}
-          onValueChange={(value) => {
+          onChange={(value) => {
             onFormatChange({ font: value });
             setActivePicker(null);
           }}
-        >
-          <SelectTrigger
-            className="h-8 w-[130px] text-sm bg-white border-gray-300"
-            style={{ fontFamily: format.font }}
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="z-[9999]">
-            {fonts.map((font) => (
-              <SelectItem key={font} value={font}>
-                <span style={{ fontFamily: font }}>{font}</span>
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          options={fonts.map((font) => ({ value: font, label: font }))}
+          placeholder={t("pdfProcessing.editor.toolbar.font")}
+          className="w-[130px] [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:text-sm"
+        />
       </div>
 
       {/* Font Size Dropdown */}
@@ -84,27 +66,16 @@ export function TextFormattingToolbar({
         <label className="text-xs font-medium text-gray-600">
           {t("pdfProcessing.editor.toolbar.size")}
         </label>
-        <Select
+        <CustomDropdown
           value={String(format.size)}
-          onValueChange={(value) => {
+          onChange={(value) => {
             onFormatChange({ size: Number(value) });
             setActivePicker(null);
           }}
-        >
-          <SelectTrigger
-            className="h-8 w-[80px] text-sm bg-white border-gray-300"
-            onMouseDown={(e) => e.stopPropagation()}
-          >
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent className="z-[9999]">
-            {sizes.map((size) => (
-              <SelectItem key={size} value={String(size)}>
-                {size}px
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+          options={sizes.map((size) => ({ value: String(size), label: `${size}px` }))}
+          placeholder={t("pdfProcessing.editor.toolbar.size")}
+          className="w-[80px] [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:text-sm"
+        />
       </div>
 
       {/* Divider */}

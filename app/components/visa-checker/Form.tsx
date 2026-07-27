@@ -23,7 +23,10 @@ export default function Form() {
   const { user } = useAuth();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
 
-  const visaCategoryOptions: DropdownOption[] = [{ value: "IR-1", label: "IR-1 (Spouse)" }];
+  const visaCategoryOptions: DropdownOption[] = [
+    { value: "IR-1", label: "IR-1 (Spouse)" },
+    { value: "IR-5", label: "IR-5 (Parent)" },
+  ];
 
   const countryOptions: DropdownOption[] = [
     { value: "All Other Countries", label: t("visaChecker.form.countries.all") },

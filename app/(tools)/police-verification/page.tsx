@@ -41,6 +41,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { createBrowserClient } from "@supabase/ssr";
 import { Loader } from "@/components/ui/spinner";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { PKMCenter, pkmCenters } from "./(data)/punjab-pkm-centers";
 import { balochistanCenters } from "./(data)/balochistan-pkm-centers";
 import { kpkCenters } from "./(data)/kpk-centers";
@@ -49,6 +50,18 @@ import {
   AuthorityLetterModal,
   AuthorityLetterPreviewModal,
 } from "./components/AuthorityLetterComponents";
+
+const relationOptions = [
+  { value: "S/O", label: "S/O" },
+  { value: "D/O", label: "D/O" },
+  { value: "W/O", label: "W/O" },
+];
+
+const purposeOptions = [
+  { value: "Study", label: "Study" },
+  { value: "Immigration", label: "Immigration" },
+  { value: "Foreign Employment", label: "Foreign Employment" },
+];
 
 export default function PoliceVerificationPage() {
   const router = useRouter();
@@ -1485,16 +1498,13 @@ function LetterModal({
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-muted-foreground">Relation</label>
-                <select
-                  name="relation"
+                <CustomDropdown
                   value={formData.relation}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-xl border border-input bg-background/50 focus:border-primary outline-none transition-all"
-                >
-                  <option value="S/O">S/O</option>
-                  <option value="D/O">D/O</option>
-                  <option value="W/O">W/O</option>
-                </select>
+                  onChange={(value) => setFormData((prev) => ({ ...prev, relation: value }))}
+                  options={relationOptions}
+                  placeholder="Select relation"
+                  className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-xl [&_button]:bg-background/50 [&_button]:p-3"
+                />
               </div>
             </div>
 
@@ -1548,16 +1558,13 @@ function LetterModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-muted-foreground">Purpose</label>
-                <select
-                  name="purpose"
+                <CustomDropdown
                   value={formData.purpose}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-xl border border-input bg-background/50 focus:border-primary outline-none transition-all"
-                >
-                  <option value="Study">Study</option>
-                  <option value="Immigration">Immigration</option>
-                  <option value="Foreign Employment">Foreign Employment</option>
-                </select>
+                  onChange={(value) => setFormData((prev) => ({ ...prev, purpose: value }))}
+                  options={purposeOptions}
+                  placeholder="Select purpose"
+                  className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-xl [&_button]:bg-background/50 [&_button]:p-3"
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-muted-foreground">

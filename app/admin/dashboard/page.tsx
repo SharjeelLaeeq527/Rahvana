@@ -23,13 +23,6 @@ import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/spinner";
 import { E, msg } from "@/lib/errors";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   AreaChart,
   Area,
   XAxis,
@@ -42,6 +35,7 @@ import {
   // Legend,
 } from "recharts";
 import { AdminNotificationBell } from "@/lib/AdminNotificationBell";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 interface AnalyticsData {
   realtime: {
     activeUsers: string;
@@ -189,18 +183,13 @@ export default function AnalyticsDashboard() {
               {/* Period Selector */}
               <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 py-1 shadow-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <Select value={period} onValueChange={setPeriod}>
-                  <SelectTrigger className="w-[140px] border-none shadow-none focus:ring-0">
-                    <SelectValue placeholder="Select period" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {periods.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>
-                        {p.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CustomDropdown
+                  value={period}
+                  onChange={setPeriod}
+                  options={periods}
+                  placeholder="Select period"
+                  className="w-[140px] [&_button]:w-full [&_button]:min-w-0 [&_button]:border-none [&_button]:shadow-none [&_button]:focus:ring-0"
+                />
               </div>
 
               {/* Refresh Button */}

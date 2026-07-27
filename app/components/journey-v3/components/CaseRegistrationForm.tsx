@@ -5,15 +5,9 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { FileText, Save, CheckCircle, AlertCircle, Info } from "lucide-react";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface CaseRegistrationFormProps {
   onComplete: (data: {
@@ -185,21 +179,22 @@ export default function CaseRegistrationForm({
           <Label htmlFor="embassy-city">
             Embassy/Consulate City <span className="text-red-500">*</span>
           </Label>
-          <Select value={embassyCity} onValueChange={setEmbassyCity}>
-            <SelectTrigger className="mt-1">
-              <SelectValue placeholder="Select your embassy city" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="Islamabad">Islamabad, Pakistan</SelectItem>
-              <SelectItem value="Karachi">Karachi, Pakistan</SelectItem>
-              <SelectItem value="Lahore">Lahore, Pakistan</SelectItem>
-              <SelectItem value="Abu Dhabi">Abu Dhabi, UAE</SelectItem>
-              <SelectItem value="Dubai">Dubai, UAE</SelectItem>
-              <SelectItem value="London">London, UK</SelectItem>
-              <SelectItem value="Toronto">Toronto, Canada</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
+          <CustomDropdown
+            value={embassyCity}
+            onChange={setEmbassyCity}
+            options={[
+              { value: "Islamabad", label: "Islamabad, Pakistan" },
+              { value: "Karachi", label: "Karachi, Pakistan" },
+              { value: "Lahore", label: "Lahore, Pakistan" },
+              { value: "Abu Dhabi", label: "Abu Dhabi, UAE" },
+              { value: "Dubai", label: "Dubai, UAE" },
+              { value: "London", label: "London, UK" },
+              { value: "Toronto", label: "Toronto, Canada" },
+              { value: "other", label: "Other" },
+            ]}
+            placeholder="Select your embassy city"
+            className="mt-1 w-full [&_button]:w-full [&_button]:min-w-0"
+          />
           <p className="text-xs text-muted-foreground mt-1">
             Where your interview will be conducted
           </p>

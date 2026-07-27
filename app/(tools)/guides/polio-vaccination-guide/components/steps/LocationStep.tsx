@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { usePolioWizard } from "../../PolioContext";
 import { MapPin } from "lucide-react";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface District {
   id: string;
@@ -107,63 +108,47 @@ export default function LocationStep() {
             <label className="block text-sm font-bold text-slate-700 mb-2">
               Province / Territory <span className="text-rose-500">*</span>
             </label>
-            <select
+            <CustomDropdown
               value={selectedProvince}
-              onChange={(e) => setSelectedProvince(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-slate-50 hover:bg-white"
-              required
-            >
-              <option value="">Select Province / Territory</option>
-              {locationsData.provinces.map((province: Province) => (
-                <option key={province.id} value={province.id}>
-                  {province.name}
-                </option>
-              ))}
-            </select>
+              onChange={setSelectedProvince}
+              options={locationsData.provinces.map((province: Province) => ({
+                value: province.id,
+                label: province.name,
+              }))}
+              placeholder="Select Province / Territory"
+              className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-slate-50 [&_button]:hover:bg-white"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-2">
               District <span className="text-rose-500">*</span>
             </label>
-            <select
+            <CustomDropdown
               value={selectedDistrict}
-              onChange={(e) => setSelectedDistrict(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-slate-50 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+              onChange={setSelectedDistrict}
+              options={availableDistricts.map((district: District) => ({
+                value: district.id,
+                label: district.name,
+              }))}
+              placeholder={selectedProvince ? "Select District" : "Select Province First"}
               disabled={!selectedProvince}
-              required
-            >
-              <option value="">
-                {selectedProvince ? "Select District" : "Select Province First"}
-              </option>
-              {availableDistricts.map((district: District) => (
-                <option key={district.id} value={district.id}>
-                  {district.name}
-                </option>
-              ))}
-            </select>
+              className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-slate-50 [&_button]:hover:bg-white"
+            />
           </div>
 
           <div>
             <label className="block text-sm font-bold text-slate-700 mb-2">
               City / Area <span className="text-rose-500">*</span>
             </label>
-            <select
+            <CustomDropdown
               value={selectedCity}
-              onChange={(e) => setSelectedCity(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all bg-slate-50 hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed"
+              onChange={setSelectedCity}
+              options={availableCities.map((city: string) => ({ value: city, label: city }))}
+              placeholder={selectedDistrict ? "Select City / Area" : "Select District First"}
               disabled={!selectedDistrict}
-              required
-            >
-              <option value="">
-                {selectedDistrict ? "Select City / Area" : "Select District First"}
-              </option>
-              {availableCities.map((city: string) => (
-                <option key={city} value={city}>
-                  {city}
-                </option>
-              ))}
-            </select>
+              className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-slate-50 [&_button]:hover:bg-white"
+            />
           </div>
         </div>
 

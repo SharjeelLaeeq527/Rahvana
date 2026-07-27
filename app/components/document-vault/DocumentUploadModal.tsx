@@ -762,24 +762,6 @@ export function DocumentUploadModal({
               />
             </div>
 
-            {/* Role selection */}
-            {/* <div className="space-y-2">
-              <Label className="text-sm font-semibold text-[#3a4f63]">
-                {t("documentVaultPage.components.uploadModal.providedBy")}
-              </Label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as DocumentRole)}
-                className="w-full border border-[#d0e4f7] rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-brand/20 focus:border-brand transition-all outline-none"
-              >
-                {documentDef.roles.map((r) => (
-                  <option key={r} value={r}>
-                    {t(`documentVaultPage.roles.${r}`)}
-                  </option>
-                ))}
-              </select>
-            </div> */}
-
             {/* Expiration date (if needed) */}
             {needsExpirationDate && (
               <div className="space-y-2">

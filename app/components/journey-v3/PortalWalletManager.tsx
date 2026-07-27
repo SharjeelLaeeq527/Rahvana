@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { ShieldCheck, X } from "lucide-react";
 
 interface PortalCredential {
@@ -231,32 +232,36 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({ isOpen, onClose, data,
                 <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097]">
                   Affidavit of Support Fee
                 </label>
-                <select
+                <CustomDropdown
                   value={localData.aos}
-                  onChange={(e) => setLocalData({ ...localData, aos: e.target.value })}
-                  className="p-[11px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#3b7dd8] focus:ring-4 focus:ring-[#3b7dd8]/12 transition-all appearance-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b8097%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E')] bg-no-repeat bg-[position:right_12px_center]"
-                >
-                  <option value="">Select status…</option>
-                  <option value="Not paid">Not paid</option>
-                  <option value="In process">In process</option>
-                  <option value="Paid">Paid</option>
-                </select>
+                  onChange={(value) => setLocalData({ ...localData, aos: value })}
+                  options={[
+                    { value: "", label: "Select status..." },
+                    { value: "Not paid", label: "Not paid" },
+                    { value: "In process", label: "In process" },
+                    { value: "Paid", label: "Paid" },
+                  ]}
+                  placeholder="Select status..."
+                  className="w-full [&_button]:w-full [&_button]:min-w-0"
+                />
               </div>
 
               <div className="flex flex-col gap-[5px]">
                 <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097]">
                   Immigrant Visa Fee
                 </label>
-                <select
+                <CustomDropdown
                   value={localData.iv}
-                  onChange={(e) => setLocalData({ ...localData, iv: e.target.value })}
-                  className="p-[11px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#3b7dd8] focus:ring-4 focus:ring-[#3b7dd8]/12 transition-all appearance-none bg-[url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%236b8097%22 stroke-width=%222%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%226 9 12 15 18 9%22/%3E%3C/svg%3E')] bg-no-repeat bg-[position:right_12px_center]"
-                >
-                  <option value="">Select status…</option>
-                  <option value="Not paid">Not paid</option>
-                  <option value="In process">In process</option>
-                  <option value="Paid">Paid</option>
-                </select>
+                  onChange={(value) => setLocalData({ ...localData, iv: value })}
+                  options={[
+                    { value: "", label: "Select status..." },
+                    { value: "Not paid", label: "Not paid" },
+                    { value: "In process", label: "In process" },
+                    { value: "Paid", label: "Paid" },
+                  ]}
+                  placeholder="Select status..."
+                  className="w-full [&_button]:w-full [&_button]:min-w-0"
+                />
               </div>
 
               <div className="flex flex-col gap-[5px]">
@@ -352,18 +357,16 @@ export const ApUpdateModal: React.FC<{
               <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
                 CEAC Status Observed
               </label>
-              <select
+              <CustomDropdown
                 value={ceac}
-                onChange={(e) => setCeac(e.target.value)}
-                className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
-              >
-                <option value="">Select...</option>
-                {ceacOptions.map((opt) => (
-                  <option key={opt} value={opt}>
-                    {opt}
-                  </option>
-                ))}
-              </select>
+                onChange={setCeac}
+                options={[
+                  { value: "", label: "Select..." },
+                  ...ceacOptions.map((opt) => ({ value: opt, label: opt })),
+                ]}
+                placeholder="Select..."
+                className="w-full [&_button]:w-full [&_button]:min-w-0"
+              />
             </div>
 
             <div className="flex flex-col gap-1.5">

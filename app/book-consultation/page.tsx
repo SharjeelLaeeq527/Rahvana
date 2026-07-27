@@ -1153,49 +1153,6 @@ const ConsultationBookingPageContent = () => {
                   <p className="mt-1 text-sm text-red-600">{errors.issue_category}</p>
                 )}
               </div>
-              {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Visa Category *
-                </label>
-                <select
-                  value={formData.visa_category}
-                  onChange={(e) => {
-                    handleInputChange("visa_category", e.target.value);
-                    // Clear error when user selects a value
-                    if (errors.visa_category && e.target.value) {
-                      setErrors((prev) => {
-                        const newErrors = { ...prev };
-                        delete newErrors.visa_category;
-                        return newErrors;
-                      });
-                    }
-                  }}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
-                    errors.visa_category ? "border-red-500" : "border-gray-300"
-                  }`}
-                  required
-                >
-                  <option value="">Select a visa category...</option>
-                  {[...new Set(visaCategories.map((c) => c.group))].map(
-                    (group) => (
-                      <optgroup key={group} label={group!}>
-                        {visaCategories
-                          .filter((c) => c.group === group)
-                          .map((c) => (
-                            <option key={c.value} value={c.value}>
-                              {c.label}
-                            </option>
-                          ))}
-                      </optgroup>
-                    ),
-                  )}
-                </select>
-                {errors.visa_category && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.visa_category}
-                  </p>
-                )}
-              </div> */}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>

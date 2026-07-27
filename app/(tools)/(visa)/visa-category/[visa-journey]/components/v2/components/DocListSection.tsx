@@ -99,6 +99,11 @@ export function DocListSection({
 
   return (
     <div className="flex flex-col">
+      <h1 className="text-[#28151C] text-4xl font-extrabold mb-2">Gather Required Documents</h1>
+      <p className="text-[#8284BF] text-[14px] sm:text-[16px] mb-4 leading-relaxed">
+        Prepare the documents needed for your petition. Open each item to see exactly what is
+        needed, where to get it, and what to watch out for.
+      </p>
       {/* Progress bar */}
       <div className="flex items-center gap-[10px] sm:gap-[12px] mb-[20px] sm:mb-[24px]">
         <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
@@ -196,7 +201,9 @@ export function DocListSection({
                           : "bg-[#e8f1fb] border-[#d0e4f7]"
                       }`}
                     >
-                      <div className="text-primary/70">{getStepIcon(item.icon || "") || getStepIcon("file-text")}</div>
+                      <div className="text-primary/70">
+                        {getStepIcon(item.icon || "") || getStepIcon("file-text")}
+                      </div>
                     </div>
 
                     {/* Content */}
@@ -219,11 +226,24 @@ export function DocListSection({
                                 cls = "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]";
                               } else if (t.cls === "tag-js" || t.cls === "js") {
                                 cls = "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]";
-                              } else if (t.cls === "tag-hm" || t.cls === "hm" || t.cls === "bene" || t.cls === "tag-res") {
+                              } else if (
+                                t.cls === "tag-hm" ||
+                                t.cls === "hm" ||
+                                t.cls === "bene" ||
+                                t.cls === "tag-res"
+                              ) {
                                 cls = "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]";
-                              } else if (t.cls === "tag-tax" || t.cls === "tax" || t.cls === "tag-gov") {
+                              } else if (
+                                t.cls === "tag-tax" ||
+                                t.cls === "tax" ||
+                                t.cls === "tag-gov"
+                              ) {
                                 cls = "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]";
-                              } else if (t.cls === "tag-cur" || t.cls === "cur" || t.cls === "tag-id") {
+                              } else if (
+                                t.cls === "tag-cur" ||
+                                t.cls === "cur" ||
+                                t.cls === "tag-id"
+                              ) {
                                 cls = "bg-[#eef3fa] text-[#3a4f63] border-[#d0e4f7]";
                               } else if (t.cls) {
                                 cls = t.cls;

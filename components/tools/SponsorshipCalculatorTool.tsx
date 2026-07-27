@@ -21,6 +21,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 // --- CONSTANTS ---
@@ -1080,18 +1081,20 @@ export default function SponsorshipCalculatorTool({
                             data.householdMembers.map((m: any) => (
                               <div key={m.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                                 <div className="flex gap-2 mb-3">
-                                  <select 
+                                  <CustomDropdown
                                     value={m.relationship}
-                                    onChange={(e) => updateHouseholdMember(m.id, {relationship: e.target.value})}
-                                    className="flex-1 p-2 text-sm border-2 border-slate-100 rounded-lg bg-slate-50 focus:border-purple-200 outline-none"
-                                  >
-                                    <option value="">Relationship...</option>
-                                    <option value="Spouse">Spouse</option>
-                                    <option value="Child">Child</option>
-                                    <option value="Parent">Parent</option>
-                                    <option value="Sibling">Sibling</option>
-                                    <option value="Other Living in Household">Other Relative</option>
-                                  </select>
+                                    onChange={(value) => updateHouseholdMember(m.id, { relationship: value })}
+                                    options={[
+                                      { value: "", label: "Relationship..." },
+                                      { value: "Spouse", label: "Spouse" },
+                                      { value: "Child", label: "Child" },
+                                      { value: "Parent", label: "Parent" },
+                                      { value: "Sibling", label: "Sibling" },
+                                      { value: "Other Living in Household", label: "Other Relative" },
+                                    ]}
+                                    placeholder="Relationship..."
+                                    className="flex-1 [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-slate-50"
+                                  />
                                   <button onClick={() => removeHouseholdMember(m.id)} className="p-2 text-red-300 hover:bg-red-50 rounded-lg"><Trash2 size={16} /></button>
                                 </div>
                                 <input 

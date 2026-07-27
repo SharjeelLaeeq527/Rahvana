@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from "react";
 import { Info, Check, Calendar, Upload } from "lucide-react";
 import { ApUpdateModal } from "../PortalWalletManager";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface ApDetails {
   received: boolean | null;
@@ -234,22 +235,18 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
                 <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
                   Additional Docs Requested?
                 </label>
-                <select
+                <CustomDropdown
                   value={apDetails.docsRequested}
-                  onChange={(e) =>
+                  onChange={(value) =>
                     setApDetails({
                       ...apDetails,
-                      docsRequested: e.target.value,
+                      docsRequested: value,
                     })
                   }
-                  className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[14px] outline-none focus:border-primary transition-all"
-                >
-                  {tool.recorder.docs_requested_options.map((opt: any) => (
-                    <option key={opt.value} value={opt.value}>
-                      {opt.label}
-                    </option>
-                  ))}
-                </select>
+                  options={tool.recorder.docs_requested_options}
+                  placeholder="Select..."
+                  className="w-full [&_button]:w-full [&_button]:min-w-0"
+                />
               </div>
             </div>
 

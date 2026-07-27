@@ -1169,7 +1169,7 @@ export function MultipleDocumentUploadModal({
                         status: uploadedTypes.includes(opt) ? "uploaded" : "none",
                       }))}
                       placeholder="Select type..."
-                      className="rounded-xl border-2 border-[#e8f1fb] focus:ring-4 focus:ring-primary/10 focus:border-primary bg-slate-50/50"
+                      className="w-full [&_button]:rounded-xl [&_button]:border-2 [&_button]:border-[#e8f1fb] [&_button]:bg-slate-50/50 [&_button]:focus:border-primary [&_button]:focus:ring-4 [&_button]:focus:ring-primary/10"
                       disabled={uploading}
                     />
                   </div>
