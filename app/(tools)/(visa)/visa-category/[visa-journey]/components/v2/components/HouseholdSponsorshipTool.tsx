@@ -6,6 +6,7 @@ import { getStepIcon } from "../StepIcon";
 import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 import { getHhDocItems } from "./HouseholdMemberTool";
 import { DocListSection } from "./DocListSection";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface HouseholdSponsorshipToolProps {
   // State
@@ -209,36 +210,32 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
             <label className="text-[11px] font-semibold text-[#6b8097] uppercase tracking-wider mb-1.5 ml-0.5">
               Number of joint sponsors
             </label>
-            <select
-              value={jsCount}
-              onChange={(e) => setJsCount(parseInt(e.target.value))}
-              className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_10px_center] bg-no-repeat pr-[30px]"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-              }}
-            >
-              <option value="0">0 — not using a joint sponsor</option>
-              <option value="1">1 joint sponsor</option>
-              <option value="2">2 joint sponsors</option>
-            </select>
+            <CustomDropdown
+              value={String(jsCount)}
+              onChange={(value) => setJsCount(parseInt(value, 10))}
+              options={[
+                { value: "0", label: "0 - not using a joint sponsor" },
+                { value: "1", label: "1 joint sponsor" },
+                { value: "2", label: "2 joint sponsors" },
+              ]}
+              className="w-full [&_button]:w-full [&_button]:min-w-0"
+            />
           </div>
           <div className="flex flex-col">
             <label className="text-[11px] font-semibold text-[#6b8097] uppercase tracking-wider mb-1.5 ml-0.5">
               Number of household members
             </label>
-            <select
-              value={hhCount}
-              onChange={(e) => setHhCount(parseInt(e.target.value))}
-              className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_10px_center] bg-no-repeat pr-[30px]"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-              }}
-            >
-              <option value="0">0 — no household members</option>
-              <option value="1">1 household member</option>
-              <option value="2">2 household members</option>
-              <option value="3">3 household members</option>
-            </select>
+            <CustomDropdown
+              value={String(hhCount)}
+              onChange={(value) => setHhCount(parseInt(value, 10))}
+              options={[
+                { value: "0", label: "0 - no household members" },
+                { value: "1", label: "1 household member" },
+                { value: "2", label: "2 household members" },
+                { value: "3", label: "3 household members" },
+              ]}
+              className="w-full [&_button]:w-full [&_button]:min-w-0"
+            />
           </div>
         </div>
 
@@ -255,26 +252,24 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
                     <span className="text-[13px] font-medium text-[#3a4f63] min-w-[140px]">
                       Household Member {num}
                     </span>
-                    <select
+                    <CustomDropdown
                       value={hhRelationships[num] || "other-hh"}
-                      onChange={(e) =>
+                      onChange={(value) =>
                         setHhRelationships((prev) => ({
                           ...prev,
-                          [num]: e.target.value,
+                          [num]: value,
                         }))
                       }
-                      className="flex-1 p-[8px_10px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[13px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_8px_center] bg-no-repeat pr-[26px]"
-                      style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='11' height='11' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-                      }}
-                    >
-                      <option value="spouse">Spouse of petitioner</option>
-                      <option value="child">Child of petitioner</option>
-                      <option value="parent">Parent of petitioner</option>
-                      <option value="sibling">Sibling of petitioner</option>
-                      <option value="other-relative">Other relative</option>
-                      <option value="other-hh">Other household member</option>
-                    </select>
+                      options={[
+                        { value: "spouse", label: "Spouse of petitioner" },
+                        { value: "child", label: "Child of petitioner" },
+                        { value: "parent", label: "Parent of petitioner" },
+                        { value: "sibling", label: "Sibling of petitioner" },
+                        { value: "other-relative", label: "Other relative" },
+                        { value: "other-hh", label: "Other household member" },
+                      ]}
+                      className="flex-1 [&_button]:w-full [&_button]:min-w-0"
+                    />
                   </div>
                 );
               })}

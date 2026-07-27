@@ -326,19 +326,35 @@ export default function ActionPlanResults({
     if (setDocActionModal) {
       setDocActionModal({
         isOpen: true,
-        doc: { id: item.id, title: item.label, sub: item.sub, icon: "FileText" },
+        doc: {
+          id: item.id,
+          title: item.label,
+          sub: item.sub,
+          icon: "FileText",
+        },
         title: item.label,
         subtitle: item.sub,
-        onReadGuide: undefined,
         onUpload: () => {
-          if (setActiveUploadId) setActiveUploadId(item.id);
-          if (setActiveUploadType) setActiveUploadType("doc");
-          if (openUploadModal) openUploadModal(item.vaultId!);
+          if (setActiveUploadId) {
+            setActiveUploadId(item.id);
+          }
+    
+          if (setActiveUploadType) {
+            setActiveUploadType("doc");
+          }
+    
+          if (openUploadModal) {
+            openUploadModal(item.vaultId!);
+          }
+    
           markUploaded();
         },
       });
     } else {
-      if (openUploadModal) openUploadModal(item.vaultId!);
+      if (openUploadModal) {
+        openUploadModal(item.vaultId!);
+      }
+    
       markUploaded();
     }
   };

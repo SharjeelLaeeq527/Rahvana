@@ -26,6 +26,7 @@ interface DocActionModalProps {
     doc: any;
     title?: string;
     subtitle?: string;
+    hasGuide?: boolean;
     onReadGuide?: () => void;
     onUpload?: () => void;
   };
@@ -68,6 +69,9 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
 
   const canReadGuide = plan.canUse(guideFeature);
   const canUpload = plan.canUse("document_vault");
+  const hasGuideAction = typeof onReadGuide === "function" && docActionModal.hasGuide !== false;
+  const hasUploadAction = typeof onUpload === "function";
+  const availableActionsCount = Number(hasGuideAction) + Number(hasUploadAction);
 
   const guideTierIconClass = (() => {
     const target = plan.entitlement(guideFeature).upgradeTarget;
@@ -140,89 +144,95 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div
+                className={`grid grid-cols-1 gap-4 ${
+                  availableActionsCount > 1 ? "sm:grid-cols-2" : "sm:grid-cols-1"
+                }`}
+              >
                 {/* ── Read Guide / Launch Tool Card ── */}
-                <button
-                  onClick={() => {
-                    if (!canReadGuide) {
+                {hasGuideAction && (
+                  <button
+                    onClick={() => {
+                      if (!canReadGuide) {
+                        setDocActionModal({ ...docActionModal, isOpen: false });
+                        setDocActionUpgradeFeature(guideFeature);
+                        return;
+                      }
                       setDocActionModal({ ...docActionModal, isOpen: false });
-                      setDocActionUpgradeFeature(guideFeature);
-                      return;
-                    }
-                    setDocActionModal({ ...docActionModal, isOpen: false });
-                    if (onReadGuide) onReadGuide();
-                  }}
-                  className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
+                      onReadGuide();
+                    }}
+                    className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
                   ${
                     canReadGuide
                       ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
                       : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
                   }`}
-                >
-                  {!canReadGuide && (
-                    <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
-                      <span
-                        className={`plan-icon ${guideTierIconClass} scale-110`}
-                        aria-hidden="true"
-                      />
-                      <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
-                        Upgrade
-                      </span>
-                    </div>
-                  )}
+                  >
+                    {!canReadGuide && (
+                      <div className="absolute top-3 right-3 flex items-center gap-1 bg-[#fffbec] border border-[#e8d47a] rounded-full px-2 py-0.5">
+                        <span
+                          className={`plan-icon ${guideTierIconClass} scale-110`}
+                          aria-hidden="true"
+                        />
+                        <span className="text-[9px] font-bold text-[#c49a0a] uppercase tracking-wider">
+                          Upgrade
+                        </span>
+                      </div>
+                    )}
 
-                  <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
+                    <div
+                      className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
                     ${
                       canReadGuide
                         ? "bg-[#e8f1fb] text-primary group-hover:bg-primary group-hover:text-white"
                         : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
                     }`}
-                  >
-                    {isTranslation ? (
-                      <Sparkles size={20} />
-                    ) : isPassportPhoto ? (
-                      <Camera size={20} />
-                    ) : (
-                      <BookOpen size={20} />
-                    )}
-                  </div>
+                    >
+                      {isTranslation ? (
+                        <Sparkles size={20} />
+                      ) : isPassportPhoto ? (
+                        <Camera size={20} />
+                      ) : (
+                        <BookOpen size={20} />
+                      )}
+                    </div>
 
-                  <h4 className="font-bold text-[#0f1f38] mb-1">
-                    {isTranslation || isPassportPhoto ? "Launch the Tool" : "Read the Guide"}
-                  </h4>
-                  <p className="text-xs text-[#6b8097] leading-relaxed">
-                    {isTranslation
-                      ? "Use our automated tool to prepare certified translations for your documents."
-                      : isPassportPhoto
-                        ? "Generate and validate your passport photos to meet U.S. specifications."
-                        : "View requirements, pitfalls, and step-by-step instructions."}
-                  </p>
-
-                  {isPassportPhoto &&
-                    canReadGuide &&
-                    (() => {
-                      const ent = plan.entitlement("photo_booth");
-                      if (ent.state === "limited") {
-                        return (
-                          <div className="mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
-                            <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
-                            <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">
-                              {ent.limit} Credits Included
-                            </span>
-                          </div>
-                        );
-                      }
-                      return null;
-                    })()}
-
-                  {!canReadGuide && (
-                    <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
-                      <Lock size={9} strokeWidth={2.5} />
-                      Not included in your current plan
+                    <h4 className="font-bold text-[#0f1f38] mb-1">
+                      {isTranslation || isPassportPhoto ? "Launch the Tool" : "Read the Guide"}
+                    </h4>
+                    <p className="text-xs text-[#6b8097] leading-relaxed">
+                      {isTranslation
+                        ? "Use our automated tool to prepare certified translations for your documents."
+                        : isPassportPhoto
+                          ? "Generate and validate your passport photos to meet U.S. specifications."
+                          : "View requirements, pitfalls, and step-by-step instructions."}
                     </p>
-                  )}
-                </button>
+
+                    {isPassportPhoto &&
+                      canReadGuide &&
+                      (() => {
+                        const ent = plan.entitlement("photo_booth");
+                        if (ent.state === "limited") {
+                          return (
+                            <div className="mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
+                              <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                              <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">
+                                {ent.limit} Credits Included
+                              </span>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })()}
+
+                    {!canReadGuide && (
+                      <p className="mt-2 text-[10px] font-semibold text-[#c49a0a] flex items-center gap-1">
+                        <Lock size={9} strokeWidth={2.5} />
+                        Not included in your current plan
+                      </p>
+                    )}
+                  </button>
+                )}
 
                 {/* ── Upload Document Card ── */}
                 <button

@@ -7,6 +7,7 @@ import {
   FormData as PlannerFormData,
   FormSelections,
 } from "@/app/(tools)/(visa)/221g-action-planner/types/221g";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface Respond221gToolProps {
   tool: any;
@@ -101,17 +102,19 @@ export const Respond221gTool: React.FC<Respond221gToolProps> = ({
                 <label className="text-[10px] font-bold uppercase tracking-wide text-[#6b8097]">
                   Submission Method
                 </label>
-                <select
+                <CustomDropdown
                   value={submissionMethod}
-                  onChange={(e) => setSubmissionMethod(e.target.value)}
-                  className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[13px] outline-none focus:border-primary transition-all"
-                >
-                  <option value="">Select method…</option>
-                  <option value="drop_box">Courier / Drop Box</option>
-                  <option value="email">Email</option>
-                  <option value="in_person">In Person</option>
-                  <option value="other">Other</option>
-                </select>
+                  onChange={setSubmissionMethod}
+                  options={[
+                    { value: "", label: "Select method..." },
+                    { value: "drop_box", label: "Courier / Drop Box" },
+                    { value: "email", label: "Email" },
+                    { value: "in_person", label: "In Person" },
+                    { value: "other", label: "Other" },
+                  ]}
+                  placeholder="Select method..."
+                  className="w-full [&_button]:w-full [&_button]:min-w-0"
+                />
               </div>
             </div>
             <button

@@ -15,6 +15,7 @@ import {
 import { Loader } from "@/components/ui/spinner";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 // External Imports for PKM Locator
 import { PKMCenter, pkmCenters } from "../../../police-verification/(data)/punjab-pkm-centers";
@@ -23,6 +24,27 @@ import { E, msg } from "@/lib/errors";
 import { kpkCenters } from "../../../police-verification/(data)/kpk-centers";
 import { findNearestCenters, geocodeAddress } from "../../../police-verification/location-utils";
 import Link from "next/link";
+
+const relationOptions = [
+  { value: "S/O", label: "S/O" },
+  { value: "D/O", label: "D/O" },
+  { value: "W/O", label: "W/O" },
+];
+
+const purposeOptions = [
+  { value: "Study", label: "Study" },
+  { value: "Immigration", label: "Immigration" },
+  { value: "Foreign Employment", label: "Foreign Employment" },
+];
+
+const relationshipOptions = [
+  { value: "Father", label: "Father" },
+  { value: "Mother", label: "Mother" },
+  { value: "Brother", label: "Brother" },
+  { value: "Son", label: "Son" },
+  { value: "Cousin", label: "Cousin" },
+  { value: "Relative", label: "Relative" },
+];
 
 export interface FormData {
   fullName: string;
@@ -173,16 +195,13 @@ export function LetterModal({
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-500">Relation</label>
-                <select
-                  name="relation"
+                <CustomDropdown
                   value={formData.relation}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-xl border border-gray-200 focus:border-primary outline-none transition-all"
-                >
-                  <option value="S/O">S/O</option>
-                  <option value="D/O">D/O</option>
-                  <option value="W/O">W/O</option>
-                </select>
+                  onChange={(value) => setFormData((prev) => ({ ...prev, relation: value }))}
+                  options={relationOptions}
+                  placeholder="Select relation"
+                  className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-xl [&_button]:bg-white [&_button]:p-3"
+                />
               </div>
             </div>
 
@@ -232,16 +251,13 @@ export function LetterModal({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-500">Purpose</label>
-                <select
-                  name="purpose"
+                <CustomDropdown
                   value={formData.purpose}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-xl border border-gray-200 focus:border-primary outline-none transition-all"
-                >
-                  <option value="Study">Study</option>
-                  <option value="Immigration">Immigration</option>
-                  <option value="Foreign Employment">Foreign Employment</option>
-                </select>
+                  onChange={(value) => setFormData((prev) => ({ ...prev, purpose: value }))}
+                  options={purposeOptions}
+                  placeholder="Select purpose"
+                  className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-xl [&_button]:bg-white [&_button]:p-3"
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-gray-500">District/Region</label>
@@ -598,16 +614,15 @@ export function AuthorityLetterModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-600">Relation Type</label>
-                  <select
-                    name="relationType"
+                  <CustomDropdown
                     value={formData.relationType}
-                    onChange={handleChange}
-                    className="w-full p-3 rounded-xl border border-gray-200 focus:border-primary outline-none"
-                  >
-                    <option value="S/O">S/O</option>
-                    <option value="D/O">D/O</option>
-                    <option value="W/O">W/O</option>
-                  </select>
+                    onChange={(value) =>
+                      setFormData((prev) => ({ ...prev, relationType: value }))
+                    }
+                    options={relationOptions}
+                    placeholder="Select relation"
+                    className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-xl [&_button]:bg-white [&_button]:p-3"
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-600">
@@ -699,16 +714,15 @@ export function AuthorityLetterModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-600">Relation Type</label>
-                  <select
-                    name="authRelationType"
+                  <CustomDropdown
                     value={formData.authRelationType}
-                    onChange={handleChange}
-                    className="w-full p-3 rounded-xl border border-gray-200 focus:border-primary outline-none"
-                  >
-                    <option value="S/O">S/O</option>
-                    <option value="D/O">D/O</option>
-                    <option value="W/O">W/O</option>
-                  </select>
+                    onChange={(value) =>
+                      setFormData((prev) => ({ ...prev, authRelationType: value }))
+                    }
+                    options={relationOptions}
+                    placeholder="Select relation"
+                    className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-xl [&_button]:bg-white [&_button]:p-3"
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-600">
@@ -728,19 +742,15 @@ export function AuthorityLetterModal({
                   <label className="text-sm font-semibold text-gray-600">
                     Relationship to Applicant
                   </label>
-                  <select
-                    name="authRelationship"
+                  <CustomDropdown
                     value={formData.authRelationship}
-                    onChange={handleChange}
-                    className="w-full p-3 rounded-xl border border-gray-200 focus:border-primary outline-none"
-                  >
-                    <option value="Father">Father</option>
-                    <option value="Mother">Mother</option>
-                    <option value="Brother">Brother</option>
-                    <option value="Son">Son</option>
-                    <option value="Cousin">Cousin</option>
-                    <option value="Relative">Relative</option>
-                  </select>
+                    onChange={(value) =>
+                      setFormData((prev) => ({ ...prev, authRelationship: value }))
+                    }
+                    options={relationshipOptions}
+                    placeholder="Select relationship"
+                    className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-xl [&_button]:bg-white [&_button]:p-3"
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-600">

@@ -214,7 +214,7 @@ export default function CountryAutocomplete({
         </div>
       )}
 
-      {/* Suggestions dropdown – same styling as SelectContent/SelectItem */}
+      {/* Suggestions dropdown using the shared menu visual language */}
       {!loading && suggestions.length > 0 && (
         <div
           id="country-suggestions-list"

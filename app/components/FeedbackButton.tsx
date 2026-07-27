@@ -5,19 +5,13 @@ import { MessageSquareWarning, X, Upload } from "lucide-react";
 import { useToast } from "./shared/ToastProvider";
 import { usePathname } from "next/navigation";
 import {
-  Select,
-  SelectContent,
-  SelectTrigger,
-  SelectItem,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface FeedbackButtonProps {
   steps?: string[];
@@ -469,21 +463,19 @@ export default function FeedbackButton({
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Feedback Type
                 </label>
-                <Select
+                <CustomDropdown
                   value={feedback.category}
-                  onValueChange={(val) => setFeedback((prev) => ({ ...prev, category: val }))}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder="Select a category" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="incorrect_information">Incorrect information</SelectItem>
-                    <SelectItem value="ui_ux_issue">UI/UX issue</SelectItem>
-                    <SelectItem value="bug">Bug / Something broken</SelectItem>
-                    <SelectItem value="suggestion">Suggestion / Improvement</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={(val) => setFeedback((prev) => ({ ...prev, category: val }))}
+                  options={[
+                    { value: "incorrect_information", label: "Incorrect information" },
+                    { value: "ui_ux_issue", label: "UI/UX issue" },
+                    { value: "bug", label: "Bug / Something broken" },
+                    { value: "suggestion", label: "Suggestion / Improvement" },
+                    { value: "other", label: "Other" },
+                  ]}
+                  placeholder="Select a category"
+                  className="w-full [&_button]:w-full [&_button]:min-w-0"
+                />
               </div>
 
               {/* Step */}
@@ -492,21 +484,13 @@ export default function FeedbackButton({
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Where did this happen?
                   </label>
-                  <Select
+                  <CustomDropdown
                     value={feedback.step}
-                    onValueChange={(val) => setFeedback((prev) => ({ ...prev, step: val }))}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select a step" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {steps.map((s) => (
-                        <SelectItem key={s} value={s}>
-                          {s}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(val) => setFeedback((prev) => ({ ...prev, step: val }))}
+                    options={steps.map((step) => ({ value: step, label: step }))}
+                    placeholder="Select a step"
+                    className="w-full [&_button]:w-full [&_button]:min-w-0"
+                  />
                 </div>
               )}
 

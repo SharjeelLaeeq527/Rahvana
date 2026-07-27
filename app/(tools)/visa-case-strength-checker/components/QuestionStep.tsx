@@ -1,16 +1,10 @@
 import React, { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ToggleSwitch } from "@/app/components/interview-prep/ToggleSwitch";
 import CountryAutocomplete from "@/app/components/shared/CountryAutoComplete";
 import { QuestionStepProps } from "../types";
 import { Question } from "@/lib/visa-checker/engine-types";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 const QuestionStep = ({
   questionnaire,
@@ -144,21 +138,16 @@ const QuestionStep = ({
       case "select":
         if (Array.isArray(question.options)) {
           return (
-            <Select
+            <CustomDropdown
               value={String(value ?? "")}
-              onValueChange={(newValue) => handleChange(question.id, newValue)}
-            >
-              <SelectTrigger className="w-full h-14">
-                <SelectValue placeholder={`Select ${question.label.toLowerCase()}`} />
-              </SelectTrigger>
-              <SelectContent>
-                {question.options.map((option: string) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={(newValue) => handleChange(question.id, newValue)}
+              options={question.options.map((option: string) => ({
+                value: option,
+                label: option,
+              }))}
+              placeholder={`Select ${question.label.toLowerCase()}`}
+              className="w-full [&_button]:h-14 [&_button]:w-full [&_button]:min-w-0"
+            />
           );
         }
         return null;

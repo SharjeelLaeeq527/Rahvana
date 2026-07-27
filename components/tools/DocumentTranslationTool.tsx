@@ -3,13 +3,6 @@
 import { useState, useRef } from "react";
 import { Upload, AlertCircle, CheckCircle, X, FileText, Lock } from "lucide-react";
 import SuccessState from "@/app/components/document-translation/SuccessState";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { AuthRequiredModal } from "@/app/components/shared/AuthRequiredModal";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -19,6 +12,7 @@ import { CreditCard, ShoppingBag, Sparkles, Crown } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface DocumentTranslationToolProps {
   showHeader?: boolean;
@@ -536,27 +530,24 @@ export default function DocumentTranslationTool({
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     {t("documentTranslation.uploadPage.documentTypeLabel")}
                   </label>
-                  <Select value={documentType} onValueChange={setDocumentType}>
-                    <SelectTrigger className="w-full">
-                      <SelectValue
-                        placeholder={t("documentTranslation.uploadPage.selectTypePlaceholder")}
-                      />
-                    </SelectTrigger>
-                    <SelectContent className="z-[200]">
-                      <SelectItem value="marriage">
-                        {t("documentTranslation.uploadPage.types.marriage")}
-                      </SelectItem>
-                      <SelectItem value="birth">
-                        {t("documentTranslation.uploadPage.types.birth")}
-                      </SelectItem>
-                      <SelectItem value="divorce">
-                        {t("documentTranslation.uploadPage.types.divorce")}
-                      </SelectItem>
-                      <SelectItem value="death">
-                        {t("documentTranslation.uploadPage.types.death")}
-                      </SelectItem>
-                    </SelectContent>
-                  </Select>
+                  <CustomDropdown
+                    value={documentType}
+                    onChange={setDocumentType}
+                    options={[
+                      {
+                        value: "marriage",
+                        label: t("documentTranslation.uploadPage.types.marriage"),
+                      },
+                      { value: "birth", label: t("documentTranslation.uploadPage.types.birth") },
+                      {
+                        value: "divorce",
+                        label: t("documentTranslation.uploadPage.types.divorce"),
+                      },
+                      { value: "death", label: t("documentTranslation.uploadPage.types.death") },
+                    ]}
+                    placeholder={t("documentTranslation.uploadPage.selectTypePlaceholder")}
+                    className="w-full [&_button]:w-full [&_button]:min-w-0"
+                  />
                 </div>
 
                 {/* Optional Notes */}

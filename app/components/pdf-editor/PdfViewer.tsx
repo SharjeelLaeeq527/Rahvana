@@ -5,18 +5,12 @@ import Image from "next/image";
 import { usePDFStore, type ShapeType } from "@/lib/store";
 import { ChevronLeft, ChevronRight, ZoomIn, ZoomOut, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import DraggableTextPro from "./text/DraggableTextPro";
 import DraggableShape from "./shapes/DraggableShape";
 import DraggableSignature from "./signature/DraggableSignature";
 import ShapeFormattingToolbar from "./shapes/ShapeFormattingToolbar";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import type { TextFormat } from "./text/TextFormattingToolbar";
@@ -365,9 +359,9 @@ export function PDFViewer({
           </Button>
 
           {/* Zoom Dropdown */}
-          <Select
+          <CustomDropdown
             value={String(scale)}
-            onValueChange={(val) => {
+            onChange={(val) => {
               if (val === "fitWidth" && containerRef.current && pageWidth) {
                 const containerWidth = containerRef.current.clientWidth - 32;
                 setScale(containerWidth / pageWidth);
@@ -378,27 +372,19 @@ export function PDFViewer({
                 setScale(Number(val));
               }
             }}
-          >
-            <SelectTrigger
-              className="h-8 w-[100px] text-sm bg-white"
-              onMouseDown={(e) => e.stopPropagation()}
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent className="z-[9999]">
-              <SelectItem value="0.5">50%</SelectItem>
-              <SelectItem value="0.75">75%</SelectItem>
-              <SelectItem value="1">{t("pdfProcessing.editor.viewer.actual")}</SelectItem>
-              <SelectItem value="1.25">125%</SelectItem>
-              <SelectItem value="1.5">150%</SelectItem>
-              <SelectItem value="2">200%</SelectItem>
-              <SelectItem value="3">300%</SelectItem>
-              <SelectItem value="fitWidth">{t("pdfProcessing.editor.viewer.fitWidth")}</SelectItem>
-              <SelectItem value="fitHeight">
-                {t("pdfProcessing.editor.viewer.fitHeight")}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+            options={[
+              { value: "0.5", label: "50%" },
+              { value: "0.75", label: "75%" },
+              { value: "1", label: t("pdfProcessing.editor.viewer.actual") },
+              { value: "1.25", label: "125%" },
+              { value: "1.5", label: "150%" },
+              { value: "2", label: "200%" },
+              { value: "3", label: "300%" },
+              { value: "fitWidth", label: t("pdfProcessing.editor.viewer.fitWidth") },
+              { value: "fitHeight", label: t("pdfProcessing.editor.viewer.fitHeight") },
+            ]}
+            className="w-[100px] [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:text-sm"
+          />
         </div>
       </div>
 
