@@ -99,11 +99,6 @@ export function DocListSection({
 
   return (
     <div className="flex flex-col">
-      <h1 className="text-[#28151C] text-4xl font-extrabold mb-2">Gather Required Documents</h1>
-      <p className="text-[#8284BF] text-[14px] sm:text-[16px] mb-4 leading-relaxed">
-        Prepare the documents needed for your petition. Open each item to see exactly what is
-        needed, where to get it, and what to watch out for.
-      </p>
       {/* Progress bar */}
       <div className="flex items-center gap-[10px] sm:gap-[12px] mb-[20px] sm:mb-[24px]">
         <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
