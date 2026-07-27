@@ -1,110 +1,163 @@
 "use client";
 
 import React from "react";
-// import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface DqRecordingToolProps {
   dqState: {
     dqSaved: boolean;
-    setDqSaved: (v: boolean) => void;
+    setDqSaved: (value: boolean) => void;
     dqDate: string;
-    setDqDate: (v: string) => void;
+    setDqDate: (value: string) => void;
     dqCategory: string;
-    setDqCategory: (v: string) => void;
+    setDqCategory: (value: string) => void;
     dqCountry: string;
-    setDqCountry: (v: string) => void;
+    setDqCountry: (value: string) => void;
   };
   actions: {
-    updateMetadata: (data: Record<string, unknown>) => void;
+    updateMetadata: (data: Record<string, unknown>) => void | Promise<void>;
   };
   guard?: () => boolean;
 }
 
-export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({ dqState, actions, guard }) => {
+const DQ_CATEGORY_OPTIONS = [
+  {
+    value: "IR-1",
+    label: "IR-1",
+  },
+  {
+    value: "IR-5",
+    label: "IR-5",
+  },
+];
+
+export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({
+  dqState,
+  actions,
+  guard,
+}) => {
   const {
     dqSaved,
     setDqSaved,
     dqDate,
     setDqDate,
-    // dqCategory,
-    // setDqCategory,
+    dqCategory,
+    setDqCategory,
     dqCountry,
-    // setDqCountry,
   } = dqState;
+
   const [isSaving, setIsSaving] = React.useState(false);
+
+  // Select IR-1 by default when no category has been saved.
+  React.useEffect(() => {
+    if (!dqCategory) {
+      setDqCategory("IR-1");
+    }
+  }, [dqCategory, setDqCategory]);
+
+  const selectedCategory = dqCategory || "IR-1";
+
+  const handleSave = async () => {
+    if (guard && !guard()) return;
+
+    setIsSaving(true);
+
+    try {
+      await actions.updateMetadata({
+        dqSaved: true,
+        dqDate,
+        dqCategory: selectedCategory,
+        dqCountry,
+      });
+
+      setDqSaved(true);
+    } catch (error) {
+      console.error("Failed to save DQ information:", error);
+    } finally {
+      setIsSaving(false);
+    }
+  };
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
-      <div className="flex gap-[7px] flex-wrap mb-[32px]">
-        <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#fffbec] text-[#b38600] border border-[#e8d47a]">
+      <div className="mb-[32px] flex flex-wrap gap-[7px]">
+        <span className="rounded-full border border-[#e8d47a] bg-[#fffbec] px-[12px] py-[3px] text-[11px] font-semibold uppercase tracking-wider text-[#b38600]">
           Major Milestone
         </span>
-        <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7]">
+
+        <span className="rounded-full border border-[#d0e4f7] bg-[#e8f1fb] px-[12px] py-[3px] text-[11px] font-semibold uppercase tracking-wider text-[#2d4a6e]">
           Tracking Active
         </span>
-        <span className="text-[11px] font-semibold tracking-wider uppercase px-[12px] py-[3px] rounded-full bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2]">
+
+        <span className="rounded-full border border-[#c9bef2] bg-[#f3f0fb] px-[12px] py-[3px] text-[11px] font-semibold uppercase tracking-wider text-[#4a2d8a]">
           Dashboard Update
         </span>
       </div>
 
-      <div className="relative bg-[#1a0a18] rounded-[16px] p-[22px_26px] mb-[18px] overflow-hidden">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-90" />
-        <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[5px]">
+      <div className="relative mb-[18px] overflow-hidden rounded-[16px] bg-[#1a0a18] p-[22px_26px]">
+        <div className="absolute left-0 right-0 top-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-90" />
+
+        <div className="mb-[5px] text-[10px] font-bold uppercase tracking-widest text-white/40">
           NVC — Documentary Qualification Received
         </div>
-        <div className="text-[22px] text-white/92 mb-[6px]">
+
+        <div className="mb-[6px] text-[22px] text-white/90">
           Your documents have been accepted by NVC
         </div>
-        <div className="text-[13px] text-white/55 leading-[1.55]">
-          This is a significant milestone. Case is now documentarily complete.
+
+        <div className="text-[13px] leading-[1.55] text-white/55">
+          This is a significant milestone. Your case is now documentarily complete.
         </div>
       </div>
 
       {!dqSaved ? (
-        <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px_24px] mb-[14px]">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[16px]">
+        <div className="mb-[14px] rounded-[16px] border-[1.5px] border-[#d0e4f7] bg-white p-[22px_24px]">
+          <div className="mb-[16px] grid grid-cols-1 gap-[12px] sm:grid-cols-2">
             <input
               type="date"
               value={dqDate}
               max={new Date().toISOString().split("T")[0]}
-              onChange={(e) => setDqDate(e.target.value)}
-              className="p-2.5 border rounded-lg"
+              onChange={(event) => setDqDate(event.target.value)}
+              className="min-h-[42px] w-full rounded-lg border-[1.5px] border-[#4A7772] bg-white px-3 py-2 text-[13.5px] font-semibold text-[#2E5450] outline-none transition-colors hover:border-[#3C6561] focus:ring-2 focus:ring-[#4A7772]/20"
             />
-            <div className="p-2.5 border rounded-lg bg-slate-50 text-slate-700 font-medium">
-              IR-1
-            </div>
+
+            <CustomDropdown
+              value={selectedCategory}
+              onChange={setDqCategory}
+              options={DQ_CATEGORY_OPTIONS}
+              placeholder="Select visa category"
+              className="w-full"
+            />
           </div>
+
           <button
-            onClick={async () => {
-              if (guard && !guard()) return;
-              setIsSaving(true);
-              try {
-                await actions.updateMetadata({
-                  dqSaved: true,
-                  dqDate,
-                  dqCategory: "IR-1",
-                  dqCountry,
-                });
-                setDqSaved(true);
-              } finally {
-                setIsSaving(false);
-              }
-            }}
-            disabled={isSaving}
-            className="w-full bg-primary text-white py-3 rounded-lg font-bold disabled:opacity-70 disabled:cursor-not-allowed"
+            type="button"
+            onClick={handleSave}
+            disabled={isSaving || !dqDate}
+            className="w-full rounded-lg bg-primary py-3 font-bold text-white transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {isSaving ? "Saving..." : "Save DQ & Activate Tracking"}
           </button>
         </div>
       ) : (
-        <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl mb-4 flex justify-between items-center">
-          <div className="font-bold text-emerald-800 text-xs">✓ DQ Recorded ({dqDate})</div>
+        <div className="mb-4 flex items-center justify-between rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+          <div>
+            <div className="text-xs font-bold text-emerald-800">
+              ✓ DQ Recorded ({dqDate})
+            </div>
+
+            <div className="mt-1 text-[11px] font-medium text-emerald-700">
+              Category: {selectedCategory}
+            </div>
+          </div>
+
           <button
+            type="button"
             onClick={() => {
               setIsSaving(false);
               setDqSaved(false);
             }}
-            className="text-primary text-xs font-semibold hover:underline"
+            className="text-xs font-semibold text-primary hover:underline"
           >
             Edit
           </button>
