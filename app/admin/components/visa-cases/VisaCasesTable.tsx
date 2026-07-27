@@ -12,13 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -46,6 +39,7 @@ import {
   ExternalLink,
   ChevronDown,
 } from "lucide-react";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface Journey {
   id: string;
@@ -336,17 +330,17 @@ export default function VisaCasesTable() {
                 />
               </div>
             </div>
-            <Select value={journeyType} onValueChange={setJourneyType}>
-              <SelectTrigger className="w-[200px]">
-                <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Journey Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="IR1">IR-1 Spouse Visa</SelectItem>
-                <SelectItem value="IR5">IR-5 Parent Visa</SelectItem>
-                <SelectItem value="F1">F-1 Student Visa</SelectItem>
-              </SelectContent>
-            </Select>
+            <CustomDropdown
+              value={journeyType}
+              onChange={setJourneyType}
+              options={[
+                { value: "IR1", label: "IR-1 Spouse Visa" },
+                { value: "IR5", label: "IR-5 Parent Visa" },
+                { value: "F1", label: "F-1 Student Visa" },
+              ]}
+              placeholder="Journey Type"
+              className="w-[200px] [&_button]:w-full [&_button]:min-w-0"
+            />
           </div>
 
           {/* Stats */}
@@ -701,28 +695,26 @@ export default function VisaCasesTable() {
                         <Label className="text-xs uppercase tracking-wider font-bold">
                           Update USCIS Status
                         </Label>
-                        <Select
+                        <CustomDropdown
                           value={trackingStatus.uscis_status || ""}
-                          onValueChange={(val) =>
+                          onChange={(val) =>
                             setTrackingStatus((prev) => ({
                               ...prev,
                               uscis_status: val,
                               uscis_status_updated: new Date().toISOString(),
                             }))
                           }
-                        >
-                          <SelectTrigger className="bg-white">
-                            <SelectValue placeholder="Select current status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="receipt_notice_sent">Receipt Notice Sent</SelectItem>
-                            <SelectItem value="case_received">Case Received</SelectItem>
-                            <SelectItem value="under_review">Actively Reviewing</SelectItem>
-                            <SelectItem value="rfe">Request for Evidence (RFE)</SelectItem>
-                            <SelectItem value="approved">Case Approved</SelectItem>
-                            <SelectItem value="denied">Case Denied</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          options={[
+                            { value: "receipt_notice_sent", label: "Receipt Notice Sent" },
+                            { value: "case_received", label: "Case Received" },
+                            { value: "under_review", label: "Actively Reviewing" },
+                            { value: "rfe", label: "Request for Evidence (RFE)" },
+                            { value: "approved", label: "Case Approved" },
+                            { value: "denied", label: "Case Denied" },
+                          ]}
+                          placeholder="Select current status"
+                          className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-white"
+                        />
                       </div>
                     </div>
                   )}
@@ -812,9 +804,9 @@ export default function VisaCasesTable() {
                         <Label className="text-xs uppercase tracking-wider font-bold">
                           Set Status
                         </Label>
-                        <Select
+                        <CustomDropdown
                           value={trackingStatus.dq_status || "pending"}
-                          onValueChange={(val) =>
+                          onChange={(val) =>
                             setTrackingStatus((prev) => ({
                               ...prev,
                               dq_status: val,
@@ -824,15 +816,12 @@ export default function VisaCasesTable() {
                                   : prev.dq_date,
                             }))
                           }
-                        >
-                          <SelectTrigger className="bg-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="qualified">Qualified</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          options={[
+                            { value: "pending", label: "Pending" },
+                            { value: "qualified", label: "Qualified" },
+                          ]}
+                          className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-white"
+                        />
                       </div>
                     </div>
                   )}
@@ -981,24 +970,23 @@ export default function VisaCasesTable() {
                     <Label className="text-xs uppercase tracking-wider font-bold">
                       Case Status
                     </Label>
-                    <select
+                    <CustomDropdown
                       value={caseStatus}
-                      onChange={(e) => setCaseStatus(e.target.value)}
-                      className="w-full h-9 rounded-md border border-slate-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    >
-                      <option value="">, Select Status, </option>
-                      <option value="Pending">Pending</option>
-                      <option value="Ready">Ready</option>
-                      <option value="In Transit">In Transit</option>
-                      <option value="Administrative Processing">
-                        Administrative Processing (AP)
-                      </option>
-                      <option value="221(g)">221(g)</option>
-                      <option value="Refused">Refused</option>
-                      <option value="Issued">Issued</option>
-                      <option value="Approved">Approved</option>
-                      <option value="Not Available">Not Available</option>
-                    </select>
+                      onChange={setCaseStatus}
+                      options={[
+                        { value: "Pending", label: "Pending" },
+                        { value: "Ready", label: "Ready" },
+                        { value: "In Transit", label: "In Transit" },
+                        { value: "Administrative Processing", label: "Administrative Processing (AP)" },
+                        { value: "221(g)", label: "221(g)" },
+                        { value: "Refused", label: "Refused" },
+                        { value: "Issued", label: "Issued" },
+                        { value: "Approved", label: "Approved" },
+                        { value: "Not Available", label: "Not Available" },
+                      ]}
+                      placeholder="Select Status"
+                      className="w-full [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-white"
+                    />
                   </div>
                   {/* Last Checked Date */}
                   <div className="space-y-1.5">

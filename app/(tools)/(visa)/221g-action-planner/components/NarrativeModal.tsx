@@ -1308,6 +1308,115 @@ const scenesStepParent: Scene[] = [
         </div>
       </div>
     ),
+  },
+];
+
+const scenesAdoption: Scene[] = [
+  {
+    id: "welcome",
+    title: "Welcome to Adoptive Parent Guide",
+    description: "USCIS requires additional documents to confirm that the adoptive parent-child relationship meets U.S. immigration law.",
+    illustration: "welcome",
+  },
+  {
+    id: "what-is",
+    title: "Pakistan Guardianship Nuance",
+    description: "In Pakistan, guardianship orders do not automatically qualify as an adoption. USCIS applies U.S. law to determine eligibility.",
+    illustration: "document",
+  },
+  {
+    id: "pitfalls",
+    title: "Avoid Timeline Failures",
+    titleLines: ["Avoid", "Timeline", "Failures"],
+    description: "The adoption must generally be completed before the child turns 16, and the parent must prove 2 years of legal custody and co-residence.",
+    illustration: "warning",
+  },
+  {
+    id: "workflow",
+    title: "Guided Adoption Workflow",
+    titleLines: ["Guided", "Adoption", "Workflow"],
+    description: "Complete eligibility checks, compile guardianship decrees, verify residence documents, and check translations.",
+    illustration: "checklist",
+  },
+  {
+    id: "output",
+    title: "Checklist File Ready",
+    titleLines: ["Checklist", "File", "Ready"],
+    description: "Get a practical list of required documents and actions for your petition packet.",
+    illustration: "output",
+  },
+  {
+    id: "wizard",
+    title: "How This Works",
+    extraContent: (
+      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
+        {[
+          "Verify legal relationship timing (under 16).",
+          "Check the 2-year custody and co-residence periods.",
+          "Collect court guardianship orders and secondary records.",
+          "Final check of names, scan margins, and translations.",
+        ].map((text, i) => (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+            key={i}
+            className="flex items-start gap-4 rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+          >
+            <div
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-bold text-white shadow-md"
+              style={{
+                background: `linear-gradient(135deg, ${colors.deepTeal}, ${colors.softAqua})`,
+              }}
+            >
+              {i + 1}
+            </div>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
+              {text}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    ),
+    illustration: "wizard",
+  },
+  {
+    id: "needs",
+    title: "What You'll Need",
+    extraContent: (
+      <div className="mx-auto mt-6 max-w-lg space-y-6 text-left">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {[
+            "Court-issued adoption/guardianship order",
+            "Legal custody records",
+            "Evidence of 2-year co-residence",
+            "Child's original birth certificate",
+          ].map((item, i) => (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              key={i}
+              className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
+            >
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
+                {item}
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    ),
     illustration: "preparation",
   },
 ];
@@ -1328,7 +1437,8 @@ interface NarrativeModalProps {
     | "birth-certificate"
     | "polio-vaccination"
     | "interview-prep"
-    | "step-parent";
+    | "step-parent"
+    | "adoption";
 }
 
 const SCENE_DURATION = 9000;
@@ -1352,6 +1462,7 @@ export function NarrativeModal({
     "polio-vaccination": scenesPolioVaccination,
     "interview-prep": scenesInterviewPrep,
     "step-parent": scenesStepParent,
+    adoption: scenesAdoption,
   } as const;
 
   const scenes = scenesByVariant[variant];
@@ -1385,6 +1496,7 @@ export function NarrativeModal({
     "polio-vaccination": "Polio",
     "interview-prep": "Interview",
     "step-parent": "Step-Parent",
+    adoption: "Adoption",
   };
   const docBadgeText = docBadgeTextByVariant[variant];
   const isGuideVariant = variant !== "221g";

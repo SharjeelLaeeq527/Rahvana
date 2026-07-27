@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Eye, MoreVertical, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
@@ -9,6 +9,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getStepIcon } from "../StepIcon";
+import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
+import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPreviewModal";
 
 interface UploadedDoc {
   id: string;
@@ -84,6 +86,16 @@ export function DocListSection({
 }: DocListSectionProps) {
   const totalItems = groups.reduce((acc, g) => acc + g.items.length, 0);
   const reviewedCount = Object.values(docsStatus).filter((s) => s === "reviewed").length;
+
+  const [previewState, setPreviewState] = useState<{
+    isOpen: boolean;
+    uploadedDoc: any | null;
+    docDef: any | null;
+  }>({
+    isOpen: false,
+    uploadedDoc: null,
+    docDef: null,
+  });
 
   return (
     <div className="flex flex-col">
@@ -278,7 +290,20 @@ export function DocListSection({
                             <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onPreview(uploadedDoc.id);
+                                const defId = getVaultId(item);
+                                let docDef = ALL_DOCUMENTS.find((d) => d.id === defId);
+                                if (!docDef) {
+                                  docDef = {
+                                    id: defId || item.id,
+                                    name: item.title || "Document",
+                                    description: item.sub || "",
+                                  } as any;
+                                }
+                                setPreviewState({
+                                  isOpen: true,
+                                  uploadedDoc,
+                                  docDef,
+                                });
                               }}
                               className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
                             >
@@ -306,6 +331,15 @@ export function DocListSection({
           </div>
         ))}
       </div>
+
+      {previewState.isOpen && previewState.uploadedDoc && previewState.docDef && (
+        <DocumentPreviewModal
+          open={previewState.isOpen}
+          onClose={() => setPreviewState({ ...previewState, isOpen: false })}
+          documentDef={previewState.docDef}
+          uploadedDoc={previewState.uploadedDoc}
+        />
+      )}
     </div>
   );
 }

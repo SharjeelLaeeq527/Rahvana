@@ -16,13 +16,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface Slot {
   id: string;
@@ -757,29 +751,6 @@ const AvailabilityGrid = () => {
                       />
                     </div>
                   </div>
-                  {/* <div>
-                    <label className="text-xs font-semibold uppercase text-gray-500 mb-1.5 block">
-                      Slot Status
-                    </label>
-                    <Select
-                      value={editForm.status}
-                      onValueChange={(val) =>
-                        setEditForm({ ...editForm, status: val as any })
-                      }
-                      disabled={isActiveSlotPast}
-                    >
-                      <SelectTrigger className="border-gray-200" disabled={isActiveSlotPast}>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="available">Available (Teal)</SelectItem>
-                        <SelectItem value="unavailable">Unavailable (Gray)</SelectItem>
-                        <SelectItem value="pending">Pending Booking (Yellow)</SelectItem>
-                        <SelectItem value="confirmed">Confirmed / Booked (Green)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div> */}
-
                   <DialogFooter className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-3 pt-4 border-t">
                     <Button
                       type="button"

@@ -1,16 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { X, Eye, EyeOff } from "lucide-react";
 import securityQuestionsData from "../../../../data/portal-wallet-security-questions-questionnaire.json";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 type PortalType = "USCIS" | "NVC" | "COURIER";
 
@@ -325,22 +319,13 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
                     Question {index + 1}
                   </label>
 
-                  <Select
+                  <CustomDropdown
                     value={sq.question}
-                    onValueChange={(val) => handleQuestionChange(index, val)}
-                  >
-                    <SelectTrigger className="w-full h-9 px-3 rounded-lg border border-[#e0f0f0] bg-white text-[12px] text-[#0a1128] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all cursor-pointer">
-                      <SelectValue placeholder="Select a security question" />
-                    </SelectTrigger>
-
-                    <SelectContent className="max-h-96 overflow-y-auto">
-                      {getFilteredQuestions(index).map((q) => (
-                        <SelectItem key={q} value={q}>
-                          {q}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(val) => handleQuestionChange(index, val)}
+                    options={getFilteredQuestions(index).map((q) => ({ value: q, label: q }))}
+                    placeholder="Select a security question"
+                    className="w-full [&_button]:h-9 [&_button]:min-h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-lg [&_button]:bg-white [&_button]:px-3 [&_button]:py-0 [&_button]:text-[12px]"
+                  />
 
                   <input
                     type="text"

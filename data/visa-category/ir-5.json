@@ -2582,7 +2582,7 @@
                 "label": "Payment guide · Step 5",
                 "title": "Save your payment method in Rahvana and continue",
                 "text": "Once your payment item is ready, go back to the step card and select your payment method from the dropdown shown in the video above. Saving your selection in Rahvana confirms this step is complete and unlocks the next stage of packet assembly.",
-                "url": "rahvana.com/visa-category/ir-category/ir1-journey",
+                "url": "rahvana.com/visa-category/ir1-journey",
                 "visual": "<video src=\"/assets/videos/ir1-journey/c1_step7(mailing)/guide_laststep.mp4\" autoplay loop muted playsinline style=\"width:100%;border-radius:8px;\" />",
                 "note": "Payment preparation must be complete before you build the final paper packet. Do not skip this, the packet checklist step depends on it."
               }
@@ -2853,7 +2853,7 @@
                 "label": "Mailing guide · Step 4",
                 "title": "Mail the packet and save the tracking details",
                 "text": "As soon as the packet is mailed, save the carrier and tracking number in Rahvana.",
-                "url": "rahvana.com/visa-category/ir-category/ir1-journey",
+                "url": "rahvana.com/visa-category/ir1-journey",
                 "visual": "<video src=\"/step4chp1.mp4\" autoplay loop muted playsinline style=\"width:100%;border-radius:8px;\" />",
                 "note": "Do not wait until later to record the tracking number. Save it the same day you mail the packet."
               },
@@ -2861,7 +2861,7 @@
                 "label": "Mailing guide · Step 5",
                 "title": "Watch for delivery, then wait for the USCIS receipt notice",
                 "text": "Once the carrier shows delivered, keep the proof and then watch for USCIS acceptance and the receipt notice.",
-                "url": "rahvana.com/visa-category/ir-category/ir1-journey",
+                "url": "rahvana.com/visa-category/ir1-journey",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step9(mailing)/step3.jpg\" alt=\"Watch for delivery and receipt notice\" style=\"width:100%;\" />",
                 "note": "After delivery, the paper path rejoins the same receipt-notice and case-tracking flow used in the online branch."
               }
@@ -3041,7 +3041,7 @@
                 "label": "Step 3 of 4, Decide how to register it",
                 "heading": "Choose the easiest intake path",
                 "instruction": "If you already have the document, upload the notice. If you only have the receipt number from the portal or an e-notification, manual entry is faster.",
-                "url": "rahvana.com/visa-category/ir-category/ir1-journey",
+                "url": "rahvana.com/visa-category/ir1-journey",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step3.png\" alt=\"Decide the path\" style=\"width:100%; \" />",
                 "caption": "Upload is useful for preserving the notice. Manual entry is useful when speed matters more."
               },
@@ -3049,7 +3049,7 @@
                 "label": "Step 4 of 4, Save and turn on monitoring",
                 "heading": "Confirm the details and enable tracking",
                 "instruction": "Before saving, confirm the receipt number and any dates shown on the notice. After that, Rahvana can store the case record, enable tracking, and keep a timeline of changes.",
-                "url": "rahvana.com/visa-category/ir-category/ir1-journey",
+                "url": "rahvana.com/visa-category/ir1-journey",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step4.png\" alt=\"Save\" style=\"width:100%; height:500px; -mt-4 \" />"
               }
             ],
@@ -6589,7 +6589,7 @@
               "Not confirming medical results were sent to the embassy"
             ],
             "tips": [
-              "Arrive 15-20 minutes early to handle registration",
+              "Arrive 15–20 minutes early to handle registration",
               "Bring a snack and water, exams can take several hours",
               "Wear comfortable, easy-to-remove clothing for physical examination",
               "After the exam, confirm the physician will send results before your interview date"
@@ -6605,10 +6605,10 @@
               {
                 "label": "Step 2 of 6",
                 "heading": "Arrive on time, allow extra time",
-                "instruction": "Arrive at least 15-20 minutes before your scheduled time. Security checks and registration take time. Latecomers may not be accommodated.",
+                "instruction": "Arrive at least 15–20 minutes before your scheduled time. Security checks and registration take time. Latecomers may not be accommodated.",
                 "vlabel": "Arrival Timing",
                 "note": "If your appointment is in the morning, account for morning traffic, especially in major cities like Islamabad or Karachi.",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Timing guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Arrive 15-20 minutes early. Registration and waiting can take time before the exam begins. Bring something to read, exams often involve waiting periods.</div></div>"
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Timing guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Arrive 15–20 minutes early. Registration and waiting can take time before the exam begins. Bring something to read, exams often involve waiting periods.</div></div>"
               },
               {
                 "label": "Step 3 of 6",
@@ -6728,7 +6728,7 @@
               "groups": [
                 {
                   "id": "civil",
-                  "label": "Bring - Original Civil Documents",
+                  "label": "Bring, Original Civil Documents",
                   "badge": "Required",
                   "items": [
                     {
@@ -6851,7 +6851,7 @@
                 },
                 {
                   "id": "financial",
-                  "label": "Bring - Financial & Sponsor Documents",
+                  "label": "Bring, Financial & Sponsor Documents",
                   "badge": "Required",
                   "items": [
                     {
@@ -6901,11 +6901,11 @@
                       "sub": "Proof of U.S. citizenship and U.S. domicile or re-establishment of domicile",
                       "sections": [
                         {
-                          "t": "What to Bring - U.S. Citizenship",
+                          "t": "What to bring, U.S. Citizenship",
                           "c": "<p>Bring a clear photocopy of the petitioner's proof of U.S. citizenship: <ul><li>U.S. passport biographic page (current and valid)</li><li>U.S. birth certificate showing birth in the United States</li><li>Certificate of Naturalization (Form N-550 or N-570)</li><li>Certificate of Citizenship (Form N-560 or N-561)</li></ul></p>"
                         },
                         {
-                          "t": "What to Bring - U.S. Domicile",
+                          "t": "What to bring, U.S. Domicile",
                           "c": "<p>Bring copies of documents proving that the petitioner maintains a permanent home in the United States: utility bills, lease agreement or mortgage statement, pay stubs, U.S. driver's license, bank account statements, voter registration, or property tax records.</p>"
                         },
                         {
@@ -6950,7 +6950,7 @@
                 },
                 {
                   "id": "interview-day",
-                  "label": "Bring - Interview Day and Conditional Documents",
+                  "label": "Bring, Interview Day and Conditional Documents",
                   "badge": "Required if applicable",
                   "items": [
                     {
@@ -7320,7 +7320,7 @@
               {
                 "label": "Step 2 of 8",
                 "heading": "Arrive early, embassy entry is strict",
-                "instruction": "Arrive at the embassy at least 20-30 minutes before your scheduled appointment time. Embassy security queues can be slow. Latecomers may not be admitted for their scheduled slot.",
+                "instruction": "Arrive at the embassy at least 20–30 minutes before your scheduled appointment time. Embassy security queues can be slow. Latecomers may not be admitted for their scheduled slot.",
                 "vlabel": "Arrival Timing",
                 "note": "Do not carry electronics beyond what is permitted by the embassy. Check the specific embassy's guidelines on phones and devices before arrival.",
                 "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Arrival guidance</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Plan for 20-30 minutes of buffer time. Factor in travel to the Diplomatic Enclave, transport arrangements, and security screening at U.S. Embassy Islamabad.\n      </div>\n      <div class=\"hl-box\" style=\"margin-top:12px\">Earlier is always safer than exactly on time</div>\n    </div>"
@@ -8362,7 +8362,7 @@
         },
         {
           "title": "For the I-130 stage specifically",
-          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">At the USCIS I-130 filing stage, the petitioner submits the I-130 along with supporting evidence. A strong bona fide marriage package typically includes:</p>\n        <ul class=\"pl-[20px] mt-[6px] list-disc marker:text-[#6b8097]\">\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">At least 3-5 photos showing the couple together across different occasions</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Evidence of ongoing communication (call logs or chat screenshots with metadata)</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Evidence of at least one in-person visit (travel documentation)</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Affidavits if direct joint evidence is limited</li>\n        </ul>\n        <div class=\"bg-[#e8f1fb] border border-[#d0e4f7] rounded-[9px] p-[13px_16px] mt-[14px]\">\n          <p class=\"text-[13px] text-[#3a4f63] leading-[1.6] m-0\">There is no single &quot;required&quot; evidence list from USCIS, the goal is to present a convincing overall picture of a genuine relationship. More varied evidence across categories is better than one large category alone.</p>\n        </div>"
+          "htmlContent": "<p class=\"text-[14px] text-[#3a4f63] leading-[1.7] mb-[10px]\">At the USCIS I-130 filing stage, the petitioner submits the I-130 along with supporting evidence. A strong bona fide marriage package typically includes:</p>\n        <ul class=\"pl-[20px] mt-[6px] list-disc marker:text-[#6b8097]\">\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">At least 3–5 photos showing the couple together across different occasions</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Evidence of ongoing communication (call logs or chat screenshots with metadata)</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Evidence of at least one in-person visit (travel documentation)</li>\n          <li class=\"text-[14px] text-[#3a4f63] leading-[1.65] mb-[6px] last:mb-0\">Affidavits if direct joint evidence is limited</li>\n        </ul>\n        <div class=\"bg-[#e8f1fb] border border-[#d0e4f7] rounded-[9px] p-[13px_16px] mt-[14px]\">\n          <p class=\"text-[13px] text-[#3a4f63] leading-[1.6] m-0\">There is no single &quot;required&quot; evidence list from USCIS, the goal is to present a convincing overall picture of a genuine relationship. More varied evidence across categories is better than one large category alone.</p>\n        </div>"
         },
         {
           "title": "What to avoid",
@@ -8626,7 +8626,7 @@
   "household_guide_content": {
     "birth-cert-hh": {
       "title": "Birth Certificate, Household Member",
-      "intro": "Proves the parent-child relationship between the household member and the petitioner.",
+      "intro": "Proves the parent–child relationship between the household member and the petitioner.",
       "sections": [
         {
           "title": "What this is",

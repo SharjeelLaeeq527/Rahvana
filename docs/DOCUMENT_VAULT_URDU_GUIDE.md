@@ -708,12 +708,17 @@ function ConfigurationWizard({ userId, onComplete }) {
       {step === 1 && (
         <div>
           <h2>Select Your Visa Category</h2>
-          <select onChange={e => setVisaCategory(e.target.value)}>
-            <option value="IR-1">IR-1: Spouse of U.S. Citizen</option>
-            <option value="CR-1">CR-1: Conditional Resident Spouse</option>
-            <option value="F1">F1: Unmarried Son/Daughter</option>
-            {/* ... more options */}
-          </select>
+          <CustomDropdown
+            value={visaCategory}
+            onChange={setVisaCategory}
+            placeholder="Select visa category"
+            options={[
+              { value: "IR-1", label: "IR-1: Spouse of U.S. Citizen" },
+              { value: "CR-1", label: "CR-1: Conditional Resident Spouse" },
+              { value: "F1", label: "F1: Unmarried Son/Daughter" },
+              // ... more options
+            ]}
+          />
           <button onClick={() => setStep(2)}>Next</button>
         </div>
       )}

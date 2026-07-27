@@ -505,7 +505,7 @@ export function generateRequiredDocuments(
       const ir1Map: Record<string, string> = {
         "passport-beneficiary": "Beneficiary Passport",
         "birth-cert-beneficiary": "Birth Certificate",
-        "birth-cert-petitioner": "Birth Certificate of Petitioner",
+        // "birth-cert-petitioner": "Birth Certificate of Petitioner",
         "police-certificate-pakistan": "Police Character Certificate",
         "nadra-mrc": "NADRA Marriage Certificate",
         "nikah-nama": "Nikah Nama (Original)",

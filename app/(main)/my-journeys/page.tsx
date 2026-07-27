@@ -246,7 +246,7 @@ export default function MyJourneysPage() {
                   </Button>
                 )}
                 <Button
-                  onClick={() => router.push("/visa-category/ir-category")}
+                  onClick={() => router.push("/visa-category")}
                   className="bg-primary hover:bg-primary/90 text-white shadow-xl shadow-primary/20"
                 >
                   <Plus className="w-4 h-4 mr-2" />
@@ -306,7 +306,7 @@ export default function MyJourneysPage() {
                   </p>
                   <Button
                     size="lg"
-                    onClick={() => router.push("/visa-category/ir-category")}
+                    onClick={() => router.push("/visa-category")}
                     className="bg-primary hover:bg-primary/90 text-white rounded-full px-8 py-6 text-lg font-bold shadow-lg shadow-primary/20"
                   >
                     {t("myJourneys.emptyState.button")} <ChevronRight className="ml-2 w-5 h-5" />

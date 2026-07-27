@@ -3295,11 +3295,16 @@ export const StepView: React.FC<StepViewProps> = ({
                                           <div
                                             key={doc.id || idx}
                                             onClick={() => {
+                                              const hasDocGuide =
+                                                Boolean(doc.guideUrl && doc.guideUrl !== "/guides") ||
+                                                Boolean(doc.id && InlineGuideData[doc.id]);
+
                                               setDocActionModal({
                                                 isOpen: true,
                                                 doc,
                                                 title: doc.name,
                                                 subtitle: doc.subtitle,
+                                                hasGuide: hasDocGuide,
                                                 onReadGuide: () => {
                                                   if (doc.guideUrl && doc.guideUrl !== "/guides") {
                                                     window.open(doc.guideUrl, "_blank");
@@ -3696,6 +3701,11 @@ export const StepView: React.FC<StepViewProps> = ({
 
                     return (
                       <div className="w-full max-w-[740px] px-0 mb-10">
+                        <h1 className="text-[#28151C] text-4xl font-extrabold mb-2">Gather Required Documents</h1>
+      <p className="text-[#8284BF] text-[14px] sm:text-[16px] mb-4 leading-relaxed">
+        Prepare the documents needed for your petition. Open each item to see exactly what is
+        needed, where to get it, and what to watch out for.
+      </p>
                         <DocListSection
                           groups={step1_2Groups}
                           docsStatus={step1_2Status}
@@ -3708,11 +3718,16 @@ export const StepView: React.FC<StepViewProps> = ({
                           }
                           showTags
                           onItemClick={(item) => {
+                            const hasDocGuide =
+                              Boolean(item.guideUrl && item.guideUrl !== "/guides") ||
+                              Boolean(item.id && InlineGuideData[item.id]);
+
                             setDocActionModal({
                               isOpen: true,
                               doc: { ...item, name: item.title },
                               title: item.title,
                               subtitle: item.sub,
+                              hasGuide: hasDocGuide,
                               onReadGuide: () => {
                                 if (item.guideUrl && item.guideUrl !== "/guides") {
                                   window.open(item.guideUrl, "_blank");

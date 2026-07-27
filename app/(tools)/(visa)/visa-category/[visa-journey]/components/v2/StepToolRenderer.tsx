@@ -117,7 +117,10 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({ dqState, acti
   // -----------------------------
   // OPTIONS
   // -----------------------------
-  const categoryOptions = [{ value: "IR-1", label: "IR-1" }];
+  const categoryOptions = [
+    { value: "IR-1", label: "IR-1" },
+    { value: "IR-5", label: "IR-5" },
+  ];
 
   const postOptions = [
     { value: "Islamabad", label: "Islamabad" },

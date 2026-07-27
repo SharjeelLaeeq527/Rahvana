@@ -5,6 +5,7 @@ import { CheckCircle2, Lock } from "lucide-react";
 import { getStepIcon } from "../StepIcon";
 import { mapDocumentNameToId, isDocUploadedInVault } from "@/lib/document-vault/journey-mapping";
 import { DocListSection } from "./DocListSection";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 export const SCENARIOS: Record<string, any> = {
   "pet-only": {
@@ -324,21 +325,18 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
         <span className="text-[12px] font-semibold text-[#6b8097] whitespace-nowrap">
           Sponsorship structure:
         </span>
-        <select
-          className="flex-1 min-w-[180px] p-[8px_12px] border-[1.5px] border-[#d0e4f7] rounded-[8px] font-sans text-[13px] text-[#1c2b3a] bg-[#f4f7fb] outline-none cursor-pointer focus:border-primary"
+        <CustomDropdown
           value={selectedScenario}
-          onChange={(e) => {
-            const val = e.target.value;
+          onChange={(val) => {
             setSelectedScenario(val);
             updateMetadata({ selectedScenario: val });
           }}
-        >
-          {Object.entries(SCENARIOS).map(([key, sc]) => (
-            <option key={key} value={key}>
-              {sc.label}
-            </option>
-          ))}
-        </select>
+          options={Object.entries(SCENARIOS).map(([key, sc]) => ({
+            value: key,
+            label: sc.label,
+          }))}
+          className="flex-1 min-w-[180px] [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-[#f4f7fb]"
+        />
       </div>
 
       {/* Sponsorship Summary Card */}

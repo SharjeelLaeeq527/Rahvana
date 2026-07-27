@@ -4,9 +4,9 @@
  */
 export const ROUTES = {
   HOME: "/",
-  JOURNEY: "/visa-category/ir-category/ir1-journey",
-  EXPLORE: "/visa-category/ir-category/",
-  IR5_JOURNEY: "/visa-category/ir-category/ir5-journey",
+  JOURNEY: "/visa-category/ir1-journey",
+  EXPLORE: "/visa-category/",
+  IR5_JOURNEY: "/visa-category/ir5-journey",
   TOOLS: "/tools",
   RESOURCES: "/resources",
 } as const;

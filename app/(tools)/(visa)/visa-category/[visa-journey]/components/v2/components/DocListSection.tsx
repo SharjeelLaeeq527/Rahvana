@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { Eye, MoreVertical, Trash2 } from "lucide-react";
 import {
   DropdownMenu,
@@ -9,6 +9,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { getStepIcon } from "../StepIcon";
+import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
+import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPreviewModal";
 
 interface UploadedDoc {
   id: string;
@@ -84,6 +86,16 @@ export function DocListSection({
 }: DocListSectionProps) {
   const totalItems = groups.reduce((acc, g) => acc + g.items.length, 0);
   const reviewedCount = Object.values(docsStatus).filter((s) => s === "reviewed").length;
+
+  const [previewState, setPreviewState] = useState<{
+    isOpen: boolean;
+    uploadedDoc: any | null;
+    docDef: any | null;
+  }>({
+    isOpen: false,
+    uploadedDoc: null,
+    docDef: null,
+  });
 
   return (
     <div className="flex flex-col">
@@ -184,7 +196,9 @@ export function DocListSection({
                           : "bg-[#e8f1fb] border-[#d0e4f7]"
                       }`}
                     >
-                      <div className="text-primary/70">{getStepIcon(item.icon || "") || getStepIcon("file-text")}</div>
+                      <div className="text-primary/70">
+                        {getStepIcon(item.icon || "") || getStepIcon("file-text")}
+                      </div>
                     </div>
 
                     {/* Content */}
@@ -207,11 +221,24 @@ export function DocListSection({
                                 cls = "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]";
                               } else if (t.cls === "tag-js" || t.cls === "js") {
                                 cls = "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]";
-                              } else if (t.cls === "tag-hm" || t.cls === "hm" || t.cls === "bene" || t.cls === "tag-res") {
+                              } else if (
+                                t.cls === "tag-hm" ||
+                                t.cls === "hm" ||
+                                t.cls === "bene" ||
+                                t.cls === "tag-res"
+                              ) {
                                 cls = "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]";
-                              } else if (t.cls === "tag-tax" || t.cls === "tax" || t.cls === "tag-gov") {
+                              } else if (
+                                t.cls === "tag-tax" ||
+                                t.cls === "tax" ||
+                                t.cls === "tag-gov"
+                              ) {
                                 cls = "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]";
-                              } else if (t.cls === "tag-cur" || t.cls === "cur" || t.cls === "tag-id") {
+                              } else if (
+                                t.cls === "tag-cur" ||
+                                t.cls === "cur" ||
+                                t.cls === "tag-id"
+                              ) {
                                 cls = "bg-[#eef3fa] text-[#3a4f63] border-[#d0e4f7]";
                               } else if (t.cls) {
                                 cls = t.cls;
@@ -278,7 +305,20 @@ export function DocListSection({
                             <DropdownMenuItem
                               onClick={(e) => {
                                 e.stopPropagation();
-                                onPreview(uploadedDoc.id);
+                                const defId = getVaultId(item);
+                                let docDef = ALL_DOCUMENTS.find((d) => d.id === defId);
+                                if (!docDef) {
+                                  docDef = {
+                                    id: defId || item.id,
+                                    name: item.title || "Document",
+                                    description: item.sub || "",
+                                  } as any;
+                                }
+                                setPreviewState({
+                                  isOpen: true,
+                                  uploadedDoc,
+                                  docDef,
+                                });
                               }}
                               className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
                             >
@@ -306,6 +346,15 @@ export function DocListSection({
           </div>
         ))}
       </div>
+
+      {previewState.isOpen && previewState.uploadedDoc && previewState.docDef && (
+        <DocumentPreviewModal
+          open={previewState.isOpen}
+          onClose={() => setPreviewState({ ...previewState, isOpen: false })}
+          documentDef={previewState.docDef}
+          uploadedDoc={previewState.uploadedDoc}
+        />
+      )}
     </div>
   );
 }

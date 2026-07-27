@@ -12,6 +12,7 @@ import { NarrativeModal } from "../../(visa)/221g-action-planner/components/Narr
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
+import { PageGate } from "@/app/components/entitlements/PageGate";
 
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
@@ -294,10 +295,15 @@ const BirthCertificateGuidePage = () => {
   }
 
   return (
-    <div
-      className={`min-h-screen flex flex-col bg-[#f5f7fa] pt-26 ${isUrdu ? "font-urdu-body" : ""}`}
-      dir={isUrdu ? "rtl" : "ltr"}
+    <PageGate
+      feature="guide_birth_cert"
+      title="Birth Certificate Guide Locked"
+      description="Upgrade your plan to unlock step-by-step guidance on obtaining your birth certificate."
     >
+      <div
+        className={`min-h-screen flex flex-col bg-[#f5f7fa] pt-26 ${isUrdu ? "font-urdu-body" : ""}`}
+        dir={isUrdu ? "rtl" : "ltr"}
+      >
       <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={wizardData.title} />
 
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
@@ -431,7 +437,8 @@ const BirthCertificateGuidePage = () => {
         currentStepName={t(`wizard.common.${currentStepId}`)}
         onSubmit={handleSubmitFeedback}
       />
-    </div>
+      </div>
+    </PageGate>
   );
 };
 

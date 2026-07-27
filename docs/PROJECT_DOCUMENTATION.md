@@ -61,7 +61,7 @@ Yeh folder Next.js App Router use karta hai. Sab pages aur components yahan hain
 
 | File                                    | Description                                     |
 | --------------------------------------- | ----------------------------------------------- |
-| `visa-category/ir-category/page.tsx`    | IR visa category info page                      |
+| `visa-category/page.tsx`    | IR visa category info page                      |
 | `visa-checker/page.tsx`                 | Visa status checker - priority date check karna |
 | `visa-checker/result/page.tsx`          | Visa checker results display                    |
 | `ir-1-roadmap/page.tsx`                 | IR-1 visa roadmap - step by step guide          |

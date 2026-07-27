@@ -14,13 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import {
@@ -30,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 type AppointmentStatus = "pending" | "in_progress" | "completed" | "cancelled";
 
@@ -326,35 +320,31 @@ export default function BookAppointmentTable() {
 
           {/* Dropdowns - Right side */}
           <div className="flex space-x-3">
-            <Select
+            <CustomDropdown
               value={selectedStatus}
-              onValueChange={(value: AppointmentStatus | "all") => setSelectedStatus(value)}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(value) => setSelectedStatus(value as AppointmentStatus | "all")}
+              options={[
+                { value: "all", label: "All Statuses" },
+                { value: "pending", label: "Pending" },
+                { value: "in_progress", label: "In Progress" },
+                { value: "completed", label: "Completed" },
+                { value: "cancelled", label: "Cancelled" },
+              ]}
+              placeholder="Filter by status"
+              className="w-40 [&_button]:w-full [&_button]:min-w-0"
+            />
 
             {/* Date Sorting */}
-            <Select
+            <CustomDropdown
               value={sortOrder}
-              onValueChange={(value: "asc" | "desc") => setSortOrder(value)}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Sort by date" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="desc">Latest First</SelectItem>
-                <SelectItem value="asc">Oldest First</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(value) => setSortOrder(value as "asc" | "desc")}
+              options={[
+                { value: "desc", label: "Latest First" },
+                { value: "asc", label: "Oldest First" },
+              ]}
+              placeholder="Sort by date"
+              className="w-40 [&_button]:w-full [&_button]:min-w-0"
+            />
           </div>
         </CardHeader>
         <CardContent>
@@ -945,22 +935,19 @@ export default function BookAppointmentTable() {
                           >
                             Download
                           </Button>
-                          <Select
+                          <CustomDropdown
                             value={appointment.status}
-                            onValueChange={(value: AppointmentStatus) =>
-                              initiateStatusUpdate(appointment.id, value)
+                            onChange={(value) =>
+                              initiateStatusUpdate(appointment.id, value as AppointmentStatus)
                             }
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="in_progress">In Progress</SelectItem>
-                              <SelectItem value="completed">Completed</SelectItem>
-                              <SelectItem value="cancelled">Cancelled</SelectItem>
-                            </SelectContent>
-                          </Select>
+                            options={[
+                              { value: "pending", label: "Pending" },
+                              { value: "in_progress", label: "In Progress" },
+                              { value: "completed", label: "Completed" },
+                              { value: "cancelled", label: "Cancelled" },
+                            ]}
+                            className="w-32 [&_button]:w-full [&_button]:min-w-0"
+                          />
                         </div>
                       </TableCell>
                     </TableRow>
@@ -1029,9 +1016,9 @@ export default function BookAppointmentTable() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Cancellation Reason <span className="text-red-500">*</span>
                   </label>
-                  <Select
+                  <CustomDropdown
                     value={cancellationReason}
-                    onValueChange={(val) => {
+                    onChange={(val) => {
                       setCancellationReason(val);
                       if (val !== "other") {
                         setAdminNotes(val);
@@ -1039,18 +1026,10 @@ export default function BookAppointmentTable() {
                         setAdminNotes("");
                       }
                     }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select cancellation reason" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CANCELLATION_TEMPLATES.map((tpl) => (
-                        <SelectItem key={tpl.value} value={tpl.value}>
-                          {tpl.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    options={CANCELLATION_TEMPLATES}
+                    placeholder="Select cancellation reason"
+                    className="w-full [&_button]:w-full [&_button]:min-w-0"
+                  />
                 </div>
                 {cancellationReason === "other" && (
                   <div>

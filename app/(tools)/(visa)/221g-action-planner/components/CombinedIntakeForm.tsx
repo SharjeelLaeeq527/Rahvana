@@ -4,13 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   ArrowRight,
@@ -310,9 +304,16 @@ const VISA_TYPES = [
 
 const VISA_CATEGORIES = [
   { value: "IR-1", label: "IR-1 (Immediate Relative Spouse)" },
+<<<<<<< HEAD
   // { value: "IR-2", label: "IR-2 (Immediate Relative – Child)" },
   // { value: "IR-5", label: "IR-5 (Immediate Relative – Parent)" },
   // { value: "CR-1", label: "CR-1 (Conditional Resident – Spouse)" },
+=======
+  { value: "IR-5", label: "IR-5 (Immediate Relative Parent)" },
+  // { value: "IR-2", label: "IR-2 (Immediate Relative â€“ Child)" },
+  // { value: "IR-5", label: "IR-5 (Immediate Relative â€“ Parent)" },
+  // { value: "CR-1", label: "CR-1 (Conditional Resident â€“ Spouse)" },
+>>>>>>> 0cff4a65afefb3470ea10e23c75dc1c23caf90bc
   // { value: "F-1", label: "F-1 (Family 1st Preference)" },
   // { value: "F-2A", label: "F-2A (Family 2nd Preference)" },
   // { value: "F-3", label: "F-3 (Family 3rd Preference)" },
@@ -2461,40 +2462,24 @@ export default function CombinedIntakeForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="visaType">Visa Type *</Label>
-                  <Select
+                  <CustomDropdown
                     value={formData.visaType}
-                    onValueChange={(v) => handleField("visaType", v)}
-                  >
-                    <SelectTrigger id="visaType">
-                      <SelectValue placeholder="Select..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {VISA_TYPES.map((t) => (
-                        <SelectItem key={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(v) => handleField("visaType", v)}
+                    options={VISA_TYPES}
+                    placeholder="Select..."
+                    className="w-full [&_button]:w-full [&_button]:min-w-0"
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="visaCategory">Visa Category *</Label>
-                  <Select
+                  <CustomDropdown
                     value={formData.visaCategory}
-                    onValueChange={(v) => handleField("visaCategory", v)}
-                  >
-                    <SelectTrigger id="visaCategory">
-                      <SelectValue placeholder="Select..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {VISA_CATEGORIES.map((c) => (
-                        <SelectItem key={c.value} value={c.value}>
-                          {c.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(v) => handleField("visaCategory", v)}
+                    options={VISA_CATEGORIES}
+                    placeholder="Select..."
+                    className="w-full [&_button]:w-full [&_button]:min-w-0"
+                  />
                 </div>
               </div>
 
@@ -2522,21 +2507,13 @@ export default function CombinedIntakeForm({
 
                 <div className="space-y-2">
                   <Label htmlFor="ceacStatus">Current CEAC Status</Label>
-                  <Select
+                  <CustomDropdown
                     value={formData.ceacStatus}
-                    onValueChange={(v) => handleField("ceacStatus", v)}
-                  >
-                    <SelectTrigger id="ceacStatus">
-                      <SelectValue placeholder="Select..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CEAC_STATUSES.map((s) => (
-                        <SelectItem key={s.value} value={s.value}>
-                          {s.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(v) => handleField("ceacStatus", v)}
+                    options={CEAC_STATUSES}
+                    placeholder="Select..."
+                    className="w-full [&_button]:w-full [&_button]:min-w-0"
+                  />
                 </div>
               </div>
 

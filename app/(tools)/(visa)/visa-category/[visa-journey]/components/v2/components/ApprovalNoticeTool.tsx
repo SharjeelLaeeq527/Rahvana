@@ -782,7 +782,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                     <div className="w-[10px] h-[10px] rounded-full bg-[#fbbf24]" />
                     <div className="w-[10px] h-[10px] rounded-full bg-[#34d399]" />
                     <div className="ml-[8px] bg-white rounded-[6px] p-[5px_10px] text-[10px] text-[#6b8097] font-mono flex-1">
-                      Rahvana/visa-category/ir-category/ir1-journey
+                      Rahvana/visa-category/ir1-journey
                     </div>
                   </div>
                 )}

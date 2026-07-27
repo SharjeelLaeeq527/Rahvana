@@ -435,7 +435,9 @@ const StepParentGuidePage = () => {
                     <span className="text-xs leading-relaxed opacity-90">
                       {qualifies
                         ? "Based on your selections, the step-parent relationship meets the timing and validity rules under U.S. immigration law. You are ready to compile the required documents on the next step."
-                        : "If the marriage occurred after the child's 18th birthday, the step-parent generally does not qualify as a parent for petition types like the IR-5. Review the guidelines or legal counsel before proceeding."}
+                        : answers.childAge === "over18"
+                        ? "Under U.S. immigration law, the marriage creating the step-relationship must take place before the child turns 18. Because your case does not meet this timing requirement, the relationship does not qualify, and the continue button has been disabled."
+                        : "To qualify, the marriage between the biological parent and the step-parent must be legally recognized, and all prior marriages must have been legally dissolved. Please review your documents before proceeding."}
                     </span>
                   </div>
                 </motion.div>

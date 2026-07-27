@@ -1786,7 +1786,7 @@ export default function ExploreJourneys({ origin, destination }: ExploreJourneys
                   {highlightedJourney &&
                   ["ir1", "ir5", "f1", "germany-student"].includes(highlightedJourney) ? (
                     <Link
-                      href={`/visa-category/ir-category/${
+                      href={`/visa-category/${
                         highlightedJourney === "ir1"
                           ? "ir1-journey"
                           : highlightedJourney === "ir5"
@@ -2028,7 +2028,7 @@ function JourneyCard({
             href={
               hasProgress
                 ? "/my-journeys"
-                : `/visa-category/ir-category/${
+                : `/visa-category/${
                     journey.id === "ir1"
                       ? "ir1-journey"
                       : journey.id === "ir5"
