@@ -47,7 +47,7 @@
                     "id": "q1s1",
                     "label": "Petitioner Status",
                     "question": "What is the petitioner's current immigration status?",
-                    "helper": "The IR-1 visa is only available when the petitioner is a U.S. citizen — not a green card holder.",
+                    "helper": "The IR-1 visa is only available when the petitioner is a U.S. citizen, not a green card holder.",
                     "type": "single",
                     "options": [
                       {
@@ -106,7 +106,7 @@
                     "id": "q1s3",
                     "label": "Proof of Citizenship",
                     "question": "Does the petitioner have at least one accepted proof of U.S. citizenship?",
-                    "helper": "USCIS accepts several document types. You do not need all of them — just one valid proof.",
+                    "helper": "USCIS accepts several document types. You do not need all of them, just one valid proof.",
                     "type": "single",
                     "hint": {
                       "intro": "Commonly accepted proofs include:",
@@ -120,17 +120,17 @@
                     },
                     "options": [
                       {
-                        "label": "Yes — I have at least one of these documents",
+                        "label": "Yes, I have at least one of these documents",
                         "value": "yes",
                         "outcome": "next"
                       },
                       {
-                        "label": "Not yet — but I can obtain one",
+                        "label": "Not yet, but I can obtain one",
                         "value": "can_get",
                         "outcome": "next"
                       },
                       {
-                        "label": "No — and I'm not sure how to get one",
+                        "label": "No, and I'm not sure how to get one",
                         "value": "no",
                         "outcome": "caution"
                       },
@@ -149,17 +149,17 @@
                     "type": "single",
                     "options": [
                       {
-                        "label": "Yes — name matches exactly",
+                        "label": "Yes, name matches exactly",
                         "value": "match",
                         "outcome": "pass"
                       },
                       {
-                        "label": "No — but I have legal proof of the name change",
+                        "label": "No, but I have legal proof of the name change",
                         "value": "diff_proof",
                         "outcome": "pass"
                       },
                       {
-                        "label": "No — and I don't have name-change proof yet",
+                        "label": "No, and I don't have name-change proof yet",
                         "value": "diff_no_proof",
                         "outcome": "caution"
                       },
@@ -171,7 +171,7 @@
                     ]
                   }
                 ],
-                "result_logic": "(function() { if (answers['q1s1'] === 'lpr') return { state: 'stop', title: 'IR-1 requires a U.S. citizen petitioner', body: 'The IR-1 spouse visa is only available when the petitioner is a U.S. citizen. Lawful Permanent Residents may be eligible to petition under a different category (F2A preference visa). Consider speaking with an attorney about your options.' }; if (answers['q1s1'] === 'unsure' || answers['q1s1'] === 'other' || answers['q1s2'] === 'unsure') return { state: 'review', title: 'Petitioner\\'s citizenship status needs clarification', body: 'The petitioner\\'s status or citizenship path was marked as unclear. Confirm the petitioner\\'s status before moving forward — this is the foundational requirement for the IR-1 petition.' }; if (answers['q1s3'] === 'no' || answers['q1s3'] === 'unsure' || (answers['q1s4'] && (answers['q1s4'] === 'diff_no_proof' || answers['q1s4'] === 'unsure'))) return { state: 'caution', title: 'Citizenship appears likely — but proof needs attention', body: 'The petitioner appears to be a U.S. citizen, but proof of citizenship or name-match documentation may need to be gathered or organized before filing. Address this early to avoid delays.' }; return { state: 'pass', title: 'Petitioner eligibility looks solid', body: 'The petitioner appears to be a U.S. citizen with identifiable proof. This core requirement is on track. Continue to the next section.' }; })()"
+                "result_logic": "(function() { if (answers['q1s1'] === 'lpr') return { state: 'stop', title: 'IR-1 requires a U.S. citizen petitioner', body: 'The IR-1 spouse visa is only available when the petitioner is a U.S. citizen. Lawful Permanent Residents may be eligible to petition under a different category (F2A preference visa). Consider speaking with an attorney about your options.' }; if (answers['q1s1'] === 'unsure' || answers['q1s1'] === 'other' || answers['q1s2'] === 'unsure') return { state: 'review', title: 'Petitioner\\'s citizenship status needs clarification', body: 'The petitioner\\'s status or citizenship path was marked as unclear. Confirm the petitioner\\'s status before moving forward, this is the foundational requirement for the IR-1 petition.' }; if (answers['q1s3'] === 'no' || answers['q1s3'] === 'unsure' || (answers['q1s4'] && (answers['q1s4'] === 'diff_no_proof' || answers['q1s4'] === 'unsure'))) return { state: 'caution', title: 'Citizenship appears likely, but proof needs attention', body: 'The petitioner appears to be a U.S. citizen, but proof of citizenship or name-match documentation may need to be gathered or organized before filing. Address this early to avoid delays.' }; return { state: 'pass', title: 'Petitioner eligibility looks solid', body: 'The petitioner appears to be a U.S. citizen with identifiable proof. This core requirement is on track. Continue to the next section.' }; })()"
               },
               {
                 "id": "q2",
@@ -182,7 +182,7 @@
                     "id": "q2s1",
                     "label": "Relationship Status",
                     "question": "Which of these best describes the couple's current legal relationship?",
-                    "helper": "USCIS requires an existing, legally recognized civil marriage — not just an engagement or ceremony.",
+                    "helper": "USCIS requires an existing, legally recognized civil marriage, not just an engagement or ceremony.",
                     "type": "single",
                     "options": [
                       {
@@ -191,12 +191,12 @@
                         "outcome": "next"
                       },
                       {
-                        "label": "Only engaged — not yet married",
+                        "label": "Only engaged, not yet married",
                         "value": "engaged",
                         "outcome": "stop"
                       },
                       {
-                        "label": "Religious or cultural ceremony only — no civil registration",
+                        "label": "Religious or cultural ceremony only, no civil registration",
                         "value": "ceremony_only",
                         "outcome": "stop",
                         "sub": "Civil registration is typically required for immigration purposes."
@@ -221,12 +221,12 @@
                     "type": "single",
                     "options": [
                       {
-                        "label": "Yes — it was a legally registered civil marriage there",
+                        "label": "Yes, it was a legally registered civil marriage there",
                         "value": "yes",
                         "outcome": "next"
                       },
                       {
-                        "label": "No — it was not legally registered or recognized there",
+                        "label": "No, it was not legally registered or recognized there",
                         "value": "no",
                         "outcome": "stop"
                       },
@@ -241,7 +241,7 @@
                     "id": "q2s3",
                     "label": "Marriage Certificate",
                     "question": "Is there an official marriage certificate or record issued by the appropriate civil authority?",
-                    "helper": "USCIS expects the official civil marriage certificate from the relevant government or registry office — not wedding photos or invitations.",
+                    "helper": "USCIS expects the official civil marriage certificate from the relevant government or registry office, not wedding photos or invitations.",
                     "type": "single",
                     "hint": {
                       "intro": "Valid marriage records typically include:",
@@ -253,17 +253,17 @@
                     },
                     "options": [
                       {
-                        "label": "Yes — I have the official certificate",
+                        "label": "Yes, I have the official certificate",
                         "value": "yes",
                         "outcome": "next"
                       },
                       {
-                        "label": "Not yet — but I can obtain a certified copy",
+                        "label": "Not yet, but I can obtain a certified copy",
                         "value": "can_get",
                         "outcome": "caution"
                       },
                       {
-                        "label": "No — and I'm not sure how to get one",
+                        "label": "No, and I'm not sure how to get one",
                         "value": "no",
                         "outcome": "caution"
                       },
@@ -275,7 +275,7 @@
                     ]
                   }
                 ],
-                "result_logic": "(function() { if (answers['q2s1'] === 'engaged' || answers['q2s1'] === 'ceremony_only' || answers['q2s1'] === 'separated' || answers['q2s2'] === 'no') return { state: 'stop', title: 'A legally valid marriage is required for the IR-1', body: 'USCIS requires an existing, legally recognized civil marriage. Engagements, religious-only ceremonies, and ongoing separations or divorces do not qualify at the time of filing. Review the couple\\'s current legal status.' }; if (answers['q2s1'] === 'unsure' || answers['q2s2'] === 'unsure') return { state: 'review', title: 'Marriage validity needs confirmation', body: 'The legal recognition of the marriage is unclear. This is a foundational requirement — confirm the marriage was properly registered under the applicable local law before proceeding.' }; if (answers['q2s3'] === 'can_get' || answers['q2s3'] === 'no' || answers['q2s3'] === 'unsure') return { state: 'caution', title: 'Marriage appears valid — certificate still needed', body: 'The marriage appears legally valid, but obtaining the official marriage certificate is an important early task. Start that process now — certified copies can take time, especially for international records.' }; return { state: 'pass', title: 'Marriage eligibility looks solid', body: 'A legally recognized civil marriage with official documentation appears to be in place. This requirement is on track.' }; })()"
+                "result_logic": "(function() { if (answers['q2s1'] === 'engaged' || answers['q2s1'] === 'ceremony_only' || answers['q2s1'] === 'separated' || answers['q2s2'] === 'no') return { state: 'stop', title: 'A legally valid marriage is required for the IR-1', body: 'USCIS requires an existing, legally recognized civil marriage. Engagements, religious-only ceremonies, and ongoing separations or divorces do not qualify at the time of filing. Review the couple\\'s current legal status.' }; if (answers['q2s1'] === 'unsure' || answers['q2s2'] === 'unsure') return { state: 'review', title: 'Marriage validity needs confirmation', body: 'The legal recognition of the marriage is unclear. This is a foundational requirement, confirm the marriage was properly registered under the applicable local law before proceeding.' }; if (answers['q2s3'] === 'can_get' || answers['q2s3'] === 'no' || answers['q2s3'] === 'unsure') return { state: 'caution', title: 'Marriage appears valid, certificate still needed', body: 'The marriage appears legally valid, but obtaining the official marriage certificate is an important early task. Start that process now, certified copies can take time, especially for international records.' }; return { state: 'pass', title: 'Marriage eligibility looks solid', body: 'A legally recognized civil marriage with official documentation appears to be in place. This requirement is on track.' }; })()"
               },
               {
                 "id": "q3",
@@ -286,26 +286,26 @@
                     "id": "q3s1",
                     "label": "Prior Marriage History",
                     "question": "Before this marriage, did either spouse have any previous legally registered marriages?",
-                    "helper": "Count any marriage that was legally registered — anywhere in the world. Religious-only or unregistered ceremonies generally do not count.",
+                    "helper": "Count any marriage that was legally registered, anywhere in the world. Religious-only or unregistered ceremonies generally do not count.",
                     "type": "single",
                     "options": [
                       {
-                        "label": "No — neither spouse had any prior legally registered marriages",
+                        "label": "No, neither spouse had any prior legally registered marriages",
                         "value": "none",
                         "outcome": "pass_direct"
                       },
                       {
-                        "label": "Yes — the petitioner had a prior marriage",
+                        "label": "Yes, the petitioner had a prior marriage",
                         "value": "petitioner",
                         "outcome": "next"
                       },
                       {
-                        "label": "Yes — the beneficiary had a prior marriage",
+                        "label": "Yes, the beneficiary had a prior marriage",
                         "value": "beneficiary",
                         "outcome": "next"
                       },
                       {
-                        "label": "Yes — both had prior marriages",
+                        "label": "Yes, both had prior marriages",
                         "value": "both",
                         "outcome": "next"
                       },
@@ -320,16 +320,16 @@
                     "id": "q3s2",
                     "label": "Termination Timing",
                     "question": "Did every prior marriage end before the date of the current marriage?",
-                    "helper": "A prior marriage must have ended first — by final divorce, annulment, or the death of the prior spouse — before the new marriage is legally valid.",
+                    "helper": "A prior marriage must have ended first, by final divorce, annulment, or the death of the prior spouse, before the new marriage is legally valid.",
                     "type": "single",
                     "options": [
                       {
-                        "label": "Yes — all prior marriages ended before the current marriage",
+                        "label": "Yes, all prior marriages ended before the current marriage",
                         "value": "yes",
                         "outcome": "next"
                       },
                       {
-                        "label": "No — at least one prior marriage was still ongoing",
+                        "label": "No, at least one prior marriage was still ongoing",
                         "value": "no",
                         "outcome": "stop"
                       },
@@ -344,7 +344,7 @@
                     "id": "q3s3",
                     "label": "Proof of Termination",
                     "question": "Is there documentation showing how each prior marriage legally ended?",
-                    "helper": "USCIS will want to see this proof for every prior marriage — for both spouses.",
+                    "helper": "USCIS will want to see this proof for every prior marriage, for both spouses.",
                     "type": "single",
                     "hint": {
                       "intro": "Accepted termination documents include:",
@@ -356,17 +356,17 @@
                     },
                     "options": [
                       {
-                        "label": "Yes — documentation exists for all prior marriages",
+                        "label": "Yes, documentation exists for all prior marriages",
                         "value": "yes",
                         "outcome": "pass"
                       },
                       {
-                        "label": "Some, but not all — documentation is missing for at least one",
+                        "label": "Some, but not all, documentation is missing for at least one",
                         "value": "partial",
                         "outcome": "caution"
                       },
                       {
-                        "label": "No — no documentation yet",
+                        "label": "No, no documentation yet",
                         "value": "no",
                         "outcome": "caution"
                       },
@@ -378,7 +378,7 @@
                     ]
                   }
                 ],
-                "result_logic": "(function() { if (answers['q3s1'] === 'none') return { state: 'pass', title: 'No prior marriages to verify', body: 'Neither spouse had a prior legally registered marriage, so this section is not an issue for your case. Well done — move on to the next section.' }; if (answers['q3s1'] === 'unsure') return { state: 'review', title: 'Prior marriage history needs clarification', body: 'It\\'s unclear whether either spouse had a prior marriage. This should be confirmed — USCIS will require documentation if any prior marriages existed.' }; if (answers['q3s2'] === 'no') return { state: 'stop', title: 'Potential bigamy issue — legal review needed', body: 'If a prior marriage had not ended before the current marriage occurred, the current marriage may not be legally valid for immigration purposes. This is a serious issue that requires legal review before proceeding.' }; if (answers['q3s2'] === 'unsure') return { state: 'review', title: 'Termination timing is unclear', body: 'The timing of when prior marriages ended relative to the current marriage start date needs to be confirmed. This is a critical fact — consult an attorney if uncertain.' }; if (answers['q3s3'] === 'partial' || answers['q3s3'] === 'no' || answers['q3s3'] === 'unsure') return { state: 'caution', title: 'Prior marriages appear terminated — documents needed', body: 'The prior marriage(s) appear to have ended before the current marriage, but documentation is missing or incomplete. Gathering divorce decrees, annulment orders, or death certificates is an important early task.' }; return { state: 'pass', title: 'Prior marriage termination looks clear', body: 'All prior marriages appear to have legally ended before the current marriage, and documentation is available. This requirement is on track.' }; })()"
+                "result_logic": "(function() { if (answers['q3s1'] === 'none') return { state: 'pass', title: 'No prior marriages to verify', body: 'Neither spouse had a prior legally registered marriage, so this section is not an issue for your case. Well done, move on to the next section.' }; if (answers['q3s1'] === 'unsure') return { state: 'review', title: 'Prior marriage history needs clarification', body: 'It\\'s unclear whether either spouse had a prior marriage. This should be confirmed, USCIS will require documentation if any prior marriages existed.' }; if (answers['q3s2'] === 'no') return { state: 'stop', title: 'Potential bigamy issue, legal review needed', body: 'If a prior marriage had not ended before the current marriage occurred, the current marriage may not be legally valid for immigration purposes. This is a serious issue that requires legal review before proceeding.' }; if (answers['q3s2'] === 'unsure') return { state: 'review', title: 'Termination timing is unclear', body: 'The timing of when prior marriages ended relative to the current marriage start date needs to be confirmed. This is a critical fact, consult an attorney if uncertain.' }; if (answers['q3s3'] === 'partial' || answers['q3s3'] === 'no' || answers['q3s3'] === 'unsure') return { state: 'caution', title: 'Prior marriages appear terminated, documents needed', body: 'The prior marriage(s) appear to have ended before the current marriage, but documentation is missing or incomplete. Gathering divorce decrees, annulment orders, or death certificates is an important early task.' }; return { state: 'pass', title: 'Prior marriage termination looks clear', body: 'All prior marriages appear to have legally ended before the current marriage, and documentation is available. This requirement is on track.' }; })()"
               },
               {
                 "id": "q4",
@@ -389,16 +389,16 @@
                     "id": "q4s1",
                     "label": "Genuine Intent",
                     "question": "When both spouses married, was it with the genuine intention to build a shared life together?",
-                    "helper": "USCIS looks at whether the marriage was entered in good faith — not primarily for immigration purposes.",
+                    "helper": "USCIS looks at whether the marriage was entered in good faith, not primarily for immigration purposes.",
                     "type": "single",
                     "options": [
                       {
-                        "label": "Yes — both intended a genuine marriage",
+                        "label": "Yes, both intended a genuine marriage",
                         "value": "yes",
                         "outcome": "next"
                       },
                       {
-                        "label": "No — immigration was the primary reason for the marriage",
+                        "label": "No, immigration was the primary reason for the marriage",
                         "value": "no",
                         "outcome": "stop"
                       },
@@ -446,22 +446,22 @@
                   {
                     "id": "q4s3",
                     "label": "Consistency",
-                    "question": "Can both spouses describe the relationship consistently — timeline, how they met, living situation, and future plans?",
+                    "question": "Can both spouses describe the relationship consistently, timeline, how they met, living situation, and future plans?",
                     "helper": "USCIS interviews often test whether both spouses' stories match on basic facts. This is not about perfection, but about genuine shared knowledge.",
                     "type": "single",
                     "options": [
                       {
-                        "label": "Yes — both are comfortable and consistent on the basics",
+                        "label": "Yes, both are comfortable and consistent on the basics",
                         "value": "yes",
                         "outcome": "next"
                       },
                       {
-                        "label": "Mostly — there may be some minor gaps or differences",
+                        "label": "Mostly, there may be some minor gaps or differences",
                         "value": "mostly",
                         "outcome": "caution"
                       },
                       {
-                        "label": "No — there are significant inconsistencies",
+                        "label": "No, there are significant inconsistencies",
                         "value": "no",
                         "outcome": "review"
                       },
@@ -476,7 +476,7 @@
                     "id": "q4s4",
                     "label": "Fraud Risk Flags",
                     "question": "Are there facts in this case that might raise questions about the relationship's authenticity?",
-                    "helper": "This is just a flag — having a complicating factor doesn't mean the marriage isn't real. It means you'll want to address it proactively.",
+                    "helper": "This is just a flag, having a complicating factor doesn't mean the marriage isn't real. It means you'll want to address it proactively.",
                     "type": "single",
                     "hint": {
                       "intro": "Common factors that may invite closer review:",
@@ -490,12 +490,12 @@
                     },
                     "options": [
                       {
-                        "label": "No — no significant fraud-risk factors I can think of",
+                        "label": "No, no significant fraud-risk factors I can think of",
                         "value": "no",
                         "outcome": "pass"
                       },
                       {
-                        "label": "Yes — there is at least one factor that may need explanation",
+                        "label": "Yes, there is at least one factor that may need explanation",
                         "value": "yes",
                         "outcome": "review"
                       },
@@ -507,7 +507,7 @@
                     ]
                   }
                 ],
-                "result_logic": "(function() { if (answers['q4s1'] === 'no') return { state: 'stop', title: 'Good-faith intent is required', body: 'USCIS requires that the marriage was entered in good faith — not primarily to obtain immigration benefits. A marriage entered primarily for immigration is considered fraudulent. This is a serious issue that should be discussed with an attorney.' }; if (answers['q4s1'] === 'unsure' || answers['q4s4'] === 'yes' || answers['q4s4'] === 'unsure' || answers['q4s3'] === 'no') return { state: 'review', title: 'Potential bona fide marriage concerns', body: 'Some answers suggest this case may face closer scrutiny on bona fide marriage. This does not mean the marriage is invalid — but it means gathering strong, varied evidence early is important, and an attorney review is recommended.' }; const q4s2vals = answers['q4s2'] || []; if (q4s2vals.includes('none') || answers['q4s3'] === 'mostly' || answers['q4s3'] === 'unsure') return { state: 'caution', title: 'Marriage appears genuine — strengthen evidence early', body: 'The marriage appears to be in good faith, but the current evidence is thin or there are minor consistency concerns. Start building your evidence package now — across multiple categories.' }; return { state: 'pass', title: 'Bona fide marriage looks solid', body: 'Good-faith intent is affirmed, relationship evidence exists across multiple categories, and no major fraud-risk flags were identified. This section looks strong.' }; })()"
+                "result_logic": "(function() { if (answers['q4s1'] === 'no') return { state: 'stop', title: 'Good-faith intent is required', body: 'USCIS requires that the marriage was entered in good faith, not primarily to obtain immigration benefits. A marriage entered primarily for immigration is considered fraudulent. This is a serious issue that should be discussed with an attorney.' }; if (answers['q4s1'] === 'unsure' || answers['q4s4'] === 'yes' || answers['q4s4'] === 'unsure' || answers['q4s3'] === 'no') return { state: 'review', title: 'Potential bona fide marriage concerns', body: 'Some answers suggest this case may face closer scrutiny on bona fide marriage. This does not mean the marriage is invalid, but it means gathering strong, varied evidence early is important, and an attorney review is recommended.' }; const q4s2vals = answers['q4s2'] || []; if (q4s2vals.includes('none') || answers['q4s3'] === 'mostly' || answers['q4s3'] === 'unsure') return { state: 'caution', title: 'Marriage appears genuine, strengthen evidence early', body: 'The marriage appears to be in good faith, but the current evidence is thin or there are minor consistency concerns. Start building your evidence package now, across multiple categories.' }; return { state: 'pass', title: 'Bona fide marriage looks solid', body: 'Good-faith intent is affirmed, relationship evidence exists across multiple categories, and no major fraud-risk flags were identified. This section looks strong.' }; })()"
               },
               {
                 "id": "q5",
@@ -522,12 +522,12 @@
                     "type": "single",
                     "options": [
                       {
-                        "label": "No — none of the above",
+                        "label": "No, none of the above",
                         "value": "no",
                         "outcome": "next"
                       },
                       {
-                        "label": "Yes — at least one of these applies",
+                        "label": "Yes, at least one of these applies",
                         "value": "yes",
                         "outcome": "review"
                       },
@@ -541,17 +541,17 @@
                   {
                     "id": "q5s2",
                     "label": "Criminal History",
-                    "question": "Does the beneficiary have any arrest, charge, or criminal conviction — anywhere in the world?",
-                    "helper": "Even minor or older matters can affect immigration eligibility. Do not guess or omit — certain convictions can trigger bars to admissibility.",
+                    "question": "Does the beneficiary have any arrest, charge, or criminal conviction, anywhere in the world?",
+                    "helper": "Even minor or older matters can affect immigration eligibility. Do not guess or omit, certain convictions can trigger bars to admissibility.",
                     "type": "single",
                     "options": [
                       {
-                        "label": "No — no arrests, charges, or convictions",
+                        "label": "No, no arrests, charges, or convictions",
                         "value": "no",
                         "outcome": "next"
                       },
                       {
-                        "label": "Yes — there is at least one arrest, charge, or conviction",
+                        "label": "Yes, there is at least one arrest, charge, or conviction",
                         "value": "yes",
                         "outcome": "review"
                       },
@@ -584,7 +584,7 @@
                         "outcome": "next"
                       },
                       {
-                        "label": "Yes — there is a health concern that may come up",
+                        "label": "Yes, there is a health concern that may come up",
                         "value": "yes",
                         "outcome": "review"
                       },
@@ -603,12 +603,12 @@
                     "type": "single",
                     "options": [
                       {
-                        "label": "No — the beneficiary has no such U.S. immigration history",
+                        "label": "No, the beneficiary has no such U.S. immigration history",
                         "value": "no",
                         "outcome": "next"
                       },
                       {
-                        "label": "Yes — at least one of these applies",
+                        "label": "Yes, at least one of these applies",
                         "value": "yes",
                         "outcome": "review"
                       },
@@ -623,16 +623,16 @@
                     "id": "q5s5",
                     "label": "Financial Sponsorship",
                     "question": "Is there any concern that meeting the financial sponsorship requirements (Affidavit of Support) may be difficult?",
-                    "helper": "This does not affect eligibility right now — it's a forward-looking flag to plan for. The petitioner will need to meet the minimum income threshold or secure a joint sponsor.",
+                    "helper": "This does not affect eligibility right now, it's a forward-looking flag to plan for. The petitioner will need to meet the minimum income threshold or secure a joint sponsor.",
                     "type": "single",
                     "options": [
                       {
-                        "label": "No known concern — petitioner can likely meet the income requirement",
+                        "label": "No known concern, petitioner can likely meet the income requirement",
                         "value": "no",
                         "outcome": "pass"
                       },
                       {
-                        "label": "Yes — there may be a challenge meeting the income threshold",
+                        "label": "Yes, there may be a challenge meeting the income threshold",
                         "value": "yes",
                         "outcome": "caution"
                       },
@@ -644,7 +644,7 @@
                     ]
                   }
                 ],
-                "result_logic": "(function() { const r = ['q5s1','q5s2','q5s3','q5s4'].filter(k => answers[k] === 'yes' || answers[k] === 'unsure'); if (r.length > 0) return { state: 'review', title: 'One or more admissibility concerns flagged', body: 'This screening identified at least one area — prior immigration actions, criminal history, medical, or unlawful presence — that warrants closer legal review. These issues do not automatically disqualify the case, but they require attorney analysis before proceeding.' }; if (answers['q5s5'] === 'yes' || answers['q5s5'] === 'unsure') return { state: 'caution', title: 'Financial sponsorship may need planning', body: 'No admissibility red flags were identified. However, the financial sponsorship requirement may need attention. Review the current income thresholds and consider whether a joint sponsor may be needed.' }; return { state: 'pass', title: 'No significant ineligibility flags identified', body: 'Based on this early screening, no major admissibility concerns were flagged. Remember: this is not a legal determination. Always review the full case with a qualified immigration attorney.' }; })()"
+                "result_logic": "(function() { const r = ['q5s1','q5s2','q5s3','q5s4'].filter(k => answers[k] === 'yes' || answers[k] === 'unsure'); if (r.length > 0) return { state: 'review', title: 'One or more admissibility concerns flagged', body: 'This screening identified at least one area, prior immigration actions, criminal history, medical, or unlawful presence, that warrants closer legal review. These issues do not automatically disqualify the case, but they require attorney analysis before proceeding.' }; if (answers['q5s5'] === 'yes' || answers['q5s5'] === 'unsure') return { state: 'caution', title: 'Financial sponsorship may need planning', body: 'No admissibility red flags were identified. However, the financial sponsorship requirement may need attention. Review the current income thresholds and consider whether a joint sponsor may be needed.' }; return { state: 'pass', title: 'No significant ineligibility flags identified', body: 'Based on this early screening, no major admissibility concerns were flagged. Remember: this is not a legal determination. Always review the full case with a qualified immigration attorney.' }; })()"
               }
             ]
           },
@@ -668,7 +668,7 @@
                 "condition": "duration_months < 6",
                 "severity": "warning",
                 "advisory": "USCIS may apply additional scrutiny to short-duration marriages. Strengthen the filing with multiple Tier 1 bona fide evidence items (joint financial accounts, joint tax filings, joint property/lease) and consider including a relationship timeline cover letter.",
-                "source_basis": "USCIS Policy Manual Vol. 12, Part G, Ch. 2 — bona fide marriage adjudication"
+                "source_basis": "USCIS Policy Manual Vol. 12, Part G, Ch. 2, bona fide marriage adjudication"
               },
               {
                 "id": "never_met_in_person",
@@ -684,7 +684,7 @@
                 "trigger_field": "eligibility_quest_answer",
                 "severity": "critical",
                 "advisory": "Under INA Section 204(c), if any prior marriage was found to be entered into for the purpose of evading immigration laws, all future I-130 petitions by the same petitioner are barred. Consult an immigration attorney before filing.",
-                "source_basis": "INA Section 204(c) — 8 USC Section 1154(c)"
+                "source_basis": "INA Section 204(c), 8 USC Section 1154(c)"
               },
               {
                 "id": "missing_prior_marriage_termination",
@@ -692,15 +692,15 @@
                 "trigger_field": "prior_marriage_status_and_documents",
                 "severity": "critical",
                 "advisory": "If either party had a prior marriage, proof of legal termination is required (divorce decree, annulment order, or death certificate). Without this, USCIS will issue an RFE.",
-                "source_basis": "8 CFR Section 204.2(a)(2) — I-130 documentation requirements"
+                "source_basis": "8 CFR Section 204.2(a)(2), I-130 documentation requirements"
               },
               {
                 "id": "prior_visa_refusal_or_fraud",
                 "title": "Prior U.S. visa refusal, deportation, or fraud allegation",
                 "trigger_field": "eligibility_quest_q5s1",
                 "severity": "critical",
-                "advisory": "Any prior visa refusal, deportation, removal order, or fraud/misrepresentation allegation must be disclosed and documented in the petition. Misrepresentation under INA 212(a)(6)(C) creates a permanent inadmissibility bar unless waived. Consult an immigration attorney before filing — this is not a DIY scenario.",
-                "source_basis": "INA Section 212(a)(6)(C) — 8 USC Section 1182(a)(6)(C) — misrepresentation bar"
+                "advisory": "Any prior visa refusal, deportation, removal order, or fraud/misrepresentation allegation must be disclosed and documented in the petition. Misrepresentation under INA 212(a)(6)(C) creates a permanent inadmissibility bar unless waived. Consult an immigration attorney before filing, this is not a DIY scenario.",
+                "source_basis": "INA Section 212(a)(6)(C), 8 USC Section 1182(a)(6)(C), misrepresentation bar"
               },
               {
                 "id": "unlawful_presence_history",
@@ -708,7 +708,7 @@
                 "trigger_field": "eligibility_quest_q5s4",
                 "severity": "critical",
                 "advisory": "Unlawful presence triggers the 3-year or 10-year bar under INA 212(a)(9)(B) once the beneficiary departs the U.S. for consular processing. A provisional unlawful presence waiver (Form I-601A) may be required before the visa interview. Consult an immigration attorney to determine the correct path before filing.",
-                "source_basis": "INA Section 212(a)(9)(B) — 8 USC Section 1182(a)(9)(B) — unlawful presence bars"
+                "source_basis": "INA Section 212(a)(9)(B), 8 USC Section 1182(a)(9)(B), unlawful presence bars"
               },
               {
                 "id": "financial_sponsorship_concern",
@@ -716,15 +716,15 @@
                 "trigger_field": "eligibility_quest_q5s5",
                 "severity": "warning",
                 "advisory": "The Affidavit of Support (Form I-864) requires the petitioner to demonstrate income at or above 125% of the federal poverty guideline for the household size. If the petitioner cannot meet this on their own, a joint sponsor or qualifying assets will be needed. Plan for this now to avoid an RFE at the NVC stage.",
-                "source_basis": "INA Section 213A — 8 USC Section 1183a — Affidavit of Support requirement; Form I-864 instructions"
+                "source_basis": "INA Section 213A, 8 USC Section 1183a, Affidavit of Support requirement; Form I-864 instructions"
               },
               {
                 "id": "beneficiary_criminal_history",
                 "title": "Beneficiary has arrest, charge, or conviction",
                 "trigger_field": "eligibility_quest_q5s2",
                 "severity": "critical",
-                "advisory": "Any arrest, charge, or conviction — anywhere in the world — must be disclosed and may trigger an inadmissibility bar under INA 212(a)(2). Certified court dispositions and police records will be required. Some convictions are waivable; others are permanent bars. Consult an immigration attorney to evaluate impact before filing.",
-                "source_basis": "INA Section 212(a)(2) — 8 USC Section 1182(a)(2) — criminal-related grounds of inadmissibility"
+                "advisory": "Any arrest, charge, or conviction, anywhere in the world, must be disclosed and may trigger an inadmissibility bar under INA 212(a)(2). Certified court dispositions and police records will be required. Some convictions are waivable; others are permanent bars. Consult an immigration attorney to evaluate impact before filing.",
+                "source_basis": "INA Section 212(a)(2), 8 USC Section 1182(a)(2), criminal-related grounds of inadmissibility"
               }
             ]
           }
@@ -774,7 +774,7 @@
             {
               "id": "doc_nikah_nama",
               "name": "Nikah Nama (Original)",
-              "subtitle": "Islamic marriage contract — the foundational marriage document",
+              "subtitle": "Islamic marriage contract, the foundational marriage document",
               "tag": "beneficiary",
               "guideUrl": "/guides/nikah-nama-guide",
               "icon": "FileText",
@@ -829,7 +829,7 @@
             {
               "id": "doc_birth_cert",
               "name": "Birth Certificate",
-              "subtitle": "Beneficiary's Pakistan birth record — needed at consular stage",
+              "subtitle": "Beneficiary's Pakistan birth record, needed at consular stage",
               "tag": "beneficiary",
               "guideUrl": "/guides/birth-certificate-guide",
               "icon": "ClipboardList",
@@ -840,7 +840,7 @@
             {
               "id": "doc_police_cert",
               "name": "Police Character Certificate",
-              "subtitle": "Pakistan PCC — required at consular stage",
+              "subtitle": "Pakistan PCC, required at consular stage",
               "tag": "beneficiary",
               "guideUrl": "/guides/police-verification-guide",
               "icon": "Lock",
@@ -919,7 +919,7 @@
           "filing_data": {
             "id": "filing-method-comparison",
             "title": "Decide Filing Method",
-            "subtitle": "Choose how to file Form I-130 with USCIS. Both methods are fully accepted and take the same amount of time to process — select the one that works best for you.",
+            "subtitle": "Choose how to file Form I-130 with USCIS. Both methods are fully accepted and take the same amount of time to process, select the one that works best for you.",
             "methods": [
               {
                 "id": "online",
@@ -958,21 +958,21 @@
                 {
                   "id": "attorney",
                   "question": "Is an attorney or accredited representative managing the filing for you?",
-                  "helper": "If a representative is handling the paperwork, they typically decide the filing method — this walkthrough may not apply.",
+                  "helper": "If a representative is handling the paperwork, they typically decide the filing method, this walkthrough may not apply.",
                   "hint": {
                     "items": [
-                      "Attorneys can file I-130 online via their USCIS representative account, or by mailing a paper packet — both work",
+                      "Attorneys can file I-130 online via their USCIS representative account, or by mailing a paper packet, both work",
                       "Ask your attorney or document preparer which method they prefer before deciding"
                     ]
                   },
                   "options": [
                     {
-                      "label": "Yes — a representative is handling this",
+                      "label": "Yes, a representative is handling this",
                       "value": "yes",
                       "signal": "discuss"
                     },
                     {
-                      "label": "No — I'm filing on my own",
+                      "label": "No, I'm filing on my own",
                       "value": "no",
                       "signal": "neutral"
                     },
@@ -986,7 +986,7 @@
                 {
                   "id": "online-account",
                   "question": "Can the petitioner create and manage a USCIS online account?",
-                  "helper": "Online filing requires a free USCIS account at my.uscis.gov — used to complete the form, upload documents, and pay the filing fee.",
+                  "helper": "Online filing requires a free USCIS account at my.uscis.gov, used to complete the form, upload documents, and pay the filing fee.",
                   "hint": {
                     "items": [
                       "Account setup takes a few minutes and just needs a valid email address",
@@ -996,12 +996,12 @@
                   },
                   "options": [
                     {
-                      "label": "Yes — comfortable setting up and using an online account",
+                      "label": "Yes, comfortable setting up and using an online account",
                       "value": "yes",
                       "signal": "online"
                     },
                     {
-                      "label": "No — online accounts aren't practical right now",
+                      "label": "No, online accounts aren't practical right now",
                       "value": "no",
                       "signal": "paper"
                     },
@@ -1018,19 +1018,19 @@
                   "helper": "Online filing requires uploading scanned or photographed copies. Paper filing uses physical copies sent by mail.",
                   "hint": {
                     "items": [
-                      "PDF, JPG, or PNG are accepted — a phone camera usually works fine",
+                      "PDF, JPG, or PNG are accepted, a phone camera usually works fine",
                       "Documents must be clear and fully legible",
                       "A flatbed scanner gives better results for dense documents like a Nikah Nama"
                     ]
                   },
                   "options": [
                     {
-                      "label": "Yes — documents are ready or easy to scan",
+                      "label": "Yes, documents are ready or easy to scan",
                       "value": "yes",
                       "signal": "online"
                     },
                     {
-                      "label": "No — physical copies only, hard to digitize right now",
+                      "label": "No, physical copies only, hard to digitize right now",
                       "value": "no",
                       "signal": "paper"
                     },
@@ -1044,20 +1044,20 @@
                 {
                   "id": "preference",
                   "question": "Does the petitioner have a preference for how to file?",
-                  "helper": "Both methods are fully valid. Your comfort level is a legitimate deciding factor — there is no wrong choice.",
+                  "helper": "Both methods are fully valid. Your comfort level is a legitimate deciding factor, there is no wrong choice.",
                   "options": [
                     {
-                      "label": "Prefer online — convenient and saves $50",
+                      "label": "Prefer online, convenient and saves $50",
                       "value": "online",
                       "signal": "online"
                     },
                     {
-                      "label": "Prefer paper — more comfortable mailing a physical packet",
+                      "label": "Prefer paper, more comfortable mailing a physical packet",
                       "value": "paper",
                       "signal": "paper"
                     },
                     {
-                      "label": "No strong preference — happy with whatever works best",
+                      "label": "No strong preference, happy with whatever works best",
                       "value": "neutral",
                       "signal": "neutral"
                     }
@@ -1084,7 +1084,7 @@
                   "Trackable shipping recommended for delivery proof"
                 ]
               },
-              "source_basis": "USCIS processing times — uscis.gov/processing-times. Operational notes from USCIS published guidance."
+              "source_basis": "USCIS processing times, uscis.gov/processing-times. Operational notes from USCIS published guidance."
             }
           },
           "tool_data": {
@@ -1106,14 +1106,14 @@
           "step_number": 4,
           "step_name": "Fill Form I-130",
           "step_short_description": "via Rahvana wizard",
-          "step_description": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative — with structured step-by-step support, clear prompts, and a built-in review flow.",
+          "step_description": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative, with structured step-by-step support, clear prompts, and a built-in review flow.",
           "step_type": "tool",
           "visible_when": {},
           "tool_data": {
             "id": "i130-filler-online",
             "eyebrow": "Fill Form I-130",
             "title": "Fill Form I-130",
-            "subtitle": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative — with structured step-by-step support, clear prompts, and a built-in review flow.",
+            "subtitle": "Use Rahvana's guided Autoform Filler to complete the I-130 Petition for Alien Relative, with structured step-by-step support, clear prompts, and a built-in review flow.",
             "chips": [
               {
                 "label": "Petitioner",
@@ -1140,7 +1140,7 @@
               ],
               "button_label": "Launch I-130 Autoform Filler",
               "href": "/visa-forms/i130/wizard",
-              "note": "Opens in a new browser tab — you can return to the roadmap anytime"
+              "note": "Opens in a new browser tab, you can return to the roadmap anytime"
             },
             "support_cards": [
               {
@@ -1202,7 +1202,7 @@
           "step_number": 5,
           "step_name": "Fill Form I-130A",
           "step_short_description": "via Rahvana wizard",
-          "step_description": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler — structured prompts, field-by-field clarity, and a built-in review before you finalize.",
+          "step_description": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler, structured prompts, field-by-field clarity, and a built-in review before you finalize.",
           "step_type": "tool",
           "visible_when": {},
           "who": "via Rahvana wizard",
@@ -1214,7 +1214,7 @@
           "display_order": 5,
           "tool_data": {
             "title": "Fill Form I-130A",
-            "subtitle": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler — structured prompts, field-by-field clarity, and a built-in review before you finalize.",
+            "subtitle": "Complete the beneficiary spouse information form using Rahvana's guided Autoform Filler, structured prompts, field-by-field clarity, and a built-in review before you finalize.",
             "chips": [
               {
                 "label": "Beneficiary",
@@ -1241,7 +1241,7 @@
               ],
               "button_label": "Launch I-130A Autoform Filler",
               "href": "/visa-forms/i130a/wizard",
-              "note": "Opens in a new browser tab — you can return to the roadmap anytime"
+              "note": "Opens in a new browser tab, you can return to the roadmap anytime"
             },
             "support_cards": [
               {
@@ -1267,8 +1267,8 @@
           "beneficiary_residence_capture": {
             "title": "Beneficiary residence history",
             "subtitle": "Capture the beneficiary's residence countries here so Rahvana can pre-prepare the police certificate requirements for Chapter 3 and cross-check against the I-130A and DS-260 later.",
-            "rule_summary": "A police certificate is required from every country where the beneficiary lived for 6 months or more since age 16. Some countries are exempt — refer to the travel.state.gov Reciprocity Schedule for each country.",
-            "source_basis": "9 FAM 504.4-4(B)(2) — Police Certificate Requirement; travel.state.gov Reciprocity Schedule",
+            "rule_summary": "A police certificate is required from every country where the beneficiary lived for 6 months or more since age 16. Some countries are exempt, refer to the travel.state.gov Reciprocity Schedule for each country.",
+            "source_basis": "9 FAM 504.4-4(B)(2), Police Certificate Requirement; travel.state.gov Reciprocity Schedule",
             "exempt_country_note": "A small list of countries does not produce reliable police certificates (see travel.state.gov Reciprocity Schedule). The consular officer at the interview will indicate whether a substitute is acceptable.",
             "age_threshold": 16,
             "duration_threshold_months": 6,
@@ -1292,7 +1292,7 @@
             "filingMethodConfirmed": true,
             "filingMethod": "online"
           },
-          "step_description": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
+          "step_description": "Set up the petitioner's USCIS online account, the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
           "who": "myaccount.uscis.gov",
           "dependencies": [
             "step_1_3"
@@ -1303,7 +1303,7 @@
           "tool_data": {
             "id": "uscis-account-setup",
             "title": "Create USCIS Account",
-            "subtitle": "Set up the petitioner's USCIS online account — the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
+            "subtitle": "Set up the petitioner's USCIS online account, the gateway for filing Form I-130 digitally, tracking the case, and responding to any USCIS requests.",
             "chips": [
               {
                 "label": "Petitioner",
@@ -1407,7 +1407,7 @@
               "button_label": "Go to USCIS Portal",
               "button_launched_label": "Portal Opened",
               "href": "https://myaccount.uscis.gov/",
-              "note": "Opens your USCIS account in a new tab — return here after starting the form",
+              "note": "Opens your USCIS account in a new tab, return here after starting the form",
               "launched_note": "Sign in and click \"File a Form Online\" to begin the I-130 draft",
               "return_note": {
                 "title": "USCIS portal opened in a new tab",
@@ -1420,7 +1420,7 @@
             },
             "tutorial_steps": [
               {
-                "label": "Step 1 of 10 — Sign in to USCIS",
+                "label": "Step 1 of 10, Sign in to USCIS",
                 "heading": "Sign in to your USCIS account",
                 "instruction": "Go to <strong>myaccount.uscis.gov</strong> and sign in with the email address and password you set up when creating the account. Complete the two-step verification prompt.",
                 "url": "myaccount.uscis.gov",
@@ -1445,10 +1445,10 @@
                     "label": "Sign In"
                   }
                 ],
-                "note": "Two-step verification is required on every login — have your phone or authenticator app ready."
+                "note": "Two-step verification is required on every login, have your phone or authenticator app ready."
               },
               {
-                "label": "Step 2 of 10 — Go to myUSCIS",
+                "label": "Step 2 of 10, Go to myUSCIS",
                 "heading": "Navigate to myUSCIS",
                 "instruction": "After signing in, you will be directed to the <strong>myUSCIS portal homepage</strong>. This is your central hub for filing forms, checking case status, and managing your USCIS cases.",
                 "url": "my.uscis.gov",
@@ -1467,7 +1467,7 @@
                 "note": null
               },
               {
-                "label": "Step 3 of 10 — MyUSCIS Account Homepage",
+                "label": "Step 3 of 10, MyUSCIS Account Homepage",
                 "heading": "View your account homepage",
                 "instruction": "Your myUSCIS account homepage displays your <strong>filed cases, notices, and filing options</strong>. This is where you will manage all your online USCIS applications.",
                 "url": "my.uscis.gov",
@@ -1486,7 +1486,7 @@
                 "note": null
               },
               {
-                "label": "Step 4 of 10 — File a Form Online",
+                "label": "Step 4 of 10, File a Form Online",
                 "heading": "Click 'File a Form Online'",
                 "instruction": "From your account homepage, locate and click the <strong>\"File a Form Online\"</strong> button. This is the starting point for all online form submissions.",
                 "url": "my.uscis.gov",
@@ -1502,10 +1502,10 @@
                     "label": "File a Form Online"
                   }
                 ],
-                "note": "If you don't see this button immediately, scroll down — its position may vary on the dashboard."
+                "note": "If you don't see this button immediately, scroll down, its position may vary on the dashboard."
               },
               {
-                "label": "Step 5 of 10 — Select Form I-130",
+                "label": "Step 5 of 10, Select Form I-130",
                 "heading": "Find and select Form I-130",
                 "instruction": "After clicking \"File a Form Online,\" you will see a list of available forms. Locate <strong>Form I-130, Petition for Alien Relative</strong> and select it to begin.",
                 "url": "my.uscis.gov/file-online",
@@ -1524,7 +1524,7 @@
                 "note": null
               },
               {
-                "label": "Step 6 of 10 — Review Filing Methods",
+                "label": "Step 6 of 10, Review Filing Methods",
                 "heading": "Confirm your filing method",
                 "instruction": "USCIS may ask you to confirm your filing preference: <strong>guided online workflow</strong> or <strong>PDF upload method</strong>. Choose the guided online workflow for step-by-step assistance.",
                 "url": "my.uscis.gov",
@@ -1543,9 +1543,9 @@
                 "note": null
               },
               {
-                "label": "Step 7 of 10 — Begin the I-130 Form",
+                "label": "Step 7 of 10, Begin the I-130 Form",
                 "heading": "Start filling out Form I-130",
-                "instruction": "The USCIS portal will walk you through the form <strong>section by section</strong>. Enter your information carefully — progress saves automatically as you go.",
+                "instruction": "The USCIS portal will walk you through the form <strong>section by section</strong>. Enter your information carefully, progress saves automatically as you go.",
                 "url": "my.uscis.gov",
                 "screenTitle": "Form I-130",
                 "screenDesc": "Begin the application form",
@@ -1559,10 +1559,10 @@
                     "label": "Start Form"
                   }
                 ],
-                "note": "You can save your progress and return later to continue — the system will remember where you left off."
+                "note": "You can save your progress and return later to continue, the system will remember where you left off."
               },
               {
-                "label": "Step 8 of 10 — Fill Required Fields",
+                "label": "Step 8 of 10, Fill Required Fields",
                 "heading": "Complete all required sections",
                 "instruction": "Fill in all required fields carefully and accurately. <strong>Your answers must match your official documents</strong>. Check twice before moving to the next section.",
                 "url": "my.uscis.gov",
@@ -1578,12 +1578,12 @@
                     "label": "Continue"
                   }
                 ],
-                "note": "Inconsistencies between your form and official documents can lead to a Request for Evidence (RFE) — take time to be accurate."
+                "note": "Inconsistencies between your form and official documents can lead to a Request for Evidence (RFE), take time to be accurate."
               },
               {
-                "label": "Step 9 of 10 — Go to I-130A Section",
+                "label": "Step 9 of 10, Go to I-130A Section",
                 "heading": "Complete Form I-130A for beneficiary",
-                "instruction": "After completing the I-130, you will proceed to <strong>Form I-130A</strong> — the supplemental form for information about the beneficiary (your spouse). Fill this section with your spouse's details.",
+                "instruction": "After completing the I-130, you will proceed to <strong>Form I-130A</strong>, the supplemental form for information about the beneficiary (your spouse). Fill this section with your spouse's details.",
                 "url": "my.uscis.gov",
                 "screenTitle": "Form I-130A",
                 "screenDesc": "Beneficiary supplemental information",
@@ -1600,7 +1600,7 @@
                 "note": null
               },
               {
-                "label": "Step 10 of 10 — Upload I-130A Form",
+                "label": "Step 10 of 10, Upload I-130A Form",
                 "heading": "Upload the completed I-130A",
                 "instruction": "After completing Form I-130A, upload it along with your supporting evidence. Ensure all files are clearly named, legible, and in PDF or JPG format.",
                 "url": "my.uscis.gov",
@@ -1629,7 +1629,7 @@
           "step_short_description": "PDF/JPG, 12 MB max",
           "step_type": "tool",
           "branch": "online",
-          "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase — your documents become part of the official I-130 filing record.",
+          "step_description": "Attach your supporting documents inside the USCIS online portal. This is the evidence-upload phase, your documents become part of the official I-130 filing record.",
           "who": "Petitioner",
           "where": "myaccount.uscis.gov",
           "dependencies": [
@@ -1683,7 +1683,7 @@
             },
             "tutorial_steps": [
               {
-                "label": "Step 1 of 4 — Locate the Evidence Section",
+                "label": "Step 1 of 4, Locate the Evidence Section",
                 "heading": "Find the evidence upload section",
                 "instruction": "Inside your I-130 draft, navigate to the <strong>evidence or supporting documents</strong> section. USCIS labels this as the upload step in the guided online filing workflow.",
                 "url": "my.uscis.gov",
@@ -1702,7 +1702,7 @@
                 "note": null
               },
               {
-                "label": "Step 2 of 4 — Upload Documents",
+                "label": "Step 2 of 4, Upload Documents",
                 "heading": "Attach your supporting evidence",
                 "instruction": "Upload each document individually using the upload interface. Select and attach all required documents: passport, marriage certificate, civil documents, photos, and any other evidence supporting your petition.",
                 "url": "my.uscis.gov",
@@ -1725,7 +1725,7 @@
                 "note": "USCIS accepts PDF, JPG, and JPEG files up to 12 MB each. If a document is in a foreign language, upload the original AND the certified English translation as separate files."
               },
               {
-                "label": "Step 3 of 4 — Review Each File",
+                "label": "Step 3 of 4, Review Each File",
                 "heading": "Verify each uploaded file",
                 "instruction": "After uploading each file, verify it appears in the list of attached documents. <strong>Open or preview any file</strong> to confirm it is legible, complete, and the correct document.",
                 "url": "my.uscis.gov",
@@ -1744,7 +1744,7 @@
                 "note": "A blurry, rotated, or incomplete scan can lead to a Request for Evidence (RFE). Verify each file is fully legible before continuing."
               },
               {
-                "label": "Step 4 of 4 — All Documents Attached",
+                "label": "Step 4 of 4, All Documents Attached",
                 "heading": "Confirm all documents are uploaded",
                 "instruction": "Once all required documents are attached and verified, your evidence section is complete. <strong>Do not proceed</strong> until you have confirmed all required documents are present.",
                 "url": "my.uscis.gov",
@@ -1775,11 +1775,11 @@
               ],
               "guidance": [
                 "Each individual file must be 12 MB or smaller (USCIS portal limit)",
-                "Scans must be clear and legible — USCIS commonly issues RFEs for unreadable documents",
+                "Scans must be clear and legible, USCIS commonly issues RFEs for unreadable documents",
                 "All non-English documents require a certified English translation uploaded alongside",
                 "Combine multi-page documents into a single PDF per category where appropriate"
               ],
-              "source_basis": "USCIS online filing portal — file requirements published at myaccount.uscis.gov"
+              "source_basis": "USCIS online filing portal, file requirements published at myaccount.uscis.gov"
             }
           }
         },
@@ -1847,11 +1847,11 @@
             },
             "guide_card": {
               "title": "View Step-by-Step Payment Guide",
-              "subtitle": "Walk through the USCIS portal payment sequence — from the review step to completing payment and receiving your receipt."
+              "subtitle": "Walk through the USCIS portal payment sequence, from the review step to completing payment and receiving your receipt."
             },
             "tutorial_steps": [
               {
-                "label": "Step 1 of 5 — Review your form",
+                "label": "Step 1 of 5, Review your form",
                 "heading": "Review your form",
                 "instruction": "Before payment, USCIS requires you to review a summary of all the information you have entered. Confirm each entry is correct before signing or paying.",
                 "url": "my.uscis.gov",
@@ -1867,7 +1867,7 @@
                 "note": "Review every entry carefully. Changes after signing and payment require contacting USCIS."
               },
               {
-                "label": "Step 2 of 5 — Digitally sign the form",
+                "label": "Step 2 of 5, Digitally sign the form",
                 "heading": "Digitally sign your form",
                 "instruction": "After confirming the review, you will be prompted to digitally sign by entering your full legal name in the space provided. This acts as your electronic signature.",
                 "url": "my.uscis.gov",
@@ -1899,7 +1899,7 @@
                 "note": "Be certain before signing; once signed and payment is submitted, edits are difficult."
               },
               {
-                "label": "Step 3 of 5 — Reach the payment step",
+                "label": "Step 3 of 5, Reach the payment step",
                 "heading": "Proceed to the USCIS payment step",
                 "instruction": "After signing, the portal will advance to the payment section. You will see the filing fee amount displayed. Confirm the amount matches the current USCIS fee schedule before proceeding.",
                 "url": "my.uscis.gov",
@@ -1913,7 +1913,7 @@
                 "note": null
               },
               {
-                "label": "Step 4 of 5 — Enter payment details",
+                "label": "Step 4 of 5, Enter payment details",
                 "heading": "Enter your payment method",
                 "instruction": "USCIS accepts credit cards, debit cards, and ACH bank transfers for online filings. Personal checks and money orders are not accepted for online submissions. Enter your payment details in the USCIS payment interface.",
                 "url": "pay.gov",
@@ -1927,9 +1927,9 @@
                 "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen."
               },
               {
-                "label": "Step 5 of 5 — Receive your receipt notice",
-                "heading": "Payment complete — receipt issued immediately",
-                "instruction": "After successful payment, USCIS immediately issues a receipt notice with your case number (typically beginning with \"IOE\"). Download or save this receipt — it is your proof of filing and your case tracking number.",
+                "label": "Step 5 of 5, Receive your receipt notice",
+                "heading": "Payment complete, receipt issued immediately",
+                "instruction": "After successful payment, USCIS immediately issues a receipt notice with your case number (typically beginning with \"IOE\"). Download or save this receipt, it is your proof of filing and your case tracking number.",
                 "url": "my.uscis.gov",
                 "screenTitle": "USCIS Payment",
                 "screenDesc": "Confirm Payment Amount",
@@ -1941,7 +1941,7 @@
                 "note": null
               }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nAlways verify the current fee at uscis.gov/g-1055 before paying — fees are subject to change."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nAlways verify the current fee at uscis.gov/g-1055 before paying, fees are subject to change."
           }
         },
         {
@@ -2000,15 +2000,15 @@
               "All form fields completed and accurate",
               "All required evidence documents attached and verified",
               "Payment method ready (credit/debit card or ACH bank transfer)",
-              "USCIS account email is actively monitored — receipts and notices will arrive there"
+              "USCIS account email is actively monitored, receipts and notices will arrive there"
             ],
             "guide_card": {
               "title": "View Step-by-Step Review & Submit Guide",
-              "subtitle": "Walk through the final USCIS portal sequence — reviewing your filing, signing, paying, and receiving your receipt confirmation."
+              "subtitle": "Walk through the final USCIS portal sequence, reviewing your filing, signing, paying, and receiving your receipt confirmation."
             },
             "tutorial_steps": [
               {
-                "label": "Step 1 of 5 — Review Your Petition",
+                "label": "Step 1 of 5, Review Your Petition",
                 "heading": "Open the filing review",
                 "instruction": "Sign in to your USCIS account, open your I-130 draft, and navigate to the <strong>review step</strong>. The portal will display a full summary of everything you have entered.",
                 "url": "myaccount.uscis.gov",
@@ -2027,10 +2027,10 @@
                     "label": "Review"
                   }
                 ],
-                "note": "Read the review summary carefully — this is your last opportunity to spot errors before official submission."
+                "note": "Read the review summary carefully, this is your last opportunity to spot errors before official submission."
               },
               {
-                "label": "Step 2 of 5 — Open the Review Summary",
+                "label": "Step 2 of 5, Open the Review Summary",
                 "heading": "Examine the complete filing summary",
                 "instruction": "Watch as the portal displays your complete filing summary. Review each section carefully to ensure <strong>all information is accurate and complete</strong>.",
                 "url": "my.uscis.gov",
@@ -2052,7 +2052,7 @@
                 "note": null
               },
               {
-                "label": "Step 3 of 5 — Confirm Your Attached Evidence",
+                "label": "Step 3 of 5, Confirm Your Attached Evidence",
                 "heading": "Verify all supporting documents",
                 "instruction": "Within the review, verify that each piece of supporting evidence is correctly attached. Check that file names match the documents they represent and that nothing is missing.",
                 "url": "my.uscis.gov",
@@ -2068,12 +2068,12 @@
                     "label": "Verify Evidence"
                   }
                 ],
-                "note": "A missing or incorrect attachment is harder to fix after submission — verify each file at this stage."
+                "note": "A missing or incorrect attachment is harder to fix after submission, verify each file at this stage."
               },
               {
-                "label": "Step 4 of 5 — Enter Your Full Legal Name",
+                "label": "Step 4 of 5, Enter Your Full Legal Name",
                 "heading": "Digitally sign your petition",
-                "instruction": "After completing the review, USCIS will prompt you to <strong>digitally sign</strong>. Enter your full legal name — first, middle (if applicable), and last — exactly as it appears in official documents.",
+                "instruction": "After completing the review, USCIS will prompt you to <strong>digitally sign</strong>. Enter your full legal name, first, middle (if applicable), and last, exactly as it appears in official documents.",
                 "url": "my.uscis.gov",
                 "screenTitle": "Electronic Signature",
                 "screenDesc": "Sign with your full legal name",
@@ -2102,7 +2102,7 @@
                 "note": "Once you sign and proceed to payment, going back to edit requires contacting USCIS. Be certain before continuing."
               },
               {
-                "label": "Step 5 of 5 — Pay the I-130 Fees",
+                "label": "Step 5 of 5, Pay the I-130 Fees",
                 "heading": "Complete the filing fee payment",
                 "instruction": "After signing, the portal advances to the payment step. Confirm the filing fee displayed ($625 for online I-130 filing). <strong>Enter your payment information</strong> to complete submission.",
                 "url": "pay.gov",
@@ -2129,7 +2129,7 @@
                 "note": "Do not close the browser tab during payment processing. Wait for the confirmation screen. USCIS fees are generally non-refundable once a case is accepted."
               }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nReview your filing carefully before submitting — USCIS fees are non-refundable once a case is accepted."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice.\nReview your filing carefully before submitting, USCIS fees are non-refundable once a case is accepted."
           }
         },
         {
@@ -2357,7 +2357,7 @@
               {
                 "label": "Payment guide · Step 1",
                 "title": "Go to the official USCIS fee schedule page",
-                "text": "Open the official USCIS fee schedule at <strong>uscis.gov/g-1055</strong> and select <strong>I-130, Petition for Alien Relative</strong> from the form dropdown to see the current filing fees. This is the only place you should confirm the fee amount — do not rely on any saved screenshot or old amount.",
+                "text": "Open the official USCIS fee schedule at <strong>uscis.gov/g-1055</strong> and select <strong>I-130, Petition for Alien Relative</strong> from the form dropdown to see the current filing fees. This is the only place you should confirm the fee amount, do not rely on any saved screenshot or old amount.",
                 "url": "uscis.gov/g-1055?form=i-130",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1-step7(mailing)/Screenshot 2026-05-15 003134.jpg\" alt=\"USCIS G-1055 fee schedule page with I-130 selected\" style=\"width:100%;\" />",
                 "note": "Type 'I-13' in the search field and select 'I-130, Petition for Alien Relative' from the dropdown that appears."
@@ -2381,9 +2381,9 @@
               {
                 "label": "Payment guide · Step 4",
                 "title": "Place payment at the front of the packet",
-                "text": "Once the payment item is ready — whether it is a completed Form G-1450 (card) or Form G-1650 (ACH) — place it at the very front of the mailing packet. The payment form should be the first thing USCIS sees when they open the envelope.",
+                "text": "Once the payment item is ready, whether it is a completed Form G-1450 (card) or Form G-1650 (ACH), place it at the very front of the mailing packet. The payment form should be the first thing USCIS sees when they open the envelope.",
                 "url": "paper packet",
-                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card) or Form G-1650 (ACH) — placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Forms</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130 and I-130A forms</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
+                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card) or Form G-1650 (ACH), placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Forms</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130 and I-130A forms</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
                 "note": "Keep the payment form separate and easy to reach so packet assembly in the next step stays quick and organized."
               },
               {
@@ -2392,7 +2392,7 @@
                 "text": "Once your payment item is ready, go back to the step card and select your payment method from the dropdown shown in the video above. Saving your selection in Rahvana confirms this step is complete and unlocks the next stage of packet assembly.",
                 "url": "rahvana.com/visa-category/ir1-journey",
                 "visual": "<video src=\"/assets/videos/ir1-journey/c1_step7(mailing)/guide_laststep.mp4\" autoplay loop muted playsinline style=\"width:100%;border-radius:8px;\" />",
-                "note": "Payment preparation must be complete before you build the final paper packet. Do not skip this — the packet checklist step depends on it."
+                "note": "Payment preparation must be complete before you build the final paper packet. Do not skip this, the packet checklist step depends on it."
               }
             ]
           },
@@ -2522,7 +2522,7 @@
                 },
                 {
                   "id": "forms",
-                  "label": "Completed I-130 and I-130A — signed and dated",
+                  "label": "Completed I-130 and I-130A, signed and dated",
                   "position": "after payment",
                   "required": true
                 },
@@ -2563,7 +2563,7 @@
                   "required_when": "instructions request photos"
                 }
               ],
-              "source_basis": "USCIS I-130 paper filing instructions — uscis.gov/i-130"
+              "source_basis": "USCIS I-130 paper filing instructions, uscis.gov/i-130"
             }
           }
         },
@@ -2659,7 +2659,7 @@
                 "title": "Choose a trackable mailing service",
                 "text": "Select a mailing carrier and shipping service that includes tracking and delivery confirmation before sending the packet to USCIS.",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step9(mailing)/step5.jpg\" alt=\"Choose a trackable mailing service\" style=\"width:100%;\" />",
-                "note": "Tracking and delivery confirmation help prove the packet was successfully delivered to USCIS. Keep the receipt — you may need it later."
+                "note": "Tracking and delivery confirmation help prove the packet was successfully delivered to USCIS. Keep the receipt, you may need it later."
               },
               {
                 "label": "Mailing guide · Step 4",
@@ -2836,24 +2836,24 @@
                 "sub": "Initial placeholder status stored as the baseline for future comparisons."
               }
             ],
-            "footer_note": "Rahvana can monitor for status changes and notify the user, but this should be presented as managed monitoring around USCIS status tools — not as a guaranteed official USCIS API stream.",
+            "footer_note": "Rahvana can monitor for status changes and notify the user, but this should be presented as managed monitoring around USCIS status tools, not as a guaranteed official USCIS API stream.",
             "tutorial_steps": [
               {
-                "label": "Step 1 of 4 — Watch for USCIS acceptance",
+                "label": "Step 1 of 4, Watch for USCIS acceptance",
                 "heading": "Look for the first accepted-filing notice",
                 "instruction": "After USCIS accepts the filing, watch your <strong>USCIS online account</strong>, any available <strong>e-notification</strong>, and the <strong>physical notice by mail</strong>. The goal is to bring back the receipt number once it appears.",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step1.png\" alt=\"Find the receipt number\" style=\"width:100%; \" />",
                 "caption": "Return to Rahvana once you have the receipt number or the notice itself."
               },
               {
-                "label": "Step 2 of 4 — Find the receipt number",
+                "label": "Step 2 of 4, Find the receipt number",
                 "heading": "Find the 13-character receipt number",
                 "instruction": "The receipt number is the core tracking identifier. It consists of <strong>3 letters followed by 10 numbers</strong>, such as IOE1234567890.",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step15/step2.png\" alt=\"Find the receipt number\" style=\"width:100%; height: 400px; \" />",
                 "caption": "This is the number Rahvana should save to enable case monitoring."
               },
               {
-                "label": "Step 3 of 4 — Decide how to register it",
+                "label": "Step 3 of 4, Decide how to register it",
                 "heading": "Choose the easiest intake path",
                 "instruction": "If you already have the document, upload the notice. If you only have the receipt number from the portal or an e-notification, manual entry is faster.",
                 "url": "rahvana.com/visa-category/ir1-journey",
@@ -2861,7 +2861,7 @@
                 "caption": "Upload is useful for preserving the notice. Manual entry is useful when speed matters more."
               },
               {
-                "label": "Step 4 of 4 — Save and turn on monitoring",
+                "label": "Step 4 of 4, Save and turn on monitoring",
                 "heading": "Confirm the details and enable tracking",
                 "instruction": "Before saving, confirm the receipt number and any dates shown on the notice. After that, Rahvana can store the case record, enable tracking, and keep a timeline of changes.",
                 "url": "rahvana.com/visa-category/ir1-journey",
@@ -2881,8 +2881,8 @@
                 "IOE": "USCIS ELIS / online filing system"
               },
               "example": "MSC2390123456",
-              "invalid_format_message": "This does not match the standard USCIS receipt number format. Double-check the number on your I-797C — it should be 3 letters followed by 10 digits.",
-              "source_basis": "USCIS publishes receipt notice format — see I-797C examples on uscis.gov"
+              "invalid_format_message": "This does not match the standard USCIS receipt number format. Double-check the number on your I-797C, it should be 3 letters followed by 10 digits.",
+              "source_basis": "USCIS publishes receipt notice format, see I-797C examples on uscis.gov"
             }
           }
         },
@@ -3069,7 +3069,7 @@
             ],
             "tutorial_steps": [
               {
-                "label": "Step 1 of 4 — Open official USCIS status tools",
+                "label": "Step 1 of 4, Open official USCIS status tools",
                 "heading": "Start with the official case-status view",
                 "instruction": "USCIS case-status tools revolve around the receipt number. The official status view usually reflects the latest recorded action on the case.",
                 "url": "egov.uscis.gov",
@@ -3084,7 +3084,7 @@
                 "note": "A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet."
               },
               {
-                "label": "Step 2 of 4 — Understand common pending statuses",
+                "label": "Step 2 of 4, Understand common pending statuses",
                 "heading": "Learn the difference between waiting and action-required states",
                 "instruction": "Most of the time, a pending case is in a waiting state like “Case Was Received” or “Case Is Being Actively Reviewed.” The important distinction is whether USCIS is simply processing or has asked for something.",
                 "url": "rahvana.local/status-map",
@@ -3100,7 +3100,7 @@
                 "note": "Use this guide to understand whether you need to act now or simply stay prepared."
               },
               {
-                "label": "Step 3 of 4 — Use the waiting period well",
+                "label": "Step 3 of 4, Use the waiting period well",
                 "heading": "Turn waiting time into preparation time",
                 "instruction": "Use this waiting period to stay prepared, keep your records current, and learn what usually comes next in the journey.",
                 "url": "rahvana.local/pending-prep",
@@ -3115,7 +3115,7 @@
                 "note": "A few small tasks now can make the next phase feel much easier when the case moves forward."
               },
               {
-                "label": "Step 4 of 4 — Know when the page should pivot",
+                "label": "Step 4 of 4, Know when the page should pivot",
                 "heading": "Be ready for the next meaningful change",
                 "instruction": "If USCIS later issues a request for evidence, approval, or another major update, your next step here should change with it.",
                 "url": "rahvana.local/conditional-next-steps",
@@ -3188,7 +3188,7 @@
           "step_number": 1,
           "step_name": "Access CEAC Case",
           "step_short_description": "Secure case details & sign in",
-          "step_description": "Your NVC Welcome Letter contains the case number and invoice ID needed to access CEAC — the online portal where NVC processing continues.",
+          "step_description": "Your NVC Welcome Letter contains the case number and invoice ID needed to access CEAC, the online portal where NVC processing continues.",
           "step_type": "tool",
           "who": "Petitioner",
           "where": "NVC Welcome Letter / ceac.state.gov",
@@ -3206,7 +3206,7 @@
           "tool_data": {
             "id": "step_2_1",
             "title": "Access CEAC Case",
-            "subtitle": "Your NVC Welcome Letter contains the case number and invoice ID needed to access CEAC — the online portal where NVC processing continues.",
+            "subtitle": "Your NVC Welcome Letter contains the case number and invoice ID needed to access CEAC, the online portal where NVC processing continues.",
             "chips": [
               {
                 "label": "Petitioner",
@@ -3238,10 +3238,10 @@
             },
             "tutorial_steps": [
               {
-                "label": "Step 1 of 5 — Find your NVC Welcome Letter",
+                "label": "Step 1 of 5, Find your NVC Welcome Letter",
                 "heading": "Find your NVC Welcome Letter",
                 "screenTitle": "Find your NVC Welcome Letter",
-                "instruction": "After USCIS approves your I-130 petition, your case is transferred to the National Visa Center (NVC). The NVC sends a Welcome Letter or email to the petitioner's address — this communication contains the two key details you need to access CEAC.",
+                "instruction": "After USCIS approves your I-130 petition, your case is transferred to the National Visa Center (NVC). The NVC sends a Welcome Letter or email to the petitioner's address, this communication contains the two key details you need to access CEAC.",
                 "url": "NVC Welcome Communication",
                 "ss_label": "NVC Welcome Communication",
                 "ss_headline": "Notice of NVC Receipt",
@@ -3253,10 +3253,10 @@
                 }
               },
               {
-                "label": "Step 2 of 5 — Locate your NVC Case Number",
+                "label": "Step 2 of 5, Locate your NVC Case Number",
                 "heading": "Locate your NVC Case Number",
                 "screenTitle": "Locate your NVC Case Number",
-                "instruction": "The NVC Case Number appears clearly in the Welcome Letter or email. For IR-1 spouse cases from Pakistan, it typically follows a format like <strong>ISL2026XXXXXX</strong> — beginning with your consulate code, followed by the year and case digits.",
+                "instruction": "The NVC Case Number appears clearly in the Welcome Letter or email. For IR-1 spouse cases from Pakistan, it typically follows a format like <strong>ISL2026XXXXXX</strong>, beginning with your consulate code, followed by the year and case digits.",
                 "url": "NVC Case Number Location",
                 "ss_label": "NVC Case Number Location",
                 "ss_headline": "Notice of NVC Receipt",
@@ -3267,7 +3267,7 @@
                 }
               },
               {
-                "label": "Step 3 of 5 — Locate your Invoice ID Number",
+                "label": "Step 3 of 5, Locate your Invoice ID Number",
                 "heading": "Locate your Invoice ID Number",
                 "instruction": "The Invoice ID Number (also called the Invoice Identification Number) also appears in the same letter. This is a separate number from the case number and is required alongside it to complete first-time CEAC login.",
                 "url": "Invoice ID Location",
@@ -3281,12 +3281,12 @@
                 }
               },
               {
-                "label": "Step 4 of 5 — Enter your details into CEAC",
+                "label": "Step 4 of 5, Enter your details into CEAC",
                 "heading": "Enter your case details into CEAC",
                 "instruction": "Go to the CEAC portal and enter your NVC Case Number and Invoice ID Number to access your case for the first time. This creates your CEAC session and allows you to begin the immigrant visa application process.",
                 "url": "ceac.state.gov",
                 "ss_label": "CEAC Portal Login",
-                "ss_headline": "Immigrant Visa Case — CEAC Login",
+                "ss_headline": "Immigrant Visa Case, CEAC Login",
                 "ss_desc": "Sign In",
                 "media": {
                   "type": "img",
@@ -3294,7 +3294,7 @@
                 }
               },
               {
-                "label": "Step 5 of 5 — Return and save your details",
+                "label": "Step 5 of 5, Return and save your details",
                 "heading": "Return here and save your CEAC details",
                 "instruction": "Once you have located your case number and invoice ID and accessed CEAC, return to this Rahvana step and save both details in the Portal Wallet. This keeps them secure and easy to retrieve throughout your NVC processing.",
                 "url": "Save to Portal Wallet",
@@ -3375,7 +3375,7 @@
             },
             "tutorial_steps": [
               {
-                "label": "Step 1 of 6 — Open CEAC",
+                "label": "Step 1 of 6, Open CEAC",
                 "heading": "Open CEAC and sign in",
                 "screenTitle": "Open CEAC and sign in",
                 "instruction": "Go to the CEAC portal and sign in using the NVC Case Number and Invoice ID from your Welcome Letter.",
@@ -3389,14 +3389,14 @@
                 }
               },
               {
-                "label": "Step 2 of 6 — Enter case details",
+                "label": "Step 2 of 6, Enter case details",
                 "heading": "Enter your case information",
                 "screenTitle": "Enter your case information",
                 "instruction": "Enter your case number and invoice ID exactly as they appear in the NVC Welcome Letter. Both fields are required to access the case.",
                 "url": "ceac.state.gov",
                 "ss_label": "Case Access",
                 "ss_headline": "Case Number & Invoice ID Required",
-                "ss_desc": "ISL2026XXXXXX — Invoice ID confirmed",
+                "ss_desc": "ISL2026XXXXXX, Invoice ID confirmed",
                 "note": "Keep your NVC Welcome Letter accessible. Both numbers are case-sensitive.",
                 "media": {
                   "type": "img",
@@ -3404,21 +3404,21 @@
                 }
               },
               {
-                "label": "Step 3 of 6 — Fee payment area",
+                "label": "Step 3 of 6, Fee payment area",
                 "heading": "Go to the fee payment section",
                 "screenTitle": "Go to the fee payment section",
                 "instruction": "After entering CEAC, navigate to the payment or invoices area. This is where NVC fee invoices are listed and where you can initiate payment.",
                 "url": "ceac.state.gov",
                 "ss_label": "CEAC Dashboard",
                 "ss_headline": "Fee Payment",
-                "ss_desc": "Fee Payment — Available",
+                "ss_desc": "Fee Payment, Available",
                 "media": {
                   "type": "img",
                   "src": "/assets/images/ir1-journey/c2_step2/03-fee-section.png"
                 }
               },
               {
-                "label": "Step 4 of 6 — Review fee invoices",
+                "label": "Step 4 of 6, Review fee invoices",
                 "heading": "Review the required fee invoices",
                 "screenTitle": "Review the required fee invoices",
                 "instruction": "CEAC will display the required fee invoices for your case. Review both the Affidavit of Support fee and the Immigrant Visa fee before proceeding.",
@@ -3433,7 +3433,7 @@
                 }
               },
               {
-                "label": "Step 5 of 6 — Submit payment",
+                "label": "Step 5 of 6, Submit payment",
                 "heading": "Follow the payment prompts carefully",
                 "screenTitle": "Follow the payment prompts carefully",
                 "instruction": "Proceed through the CEAC payment flow. Complete the payment method selection and confirm the transaction according to the portal prompts.",
@@ -3448,7 +3448,7 @@
                 }
               },
               {
-                "label": "Step 6 of 6 — Return and save",
+                "label": "Step 6 of 6, Return and save",
                 "heading": "Return here and save your payment record",
                 "instruction": "Once payment is submitted, return to this Rahvana step and save the fee status in the Portal Wallet for reference throughout your NVC processing.",
                 "url": "Save to Portal Wallet",
@@ -3489,25 +3489,25 @@
                 "id": "prior_marriage",
                 "trigger": "Any prior marriage declared at eligibility (q3.q3s1)",
                 "requirement": "List every prior marriage and how it ended; must match the I-130 and termination documents.",
-                "source_basis": "9 FAM 504.4; INA 212(a)(6)(C) — material misrepresentation"
+                "source_basis": "9 FAM 504.4; INA 212(a)(6)(C), material misrepresentation"
               },
               {
                 "id": "prior_visa_refusal",
                 "trigger": "Prior U.S. visa refusal or application declared (q5.q5s1)",
                 "requirement": "Declare every prior U.S. visa refusal or application. Omission risks a misrepresentation finding.",
-                "source_basis": "9 FAM 504.4; INA 212(a)(6)(C) — 8 USC 1182(a)(6)(C)"
+                "source_basis": "9 FAM 504.4; INA 212(a)(6)(C), 8 USC 1182(a)(6)(C)"
               },
               {
                 "id": "criminal_record",
                 "trigger": "Arrest, charge, or court/police record declared (q5.q5s2)",
                 "requirement": "Declare any arrest or charge and bring certified court and police records to the interview.",
-                "source_basis": "9 FAM 504.4; INA 212(a)(2) — 8 USC 1182(a)(2) criminal grounds"
+                "source_basis": "9 FAM 504.4; INA 212(a)(2), 8 USC 1182(a)(2) criminal grounds"
               },
               {
                 "id": "prior_overstay",
                 "trigger": "Prior U.S. overstay / unlawful presence declared (q5.q5s4)",
                 "requirement": "Declare any unlawful presence; a provisional waiver (I-601A) may be needed before the interview.",
-                "source_basis": "9 FAM 504.4; INA 212(a)(9)(B) — 8 USC 1182(a)(9)(B) unlawful presence bars"
+                "source_basis": "9 FAM 504.4; INA 212(a)(9)(B), 8 USC 1182(a)(9)(B) unlawful presence bars"
               }
             ],
             "source_basis": "U.S. Department of State 9 FAM 504.4 (DS-260 adjudication); INA 212(a)(6)(C)."
@@ -3515,7 +3515,7 @@
           "step_number": 3,
           "step_name": "Complete Form DS-260",
           "step_short_description": "Immigrant visa application",
-          "step_description": "Use Rahvana's guided Autoform Filler to prepare your answers first, then use the generated PDF as an answer key when completing the DS-260 inside CEAC — or fill the form directly in the portal.",
+          "step_description": "Use Rahvana's guided Autoform Filler to prepare your answers first, then use the generated PDF as an answer key when completing the DS-260 inside CEAC, or fill the form directly in the portal.",
           "step_type": "tool",
           "who": "Beneficiary",
           "where": "CEAC Portal",
@@ -3532,7 +3532,7 @@
           "tool_data": {
             "id": "step_2_3",
             "title": "Complete Form DS-260",
-            "subtitle": "Use Rahvana's guided Autoform Filler to prepare your answers first, then use the generated PDF as an answer key when completing the DS-260 inside CEAC — or fill the form directly in the portal.",
+            "subtitle": "Use Rahvana's guided Autoform Filler to prepare your answers first, then use the generated PDF as an answer key when completing the DS-260 inside CEAC, or fill the form directly in the portal.",
             "chips": [
               {
                 "label": "Beneficiary",
@@ -3560,7 +3560,7 @@
               ],
               "button_label": "Launch DS-260 Autoform Filler",
               "href": "https://www.rahvana.com/visa-forms/ds260/wizard",
-              "note": "Opens in a new tab — return here when finished"
+              "note": "Opens in a new tab, return here when finished"
             },
             "support_cards": [
               {
@@ -3601,12 +3601,12 @@
             ],
             "tutorial_steps": [
               {
-                "label": "Step 1 of 7 — Sign in to CEAC",
+                "label": "Step 1 of 7, Sign in to CEAC",
                 "heading": "Sign in to CEAC",
                 "screenTitle": "Sign in to CEAC",
                 "instruction": "Enter CEAC using your NVC Case Number and Invoice ID from the Welcome Letter. Your fees must be fully processed before DS-260 is available.",
                 "ss_label": "CEAC Login",
-                "ss_headline": "Immigrant Visa Case — Sign In",
+                "ss_headline": "Immigrant Visa Case, Sign In",
                 "ss_desc": "NVC Case Number: ISL2026XXXXXX, Invoice ID: ••••••••••••••••",
                 "media": {
                   "type": "img",
@@ -3614,7 +3614,7 @@
                 }
               },
               {
-                "label": "Step 2 of 7 — Open the DS-260 section",
+                "label": "Step 2 of 7, Open the DS-260 section",
                 "heading": "Open the DS-260 section",
                 "screenTitle": "Open the DS-260 section",
                 "instruction": "Once fee payment is processed, DS-260 becomes available inside your CEAC case. Navigate to the DS-260 area and select Start or Resume.",
@@ -3628,7 +3628,7 @@
                 }
               },
               {
-                "label": "Step 3 of 7 — Start your DS-260",
+                "label": "Step 3 of 7, Start your DS-260",
                 "heading": "Start your DS-260",
                 "screenTitle": "Start your DS-260",
                 "instruction": "Click Start or Resume to begin. The form is divided into multiple sections. Use your Rahvana-generated PDF as a reference while completing each section.",
@@ -3641,7 +3641,7 @@
                 }
               },
               {
-                "label": "Step 4 of 7 — Complete section by section",
+                "label": "Step 4 of 7, Complete section by section",
                 "heading": "Complete section by section",
                 "screenTitle": "Complete section by section",
                 "instruction": "Move through each DS-260 section in sequence. Enter your information carefully. Keep answers consistent with other immigration forms in your case.",
@@ -3655,7 +3655,7 @@
                 }
               },
               {
-                "label": "Step 5 of 7 — Review your answers carefully",
+                "label": "Step 5 of 7, Review your answers carefully",
                 "heading": "Review your answers carefully",
                 "screenTitle": "Review your answers carefully",
                 "instruction": "Use the review stage to check for errors or missing information before certifying. This is your last opportunity to make edits.",
@@ -3668,10 +3668,10 @@
                 }
               },
               {
-                "label": "Step 6 of 7 — Sign and submit the DS-260",
+                "label": "Step 6 of 7, Sign and submit the DS-260",
                 "heading": "Sign and submit the DS-260",
                 "screenTitle": "Sign and submit the DS-260",
-                "instruction": "The final step requires certification. Read carefully before submitting — changes after submission are not straightforward.",
+                "instruction": "The final step requires certification. Read carefully before submitting, changes after submission are not straightforward.",
                 "ss_label": "Certification",
                 "ss_headline": "Sign and Submit",
                 "ss_desc": "Certify accuracy of your application before final submission.",
@@ -3682,7 +3682,7 @@
                 }
               },
               {
-                "label": "Step 7 of 7 — Save your confirmation page",
+                "label": "Step 7 of 7, Save your confirmation page",
                 "heading": "Save your confirmation page",
                 "screenTitle": "Save your confirmation page",
                 "instruction": "After submission, CEAC displays a confirmation page. Save or print this for your records as proof that DS-260 has been received.",
@@ -3773,7 +3773,7 @@
                       "id": "marriage",
                       "icon": "marriage",
                       "title": "Marriage Certificate / Marriage Registration Record",
-                      "sub": "Official civil proof of the marriage — Nikah Nama and NADRA MRC",
+                      "sub": "Official civil proof of the marriage, Nikah Nama and NADRA MRC",
                       "tags": [
                         "both",
                         "govt"
@@ -3827,7 +3827,7 @@
                       "sections": [
                         {
                           "t": "Requirement",
-                          "c": "<p>Every document not in English must be accompanied by a full certified English translation. This applies to all stages — USCIS, NVC, and consular.</p>"
+                          "c": "<p>Every document not in English must be accompanied by a full certified English translation. This applies to all stages, USCIS, NVC, and consular.</p>"
                         },
                         {
                           "t": "What certified means",
@@ -3835,7 +3835,7 @@
                         },
                         {
                           "t": "Upload pairing",
-                          "c": "<p>Upload the original document and its translation as separate files or clearly labeled together. CEAC expects both — original and translation — for each non-English document.</p>"
+                          "c": "<p>Upload the original document and its translation as separate files or clearly labeled together. CEAC expects both, original and translation, for each non-English document.</p>"
                         },
                         {
                           "t": "Watch out for",
@@ -3938,7 +3938,7 @@
                       "sections": [
                         {
                           "t": "When this applies",
-                          "c": "<p>If a required document — such as a birth certificate or civil record — is genuinely unavailable or was never issued, substitute documentation may be submitted.</p>"
+                          "c": "<p>If a required document, such as a birth certificate or civil record, is genuinely unavailable or was never issued, substitute documentation may be submitted.</p>"
                         },
                         {
                           "t": "What to provide",
@@ -4034,7 +4034,7 @@
             },
             "tutorial_steps": [
               {
-                "label": "Step 1 of 13 — Sign in to CEAC",
+                "label": "Step 1 of 13, Sign in to CEAC",
                 "heading": "Sign in to CEAC",
                 "screenTitle": "Sign in to CEAC",
                 "instruction": "Enter CEAC using your NVC Case Number and Invoice ID from the Welcome Letter. Your fees must be fully processed and DS-260 completed before you can upload civil documents.",
@@ -4051,7 +4051,7 @@
                 }
               },
               {
-                "label": "Step 2 of 13 — Submit IV and AOS fees",
+                "label": "Step 2 of 13, Submit IV and AOS fees",
                 "heading": "Confirm all fees are paid",
                 "screenTitle": "Confirm all fees are paid",
                 "instruction": "Before document submission begins, verify in CEAC that both the Affidavit of Support fee ($120) and the Immigrant Visa fee ($345) have been successfully processed.",
@@ -4060,7 +4060,7 @@
                 "ss_headline": "NVC Fees Paid",
                 "ss_desc": "AOS + IV fees required before document upload",
                 "ss_highlight": null,
-                "caption": "If fees are not marked as paid, do not proceed — contact NVC first.",
+                "caption": "If fees are not marked as paid, do not proceed, contact NVC first.",
                 "note": null,
                 "media": {
                   "type": "img",
@@ -4068,7 +4068,7 @@
                 }
               },
               {
-                "label": "Step 3 of 13 — Start civil document upload",
+                "label": "Step 3 of 13, Start civil document upload",
                 "heading": "Navigate to the civil documents section",
                 "screenTitle": "Navigate to the civil documents section",
                 "instruction": "In CEAC, locate and open the civil documents upload area. This is where you will attach the required birth certificates, marriage records, police certificates, and other supporting documents.",
@@ -4085,7 +4085,7 @@
                 }
               },
               {
-                "label": "Step 4 of 13 — Upload documents to CEAC",
+                "label": "Step 4 of 13, Upload documents to CEAC",
                 "heading": "Upload each document individually",
                 "screenTitle": "Upload each document individually",
                 "instruction": "Select and upload each civil document one by one. Ensure each file is under 4 MB. For non-English documents, upload both the original and the certified English translation as separate files.",
@@ -4094,7 +4094,7 @@
                 "ss_headline": "Select Files to Upload",
                 "ss_desc": "PDF or image files, max 4 MB each",
                 "ss_highlight": null,
-                "caption": "CEAC uploads are processed individually — you will see feedback for each file.",
+                "caption": "CEAC uploads are processed individually, you will see feedback for each file.",
                 "note": null,
                 "media": {
                   "type": "img",
@@ -4102,14 +4102,14 @@
                 }
               },
               {
-                "label": "Step 5 of 13 — Upload documents one by one",
+                "label": "Step 5 of 13, Upload documents one by one",
                 "heading": "Process each upload sequentially",
                 "screenTitle": "Process each upload sequentially",
                 "instruction": "Continue uploading remaining documents one at a time. CEAC will show the upload progress for each file. Wait for confirmation before uploading the next document.",
                 "url": "ceac.state.gov",
                 "ss_label": "Sequential Upload",
                 "ss_headline": "Upload Queue",
-                "ss_desc": "One document at a time — wait for confirmation",
+                "ss_desc": "One document at a time, wait for confirmation",
                 "ss_highlight": null,
                 "caption": "Uploading sequentially helps you track which documents have been processed.",
                 "note": "Do not close the browser tab during the upload process.",
@@ -4119,7 +4119,7 @@
                 }
               },
               {
-                "label": "Step 6 of 13 — Upload all required documents",
+                "label": "Step 6 of 13, Upload all required documents",
                 "heading": "Complete the full civil document set",
                 "screenTitle": "Complete the full civil document set",
                 "instruction": "Upload all required civil documents as per CEAC's document type list. Include birth certificates, marriage records, police certificates, and all certified English translations. Verify each upload is confirmed before moving to the next.",
@@ -4136,7 +4136,7 @@
                 }
               },
               {
-                "label": "Step 7 of 13 — Document unavailable? Use comments",
+                "label": "Step 7 of 13, Document unavailable? Use comments",
                 "heading": "Report missing or unavailable documents",
                 "screenTitle": "Report missing or unavailable documents",
                 "instruction": "If a required document is genuinely unavailable or does not exist, use the comments field to explain why. Provide a brief, clear explanation of the circumstance and any substitute documents you have submitted instead.",
@@ -4145,7 +4145,7 @@
                 "ss_headline": "Explain Missing Documents",
                 "ss_desc": "Use comments to document unavailability",
                 "ss_highlight": null,
-                "caption": "Be concise and factual — explain only what is genuinely unavailable, not what is incomplete.",
+                "caption": "Be concise and factual, explain only what is genuinely unavailable, not what is incomplete.",
                 "note": null,
                 "media": {
                   "type": "img",
@@ -4153,7 +4153,7 @@
                 }
               },
               {
-                "label": "Step 8 of 13 — Write comments for missing documents",
+                "label": "Step 8 of 13, Write comments for missing documents",
                 "heading": "Document your explanation in comments",
                 "screenTitle": "Document your explanation in comments",
                 "instruction": "In the comment section, write a clear explanation for any document that is unavailable. Include the document name, reason for unavailability, and any substitute documents submitted. Keep the explanation brief and professional.",
@@ -4170,10 +4170,10 @@
                 }
               },
               {
-                "label": "Step 9 of 13 — Document rejected? Review and correct",
+                "label": "Step 9 of 13, Document rejected? Review and correct",
                 "heading": "Review rejection reasons and correct issues",
                 "screenTitle": "Review rejection reasons and correct issues",
-                "instruction": "If a document is rejected by CEAC, you will see an explanation of why — it may be file size, format, legibility, or missing information. Review the reason carefully and prepare a corrected version of the document.",
+                "instruction": "If a document is rejected by CEAC, you will see an explanation of why, it may be file size, format, legibility, or missing information. Review the reason carefully and prepare a corrected version of the document.",
                 "url": "ceac.state.gov",
                 "ss_label": "Rejection Notice",
                 "ss_headline": "Document Rejected",
@@ -4187,7 +4187,7 @@
                 }
               },
               {
-                "label": "Step 10 of 13 — Re-upload rejected documents",
+                "label": "Step 10 of 13, Re-upload rejected documents",
                 "heading": "Upload the corrected document",
                 "screenTitle": "Upload the corrected document",
                 "instruction": "After correcting the issue, re-upload the document following CEAC's process. If the file was too large, try compressing it. If it was blurry, rescan it at higher resolution (300 DPI minimum). Upload the corrected version and wait for confirmation.",
@@ -4204,7 +4204,7 @@
                 }
               },
               {
-                "label": "Step 11 of 13 — Document accepted",
+                "label": "Step 11 of 13, Document accepted",
                 "heading": "Confirmation that document was accepted",
                 "screenTitle": "Confirmation that document was accepted",
                 "instruction": "Once a document is accepted by CEAC, you will see an approval message or status change. The document is now part of your official case record. Continue uploading remaining documents until all required documents are submitted.",
@@ -4221,7 +4221,7 @@
                 }
               },
               {
-                "label": "Step 12 of 13 — Check submission status",
+                "label": "Step 12 of 13, Check submission status",
                 "heading": "Verify your overall submission status",
                 "screenTitle": "Verify your overall submission status",
                 "instruction": "After uploading all civil documents, check the overall status in CEAC to confirm all items have been received and are marked as 'Submitted' or 'Received.' This gives you confidence before proceeding.",
@@ -4230,7 +4230,7 @@
                 "ss_headline": "Submission Status",
                 "ss_desc": "Confirm all documents marked as received",
                 "ss_highlight": null,
-                "caption": "Document submission is a milestone — once completed, NVC will begin reviewing your package for documentary qualification.",
+                "caption": "Document submission is a milestone, once completed, NVC will begin reviewing your package for documentary qualification.",
                 "note": null,
                 "media": {
                   "type": "img",
@@ -4238,7 +4238,7 @@
                 }
               },
               {
-                "label": "Step 13 of 13 — Case ready for NVC review",
+                "label": "Step 13 of 13, Case ready for NVC review",
                 "heading": "Your case is ready for NVC processing",
                 "screenTitle": "Your case is ready for NVC processing",
                 "instruction": "With all required civil documents submitted and accepted, your case package is now ready for NVC's documentary qualification review. NVC will now examine your complete case to determine whether all required documents are present and consistent before issuing a DQ (Documentary Qualification) notice.",
@@ -4270,12 +4270,12 @@
               "Assets may cover an income shortfall, generally valued at 3x the gap (5x for some categories).",
               "Each sponsor files a separate I-864."
             ],
-            "source_basis": "Form I-864 instructions; HHS Poverty Guidelines; INA 213A — 8 CFR 213a."
+            "source_basis": "Form I-864 instructions; HHS Poverty Guidelines; INA 213A, 8 CFR 213a."
           },
           "step_number": 5,
           "step_name": "Affidavit of Support",
           "step_short_description": "Determine and prepare sponsorship",
-          "step_description": "First determine the sponsorship setup using Rahvana's calculator — then the correct affidavit forms are generated for your case.",
+          "step_description": "First determine the sponsorship setup using Rahvana's calculator, then the correct affidavit forms are generated for your case.",
           "step_type": "tool",
           "who": "Petitioner",
           "where": "Sponsorship Calculator",
@@ -4311,7 +4311,7 @@
             },
             "tutorial_steps": [
               {
-                "label": "Step 1 of 8 — Pay Affidavit of Support fee",
+                "label": "Step 1 of 8, Pay Affidavit of Support fee",
                 "heading": "Pay the AOS sponsorship fee",
                 "screenTitle": "Pay the AOS sponsorship fee",
                 "instruction": "In CEAC, navigate to the fee section and pay the Affidavit of Support fee ($120 as of 2026). This fee is required before financial documentation can be submitted. Use your CEAC account to complete the payment.",
@@ -4320,7 +4320,7 @@
                 "ss_headline": "Affidavit of Support Fee",
                 "ss_desc": "$120 required payment",
                 "ss_highlight": null,
-                "caption": "AOS fee is separate from the Immigrant Visa fee — both must be paid before document submission.",
+                "caption": "AOS fee is separate from the Immigrant Visa fee, both must be paid before document submission.",
                 "note": null,
                 "media": {
                   "type": "img",
@@ -4328,7 +4328,7 @@
                 }
               },
               {
-                "label": "Step 2 of 8 — Receive AOS payment receipt",
+                "label": "Step 2 of 8, Receive AOS payment receipt",
                 "heading": "Confirm payment and save receipt",
                 "screenTitle": "Confirm payment and save receipt",
                 "instruction": "After successfully paying the AOS fee, CEAC will display a payment receipt or confirmation. Save or print this confirmation for your records as proof that the fee has been paid.",
@@ -4345,7 +4345,7 @@
                 }
               },
               {
-                "label": "Step 3 of 8 — Start AOS and financial document submission",
+                "label": "Step 3 of 8, Start AOS and financial document submission",
                 "heading": "Begin the Affidavit of Support document submission",
                 "screenTitle": "Begin the Affidavit of Support document submission",
                 "instruction": "Once the AOS fee is paid, navigate to the Affidavit of Support section in CEAC. This is where you will upload the completed I-864 or I-864EZ form and all supporting financial documents for the petitioner and any joint sponsors or household members.",
@@ -4362,7 +4362,7 @@
                 }
               },
               {
-                "label": "Step 4 of 8 — Select and verify document type",
+                "label": "Step 4 of 8, Select and verify document type",
                 "heading": "Check the document type before uploading",
                 "screenTitle": "Check the document type before uploading",
                 "instruction": "CEAC requires you to specify the document type for each file (e.g., Tax Return, W-2, Affidavit of Support form, etc.). Verify that you are selecting the correct document type from CEAC's dropdown menu before uploading each file.",
@@ -4371,7 +4371,7 @@
                 "ss_headline": "Select Document Category",
                 "ss_desc": "Verify correct type before upload",
                 "ss_highlight": null,
-                "caption": "Incorrectly classified documents may be rejected or cause confusion during NVC review — always verify the type first.",
+                "caption": "Incorrectly classified documents may be rejected or cause confusion during NVC review, always verify the type first.",
                 "note": null,
                 "media": {
                   "type": "img",
@@ -4379,7 +4379,7 @@
                 }
               },
               {
-                "label": "Step 5 of 8 — Upload financial documents",
+                "label": "Step 5 of 8, Upload financial documents",
                 "heading": "Upload each financial document",
                 "screenTitle": "Upload each financial document",
                 "instruction": "Upload all required financial documents one by one. Ensure each file is under 4 MB, clearly labeled, and in PDF or image format. Include tax returns, W-2 forms, pay stubs, bank statements, employment letters, and any other evidence of income or assets required to support the I-864 sponsorship.",
@@ -4396,7 +4396,7 @@
                 }
               },
               {
-                "label": "Step 6 of 8 — Verify submission completeness",
+                "label": "Step 6 of 8, Verify submission completeness",
                 "heading": "Check that all documents are submitted",
                 "screenTitle": "Check that all documents are submitted",
                 "instruction": "After uploading all financial documents, review the submission checklist in CEAC to confirm that all required documents have been received and are marked as 'Submitted' or 'Accepted.' This ensures your AOS package is complete.",
@@ -4413,7 +4413,7 @@
                 }
               },
               {
-                "label": "Step 7 of 8 — Document rejected? Review reason",
+                "label": "Step 7 of 8, Document rejected? Review reason",
                 "heading": "Understand why a document was rejected",
                 "screenTitle": "Understand why a document was rejected",
                 "instruction": "If a financial document is rejected by CEAC, you will see a rejection reason. Common reasons include: file too large (over 4 MB), image too blurry, missing pages, or incorrect document type. Review the reason carefully and prepare a corrected version.",
@@ -4430,7 +4430,7 @@
                 }
               },
               {
-                "label": "Step 8 of 8 — Replace rejected document",
+                "label": "Step 8 of 8, Replace rejected document",
                 "heading": "Re-upload the corrected document",
                 "screenTitle": "Re-upload the corrected document",
                 "instruction": "After correcting the issue, re-upload the document using CEAC's resubmission process. Ensure the new file meets all requirements: under 4 MB, clear and legible, correct document type selected. Upload and wait for confirmation that the document is now accepted.",
@@ -4507,14 +4507,14 @@
         {
           "step_key": "step_2_7",
           "joint_sponsor_requirements": {
-            "disclaimer": "A joint sponsor is only needed when the petitioner cannot meet the income requirement alone. Advisory guidance — confirm against the current Form I-864/I-864A instructions.",
+            "disclaimer": "A joint sponsor is only needed when the petitioner cannot meet the income requirement alone. Advisory guidance, confirm against the current Form I-864/I-864A instructions.",
             "guidance": [
               "A joint sponsor must be a U.S. citizen or LPR, at least 18, and domiciled in the United States.",
-              "The joint sponsor must independently meet the 125% income requirement for their own household size — incomes are not combined with the petitioner's.",
+              "The joint sponsor must independently meet the 125% income requirement for their own household size, incomes are not combined with the petitioner's.",
               "A household member who is not the sponsor uses Form I-864A to contribute their income.",
               "The joint sponsor submits their own federal tax returns and proof of status."
             ],
-            "source_basis": "Form I-864 / I-864A instructions; INA 213A — 8 CFR 213a.2."
+            "source_basis": "Form I-864 / I-864A instructions; INA 213A, 8 CFR 213a.2."
           },
           "step_number": 7,
           "step_name": "Add Household Member or Joint Sponsor",
@@ -4545,7 +4545,7 @@
                   "instruction": "Sign in to CEAC at <strong>ceac.state.gov</strong> using your NVC Case Number and Invoice ID from the Welcome Letter.",
                   "url": "ceac.state.gov",
                   "ss_label": "CEAC Login",
-                  "ss_headline": "CEAC — Immigrant Visa Application",
+                  "ss_headline": "CEAC, Immigrant Visa Application",
                   "ss_desc": "Use your case number and invoice ID to enter CEAC.",
                   "ss_highlight": null,
                   "caption": "Sign in first, then move into the sponsorship section.",
@@ -4598,7 +4598,7 @@
               ],
               "household_member": [
                 {
-                  "label": "Step 4 of 6 — Add household member",
+                  "label": "Step 4 of 6, Add household member",
                   "heading": "Add a household member to your sponsorship",
                   "screenTitle": "Add a household member to your sponsorship",
                   "instruction": "In CEAC, navigate to the sponsorship section and select the option to add a household member. A household member is someone who lives with the petitioner and whose income contributes to meeting the affidavit of support income requirement.",
@@ -4615,7 +4615,7 @@
                   }
                 },
                 {
-                  "label": "Step 5 of 6 — Add household member documents",
+                  "label": "Step 5 of 6, Add household member documents",
                   "heading": "Upload household member's financial documents",
                   "screenTitle": "Upload household member's financial documents",
                   "instruction": "Select and upload the required financial documents for the household member. These typically include tax returns, W-2 forms, pay stubs, and bank statements showing their income and assets.",
@@ -4632,7 +4632,7 @@
                   }
                 },
                 {
-                  "label": "Step 6 of 6 — Finish the household member flow",
+                  "label": "Step 6 of 6, Finish the household member flow",
                   "heading": "Confirm the household member path is complete",
                   "screenTitle": "Confirm the household member path is complete",
                   "instruction": "Use the CEAC status screen to confirm the household member entry and documents were received. Save the confirmation for your records.",
@@ -4651,7 +4651,7 @@
               ],
               "joint_sponsor": [
                 {
-                  "label": "Step 4 of 6 — Click on joint sponsor option",
+                  "label": "Step 4 of 6, Click on joint sponsor option",
                   "heading": "Select the joint sponsor option in CEAC",
                   "screenTitle": "Select the joint sponsor option in CEAC",
                   "instruction": "In CEAC, navigate to the sponsorship section and select the option to add a joint sponsor. A joint sponsor is a separate person (typically with significant income and assets) who jointly files the Affidavit of Support with the petitioner.",
@@ -4668,7 +4668,7 @@
                   }
                 },
                 {
-                  "label": "Step 5 of 6 — Add joint sponsor documents",
+                  "label": "Step 5 of 6, Add joint sponsor documents",
                   "heading": "Upload joint sponsor's financial documents",
                   "screenTitle": "Upload joint sponsor's financial documents",
                   "instruction": "Select and upload the required financial documents for the joint sponsor. Include their complete tax returns (3 years), W-2 forms, current pay stubs (6 months), bank statements, and employment verification letter.",
@@ -4685,7 +4685,7 @@
                   }
                 },
                 {
-                  "label": "Step 6 of 6 — Finish the joint sponsor flow",
+                  "label": "Step 6 of 6, Finish the joint sponsor flow",
                   "heading": "Confirm the joint sponsor path is complete",
                   "screenTitle": "Confirm the joint sponsor path is complete",
                   "instruction": "Use the CEAC status screen to confirm the joint sponsor entry and documents were received. Save the confirmation for your records.",
@@ -4703,7 +4703,7 @@
                 }
               ]
             },
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Relationship-proof requirements may vary — confirm with your attorney or NVC guidance."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. Relationship-proof requirements may vary, confirm with your attorney or NVC guidance."
           },
           "citations": [
             {
@@ -4796,7 +4796,7 @@
           "step_number": 10,
           "step_name": "Record Documentary Qualification",
           "step_short_description": "Record DQ date & activate tracking",
-          "step_description": "Your case has been documentarily qualified — NVC has accepted your package. Record your DQ date to activate scheduling tracking and sync your dashboard.",
+          "step_description": "Your case has been documentarily qualified, NVC has accepted your package. Record your DQ date to activate scheduling tracking and sync your dashboard.",
           "step_type": "tool",
           "who": "Both",
           "where": "Email + CEAC",
@@ -4813,7 +4813,7 @@
             "id": "step_2_10",
             "type": "dq_recording",
             "title": "Record Documentary Qualification",
-            "disclaimer": "Official scheduling status reflects the State Department Visa Bulletin and NVC scheduling data — verify directly at travel.state.gov. Rahvana estimates are trend projections only."
+            "disclaimer": "Official scheduling status reflects the State Department Visa Bulletin and NVC scheduling data, verify directly at travel.state.gov. Rahvana estimates are trend projections only."
           }
         },
         {
@@ -4967,7 +4967,7 @@
           "step_number": 3,
           "step_name": "Obtain Fresh Police Clearance Certificate",
           "step_short_description": "Required for interview",
-          "step_description": "A fresh police clearance certificate (PCC) is required for the consular interview. Apply now — this can take several weeks and must be tracked until received.",
+          "step_description": "A fresh police clearance certificate (PCC) is required for the consular interview. Apply now, this can take several weeks and must be tracked until received.",
           "step_type": "tool",
           "who": "Beneficiary",
           "where": "Pakistan police authorities / Rahvana Sindh Service",
@@ -5025,14 +5025,14 @@
             ],
             "pitfalls": [
               "Forgetting the polio vaccination certificate",
-              "Arriving late — exams may not accommodate latecomers",
+              "Arriving late, exams may not accommodate latecomers",
               "Not having the exam fee ready in the accepted form",
               "Using an unapproved or removed panel physician",
               "Not confirming medical results were sent to the embassy"
             ],
             "tips": [
               "Arrive 15–20 minutes early to handle registration",
-              "Bring a snack and water — exams can take several hours",
+              "Bring a snack and water, exams can take several hours",
               "Wear comfortable, easy-to-remove clothing for physical examination",
               "After the exam, confirm the physician will send results before your interview date"
             ],
@@ -5046,11 +5046,11 @@
               },
               {
                 "label": "Step 2 of 6",
-                "heading": "Arrive on time — allow extra time",
+                "heading": "Arrive on time, allow extra time",
                 "instruction": "Arrive at least 15–20 minutes before your scheduled time. Security checks and registration take time. Latecomers may not be accommodated.",
                 "vlabel": "Arrival Timing",
-                "note": "If your appointment is in the morning, account for morning traffic — especially in major cities like Islamabad or Karachi.",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Timing guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Arrive 15–20 minutes early. Registration and waiting can take time before the exam begins. Bring something to read — exams often involve waiting periods.</div></div>"
+                "note": "If your appointment is in the morning, account for morning traffic, especially in major cities like Islamabad or Karachi.",
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Timing guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Arrive 15–20 minutes early. Registration and waiting can take time before the exam begins. Bring something to read, exams often involve waiting periods.</div></div>"
               },
               {
                 "label": "Step 3 of 6",
@@ -5064,19 +5064,19 @@
                 "heading": "Vaccinations at the exam",
                 "instruction": "The physician may administer required vaccinations during the exam. Required vaccines vary by immigration category and age. The polio certificate you bring will be reviewed here.",
                 "vlabel": "Vaccinations",
-                "note": "Bring your polio vaccination certificate — the physician needs to confirm and document it as part of the medical packet.",
+                "note": "Bring your polio vaccination certificate, the physician needs to confirm and document it as part of the medical packet.",
                 "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Vaccination at the exam</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Required vaccinations are administered by the physician if not already received. The physician documents all vaccinations as part of the sealed medical packet sent to the embassy.</div></div>"
               },
               {
                 "label": "Step 5 of 6",
-                "heading": "The fee — confirm in advance",
+                "heading": "The fee, confirm in advance",
                 "instruction": "The medical exam fee is paid directly to the physician. It is not part of the visa fee. Confirm the amount and accepted payment methods with your physician before the exam day.",
                 "vlabel": "Fee Payment",
                 "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Fee guidance</div><div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">Fees vary by physician and exam complexity. Confirm the current fee and payment method (cash vs card) directly with the physician's office before your appointment.</div></div>"
               },
               {
                 "label": "Step 6 of 6",
-                "heading": "After the exam — confirm results will be sent",
+                "heading": "After the exam, confirm results will be sent",
                 "instruction": "Before leaving, confirm with the physician's office that the sealed medical results will be forwarded to the embassy before your interview date. Do not assume this happens automatically.",
                 "vlabel": "Post-Exam",
                 "visual": "<div style=\"background:var(--green-bg);border:1px solid var(--green-border);border-radius:var(--radius-sm);padding:14px 16px\"><div style=\"font-size:13px;font-weight:600;color:var(--green);margin-bottom:4px\">Exam complete</div><div style=\"font-size:12px;color:var(--ink-soft);line-height:1.5\">Confirm the physician's office will transmit the sealed results to the embassy before your interview date. Follow up if you have not received confirmation.</div></div>"
@@ -5121,7 +5121,7 @@
                 "heading": "Create your account",
                 "instruction": "Select 'Create Account' or 'Sign Up'. Enter your email address and create a secure password. Verify your email address when prompted.",
                 "vlabel": "Account Creation",
-                "note": "Use an email address you actively monitor — all courier notifications will be sent there.",
+                "note": "Use an email address you actively monitor, all courier notifications will be sent there.",
                 "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Create Account</div><div class=\"mock-field\"><div class=\"mock-field-label\">Email Address</div><div class=\"mock-field-input\">your@email.com</div></div><div class=\"mock-field\"><div class=\"mock-field-label\">Password</div><div class=\"mock-field-input\">••••••••••</div></div><div class=\"mock-btn\">Create Account</div></div>"
               },
               {
@@ -5170,14 +5170,14 @@
               "groups": [
                 {
                   "id": "civil",
-                  "label": "Bring — Original Civil Documents",
+                  "label": "Bring, Original Civil Documents",
                   "badge": "Required",
                   "items": [
                     {
                       "id": "passport",
                       "icon": "passport",
                       "title": "Passport (current + any prior passports)",
-                      "sub": "Bring originals of all passports — current and expired — that contain U.S. visa history",
+                      "sub": "Bring originals of all passports, current and expired, that contain U.S. visa history",
                       "sections": [
                         {
                           "t": "What to bring",
@@ -5229,7 +5229,7 @@
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring the original fresh PCC obtained during Chapter 3 Step 3. Do not bring the older PCC submitted during NVC processing — this must be the fresh one.</p>"
+                          "c": "<p>Bring the original fresh PCC obtained during Chapter 3 Step 3. Do not bring the older PCC submitted during NVC processing, this must be the fresh one.</p>"
                         },
                         {
                           "t": "Validity",
@@ -5253,13 +5253,13 @@
                 },
                 {
                   "id": "financial",
-                  "label": "Bring — Financial & Sponsor Documents",
+                  "label": "Bring, Financial & Sponsor Documents",
                   "badge": "Required",
                   "items": [
                     {
                       "id": "i864-original",
                       "icon": "banknote",
-                      "title": "Original Affidavit of Support — Petitioner",
+                      "title": "Original Affidavit of Support, Petitioner",
                       "sub": "Original signed I-864 or I-864EZ from the petitioner",
                       "sections": [
                         {
@@ -5291,19 +5291,19 @@
                     {
                       "id": "tax-docs",
                       "icon": "calculator",
-                      "title": "Most Recent Tax Evidence — Petitioner",
+                      "title": "Most Recent Tax Evidence, Petitioner",
                       "sub": "Federal tax return or IRS transcript copies",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring copies of the most recent year's tax return or IRS transcript. Originals are not always required — copies are generally acceptable, but bring them organized.</p>"
+                          "c": "<p>Bring copies of the most recent year's tax return or IRS transcript. Originals are not always required, copies are generally acceptable, but bring them organized.</p>"
                         }
                       ]
                     },
                     {
                       "id": "employment-letter",
                       "icon": "briefcase",
-                      "title": "Employment Letter — Petitioner",
+                      "title": "Employment Letter, Petitioner",
                       "sub": "Current employment confirmation letter if available",
                       "sections": [
                         {
@@ -5316,7 +5316,7 @@
                 },
                 {
                   "id": "interview-day",
-                  "label": "Bring — Interview Day Items",
+                  "label": "Bring, Interview Day Items",
                   "badge": "Required if applicable",
                   "items": [
                     {
@@ -5347,7 +5347,7 @@
                       "id": "medical-packet",
                       "icon": "medical",
                       "title": "Medical Examination Results Packet Reference",
-                      "sub": "Not brought by you — sealed by physician — but confirm it was sent",
+                      "sub": "Not brought by you, sealed by physician, but confirm it was sent",
                       "sections": [
                         {
                           "t": "How this works",
@@ -5379,7 +5379,7 @@
                 },
                 {
                   "id": "organization",
-                  "label": "Recommended — Organization Items",
+                  "label": "Recommended, Organization Items",
                   "badge": "Recommended",
                   "items": [
                     {
@@ -5414,7 +5414,7 @@
                 }
               ]
             },
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
           }
         },
         {
@@ -5465,25 +5465,25 @@
               {
                 "title": "Review before your interview",
                 "items": [
-                  "DS-260 answers — know every section you completed",
-                  "Relationship timeline — dates, meetings, visits",
+                  "DS-260 answers, know every section you completed",
+                  "Relationship timeline, dates, meetings, visits",
                   "Sponsor income and financial details",
-                  "Civil document details — names, dates, record history",
+                  "Civil document details, names, dates, record history",
                   "Travel history and prior U.S. visa history if any"
                 ]
               },
               {
                 "title": "Mindset and approach",
                 "items": [
-                  "Answer only what is asked — do not volunteer extra information",
+                  "Answer only what is asked, do not volunteer extra information",
                   "Answer truthfully and consistently with your filed documents",
-                  "Stay calm — the officer is doing their job, not targeting you",
-                  "If unsure, say so calmly — do not guess",
+                  "Stay calm, the officer is doing their job, not targeting you",
+                  "If unsure, say so calmly, do not guess",
                   "Practice out loud, not just in your head"
                 ]
               }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
           }
         },
         {
@@ -5543,23 +5543,23 @@
               },
               {
                 "label": "Step 2 of 8",
-                "heading": "Arrive early — embassy entry is strict",
+                "heading": "Arrive early, embassy entry is strict",
                 "instruction": "Arrive at the embassy at least 20–30 minutes before your scheduled appointment time. Embassy security queues can be slow. Latecomers may not be admitted for their scheduled slot.",
                 "vlabel": "Arrival Timing",
                 "note": "Do not carry electronics beyond what is permitted by the embassy. Check the specific embassy's guidelines on phones and devices before arrival.",
-                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Arrival guidance</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Plan for 20–30 minutes of buffer time. Factor in traffic, parking, and security queue length — especially at high-volume posts like Islamabad or Karachi.\n      </div>\n      <div class=\"hl-box\" style=\"margin-top:12px\">Earlier is always safer than exactly on time</div>\n    </div>"
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Arrival guidance</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Plan for 20–30 minutes of buffer time. Factor in traffic, parking, and security queue length, especially at high-volume posts like Islamabad or Karachi.\n      </div>\n      <div class=\"hl-box\" style=\"margin-top:12px\">Earlier is always safer than exactly on time</div>\n    </div>"
               },
               {
                 "label": "Step 3 of 8",
                 "heading": "Security screening and document intake",
-                "instruction": "At entry, your appointment letter and passport will be checked. You will pass through security screening. Some items — including certain electronics — may need to be left outside or checked in.",
+                "instruction": "At entry, your appointment letter and passport will be checked. You will pass through security screening. Some items, including certain electronics, may need to be left outside or checked in.",
                 "vlabel": "Security & Entry",
                 "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Entry sequence</div>\n      <div class=\"mock-row\">Appointment letter check at gate</div>\n      <div class=\"mock-row\">Security screening (bag + personal)</div>\n      <div class=\"mock-row\">Document receipt / number assignment</div>\n      <div class=\"mock-row\">Wait in designated area</div>\n    </div>"
               },
               {
                 "label": "Step 4 of 8",
-                "heading": "Biometrics — fingerprints and photo",
-                "instruction": "Before your consular interview, you will be called to provide biometrics — fingerprints and a digital photograph. This is routine and applies to almost all immigrant visa applicants.",
+                "heading": "Biometrics, fingerprints and photo",
+                "instruction": "Before your consular interview, you will be called to provide biometrics, fingerprints and a digital photograph. This is routine and applies to almost all immigrant visa applicants.",
                 "vlabel": "Biometrics",
                 "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Biometric collection</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Fingerprints are scanned digitally. You will also be photographed. This takes only a few minutes. Follow the staff instructions exactly.\n      </div>\n    </div>"
               },
@@ -5580,17 +5580,17 @@
               },
               {
                 "label": "Step 7 of 8",
-                "heading": "Stay calm — the officer is doing their job",
+                "heading": "Stay calm, the officer is doing their job",
                 "instruction": "Consular officers ask direct questions. Their tone is professional, not personal. Nervousness is expected and normal. Answer clearly and calmly. If you do not understand a question, politely ask for clarification.",
                 "vlabel": "Interview Mindset",
-                "visual": "<div class=\"calm-box\">\n      Answer only what is asked. Be honest. Be calm. Be concise. You have prepared for this — trust your preparation.\n    </div>"
+                "visual": "<div class=\"calm-box\">\n      Answer only what is asked. Be honest. Be calm. Be concise. You have prepared for this, trust your preparation.\n    </div>"
               },
               {
                 "label": "Step 8 of 8",
                 "heading": "Possible outcomes after the interview",
                 "instruction": "The officer will indicate the outcome at the window or shortly after. The three main outcomes are approval, Administrative Processing (AP), or refusal. If AP applies, proceed to Step 9 to track and manage the AP process.",
                 "vlabel": "Interview Outcomes",
-                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">What you may hear</div>\n      <div class=\"mock-row\">Approved — passport retained, visa to be delivered <span class=\"mock-badge-green\">Best</span></div>\n      <div class=\"mock-row\">Administrative Processing — more time needed <span class=\"mock-badge-amber\">Step 9</span></div>\n      <div class=\"mock-row\">Refused — written reason provided <span class=\"mock-badge-blue\">Consult attorney</span></div>\n    </div>"
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">What you may hear</div>\n      <div class=\"mock-row\">Approved, passport retained, visa to be delivered <span class=\"mock-badge-green\">Best</span></div>\n      <div class=\"mock-row\">Administrative Processing, more time needed <span class=\"mock-badge-amber\">Step 9</span></div>\n      <div class=\"mock-row\">Refused, written reason provided <span class=\"mock-badge-blue\">Consult attorney</span></div>\n    </div>"
               }
             ],
             "checklists": [
@@ -5613,20 +5613,20 @@
                 "items": [
                   "Arriving without the printed appointment letter",
                   "Bringing electronic devices that are prohibited beyond security",
-                  "Disorganized packet — makes document retrieval slow and stressful",
-                  "Inconsistent answers — not matching DS-260 responses",
+                  "Disorganized packet, makes document retrieval slow and stressful",
+                  "Inconsistent answers, not matching DS-260 responses",
                   "Volunteering extra information that was not asked",
-                  "Arriving late — embassy entry is strictly time-controlled"
+                  "Arriving late, embassy entry is strictly time-controlled"
                 ]
               }
             ],
             "tips": [
               "Arrive 20–30 minutes before your appointment time",
               "Keep your document packet organized with labeled tabs",
-              "Answer only what is asked — concisely and truthfully",
-              "Stay calm — nervousness is normal and expected",
+              "Answer only what is asked, concisely and truthfully",
+              "Stay calm, nervousness is normal and expected",
               "Have originals on top and copies in a separate section",
-              "If unsure of an answer, say so calmly — do not guess"
+              "If unsure of an answer, say so calmly, do not guess"
             ],
             "outcomes": [
               {
@@ -5648,7 +5648,7 @@
                 "sub": "The officer denies the visa under a specific ground. A refusal typically comes with a written reason. Consult an immigration attorney if this occurs."
               }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
           },
           "pakistanSpecific": "Address: Diplomatic Enclave, Ramna 5, Islamabad. NO mobile phones allowed."
         },
@@ -5695,7 +5695,7 @@
               {
                 "id": "221g",
                 "label": "221(g) Refusal",
-                "description": "The officer issued a 221(g) notice. This is not a final denial — your case may require additional documents or further review.",
+                "description": "The officer issued a 221(g) notice. This is not a final denial, your case may require additional documents or further review.",
                 "badge": "More steps ahead",
                 "badgeType": "amber",
                 "icon": "clipboard"
@@ -5719,11 +5719,11 @@
                 {
                   "id": "further_review",
                   "label": "My case was placed in further review / administrative processing",
-                  "sub": "No specific documents were requested — the case just needs more time"
+                  "sub": "No specific documents were requested, the case just needs more time"
                 },
                 {
                   "id": "both",
-                  "label": "Both — documents requested and further review",
+                  "label": "Both, documents requested and further review",
                   "sub": "Documents were requested and the case also requires additional review"
                 },
                 {
@@ -5740,11 +5740,11 @@
                 "options": [
                   {
                     "value": "yes",
-                    "label": "Yes — I was handed a paper or sheet"
+                    "label": "Yes, I was handed a paper or sheet"
                   },
                   {
                     "value": "no",
-                    "label": "No — I was only told verbally"
+                    "label": "No, I was only told verbally"
                   },
                   {
                     "value": "not_sure",
@@ -5758,11 +5758,11 @@
                 "options": [
                   {
                     "value": "yes",
-                    "label": "Yes — specific items were listed or requested"
+                    "label": "Yes, specific items were listed or requested"
                   },
                   {
                     "value": "no",
-                    "label": "No — nothing specific was mentioned"
+                    "label": "No, nothing specific was mentioned"
                   },
                   {
                     "value": "not_sure",
@@ -5815,7 +5815,7 @@
                 ]
               }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
           }
         },
         {
@@ -5858,17 +5858,17 @@
             ],
             "congratulations": {
               "eyebrow": "Visa approved",
-              "title": "Your visa has been approved — congratulations.",
+              "title": "Your visa has been approved, congratulations.",
               "body": "The consular officer has approved your immigrant visa. Your passport will be delivered via the courier service you registered. Track the shipment, verify the visa details once received, and prepare for your move."
             },
             "checklist": [
               "Log into your USVisaScheduling account and confirm the delivery address",
-              "Track the shipment — delivery typically takes a few business days",
+              "Track the shipment, delivery typically takes a few business days",
               "When received, verify your name, date of birth, and visa category are correct",
-              "Check the visa expiry date — you must use it before it expires",
+              "Check the visa expiry date, you must use it before it expires",
               "Note your priority date and any conditions listed on the visa"
             ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
           }
         },
         {
@@ -5890,7 +5890,7 @@
             "Open your 221(g) letter",
             "Select every item the embassy has requested",
             "Fill in any required names or details",
-            "Save — your personalized action plan will be generated"
+            "Save, your personalized action plan will be generated"
           ],
           "tool_data": {
             "type": "input_221g",
@@ -5904,7 +5904,7 @@
                 "type": "red"
               }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
           }
         },
         {
@@ -5928,7 +5928,7 @@
           },
           "actions": [
             "Read your 221(g) letter thoroughly",
-            "Gather every item that was requested — exactly as specified",
+            "Gather every item that was requested, exactly as specified",
             "Submit your packet via the method stated in the notice",
             "Log your submission date and method in the tracker below"
           ],
@@ -5949,7 +5949,7 @@
               }
             ],
             "explainer": {
-              "eyebrow": "221(g) — Document Submission Required",
+              "eyebrow": "221(g), Document Submission Required",
               "title": "The embassy needs specific documents from you",
               "body": "A 221(g) notice is not a final refusal. The officer requires additional documents or information before a decision can be made. Gather exactly what was requested, submit via the method stated in the notice, and log your submission below. Once submitted, your case moves into consular review."
             },
@@ -5971,11 +5971,11 @@
                   "value": ""
                 },
                 {
-                  "label": "Yes — documents requested",
+                  "label": "Yes, documents requested",
                   "value": "yes"
                 },
                 {
-                  "label": "No — no additional docs requested",
+                  "label": "No, no additional docs requested",
                   "value": "no"
                 },
                 {
@@ -5985,9 +5985,9 @@
               ]
             },
             "action_steps": [
-              "Read the 221(g) letter from start to finish — every word matters",
-              "List every item requested — do not guess or assume scope",
-              "Gather each item exactly as specified — format, translation, notarization if required",
+              "Read the 221(g) letter from start to finish, every word matters",
+              "List every item requested, do not guess or assume scope",
+              "Gather each item exactly as specified, format, translation, notarization if required",
               "Submit by the method and to the address stated in the notice",
               "Keep a copy of everything you submit",
               "Log the submission date and method in the tracker below"
@@ -5998,9 +5998,9 @@
                 "type": "sky",
                 "icon": "info",
                 "items": [
-                  "Submit exactly what was requested — nothing more, nothing less",
+                  "Submit exactly what was requested, nothing more, nothing less",
                   "If the notice specifies a method (drop box, mail, email), use that method",
-                  "If the notice specifies a deadline, meet it — do not delay",
+                  "If the notice specifies a deadline, meet it, do not delay",
                   "Keep a complete copy of everything you submit",
                   "After submission, check CEAC weekly for status changes",
                   "Monitor the email registered with the consulate for any follow-up"
@@ -6013,12 +6013,12 @@
                 "items": [
                   "After submission, the case typically moves to Administrative Processing while the consulate reviews what you sent",
                   "CEAC may show 'Administrative Processing' during this period",
-                  "Resolution timelines vary — from days to several months depending on the case",
+                  "Resolution timelines vary, from days to several months depending on the case",
                   "If approved after 221(g) review, your passport will be delivered via the courier you registered"
                 ]
               }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
           }
         },
         {
@@ -6045,7 +6045,7 @@
             "Monitor registered email for correspondence",
             "Log each status check in the update log",
             "Respond immediately if contacted by consulate",
-            "Be patient — AP timelines are outside your control"
+            "Be patient, AP timelines are outside your control"
           ],
           "tool_data": {
             "type": "adm_processing",
@@ -6065,8 +6065,8 @@
             ],
             "explainer": {
               "eyebrow": "What post-interview review means",
-              "title": "Your case is under review — this is not a refusal",
-              "body": "Administrative Processing after a visa interview means the consulate needs additional time — for security checks, background review, or other internal processing. Most cases in AP eventually result in visa issuance. Timelines vary and are entirely within the U.S. government's control."
+              "title": "Your case is under review, this is not a refusal",
+              "body": "Administrative Processing after a visa interview means the consulate needs additional time, for security checks, background review, or other internal processing. Most cases in AP eventually result in visa issuance. Timelines vary and are entirely within the U.S. government's control."
             },
             "recorder": {
               "title": "Record your AP/review details",
@@ -6086,11 +6086,11 @@
                   "value": ""
                 },
                 {
-                  "label": "Yes — documents requested",
+                  "label": "Yes, documents requested",
                   "value": "yes"
                 },
                 {
-                  "label": "No — no additional docs requested",
+                  "label": "No, no additional docs requested",
                   "value": "no"
                 },
                 {
@@ -6105,8 +6105,8 @@
                 "type": "sky",
                 "icon": "info",
                 "items": [
-                  "Check CEAC status weekly — note any changes and log them below",
-                  "Monitor the email registered with the consulate — correspondence may arrive at any time",
+                  "Check CEAC status weekly, note any changes and log them below",
+                  "Monitor the email registered with the consulate, correspondence may arrive at any time",
                   "Respond immediately if the consulate contacts you",
                   "Ensure your passport remains valid throughout the review period",
                   "If review exceeds 180 days with no update, consider a congressional inquiry or attorney consultation"
@@ -6117,14 +6117,14 @@
                 "type": "teal",
                 "icon": "check",
                 "items": [
-                  "Review is not a visa refusal — your case is still active",
+                  "Review is not a visa refusal, your case is still active",
                   "It does not mean there is a problem with your relationship or documents",
                   "Most cases in administrative processing eventually result in approval",
                   "Contacting the embassy repeatedly does not speed up the process"
                 ]
               }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
           }
         },
         {
@@ -6171,7 +6171,7 @@
             ],
             "explainer": {
               "eyebrow": "Post-submission monitoring",
-              "title": "Documents submitted — now monitoring for resolution",
+              "title": "Documents submitted, now monitoring for resolution",
               "body": "You have submitted your 221(g) response. The consulate is now reviewing your submission alongside any required background processing. This phase can take days to months depending on the case. Use this tracker to log status checks and stay organized while you wait."
             },
             "recorder": {
@@ -6192,11 +6192,11 @@
                   "value": ""
                 },
                 {
-                  "label": "Yes — documents requested",
+                  "label": "Yes, documents requested",
                   "value": "yes"
                 },
                 {
-                  "label": "No — no additional docs requested",
+                  "label": "No, no additional docs requested",
                   "value": "no"
                 },
                 {
@@ -6211,8 +6211,8 @@
                 "type": "sky",
                 "icon": "info",
                 "items": [
-                  "Check CEAC weekly and log each check — note the status and any changes",
-                  "Watch for 'Issued' status on CEAC — that signals the visa has been approved and processed",
+                  "Check CEAC weekly and log each check, note the status and any changes",
+                  "Watch for 'Issued' status on CEAC, that signals the visa has been approved and processed",
                   "Monitor your registered email for any additional requests from the consulate",
                   "If CEAC changes from AP to 'Refused', read your written notice carefully before drawing conclusions",
                   "If 180 days pass with no update, consider a congressional inquiry or attorney consultation"
@@ -6223,14 +6223,14 @@
                 "type": "teal",
                 "icon": "check",
                 "items": [
-                  "Approved — CEAC shows 'Issued', passport delivered via courier",
-                  "Additional review — AP continues; keep monitoring and logging",
-                  "Further documents — respond promptly to any new requests",
-                  "Refused — read the written notice carefully; consult an attorney"
+                  "Approved, CEAC shows 'Issued', passport delivered via courier",
+                  "Additional review, AP continues; keep monitoring and logging",
+                  "Further documents, respond promptly to any new requests",
+                  "Refused, read the written notice carefully; consult an attorney"
                 ]
               }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."
+            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
           }
         }
       ]
