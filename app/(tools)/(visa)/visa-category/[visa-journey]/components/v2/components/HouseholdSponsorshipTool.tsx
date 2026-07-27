@@ -225,21 +225,20 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
             <label className="text-[11px] font-semibold text-[#6b8097] uppercase tracking-wider mb-1.5 ml-0.5">
               Number of household members
             </label>
-<<<<<<< HEAD:app/(tools)/(visa)/visa-category/ir-category/[visa-journey]/components/v2/components/HouseholdSponsorshipTool.tsx
-            <select
-              value={hhCount}
-              onChange={(e) => setHhCount(parseInt(e.target.value))}
-              className="w-full p-[9px_12px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] bg-white outline-none focus:border-primary appearance-none bg-[position:right_10px_center] bg-no-repeat pr-[30px]"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
-              }}
-            >
-              <option value="0">0, no household members</option>
-              <option value="1">1 household member</option>
-              <option value="2">2 household members</option>
-              <option value="3">3 household members</option>
-            </select>
-=======
+            <CustomDropdown
+              value={String(hhCount)}
+              onChange={(value) => setHhCount(parseInt(value, 10))}
+              options={[
+                { value: "0", label: "0, no household members" },
+                { value: "1", label: "1 household member" },
+                { value: "2", label: "2 household members" },
+                { value: "3", label: "3 household members" },
+              ]}
+              className="w-full [&_button]:w-full [&_button]:min-w-0"
+            />
+          </div>
+        </div>
+
         {hhCount > 0 && (
           <div className="mt-4 pt-4 border-t border-[#d0e4f7]">
             <div className="text-[11px] font-bold text-[#6b8097] uppercase tracking-widest mb-3 ml-0.5">

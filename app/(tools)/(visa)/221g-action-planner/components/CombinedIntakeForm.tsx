@@ -304,16 +304,10 @@ const VISA_TYPES = [
 
 const VISA_CATEGORIES = [
   { value: "IR-1", label: "IR-1 (Immediate Relative Spouse)" },
-<<<<<<< HEAD
-  // { value: "IR-2", label: "IR-2 (Immediate Relative – Child)" },
-  // { value: "IR-5", label: "IR-5 (Immediate Relative – Parent)" },
-  // { value: "CR-1", label: "CR-1 (Conditional Resident – Spouse)" },
-=======
   { value: "IR-5", label: "IR-5 (Immediate Relative Parent)" },
-  // { value: "IR-2", label: "IR-2 (Immediate Relative â€“ Child)" },
-  // { value: "IR-5", label: "IR-5 (Immediate Relative â€“ Parent)" },
-  // { value: "CR-1", label: "CR-1 (Conditional Resident â€“ Spouse)" },
->>>>>>> 0cff4a65afefb3470ea10e23c75dc1c23caf90bc
+  // { value: "IR-2", label: "IR-2 (Immediate Relative - Child)" },
+  // { value: "IR-5", label: "IR-5 (Immediate Relative - Parent)" },
+  // { value: "CR-1", label: "CR-1 (Conditional Resident - Spouse)" },
   // { value: "F-1", label: "F-1 (Family 1st Preference)" },
   // { value: "F-2A", label: "F-2A (Family 2nd Preference)" },
   // { value: "F-3", label: "F-3 (Family 3rd Preference)" },
