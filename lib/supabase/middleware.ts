@@ -48,7 +48,7 @@ export async function updateSession(request: NextRequest) {
     "/affidavit-support-calculator",
     "/visa-checker",
     "/visa-eligibility",
-    "/visa-category/ir-category/ir1-journey",
+    "/visa-category/ir1-journey",
     "/interview-prep",
     "/interview-prep/my-sessions",
   ];
@@ -70,7 +70,8 @@ export async function updateSession(request: NextRequest) {
   // =============================
   const isApiAdminRoute = pathname.startsWith("/api/admin");
 
-  const needsAuthCheck = isProtectedRoute || isAdminRoute || isApiAdminRoute || isAuthRoute || isAdminAuthRoute;
+  const needsAuthCheck =
+    isProtectedRoute || isAdminRoute || isApiAdminRoute || isAuthRoute || isAdminAuthRoute;
 
   // Optimize: Skip auth checks and API calls on completely public routes.
   // This avoids costly network requests to Supabase Auth on every static asset/page and prevents 504 Middleware Timeouts.

@@ -363,7 +363,7 @@ export function SiteHeader({
 
   const journeyButtonText = showToggle ? "Explore Journeys" : "IR-1 Journey";
 
-  const journeyButtonHref = showToggle ? "/visa-category/ir-category" : ir1journeyHref;
+  const journeyButtonHref = showToggle ? "/visa-category" : ir1journeyHref;
 
   const journeyNavigationId = showToggle ? "journeys" : "ir1-journey";
 
@@ -624,12 +624,12 @@ export function SiteHeader({
 
       const routes: Record<string, string> = {
         home: "/",
-        journeys: "/visa-category/ir-category",
+        journeys: "/visa-category",
         "my-journeys": "/my-journeys",
         "my-guides": "/guides/my-guides",
         "ir1-journey": ir1journeyHref,
         "ir5-journey": ir5journeyHref,
-        "k1-journey": "/visa-category/ir-category/k1-journey",
+        "k1-journey": "/visa-category/k1-journey",
         services: "/resources?tab=services",
         tools: "/resources?tab=toolbox",
         guides: "/resources?tab=guides",
@@ -1798,7 +1798,7 @@ export function SiteHeader({
               <HydrationSafeButton
                 onClick={() => handleNav("ir1-journey")}
                 className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                  isActive("ir1-journey", "/visa-category/ir-category/ir1-journey")
+                  isActive("ir1-journey", "/visa-category/ir1-journey")
                     ? "bg-[#6ba3a0]/60 text-[#0d7377]"
                     : "text-muted-foreground hover:bg-muted"
                 }`}

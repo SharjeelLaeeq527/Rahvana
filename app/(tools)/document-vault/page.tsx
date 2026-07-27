@@ -762,7 +762,7 @@ export default function DocumentVaultPage() {
 
             {/* Actions */}
             <div className="relative z-10 w-full space-y-3">
-              <Link href="/visa-category/ir-category">
+              <Link href="/visa-category">
                 <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-base shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95">
                   <Route className="w-5 h-5 mr-2" />
                   Browse Available Journeys
@@ -1642,7 +1642,7 @@ export default function DocumentVaultPage() {
               <Link href={journeyRoadmapHref}>
                 {" "}
                 <Button
-                  // onClick={() => router.push("/visa-category/ir-category/ir-1")}
+                  // onClick={() => router.push("/visa-category/ir-1")}
                   className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-base shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95"
                 >
                   Go to Journey Roadmap

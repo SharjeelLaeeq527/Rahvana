@@ -24,7 +24,7 @@ export function JourneyDetailPage({ slug }: { slug: JourneySlug }) {
         <div className="relative mx-auto grid max-w-7xl gap-8 lg:grid-cols-[1fr_390px] lg:items-center">
           <div>
             <nav className="mb-4 flex flex-wrap items-center gap-2 text-xs font-semibold text-[var(--rv-muted)]">
-              <Link href="/visa-category/ir-category" className="hover:text-[var(--rahvana-primary)]">
+              <Link href="/visa-category" className="hover:text-[var(--rahvana-primary)]">
                 All journeys
               </Link>
               <ArrowRight className="h-4 w-4" />

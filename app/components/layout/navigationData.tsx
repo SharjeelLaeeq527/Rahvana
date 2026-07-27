@@ -65,7 +65,7 @@ export const NAV_DATA: Record<string, NavSection> = {
     showSearch: true,
     footerLink: {
       label: "Explore all journeys",
-      href: "/visa-category/ir-category",
+      href: "/visa-category",
     },
     tabs: [
       {
@@ -86,7 +86,7 @@ export const NAV_DATA: Record<string, NavSection> = {
                 icon: <Briefcase className="h-5 w-5" />,
                 title: "K-1",
                 description: "Fiancé(e) of U.S. Citizen",
-                href: "/visa-category/ir-category",
+                href: "/visa-category",
                 // badge: "Soon",
                 disabled: true,
               },
