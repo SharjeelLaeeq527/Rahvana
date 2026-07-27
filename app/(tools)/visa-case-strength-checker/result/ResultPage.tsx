@@ -112,7 +112,7 @@ export function ResultPage({ sessionId, onRestart, onEdit, onSaveToProfile }: Re
           </h3>
           <p className="text-slate-600 mb-6">
             {sessionGone
-              ? "Your previous assessment session is no longer available. This can happen if the session expired or was not saved correctly. Please start a new analysis — it only takes a few minutes!"
+              ? "Your previous assessment session is no longer available. This can happen if the session expired or was not saved correctly. Please start a new analysis, it only takes a few minutes!"
               : error}
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">

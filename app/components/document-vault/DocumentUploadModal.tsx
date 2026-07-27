@@ -529,7 +529,7 @@ export function DocumentUploadModal({
                 <div className="flex-1">
                   <p className="font-bold text-sm">
                     {ocrPhase === "reading"
-                      ? "Reading your document…"
+                      ? "Reading your document..."
                       : ocrPhase === "error"
                         ? "We couldn't read this document"
                         : "Confirm the details we read"}
@@ -561,7 +561,7 @@ export function DocumentUploadModal({
               {ocrPhase === "reading" && (
                 <div className="flex items-center justify-center gap-3 py-10 text-[#6b8097]">
                   <div className="w-5 h-5 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
-                  <span className="text-sm font-medium">Extracting fields…</span>
+                  <span className="text-sm font-medium">Extracting fields...</span>
                 </div>
               )}
 
@@ -569,7 +569,7 @@ export function DocumentUploadModal({
                 <>
                   <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
                     <p className="font-semibold mb-1">
-                      Your document is saved — we just couldn&apos;t auto-read it.
+                      Your document is saved, we just couldn&apos;t auto-read it.
                     </p>
                     <p className="leading-relaxed">
                       The photo may be blurry, cropped, or have glare. For the best result, use a
@@ -613,7 +613,7 @@ export function DocumentUploadModal({
                   {journeyMarriageClash && (
                     <div className="bg-red-50 border border-red-300 rounded-xl p-4 text-sm text-red-800">
                       <p className="font-semibold mb-1">
-                        ⚠️ Please review — this may not match an earlier answer
+                        ⚠️ Please review, this may not match an earlier answer
                       </p>
                       <p>
                         This document suggests a <strong>previous marriage</strong>, but earlier in
@@ -690,7 +690,7 @@ export function DocumentUploadModal({
                       disabled={ocrSaving}
                       className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold"
                     >
-                      {ocrSaving ? "Saving…" : "Confirm & Save"}
+                      {ocrSaving ? "Saving..." : "Confirm & Save"}
                     </Button>
                   </div>
                 </>

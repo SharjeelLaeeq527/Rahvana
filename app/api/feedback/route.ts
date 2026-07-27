@@ -165,7 +165,7 @@ export async function POST(request: Request) {
         pageUrl: pageUrl || slug || "/",
         feedbackType: FEEDBACK_TYPE_LABELS[feedbackType] ?? feedbackType,
         description,
-        attachmentUrls: finalAttachmentUrl || "—",
+        attachmentUrls: finalAttachmentUrl || "",
         timestamp,
         priority,
       });

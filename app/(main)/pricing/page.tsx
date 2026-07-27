@@ -130,7 +130,7 @@ const RESOURCE_TABS: Record<ResourceMode, ResourceTabInfo> = {
     label: "Tools",
     sub: "Self-serve tools",
     heading: "Buy individual tools",
-    blurb: "Self-serve tools you can use right away — no full journey plan required.",
+    blurb: "Self-serve tools you can use right away, no full journey plan required.",
   },
   services: {
     label: "Services",
@@ -375,11 +375,9 @@ function ComparisonCell({ value }: { value: string }) {
   if (v === "Not Included") {
     return <IconX className="w-5 h-5 mx-auto text-red-500" />;
   }
-  if (v === "—") {
+  if (v === "") {
     return (
-      <span className="block text-center text-muted-foreground/40 font-bold text-xl leading-none">
-        —
-      </span>
+      <span className="block text-center text-muted-foreground/40 font-bold text-xl leading-none">, </span>
     );
   }
   if (/included/i.test(v) && v !== "Included") {
@@ -880,7 +878,7 @@ function PricingContent() {
           disabled
           className="w-full py-[11px] px-5 rounded-full text-[14px] font-semibold bg-primary/50 text-white/70 cursor-not-allowed text-center"
         >
-          Loading…
+          Loading...
         </button>
       ) : userId ? (
         <CheckoutButton
@@ -983,7 +981,7 @@ function PricingContent() {
           <div className="flex items-start gap-3 rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-900/20">
             <IcoInfo className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
             <div className="flex-1 text-[13px] leading-relaxed text-amber-800 dark:text-amber-300">
-              <strong className="font-semibold">Checkout canceled — no charge was made.</strong>{" "}
+              <strong className="font-semibold">Checkout canceled, no charge was made.</strong>{" "}
               Your selection is saved below. Continue whenever you&apos;re ready.
             </div>
             <button
@@ -1189,7 +1187,7 @@ function PricingContent() {
                   Not ready to commit? Start with a free preview.
                 </p>
                 <p className="text-muted-foreground text-[13px] m-0 mt-0.5">
-                  Preview the roadmap structure, access public tools — no payment required.
+                  Preview the roadmap structure, access public tools, no payment required.
                 </p>
               </div>
               <Link href={userId ? "/" : "/signup"} className="shrink-0">
@@ -1355,7 +1353,7 @@ function PricingContent() {
                   <div className={eyebrow}>Optional add-ons</div>
                   <h2 className="text-[21px] font-bold m-0 mb-1">Want to add extra help?</h2>
                   <p className="text-[13.5px] text-muted-foreground mb-5">
-                    Add only what you need. Recommended for the {currentPlanData.name} plan — or
+                    Add only what you need. Recommended for the {currentPlanData.name} plan, or
                     browse all below.
                   </p>
 
@@ -1684,7 +1682,7 @@ export default function PricingSection() {
       fallback={
         <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
           <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4 mx-auto" />
-          <h2 className="text-xl font-bold mb-2">Loading Pricing…</h2>
+          <h2 className="text-xl font-bold mb-2">Loading Pricing...</h2>
           <p className="text-muted-foreground">Preparing your plan options.</p>
         </div>
       }

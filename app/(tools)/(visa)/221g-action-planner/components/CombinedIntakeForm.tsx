@@ -310,14 +310,14 @@ const VISA_TYPES = [
 
 const VISA_CATEGORIES = [
   { value: "IR-1", label: "IR-1 (Immediate Relative Spouse)" },
-  // { value: "IR-2", label: "IR-2 (Immediate Relative â€“ Child)" },
-  // { value: "IR-5", label: "IR-5 (Immediate Relative â€“ Parent)" },
-  // { value: "CR-1", label: "CR-1 (Conditional Resident â€“ Spouse)" },
+  // { value: "IR-2", label: "IR-2 (Immediate Relative – Child)" },
+  // { value: "IR-5", label: "IR-5 (Immediate Relative – Parent)" },
+  // { value: "CR-1", label: "CR-1 (Conditional Resident – Spouse)" },
   // { value: "F-1", label: "F-1 (Family 1st Preference)" },
   // { value: "F-2A", label: "F-2A (Family 2nd Preference)" },
   // { value: "F-3", label: "F-3 (Family 3rd Preference)" },
   // { value: "F-4", label: "F-4 (Family 4th Preference)" },
-  // { value: "K-1", label: "K-1 (FiancÃ©(e))" },
+  // { value: "K-1", label: "K-1 (Fiancé(e))" },
   // { value: "K-3", label: "K-3 (Spouse of U.S. Citizen)" },
   // { value: "B-1/B-2", label: "B-1/B-2 (Tourist/Business)" },
   // { value: "F-1-student", label: "F-1 (Student)" },
@@ -538,7 +538,7 @@ export default function CombinedIntakeForm({
   };
 
   const formatDate = (d: string) => {
-    if (!d) return "â€”";
+    if (!d) return "-";
     return new Date(d).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -546,9 +546,9 @@ export default function CombinedIntakeForm({
     });
   };
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
   // GENERATORS (Translated from app.js)
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
 
   const getMethod = (key: string) => {
     const cl = selected221gItems;
@@ -619,7 +619,7 @@ export default function CombinedIntakeForm({
     const isAdminProcessingStatus = cb.ceacStatus?.toLowerCase().includes("administrative");
 
     if (isAdminOnly || isAdminProcessingStatus) {
-      plan += `Your case is currently under Administrative Processing following the visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost}. Under INA Section 221(g), additional review is being conducted before a final decision can be made. No additional documents have been specifically requested at this time â€” you are advised to monitor your CEAC status and wait for further instructions from the embassy.\n\n`;
+      plan += `Your case is currently under Administrative Processing following the visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost}. Under INA Section 221(g), additional review is being conducted before a final decision can be made. No additional documents have been specifically requested at this time, you are advised to monitor your CEAC status and wait for further instructions from the embassy.\n\n`;
     } else {
       plan += `Your visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost} resulted in a temporary hold under INA Section 221(g). The consular officer requires the documents listed below before a final decision can be made. This is NOT a permanent denial.\n\n`;
 
@@ -641,10 +641,10 @@ export default function CombinedIntakeForm({
       if (cl.passport) plan += `- Your passport for visa placement\n`;
       if (cl.medical_examination) plan += `- Completed medical examination\n`;
       if (cl.nadra_family_reg || cl.nadra_birth_cert || cl.nadra_marriage_cert || cl.nikah_nama) {
-        plan += `- Civil/NADRA registration documents – ${cl.nadra_family_reg_name || cl.nadra_family_reg ? `Family Registration Certificate` : ""} ${cl.nadra_birth_cert ? `, Birth Certificate` : ""} ${cl.nadra_marriage_cert ? `, Marriage Certificate` : ""} ${cl.nikah_nama ? `, Nikkah Nama` : ""}\n`;
+        plan += `- Civil/NADRA registration documents, ${cl.nadra_family_reg_name || cl.nadra_family_reg ? `Family Registration Certificate` : ""} ${cl.nadra_birth_cert ? `, Birth Certificate` : ""} ${cl.nadra_marriage_cert ? `, Marriage Certificate` : ""} ${cl.nikah_nama ? `, Nikkah Nama` : ""}\n`;
       }
       if (cl.police_certificate)
-        plan += `- Police certificate – ${cl.police_certificate_country || "[INFORMATION MISSING - please go back and specify country]"}\n`;
+        plan += `- Police certificate, ${cl.police_certificate_country || "[INFORMATION MISSING - please go back and specify country]"}\n`;
       // if (cl.english_translation) plan += `- Certified English translations\n`;
       if (cl.dna_test) plan += `- DNA test\n`;
       if (cl.admin_processing) plan += `- Administrative processing (no action needed from you)\n`;
@@ -1018,7 +1018,7 @@ export default function CombinedIntakeForm({
     const civilDocs: string[] = [];
     if (cl.nadra_family_reg)
       civilDocs.push(
-        `NADRA Family Registration Certificate${cl.nadra_family_reg_name ? ` – ${cl.nadra_family_reg_name}` : " [INFORMATION MISSING - please go back and specify person]"}`
+        `NADRA Family Registration Certificate${cl.nadra_family_reg_name ? ` - ${cl.nadra_family_reg_name}` : " [INFORMATION MISSING - please go back and specify person]"}`
       );
     if (cl.nadra_marriage_cert) civilDocs.push("NADRA Marriage Certificate");
     if (cl.nikah_nama) {
@@ -1063,7 +1063,7 @@ export default function CombinedIntakeForm({
     }
 
     checklist += `\n\n## BEFORE YOU SUBMIT - FINAL CHECKS\n\n`;
-    // checklist += `â˜ Cover letter is signed and dated\n`;
+    // checklist += `☐ Cover letter is signed and dated\n`;
     checklist += `- All documents are in the correct order\n`;
     checklist += `- Originals are included where required (not photocopies)\n`;
     checklist += `- All signatures are in blue ink where required\n`;
@@ -1098,8 +1098,8 @@ export default function CombinedIntakeForm({
   //   letter += `${cb.consularPost}\n`;
   //   letter += `${visaUnitType} Visa Unit\n\n`;
   //   letter += `**Subject: Response to INA 221(g) Refusal`;
-  //   if (cb.caseNumber) letter += ` â€“ Case Number: ${cb.caseNumber}`;
-  //   if (cb.beneficiaryName) letter += ` â€“ ${cb.beneficiaryName}`;
+  //   if (cb.caseNumber) letter += ` – Case Number: ${cb.caseNumber}`;
+  //   if (cb.beneficiaryName) letter += ` – ${cb.beneficiaryName}`;
   //   letter += `**\n\n`;
 
   //   letter += `Dear Consular Officer,\n\n`;
@@ -1227,9 +1227,9 @@ export default function CombinedIntakeForm({
   //   return letter;
   // };
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
   // Progress Indicator
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
   
   const ProgressIndicator = () => (
     <div className="flex items-center justify-between mb-8 px-2 max-w-2xl mx-auto">
@@ -1292,9 +1292,9 @@ export default function CombinedIntakeForm({
     setShowEmbassySuggestions(false);
   };
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Step 3 â€“ Review & Generate
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
+  // Step 3 – Review & Generate
+  // ──────────────────────────────────────────────
   const StepReviewGenerate = () => {
     const selectedCount = Object.entries(selected221gItems).filter(
       ([key, value]) =>
@@ -1553,9 +1553,9 @@ export default function CombinedIntakeForm({
     );
   };
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Step 4 â€“ Export Packet
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
+  // Step 4 – Export Packet
+  // ──────────────────────────────────────────────
   const StepExportPacket = () => {
     if (!outputs) return null;
 
@@ -2172,7 +2172,7 @@ export default function CombinedIntakeForm({
           continue;
         }
 
-        // â”€â”€ Bullet list (starts with * or -)
+        // ── Bullet list (starts with * or -)
         if (line.startsWith("* ") || line.startsWith("- ")) {
           const txt = line.substring(2).trim();
           nodes.push(
@@ -2184,7 +2184,7 @@ export default function CombinedIntakeForm({
           continue;
         }
 
-        // â”€â”€ Numbered list
+        // ── Numbered list
         if (line.match(/^\d+\.\s/)) {
           const txt = line.replace(/^\d+\.\s/, "");
           nodes.push(
@@ -2200,7 +2200,7 @@ export default function CombinedIntakeForm({
           continue;
         }
 
-        // â”€â”€ Full-line bold (**text**)
+        // ── Full-line bold (**text**)
         if (line.match(/^\*\*(.*?)\*\*$/)) {
           nodes.push(
             <p key={i} className="font-bold text-slate-900 text-sm mt-3 mb-1">
@@ -2211,14 +2211,14 @@ export default function CombinedIntakeForm({
           continue;
         }
 
-        // â”€â”€ Empty line â†’ spacer
+        // ── Empty line → spacer
         if (line.trim() === "") {
           nodes.push(<div key={i} className="h-3" />);
           i++;
           continue;
         }
 
-        // â”€â”€ Default paragraph (with inline bold handling)
+        // ── Default paragraph (with inline bold handling)
         nodes.push(
           <p key={i} className="text-sm text-slate-700 mb-1.5 leading-relaxed">
             {renderInlineBold(line)}
@@ -2427,9 +2427,9 @@ export default function CombinedIntakeForm({
     );
   };
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
   // Main render
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
   return (
     <div className="w-full space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -2448,7 +2448,7 @@ export default function CombinedIntakeForm({
       </div>
       <div className="bg-card rounded-2xl border border-border shadow-2xl overflow-hidden">
         <div className="p-6 md:p-10">
-          {/* â”€â”€ Step 1: Case Basics (inlined to prevent re-mount focus loss) â”€â”€ */}
+          {/* ── Step 1: Case Basics (inlined to prevent re-mount focus loss) ── */}
           {currentStep === 1 && (
             <div className="space-y-6">
               <div className="border-b pb-4">
@@ -2726,7 +2726,7 @@ export default function CombinedIntakeForm({
               </div>
             </div>
           )}
-          {/* â”€â”€ Step 2: Replicate Checklist â”€â”€ */}
+          {/* ── Step 2: Replicate Checklist ── */}
           {currentStep === 2 && (
             <div className="space-y-6">
               <Actual221GFormChecker
@@ -2751,7 +2751,7 @@ export default function CombinedIntakeForm({
               </div>
               <div style={{ display: "none" }}>
                 <Button variant="outline" onClick={goBack}>
-                  â† Back
+                  ← Back
                 </Button>
               </div>
             </div>
@@ -2790,7 +2790,7 @@ export default function CombinedIntakeForm({
         open={showResetModal}
         onOpenChange={setShowResetModal}
         title="Start Over?"
-        description="This will permanently erase all your current progress â€” your case details, selected checklist items, and any generated documents. This action cannot be undone."
+        description="This will permanently erase all your current progress, your case details, selected checklist items, and any generated documents. This action cannot be undone."
         confirmText="Yes, Start Over"
         cancelText="Cancel"
         confirmVariant="danger"

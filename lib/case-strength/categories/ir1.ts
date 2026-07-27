@@ -73,7 +73,7 @@ export const spouseRelationshipSignal: RelationshipStrengthSignal = ({
 
 export const IR1_PROFILE: CaseStrengthProfile = {
   id: "ir-1",
-  label: "IR-1 / CR-1 — Spouse of U.S. Citizen",
+  label: "IR-1 / CR-1, Spouse of U.S. Citizen",
   journeyTypes: ["IR1", "IR-1", "CR1", "CR-1", "ir-1"],
   stepCheckers: IR1_STEP_CHECKERS,
   stepRefs: IR1_STEP_REFS,

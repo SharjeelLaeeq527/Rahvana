@@ -54,7 +54,7 @@ export function PlanTierDevToggle() {
       {expanded && (
         <div className="flex flex-col gap-1 bg-[#181c25] border border-white/10 rounded-2xl p-2 shadow-2xl animate-in slide-in-from-bottom-2 fade-in duration-150">
           <div className="text-[9.5px] font-black uppercase tracking-widest text-white/30 px-2 pb-1">
-            Dev — preview as tier
+            Dev, preview as tier
           </div>
           {TIER_ORDER.map((t) => {
             const c = TIER_COLORS[t];

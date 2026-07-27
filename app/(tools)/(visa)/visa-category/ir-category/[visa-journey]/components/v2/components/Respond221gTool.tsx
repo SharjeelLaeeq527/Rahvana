@@ -106,7 +106,7 @@ export const Respond221gTool: React.FC<Respond221gToolProps> = ({
                   onChange={(e) => setSubmissionMethod(e.target.value)}
                   className="p-2.5 border-[1.5px] border-[#d0e4f7] rounded-lg text-[13px] outline-none focus:border-primary transition-all"
                 >
-                  <option value="">Select method…</option>
+                  <option value="">Select method...</option>
                   <option value="drop_box">Courier / Drop Box</option>
                   <option value="email">Email</option>
                   <option value="in_person">In Person</option>

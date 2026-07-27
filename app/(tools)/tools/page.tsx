@@ -170,7 +170,7 @@ const TOOLS: Tool[] = [
   {
     id: "pdf-toolkit",
     title: "PDF Tool Kit",
-    description: "Merge • compress • convert • edit — all in one toolkit.",
+    description: "Merge • compress • convert • edit, all in one toolkit.",
     category: "Docs & PDFs",
     href: "/pdf-processing",
     icon: Files,
@@ -416,7 +416,7 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
               <>
                 <ResourceSectionHeader
                   title="Browse Tools"
-                  subtitle="Explore more tools — try a demo or unlock the full version."
+                  subtitle="Explore more tools, try a demo or unlock the full version."
                   className="mt-12"
                 />
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">

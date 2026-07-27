@@ -180,14 +180,13 @@ export function EvidenceStrengthMeter({
                   {requiredDone} of {totalRequired} required documents done
                   {requiredPending > 0 && (
                     <>
-                      {" "}
-                      — <strong>{requiredPending} required</strong> still pending.
+                      {" "}, <strong>{requiredPending} required</strong> still pending.
                     </>
                   )}
                 </>
               ) : (
                 <>
-                  {doneDocs} of {totalDocs} documents done — {totalDocs - doneDocs} still pending.
+                  {doneDocs} of {totalDocs} documents done, {totalDocs - doneDocs} still pending.
                 </>
               )}
             </p>
@@ -263,7 +262,7 @@ export function EvidenceStrengthMeter({
 
         <p className="text-[10.5px] text-[#78716c] leading-relaxed italic">
           Shows only documents still pending. Marked complete when you upload via the document
-          vault, mark as reviewed, or attach a file. Advisory only — not legal advice.
+          vault, mark as reviewed, or attach a file. Advisory only, not legal advice.
         </p>
       </div>
     </div>

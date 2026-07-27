@@ -114,7 +114,7 @@ export function BeneficiaryResidenceCapture({
     "A police certificate is required from every country where the beneficiary lived " +
       "for 6 months or more since age 16.";
   const sourceBasis =
-    config?.source_basis ?? "9 FAM 504.4-4(B)(2) — Police Certificate Requirement";
+    config?.source_basis ?? "9 FAM 504.4-4(B)(2), Police Certificate Requirement";
 
   return (
     <div className="mt-[12px]" role="region" aria-label="Beneficiary residence history">
@@ -311,7 +311,7 @@ export function BeneficiaryResidenceCapture({
         )}
 
         <p className="text-[10.5px] text-[#78716c] mt-3 leading-relaxed italic">
-          Advisory only — not legal advice. Rahvana stores these values separately from the I-130A
+          Advisory only, not legal advice. Rahvana stores these values separately from the I-130A
           form data.
         </p>
       </div>

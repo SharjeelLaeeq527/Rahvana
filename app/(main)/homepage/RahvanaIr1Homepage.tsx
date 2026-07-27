@@ -774,7 +774,7 @@ function HeroI130StepPanel({ launchTargeted = false }: { launchTargeted?: boolea
         "Pakistan-context defaults where relevant",
       ],
       button_label: "Launch I-130 Autoform Filler",
-      note: "Opens in a new browser tab — you can return to the roadmap anytime",
+      note: "Opens in a new browser tab, you can return to the roadmap anytime",
     },
   };
 
@@ -791,7 +791,7 @@ function HeroI130StepPanel({ launchTargeted = false }: { launchTargeted?: boolea
           </h1>
           <p className="mb-[28px] max-w-[620px] text-[15px] leading-[1.65] text-[#3a4f63]">
             Use Rahvana&apos;s guided Autoform Filler to complete the I-130 Petition for Alien
-            Relative — with structured step-by-step support, clear prompts, and a built-in review
+            Relative, with structured step-by-step support, clear prompts, and a built-in review
             flow.
           </p>
 
@@ -2553,9 +2553,8 @@ export default function RahvanaIr1Homepage() {
             <h1 className="sr-only">Navigate your IR-1 journey with clarity.</h1>
             <p className="max-w-[820px] text-[16px] leading-[1.65] text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] xl:text-[17px]">
               <span className="block xl:whitespace-nowrap">
-                Rahvana gives you a structured step-by-step IR-1 roadmap — from petition filing to
-                interview readiness —
-              </span>
+                Rahvana gives you a structured step-by-step IR-1 roadmap, from petition filing to
+                interview readiness, </span>
               <span className="block xl:whitespace-nowrap">
                 with guided steps, document organization, progress tracking, and focused tools when
                 you need them.
@@ -2606,9 +2605,8 @@ export default function RahvanaIr1Homepage() {
           <div className="mx-auto flex w-full max-w-[760px] flex-col gap-5">
             <p className="text-base leading-7 text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] sm:text-lg">
               <span className="block">
-                Rahvana gives you a structured step-by-step IR-1 roadmap — from petition filing to
-                interview readiness —
-              </span>
+                Rahvana gives you a structured step-by-step IR-1 roadmap, from petition filing to
+                interview readiness, </span>
               <span className="block">
                 with guided steps, document organization, progress tracking, and focused tools when
                 you need them.

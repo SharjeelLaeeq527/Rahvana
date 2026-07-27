@@ -618,7 +618,7 @@ export const NAV_DATA: Record<string, NavSection> = {
           {
             icon: <Files className="h-5 w-5 text-rose-600 dark:text-rose-400" />,
             title: "PDF Tool Kit",
-            description: "Merge • compress • convert • edit — all in one toolkit.",
+            description: "Merge • compress • convert • edit, all in one toolkit.",
             href: "/pdf-processing",
             // badge: "Live",
           },
@@ -904,7 +904,7 @@ export const NAV_DATA: Record<string, NavSection> = {
           // },
           {
             icon: <Shield className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />,
-            title: "PCC Filing Service — Sindh",
+            title: "PCC Filing Service, Sindh",
             translationKey: "pccSindh",
             description: "Done-for-you police certificate filing for Sindh.",
             href: "/police-verification/apply?province=Sindh",

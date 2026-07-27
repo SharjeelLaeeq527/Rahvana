@@ -679,7 +679,7 @@ const StepParentGuidePage = () => {
           "Names match exactly across the child's birth certificate, parents' marriage certificate, and petition forms.",
           "Proof of termination for all prior marriages is compiled (if applicable).",
           "Certified English translations are attached for every foreign-language document.",
-          "Scan quality is verified—all borders, text, stamps, and signatures are crisp and readable.",
+          "Scan quality is verified-all borders, text, stamps, and signatures are crisp and readable.",
         ];
 
         return (

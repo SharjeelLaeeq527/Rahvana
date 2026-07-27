@@ -164,7 +164,7 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({ actions, medSt
           <div className="flex-1 overflow-y-auto p-12 flex flex-col items-center">
             <div className="w-full max-w-lg">
               <div className="text-[10px] font-bold text-primary uppercase mb-2">
-                Step {medWizardStep + 1} — {medWizardMode === "service" ? "Service" : "Guide"}
+                Step {medWizardStep + 1}, {medWizardMode === "service" ? "Service" : "Guide"}
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-2">{s.heading}</h2>
               <p className="text-sm text-slate-600 leading-relaxed mb-8">{s.sub}</p>

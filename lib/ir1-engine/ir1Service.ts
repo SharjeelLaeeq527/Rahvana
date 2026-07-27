@@ -424,14 +424,14 @@ function buildSummaryCard(
   const typicalRange =
     estimate.endToEnd.typicalMinQuarter.label === estimate.endToEnd.typicalMaxQuarter.label
       ? estimate.endToEnd.typicalMinQuarter.label
-      : `${estimate.endToEnd.typicalMinQuarter.label} – ${estimate.endToEnd.typicalMaxQuarter.label}`;
+      : `${estimate.endToEnd.typicalMinQuarter.label} ${estimate.endToEnd.typicalMaxQuarter.label}`;
 
   const pauseSuffix = estimate.endToEnd.visaIssuanceIndefinite
     ? " (visa issuance currently paused)"
     : "";
 
   return {
-    headline: `Case — ${stage}`,
+    headline: `Case, ${stage}`,
     subheadline: typicalRange + pauseSuffix,
     typicalRangeLabel: typicalRange + pauseSuffix,
     confidenceLabel: estimate.confidence.label,

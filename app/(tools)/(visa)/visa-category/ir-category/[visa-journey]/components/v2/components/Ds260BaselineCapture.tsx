@@ -133,7 +133,7 @@ export function Ds260BaselineCapture({
             </h3>
             <p className="text-[12px] text-[#57534e] mt-0.5 leading-relaxed">
               Enter the dates exactly as you put them on the DS-260. Rahvana compares them against
-              what you filed on the I-130 — any mismatch between the two forms is flagged so you can
+              what you filed on the I-130, any mismatch between the two forms is flagged so you can
               correct it before submitting. Independent of the DS-260 form data.
             </p>
           </div>
@@ -258,15 +258,14 @@ export function Ds260BaselineCapture({
                       </h5>
                       <p className="text-[12px] mt-1 leading-relaxed" style={{ color: "#7f1d1d" }}>
                         I-130 says <strong>{m.i130Value}</strong>, DS-260 says{" "}
-                        <strong>{m.ds260Value}</strong>. Correct one of them so both forms agree —
-                        inconsistencies between the I-130 and DS-260 are a leading cause of NVC
+                        <strong>{m.ds260Value}</strong>. Correct one of them so both forms agree, inconsistencies between the I-130 and DS-260 are a leading cause of NVC
                         delays and interview questions.
                       </p>
                       <p
                         className="text-[10.5px] mt-1.5 leading-relaxed italic opacity-80"
                         style={{ color: "#7f1d1d" }}
                       >
-                        Source: 9 FAM 504.4; INA 212(a)(6)(C) — material misrepresentation
+                        Source: 9 FAM 504.4; INA 212(a)(6)(C), material misrepresentation
                       </p>
                     </div>
                   </div>
@@ -290,7 +289,7 @@ export function Ds260BaselineCapture({
         )}
 
         <p className="text-[10.5px] text-[#78716c] mt-3 leading-relaxed italic">
-          Advisory only — not legal advice. Rahvana stores these values separately from the DS-260
+          Advisory only, not legal advice. Rahvana stores these values separately from the DS-260
           form data.
         </p>
       </div>

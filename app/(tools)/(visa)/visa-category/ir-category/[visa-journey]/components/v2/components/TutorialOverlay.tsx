@@ -242,7 +242,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                     }}
                     className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
                   >
-                    Done — return to step
+                    Done, return to step
                   </button>
                 )}
               </div>
@@ -547,7 +547,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 onClick={onClose}
                 className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
               >
-                Done — return to step
+                Done, return to step
               </button>
             )}
           </div>

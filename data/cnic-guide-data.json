@@ -317,7 +317,7 @@
             "id": 2,
             "title": "Details & Documents",
             "duration": "20 mins",
-            "description": "On Home page, go to ID Documents and select ID Card. Choose application category. Select the purpose(new, update card, etc). Enter applicant’s personal details. Upload supporting documents including Birth Certificate or B-Form, School Leaving Certificate, Guardian Certificate (if any), Affidavit, and UC/Police Verification. Review carefully."
+            "description": "On Home page, go to ID Documents and select ID Card. Choose application category. Select the purpose(new, update card, etc). Enter applicant's personal details. Upload supporting documents including Birth Certificate or B-Form, School Leaving Certificate, Guardian Certificate (if any), Affidavit, and UC/Police Verification. Review carefully."
           },
           {
             "id": 3,
@@ -336,7 +336,7 @@
           {
             "id": 2,
             "title": "Verification & Biometrics",
-            "duration": "25–40 mins",
+            "duration": "25-40 mins",
             "description": "Biometric capture. Document verification including Birth Certificate/B-Form, School Leaving Certificate, Guardian Certificate (if any), Affidavit, and UC/Police verification. No family biometric required. Attestation by Gazetted Officer. Interview by NADRA OIC. Fee submission."
           },
           {
@@ -638,7 +638,7 @@
           "Urban areas generally have NADRA Mega Centers for faster processing."
         ],
         "pitfalls": [
-          "Don't assume any NADRA center can process your request — check availability.",
+          "Don't assume any NADRA center can process your request, check availability.",
           "Avoid visiting on Fridays after 12 PM as most centers close early."
         ],
         "links": [{ "label": "Find NADRA Offices", "url": "https://www.nadra.gov.pk/nadraOffices" }]
@@ -649,7 +649,7 @@
           "Visit during weekday mornings for shorter wait times."
         ],
         "pitfalls": [
-          "Don't visit without original B-form — photocopies alone are not accepted.",
+          "Don't visit without original B-form, photocopies alone are not accepted.",
           "Missing family member documents will delay your application."
         ],
         "links": [{ "label": "NADRA Document Requirements", "url": "https://www.nadra.gov.pk" }]
@@ -660,7 +660,7 @@
           "Bring photocopies of all documents in addition to originals."
         ],
         "pitfalls": [
-          "Don't rely on unofficial centers — only visit authorized NADRA Registration Centers."
+          "Don't rely on unofficial centers, only visit authorized NADRA Registration Centers."
         ],
         "links": [
           { "label": "NADRA Office Locator", "url": "https://www.nadra.gov.pk/nadraOffices" }
@@ -672,7 +672,7 @@
           "Check that attestation is from a valid Grade 16+ officer."
         ],
         "pitfalls": [
-          "Don't submit with spelling mismatches — it will cause lifelong issues.",
+          "Don't submit with spelling mismatches, it will cause lifelong issues.",
           "Don't assume your old CNIC info will auto-correct."
         ],
         "links": [{ "label": "NADRA Certificate Verification", "url": "https://id.nadra.gov.pk" }]

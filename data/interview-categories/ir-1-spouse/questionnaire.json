@@ -19,7 +19,7 @@
           "type": "select",
           "required": true,
           "helpText": "Indicate if either of you has been married previously",
-          "options": ["No", "Yes – Beneficiary", "Yes – Sponsor", "Yes – Both"]
+          "options": ["No", "Yes, Beneficiary", "Yes, Sponsor", "Yes, Both"]
         }
       ]
     },
@@ -59,7 +59,7 @@
           "type": "select",
           "required": true,
           "helpText": "Specify your current living situation",
-          "options": ["Yes", "No – Living apart"]
+          "options": ["Yes", "No, Living apart"]
         },
         {
           "key": "communication_frequency",

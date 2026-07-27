@@ -68,7 +68,7 @@ export function CaseSummaryCard({
 
   // Truncate executive summary to ~2 lines (approx 180 chars)
   const summary = narrative.executiveSummary;
-  const truncated = summary.length > 180 ? summary.slice(0, 180).trim() + "…" : summary;
+  const truncated = summary.length > 180 ? summary.slice(0, 180).trim() + "..." : summary;
 
   return (
     <motion.div

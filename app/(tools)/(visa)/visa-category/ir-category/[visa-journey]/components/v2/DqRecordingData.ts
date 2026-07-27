@@ -5,14 +5,14 @@ export const DQ_RECORDING_DATA = {
   // },
   title: "Record Documentary Qualification",
   description:
-    "Your case has been documentarily qualified — NVC has accepted your package. Record your DQ date to activate scheduling tracking and sync your dashboard.",
+    "Your case has been documentarily qualified, NVC has accepted your package. Record your DQ date to activate scheduling tracking and sync your dashboard.",
   chips: [
     { label: "Major Milestone", type: "milestone" },
     { label: "Tracking Active", type: "track" },
     { label: "Dashboard Update", type: "dash" },
   ],
   milestoneBanner: {
-    eyebrow: "NVC — Documentary Qualification Received",
+    eyebrow: "NVC, Documentary Qualification Received",
     title: "Your documents have been accepted by NVC",
     sub: "This is a significant milestone. Your case is now documentarily complete and eligible for interview scheduling at your designated post.",
   },
@@ -43,5 +43,5 @@ export const DQ_RECORDING_DATA = {
     },
   },
   disclaimer:
-    "Official scheduling status reflects the State Department Visa Bulletin and NVC scheduling data — verify directly at travel.state.gov. Rahvana estimates are trend projections only.",
+    "Official scheduling status reflects the State Department Visa Bulletin and NVC scheduling data, verify directly at travel.state.gov. Rahvana estimates are trend projections only.",
 };

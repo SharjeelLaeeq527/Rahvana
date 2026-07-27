@@ -55,7 +55,7 @@ export default function ReviewForm({
         style={{ borderColor: `${accent}40`, backgroundColor: tint }}
       >
         <p className="text-foreground/90">
-          Thanks — your review was submitted and is <strong>pending approval</strong>. It&apos;ll
+          Thanks, your review was submitted and is <strong>pending approval</strong>. It&apos;ll
           appear here once our team reviews it.
         </p>
       </div>
@@ -147,7 +147,7 @@ export default function ReviewForm({
         onChange={(e) => setBody(e.target.value)}
         maxLength={2000}
         rows={4}
-        placeholder="Share how this tool helped your case…"
+        placeholder="Share how this tool helped your case..."
         className="mt-4 w-full resize-y rounded-xl border border-border bg-card px-3.5 py-2.5 text-[13.5px] leading-relaxed outline-none transition focus:border-foreground/30"
       />
       <div className="mt-1 text-right text-[11px] text-muted-foreground">{body.length}/2000</div>
@@ -171,7 +171,7 @@ export default function ReviewForm({
           className="inline-flex items-center justify-center rounded-full px-5 py-2.5 text-[13.5px] font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 disabled:cursor-not-allowed disabled:opacity-60"
           style={{ backgroundColor: accent }}
         >
-          {submitting ? "Submitting…" : "Submit review"}
+          {submitting ? "Submitting..." : "Submit review"}
         </button>
         <button
           type="button"

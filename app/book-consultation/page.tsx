@@ -1022,11 +1022,11 @@ const ConsultationBookingPageContent = () => {
     };
 
     if (start.getFullYear() !== end.getFullYear()) {
-      return `${start.toLocaleDateString(undefined, { ...optionsStart, year: "numeric" })} – ${end.toLocaleDateString(undefined, optionsEnd)}`;
+      return `${start.toLocaleDateString(undefined, { ...optionsStart, year: "numeric" })} ${end.toLocaleDateString(undefined, optionsEnd)}`;
     } else if (start.getMonth() !== end.getMonth()) {
-      return `${start.toLocaleDateString(undefined, optionsStart)} – ${end.toLocaleDateString(undefined, optionsEnd)}`;
+      return `${start.toLocaleDateString(undefined, optionsStart)} ${end.toLocaleDateString(undefined, optionsEnd)}`;
     } else {
-      return `${start.toLocaleDateString(undefined, { month: "long" })} ${start.getDate()} – ${end.getDate()}, ${start.getFullYear()}`;
+      return `${start.toLocaleDateString(undefined, { month: "long" })} ${start.getDate()} ${end.getDate()}, ${start.getFullYear()}`;
     }
   };
 

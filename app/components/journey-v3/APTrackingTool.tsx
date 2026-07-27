@@ -81,7 +81,7 @@ const CEAC_STATUS_UI: Record<StatusKey, StatusUI> = {
     accentSoft: "rgba(56,189,248,0.14)",
     chipBg: "rgba(56,189,248,0.18)",
     chipColor: "#CFF0FF",
-    heading: "Ready — Case at Embassy",
+    heading: "Ready, Case at Embassy",
     trackerLabel: "CEAC Status Tracker",
     counterLabel: (d) =>
       d === 0 ? "Just Became Ready" : `Ready · ${d} Day${d !== 1 ? "s" : ""}`,
@@ -93,7 +93,7 @@ const CEAC_STATUS_UI: Record<StatusKey, StatusUI> = {
     accentSoft: "rgba(245,158,11,0.14)",
     chipBg: "rgba(245,158,11,0.18)",
     chipColor: "#FCE3B0",
-    heading: "Pending — Awaiting Processing",
+    heading: "Pending, Awaiting Processing",
     trackerLabel: "CEAC Status Tracker",
     counterLabel: (d) =>
       d === 0 ? "Pending Since Today" : `Pending · ${d} Day${d !== 1 ? "s" : ""}`,
@@ -117,10 +117,10 @@ const CEAC_STATUS_UI: Record<StatusKey, StatusUI> = {
     accentSoft: "rgba(34,197,94,0.14)",
     chipBg: "rgba(34,197,94,0.18)",
     chipColor: "#C5F2D6",
-    heading: "Visa Issued — Congratulations",
+    heading: "Visa Issued, Congratulations",
     trackerLabel: "Visa Status",
     counterLabel: (d) => (d === 0 ? "Issued Today" : `Issued ${d} Day${d !== 1 ? "s" : ""} Ago`),
-    intLabel: "Next Step — Track Your Courier",
+    intLabel: "Next Step, Track Your Courier",
     icon: CheckCircle2,
   },
   Approved: {
@@ -139,7 +139,7 @@ const CEAC_STATUS_UI: Record<StatusKey, StatusUI> = {
     accentSoft: "rgba(239,68,68,0.14)",
     chipBg: "rgba(239,68,68,0.18)",
     chipColor: "#FBD3D3",
-    heading: "Refused — Review Your Written Notice",
+    heading: "Refused, Review Your Written Notice",
     trackerLabel: "Refusal & 221(g) Tracker",
     counterLabel: (d) => `${d} Day${d !== 1 ? "s" : ""} Since Refusal`,
     intLabel: "221(g) or Final Denial?",
@@ -238,10 +238,10 @@ export default function APTrackingTool({ state }: APTrackingToolProps) {
   const intelligenceMessage = isIssued
     ? "Visa issued. Track your passport delivery via the courier portal."
     : isRefused
-      ? "Carefully read your written notice — it tells you whether this is a 221(g) request or a final denial under a specific INA ground."
+      ? "Carefully read your written notice, it tells you whether this is a 221(g) request or a final denial under a specific INA ground."
       : isAP
         ? daysInAP < 30
-          ? "Initial processing phase. Most AP cases resolve within 60–90 days."
+          ? "Initial processing phase. Most AP cases resolve within 60-90 days."
           : daysInAP < 90
             ? "You are within the standard AP window. No escalation recommended yet."
             : "Case has exceeded 90 days in AP. Consider escalation."
@@ -252,7 +252,7 @@ export default function APTrackingTool({ state }: APTrackingToolProps) {
             : ceacStatusRaw === "Pending"
               ? "Case not yet processed by NVC or the consulate. Normal in early stages."
               : ceacStatusRaw === "Not Available"
-                ? "CEAC cannot locate this case number. Verify the number or wait 2–5 business days."
+                ? "CEAC cannot locate this case number. Verify the number or wait 2-5 business days."
                 : "Monitor your CEAC status and update it here when it changes.";
 
   const recommendedAction = isIssued
@@ -266,9 +266,9 @@ export default function APTrackingTool({ state }: APTrackingToolProps) {
           ? "Continue monitoring CEAC weekly. No action required."
           : "Consider a congressional inquiry or attorney consultation."
         : ceacStatusRaw === "Ready" || ceacStatusRaw === "In Transit"
-          ? "Check CEAC every 2–3 days for status changes."
+          ? "Check CEAC every 2-3 days for status changes."
           : ceacStatusRaw === "Pending"
-            ? "Check back in 2–3 days. No action required."
+            ? "Check back in 2-3 days. No action required."
             : ceacStatusRaw === "Not Available"
               ? "Re-verify your case number. Contact NVC if it persists beyond 1 week."
               : "Continue monitoring CEAC weekly.";

@@ -517,7 +517,7 @@ export function getFeatureAnnouncementEmailHtml(
 
                   <!-- Footer Text -->
                   <p style="margin:0; font-size:14px; color:#94a3b8; text-align:center;">
-                    Thank you for being part of Rahvana. We’re constantly improving to make your experience better.
+                    Thank you for being part of Rahvana. We're constantly improving to make your experience better.
                   </p>
 
                 </td>

@@ -140,10 +140,10 @@ export const VISA_FLAG_REGISTRY: Record<string, FlagGroup[]> = {
           type: "radio",
           label: "Petitioner-Parent Relationship Type",
           options: [
-            { label: "Biological mother — the petitioner's birth mother", value: "biological_mother" },
-            { label: "Biological father — parents were legally married to each other", value: "father_married" },
-            { label: "Biological father — parents were never married to each other", value: "father_unmarried" },
-            { label: "Stepparent — a stepfather or stepmother", value: "stepparent" },
+            { label: "Biological mother, the petitioner's birth mother", value: "biological_mother" },
+            { label: "Biological father, parents were legally married to each other", value: "father_married" },
+            { label: "Biological father, parents were never married to each other", value: "father_unmarried" },
+            { label: "Stepparent, a stepfather or stepmother", value: "stepparent" },
             { label: "Adoptive parent", value: "adoptive" },
           ]
         }

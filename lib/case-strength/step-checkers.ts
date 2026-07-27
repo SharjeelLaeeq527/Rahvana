@@ -80,7 +80,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       checks.push({
         level: "warning",
         title: "Marriage date missing",
-        hint: "Enter your marriage date — it'll be cross-checked with Nikah Nama",
+        hint: "Enter your marriage date, it'll be cross-checked with Nikah Nama",
       });
     }
     if (!baseline?.petitionerDateOfBirth || !baseline?.beneficiaryDateOfBirth) {
@@ -199,7 +199,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       checks.push({
         level: "critical",
         title: `${oversized} file${oversized === 1 ? " is" : "s are"} too large`,
-        hint: "USCIS limit is 12MB per file — compress before uploading",
+        hint: "USCIS limit is 12MB per file, compress before uploading",
       });
     }
     if (wrongFormat > 0) {
@@ -246,7 +246,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     if (flags.filter((f) => f.severity === "critical").length > 0) {
       checks.push({
         level: "critical",
-        title: "Unresolved critical issues — do not submit yet",
+        title: "Unresolved critical issues, do not submit yet",
         hint: "Fix the critical items in earlier steps first",
       });
     }
@@ -326,7 +326,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       checks.push({
         level: "info",
         title: "Save your NVC fee status",
-        hint: "Record both the Affidavit of Support fee and Immigrant Visa fee once paid — DS-260 and document upload unlock only after fees post.",
+        hint: "Record both the Affidavit of Support fee and Immigrant Visa fee once paid, DS-260 and document upload unlock only after fees post.",
       });
     }
     return checks;
@@ -343,7 +343,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       checks.push({
         level: "warning",
         title: "I-130 baseline not captured",
-        hint: "Go to Chapter 1 Step 4 and save your marriage date and dates of birth so Rahvana can flag any DS-260 mismatch — inconsistencies are the #1 cause of NVC delays.",
+        hint: "Go to Chapter 1 Step 4 and save your marriage date and dates of birth so Rahvana can flag any DS-260 mismatch, inconsistencies are the #1 cause of NVC delays.",
       });
     } else if (!ds260?.capturedAt) {
       // I-130 baseline exists but the DS-260 values haven't been confirmed here.
@@ -370,7 +370,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
           checks.push({
             level: "critical",
             title: `DS-260 does not match I-130: ${m.label}`,
-            hint: `I-130 says ${m.i130Value}, DS-260 says ${m.ds260Value}. Correct one so both forms agree — form-to-form inconsistencies are a leading cause of NVC delays and interview RFEs (9 FAM 504.4).`,
+            hint: `I-130 says ${m.i130Value}, DS-260 says ${m.ds260Value}. Correct one so both forms agree, form-to-form inconsistencies are a leading cause of NVC delays and interview RFEs (9 FAM 504.4).`,
           });
         }
       }
@@ -406,7 +406,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       checks.push({
         level: "info",
         title: "Certified translations + country-specific requirements",
-        hint: "Every foreign-language civil document (birth, marriage, divorce, police certificates) needs a certified English translation, and the exact required documents vary by country — confirm yours on the U.S. State Department reciprocity schedule at travel.state.gov before submitting. (9 FAM 504.4-4)",
+        hint: "Every foreign-language civil document (birth, marriage, divorce, police certificates) needs a certified English translation, and the exact required documents vary by country, confirm yours on the U.S. State Department reciprocity schedule at travel.state.gov before submitting. (9 FAM 504.4-4)",
       });
     }
     return checks;
@@ -420,7 +420,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     if (!result) {
       const hint =
         eligibilityAnswers?.q5?.q5s5 === "yes"
-          ? "You flagged a possible income concern during eligibility. Run the Sponsorship Calculator to confirm whether the petitioner meets the 125% poverty guideline — and line up a joint sponsor early if not."
+          ? "You flagged a possible income concern during eligibility. Run the Sponsorship Calculator to confirm whether the petitioner meets the 125% poverty guideline, and line up a joint sponsor early if not."
           : "Run the Sponsorship Calculator to confirm the petitioner's income meets the 125% poverty guideline for your household size.";
       checks.push({ level: "info", title: "Confirm income meets the requirement", hint });
       return checks;
@@ -454,7 +454,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       checks.push({
         level: "info",
         title: "Gather every sponsor's financial documents",
-        hint: "Each joint sponsor and household member needs their own tax returns (most recent year), W-2s, recent pay stubs, and an employment letter — not just the petitioner.",
+        hint: "Each joint sponsor and household member needs their own tax returns (most recent year), W-2s, recent pay stubs, and an employment letter, not just the petitioner.",
       });
     }
     return checks;
@@ -493,7 +493,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       checks.push({
         level: "warning",
         title: "Civil documents not all prepared",
-        hint: "Finish the civil-document checklist (Step 4) — missing required documents will hold up documentary qualification.",
+        hint: "Finish the civil-document checklist (Step 4), missing required documents will hold up documentary qualification.",
       });
     }
     if (result && result.isEligible === false) {
@@ -526,7 +526,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       checks.push({
         level: "info",
         title: "Save your interview date",
-        hint: "Recording the appointment unlocks Chapter 3 — schedule your medical exam right away, as slots fill quickly before the interview.",
+        hint: "Recording the appointment unlocks Chapter 3, schedule your medical exam right away, as slots fill quickly before the interview.",
       });
     }
     return checks;
@@ -543,7 +543,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       checks.push({
         level: interviewDate ? "warning" : "info",
         title: interviewDate
-          ? "Medical exam not scheduled yet — book now"
+          ? "Medical exam not scheduled yet, book now"
           : "Schedule your medical exam early",
         hint: "The medical exam must be completed before your interview, and approved panel-physician slots fill up fast. Book as soon as your interview is set and record the appointment here.",
       });
@@ -561,7 +561,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       checks.push({
         level: "info",
         title: "Get your polio vaccination certificate before the medical exam",
-        hint: "Pakistan-origin applicants must present an original polio vaccination certificate. The panel physician reviews it at the medical exam and you must bring the original to the interview — arrange it now so it doesn't hold up your exam.",
+        hint: "Pakistan-origin applicants must present an original polio vaccination certificate. The panel physician reviews it at the medical exam and you must bring the original to the interview, arrange it now so it doesn't hold up your exam.",
       });
     }
     return checks;
@@ -576,13 +576,13 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       checks.push({
         level: "warning",
         title: "Apply for a fresh police certificate now",
-        hint: "The interview requires a fresh PCC — not the one submitted during NVC processing. It can take several weeks, so apply early and bring the original to your interview.",
+        hint: "The interview requires a fresh PCC, not the one submitted during NVC processing. It can take several weeks, so apply early and bring the original to your interview.",
       });
     } else if (saved && !received) {
       checks.push({
         level: "info",
         title: "Track your police certificate until you hold the original",
-        hint: "You've applied — keep following up until the original PCC is in hand. Confirm it is still within your embassy's validity window for the interview date.",
+        hint: "You've applied, keep following up until the original PCC is in hand. Confirm it is still within your embassy's validity window for the interview date.",
       });
     }
     return checks;
@@ -596,7 +596,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       checks.push({
         level: "info",
         title: "Do not open the sealed medical envelope",
-        hint: "Bring your polio certificate, passport, and appointment letter. The physician seals the results and sends them to the embassy — never open the envelope, and confirm the clinic will transmit your results before your interview date.",
+        hint: "Bring your polio certificate, passport, and appointment letter. The physician seals the results and sends them to the embassy, never open the envelope, and confirm the clinic will transmit your results before your interview date.",
       });
     }
     return checks;
@@ -626,7 +626,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
         title: "Bring every required original to your interview",
         hint: `Organize originals (not photocopies) for: ${requiredGroups.join(
           "; "
-        )}. Keep each foreign-language civil document together with its certified English translation, and bring the fresh police certificate — not the one filed at NVC.`,
+        )}. Keep each foreign-language civil document together with its certified English translation, and bring the fresh police certificate, not the one filed at NVC.`,
       });
     }
     checks.push({
@@ -643,7 +643,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     checks.push({
       level: "info",
       title: "Your interview answers must match your DS-260",
-      hint: "Re-read every DS-260 section before interview day. The officer's questions about your relationship, dates, and history are checked against your filed answers — inconsistencies are the most common cause of 221(g) holds.",
+      hint: "Re-read every DS-260 section before interview day. The officer's questions about your relationship, dates, and history are checked against your filed answers, inconsistencies are the most common cause of 221(g) holds.",
     });
     // Anything disclosed at eligibility will likely come up — be ready to explain it.
     for (const d of interviewDisclosureReminders(eligibilityAnswers)) checks.push(d);
@@ -658,7 +658,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
       checks.push({
         level: "warning",
         title: "Original documents not gathered yet",
-        hint: "Finish gathering and organizing your original documents (Step 6) before interview day — the officer may ask for any of them.",
+        hint: "Finish gathering and organizing your original documents (Step 6) before interview day, the officer may ask for any of them.",
       });
     }
     if (!done("step_3_7")) {
@@ -670,7 +670,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     }
     checks.push({
       level: "info",
-      title: "No electronics — arrive 20–30 minutes early",
+      title: "No electronics, arrive 20-30 minutes early",
       hint: "Bring the printed appointment letter and your organized packet. Phones and electronic devices are not allowed inside U.S. Embassy Islamabad, and latecomers may be turned away.",
     });
     return checks;
@@ -694,7 +694,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     {
       level: "info",
       title: "Verify your visa details when the passport arrives",
-      hint: "Check that your name, date of birth, visa category, and expiry date are all correct. Report any error to the embassy immediately — you must enter the U.S. before the visa expires.",
+      hint: "Check that your name, date of birth, visa category, and expiry date are all correct. Report any error to the embassy immediately, you must enter the U.S. before the visa expires.",
     },
   ],
 
@@ -703,7 +703,7 @@ export const IR1_STEP_CHECKERS: Record<string, StepChecker> = {
     {
       level: "warning",
       title: "Submit exactly what the 221(g) requested",
-      hint: "Provide every requested item — nothing more, nothing less — using the method and any deadline stated in the notice. Keep a complete copy of everything you submit, then monitor CEAC weekly.",
+      hint: "Provide every requested item, nothing more, nothing less, using the method and any deadline stated in the notice. Keep a complete copy of everything you submit, then monitor CEAC weekly.",
     },
   ],
 };

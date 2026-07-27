@@ -312,7 +312,7 @@ export async function GET(request: NextRequest) {
                   Go to Dashboard
                 </a>
                 <p style="color: #6e736f; font-size: 13px; margin-top: 24px;">
-                  Questions? Reply to this email — we're here to help.
+                  Questions? Reply to this email, we're here to help.
                 </p>
               </div>
             `,

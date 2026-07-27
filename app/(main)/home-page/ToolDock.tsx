@@ -48,7 +48,7 @@ const tools: Tool[] = [
     glow: "rgba(167,139,250,0.35)",
     scenario: {
       title: "Got a 221(g) and feeling lost?",
-      body: "We turn that scary blue slip into a simple checklist of what to send, where, and when — so you can move forward today.",
+      body: "We turn that scary blue slip into a simple checklist of what to send, where, and when, so you can move forward today.",
     },
     href: "/221g-action-planner",
   },
@@ -118,7 +118,7 @@ const tools: Tool[] = [
     glow: "rgba(244,114,182,0.35)",
     scenario: {
       title: "Signature looks messy on scans?",
-      body: "Take a photo of your handwritten signature — we give you a clean, background-free version ready to drop on any form.",
+      body: "Take a photo of your handwritten signature, we give you a clean, background-free version ready to drop on any form.",
     },
     href: "/signature-image-processing",
   },
@@ -216,7 +216,7 @@ const tools: Tool[] = [
     glow: "rgba(16,185,129,0.30)",
     scenario: {
       title: "First CNIC, fix, or renewal?",
-      body: "The exact NADRA workflow — what to bring, which counter, and how long it really takes.",
+      body: "The exact NADRA workflow, what to bring, which counter, and how long it really takes.",
     },
     href: "/guides/cnic-guide",
   },
@@ -258,7 +258,7 @@ const tools: Tool[] = [
     glow: "rgba(16,185,129,0.30)",
     scenario: {
       title: "New passport, renewal, or lost one?",
-      body: "A clear DGIP roadmap for MRP and ePassport applications — what to file and what to skip.",
+      body: "A clear DGIP roadmap for MRP and ePassport applications, what to file and what to skip.",
     },
     href: "/guides/passport-guide",
   },
@@ -327,7 +327,7 @@ export function ToolsDock() {
             <span className="text-zinc-900">You just need the right tools.</span>
           </h2>
           <p className="mx-auto mt-2 md:mt-3 max-w-lg text-[13px] md:text-[15px] leading-relaxed text-zinc-500">
-            Tools, expert services, and country-specific guides — all in one place.
+            Tools, expert services, and country-specific guides, all in one place.
           </p>
         </div>
 

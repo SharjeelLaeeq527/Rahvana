@@ -74,8 +74,8 @@
         },
         {
           "type": "Sindh",
-          "price": "500–1000",
-          "days": "7–15 working days",
+          "price": "500-1000",
+          "days": "7-15 working days",
           "badge_variant": "green"
         },
         {
@@ -127,7 +127,7 @@
             "id": 2,
             "title": "Document Submission",
             "duration": "Verification Desk",
-            "description": "Submit original CNIC with photocopy, passport copy, recent passport-size photographs, utility bill (proof of address), and a Verification/Purpose Letter stating why the certificate is required (job, visa, immigration, study, etc.). If applicant is abroad, submit Authority Letter and applicant’s documents."
+            "description": "Submit original CNIC with photocopy, passport copy, recent passport-size photographs, utility bill (proof of address), and a Verification/Purpose Letter stating why the certificate is required (job, visa, immigration, study, etc.). If applicant is abroad, submit Authority Letter and applicant's documents."
           },
           {
             "id": 3,
@@ -145,7 +145,7 @@
             "id": 5,
             "title": "Fee & Processing Time",
             "duration": "Processing",
-            "description": "Processing Fee: Typically Rs 300–500 (may vary by district). Normal processing time: 7 to 14 working days depending on field verification speed and district workload."
+            "description": "Processing Fee: Typically Rs 300-500 (may vary by district). Normal processing time: 7 to 14 working days depending on field verification speed and district workload."
           },
           {
             "id": 6,

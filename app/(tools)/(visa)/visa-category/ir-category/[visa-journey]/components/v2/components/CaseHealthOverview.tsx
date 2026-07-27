@@ -345,7 +345,7 @@ export function CaseHealthOverview({
   const totalCats = 7; // 7 evidence categories
 
   // Evidence coverage display
-  const coverageValue = evidenceAnalysis ? `${strongCats} / ${totalCats} Strong` : "—";
+  const coverageValue = evidenceAnalysis ? `${strongCats} / ${totalCats} Strong` : "";
 
   if (loading) {
     return (
@@ -419,7 +419,7 @@ export function CaseHealthOverview({
           {/* Body — muted dashed dial + learning cue */}
           <div className="px-5 py-6 flex items-center gap-5">
             <div className="shrink-0 w-[104px] h-[104px] rounded-full flex flex-col items-center justify-center border-2 border-dashed border-white/15 bg-white/[0.03]">
-              <span className="text-[34px] font-black leading-none text-white/35">—</span>
+              <span className="text-[34px] font-black leading-none text-white/35">, </span>
               <span className="text-[9px] font-bold text-white/30 tracking-widest mt-0.5">
                 / 100
               </span>
@@ -430,7 +430,7 @@ export function CaseHealthOverview({
               </p>
               <p className="text-[12px] text-white/45 mt-1.5 leading-relaxed">
                 Complete your first step or upload a document, and your evidence,
-                consistency, and critical-issue analysis will appear here — based on what
+                consistency, and critical-issue analysis will appear here, based on what
                 your case actually shows.
               </p>
             </div>
@@ -726,7 +726,7 @@ export function CaseHealthOverview({
                       </div>
 
                       <div className="text-4xl font-black text-slate-800">
-                        {evidenceScore ?? "—"}
+                        {evidenceScore ?? ""}
                       </div>
 
                       <div className="text-xs text-slate-500 mt-1">Document Strength</div>
@@ -742,7 +742,7 @@ export function CaseHealthOverview({
                       </div>
 
                       <div className="text-4xl font-black text-slate-800">
-                        {consistencyScore ?? "—"}
+                        {consistencyScore ?? ""}
                       </div>
 
                       <div className="text-xs text-slate-500 mt-1">Information Accuracy</div>
@@ -759,7 +759,7 @@ export function CaseHealthOverview({
                   <p className="text-sm text-muted-foreground leading-relaxed mb-4">
                     Your Case Health score is built from two equally-weighted analyses. Each one
                     examines a different dimension of your case, and together they produce a single
-                    0–100 score that reflects your overall readiness.
+                    0-100 score that reflects your overall readiness.
                   </p>
 
                   <div className="space-y-3">
@@ -948,7 +948,7 @@ export function CaseHealthOverview({
                 <ExpandableTooltip
                   icon={<AlertCircle size={12} />}
                   title="Important Disclaimer"
-                  message="Case Health reflects Rahvana’s analysis of your evidence and case data. It is intended for guidance only and does not predict approval or constitute legal advice."
+                  message="Case Health reflects Rahvana's analysis of your evidence and case data. It is intended for guidance only and does not predict approval or constitute legal advice."
                   defaultOpen={true}
                 />
               </div>

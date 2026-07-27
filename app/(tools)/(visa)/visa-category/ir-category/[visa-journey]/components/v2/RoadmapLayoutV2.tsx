@@ -318,7 +318,7 @@ export default function RoadmapLayoutV2({ data, state, actions }: RoadmapLayoutV
           box-sizing: border-box;
         }
 
-        /* Back button slot — fixed width so breadcrumbs don't jump */
+        /* Back button slot, fixed width so breadcrumbs don't jump */
         .nav-back-slot {
           flex: 0 0 30px;
           display: flex;
@@ -474,7 +474,7 @@ export default function RoadmapLayoutV2({ data, state, actions }: RoadmapLayoutV
 
         /*
           ≥560px   → full label
-          480–559px → short label
+          480-559px → short label
           <480px   → icon only, circle
         */
         .complete-label--full {

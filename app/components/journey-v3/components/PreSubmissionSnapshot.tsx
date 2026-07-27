@@ -27,7 +27,7 @@ interface PreSubmissionSnapshotProps {
 }
 
 function fmtDate(iso: string | undefined): string {
-  if (!iso) return "—";
+  if (!iso) return "";
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return iso;
   return d.toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
@@ -196,12 +196,12 @@ export function PreSubmissionSnapshot({
   const residenceRows: ChecklistRow[] = [
     {
       label: "Current country",
-      value: beneficiaryBaseline?.currentCountry ?? "—",
+      value: beneficiaryBaseline?.currentCountry ?? "",
       captured: !!beneficiaryBaseline?.currentCountry,
     },
     {
       label: "Current city",
-      value: beneficiaryBaseline?.currentCity ?? "—",
+      value: beneficiaryBaseline?.currentCity ?? "",
       captured: !!beneficiaryBaseline?.currentCity,
     },
     {
@@ -273,7 +273,7 @@ export function PreSubmissionSnapshot({
             <div className="flex items-center gap-2 mb-2">
               <Calendar size={13} color="#1e40af" />
               <span className="text-[11.5px] font-bold text-[#1c1917] flex-1">
-                Key dates — I-130
+                Key dates, I-130
               </span>
               {missingDates > 0 && (
                 <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full bg-[#fef3c7] text-[#78350f]">
@@ -312,7 +312,7 @@ export function PreSubmissionSnapshot({
             <div className="flex items-center gap-2 mb-2">
               <Globe size={13} color="#155e75" />
               <span className="text-[11.5px] font-bold text-[#1c1917] flex-1">
-                Beneficiary residence — I-130A
+                Beneficiary residence, I-130A
               </span>
               {missingResidence > 0 && (
                 <span className="text-[9.5px] font-bold px-1.5 py-0.5 rounded-full bg-[#fef3c7] text-[#78350f]">
@@ -364,7 +364,7 @@ export function PreSubmissionSnapshot({
           style={{ borderColor: "#f0ece8", background: "#fafaf9" }}
         >
           <p className="text-[10.5px] text-[#a8a29e] leading-snug">
-            Advisory only — not legal advice. Values reflect only what you captured in Rahvana.
+            Advisory only, not legal advice. Values reflect only what you captured in Rahvana.
           </p>
         </div>
       </div>

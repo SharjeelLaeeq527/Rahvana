@@ -144,12 +144,12 @@
           {
             "field": "co_residence_history",
             "operator": "equals",
-            "value": "Yes — Currently Living Together"
+            "value": "Yes, Currently Living Together"
           },
           {
             "field": "co_residence_history",
             "operator": "equals",
-            "value": "Yes — Lived Together Previously"
+            "value": "Yes, Lived Together Previously"
           }
         ]
       },
@@ -171,7 +171,7 @@
           {
             "field": "co_residence_history",
             "operator": "equals",
-            "value": "No — Never Lived Together"
+            "value": "No, Never Lived Together"
           }
         ]
       },

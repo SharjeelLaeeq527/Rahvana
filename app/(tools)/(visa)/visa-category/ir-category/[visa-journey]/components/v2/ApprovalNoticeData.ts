@@ -126,7 +126,7 @@ export const APPROVAL_NOTICE_DATA = {
   },
   guideSteps: [
     {
-      label: "Step 1 — Approval confirmed",
+      label: "Step 1, Approval confirmed",
       title: "The I-797 tells you USCIS approved the petition",
       copy: "This notice confirms the I-130 petition was approved. It is a milestone record that you should save and keep with your immigration file.",
       head: "Approval notice",
@@ -139,7 +139,7 @@ export const APPROVAL_NOTICE_DATA = {
       note: "This is a USCIS milestone notice. The next major handoff is usually to the National Visa Center.",
     },
     {
-      label: "Step 2 — Save the important details",
+      label: "Step 2, Save the important details",
       title: "Keep the approval date and receipt number easy to find",
       copy: "Those details help you preserve the case timeline and make later recordkeeping easier. You can save them inside Rahvana now.",
       head: "Case details",
@@ -151,7 +151,7 @@ export const APPROVAL_NOTICE_DATA = {
       note: "For IR-1, save the priority date as a record, but do not treat it like the main wait-list driver.",
     },
     {
-      label: "Step 3 — Get ready for NVC",
+      label: "Step 3, Get ready for NVC",
       title: "The next stage is usually NVC case creation",
       copy: "After USCIS forwards the approved petition, NVC creates the case and later sends the Welcome Letter. Use this time to prepare your next-stage documents and financial records.",
       head: "What comes next",

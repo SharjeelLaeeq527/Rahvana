@@ -100,7 +100,7 @@ export const MedicalExamGuideOverlay: React.FC<MedicalExamGuideOverlayProps> = (
               }`}
             >
               {isLast ? (
-                "Done — return to step"
+                "Done, return to step"
               ) : (
                 <>
                   Next <ArrowRight size={16} />

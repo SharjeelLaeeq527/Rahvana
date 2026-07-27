@@ -181,7 +181,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
       </span>
       <p className="text-[12px] leading-[1.6]" style={{ color: "#5a3040" }}>
         Uploading your approval notice automatically saves it to the document vault and extracts key
-        information — approval date, receipt number, and more. This feature is available on{" "}
+        information, approval date, receipt number, and more. This feature is available on{" "}
         <strong>Premium and above</strong>.{" "}
         <button
           onClick={() => setUpgradeModalFeature("approval_notice_upload")}
@@ -361,7 +361,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                         approvalDoc?.originalFilename || (isBasic ? "Upload locked" : "Not saved")
                       }
                     >
-                      {approvalDoc?.originalFilename || (isBasic ? "—" : "Not saved")}
+                      {approvalDoc?.originalFilename || (isBasic ? "" : "Not saved")}
                     </span>
                   </div>
                   <div className="flex justify-between gap-[12px] py-[7px] border-b border-[#a8d9be]">

@@ -4,11 +4,11 @@ import { Building2, ClipboardList } from "lucide-react";
 export const POLICE_CLEARANCE_DATA = {
   eyebrow: {
     chapter: "Chapter 3 · Medical & Interview",
-    step: "Step 3 — Police Clearance Certificate",
+    step: "Step 3, Police Clearance Certificate",
   },
   title: "Obtain Fresh Police Clearance Certificate",
   description:
-    "A fresh police clearance certificate (PCC) is required for the consular interview. Apply now — this can take several weeks and must be tracked until received.",
+    "A fresh police clearance certificate (PCC) is required for the consular interview. Apply now, this can take several weeks and must be tracked until received.",
   chips: [
     { label: "PCC Required", type: "pcc" },
     { label: "Tracking", type: "track" },
@@ -43,12 +43,12 @@ export const POLICE_CLEARANCE_DATA = {
     buttonLabel: "Save Application Details",
   },
   pendingCard: {
-    title: "PCC still pending — dashboard reminder active",
+    title: "PCC still pending, dashboard reminder active",
     body: "Your police certificate application is recorded but the certificate has not yet been received. This reminder will stay on your dashboard until you mark it as received below.\n\nFollow up with the police department regularly to check status. Don't wait until the last moment.",
     buttonLabel: "Mark Certificate as Received →",
   },
   receivedCard: {
-    title: "Fresh PCC received — save to Document Vault",
+    title: "Fresh PCC received, save to Document Vault",
     body: "Your police clearance certificate has been received. Save it to the Document Vault for easy access during the interview and upload stages.",
     buttonLabel: "Save PCC to Document Vault",
     vaultUrl: "https://www.rahvana.com/document-vault",
@@ -78,7 +78,7 @@ export const POLICE_CLEARANCE_DATA = {
       heading: "Save your receipt and track actively",
       instruction:
         "Return to the main page and save your receipt number and application date. Rahvana will keep a reminder on your dashboard until you confirm the certificate is received.",
-      info: "PCCs typically take several weeks. Follow up periodically. Do not wait — check status proactively as the interview date approaches.",
+      info: "PCCs typically take several weeks. Follow up periodically. Do not wait, check status proactively as the interview date approaches.",
       nav: { back: true, done: "Return to tracking →" },
     },
   ],

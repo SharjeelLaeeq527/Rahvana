@@ -45,7 +45,7 @@ export function ReceiptFormatChip({ value, className }: ReceiptFormatChipProps) 
       >
         <Pencil size={13} className="mt-[1px] shrink-0" />
         <span>
-          Keep typing — {trimmed.length}/{FULL_LENGTH} characters. Format: 3 letters + 10 digits.
+          Keep typing, {trimmed.length}/{FULL_LENGTH} characters. Format: 3 letters + 10 digits.
         </span>
       </div>
     );

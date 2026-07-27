@@ -266,7 +266,7 @@ async function postReceipt(
     return { record, error: "" };
   } catch {
     console.error("[RegisterReceiptStep v2] postReceipt network error");
-    return { record: null, error: "Network error while saving receipt — please try again." };
+    return { record: null, error: "Network error while saving receipt, please try again." };
   }
 }
 
@@ -478,7 +478,7 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
           color: "#28151c",
         }}
       >
-        Always confirm the receipt number before saving — it is the primary key used for case
+        Always confirm the receipt number before saving, it is the primary key used for case
         tracking.
       </div>
 
@@ -520,7 +520,7 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
         >
           {trackingLocked && !isUpdate && <Lock className="w-3.5 h-3.5" />}
           {loading
-            ? "Saving…"
+            ? "Saving..."
             : isUpdate
               ? "Save Changes"
               : trackingLocked
@@ -918,7 +918,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
           onMouseEnter={(e) => !loading && (e.currentTarget.style.background = "#6d5fb0")}
           onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#8284bf")}
         >
-          {loading ? "Saving…" : isUpdate ? "Save Changes" : "Save Receipt & Enable Tracking"}
+          {loading ? "Saving..." : isUpdate ? "Save Changes" : "Save Receipt & Enable Tracking"}
         </button>
       </div>
     </div>
@@ -1310,7 +1310,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
           {showTrackingNudge && (
             <UpgradeNudge
               title="Case tracking requires an upgrade"
-              description="Your receipt details have been saved. Automatic case status monitoring — where Rahvana checks USCIS on your behalf and alerts you to changes — is available on Premium and Executive plans."
+              description="Your receipt details have been saved. Automatic case status monitoring, where Rahvana checks USCIS on your behalf and alerts you to changes, is available on Premium and Executive plans."
               onUpgrade={() => {
                 setShowTrackingNudge(false);
                 setUpgradeModalFeature("receipt_tracking");

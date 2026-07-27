@@ -236,9 +236,9 @@ export const COMPARISON_GROUPS = [
     rows: [
       ["Full visa roadmap: all chapters & steps", "Included", "Included", "Included"],
       ["Checklist engine for your case", "Included", "Included", "Included"],
-      ["Step-by-step guides in every step", "—", "Included", "Included"],
-      ["Document vault: upload & auto-extract", "—", "Included", "Included"],
-      ["Tracker & reminders", "—", "Included", "Included"],
+      ["Step-by-step guides in every step", "", "Included", "Included"],
+      ["Document vault: upload & auto-extract", "", "Included", "Included"],
+      ["Tracker & reminders", "", "Included", "Included"],
     ],
   },
   {
@@ -255,34 +255,34 @@ export const COMPARISON_GROUPS = [
   {
     label: "Tools: Premium Upgrades (Add-on for Basic)",
     rows: [
-      ["Rapid Fire Interview Prep", "—", "Included", "Included"],
-      ["Smart Form Filler (I-130 / I-130A)", "—", "Included", "Included"],
-      ["Sponsorship Calculator", "—", "Included", "Included"],
-      ["Photo Booth", "—", "2 included", "Unlimited"],
+      ["Rapid Fire Interview Prep", "", "Included", "Included"],
+      ["Smart Form Filler (I-130 / I-130A)", "", "Included", "Included"],
+      ["Sponsorship Calculator", "", "Included", "Included"],
+      ["Photo Booth", "", "2 included", "Unlimited"],
       ["Medical Appointment Booking", "Add On · $5", "Included", "Included"],
-      ["Civil Document Guides", "—", "Included", "Included"],
+      ["Civil Document Guides", "", "Included", "Included"],
     ],
   },
   {
     label: "Tools: Executive Only (Add-on for Basic & Premium)",
     rows: [
-      ["Case Strength Analyzer", "—", "—", "Included"],
-      ["221(g) Action Planner", "—", "—", "Included"],
-      ["Mock Interview", "—", "—", "Included"],
+      ["Case Strength Analyzer", "", "", "Included"],
+      ["221(g) Action Planner", "", "", "Included"],
+      ["Mock Interview", "", "", "Included"],
     ],
   },
   {
     label: "Reviews & Support",
     rows: [
-      ["Expert Case Review", "—", "—", "2 included"],
-      ["Expert Consultation", "—", "—", "2 included"],
+      ["Expert Case Review", "", "", "2 included"],
+      ["Expert Consultation", "", "", "2 included"],
     ],
   },
   {
     label: "Services",
     rows: [
       ["PCC Filing (Sindh Only)", "Add On · $25", "Add On · $25", "Included"],
-      ["Document Translation", "—", "—", "2 included"],
+      ["Document Translation", "", "", "2 included"],
       // ["Dedicated Case Manager",                    "—",             "—",             "—"],
     ],
   },
@@ -354,7 +354,7 @@ export const ADDONS = [
     title: "PDF Tool Kit",
     price: 69,
     unit: "one-time",
-    copy: "Merge, edit, compress and convert your PDFs in one place — get every document into the exact format the embassy expects.",
+    copy: "Merge, edit, compress and convert your PDFs in one place, get every document into the exact format the embassy expects.",
     note: "Included free with Basic, Premium & Executive",
   },
   {

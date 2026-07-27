@@ -241,7 +241,7 @@
         },
         {
           "id": "driving_license_copy_available",
-          "label": "Do you have copies of either spouse’s driving license?",
+          "label": "Do you have copies of either spouse's driving license?",
           "type": "boolean"
         },
         {

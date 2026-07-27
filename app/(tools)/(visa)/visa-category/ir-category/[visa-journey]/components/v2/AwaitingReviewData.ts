@@ -1,7 +1,7 @@
 export const AWAITING_REVIEW_DATA = {
   eyebrow: {
     chapter: "Chapter 2 · NVC / CEAC Processing",
-    step: "Step 9 — Awaiting NVC Document Review",
+    step: "Step 9, Awaiting NVC Document Review",
   },
   title: "Awaiting NVC Document Review",
   description:
@@ -23,9 +23,9 @@ export const AWAITING_REVIEW_DATA = {
   reviewItems: {
     title: "What NVC is reviewing",
     items: [
-      "DS-260 — immigrant visa application accuracy and completeness",
-      "Civil documents — passport, birth certificate, marriage records, police certificate",
-      "Financial forms — Affidavit of Support and supporting evidence",
+      "DS-260, immigrant visa application accuracy and completeness",
+      "Civil documents, passport, birth certificate, marriage records, police certificate",
+      "Financial forms, Affidavit of Support and supporting evidence",
       "Translation pairing and document legibility across all files",
       "Overall package consistency with DS-260 answers and other filings",
     ],
@@ -52,10 +52,10 @@ export const AWAITING_REVIEW_DATA = {
   correctionsAlert: {
     title: "If NVC requests corrections or additional documents",
     items: [
-      "Read the checklist notice carefully — NVC will specify exactly what is missing or incorrect",
-      "Replace only the specific document(s) flagged — do not re-upload your entire package",
+      "Read the checklist notice carefully, NVC will specify exactly what is missing or incorrect",
+      "Replace only the specific document(s) flagged, do not re-upload your entire package",
       "Upload the corrected file under the same person and document type slot",
-      "Resubmit promptly — delay in responding extends the overall timeline",
+      "Resubmit promptly, delay in responding extends the overall timeline",
     ],
   },
   disclaimer:

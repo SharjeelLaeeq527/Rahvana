@@ -18,7 +18,7 @@ export const SUBMISSION_TUTORIAL_STEPS: SubmissionStep[] = [
       "Sign in to CEAC and navigate to the Documents section of your case. This is where your uploaded files are organized by person and document type.",
     vlabel: "CEAC Documents",
     visual:
-      '<div class="mock-card"><div class="mock-title">CEAC — Documents</div><div class="mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]">Beneficiary Documents <span class="mock-badge-amber px-2.5 py-1 bg-[#fef8e8] text-[#8a6200] border border-[#f0d98a] rounded-full text-[11px] font-bold uppercase tracking-wider">Review</span></div><div class="mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]">Petitioner Documents <span class="mock-badge-amber px-2.5 py-1 bg-[#fef8e8] text-[#8a6200] border border-[#f0d98a] rounded-full text-[11px] font-bold uppercase tracking-wider">Review</span></div><div class="mock-row flex justify-between items-center py-2 text-[13px] text-[#3a4f63]">Sponsor / Financial <span class="mock-badge-amber px-2.5 py-1 bg-[#fef8e8] text-[#8a6200] border border-[#f0d98a] rounded-full text-[11px] font-bold uppercase tracking-wider">Review</span></div></div>',
+      '<div class="mock-card"><div class="mock-title">CEAC, Documents</div><div class="mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]">Beneficiary Documents <span class="mock-badge-amber px-2.5 py-1 bg-[#fef8e8] text-[#8a6200] border border-[#f0d98a] rounded-full text-[11px] font-bold uppercase tracking-wider">Review</span></div><div class="mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]">Petitioner Documents <span class="mock-badge-amber px-2.5 py-1 bg-[#fef8e8] text-[#8a6200] border border-[#f0d98a] rounded-full text-[11px] font-bold uppercase tracking-wider">Review</span></div><div class="mock-row flex justify-between items-center py-2 text-[13px] text-[#3a4f63]">Sponsor / Financial <span class="mock-badge-amber px-2.5 py-1 bg-[#fef8e8] text-[#8a6200] border border-[#f0d98a] rounded-full text-[11px] font-bold uppercase tracking-wider">Review</span></div></div>',
     note: null,
   },
   {
@@ -28,7 +28,7 @@ export const SUBMISSION_TUTORIAL_STEPS: SubmissionStep[] = [
       "Open each person's section. Verify that every file belongs to the right person. A beneficiary document accidentally filed under the petitioner will need to be corrected.",
     vlabel: "Person Assignment",
     visual:
-      '<div class="mock-card"><div class="mock-title">Beneficiary — Uploaded Files</div><div class="mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]">Passport Biographic Page <span class="mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider">Correct</span></div><div class="mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]">Birth Certificate <span class="mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider">Correct</span></div><div class="mock-row flex justify-between items-center py-2 text-[13px] text-[#3a4f63]">Police Certificate <span class="mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider">Correct</span></div></div>',
+      '<div class="mock-card"><div class="mock-title">Beneficiary, Uploaded Files</div><div class="mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]">Passport Biographic Page <span class="mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider">Correct</span></div><div class="mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]">Birth Certificate <span class="mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider">Correct</span></div><div class="mock-row flex justify-between items-center py-2 text-[13px] text-[#3a4f63]">Police Certificate <span class="mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider">Correct</span></div></div>',
     note: "If a file is under the wrong person, remove and re-upload under the correct assignment before continuing.",
   },
   {
@@ -45,7 +45,7 @@ export const SUBMISSION_TUTORIAL_STEPS: SubmissionStep[] = [
     label: "Step 4 of 8",
     heading: "Verify readability and translation pairing",
     instruction:
-      "Open each file and visually confirm it is fully legible — no cropping, no rotation, no blur. For every non-English document, confirm the certified English translation is uploaded alongside it.",
+      "Open each file and visually confirm it is fully legible, no cropping, no rotation, no blur. For every non-English document, confirm the certified English translation is uploaded alongside it.",
     vlabel: "Readability & Translations",
     visual:
       '<div class="mock-card"><div class="mock-title">Translation Pairing Check</div><div class="mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]">Nikah Nama (Urdu original) <span class="mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider">Present</span></div><div class="mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]">Nikah Nama (English translation) <span class="mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider">Present</span></div><div class="mock-row flex justify-between items-center py-2 border-b border-[#d0e4f7] text-[13px] text-[#3a4f63]">Birth Certificate (Urdu) <span class="mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider">Present</span></div><div class="mock-row flex justify-between items-center py-2 text-[13px] text-[#3a4f63]">Birth Certificate (English) <span class="mock-badge-green px-2.5 py-1 bg-[#e8f5ef] text-[#15744f] border border-[#a8d9be] rounded-full text-[11px] font-bold uppercase tracking-wider">Present</span></div></div>',
@@ -55,10 +55,10 @@ export const SUBMISSION_TUTORIAL_STEPS: SubmissionStep[] = [
     label: "Step 5 of 8",
     heading: "Add comments only where genuinely needed",
     instruction:
-      "CEAC allows comments per document. Use them sparingly — only when a brief factual clarification helps NVC understand an unusual document. Avoid unnecessary commentary that adds noise without value.",
+      "CEAC allows comments per document. Use them sparingly, only when a brief factual clarification helps NVC understand an unusual document. Avoid unnecessary commentary that adds noise without value.",
     vlabel: "Comments Review",
     visual:
-      '<div class="mock-card"><div class="mock-title">When to add a comment</div><div style="font-size:13px;color:#3a4f63;line-height:1.6;margin-top:6px">✓ "Original NADRA MRC — bilingual document, no separate translation required"<br><br>✗ "This is my marriage certificate which shows I am married to my wife"</div></div>',
+      '<div class="mock-card"><div class="mock-title">When to add a comment</div><div style="font-size:13px;color:#3a4f63;line-height:1.6;margin-top:6px">✓ "Original NADRA MRC, bilingual document, no separate translation required"<br><br>✗ "This is my marriage certificate which shows I am married to my wife"</div></div>',
     note: "Comments are not required in most cases. Only add them when they help clarify something non-obvious.",
   },
   {
@@ -75,7 +75,7 @@ export const SUBMISSION_TUTORIAL_STEPS: SubmissionStep[] = [
     label: "Step 7 of 8",
     heading: "Submit documents to NVC",
     instruction:
-      "When every file is verified, proceed to the CEAC submission action. Confirm the submission — do not close the browser tab until you receive a confirmation message.",
+      "When every file is verified, proceed to the CEAC submission action. Confirm the submission, do not close the browser tab until you receive a confirmation message.",
     vlabel: "Submit to NVC",
     visual:
       '<div class="mock-card"><div class="mock-title">Submission</div><div style="font-size:13px;color:#3a4f63;line-height:1.6;margin-top:4px;margin-bottom:12px">Confirm all documents are ready to submit to NVC for review.</div><div style="width:100%;padding:14px;background:#15744f;color:white;border:none;border-radius:10px;font-size:14px;font-weight:600;text-align:center">Submit Documents to NVC</div></div>',
@@ -209,7 +209,7 @@ export function SubmissionTutorialOverlay({
                 onClick={onClose}
                 className="flex-1 p-[12px_20px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-bold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center flex items-center justify-center gap-2"
               >
-                Done — return to step
+                Done, return to step
               </button>
             )}
           </div>

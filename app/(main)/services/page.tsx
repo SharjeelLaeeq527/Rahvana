@@ -83,7 +83,7 @@ interface TranslationDocument {
 const SERVICE_ENTITLEMENT_MAP: Record<string, string> = {
   "book-a-consultation": "expert_consultation",
   // "expert-case-review":           "expert_doc_review",
-  "pcc-filing-service-—-sindh": "pcc_filing",
+  "pcc-filing-service-, -sindh": "pcc_filing",
   "book-medical-appointment": "medical_booking",
   "urdu-→-english-translation": "document_translation",
 };
@@ -92,7 +92,7 @@ const SERVICE_ENTITLEMENT_MAP: Record<string, string> = {
 const SERVICE_TIER_MAP: Record<string, "basic" | "premium" | "executive"> = {
   "book-a-consultation": "premium",
   // "expert-case-review":           "premium",
-  "pcc-filing-service-—-sindh": "executive",
+  "pcc-filing-service-, -sindh": "executive",
   "book-medical-appointment": "premium",
   "urdu-→-english-translation": "premium",
 };
@@ -231,7 +231,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
         };
       }
     }
-    if (serviceId === "pcc-filing-service-—-sindh") {
+    if (serviceId === "pcc-filing-service-, -sindh") {
       if (pccRequests.length > 0) {
         return {
           count: pccRequests.length,
@@ -582,7 +582,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
                           icon_name: (() => {
                             const mapping: Record<string, string> = {
                               "book-a-consultation": "Briefcase",
-                              "pcc-filing-service-—-sindh": "Shield",
+                              "pcc-filing-service-, -sindh": "Shield",
                               "book-medical-appointment": "Clock",
                               "urdu-→-english-translation": "Files",
                             };
@@ -633,7 +633,7 @@ export default function ServicesPage({ isEmbedded = false }: { isEmbedded?: bool
           <>
             <ResourceSectionHeader
               title="Browse Services"
-              subtitle="Explore more services — unlock them when you're ready."
+              subtitle="Explore more services, unlock them when you're ready."
               className="mt-12"
             />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
@@ -1041,7 +1041,7 @@ function ServiceCard({
                   icon_name: (() => {
                     const mapping: Record<string, string> = {
                       "book-a-consultation": "Briefcase",
-                      "pcc-filing-service-—-sindh": "Shield",
+                      "pcc-filing-service-, -sindh": "Shield",
                       "book-medical-appointment": "Clock",
                       "urdu-→-english-translation": "Files",
                     };

@@ -107,7 +107,7 @@ export function buildSteps(a: VisaExplorationAnswers): Step[] {
     field: "purpose",
     title: "What would you like to do there?",
     subtitle:
-      "Don't worry if you're not sure — just pick the option closest to what you have in mind.",
+      "Don't worry if you're not sure, just pick the option closest to what you have in mind.",
     options: countryData.purposes,
     canProceed: !!a.purpose,
   });

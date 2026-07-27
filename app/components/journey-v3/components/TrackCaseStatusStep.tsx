@@ -93,7 +93,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
   // Tutorial steps loaded dynamically from json, fallback to static defaults
   const USCIS_STATUS_TUTORIAL_STEPS = tool?.tutorial_steps || [
     {
-      label: "Step 1 of 4 — Open official USCIS status tools",
+      label: "Step 1 of 4, Open official USCIS status tools",
       heading: "Start with the official case-status view",
       instruction:
         "USCIS case-status tools revolve around the receipt number. The official status view usually reflects the latest recorded action on the case.",
@@ -105,10 +105,10 @@ const TrackCaseStatusStep: React.FC<any> = ({
       note: "A quiet status page does not necessarily mean nothing is happening internally. It usually means there has been no new official outward-facing update yet.",
     },
     {
-      label: "Step 2 of 4 — Understand common pending statuses",
+      label: "Step 2 of 4, Understand common pending statuses",
       heading: "Learn the difference between waiting and action-required states",
       instruction:
-        "Most of the time, a pending case is in a waiting state like “Case Was Received” or “Case Is Being Actively Reviewed.” The important distinction is whether USCIS is simply processing or has asked for something.",
+        "Most of the time, a pending case is in a waiting state like \"Case Was Received\" or \"Case Is Being Actively Reviewed.\" The important distinction is whether USCIS is simply processing or has asked for something.",
       url: "rahvana.local/status-map",
       kicker: "Status guide",
       head: "Status meanings",
@@ -117,7 +117,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
       note: "Use this guide to understand whether you need to act now or simply stay prepared.",
     },
     {
-      label: "Step 3 of 4 — Use the waiting period well",
+      label: "Step 3 of 4, Use the waiting period well",
       heading: "Turn waiting time into preparation time",
       instruction:
         "Use this waiting period to stay prepared, keep your records current, and learn what usually comes next in the journey.",
@@ -129,7 +129,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
       note: "A few small tasks now can make the next phase feel much easier when the case moves forward.",
     },
     {
-      label: "Step 4 of 4 — Know when the page should pivot",
+      label: "Step 4 of 4, Know when the page should pivot",
       heading: "Be ready for the next meaningful change",
       instruction:
         "If USCIS later issues a request for evidence, approval, or another major update, your next step here should change with it.",
@@ -263,7 +263,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                     className="metric-value text-[14px] font-semibold"
                     style={{ color: "var(--rv-ch1-text)" }}
                   >
-                    {receiptInfo?.lastKnownStatus || "—"}
+                    {receiptInfo?.lastKnownStatus || ""}
                   </div>
                   <div className="metric-sub text-[11px] mt-1 text-white">
                     Current USCIS case status
@@ -288,7 +288,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                     className="metric-value text-[14px] font-semibold"
                     style={{ color: "var(--rv-ch1-text)" }}
                   >
-                    {receiptInfo?.lastCheckedAt ? fmtDateTime(receiptInfo.lastCheckedAt) : "—"}
+                    {receiptInfo?.lastCheckedAt ? fmtDateTime(receiptInfo.lastCheckedAt) : ""}
                   </div>
                   <div className="metric-sub text-[11px] mt-1 text-white">
                     Latest system refresh
@@ -313,7 +313,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                     className="metric-value text-[14px] font-semibold"
                     style={{ color: "var(--rv-ch1-text)" }}
                   >
-                    {receiptInfo?.noticeDate ? fmtDate(receiptInfo.noticeDate) : "—"}
+                    {receiptInfo?.noticeDate ? fmtDate(receiptInfo.noticeDate) : ""}
                   </div>
                   <div className="metric-sub text-[11px] mt-1 text-white">USCIS receipt notice</div>
                 </div>
@@ -336,7 +336,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                     className="metric-value text-[14px] font-semibold"
                     style={{ color: "var(--rv-ch1-text)" }}
                   >
-                    {receiptInfo?.priorityDate ? fmtDate(receiptInfo.priorityDate) : "—"}
+                    {receiptInfo?.priorityDate ? fmtDate(receiptInfo.priorityDate) : ""}
                   </div>
                   <div className="metric-sub text-[11px] mt-1 text-white">
                     Filing priority reference

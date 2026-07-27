@@ -46,7 +46,7 @@ const portals: {
   {
     type: "USCIS",
     title: "USCIS",
-    description: "U.S. Citizenship and Immigration Services — track cases, forms, and account.",
+    description: "U.S. Citizenship and Immigration Services, track cases, forms, and account.",
     url: "https://myaccount.uscis.gov/sign-in",
     icon: <Image src="/uscis.png" alt="USCIS" width={64} height={64} className="object-contain" />,
     iconBgColor: "bg-[#e8f6f6]",
@@ -55,7 +55,7 @@ const portals: {
   {
     type: "NVC",
     title: "NVC (CEAC)",
-    description: "National Visa Center — manage documents, affidavits, and case status.",
+    description: "National Visa Center, manage documents, affidavits, and case status.",
     url: "https://ceac.state.gov/iv/login.aspx",
     icon: <Image src="/ceac.png" alt="CEAC" width={64} height={64} className="object-contain" />,
     iconBgColor: "bg-[#fef3c7]",
@@ -289,7 +289,7 @@ const PortalWallet: React.FC = () => {
             Portal Wallet - Your Secure Credential Vault
           </h1>
           <p className="text-[15px] text-[#67737e] max-w-lg mx-auto">
-            Store, manage, and quickly access your immigration portal logins — encrypted and
+            Store, manage, and quickly access your immigration portal logins, encrypted and
             protected.
           </p>
         </div>

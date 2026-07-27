@@ -13,7 +13,7 @@ export default function PassportOcrPage() {
           Passport Auto-Fill
         </h1>
         <p className="text-sm sm:text-base text-muted-foreground px-2 sm:px-0">
-          Upload your passport once — we read the details, check them against your profile, and you
+          Upload your passport once, we read the details, check them against your profile, and you
           confirm before anything is saved.
         </p>
       </div>

@@ -492,7 +492,7 @@ export function DashboardView({
     return {
       level: "warning",
       title: `Case strength dropped to ${SCORE_BAND_LABEL[scoreDropBand.to]}`,
-      hint: `Your Case Strength moved from ${SCORE_BAND_LABEL[scoreDropBand.from]} to ${SCORE_BAND_LABEL[scoreDropBand.to]}. Open the breakdown to see which factor fell — evidence, consistency, completeness, or a new risk flag.`,
+      hint: `Your Case Strength moved from ${SCORE_BAND_LABEL[scoreDropBand.from]} to ${SCORE_BAND_LABEL[scoreDropBand.to]}. Open the breakdown to see which factor fell, evidence, consistency, completeness, or a new risk flag.`,
       stepKey: "__score__",
       stepName: "Case Strength",
       stepNumber: 0,
@@ -946,12 +946,12 @@ export function DashboardView({
 
   const [receiptRecord, setReceiptRecord] = useState<ReceiptRecord | null | undefined>(undefined);
   useEffect(() => {
-    console.log("DEBUG [receipt effect] FIRED — state.backendId:", state.backendId);
+    console.log("DEBUG [receipt effect] FIRED, state.backendId:", state.backendId);
     let cancelled = false;
     const jId = state.backendId;
 
     if (!jId) {
-      console.log("DEBUG [receipt effect] No backendId yet — skipping fetch");
+      console.log("DEBUG [receipt effect] No backendId yet, skipping fetch");
       return;
     }
 
@@ -977,7 +977,7 @@ export function DashboardView({
       });
 
     return () => {
-      console.log("DEBUG [receipt effect] Cleanup — marking cancelled");
+      console.log("DEBUG [receipt effect] Cleanup, marking cancelled");
       cancelled = true;
     };
   }, [state.backendId]);
@@ -1567,7 +1567,7 @@ export function DashboardView({
                               Interview Queue ({postLabel})
                             </div>
                             <h3 className="text-[18px] font-black mb-2">
-                              In Queue — Awaiting Estimate
+                              In Queue, Awaiting Estimate
                             </h3>
                             <p className="text-[12.5px] text-white/60 leading-relaxed mb-4 max-w-md">
                               Your DQ date is recorded. To see your estimated interview window, go
@@ -1616,7 +1616,7 @@ export function DashboardView({
                     const windowStr =
                       waitMonths === 0
                         ? "Approaching Soon"
-                        : `${lowDate.toLocaleDateString("en-US", fmt)} – ${highDate.toLocaleDateString("en-US", fmt)}`;
+                        : `${lowDate.toLocaleDateString("en-US", fmt)} ${highDate.toLocaleDateString("en-US", fmt)}`;
                     const embassyMonthStr = ivDate.toLocaleDateString("en-US", {
                       month: "long",
                       year: "numeric",

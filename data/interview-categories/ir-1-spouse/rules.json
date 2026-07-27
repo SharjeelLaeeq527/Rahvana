@@ -136,7 +136,7 @@
           {
             "field": "living_arrangement",
             "operator": "equals",
-            "value": "No – Living apart"
+            "value": "No, Living apart"
           }
         ]
       },

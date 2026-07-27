@@ -71,7 +71,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
       items.push({
         id: `hh${i}-i864a`,
         icon: "file",
-        title: `Form I-864A — ${label}`,
+        title: `Form I-864A, ${label}`,
         sub: "The contract between the petitioner and household member",
         tags: [
           { cls: "tag-hh", label: "Household Member" },
@@ -85,7 +85,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
       items.push({
         id: `hh${i}-tax`,
         icon: "calc",
-        title: `IRS Tax Return Transcript — ${label}`,
+        title: `IRS Tax Return Transcript, ${label}`,
         sub: "Most recent year required; last 3 years recommended",
         tags: [
           { cls: "tag-hh", label: "Household Member" },
@@ -118,7 +118,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
           items.push({
             id: `hh${i}-birth`,
             icon: "birth",
-            title: `Birth Certificate — ${label}`,
+            title: `Birth Certificate, ${label}`,
             sub: "Shows the parent-child relationship to the petitioner",
             tags: [
               { cls: "tag-hh", label: "Household Member" },
@@ -147,7 +147,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
           items.push({
             id: `hh${i}-id`,
             icon: "id",
-            title: `Identity Document — ${label}`,
+            title: `Identity Document, ${label}`,
             sub: "Government-issued ID for the household member",
             tags: [
               { cls: "tag-hh", label: "Household Member" },
@@ -160,7 +160,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
           items.push({
             id: `hh${i}-residence`,
             icon: "home",
-            title: `Proof of Shared Residence — ${label}`,
+            title: `Proof of Shared Residence, ${label}`,
             sub: "Confirms parent and petitioner share the same household",
             tags: [
               { cls: "tag-hh", label: "Household Member" },
@@ -188,7 +188,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
           items.push({
             id: `hh${i}-birth-hh`,
             icon: "birth",
-            title: `Birth Certificate — ${label}`,
+            title: `Birth Certificate, ${label}`,
             sub: "Combined with petitioner's birth cert to show shared parentage",
             tags: [
               { cls: "tag-hh", label: "Household Member" },
@@ -201,7 +201,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
           items.push({
             id: `hh${i}-id`,
             icon: "id",
-            title: `Identity Document — ${label}`,
+            title: `Identity Document, ${label}`,
             sub: "Government-issued ID for the household member",
             tags: [
               { cls: "tag-hh", label: "Household Member" },
@@ -214,7 +214,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
           items.push({
             id: `hh${i}-residence`,
             icon: "home",
-            title: `Proof of Shared Residence — ${label}`,
+            title: `Proof of Shared Residence, ${label}`,
             sub: "Confirms sibling and petitioner share the same household",
             tags: [
               { cls: "tag-hh", label: "Household Member" },
@@ -231,7 +231,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
           items.push({
             id: `hh${i}-residence`,
             icon: "home",
-            title: `Proof of Shared Residence — ${label}`,
+            title: `Proof of Shared Residence, ${label}`,
             sub: "Demonstrates the shared-household basis for including their income",
             tags: [
               { cls: "tag-hh", label: "Household Member" },
@@ -243,7 +243,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
           items.push({
             id: `hh${i}-family-link`,
             icon: "link",
-            title: `Supporting Family-Link Evidence — ${label}`,
+            title: `Supporting Family-Link Evidence, ${label}`,
             sub: "Civil records or affidavit establishing the household connection",
             tags: [
               { cls: "tag-hh", label: "Household Member" },
@@ -255,7 +255,7 @@ export const HouseholdBuilder: React.FC<HouseholdBuilderProps> = ({
           items.push({
             id: `hh${i}-id`,
             icon: "id",
-            title: `Identity Document — ${label}`,
+            title: `Identity Document, ${label}`,
             sub: "Government-issued ID for the household member",
             tags: [
               { cls: "tag-hh", label: "Household Member" },

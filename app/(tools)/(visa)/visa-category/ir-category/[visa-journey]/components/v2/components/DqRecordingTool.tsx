@@ -50,7 +50,7 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({ dqState, actio
       <div className="relative bg-[#1a0a18] rounded-[16px] p-[22px_26px] mb-[18px] overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-90" />
         <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[5px]">
-          NVC — Documentary Qualification Received
+          NVC, Documentary Qualification Received
         </div>
         <div className="text-[22px] text-white/92 mb-[6px]">
           Your documents have been accepted by NVC

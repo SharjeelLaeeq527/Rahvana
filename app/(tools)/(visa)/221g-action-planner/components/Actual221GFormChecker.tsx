@@ -64,7 +64,7 @@ export default function Actual221GFormChecker({
           What Did Your 221(g) Letter Request?
         </CardTitle>
         <CardDescription>
-          Select every item your letter asked for — we'll build your action plan from this
+          Select every item your letter asked for, we'll build your action plan from this
         </CardDescription>
       </CardHeader>
       <CardContent>

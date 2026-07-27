@@ -325,12 +325,12 @@ function estimateLabel(
 
   // Reworded suffix: factual about what the estimate covers, not alarming
   const pauseSuffix = result.endToEnd.visaIssuanceIndefinite
-    ? " (estimated interview window —  visa timing subject to current pause)"
+    ? " (estimated interview window, visa timing subject to current pause)"
     : "";
 
   const minLabel = result.endToEnd.typicalMinQuarter.label;
   const maxLabel = result.endToEnd.typicalMaxQuarter.label;
-  const rangeLabel = minLabel === maxLabel ? minLabel : `${minLabel} – ${maxLabel}`;
+  const rangeLabel = minLabel === maxLabel ? minLabel : `${minLabel} ${maxLabel}`;
   return rangeLabel + pauseSuffix;
 }
 
@@ -391,7 +391,7 @@ export function generateNarrative(
         return {
           stage,
           policyAlert: null,
-          headline: "Your USCIS account is set up — almost ready to file.",
+          headline: "Your USCIS account is set up, almost ready to file.",
           why: "You're close to submitting your I-130. Finish the remaining prep steps and you can file directly from your USCIS account.",
           action: "Pick up where you left off in Chapter 1 and submit when everything is ready.",
           estimate: null,
@@ -401,7 +401,7 @@ export function generateNarrative(
       return {
         stage,
         policyAlert: null,
-        headline: "Your journey starts here — filing the I-130 petition.",
+        headline: "Your journey starts here, filing the I-130 petition.",
         why:
           `Chapter 1 walks you through everything you need to get your petition ready and submitted. ` +
           `You're working toward ${filingMethodNextStep}.`,
@@ -422,10 +422,10 @@ export function generateNarrative(
         policyAlert: null,
         headline:
           elapsed !== null && elapsed > 0
-            ? `I-130 filed — ${pl(elapsed, "month")} in and waiting for your receipt notice.`
-            : "I-130 filed — waiting for your USCIS receipt notice.",
+            ? `I-130 filed, ${pl(elapsed, "month")} in and waiting for your receipt notice.`
+            : "I-130 filed, waiting for your USCIS receipt notice.",
         why:
-          "USCIS typically sends a receipt notice (NOA1) within 2–4 weeks of receiving your petition. " +
+          "USCIS typically sends a receipt notice (NOA1) within 2-4 weeks of receiving your petition. " +
           "It'll have your official case number on it, which is what you need to start tracking your case.",
         action:
           "Keep an eye on the mail and your USCIS online account. When the receipt notice arrives, save the receipt number in your roadmap.",
@@ -450,10 +450,10 @@ export function generateNarrative(
         return {
           stage,
           policyAlert: null,
-          headline: "Receipt number saved — your case is with USCIS.",
+          headline: "Receipt number saved, your case is with USCIS.",
           why:
             "You can check your case status anytime at egov.uscis.gov using your receipt number. " +
-            "For Pakistan cases at the National Benefits Center, the typical USCIS review window is 12–16 months from filing.",
+            "For Pakistan cases at the National Benefits Center, the typical USCIS review window is 12-16 months from filing.",
           action:
             "Check case status on egov.uscis.gov and keep your USCIS account notifications turned on so you don't miss any updates.",
           estimate: null,
@@ -468,13 +468,13 @@ export function generateNarrative(
         return {
           stage,
           policyAlert: null,
-          headline: "Your I-130 is with USCIS — review takes 12–16 months for Pakistan cases.",
+          headline: "Your I-130 is with USCIS, review takes 12-16 months for Pakistan cases.",
           why:
             "USCIS is working through your petition at the National Benefits Center. " +
-            "Pakistan cases typically see approval in the 12–16 month window after filing. " +
+            "Pakistan cases typically see approval in the 12-16 month window after filing. " +
             "There's nothing to do right now except stay on top of your case status.",
           action:
-            "Check egov.uscis.gov occasionally and make sure your USCIS account email is current — that's where any notices will land.",
+            "Check egov.uscis.gov occasionally and make sure your USCIS account email is current, that's where any notices will land.",
           estimate: null,
           badge: "With USCIS",
         };
@@ -487,9 +487,9 @@ export function generateNarrative(
         return {
           stage,
           policyAlert: null,
-          headline: `Receipt notice was ${pl(monthsSinceNoa1, "month")} ago — USCIS is reviewing your petition.`,
+          headline: `Receipt notice was ${pl(monthsSinceNoa1, "month")} ago, USCIS is reviewing your petition.`,
           why:
-            `Pakistan cases at the National Benefits Center typically receive USCIS approval 12–16 months after filing. ` +
+            `Pakistan cases at the National Benefits Center typically receive USCIS approval 12-16 months after filing. ` +
             `Your receipt notice was ${pl(monthsSinceNoa1, "month")} ago, so you're moving through that window.`,
           action:
             "Keep checking egov.uscis.gov and make sure your contact details in your USCIS account are up to date.",
@@ -506,14 +506,14 @@ export function generateNarrative(
         badge: string;
 
       if (elapsed < USCIS_TIERS.typical.min) {
-        headline = `${pl(elapsed, "month")} in${approxNote} — USCIS is working through your petition.`;
+        headline = `${pl(elapsed, "month")} in${approxNote} USCIS is working through your petition.`;
         why =
           `Pakistan I-130 cases at the National Benefits Center typically reach approval ` +
           `between months ${USCIS_TIERS.typical.min} and ${USCIS_TIERS.typical.max}. ` +
-          `At ${elapsed} ${elapsed === 1 ? "month" : "months"} in, you're right in the normal waiting period — nothing to worry about.`;
+          `At ${elapsed} ${elapsed === 1 ? "month" : "months"} in, you're right in the normal waiting period, nothing to worry about.`;
         badge = "With USCIS";
       } else if (elapsed <= USCIS_TIERS.typical.max) {
-        headline = `${pl(elapsed, "month")} in${approxNote} — you're right in the typical approval window.`;
+        headline = `${pl(elapsed, "month")} in${approxNote} you're right in the typical approval window.`;
         why =
           `Most Pakistan NBC cases get USCIS approval between months ` +
           `${USCIS_TIERS.typical.min} and ${USCIS_TIERS.typical.max}. ` +
@@ -521,28 +521,28 @@ export function generateNarrative(
         badge = "Approval expected soon";
       } else if (elapsed <= USCIS_TIERS.slowButCommon.max) {
         const pastTypical = elapsed - USCIS_TIERS.typical.max;
-        headline = `${pl(elapsed, "month")} in${approxNote} — running a little longer than typical, but that's common.`;
+        headline = `${pl(elapsed, "month")} in${approxNote} running a little longer than typical, but that's common.`;
         why =
-          `The typical window for Pakistan cases is 12–16 months, but delays in the 16–20 month range ` +
-          `happen regularly and usually come down to caseload spikes, service-center transfers, or an RFE — ` +
+          `The typical window for Pakistan cases is 12-16 months, but delays in the 16-20 month range ` +
+          `happen regularly and usually come down to caseload spikes, service-center transfers, or an RFE, ` +
           `none of which mean anything is wrong with your petition. ` +
           (elapsed >= 18
             ? `At ${elapsed} months, you're entitled to submit a formal case inquiry through USCIS if you'd like a status update.`
             : `Once you cross 18 months, you can submit a formal case inquiry through USCIS.`);
         action =
           elapsed >= 18
-            ? "Submit a case inquiry at egov.uscis.gov/e-request — you're entitled to a response at this stage."
+            ? "Submit a case inquiry at egov.uscis.gov/e-request, you're entitled to a response at this stage."
             : "Keep an eye on your USCIS account and make sure your contact details are current.";
         badge = "Running a bit longer than typical";
       } else {
-        headline = `${pl(elapsed, "month")} in${approxNote} — taking longer than usual, but your case is still moving.`;
+        headline = `${pl(elapsed, "month")} in${approxNote} taking longer than usual, but your case is still moving.`;
         ((why = ""),
-          `At ${elapsed} months, you've gone past the typical Pakistan NBC range (12–16 months). ` +
-            `Cases that run this long usually involve an RFE, a service-center transfer, or a name/security check — ` +
+          `At ${elapsed} months, you've gone past the typical Pakistan NBC range (12-16 months). ` +
+            `Cases that run this long usually involve an RFE, a service-center transfer, or a name/security check, ` +
             `all routine parts of the process, not signs that anything is wrong. ` +
             `You've been able to submit a formal case inquiry since month 18, and that's a reasonable step to take now.`);
         action =
-          "Submit a formal case inquiry at egov.uscis.gov/e-request — it's a normal, available step that can help surface where things stand. " +
+          "Submit a formal case inquiry at egov.uscis.gov/e-request, it's a normal, available step that can help surface where things stand. " +
           "If you'd like a second opinion on your situation, booking a consultation is an option.";
         badge = "Taking longer than usual";
       }
@@ -561,23 +561,23 @@ export function generateNarrative(
         weeksAgo === null
           ? ""
           : weeksAgo === 0
-            ? " — just approved"
+            ? " just approved"
             : weeksAgo === 1
-              ? " — 1 week ago"
-              : ` — ${weeksAgo} weeks ago`;
+              ? " 1 week ago"
+              : ` ${weeksAgo} weeks ago`;
 
       return {
         stage,
         policyAlert: null,
-        headline: `I-130 approved by USCIS${timeStr} — great milestone.`,
+        headline: `I-130 approved by USCIS${timeStr} great milestone.`,
         why:
-          "USCIS is transferring your approved petition to the National Visa Center (NVC), which usually takes 2–6 weeks. " +
-          "NVC will send you a welcome letter with your NVC case number and invoice ID — it goes to both email and physical mail, " +
+          "USCIS is transferring your approved petition to the National Visa Center (NVC), which usually takes 2-6 weeks. " +
+          "NVC will send you a welcome letter with your NVC case number and invoice ID, it goes to both email and physical mail, " +
           "so watch both. That letter is what unlocks Chapter 2.",
         action:
           "Watch your email and mailbox for the NVC welcome letter. As soon as it arrives, save your NVC case number and invoice ID in your roadmap.",
         estimate,
-        badge: "Approved — on the way to NVC",
+        badge: "Approved, on the way to NVC",
       };
     }
 
@@ -592,13 +592,13 @@ export function generateNarrative(
         return {
           stage,
           policyAlert: null,
-          headline: "Case is at NVC — working through the paperwork steps.",
+          headline: "Case is at NVC, working through the paperwork steps.",
           why:
             "Log into CEAC (ceac.state.gov) with your NVC case number to see exactly where things stand. " +
             "NVC is the gateway between USCIS approval and your Islamabad interview. " +
-            "Fees, DS-260, and civil documents typically move through in about 2–3 months when you stay on top of each step.",
+            "Fees, DS-260, and civil documents typically move through in about 2-3 months when you stay on top of each step.",
           action:
-            "Chapter 2 walks you through each NVC step in order. Keep moving — every week you save here is a week closer to your interview.",
+            "Chapter 2 walks you through each NVC step in order. Keep moving, every week you save here is a week closer to your interview.",
           estimate,
           badge: "At NVC",
         };
@@ -607,13 +607,13 @@ export function generateNarrative(
       return {
         stage,
         policyAlert: null,
-        headline: "Case is at NVC — you're into Chapter 2 now.",
+        headline: "Case is at NVC, you're into Chapter 2 now.",
         why:
           "NVC handles the paperwork between your USCIS approval and your Islamabad interview. " +
-          "Fees, DS-260, and civil documents usually take about 2–3 months when you keep moving through each step. " +
+          "Fees, DS-260, and civil documents usually take about 2-3 months when you keep moving through each step. " +
           "Every week of delay here delays your interview by roughly the same amount, so it's worth staying on top of.",
         action:
-          "Work through the NVC steps in Chapter 2 — start with CEAC access and pay your fees as soon as the case is ready.",
+          "Work through the NVC steps in Chapter 2, start with CEAC access and pay your fees as soon as the case is ready.",
         estimate,
         badge: "At NVC",
       };
@@ -626,9 +626,9 @@ export function generateNarrative(
       return {
         stage,
         policyAlert: null,
-        headline: "NVC fees paid — DS-260 should unlock in CEAC within a couple of days.",
+        headline: "NVC fees paid, DS-260 should unlock in CEAC within a couple of days.",
         why:
-          "The DS-260 is your formal immigrant visa application — it's one of the most important forms in this process. " +
+          "The DS-260 is your formal immigrant visa application, it's one of the most important forms in this process. " +
           "Use the time while it unlocks to start pulling together your civil documents too, " +
           "rather than waiting until the DS-260 is done.",
         action:
@@ -644,15 +644,15 @@ export function generateNarrative(
       const wks = isMeaningfulDate(user.ds260_submitted)
         ? weeksAgoRounded(user.ds260_submitted)
         : null;
-      const elapsedStr = wks !== null && wks > 0 ? ` — ${pl(wks, "week")} ago` : "";
+      const elapsedStr = wks !== null && wks > 0 ? ` ${pl(wks, "week")} ago` : "";
       return {
         stage,
         policyAlert: null,
-        headline: `DS-260 submitted${elapsedStr} — time to get your civil documents uploaded.`,
+        headline: `DS-260 submitted${elapsedStr} time to get your civil documents uploaded.`,
         why:
           "Rejected documents are the most common source of NVC delays for Pakistan cases. " +
-          "Police clearances are needed for every city you've lived in for 6+ months since age 16 — not just your current city. " +
-          "Upload what you have now and keep adding as the rest come in — you don't need everything ready at once.",
+          "Police clearances are needed for every city you've lived in for 6+ months since age 16, not just your current city. " +
+          "Upload what you have now and keep adding as the rest come in, you don't need everything ready at once.",
         action:
           "Upload to CEAC: Nikah Nama with certified English translation, NADRA MRC, police clearances from all qualifying cities, and birth certificate.",
         estimate,
@@ -667,11 +667,11 @@ export function generateNarrative(
       return {
         stage,
         policyAlert: null,
-        headline: "Civil documents submitted — NVC is reviewing for Documentary Qualification.",
+        headline: "Civil documents submitted, NVC is reviewing for Documentary Qualification.",
         why:
           "Documentary Qualification (DQ) is the green light that gets your case into the Islamabad interview queue. " +
           "When documents are accepted first time, DQ can follow within days of NVC completing their review. " +
-          "If they send a checklist (a document was rejected or something's missing), resubmit the same day — each round adds 2–4 weeks.",
+          "If they send a checklist (a document was rejected or something's missing), resubmit the same day, each round adds 2-4 weeks.",
         action:
           "Check CEAC every few days. If a checklist comes through, deal with it immediately.",
         estimate,
@@ -701,15 +701,15 @@ export function generateNarrative(
 
       if (holdActive) {
         context = hasDqDate
-          ? `You reached Documentary Qualification ${dqElapsedStr} ago — that's a real milestone and your paperwork is complete. ` +
+          ? `You reached Documentary Qualification ${dqElapsedStr} ago, that's a real milestone and your paperwork is complete. ` +
             `Under normal circumstances, Islamabad schedules interviews about ${pl(queueTypical, "month")} after DQ. ` +
             `Right now, NVC is holding DQ'd Pakistan cases rather than forwarding them to the embassy while a policy pause is in place. ` +
-            `Your place in the queue is preserved — this is a temporary hold, not an issue with your case.`
-          : `Documentary Qualification means your paperwork is complete — that's a real milestone. ` +
+            `Your place in the queue is preserved, this is a temporary hold, not an issue with your case.`
+          : `Documentary Qualification means your paperwork is complete, that's a real milestone. ` +
             `Normally, Islamabad schedules interviews about ${pl(queueTypical, "month")} after DQ, ` +
             `but NVC is currently holding Pakistan cases at this stage while a policy pause is in place. ` +
             `Your position is preserved and this has nothing to do with your individual case.`;
-        badge = "DQ — scheduling paused";
+        badge = "DQ, scheduling paused";
       } else if (!hasDqDate) {
         context =
           `Islamabad is currently scheduling cases about ${pl(queueTypical, "month")} after DQ. ` +
@@ -718,7 +718,7 @@ export function generateNarrative(
       } else if (dqMo < queueTypical - 1) {
         context =
           `Islamabad is scheduling cases about ${pl(queueTypical, "month")} after DQ. ` +
-          `You're ${dqElapsedStr} in — your interview notice should arrive within the next ${pl(queueTypical - dqMo, "month")} or so.`;
+          `You're ${dqElapsedStr} in, your interview notice should arrive within the next ${pl(queueTypical - dqMo, "month")} or so.`;
         badge = "In Islamabad queue";
       } else if (dqMo <= queueTypical + 2) {
         context =
@@ -728,9 +728,9 @@ export function generateNarrative(
       } else {
         const past = dqMo - queueTypical;
         context =
-          `You've been waiting ${dqElapsedStr} since DQ — ${pl(past, "month")} longer than the current typical, ` +
+          `You've been waiting ${dqElapsedStr} since DQ, ${pl(past, "month")} longer than the current typical, ` +
           `which is common when embassy volume is higher than usual. Islamabad also handles Afghanistan cases, ` +
-          `which adds to the queue. Your place is preserved — no action needed beyond monitoring CEAC and your registered email.`;
+          `which adds to the queue. Your place is preserved, no action needed beyond monitoring CEAC and your registered email.`;
         badge = "Queue taking a little longer";
       }
 
@@ -738,14 +738,14 @@ export function generateNarrative(
         stage,
         policyAlert,
         headline: hasDqDate
-          ? `Documentarily qualified ${dqElapsedStr} ago — ${holdActive ? "waiting for scheduling to resume" : "in the Islamabad interview queue"}.`
-          : `Documentarily qualified — ${holdActive ? "waiting for scheduling to resume" : "in the Islamabad interview queue"}.`,
+          ? `Documentarily qualified ${dqElapsedStr} ago, ${holdActive ? "waiting for scheduling to resume" : "in the Islamabad interview queue"}.`
+          : `Documentarily qualified, ${holdActive ? "waiting for scheduling to resume" : "in the Islamabad interview queue"}.`,
         why: context,
         action: holdActive
-          ? "Use this time well — book your medical exam if you haven't already (it's valid for 2 years, so there's no downside to doing it early) " +
+          ? "Use this time well, book your medical exam if you haven't already (it's valid for 2 years, so there's no downside to doing it early) " +
             "and make sure your interview document packet is ready to go. " +
             "Keep an eye on pk.usembassy.gov for updates on when scheduling resumes."
-          : "If you haven't booked your medical exam yet, do it now — slots fill up and it must be done before the interview. " +
+          : "If you haven't booked your medical exam yet, do it now, slots fill up and it must be done before the interview. " +
             "Approved panel physicians include AMC Islamabad, IOM Islamabad, and Wilcare Lahore.",
         estimate,
         badge,
@@ -770,22 +770,22 @@ export function generateNarrative(
         stage,
         policyAlert,
         headline: hasDqDate
-          ? `In the Islamabad queue — ${dqElapsedStr} since DQ${holdActive ? " (scheduling currently paused)" : ""}.`
-          : `In the Islamabad queue${holdActive ? " — scheduling currently paused" : " — interview date coming"}.`,
+          ? `In the Islamabad queue, ${dqElapsedStr} since DQ${holdActive ? " (scheduling currently paused)" : ""}.`
+          : `In the Islamabad queue${holdActive ? ", scheduling currently paused" : ", interview date coming"}.`,
         why: holdActive
           ? `Islamabad normally schedules interviews about ${pl(consulate.postDQTypical, "month")} after DQ. ` +
-            `A policy pause means NVC is holding cases rather than forwarding them to the embassy right now — ` +
+            `A policy pause means NVC is holding cases rather than forwarding them to the embassy right now, ` +
             `your place in the queue is preserved and your case is in good order. ` +
             `This is a temporary situation and doesn't reflect anything about your individual file.`
           : `Islamabad is scheduling interviews about ${pl(consulate.postDQTypical, "month")} after DQ. ` +
-            `Interview notices go out in batches — you'll get an email and see a CEAC update when your date is assigned.`,
+            `Interview notices go out in batches, you'll get an email and see a CEAC update when your date is assigned.`,
         action: holdActive
-          ? "This is a good time to get ahead on interview prep — book your medical exam now if you haven't (it's valid 2 years) " +
+          ? "This is a good time to get ahead on interview prep, book your medical exam now if you haven't (it's valid 2 years) " +
             "and get your interview document packet organised so you're ready the moment scheduling opens back up. " +
             "Monitor pk.usembassy.gov for pause updates."
-          : "Book your medical exam if you haven't already — it needs to be done before your interview. Chapter 3 covers exactly what to do.",
+          : "Book your medical exam if you haven't already, it needs to be done before your interview. Chapter 3 covers exactly what to do.",
         estimate,
-        badge: holdActive ? "Queue paused — your place is held" : "In Islamabad queue",
+        badge: holdActive ? "Queue paused, your place is held" : "In Islamabad queue",
       };
     }
     // ─────────────────────────────────────────────────────────────────────────
@@ -798,11 +798,11 @@ export function generateNarrative(
         stage,
         policyAlert,
         headline: intDate
-          ? `Medical exam booked — interview on ${intDate} (${pl(days!, "day")} away).`
-          : "Medical exam booked — interview date will follow from NVC.",
+          ? `Medical exam booked, interview on ${intDate} (${pl(days!, "day")} away).`
+          : "Medical exam booked, interview date will follow from NVC.",
         why:
           "Your medical report is valid for 2 years from the exam date. " +
-          "The physician will hand you a sealed envelope — do not open it under any circumstances. " +
+          "The physician will hand you a sealed envelope, do not open it under any circumstances. " +
           "You'll present it sealed directly to the consular officer at your interview.",
         action:
           "Start building your interview packet now: passport, two passport photos, police clearances, Nikah Nama, birth certificate, and the sealed medical envelope. " +
@@ -822,10 +822,10 @@ export function generateNarrative(
         stage,
         policyAlert,
         headline: intDate
-          ? `Medical done — Islamabad interview on ${intDate}, ${pl(days!, "day")} away.`
-          : "Medical exam done — waiting for your Islamabad interview date.",
+          ? `Medical done, Islamabad interview on ${intDate}, ${pl(days!, "day")} away.`
+          : "Medical exam done, waiting for your Islamabad interview date.",
         why:
-          "Keep the sealed medical envelope as-is — it goes directly to the consular officer. " +
+          "Keep the sealed medical envelope as-is, it goes directly to the consular officer. " +
           "Opening it voids your medical clearance and means redoing the exam.",
         action:
           "Final checklist before your interview: original passport, Nikah Nama, CNIC, police clearances (all qualifying cities), birth certificate, sealed medical envelope, and two 2×2 passport photos.",
@@ -845,29 +845,29 @@ export function generateNarrative(
         stage,
         policyAlert,
         headline: isMeaningfulDate(user.interview_date)
-          ? `Islamabad interview on ${fmtDate(user.interview_date)} — ${pl(days!, "day")} away.`
-          : "Islamabad interview date assigned — getting ready.",
+          ? `Islamabad interview on ${fmtDate(user.interview_date)} ${pl(days!, "day")} away.`
+          : "Islamabad interview date assigned, getting ready.",
         why: pauseActive
           ? "Two things worth knowing right now. First, some Islamabad interviews scheduled after January 21, 2026 " +
-            "have been cancelled — it's worth confirming yours is still on via CEAC or by contacting the embassy directly. " +
+            "have been cancelled, it's worth confirming yours is still on via CEAC or by contacting the embassy directly. " +
             "Second, even if your interview goes smoothly, cases are being placed into Administrative Processing rather than " +
-            "receiving a visa stamp on the day — that's a policy situation, not anything to do with your case."
-          : "After a successful interview, visa issuance usually takes 1–2 weeks. " +
+            "receiving a visa stamp on the day, that's a policy situation, not anything to do with your case."
+          : "After a successful interview, visa issuance usually takes 1-2 weeks. " +
             "Some Pakistan cases do go into Administrative Processing (221g) after the interview, which has no fixed timeline, " +
             "but the majority resolve within a few months.",
         action: pauseActive
-          ? "First, confirm your interview is still scheduled — check CEAC or contact the embassy. " +
-            "Either way, start preparing now: pack your originals — passport, Nikah Nama, CNIC, police clearances " +
-            "(all qualifying cities), birth certificate, sealed medical envelope (do not open), and two passport photos — " +
+          ? "First, confirm your interview is still scheduled, check CEAC or contact the embassy. " +
+            "Either way, start preparing now: pack your originals, passport, Nikah Nama, CNIC, police clearances " +
+            "(all qualifying cities), birth certificate, sealed medical envelope (do not open), and two passport photos, " +
             "then work through the Interview Prep Tool and the Interview Day Guide in Chapter 3 to walk in ready."
-          : "Pack your originals — passport, Nikah Nama, CNIC, police clearances (all qualifying cities), " +
-            "birth certificate, sealed medical envelope (do not open), and two passport photos — " +
+          : "Pack your originals, passport, Nikah Nama, CNIC, police clearances (all qualifying cities), " +
+            "birth certificate, sealed medical envelope (do not open), and two passport photos, " +
             "then work through the Interview Prep Tool and the Interview Day Guide in Chapter 3 to walk in ready.",
         estimate: null,
         badge:
           days !== null
             ? pauseActive
-              ? `Interview in ${pl(days, "day")} — confirm it's still on`
+              ? `Interview in ${pl(days, "day")} confirm it's still on`
               : `Interview in ${pl(days, "day")}`
             : "Interview scheduled",
       };
@@ -884,18 +884,18 @@ export function generateNarrative(
         return {
           stage,
           policyAlert,
-          headline: "Interview done — waiting for a decision.",
+          headline: "Interview done, waiting for a decision.",
           why:
             "Even when an interview goes well, the U.S. Department of State is currently placing Pakistani applicant cases " +
             "into Administrative Processing rather than issuing visas while a policy pause is in effect. " +
-            "This applies to everyone right now — it's not a reflection of your case or your interview. " +
+            "This applies to everyone right now, it's not a reflection of your case or your interview. " +
             "Monitor pk.usembassy.gov for updates on when visa issuance resumes.",
           action:
-            "If you received a 221(g) requesting additional documents, get those uploaded immediately — " +
+            "If you received a 221(g) requesting additional documents, get those uploaded immediately, " +
             "responding now means you'll be ready the moment things open back up. " +
             "Keep an eye on pk.usembassy.gov and CEAC for any changes.",
           estimate: null,
-          badge: "AP — policy pause in effect",
+          badge: "AP, policy pause in effect",
         };
       }
 
@@ -908,47 +908,47 @@ export function generateNarrative(
         if (weeksWaiting < AP_ESCALATION_THRESHOLDS.normalWeeks) {
           context =
             `Your case is in Administrative Processing (221g). ${guidance.description} ` +
-            `You're ${pl(weeksWaiting, "week")} in — that's well within the early normal window, nothing to be concerned about.`;
-          badge = "AP — in progress";
+            `You're ${pl(weeksWaiting, "week")} in, that's well within the early normal window, nothing to be concerned about.`;
+          badge = "AP, in progress";
           action =
-            "If the embassy requested any additional documents, get those in as quickly as you can — " +
+            "If the embassy requested any additional documents, get those in as quickly as you can, " +
             "that's the single biggest factor in how quickly AP resolves.";
         } else if (weeksWaiting <= AP_ESCALATION_THRESHOLDS.typicalMaxWeeks) {
           context =
             `Your case has been in Administrative Processing for ${pl(weeksWaiting, "week")}. ` +
-            `That's right in line with the typical duration — the average across all 221(g) cases is around 4 months. ` +
+            `That's right in line with the typical duration, the average across all 221(g) cases is around 4 months. ` +
             `There's nothing unusual about where things stand.`;
-          badge = "AP — normal duration";
+          badge = "AP, normal duration";
           action =
             "Keep checking CEAC and your email. If you haven't responded to any document requests yet, do that straight away.";
         } else if (weeksWaiting <= AP_ESCALATION_THRESHOLDS.extendedMaxWeeks) {
           context =
-            `Your case has been in Administrative Processing for ${pl(weeksWaiting, "week")} — ` +
+            `Your case has been in Administrative Processing for ${pl(weeksWaiting, "week")} ` +
             `longer than average, but extended AP is genuinely common for Pakistan cases involving additional security review. ` +
             `${guidance.description}`;
-          badge = "AP — extended (not unusual)";
+          badge = "AP, extended (not unusual)";
           action =
             "Keep monitoring CEAC. If you haven't submitted a status inquiry yet, " +
-            "NVC's public inquiry form is a reasonable next step — though responses rarely include a specific timeline.";
+            "NVC's public inquiry form is a reasonable next step, though responses rarely include a specific timeline.";
         } else {
           context =
-            `Your case has been in Administrative Processing for ${pl(weeksWaiting, "week")} — ` +
-            `well into the range associated with Security Advisory Opinion (SAO) review, which can run 12–18 months. ` +
+            `Your case has been in Administrative Processing for ${pl(weeksWaiting, "week")} ` +
+            `well into the range associated with Security Advisory Opinion (SAO) review, which can run 12-18 months. ` +
             `This is a recognised category of delay, not a sign that something has gone wrong. ` +
             (weeksWaiting >= AP_ESCALATION_THRESHOLDS.mandamusConsiderationWeeks
-              ? `At this duration, it may be worth getting a consultation to talk through what options exist — there's no guaranteed fix, but it can help to have someone review your specific situation.`
+              ? `At this duration, it may be worth getting a consultation to talk through what options exist, there's no guaranteed fix, but it can help to have someone review your specific situation.`
               : `If you reach the 18-month mark without a resolution, getting a consultation to talk through your options is something to consider.`);
-          badge = "AP — extended (SAO range)";
+          badge = "AP, extended (SAO range)";
           action =
             weeksWaiting >= AP_ESCALATION_THRESHOLDS.mandamusConsiderationWeeks
-              ? "At this stage it may be worth booking a consultation to talk through your options — there's no guaranteed path to speed things up, but having a second set of eyes on your case can help you figure out if there's anything worth pursuing. Keep monitoring CEAC in the meantime."
+              ? "At this stage it may be worth booking a consultation to talk through your options, there's no guaranteed path to speed things up, but having a second set of eyes on your case can help you figure out if there's anything worth pursuing. Keep monitoring CEAC in the meantime."
               : "Keep monitoring CEAC. There's no action that reliably speeds up an SAO-stage review beyond responding quickly to any requests.";
         }
 
         return {
           stage,
           policyAlert,
-          headline: "Interview done — case is in Administrative Processing.",
+          headline: "Interview done, case is in Administrative Processing.",
           why: "",
           action,
           estimate: null,
@@ -959,14 +959,14 @@ export function generateNarrative(
       return {
         stage,
         policyAlert,
-        headline: "Interview done — waiting for a decision.",
+        headline: "Interview done, waiting for a decision.",
         why:
-          "Without a 221(g) hold, visas are typically issued within 1–2 weeks of the interview. " +
-          "If your case does go into Administrative Processing, most resolve within a couple of months — " +
+          "Without a 221(g) hold, visas are typically issued within 1-2 weeks of the interview. " +
+          "If your case does go into Administrative Processing, most resolve within a couple of months, " +
           "check CEAC for any status changes.",
         action:
           "Monitor CEAC and your registered email. If you received a 221(g) notice, upload whatever's requested the same day " +
-          "— and consider recording the slip type in your roadmap for more specific guidance on what to expect.",
+          "and consider recording the slip type in your roadmap for more specific guidance on what to expect.",
         estimate: null,
         badge: "Awaiting decision",
       };
@@ -994,21 +994,21 @@ export function generateNarrative(
         return {
           stage,
           policyAlert: null, // suppress the generic pause alert for approved cases
-          headline: "Interview approved — visa issuance in progress.",
+          headline: "Interview approved, visa issuance in progress.",
           why: pauseActive
             ? "Your interview was approved. Under normal circumstances the visa packet is " +
-              "couriered within 1–2 weeks of approval. Right now, the Department of State has " +
-              "a temporary pause on immigrant visa issuances for Pakistani nationals — your " +
+              "couriered within 1-2 weeks of approval. Right now, the Department of State has " +
+              "a temporary pause on immigrant visa issuances for Pakistani nationals, your " +
               "case is fully approved and in the queue, just waiting for that pause to lift."
             : "Your interview was approved. The visa packet is typically couriered within " +
-              "1–2 weeks of approval. Watch CEAC and your registered email for the issuance notice.",
+              "1-2 weeks of approval. Watch CEAC and your registered email for the issuance notice.",
           action: pauseActive
             ? "Monitor pk.usembassy.gov and CEAC for updates on when visa issuance resumes. " +
               "Make sure your delivery address in the courier portal is correct so there are no delays once things open up."
             : "Keep an eye on CEAC and your email. Once issued, you'll receive a courier tracking number. " +
-              "Do not open the sealed visa packet — hand it to CBP at your port of entry.",
+              "Do not open the sealed visa packet, hand it to CBP at your port of entry.",
           estimate: null,
-          badge: pauseActive ? "Approved — awaiting issuance" : "Visa being issued",
+          badge: pauseActive ? "Approved, awaiting issuance" : "Visa being issued",
         };
       }
 
@@ -1032,11 +1032,11 @@ export function generateNarrative(
         const get221gWhy = () => {
           if (!packetSubmitted) {
             return (
-              "A 221(g) means your case is still active — it's a request for additional review or " +
+              "A 221(g) means your case is still active, it's a request for additional review or " +
               "documents, not a final denial. The most important thing you can do right now is respond " +
               "to whatever the officer requested as quickly as possible. " +
               "Separately, there's a temporary pause on immigrant visa issuances for Pakistani nationals " +
-              "— this affects everyone at this stage, so your case isn't being singled out. " +
+              "this affects everyone at this stage, so your case isn't being singled out. " +
               "Responding promptly means you'll be at the front of the queue when things resume."
             );
           }
@@ -1044,7 +1044,7 @@ export function generateNarrative(
             return (
               `Your 221(g) response packet was submitted ${daysSinceSubmission === 0 ? "today" : `${daysSinceSubmission} day${daysSinceSubmission === 1 ? "" : "s"} ago`}` +
               (submissionMethodLabel ? ` via ${submissionMethodLabel}` : "") +
-              ". The embassy typically needs at least 10 business days to process a response — " +
+              ". The embassy typically needs at least 10 business days to process a response, " +
               "there's nothing more to do right now except wait. " +
               "There's also a temporary pause on immigrant visa issuances for Pakistani nationals, " +
               "which affects all cases at this stage."
@@ -1054,7 +1054,7 @@ export function generateNarrative(
             `Your 221(g) response packet was submitted ${daysSinceSubmission} days ago` +
             (submissionMethodLabel ? ` via ${submissionMethodLabel}` : "") +
             ". At this point it's reasonable to check CEAC for any status change. " +
-            "If there's been no update, a polite status inquiry to the embassy is a reasonable next step — " +
+            "If there's been no update, a polite status inquiry to the embassy is a reasonable next step, " +
             "it won't speed things up but it confirms your packet was received. " +
             "The temporary pause on Pakistani immigrant visas may also be a factor in the delay."
           );
@@ -1063,7 +1063,7 @@ export function generateNarrative(
         const get221gAction = () => {
           if (!packetSubmitted) {
             return (
-              "Continue in Chapter 3 — the next steps walk you through exactly what to submit and how. " +
+              "Continue in Chapter 3, the next steps walk you through exactly what to submit and how. " +
               "Use the 221(g) Action Plan tool to build your response checklist."
             );
           }
@@ -1072,15 +1072,15 @@ export function generateNarrative(
           }
           return (
             "Check CEAC for any status change. If nothing has moved, consider sending a brief " +
-            "status inquiry to the embassy — keep it factual: your case number, submission date, " +
+            "status inquiry to the embassy, keep it factual: your case number, submission date, " +
             "and a request for confirmation that your packet was received."
           );
         };
 
         const get221gBadge = () => {
-          if (!packetSubmitted) return "221(g) — respond now";
-          if (daysSinceSubmission! < 10) return "221(g) — packet submitted, allow time";
-          return "221(g) — consider status inquiry";
+          if (!packetSubmitted) return "221(g), respond now";
+          if (daysSinceSubmission! < 10) return "221(g), packet submitted, allow time";
+          return "221(g), consider status inquiry";
         };
 
         return {
@@ -1088,21 +1088,21 @@ export function generateNarrative(
           policyAlert,
           headline: is221g
             ? packetSubmitted
-              ? "221(g) packet submitted — monitoring for a response."
-              : "221(g) recorded — your next move matters most right now."
+              ? "221(g) packet submitted, monitoring for a response."
+              : "221(g) recorded, your next move matters most right now."
             : isRefused
-              ? "Interview outcome recorded — review your written notice."
-              : "Interview outcome recorded — visa issuance on hold.",
+              ? "Interview outcome recorded, review your written notice."
+              : "Interview outcome recorded, visa issuance on hold.",
           why: is221g
             ? get221gWhy()
             : isRefused
               ? "Your written notice from the officer will state whether this is a 221(g) request " +
-                "(case still active — you can submit the requested documents) or a final denial " +
+                "(case still active, you can submit the requested documents) or a final denial " +
                 "under a specific INA ground. These two situations require completely different responses. " +
                 "Read the notice carefully before taking any action."
               : "Your interview is done and the outcome is on file, but the U.S. Department of State " +
                 "has paused immigrant visa issuances for Pakistani nationals while a policy review is in place. " +
-                "Your case is ready — it's just waiting for that pause to lift. " +
+                "Your case is ready, it's just waiting for that pause to lift. " +
                 "Keep an eye on pk.usembassy.gov for the latest.",
           action: is221g
             ? get221gAction()
@@ -1116,8 +1116,8 @@ export function generateNarrative(
           badge: is221g
             ? get221gBadge()
             : isRefused
-              ? "Refused — review your notice"
-              : "Outcome on file — waiting for pause to lift",
+              ? "Refused, review your notice"
+              : "Outcome on file, waiting for pause to lift",
         };
       }
 
@@ -1129,22 +1129,22 @@ export function generateNarrative(
         let badge: string;
 
         if (weeksWaiting < AP_ESCALATION_THRESHOLDS.normalWeeks) {
-          badge = "AP — in progress";
+          badge = "AP, in progress";
         } else if (weeksWaiting <= AP_ESCALATION_THRESHOLDS.typicalMaxWeeks) {
-          badge = "AP — normal duration";
+          badge = "AP, normal duration";
         } else if (weeksWaiting <= AP_ESCALATION_THRESHOLDS.extendedMaxWeeks) {
-          badge = "AP — extended (not unusual)";
+          badge = "AP, extended (not unusual)";
         } else {
-          badge = "AP — extended (SAO range)";
+          badge = "AP, extended (SAO range)";
         }
 
         return {
           stage,
           policyAlert,
-          headline: "Interview outcome recorded — case in Administrative Processing.",
+          headline: "Interview outcome recorded, case in Administrative Processing.",
           why: "",
           action:
-            "Monitor CEAC and your email. Respond to any document requests straight away — that's the most impactful thing you can do.",
+            "Monitor CEAC and your email. Respond to any document requests straight away, that's the most impactful thing you can do.",
           estimate: null,
           badge,
         };
@@ -1155,16 +1155,16 @@ export function generateNarrative(
         return {
           stage,
           policyAlert: null,
-          headline: "Interview outcome recorded — review your written notice.",
+          headline: "Interview outcome recorded, review your written notice.",
           why:
             "Your written notice from the officer will state whether this is a 221(g) request " +
-            "(case still active) or a final denial. These require completely different responses — " +
+            "(case still active) or a final denial. These require completely different responses, " +
             "read the notice carefully before taking any action.",
           action:
             "If it's a 221(g), gather the requested items and submit them as directed. " +
             "If it's a final denial, consider consulting an immigration attorney.",
           estimate: null,
-          badge: "Refused — review your notice",
+          badge: "Refused, review your notice",
         };
       }
 
@@ -1172,10 +1172,10 @@ export function generateNarrative(
       return {
         stage,
         policyAlert,
-        headline: "Interview outcome recorded — visa on the way.",
+        headline: "Interview outcome recorded, visa on the way.",
         why:
-          "If your interview was approved without a hold, the visa is usually issued within 1–2 weeks. " +
-          "Check CEAC — if additional documents come up, upload them the same day.",
+          "If your interview was approved without a hold, the visa is usually issued within 1-2 weeks. " +
+          "Check CEAC, if additional documents come up, upload them the same day.",
         action: "Watch CEAC and your email closely. Respond to anything that comes in immediately.",
         estimate: null,
         badge: "Awaiting visa issuance",
@@ -1193,10 +1193,10 @@ export function generateNarrative(
       return {
         stage,
         policyAlert: issuedBeforePause ? null : policyAlert,
-        headline: "Visa issued — you're nearly there.",
+        headline: "Visa issued, you're nearly there.",
         why:
           "Your sealed immigrant visa packet will be couriered to your registered address. " +
-          "Present it unopened to U.S. Customs and Border Protection at your port of entry — opening it voids the packet.",
+          "Present it unopened to U.S. Customs and Border Protection at your port of entry, opening it voids the packet.",
         action:
           "Don't open the visa packet. Hand it sealed to CBP at the port of entry. " +
           "Double-check that the delivery address in your courier portal is correct.",
@@ -1215,7 +1215,7 @@ export function generateNarrative(
         stage,
         policyAlert: null,
         headline: "Your case is in progress.",
-        why: "Keep working through your steps — each one moves you closer to your interview.",
+        why: "Keep working through your steps, each one moves you closer to your interview.",
         action: null,
         estimate: null,
         badge: null,

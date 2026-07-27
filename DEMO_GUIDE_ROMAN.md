@@ -208,7 +208,7 @@ Demo ek hi din mein hota hai, to "7 din / 21 din" wala time naturally nahi dikhe
 **Kya dikhna chahiye:**
 - Ab ring **number dikhana shuru** karti hai (approx **35–40%**).
 - Label calm hota hai — jaise **"Building your case"** (RED nahi).
-- Evidence sub-score: **1 of 6** jaisa kuch.
+- Evidence sub-score: **1 of 3** jaisa kuch (IR-5 ke current-stage required = 3 identity docs).
 
 **Ye kyun:** Ab asli evidence aa gayi, to gate khul gaya aur real score dikhne laga.
 

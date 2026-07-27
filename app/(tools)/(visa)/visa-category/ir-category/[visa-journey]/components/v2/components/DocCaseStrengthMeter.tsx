@@ -284,7 +284,7 @@ export function DocCaseStrengthMeter({
           )}
 
           <p className="text-[9.5px] text-slate-400 text-center italic px-2">
-            Not legal advice — just a friendly check based on what you&apos;ve filled in.
+            Not legal advice, just a friendly check based on what you&apos;ve filled in.
           </p>
         </div>
       )}

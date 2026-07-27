@@ -119,8 +119,8 @@ export function analyzeCivilDocs(
               level: "critical",
               title: `Required for your case: Prior Marriage Termination Documents`,
               hint: anyPriorMarriageDocDone
-                ? "Document uploaded — prior marriage termination proof is on file."
-                : "You indicated a prior marriage during eligibility. NVC requires proof every prior marriage legally ended (final divorce decree, annulment, or death certificate) — with a certified English translation.",
+                ? "Document uploaded, prior marriage termination proof is on file."
+                : "You indicated a prior marriage during eligibility. NVC requires proof every prior marriage legally ended (final divorce decree, annulment, or death certificate), with a certified English translation.",
               docId: item.id,
               resolved: anyPriorMarriageDocDone,
             });

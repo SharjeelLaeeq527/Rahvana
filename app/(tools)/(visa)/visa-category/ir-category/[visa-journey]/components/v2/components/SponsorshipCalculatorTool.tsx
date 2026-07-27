@@ -940,7 +940,7 @@ export default function SponsorshipCalculatorTool({
 
                       {/* UPDATED DESCRIPTION */}
                       <p className="text-[11px] text-slate-500 mt-2">
-                        Adjusted Gross Income (AGI) — Line 11 of your most recent IRS Form 1040.
+                        Adjusted Gross Income (AGI), Line 11 of your most recent IRS Form 1040.
                       </p>
                     </div>
                   </div>

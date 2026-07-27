@@ -181,7 +181,7 @@ export function computeCaseStrength(
         passed: done,
         hint: done
           ? undefined
-          : `You said there was a previous marriage — please add ${priorDoc.name}`,
+          : `You said there was a previous marriage, please add ${priorDoc.name}`,
         relatedDocId: priorDoc.id,
       });
     }
@@ -208,7 +208,7 @@ export function computeCaseStrength(
         passed: done,
         hint: done
           ? undefined
-          : `Your documents are in Urdu/regional language — please add the ${translationDoc.name}`,
+          : `Your documents are in Urdu/regional language, please add the ${translationDoc.name}`,
         relatedDocId: translationDoc.id,
       });
     }
@@ -233,7 +233,7 @@ export function computeCaseStrength(
         passed: done,
         hint: done
           ? undefined
-          : `You mentioned an arrest/charge in eligibility — please add the ${policeDoc.name}`,
+          : `You mentioned an arrest/charge in eligibility, please add the ${policeDoc.name}`,
         relatedDocId: policeDoc.id,
       });
     }
@@ -294,7 +294,7 @@ export function computeCaseStrength(
   for (const w of weak.slice(0, 2)) {
     nextSteps.push({
       priority: priority++,
-      action: `Strengthen evidence — upload + mark reviewed: ${w.name}`,
+      action: `Strengthen evidence, upload + mark reviewed: ${w.name}`,
       docId: w.id,
     });
   }

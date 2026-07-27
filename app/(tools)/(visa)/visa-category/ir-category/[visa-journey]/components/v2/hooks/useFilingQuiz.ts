@@ -39,7 +39,7 @@ export const useFilingQuiz = ({
       const isSelf = a["attorney"].value === "no";
       f.push({
         icon: isSelf ? "Check" : "User",
-        text: isSelf ? "Self-filing — the decision is yours" : "Representative involvement noted",
+        text: isSelf ? "Self-filing, the decision is yours" : "Representative involvement noted",
       });
     }
     if (a["online-account"]) {
@@ -61,7 +61,7 @@ export const useFilingQuiz = ({
     if (a["doc-upload"]) {
       const m: Record<string, string> = {
         yes: "Documents are ready or easily scannable",
-        no: "Physical copies only — digitizing is difficult now",
+        no: "Physical copies only, digitizing is difficult now",
         unsure: "Document digitization readiness unclear",
       };
       f.push({
@@ -125,14 +125,14 @@ export const useFilingQuiz = ({
       return {
         type: "online",
         headline: "Online filing looks like the right choice",
-        body: "You appear ready to file online. It saves $50, gives you an instant receipt number, and keeps everything — notices and evidence requests — in one place.",
+        body: "You appear ready to file online. It saves $50, gives you an instant receipt number, and keeps everything, notices and evidence requests, in one place.",
         factors: buildFactors(a),
         emphasize: "online",
       } as FilingQuizResult;
 
     return {
       type: "lean-online",
-      headline: "Either method works — online has a slight edge",
+      headline: "Either method works, online has a slight edge",
       body: "No hard blockers were found for either path. Online saves $50 and gives an instant receipt, but paper filing is equally valid if that feels more comfortable.",
       factors: buildFactors(a),
       emphasize: "online",

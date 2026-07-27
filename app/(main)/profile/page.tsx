@@ -388,7 +388,7 @@ export default function ProfilePage() {
             <SectionHeader
               icon={<UserIcon className="h-4 w-4" />}
               title={t("profile.sections.personal")}
-              description="Your own details — the visa applicant (beneficiary)."
+              description="Your own details, the visa applicant (beneficiary)."
               accent="slate"
               badge="You"
               isOpen={sections.personal}
@@ -625,7 +625,7 @@ export default function ProfilePage() {
             <SectionHeader
               icon={<HeartHandshake className="h-4 w-4" />}
               title="Sponsor"
-              description="The U.S. petitioner filing on your behalf — their details, not yours."
+              description="The U.S. petitioner filing on your behalf, their details, not yours."
               accent="emerald"
               badge="The other person"
               isOpen={sections.sponsor}
@@ -925,7 +925,7 @@ export default function ProfilePage() {
             <SectionHeader
               icon={<Users className="h-4 w-4" />}
               title={t("profile.sections.family")}
-              description="The visa applicant's parents — father & mother (you)."
+              description="The visa applicant's parents, father & mother (you)."
               accent="violet"
               isOpen={sections.family}
             />

@@ -99,7 +99,7 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
         </div>
         <div className="text-[20px] font-sans font-semibold text-white mb-[18px] flex items-center gap-[10px]">
           <span className="inline-block w-[7px] h-[7px] rounded-full bg-[#2f6fd4] animate-pulse shadow-[0_0_8px_rgba(47,111,212,0.6)]" />
-          In queue — awaiting interview letter
+          In queue, awaiting interview letter
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-[14px]">
           <div>
@@ -113,7 +113,7 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
                     month: "long",
                     day: "numeric",
                   })
-                : "—"}
+                : ""}
             </div>
           </div>
           <div>
@@ -121,7 +121,7 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
               POST
             </div>
             <div className="text-[13px] font-semibold text-white/90">
-              {state.metadata.post && state.metadata.post !== "Other" ? state.metadata.post : (state.metadata.dqPost && state.metadata.dqPost !== "Other" ? state.metadata.dqPost : "—")}
+              {state.metadata.post && state.metadata.post !== "Other" ? state.metadata.post : (state.metadata.dqPost && state.metadata.dqPost !== "Other" ? state.metadata.dqPost : "")}
             </div>
           </div>
           <div className="col-span-2 md:col-span-1">
@@ -236,7 +236,7 @@ export const InterviewSchedulingTool: React.FC<InterviewSchedulingToolProps> = (
                   className="text-[20px] font-serif text-[#b38600] mb-[4px]"
                   style={{ fontFamily: "'DM Serif Display', serif" }}
                 >
-                  {waitMonths === 0 ? "Approaching now" : `${fmt(low)} – ${fmt(high)}`}
+                  {waitMonths === 0 ? "Approaching now" : `${fmt(low)} ${fmt(high)}`}
                 </div>
                 <div className="text-[12px] text-[#6b8097] leading-[1.5]">
                   Embassy is approx {waitMonths} month{waitMonths !== 1 ? "s" : ""} away from your

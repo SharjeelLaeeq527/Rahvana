@@ -300,22 +300,22 @@ export class ReminderEngine {
 
     if (daysSince >= 30) {
       priority = "critical";
-      title = `⚠️ PCC overdue — ${daysSince} days since application`;
-      body = `Your Police Clearance Certificate was applied ${daysSince} days ago and is still not received. This is urgent — contact the issuing authority immediately and confirm your interview timeline is not at risk.`;
+      title = `⚠️ PCC overdue, ${daysSince} days since application`;
+      body = `Your Police Clearance Certificate was applied ${daysSince} days ago and is still not received. This is urgent, contact the issuing authority immediately and confirm your interview timeline is not at risk.`;
     } else if (daysSince >= 21) {
       priority = "high";
-      title = `PCC still pending — ${daysSince} days, follow up now`;
-      body = `It has been ${daysSince} days since your PCC application. Most PCCs arrive within 14–21 days. Visit the tracking portal or call the issuing office to check your status and get an ETA.`;
+      title = `PCC still pending, ${daysSince} days, follow up now`;
+      body = `It has been ${daysSince} days since your PCC application. Most PCCs arrive within 14-21 days. Visit the tracking portal or call the issuing office to check your status and get an ETA.`;
     } else if (daysSince >= 14) {
       priority = "high";
-      title = "PCC — 2 weeks since application, check tracking";
+      title = "PCC, 2 weeks since application, check tracking";
       body =
         "Your PCC application is 2 weeks old. Log in to the tracking website of the issuing authority to verify processing status. Mark it as received in your journey once it arrives.";
     } else {
       priority = "normal";
-      title = "PCC — 1 week check-in";
+      title = "PCC, 1 week check-in";
       body =
-        "It has been a week since your PCC application. Applications typically enter processing within 7–10 days. You can start checking the tracking portal for a status update.";
+        "It has been a week since your PCC application. Applications typically enter processing within 7-10 days. You can start checking the tracking portal for a status update.";
     }
 
     return [
@@ -545,7 +545,7 @@ export class ReminderEngine {
         reminder_type: "tool_session_abandoned" as const,
         priority: "normal" as const,
         title: `Resume ${label}`,
-        body: `You started the ${label} but left at ${pct}% completion. Return to pick up where you left off — your progress is saved.`,
+        body: `You started the ${label} but left at ${pct}% completion. Return to pick up where you left off, your progress is saved.`,
         step_key: session.step_key,
         reference_id: session.id,
         action_url: this.defaultJourneyHref,
@@ -838,7 +838,7 @@ export class ReminderEngine {
       {
         reminder_type: "missing_document" as const,
         priority,
-        title: `Complete your documents — ${count} item${count !== 1 ? "s" : ""} pending`,
+        title: `Complete your documents, ${count} item${count !== 1 ? "s" : ""} pending`,
         body: `Your document checklist for Chapter 1, Step 2 is incomplete. Still needed: ${pendingLabels.join(", ")}. Mark each document as ready to keep your case on track.`,
         step_key: "step_1_2",
         action_url: this.defaultJourneyHref,

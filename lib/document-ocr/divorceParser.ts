@@ -169,7 +169,7 @@ export function parseDivorceText(rawText: string): DivorceParseResult {
       confidence["relationship.priorMarriage.dateMarriageEnded"] = 0.3;
       source = source === "none" ? "single-date" : source;
       warnings.push(
-        "We found one date and assumed it is when the marriage ended — please verify it."
+        "We found one date and assumed it is when the marriage ended, please verify it."
       );
     }
   }
@@ -191,7 +191,7 @@ export function parseDivorceText(rawText: string): DivorceParseResult {
 
   if (Object.keys(fields).length === 0) {
     warnings.push(
-      "We couldn't confidently read this document — please fill in the fields. Tip: an English translation reads more reliably."
+      "We couldn't confidently read this document, please fill in the fields. Tip: an English translation reads more reliably."
     );
   }
 

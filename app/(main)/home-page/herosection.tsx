@@ -249,7 +249,7 @@ function PoseEffect({ pose }) {
             whiteSpace: "nowrap",
           }}
         >
-          Hmm…
+          Hmm...
         </motion.div>
       </div>
     );
@@ -1713,7 +1713,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
                           >
                             {query.length === 0 && !submitted ? (
                               <span style={{ color: "#9ca3af" }}>
-                                Ask anything about immigration…
+                                Ask anything about immigration...
                               </span>
                             ) : (
                               query

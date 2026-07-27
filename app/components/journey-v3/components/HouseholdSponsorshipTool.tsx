@@ -202,7 +202,7 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
       {/* SCENARIO BUILDER */}
       <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px] mb-[18px]">
         <div className="text-[14px] font-semibold text-[#0c1b33] mb-4">
-          Define your scenario — who is involved in the sponsorship?
+          Define your scenario, who is involved in the sponsorship?
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="flex flex-col">
@@ -217,7 +217,7 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
               }}
             >
-              <option value="0">0 — not using a joint sponsor</option>
+              <option value="0">0, not using a joint sponsor</option>
               <option value="1">1 joint sponsor</option>
               <option value="2">2 joint sponsors</option>
             </select>
@@ -234,7 +234,7 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
                 backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236b8097' stroke-width='2' stroke-linecap='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E")`,
               }}
             >
-              <option value="0">0 — no household members</option>
+              <option value="0">0, no household members</option>
               <option value="1">1 household member</option>
               <option value="2">2 household members</option>
               <option value="3">3 household members</option>
@@ -384,7 +384,7 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
           </div>
           <div className="text-[13px] text-[#6b8097]">
             Joint sponsors do not require relationship documentation. Your I-864 forms are the
-            primary requirement — see Step 5 for those.
+            primary requirement, see Step 5 for those.
           </div>
         </div>
       ) : (

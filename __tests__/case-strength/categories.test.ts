@@ -206,20 +206,27 @@ describe("Evidence Gap — category profiles", () => {
     questionnaireResponses: {},
   };
 
-  it("IR-1 profile keeps the bona-fide-marriage categories; IR-5 drops them", () => {
+  it("IR-1 keeps the full evidence set; IR-5 assesses only I-130 filing-stage categories", () => {
     const ir1Cats = Object.keys(IR1_PROFILE.evidence.requirements);
     const ir5Cats = Object.keys(IR5_PROFILE.evidence.requirements);
 
-    // Spouse categories present for IR-1, absent for IR-5.
-    for (const c of ["RELATIONSHIP", "COHABITATION", "COMMUNICATION"]) {
+    // Spouse categories AND the NVC-stage categories (FINANCIAL = I-864/tax,
+    // IMMIGRATION_HISTORY = police cert) are present for IR-1 but omitted for IR-5,
+    // whose Case Analysis focuses on the I-130 filing stage only.
+    for (const c of [
+      "RELATIONSHIP",
+      "COHABITATION",
+      "COMMUNICATION",
+      "FINANCIAL",
+      "IMMIGRATION_HISTORY",
+    ]) {
       expect(ir1Cats).toContain(c);
       expect(ir5Cats).not.toContain(c);
     }
-    // Shared categories present for both.
-    for (const c of ["IDENTITY", "FINANCIAL", "IMMIGRATION_HISTORY"]) {
-      expect(ir1Cats).toContain(c);
-      expect(ir5Cats).toContain(c);
-    }
+    // IR-5 assesses only the filing-stage categories.
+    expect(ir1Cats).toContain("IDENTITY");
+    expect(ir5Cats).toContain("IDENTITY");
+    expect(ir5Cats).toContain("FAMILY_INTEGRATION");
   });
 
   it("IR-1 IDENTITY requires the marriage certificates; IR-5 IDENTITY does not", () => {
@@ -259,12 +266,19 @@ describe("Evidence Gap — category profiles", () => {
     expect(cardCats).not.toContain("COMMUNICATION");
   });
 
-  it("IR-5 questionnaire drops the marriage questions but keeps financial/immigration", () => {
+  it("IR-5 questionnaire keeps only I-130 filing-stage questions (drops marriage + NVC-stage)", () => {
     const ir5Ids = IR5_PROFILE.evidence.questionnaire.map((q) => q.id);
+    // Marriage questions dropped (a parent case has no marriage to prove).
     expect(ir5Ids).not.toContain("has_wedding_photos");
     expect(ir5Ids).not.toContain("has_lease");
     expect(ir5Ids).not.toContain("has_children");
-    expect(ir5Ids).toEqual(expect.arrayContaining(["has_i864", "has_tax_returns", "has_i94"]));
+    // NVC-stage financial/immigration questions are dropped too — those categories
+    // are not scored at the I-130 filing stage, so we don't ask about them here.
+    expect(ir5Ids).not.toContain("has_i864");
+    expect(ir5Ids).not.toContain("has_tax_returns");
+    expect(ir5Ids).not.toContain("has_i94");
+    // Only the filing-stage supporting question remains.
+    expect(ir5Ids).toContain("has_family_photos");
   });
 });
 

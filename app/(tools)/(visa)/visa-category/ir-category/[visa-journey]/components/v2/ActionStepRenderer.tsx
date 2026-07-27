@@ -2650,7 +2650,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                             (e.target as HTMLElement).style.transform = "translateY(0)";
                           }}
                         >
-                          Done — return to step
+                          Done, return to step
                         </button>
                       )}
                     </div>

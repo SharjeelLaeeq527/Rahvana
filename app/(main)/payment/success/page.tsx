@@ -335,7 +335,7 @@ try {
   if (isVerifying) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-rahvana-primary-pale to-slate-50">
-        <Loader size="md" text="Confirming your plan activation…" />
+        <Loader size="md" text="Confirming your plan activation..." />
       </div>
     );
   }
@@ -352,7 +352,7 @@ try {
           <p className="text-slate-500 text-[13px] leading-relaxed mb-4">
             {verifyStatus === "confirmed"
               ? "Your plan has been activated. Welcome to your new tier!"
-              : "Your payment was processed. Plan activation may take a few moments — refresh your dashboard if features are not yet unlocked."}
+              : "Your payment was processed. Plan activation may take a few moments, refresh your dashboard if features are not yet unlocked."}
           </p>
 
           {/* What's Next */}

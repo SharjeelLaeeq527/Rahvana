@@ -307,11 +307,11 @@ export function getEffectiveDocDef(id: string | null) {
         if (id.includes("-joint-sponsor-")) {
           const match = id.match(/-joint-sponsor-(\d+)/);
           const index = match ? match[1] : "1";
-          customName = `${baseDoc.name} — Joint Sponsor ${index}`;
+          customName = `${baseDoc.name} Joint Sponsor ${index}`;
         } else if (id.includes("-household-member-")) {
           const match = id.match(/-household-member-(\d+)/);
           const index = match ? match[1] : "1";
-          customName = `${baseDoc.name} — Household Member ${index}`;
+          customName = `${baseDoc.name} Household Member ${index}`;
         }
         return {
           ...baseDoc,
@@ -2367,7 +2367,7 @@ export const StepView: React.FC<StepViewProps> = ({
               {(sId === "step_1_6" ? uscisCredentials : ceacCredentials) && (
                 <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-5 flex flex-col animate-in fade-in slide-in-from-top-2 duration-300">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-[#15744f] mb-[10px]">
-                    {sId === "step_1_6" ? "USCIS" : "CEAC"} Credentials — Saved
+                    {sId === "step_1_6" ? "USCIS" : "CEAC"} Credentials, Saved
                   </div>
                   <div className="flex-1 flex flex-col">
                     {sId === "step_1_6" ? (
@@ -2402,7 +2402,7 @@ export const StepView: React.FC<StepViewProps> = ({
                             NVC Case Number
                           </span>
                           <span className="text-[12px] text-[#0c1b33] font-semibold font-mono">
-                            {ceacCredentials?.nvc_case_number ? "••••••••" : "—"}
+                            {ceacCredentials?.nvc_case_number ? "••••••••" : ""}
                           </span>
                         </div>
                         <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50">
@@ -2410,7 +2410,7 @@ export const StepView: React.FC<StepViewProps> = ({
                             Invoice ID Number
                           </span>
                           <span className="text-[12px] text-[#0c1b33] font-semibold font-mono">
-                            {ceacCredentials?.nvc_invoice_id ? "••••••••" : "—"}
+                            {ceacCredentials?.nvc_invoice_id ? "••••••••" : ""}
                           </span>
                         </div>
                       </>
@@ -2768,7 +2768,7 @@ export const StepView: React.FC<StepViewProps> = ({
             className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-5" : "mt-5"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
           >
             {tool.disclaimer ||
-              "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."}
+              "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."}
           </p>
 
           {/* Citations section */}
@@ -4355,7 +4355,7 @@ export const StepView: React.FC<StepViewProps> = ({
                 <span className="text-[11px] font-medium text-[#3a4f63]">
                   {InlineGuideData[selectedGuideId].sourceType === "internal"
                     ? "Roadmap Module"
-                    : `Rahvana Guide — ${InlineGuideData[selectedGuideId].title}`}
+                    : `Rahvana Guide, ${InlineGuideData[selectedGuideId].title}`}
                 </span>
               </div>
               <h2 className="font-black text-[clamp(22px,3.5vw,28px)] text-[#0f1f38] mb-[6px] leading-[1.25]">
@@ -4720,7 +4720,7 @@ export const StepView: React.FC<StepViewProps> = ({
                             }}
                             className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
                           >
-                            Done — return to step
+                            Done, return to step
                           </button>
                         )}
                       </div>
@@ -5073,7 +5073,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         onClick={() => setIsTutorialOpen(false)}
                         className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
                       >
-                        Done — return to step
+                        Done, return to step
                       </button>
                     )}
                   </div>
@@ -5271,7 +5271,7 @@ export const StepView: React.FC<StepViewProps> = ({
                       }`}
                     >
                       {isLast ? (
-                        "Done — return to step"
+                        "Done, return to step"
                       ) : (
                         <>
                           Next <ArrowRight size={16} />

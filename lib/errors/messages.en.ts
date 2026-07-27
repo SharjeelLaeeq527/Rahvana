@@ -39,13 +39,13 @@ export const en: Record<ErrorId, string> = {
 
   // 1000 — /forgot-password, email send failed
   // Note: also fires when the email doesn't exist in DB — intentional, prevents user enumeration
-  1000: "We couldn't send a reset email to that address. Make sure the email is correct and try again. Check your spam folder — if it doesn't arrive within a minute, try once more or contact support.",
+  1000: "We couldn't send a reset email to that address. Make sure the email is correct and try again. Check your spam folder, if it doesn't arrive within a minute, try once more or contact support.",
 
   // 1001 — /forgot-password, resend link button clicked and also failed
-  1001: "We couldn't resend the email. Your link may have already been sent — check your spam folder. If nothing arrived after a minute, try again.",
+  1001: "We couldn't resend the email. Your link may have already been sent, check your spam folder. If nothing arrived after a minute, try again.",
 
   // 1002 — /reset-password, token missing / expired / already used
-  1002: "This password reset link is no longer valid — it may have expired or already been used. Go back to Forgot Password and request a new link.",
+  1002: "This password reset link is no longer valid, it may have expired or already been used. Go back to Forgot Password and request a new link.",
 
   // 1003 — /login, generic auth failure (wrong password, locked account, etc.)
   1003: "Your email or password is incorrect. Double-check your credentials and try again. If you continue to have trouble, use Forgot Password or contact support",
@@ -71,7 +71,7 @@ export const en: Record<ErrorId, string> = {
   1010: "We couldn't identify your two-factor authentication setup. Please sign out and back in, then try disabling two-factor authentication again.",
 
   // 1011 — MFA login step or admin login, code rejected or expired
-  1011: "We couldn't verify that code. Authentication codes expire every 30 seconds — check your email for a fresh one and try again.",
+  1011: "We couldn't verify that code. Authentication codes expire every 30 seconds, check your email for a fresh one and try again.",
 
   // 1012 — Account settings, password update API failed
   1012: "Password update failed. Ensure your new password meets requirements (8+ chars, uppercase, lowercase, numbers, symbols). Try again. If it continues failing, sign out and use Forgot Password instead.",
@@ -145,10 +145,10 @@ export const en: Record<ErrorId, string> = {
   // ─── DASHBOARD & NAVIGATION ──────────────────────────────────────────────
 
   // 1100 — useWizard hook, auto-save to cloud failed (data safe locally)
-  1100: "We couldn't save your progress to the cloud right now. Your data is safe on this device — please try the Save button again, or refresh the page and try again.",
+  1100: "We couldn't save your progress to the cloud right now. Your data is safe on this device, please try the Save button again, or refresh the page and try again.",
 
   // 1101 — useWizard hook, vault write failed during wizard step
-  1101: "We couldn't save your information to the vault. Your progress may not be stored. Please try again — if the problem continues, refresh the page and retry.",
+  1101: "We couldn't save your information to the vault. Your progress may not be stored. Please try again, if the problem continues, refresh the page and retry.",
 
   // 1102 — Wizard, tried to navigate to a locked step
   1102: "This step is locked because earlier steps aren't complete yet. Go back and finish the previous steps first.",
@@ -160,28 +160,28 @@ export const en: Record<ErrorId, string> = {
   // ─── DOCUMENT VAULT ───────────────────────────────────────────────────────
 
   // 1200 — Background sync failed, data safe on device
-  1200: "Your changes didn't sync right now. They're saved on this device — please try again when your connection is stable, or refresh the page.",
+  1200: "Your changes didn't sync right now. They're saved on this device, please try again when your connection is stable, or refresh the page.",
 
   // 1201 — Export button, single or batch export failed
   1201: "We couldn't export your documents right now. Please try again. If the problem continues, try exporting fewer documents at once.",
 
   // 1202 — Export all, bulk export failed (none exported)
-  1202: "We couldn't export all your documents right now. None have been lost — please try again, or export them in smaller batches.",
+  1202: "We couldn't export all your documents right now. None have been lost, please try again, or export them in smaller batches.",
 
   // 1203 — Download button, fetch or URL failed
   1203: "We couldn't download that document right now. Please try again. If the problem continues, refresh the page.",
 
   // 1204 — Delete button, server-side delete failed (document still in vault)
-  1204: "We couldn't delete that document. It's still in your vault — please try again.",
+  1204: "We couldn't delete that document. It's still in your vault, please try again.",
 
   // 1205 — Delete all, bulk delete failed (no documents removed)
-  1205: "We couldn't delete all documents. Your files are still in your vault — please try again.",
+  1205: "We couldn't delete all documents. Your files are still in your vault, please try again.",
 
   // 1206 — Step-view delete, failed from within a visa journey step
-  1206: "We couldn't delete that document right now. It's still in your vault — please try again. If the problem continues, refresh the page and try again; if it still fails, contact support.",
+  1206: "We couldn't delete that document right now. It's still in your vault, please try again. If the problem continues, refresh the page and try again; if it still fails, contact support.",
 
   // 1207 — Server-side delete throw, document may still appear
-  1207: "We couldn't remove that document from the server. The file may still appear in your vault — please try deleting again.",
+  1207: "We couldn't remove that document from the server. The file may still appear in your vault, please try deleting again.",
 
   // 1208 — Upload modal, vault config missing or failed to initialise
   1208: "Your Document Vault isn't ready to accept uploads right now. Please refresh the page to reconnect, then try again.",
@@ -199,34 +199,34 @@ export const en: Record<ErrorId, string> = {
   // ─── VISA JOURNEY ─────────────────────────────────────────────────────────
 
   // 1300 — Register receipt, save failed after upload
-  1300: "Your receipt couldn't be saved. Your information is still here — tap 'Save' again. If this keeps happening, check your internet connection.",
+  1300: "Your receipt couldn't be saved. Your information is still here, tap 'Save' again. If this keeps happening, check your internet connection.",
 
   // 1301 — Register receipt, fetch failed on load (data not deleted)
   1301: "We couldn't load your saved receipt right now. Refresh the page to try again. Your data has not been deleted.",
 
   // 1302 — Police clearance step, vault service unreachable
-  1302: "The document vault is temporarily unavailable. You can still complete this step — upload your police clearance directly using the file picker below instead.",
+  1302: "The document vault is temporarily unavailable. You can still complete this step, upload your police clearance directly using the file picker below instead.",
 
   // 1303 — Portal wallet on journey, credential save failed
-  1303: "Your credentials couldn't be saved right now. They haven't been lost — try saving again. If this keeps failing, check your internet connection.",
+  1303: "Your credentials couldn't be saved right now. They haven't been lost, try saving again. If this keeps failing, check your internet connection.",
 
   // 1304 — Portal wallet on journey, credential delete failed (not removed)
-  1304: "We couldn't delete those credentials right now. They have not been removed — please try again. If this continues, refresh the page first.",
+  1304: "We couldn't delete those credentials right now. They have not been removed, please try again. If this continues, refresh the page first.",
 
   // 1305 — Action step, mailing details save failed
-  1305: "Your mailing details couldn't be saved. Your information is still on screen — tap Save again. Check your internet connection if this keeps happening.",
+  1305: "Your mailing details couldn't be saved. Your information is still on screen, tap Save again. Check your internet connection if this keeps happening.",
 
   // 1306 — Notifications panel, fetch failed (no notifications lost)
-  1306: "We couldn't load your notifications right now. Your data is safe — this is a display issue. Refresh the page to try again.",
+  1306: "We couldn't load your notifications right now. Your data is safe, this is a display issue. Refresh the page to try again.",
 
   // 1307 — Document check, required document not yet in vault
   1307: "This document hasn't been uploaded to your vault yet. Go to Document Vault to upload it before continuing.",
 
   // 1308 — NVC fields, case number format validation failed
-  1308: "Please check your NVC Case Number — it must begin with 3 capital letters (e.g., IOE or NWK), followed by numbers.",
+  1308: "Please check your NVC Case Number, it must begin with 3 capital letters (e.g., IOE or NWK), followed by numbers.",
 
   // 1309 — NVC fields, invoice ID format validation failed
-  1309: "Your Invoice ID looks incorrect — it should start with 'IVSCA' followed by numbers (e.g., IVSCA1234567). Check your NVC invoice and re-enter it.",
+  1309: "Your Invoice ID looks incorrect, it should start with 'IVSCA' followed by numbers (e.g., IVSCA1234567). Check your NVC invoice and re-enter it.",
 
   // 1310 — Journey not found
   1310: "We couldn't find that journey. It may have been removed or isn't available yet. Please refresh the page or contact support for help.",
@@ -238,7 +238,7 @@ export const en: Record<ErrorId, string> = {
   1312: "We couldn't find that information. It may have been removed or is not available yet.",
 
   // 1313 — Case data save failed
-  1313: "We couldn't save your information right now. Your input is still on-screen — try saving again. If this keeps happening, check your connection and try a different browser. If it continues, contact support.",
+  1313: "We couldn't save your information right now. Your input is still on-screen, try saving again. If this keeps happening, check your connection and try a different browser. If it continues, contact support.",
 
   // 1314 — Chapter not found
   1314: "We couldn't find that chapter. Check the link and try again or contact support.",
@@ -305,7 +305,7 @@ export const en: Record<ErrorId, string> = {
   1403: "We couldn't generate your interview prep materials right now. This may be a temporary overload. Please wait a moment and try again.",
 
   // 1404 — Case Strength Checker, results save failed after analysis
-  1404: "We couldn't save your case analysis right now. Your results are still visible on screen — please copy or screenshot them before leaving. Try saving again in a moment.",
+  1404: "We couldn't save your case analysis right now. Your results are still visible on screen, please copy or screenshot them before leaving. Try saving again in a moment.",
 
   // 1405 — Case Strength Checker, analysis API call failed
   1405: "We couldn't complete the analysis right now. Please check your answers are filled in, then try again. If the problem continues, refresh the page.",
@@ -333,10 +333,10 @@ export const en: Record<ErrorId, string> = {
   1410: "We couldn't start your session. Please refresh the page and try again. If you keep seeing this, try signing out and back in.",
 
   // 1411 — 221(g) action planner, checklist download/export failed
-  1411: "Your checklist couldn't be downloaded right now — the server may be busy. Please try again in a moment. If it keeps failing, refresh the page and regenerate your plan.",
+  1411: "Your checklist couldn't be downloaded right now, the server may be busy. Please try again in a moment. If it keeps failing, refresh the page and regenerate your plan.",
 
   // 1412 — Interview Prep, saving a user's answer failed
-  1412: "We couldn't save your answer right now. Please try again — your text is still on-screen so you can retry.",
+  1412: "We couldn't save your answer right now. Please try again, your text is still on-screen so you can retry.",
 
   // 1413 — Visa tools, submitting a session for scoring failed
   1413: "We couldn't submit your session for scoring right now. Please try again in a moment.",
@@ -347,7 +347,7 @@ export const en: Record<ErrorId, string> = {
   // 1415 — Interview Prep, expected session missing
   // 1415 — Interview Prep, expected session missing
   // User-facing: instruct how to recover and restart without confusion
-  1415: "We couldn't find your interview session. Refresh the page and try again — if your answers are missing, re-select your visa category to restart the session.",
+  1415: "We couldn't find your interview session. Refresh the page and try again, if your answers are missing, re-select your visa category to restart the session.",
 
   // 1416 — Visa Case Strength Checker, missing answer validation
   1416: "Please provide an answer for: {questionLabel}",
@@ -437,7 +437,7 @@ export const en: Record<ErrorId, string> = {
   1445: "This document appears to be missing a required identifier: {field}. Please ensure the {field} is visible and try again.",
 
   // 1446 — Interview Prep — AI suggestion/improvement request failed
-  1446: "We couldn't generate an improved version of your answer right now. Please try again — if this continues, try a different improvement type or come back later.",
+  1446: "We couldn't generate an improved version of your answer right now. Please try again, if this continues, try a different improvement type or come back later.",
 
 
   // ─── TOOLS – PDF (1450–1499) ──────────────────────────────────────────
@@ -446,7 +446,7 @@ export const en: Record<ErrorId, string> = {
   1450: "Only PDF files can be merged. The file you selected appears to be a different format. Please choose a .pdf file and try again.",
 
   // 1451 — PDF merge, file exceeds 100 MB
-  1451: "That file is too large to merge here — the maximum size is 100 MB. Try compressing the PDF first, or split it into smaller parts before uploading.",
+  1451: "That file is too large to merge here, the maximum size is 100 MB. Try compressing the PDF first, or split it into smaller parts before uploading.",
 
   // 1460 — Appointment tool — interview date required
   1460: "Please select an interview date.",
@@ -603,7 +603,7 @@ export const en: Record<ErrorId, string> = {
 
   // 1750 — FollowUpManager, DB status update failed
   // SECURITY: was appending raw DB/ORM error text — never pass error objects here
-  1750: "We couldn't update the follow-up status right now. Your changes haven't been saved. Please try again — if the issue continues, refresh the page.",
+  1750: "We couldn't update the follow-up status right now. Your changes haven't been saved. Please try again, if the issue continues, refresh the page.",
 
 
   // ─── PAYMENTS ─────────────────────────────────────────────────────────────
@@ -738,7 +738,7 @@ export const en: Record<ErrorId, string> = {
   2000: "Your message couldn't be sent right now due to a server issue. Copy your message text so you don't lose it, then try again in a moment.",
 
   // 2001 — /contact, server-side email send failed
-  2001: "Your message couldn't be sent — the mail server returned an error. Please try again. If the issue persists, contact support.",
+  2001: "Your message couldn't be sent, the mail server returned an error. Please try again. If the issue persists, contact support.",
 
   // 2002 — PDF converter: text too long
   2002: "Your text is too long. Please shorten it to under {max} characters.",
@@ -794,13 +794,13 @@ export const en: Record<ErrorId, string> = {
   // ─── FEEDBACK & MISC ──────────────────────────────────────────────────────
 
   // 2100 — Guides page, save guide API failed
-  2100: "We couldn't save this guide right now. Your progress hasn't been lost — please try saving again. If it keeps failing, refresh the page and retry.",
+  2100: "We couldn't save this guide right now. Your progress hasn't been lost, please try saving again. If it keeps failing, refresh the page and retry.",
 
   // 2101 — Feedback widget, submitted without choosing a feedback type
   2101: "Please choose a feedback type from the dropdown above before submitting.",
 
   // 2102 — Feedback widget, submitted without writing a description
-  2102: "Please describe what you noticed or experienced — even a sentence helps.",
+  2102: "Please describe what you noticed or experienced, even a sentence helps.",
 
   // 2103 — Dashboard wizard, required step not completed before proceeding
   // Use msg(E.JOURNEY_STEP_INCOMPLETE, { stepName: step.displayName })

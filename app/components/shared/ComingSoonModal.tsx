@@ -112,7 +112,7 @@ export function ComingSoonModal({ open, onOpenChange }: ComingSoonModalProps) {
                 } mt-8`}
               >
                 <p className="text-base md:text-lg lg:text-xl text-muted-foreground mb-6 leading-relaxed px-2 md:px-0">
-                  You requested early access to this feature — and we heard you. Our team is
+                  You requested early access to this feature, and we heard you. Our team is
                   actively working on it. As soon as it goes live, we&apos;ll notify you. Thanks for
                   being part of the journey!
                 </p>

@@ -133,7 +133,7 @@ export async function POST(request: NextRequest) {
       if (dbStatus === "active" && targetRank < currentRank) {
         return NextResponse.json(
           {
-            error: `You already have the ${dbTier} plan. Downgrades are not allowed — manage via billing portal.`,
+            error: `You already have the ${dbTier} plan. Downgrades are not allowed, manage via billing portal.`,
           },
           { status: 400 }
         );

@@ -254,7 +254,7 @@ function asLookAhead(issue: AggregatedIssue): AggregatedIssue {
 // ─── Case-strength escalation note ───────────────────────────────────────────
 
 const CASE_STRENGTH_NOTE =
-  "This item was left unresolved on a step you already passed — it is now weakening your case strength. Resolve it before your next milestone.";
+  "This item was left unresolved on a step you already passed, it is now weakening your case strength. Resolve it before your next milestone.";
 
 function withCaseStrengthNote(hint?: string): string {
   return hint ? `${hint}\n\n${CASE_STRENGTH_NOTE}` : CASE_STRENGTH_NOTE;
@@ -356,8 +356,8 @@ function gateMissingDocument(
 }
 
 const DOC_STAGE_NOTE: Record<DocStage, string> = {
-  info: "Recommended to gather before you submit — not urgent yet.",
-  warning: "Your filing step is approaching — please arrange this soon.",
+  info: "Recommended to gather before you submit, not urgent yet.",
+  warning: "Your filing step is approaching, please arrange this soon.",
   critical: "This is required to submit and is now blocking your petition.",
 };
 

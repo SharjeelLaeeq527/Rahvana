@@ -19,7 +19,7 @@ export const HOUSEHOLD_TUTORIAL_STEPS: HouseholdTutorialStep[] = [
     vlabel: "CEAC Login",
     visual: `
       <div class="mock-card">
-        <div class="mock-title">CEAC — Immigrant Visa Application</div>
+        <div class="mock-title">CEAC, Immigrant Visa Application</div>
         <div class="mock-field"><div class="mock-field-label">NVC Case Number</div><div class="mock-field-input">ISL2026XXXXXX</div></div>
         <div class="mock-field"><div class="mock-field-label">Invoice ID Number</div><div class="mock-field-input">••••••••••••••••</div></div>
         <div class="mock-btn">Sign In</div>
@@ -46,8 +46,8 @@ export const HOUSEHOLD_TUTORIAL_STEPS: HouseholdTutorialStep[] = [
     label: "Step 3 of 6",
     heading: "Choose to add a household member or joint sponsor",
     instruction:
-      "Inside the sponsorship section, select the appropriate option to add a participant. The two options — household member and joint sponsor — are handled through the same CEAC area but have different implications.",
-    note: "Remember: joint sponsors do not require relationship-proof documents. Household members do — the checklist below will generate the correct items once you define who they are.",
+      "Inside the sponsorship section, select the appropriate option to add a participant. The two options, household member and joint sponsor, are handled through the same CEAC area but have different implications.",
+    note: "Remember: joint sponsors do not require relationship-proof documents. Household members do, the checklist below will generate the correct items once you define who they are.",
     vlabel: "Add Participant",
     visual: `
       <div class="mock-card">
@@ -62,7 +62,7 @@ export const HOUSEHOLD_TUTORIAL_STEPS: HouseholdTutorialStep[] = [
     label: "Step 4 of 6",
     heading: "Enter the participant's details",
     instruction:
-      "Fill in the required personal information for the participant — name, date of birth, address, and their relationship to the petitioner. Complete all required fields before saving.",
+      "Fill in the required personal information for the participant, name, date of birth, address, and their relationship to the petitioner. Complete all required fields before saving.",
     note: null,
     media: { type: "img", src: "/assets/images/ir1-journey/c2_step7/Participant's_details.png" },
     vlabel: "Participant Entry Form",
@@ -87,14 +87,14 @@ export const HOUSEHOLD_TUTORIAL_STEPS: HouseholdTutorialStep[] = [
       <div class="mock-card">
         <div class="mock-title">Sponsorship Participants</div>
         <div class="mock-row">Petitioner (Primary Sponsor) <span class="mock-badge">Listed</span></div>
-        <div class="mock-row">Household Member 1 — Spouse <span class="mock-badge">Added</span></div>
+        <div class="mock-row">Household Member 1, Spouse <span class="mock-badge">Added</span></div>
       </div>`,
   },
   {
     label: "Step 6 of 6",
     heading: "Return here to prepare relationship proof",
     instruction:
-      "Once the participant is confirmed in CEAC, return to this step. Use the <strong>scenario builder</strong> to select each household member's relationship — Rahvana will generate the exact relationship-proof checklist for you.",
+      "Once the participant is confirmed in CEAC, return to this step. Use the <strong>scenario builder</strong> to select each household member's relationship, Rahvana will generate the exact relationship-proof checklist for you.",
     note: null,
     media: { type: "img", src: "/assets/images/ir1-journey/c2_step7/back_to_rahvana.png" },
     vlabel: "Return to Rahvana",
@@ -119,8 +119,8 @@ export interface HouseholdGuide {
 
 export const HOUSEHOLD_GUIDE_CONTENT: Record<string, HouseholdGuide> = {
   "birth-cert-hh": {
-    title: "Birth Certificate — Household Member",
-    intro: "Proves the parent–child relationship between the household member and the petitioner.",
+    title: "Birth Certificate, Household Member",
+    intro: "Proves the parent-child relationship between the household member and the petitioner.",
     sections: [
       {
         title: "What this is",
@@ -128,7 +128,7 @@ export const HOUSEHOLD_GUIDE_CONTENT: Record<string, HouseholdGuide> = {
       },
       {
         title: "Why it is needed",
-        body: "<p>When a child's income is being combined with the petitioner's through Form I-864A, the parent–child relationship must be established. The birth certificate naming the petitioner as a parent does this.</p>",
+        body: "<p>When a child's income is being combined with the petitioner's through Form I-864A, the parent-child relationship must be established. The birth certificate naming the petitioner as a parent does this.</p>",
       },
       {
         title: "Translation",
@@ -143,7 +143,7 @@ export const HOUSEHOLD_GUIDE_CONTENT: Record<string, HouseholdGuide> = {
   "birth-cert-sponsor": {
     title: "Birth Certificate of Petitioner / Sponsor",
     intro:
-      "Used when the household member is a parent or sibling of the petitioner — to show the shared family link.",
+      "Used when the household member is a parent or sibling of the petitioner, to show the shared family link.",
     sections: [
       {
         title: "What this is",
@@ -151,7 +151,7 @@ export const HOUSEHOLD_GUIDE_CONTENT: Record<string, HouseholdGuide> = {
       },
       {
         title: "For parent relationship",
-        body: "<p>Shows that the household member (parent) is listed on the petitioner's birth certificate, establishing the parent–child link.</p>",
+        body: "<p>Shows that the household member (parent) is listed on the petitioner's birth certificate, establishing the parent-child link.</p>",
       },
       {
         title: "For sibling relationship",
@@ -160,7 +160,7 @@ export const HOUSEHOLD_GUIDE_CONTENT: Record<string, HouseholdGuide> = {
     ],
   },
   "marriage-cert-hh": {
-    title: "Marriage Certificate — Household Member",
+    title: "Marriage Certificate, Household Member",
     intro: "Establishes the spousal relationship between the household member and the petitioner.",
     sections: [
       {
@@ -197,7 +197,7 @@ export const HOUSEHOLD_GUIDE_CONTENT: Record<string, HouseholdGuide> = {
     ],
   },
   "id-doc-hh": {
-    title: "Identity Document — Household Member",
+    title: "Identity Document, Household Member",
     intro: "Confirms the identity of the household member named in the I-864A.",
     sections: [
       {
@@ -213,7 +213,7 @@ export const HOUSEHOLD_GUIDE_CONTENT: Record<string, HouseholdGuide> = {
   "family-link": {
     title: "Supporting Family-Link Evidence",
     intro:
-      "Used when the household member's relationship is more distant or non-standard — to establish the household connection.",
+      "Used when the household member's relationship is more distant or non-standard, to establish the household connection.",
     sections: [
       {
         title: "When this applies",

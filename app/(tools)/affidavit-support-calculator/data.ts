@@ -133,7 +133,7 @@ export const getFormsInfo = (caseNumber: number): FormInfo[] => {
   const forms: Record<number, FormInfo[]> = {
     1: [
       {
-        name: "I-864 – Affidavit of Support",
+        name: "I-864, Affidavit of Support",
         description: "Official sponsor income verification form",
         whereToFile: "USCIS (United States Citizenship and Immigration Services)",
         notes: [
@@ -143,7 +143,7 @@ export const getFormsInfo = (caseNumber: number): FormInfo[] => {
         ],
       },
       {
-        name: "I-864A – Contract Between Sponsor and Household Member",
+        name: "I-864A, Contract Between Sponsor and Household Member",
         description: "Required if using household member's income",
         whereToFile: "USCIS (file with I-864)",
         notes: [
@@ -152,7 +152,7 @@ export const getFormsInfo = (caseNumber: number): FormInfo[] => {
         ],
       },
       {
-        name: "I-864W – Request for Exemption (Optional)",
+        name: "I-864W, Request for Exemption (Optional)",
         description: "For VAWA/self-petition cases",
         whereToFile: "USCIS",
         notes: ["Only needed if sponsor is exempt from income requirements"],
@@ -160,7 +160,7 @@ export const getFormsInfo = (caseNumber: number): FormInfo[] => {
     ],
     5: [
       {
-        name: "I-864 – Affidavit of Support",
+        name: "I-864, Affidavit of Support",
         description: "Household member is the legal sponsor",
         whereToFile: "USCIS",
         notes: [
@@ -172,7 +172,7 @@ export const getFormsInfo = (caseNumber: number): FormInfo[] => {
     ],
     6: [
       {
-        name: "I-864 – Affidavit of Support",
+        name: "I-864, Affidavit of Support",
         description: "Joint sponsor becomes primary sponsor",
         whereToFile: "USCIS",
         notes: [
@@ -182,7 +182,7 @@ export const getFormsInfo = (caseNumber: number): FormInfo[] => {
         ],
       },
       {
-        name: "I-864A – Contract Between Sponsor and Household Member",
+        name: "I-864A, Contract Between Sponsor and Household Member",
         description: "Primary sponsor's contract",
         whereToFile: "USCIS (file with I-864)",
         notes: [
@@ -193,9 +193,9 @@ export const getFormsInfo = (caseNumber: number): FormInfo[] => {
     ],
     7: [
       {
-        name: "I-864 – Affidavit of Support",
+        name: "I-864, Affidavit of Support",
         description: "Substitute sponsor form",
-        whereToFile: "USCIS – File with I-130/I-485",
+        whereToFile: "USCIS, File with I-130/I-485",
         notes: [
           "Must include Form I-363 Request to Designate or Substitute",
           "Original sponsor's death certificate required",
@@ -203,7 +203,7 @@ export const getFormsInfo = (caseNumber: number): FormInfo[] => {
         ],
       },
       {
-        name: "I-363 – Request to Designate or Substitute",
+        name: "I-363, Request to Designate or Substitute",
         description: "Official request for substitute sponsorship",
         whereToFile: "USCIS",
         notes: [
@@ -215,7 +215,7 @@ export const getFormsInfo = (caseNumber: number): FormInfo[] => {
     ],
     8: [
       {
-        name: "I-864 – Affidavit of Support",
+        name: "I-864, Affidavit of Support",
         description: "Joint sponsor's form with household income",
         whereToFile: "USCIS",
         notes: [
@@ -225,7 +225,7 @@ export const getFormsInfo = (caseNumber: number): FormInfo[] => {
         ],
       },
       {
-        name: "I-864A – Contract for Each Household Member",
+        name: "I-864A, Contract for Each Household Member",
         description: "Joint sponsor's household contracts",
         whereToFile: "USCIS (file with I-864)",
         notes: [
@@ -236,7 +236,7 @@ export const getFormsInfo = (caseNumber: number): FormInfo[] => {
     ],
     9: [
       {
-        name: "I-864 – Affidavit of Support",
+        name: "I-864, Affidavit of Support",
         description: "Asset-based sponsorship",
         whereToFile: "USCIS",
         notes: [
@@ -246,7 +246,7 @@ export const getFormsInfo = (caseNumber: number): FormInfo[] => {
         ],
       },
       {
-        name: "I-864 Supplement 3 – Identifying Information for Asset",
+        name: "I-864 Supplement 3, Identifying Information for Asset",
         description: "Asset documentation supplement",
         whereToFile: "USCIS (file with I-864)",
         notes: [
@@ -258,7 +258,7 @@ export const getFormsInfo = (caseNumber: number): FormInfo[] => {
     ],
     10: [
       {
-        name: "I-360 – Petition for Amerasian, Widow(er), or Special Immigrant",
+        name: "I-360, Petition for Amerasian, Widow(er), or Special Immigrant",
         description: "Self-petition form",
         whereToFile: "USCIS",
         notes: [
@@ -268,7 +268,7 @@ export const getFormsInfo = (caseNumber: number): FormInfo[] => {
         ],
       },
       {
-        name: "I-485 – Application to Register Permanent Residence",
+        name: "I-485, Application to Register Permanent Residence",
         description: "Green card application",
         whereToFile: "USCIS (after I-360 approval)",
         notes: [

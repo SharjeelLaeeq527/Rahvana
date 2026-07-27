@@ -190,11 +190,11 @@ export async function POST(request: NextRequest) {
             if (documentDefId.includes("-joint-sponsor-")) {
               const match = documentDefId.match(/-joint-sponsor-(\d+)/);
               const index = match ? match[1] : "1";
-              customName = `${baseDoc.name} — Joint Sponsor ${index}`;
+              customName = `${baseDoc.name} Joint Sponsor ${index}`;
             } else if (documentDefId.includes("-household-member-")) {
               const match = documentDefId.match(/-household-member-(\d+)/);
               const index = match ? match[1] : "1";
-              customName = `${baseDoc.name} — Household Member ${index}`;
+              customName = `${baseDoc.name} Household Member ${index}`;
             }
             documentDef = {
               ...baseDoc,

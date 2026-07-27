@@ -139,7 +139,7 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
                       : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:border-[#3a4f63]"
                   }`}
                 >
-                  Yes — AP received
+                  Yes, AP received
                 </button>
                 <button
                   onClick={() => setApDetails({ ...apDetails, received: false })}
@@ -149,7 +149,7 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
                       : "bg-white border-[#d0e4f7] text-[#3a4f63] hover:border-[#3a4f63]"
                   }`}
                 >
-                  No — awaiting outcome
+                  No, awaiting outcome
                 </button>
               </div>
             </div>
@@ -222,7 +222,7 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
                               year: "numeric",
                             })
                           ) : (
-                            <span className="text-[#9ab0c8] font-normal italic text-[13px]">—</span>
+                            <span className="text-[#9ab0c8] font-normal italic text-[13px]">, </span>
                           )}
                         </div>
                       </div>
@@ -302,21 +302,21 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
                     onClick={() => clarifyRefusedSubType("refusal_221g")}
                     className="w-full p-3.5 rounded-lg border-[1.5px] border-[#f0d98a] bg-white text-[13px] font-semibold text-[#8a6200] text-left hover:bg-[#fef8e8] transition-all"
                   >
-                    <span className="font-black">221(g)</span> — Officer requested more documents or
+                    <span className="font-black">221(g)</span>, Officer requested more documents or
                     info. Case is still active.
                   </button>
                   <button
                     onClick={() => clarifyRefusedSubType("refusal_final")}
                     className="w-full p-3.5 rounded-lg border-[1.5px] border-[#fecdd3] bg-white text-[13px] font-semibold text-[#9f1239] text-left hover:bg-[#fff1f2] transition-all"
                   >
-                    <span className="font-black">Final Denial</span> — Officer denied under a
+                    <span className="font-black">Final Denial</span>, Officer denied under a
                     specific ground (INA §212 etc.)
                   </button>
                   <button
                     onClick={() => setRefusedPromptOpen(false)}
                     className="text-[12px] text-[#6b8097] hover:text-[#1c2b3a] mt-1 text-center"
                   >
-                    Not sure yet — I&apos;ll check my notice
+                    Not sure yet, I&apos;ll check my notice
                   </button>
                 </div>
               </div>
@@ -327,7 +327,7 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
         <div className="bg-white border-[1.5px] border-[#f0d98a] rounded-[16px] p-6 mb-4 shadow-[0_4px_24px_rgba(12,27,51,0.08)] animate-in fade-in duration-300">
           <div className="flex items-center justify-between mb-4">
             <div className="text-[10px] font-bold uppercase tracking-widest text-[#8a6200]">
-              AP Details Recorded — Tracking Active
+              AP Details Recorded, Tracking Active
             </div>
             <button
               onClick={() => setIsApSaved(false)}
@@ -346,7 +346,7 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
                       month: "long",
                       day: "numeric",
                     })
-                  : "—"}
+                  : ""}
               </div>
             </div>
             <div>
@@ -355,16 +355,16 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
               </div>
               <div className="text-[13px] font-bold text-[#0c1b33]">
                 {apDetails.received === true
-                  ? "Yes — 221(g) received"
+                  ? "Yes, 221(g) received"
                   : apDetails.received === false
-                    ? "No — awaiting outcome"
-                    : "—"}
+                    ? "No, awaiting outcome"
+                    : ""}
               </div>
             </div>
             <div>
               <div className="text-[11px] text-[#6b8097] font-medium mb-0.5">CEAC Status</div>
               <div className="text-[13px] font-bold text-[#0c1b33]">
-                {state.metadata?.admin_case_status || apDetails.ceacStatus || "—"}
+                {state.metadata?.admin_case_status || apDetails.ceacStatus || ""}
               </div>
             </div>
             <div>
@@ -382,7 +382,7 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
                         day: "numeric",
                         year: "numeric",
                       })
-                    : "—"}
+                    : ""}
               </div>
             </div>
           </div>
@@ -448,7 +448,7 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
                   {entry.ceac && ` · CEAC: ${entry.ceac}`}
                 </div>
                 <div className="text-[13px] text-[#3a4f63] leading-relaxed">
-                  {entry.note || "Status checked — no change noted."}
+                  {entry.note || "Status checked, no change noted."}
                 </div>
               </div>
             ))

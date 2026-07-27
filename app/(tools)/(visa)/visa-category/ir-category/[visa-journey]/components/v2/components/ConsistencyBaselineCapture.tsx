@@ -272,7 +272,7 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
         )}
 
         <p className="text-[10.5px] text-[#78716c] mt-3 leading-relaxed italic">
-          Advisory only — not legal advice. Rahvana stores these values separately from the I-130
+          Advisory only, not legal advice. Rahvana stores these values separately from the I-130
           form data.
         </p>
       </div>

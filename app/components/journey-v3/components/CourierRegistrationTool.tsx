@@ -118,7 +118,7 @@ export const CourierRegistrationTool: React.FC<CourierRegistrationToolProps> = (
             Step-by-Step Sign-Up Guide
           </div>
           <div className="text-[12px] text-[#6b8097] leading-[1.5] mb-3">
-            Walkthrough of the courier registration sign-up process — account creation, selection,
+            Walkthrough of the courier registration sign-up process, account creation, selection,
             and confirmation.
           </div>
           <div className="mt-auto text-[12px] font-bold text-primary flex items-center gap-1 group-hover:gap-2 transition-all">
@@ -171,7 +171,7 @@ export const CourierRegistrationTool: React.FC<CourierRegistrationToolProps> = (
       {courierCredentials && (
         <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[10px] p-[16px_18px] mb-5 animate-in fade-in slide-in-from-top-1">
           <div className="text-[10px] font-bold uppercase tracking-[0.08em] text-[#15744f] mb-[10px]">
-            ✓ Credentials Saved — Courier Account
+            ✓ Credentials Saved, Courier Account
           </div>
           <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50">
             <span className="text-[12px] text-[#3a4f63] font-medium">Email</span>

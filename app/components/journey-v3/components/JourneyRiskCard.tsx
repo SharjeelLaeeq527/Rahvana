@@ -214,7 +214,7 @@ export function JourneyRiskCard({
   } else if (criticalCount > 0) {
     stateLabel = `${allFlags.length} to fix`;
     stateColor = "#dc2626";
-    stateText = "Important issues found — please review";
+    stateText = "Important issues found, please review";
     StateIcon = ShieldAlert;
   } else if (warningCount > 0) {
     stateLabel = `${allFlags.length} to review`;
@@ -348,7 +348,7 @@ export function JourneyRiskCard({
           )}
 
           <p className="text-[9.5px] text-slate-400 text-center italic px-2">
-            Advisory only — not legal advice.
+            Advisory only, not legal advice.
           </p>
         </div>
       )}

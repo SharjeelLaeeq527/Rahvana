@@ -405,13 +405,12 @@ export const EVIDENCE_QUESTIONNAIRE: EvidenceQuestion[] = [
  * re-declaring the question objects, so wording/description edits made above
  * automatically flow through to IR-5.
  */
+// Keep the IR-5 evidence questionnaire aligned with IR5_EVIDENCE_REQUIREMENTS:
+// only ask about categories we actually score at the I-130 filing stage. FINANCIAL
+// (i864/tax/bank) and IMMIGRATION_HISTORY (prior visas / I-94) are NVC-stage, so
+// their questions are omitted here — the vault checklist still tracks those docs.
 const IR5_QUESTION_IDS = new Set<string>([
-  "has_i864",
-  "has_tax_returns",
-  "has_bank_statements",
   "has_family_photos",
-  "has_prior_visas",
-  "has_i94",
 ]);
 
 export const IR5_EVIDENCE_QUESTIONNAIRE: EvidenceQuestion[] = EVIDENCE_QUESTIONNAIRE.filter((q) =>
