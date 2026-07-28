@@ -300,7 +300,7 @@ export class ReminderEngine {
 
     if (daysSince >= 30) {
       priority = "critical";
-      title = `⚠️ PCC overdue — ${daysSince} days since application`;
+      title = `PCC overdue — ${daysSince} days since application`;
       body = `Your Police Clearance Certificate was applied ${daysSince} days ago and is still not received. This is urgent — contact the issuing authority immediately and confirm your interview timeline is not at risk.`;
     } else if (daysSince >= 21) {
       priority = "high";
