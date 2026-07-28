@@ -25,6 +25,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
+import { CaseHealthCalculation } from "@/app/components/case-health/CaseHealthCalculation";
 import type { EvidenceGapAnalysis } from "@/lib/journey/evidence-gap";
 
 // ─── Types ──────────────────────────────────────────────────────────────────────
@@ -38,6 +39,16 @@ export interface CaseHealthOverviewProps {
   evidenceScore?: number;
   /** Consistency sub-score (0–100) — 100 minus penalties for unresolved findings */
   consistencyScore?: number;
+  /**
+   * Completeness sub-score (0–100) — % of required checklist items the user has
+   * filled. Present only for the weighted score model. Omit → not shown.
+   */
+  completenessScore?: number;
+  /**
+   * Risk penalty (0–100, higher = more risk) from detected red flags. Present
+   * only for the weighted score model. Omit → not shown.
+   */
+  riskPenalty?: number;
   healthLabel: string;
   healthStatus: "excellent" | "good" | "needs-attention" | "critical";
   loading?: boolean;
@@ -287,6 +298,8 @@ export function CaseHealthOverview({
   overallScore,
   evidenceScore,
   consistencyScore,
+  completenessScore,
+  riskPenalty,
   healthLabel,
   healthStatus,
   loading,
@@ -695,263 +708,14 @@ export function CaseHealthOverview({
                 </div>
               </div>
 
-              {/* Scrollable Content */}
-              <div className="flex-1 overflow-y-auto px-8 py-6 space-y-8">
-                {/* Score Cards */}
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">
-                    Your Score Breakdown
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Case Health */}
-                    <div className="rounded-2xl border border-[#0d7377]/15 bg-[#0d7377]/5 p-5">
-                      <div className="flex items-center gap-2 mb-4">
-                        <Shield size={16} className="text-[#0d7377]" />
-                        <span className="text-sm font-semibold text-slate-700">Case Health</span>
-                      </div>
-
-                      <div className="text-4xl font-black text-[#0d7377]">{overallScore}</div>
-
-                      <div className="text-xs text-slate-500 mt-1">Overall Score</div>
-                    </div>
-
-                    {/* Evidence */}
-                    <div className="rounded-2xl border border-[#cfe8e9] bg-[#f8fcfc] p-5">
-                      <div className="flex items-center gap-2 mb-4">
-                        <FileCheck size={16} className="text-[#0d7377]" />
-                        <span className="text-sm font-semibold text-slate-700">
-                          Evidence Analysis
-                        </span>
-                      </div>
-
-                      <div className="text-4xl font-black text-slate-800">
-                        {evidenceScore ?? ""}
-                      </div>
-
-                      <div className="text-xs text-slate-500 mt-1">Document Strength</div>
-                    </div>
-
-                    {/* Consistency */}
-                    <div className="rounded-2xl border border-[#e4d7e9] bg-[#faf8fc] p-5">
-                      <div className="flex items-center gap-2 mb-4">
-                        <CheckCircle2 size={16} className="text-[#9a6b96]" />
-                        <span className="text-sm font-semibold text-slate-700">
-                          Consistency Analysis
-                        </span>
-                      </div>
-
-                      <div className="text-4xl font-black text-slate-800">
-                        {consistencyScore ?? ""}
-                      </div>
-
-                      <div className="text-xs text-slate-500 mt-1">Information Accuracy</div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Calculation */}
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">
-                    How It&apos;s Calculated
-                  </div>
-
-                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-                    Your Case Health score is built from two equally-weighted analyses. Each one
-                    examines a different dimension of your case, and together they produce a single
-                    0-100 score that reflects your overall readiness.
-                  </p>
-
-                  <div className="space-y-3">
-                    <div className="p-4 rounded-2xl border border-border bg-muted/30">
-                      <div className="flex items-start gap-3">
-                        <div className="w-2 h-2 rounded-full bg-[#0d7377] mt-2 shrink-0" />
-
-                        <div>
-                          <h4 className="font-semibold text-foreground text-sm">
-                            Evidence Analysis (50%)
-                          </h4>
-
-                          <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                            Evaluates the strength, completeness, and relevance of documents and
-                            supporting evidence available within your Rahvana case journey.
-                          </p>
-
-                          <div className="mt-3 space-y-1.5">
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <FileCheck size={11} className="text-[#0d7377] shrink-0" />
-                              <span>Checks which required documents are uploaded vs. missing</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <FileCheck size={11} className="text-[#0d7377] shrink-0" />
-                              <span>
-                                Assesses document relevance and coverage for your visa category
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <FileCheck size={11} className="text-[#0d7377] shrink-0" />
-                              <span>Scores evidence strength from incomplete to comprehensive</span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="p-4 rounded-2xl border border-border bg-muted/30">
-                      <div className="flex items-start gap-3">
-                        <div className="w-2 h-2 rounded-full bg-[#9a6b96] mt-2 shrink-0" />
-
-                        <div>
-                          <h4 className="font-semibold text-foreground text-sm">
-                            Consistency Analysis (50%)
-                          </h4>
-
-                          <p className="text-sm text-muted-foreground mt-1 leading-relaxed">
-                            Reviews dates, personal details, relationships, timelines, and
-                            information entered throughout your journey to identify inconsistencies
-                            and potential issues.
-                          </p>
-
-                          <div className="mt-3 space-y-1.5">
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <CheckCircle2 size={11} className="text-[#9a6b96] shrink-0" />
-                              <span>Cross-checks dates and timelines across all entered data</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <CheckCircle2 size={11} className="text-[#9a6b96] shrink-0" />
-                              <span>Detects conflicting personal details or relationship info</span>
-                            </div>
-                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                              <CheckCircle2 size={11} className="text-[#9a6b96] shrink-0" />
-                              <span>
-                                Flags contradictions between documents and questionnaire answers
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Formula visual */}
-                  <div className="mt-4 p-3.5 rounded-xl border border-border bg-muted/20">
-                    <div className="flex items-center justify-center gap-2 text-xs font-mono text-muted-foreground">
-                      <span className="px-3.5 py-1.5 rounded-full bg-[#0d7377] text-[#e8fbfb] border border-[#afdbdb]/20 font-semibold text-xs tracking-[0.01em] transition-all duration-300 hover:-translate-y-0.5 hover:border-[#afdbdb]/40 hover:shadow-[0_6px_20px_rgba(13,115,119,0.30)]">
-                        Evidence × 50%
-                      </span>
-
-                      {/* Plus */}
-                      <div
-                        className="
-      w-7 h-7
-      rounded-full
-      flex items-center justify-center
-      bg-white/[0.04]
-      border border-white/[0.08]
-      text-[#89a4a0]
-      font-bold
-      text-sm
-      backdrop-blur-sm
-    "
-                      >
-                        +
-                      </div>
-
-                      {/* Consistency */}
-                      <span
-                        className="
-      px-3.5 py-1.5
-      rounded-full
-      bg-[#cdadcc]
-      text-[#452f45]
-      border border-white/10
-      font-semibold
-      text-xs
-      tracking-[0.01em]
-      transition-all duration-300
-      hover:-translate-y-0.5
-      hover:shadow-[0_6px_20px_rgba(205,173,204,0.30)]
-    "
-                      >
-                        Consistency × 50%
-                      </span>
-
-                      {/* Equals */}
-                      <div
-                        className="
-      w-8 h-8
-      rounded-full
-      flex items-center justify-center
-      bg-white/[0.05]
-      border border-white/[0.10]
-      text-[#89a4a0]
-      font-bold
-      text-sm
-      backdrop-blur-sm
-    "
-                      >
-                        =
-                      </div>
-
-                      {/* Result */}
-                      <span
-                        className="
-      px-4 py-1.5
-      rounded-full
-      bg-gradient-to-r
-      from-[#0d7377]
-      to-[#89a4a0]
-      text-white
-      border border-white/10
-      font-bold
-      text-xs
-      tracking-[0.02em]
-      shadow-[0_8px_24px_rgba(13,115,119,0.25)]
-      transition-all duration-300
-      hover:-translate-y-0.5
-      hover:shadow-[0_10px_28px_rgba(13,115,119,0.35)]
-    "
-                      >
-                        Case Health
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* What the Score Helps With */}
-                <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-4">
-                    What This Score Helps Identify
-                  </div>
-
-                  <div className="grid md:grid-cols-2 gap-3">
-                    {[
-                      "Missing supporting evidence",
-                      "Incomplete documentation",
-                      "Potential inconsistencies",
-                      "Case preparation gaps",
-                      "Timeline discrepancies",
-                      "Areas needing attention before submission",
-                    ].map((item) => (
-                      <div
-                        key={item}
-                        className="flex items-center gap-2 p-3 rounded-xl bg-muted/30"
-                      >
-                        <div className="w-1.5 h-1.5 rounded-full bg-[#0d7377]" />
-                        <span className="text-sm text-muted-foreground">{item}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Disclaimer */}
-                <ExpandableTooltip
-                  icon={<AlertCircle size={12} />}
-                  title="Important Disclaimer"
-                  message="Case Health reflects Rahvana's analysis of your evidence and case data. It is intended for guidance only and does not predict approval or constitute legal advice."
-                  defaultOpen={true}
-                />
-              </div>
+              {/* Scrollable Content — shared explainer (single source of truth) */}
+              <CaseHealthCalculation
+                overallScore={overallScore}
+                evidenceScore={evidenceScore}
+                consistencyScore={consistencyScore}
+                completenessScore={completenessScore}
+                riskPenalty={riskPenalty}
+              />
 
               {/* Footer */}
               <div className="border-t border-border p-6 bg-background">

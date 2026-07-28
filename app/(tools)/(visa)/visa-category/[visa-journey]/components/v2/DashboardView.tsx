@@ -517,7 +517,11 @@ export function DashboardView({
   // Overall combined case score (evidence + consistency)
   // Weighted model (IR-1/IR-5): 4-ingredient (Evidence 40 / Consistency 30 / Completeness 20 / Risk 10)
   // with user-provided-only evidence. Legacy model: 50/50 blend.
-  const overallCaseScore = useMemo(() => {
+  // Returns { score, breakdown } so the CaseHealthOverview explainer can display
+  // the SAME four ingredient numbers that produced the score — the worked example
+  // must reconcile exactly. Mirrors DashboardViewV3's weighted path (no
+  // userProvided gate; `?? 0` fallbacks) so V2/V3 stay in lockstep.
+  const caseScoreResult = useMemo(() => {
     const eligibilityAnswers =
       (state.answers?.["eligibility-suite"] as any) ??
       (state.metadata?.["questAnswers_eligibility-suite"] as any);
@@ -528,23 +532,26 @@ export function DashboardView({
     );
 
     const p = resolveCaseStrengthProfile((data as any).journey_type);
-    if (p.caseScore?.model === "weighted" && evidenceAnalysis?.userProvided) {
-      const up = evidenceAnalysis.userProvided;
+    if (p.caseScore?.model === "weighted") {
       const metadata = state.metadata as Record<string, unknown> | undefined;
       const questAnswers = metadata?.["questAnswers_eligibility-suite"] as
         | Record<string, Record<string, string | string[]>>
         | undefined;
       const eligibilityRisks = p.detectEligibilityRisks(questAnswers, p.stepRefs);
       return computeWeightedCaseScore({
-        evidenceStrength: up.score,
+        evidenceStrength: evidenceAnalysis?.userProvided?.score ?? 0,
         consistencyScore: computeConsistencyScore(consistencyFindings),
-        completeness: up.completionPercentage,
+        completeness: evidenceAnalysis?.userProvided?.completionPercentage ?? 0,
         riskFlags: eligibilityRisks,
-      }).score;
+      });
     }
 
-    return computeOverallCaseScore({ evidenceAnalysis, consistencyFindings });
+    return {
+      score: computeOverallCaseScore({ evidenceAnalysis, consistencyFindings }),
+      breakdown: null as ReturnType<typeof computeWeightedCaseScore>["breakdown"] | null,
+    };
   }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments, data]);
+  const overallCaseScore = caseScoreResult.score;
 
   // Sub-scores for the CaseHealthOverview popover breakdown
   // Weighted model uses user-provided-only view; legacy uses autofill-inclusive.
@@ -1069,8 +1076,10 @@ export function DashboardView({
             criticalCount={critIssueCount}
             warningCount={warnIssueCount}
             overallScore={overallCaseScore}
-            evidenceScore={evidenceSubScore}
-            consistencyScore={consistencySubScore}
+            evidenceScore={caseScoreResult.breakdown?.evidenceStrength ?? evidenceSubScore}
+            consistencyScore={caseScoreResult.breakdown?.consistencyScore ?? consistencySubScore}
+            completenessScore={caseScoreResult.breakdown?.completeness}
+            riskPenalty={caseScoreResult.breakdown?.riskPenalty}
             healthLabel={caseHealthStatus?.label ?? "Analyzing"}
             healthStatus={caseHealthStatus?.status ?? "needs-attention"}
             loading={evidenceLoading}
