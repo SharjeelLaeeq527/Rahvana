@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   CircleAlert,
   FileCheck,
+  ClipboardCheck,
   ArrowRight,
   Shield,
   Info,
@@ -210,7 +211,8 @@ function MetricBadge({
   accentColor?: string;
   progress?: number;
 }) {
-  const isAnalysisCard = label === "Evidence" || label === "Consistency";
+  const isAnalysisCard =
+    label === "Evidence" || label === "Consistency" || label === "Completeness";
 
   if (isAnalysisCard) {
     return (
@@ -363,6 +365,11 @@ export function CaseHealthOverview({
 
   // Evidence coverage display
   const coverageValue = evidenceAnalysis ? `${strongCats} / ${totalCats} Strong` : "";
+
+  // Completeness display: how many required documents the user has provided.
+  // Mirrors the Evidence "coverage" phrasing so the three meters read alike.
+  const reqDocs = evidenceAnalysis?.requiredDocuments;
+  const completenessValue = reqDocs ? `${reqDocs.found} / ${reqDocs.total} Provided` : "";
 
   if (loading) {
     return (
@@ -633,6 +640,19 @@ export function CaseHealthOverview({
                 progress={consistencyScore}
                 accentColor={warningCount > 0 ? "#FBBF24" : "#5eead4"}
               />
+
+              {/* Completeness — a weighted score ingredient (20%). Shown only for the
+                  weighted model (IR-5); omitted for the legacy IR-1/CR-1 model where
+                  completenessScore is undefined. */}
+              {completenessScore !== undefined && (
+                <MetricBadge
+                  icon={<ClipboardCheck size={13} />}
+                  label="Completeness"
+                  value={completenessValue || "Not started"}
+                  progress={completenessScore}
+                  accentColor="#5eead4"
+                />
+              )}
 
               <MetricBadge
                 icon={<CircleAlert size={13} />}

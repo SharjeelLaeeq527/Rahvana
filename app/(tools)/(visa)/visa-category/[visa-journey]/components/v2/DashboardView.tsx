@@ -39,7 +39,7 @@ import {
 } from "@/lib/case-strength/aggregate-issues";
 import {
   gateAlertIssues,
-  buildGateContext,
+  buildAlertGateContext,
   isMeaningfullyStarted,
   isCaseHealthScorable,
   hasUserEvidenceSignal,
@@ -455,17 +455,20 @@ export function DashboardView({
     // Progressive reveal: hide alerts for steps the user hasn't reached yet, and
     // (Phase 2) time-gate current/passed-step warnings. Keeps the dashboard from
     // dumping every chapter's issues at once. See CASE_STRENGTH_ALERT_PLAN.md.
-    // buildGateContext derives the frontier/active-order (shared with V3); the
-    // look-ahead rules come from the resolved category profile.
+    // buildAlertGateContext (shared with V3) derives the frontier/active-order
+    // AND wires the category profile's look-ahead + document-escalation config +
+    // target filing date, so IR-1 gets the same calm 3-stage doc lifecycle as IR-5
+    // instead of instant-red criticals.
+    const alertProfile = resolveCaseStrengthProfile((data as any).journey_type);
     const gated = gateAlertIssues(
       all,
-      buildGateContext({
+      buildAlertGateContext({
         chapters,
         state,
         getActiveStepsForStage,
         getNextBestAction,
-        lookAheadRules: resolveCaseStrengthProfile((data as any).journey_type).lookAhead,
         stepTimestamps: state.stepTimestamps,
+        profile: alertProfile,
       })
     );
 

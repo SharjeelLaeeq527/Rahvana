@@ -4,7 +4,8 @@
  * gateAlertIssues filters the flat aggregated-issue list against the user's
  * journey "frontier" (first uncompleted active step):
  *   - AHEAD steps  → hidden (the core fix)
- *   - ACTIVE step  → shown (Phase-2 grace when startedAt supplied)
+ *   - ACTIVE step  → calm until the user opens it (no startedAt → suppressed),
+ *                    then a grace window before its warnings surface
  *   - BEHIND steps → shown (Phase-2 escalation when completedAt supplied)
  *   - look-ahead allowlist → shown one chapter early, "Plan ahead", warning-capped
  *   - hidden-branch / unknown steps → always suppressed
@@ -15,6 +16,8 @@
 import {
   gateAlertIssues,
   buildGateContext,
+  buildAlertGateContext,
+  resolveTargetFilingDate,
   isMeaningfullyStarted,
   ALERT_TIMING,
   computeDocumentStage,
@@ -73,18 +76,21 @@ function gate(issues: AggregatedIssue[], completed: string[] = [], extra: any = 
 // ── AHEAD suppression (the core fix) ──────────────────────────────────────────
 
 describe("progressive reveal — AHEAD suppression", () => {
-  it("fresh start shows only the current step; future steps hidden", () => {
-    const out = gate(
-      [
-        issue("step_1_1", 0, 0, "warning", "eligibility risk"),
-        issue("step_1_2", 0, 1, "critical", "Missing: passport"),
-        issue("step_2_8", 1, 1, "warning", "submit to NVC"),
-      ],
-      []
-    );
-    expect(titles(out)).toContain("eligibility risk");
-    expect(titles(out)).not.toContain("Missing: passport"); // step_1_2 is AHEAD
-    expect(titles(out)).not.toContain("submit to NVC"); // Chapter 2 AHEAD
+  it("fresh start stays calm: current step hidden until opened, future steps hidden", () => {
+    const issues = [
+      issue("step_1_1", 0, 0, "warning", "eligibility risk"), // ACTIVE, not opened
+      issue("step_1_2", 0, 1, "critical", "Missing: passport"), // AHEAD
+      issue("step_2_8", 1, 1, "warning", "submit to NVC"), // AHEAD
+    ];
+    // Nothing opened yet → no alert blasts on arrival.
+    expect(gate(issues, [])).toHaveLength(0);
+    // Once the user has been ON step_1_1 past the grace window, its own warning surfaces.
+    const opened = gate(issues, [], {
+      startedAt: { step_1_1: daysAgo(ALERT_TIMING.activeWarningGraceDays + 1) },
+    });
+    expect(titles(opened)).toContain("eligibility risk");
+    expect(titles(opened)).not.toContain("Missing: passport"); // step_1_2 is AHEAD
+    expect(titles(opened)).not.toContain("submit to NVC"); // Chapter 2 AHEAD
   });
 
   it("hides even a critical when its step is still in the future", () => {
@@ -92,19 +98,30 @@ describe("progressive reveal — AHEAD suppression", () => {
     expect(out).toHaveLength(0);
   });
 
-  it("reveals a behind step's leftover once the user has moved past it", () => {
+  it("reveals a behind step's leftover, but NOT the just-reached active step's warning", () => {
     const out = gate(
       [
-        issue("step_1_2", 0, 1, "warning", "marriage date missing"), // BEHIND
-        issue("step_1_3", 0, 2, "warning", "filing method not chosen"), // ACTIVE
-        issue("step_2_8", 1, 1, "warning", "still ahead"), // AHEAD
+        issue("step_1_2", 0, 1, "warning", "marriage date missing"), // BEHIND → shows
+        issue("step_1_3", 0, 2, "warning", "filing method not chosen"), // ACTIVE, not opened → calm
+        issue("step_2_8", 1, 1, "warning", "still ahead"), // AHEAD → hidden
       ],
-      ["step_1_1", "step_1_2"]
+      ["step_1_1", "step_1_2"] // frontier = step_1_3, no startedAt for it
     );
-    expect(titles(out)).toEqual(
-      expect.arrayContaining(["marriage date missing", "filing method not chosen"])
-    );
+    expect(titles(out)).toContain("marriage date missing");
+    // The user just completed step_1_2; step_1_3 is now current but unopened, so
+    // its "you haven't done this yet" warning must NOT blast immediately.
+    expect(titles(out)).not.toContain("filing method not chosen");
     expect(titles(out)).not.toContain("still ahead");
+  });
+
+  it("keeps the current step calm until opened: unopened → hidden, opened-within-grace → hidden", () => {
+    const issues = [issue("step_1_3", 0, 2, "warning", "filing method not chosen")];
+    // Frontier advanced here but never opened (no startedAt) → suppressed.
+    expect(gate(issues, ["step_1_1", "step_1_2"])).toHaveLength(0);
+    // Opened just now (startedAt stamped) → still within grace → suppressed.
+    expect(
+      gate(issues, ["step_1_1", "step_1_2"], { startedAt: { step_1_3: NOW } })
+    ).toHaveLength(0);
   });
 });
 
@@ -138,13 +155,14 @@ describe("look-ahead allowlist", () => {
     expect(out[0].title.startsWith("Plan ahead: ")).toBe(true);
   });
 
-  it("shows the natural (un-tagged) alert once the user is actually on the step", () => {
+  it("shows the natural (un-tagged) alert once the user has engaged with the step past grace", () => {
     const out = gate(
       [issue("step_2_5", 1, 0, "warning", "Income is $5,000 below the requirement")],
-      ["step_1_1", "step_1_2", "step_1_3"]
+      ["step_1_1", "step_1_2", "step_1_3"], // frontier = step_2_5 (active)
+      { startedAt: { step_2_5: daysAgo(ALERT_TIMING.activeWarningGraceDays + 1) } }
     );
     expect(out).toHaveLength(1);
-    expect(out[0].title).toBe("Income is $5,000 below the requirement"); // no prefix
+    expect(out[0].title).toBe("Income is $5,000 below the requirement"); // no "Plan ahead:" prefix
   });
 });
 
@@ -317,6 +335,84 @@ describe("buildGateContext + category-driven look-ahead", () => {
   });
 });
 
+// ── buildAlertGateContext (profile-aware wrapper) ─────────────────────────────
+//
+// This is the shared wrapper every dashboard must use. The regression it guards:
+// V2 (IR-1) once called buildGateContext WITHOUT documentEscalation, silently
+// disabling IR-1's opt-in escalation so a fresh missing doc showed as an instant
+// red critical. Going through the profile here makes that impossible to forget.
+
+describe("resolveTargetFilingDate", () => {
+  it("parses an ISO string and an epoch-ms number", () => {
+    const iso = "2026-09-01T00:00:00.000Z";
+    expect(resolveTargetFilingDate({ targetFilingDate: iso })).toBe(new Date(iso).getTime());
+    expect(resolveTargetFilingDate({ targetFilingDate: NOW })).toBe(NOW);
+  });
+
+  it("returns undefined when absent or unparseable (→ fixed-days fallback)", () => {
+    expect(resolveTargetFilingDate({})).toBeUndefined();
+    expect(resolveTargetFilingDate(null)).toBeUndefined();
+    expect(resolveTargetFilingDate({ targetFilingDate: "not-a-date" })).toBeUndefined();
+  });
+});
+
+describe("buildAlertGateContext — wires profile escalation like every dashboard", () => {
+  const makeChapters = () => [
+    { steps: [{ step_key: "step_1_1" }, { step_key: "step_1_2" }] },
+    { steps: [{ step_key: "step_2_5" }] },
+  ];
+  const getActiveStepsForStage = (data: any, i: number) => data.chapters[i].steps;
+  const getNextBestAction = (data: any, state: any) => {
+    for (let ci = 0; ci < data.chapters.length; ci++) {
+      for (const s of data.chapters[ci].steps) {
+        if (!state.completedSteps.has(s.step_key)) return { step: s, chapterIdx: ci };
+      }
+    }
+    return null;
+  };
+  const mkState = (metadata: any = {}) => ({
+    metadata,
+    filingType: "online",
+    completedSteps: new Set<string>(), // frontier = step_1_1 (active)
+    stepTimestamps: { step_1_1: { startedAt: NOW } },
+  });
+
+  const gateWith = (profile: any, metadata: any = {}) =>
+    gateAlertIssues(
+      [missingDoc("step_1_1", 0, 0)],
+      buildAlertGateContext({
+        chapters: makeChapters(),
+        state: mkState(metadata) as any,
+        getActiveStepsForStage,
+        getNextBestAction,
+        stepTimestamps: mkState(metadata).stepTimestamps,
+        profile,
+        now: NOW,
+      })
+    );
+
+  it("with the profile's documentEscalation, a fresh missing doc is a calm to-do (the IR-1 fix)", () => {
+    const out = gateWith({ documentEscalation: DEFAULT_DOCUMENT_ESCALATION });
+    expect(out).toHaveLength(1);
+    expect(out[0].level).toBe("info");
+    expect(out[0].title).toBe("To gather: Passport");
+  });
+
+  it("without documentEscalation (legacy profile), the same doc stays an instant critical", () => {
+    const out = gateWith({});
+    expect(out[0].level).toBe("critical");
+    expect(out[0].title).toBe("Missing: Passport");
+  });
+
+  it("derives targetFilingDate from journey metadata → near filing forces red even on a fresh step", () => {
+    const out = gateWith(
+      { documentEscalation: DEFAULT_DOCUMENT_ESCALATION },
+      { targetFilingDate: NOW + DEFAULT_DOCUMENT_ESCALATION.filingCriticalDays * DAY }
+    );
+    expect(out[0].level).toBe("critical");
+  });
+});
+
 // ── Engagement gate (empty-state) ─────────────────────────────────────────────
 
 describe("isMeaningfullyStarted", () => {
@@ -359,15 +455,27 @@ describe("computeDocumentStage (pure)", () => {
     expect(computeDocumentStage({ daysOnStep: cfg.criticalDays, daysUntilFiling: null, isBehind: false, cfg })).toBe("critical");
   });
 
-  it("behind the step (passed it, still missing) is at least amber, red once outstanding long enough", () => {
-    expect(computeDocumentStage({ daysOnStep: 0, daysUntilFiling: null, isBehind: true, cfg })).toBe("warning");
-    expect(computeDocumentStage({ daysOnStep: cfg.criticalDays, daysUntilFiling: null, isBehind: true, cfg })).toBe("critical");
+  it("behind the step starts CALM on day 0 (no instant due-soon), then escalates on its shorter windows", () => {
+    // Day 0 behind must be calm — completing a step is not a deadline.
+    expect(computeDocumentStage({ daysOnStep: 0, daysUntilFiling: null, isBehind: true, cfg })).toBe("info");
+    // Behind escalates FASTER than active (shorter windows).
+    expect(computeDocumentStage({ daysOnStep: cfg.behindTodoDays, daysUntilFiling: null, isBehind: true, cfg })).toBe("warning");
+    expect(computeDocumentStage({ daysOnStep: cfg.behindCriticalDays, daysUntilFiling: null, isBehind: true, cfg })).toBe("critical");
+    // Behind is stricter than active at the same elapsed time.
+    expect(computeDocumentStage({ daysOnStep: cfg.behindTodoDays, daysUntilFiling: null, isBehind: false, cfg })).toBe("info");
   });
 
-  it("deadline-relative wins over days-on-step: near filing → red even on day 0", () => {
+  it("deadline-relative: near filing → red even on day 0; far → no deadline pressure yet", () => {
     expect(computeDocumentStage({ daysOnStep: 0, daysUntilFiling: cfg.filingCriticalDays, isBehind: false, cfg })).toBe("critical");
     expect(computeDocumentStage({ daysOnStep: 0, daysUntilFiling: cfg.filingDueSoonDays, isBehind: false, cfg })).toBe("warning");
-    expect(computeDocumentStage({ daysOnStep: 999, daysUntilFiling: cfg.filingDueSoonDays + 60, isBehind: false, cfg })).toBe("info");
+    // Far from filing + fresh → calm (no deadline pressure, no elapsed time).
+    expect(computeDocumentStage({ daysOnStep: 0, daysUntilFiling: cfg.filingDueSoonDays + 60, isBehind: false, cfg })).toBe("info");
+  });
+
+  it("far from the deadline still escalates on elapsed time (deadline + time-based unified)", () => {
+    // A distant deadline no longer freezes a doc at calm forever: once it has
+    // been outstanding past the critical window, it turns red on its own.
+    expect(computeDocumentStage({ daysOnStep: 999, daysUntilFiling: cfg.filingDueSoonDays + 60, isBehind: false, cfg })).toBe("critical");
   });
 });
 
@@ -421,5 +529,26 @@ describe("gate — document escalation opt-in", () => {
       documentEscalation: DEFAULT_DOCUMENT_ESCALATION,
     });
     expect(out).toHaveLength(0);
+  });
+
+  it("a JUST-completed gathering step (behind, day 0, no deadline) keeps missing docs CALM — the fresh-journey fix", () => {
+    // Reproduces the reported bug: start a journey, mark the Gather-Documents
+    // step complete with nothing uploaded → the docs must NOT become "Due soon".
+    const out = gate([missingDoc("step_1_2", 0, 1)], ["step_1_1", "step_1_2"], {
+      documentEscalation: DEFAULT_DOCUMENT_ESCALATION,
+      completedAt: { step_1_2: NOW },
+    });
+    expect(out).toHaveLength(1);
+    expect(out[0].level).toBe("info"); // filtered out of the Alert Center (critical+warning only)
+    expect(out[0].title).toBe("To gather: Passport");
+  });
+
+  it("a behind missing doc escalates to due-soon only AFTER its (shorter) behind window", () => {
+    const out = gate([missingDoc("step_1_2", 0, 1)], ["step_1_1", "step_1_2"], {
+      documentEscalation: DEFAULT_DOCUMENT_ESCALATION,
+      completedAt: { step_1_2: daysAgo(DEFAULT_DOCUMENT_ESCALATION.behindTodoDays + 1) },
+    });
+    expect(out[0].level).toBe("warning");
+    expect(out[0].title).toBe("Due soon: Passport");
   });
 });
