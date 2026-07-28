@@ -403,7 +403,7 @@ export function MultipleDocumentUploadModal({
     const allowedIds = [categoryId, ...options.map((opt) => mapDocumentNameToId(opt))];
     const currentCategory = (documentDef as any).category || categoryId;
 
-    return vaultDocuments.filter((d) => {
+    const filtered = vaultDocuments.filter((d) => {
       // Direct ID match
       if (allowedIds.includes(d.documentDefId)) return true;
 
@@ -416,6 +416,15 @@ export function MultipleDocumentUploadModal({
       }
 
       return false;
+    });
+
+    // Deduplicate by storagePath
+    const seen = new Set<string>();
+    return filtered.filter((d) => {
+      const key = d.storagePath || d.id;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
     });
   }, [vaultDocuments, categoryId, options, documentDef]);
 

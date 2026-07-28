@@ -81,22 +81,38 @@ function findRelatedDocs(
 
   const docDef = ALL_DOCUMENTS.find((d) => d.id === vaultId);
   if (!docDef) {
-    return uploadedDocuments.filter((d) => d.documentDefId === vaultId);
+    const filtered = uploadedDocuments.filter((d) => d.documentDefId === vaultId);
+    const seen = new Set<string>();
+    return filtered.filter((d) => {
+      const key = d.storagePath || d.id;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
   }
 
+  let filtered: UploadedDoc[] = [];
   if (docDef.isDynamicCategory) {
     const parentCategory = (docDef as any).category as string;
     const suggestionsIds = (docDef.suggestions || []).map((opt) => mapDocumentNameToId(opt));
 
-    return uploadedDocuments.filter((d) => {
+    filtered = uploadedDocuments.filter((d) => {
       if (d.documentDefId === vaultId) return true;
       if (suggestionsIds.includes(d.documentDefId)) return true;
       if (parentCategory && d.documentDefId.startsWith(`dynamic-${parentCategory}-`)) return true;
       return false;
     });
+  } else {
+    filtered = uploadedDocuments.filter((d) => d.documentDefId === vaultId);
   }
 
-  return uploadedDocuments.filter((d) => d.documentDefId === vaultId);
+  const seen = new Set<string>();
+  return filtered.filter((d) => {
+    const key = d.storagePath || d.id;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
 }
 
 export function DocListSection({

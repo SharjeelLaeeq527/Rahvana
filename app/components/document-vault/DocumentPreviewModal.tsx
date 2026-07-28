@@ -39,11 +39,25 @@ export function DocumentPreviewModal({
     }
   }, [open, uploadedDoc]);
 
-  // Find the index of activeDoc in allUploadedDocs
+  // Deduplicate allUploadedDocs by storagePath (or id as fallback) to prevent any double-rendering/duplication bugs
+  const uniqueUploadedDocs = useMemo(() => {
+    if (!allUploadedDocs) return [];
+    const seen = new Set<string>();
+    return allUploadedDocs.filter((d) => {
+      if (!d) return false;
+      const key = d.storagePath || d.id;
+      if (!key) return false;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [allUploadedDocs]);
+
+  // Find the index of activeDoc in uniqueUploadedDocs
   const activeIndex = useMemo(() => {
-    if (!allUploadedDocs || allUploadedDocs.length === 0) return -1;
-    return allUploadedDocs.findIndex((d) => d.id === activeDoc.id);
-  }, [allUploadedDocs, activeDoc]);
+    if (!uniqueUploadedDocs || uniqueUploadedDocs.length === 0) return -1;
+    return uniqueUploadedDocs.findIndex((d) => d.id === activeDoc.id);
+  }, [uniqueUploadedDocs, activeDoc]);
 
   const currentDef = useMemo(() => {
     if (activeDoc && activeDoc.documentDefId !== documentDef.id) {
@@ -68,12 +82,12 @@ export function DocumentPreviewModal({
       baseTitle = `${specificType} / ${categoryName}`;
     }
 
-    if (allUploadedDocs && allUploadedDocs.length > 1 && activeIndex !== -1) {
-      baseTitle = `${baseTitle} (${activeIndex + 1} of ${allUploadedDocs.length})`;
+    if (uniqueUploadedDocs && uniqueUploadedDocs.length > 1 && activeIndex !== -1) {
+      baseTitle = `${baseTitle} (${activeIndex + 1} of ${uniqueUploadedDocs.length})`;
     }
 
     return baseTitle;
-  }, [currentDef, activeDoc, t, allUploadedDocs, activeIndex]);
+  }, [currentDef, activeDoc, t, uniqueUploadedDocs, activeIndex]);
 
   // Load document when activeDoc changes
   useEffect(() => {
@@ -131,14 +145,14 @@ export function DocumentPreviewModal({
   const handleZoomOut = () => setZoom((prev) => Math.max(prev - 25, 50));
 
   const handlePrev = () => {
-    if (allUploadedDocs && activeIndex > 0) {
-      setActiveDoc(allUploadedDocs[activeIndex - 1]);
+    if (uniqueUploadedDocs && activeIndex > 0) {
+      setActiveDoc(uniqueUploadedDocs[activeIndex - 1]);
     }
   };
 
   const handleNext = () => {
-    if (allUploadedDocs && activeIndex < allUploadedDocs.length - 1) {
-      setActiveDoc(allUploadedDocs[activeIndex + 1]);
+    if (uniqueUploadedDocs && activeIndex < uniqueUploadedDocs.length - 1) {
+      setActiveDoc(uniqueUploadedDocs[activeIndex + 1]);
     }
   };
 
@@ -220,7 +234,7 @@ export function DocumentPreviewModal({
               )}
 
               {/* Navigation controls */}
-              {allUploadedDocs.length > 1 && activeIndex !== -1 && (
+              {uniqueUploadedDocs.length > 1 && activeIndex !== -1 && (
                 <>
                   <button
                     disabled={activeIndex === 0}
@@ -232,7 +246,7 @@ export function DocumentPreviewModal({
                   </button>
 
                   <button
-                    disabled={activeIndex === allUploadedDocs.length - 1}
+                    disabled={activeIndex === uniqueUploadedDocs.length - 1}
                     onClick={handleNext}
                     className="absolute right-4 z-30 p-2 sm:p-3 rounded-full bg-black/45 hover:bg-black/60 text-white disabled:opacity-30 disabled:pointer-events-none transition-all duration-200 shadow-md backdrop-blur-xs flex items-center justify-center border border-white/10 hover:scale-105 active:scale-95"
                     title="Next document"
