@@ -92,7 +92,7 @@ const nextConfig = {
               "font-src 'self' fonts.gstatic.com data:",
               "img-src 'self' data: blob: *.supabase.co images.unsplash.com",
               "connect-src 'self' *.supabase.co *.stripe.com *.google-analytics.com rahvana-1.onrender.com wss://*.supabase.co http://localhost:8000 http://127.0.0.1:8000 ws://localhost:8000 ws://127.0.0.1:8000",
-              "frame-src 'self' js.stripe.com",
+              "frame-src 'self' js.stripe.com *.uscis.gov *.state.gov *.cbp.dhs.gov *.ssa.gov",
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
