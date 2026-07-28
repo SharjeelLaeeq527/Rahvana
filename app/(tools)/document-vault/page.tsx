@@ -69,6 +69,7 @@ import {
   getFriendlyJourneyName,
   setCachedUserJourneys,
   syncQuestionnaireAnswersToFlags,
+  mapDocumentNameToId,
 } from "@/lib/document-vault/journey-mapping";
 
 // ── Journey → Visa Category mapping ──────────────────────────────────────────
@@ -125,6 +126,31 @@ export default function DocumentVaultPage() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<UploadedDocument | null>(null);
+
+  const previewDocRelatedFiles = useMemo(() => {
+    if (!previewDoc) return [];
+    
+    const defId = previewDoc.documentDefId;
+    const parentDef = ALL_DOCUMENTS.find(
+      (d) =>
+        d.isDynamicCategory &&
+        (d.id === defId || d.suggestions?.some((opt) => mapDocumentNameToId(opt) === defId))
+    );
+    
+    if (parentDef) {
+      const parentCategory = (parentDef as any).category as string;
+      const suggestionsIds = (parentDef.suggestions || []).map((opt) => mapDocumentNameToId(opt));
+      
+      return uploadedDocuments.filter((d) => {
+        if (d.documentDefId === parentDef.id) return true;
+        if (suggestionsIds.includes(d.documentDefId)) return true;
+        if (parentCategory && d.documentDefId.startsWith(`dynamic-${parentCategory}-`)) return true;
+        return false;
+      });
+    }
+    
+    return uploadedDocuments.filter((d) => d.documentDefId === defId);
+  }, [previewDoc, uploadedDocuments]);
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
   const [activeTab, setActiveTab] = useState<string>("required");
   const [searchQuery, setSearchQuery] = useState("");
@@ -1606,6 +1632,7 @@ export default function DocumentVaultPage() {
             requiredDocuments.find((d) => d.id === previewDoc.documentDefId)!
           }
           uploadedDoc={previewDoc}
+          allUploadedDocs={previewDocRelatedFiles}
         />
       )}
 

@@ -1101,6 +1101,7 @@ export function MultipleDocumentUploadModal({
               onClose={() => setPreviewDoc(null)}
               documentDef={documentDef}
               uploadedDoc={previewDoc}
+              allUploadedDocs={uploadedDocuments}
             />
           )}
 

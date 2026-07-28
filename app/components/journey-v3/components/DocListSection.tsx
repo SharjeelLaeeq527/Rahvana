@@ -11,6 +11,7 @@ import {
 import { getStepIcon } from "../StepIcon";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPreviewModal";
+import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
 
 interface UploadedDoc {
   id: string;
@@ -70,6 +71,34 @@ const TAG_MAP: Record<string, { label: string; cls: string }> = {
   },
 };
 
+function findRelatedDocs(
+  item: DocItem,
+  getVaultId: (item: DocItem) => string,
+  uploadedDocuments: UploadedDoc[]
+): UploadedDoc[] {
+  const vaultId = getVaultId(item);
+  if (!vaultId) return [];
+
+  const docDef = ALL_DOCUMENTS.find((d) => d.id === vaultId);
+  if (!docDef) {
+    return uploadedDocuments.filter((d) => d.documentDefId === vaultId);
+  }
+
+  if (docDef.isDynamicCategory) {
+    const parentCategory = (docDef as any).category as string;
+    const suggestionsIds = (docDef.suggestions || []).map((opt) => mapDocumentNameToId(opt));
+
+    return uploadedDocuments.filter((d) => {
+      if (d.documentDefId === vaultId) return true;
+      if (suggestionsIds.includes(d.documentDefId)) return true;
+      if (parentCategory && d.documentDefId.startsWith(`dynamic-${parentCategory}-`)) return true;
+      return false;
+    });
+  }
+
+  return uploadedDocuments.filter((d) => d.documentDefId === vaultId);
+}
+
 export function DocListSection({
   groups,
   docsStatus,
@@ -91,10 +120,12 @@ export function DocListSection({
     isOpen: boolean;
     uploadedDoc: any | null;
     docDef: any | null;
+    allUploadedDocs?: any[];
   }>({
     isOpen: false,
     uploadedDoc: null,
     docDef: null,
+    allUploadedDocs: [],
   });
 
   return (
@@ -299,10 +330,12 @@ export function DocListSection({
                                     description: item.sub || "",
                                   } as any;
                                 }
+                                const related = findRelatedDocs(item, getVaultId, uploadedDocuments);
                                 setPreviewState({
                                   isOpen: true,
                                   uploadedDoc,
                                   docDef,
+                                  allUploadedDocs: related,
                                 });
                               }}
                               className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
@@ -338,6 +371,7 @@ export function DocListSection({
           onClose={() => setPreviewState({ ...previewState, isOpen: false })}
           documentDef={previewState.docDef}
           uploadedDoc={previewState.uploadedDoc}
+          allUploadedDocs={previewState.allUploadedDocs}
         />
       )}
     </div>
