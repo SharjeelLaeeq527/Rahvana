@@ -121,6 +121,15 @@ export default function Footer() {
                   IR-5 Journey
                 </Link>
               )}
+              {showToggle && (
+                <Link
+                  href="/visa-category"
+                  className="text-white font-medium underline hover:text-slate-200 transition-colors"
+                >
+                  Explore all Journeys
+                  <ArrowRight size={14} className="inline-block ml-1" />
+                </Link>
+              )}
             </nav>
           </div>
 
