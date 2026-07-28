@@ -100,7 +100,12 @@ export function DocumentPreviewModal({
   // Reset when closed
   useEffect(() => {
     if (!open) {
-      setPreviewUrl(null);
+      setPreviewUrl((prev) => {
+        if (prev && prev.startsWith("blob:")) {
+          URL.revokeObjectURL(prev);
+        }
+        return null;
+      });
       setZoom(100);
       setIsLoading(false);
     }
@@ -109,7 +114,7 @@ export function DocumentPreviewModal({
   // Cleanup URL on unmount
   useEffect(() => {
     return () => {
-      if (previewUrl) {
+      if (previewUrl && previewUrl.startsWith("blob:")) {
         URL.revokeObjectURL(previewUrl);
       }
     };
@@ -125,11 +130,24 @@ export function DocumentPreviewModal({
         return;
       }
 
+      // Direct URL is required for PDFs because browsers block blob: URLs in iframes due to security sandboxing
+      const isPdfDoc = activeDoc.mimeType?.toLowerCase() === "application/pdf";
+      if (isPdfDoc) {
+        setPreviewUrl((prev) => {
+          if (prev && prev.startsWith("blob:")) {
+            URL.revokeObjectURL(prev);
+          }
+          return `/api/documents/${activeDoc.id}/preview`;
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch(`/api/documents/${activeDoc.id}/preview`);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       setPreviewUrl((prev) => {
-        if (prev) {
+        if (prev && prev.startsWith("blob:")) {
           URL.revokeObjectURL(prev);
         }
         return url;
