@@ -94,8 +94,8 @@ export const EXPLORER_CARDS: ExplorerJourneyCard[] = [
     successRate: "92%",
     status: "Live",
     featured: true,
-    href: ir1journeyHref,
-    image: "/assets/images/ir1_spouse_visa.png",
+    href: "/visa-category/ir-1",
+    image: "/assets/images/ir1-doc-vault-image.png",
     highlights: ["Immediate relative", "Consular processing", "Work authorization on arrival"],
   },
   {
@@ -110,8 +110,8 @@ export const EXPLORER_CARDS: ExplorerJourneyCard[] = [
     successRate: "96%",
     status: "Live",
     featured: true,
-    href: ir5journeyHref,
-    image: "/assets/images/ir5_parent_visa.png",
+    href: "/visa-category/ir-5",
+    image: "/assets/images/ir5-doc-vault-image.png",
     highlights: ["Age 21+ petitioner", "No annual quota", "Permanent residency outcome"],
   },
   {
@@ -138,7 +138,7 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
     summary:
       "A focused, immediate-relative pathway for spouses pursuing lawful permanent residency through consular processing.",
     heroEyebrow: "Family-based journey",
-    heroImage: "/assets/images/ir1_spouse_visa.png",
+    heroImage: "/assets/images/ir1-doc-vault-image.png",
     heroOverlay: "linear-gradient(180deg, rgba(4, 67, 73, 0.12) 0%, rgba(4, 67, 73, 0.72) 100%)",
     quickFacts: [
       { label: "Green card type", value: "10-year if married 2+ years" },
@@ -289,7 +289,7 @@ export const JOURNEY_DETAILS: Record<JourneySlug, JourneyDetailContent> = {
     summary:
       "A direct immediate-relative route for parents who qualify under U.S. citizen sponsorship and consular processing.",
     heroEyebrow: "Immediate relative category",
-    heroImage: "/assets/images/ir5_parent_visa.png",
+    heroImage: "/assets/images/ir5-doc-vault-image.png",
     heroOverlay: "linear-gradient(180deg, rgba(4, 67, 73, 0.08) 0%, rgba(48, 63, 63, 0.74) 100%)",
     quickFacts: [
       { label: "Petitioner age", value: "U.S. citizen 21+" },

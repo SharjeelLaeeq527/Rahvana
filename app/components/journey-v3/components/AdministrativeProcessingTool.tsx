@@ -407,7 +407,7 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
             specified.
           </div>
           <button
-            onClick={() => window.open("https://www.rahvana.com/document-vault", "_blank")}
+            onClick={() => window.open("/document-vault", "_blank")}
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-[#8a6200] text-white rounded-lg text-[13px] font-bold transition-all hover:opacity-90"
           >
             <Upload size={14} />

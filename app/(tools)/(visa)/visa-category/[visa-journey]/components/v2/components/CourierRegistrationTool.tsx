@@ -196,7 +196,7 @@ export const CourierRegistrationTool: React.FC<CourierRegistrationToolProps> = (
               Edit or update in Portal Wallet <ExternalLink size={11} strokeWidth={2.5} />
             </button>
             <a
-              href="https://www.rahvana.com/document-vault"
+              href="/document-vault"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1.5 text-[12px] font-bold text-[#15744f] hover:underline"
