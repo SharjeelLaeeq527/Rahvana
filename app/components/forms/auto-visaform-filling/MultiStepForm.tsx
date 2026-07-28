@@ -1012,7 +1012,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
       clearTimeout(timeoutId);
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) throw new Error(`${await res.text()} (Endpoint: ${apiUrl})`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank", "noopener,noreferrer");
@@ -1050,7 +1050,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
       clearTimeout(timeoutId);
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) throw new Error(`${await res.text()} (Endpoint: ${apiUrl})`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1106,7 +1106,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
       clearTimeout(timeoutId);
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) throw new Error(`${await res.text()} (Endpoint: ${apiUrl})`);
       const blob = await res.blob();
 
       const file = new File([blob], `${formCode.toUpperCase()}-auto-filled.pdf`, {
