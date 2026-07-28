@@ -893,15 +893,10 @@ function PricingContent() {
         </button>
       ) : userId ? (
         <CheckoutButton
-  productTier={
-    mode === "plans" &&
-    selectedPlan !== "free"
-      ? selectedPlan
-      : undefined
-  }
-  addons={checkoutAddonIds}
-  visaCategory={visa}
-  userId={userId}
+          productTier={mode === "plans" && selectedPlan !== "free" ? selectedPlan : undefined}
+          addons={checkoutAddonIds}
+          visaCategory={visa}
+          userId={userId}
           onLoadingChange={setIsManualCheckoutLoading}
           className="w-full py-[11px] px-5 rounded-full text-[14px] font-semibold bg-primary hover:bg-primary/90 text-white text-center"
         >
@@ -1412,11 +1407,12 @@ function PricingContent() {
                                     <div className="resource-fcard-unit">{addon.unit}</div>
                                   </div>
                                   <button
+                                    title={isAdded ? "Added to order" : "Add to order"}
                                     disabled={isAnyCheckoutLoading}
                                     className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
                                     onClick={() => toggleAddon(addon.id)}
                                   >
-                                    {isAdded ? "✓ Added to order" : "+ Add to order"}
+                                    {isAdded ? "✓ Added to order" : "+ Add"}
                                   </button>
                                 </div>
                               </div>
@@ -1487,11 +1483,12 @@ function PricingContent() {
                                     </div>
 
                                     <button
+                                      title={isAdded ? "Added to order" : "Add to order"}
                                       disabled={isAnyCheckoutLoading}
                                       className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
                                       onClick={() => toggleAddon(addon.id)}
                                     >
-                                      {isAdded ? "✓ Added to order" : "+ Add to order"}
+                                      {isAdded ? "✓ Added to order" : "+ Add"}
                                     </button>
                                   </div>
                                 </div>
