@@ -3559,7 +3559,7 @@
                 "Generate a PDF answer key for CEAC entry"
               ],
               "button_label": "Launch DS-260 Autoform Filler",
-              "href": "https://www.rahvana.com/visa-forms/ds260/wizard",
+              "href": "/visa-forms/ds260/wizard",
               "note": "Opens in a new tab, return here when finished"
             },
             "support_cards": [

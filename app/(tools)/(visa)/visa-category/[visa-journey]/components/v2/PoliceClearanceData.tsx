@@ -51,7 +51,7 @@ export const POLICE_CLEARANCE_DATA = {
     title: "Fresh PCC received, save to Document Vault",
     body: "Your police clearance certificate has been received. Save it to the Document Vault for easy access during the interview and upload stages.",
     buttonLabel: "Save PCC to Document Vault",
-    vaultUrl: "https://www.rahvana.com/document-vault",
+    vaultUrl: "/document-vault",
   },
   disclaimer:
     "Rahvana's application submission service is available for Sindh only. Rahvana submits the application but the user must collect the certificate. Always verify PCC requirements with your consulate.",
@@ -97,7 +97,7 @@ export const POLICE_CLEARANCE_DATA = {
       instruction:
         "Visit the relevant police station or submit through the government's online portal if available in your district.",
       info: "For detailed district-specific instructions, use the Rahvana Police Certificate Guide:\n\nOpen Full PCC Guide →",
-      guideUrl: "https://www.rahvana.com/guides/police-verification-guide",
+      guideUrl: "/guides/police-verification-guide",
       nav: { back: true, next: "Next →" },
     },
     {
