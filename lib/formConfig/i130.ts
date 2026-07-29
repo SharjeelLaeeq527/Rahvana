@@ -395,7 +395,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_street",
         pdfKey: "mailing_street",
-        label: "Street Address",
+        label: "What is the physical House Number and Street Name?",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No",
@@ -416,7 +416,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_unit_number",
         pdfKey: "mailing_unit_number",
-        label: "Room, Apt, or Suite Number",
+        label: "What is the Room or Apartment Number?",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No",
@@ -424,7 +424,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_city",
         pdfKey: "mailing_city",
-        label: "City or Town",
+        label: "In what city or town is this address located?",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No",
@@ -432,7 +432,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_state",
         pdfKey: "mailing_state",
-        label: "State (if in US)",
+        label: "In what U.S. state is this address?",
         type: "dropdown",
         isState: true,
         section: "Address History",
@@ -441,7 +441,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_zip",
         pdfKey: "mailing_zip",
-        label: "ZIP Code (if in US)",
+        label: "What is the ZIP Code? (if in the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No" && !d.mailing_postal_code,
@@ -449,7 +449,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_province",
         pdfKey: "mailing_province",
-        label: "Province (if outside US)",
+        label: "What is the Province? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No" && !d.mailing_state,
@@ -457,7 +457,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_postal_code",
         pdfKey: "mailing_postal_code",
-        label: "Postal Code (if outside US)",
+        label: "What is the Postal Code? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No" && !d.mailing_zip,
@@ -465,7 +465,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_country",
         pdfKey: "mailing_country",
-        label: "Country",
+        label: "In what country is this address located?",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No",
@@ -1462,7 +1462,7 @@ export const formFields: Field[] = [
   {
     key: "spouse1_place_state",
     pdfKey: "Pt2Line19b_State",
-    label: "State (if in US)",
+    label: "What U.S. state did you get married in? (if in the U.S.)",
     type: "dropdown",
     isState: true,
     section: "Your Marital Information",
@@ -1470,14 +1470,14 @@ export const formFields: Field[] = [
   {
     key: "spouse1_place_province",
     pdfKey: "Pt2Line19c_Province",
-    label: "Province (if outside US)",
+    label: "What province did you get married in? (if outside the U.S.)",
     type: "text",
     section: "Your Marital Information",
   },
   {
     key: "spouse1_place_country",
     pdfKey: "Pt2Line19d_Country",
-    label: "Country",
+    label: "What country did you get married in?",
     type: "text",
     section: "Your Marital Information",
   },
