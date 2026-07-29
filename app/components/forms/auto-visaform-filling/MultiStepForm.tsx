@@ -1245,7 +1245,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             <motion.div
               key={section.title}
               whileHover={{ x: isSidebarCollapsed ? 0 : 2 }}
-              className="group w-full text-left rounded-xl transition-all overflow-visible overflow-y-auto relative cursor-pointer"
+              className="group w-full text-left rounded-xl transition-colors relative cursor-pointer"
               style={{
                 backgroundColor: isActive && !isSidebarCollapsed ? "#e8f6f6" : "transparent",
                 boxShadow:
@@ -1490,14 +1490,16 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       <div className="flex gap-6 px-4 md:px-8 py-0 guide-grid-bg justify-center items-stretch flex-1 min-h-0">
         {/* Desktop Sidebar (stays within header/footer zone) */}
         {view === "form" && !(showSectionIntro && introVisible) && (
-          <div className="hidden lg:block shrink-0 -ml-4 md:-ml-8">
-            <motion.aside
-              initial={false}
-              animate={{
-                width: isSidebarCollapsed ? 24 : 325,
-              }}
-              transition={{ type: "spring", damping: 28, stiffness: 240 }}
-              className="sticky top-16 mt-12 h-[calc(100vh-280px)] overflow-hidden"
+          <motion.div
+            initial={false}
+            animate={{
+              width: isSidebarCollapsed ? 24 : 325,
+            }}
+            transition={{ type: "spring", damping: 28, stiffness: 240 }}
+            className="hidden lg:block shrink-0 -ml-4 md:-ml-8"
+          >
+            <aside
+              className="sticky top-16 mt-12 h-[calc(100vh-280px)] w-full overflow-hidden"
               aria-hidden={false}
             >
               <div
@@ -1549,8 +1551,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                   {isSidebarCollapsed ? <ChevronRight /> : <ChevronLeft />}
                 </motion.button>
               </div>
-            </motion.aside>
-          </div>
+            </aside>
+          </motion.div>
         )}
 
         {/* Right Content Area */}
