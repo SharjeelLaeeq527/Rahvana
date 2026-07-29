@@ -277,11 +277,25 @@ export const formFields: Field[] = [
 
   // Mailing Address
   {
-    key: "current_in_care_of",
-    pdfKey: "current_in_care_of",
-    label: "Is there someone else's name on your mail? If yes then provide full name. (Optional)",
-    type: "text",
+    key: "has_another_mail",
+    label: "Is there someone else's name on your mail?",
+    type: "radio",
+    pdfKey: "different_mail_name",
     section: "Mailing Address",
+    options: [
+      { label: "Yes", value: "Yes" },
+      { label: "No", value: "No" },
+    ],
+    subQuestions: [
+      {
+        key: "current_in_care_of",
+        label: "Please provide full name .",
+        type: "text",
+        pdfKey: "current_in_care_of",
+        placeholder: "Full Name",
+        condition: (d) => d.has_another_mail === "Yes",
+      },
+    ],
   },
   {
     key: "current_street",
@@ -5360,7 +5374,7 @@ export const sectionIntroMessages = {
   "Address History": {
     greeting: "Let's cover your address history",
     message:
-      "USCIS requires a complete record of where you've lived. We'll collect your current and previous addresses to ensure all records are accurate and up to date.",
+      "USCIS requires a complete record of where you've lived in the last 5 years. We'll collect your current and previous addresses to ensure all records are accurate and up to date.",
   },
   "Biographic Information": {
     greeting: "Moving on to biographic details",
