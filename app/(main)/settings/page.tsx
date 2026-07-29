@@ -14,9 +14,9 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader } from "@/components/ui/spinner";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
+import { MFACodeModal } from "@/app/components/shared/MFACodeModal";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { validateStrongPassword } from "@/lib/security/password";
-import { set } from "react-hook-form";
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -47,6 +47,10 @@ export default function SettingsPage() {
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [passwordChangedModalOpen, setPasswordChangedModalOpen] = useState(false);
+  const [mfaCodeModalOpen, setMfaCodeModalOpen] = useState(false);
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaCodeError, setMfaCodeError] = useState("");
+  const [isVerifyingMfaCode, setIsVerifyingMfaCode] = useState(false);
 
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -103,14 +107,15 @@ export default function SettingsPage() {
     };
   }, [authLoading, supabase, userId]);
 
-  const handlePasswordChange = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-
+  const submitPasswordChange = async (
+    submittedMfaCode?: string
+  ): Promise<"success" | "mfa-required" | "error"> => {
+    setMfaCodeError("");
     const { currentPassword, newPassword, confirmPassword } = passwordForm;
 
     if (!currentPassword || !newPassword || !confirmPassword) {
       showToast("All password fields are required.", "error");
-      return;
+      return "error";
     }
 
     if (!validateStrongPassword(newPassword)) {
@@ -118,17 +123,17 @@ export default function SettingsPage() {
         "Your new password must be at least 8 characters long and include uppercase, lowercase, number, and symbol characters.",
         "error"
       );
-      return;
+      return "error";
     }
 
     if (newPassword !== confirmPassword) {
       showToast("New password and confirmation do not match.", "error");
-      return;
+      return "error";
     }
 
     if (currentPassword === newPassword) {
       showToast("Your new password must be different from the current one.", "error");
-      return;
+      return "error";
     }
 
     try {
@@ -137,14 +142,30 @@ export default function SettingsPage() {
       const response = await fetch("/api/auth/change-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ currentPassword, newPassword }),
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+          ...(submittedMfaCode ? { mfaCode: submittedMfaCode } : {}),
+        }),
       });
 
       const data = await response.json();
 
+      if (data?.mfaRequired) {
+        setMfaCode("");
+        setMfaCodeError("");
+        setMfaCodeModalOpen(true);
+        return "mfa-required";
+      }
+
       if (!response.ok) {
-        showToast(data.error || "Password update failed. Please try again.", "error");
-        return;
+        const errorMessage = data.error || "Password update failed. Please try again.";
+        if (submittedMfaCode) {
+          setMfaCodeError(errorMessage);
+        } else {
+          showToast(errorMessage, "error");
+        }
+        return "error";
       }
 
       setPasswordForm({
@@ -154,11 +175,40 @@ export default function SettingsPage() {
       });
       showToast("Password updated successfully.", "success");
       setPasswordChangedModalOpen(true);
+      return "success";
     } catch (error) {
       console.error("Error updating password:", error);
       showToast("Password update failed. Please try again.", "error");
+      return "error";
     } finally {
       setIsPasswordSaving(false);
+    }
+  };
+
+  const handlePasswordChange = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await submitPasswordChange();
+  };
+
+  const handleMfaCodeSubmit = async () => {
+    const code = mfaCode.trim();
+
+    if (!/^\d{6}$/.test(code)) {
+      setMfaCodeError("Enter the 6-digit code from your authenticator app.");
+      return;
+    }
+
+    try {
+      setIsVerifyingMfaCode(true);
+      const result = await submitPasswordChange(code);
+      if (result === "success") {
+        setMfaCodeModalOpen(false);
+      }
+    } catch (error) {
+      console.error("Error verifying MFA code:", error);
+      setMfaCodeError("We couldn't verify that code. Please try again.");
+    } finally {
+      setIsVerifyingMfaCode(false);
     }
   };
 
@@ -205,7 +255,7 @@ export default function SettingsPage() {
 
   if (authLoading || pageLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Loader size="lg" text={t("pages.settings.loading")} />
       </div>
     );
@@ -265,7 +315,7 @@ export default function SettingsPage() {
                 Account Settings
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-5 pt-6">
+            <CardContent className="space-y-5 pt-2">
               <div className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-background p-4">
                 <div className="space-y-1">
                   <Label htmlFor="two-factor" className="text-sm font-medium text-foreground">
@@ -513,6 +563,27 @@ export default function SettingsPage() {
           setPasswordChangedModalOpen(false);
           await handleGlobalSignOut();
         }}
+      />
+
+      <MFACodeModal
+        open={mfaCodeModalOpen}
+        onOpenChange={(open) => {
+          setMfaCodeModalOpen(open);
+          if (!open) {
+            setMfaCode("");
+            setMfaCodeError("");
+          }
+        }}
+        value={mfaCode}
+        onValueChange={setMfaCode}
+        onSubmit={handleMfaCodeSubmit}
+        loading={isVerifyingMfaCode}
+        error={mfaCodeError}
+        title="Verify Your Identity"
+        description="For security, enter the 6-digit code from your authenticator app before changing your password."
+        confirmText="Verify Code"
+        loadingText="Verifying..."
+        variant="primary"
       />
 
       <ConfirmationModal
