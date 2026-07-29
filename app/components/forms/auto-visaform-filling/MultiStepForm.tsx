@@ -1186,7 +1186,32 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   ]);
 
   /* Sidebar (desktop) */
-  const SectionList = useCallback(
+  // Memoize section status calculations to avoid heavy computation during renders
+  const sectionStats = useMemo(() => {
+    return sections.map((section) => {
+      const visibleSectionFields = section.fields.filter(
+        (field) => !field.condition || field.condition(formData)
+      );
+
+      const answeredCount = visibleSectionFields.filter((field) => {
+        const value = formData[field.key];
+        return value && value.trim() !== "";
+      }).length;
+
+      const totalCount = visibleSectionFields.length;
+      const isCompleted = totalCount > 0 && answeredCount === totalCount;
+
+      return {
+        visibleSectionFields,
+        answeredCount,
+        totalCount,
+        isCompleted,
+      };
+    });
+  }, [sections, formData]);
+
+  /* Sidebar (desktop) */
+  const renderSectionList = useCallback(
     ({
       onPick,
       showLabels = !isSidebarCollapsed,
@@ -1199,18 +1224,14 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           const stepNum = idx + 1;
           const label = section.title.replace(/^\d+\.\s*/, "");
           const isActive = currentStep === stepNum;
-          const visibleSectionFields = section.fields.filter(
-            (field) => !field.condition || field.condition(formData)
-          );
-
-          const answeredCount = visibleSectionFields.filter((field) => {
-            const value = formData[field.key];
-            return value && value.trim() !== "";
-          }).length;
-
-          const totalCount = visibleSectionFields.length;
-
-          const isCompleted = totalCount > 0 && answeredCount === totalCount;
+          
+          const stats = sectionStats[idx] || {
+            visibleSectionFields: [],
+            answeredCount: 0,
+            totalCount: 0,
+            isCompleted: false,
+          };
+          const { visibleSectionFields, answeredCount, totalCount, isCompleted } = stats;
 
           const isSkipped =
             stepNum < currentStep && answeredCount > 0 && answeredCount < totalCount;
@@ -1362,6 +1383,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       handleGoToStep,
       toggleSectionExpanded,
       handleJumpToQuestion,
+      sectionStats,
     ]
   );
 
@@ -1457,7 +1479,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
               {/* Content (Scrollable) */}
               <div className="flex-1 overflow-y-auto px-5 py-4">
-                <SectionList onPick={() => setIsDrawerOpen(false)} showLabels />
+                {renderSectionList({ onPick: () => setIsDrawerOpen(false), showLabels: true })}
               </div>
             </motion.div>
           </>
@@ -1506,7 +1528,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
                     {/* Content */}
                     <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
-                      <SectionList />
+                      {renderSectionList({})}
                     </div>
                   </>
                 )}
