@@ -11,6 +11,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { createBrowserClient } from "@supabase/ssr/dist/main/createBrowserClient";
 import { useToast } from "../shared/ToastProvider";
 import { Loader } from "@/components/ui/spinner";
+import { MFACodeModal } from "../shared/MFACodeModal";
 
 export function MFASetup() {
   const supabase = createBrowserClient(
@@ -210,103 +211,20 @@ export function MFASetup() {
         )}
 
         {/* Disable MFA Modal */}
-        {isDisableModalOpen && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-card rounded-2xl shadow-xl border border-border w-full max-w-md overflow-hidden">
-              {/* Header */}
-              <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 border-b border-border">
-                <div className="flex items-start sm:items-center gap-3 mb-2">
-                  <div className="w-10 h-10 shrink-0 rounded-full bg-destructive/10 flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 text-destructive"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground">
-                    Disable Two-Factor Authentication
-                  </h3>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Enter your current authentication code to disable 2FA
-                </p>
-              </div>
-
-              {/* Body */}
-              <div className="px-4 sm:px-6 py-5 sm:py-6">
-                <div className="space-y-5">
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-foreground">
-                      Authentication Code
-                    </label>
-                    <Input
-                      type="text"
-                      value={disableOTP}
-                      onChange={(e) => setDisableOTP(e.target.value)}
-                      placeholder="Enter 6-digit code"
-                      maxLength={6}
-                      disabled={loading}
-                      className="w-full"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Enter the code from your authenticator app
-                    </p>
-                  </div>
-
-                  {error && (
-                    <div className="flex items-start gap-3 p-4 bg-destructive/5 border border-destructive/20 rounded-xl">
-                      <svg
-                        className="w-5 h-5 text-destructive shrink-0 mt-0.5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <p className="text-sm text-destructive">{error}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="px-4 sm:px-6 py-4 bg-muted/20 border-t border-border flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsDisableModalOpen(false);
-                    setDisableOTP("");
-                    setError("");
-                  }}
-                  disabled={loading}
-                  className="h-11 rounded-xl px-6 w-full sm:w-auto"
-                >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleDisableMFA}
-                  disabled={loading || disableOTP.trim().length !== 6}
-                  className="h-11 rounded-xl px-10 w-full sm:w-auto bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                >
-                  {loading ? "Disabling..." : "Disable 2FA"}
-                </Button>
-              </div>
-            </div>
-          </div>
-        )}
+        <MFACodeModal
+          open={isDisableModalOpen}
+          onOpenChange={setIsDisableModalOpen}
+          value={disableOTP}
+          onValueChange={setDisableOTP}
+          onSubmit={handleDisableMFA}
+          loading={loading}
+          error={error}
+          title="Disable Two-Factor Authentication"
+          description="Enter your current authentication code to disable 2FA."
+          confirmText="Disable 2FA"
+          loadingText="Disabling..."
+          variant="danger"
+        />
       </Card>
     );
   }

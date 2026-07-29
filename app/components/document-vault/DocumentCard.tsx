@@ -1,7 +1,5 @@
 import { useState } from "react";
 import { DocumentDefinition, UploadedDocument } from "@/lib/document-vault/types";
-
-import { DocumentDefinition, UploadedDocument } from "@/lib/document-vault/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import {
   formatExpirationDate,
@@ -27,6 +25,8 @@ import {
   Edit2,
   Check,
   X,
+  Plus,
+  Clock,
 } from "lucide-react";
 import {
   DropdownMenu,
