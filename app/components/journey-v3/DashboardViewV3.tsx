@@ -54,7 +54,7 @@ import {
 } from "@/lib/case-strength/aggregate-issues";
 import {
   gateAlertIssues,
-  buildGateContext,
+  buildAlertGateContext,
   isMeaningfullyStarted,
   isCaseHealthScorable,
   hasUserEvidenceSignal,
@@ -510,27 +510,20 @@ export function DashboardViewV3({
     // Progressive reveal: hide alerts for steps the user hasn't reached yet, and
     // (Phase 2) time-gate current/passed-step warnings. Keeps the dashboard from
     // dumping every chapter's issues at once. See CASE_STRENGTH_ALERT_PLAN.md.
-    // buildGateContext derives the frontier/active-order (shared with V2); the
-    // look-ahead rules come from the resolved category profile.
+    // buildAlertGateContext (shared with V2) derives the frontier/active-order
+    // AND wires the category profile's look-ahead + document-escalation config +
+    // target filing date (parsed from metadata) in one place, so V2 and V3 can't
+    // drift on which gate inputs get passed.
     const alertProfile = resolveCaseStrengthProfile((data as any).journey_type);
-    // Optional user target filing date → deadline-relative escalation. Absent →
-    // the config's fixed-days fallback (§4–§5). Accepts an ISO string or epoch ms.
-    const rawFilingDate = (state.metadata as any)?.targetFilingDate;
-    const targetFilingDate =
-      rawFilingDate != null && !Number.isNaN(new Date(rawFilingDate).getTime())
-        ? new Date(rawFilingDate).getTime()
-        : undefined;
     const gated = gateAlertIssues(
       all,
-      buildGateContext({
+      buildAlertGateContext({
         chapters,
         state,
         getActiveStepsForStage,
         getNextBestAction,
-        lookAheadRules: alertProfile.lookAhead,
         stepTimestamps: state.stepTimestamps,
-        documentEscalation: alertProfile.documentEscalation,
-        targetFilingDate,
+        profile: alertProfile,
       })
     );
 

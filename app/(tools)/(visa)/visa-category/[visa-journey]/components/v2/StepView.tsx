@@ -380,7 +380,6 @@ export const StepView: React.FC<StepViewProps> = ({
     closeUploadModal,
     selectedDocumentDefId,
     reloadDocuments,
-    setConfig: setConfigVault,
     uploadedDocuments,
     isReloadingDocs,
     isDeletingIds,
@@ -1039,30 +1038,9 @@ export const StepView: React.FC<StepViewProps> = ({
     setIsLocked(state.metadata.filingMethodConfirmed || false);
   }, [state.metadata.filingMethodConfirmed]);
 
-  // Initialize Document Vault Config — runs on mount, no user.id dependency
-  // The API uses the session cookie to get real user_id, so userId here is just a local label
-  useEffect(() => {
-    const initVault = async () => {
-      // Run these in parallel to speed up initialization
-      Promise.all([
-        setConfigVault({
-          userId: user?.id || "session",
-          visaCategory: "IR-1",
-          caseId: (state.metadata.caseId as string) || "ARACHNIE-IR1",
-          petitionerName: (state.metadata.petitionerName as string) || "Petitioner",
-          beneficiaryName: (state.metadata.beneficiaryName as string) || "Beneficiary",
-          jointSponsorName: (state.metadata.jointSponsorName as string) || "",
-          scenarioFlags: {},
-        }),
-        // Pass this journey's id so the vault loads ONLY this journey's documents
-        // (reloadDocuments re-fetches when the journey differs). Without it the
-        // API returns all journeys' uploads and a fresh journey looks pre-filled.
-        reloadDocuments(state.backendId || undefined),
-      ]);
-    };
-    initVault();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount — config is set immediately, no race condition
+  // Document Vault init (setConfig + reloadDocuments) is now prefetched once, up in
+  // RoadmapLayoutV2 via useInitDocumentVault — so uploaded documents are already
+  // loaded before this (lazy) step ever mounts. See lib/document-vault/useInitDocumentVault.ts.
 
   // Disable body scroll when overlays are open
   useEffect(() => {

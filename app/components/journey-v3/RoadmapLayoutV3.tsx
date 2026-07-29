@@ -9,6 +9,8 @@ import { getActiveStepsForStage } from "./journeyHelpersV3";
 import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
 import { ChevronRight, ArrowLeft, Check, X, LayoutDashboard } from "lucide-react";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { useAuth } from "@/app/context/AuthContext";
+import { useInitDocumentVault } from "@/lib/document-vault/useInitDocumentVault";
 
 /** Lazy-load StepViewV3 — only fetched when user navigates to a step */
 const LazyStepViewV3 = React.lazy(() =>
@@ -60,6 +62,18 @@ export default function RoadmapLayoutV3({ data, state, actions }: RoadmapLayoutV
   );
 
   const { showToast } = useToast();
+  const { user } = useAuth();
+
+  // Prefetch the document vault as soon as the journey opens (on the dashboard),
+  // not when the lazy StepView mounts. This is why the "Get Required Documents"
+  // step shows uploaded/not-uploaded instantly and the case-strength ring is
+  // already populated by the time the user reaches any step.
+  useInitDocumentVault({
+    journeyType: data.journey_type,
+    backendId: state.backendId,
+    metadata: state.metadata,
+    userId: user?.id,
+  });
 
   useEffect(() => {
     if (state.currentStage !== undefined && state.currentStage !== -1) {
