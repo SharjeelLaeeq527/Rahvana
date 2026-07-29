@@ -16,6 +16,7 @@ import { Loader } from "@/components/ui/spinner";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { validateStrongPassword } from "@/lib/security/password";
+import { set } from "react-hook-form";
 
 export default function SettingsPage() {
   const { t } = useLanguage();
@@ -45,6 +46,7 @@ export default function SettingsPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordChangedModalOpen, setPasswordChangedModalOpen] = useState(false);
 
   const [passwordForm, setPasswordForm] = useState({
     currentPassword: "",
@@ -151,6 +153,7 @@ export default function SettingsPage() {
         confirmPassword: "",
       });
       showToast("Password updated successfully.", "success");
+      setPasswordChangedModalOpen(true);
     } catch (error) {
       console.error("Error updating password:", error);
       showToast("Password update failed. Please try again.", "error");
@@ -494,7 +497,22 @@ export default function SettingsPage() {
         confirmText="Sign Out"
         onConfirm={handleGlobalSignOut}
         loading={isSigningOut}
+        confirmVariant="danger"
+      />
+
+      <ConfirmationModal
+        open={passwordChangedModalOpen}
+        onOpenChange={setPasswordChangedModalOpen}
+        title="Password Updated"
+        description="Your password has been changed successfully. Would you like to sign out of all active devices? This is recommended if you believe your account may have been accessed by someone else."
+        cancelText="Stay Signed In"
+        confirmText="Sign Out All Devices"
         confirmVariant="primary"
+        loading={isSigningOut}
+        onConfirm={async () => {
+          setPasswordChangedModalOpen(false);
+          await handleGlobalSignOut();
+        }}
       />
 
       <ConfirmationModal

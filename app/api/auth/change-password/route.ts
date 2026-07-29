@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
+import { sendEmail, getPasswordChangedHtml } from "@/lib/email/resend";
 import { validateStrongPassword } from "@/lib/security/password";
 import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
 import { auditLog, auditBlocked } from "@/lib/security/audit-log";
@@ -46,6 +47,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const emailHtml = getPasswordChangedHtml();
+
     const { error: verifyError } = await supabase.auth.signInWithPassword({
       email: user.email!,
       password: currentPassword,
@@ -62,6 +65,13 @@ export async function POST(req: NextRequest) {
     if (updateError) {
       return NextResponse.json({ error: updateError.message }, { status: 400 });
     }
+
+    // Send confirmation email
+    await sendEmail({
+      to: user.email!,
+      subject: "Password Changed - Rahvana",
+      html: emailHtml,
+    });
 
     // Audit log — successful change password
     auditLog({
