@@ -695,7 +695,11 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       // Save completed form data back to central profile (auto-fill for other tools)
       if (userProfile) {
         try {
-          const profileDelta = mapFormToProfile(formData, userProfile, getFormFieldOverrides(formCode));
+          const profileDelta = mapFormToProfile(
+            formData,
+            userProfile,
+            getFormFieldOverrides(formCode)
+          );
           if (Object.keys(profileDelta).length > 0) {
             updateProfile(profileDelta, { silent: true });
           }
@@ -734,11 +738,16 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           nextField = nextVisible[0];
         }
       }
-      
-      const isNextFieldEmpty = !nextField || !formData[nextField.key] || formData[nextField.key].trim() === "";
-      
+
+      const isNextFieldEmpty =
+        !nextField || !formData[nextField.key] || formData[nextField.key].trim() === "";
+
       if (filledFieldsCount >= 15 && isNextFieldEmpty) {
-        showToast("Free Preview: You've reached the 15-question limit. Redirecting to review page...", "info", 6000);
+        showToast(
+          "Free Preview: You've reached the 15-question limit. Redirecting to review page...",
+          "info",
+          6000
+        );
         setView("review");
         return;
       }
@@ -786,7 +795,11 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     // Save current step data back to central profile (real-time sync for other tools)
     if (userProfile) {
       try {
-        const profileDelta = mapFormToProfile(formData, userProfile, getFormFieldOverrides(formCode));
+        const profileDelta = mapFormToProfile(
+          formData,
+          userProfile,
+          getFormFieldOverrides(formCode)
+        );
         if (Object.keys(profileDelta).length > 0) {
           updateProfile(profileDelta, { silent: true });
         }
@@ -846,42 +859,57 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     });
   }, []);
 
-  const handleJumpToQuestion = useCallback((stepIdx: number, questionIdx: number) => {
-    if (isFreePreview && filledFieldsCount >= 15) {
-      const targetSection = sections[stepIdx];
-      const targetField = targetSection?.fields.filter(
-        (f) => !f.condition || f.condition(formData)
-      )[questionIdx];
-      
-      const isTargetEmpty = !targetField || !formData[targetField.key] || formData[targetField.key].trim() === "";
-      
-      if (isTargetEmpty) {
-        showToast("Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new questions.", "info", 5000);
-        setView("review");
-        return;
-      }
-    }
-    setCurrentStep(stepIdx + 1);
-    setCurrentQuestionIndex(questionIdx);
-    setIsDrawerOpen(false);
-  }, [isFreePreview, filledFieldsCount, sections, formData]);
+  const handleJumpToQuestion = useCallback(
+    (stepIdx: number, questionIdx: number) => {
+      if (isFreePreview && filledFieldsCount >= 15) {
+        const targetSection = sections[stepIdx];
+        const targetField = targetSection?.fields.filter(
+          (f) => !f.condition || f.condition(formData)
+        )[questionIdx];
 
-  const handleGoToStep = useCallback((step: number) => {
-    if (isFreePreview && filledFieldsCount >= 15) {
-      const targetSection = sections[step - 1];
-      const hasAnyAnswered = targetSection?.fields.some(
-        (f) => formData[f.key] && formData[f.key].trim() !== ""
-      );
-      
-      if (!hasAnyAnswered) {
-        showToast("Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new sections.", "info", 5000);
-        setView("review");
-        return;
+        const isTargetEmpty =
+          !targetField || !formData[targetField.key] || formData[targetField.key].trim() === "";
+
+        if (isTargetEmpty) {
+          showToast(
+            "Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new questions.",
+            "info",
+            5000
+          );
+          setView("review");
+          return;
+        }
       }
-    }
-    setCurrentStep(step);
-    setView("form");
-  }, [isFreePreview, filledFieldsCount, sections, formData]);
+      setCurrentStep(stepIdx + 1);
+      setCurrentQuestionIndex(questionIdx);
+      setIsDrawerOpen(false);
+    },
+    [isFreePreview, filledFieldsCount, sections, formData]
+  );
+
+  const handleGoToStep = useCallback(
+    (step: number) => {
+      if (isFreePreview && filledFieldsCount >= 15) {
+        const targetSection = sections[step - 1];
+        const hasAnyAnswered = targetSection?.fields.some(
+          (f) => formData[f.key] && formData[f.key].trim() !== ""
+        );
+
+        if (!hasAnyAnswered) {
+          showToast(
+            "Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new sections.",
+            "info",
+            5000
+          );
+          setView("review");
+          return;
+        }
+      }
+      setCurrentStep(step);
+      setView("form");
+    },
+    [isFreePreview, filledFieldsCount, sections, formData]
+  );
 
   const handleEditStep = useCallback((step: number) => {
     setCurrentStep(step);
@@ -1224,7 +1252,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           const stepNum = idx + 1;
           const label = section.title.replace(/^\d+\.\s*/, "");
           const isActive = currentStep === stepNum;
-          
+
           const stats = sectionStats[idx] || {
             visibleSectionFields: [],
             answeredCount: 0,
@@ -1336,6 +1364,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                         // Remove numbering from label
                         const cleanLabel = field.label.replace(/^\d+[a-z]?\.\s*/, "");
                         const fieldAnswered = formData[field.key] && formData[field.key] !== "";
+                        const isActiveQuestion =
+                          isActive && visibleFields[currentQuestionIndex]?.key === field.key;
 
                         return (
                           <motion.button
@@ -1350,9 +1380,17 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                               );
                               handleJumpToQuestion(idx, actualIndex);
                             }}
-                            className="w-full text-left text-xs p-2 rounded hover:bg-[#e8f6f6] transition-colors flex items-center gap-2 group"
+                            className={`w-full text-left text-xs p-2 rounded transition-colors flex items-center gap-2 group ${
+                              isActiveQuestion
+                                ? "bg-[#0d7377]/10 font-semibold pl-1.5"
+                                : "hover:bg-[#e8f6f6]"
+                            }`}
                             style={{
-                              color: fieldAnswered ? "#0a5a5d" : "#6b7280",
+                              color: isActiveQuestion
+                                ? "#0d7377"
+                                : fieldAnswered
+                                  ? "#0a5a5d"
+                                  : "#6b7280",
                             }}
                           >
                             {fieldAnswered && (
@@ -1384,6 +1422,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       toggleSectionExpanded,
       handleJumpToQuestion,
       sectionStats,
+      visibleFields,
+      currentQuestionIndex,
     ]
   );
 
