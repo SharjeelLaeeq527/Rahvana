@@ -54,12 +54,12 @@ import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 import { getActiveStepsForStage } from "./journeyHelpers";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 import { E, msg } from "@/lib/errors";
-import IR1Ticker from "./IR1Ticker";
+import VisaTicker from "@/app/components/home-page/VisaTicker";
 import {
-  buildIR1TickerProps,
+  buildVisaTickerProps,
   fetchReceiptForJourney,
   ReceiptRecord,
-} from "@/app/components/home-page/Ir1tickerprops";
+} from "@/app/components/home-page/Visatickerprops";
 
 interface DashboardViewProps {
   data: RoadmapData;
@@ -1030,11 +1030,11 @@ export function DashboardView({
             onClose={() => setUpgradeModalFeature(null)}
           />
         )}
-        {/* IR-1 Live ticker — journey dashboard (placed above hero) */}
+        {/* Visa ticker — journey dashboard (placed above hero) */}
         {receiptRecord !== undefined && (
           <div className="mb-6">
-            <IR1Ticker
-              {...buildIR1TickerProps(
+            <VisaTicker
+              {...buildVisaTickerProps(
                 state,
                 trackingStatus,
                 nvcCaseNum,

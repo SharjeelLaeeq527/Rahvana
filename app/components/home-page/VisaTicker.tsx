@@ -2,6 +2,7 @@
 
 import React, { useMemo } from "react";
 import type { CSSProperties } from "react";
+import { usePathname } from "next/navigation";
 import {
   generateNarrative,
   type CaseFields,
@@ -64,9 +65,36 @@ function buildItems(user: CaseFields, journeyContext?: NarrativeJourneyContext):
   return items;
 }
 
+function getLiveLabel(pathname: string | null) {
+  const normalized = (pathname || "").toLowerCase();
+  const lastSegment = normalized.split("/").filter(Boolean).pop() || "";
+
+  if (normalized.includes("ir-5") || lastSegment.includes("ir-5")) {
+    return "IR-5 Live";
+  }
+
+  if (
+    normalized.includes("ir-1") ||
+    lastSegment.includes("ir-1") 
+  ) {
+    return "IR-1 Live";
+  }
+
+  if (lastSegment) {
+    const pretty = lastSegment
+      .replace(/-journey$/, "")
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase());
+
+    return `${pretty} Live`;
+  }
+
+  return "Visa Live";
+}
+
 // ─── Component ────────────────────────────────────────────────────────────────
 
-export interface IR1TickerProps {
+export interface VisaTickerProps {
   user: CaseFields;
   journeyContext?: NarrativeJourneyContext;
   speed?: number;
@@ -74,14 +102,16 @@ export interface IR1TickerProps {
   style?: CSSProperties;
 }
 
-export default function IR1Ticker({
+export default function VisaTicker({
   user,
   journeyContext,
   speed = 50,
   className,
   style,
-}: IR1TickerProps) {
+}: VisaTickerProps) {
+  const pathname = usePathname();
   const items = useMemo(() => buildItems(user, journeyContext), [user, journeyContext]);
+  const liveLabel = useMemo(() => getLiveLabel(pathname), [pathname]);
 
   const duration = Math.max(20, Math.min(90, speed + items.length * 2.5));
 
@@ -156,7 +186,7 @@ export default function IR1Ticker({
               WebkitFontSmoothing: "antialiased",
             }}
           >
-            IR-1 Live
+            {liveLabel}
           </span>
         </div>
 

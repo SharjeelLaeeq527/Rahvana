@@ -36,10 +36,24 @@ export type Field = {
 };
 
 // ✅ Add this: FormConfig type
+export type OverflowFieldConfig = {
+  prefix: string;
+  countKey: string;
+  startIndex: number;
+  maxIndex?: number;
+  pageNumber: string;
+  partNumber: string;
+  itemNumber: string;
+  labelPrefix: string;
+  fields: { suffix: string; label: string }[];
+  formatInfo: (index: number, data: Record<string, string>) => string;
+};
+
 export type FormConfig = {
   formTitle?: string;
   formSubtitle?: string;
   formFields: Field[];
   getInitialFormData: () => Record<string, string>;
   sectionIntroMessages?: Record<string, { greeting: string; message: string }>;
+  overflowFields?: OverflowFieldConfig[];
 };

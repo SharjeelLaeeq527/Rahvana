@@ -1,6 +1,58 @@
 // C:\Users\HP\Desktop\arachnie\Arachnie\lib\formConfig\i130.ts
 import type { Field } from "./types";
 
+const getSpouseCondition = (i: number) => {
+  return (d: Record<string, string>) => {
+    return Number(d.number_of_marriages) >= i - 1;
+  };
+};
+
+const generatePriorSpousesFields = (startIndex: number, endIndex: number): Field[] => {
+  const fields: Field[] = [];
+  for (let i = startIndex; i <= endIndex; i++) {
+    fields.push({
+      key: `spouse_${i}_history_note`,
+      pdfKey: "N/A",
+      label: `Previous Spouse ${i - 1}`,
+      type: "hidden",
+      section: "Your Marital Information",
+      condition: getSpouseCondition(i),
+      subQuestions: [
+        {
+          key: `spouse_${i}_given_name`,
+          pdfKey: "N/A",
+          label: "What was their first name?",
+          type: "text",
+          section: "Your Marital Information",
+        },
+        {
+          key: `spouse_${i}_family_name`,
+          pdfKey: "N/A",
+          label: "What was their last name?",
+          type: "text",
+          section: "Your Marital Information",
+        },
+        {
+          key: `spouse_${i}_middle_name`,
+          pdfKey: "N/A",
+          label: "What was their middle name? (If any)",
+          type: "text",
+          section: "Your Marital Information",
+        },
+        {
+          key: `spouse_${i}_marriage_end_date`,
+          pdfKey: "N/A",
+          label: "When did this marriage end? (MM/DD/YYYY)",
+          type: "date",
+          section: "Your Marital Information",
+          placeholder: "MM/DD/YYYY",
+        },
+      ],
+    });
+  }
+  return fields;
+};
+
 export const formId = "i130";
 export const formTitle = "Form I-130";
 export const formSubtitle = "Petition for Alien Relative";
@@ -277,11 +329,25 @@ export const formFields: Field[] = [
 
   // Mailing Address
   {
-    key: "current_in_care_of",
-    pdfKey: "current_in_care_of",
-    label: "Is there someone else's name on your mail? If yes then provide full name. (Optional)",
-    type: "text",
+    key: "has_another_mail",
+    label: "Is there someone else's name on your mail?",
+    type: "radio",
+    pdfKey: "different_mail_name",
     section: "Mailing Address",
+    options: [
+      { label: "Yes", value: "Yes" },
+      { label: "No", value: "No" },
+    ],
+    subQuestions: [
+      {
+        key: "current_in_care_of",
+        label: "Please provide full name .",
+        type: "text",
+        pdfKey: "current_in_care_of",
+        placeholder: "Full Name",
+        condition: (d) => d.has_another_mail === "Yes",
+      },
+    ],
   },
   {
     key: "current_street",
@@ -361,15 +427,15 @@ export const formFields: Field[] = [
   // ============================================
   // ADDRESS HISTORY
   // ============================================
-  {
-    key: "address_history_note",
-    pdfKey: "N/A",
-    label:
-      "Please tell us all the places you have lived in the last 5 years. Start with where you live right now, only if it's different from the mailing address you just gave us.",
-    type: "hidden",
-    section: "Address History",
-    options: [{ label: "I understand", value: "ok", pdfKey: "N/A" }],
-  },
+  // {
+  //   key: "address_history_note",
+  //   pdfKey: "N/A",
+  //   label:
+  //     "Please tell us all the places you have lived in the last 5 years. Start with where you live right now, only if it's different from the mailing address you just gave us.",
+  //   type: "hidden",
+  //   section: "Address History",
+  //   options: [{ label: "I understand", value: "ok", pdfKey: "N/A" }],
+  // },
 
   // Address History
 
@@ -395,7 +461,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_street",
         pdfKey: "mailing_street",
-        label: "Street Address",
+        label: "What is the physical House Number and Street Name?",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No",
@@ -416,7 +482,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_unit_number",
         pdfKey: "mailing_unit_number",
-        label: "Room, Apt, or Suite Number",
+        label: "What is the Room or Apartment Number?",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No",
@@ -424,7 +490,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_city",
         pdfKey: "mailing_city",
-        label: "City or Town",
+        label: "In what city or town is this address located?",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No",
@@ -432,7 +498,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_state",
         pdfKey: "mailing_state",
-        label: "State (if in US)",
+        label: "In what U.S. state is this address?",
         type: "dropdown",
         isState: true,
         section: "Address History",
@@ -441,7 +507,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_zip",
         pdfKey: "mailing_zip",
-        label: "ZIP Code (if in US)",
+        label: "What is the ZIP Code? (if in the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No" && !d.mailing_postal_code,
@@ -449,7 +515,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_province",
         pdfKey: "mailing_province",
-        label: "Province (if outside US)",
+        label: "What is the Province? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No" && !d.mailing_state,
@@ -457,7 +523,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_postal_code",
         pdfKey: "mailing_postal_code",
-        label: "Postal Code (if outside US)",
+        label: "What is the Postal Code? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No" && !d.mailing_zip,
@@ -465,7 +531,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_country",
         pdfKey: "mailing_country",
-        label: "Country",
+        label: "In what country is this address located?",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No",
@@ -1394,14 +1460,6 @@ export const formFields: Field[] = [
   // MARRIAGE INFORMATION
   // ============================================
   {
-    key: "number_of_marriages",
-    pdfKey: "number_of_marriages",
-    label: "How many times have you been married in your whole life?",
-    type: "text",
-    section: "Your Marital Information",
-    maxLength: 2,
-  },
-  {
     key: "marital_status",
     pdfKey: "marital_status",
     label: "Which of these best describes you right now?",
@@ -1439,103 +1497,125 @@ export const formFields: Field[] = [
         pdfKey: "marital_status_Annulled",
       },
     ],
-  },
-
-  // ============================================
-  // PAGE 3: SPOUSE & MARRIAGE DETAILS
-  // ============================================
-  {
-    key: "spouse1_date_marriage",
-    pdfKey: "Pt2Line18_DateOfMarriage",
-    label: "When did you get married to your current husband or wife?",
-    type: "date",
-    section: "Your Marital Information",
-    placeholder: "MM/DD/YYYY",
-  },
-  {
-    key: "spouse1_place_city",
-    pdfKey: "Pt2Line19a_CityTown",
-    label: "What city or town did you get married in?",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse1_place_state",
-    pdfKey: "Pt2Line19b_State",
-    label: "State (if in US)",
-    type: "dropdown",
-    isState: true,
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse1_place_province",
-    pdfKey: "Pt2Line19c_Province",
-    label: "Province (if outside US)",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse1_place_country",
-    pdfKey: "Pt2Line19d_Country",
-    label: "Country",
-    type: "text",
-    section: "Your Marital Information",
-  },
-
-  // Spouse 1 Full Name
-  {
-    key: "spouse1_given_name",
-    pdfKey: "Pt2Line20b_GivenName",
-    label: "Spouse 1: First Name",
-    type: "text",
-    section: "Your Marital Information",
     subQuestions: [
+      // ============================================
+      // PAGE 3: SPOUSE & MARRIAGE DETAILS
+      // ============================================
       {
-        key: "spouse1_family_name",
-        pdfKey: "Pt2Line20a_FamilyName",
-        label: "Spouse 1: Last Name",
+        key: "number_of_marriages",
+        pdfKey: "number_of_marriages",
+        label: "How many times have you been married in your whole life?",
         type: "text",
         section: "Your Marital Information",
+        maxLength: 2,
+        pattern: "[0-9]*",
+        inputMode: "numeric",
+        condition: (d) => d.marital_status !== "Single",
       },
       {
-        key: "spouse1_middle_name",
-        pdfKey: "Pt2Line20c_MiddleName",
-        label: "Spouse 1: Middle Name",
+        key: "spouse1_date_marriage",
+        pdfKey: "Pt2Line18_DateOfMarriage",
+        label: "When did you get married to your current husband or wife?",
+        type: "date",
+        section: "Your Marital Information",
+        placeholder: "MM/DD/YYYY",
+        condition: (d) => d.marital_status !== "Single",
+      },
+      {
+        key: "spouse1_place_city",
+        pdfKey: "Pt2Line19a_CityTown",
+        label: "What city or town did you get married in?",
         type: "text",
         section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+      },
+      {
+        key: "spouse1_place_state",
+        pdfKey: "Pt2Line19b_State",
+        label: "What U.S. state did you get married in? (if in the U.S.)",
+        type: "dropdown",
+        isState: true,
+        section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+      },
+      {
+        key: "spouse1_place_province",
+        pdfKey: "Pt2Line19c_Province",
+        label: "What province did you get married in? (if outside the U.S.)",
+        type: "text",
+        section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+      },
+      {
+        key: "spouse1_place_country",
+        pdfKey: "Pt2Line19d_Country",
+        label: "What country did you get married in?",
+        type: "text",
+        section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+      },
+
+      // Spouse 1 Full Name
+      {
+        key: "spouse1_given_name",
+        pdfKey: "Pt2Line20b_GivenName",
+        label: "What is your current spouse's first name? (Spouse 1)",
+        type: "text",
+        section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+        subQuestions: [
+          {
+            key: "spouse1_family_name",
+            pdfKey: "Pt2Line20a_FamilyName",
+            label: "What is their last name?",
+            type: "text",
+            section: "Your Marital Information",
+          },
+          {
+            key: "spouse1_middle_name",
+            pdfKey: "Pt2Line20c_MiddleName",
+            label: "What is their middle name? (If any)",
+            type: "text",
+            section: "Your Marital Information",
+          },
+        ],
+      },
+      {
+        key: "spouse1_marriage_end_date",
+        pdfKey: "Pt2Line21_DateMarriageEnded",
+        label: "When did this marriage end? (Leave blank if you are still married)",
+        type: "text",
+        section: "Your Marital Information",
+        placeholder: "MM/DD/YYYY",
+        condition: (d) => d.marital_status !== "Single",
       },
     ],
-  },
-  {
-    key: "spouse1_marriage_end_date",
-    pdfKey: "Pt2Line21_DateMarriageEnded",
-    label: "When did this marriage end? (Leave blank if you are still married)",
-    type: "text",
-    section: "Your Marital Information",
-    placeholder: "MM/DD/YYYY",
   },
 
   // Spouse 2 (Previous Spouse)
   {
     key: "spouse2_given_name",
     pdfKey: "Pt2Line22b_GivenName",
-    label: "Spouse 2: First Name",
+    label: "What was your previous husband or wife's first name? (Spouse 2)",
     type: "text",
     section: "Your Marital Information",
+    condition: getSpouseCondition(2),
   },
   {
     key: "spouse2_family_name",
     pdfKey: "Pt2Line22a_FamilyName",
-    label: "Spouse 2: Last Name",
+    label: "What was their last name?",
     type: "text",
     section: "Your Marital Information",
+    condition: getSpouseCondition(2),
   },
   {
     key: "spouse2_middle_name",
     pdfKey: "Pt2Line22c_MiddleName",
-    label: "Spouse 2: Middle Name",
+    label: "What was their middle name? (If any)",
     type: "text",
     section: "Your Marital Information",
+    condition: getSpouseCondition(2),
   },
   {
     key: "spouse2_marriage_end_date",
@@ -1544,107 +1624,45 @@ export const formFields: Field[] = [
     type: "date",
     section: "Your Marital Information",
     placeholder: "MM/DD/YYYY",
+    condition: getSpouseCondition(2),
   },
 
-  // Spouse 3
-  {
-    key: "spouse3_given_name",
-    pdfKey: "Pt2Line24_GivenName",
-    label: "Spouse 3: First Name",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse3_family_name",
-    pdfKey: "Pt2Line24_FamilyName",
-    label: "Spouse 3: Last Name",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse3_middle_name",
-    pdfKey: "Pt2Line24_MiddleName",
-    label: "Spouse 3: Middle Name",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse3_date_of_birth",
-    pdfKey: "Pt2Line25_DateofBirth",
-    label: "Spouse 3: Date of Birth",
-    type: "date",
-    section: "Your Marital Information",
-    placeholder: "MM/DD/YYYY",
-  },
-  {
-    key: "spouse3_sex",
-    pdfKey: "Pt2Line26",
-    label: "Spouse 3: Sex",
-    type: "radio",
-    section: "Your Marital Information",
-    options: [
-      { label: "Male", value: "Male", pdfKey: "Pt2Line26_Male" },
-      { label: "Female", value: "Female", pdfKey: "Pt2Line26_Female" },
-    ],
-  },
-
-  // Spouse 3 Residence
-  {
-    key: "spouse3_country_birth",
-    pdfKey: "Pt2Line27_CountryofBirth",
-    label: "Spouse 3: Country of Birth",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse3_city_residence",
-    pdfKey: "Pt2Line28_CityTownOrVillageOfResidence",
-    label: "Spouse 3: City or Town where they live",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse3_country_residence",
-    pdfKey: "Pt2Line29_CountryOfResidence",
-    label: "Spouse 3: Country where they live",
-    type: "text",
-    section: "Your Marital Information",
-  },
+  ...generatePriorSpousesFields(3, 8),
 
   // Parent 1
   {
     key: "parent1_family_name",
     pdfKey: "Pt2Line24_FamilyName",
-    label: "Parent 1: Last Name",
+    label: "What is your first parent's last name? (Parent 1)",
     type: "text",
     section: "Your Marital Information",
   },
   {
     key: "parent1_given_name",
     pdfKey: "Pt2Line24_GivenName",
-    label: "Parent 1: First Name",
+    label: "What is your first parent's first name?",
     type: "text",
     section: "Your Marital Information",
   },
   {
     key: "parent1_middle_name",
     pdfKey: "Pt2Line24_MiddleName",
-    label: "Parent 1: Middle Name",
+    label: "What is their middle name? (If any)",
     type: "text",
     section: "Your Marital Information",
   },
   {
     key: "parent1_date_of_birth",
     pdfKey: "Pt2Line25_DateofBirth",
-    label: "Parent 1: Date of Birth",
+    label: "When was your first parent born?",
     type: "date",
     section: "Your Marital Information",
     placeholder: "MM/DD/YYYY",
   },
   {
     key: "parent1_sex",
-    pdfKey: "Pt2Line32",
-    label: "Parent 1: Sex",
+    pdfKey: "Pt2Line26",
+    label: "What is your first parent's gender?",
     type: "radio",
     section: "Your Marital Information",
     options: [
@@ -1657,21 +1675,21 @@ export const formFields: Field[] = [
   {
     key: "parent1_country_birth",
     pdfKey: "Pt2Line27_CountryofBirth",
-    label: "Parent 1: Country of Birth",
+    label: "What country was your first parent born in?",
     type: "text",
     section: "Your Marital Information",
   },
   {
     key: "parent1_city_residence",
     pdfKey: "Pt2Line28_CityTownOrVillageOfResidence",
-    label: "Parent 1: City or Town where they live",
+    label: "What city or town do they live in now?",
     type: "text",
     section: "Your Marital Information",
   },
   {
     key: "parent1_country_residence",
     pdfKey: "Pt2Line29_CountryOfResidence",
-    label: "Parent 1: Country where they live",
+    label: "What country do they live in now?",
     type: "text",
     section: "Your Marital Information",
   },
@@ -1679,36 +1697,36 @@ export const formFields: Field[] = [
   {
     key: "parent2_family_name",
     pdfKey: "Pt2Line30a_FamilyName",
-    label: "Parent 2: Last Name",
+    label: "What is your second parent's last name? (Parent 2)",
     type: "text",
     section: "Your Marital Information",
   },
   {
     key: "parent2_given_name",
     pdfKey: "Pt2Line30b_GivenName",
-    label: "Parent 2: First Name",
+    label: "What is your second parent's first name?",
     type: "text",
     section: "Your Marital Information",
   },
   {
-    key: "parent1_middle_name",
+    key: "parent2_middle_name",
     pdfKey: "Pt2Line30c_MiddleName",
-    label: "Parent 2: Middle Name",
+    label: "What is their middle name? (If any)",
     type: "text",
     section: "Your Marital Information",
   },
   {
-    key: "parent1_date_of_birth",
+    key: "parent2_date_of_birth",
     pdfKey: "Pt2Line31_DateofBirth",
-    label: "Parent 2: Date of Birth",
+    label: "When was your second parent born?",
     type: "date",
     section: "Your Marital Information",
     placeholder: "MM/DD/YYYY",
   },
   {
-    key: "parent1_sex",
+    key: "parent2_sex",
     pdfKey: "Pt2Line32",
-    label: "Parent 2: Sex",
+    label: "What is your second parent's gender?",
     type: "radio",
     section: "Your Marital Information",
     options: [
@@ -1717,25 +1735,25 @@ export const formFields: Field[] = [
     ],
   },
 
-  // Parent 1 Residence
+  // Parent 2 Residence
   {
-    key: "parent1_country_birth",
+    key: "parent2_country_birth",
     pdfKey: "Pt2Line33_CountryofBirth",
-    label: "Parent 2: Country of Birth",
+    label: "What country was your second parent born in?",
     type: "text",
     section: "Your Marital Information",
   },
   {
-    key: "parent1_city_residence",
+    key: "parent2_city_residence",
     pdfKey: "Pt2Line34_CityTownOrVillageOfResidence",
-    label: "Parent 2: City or Town where they live",
+    label: "What city or town do they live in now?",
     type: "text",
     section: "Your Marital Information",
   },
   {
-    key: "parent1_country_residence",
+    key: "parent2_country_residence",
     pdfKey: "Pt2Line35_CountryOfResidence",
-    label: "Parent 2: Country where they live",
+    label: "What country do they live in now?",
     type: "text",
     section: "Your Marital Information",
   },
@@ -2478,39 +2496,38 @@ export const formFields: Field[] = [
     ],
   },
   {
-    key: "Pt3Line2_Race_White",
-    label: "Is your race White?",
+    key: "Pt3Line2_Race",
+    pdfKey: "Pt3Line2_Race",
+    label: "What is your race? (Select all that apply)",
     section: "Biographic Information",
     type: "checkbox",
-    pdfKey: "Pt3Line2_Race_White",
-  },
-  {
-    key: "Pt3Line2_Race_Asian",
-    label: "Is your race Asian?",
-    section: "Biographic Information",
-    type: "checkbox",
-    pdfKey: "Pt3Line2_Race_Asian",
-  },
-  {
-    key: "Pt3Line2_Race_Black",
-    label: "Is your race Black or African American?",
-    section: "Biographic Information",
-    type: "checkbox",
-    pdfKey: "Pt3Line2_Race_Black",
-  },
-  {
-    key: "Pt3Line2_Race_AmericanIndianAlaskaNative",
-    label: "Is your race American Indian or Alaska Native?",
-    section: "Biographic Information",
-    type: "checkbox",
-    pdfKey: "Pt3Line2_Race_AmericanIndianAlaskaNative",
-  },
-  {
-    key: "Pt3Line2_Race_NativeHawaiianOtherPacificIslander",
-    label: "Is your race Native Hawaiian or Other Pacific Islander?",
-    section: "Biographic Information",
-    type: "checkbox",
-    pdfKey: "Pt3Line2_Race_NativeHawaiianOtherPacificIslander",
+    options: [
+      {
+        label: "White",
+        value: "White",
+        pdfKey: "Pt3Line2_Race_White",
+      },
+      {
+        label: "Asian",
+        value: "Asian",
+        pdfKey: "Pt3Line2_Race_Asian",
+      },
+      {
+        label: "Black or African American",
+        value: "Black",
+        pdfKey: "Pt3Line2_Race_Black",
+      },
+      {
+        label: "American Indian or Alaska Native",
+        value: "AmericanIndianAlaskaNative",
+        pdfKey: "Pt3Line2_Race_AmericanIndianAlaskaNative",
+      },
+      {
+        label: "Native Hawaiian or Other Pacific Islander",
+        value: "NativeHawaiianOtherPacificIslander",
+        pdfKey: "Pt3Line2_Race_NativeHawaiianOtherPacificIslander",
+      },
+    ],
   },
   {
     key: "Pt3Line3_HeightFeet",
@@ -5342,7 +5359,16 @@ export const formFields: Field[] = [
 
 export const getInitialFormData = () => {
   const data: Record<string, string> = {};
-  formFields.forEach((f) => (data[f.key] = ""));
+  formFields.forEach((f) => {
+    data[f.key] = "";
+    if (f.options) {
+      f.options.forEach((opt) => {
+        if (opt.pdfKey) {
+          data[opt.pdfKey] = "";
+        }
+      });
+    }
+  });
   return data;
 };
 
@@ -5360,7 +5386,7 @@ export const sectionIntroMessages = {
   "Address History": {
     greeting: "Let's cover your address history",
     message:
-      "USCIS requires a complete record of where you've lived. We'll collect your current and previous addresses to ensure all records are accurate and up to date.",
+      "USCIS requires a complete record of where you've lived in the last 5 years. We'll collect your current and previous addresses to ensure all records are accurate and up to date.",
   },
   "Biographic Information": {
     greeting: "Moving on to biographic details",
@@ -5404,12 +5430,80 @@ export const sectionIntroMessages = {
   },
 };
 
+export const overflowFields = [
+  {
+    prefix: "address",
+    countKey: "address_count",
+    startIndex: 3,
+    maxIndex: 9,
+    pageNumber: "2",
+    partNumber: "2",
+    itemNumber: "14",
+    labelPrefix: "Address",
+    fields: [
+      { suffix: "street", label: "Street" },
+      { suffix: "city", label: "City" },
+      { suffix: "state", label: "State" },
+      { suffix: "zip", label: "Zip" },
+      { suffix: "from", label: "From" },
+      { suffix: "to", label: "To" },
+      { suffix: "country", label: "Country" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const street = data[`address_${index}_street`] || "";
+      const city = data[`address_${index}_city`] || "";
+      const state = data[`address_${index}_state`] || "";
+      const zip = data[`address_${index}_zip`] || "";
+      const from = data[`address_${index}_from`] || "";
+      const to = data[`address_${index}_to`] || "";
+      const country = data[`address_${index}_country`] || "";
+
+      const parts = [street, city, state, zip, country].filter(Boolean);
+      let info = `Address ${index}: ${parts.join("\n ")}.`;
+      if (from || to) {
+        info += ` From: ${from} To: ${to}`;
+      }
+      return info;
+    },
+  },
+  {
+    prefix: "spouse",
+    countKey: "number_of_marriages",
+    startIndex: 3,
+    maxIndex: 8,
+    pageNumber: "3",
+    partNumber: "2",
+    itemNumber: "22",
+    labelPrefix: "Spouse",
+    fields: [
+      { suffix: "given_name", label: "First Name" },
+      { suffix: "family_name", label: "Last Name" },
+      { suffix: "middle_name", label: "Middle Name" },
+      { suffix: "marriage_end_date", label: "Marriage End Date" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const givenName = data[`spouse_${index}_given_name`] || "";
+      const familyName = data[`spouse_${index}_family_name`] || "";
+      const middleName = data[`spouse_${index}_middle_name`] || "";
+      const endDate = data[`spouse_${index}_marriage_end_date`] || "";
+
+      const nameParts = [givenName, middleName, familyName].filter(Boolean);
+      let info = `Prior Spouse ${index - 1}: ${nameParts.join(" ")}.`;
+      if (endDate) {
+        info += ` Marriage Ended: ${endDate}`;
+      }
+      return info;
+    },
+  },
+];
+
 export const i130Config = {
   formId,
   formTitle,
   formSubtitle,
   formFields,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i130Config;
