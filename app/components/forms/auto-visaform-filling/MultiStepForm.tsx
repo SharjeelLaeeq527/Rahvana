@@ -1582,7 +1582,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       {/* Main Layout - Centered Content */}
       <div className="flex gap-6 px-4 md:px-8 py-0 guide-grid-bg justify-center items-stretch flex-1 min-h-0">
         {/* Desktop Sidebar (stays within header/footer zone) */}
-        {view === "form" && !(showSectionIntro && introVisible) && (
+        {view === "form" && (
           <motion.div
             initial={false}
             animate={{
@@ -1590,6 +1590,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             }}
             transition={{ type: "spring", damping: 28, stiffness: 240 }}
             className="hidden lg:block shrink-0 -ml-4 md:-ml-8"
+            style={{
+              display: (showSectionIntro && introVisible) ? "none" : "block",
+            }}
           >
             <aside
               className="sticky top-16 mt-12 h-[calc(100vh-280px)] w-full overflow-hidden"
