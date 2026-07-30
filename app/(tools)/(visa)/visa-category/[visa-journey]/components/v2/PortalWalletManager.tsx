@@ -270,7 +270,8 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({ isOpen, onClose, data,
                 </label>
                 <input
                   type="date"
-                  value={localData.date}
+                  value={localData.date || ""}
+                  onChange={(e) => setLocalData({ ...localData, date: e.target.value })}
                   max={new Date().toISOString().split("T")[0]}
                   className="p-[11px_14px] border-[1.5px] border-[#d0e4f7] rounded-[10px] text-[14px] text-[#1c2b3a] bg-white outline-none focus:border-[#3b7dd8] focus:ring-4 focus:ring-[#3b7dd8]/12 transition-all"
                 />

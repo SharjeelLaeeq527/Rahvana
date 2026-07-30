@@ -748,8 +748,21 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       const currentField = visibleFields[currentQuestionIndex];
       const currentSubCount = progressiveSubQuestionIndices[currentField.key] ?? -1;
 
-      // Handle sub-questions (including conditional ones)
-      if (currentField.subQuestions && currentSubCount < currentField.subQuestions.length - 1) {
+      // Only count sub-questions that are actually applicable/visible right now.
+      // FormStep renders `applicableSubQuestions` (filtered by the same condition),
+      // so the reveal counter must use the same filter. Otherwise a conditional
+      // sub-question whose condition is currently false creates a "dead" click that
+      // reveals nothing yet still blocks navigation, forcing the user to press
+      // Continue several times before it advances to the next question.
+      const applicableSubQuestions = (currentField.subQuestions || []).filter(
+        (subQ) => !subQ.condition || subQ.condition(formData)
+      );
+
+      // Handle sub-questions (reveal the next applicable one before advancing)
+      if (
+        applicableSubQuestions.length > 0 &&
+        currentSubCount < applicableSubQuestions.length - 1
+      ) {
         setProgressiveSubQuestionIndices((prev) => ({
           ...prev,
           [currentField.key]: (currentSubCount ?? -1) + 1,
@@ -1457,7 +1470,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
               {/* Content (Scrollable) */}
               <div className="flex-1 overflow-y-auto px-5 py-4">
-                <SectionList onPick={() => setIsDrawerOpen(false)} showLabels />
+                {SectionList({ onPick: () => setIsDrawerOpen(false), showLabels: true })}
               </div>
             </motion.div>
           </>
@@ -1506,7 +1519,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
                     {/* Content */}
                     <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
-                      <SectionList />
+                      {SectionList({})}
                     </div>
                   </>
                 )}
