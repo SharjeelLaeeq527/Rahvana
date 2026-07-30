@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { ChevronDown, ExternalLink, Clock, Shield } from "lucide-react";
 import { RoadmapDataV3 } from "./types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -69,12 +70,12 @@ import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 // import { getActiveStepsForStage } from "./journeyHelpersV3";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 import { E, msg } from "@/lib/errors";
-import IR1Ticker from "./IR1Ticker";
+import VisaTicker from "@/app/components/home-page/VisaTicker";
 import {
-  buildIR1TickerProps,
+  buildVisaTickerProps,
   fetchReceiptForJourney,
   ReceiptRecord,
-} from "@/app/components/home-page/Ir1tickerprops";
+} from "@/app/components/home-page/Visatickerprops";
 
 interface DashboardViewProps {
   data: RoadmapDataV3;
@@ -104,6 +105,10 @@ interface DashboardViewProps {
 // Dashboard background image
 const dashboardBg = "/assets/images/dashboard.png";
 
+const visaCategoryNames: Record<string, string> = {
+  "ir5-journey": "IR-5 Parent",
+};
+
 export function DashboardViewV3({
   data,
   state,
@@ -115,6 +120,11 @@ export function DashboardViewV3({
   actions,
 }: DashboardViewProps) {
   const plan = usePlan();
+
+  const pathname = usePathname();
+  const slug = pathname.split("/").pop();
+  const visaName = visaCategoryNames[slug || ""];
+
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
 
   // Category-specific Consistency Intelligence config. Falls back to IR-1 (the
@@ -1116,7 +1126,7 @@ export function DashboardViewV3({
       <div className="w-full max-w-[1200px] xl:max-w-[1500px] mx-auto animate-in fade-in duration-700 relative z-10">
         <div className={`w-full mb-6`}>
           <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-1 text-center lg:text-left">
-            IR-1 Spouse Visa · Pakistan
+            {visaName} Visa · Pakistan
           </div>
         </div>
         {upgradeModalFeature && (
@@ -1125,11 +1135,11 @@ export function DashboardViewV3({
             onClose={() => setUpgradeModalFeature(null)}
           />
         )}
-        {/* IR-1 Live ticker — journey dashboard (placed above hero) */}
+        {/* Visa ticker — journey dashboard (placed above hero) */}
         {receiptRecord !== undefined && (
           <div className="mb-6">
-            <IR1Ticker
-              {...buildIR1TickerProps(
+            <VisaTicker
+              {...buildVisaTickerProps(
                 state,
                 trackingStatus,
                 nvcCaseNum,
