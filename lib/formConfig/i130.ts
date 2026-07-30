@@ -1,6 +1,52 @@
 // C:\Users\HP\Desktop\arachnie\Arachnie\lib\formConfig\i130.ts
 import type { Field } from "./types";
 
+const generatePriorSpousesFields = (startIndex: number, endIndex: number): Field[] => {
+  const fields: Field[] = [];
+  for (let i = startIndex; i <= endIndex; i++) {
+    fields.push({
+      key: `spouse_${i}_history_note`,
+      pdfKey: "N/A",
+      label: `Previous Spouse ${i - 1}`,
+      type: "hidden",
+      section: "Your Marital Information",
+      condition: (d) => Number(d.number_of_marriages) >= i,
+      subQuestions: [
+        {
+          key: `spouse_${i}_given_name`,
+          pdfKey: "N/A",
+          label: "What was their first name?",
+          type: "text",
+          section: "Your Marital Information",
+        },
+        {
+          key: `spouse_${i}_family_name`,
+          pdfKey: "N/A",
+          label: "What was their last name?",
+          type: "text",
+          section: "Your Marital Information",
+        },
+        {
+          key: `spouse_${i}_middle_name`,
+          pdfKey: "N/A",
+          label: "What was their middle name? (If any)",
+          type: "text",
+          section: "Your Marital Information",
+        },
+        {
+          key: `spouse_${i}_marriage_end_date`,
+          pdfKey: "N/A",
+          label: "When did this marriage end? (MM/DD/YYYY)",
+          type: "date",
+          section: "Your Marital Information",
+          placeholder: "MM/DD/YYYY",
+        },
+      ],
+    });
+  }
+  return fields;
+};
+
 export const formId = "i130";
 export const formTitle = "Form I-130";
 export const formSubtitle = "Petition for Alien Relative";
@@ -1414,6 +1460,8 @@ export const formFields: Field[] = [
     type: "text",
     section: "Your Marital Information",
     maxLength: 2,
+    pattern: "[0-9]*",
+    inputMode: "numeric",
   },
   {
     key: "marital_status",
@@ -1536,6 +1584,7 @@ export const formFields: Field[] = [
     label: "What was your previous husband or wife's first name? (Spouse 2)",
     type: "text",
     section: "Your Marital Information",
+    condition: (d) => Number(d.number_of_marriages) >= 2,
   },
   {
     key: "spouse2_family_name",
@@ -1543,6 +1592,7 @@ export const formFields: Field[] = [
     label: "What was their last name?",
     type: "text",
     section: "Your Marital Information",
+    condition: (d) => Number(d.number_of_marriages) >= 2,
   },
   {
     key: "spouse2_middle_name",
@@ -1550,6 +1600,7 @@ export const formFields: Field[] = [
     label: "What was their middle name? (If any)",
     type: "text",
     section: "Your Marital Information",
+    condition: (d) => Number(d.number_of_marriages) >= 2,
   },
   {
     key: "spouse2_marriage_end_date",
@@ -1558,72 +1609,10 @@ export const formFields: Field[] = [
     type: "date",
     section: "Your Marital Information",
     placeholder: "MM/DD/YYYY",
+    condition: (d) => Number(d.number_of_marriages) >= 2,
   },
 
-  // // Spouse 3
-  // {
-  //   key: "spouse3_given_name",
-  //   pdfKey: "Pt2Line24_GivenName",
-  //   label: "Spouse 3: First Name",
-  //   type: "text",
-  //   section: "Your Marital Information",
-  // },
-  // {
-  //   key: "spouse3_family_name",
-  //   pdfKey: "Pt2Line24_FamilyName",
-  //   label: "Spouse 3: Last Name",
-  //   type: "text",
-  //   section: "Your Marital Information",
-  // },
-  // {
-  //   key: "spouse3_middle_name",
-  //   pdfKey: "Pt2Line24_MiddleName",
-  //   label: "Spouse 3: Middle Name",
-  //   type: "text",
-  //   section: "Your Marital Information",
-  // },
-  // {
-  //   key: "spouse3_date_of_birth",
-  //   pdfKey: "Pt2Line25_DateofBirth",
-  //   label: "Spouse 3: Date of Birth",
-  //   type: "date",
-  //   section: "Your Marital Information",
-  //   placeholder: "MM/DD/YYYY",
-  // },
-  // {
-  //   key: "spouse3_sex",
-  //   pdfKey: "Pt2Line26",
-  //   label: "Spouse 3: Sex",
-  //   type: "radio",
-  //   section: "Your Marital Information",
-  //   options: [
-  //     { label: "Male", value: "Male", pdfKey: "Pt2Line26_Male" },
-  //     { label: "Female", value: "Female", pdfKey: "Pt2Line26_Female" },
-  //   ],
-  // },
-
-  // // Spouse 3 Residence
-  // {
-  //   key: "spouse3_country_birth",
-  //   pdfKey: "Pt2Line27_CountryofBirth",
-  //   label: "Spouse 3: Country of Birth",
-  //   type: "text",
-  //   section: "Your Marital Information",
-  // },
-  // {
-  //   key: "spouse3_city_residence",
-  //   pdfKey: "Pt2Line28_CityTownOrVillageOfResidence",
-  //   label: "Spouse 3: City or Town where they live",
-  //   type: "text",
-  //   section: "Your Marital Information",
-  // },
-  // {
-  //   key: "spouse3_country_residence",
-  //   pdfKey: "Pt2Line29_CountryOfResidence",
-  //   label: "Spouse 3: Country where they live",
-  //   type: "text",
-  //   section: "Your Marital Information",
-  // },
+  ...generatePriorSpousesFields(3, 8),
 
   // Parent 1
   {
@@ -5426,12 +5415,80 @@ export const sectionIntroMessages = {
   },
 };
 
+export const overflowFields = [
+  {
+    prefix: "address",
+    countKey: "address_count",
+    startIndex: 3,
+    maxIndex: 9,
+    pageNumber: "2",
+    partNumber: "2",
+    itemNumber: "14",
+    labelPrefix: "Address",
+    fields: [
+      { suffix: "street", label: "Street" },
+      { suffix: "city", label: "City" },
+      { suffix: "state", label: "State" },
+      { suffix: "zip", label: "Zip" },
+      { suffix: "from", label: "From" },
+      { suffix: "to", label: "To" },
+      { suffix: "country", label: "Country" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const street = data[`address_${index}_street`] || "";
+      const city = data[`address_${index}_city`] || "";
+      const state = data[`address_${index}_state`] || "";
+      const zip = data[`address_${index}_zip`] || "";
+      const from = data[`address_${index}_from`] || "";
+      const to = data[`address_${index}_to`] || "";
+      const country = data[`address_${index}_country`] || "";
+
+      const parts = [street, city, state, zip, country].filter(Boolean);
+      let info = `Address ${index}: ${parts.join("\n ")}.`;
+      if (from || to) {
+        info += ` From: ${from} To: ${to}`;
+      }
+      return info;
+    },
+  },
+  {
+    prefix: "spouse",
+    countKey: "number_of_marriages",
+    startIndex: 3,
+    maxIndex: 8,
+    pageNumber: "3",
+    partNumber: "2",
+    itemNumber: "22",
+    labelPrefix: "Spouse",
+    fields: [
+      { suffix: "given_name", label: "First Name" },
+      { suffix: "family_name", label: "Last Name" },
+      { suffix: "middle_name", label: "Middle Name" },
+      { suffix: "marriage_end_date", label: "Marriage End Date" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const givenName = data[`spouse_${index}_given_name`] || "";
+      const familyName = data[`spouse_${index}_family_name`] || "";
+      const middleName = data[`spouse_${index}_middle_name`] || "";
+      const endDate = data[`spouse_${index}_marriage_end_date`] || "";
+
+      const nameParts = [givenName, middleName, familyName].filter(Boolean);
+      let info = `Prior Spouse ${index - 1}: ${nameParts.join(" ")}.`;
+      if (endDate) {
+        info += ` Marriage Ended: ${endDate}`;
+      }
+      return info;
+    },
+  },
+];
+
 export const i130Config = {
   formId,
   formTitle,
   formSubtitle,
   formFields,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i130Config;

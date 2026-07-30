@@ -1000,8 +1000,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       processField(field);
     });
 
-    // Add dynamic overflow handling for additional addresses
-    const count = Number(formData.address_count) || 0;
+    // Add dynamic overflow handling for additional entries (e.g. addresses, spouses)
     const additionalBlocks: Array<{
       page_number: string;
       part_number: string;
@@ -1009,28 +1008,29 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       info: string;
     }> = [];
 
-    for (let i = 3; i <= count + 1; i++) {
-      if (i > 9) break; // Limit to Address 9 (which is 8 previous addresses) for now
+    if (config.overflowFields) {
+      config.overflowFields.forEach((overConfig) => {
+        const count = Number(formData[overConfig.countKey]) || 0;
+        const maxIdx = overConfig.maxIndex ?? (count + 1);
+        for (let i = overConfig.startIndex; i <= count + 1; i++) {
+          if (i > maxIdx) break;
 
-      const street = formData[`address_${i}_street`] || "";
-      const city = formData[`address_${i}_city`] || "";
-      const state = formData[`address_${i}_state`] || "";
-      const zip = formData[`address_${i}_zip`] || "";
-      const from = formData[`address_${i}_from`] || "";
-      const to = formData[`address_${i}_to`] || "";
-      const country = formData[`address_${i}_country`] || "";
+          const keyPrefix = `${overConfig.prefix}_${i}_`;
+          const isAnyFieldFilled = overConfig.fields.some((f) => {
+            const val = formData[`${keyPrefix}${f.suffix}`];
+            return val && val.trim() !== "";
+          });
 
-      const parts = [street, city, state, zip, country].filter(Boolean);
-      let infoString = `Address ${i}: ${parts.join("\n ")}.`;
-      if (from || to) {
-        infoString += ` From: ${from} To: ${to}`;
-      }
-
-      additionalBlocks.push({
-        page_number: "2", // I-130 Address History is on Page 2
-        part_number: "2", // Part 2
-        item_number: "14", // Item 14 (Physical Address 2)
-        info: infoString,
+          if (isAnyFieldFilled) {
+            const infoString = overConfig.formatInfo(i, formData);
+            additionalBlocks.push({
+              page_number: overConfig.pageNumber,
+              part_number: overConfig.partNumber,
+              item_number: overConfig.itemNumber,
+              info: infoString,
+            });
+          }
+        }
       });
     }
 
