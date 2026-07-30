@@ -1886,19 +1886,26 @@ export function SiteHeader({
 
           <div className="flex-1 overflow-y-auto py-4">
             <nav className="flex flex-col px-4 gap-1">
-              {/* IR-1 Journey Link */}
-              <HydrationSafeButton
-                onClick={() => handleNav("ir1-journey")}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                  isActive("ir1-journey", "/visa-category/ir1-journey")
-                    ? "bg-[#6ba3a0]/60 text-[#0d7377]"
-                    : "text-muted-foreground hover:bg-muted"
+              {/* Explore Journey Link */}
+              <div className="relative pt-2 pb-0">
+              <Link
+                href={journeyButtonHref}
+                onClick={(e) => handleNav(journeyNavigationId, e)}
+                className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  isHomeHeroState
+                    ? isActive(journeyNavigationId, journeyButtonHref)
+                      ? "bg-muted text-[#0d7377]"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                    : isHomeHeroP2State || isHomepageHeroState
+                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                      : isActive(journeyNavigationId, journeyButtonHref)
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
-                <Briefcase className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-                <span className="font-bold">IR-1 Journey</span>
-              </HydrationSafeButton>
-
+                {journeyButtonText}
+              </Link>
+            </div>
               {/* Commented out - Explore Journeys - Now using IR-1 Journey */}
               {/* <HydrationSafeButton
                 onClick={() => {
