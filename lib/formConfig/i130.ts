@@ -1,6 +1,14 @@
 // C:\Users\HP\Desktop\arachnie\Arachnie\lib\formConfig\i130.ts
 import type { Field } from "./types";
 
+const getSpouseCondition = (i: number) => {
+  return (d: Record<string, string>) => {
+    const married = d.marital_status === "Married" || d.marital_status === "Separated";
+    const limit = married ? i : i - 1;
+    return Number(d.number_of_marriages) >= limit;
+  };
+};
+
 const generatePriorSpousesFields = (startIndex: number, endIndex: number): Field[] => {
   const fields: Field[] = [];
   for (let i = startIndex; i <= endIndex; i++) {
@@ -10,7 +18,7 @@ const generatePriorSpousesFields = (startIndex: number, endIndex: number): Field
       label: `Previous Spouse ${i - 1}`,
       type: "hidden",
       section: "Your Marital Information",
-      condition: (d) => Number(d.number_of_marriages) >= i,
+      condition: getSpouseCondition(i),
       subQuestions: [
         {
           key: `spouse_${i}_given_name`,
@@ -1454,16 +1462,6 @@ export const formFields: Field[] = [
   // MARRIAGE INFORMATION
   // ============================================
   {
-    key: "number_of_marriages",
-    pdfKey: "number_of_marriages",
-    label: "How many times have you been married in your whole life?",
-    type: "text",
-    section: "Your Marital Information",
-    maxLength: 2,
-    pattern: "[0-9]*",
-    inputMode: "numeric",
-  },
-  {
     key: "marital_status",
     pdfKey: "marital_status",
     label: "Which of these best describes you right now?",
@@ -1501,80 +1499,99 @@ export const formFields: Field[] = [
         pdfKey: "marital_status_Annulled",
       },
     ],
-  },
-
-  // ============================================
-  // PAGE 3: SPOUSE & MARRIAGE DETAILS
-  // ============================================
-  {
-    key: "spouse1_date_marriage",
-    pdfKey: "Pt2Line18_DateOfMarriage",
-    label: "When did you get married to your current husband or wife?",
-    type: "date",
-    section: "Your Marital Information",
-    placeholder: "MM/DD/YYYY",
-  },
-  {
-    key: "spouse1_place_city",
-    pdfKey: "Pt2Line19a_CityTown",
-    label: "What city or town did you get married in?",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse1_place_state",
-    pdfKey: "Pt2Line19b_State",
-    label: "What U.S. state did you get married in? (if in the U.S.)",
-    type: "dropdown",
-    isState: true,
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse1_place_province",
-    pdfKey: "Pt2Line19c_Province",
-    label: "What province did you get married in? (if outside the U.S.)",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse1_place_country",
-    pdfKey: "Pt2Line19d_Country",
-    label: "What country did you get married in?",
-    type: "text",
-    section: "Your Marital Information",
-  },
-
-  // Spouse 1 Full Name
-  {
-    key: "spouse1_given_name",
-    pdfKey: "Pt2Line20b_GivenName",
-    label: "What is your current spouse's first name? (Spouse 1)",
-    type: "text",
-    section: "Your Marital Information",
     subQuestions: [
+      // ============================================
+      // PAGE 3: SPOUSE & MARRIAGE DETAILS
+      // ============================================
       {
-        key: "spouse1_family_name",
-        pdfKey: "Pt2Line20a_FamilyName",
-        label: "What is their last name?",
+        key: "number_of_marriages",
+        pdfKey: "number_of_marriages",
+        label: "How many times have you been married in your whole life?",
         type: "text",
         section: "Your Marital Information",
+        maxLength: 2,
+        pattern: "[0-9]*",
+        inputMode: "numeric",
+        condition: (d) => d.marital_status !== "Single",
       },
       {
-        key: "spouse1_middle_name",
-        pdfKey: "Pt2Line20c_MiddleName",
-        label: "What is their middle name? (If any)",
+        key: "spouse1_date_marriage",
+        pdfKey: "Pt2Line18_DateOfMarriage",
+        label: "When did you get married to your current husband or wife?",
+        type: "date",
+        section: "Your Marital Information",
+        placeholder: "MM/DD/YYYY",
+        condition: (d) => d.marital_status !== "Single",
+      },
+      {
+        key: "spouse1_place_city",
+        pdfKey: "Pt2Line19a_CityTown",
+        label: "What city or town did you get married in?",
         type: "text",
         section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+      },
+      {
+        key: "spouse1_place_state",
+        pdfKey: "Pt2Line19b_State",
+        label: "What U.S. state did you get married in? (if in the U.S.)",
+        type: "dropdown",
+        isState: true,
+        section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+      },
+      {
+        key: "spouse1_place_province",
+        pdfKey: "Pt2Line19c_Province",
+        label: "What province did you get married in? (if outside the U.S.)",
+        type: "text",
+        section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+      },
+      {
+        key: "spouse1_place_country",
+        pdfKey: "Pt2Line19d_Country",
+        label: "What country did you get married in?",
+        type: "text",
+        section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+      },
+
+      // Spouse 1 Full Name
+      {
+        key: "spouse1_given_name",
+        pdfKey: "Pt2Line20b_GivenName",
+        label: "What is your current spouse's first name? (Spouse 1)",
+        type: "text",
+        section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+        subQuestions: [
+          {
+            key: "spouse1_family_name",
+            pdfKey: "Pt2Line20a_FamilyName",
+            label: "What is their last name?",
+            type: "text",
+            section: "Your Marital Information",
+          },
+          {
+            key: "spouse1_middle_name",
+            pdfKey: "Pt2Line20c_MiddleName",
+            label: "What is their middle name? (If any)",
+            type: "text",
+            section: "Your Marital Information",
+          },
+        ],
+      },
+      {
+        key: "spouse1_marriage_end_date",
+        pdfKey: "Pt2Line21_DateMarriageEnded",
+        label: "When did this marriage end? (Leave blank if you are still married)",
+        type: "text",
+        section: "Your Marital Information",
+        placeholder: "MM/DD/YYYY",
+        condition: (d) => d.marital_status !== "Single",
       },
     ],
-  },
-  {
-    key: "spouse1_marriage_end_date",
-    pdfKey: "Pt2Line21_DateMarriageEnded",
-    label: "When did this marriage end? (Leave blank if you are still married)",
-    type: "text",
-    section: "Your Marital Information",
-    placeholder: "MM/DD/YYYY",
   },
 
   // Spouse 2 (Previous Spouse)
@@ -1584,7 +1601,7 @@ export const formFields: Field[] = [
     label: "What was your previous husband or wife's first name? (Spouse 2)",
     type: "text",
     section: "Your Marital Information",
-    condition: (d) => Number(d.number_of_marriages) >= 2,
+    condition: getSpouseCondition(2),
   },
   {
     key: "spouse2_family_name",
@@ -1592,7 +1609,7 @@ export const formFields: Field[] = [
     label: "What was their last name?",
     type: "text",
     section: "Your Marital Information",
-    condition: (d) => Number(d.number_of_marriages) >= 2,
+    condition: getSpouseCondition(2),
   },
   {
     key: "spouse2_middle_name",
@@ -1600,7 +1617,7 @@ export const formFields: Field[] = [
     label: "What was their middle name? (If any)",
     type: "text",
     section: "Your Marital Information",
-    condition: (d) => Number(d.number_of_marriages) >= 2,
+    condition: getSpouseCondition(2),
   },
   {
     key: "spouse2_marriage_end_date",
@@ -1609,7 +1626,7 @@ export const formFields: Field[] = [
     type: "date",
     section: "Your Marital Information",
     placeholder: "MM/DD/YYYY",
-    condition: (d) => Number(d.number_of_marriages) >= 2,
+    condition: getSpouseCondition(2),
   },
 
   ...generatePriorSpousesFields(3, 8),
