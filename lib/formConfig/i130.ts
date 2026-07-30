@@ -2492,39 +2492,38 @@ export const formFields: Field[] = [
     ],
   },
   {
-    key: "Pt3Line2_Race_White",
-    label: "Is your race White?",
+    key: "Pt3Line2_Race",
+    pdfKey: "Pt3Line2_Race",
+    label: "What is your race? (Select all that apply)",
     section: "Biographic Information",
     type: "checkbox",
-    pdfKey: "Pt3Line2_Race_White",
-  },
-  {
-    key: "Pt3Line2_Race_Asian",
-    label: "Is your race Asian?",
-    section: "Biographic Information",
-    type: "checkbox",
-    pdfKey: "Pt3Line2_Race_Asian",
-  },
-  {
-    key: "Pt3Line2_Race_Black",
-    label: "Is your race Black or African American?",
-    section: "Biographic Information",
-    type: "checkbox",
-    pdfKey: "Pt3Line2_Race_Black",
-  },
-  {
-    key: "Pt3Line2_Race_AmericanIndianAlaskaNative",
-    label: "Is your race American Indian or Alaska Native?",
-    section: "Biographic Information",
-    type: "checkbox",
-    pdfKey: "Pt3Line2_Race_AmericanIndianAlaskaNative",
-  },
-  {
-    key: "Pt3Line2_Race_NativeHawaiianOtherPacificIslander",
-    label: "Is your race Native Hawaiian or Other Pacific Islander?",
-    section: "Biographic Information",
-    type: "checkbox",
-    pdfKey: "Pt3Line2_Race_NativeHawaiianOtherPacificIslander",
+    options: [
+      {
+        label: "White",
+        value: "White",
+        pdfKey: "Pt3Line2_Race_White",
+      },
+      {
+        label: "Asian",
+        value: "Asian",
+        pdfKey: "Pt3Line2_Race_Asian",
+      },
+      {
+        label: "Black or African American",
+        value: "Black",
+        pdfKey: "Pt3Line2_Race_Black",
+      },
+      {
+        label: "American Indian or Alaska Native",
+        value: "AmericanIndianAlaskaNative",
+        pdfKey: "Pt3Line2_Race_AmericanIndianAlaskaNative",
+      },
+      {
+        label: "Native Hawaiian or Other Pacific Islander",
+        value: "NativeHawaiianOtherPacificIslander",
+        pdfKey: "Pt3Line2_Race_NativeHawaiianOtherPacificIslander",
+      },
+    ],
   },
   {
     key: "Pt3Line3_HeightFeet",
@@ -5356,7 +5355,16 @@ export const formFields: Field[] = [
 
 export const getInitialFormData = () => {
   const data: Record<string, string> = {};
-  formFields.forEach((f) => (data[f.key] = ""));
+  formFields.forEach((f) => {
+    data[f.key] = "";
+    if (f.options) {
+      f.options.forEach((opt) => {
+        if (opt.pdfKey) {
+          data[opt.pdfKey] = "";
+        }
+      });
+    }
+  });
   return data;
 };
 
