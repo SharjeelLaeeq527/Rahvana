@@ -3,9 +3,7 @@ import type { Field } from "./types";
 
 const getSpouseCondition = (i: number) => {
   return (d: Record<string, string>) => {
-    const married = d.marital_status === "Married" || d.marital_status === "Separated";
-    const limit = married ? i : i - 1;
-    return Number(d.number_of_marriages) >= limit;
+    return Number(d.number_of_marriages) >= i - 1;
   };
 };
 
