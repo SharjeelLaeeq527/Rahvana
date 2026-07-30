@@ -35,6 +35,83 @@ const getDisplayValue = (field: Field, formData: Record<string, string>): string
   return formData[field.key] ?? "";
 };
 
+interface ReviewGroup {
+  type: "group";
+  key: string;
+  label: string;
+  fields: Field[];
+}
+
+interface ReviewFieldItem {
+  type: "field";
+  key: string;
+  label: string;
+  field: Field;
+}
+
+type ReviewItem = ReviewGroup | ReviewFieldItem;
+
+const getReviewItems = (
+  fields: Field[],
+  formData: Record<string, string>
+): ReviewItem[] => {
+  const items: ReviewItem[] = [];
+
+  const processField = (field: Field) => {
+    if (field.condition && !field.condition(formData)) {
+      return;
+    }
+
+    if (field.type === "hidden" && field.subQuestions && field.subQuestions.length > 0) {
+      // Gather visible subQuestions
+      const visibleSubQuestions: Field[] = [];
+      const collectSubs = (subField: Field) => {
+        if (subField.condition && !subField.condition(formData)) {
+          return;
+        }
+        if (subField.type !== "hidden" || subField.label) {
+          visibleSubQuestions.push(subField);
+        }
+        if (subField.subQuestions) {
+          subField.subQuestions.forEach((subQ) => {
+            collectSubs(subQ as unknown as Field);
+          });
+        }
+      };
+
+      field.subQuestions.forEach((subQ) => {
+        collectSubs(subQ as unknown as Field);
+      });
+
+      if (visibleSubQuestions.length > 0) {
+        items.push({
+          type: "group",
+          key: field.key,
+          label: field.label,
+          fields: visibleSubQuestions,
+        });
+      }
+    } else if (field.type !== "hidden") {
+      items.push({
+        type: "field",
+        key: field.key,
+        label: field.label,
+        field,
+      });
+    } else if (field.label) {
+      items.push({
+        type: "field",
+        key: field.key,
+        label: field.label,
+        field,
+      });
+    }
+  };
+
+  fields.forEach(processField);
+  return items;
+};
+
 interface ReviewPageProps {
   formData: Record<string, string>;
   sections: { title: string; fields: Field[] }[];
@@ -68,6 +145,7 @@ export function ReviewPage({
   const [expandedSections, setExpandedSections] = useState<Set<number>>(
     new Set([0]) // First section expanded by default
   );
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
 
   const toggleSection = (idx: number) => {
     setExpandedSections((prev) => {
@@ -78,9 +156,27 @@ export function ReviewPage({
     });
   };
 
-  const completedCount = sections.filter((section) =>
-    section.fields.some((f) => isFieldAnswered(f, formData))
-  ).length;
+  const toggleGroup = (key: string) => {
+    setExpandedGroups((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  };
+
+  const completedCount = sections.filter((section) => {
+    const reviewItems = getReviewItems(section.fields, formData);
+    const visibleFieldItems: Field[] = [];
+    reviewItems.forEach((item) => {
+      if (item.type === "group") {
+        visibleFieldItems.push(...item.fields);
+      } else {
+        visibleFieldItems.push(item.field);
+      }
+    });
+    return visibleFieldItems.length > 0 && visibleFieldItems.some((f) => isFieldAnswered(f, formData));
+  }).length;
 
   const totalCount = sections.length;
   return (
@@ -158,10 +254,19 @@ export function ReviewPage({
       <div className="space-y-3">
         {sections.map((section, idx) => {
           const stepNum = idx + 1;
-          const hasData = section.fields.some((f) => isFieldAnswered(f, formData));
+          const reviewItems = getReviewItems(section.fields, formData);
+          const visibleFieldItems: Field[] = [];
+          reviewItems.forEach((item) => {
+            if (item.type === "group") {
+              visibleFieldItems.push(...item.fields);
+            } else {
+              visibleFieldItems.push(item.field);
+            }
+          });
+          const totalFields = visibleFieldItems.length;
+          const answeredFields = visibleFieldItems.filter((f) => isFieldAnswered(f, formData)).length;
+          const hasData = answeredFields > 0;
           const isExpanded = expandedSections.has(idx);
-          const answeredFields = section.fields.filter((f) => isFieldAnswered(f, formData)).length;
-          const totalFields = section.fields.length;
 
           return (
             <motion.div
@@ -236,13 +341,84 @@ export function ReviewPage({
                   >
                     <div className="px-5 md:px-6 pb-5 border-t border-gray-100">
                       <div className="pt-4 space-y-3">
-                        {section.fields.map((field, fieldIdx) => {
+                        {reviewItems.map((item, itemIdx) => {
+                          if (item.type === "group") {
+                            const isGroupExpanded = expandedGroups.has(item.key);
+                            const groupAnsweredCount = item.fields.filter((f) => isFieldAnswered(f, formData)).length;
+                            const groupTotalCount = item.fields.length;
+
+                            return (
+                              <div
+                                key={item.key || `group-${itemIdx}`}
+                                className="border border-gray-100 rounded-lg overflow-hidden my-2 bg-white shadow-sm"
+                              >
+                                {/* Group Header */}
+                                <div
+                                  onClick={() => toggleGroup(item.key)}
+                                  className="px-4 py-3 bg-[#e8f6f6]/30 hover:bg-[#e8f6f6]/60 flex items-center justify-between cursor-pointer transition-colors"
+                                >
+                                  <div className="flex flex-col">
+                                    <span className="font-bold text-[#0d7377] text-sm">
+                                      {item.label}
+                                    </span>
+                                    <span className="text-[11px] text-gray-500 mt-0.5 font-medium">
+                                      {groupAnsweredCount} of {groupTotalCount} fields completed
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 text-gray-400">
+                                    {isGroupExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+                                  </div>
+                                </div>
+
+                                {/* Group Content */}
+                                <AnimatePresence>
+                                  {isGroupExpanded && (
+                                    <motion.div
+                                      initial={{ height: 0, opacity: 0 }}
+                                      animate={{ height: "auto", opacity: 1 }}
+                                      exit={{ height: 0, opacity: 0 }}
+                                      className="overflow-hidden bg-[#fafdfc]"
+                                    >
+                                      <div className="px-4 py-3 space-y-3 border-t border-gray-100/50">
+                                        {item.fields.map((field, fieldIdx) => {
+                                          const value = getDisplayValue(field, formData);
+                                          const hasValue = value && value !== "";
+
+                                          return (
+                                            <div
+                                              key={field.key || `subfield-${fieldIdx}`}
+                                              className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 pb-2.5 border-b border-gray-50 last:border-b-0 last:pb-0"
+                                            >
+                                              <span className="font-semibold text-gray-650 text-sm flex-1 pl-2">
+                                                {field.label}
+                                              </span>
+                                              <span
+                                                className="text-gray-900 text-sm text-right max-w-xs font-medium px-2.5 py-1 rounded-md"
+                                                style={{
+                                                  backgroundColor: hasValue ? "#e8f6f6" : "#f5f5f5",
+                                                  color: hasValue ? "#0a5a5d" : "#9ca3af",
+                                                }}
+                                              >
+                                                {hasValue ? value : <span className="italic">Not provided</span>}
+                                              </span>
+                                            </div>
+                                          );
+                                        })}
+                                      </div>
+                                    </motion.div>
+                                  )}
+                                </AnimatePresence>
+                              </div>
+                            );
+                          }
+
+                          const field = item.field;
                           const value = getDisplayValue(field, formData);
                           const hasValue = value && value !== "";
 
                           return (
                             <div
-                              key={field.key || `field-${fieldIdx}`}
+                              key={field.key || `field-${itemIdx}`}
                               className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 pb-3 border-b border-gray-50 last:border-b-0"
                             >
                               <span className="font-semibold text-gray-700 text-sm flex-1">
