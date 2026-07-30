@@ -84,6 +84,14 @@ class PDFFillerService:
         
         # Extract additional info blocks if present
         additional_blocks = form_data.pop("additional_info_blocks", [])
+        if isinstance(additional_blocks, str):
+            import json
+            try:
+                additional_blocks = json.loads(additional_blocks)
+            except Exception as e:
+                logger.error(f"Error parsing additional_info_blocks JSON: {e}")
+                additional_blocks = []
+
 
         for frontend_key, value in form_data.items():
             pdf_field_name = self.field_mapping.get(frontend_key)
