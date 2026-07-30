@@ -304,6 +304,32 @@ export function FormStep({
       );
     }
     if (field.type === "checkbox") {
+      if (field.options) {
+        const cols =
+          field.options.length >= 4
+            ? "grid-cols-1 md:grid-cols-2"
+            : field.options.length === 3
+              ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+              : field.options.length === 2
+                ? "grid-cols-1 md:grid-cols-2"
+                : "grid-cols-1";
+        return (
+          <div className={`grid ${cols} gap-3`}>
+            {field.options.map((opt) => {
+              const name = opt.pdfKey || opt.value;
+              return (
+                <CheckboxCard
+                  key={opt.value}
+                  name={name}
+                  label={opt.label}
+                  checked={formData[name] === "Yes"}
+                  onChange={onInputChange}
+                />
+              );
+            })}
+          </div>
+        );
+      }
       return (
         <CheckboxCard
           name={field.key}
@@ -404,12 +430,10 @@ export function FormStep({
         >
           {/* Question Heading */}
           <div>
-            {!(activeField.type === "hidden" && activeField.label) && (
-              <h2 className="text-[20px] md:text-[24px] font-semibold leading-[1.35] tracking-[-0.02em] text-gray-900 mb-2">
-                {mainQuestion}
-              </h2>
-            )}
-            {!(activeField.type === "hidden" && activeField.label) && hintText && (
+            <h2 className="text-[20px] md:text-[24px] font-semibold leading-[1.35] tracking-[-0.02em] text-gray-900 mb-2">
+              {mainQuestion}
+            </h2>
+            {hintText && (
               <p className="text-sm text-gray-600 mt-1">{hintText}</p>
             )}
           </div>
