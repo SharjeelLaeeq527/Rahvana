@@ -4,7 +4,7 @@ import Result from "@/app/components/visa-checker/Result";
 import { useEffect, useState } from "react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
-// Define the exact shape here (or import from a shared types file)
+
 type VisaData = {
   status: "current" | "waiting" | "unavailable" | string;
   categoryFull: string;
