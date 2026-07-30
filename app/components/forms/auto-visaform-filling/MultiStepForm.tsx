@@ -261,6 +261,12 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             const walk = (items: ConfigField[]) => {
               items.forEach((f) => {
                 keys.add(f.key);
+                if (f.options) {
+                  f.options.forEach((opt) => {
+                    const name = opt.pdfKey || opt.value;
+                    keys.add(name);
+                  });
+                }
                 if (f.subQuestions && f.subQuestions.length > 0) {
                   walk(f.subQuestions as ConfigField[]);
                 }
@@ -943,7 +949,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       }
 
       const value = formData[field.key];
-      if (value) {
+      if (value || (field.type === "checkbox" && field.options)) {
         if (field.type === "radio" && field.options) {
           const selected = field.options.find(
             (opt: { value: string; pdfKey?: string }) => opt.value === value
@@ -959,10 +965,21 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
               });
           }
         } else if (field.type === "checkbox") {
-          const isChecked = value === "Yes" || String(value) === "true" || value === "on";
-          const pdfKey = field.pdfKey as string | undefined;
-          if (pdfKey) {
-            payload[pdfKey] = isChecked ? "Yes" : "Off";
+          if (field.options) {
+            field.options.forEach((opt: { value: string; pdfKey?: string }) => {
+              const name = opt.pdfKey || opt.value;
+              const optVal = formData[name];
+              const isChecked = optVal === "Yes" || String(optVal) === "true" || optVal === "on";
+              if (opt.pdfKey) {
+                payload[opt.pdfKey] = isChecked ? "Yes" : "Off";
+              }
+            });
+          } else {
+            const isChecked = value === "Yes" || String(value) === "true" || value === "on";
+            const pdfKey = field.pdfKey as string | undefined;
+            if (pdfKey) {
+              payload[pdfKey] = isChecked ? "Yes" : "Off";
+            }
           }
         } else {
           const pdfKey = field.pdfKey as string | undefined;
@@ -1222,6 +1239,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       );
 
       const answeredCount = visibleSectionFields.filter((field) => {
+        if (field.type === "checkbox" && field.options) {
+          return field.options.some((opt) => formData[opt.pdfKey || opt.value] === "Yes");
+        }
         const value = formData[field.key];
         return value && value.trim() !== "";
       }).length;
@@ -1363,7 +1383,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
                         // Remove numbering from label
                         const cleanLabel = field.label.replace(/^\d+[a-z]?\.\s*/, "");
-                        const fieldAnswered = formData[field.key] && formData[field.key] !== "";
+                        const fieldAnswered = field.type === "checkbox" && field.options
+                          ? field.options.some((opt) => formData[opt.pdfKey || opt.value] === "Yes")
+                          : formData[field.key] && formData[field.key] !== "";
                         const isActiveQuestion =
                           isActive && visibleFields[currentQuestionIndex]?.key === field.key;
 

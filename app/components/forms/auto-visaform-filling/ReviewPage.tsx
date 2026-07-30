@@ -17,6 +17,24 @@ import {
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
+const isFieldAnswered = (field: Field, formData: Record<string, string>): boolean => {
+  if (field.type === "checkbox" && field.options) {
+    return field.options.some((opt) => formData[opt.pdfKey || opt.value] === "Yes");
+  }
+  const value = formData[field.key];
+  return !!(value && value.trim() !== "");
+};
+
+const getDisplayValue = (field: Field, formData: Record<string, string>): string => {
+  if (field.type === "checkbox" && field.options) {
+    const selectedLabels = field.options
+      .filter((opt) => formData[opt.pdfKey || opt.value] === "Yes")
+      .map((opt) => opt.label);
+    return selectedLabels.join(", ");
+  }
+  return formData[field.key] ?? "";
+};
+
 interface ReviewPageProps {
   formData: Record<string, string>;
   sections: { title: string; fields: Field[] }[];
@@ -61,7 +79,7 @@ export function ReviewPage({
   };
 
   const completedCount = sections.filter((section) =>
-    section.fields.some((f) => formData[f.key])
+    section.fields.some((f) => isFieldAnswered(f, formData))
   ).length;
 
   const totalCount = sections.length;
@@ -140,9 +158,9 @@ export function ReviewPage({
       <div className="space-y-3">
         {sections.map((section, idx) => {
           const stepNum = idx + 1;
-          const hasData = section.fields.some((f) => formData[f.key]);
+          const hasData = section.fields.some((f) => isFieldAnswered(f, formData));
           const isExpanded = expandedSections.has(idx);
-          const answeredFields = section.fields.filter((f) => formData[f.key]).length;
+          const answeredFields = section.fields.filter((f) => isFieldAnswered(f, formData)).length;
           const totalFields = section.fields.length;
 
           return (
@@ -219,7 +237,7 @@ export function ReviewPage({
                     <div className="px-5 md:px-6 pb-5 border-t border-gray-100">
                       <div className="pt-4 space-y-3">
                         {section.fields.map((field, fieldIdx) => {
-                          const value = formData[field.key];
+                          const value = getDisplayValue(field, formData);
                           const hasValue = value && value !== "";
 
                           return (

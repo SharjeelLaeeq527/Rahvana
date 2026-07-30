@@ -304,6 +304,32 @@ export function FormStep({
       );
     }
     if (field.type === "checkbox") {
+      if (field.options) {
+        const cols =
+          field.options.length >= 4
+            ? "grid-cols-1 md:grid-cols-2"
+            : field.options.length === 3
+              ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+              : field.options.length === 2
+                ? "grid-cols-1 md:grid-cols-2"
+                : "grid-cols-1";
+        return (
+          <div className={`grid ${cols} gap-3`}>
+            {field.options.map((opt) => {
+              const name = opt.pdfKey || opt.value;
+              return (
+                <CheckboxCard
+                  key={opt.value}
+                  name={name}
+                  label={opt.label}
+                  checked={formData[name] === "Yes"}
+                  onChange={onInputChange}
+                />
+              );
+            })}
+          </div>
+        );
+      }
       return (
         <CheckboxCard
           name={field.key}
