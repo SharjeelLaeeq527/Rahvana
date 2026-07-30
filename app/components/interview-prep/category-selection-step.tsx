@@ -1,8 +1,7 @@
 // Category Selection Step - Displays available visa categories for user selection.
 "use client";
-
 import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
+import { Heart, UsersRound, UserRound, type LucideIcon } from "lucide-react";
 import type { InterviewCategoryConfig } from "@/data/interview-categories/schema";
 
 export interface CategoryWithPurchaseStatus extends InterviewCategoryConfig {
@@ -48,6 +47,7 @@ const getThemeColor = (themeColor: string) => {
       borderSelected: "rgba(13, 115, 119, 0.4)",
       glowColor: "rgba(175, 219, 219, 0.2)",
     },
+
     blue: {
       gradient: "linear-gradient(145deg, #ffffff 0%, #f8fbff 40%, #eef5ff 70%, #e8f0ff 100%)",
       iconBg: "#afdbdb",
@@ -56,6 +56,7 @@ const getThemeColor = (themeColor: string) => {
       borderSelected: "rgba(13, 115, 119, 0.4)",
       glowColor: "rgba(175, 219, 219, 0.2)",
     },
+
     purple: {
       gradient: "linear-gradient(145deg, #ffffff 0%, #fdfbff 40%, #f8f0ff 70%, #f3e8ff 100%)",
       iconBg: "#cdadcc",
@@ -64,6 +65,7 @@ const getThemeColor = (themeColor: string) => {
       borderSelected: "rgba(107, 91, 123, 0.4)",
       glowColor: "rgba(205, 173, 204, 0.2)",
     },
+
     green: {
       gradient: "linear-gradient(145deg, #ffffff 0%, #f8fdfb 40%, #edf7f2 70%, #e8f0ed 100%)",
       iconBg: "#89a4a0",
@@ -72,6 +74,7 @@ const getThemeColor = (themeColor: string) => {
       borderSelected: "rgba(137, 164, 160, 0.4)",
       glowColor: "rgba(137, 164, 160, 0.2)",
     },
+
     orange: {
       gradient: "linear-gradient(145deg, #ffffff 0%, #fdfaf7 40%, #f9f0e7 70%, #f3ede7 100%)",
       iconBg: "#f3ede7",
@@ -80,6 +83,7 @@ const getThemeColor = (themeColor: string) => {
       borderSelected: "rgba(156, 111, 56, 0.4)",
       glowColor: "rgba(243, 237, 231, 0.3)",
     },
+
     rose: {
       gradient: "linear-gradient(145deg, #ffffff 0%, #fffafa 40%, #fef0f2 70%, #fce8ec 100%)",
       iconBg: "#fce8ec",
@@ -89,17 +93,26 @@ const getThemeColor = (themeColor: string) => {
       glowColor: "rgba(219, 128, 144, 0.15)",
     },
   };
-
   return colorMap[themeColor] || colorMap.teal;
 };
 
-const getIcon = (iconName: string) => {
-  return <Heart className="h-7 w-7" />;
+const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
+  heart: Heart,
+  "users-round": UsersRound,
 };
 
-// Watermark icon for decorative element
+const getCategoryIcon = (iconName: string): LucideIcon => {
+  return CATEGORY_ICON_MAP[iconName] ?? UserRound;
+};
+
+const getIcon = (iconName: string) => {
+  const Icon = getCategoryIcon(iconName);
+  return <Icon className="h-7 w-7" strokeWidth={1.9} />;
+};
+
 const getWatermarkIcon = (iconName: string) => {
-  return <Heart className="w-24 h-24" strokeWidth={1} />;
+  const Icon = getCategoryIcon(iconName);
+  return <Icon className="h-24 w-24" strokeWidth={1} />;
 };
 
 export function CategorySelectionStep({
@@ -167,7 +180,6 @@ export function CategorySelectionStep({
         {categories.map((category) => {
           const theme = getThemeColor(category.ui.themeColor);
           const isSelected = selectedCategory?.categorySlug === category.categorySlug;
-
           return (
             <button
               key={category.categorySlug}
