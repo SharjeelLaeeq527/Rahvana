@@ -31,6 +31,7 @@ import {
   Clock,
   Camera,
   Files,
+  Map,
   PenTool,
   Globe,
   Shield,
@@ -1718,20 +1719,19 @@ export function SiteHeader({
 
                     {/* Section 1 */}
                     <div className="py-2 border-b border-border">
-                      {/* <button
-                        id="my-dashboard-menu-item"
-                        onClick={() => handleNav("dashboard")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
-                      >
-                        <Layout className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                        My Dashboard
-                      </button> */}
                       <button
                         onClick={() => handleNav("profile")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <UserIcon className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                         My Profile
+                      </button>
+                      <button
+                        onClick={() => handleNav("my-journeys")}
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
+                      >
+                        <Map className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                        My Journeys
                       </button>
                       <button
                         onClick={() => handleNav("document-vault")}

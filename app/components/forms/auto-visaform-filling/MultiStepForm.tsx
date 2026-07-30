@@ -261,6 +261,12 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             const walk = (items: ConfigField[]) => {
               items.forEach((f) => {
                 keys.add(f.key);
+                if (f.options) {
+                  f.options.forEach((opt) => {
+                    const name = opt.pdfKey || opt.value;
+                    keys.add(name);
+                  });
+                }
                 if (f.subQuestions && f.subQuestions.length > 0) {
                   walk(f.subQuestions as ConfigField[]);
                 }
@@ -753,32 +759,24 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       }
     }
 
-    if (currentQuestionIndex < visibleFields.length - 1) {
-      const currentField = visibleFields[currentQuestionIndex];
+    const currentField = visibleFields[currentQuestionIndex];
+    if (currentField) {
       const currentSubCount = progressiveSubQuestionIndices[currentField.key] ?? -1;
-
-      // Only count sub-questions that are actually applicable/visible right now.
-      // FormStep renders `applicableSubQuestions` (filtered by the same condition),
-      // so the reveal counter must use the same filter. Otherwise a conditional
-      // sub-question whose condition is currently false creates a "dead" click that
-      // reveals nothing yet still blocks navigation, forcing the user to press
-      // Continue several times before it advances to the next question.
       const applicableSubQuestions = (currentField.subQuestions || []).filter(
         (subQ) => !subQ.condition || subQ.condition(formData)
       );
 
-      // Handle sub-questions (reveal the next applicable one before advancing)
-      if (
-        applicableSubQuestions.length > 0 &&
-        currentSubCount < applicableSubQuestions.length - 1
-      ) {
+      // Handle sub-questions (including conditional ones)
+      if (applicableSubQuestions.length > 0 && currentSubCount < applicableSubQuestions.length - 1) {
         setProgressiveSubQuestionIndices((prev) => ({
           ...prev,
           [currentField.key]: (currentSubCount ?? -1) + 1,
         }));
         return;
       }
+    }
 
+    if (currentQuestionIndex < visibleFields.length - 1) {
       // Move to next field
       const nextIndex = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextIndex);
@@ -828,8 +826,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   const handlePrevious = () => {
     setNavigationDirection("prev");
-    if (currentQuestionIndex > 0) {
-      const currentField = visibleFields[currentQuestionIndex];
+    const currentField = visibleFields[currentQuestionIndex];
+    if (currentField) {
       const currentSubCount = progressiveSubQuestionIndices[currentField.key] ?? -1;
       if (currentSubCount > -1) {
         // Hide last shown sub-question
@@ -839,7 +837,21 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         }));
         return;
       }
-      setCurrentQuestionIndex((prev) => prev - 1);
+    }
+
+    if (currentQuestionIndex > 0) {
+      const prevIndex = currentQuestionIndex - 1;
+      const prevField = visibleFields[prevIndex];
+      if (prevField?.subQuestions && prevField.subQuestions.length > 0) {
+        const applicablePrev = prevField.subQuestions.filter(
+          (subQ) => !subQ.condition || subQ.condition(formData)
+        );
+        setProgressiveSubQuestionIndices((prev) => ({
+          ...prev,
+          [prevField.key]: Math.max(0, applicablePrev.length - 1),
+        }));
+      }
+      setCurrentQuestionIndex(prevIndex);
     } else if (currentStep > 1) {
       if (currentQuestionIndex === 0 && cameFromIntro) {
         // User just entered section → go back to intro of SAME section
@@ -859,7 +871,19 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         (field) => !field.condition || field.condition(formData)
       );
 
-      setCurrentQuestionIndex(Math.max(0, prevVisible.length - 1));
+      const targetIdx = Math.max(0, prevVisible.length - 1);
+      const prevField = prevVisible[targetIdx];
+      if (prevField?.subQuestions && prevField.subQuestions.length > 0) {
+        const applicablePrev = prevField.subQuestions.filter(
+          (subQ) => !subQ.condition || subQ.condition(formData)
+        );
+        setProgressiveSubQuestionIndices((prev) => ({
+          ...prev,
+          [prevField.key]: Math.max(0, applicablePrev.length - 1),
+        }));
+      }
+
+      setCurrentQuestionIndex(targetIdx);
     }
   };
 
@@ -956,7 +980,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       }
 
       const value = formData[field.key];
-      if (value) {
+      if (value || (field.type === "checkbox" && field.options)) {
         if (field.type === "radio" && field.options) {
           const selected = field.options.find(
             (opt: { value: string; pdfKey?: string }) => opt.value === value
@@ -972,10 +996,21 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
               });
           }
         } else if (field.type === "checkbox") {
-          const isChecked = value === "Yes" || String(value) === "true" || value === "on";
-          const pdfKey = field.pdfKey as string | undefined;
-          if (pdfKey) {
-            payload[pdfKey] = isChecked ? "Yes" : "Off";
+          if (field.options) {
+            field.options.forEach((opt: { value: string; pdfKey?: string }) => {
+              const name = opt.pdfKey || opt.value;
+              const optVal = formData[name];
+              const isChecked = optVal === "Yes" || String(optVal) === "true" || optVal === "on";
+              if (opt.pdfKey) {
+                payload[opt.pdfKey] = isChecked ? "Yes" : "Off";
+              }
+            });
+          } else {
+            const isChecked = value === "Yes" || String(value) === "true" || value === "on";
+            const pdfKey = field.pdfKey as string | undefined;
+            if (pdfKey) {
+              payload[pdfKey] = isChecked ? "Yes" : "Off";
+            }
           }
         } else {
           const pdfKey = field.pdfKey as string | undefined;
@@ -996,8 +1031,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       processField(field);
     });
 
-    // Add dynamic overflow handling for additional addresses
-    const count = Number(formData.address_count) || 0;
+    // Add dynamic overflow handling for additional entries (e.g. addresses, spouses)
     const additionalBlocks: Array<{
       page_number: string;
       part_number: string;
@@ -1005,28 +1039,29 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       info: string;
     }> = [];
 
-    for (let i = 3; i <= count + 1; i++) {
-      if (i > 9) break; // Limit to Address 9 (which is 8 previous addresses) for now
+    if (config.overflowFields) {
+      config.overflowFields.forEach((overConfig) => {
+        const count = Number(formData[overConfig.countKey]) || 0;
+        const maxIdx = overConfig.maxIndex ?? (count + 1);
+        for (let i = overConfig.startIndex; i <= count + 1; i++) {
+          if (i > maxIdx) break;
 
-      const street = formData[`address_${i}_street`] || "";
-      const city = formData[`address_${i}_city`] || "";
-      const state = formData[`address_${i}_state`] || "";
-      const zip = formData[`address_${i}_zip`] || "";
-      const from = formData[`address_${i}_from`] || "";
-      const to = formData[`address_${i}_to`] || "";
-      const country = formData[`address_${i}_country`] || "";
+          const keyPrefix = `${overConfig.prefix}_${i}_`;
+          const isAnyFieldFilled = overConfig.fields.some((f) => {
+            const val = formData[`${keyPrefix}${f.suffix}`];
+            return val && val.trim() !== "";
+          });
 
-      const parts = [street, city, state, zip, country].filter(Boolean);
-      let infoString = `Address ${i}: ${parts.join("\n ")}.`;
-      if (from || to) {
-        infoString += ` From: ${from} To: ${to}`;
-      }
-
-      additionalBlocks.push({
-        page_number: "2", // I-130 Address History is on Page 2
-        part_number: "2", // Part 2
-        item_number: "14", // Item 14 (Physical Address 2)
-        info: infoString,
+          if (isAnyFieldFilled) {
+            const infoString = overConfig.formatInfo(i, formData);
+            additionalBlocks.push({
+              page_number: overConfig.pageNumber,
+              part_number: overConfig.partNumber,
+              item_number: overConfig.itemNumber,
+              info: infoString,
+            });
+          }
+        }
       });
     }
 
@@ -1235,6 +1270,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       );
 
       const answeredCount = visibleSectionFields.filter((field) => {
+        if (field.type === "checkbox" && field.options) {
+          return field.options.some((opt) => formData[opt.pdfKey || opt.value] === "Yes");
+        }
         const value = formData[field.key];
         return value && value.trim() !== "";
       }).length;
@@ -1376,7 +1414,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
                         // Remove numbering from label
                         const cleanLabel = field.label.replace(/^\d+[a-z]?\.\s*/, "");
-                        const fieldAnswered = formData[field.key] && formData[field.key] !== "";
+                        const fieldAnswered = field.type === "checkbox" && field.options
+                          ? field.options.some((opt) => formData[opt.pdfKey || opt.value] === "Yes")
+                          : formData[field.key] && formData[field.key] !== "";
                         const isActiveQuestion =
                           isActive && visibleFields[currentQuestionIndex]?.key === field.key;
 
@@ -1542,7 +1582,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       {/* Main Layout - Centered Content */}
       <div className="flex gap-6 px-4 md:px-8 py-0 guide-grid-bg justify-center items-stretch flex-1 min-h-0">
         {/* Desktop Sidebar (stays within header/footer zone) */}
-        {view === "form" && !(showSectionIntro && introVisible) && (
+        {view === "form" && (
           <motion.div
             initial={false}
             animate={{
@@ -1550,6 +1590,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             }}
             transition={{ type: "spring", damping: 28, stiffness: 240 }}
             className="hidden lg:block shrink-0 -ml-4 md:-ml-8"
+            style={{
+              display: (showSectionIntro && introVisible) ? "none" : "block",
+            }}
           >
             <aside
               className="sticky top-16 mt-12 h-[calc(100vh-280px)] w-full overflow-hidden"
