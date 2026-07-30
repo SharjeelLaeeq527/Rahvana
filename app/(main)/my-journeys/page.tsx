@@ -550,7 +550,7 @@ function JourneyCard({
 
             <div className="min-w-0">
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                Last activity
+                Last updated
               </p>
               <p className="truncate font-medium text-slate-600">{activity}</p>
             </div>
