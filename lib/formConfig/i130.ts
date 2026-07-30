@@ -375,15 +375,15 @@ export const formFields: Field[] = [
   // ============================================
   // ADDRESS HISTORY
   // ============================================
-  {
-    key: "address_history_note",
-    pdfKey: "N/A",
-    label:
-      "Please tell us all the places you have lived in the last 5 years. Start with where you live right now, only if it's different from the mailing address you just gave us.",
-    type: "hidden",
-    section: "Address History",
-    options: [{ label: "I understand", value: "ok", pdfKey: "N/A" }],
-  },
+  // {
+  //   key: "address_history_note",
+  //   pdfKey: "N/A",
+  //   label:
+  //     "Please tell us all the places you have lived in the last 5 years. Start with where you live right now, only if it's different from the mailing address you just gave us.",
+  //   type: "hidden",
+  //   section: "Address History",
+  //   options: [{ label: "I understand", value: "ok", pdfKey: "N/A" }],
+  // },
 
   // Address History
 
