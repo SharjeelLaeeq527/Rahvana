@@ -1,7 +1,7 @@
 // Category Selection Step - Displays available visa categories for user selection.
 "use client";
 import { Button } from "@/components/ui/button";
-import { Heart, UsersRound, UserRound, type LucideIcon } from "lucide-react";
+import { Heart, UsersRound, UserRound, type LucideIcon, FileText } from "lucide-react";
 import type { InterviewCategoryConfig } from "@/data/interview-categories/schema";
 
 export interface CategoryWithPurchaseStatus extends InterviewCategoryConfig {
@@ -126,8 +126,36 @@ export function CategorySelectionStep({
 }: CategorySelectionStepProps) {
   if (categories.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-slate-600">No categories available at this time.</p>
+      <div className="rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center shadow-sm sm:px-10">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <FileText className="h-8 w-8" />
+        </div>
+        <h3 className="mt-5 text-2xl font-semibold tracking-tight text-slate-950">
+          No categories available
+        </h3>
+        <p className="mx-auto mt-3 max-w-xl text-base leading-7 text-slate-500">
+          You already have sessions for the available categories here. Open My Sessions to resume
+          one, or choose a different country to see new options.
+        </p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          {/* <Button
+            type="button"
+            onClick={onBack}
+            variant="outline"
+            className="rounded-full border-slate-200 px-5 text-slate-700 hover:bg-slate-50"
+          >
+            Back
+          </Button> */}
+          <Button
+            type="button"
+            onClick={() => {
+              window.location.href = "/interview-prep/my-sessions";
+            }}
+            className="rounded-full bg-primary px-5 text-white shadow-sm shadow-primary/20 hover:bg-primary/90"
+          >
+            Open My Sessions
+          </Button>
+        </div>
       </div>
     );
   }
