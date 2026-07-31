@@ -229,13 +229,14 @@ export class DocumentDatabaseStorage {
       beneficiary_name: config.beneficiaryName,
       joint_sponsor_name: config.jointSponsorName,
       dynamic_documents: config.dynamicDocuments || {},
+      journey_id: config.journeyId || null,
       updated_at: new Date().toISOString(),
     };
 
     const { data, error } = await this.supabase
       .from("document_vault_config")
       .upsert(dbConfig, {
-        onConflict: "user_id", // Specify the unique constraint column
+        onConflict: "user_id,journey_id", // Specify the unique constraint columns
       })
       .select()
       .single();
@@ -251,12 +252,19 @@ export class DocumentDatabaseStorage {
   /**
    * Gets vault configuration
    */
-  async getVaultConfig(userId: string): Promise<DocumentVaultConfig | null> {
-    const { data, error } = await this.supabase
+  async getVaultConfig(userId: string, journeyId?: string): Promise<DocumentVaultConfig | null> {
+    let query = this.supabase
       .from("document_vault_config")
       .select("*")
-      .eq("user_id", userId)
-      .single();
+      .eq("user_id", userId);
+
+    if (journeyId) {
+      query = query.eq("journey_id", journeyId);
+    } else {
+      query = query.is("journey_id", null);
+    }
+
+    const { data, error } = await query.single();
 
     if (error) {
       if (error.code === "PGRST116") {
@@ -411,6 +419,7 @@ export class DocumentDatabaseStorage {
       visaCategory: data.visa_category as VisaCategory,
       scenarioFlags: (data.scenario_flags as Record<string, unknown>) || {},
       caseId: data.case_id as string | undefined,
+      journeyId: data.journey_id as string | null | undefined,
       petitionerName: data.petitioner_name as string | undefined,
       beneficiaryName: data.beneficiary_name as string | undefined,
       jointSponsorName: data.joint_sponsor_name as string | undefined,

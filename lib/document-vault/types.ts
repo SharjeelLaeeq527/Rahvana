@@ -176,6 +176,7 @@ export interface DocumentVaultConfig {
   visaCategory: VisaCategory;
   scenarioFlags: ScenarioFlags;
   caseId?: string; // USCIS receipt or NVC case number
+  journeyId?: string | null;
 
   // User info for naming
   petitionerName?: string;
