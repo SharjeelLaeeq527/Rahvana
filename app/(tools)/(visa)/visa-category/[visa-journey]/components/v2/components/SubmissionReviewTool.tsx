@@ -160,12 +160,12 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
           </div>
           <div className="flex flex-col gap-[8px]">
             {[
-              "Wrong person selected — file under beneficiary vs petitioner",
-              "Wrong document category — civil doc filed as financial",
-              "Missing translation — uploaded original without translation",
-              "Incomplete scan — page cut off or text obscured",
-              "Missing financial/civil pairings — both required",
-              "Unnecessary comments — clutter without purpose",
+              "Wrong person selected, file under beneficiary vs petitioner",
+              "Wrong document category, civil doc filed as financial",
+              "Missing translation, uploaded original without translation",
+              "Incomplete scan, page cut off or text obscured",
+              "Missing financial/civil pairings, both required",
+              "Unnecessary comments, clutter without purpose",
             ].map((pitfall, i) => (
               <div
                 key={i}

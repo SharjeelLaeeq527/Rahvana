@@ -304,7 +304,7 @@ export function MultipleDocumentUploadModal({
       });
       const json = await res.json().catch(() => null);
       if (!res.ok || !json) {
-        showToast("Uploaded. We couldn't auto-read this document — you can fill details manually.", "info");
+        showToast("Uploaded. We couldn't auto-read this document, you can fill details manually.", "info");
         dismissOcr();
         return;
       }
@@ -313,7 +313,7 @@ export function MultipleDocumentUploadModal({
       setOcrWarnings(json.warnings || []);
       setOcrPhase("confirm");
     } catch {
-      showToast("Uploaded. We couldn't auto-read this document — you can fill details manually.", "info");
+      showToast("Uploaded. We couldn't auto-read this document, you can fill details manually.", "info");
       dismissOcr();
     }
   };
@@ -834,7 +834,7 @@ export function MultipleDocumentUploadModal({
                 <div className="flex-1">
                   <p className="font-bold text-sm">
                     {ocrPhase === "reading"
-                      ? "Reading your document…"
+                      ? "Reading your document..."
                       : ocrAnyDetected
                         ? "Confirm the details we read"
                         : "Add your details"}
@@ -842,8 +842,8 @@ export function MultipleDocumentUploadModal({
                   <p className="text-xs text-[#6b8097]">
                     {ocrPhase === "confirm" && !ocrAnyDetected
                       ? ocrTarget === "beneficiary"
-                        ? "We couldn't auto-read this — please type them in. Saved to your spouse's (beneficiary) details."
-                        : "We couldn't auto-read this — please type them in. Saved to your profile."
+                        ? "We couldn't auto-read this, please type them in. Saved to your spouse's (beneficiary) details."
+                        : "We couldn't auto-read this, please type them in. Saved to your profile."
                       : ocrTarget === "beneficiary"
                         ? "These will be saved to your spouse's (beneficiary) details."
                         : "These will be saved to your profile."}
@@ -867,7 +867,7 @@ export function MultipleDocumentUploadModal({
               {ocrPhase === "reading" && (
                 <div className="flex items-center justify-center gap-3 py-10 text-[#6b8097]">
                   <div className="w-5 h-5 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
-                  <span className="text-sm font-medium">Extracting fields…</span>
+                  <span className="text-sm font-medium">Extracting fields...</span>
                 </div>
               )}
 
@@ -876,7 +876,7 @@ export function MultipleDocumentUploadModal({
                   {!ocrAnyDetected ? (
                     <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-xl p-4 text-sm text-[#3a4f63]">
                       We couldn&apos;t automatically read this document. Please type the
-                      details below — they&apos;ll be saved just the same.
+                      details below, they&apos;ll be saved just the same.
                     </div>
                   ) : (
                     ocrWarnings.length > 0 && (
@@ -951,7 +951,7 @@ export function MultipleDocumentUploadModal({
                       disabled={ocrSaving}
                       className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold"
                     >
-                      {ocrSaving ? "Saving…" : "Confirm & Save"}
+                      {ocrSaving ? "Saving..." : "Confirm & Save"}
                     </Button>
                   </div>
                 </>

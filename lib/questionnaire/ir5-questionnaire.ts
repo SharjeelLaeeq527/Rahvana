@@ -25,26 +25,26 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         "The type of parent-child relationship determines which documents USCIS requires to establish eligibility.",
       options: [
         {
-          label: "Biological mother — the petitioner's birth mother",
+          label: "Biological mother, the petitioner's birth mother",
           value: "biological_mother",
           helper:
             "The birth certificate alone usually establishes this relationship.",
         },
         {
           label:
-            "Biological father — parents were legally married to each other",
+            "Biological father, parents were legally married to each other",
           value: "father_married",
           helper:
             "The parents' marriage certificate is generally required to establish the father's status.",
         },
         {
-          label: "Biological father — parents were never married to each other",
+          label: "Biological father, parents were never married to each other",
           value: "father_unmarried",
           helper:
             "Additional bona fide father-child relationship evidence may be required when parents were not married.",
         },
         {
-          label: "Stepparent — a stepfather or stepmother",
+          label: "Stepparent, a stepfather or stepmother",
           value: "stepparent",
           helper:
             "The stepparent must have married the petitioner's biological parent before the petitioner turned 18.",
@@ -65,18 +65,18 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       question:
         "Did the petitioner's biological parent (who married the stepparent) have any prior marriages before that marriage?",
       helper:
-        "Proof that prior marriages ended — a divorce decree or a death certificate — is required to show the step-creating marriage is legally valid.",
+        "Proof that prior marriages ended, a divorce decree or a death certificate, is required to show the step-creating marriage is legally valid.",
       visibleWhen: [
         { questionId: "relationship_type", requiredValue: "stepparent" },
       ],
       options: [
         {
           label:
-            "Yes — the biological parent had at least one prior marriage before marrying the stepparent",
+            "Yes, the biological parent had at least one prior marriage before marrying the stepparent",
           value: "yes",
         },
         {
-          label: "No — this was the biological parent's first marriage",
+          label: "No, this was the biological parent's first marriage",
           value: "no",
         },
       ],
@@ -88,15 +88,15 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       question:
         "Are there any name differences, spelling variations, or date discrepancies across the petitioner's or parent's records?",
       helper:
-        "Even minor differences — a different spelling on a birth certificate vs. a passport, or a slight date-of-birth variation — must be officially explained with supporting documentation.",
+        "Even minor differences, a different spelling on a birth certificate vs. a passport, or a slight date-of-birth variation, must be officially explained with supporting documentation.",
       options: [
         {
           label:
-            "Yes — there are name, spelling, or date discrepancies across documents",
+            "Yes, there are name, spelling, or date discrepancies across documents",
           value: "yes",
         },
         {
-          label: "No — all names, spellings, and dates are consistent",
+          label: "No, all names, spellings, and dates are consistent",
           value: "no",
         },
       ],
@@ -113,12 +113,12 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       options: [
         {
           label:
-            "Yes — the primary record is available and all information is consistent",
+            "Yes, the primary record is available and all information is consistent",
           value: "yes",
         },
         {
           label:
-            "No — the record is unavailable, late-registered, or has inconsistencies",
+            "No, the record is unavailable, late-registered, or has inconsistencies",
           value: "no",
         },
       ],
@@ -134,11 +134,11 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       options: [
         {
           label:
-            "Yes — the parent has or had prior marriages, divorces, or is widowed",
+            "Yes, the parent has or had prior marriages, divorces, or is widowed",
           value: "yes",
         },
         {
-          label: "No — the parent has only ever had one marriage (or none)",
+          label: "No, the parent has only ever had one marriage (or none)",
           value: "no",
         },
       ],
@@ -148,14 +148,14 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       id: "name_change",
       question: "Has the petitioner or parent beneficiary ever legally changed their name (for any reason)?",
       helper:
-        "If any legal name has changed — through marriage, court order, or other means — official documentation is required.",
+        "If any legal name has changed, through marriage, court order, or other means, official documentation is required.",
       options: [
         {
-          label: "Yes — at least one person has had a legal name change",
+          label: "Yes, at least one person has had a legal name change",
           value: "yes",
         },
         {
-          label: "No — neither has changed their legal name",
+          label: "No, neither has changed their legal name",
           value: "no",
         },
       ],
@@ -169,11 +169,11 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         "If yes, military service records with a certified English translation are required for the visa application.",
       options: [
         {
-          label: "Yes — the parent has military service history",
+          label: "Yes, the parent has military service history",
           value: "yes",
         },
         {
-          label: "No — no military service",
+          label: "No, no military service",
           value: "no",
         },
       ],
@@ -183,16 +183,16 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
     {
       id: "criminal_history",
       question:
-        "Has the parent beneficiary ever been arrested, charged, or convicted of any crime — anywhere in the world?",
+        "Has the parent beneficiary ever been arrested, charged, or convicted of any crime, anywhere in the world?",
       helper:
         "Even minor or old matters can affect eligibility. Court/disposition records will be needed if applicable.",
       options: [
         {
-          label: "Yes — there is at least one arrest, charge, or conviction",
+          label: "Yes, there is at least one arrest, charge, or conviction",
           value: "yes",
         },
         {
-          label: "No — no criminal history at all",
+          label: "No, no criminal history at all",
           value: "no",
         },
       ],
@@ -256,7 +256,7 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       id: "doc_parent_passport",
       name: "Parent Beneficiary Passport",
       subtitle:
-        "Current Pakistani passport — primarily required during NVC and consular processing",
+        "Current Pakistani passport, primarily required during NVC and consular processing",
       tag: "beneficiary",
       guideUrl: "/guides/passport-guide",
       icon: "BookOpen",
@@ -267,7 +267,7 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       id: "doc_parent_birth_cert",
       name: "Parent Beneficiary Birth Certificate",
       subtitle:
-        "Parent's Pakistan civil birth record — required during NVC and interview processing",
+        "Parent's Pakistan civil birth record, required during NVC and interview processing",
       tag: "beneficiary",
       guideUrl: "/guides/birth-certificate-guide",
       icon: "ClipboardList",
@@ -278,7 +278,7 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       id: "doc_police_cert",
       name: "Police Character Certificate",
       subtitle:
-        "Pakistan Character Certificate — required later under NVC age and residence rules",
+        "Pakistan Character Certificate, required later under NVC age and residence rules",
       tag: "beneficiary",
       guideUrl: "/guides/police-verification-guide",
       icon: "Lock",
@@ -331,7 +331,7 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
           id: "doc_parents_marriage",
           name: "Parents' Marriage Certificate",
           subtitle:
-            "Include if the parents eventually married — helps support the father's relationship claim",
+            "Include if the parents eventually married, helps support the father's relationship claim",
           tag: "both",
           guideUrl: "/guides/nikah-nama-guide",
           icon: "FileCheck",
@@ -342,7 +342,7 @@ export const IR5_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
           id: "doc_father_bona_fide_relationship",
           name: "Evidence of a Bona Fide Father-Child Relationship",
           subtitle:
-            "May be required where the petitioner's parents were not married — shows the father acknowledged and supported the child",
+            "May be required where the petitioner's parents were not married, shows the father acknowledged and supported the child",
           tag: "both",
           guideUrl: "/guides",
           icon: "Users",

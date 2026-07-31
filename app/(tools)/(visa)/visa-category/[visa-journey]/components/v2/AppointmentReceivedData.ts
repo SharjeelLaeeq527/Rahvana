@@ -35,11 +35,11 @@ export const APPOINTMENT_RECEIVED_DATA = {
     button: "Edit",
   },
   dashboardUpdate: {
-    title: "Dashboard updated — interview scheduled",
+    title: "Dashboard updated, interview scheduled",
     sub: "Your interview date is now pinned to your Rahvana dashboard. The DQ tracking card has been replaced with your interview-scheduled status.",
   },
   nextChapter: {
-    title: "Chapter 3 — Interview Preparation unlocked",
+    title: "Chapter 3, Interview Preparation unlocked",
     sub: "Your next preparation phase is now active",
     phases: [
       {

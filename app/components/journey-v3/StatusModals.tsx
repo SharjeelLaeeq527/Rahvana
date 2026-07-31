@@ -199,7 +199,7 @@ export function ProcessingTimeModal({ open, onClose }: { open: boolean; onClose:
           Use this to keep expectations grounded.
         </div>
         <div className="text-[13px] text-[#3a4f63] leading-[1.7]">
-          USCIS processing–time tools can help you see whether your case still appears to be within
+          USCIS processing-time tools can help you see whether your case still appears to be within
           normal timing for this form and office. A quiet case is common, so use this as context
           rather than a reason to panic.
         </div>

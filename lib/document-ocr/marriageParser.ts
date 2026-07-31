@@ -196,14 +196,14 @@ export function parseMarriageText(rawText: string): MarriageParseResult {
       confidence["relationship.marriageDate"] = 0.35;
       source = "single-date";
       warnings.push(
-        "We found one date and assumed it is the marriage date — please verify it before saving."
+        "We found one date and assumed it is the marriage date, please verify it before saving."
       );
     }
   }
 
   if (!fields["relationship.marriageDate"]) {
     warnings.push(
-      "Marriage date was not confidently detected — please fill it in. Tip: an English translation reads more reliably."
+      "Marriage date was not confidently detected, please fill it in. Tip: an English translation reads more reliably."
     );
   }
 

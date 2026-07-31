@@ -134,7 +134,7 @@ export default function ReviewsTable() {
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {r.email || "—"}
+                      {r.email || ""}
                       {r.location ? ` · ${r.location}` : ""}
                     </div>
                   </div>

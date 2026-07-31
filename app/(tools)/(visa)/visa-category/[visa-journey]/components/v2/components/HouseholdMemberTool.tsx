@@ -29,7 +29,7 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
         items.push({
           id: `hh${i}-marriage`,
           icon: "marriage",
-          title: `Marriage Certificate — ${label}`,
+          title: `Marriage Certificate, ${label}`,
           sub: "Proves the spousal relationship to the petitioner",
           tags: [
             { cls: "tag-hh", label: "Household Member" },
@@ -42,7 +42,7 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
         items.push({
           id: `hh${i}-residence`,
           icon: "home",
-          title: `Proof of Shared Residence — ${label}`,
+          title: `Proof of Shared Residence, ${label}`,
           sub: "Confirms both spouses share the same household address",
           tags: [
             { cls: "tag-hh", label: "Household Member" },
@@ -54,7 +54,7 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
         items.push({
           id: `hh${i}-id`,
           icon: "id",
-          title: `Identity Document — ${label}`,
+          title: `Identity Document, ${label}`,
           sub: "Government-issued ID confirming the household member's identity",
           tags: [
             { cls: "tag-hh", label: "Household Member" },
@@ -70,8 +70,8 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
         items.push({
           id: `hh${i}-birth-hh`,
           icon: "birth",
-          title: `Birth Certificate — ${label}`,
-          sub: "Proves the parent–child relationship to the petitioner",
+          title: `Birth Certificate, ${label}`,
+          sub: "Proves the parent-child relationship to the petitioner",
           tags: [
             { cls: "tag-hh", label: "Household Member" },
             { cls: "tag-rel", label: "Relationship Proof" },
@@ -83,7 +83,7 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
         items.push({
           id: `hh${i}-residence`,
           icon: "home",
-          title: `Proof of Shared Residence — ${label}`,
+          title: `Proof of Shared Residence, ${label}`,
           sub: "Confirms child lives in the same household",
           tags: [
             { cls: "tag-hh", label: "Household Member" },
@@ -95,7 +95,7 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
         items.push({
           id: `hh${i}-id`,
           icon: "id",
-          title: `Identity Document — ${label}`,
+          title: `Identity Document, ${label}`,
           sub: "Government-issued ID for the household member",
           tags: [
             { cls: "tag-hh", label: "Household Member" },
@@ -112,7 +112,7 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
           id: `hh${i}-birth-sponsor`,
           icon: "birth",
           title: `Birth Certificate of Petitioner`,
-          sub: `Shows ${label} (parent) is listed — establishes the parent–child link`,
+          sub: `Shows ${label} (parent) is listed, establishes the parent-child link`,
           tags: [
             { cls: "tag-hh", label: "Household Member" },
             { cls: "tag-rel", label: "Relationship Proof" },
@@ -124,7 +124,7 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
         items.push({
           id: `hh${i}-id`,
           icon: "id",
-          title: `Identity Document — ${label}`,
+          title: `Identity Document, ${label}`,
           sub: "Government-issued ID for the household member",
           tags: [
             { cls: "tag-hh", label: "Household Member" },
@@ -137,7 +137,7 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
         items.push({
           id: `hh${i}-residence`,
           icon: "home",
-          title: `Proof of Shared Residence — ${label}`,
+          title: `Proof of Shared Residence, ${label}`,
           sub: "Confirms parent and petitioner share the same household",
           tags: [
             { cls: "tag-hh", label: "Household Member" },
@@ -165,7 +165,7 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
         items.push({
           id: `hh${i}-birth-hh`,
           icon: "birth",
-          title: `Birth Certificate — ${label}`,
+          title: `Birth Certificate, ${label}`,
           sub: "Combined with petitioner's birth cert to show shared parentage",
           tags: [
             { cls: "tag-hh", label: "Household Member" },
@@ -178,7 +178,7 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
         items.push({
           id: `hh${i}-id`,
           icon: "id",
-          title: `Identity Document — ${label}`,
+          title: `Identity Document, ${label}`,
           sub: "Government-issued ID for the household member",
           tags: [
             { cls: "tag-hh", label: "Household Member" },
@@ -191,7 +191,7 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
         items.push({
           id: `hh${i}-residence`,
           icon: "home",
-          title: `Proof of Shared Residence — ${label}`,
+          title: `Proof of Shared Residence, ${label}`,
           sub: "Confirms sibling and petitioner share the same household",
           tags: [
             { cls: "tag-hh", label: "Household Member" },
@@ -208,7 +208,7 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
         items.push({
           id: `hh${i}-residence`,
           icon: "home",
-          title: `Proof of Shared Residence — ${label}`,
+          title: `Proof of Shared Residence, ${label}`,
           sub: "Demonstrates the shared-household basis for including their income",
           tags: [
             { cls: "tag-hh", label: "Household Member" },
@@ -220,7 +220,7 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
         items.push({
           id: `hh${i}-family-link`,
           icon: "link",
-          title: `Supporting Family-Link Evidence — ${label}`,
+          title: `Supporting Family-Link Evidence, ${label}`,
           sub: "Civil records or affidavit establishing the household connection",
           tags: [
             { cls: "tag-hh", label: "Household Member" },
@@ -232,7 +232,7 @@ export const getHhDocItems = (count: number, rels: Record<number, string>) => {
         items.push({
           id: `hh${i}-id`,
           icon: "id",
-          title: `Identity Document — ${label}`,
+          title: `Identity Document, ${label}`,
           sub: "Government-issued ID for the household member",
           tags: [
             { cls: "tag-hh", label: "Household Member" },

@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
         const lastEvent = await db.getCaseDataByKeyDB(journeyId, "easypost_last_event_id");
         if (lastEvent && lastEvent.data_value === eventId) {
           console.log(
-            `[EasyPost Webhook] Duplicate event ${eventId} for journey ${journeyId} — skipping`
+            `[EasyPost Webhook] Duplicate event ${eventId} for journey ${journeyId} skipping`
           );
           return NextResponse.json({ success: true, message: "Duplicate event" }, { status: 200 });
         }
@@ -119,7 +119,7 @@ export async function POST(request: NextRequest) {
         ]);
 
         console.log(
-          `[EasyPost Webhook] No status change for ${journeyId} (${newStatus}) — updated last-checked`
+          `[EasyPost Webhook] No status change for ${journeyId} (${newStatus}), updated last-checked`
         );
         return NextResponse.json({ success: true, message: "No status change" }, { status: 200 });
       }

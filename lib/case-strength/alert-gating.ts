@@ -26,11 +26,13 @@
  * active-step order and frontier with their own journeyHelpers (v2 or v3) and
  * pass them in, so the same gate serves every dashboard version.
  *
- * Phase 1 (ships now): pure progress gating — AHEAD hidden, ACTIVE/BEHIND shown,
- * look-ahead allowlist, plus the engagement gate. Per-step timestamps don't
- * exist client-side yet, so the time thresholds below stay inert until Phase 2
- * passes `startedAt` / `completedAt`. Written time-ready so Phase 2 is a data
- * change, not a rewrite.
+ * Progress + time gating (LIVE): AHEAD hidden; the ACTIVE step stays calm until
+ * the user actually opens it (frontier just advancing onto a step never blasts
+ * its "not done yet" warnings) and then a grace window; BEHIND deficiencies
+ * surface after their own grace/escalation; look-ahead allowlist; plus the
+ * engagement gate. Per-step timestamps (`startedAt` / `completedAt`) ARE now
+ * populated client-side (`useWizard` stamps them on first open / on complete and
+ * hydrates them from the DB), so the time thresholds below are active, not inert.
  */
 
 import type { AggregatedIssue } from "./aggregate-issues";
@@ -84,10 +86,20 @@ function daysUntil(toMs: number, nowMs: number): number {
 // opts in. All thresholds live here so they can be tuned in one place.
 
 export interface DocumentEscalationConfig {
-  /** Fixed fallback: days a new missing doc stays calm (to-do) on its step. */
+  /** Fixed fallback: days a missing doc on the ACTIVE step stays calm (to-do). */
   todoDays: number;
-  /** Fixed fallback: day it turns red (critical) if still missing. */
+  /** Fixed fallback: day an ACTIVE-step missing doc turns red (critical). */
   criticalDays: number;
+  /**
+   * Fixed fallback (BEHIND — the user already passed the step): days a still-
+   * missing doc stays calm before due-soon. Shorter than `todoDays` because
+   * moving on without the doc is more pressing — but NOT zero: merely marking a
+   * step complete creates no real deadline, so a freshly-passed step's docs
+   * start calm (day 0 = to-do), never an instant "due soon".
+   */
+  behindTodoDays: number;
+  /** Fixed fallback (BEHIND): day a passed-step missing doc turns critical. */
+  behindCriticalDays: number;
   /** Deadline-relative: days-to-filing at/under which a missing doc is critical. */
   filingCriticalDays: number;
   /** Deadline-relative: days-to-filing at/under which a missing doc is due-soon. */
@@ -98,6 +110,8 @@ export interface DocumentEscalationConfig {
 export const DEFAULT_DOCUMENT_ESCALATION: DocumentEscalationConfig = {
   todoDays: 7,
   criticalDays: 21,
+  behindTodoDays: 3,
+  behindCriticalDays: 14,
   filingCriticalDays: 7,
   filingDueSoonDays: 30,
 };
@@ -117,22 +131,26 @@ export function computeDocumentStage(params: {
 }): DocStage {
   const { daysOnStep, daysUntilFiling, isBehind, cfg } = params;
 
-  // 1. Deadline-relative (preferred when we know the target filing date).
+  // 1. Deadline pressure (preferred, only when a target filing date is known).
+  //    A close filing date forces urgency regardless of how long the doc has
+  //    been outstanding. When the deadline is still far, there is no deadline
+  //    pressure YET — fall through to time-based pressure below rather than
+  //    hard-returning, so a long-outstanding doc still escalates on its own.
   if (daysUntilFiling !== null) {
     if (daysUntilFiling <= cfg.filingCriticalDays) return "critical";
     if (daysUntilFiling <= cfg.filingDueSoonDays) return "warning";
-    // Far from filing: calm — unless the user already moved past the step.
-    return isBehind ? "warning" : "info";
   }
 
-  // 2. Fixed-days fallback.
-  if (isBehind) {
-    // Passed the gathering step with the doc still missing → at least amber,
-    // red once it's been outstanding as long as the fixed critical window.
-    return daysOnStep >= cfg.criticalDays ? "critical" : "warning";
-  }
-  if (daysOnStep >= cfg.criticalDays) return "critical";
-  if (daysOnStep >= cfg.todoDays) return "warning";
+  // 2. Time-based pressure (fixed-days fallback / far-from-deadline). A missing
+  //    doc is calm ("to gather") until it has been outstanding for the to-do
+  //    window, then due-soon, then critical. Being BEHIND (already past the
+  //    gathering step) escalates FASTER via its own shorter windows — but still
+  //    starts calm on day 0, so completing a step never fabricates an instant
+  //    "due soon" when the journey just started and no deadline is set.
+  const todoDays = isBehind ? cfg.behindTodoDays : cfg.todoDays;
+  const criticalDays = isBehind ? cfg.behindCriticalDays : cfg.criticalDays;
+  if (daysOnStep >= criticalDays) return "critical";
+  if (daysOnStep >= todoDays) return "warning";
   return "info";
 }
 
@@ -254,7 +272,7 @@ function asLookAhead(issue: AggregatedIssue): AggregatedIssue {
 // ─── Case-strength escalation note ───────────────────────────────────────────
 
 const CASE_STRENGTH_NOTE =
-  "This item was left unresolved on a step you already passed — it is now weakening your case strength. Resolve it before your next milestone.";
+  "This item was left unresolved on a step you already passed, it is now weakening your case strength. Resolve it before your next milestone.";
 
 function withCaseStrengthNote(hint?: string): string {
   return hint ? `${hint}\n\n${CASE_STRENGTH_NOTE}` : CASE_STRENGTH_NOTE;
@@ -356,8 +374,8 @@ function gateMissingDocument(
 }
 
 const DOC_STAGE_NOTE: Record<DocStage, string> = {
-  info: "Recommended to gather before you submit — not urgent yet.",
-  warning: "Your filing step is approaching — please arrange this soon.",
+  info: "Recommended to gather before you submit, not urgent yet.",
+  warning: "Your filing step is approaching, please arrange this soon.",
   critical: "This is required to submit and is now blocking your petition.",
 };
 
@@ -409,7 +427,14 @@ function gateOne(
   // ── ACTIVE: user is on this step ──────────────────────────────────────────
   if (ord === frontierOrd) {
     const reachedAt = ctx.startedAt?.[issue.stepKey];
-    if (reachedAt === undefined) return issue; // Phase 1: no grace data → show now
+    // No `startedAt` means the frontier just advanced onto this step (the user
+    // completed the previous one) but has NOT opened it yet — `startedAt` is only
+    // stamped on first open (useWizard). Don't blast the current task's "not done
+    // yet" warnings the instant the previous step is completed; stay calm until
+    // the user actually engages, which stamps `startedAt` and starts the grace
+    // clock below. Criticals already bypassed this above, so real blockers still
+    // show; and if the step is later left behind, its BEHIND branch surfaces it.
+    if (reachedAt === undefined) return null;
     return daysSince(reachedAt, now) >= ALERT_TIMING.activeWarningGraceDays ? issue : null;
   }
 
@@ -522,4 +547,61 @@ export function buildGateContext(p: BuildGateContextParams): GateContext {
     documentEscalation: p.documentEscalation,
     targetFilingDate: p.targetFilingDate,
   };
+}
+
+// ─── Profile-aware context builder (the wrapper every dashboard should use) ───
+//
+// `buildGateContext` is the low-level, UI-agnostic builder. On top of it EVERY
+// dashboard wires the same three profile/metadata-derived inputs: the category's
+// look-ahead rules, its document-escalation config, and the parsed target filing
+// date. Doing that inline in each dashboard is exactly how V2 and V3 drifted —
+// V2 forgot to pass `documentEscalation`, silently disabling IR-1's opt-in
+// escalation so every missing required document surfaced as an instant red
+// critical the moment its step became active. This wrapper is the ONE place that
+// derivation lives, so a new category or a new dashboard version can never miss
+// a field again: pass the resolved profile + the journey's own helpers and the
+// gate is wired identically everywhere.
+
+/**
+ * The profile fields the alert gate consumes. A resolved `CaseStrengthProfile`
+ * satisfies this structurally, so callers just pass the profile object — no
+ * mapping, and no import of the profile type here (keeps this module pure).
+ */
+export interface AlertGateProfileInputs {
+  lookAhead?: LookAheadRule[];
+  documentEscalation?: DocumentEscalationConfig;
+}
+
+/**
+ * Parse a journey's optional target filing date (ISO string or epoch ms) into
+ * epoch ms for deadline-relative document escalation. Shared so the parsing rule
+ * cannot diverge between dashboards. Returns undefined when absent or unparseable
+ * → the escalation config's fixed-days fallback takes over (§4–§5).
+ */
+export function resolveTargetFilingDate(metadata: unknown): number | undefined {
+  const raw = (metadata as { targetFilingDate?: unknown } | null | undefined)?.targetFilingDate;
+  if (raw == null) return undefined;
+  const ms = new Date(raw as string | number | Date).getTime();
+  return Number.isNaN(ms) ? undefined : ms;
+}
+
+/**
+ * Profile-aware wrapper over `buildGateContext`: derives `lookAheadRules`,
+ * `documentEscalation`, and `targetFilingDate` from the resolved category profile
+ * + journey metadata, so every dashboard (V2 / V3 / future) wires them the same
+ * way. Callers pass their own `getActiveStepsForStage` / `getNextBestAction` so
+ * this stays UI-agnostic.
+ */
+export function buildAlertGateContext(
+  p: Omit<BuildGateContextParams, "lookAheadRules" | "documentEscalation" | "targetFilingDate"> & {
+    profile: AlertGateProfileInputs;
+  }
+): GateContext {
+  const { profile, ...rest } = p;
+  return buildGateContext({
+    ...rest,
+    lookAheadRules: profile.lookAhead,
+    documentEscalation: profile.documentEscalation,
+    targetFilingDate: resolveTargetFilingDate(rest.state.metadata),
+  });
 }

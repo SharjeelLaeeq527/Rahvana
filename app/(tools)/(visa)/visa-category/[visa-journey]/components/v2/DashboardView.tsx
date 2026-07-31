@@ -39,7 +39,7 @@ import {
 } from "@/lib/case-strength/aggregate-issues";
 import {
   gateAlertIssues,
-  buildGateContext,
+  buildAlertGateContext,
   isMeaningfullyStarted,
   isCaseHealthScorable,
   hasUserEvidenceSignal,
@@ -54,12 +54,12 @@ import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 import { getActiveStepsForStage } from "./journeyHelpers";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 import { E, msg } from "@/lib/errors";
-import IR1Ticker from "./IR1Ticker";
+import VisaTicker from "@/app/components/home-page/VisaTicker";
 import {
-  buildIR1TickerProps,
+  buildVisaTickerProps,
   fetchReceiptForJourney,
   ReceiptRecord,
-} from "@/app/components/home-page/Ir1tickerprops";
+} from "@/app/components/home-page/Visatickerprops";
 
 interface DashboardViewProps {
   data: RoadmapData;
@@ -455,17 +455,20 @@ export function DashboardView({
     // Progressive reveal: hide alerts for steps the user hasn't reached yet, and
     // (Phase 2) time-gate current/passed-step warnings. Keeps the dashboard from
     // dumping every chapter's issues at once. See CASE_STRENGTH_ALERT_PLAN.md.
-    // buildGateContext derives the frontier/active-order (shared with V3); the
-    // look-ahead rules come from the resolved category profile.
+    // buildAlertGateContext (shared with V3) derives the frontier/active-order
+    // AND wires the category profile's look-ahead + document-escalation config +
+    // target filing date, so IR-1 gets the same calm 3-stage doc lifecycle as IR-5
+    // instead of instant-red criticals.
+    const alertProfile = resolveCaseStrengthProfile((data as any).journey_type);
     const gated = gateAlertIssues(
       all,
-      buildGateContext({
+      buildAlertGateContext({
         chapters,
         state,
         getActiveStepsForStage,
         getNextBestAction,
-        lookAheadRules: resolveCaseStrengthProfile((data as any).journey_type).lookAhead,
         stepTimestamps: state.stepTimestamps,
+        profile: alertProfile,
       })
     );
 
@@ -492,7 +495,7 @@ export function DashboardView({
     return {
       level: "warning",
       title: `Case strength dropped to ${SCORE_BAND_LABEL[scoreDropBand.to]}`,
-      hint: `Your Case Strength moved from ${SCORE_BAND_LABEL[scoreDropBand.from]} to ${SCORE_BAND_LABEL[scoreDropBand.to]}. Open the breakdown to see which factor fell — evidence, consistency, completeness, or a new risk flag.`,
+      hint: `Your Case Strength moved from ${SCORE_BAND_LABEL[scoreDropBand.from]} to ${SCORE_BAND_LABEL[scoreDropBand.to]}. Open the breakdown to see which factor fell, evidence, consistency, completeness, or a new risk flag.`,
       stepKey: "__score__",
       stepName: "Case Strength",
       stepNumber: 0,
@@ -517,7 +520,11 @@ export function DashboardView({
   // Overall combined case score (evidence + consistency)
   // Weighted model (IR-1/IR-5): 4-ingredient (Evidence 40 / Consistency 30 / Completeness 20 / Risk 10)
   // with user-provided-only evidence. Legacy model: 50/50 blend.
-  const overallCaseScore = useMemo(() => {
+  // Returns { score, breakdown } so the CaseHealthOverview explainer can display
+  // the SAME four ingredient numbers that produced the score — the worked example
+  // must reconcile exactly. Mirrors DashboardViewV3's weighted path (no
+  // userProvided gate; `?? 0` fallbacks) so V2/V3 stay in lockstep.
+  const caseScoreResult = useMemo(() => {
     const eligibilityAnswers =
       (state.answers?.["eligibility-suite"] as any) ??
       (state.metadata?.["questAnswers_eligibility-suite"] as any);
@@ -528,23 +535,26 @@ export function DashboardView({
     );
 
     const p = resolveCaseStrengthProfile((data as any).journey_type);
-    if (p.caseScore?.model === "weighted" && evidenceAnalysis?.userProvided) {
-      const up = evidenceAnalysis.userProvided;
+    if (p.caseScore?.model === "weighted") {
       const metadata = state.metadata as Record<string, unknown> | undefined;
       const questAnswers = metadata?.["questAnswers_eligibility-suite"] as
         | Record<string, Record<string, string | string[]>>
         | undefined;
       const eligibilityRisks = p.detectEligibilityRisks(questAnswers, p.stepRefs);
       return computeWeightedCaseScore({
-        evidenceStrength: up.score,
+        evidenceStrength: evidenceAnalysis?.userProvided?.score ?? 0,
         consistencyScore: computeConsistencyScore(consistencyFindings),
-        completeness: up.completionPercentage,
+        completeness: evidenceAnalysis?.userProvided?.completionPercentage ?? 0,
         riskFlags: eligibilityRisks,
-      }).score;
+      });
     }
 
-    return computeOverallCaseScore({ evidenceAnalysis, consistencyFindings });
+    return {
+      score: computeOverallCaseScore({ evidenceAnalysis, consistencyFindings }),
+      breakdown: null as ReturnType<typeof computeWeightedCaseScore>["breakdown"] | null,
+    };
   }, [evidenceAnalysis, state, phase2Responses, uploadedDocuments, data]);
+  const overallCaseScore = caseScoreResult.score;
 
   // Sub-scores for the CaseHealthOverview popover breakdown
   // Weighted model uses user-provided-only view; legacy uses autofill-inclusive.
@@ -946,12 +956,12 @@ export function DashboardView({
 
   const [receiptRecord, setReceiptRecord] = useState<ReceiptRecord | null | undefined>(undefined);
   useEffect(() => {
-    console.log("DEBUG [receipt effect] FIRED — state.backendId:", state.backendId);
+    console.log("DEBUG [receipt effect] FIRED, state.backendId:", state.backendId);
     let cancelled = false;
     const jId = state.backendId;
 
     if (!jId) {
-      console.log("DEBUG [receipt effect] No backendId yet — skipping fetch");
+      console.log("DEBUG [receipt effect] No backendId yet, skipping fetch");
       return;
     }
 
@@ -977,7 +987,7 @@ export function DashboardView({
       });
 
     return () => {
-      console.log("DEBUG [receipt effect] Cleanup — marking cancelled");
+      console.log("DEBUG [receipt effect] Cleanup, marking cancelled");
       cancelled = true;
     };
   }, [state.backendId]);
@@ -1020,11 +1030,11 @@ export function DashboardView({
             onClose={() => setUpgradeModalFeature(null)}
           />
         )}
-        {/* IR-1 Live ticker — journey dashboard (placed above hero) */}
+        {/* Visa ticker — journey dashboard (placed above hero) */}
         {receiptRecord !== undefined && (
           <div className="mb-6">
-            <IR1Ticker
-              {...buildIR1TickerProps(
+            <VisaTicker
+              {...buildVisaTickerProps(
                 state,
                 trackingStatus,
                 nvcCaseNum,
@@ -1069,8 +1079,10 @@ export function DashboardView({
             criticalCount={critIssueCount}
             warningCount={warnIssueCount}
             overallScore={overallCaseScore}
-            evidenceScore={evidenceSubScore}
-            consistencyScore={consistencySubScore}
+            evidenceScore={caseScoreResult.breakdown?.evidenceStrength ?? evidenceSubScore}
+            consistencyScore={caseScoreResult.breakdown?.consistencyScore ?? consistencySubScore}
+            completenessScore={caseScoreResult.breakdown?.completeness}
+            riskPenalty={caseScoreResult.breakdown?.riskPenalty}
             healthLabel={caseHealthStatus?.label ?? "Analyzing"}
             healthStatus={caseHealthStatus?.status ?? "needs-attention"}
             loading={evidenceLoading}
@@ -1567,7 +1579,7 @@ export function DashboardView({
                               Interview Queue ({postLabel})
                             </div>
                             <h3 className="text-[18px] font-black mb-2">
-                              In Queue — Awaiting Estimate
+                              In Queue, Awaiting Estimate
                             </h3>
                             <p className="text-[12.5px] text-white/60 leading-relaxed mb-4 max-w-md">
                               Your DQ date is recorded. To see your estimated interview window, go
@@ -1616,7 +1628,7 @@ export function DashboardView({
                     const windowStr =
                       waitMonths === 0
                         ? "Approaching Soon"
-                        : `${lowDate.toLocaleDateString("en-US", fmt)} – ${highDate.toLocaleDateString("en-US", fmt)}`;
+                        : `${lowDate.toLocaleDateString("en-US", fmt)} ${highDate.toLocaleDateString("en-US", fmt)}`;
                     const embassyMonthStr = ivDate.toLocaleDateString("en-US", {
                       month: "long",
                       year: "numeric",

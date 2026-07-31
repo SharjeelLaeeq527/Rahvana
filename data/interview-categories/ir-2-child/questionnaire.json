@@ -55,7 +55,7 @@
         },
         {
           "key": "parent_full_name",
-          "label": "What is your parent’s full name?",
+          "label": "What is your parent's full name?",
           "type": "text",
           "required": true,
           "validation": { "minLength": 3, "maxLength": 200 },

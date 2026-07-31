@@ -72,41 +72,6 @@ export default function Footer() {
               {t("footer.journeys") || "Journeys"}
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
-              {/* <Link
-                href="/visa-category/ir-category?category=Family"
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                {t("homePage.categoryLabels.Family & Protection") ||
-                  "Family & Protection"}
-              </Link>
-              <Link
-                href="/visa-category/ir-category?category=Work"
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                {t("homePage.categoryLabels.Work & Business") ||
-                  "Work & Business"}
-              </Link>
-              <Link
-                href="/visa-category/ir-category?category=Work"
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                {t("homePage.categoryLabels.Work Green Cards") ||
-                  "Work Green Cards"}
-              </Link>
-              <Link
-                href="/visa-category/ir-category?category=Study"
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                {t("homePage.categoryLabels.Students & Visitors") ||
-                  "Students & Visitors"}
-              </Link>
-              <Link
-                href="/visa-category/ir-category"
-                className="text-white font-medium underline hover:text-slate-200 transition-colors"
-              >
-                {t("footer.exploreAllJourneys") || "Explore all Journeys"}
-                <ArrowRight size={14} className="inline-block ml-1" />
-              </Link> */}
               <Link
                 href={ir1journeyHref}
                 className="text-slate-400 hover:text-white transition-colors"
@@ -119,6 +84,15 @@ export default function Footer() {
                   className="text-slate-400 hover:text-white transition-colors"
                 >
                   IR-5 Journey
+                </Link>
+              )}
+              {showToggle && (
+                <Link
+                  href="/visa-category"
+                  className="text-white font-medium underline hover:text-slate-200 transition-colors"
+                >
+                  Explore all Journeys
+                  <ArrowRight size={14} className="inline-block ml-1" />
                 </Link>
               )}
             </nav>

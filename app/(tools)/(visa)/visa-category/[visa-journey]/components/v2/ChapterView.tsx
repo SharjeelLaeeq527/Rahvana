@@ -262,7 +262,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
                 ? "Upgrade to Premium for step-by-step guidance, a document vault, and reminders."
                 : plan.tier === "premium"
                   ? "Upgrade to Executive for expert consultation, document reviews, and hands-on support."
-                  : "Full plan active — complete tools and end-to-end support throughout the process."}
+                  : "Full plan active, complete tools and end-to-end support throughout the process."}
           </p>
 
           {plan.tier !== "executive" && (

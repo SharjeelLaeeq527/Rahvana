@@ -88,7 +88,7 @@ export const COMMUNITY_VALIDATION_DATASET: CommunityCase[] = [
     serviceCenter: "Vermont",
     outcome: "iv_pause_ap",
     source: "visa_journey",
-    note: "CO confirmed approval but mandatory AP triggered — Jan 2026 IV pause. No visa issued.",
+    note: "CO confirmed approval but mandatory AP triggered, Jan 2026 IV pause. No visa issued.",
     uscisMonths: 15,
     nvcEmbassyMonths: 9,
   },
@@ -100,7 +100,7 @@ export const COMMUNITY_VALIDATION_DATASET: CommunityCase[] = [
     serviceCenter: "Vermont",
     outcome: "iv_pause_ap",
     source: "visa_journey",
-    note: "Post-Jan 2026 interview — visa issuance paused.",
+    note: "Post-Jan 2026 interview, visa issuance paused.",
     uscisMonths: 15,
     nvcEmbassyMonths: 11,
   },
@@ -112,7 +112,7 @@ export const COMMUNITY_VALIDATION_DATASET: CommunityCase[] = [
     serviceCenter: "Texas",
     outcome: "unknown",
     source: "visa_journey",
-    note: "Interview Dec 2025 — before IV pause. Outcome not confirmed in dataset.",
+    note: "Interview Dec 2025, before IV pause. Outcome not confirmed in dataset.",
     uscisMonths: 16,
     nvcEmbassyMonths: 13,
   },
@@ -124,7 +124,7 @@ export const COMMUNITY_VALIDATION_DATASET: CommunityCase[] = [
     serviceCenter: "Texas",
     outcome: "unknown",
     source: "visa_journey",
-    note: "Long NVC+embassy phase reflects 2023–2024 Islamabad queue conditions.",
+    note: "Long NVC+embassy phase reflects 2023-2024 Islamabad queue conditions.",
     uscisMonths: 12,
     nvcEmbassyMonths: 16,
   },
@@ -148,7 +148,7 @@ export const COMMUNITY_VALIDATION_DATASET: CommunityCase[] = [
     serviceCenter: "Potomac→Texas",
     outcome: "unknown",
     source: "visa_journey",
-    note: "SC transfer from Potomac to Texas. 20-month NVC+embassy reflects heavy 2023–2024 Islamabad backlog.",
+    note: "SC transfer from Potomac to Texas. 20-month NVC+embassy reflects heavy 2023-2024 Islamabad backlog.",
     uscisMonths: 12,
     nvcEmbassyMonths: 20,
   },
@@ -181,7 +181,7 @@ export const COMMUNITY_VALIDATION_DATASET: CommunityCase[] = [
 // Derived statistics for UI display (computed from the 8 cases above)
 export const COMMUNITY_DATASET_STATS = {
   n: 8,
-  source: "Visa Journey Pakistan IR-1/CR-1 timelines, interviews 2022–2026",
+  source: "Visa Journey Pakistan IR-1/CR-1 timelines, interviews 2022-2026",
   minimumForPrimaryForecasting: 25,
   usableFor: "USCIS phase validation only",
   uscis: {
@@ -191,13 +191,13 @@ export const COMMUNITY_DATASET_STATS = {
     max: 16,
     median: 12.5,
     mean: 13.1,
-    validatesTypicalRange: "12–16 months ✓",
+    validatesTypicalRange: "12-16 months ✓",
   },
   nvcEmbassy: {
     // NOA2→interview months — reflects 2022–2024 Islamabad queue, NOT current
     observed: [9, 11, 13, 15, 15, 16, 18, 20],
     warning:
-      "These reflect 2022–2024 Islamabad queue conditions. Do NOT use for current embassy estimates. Use DoS IV Tool instead.",
+      "These reflect 2022-2024 Islamabad queue conditions. Do NOT use for current embassy estimates. Use DoS IV Tool instead.",
   },
   endToEnd: {
     // filed→interview months across all 8 cases
@@ -206,7 +206,7 @@ export const COMMUNITY_DATASET_STATS = {
     max: 32,
     median: 28,
     mean: 28.4,
-    note: "filed→interview, not filed→visa. Visa issuance adds 0.5–2 months normally; indefinite under Jan 2026 pause.",
+    note: "filed→interview, not filed→visa. Visa issuance adds 0.5-2 months normally; indefinite under Jan 2026 pause.",
   },
   pauseImpact: {
     casesAffected: 2,
@@ -274,10 +274,10 @@ export const CASE_TYPE_CONFIGS: CaseTypeConfig[] = [
       uscisOfficialMonths: 51,
       uscisNote:
         "USCIS officially shows 51 months (80th-percentile completion window across all US cases). " +
-        "This captures every delayed, transferred, or RFE'd case nationwide — not a forecast for a standard Pakistan NBC case. " +
-        "Attorney analysis (Kulen Law Apr 2026: 10–15 mo; Modern Law Apr 2026: 12–14 mo) and community " +
-        "data (Visa Journey, n=8, median 12.5 mo) both point to a Pakistan-specific typical range of 12–16 months. " +
-        "Community dataset is n=8 — used for validation only, not primary forecasting.",
+        "This captures every delayed, transferred, or RFE'd case nationwide, not a forecast for a standard Pakistan NBC case. " +
+        "Attorney analysis (Kulen Law Apr 2026: 10-15 mo; Modern Law Apr 2026: 12-14 mo) and community " +
+        "data (Visa Journey, n=8, median 12.5 mo) both point to a Pakistan-specific typical range of 12-16 months. " +
+        "Community dataset is n=8, used for validation only, not primary forecasting.",
       outcomeTiers: {
         bestCase: { min: 9, max: 11 },
         optimistic: { min: 11, max: 12 },
@@ -305,9 +305,9 @@ export const CASE_TYPE_CONFIGS: CaseTypeConfig[] = [
       confidenceLevel: "medium",
       uscisOfficialMonths: null,
       uscisNote:
-        "USCIS no longer publishes a separate SCOPS figure — all service centers are grouped. " +
+        "USCIS no longer publishes a separate SCOPS figure, all service centers are grouped. " +
         "Historical SCOPS data showed ~19 months. Pakistan community data (n=8) shows no meaningful " +
-        "difference from NBC routing; same 12–16 month typical range applies.",
+        "difference from NBC routing; same 12-16 month typical range applies.",
       outcomeTiers: {
         bestCase: { min: 9, max: 11 },
         optimistic: { min: 11, max: 12 },
@@ -335,7 +335,7 @@ export const CASE_TYPE_CONFIGS: CaseTypeConfig[] = [
       uscisOfficialMonths: 67,
       uscisNote:
         "USCIS shows 67 months for field offices (80th percentile). Field office processing is a different " +
-        "workflow — not representative of standard Pakistan consular IR-1 cases.",
+        "workflow, not representative of standard Pakistan consular IR-1 cases.",
       outcomeTiers: {
         bestCase: { min: 18, max: 24 },
         optimistic: { min: 24, max: 30 },
@@ -364,7 +364,7 @@ export const CASE_TYPE_CONFIGS: CaseTypeConfig[] = [
       confidenceLevel: "low",
       uscisOfficialMonths: 52,
       uscisNote:
-        "USCIS shows 52 months (80th percentile). F2A cases require visa numbers to be current — USCIS approval " +
+        "USCIS shows 52 months (80th percentile). F2A cases require visa numbers to be current, USCIS approval " +
         "is only step 1. The Islamabad F2A consulate queue adds ~31 months (DoS IV Tool, Apr 2026), " +
         "making total typical journey approximately 84 months.",
       outcomeTiers: {
@@ -425,7 +425,7 @@ export const CASE_TYPE_CONFIGS: CaseTypeConfig[] = [
       confidenceLevel: "very_low",
       uscisOfficialMonths: 139,
       uscisNote:
-        "USCIS shows 139 months — extreme field-office backlog indicator. Not representative of consular processing.",
+        "USCIS shows 139 months, extreme field-office backlog indicator. Not representative of consular processing.",
       outcomeTiers: {
         bestCase: { min: 36, max: 48 },
         optimistic: { min: 48, max: 60 },
@@ -483,7 +483,7 @@ export const CONSULATE_QUEUE_CONFIGS: ConsulateQueueConfig[] = [
   // ── Islamabad · IR-1/CR-1 ────────────────────────────────────────────────
   {
     postCode: "ISL_IR",
-    label: "U.S. Embassy Islamabad — IR-1/CR-1",
+    label: "U.S. Embassy Islamabad, IR-1/CR-1",
     country: "Pakistan",
     visaCategory: "immediate_relative",
     postDQMin: 1,
@@ -499,13 +499,13 @@ export const CONSULATE_QUEUE_CONFIGS: ConsulateQueueConfig[] = [
     note:
       "Currently fast (~2 months post-DQ). Afghanistan cases are now also routed to Islamabad which can spike the queue. " +
       "Does not include 221(g) administrative processing after interview. " +
-      "NOTE: IV pause (Jan 21 2026) means interviews proceed but no visas are being issued — see policyFlags.ts.",
+      "NOTE: IV pause (Jan 21 2026) means interviews proceed but no visas are being issued, see policyFlags.ts.",
   },
 
   // ── Islamabad · F2A ──────────────────────────────────────────────────────
   {
     postCode: "ISL_F2A",
-    label: "U.S. Embassy Islamabad — F2A",
+    label: "U.S. Embassy Islamabad, F2A",
     country: "Pakistan",
     visaCategory: "family_preference",
     postDQMin: 20,

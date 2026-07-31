@@ -8,6 +8,8 @@ import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage } from "./journeyHelpers";
 import { ChevronRight, ArrowLeft, Check, X, LayoutDashboard } from "lucide-react";
 import {useToast} from "@/app/components/shared/ToastProvider";
+import { useAuth } from "@/app/context/AuthContext";
+import { useInitDocumentVault } from "@/lib/document-vault/useInitDocumentVault";
 
 /** Lazy-load StepView (354 KB source) — only fetched when user navigates to a step */
 const LazyStepView = React.lazy(() =>
@@ -50,6 +52,19 @@ export default function RoadmapLayoutV2({ data, state, actions }: RoadmapLayoutV
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
 
   const { showToast } = useToast();
+  const { user } = useAuth();
+
+  // Prefetch the document vault as soon as the journey opens (on the dashboard),
+  // not when the lazy StepView mounts. Keeps IR-1/CR-1 pinned to the "IR-1" vault
+  // category (matching the prior hardcoded behavior) while loading documents early
+  // so the step list and case-strength score render without the "Checking..." delay.
+  useInitDocumentVault({
+    journeyType: data.journey_type,
+    backendId: state.backendId,
+    metadata: state.metadata,
+    userId: user?.id,
+    visaCategory: "IR-1",
+  });
 
   useEffect(() => {
     if (state.currentStage !== undefined && state.currentStage !== -1) {
@@ -318,7 +333,7 @@ export default function RoadmapLayoutV2({ data, state, actions }: RoadmapLayoutV
           box-sizing: border-box;
         }
 
-        /* Back button slot — fixed width so breadcrumbs don't jump */
+        /* Back button slot, fixed width so breadcrumbs don't jump */
         .nav-back-slot {
           flex: 0 0 30px;
           display: flex;
@@ -474,7 +489,7 @@ export default function RoadmapLayoutV2({ data, state, actions }: RoadmapLayoutV
 
         /*
           ≥560px   → full label
-          480–559px → short label
+          480-559px → short label
           <480px   → icon only, circle
         */
         .complete-label--full {

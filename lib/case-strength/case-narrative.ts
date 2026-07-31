@@ -154,19 +154,19 @@ function buildExecutiveSummary(
     // journey reads as "still building", not as something being wrong.
     const band = getScoreBand(overallScore);
     if (band === "strong") {
-      parts.push("Your case is in strong shape — evidence and consistency are looking solid");
+      parts.push("Your case is in strong shape, evidence and consistency are looking solid");
     } else if (band === "moderate") {
       parts.push("Your case is on track, with a few areas you can still strengthen");
     } else {
       parts.push(
-        "You're still building your case — the key documents and details below are the ones to add next"
+        "You're still building your case, the key documents and details below are the ones to add next"
       );
     }
   } else {
     // Legacy blend (IR-1), unchanged.
     if (overallScore >= 80) {
       parts.push(
-        "Your case is in strong shape overall — evidence coverage and consistency checks are solid"
+        "Your case is in strong shape overall, evidence coverage and consistency checks are solid"
       );
     } else if (overallScore >= 60) {
       parts.push("Your case shows moderate strength with room for improvement in key areas");
@@ -405,7 +405,7 @@ function buildAreasRequiringAttention(
       const assessment = evidenceAnalysis.categories[cat];
       areas.push({
         text: `Limited ${CATEGORY_LABELS[cat]}`,
-        detail: `Only ${assessment.items.length} item${assessment.items.length !== 1 ? "s" : ""} documented — more evidence recommended`,
+        detail: `Only ${assessment.items.length} item${assessment.items.length !== 1 ? "s" : ""} documented, more evidence recommended`,
         source: "evidence",
         priority: 3,
       });

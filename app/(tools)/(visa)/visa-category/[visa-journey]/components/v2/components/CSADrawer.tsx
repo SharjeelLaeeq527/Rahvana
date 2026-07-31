@@ -478,7 +478,7 @@ export function CSADrawer({
                               </div>
                               <div className="text-[10px] text-slate-500">
                                 {evidenceAnswered > 0
-                                  ? `${evidenceAnswered} questions answered — update for deeper insights`
+                                  ? `${evidenceAnswered} questions answered, update for deeper insights`
                                   : "Answer questions across categories for deeper evidence analysis"}
                               </div>
                             </div>
@@ -573,7 +573,7 @@ export function CSADrawer({
                           </div>
                           <div className="text-[10px] text-slate-500">
                             {phase2Answered > 0
-                              ? `${phase2Answered} questions answered — update for deeper analysis`
+                              ? `${phase2Answered} questions answered, update for deeper analysis`
                               : "Answer optional questions for deeper consistency analysis"}
                           </div>
                         </div>

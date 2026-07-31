@@ -253,7 +253,7 @@
           "id": "nikah_nama",
           "label": "Nikah Nama Copy",
           "required": true,
-          "description": "Proof of parents' marriage — relationship verification"
+          "description": "Proof of parents' marriage, relationship verification"
         },
         {
           "id": "proof_of_residence",
@@ -265,13 +265,13 @@
           "id": "hospital_slip",
           "label": "Hospital Discharge / Birth Notification Slip",
           "required": false,
-          "description": "Required only for hospital births — primary evidence of birth"
+          "description": "Required only for hospital births, primary evidence of birth"
         },
         {
           "id": "witness_cnic",
           "label": "2 Witness CNICs",
           "required": false,
-          "description": "Required only for home births — witnesses must be non-relatives"
+          "description": "Required only for home births, witnesses must be non-relatives"
         },
         {
           "id": "affidavit",
@@ -283,7 +283,7 @@
           "id": "grandparent_cnic",
           "label": "Grandparent's CNIC (Conditional)",
           "required": false,
-          "description": "Required only if parent's CNIC is unavailable, or for identity verification in specific districts — not a standard requirement"
+          "description": "Required only if parent's CNIC is unavailable, or for identity verification in specific districts, not a standard requirement"
         }
       ]
     },
@@ -359,17 +359,17 @@
       },
       "roadmap": {
         "tips": [
-          "Union Council (UC) registration is mandatory FIRST — NADRA B-Form cannot be issued without a valid UC CBRC.",
+          "Union Council (UC) registration is mandatory FIRST, NADRA B-Form cannot be issued without a valid UC CBRC.",
           "Required documents: Hospital birth slip, parents' CNIC/NICOP copies, Nikah Nama, proof of residence, and affidavit for home births.",
-          "Punjab: Digital registration via Pak-ID app available in selected districts. Sindh: Uses CRMS (Civil Registration Management System). KPK: Integrated with LG&RDD. Balochistan, GB, AJK, ICT: Manual UC registration required — no digital option.",
-          "Executive NADRA processing (Rs. 500) delivers B-Form in 3–5 days instead of 10–15.",
-          "Verify all name spellings and dates on the spot at the UC before leaving — corrections later require a separate process."
+          "Punjab: Digital registration via Pak-ID app available in selected districts. Sindh: Uses CRMS (Civil Registration Management System). KPK: Integrated with LG&RDD. Balochistan, GB, AJK, ICT: Manual UC registration required, no digital option.",
+          "Executive NADRA processing (Rs. 500) delivers B-Form in 3-5 days instead of 10-15.",
+          "Verify all name spellings and dates on the spot at the UC before leaving, corrections later require a separate process."
         ],
         "pitfalls": [
-          "Digital app submission (Pak-ID) is only available in selected Punjab districts — a Union Council visit may still be required for in-person verification even after digital submission.",
-          "Grandparent's CNIC is NOT a standard requirement — it is only needed if the parent's CNIC is unavailable or for verification in specific districts. Do not gather it unless specifically requested.",
-          "Leaving the UC counter without verifying the digital entry — errors are much harder to correct after the fact.",
-          "Going to NADRA directly without first obtaining the UC Computerized Birth Certificate (CBRC) — NADRA will reject the application."
+          "Digital app submission (Pak-ID) is only available in selected Punjab districts, a Union Council visit may still be required for in-person verification even after digital submission.",
+          "Grandparent's CNIC is NOT a standard requirement, it is only needed if the parent's CNIC is unavailable or for verification in specific districts. Do not gather it unless specifically requested.",
+          "Leaving the UC counter without verifying the digital entry, errors are much harder to correct after the fact.",
+          "Going to NADRA directly without first obtaining the UC Computerized Birth Certificate (CBRC), NADRA will reject the application."
         ],
         "links": [
           {

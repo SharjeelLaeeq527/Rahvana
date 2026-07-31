@@ -12,14 +12,14 @@ export const INTERVIEW_SCHEDULING_DATA = {
     { label: "Awaiting Appointment", type: "gold" },
   ],
   queueStatus: {
-    heading: "In queue — awaiting interview letter",
+    heading: "In queue, awaiting interview letter",
   },
   schedulingData: {
     Islamabad: {
       official: "March 2024",
       trend: "Steady movement",
       detail:
-        "Islamabad has been scheduling approximately 1–2 months of DQ dates per month recently. If your DQ is from mid-2024, you are still ahead in the queue.",
+        "Islamabad has been scheduling approximately 1-2 months of DQ dates per month recently. If your DQ is from mid-2024, you are still ahead in the queue.",
     },
     Karachi: {
       official: "February 2024",
@@ -59,7 +59,7 @@ export const INTERVIEW_SCHEDULING_DATA = {
   howItWorks: [
     "NVC schedules interviews based on the post's appointment capacity and the applicant's DQ month",
     "Cases with earlier DQ dates are generally scheduled before cases with later DQ dates in the same category",
-    "The State Department publishes a monthly immigrant visa bulletin showing which DQ months are being scheduled — this is the authoritative source",
+    "The State Department publishes a monthly immigrant visa bulletin showing which DQ months are being scheduled, this is the authoritative source",
     "Once your DQ month is reached, NVC will issue an interview appointment letter to the petitioner's address",
   ],
   disclaimer:

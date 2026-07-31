@@ -250,8 +250,8 @@ export function PacketSectionChecklist({ config, checked, onToggle }: PacketSect
           {/* Source */}
           <p className="text-[10.5px] text-[#78716c] leading-relaxed italic">
             Source:{" "}
-            {config.source_basis ?? "USCIS I-130 paper filing instructions — uscis.gov/i-130"}.
-            Advisory checklist — not legal advice. Verify the current USCIS instructions before
+            {config.source_basis ?? "USCIS I-130 paper filing instructions, uscis.gov/i-130"}.
+            Advisory checklist, not legal advice. Verify the current USCIS instructions before
             mailing.
           </p>
         </div>

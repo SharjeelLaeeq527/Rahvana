@@ -160,7 +160,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
     id: "nadra-mrc",
     key: "NADRA_MRC",
     name: "Marriage Certificate / Marriage Registration Record",
-    description: "Official civil proof of the marriage — Nikah Nama and NADRA MRC",
+    description: "Official civil proof of the marriage, Nikah Nama and NADRA MRC",
     category: "CIVIL",
     applicableVisas: FAMILY_VISAS,
     roles: ["BENEFICIARY"],
@@ -573,7 +573,7 @@ const FINANCIAL_DOCS: DocumentDefinition[] = [
   {
     id: "hh-marriage",
     key: "HH_MARRIAGE",
-    name: "Marriage Certificate — Household Member",
+    name: "Marriage Certificate, Household Member",
     description: "Marriage certificate proving spousal relationship between household member and petitioner",
     category: "FINANCIAL",
     applicableVisas: FAMILY_VISAS,
@@ -589,7 +589,7 @@ const FINANCIAL_DOCS: DocumentDefinition[] = [
   {
     id: "hh-id",
     key: "HH_ID",
-    name: "Identity Document — Household Member",
+    name: "Identity Document, Household Member",
     description: "Government-issued identification card or document for the household member",
     category: "FINANCIAL",
     applicableVisas: FAMILY_VISAS,
@@ -605,7 +605,7 @@ const FINANCIAL_DOCS: DocumentDefinition[] = [
   {
     id: "hh-birth",
     key: "HH_BIRTH",
-    name: "Birth Certificate — Household Member",
+    name: "Birth Certificate, Household Member",
     description: "Birth certificate proving parent-child or sibling relationship",
     category: "FINANCIAL",
     applicableVisas: FAMILY_VISAS,
@@ -621,7 +621,7 @@ const FINANCIAL_DOCS: DocumentDefinition[] = [
   {
     id: "hh-family-link",
     key: "HH_FAMILY_LINK",
-    name: "Supporting Family-Link Evidence — Household Member",
+    name: "Supporting Family-Link Evidence, Household Member",
     description: "Civil records or affidavit establishing the household connection",
     category: "FINANCIAL",
     applicableVisas: FAMILY_VISAS,

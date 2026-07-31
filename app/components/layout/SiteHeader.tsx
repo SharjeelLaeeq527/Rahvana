@@ -31,6 +31,7 @@ import {
   Clock,
   Camera,
   Files,
+  Map,
   PenTool,
   Globe,
   Shield,
@@ -246,6 +247,34 @@ function getQuickAccessItemStyle(item: any): QuickAccessItemStyle {
   return QUICK_ACCESS_ITEM_STYLES.default;
 }
 
+// How many notifications to show before the user opts into "See More".
+const NOTIF_PAGE_SIZE = 8;
+
+// Compact relative timestamp, e.g. "Just now", "5m ago", "3h ago", "2d ago".
+// Falls back to an absolute date for anything older than a week.
+function formatNotifTime(value?: string | number | Date | null): string {
+  if (!value) return "";
+  const then = new Date(value).getTime();
+  if (Number.isNaN(then)) return "";
+  const diff = Date.now() - then;
+  if (diff < 0) return "Just now";
+
+  const sec = Math.floor(diff / 1000);
+  if (sec < 45) return "Just now";
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  if (hr < 24) return `${hr}h ago`;
+  const day = Math.floor(hr / 24);
+  if (day < 7) return `${day}d ago`;
+
+  return new Date(then).toLocaleDateString(undefined, {
+    month: "short",
+    day: "numeric",
+    year: new Date(then).getFullYear() === new Date().getFullYear() ? undefined : "numeric",
+  });
+}
+
 export function SiteHeader({
   activeSection,
   onNavigate,
@@ -347,6 +376,12 @@ export function SiteHeader({
   const [notifList, setNotifList] = useState<any[]>([]);
   const [notifJourneyId, setNotifJourneyId] = useState<string | null>(null);
   const [expandedNotifs, setExpandedNotifs] = useState<Set<string>>(new Set());
+  // How many notifications are currently rendered. Starts capped; "See More"
+  // reveals the rest and switches the list into infinite-scroll mode.
+  const [visibleNotifCount, setVisibleNotifCount] = useState(NOTIF_PAGE_SIZE);
+  const [notifSeeAll, setNotifSeeAll] = useState(false);
+  const notifScrollRef = useRef<HTMLDivElement>(null);
+  const notifSentinelRef = useRef<HTMLDivElement>(null);
   const toggleExpand = (id: string) =>
     setExpandedNotifs((prev) => {
       const n = new Set(prev);
@@ -556,6 +591,37 @@ export function SiteHeader({
   const handleBellClick = () => {
     setNotificationsOpen((prev) => !prev);
   };
+
+  // Reset the paging whenever the dropdown closes, so it always reopens
+  // collapsed to the initial page.
+  useEffect(() => {
+    if (!notificationsOpen) {
+      setVisibleNotifCount(NOTIF_PAGE_SIZE);
+      setNotifSeeAll(false);
+    }
+  }, [notificationsOpen]);
+
+  // Infinite scroll: once the user opts into "See More", reveal more rows as
+  // the sentinel at the bottom of the scroll area comes into view.
+  useEffect(() => {
+    if (!notificationsOpen || !notifSeeAll) return;
+    const sentinel = notifSentinelRef.current;
+    const root = notifScrollRef.current;
+    if (!sentinel || !root) return;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) {
+          setVisibleNotifCount((prev) =>
+            prev >= notifList.length ? prev : prev + NOTIF_PAGE_SIZE
+          );
+        }
+      },
+      { root, rootMargin: "0px 0px 120px 0px", threshold: 0.1 }
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [notificationsOpen, notifSeeAll, notifList.length]);
 
   const dismissNotif = async (id: string) => {
     const notif = notifList.find((n: any) => n.id === id);
@@ -1203,7 +1269,7 @@ export function SiteHeader({
                         </div>
 
                         {/* Body */}
-                        <div className="max-h-[340px] overflow-y-auto">
+                        <div ref={notifScrollRef} className="max-h-[340px] overflow-y-auto">
                           {notifList.length === 0 ? (
                             <div className="flex flex-col items-center justify-center px-6 py-10 gap-4">
                               <div className="w-14 h-14 rounded-2xl bg-muted flex items-center justify-center">
@@ -1219,12 +1285,14 @@ export function SiteHeader({
                               </div>
                             </div>
                           ) : (
-                            <div className="divide-y divide-border">
-                              {notifList.slice(0, 8).map((n: any) => {
+                            <>
+                              <div className="divide-y divide-border">
+                                {notifList.slice(0, visibleNotifCount).map((n: any) => {
                                 const isExpanded = expandedNotifs.has(n.id);
                                 const bodyLong = n.body && n.body.length > 80;
                                 const isRead =
                                   n._source === "app" ? !!n.is_read : readIds.has(n.id);
+                                const timeLabel = formatNotifTime(n.created_at);
                                 return (
                                   <div
                                     key={n.id}
@@ -1245,11 +1313,18 @@ export function SiteHeader({
                                       )}
                                     </div>
                                     <div className="flex-1 min-w-0">
-                                      <p
-                                        className={`text-[12px] text-foreground ${isRead ? "font-medium opacity-70" : "font-bold"}`}
-                                      >
-                                        {n.title}
-                                      </p>
+                                      <div className="flex items-start justify-between gap-2">
+                                        <p
+                                          className={`text-[12px] text-foreground ${isRead ? "font-medium opacity-70" : "font-bold"}`}
+                                        >
+                                          {n.title}
+                                        </p>
+                                        {timeLabel && (
+                                          <span className="shrink-0 text-[10px] text-muted-foreground/70 whitespace-nowrap mt-0.5">
+                                            {timeLabel}
+                                          </span>
+                                        )}
+                                      </div>
                                       <p
                                         className={`text-[11px] mt-0.5 leading-relaxed ${isRead ? "text-muted-foreground/60" : "text-muted-foreground"} ${isExpanded ? "" : "line-clamp-2"}`}
                                       >
@@ -1292,7 +1367,25 @@ export function SiteHeader({
                                   </div>
                                 );
                               })}
-                            </div>
+                              </div>
+
+                              {notifList.length > visibleNotifCount &&
+                                (!notifSeeAll ? (
+                                  <button
+                                    onClick={() => setNotifSeeAll(true)}
+                                    className="w-full px-4 py-2.5 text-xs font-bold text-[#0d7377] hover:bg-muted/50 transition-colors border-t border-border"
+                                  >
+                                    See More ({notifList.length - visibleNotifCount})
+                                  </button>
+                                ) : (
+                                  <div
+                                    ref={notifSentinelRef}
+                                    className="flex items-center justify-center px-4 py-3 text-[10px] text-muted-foreground/70"
+                                  >
+                                    Loading more...
+                                  </div>
+                                ))}
+                            </>
                           )}
                         </div>
 
@@ -1626,20 +1719,19 @@ export function SiteHeader({
 
                     {/* Section 1 */}
                     <div className="py-2 border-b border-border">
-                      {/* <button
-                        id="my-dashboard-menu-item"
-                        onClick={() => handleNav("dashboard")}
-                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
-                      >
-                        <Layout className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                        My Dashboard
-                      </button> */}
                       <button
                         onClick={() => handleNav("profile")}
                         className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
                       >
                         <UserIcon className="w-4 h-4 text-violet-600 dark:text-violet-400" />
                         My Profile
+                      </button>
+                      <button
+                        onClick={() => handleNav("my-journeys")}
+                        className="flex items-center gap-3 w-full py-2.5 px-5 text-muted-foreground hover:bg-muted hover:text-teal-700 transition-colors text-sm font-medium"
+                      >
+                        <Map className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                        My Journeys
                       </button>
                       <button
                         onClick={() => handleNav("document-vault")}
@@ -1794,19 +1886,26 @@ export function SiteHeader({
 
           <div className="flex-1 overflow-y-auto py-4">
             <nav className="flex flex-col px-4 gap-1">
-              {/* IR-1 Journey Link */}
-              <HydrationSafeButton
-                onClick={() => handleNav("ir1-journey")}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all ${
-                  isActive("ir1-journey", "/visa-category/ir1-journey")
-                    ? "bg-[#6ba3a0]/60 text-[#0d7377]"
-                    : "text-muted-foreground hover:bg-muted"
+              {/* Explore Journey Link */}
+              <div className="relative pt-2 pb-0">
+              <Link
+                href={journeyButtonHref}
+                onClick={(e) => handleNav(journeyNavigationId, e)}
+                className={`block px-4 py-2 text-sm font-semibold rounded-lg transition-all ${
+                  isHomeHeroState
+                    ? isActive(journeyNavigationId, journeyButtonHref)
+                      ? "bg-muted text-[#0d7377]"
+                      : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
+                    : isHomeHeroP2State || isHomepageHeroState
+                      ? "text-[#0d7377] hover:bg-[#0d7377]/10 hover:text-[#0d7377]"
+                      : isActive(journeyNavigationId, journeyButtonHref)
+                        ? "bg-muted text-[#0d7377]"
+                        : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
-                <Briefcase className="w-5 h-5 text-teal-600 dark:text-teal-400" />
-                <span className="font-bold">IR-1 Journey</span>
-              </HydrationSafeButton>
-
+                {journeyButtonText}
+              </Link>
+            </div>
               {/* Commented out - Explore Journeys - Now using IR-1 Journey */}
               {/* <HydrationSafeButton
                 onClick={() => {

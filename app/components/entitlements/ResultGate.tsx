@@ -166,7 +166,7 @@ export function ResultGate({
           {/* Description */}
           <p className="text-[13px] text-[#6b8097] leading-relaxed mb-3">
             {description ||
-              "You've completed all steps — upgrade your plan to unlock your personalised results."}
+              "You've completed all steps, upgrade your plan to unlock your personalised results."}
           </p>
 
           {/* Hint */}

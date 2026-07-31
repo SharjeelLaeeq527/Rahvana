@@ -70,7 +70,7 @@ export async function POST(req: NextRequest) {
 
     // Tracking only starts past at_nvc
     if (!isTrackingActive(newStatus)) {
-      return NextResponse.json({ ok: true, message: "Status at_nvc — tracking not active" });
+      return NextResponse.json({ ok: true, message: "Status at_nvc, tracking not active" });
     }
 
     // Get previous status for transition validation

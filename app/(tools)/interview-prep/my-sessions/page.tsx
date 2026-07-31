@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
+import { useRouter } from "next/navigation";
 import { E, msg } from "@/lib/errors";
-import { BookOpen, Plus, AlertTriangle, CheckCircle, BarChart3, Heart } from "lucide-react";
+import { UsersRound, Plus, AlertTriangle, CheckCircle, BarChart3, Heart, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/ui/pagination";
 import { Loader } from "@/components/ui/spinner";
@@ -10,6 +11,7 @@ import { ElementType } from "react";
 import { DataTable, Column } from "@/app/components/shared/table";
 import { FilterPanel } from "@/app/components/shared/FilterPanel";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
 
 type SessionStatus = "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
 type TimeFilter = "all" | "today" | "week" | "month";
@@ -104,6 +106,7 @@ const CompletionBadge = ({ status }: { status: SessionStatus }) => {
 };
 
 export default function MyInterviewSessions() {
+  const router = useRouter();
   const [sessions, setSessions] = useState<SessionWithDetails[]>([]);
   const [filteredSessions, setFilteredSessions] = useState<SessionWithDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -117,6 +120,9 @@ export default function MyInterviewSessions() {
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedTime, setSelectedTime] = useState<TimeFilter>("all");
   const [selectedSource, setSelectedSource] = useState("all");
+  const [showNarrative, setShowNarrative] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const hasShownNarrative = useRef(false);
 
   // pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -160,6 +166,17 @@ export default function MyInterviewSessions() {
     }, 5000);
 
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    if (hasShownNarrative.current) return;
+
+    const localHide =
+      typeof window !== "undefined" &&
+      localStorage.getItem("dont_show_interview_narrative") === "true";
+
+    hasShownNarrative.current = true;
+    setShowNarrative(!localHide);
   }, []);
 
   // Apply filters
@@ -246,7 +263,7 @@ export default function MyInterviewSessions() {
     if (categorySlug.includes("spouse") || categorySlug.includes("ir-1")) {
       return Heart;
     }
-    return BookOpen;
+    return UsersRound;
   };
 
   const columns: Column<SessionWithDetails>[] = [
@@ -321,18 +338,21 @@ export default function MyInterviewSessions() {
   ];
 
   const emptyState = (
-    <div className="bg-white rounded-xl shadow-lg overflow-hidden text-center py-16">
-      <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-6" />
-      <h3 className="text-2xl font-bold text-gray-900 mb-2">No sessions found</h3>
-      <p className="text-lg text-gray-500 mb-8">
-        You haven&apos;t created any interview preparation sessions yet.
-      </p>
-      <div>
+    <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white text-center shadow-sm">
+      <div className="mx-auto flex max-w-2xl flex-col items-center px-6 py-16 sm:px-10">
+        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <FileText className="h-8 w-8" />
+        </div>
+        <h3 className="text-2xl font-semibold tracking-tight text-slate-950">No sessions found</h3>
+        <p className="mt-3 max-w-lg text-base leading-7 text-slate-500">
+          You haven&apos;t created any interview preparation sessions yet. Start one and Rahvana
+          will guide you through the process.
+        </p>
         <Button
-          onClick={() => (window.location.href = "/interview-prep")}
-          className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white py-4 px-6 text-lg"
+          onClick={() => router.push("/interview-prep?newSession=1")}
+          className="mt-8 h-11 rounded-full bg-primary px-5 text-white shadow-sm shadow-primary/20 hover:bg-primary/90"
         >
-          <Plus className="w-5 h-5 mr-2" />
+          <Plus className="mr-2 h-5 w-5" />
           Start Your First Session
         </Button>
       </div>
@@ -344,6 +364,15 @@ export default function MyInterviewSessions() {
   return (
     <div className="bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-py site-main-px">
       <div className="mt-12">
+        <NarrativeModal
+          isOpen={showNarrative}
+          onClose={() => setShowNarrative(false)}
+          onComplete={() => setShowNarrative(false)}
+          dontShowAgain={dontShowAgain}
+          onDontShowAgainChange={setDontShowAgain}
+          variant="interview-prep"
+        />
+
         <header className="mb-12 text-center">
           <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">
             My Interview Sessions
@@ -415,8 +444,8 @@ export default function MyInterviewSessions() {
               />
             )}
             <Button
-              onClick={() => (window.location.href = "/interview-prep")}
-              className={`bg-[#0d7377] hover:bg-[#0a5a5d] text-white py-5 px-6 text-lg`}
+              onClick={() => router.push("/interview-prep?newSession=1")}
+              className="h-11 rounded-full bg-primary px-5 text-white shadow-sm shadow-primary/20 hover:bg-primary/90"
             >
               <Plus className="w-5 h-5 mr-2" />
               New Session

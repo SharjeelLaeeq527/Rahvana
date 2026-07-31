@@ -21,7 +21,7 @@ const SAMPLE_NOTIFICATIONS = [
   {
     reminder_type: "appointment_approaching",
     priority: "critical",
-    title: "🔴 Interview in 3 days — Final checklist",
+    title: "🔴 Interview in 3 days, Final checklist",
     body: "Your visa interview is in 3 days. Make sure all original documents are ready: passport, birth certificate, I-864, DS-260 confirmation, medical results, and PCC. Arrive 30 minutes early.",
     action_label: "View Interview Checklist",
     action_url: ir1journeyHref,
@@ -30,7 +30,7 @@ const SAMPLE_NOTIFICATIONS = [
   {
     reminder_type: "ceac_status_update",
     priority: "high",
-    title: "Medical exam in 7 days — confirm you have everything",
+    title: "Medical exam in 7 days, confirm you have everything",
     body: "One week to your medical exam. Confirm you have: ✓ Original passport ✓ 2 passport photos (35×45mm) ✓ Polio certificate ✓ Vaccination records ✓ Payment for physician fee.",
     action_label: "View Medical Checklist",
     action_url: ir1journeyHref,
@@ -40,7 +40,7 @@ const SAMPLE_NOTIFICATIONS = [
     reminder_type: "ceac_status_update",
     priority: "high",
     title: "Apply for Police Clearance Certificate NOW",
-    body: "A fresh PCC is required for your interview. Apply immediately at your nearest Police Khidmat Markaz. PCCs can take 3–14 days — do not leave this for the last minute.",
+    body: "A fresh PCC is required for your interview. Apply immediately at your nearest Police Khidmat Markaz. PCCs can take 3-14 days, do not leave this for the last minute.",
     action_label: "Apply for PCC",
     action_url: ir1journeyHref,
     step_key: "step_3_3",
@@ -66,7 +66,7 @@ const SAMPLE_NOTIFICATIONS = [
   {
     reminder_type: "nvc_fee_not_confirmed",
     priority: "normal",
-    title: "Monthly check — any update on your interview date?",
+    title: "Monthly check, any update on your interview date?",
     body: "Check your email and CEAC portal for an interview appointment letter. Once received, record your interview date in Chapter 2 → Step 12 to unlock Chapter 3.",
     action_label: "Check CEAC Portal",
     action_url: "https://ceac.state.gov/IV/Login.aspx",

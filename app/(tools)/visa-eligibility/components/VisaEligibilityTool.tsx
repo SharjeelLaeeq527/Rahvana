@@ -314,13 +314,13 @@ export function VisaEligibilityTool() {
       if (marriageDuration === "MORE_THAN_2") {
         v.push({
           code: "IR-1",
-          title: "Immediate Relative – Spouse of US Citizen",
+          title: "Immediate Relative, Spouse of US Citizen",
           description: "For spouses of US citizens married for 2 years or more.",
         });
       } else if (marriageDuration === "LESS_THAN_2") {
         v.push({
           code: "CR-1",
-          title: "Conditional Resident – Spouse of US Citizen",
+          title: "Conditional Resident, Spouse of US Citizen",
           description: "For spouses of US citizens married for less than 2 years.",
         });
       }
@@ -336,7 +336,7 @@ export function VisaEligibilityTool() {
     ) {
       v.push({
         code: "IR-5",
-        title: "Immediate Relative – Parent of US Citizen",
+        title: "Immediate Relative, Parent of US Citizen",
         description: "For parents of US citizens who are 21 years or older.",
       });
     }
@@ -837,7 +837,7 @@ export function VisaEligibilityTool() {
 
                 {/* Q6 Age */}
                 <div className="space-y-4">
-                  <p className="font-semibold text-gray-700">Q. What is the applicant’s age?</p>
+                  <p className="font-semibold text-gray-700">Q. What is the applicant's age?</p>
                   <div className="flex gap-3">
                     <button
                       onClick={() => setAnswer("applicantAgeGroup", "UNDER_21")}
@@ -865,7 +865,7 @@ export function VisaEligibilityTool() {
                 {/* Q7 Marital Status */}
                 <div className="space-y-4">
                   <p className="font-semibold text-gray-700">
-                    Q. What is the applicant’s marital status?
+                    Q. What is the applicant's marital status?
                   </p>
                   <div className="grid grid-cols-3 gap-3">
                     {["SINGLE", "MARRIED", "DIVORCED_WIDOWED"].map((status) => (
@@ -1041,7 +1041,7 @@ export function VisaEligibilityTool() {
                       className="p-5 border rounded-xl bg-gray-50 hover:border-primary transition cursor-pointer hover:shadow-md"
                     >
                       <h3 className="font-semibold text-primary">
-                        {visa.code} – {visa.title}
+                        {visa.code}, {visa.title}
                       </h3>
                       <p className="text-sm text-gray-600 mt-1">{visa.description}</p>
                     </div>

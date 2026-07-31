@@ -246,7 +246,7 @@ export function parseBirthCertText(rawText: string): BirthCertParseResult {
 
   if (!fields.dateOfBirth && !fields["name.first"]) {
     warnings.push(
-      "We couldn't confidently read this birth certificate — please fill in the fields. Tip: an English translation reads more reliably."
+      "We couldn't confidently read this birth certificate, please fill in the fields. Tip: an English translation reads more reliably."
     );
   }
 

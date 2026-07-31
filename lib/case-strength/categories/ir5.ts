@@ -59,9 +59,9 @@ export const IR5_BASELINE_FIELDS: CrossFormField[] = [
 
 /** Step labels used inside IR-5 advisory text. I-130A is spouse-only, so absent. */
 export const IR5_STEP_REFS: StepRefs = {
-  documents: "Chapter 1 Step 2 — Gather Documents",
-  mainForm: "Chapter 1 Step 4 — Fill I-130",
-  reviewSubmit: "Chapter 1 Step 10 — Review & Submit",
+  documents: "Chapter 1 Step 2, Gather Documents",
+  mainForm: "Chapter 1 Step 4, Fill I-130",
+  reviewSubmit: "Chapter 1 Step 10, Review & Submit",
 };
 
 /**
@@ -95,7 +95,7 @@ export function detectIr5EligibilityRisks(
   if (get("q5", "q5s1") === "yes") {
     flags.push({
       id: "parent_immigration_or_fraud_history",
-      title: "Parent's past immigration issue — disclose it",
+      title: "Parent's past immigration issue, disclose it",
       severity: "critical",
       advisory: `Disclose every prior refusal, removal, or immigration filing for the parent in ${stepRefs.mainForm} and add the records in ${stepRefs.documents}. Fraud or misrepresentation can create a permanent bar unless a waiver is available.`,
       source_basis: "INA 212(a)(6)(C); INA 212(a)(9)",
@@ -106,7 +106,7 @@ export function detectIr5EligibilityRisks(
   if (get("q5", "q5s2") === "yes") {
     flags.push({
       id: "parent_criminal_history",
-      title: "Parent's court / police record — disclose it",
+      title: "Parent's court / police record, disclose it",
       severity: "critical",
       advisory: `Collect certified court and police records for every incident and add them in ${stepRefs.documents}. Also disclose them in ${stepRefs.mainForm}.`,
       source_basis: "INA 212(a)(2)",
@@ -118,7 +118,7 @@ export function detectIr5EligibilityRisks(
   if (get("q5", "q5s3") === "yes") {
     flags.push({
       id: "unlawful_presence_history",
-      title: "Parent's U.S. overstay — waiver may be needed",
+      title: "Parent's U.S. overstay, waiver may be needed",
       severity: "critical",
       advisory: `Departure after unlawful presence can trigger a 3- or 10-year bar (a Form I-601A waiver may be required before the interview). Review the parent's full entry/exit history and disclose it in ${stepRefs.mainForm}.`,
       source_basis: "INA 212(a)(9)(B)",
@@ -133,7 +133,7 @@ export function detectIr5EligibilityRisks(
       title: "Medical or vaccination issue to plan for",
       severity: "warning",
       advisory:
-        "A health or vaccination concern may come up at the immigrant-visa medical exam. The panel physician decides — a condition does not automatically make the parent ineligible. Gather medical/vaccination records ahead of the exam.",
+        "A health or vaccination concern may come up at the immigrant-visa medical exam. The panel physician decides, a condition does not automatically make the parent ineligible. Gather medical/vaccination records ahead of the exam.",
       source_basis: "INA 212(a)(1)",
     });
   }
@@ -147,8 +147,8 @@ export function detectIr5EligibilityRisks(
       title: "Income may be too low",
       severity: "warning",
       advisory:
-        "The petitioner's income may not meet the required level. Rahvana will handle the Affidavit of Support (I-864) at the NVC stage — review qualifying assets, household-member income, or start arranging a joint sponsor now if needed. A joint sponsor does not replace the petitioner's own I-864.",
-      source_basis: "INA 213A — Form I-864",
+        "The petitioner's income may not meet the required level. Rahvana will handle the Affidavit of Support (I-864) at the NVC stage, review qualifying assets, household-member income, or start arranging a joint sponsor now if needed. A joint sponsor does not replace the petitioner's own I-864.",
+      source_basis: "INA 213A, Form I-864",
     });
   }
 
@@ -161,7 +161,7 @@ export function detectIr5EligibilityRisks(
       severity: "warning",
       advisory:
         "A petitioner living abroad must show an existing U.S. domicile or concrete steps to re-establish it no later than the parent's admission. Start gathering domicile evidence now.",
-      source_basis: "INA 213A — Form I-864",
+      source_basis: "INA 213A, Form I-864",
     });
   }
 
@@ -173,7 +173,7 @@ export function detectIr5EligibilityRisks(
       title: "File a separate I-130 for each parent",
       severity: "warning",
       advisory:
-        "IR-5 petitions give no derivative status — a spouse or other relative cannot immigrate on the same petition. File a separate Form I-130 for each parent.",
+        "IR-5 petitions give no derivative status, a spouse or other relative cannot immigrate on the same petition. File a separate Form I-130 for each parent.",
       source_basis: "Immediate-relative classification rules",
     });
   }
@@ -264,7 +264,7 @@ const step_1_4: StepChecker = ({ state }) => {
     checks.push({
       level: "warning",
       title: "Date of birth missing",
-      hint: "Add both the petitioner's (sponsoring child) and the parent's date of birth — they'll be cross-checked against your civil documents and the DS-260.",
+      hint: "Add both the petitioner's (sponsoring child) and the parent's date of birth, they'll be cross-checked against your civil documents and the DS-260.",
     });
   }
 
@@ -273,8 +273,8 @@ const step_1_4: StepChecker = ({ state }) => {
   // relationship (8 CFR 204.2(f) — Petition for a parent).
   checks.push({
     level: "info",
-    title: "Prove the parent–child relationship",
-    hint: "IR-5 approval hinges on documents that link you to your parent — above all your (the petitioner's) birth certificate naming this parent. If a name differs across records, add the affidavit or name-change document that reconciles them.",
+    title: "Prove the parent-child relationship",
+    hint: "IR-5 approval hinges on documents that link you to your parent, above all your (the petitioner's) birth certificate naming this parent. If a name differs across records, add the affidavit or name-change document that reconciles them.",
   });
 
   return checks;
@@ -312,7 +312,7 @@ const step_1_10: StepChecker = ({ state, eligibilityAnswers }) => {
   if (detectIr5EligibilityRisks(eligibilityAnswers).some((f) => f.severity === "critical")) {
     checks.push({
       level: "critical",
-      title: "Unresolved critical issues — do not submit yet",
+      title: "Unresolved critical issues, do not submit yet",
       hint: "Fix the critical items in earlier steps first.",
     });
   }
@@ -331,7 +331,7 @@ const step_2_3: StepChecker = ({ state, eligibilityAnswers }) => {
     checks.push({
       level: "warning",
       title: "I-130 baseline not captured",
-      hint: "Go to Chapter 1 Step 4 and save the petitioner and parent dates of birth so Rahvana can flag any DS-260 mismatch — inconsistencies are the #1 cause of NVC delays.",
+      hint: "Go to Chapter 1 Step 4 and save the petitioner and parent dates of birth so Rahvana can flag any DS-260 mismatch, inconsistencies are the #1 cause of NVC delays.",
     });
   } else if (!ds260?.capturedAt) {
     // Baseline exists but the DS-260 values haven't been confirmed here.
@@ -357,7 +357,7 @@ const step_2_3: StepChecker = ({ state, eligibilityAnswers }) => {
         checks.push({
           level: "critical",
           title: `DS-260 does not match I-130: ${m.label}`,
-          hint: `I-130 says ${m.aValue}, DS-260 says ${m.bValue}. Correct one so both forms agree — form-to-form inconsistencies are a leading cause of NVC delays and interview RFEs (9 FAM 504.4).`,
+          hint: `I-130 says ${m.aValue}, DS-260 says ${m.bValue}. Correct one so both forms agree, form-to-form inconsistencies are a leading cause of NVC delays and interview RFEs (9 FAM 504.4).`,
         });
       }
     }
@@ -375,7 +375,7 @@ const step_3_7: StepChecker = ({ eligibilityAnswers }) => {
     {
       level: "info",
       title: "Your interview answers must match your DS-260",
-      hint: "Re-read every DS-260 section before interview day. The officer's questions about your relationship to your parent, dates, and history are checked against your filed answers — inconsistencies are the most common cause of 221(g) holds.",
+      hint: "Re-read every DS-260 section before interview day. The officer's questions about your relationship to your parent, dates, and history are checked against your filed answers, inconsistencies are the most common cause of 221(g) holds.",
     },
   ];
   for (const d of ir5InterviewDisclosures(eligibilityAnswers)) checks.push(d);
@@ -396,7 +396,7 @@ export const IR5_STEP_CHECKERS: Record<string, StepChecker> = {
 
 export const IR5_PROFILE: CaseStrengthProfile = {
   id: "ir-5",
-  label: "IR-5 — Parent of U.S. Citizen",
+  label: "IR-5, Parent of U.S. Citizen",
   journeyTypes: ["IR5", "IR-5", "ir-5"],
   stepCheckers: IR5_STEP_CHECKERS,
   stepRefs: IR5_STEP_REFS,

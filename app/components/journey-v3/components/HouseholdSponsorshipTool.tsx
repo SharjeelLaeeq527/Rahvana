@@ -203,7 +203,7 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
       {/* SCENARIO BUILDER */}
       <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[16px] p-[22px] mb-[18px]">
         <div className="text-[14px] font-semibold text-[#0c1b33] mb-4">
-          Define your scenario — who is involved in the sponsorship?
+          Define your scenario, who is involved in the sponsorship?
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <div className="flex flex-col">
@@ -229,7 +229,7 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
               value={String(hhCount)}
               onChange={(value) => setHhCount(parseInt(value, 10))}
               options={[
-                { value: "0", label: "0 - no household members" },
+                { value: "0", label: "0, no household members" },
                 { value: "1", label: "1 household member" },
                 { value: "2", label: "2 household members" },
                 { value: "3", label: "3 household members" },
@@ -250,7 +250,6 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
                 return (
                   <div key={num} className="flex flex-col sm:flex-row sm:items-center gap-2">
                     <span className="text-[13px] font-medium text-[#3a4f63] min-w-[140px]">
-                      Household Member {num}
                     </span>
                     <CustomDropdown
                       value={hhRelationships[num] || "other-hh"}
@@ -379,7 +378,7 @@ export const HouseholdSponsorshipTool: React.FC<HouseholdSponsorshipToolProps> =
           </div>
           <div className="text-[13px] text-[#6b8097]">
             Joint sponsors do not require relationship documentation. Your I-864 forms are the
-            primary requirement — see Step 5 for those.
+            primary requirement, see Step 5 for those.
           </div>
         </div>
       ) : (

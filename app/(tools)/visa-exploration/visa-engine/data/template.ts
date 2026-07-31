@@ -45,7 +45,7 @@ export const TEMPLATE_DATA: CountryData = {
       color: T.primary,
       description: "Description of the student visa.",
       criteria: ["Criterion 1", "Criterion 2"],
-      processing: "2–4 weeks",
+      processing: "2-4 weeks",
       forms: ["Form A", "Form B"],
     },
     // ... add more visas

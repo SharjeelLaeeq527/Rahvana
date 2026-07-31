@@ -1004,7 +1004,7 @@ export default function RoadmapPage() {
                   >
                     <AnimationCard
                       file="rahvana_question_stack_standalone_final.html"
-                      title="Interview anxiety — what if I forget?"
+                      title="Interview anxiety, what if I forget?"
                       w={450}
                       h={640}
                       maxH={640}

@@ -2987,7 +2987,7 @@
               "fields": [
                 {
                   "k": "Receipt Number",
-                  "v": "—"
+                  "v": ""
                 },
                 {
                   "k": "Tracking",
@@ -3234,12 +3234,12 @@
             ],
             "community": [
               {
-                "quote": "“While our case was quiet, we used the waiting time to clean up all of our civil documents and relationship evidence. When the next stage came, we were not scrambling.”",
+                "quote": "\"While our case was quiet, we used the waiting time to clean up all of our civil documents and relationship evidence. When the next stage came, we were not scrambling.\"",
                 "meta": "Anonymized IR-family journey",
                 "sub": "Illustrative prep pattern · not legal advice"
               },
               {
-                "quote": "“The most helpful thing during the pending phase was having a simple list of what we could do now versus what truly needed to wait.”",
+                "quote": "\"The most helpful thing during the pending phase was having a simple list of what we could do now versus what truly needed to wait.\"",
                 "meta": "Common insight from similar journeys",
                 "sub": "Lightweight, practical, and grounded in real waiting-stage habits"
               }
@@ -3259,7 +3259,7 @@
               {
                 "label": "Step 2 of 4, Understand common pending statuses",
                 "heading": "Learn the difference between waiting and action-required states",
-                "instruction": "Most of the time, a pending case is in a waiting state like “Case Was Received” or “Case Is Being Actively Reviewed.” The important distinction is whether USCIS is simply processing or has asked for something.",
+                "instruction": "Most of the time, a pending case is in a waiting state like \"Case Was Received\" or \"Case Is Being Actively Reviewed.\" The important distinction is whether USCIS is simply processing or has asked for something.",
                 "url": "rahvana.local/status-map",
                 "kicker": "Status guide",
                 "head": "Status meanings",
@@ -3893,7 +3893,7 @@
                 "Generate a PDF answer key for CEAC entry"
               ],
               "button_label": "Launch DS-260 Autoform Filler",
-              "href": "https://www.rahvana.com/visa-forms/ds260/wizard",
+              "href": "/visa-forms/ds260/wizard",
               "note": "Opens in a new tab, return here when finished"
             },
             "support_cards": [
@@ -6349,7 +6349,7 @@
                 "note": "Do not get vaccinated the same day as the medical exam unless your physician specifically confirms this is acceptable.",
                 "visual": {
                   "title": "Recommended Timing",
-                  "sub": "Vaccinate → Receive certificate → Bring original to medical exam. Budget at least 1–3 days between vaccination and your scheduled medical exam date."
+                  "sub": "Vaccinate → Receive certificate → Bring original to medical exam. Budget at least 1-3 days between vaccination and your scheduled medical exam date."
                 }
               },
               {
@@ -6460,7 +6460,7 @@
               "title": "Fresh PCC received, save to Document Vault",
               "body": "Your police clearance certificate has been received. Save it to the Document Vault for easy access during the interview and upload stages.",
               "buttonLabel": "Save PCC to Document Vault",
-              "vaultUrl": "https://www.rahvana.com/document-vault"
+              "vaultUrl": "/document-vault"
             },
             "disclaimer": "Rahvana's application submission service is available for Sindh only. Rahvana submits the application but the user must collect the certificate. Always verify PCC requirements with your consulate.",
             "serviceSteps": [
@@ -6510,7 +6510,7 @@
                 "heading": "Submit your PCC application",
                 "instruction": "Visit the relevant police station or submit through the government's online portal if available in your district.",
                 "info": "For detailed district-specific instructions, use the Rahvana Police Certificate Guide:\n\nOpen Full PCC Guide →",
-                "guideUrl": "https://www.rahvana.com/guides/police-verification-guide",
+                "guideUrl": "/guides/police-verification-guide",
                 "nav": {
                   "back": true,
                   "next": "Next →"
@@ -6576,7 +6576,7 @@
               "Passport (original)",
               "NVC interview appointment letter",
               "Polio vaccination certificate (original)",
-              "Passport-style photos (2–4)",
+              "Passport-style photos (2-4)",
               "Medical exam fee (confirm with physician)",
               "Any prior vaccination records if available",
               "Current medication list and relevant medical records for chronic conditions, prior tuberculosis, major surgery, psychiatric treatment, or ongoing care"
@@ -6600,7 +6600,7 @@
                 "heading": "What to bring to the exam",
                 "instruction": "Gather all required items the day before. Arriving without required documents may mean rescheduling.",
                 "vlabel": "Required Items",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Bring checklist</div><div class=\"mock-row\">Passport (original) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">NVC appointment letter <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Polio vaccination certificate <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Passport photos (2–4) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Exam fee (cash/form per physician) <span class=\"mock-badge-green\">Required</span></div></div>"
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Bring checklist</div><div class=\"mock-row\">Passport (original) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">NVC appointment letter <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Polio vaccination certificate <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Passport photos (2-4) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Exam fee (cash/form per physician) <span class=\"mock-badge-green\">Required</span></div></div>"
               },
               {
                 "label": "Step 2 of 6",
@@ -6890,7 +6890,7 @@
                         },
                         {
                           "t": "Current income",
-                          "c": "<p>If the petitioner's income or employment changed significantly after NVC submission, bring supporting current-income evidence: recent pay stubs covering the past 3–6 months and an employer verification letter on official letterhead.</p>"
+                          "c": "<p>If the petitioner's income or employment changed significantly after NVC submission, bring supporting current-income evidence: recent pay stubs covering the past 3-6 months and an employer verification letter on official letterhead.</p>"
                         }
                       ]
                     },
@@ -7323,7 +7323,7 @@
                 "instruction": "Arrive at the embassy at least 20–30 minutes before your scheduled appointment time. Embassy security queues can be slow. Latecomers may not be admitted for their scheduled slot.",
                 "vlabel": "Arrival Timing",
                 "note": "Do not carry electronics beyond what is permitted by the embassy. Check the specific embassy's guidelines on phones and devices before arrival.",
-                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Arrival guidance</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Plan for 20–30 minutes of buffer time. Factor in travel to the Diplomatic Enclave, transport arrangements, and security screening at U.S. Embassy Islamabad.\n      </div>\n      <div class=\"hl-box\" style=\"margin-top:12px\">Earlier is always safer than exactly on time</div>\n    </div>"
+                "visual": "<div class=\"mock-card\">\n      <div class=\"mock-title\">Arrival guidance</div>\n      <div style=\"font-size:13px;color:var(--ink-soft);line-height:1.6;margin-top:4px\">\n        Plan for 20-30 minutes of buffer time. Factor in travel to the Diplomatic Enclave, transport arrangements, and security screening at U.S. Embassy Islamabad.\n      </div>\n      <div class=\"hl-box\" style=\"margin-top:12px\">Earlier is always safer than exactly on time</div>\n    </div>"
               },
               {
                 "label": "Step 3 of 8",
@@ -7407,7 +7407,7 @@
               }
             ],
             "tips": [
-              "Arrive 20–30 minutes before your appointment time",
+              "Arrive 20-30 minutes before your appointment time",
               "Keep your document packet organized with labeled tabs",
               "Answer only what is asked, concisely and truthfully",
               "Stay calm, nervousness is normal and expected",
@@ -8097,7 +8097,7 @@
       "instruction": "Create a password between 8 and 64 characters. You may use letters, numbers, and special characters. Enter it twice to confirm.",
       "url": "myaccount.uscis.gov/create-account",
       "screenTitle": "Create a Password",
-      "screenDesc": "8–64 characters · letters, numbers, symbols",
+      "screenDesc": "8-64 characters · letters, numbers, symbols",
       "media": {
         "type": "img",
         "src": "/assets/images/ir1-journey/c1_step6/04-strong-account-password.png"
@@ -8634,7 +8634,7 @@
         },
         {
           "title": "Why it is needed",
-          "body": "<p>When a child's income is being combined with the petitioner's through Form I-864A, the parent–child relationship must be established. The birth certificate naming the petitioner as a parent does this.</p>"
+          "body": "<p>When a child's income is being combined with the petitioner's through Form I-864A, the parent-child relationship must be established. The birth certificate naming the petitioner as a parent does this.</p>"
         },
         {
           "title": "Translation",
@@ -8656,7 +8656,7 @@
         },
         {
           "title": "For parent relationship",
-          "body": "<p>Shows that the household member (parent) is listed on the petitioner's birth certificate, establishing the parent–child link.</p>"
+          "body": "<p>Shows that the household member (parent) is listed on the petitioner's birth certificate, establishing the parent-child link.</p>"
         },
         {
           "title": "For sibling relationship",

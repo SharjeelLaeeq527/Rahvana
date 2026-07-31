@@ -61,14 +61,14 @@ export const profileSectionDefinitions: ProfileSectionDefinition[] = [
   {
     id: "personal",
     title: "Personal Information",
-    description: "Your own details — name, birth, passport, and identifiers.",
+    description: "Your own details, name, birth, passport, and identifiers.",
     relevance: "universal",
     visibleWhen: () => true,
   },
   {
     id: "sponsor",
     title: "Sponsor",
-    description: "The petitioner filing on your behalf — their details, not yours.",
+    description: "The petitioner filing on your behalf, their details, not yours.",
     relevance: ["IR1", "CR1", "IR5", "K1"],
     visibleWhen: (ctx) =>
       ctx.hasSponsorData || ctx.hasAnyCase || getActiveCaseTypes(ctx).length > 0,
@@ -83,7 +83,7 @@ export const profileSectionDefinitions: ProfileSectionDefinition[] = [
   {
     id: "family",
     title: "Family Background",
-    description: "Your parents — names, birth details, and residence.",
+    description: "Your parents, names, birth details, and residence.",
     relevance: "universal",
     visibleWhen: () => true,
   },

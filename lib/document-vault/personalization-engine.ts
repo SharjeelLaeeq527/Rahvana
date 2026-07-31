@@ -190,14 +190,14 @@ export function generateRequiredDocuments(
       const suffix = `-joint-sponsor-${i}`;
 
       const jsDocs = [
-        expandSponsorDoc("joint-i864", suffix, `Form I-864 — ${label}`),
-        expandSponsorDoc("joint-tax-returns", suffix, `Most Recent IRS Tax Transcript — ${label}`),
-        expandSponsorDoc("joint-w2", suffix, `W-2, 1099, and Relevant Tax Schedules — ${label}`),
-        expandSponsorDoc("joint-employment-letter", suffix, `Employment Verification Letter — ${label}`),
-        expandSponsorDoc("joint-pay-stubs", suffix, `Current Pay Records — ${label}`),
-        expandSponsorDoc("joint-assets", suffix, `Asset Evidence — ${label}`),
-        expandSponsorDoc("joint-citizenship-proof", suffix, `Proof of U.S. Status — ${label}`),
-        expandSponsorDoc("organized-income-packet", suffix, `Organized Income Packet — ${label}`),
+        expandSponsorDoc("joint-i864", suffix, `Form I-864, ${label}`),
+        expandSponsorDoc("joint-tax-returns", suffix, `Most Recent IRS Tax Transcript, ${label}`),
+        expandSponsorDoc("joint-w2", suffix, `W-2, 1099, and Relevant Tax Schedules, ${label}`),
+        expandSponsorDoc("joint-employment-letter", suffix, `Employment Verification Letter, ${label}`),
+        expandSponsorDoc("joint-pay-stubs", suffix, `Current Pay Records, ${label}`),
+        expandSponsorDoc("joint-assets", suffix, `Asset Evidence, ${label}`),
+        expandSponsorDoc("joint-citizenship-proof", suffix, `Proof of U.S. Status, ${label}`),
+        expandSponsorDoc("organized-income-packet", suffix, `Organized Income Packet, ${label}`),
       ];
 
       jsDocs.forEach((doc) => {
@@ -217,33 +217,33 @@ export function generateRequiredDocuments(
       const relationship = rels[i] || rels[String(i)] || "other-hh";
 
       const hmDocs = [
-        expandSponsorDoc("i-864a-contract", suffix, `Form I-864A (Household Member Contract) — ${label}`),
-        expandSponsorDoc("household-member-income", suffix, `Proof of Household Member Income — ${label}`),
-        expandSponsorDoc("household-member-residence", suffix, `Proof of Shared Residence — ${label}`),
+        expandSponsorDoc("i-864a-contract", suffix, `Form I-864A (Household Member Contract), ${label}`),
+        expandSponsorDoc("household-member-income", suffix, `Proof of Household Member Income, ${label}`),
+        expandSponsorDoc("household-member-residence", suffix, `Proof of Shared Residence, ${label}`),
       ];
 
       if (relationship === "spouse") {
-        hmDocs.push(expandSponsorDoc("hh-marriage", suffix, `Marriage Certificate — ${label}`));
-        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document — ${label}`));
+        hmDocs.push(expandSponsorDoc("hh-marriage", suffix, `Marriage Certificate, ${label}`));
+        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document, ${label}`));
       } else if (relationship === "child") {
-        hmDocs.push(expandSponsorDoc("hh-birth", suffix, `Birth Certificate — ${label}`));
-        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document — ${label}`));
+        hmDocs.push(expandSponsorDoc("hh-birth", suffix, `Birth Certificate, ${label}`));
+        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document, ${label}`));
       } else if (relationship === "parent") {
-        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document — ${label}`));
+        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document, ${label}`));
         const petBirth = ALL_DOCUMENTS.find((d) => d.id === "birth-cert-petitioner");
         if (petBirth && !requiredDocs.some((d) => d.id === petBirth.id)) {
           requiredDocs.push(petBirth);
         }
       } else if (relationship === "sibling") {
-        hmDocs.push(expandSponsorDoc("hh-birth", suffix, `Birth Certificate — ${label}`));
-        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document — ${label}`));
+        hmDocs.push(expandSponsorDoc("hh-birth", suffix, `Birth Certificate, ${label}`));
+        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document, ${label}`));
         const petBirth = ALL_DOCUMENTS.find((d) => d.id === "birth-cert-petitioner");
         if (petBirth && !requiredDocs.some((d) => d.id === petBirth.id)) {
           requiredDocs.push(petBirth);
         }
       } else {
-        hmDocs.push(expandSponsorDoc("hh-family-link", suffix, `Supporting Family-Link Evidence — ${label}`));
-        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document — ${label}`));
+        hmDocs.push(expandSponsorDoc("hh-family-link", suffix, `Supporting Family-Link Evidence, ${label}`));
+        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document, ${label}`));
       }
 
       hmDocs.forEach((doc) => {

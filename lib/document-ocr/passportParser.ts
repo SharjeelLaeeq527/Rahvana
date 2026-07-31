@@ -529,7 +529,7 @@ export function parsePassportText(rawText: string): PassportParseResult {
   (Object.keys(FIELD_LABELS) as (keyof PassportFields)[]).forEach((key) => {
     if (OPTIONAL_FIELDS.has(key)) return; // optional, not warned
     if (!fields[key]) {
-      warnings.push(`${FIELD_LABELS[key]} was not confidently detected — please fill it in.`);
+      warnings.push(`${FIELD_LABELS[key]} was not confidently detected, please fill it in.`);
     }
   });
 

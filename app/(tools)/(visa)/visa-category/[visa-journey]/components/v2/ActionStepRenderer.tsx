@@ -282,9 +282,12 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
   useEffect(() => {
     if (user && !hasLoadedDocsInitial) {
-      initializeVault(user.id);
+      // Scope the vault to THIS journey — without the journeyId the API returns
+      // every document the user ever uploaded (across all journeys), so a fresh
+      // journey would show old journeys' uploads. See store getAllDocuments.
+      initializeVault(user.id, undefined, state.backendId || undefined);
     }
-  }, [user, hasLoadedDocsInitial, initializeVault]);
+  }, [user, hasLoadedDocsInitial, initializeVault, state.backendId]);
 
   const [previewConfig, setPreviewConfig] = useState<{
     isOpen: boolean;
@@ -2647,7 +2650,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                             (e.target as HTMLElement).style.transform = "translateY(0)";
                           }}
                         >
-                          Done — return to step
+                          Done, return to step
                         </button>
                       )}
                     </div>

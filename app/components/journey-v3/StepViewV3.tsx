@@ -101,8 +101,7 @@ import {
 import { FileQualityPreCheck } from "./components/FileQualityPreCheck";
 import { PreSubmissionSnapshot } from "./components/PreSubmissionSnapshot";
 import { PacketSectionChecklist } from "./components/PacketSectionChecklist";
-import { getQuestionnaireConfig, IR1_QUESTIONNAIRE_CONFIG, normalizeJourneyType } from "@/lib/questionnaire";
-import type { VisaCategory } from "@/lib/document-vault/types";
+import { getQuestionnaireConfig, IR1_QUESTIONNAIRE_CONFIG } from "@/lib/questionnaire";
 import { computeDocumentList, deriveDocAnswers } from "@/lib/questionnaire/engine";
 import type { QuestionnaireResult, ConditionalDocument } from "@/lib/questionnaire/types";
 import { StepHeader } from "./StepHeader";
@@ -227,11 +226,11 @@ export function getEffectiveDocDef(id: string | null) {
         if (id.includes("-joint-sponsor-")) {
           const match = id.match(/-joint-sponsor-(\d+)/);
           const index = match ? match[1] : "1";
-          customName = `${baseDoc.name} — Joint Sponsor ${index}`;
+          customName = `${baseDoc.name} Joint Sponsor ${index}`;
         } else if (id.includes("-household-member-")) {
           const match = id.match(/-household-member-(\d+)/);
           const index = match ? match[1] : "1";
-          customName = `${baseDoc.name} — Household Member ${index}`;
+          customName = `${baseDoc.name} Household Member ${index}`;
         }
         return {
           ...baseDoc,
@@ -304,7 +303,6 @@ export const StepViewV3: React.FC<StepViewProps> = ({
     closeUploadModal,
     selectedDocumentDefId,
     reloadDocuments,
-    setConfig: setConfigVault,
     uploadedDocuments,
     isReloadingDocs,
     isDeletingIds,
@@ -950,31 +948,9 @@ export const StepViewV3: React.FC<StepViewProps> = ({
     setIsLocked(state.metadata.filingMethodConfirmed || false);
   }, [state.metadata.filingMethodConfirmed]);
 
-  // Initialize Document Vault Config — runs on mount, no user.id dependency
-  // The API uses the session cookie to get real user_id, so userId here is just a local label
-  useEffect(() => {
-    const initVault = async () => {
-      // Dynamically derive visa category from journey_type
-      const journeyType = data?.journey_type || "ir-1";
-      const visaCategory = normalizeJourneyType(journeyType).toUpperCase() as VisaCategory;
-
-      // Run these in parallel to speed up initialization
-      Promise.all([
-        setConfigVault({
-          userId: user?.id || "session",
-          visaCategory,
-          caseId: (state.metadata.caseId as string) || `ARACHNIE-${visaCategory.replace("-", "")}`,
-          petitionerName: (state.metadata.petitionerName as string) || "Petitioner",
-          beneficiaryName: (state.metadata.beneficiaryName as string) || "Beneficiary",
-          jointSponsorName: (state.metadata.jointSponsorName as string) || "",
-          scenarioFlags: {},
-        }),
-        reloadDocuments(),
-      ]);
-    };
-    initVault();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // Run once on mount — config is set immediately, no race condition
+  // Document Vault init (setConfig + reloadDocuments) is now prefetched once, up in
+  // RoadmapLayoutV3 via useInitDocumentVault — so uploaded documents are already
+  // loaded before this (lazy) step ever mounts. See lib/document-vault/useInitDocumentVault.ts.
 
   // Disable body scroll when overlays are open
   useEffect(() => {
@@ -2299,7 +2275,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
               {(sId === "step_1_6" ? uscisCredentials : ceacCredentials) && (
                 <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-5 flex flex-col animate-in fade-in slide-in-from-top-2 duration-300">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-[#15744f] mb-[10px]">
-                    {sId === "step_1_6" ? "USCIS" : "CEAC"} Credentials — Saved
+                    {sId === "step_1_6" ? "USCIS" : "CEAC"} Credentials, Saved
                   </div>
                   <div className="flex-1 flex flex-col">
                     {sId === "step_1_6" ? (
@@ -2334,7 +2310,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                             NVC Case Number
                           </span>
                           <span className="text-[12px] text-[#0c1b33] font-semibold font-mono">
-                            {ceacCredentials?.nvc_case_number ? "••••••••" : "—"}
+                            {ceacCredentials?.nvc_case_number ? "••••••••" : ""}
                           </span>
                         </div>
                         <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]/50">
@@ -2342,7 +2318,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                             Invoice ID Number
                           </span>
                           <span className="text-[12px] text-[#0c1b33] font-semibold font-mono">
-                            {ceacCredentials?.nvc_invoice_id ? "••••••••" : "—"}
+                            {ceacCredentials?.nvc_invoice_id ? "••••••••" : ""}
                           </span>
                         </div>
                       </>
@@ -2700,7 +2676,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
             className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-5" : "mt-5"} text-[11.5px] text-[#6b8097] leading-[1.65] text-center pt-[8px]`}
           >
             {tool.disclaimer ||
-              "Rahvana provides structured guidance only. This is not legal advice — always verify with official sources."}
+              "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."}
           </p>
 
           {/* Citations section */}
@@ -4302,7 +4278,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                 <span className="text-[11px] font-medium text-[#3a4f63]">
                   {inlineGuideData[selectedGuideId].sourceType === "internal"
                     ? "Roadmap Module"
-                    : `Rahvana Guide — ${inlineGuideData[selectedGuideId].title}`}
+                    : `Rahvana Guide, ${inlineGuideData[selectedGuideId].title}`}
                 </span>
               </div>
               <h2 className="font-black text-[clamp(22px,3.5vw,28px)] text-[#0f1f38] mb-[6px] leading-[1.25]">
@@ -4668,7 +4644,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                             }}
                             className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
                           >
-                            Done — return to step
+                            Done, return to step
                           </button>
                         )}
                       </div>
@@ -5010,7 +4986,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                         onClick={() => setIsTutorialOpen(false)}
                         className="flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
                       >
-                        Done — return to step
+                        Done, return to step
                       </button>
                     )}
                   </div>
@@ -5208,7 +5184,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                       }`}
                     >
                       {isLast ? (
-                        "Done — return to step"
+                        "Done, return to step"
                       ) : (
                         <>
                           Next <ArrowRight size={16} />

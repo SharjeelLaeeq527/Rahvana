@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useMemo, useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { ChevronDown, ExternalLink, Clock, Shield } from "lucide-react";
 import { RoadmapDataV3 } from "./types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -54,7 +55,7 @@ import {
 } from "@/lib/case-strength/aggregate-issues";
 import {
   gateAlertIssues,
-  buildGateContext,
+  buildAlertGateContext,
   isMeaningfullyStarted,
   isCaseHealthScorable,
   hasUserEvidenceSignal,
@@ -69,12 +70,12 @@ import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
 // import { getActiveStepsForStage } from "./journeyHelpersV3";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 import { E, msg } from "@/lib/errors";
-import IR1Ticker from "./IR1Ticker";
+import VisaTicker from "@/app/components/home-page/VisaTicker";
 import {
-  buildIR1TickerProps,
+  buildVisaTickerProps,
   fetchReceiptForJourney,
   ReceiptRecord,
-} from "@/app/components/home-page/Ir1tickerprops";
+} from "@/app/components/home-page/Visatickerprops";
 
 interface DashboardViewProps {
   data: RoadmapDataV3;
@@ -104,6 +105,10 @@ interface DashboardViewProps {
 // Dashboard background image
 const dashboardBg = "/assets/images/dashboard.png";
 
+const visaCategoryNames: Record<string, string> = {
+  "ir5-journey": "IR-5 Parent",
+};
+
 export function DashboardViewV3({
   data,
   state,
@@ -115,6 +120,11 @@ export function DashboardViewV3({
   actions,
 }: DashboardViewProps) {
   const plan = usePlan();
+
+  const pathname = usePathname();
+  const slug = pathname.split("/").pop();
+  const visaName = visaCategoryNames[slug || ""];
+
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
 
   // Category-specific Consistency Intelligence config. Falls back to IR-1 (the
@@ -510,27 +520,20 @@ export function DashboardViewV3({
     // Progressive reveal: hide alerts for steps the user hasn't reached yet, and
     // (Phase 2) time-gate current/passed-step warnings. Keeps the dashboard from
     // dumping every chapter's issues at once. See CASE_STRENGTH_ALERT_PLAN.md.
-    // buildGateContext derives the frontier/active-order (shared with V2); the
-    // look-ahead rules come from the resolved category profile.
+    // buildAlertGateContext (shared with V2) derives the frontier/active-order
+    // AND wires the category profile's look-ahead + document-escalation config +
+    // target filing date (parsed from metadata) in one place, so V2 and V3 can't
+    // drift on which gate inputs get passed.
     const alertProfile = resolveCaseStrengthProfile((data as any).journey_type);
-    // Optional user target filing date → deadline-relative escalation. Absent →
-    // the config's fixed-days fallback (§4–§5). Accepts an ISO string or epoch ms.
-    const rawFilingDate = (state.metadata as any)?.targetFilingDate;
-    const targetFilingDate =
-      rawFilingDate != null && !Number.isNaN(new Date(rawFilingDate).getTime())
-        ? new Date(rawFilingDate).getTime()
-        : undefined;
     const gated = gateAlertIssues(
       all,
-      buildGateContext({
+      buildAlertGateContext({
         chapters,
         state,
         getActiveStepsForStage,
         getNextBestAction,
-        lookAheadRules: alertProfile.lookAhead,
         stepTimestamps: state.stepTimestamps,
-        documentEscalation: alertProfile.documentEscalation,
-        targetFilingDate,
+        profile: alertProfile,
       })
     );
 
@@ -711,7 +714,7 @@ export function DashboardViewV3({
     return {
       level: "warning",
       title: `Case strength dropped to ${SCORE_BAND_LABEL[scoreDropBand.to]}`,
-      hint: `Your Case Strength moved from ${SCORE_BAND_LABEL[scoreDropBand.from]} to ${SCORE_BAND_LABEL[scoreDropBand.to]}. Open the breakdown to see which factor fell — evidence, consistency, completeness, or a new risk flag.`,
+      hint: `Your Case Strength moved from ${SCORE_BAND_LABEL[scoreDropBand.from]} to ${SCORE_BAND_LABEL[scoreDropBand.to]}. Open the breakdown to see which factor fell, evidence, consistency, completeness, or a new risk flag.`,
       stepKey: "__score__",
       stepName: "Case Strength",
       stepNumber: 0,
@@ -1058,12 +1061,12 @@ export function DashboardViewV3({
 
   const [receiptRecord, setReceiptRecord] = useState<ReceiptRecord | null | undefined>(undefined);
   useEffect(() => {
-    console.log("DEBUG [receipt effect] FIRED — state.backendId:", state.backendId);
+    console.log("DEBUG [receipt effect] FIRED, state.backendId:", state.backendId);
     let cancelled = false;
     const jId = state.backendId;
 
     if (!jId) {
-      console.log("DEBUG [receipt effect] No backendId yet — skipping fetch");
+      console.log("DEBUG [receipt effect] No backendId yet, skipping fetch");
       return;
     }
 
@@ -1089,7 +1092,7 @@ export function DashboardViewV3({
       });
 
     return () => {
-      console.log("DEBUG [receipt effect] Cleanup — marking cancelled");
+      console.log("DEBUG [receipt effect] Cleanup, marking cancelled");
       cancelled = true;
     };
   }, [state.backendId]);
@@ -1123,7 +1126,7 @@ export function DashboardViewV3({
       <div className="w-full max-w-[1200px] xl:max-w-[1500px] mx-auto animate-in fade-in duration-700 relative z-10">
         <div className={`w-full mb-6`}>
           <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400 mb-1 text-center lg:text-left">
-            IR-1 Spouse Visa · Pakistan
+            {visaName} Visa · Pakistan
           </div>
         </div>
         {upgradeModalFeature && (
@@ -1132,11 +1135,11 @@ export function DashboardViewV3({
             onClose={() => setUpgradeModalFeature(null)}
           />
         )}
-        {/* IR-1 Live ticker — journey dashboard (placed above hero) */}
+        {/* Visa ticker — journey dashboard (placed above hero) */}
         {receiptRecord !== undefined && (
           <div className="mb-6">
-            <IR1Ticker
-              {...buildIR1TickerProps(
+            <VisaTicker
+              {...buildVisaTickerProps(
                 state,
                 trackingStatus,
                 nvcCaseNum,
@@ -1681,7 +1684,7 @@ export function DashboardViewV3({
                               Interview Queue ({postLabel})
                             </div>
                             <h3 className="text-[18px] font-black mb-2">
-                              In Queue — Awaiting Estimate
+                              In Queue, Awaiting Estimate
                             </h3>
                             <p className="text-[12.5px] text-white/60 leading-relaxed mb-4 max-w-md">
                               Your DQ date is recorded. To see your estimated interview window, go
@@ -1730,7 +1733,7 @@ export function DashboardViewV3({
                     const windowStr =
                       waitMonths === 0
                         ? "Approaching Soon"
-                        : `${lowDate.toLocaleDateString("en-US", fmt)} – ${highDate.toLocaleDateString("en-US", fmt)}`;
+                        : `${lowDate.toLocaleDateString("en-US", fmt)} ${highDate.toLocaleDateString("en-US", fmt)}`;
                     const embassyMonthStr = ivDate.toLocaleDateString("en-US", {
                       month: "long",
                       year: "numeric",

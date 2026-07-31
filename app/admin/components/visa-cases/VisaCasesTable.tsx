@@ -1020,7 +1020,7 @@ export default function VisaCasesTable() {
                     <textarea
                       value={checkNotes}
                       onChange={(e) => setCheckNotes(e.target.value)}
-                      placeholder="e.g. Checked CEAC — status unchanged, case still in AP..."
+                      placeholder="e.g. Checked CEAC, status unchanged, case still in AP..."
                       rows={2}
                       className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
                     />

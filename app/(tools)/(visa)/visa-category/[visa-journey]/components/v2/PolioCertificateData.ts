@@ -1,7 +1,7 @@
 export const POLIO_CERTIFICATE_DATA = {
   eyebrow: {
     chapter: "Chapter 3 · Medical & Interview",
-    step: "Step 2 — Polio Vaccination Certificate",
+    step: "Step 2, Polio Vaccination Certificate",
   },
   title: "Obtain Polio Vaccination Certificate",
   description:
@@ -52,7 +52,7 @@ export const POLIO_CERTIFICATE_DATA = {
       vLabel: "Requirement Overview",
       visual: {
         title: "Why this is required",
-        sub: "The U.S. requires polio vaccination documentation from applicants from polio-endemic countries. This is administered at an approved vaccination site — not a general clinic.",
+        sub: "The U.S. requires polio vaccination documentation from applicants from polio-endemic countries. This is administered at an approved vaccination site, not a general clinic.",
       },
     },
     {
@@ -61,7 +61,7 @@ export const POLIO_CERTIFICATE_DATA = {
       instruction:
         "Polio vaccinations for visa purposes must be obtained from an approved government vaccination post or official WHO-designated site. Do not use a private clinic unless it is specifically on the approved list.",
       vLabel: "Vaccination Sites",
-      note: "Do not go to a general doctor or hospital for this — you must use a government-approved site for the certificate to be accepted.",
+      note: "Do not go to a general doctor or hospital for this, you must use a government-approved site for the certificate to be accepted.",
       visual: {
         title: "Approved Vaccination Sites",
         sub: "Government immunization centres in major cities typically administer this vaccine and issue the official certificate. Contact your local district health office or check with your panel physician for the nearest site.",
@@ -78,21 +78,21 @@ export const POLIO_CERTIFICATE_DATA = {
         items: [
           "Your full legal name (matching passport)",
           "Date of vaccination",
-          "Vaccine type — oral polio vaccine (OPV)",
+          "Vaccine type, oral polio vaccine (OPV)",
           "Official stamp or signature",
         ],
       },
     },
     {
       label: "Step 4 of 5",
-      heading: "Timing — when to get vaccinated",
+      heading: "Timing, when to get vaccinated",
       instruction:
         "Get your polio vaccination at least a few days before your medical exam appointment so you can bring the original certificate to the exam. The panel physician will record it as part of your medical packet.",
       vLabel: "Timing Guidance",
       note: "Do not get vaccinated the same day as the medical exam unless your physician specifically confirms this is acceptable.",
       visual: {
         title: "Recommended Timing",
-        sub: "Vaccinate → Receive certificate → Bring original to medical exam. Budget at least 1–3 days between vaccination and your scheduled medical exam date.",
+        sub: "Vaccinate → Receive certificate → Bring original to medical exam. Budget at least 1-3 days between vaccination and your scheduled medical exam date.",
       },
     },
     {

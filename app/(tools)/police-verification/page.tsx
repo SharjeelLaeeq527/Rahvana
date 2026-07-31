@@ -326,7 +326,7 @@ function SindhInstructions({
         {
           title: "Submit and Confirm",
           description:
-            "Click 'Continue'. A confirmation popup will appear—click 'OK' to be redirected to the detailed Step 1 form.",
+            "Click 'Continue'. A confirmation popup will appear-click 'OK' to be redirected to the detailed Step 1 form.",
           icon: ChevronRight,
         },
       ],

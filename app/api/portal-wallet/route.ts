@@ -6,7 +6,7 @@ import { auditLog } from "@/lib/security/audit-log";
 
 const normalizeSecurityAnswer = (answer: string) => answer.trim().replace(/\s+/g, " ").toLowerCase();
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
 

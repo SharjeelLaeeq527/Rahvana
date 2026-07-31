@@ -4,7 +4,7 @@ import { Stethoscope, ClipboardList } from "lucide-react";
 export const MEDICAL_EXAM_DATA = {
   eyebrow: {
     chapter: "Chapter 3 · Medical & Interview",
-    step: "Step 1 — Schedule Medical Exam",
+    step: "Step 1, Schedule Medical Exam",
   },
   title: "Schedule Medical Exam",
   description:
@@ -34,7 +34,7 @@ export const MEDICAL_EXAM_DATA = {
   },
   serviceSteps: [
     {
-      label: "Step 1 of 3 — Rahvana Booking Service",
+      label: "Step 1 of 3, Rahvana Booking Service",
       heading: "Book your medical exam through Rahvana",
       sub: "Rahvana will connect you with an embassy-approved physician in your area. Click below to open the booking service.",
       card: {
@@ -47,14 +47,14 @@ export const MEDICAL_EXAM_DATA = {
       nav: { next: "I've requested my appointment →" },
     },
     {
-      label: "Step 2 of 3 — Confirm booking details",
+      label: "Step 2 of 3, Confirm booking details",
       heading: "Confirm your appointment was requested",
       sub: "After submitting your request through the booking service, Rahvana will follow up to confirm the appointment time. Proceed once you have received confirmation.",
       info: "After submitting your request, check your registered email for a booking confirmation. Your appointment details will be sent once confirmed by the physician's office.",
       nav: { back: true, next: "Save my appointment details →" },
     },
     {
-      label: "Step 3 of 3 — Save appointment details",
+      label: "Step 3 of 3, Save appointment details",
       heading: "Save your appointment details",
       sub: "Record your confirmed appointment so Rahvana can set a reminder and keep it on your dashboard.",
       form: true,
@@ -63,29 +63,29 @@ export const MEDICAL_EXAM_DATA = {
   ],
   guideSteps: [
     {
-      label: "Step 1 of 4 — Find an approved physician",
+      label: "Step 1 of 4, Find an approved physician",
       heading: "Find an embassy-approved physician",
       sub: "Your consulate maintains a list of approved panel physicians. You must book with a physician on that specific list.",
       info: 'For U.S. Embassy Islamabad, Karachi, and Lahore, the approved physician list is available on the embassy\'s official website. Search "U.S. Embassy [city] panel physician list" to find current approved physicians.',
       nav: { next: "Next →" },
     },
     {
-      label: "Step 2 of 4 — Contact and book the appointment",
+      label: "Step 2 of 4, Contact and book the appointment",
       heading: "Contact the physician and book directly",
       sub: "Call or visit the approved physician's office to schedule your immigrant visa medical examination. Bring your appointment letter and passport.",
-      info: "Most approved physicians in Pakistan accept walk-ins or appointments by phone. Confirm the medical exam fee before attending. The fee is typically paid directly to the physician — not to the embassy.",
+      info: "Most approved physicians in Pakistan accept walk-ins or appointments by phone. Confirm the medical exam fee before attending. The fee is typically paid directly to the physician, not to the embassy.",
       nav: { back: true, next: "Next →" },
     },
     {
-      label: "Step 3 of 4 — Confirm your appointment",
+      label: "Step 3 of 4, Confirm your appointment",
       heading: "Confirm the appointment date and location",
       sub: "Verify the appointment date and location directly with the physician's office before proceeding.",
       alert:
-        "Ensure the physician is currently active on the approved list — lists are updated periodically. A medical exam from a removed physician will not be accepted.",
+        "Ensure the physician is currently active on the approved list, lists are updated periodically. A medical exam from a removed physician will not be accepted.",
       nav: { back: true, next: "Save my appointment details →" },
     },
     {
-      label: "Step 4 of 4 — Save appointment details",
+      label: "Step 4 of 4, Save appointment details",
       heading: "Save your appointment details",
       sub: "Record your appointment so Rahvana can set a reminder and keep it visible on your dashboard.",
       form: true,

@@ -338,7 +338,7 @@ async function handleInvoicePaymentSucceeded(invoice: Stripe.Invoice) {
 
   // Skip the first invoice — already handled by checkout.session.completed
   if (invoice.billing_reason === "subscription_create") {
-    console.log("First invoice — skipping (handled by checkout.session.completed)");
+    console.log("First invoice, skipping (handled by checkout.session.completed)");
     return;
   }
 
@@ -402,7 +402,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
       await resend.emails.send({
         from: process.env.EMAIL_FROM!,
         to: customerEmail,
-        subject: "Action Required — Rahvana Payment Failed",
+        subject: "Action Required, Rahvana Payment Failed",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
             <h1 style="color: #dc2626;">Payment Failed ⚠️</h1>
@@ -449,7 +449,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   const currentSubId = profile.profile_details?.stripe_subscription_id;
   if (currentSubId && currentSubId !== subscription.id) {
     console.log(
-      `Skipping downgrade — cancelled sub ${subscription.id} is not current (${currentSubId}). Upgrade cleanup.`
+      `Skipping downgrade, cancelled sub ${subscription.id} is not current (${currentSubId}). Upgrade cleanup.`
     );
     return;
   }
@@ -612,7 +612,7 @@ async function sendConsultationConfirmationEmail(email: string, referenceId: str
     await resend.emails.send({
       from: process.env.EMAIL_FROM!,
       to: email,
-      subject: "Consultation Payment Confirmed — Rahvana",
+      subject: "Consultation Payment Confirmed, Rahvana",
       html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
           <h1 style="color: #0d9488;">Payment Received! ✓</h1>

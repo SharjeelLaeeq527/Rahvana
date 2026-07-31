@@ -17,8 +17,8 @@
     "hasMockInterview": true
   },
   "ui": {
-    "themeColor": "teal",
-    "icon": "Heart"
+    "icon": "heart",
+    "themeColor": "rose"
   },
   "isActive": true
 }

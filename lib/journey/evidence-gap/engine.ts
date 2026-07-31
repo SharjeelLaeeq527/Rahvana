@@ -198,7 +198,7 @@ const IR1_IDENTITY_REQUIREMENT: EvidenceRequirement = {
 const IR5_IDENTITY_REQUIREMENT: EvidenceRequirement = {
   category: "IDENTITY",
   label: "Identity & Civil Documents",
-  description: "Core identity and civil documents that establish the parent–child link",
+  description: "Core identity and civil documents that establish the parent-child link",
   items: [
     {
       id: "passport_beneficiary",
@@ -247,7 +247,7 @@ const IR1_FAMILY_INTEGRATION_REQUIREMENT: EvidenceRequirement = {
 const IR5_FAMILY_INTEGRATION_REQUIREMENT: EvidenceRequirement = {
   category: "FAMILY_INTEGRATION",
   label: "Family Integration",
-  description: "Evidence of the ongoing parent–child bond",
+  description: "Evidence of the ongoing parent-child bond",
   items: [
     {
       id: "family_photos",
@@ -271,15 +271,20 @@ export const IR1_EVIDENCE_REQUIREMENTS: Record<EvidenceCategory, EvidenceRequire
   IMMIGRATION_HISTORY: IMMIGRATION_HISTORY_REQUIREMENT,
 };
 
-// IR-5 (parent): reuses FINANCIAL + IMMIGRATION_HISTORY verbatim, overrides
-// IDENTITY (no marriage docs) and FAMILY_INTEGRATION (no "children together"),
-// and OMITS the three spouse-only bona-fide-marriage categories entirely. Being
-// a Partial means those categories never render on a parent's dashboard.
+// IR-5 (parent) — I-130 filing-stage evidence only. Assesses just the two
+// categories that actually matter to a parent petition NOW:
+//   • IDENTITY — proof of citizenship + the birth certificate that establishes
+//     the parent–child link (the core required evidence), and the parent's passport.
+//   • FAMILY_INTEGRATION — supporting bond evidence (family photos with the parent).
+// FINANCIAL (I-864, tax returns) and IMMIGRATION_HISTORY (police certificate) are
+// deliberately OMITTED: those are NVC/consular-stage documents ("Gather Now for
+// Later" in the vault), so scoring or showing them here would understate the
+// current-stage case and surface "Missing" categories that aren't due yet. They
+// remain tracked by the document-vault checklist. The three spouse-only
+// bona-fide-marriage categories are likewise omitted (Partial → never render).
 export const IR5_EVIDENCE_REQUIREMENTS: Partial<Record<EvidenceCategory, EvidenceRequirement>> = {
   IDENTITY: IR5_IDENTITY_REQUIREMENT,
-  FINANCIAL: FINANCIAL_REQUIREMENT,
   FAMILY_INTEGRATION: IR5_FAMILY_INTEGRATION_REQUIREMENT,
-  IMMIGRATION_HISTORY: IMMIGRATION_HISTORY_REQUIREMENT,
 };
 
 /** Requirements config the engine runs against. IR-1 is the safe default. */

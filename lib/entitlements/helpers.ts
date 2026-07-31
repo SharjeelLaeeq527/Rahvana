@@ -59,7 +59,7 @@ export function lockHint(feature: string, tier: PlanTier, purchasedAddons: strin
         const upgradeName = e.upgradeTarget ? TIER_NAMES[e.upgradeTarget] : null;
         const addonLabel = `Add ${e.addon.name} for $${e.addon.price}`;
         return upgradeName && e.upgradeTarget !== tier
-          ? `${addonLabel} — or upgrade to ${upgradeName}`
+          ? `${addonLabel} or upgrade to ${upgradeName}`
           : addonLabel;
       }
       return "Available as an add-on";

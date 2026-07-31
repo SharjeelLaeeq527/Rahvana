@@ -24,7 +24,7 @@ export const REMINDERS: ReminderConfig[] = [
     title: "Case is on its way to the embassy",
     message:
       "Your case has left NVC and is being transferred to the U.S. Embassy or consulate. " +
-      "This status is usually brief — hours to a few days. " +
+      "This status is usually brief, hours to a few days. " +
       "Watch for your CEAC status to change to Ready. No action needed right now.",
     channel: "push",
     recurring: false,
@@ -39,7 +39,7 @@ export const REMINDERS: ReminderConfig[] = [
     kind: "FOLLOW-UP",
     triggerStatus: "in_transit",
     triggerGroup: "in_transit",
-    title: "Check your CEAC status — may have changed to Ready",
+    title: "Check your CEAC status, may have changed to Ready",
     message:
       "Your case has been In Transit for 3 days. " +
       "Log into the CEAC public status tool and check if your status has updated to Ready. " +
@@ -62,7 +62,7 @@ export const REMINDERS: ReminderConfig[] = [
     kind: "URGENT",
     triggerStatus: "ready",
     triggerGroup: "ready",
-    title: "Status is Ready — your interview is coming",
+    title: "Status is Ready, your interview is coming",
     message:
       "Your case has arrived at the embassy. 'Ready' means the consular post has your file " +
       "and is proceeding toward your interview. " +
@@ -81,8 +81,8 @@ export const REMINDERS: ReminderConfig[] = [
     triggerGroup: "ready",
     title: "Check your CEAC status for updates",
     message:
-      "Your case is Ready at the embassy. Check the CEAC public status tool every 1–2 weeks. " +
-      "When your status changes to Administrative Processing, Issued, or Refused after your interview — " +
+      "Your case is Ready at the embassy. Check the CEAC public status tool every 1-2 weeks. " +
+      "When your status changes to Administrative Processing, Issued, or Refused after your interview, " +
       "update it in Rahvana immediately.",
     channel: "push",
     recurring: { intervalDays: 14 },
@@ -101,9 +101,9 @@ export const REMINDERS: ReminderConfig[] = [
     kind: "ACTION",
     triggerStatus: "ap",
     triggerGroup: "ap",
-    title: "Administrative Processing — what this means",
+    title: "Administrative Processing, what this means",
     message:
-      "AP is not a refusal. It means the consulate needs more time — usually for security checks " +
+      "AP is not a refusal. It means the consulate needs more time, usually for security checks " +
       "or background review. Most AP cases result in visa issuance. " +
       "Do NOT contact the embassy repeatedly. Check CEAC weekly and monitor your registered email.",
     channel: "push_and_email",
@@ -118,11 +118,11 @@ export const REMINDERS: ReminderConfig[] = [
     kind: "WAITING",
     triggerStatus: "ap",
     triggerGroup: "ap",
-    title: "AP check-in — log into CEAC and check for updates",
+    title: "AP check-in, log into CEAC and check for updates",
     message:
       "Log into the CEAC public status tool and check if your status has changed. " +
       "If it shows Issued, your visa is ready. " +
-      "If it still shows Administrative Processing, no action needed yet — " +
+      "If it still shows Administrative Processing, no action needed yet, " +
       "update Rahvana if anything changes.",
     channel: "push",
     recurring: { intervalDays: 14 },
@@ -136,7 +136,7 @@ export const REMINDERS: ReminderConfig[] = [
     kind: "WAITING",
     triggerStatus: "ap",
     triggerGroup: "ap",
-    title: "AP has been 60+ days — consider consulting an attorney",
+    title: "AP has been 60+ days, consider consulting an attorney",
     message:
       "Your case has been in Administrative Processing for over 60 days with no update. " +
       "While this is not uncommon, if you haven't already, consider consulting an immigration " +
@@ -158,9 +158,9 @@ export const REMINDERS: ReminderConfig[] = [
     kind: "URGENT",
     triggerStatus: "issued",
     triggerGroup: "issued",
-    title: "Visa Issued — track your courier delivery now",
+    title: "Visa Issued, track your courier delivery now",
     message:
-      "Congratulations — your visa has been approved and is being processed for delivery. " +
+      "Congratulations, your visa has been approved and is being processed for delivery. " +
       "Log into your USVisaScheduling courier account and track your shipment. " +
       "Confirm your delivery address is correct.",
     channel: "push_and_email",
@@ -198,10 +198,10 @@ export const REMINDERS: ReminderConfig[] = [
     kind: "URGENT",
     triggerStatus: "refused",
     triggerGroup: "refused",
-    title: "Refused — read your written notice carefully",
+    title: "Refused, read your written notice carefully",
     message:
       "A 'Refused' CEAC status covers two very different situations: " +
-      "(1) a 221(g) temporary refusal asking for more documents — your case is still active, or " +
+      "(1) a 221(g) temporary refusal asking for more documents, your case is still active, or " +
       "(2) a final denial under a specific ground of ineligibility. " +
       "The CEAC status alone does NOT tell you which one. " +
       "Read the written notice from the consular officer carefully. " +
@@ -220,11 +220,11 @@ export const REMINDERS: ReminderConfig[] = [
     kind: "ACTION",
     triggerStatus: "refused",
     triggerGroup: "refused",
-    title: "221(g) — submit the requested documents promptly",
+    title: "221(g), submit the requested documents promptly",
     message:
       "Your 221(g) refusal is a request for additional documents or information, not a final denial. " +
       "Submit exactly what the officer requested, following the written instructions. " +
-      "After submission, monitor CEAC — your status may update to Issued once the post completes review.",
+      "After submission, monitor CEAC, your status may update to Issued once the post completes review.",
     channel: "push",
     recurring: false,
     delayDays: 0, // fires immediately once sub-type confirmed
@@ -239,7 +239,7 @@ export const REMINDERS: ReminderConfig[] = [
     kind: "WAITING",
     triggerStatus: "refused",
     triggerGroup: "refused",
-    title: "221(g) follow-up — check CEAC for status update",
+    title: "221(g) follow-up, check CEAC for status update",
     message:
       "Log into the CEAC public status tool and check if your status has changed from Refused to Issued. " +
       "If the status is still Refused and it has been more than 60 days since you submitted the " +
@@ -259,7 +259,7 @@ export const REMINDERS: ReminderConfig[] = [
     kind: "ACTION",
     triggerStatus: "refused",
     triggerGroup: "refused",
-    title: "Final refusal — consult an immigration attorney",
+    title: "Final refusal, consult an immigration attorney",
     message:
       "A final refusal under a specific ground of ineligibility (e.g., INA §212) is a serious outcome. " +
       "Waivers (such as I-601) may be available depending on the ground cited. " +

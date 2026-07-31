@@ -63,7 +63,7 @@ export const getFinancialDocs = (scKey: string) => {
     docs.required.push({
       id: `tax-${sp}`,
       icon: "receipt",
-      title: `Federal Tax Return — ${sp}`,
+      title: `Federal Tax Return, ${sp}`,
       sub: `${taxNote} · Aligns with affidavit income statement`,
       tags: [
         { cls: tagClass, label: sp },
@@ -86,7 +86,7 @@ export const getFinancialDocs = (scKey: string) => {
     docs.required.push({
       id: `w2-${sp}`,
       icon: "file-text",
-      title: `W-2 Forms — ${sp}`,
+      title: `W-2 Forms, ${sp}`,
       sub: `${taxNote} · Wage and salary income documentation`,
       tags: [
         { cls: tagClass, label: sp },
@@ -105,7 +105,7 @@ export const getFinancialDocs = (scKey: string) => {
     docs.required.push({
       id: `transcript-${sp}`,
       icon: "landmark",
-      title: `IRS Tax Transcripts — ${sp}`,
+      title: `IRS Tax Transcripts, ${sp}`,
       sub: "Official IRS verification of filed tax information",
       tags: [
         { cls: tagClass, label: sp },
@@ -128,8 +128,8 @@ export const getFinancialDocs = (scKey: string) => {
     docs.conditional.push({
       id: `paystubs-${sp}`,
       icon: "banknote",
-      title: `Pay Stubs — ${sp}`,
-      sub: "Current income evidence — most recent 2–3 months",
+      title: `Pay Stubs, ${sp}`,
+      sub: "Current income evidence, most recent 2-3 months",
       tags: [
         { cls: tagClass, label: sp },
         { cls: "tag-cur", label: "Current Income" },
@@ -139,7 +139,7 @@ export const getFinancialDocs = (scKey: string) => {
         sections: [
           {
             title: "What to include",
-            body: "Most recent 2–3 months of pay stubs. Must show gross pay, employer name, and pay period.",
+            body: "Most recent 2-3 months of pay stubs. Must show gross pay, employer name, and pay period.",
           },
         ],
       },
@@ -147,7 +147,7 @@ export const getFinancialDocs = (scKey: string) => {
     docs.conditional.push({
       id: `employment-${sp}`,
       icon: "building",
-      title: `Employment Letter — ${sp}`,
+      title: `Employment Letter, ${sp}`,
       sub: "Confirms current employment and compensation",
       tags: [
         { cls: tagClass, label: sp },
@@ -167,7 +167,7 @@ export const getFinancialDocs = (scKey: string) => {
     docs.conditional.push({
       id: `assets-${sp}`,
       icon: "wallet",
-      title: `Asset Evidence — ${sp}`,
+      title: `Asset Evidence, ${sp}`,
       sub: "Bank statements, property, or investment documentation",
       tags: [
         { cls: tagClass, label: sp },
@@ -187,7 +187,7 @@ export const getFinancialDocs = (scKey: string) => {
     docs.recommended.push({
       id: `packet-${sp}`,
       icon: "folder",
-      title: `Organized Income Packet — ${sp}`,
+      title: `Organized Income Packet, ${sp}`,
       sub: "All documents grouped cleanly by sponsor for upload readiness",
       tags: [{ cls: isPet ? "tag-pet" : "tag-js", label: sp }],
       guide: {
@@ -206,7 +206,7 @@ export const getFinancialDocs = (scKey: string) => {
     docs.conditional.push({
       id: `hm-income-${i}`,
       icon: "user",
-      title: `Proof of Household Member Income — ${hm}`,
+      title: `Proof of Household Member Income, ${hm}`,
       sub: "Income evidence for household member contributing to sponsorship",
       tags: [{ cls: "tag-hm", label: hm }],
       guide: {
@@ -226,7 +226,7 @@ export const getFinancialDocs = (scKey: string) => {
     docs.conditional.push({
       id: `hm-residence-${i}`,
       icon: "home",
-      title: `Proof of Shared Residence — ${hm}`,
+      title: `Proof of Shared Residence, ${hm}`,
       sub: "Evidence of household connection between sponsor and household member",
       tags: [{ cls: "tag-hm", label: hm }],
       guide: {

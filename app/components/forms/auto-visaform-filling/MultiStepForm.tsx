@@ -1691,7 +1691,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                                 icon={"i"}
                                 defaultOpen={false}
                                 title="Before you continue"
-                                message={`Provide accurate details to ensure faster processing. This information will be used in official forms, so make sure everything is correct. Don’t worry—you’ll still be able to review and edit everything later.`}
+                                message={`Provide accurate details to ensure faster processing. This information will be used in official forms, so make sure everything is correct. Don't worry-you'll still be able to review and edit everything later.`}
                               />
                             </div>
 

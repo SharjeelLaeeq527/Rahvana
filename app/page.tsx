@@ -1481,7 +1481,7 @@ function HomePageContent() {
                           >
                             <AnimationCard
                               file="rahvana_question_stack_standalone_final.html"
-                              title="Interview anxiety — what if I forget?"
+                              title="Interview anxiety, what if I forget?"
                               w={450}
                               h={640}
                               maxH={640}
@@ -1638,7 +1638,7 @@ function HomePageContent() {
                       iconBg: "bg-[#fbc8d2]",
                       author: "Ayesha W.",
                       role: "IR-1 applicant · Islamabad",
-                      text: "For the first time, I felt like someone had actually thought about what this process feels like to go through — not just the steps, but the weight of it.",
+                      text: "For the first time, I felt like someone had actually thought about what this process feels like to go through, not just the steps, but the weight of it.",
                     },
                     {
                       bg: "bg-[#e3edf9]",

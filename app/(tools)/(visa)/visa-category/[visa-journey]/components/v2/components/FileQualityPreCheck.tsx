@@ -61,7 +61,7 @@ export function FileQualityPreCheck({ uploadedDocuments }: FileQualityPreCheckPr
       const reasons: string[] = [];
       if (sizeMb > MAX_SIZE_MB) {
         reasons.push(
-          `File is ${sizeMb.toFixed(1)} MB — exceeds USCIS portal's ${MAX_SIZE_MB} MB per-file limit.`
+          `File is ${sizeMb.toFixed(1)} MB, exceeds USCIS portal's ${MAX_SIZE_MB} MB per-file limit.`
         );
       }
       if (!ext || !ACCEPTED_EXTENSIONS.includes(ext)) {
@@ -157,7 +157,7 @@ export function FileQualityPreCheck({ uploadedDocuments }: FileQualityPreCheckPr
                   USCIS upload
                 </h5>
                 <p className="text-[12px] mt-1 leading-relaxed" style={{ color: "#7f1d1d" }}>
-                  Fix each item below before attempting to upload to USCIS — the portal will reject
+                  Fix each item below before attempting to upload to USCIS, the portal will reject
                   these.
                 </p>
               </div>
@@ -195,8 +195,8 @@ export function FileQualityPreCheck({ uploadedDocuments }: FileQualityPreCheckPr
         )}
 
         <p className="text-[10.5px] text-[#78716c] mt-3 leading-relaxed italic">
-          Source: USCIS online filing portal — file requirements published at myaccount.uscis.gov.
-          Pre-check only — final acceptance is determined by USCIS at upload time.
+          Source: USCIS online filing portal, file requirements published at myaccount.uscis.gov.
+          Pre-check only, final acceptance is determined by USCIS at upload time.
         </p>
       </div>
     </div>

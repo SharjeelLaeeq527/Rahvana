@@ -1,18 +1,13 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { ListChecks } from "lucide-react";
-
 import { useRouter } from "next/navigation";
 import { ResultPage } from "./result/ResultPage";
 import { Loader } from "@/components/ui/spinner";
-
 import { InterviewPrepOutput } from "../../../lib/interview-prep/types";
-
 import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
@@ -26,7 +21,6 @@ import CountrySelectionModal from "../../components/interview-prep/CountrySelect
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import type { InterviewFormData } from "@/app/components/interview-prep/types";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
-import { NarrativeModal } from "../(visa)/221g-action-planner/components/NarrativeModal";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { useToast } from "@/app/components/shared/ToastProvider";
 
@@ -53,6 +47,7 @@ type PurchaseErrorResponse = {
 };
 
 export default function InterviewPreparation() {
+  const [entryMode, setEntryMode] = useState<"pending" | "tool" | "redirect">("pending");
   const [selectedCategory, setSelectedCategory] = useState<CategoryWithPurchaseStatus | null>(null);
 
   const [availableCategories, setAvailableCategories] = useState<CategoryWithPurchaseStatus[]>([]);
@@ -111,6 +106,22 @@ export default function InterviewPreparation() {
   const { user } = useAuth();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
   const { showToast } = useToast();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const hasJourneyOrSession = params.has("journey_id") || params.has("sessionId");
+    const isNewSessionFlow = params.get("newSession") === "1";
+
+    if (!hasJourneyOrSession && !isNewSessionFlow) {
+      setEntryMode("redirect");
+      router.replace("/interview-prep/my-sessions");
+      return;
+    }
+
+    setEntryMode("tool");
+  }, [router]);
 
   const saveProgressToProfile = (currentFormData = formData) => {
     if (!user) return;
@@ -182,29 +193,57 @@ export default function InterviewPreparation() {
       setLoadingMessage("Loading visa categories...");
       setLoading(true);
 
-      const response = await fetch(
-        `/api/interview-prep/categories?country=${encodeURIComponent(country)}`
-      );
+      const params = new URLSearchParams(window.location.search);
+      const shouldFilterExistingSessions = params.get("newSession") === "1";
 
-      const data = await response.json();
+      const [categoriesResponse, sessionsResponse] = await Promise.all([
+        fetch(`/api/interview-prep/categories?country=${encodeURIComponent(country)}`),
+        shouldFilterExistingSessions ? fetch("/api/interview-prep/user-sessions") : null,
+      ]);
+
+      const data = await categoriesResponse.json();
 
       if (
-        response.ok &&
+        categoriesResponse.ok &&
         data.success &&
         Array.isArray(data.categories) &&
         data.categories.length > 0
       ) {
         const loadedCategories = data.categories as CategoryWithPurchaseStatus[];
+        let filteredCategories = loadedCategories;
 
-        setAvailableCategories(loadedCategories);
-        setNoDataMessage(null);
+        if (shouldFilterExistingSessions && sessionsResponse?.ok) {
+          const sessionsData = await sessionsResponse.json();
+          const usedCategorySlugs = new Set<string>(
+            Array.isArray(sessionsData.sessions)
+              ? sessionsData.sessions
+                  .map((session: { category_slug?: string }) => session.category_slug)
+                  .filter((slug: string | undefined): slug is string => Boolean(slug))
+              : []
+          );
+
+          filteredCategories = loadedCategories.filter(
+            (category) => !usedCategorySlugs.has(category.categorySlug)
+          );
+        }
+
+        setAvailableCategories(filteredCategories);
+        setNoDataMessage(
+          filteredCategories.length === 0
+            ? "You already have sessions for every available category in this country."
+            : null
+        );
         setShowCountryModal(false);
 
-        return loadedCategories;
+        return filteredCategories;
       }
 
       setAvailableCategories([]);
-      setNoDataMessage("No Visa Categories available for your selected country right now.");
+      setNoDataMessage(
+        shouldFilterExistingSessions
+          ? "You already have sessions for every available category in this country."
+          : "No Visa Categories available for your selected country right now."
+      );
 
       return [];
     } catch (err) {
@@ -290,12 +329,28 @@ export default function InterviewPreparation() {
 
     const restoreIncompleteSession = async () => {
       try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const journeyId = urlParams.get("journey_id");
+        const sessionIdParam = urlParams.get("sessionId");
+        const isNewSessionFlow = urlParams.get("newSession") === "1";
+
+        if (!isNewSessionFlow && !journeyId && !sessionIdParam) {
+          setSessionRestorationAttempted(true);
+          return;
+        }
+
+        if (isNewSessionFlow && !journeyId && !sessionIdParam) {
+          setSessionSource("tool");
+          setIsJourneySession(false);
+          setSessionRestorationAttempted(true);
+          setLoading(false);
+          setLoadingMessage("");
+          return;
+        }
+
         // Set loading immediately to prevent modals from flashing
         setLoading(true);
         setLoadingMessage("Checking for existing sessions...");
-
-        const urlParams = new URLSearchParams(window.location.search);
-        const journeyId = urlParams.get("journey_id");
 
         console.log("Journey ID from URL:", journeyId);
 
@@ -393,8 +448,6 @@ export default function InterviewPreparation() {
 
         // Check for sessionId query parameter first (for completed session revisit)
         // const urlParams = new URLSearchParams(window.location.search);
-        const sessionIdParam = urlParams.get("sessionId");
-
         if (sessionIdParam) {
           setLoading(true);
           setLoadingMessage("Loading your completed interview...");
@@ -973,7 +1026,10 @@ export default function InterviewPreparation() {
           onSelectCategory={handleCategorySelect}
           onNext={handleCategorySelectionNext}
           onBack={() => {
-            router.push("/");
+            setSelectedCategory(null);
+            setError(null);
+            setAvailableCategories([]);
+            setShowCountryModal(true);
           }}
           onPurchaseAgain={
             repurchaseAddonId ? () => redirectToInterviewPrepPurchase(repurchaseAddonId) : undefined
@@ -1260,17 +1316,12 @@ export default function InterviewPreparation() {
 
   return (
     <>
-      {initialCheckDone && !sessionId && (
-        <NarrativeModal
-          isOpen={showWhatsThis}
-          onClose={handleCloseIntro}
-          onComplete={handleCloseIntro}
-          dontShowAgain={dontShowAgain}
-          onDontShowAgainChange={setDontShowAgain}
-          variant="interview-prep"
-        />
-      )}
-
+      {entryMode !== "tool" ? (
+        <div className="site-main-px site-main-py mt-12 flex min-h-[60vh] items-center justify-center">
+          <Loader size="md" text="Loading interview prep..." />
+        </div>
+      ) : (
+        <>
       {initialCheckDone && !sessionId && (
         <CountrySelectionModal
           isOpen={showCountryModal}
@@ -1297,13 +1348,6 @@ export default function InterviewPreparation() {
                 icon_name: "MessageSquare",
               }}
             />
-            <Link
-              href="/interview-prep/my-sessions"
-              className="inline-flex h-8 items-center gap-2 rounded-full border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 shadow-sm transition-all hover:border-[#0d7377]/30 hover:bg-[#f7fffd] hover:text-[#0d7377] hover:shadow-md focus:outline-none focus:ring-2 focus:ring-[#0d7377]/20"
-            >
-              <ListChecks className="h-4 w-4" />
-              My Sessions
-            </Link>
           </div>
         </div>
 
@@ -1354,6 +1398,8 @@ export default function InterviewPreparation() {
           }
         }}
       />
+        </>
+      )}
     </>
   );
 }

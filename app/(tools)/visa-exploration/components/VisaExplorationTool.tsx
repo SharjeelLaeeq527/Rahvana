@@ -656,7 +656,7 @@ function VisaDetailModal({
                 </a>
               </>
             )}
-            . General guidance only — not legal advice.
+            . General guidance only, not legal advice.
           </p>
         </div>
 
@@ -801,7 +801,7 @@ function ResultsScreen({
                 Based on your answers, no visa category matched perfectly.
               </p>
               <p className="text-slate-500 text-[13px] max-w-sm mx-auto leading-relaxed">
-                This doesn't mean there's no path for you — immigration is complex. We strongly
+                This doesn't mean there's no path for you, immigration is complex. We strongly
                 recommend consulting a licensed immigration attorney who can review your full
                 situation.
               </p>
@@ -914,7 +914,7 @@ function ResultsScreen({
                 </>
               );
             })()}
-            {" · General guidance only — not legal advice."}
+            {" · General guidance only, not legal advice."}
           </p>
         </div>
       </div>

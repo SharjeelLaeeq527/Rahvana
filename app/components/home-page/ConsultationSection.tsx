@@ -232,12 +232,12 @@ export default function ConsultationSection({ onConsultationClick }: Consultatio
                 )}
                 {phase === "connecting" && (
                   <p key="connecting" className="status-line">
-                    Connecting…
+                    Connecting...
                   </p>
                 )}
                 {(phase === "opening" || phase === "answered") && (
                   <p key="opening" className="status-line">
-                    Opening consultation booking…
+                    Opening consultation booking...
                   </p>
                 )}
               </div>

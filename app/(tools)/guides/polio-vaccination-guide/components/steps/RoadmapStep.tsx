@@ -69,7 +69,7 @@ export default function RoadmapStep() {
               >
                 NIMS website
               </a>{" "}
-              and select &quot;Other Vaccination – Polio / Yellow Fever&quot;.
+              and select &quot;Other Vaccination, Polio / Yellow Fever&quot;.
             </li>
             <li>
               Enter your{" "}

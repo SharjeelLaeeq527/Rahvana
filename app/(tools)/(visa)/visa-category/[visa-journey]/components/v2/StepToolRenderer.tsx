@@ -154,7 +154,7 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({ dqState, acti
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-90" />
 
         <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[5px]">
-          NVC — Documentary Qualification Received
+          NVC, Documentary Qualification Received
         </div>
 
         <div className="text-[22px] text-white/92 mb-[6px]">
@@ -274,16 +274,16 @@ export const InterviewSchedulingTool: React.FC<{ metadata: any }> = ({ metadata 
       </div>
       <div className="text-[20px] font-bold text-[#0c1b33] mb-4 flex items-center gap-2">
         <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
-        In queue — awaiting interview letter
+        In queue, awaiting interview letter
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="p-4 bg-slate-50 border rounded-xl">
           <div className="text-[10px] uppercase font-bold text-slate-500 mb-1">Official Status</div>
-          <div className="text-lg font-bold">{postData?.official || "—"}</div>
+          <div className="text-lg font-bold">{postData?.official || ""}</div>
         </div>
         <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
           <div className="text-[10px] uppercase font-bold text-blue-600 mb-1">Trend</div>
-          <div className="text-lg font-bold">{postData?.trend || "—"}</div>
+          <div className="text-lg font-bold">{postData?.trend || ""}</div>
         </div>
       </div>
     </div>
@@ -603,7 +603,7 @@ export const MedicalExamTool: React.FC<{
           <div className="flex-1 overflow-y-auto p-12 flex flex-col items-center">
             <div className="w-full max-w-lg">
               <div className="text-[10px] font-bold text-primary uppercase mb-2">
-                Step {medWizardStep + 1} — {medWizardMode === "service" ? "Service" : "Guide"}
+                Step {medWizardStep + 1}, {medWizardMode === "service" ? "Service" : "Guide"}
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-2">{s.heading}</h2>
               <p className="text-sm text-slate-600 leading-relaxed mb-8">{s.sub}</p>
@@ -889,7 +889,7 @@ export const PolioCertificateTool: React.FC<{
           <div className="flex-1 overflow-y-auto p-12 flex flex-col items-center">
             <div className="w-full max-lg">
               <div className="text-[10px] font-bold text-primary uppercase mb-2">
-                Step {polioGuideStep + 1} — {data.guideSteps[polioGuideStep].label}
+                Step {polioGuideStep + 1}, {data.guideSteps[polioGuideStep].label}
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-2">
                 {data.guideSteps[polioGuideStep].heading}
@@ -1243,7 +1243,7 @@ export const PoliceClearanceTool: React.FC<{
           <div className="flex-1 overflow-y-auto p-12 flex flex-col items-center">
             <div className="w-full max-w-lg">
               <div className="text-[10px] font-bold text-primary uppercase mb-2">
-                Step {pccOverlayStep + 1} — {currentSteps[pccOverlayStep].label}
+                Step {pccOverlayStep + 1}, {currentSteps[pccOverlayStep].label}
               </div>
               <h2 className="text-2xl font-bold text-slate-900 mb-2">
                 {currentSteps[pccOverlayStep].heading}

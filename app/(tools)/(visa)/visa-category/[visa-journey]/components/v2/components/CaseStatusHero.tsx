@@ -88,7 +88,7 @@ function getCurrentStage(
       stage: "Medical & Interview",
       status: "Interview Scheduled",
       statusColor: "#0d7377",
-      upcomingEvent: `Interview — ${interviewDate}${tracking.interview_time ? ` at ${tracking.interview_time}` : ""}`,
+      upcomingEvent: `Interview, ${interviewDate}${tracking.interview_time ? ` at ${tracking.interview_time}` : ""}`,
       upcomingDate: interviewDate,
     };
   }

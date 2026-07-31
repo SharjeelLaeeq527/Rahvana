@@ -2802,7 +2802,7 @@
               "fields": [
                 {
                   "k": "Receipt Number",
-                  "v": "—"
+                  "v": ""
                 },
                 {
                   "k": "Tracking",
@@ -3057,12 +3057,12 @@
             ],
             "community": [
               {
-                "quote": "“While our case was quiet, we used the waiting time to clean up all of our civil documents and relationship evidence. When the next stage came, we were not scrambling.”",
+                "quote": "\"While our case was quiet, we used the waiting time to clean up all of our civil documents and relationship evidence. When the next stage came, we were not scrambling.\"",
                 "meta": "Anonymized IR-family journey",
                 "sub": "Illustrative prep pattern · not legal advice"
               },
               {
-                "quote": "“The most helpful thing during the pending phase was having a simple list of what we could do now versus what truly needed to wait.”",
+                "quote": "\"The most helpful thing during the pending phase was having a simple list of what we could do now versus what truly needed to wait.\"",
                 "meta": "Common insight from similar journeys",
                 "sub": "Lightweight, practical, and grounded in real waiting-stage habits"
               }
@@ -3086,7 +3086,7 @@
               {
                 "label": "Step 2 of 4, Understand common pending statuses",
                 "heading": "Learn the difference between waiting and action-required states",
-                "instruction": "Most of the time, a pending case is in a waiting state like “Case Was Received” or “Case Is Being Actively Reviewed.” The important distinction is whether USCIS is simply processing or has asked for something.",
+                "instruction": "Most of the time, a pending case is in a waiting state like \"Case Was Received\" or \"Case Is Being Actively Reviewed.\" The important distinction is whether USCIS is simply processing or has asked for something.",
                 "url": "rahvana.local/status-map",
                 "kicker": "Status guide",
                 "head": "Status meanings",
@@ -3559,7 +3559,7 @@
                 "Generate a PDF answer key for CEAC entry"
               ],
               "button_label": "Launch DS-260 Autoform Filler",
-              "href": "https://www.rahvana.com/visa-forms/ds260/wizard",
+              "href": "/visa-forms/ds260/wizard",
               "note": "Opens in a new tab, return here when finished"
             },
             "support_cards": [
@@ -5019,7 +5019,7 @@
               "Passport (original)",
               "NVC interview appointment letter",
               "Polio vaccination certificate (original)",
-              "Passport-style photos (2–4)",
+              "Passport-style photos (2-4)",
               "Medical exam fee (confirm with physician)",
               "Any prior vaccination records if available"
             ],
@@ -5042,7 +5042,7 @@
                 "heading": "What to bring to the exam",
                 "instruction": "Gather all required items the day before. Arriving without required documents may mean rescheduling.",
                 "vlabel": "Required Items",
-                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Bring checklist</div><div class=\"mock-row\">Passport (original) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">NVC appointment letter <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Polio vaccination certificate <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Passport photos (2–4) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Exam fee (cash/form per physician) <span class=\"mock-badge-green\">Required</span></div></div>"
+                "visual": "<div class=\"mock-card\"><div class=\"mock-title\">Bring checklist</div><div class=\"mock-row\">Passport (original) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">NVC appointment letter <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Polio vaccination certificate <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Passport photos (2-4) <span class=\"mock-badge-green\">Required</span></div><div class=\"mock-row\">Exam fee (cash/form per physician) <span class=\"mock-badge-green\">Required</span></div></div>"
               },
               {
                 "label": "Step 2 of 6",
@@ -5323,11 +5323,11 @@
                       "id": "photos",
                       "icon": "camera",
                       "title": "Passport-Style Photos",
-                      "sub": "2–4 recent passport-style photos meeting embassy specifications",
+                      "sub": "2-4 recent passport-style photos meeting embassy specifications",
                       "sections": [
                         {
                           "t": "What to bring",
-                          "c": "<p>Bring 2–4 recent passport-style photos. Check your specific embassy's photo requirements for size and background specifications. US Embassy Pakistan typically requires standard 2x2 inch photos.</p>"
+                          "c": "<p>Bring 2-4 recent passport-style photos. Check your specific embassy's photo requirements for size and background specifications. US Embassy Pakistan typically requires standard 2x2 inch photos.</p>"
                         }
                       ]
                     },
@@ -5602,7 +5602,7 @@
                   "Current passport (original)",
                   "All prior passports",
                   "Original civil documents (organized packet)",
-                  "Passport-style photos (2–4)",
+                  "Passport-style photos (2-4)",
                   "Petitioner's original Affidavit of Support",
                   "Tax evidence and employment letter if applicable"
                 ]
@@ -5621,7 +5621,7 @@
               }
             ],
             "tips": [
-              "Arrive 20–30 minutes before your appointment time",
+              "Arrive 20-30 minutes before your appointment time",
               "Keep your document packet organized with labeled tabs",
               "Answer only what is asked, concisely and truthfully",
               "Stay calm, nervousness is normal and expected",

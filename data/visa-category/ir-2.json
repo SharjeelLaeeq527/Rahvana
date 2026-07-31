@@ -23,7 +23,7 @@
 
     "step": "You are petitioning a stepchild. A qualifying marriage between the U.S. citizen petitioner and the child's biological parent must have occurred before the child turned 18. See INA § 101(b)(1)(B).",
 
-    "adopted": "You are petitioning an adopted child. The adoption must generally have been finalized before the child turned 16, and the child must have been in the petitioner’s legal custody for at least 2 years. See INA § 101(b)(1)(E). Consult an immigration attorney for complex adoption cases."
+    "adopted": "You are petitioning an adopted child. The adoption must generally have been finalized before the child turned 16, and the child must have been in the petitioner's legal custody for at least 2 years. See INA § 101(b)(1)(E). Consult an immigration attorney for complex adoption cases."
   },
   "stages": [
     {
@@ -38,7 +38,7 @@
           "id": "I-01",
           "stepNumber": 1,
           "name": "Confirm Petitioner Eligibility",
-          "description": "Only U.S. citizens may petition for an immediate relative child (IR-2). Lawful permanent residents cannot petition under the IR-2 immediate relative category — they must use a different family preference category (F-2A). The petitioner must be a U.S. citizen.",
+          "description": "Only U.S. citizens may petition for an immediate relative child (IR-2). Lawful permanent residents cannot petition under the IR-2 immediate relative category, they must use a different family preference category (F-2A). The petitioner must be a U.S. citizen.",
           "actions": [
             "Confirm petitioner is a U.S. citizen (by birth, naturalization, or acquisition)",
             "Locate proof of citizenship: U.S. passport, U.S. birth certificate, or USCIS naturalization/citizenship certificate",
@@ -51,7 +51,7 @@
           "id": "I-02",
           "stepNumber": 2,
           "name": "Understand the IR-2 Visa Category",
-          "description": "IR-2 is the immediate relative immigrant visa category for an unmarried child under 21 of a U.S. citizen. As an immediate relative, there is no visa number waiting line — the visa is available immediately upon I-130 approval and NVC completion.",
+          "description": "IR-2 is the immediate relative immigrant visa category for an unmarried child under 21 of a U.S. citizen. As an immediate relative, there is no visa number waiting line, the visa is available immediately upon I-130 approval and NVC completion.",
           "info": "Note on CR-2: The CR-2 category refers to a child who immigrates as a derivative of a conditional resident (CR-1) parent. If you are petitioning your child directly as a U.S. citizen, the applicable category is IR-2, not CR-2.",
           "actions": [
             "Read the visa category definitions at travel.state.gov (Immigrant Visa Types)",
@@ -64,7 +64,7 @@
         {
           "id": "I-03(a)",
           "stepNumber": 3,
-          "name": "Confirm the Qualifying Relationship — Biological Child",
+          "name": "Confirm the Qualifying Relationship, Biological Child",
           "description": "For a biological child, the petitioner must be the legal (natural) parent. A child born in wedlock requires proof of the parent-child blood relationship and that the parents were married at or before the child's birth.",
           "actions": [
             "Locate the child's birth certificate showing both parents' names",
@@ -79,7 +79,7 @@
         {
           "id": "I-03(b)",
           "stepNumber": 3,
-          "name": "Confirm the Qualifying Relationship — Stepchild",
+          "name": "Confirm the Qualifying Relationship, Stepchild",
           "description": "A stepchild qualifies as a 'child' for immigration purposes if the marriage creating the step-relationship occurred before the child's 18th birthday. The petitioner (the stepparent) must be the U.S. citizen who is married to the child's biological parent. See INA § 101(b)(1)(B).",
           "info": "Important: The qualifying marriage must have taken place BEFORE the child turned 18. If the marriage occurred after the child's 18th birthday, the stepchild does not qualify as an IR-2 under this rule.",
           "actions": [
@@ -96,7 +96,7 @@
         {
           "id": "I-03(c)",
           "stepNumber": 3,
-          "name": "Confirm the Qualifying Relationship — Adopted Child",
+          "name": "Confirm the Qualifying Relationship, Adopted Child",
           "description": "An adopted child qualifies if the adoption was legally completed before the child turned 16 (or before age 18 if the child is an orphan or adopted with a sibling), and the child has been in the legal custody of and resided with the adopting parent(s) for at least 2 years. See INA § 101(b)(1)(E).",
           "info": "Adoption cases can be complex. Requirements vary based on when the adoption was finalized, which country the child is from (Hague Convention vs. non-Hague), and whether the '2-year custody and residence' requirement is met. Consulting an immigration attorney is strongly recommended for adoption-based petitions.",
           "actions": [
@@ -118,7 +118,7 @@
           "description": "Before filing Form I-130, collect all civil documents needed to prove the qualifying relationship and the petitioner's citizenship. Documents not in English must be accompanied by a certified English translation.",
           "actions": [
             "Petitioner's proof of U.S. citizenship (passport, birth certificate, or naturalization certificate)",
-            "Child's birth certificate (certified copy) — for biological or stepchild cases",
+            "Child's birth certificate (certified copy), for biological or stepchild cases",
             "For stepchild: marriage certificate of petitioner and child's biological parent; divorce decrees / death certificates for any prior marriages",
             "For adopted child: final adoption decree; evidence of 2 years of legal custody and joint residence",
             "Certified English translations for all documents not in English",
@@ -136,7 +136,7 @@
             "Complete Part 1 (petitioner information) and Part 3 (beneficiary/child information)",
             "Answer all questions about prior petitions and, if applicable, prior marriages accurately",
             "Sign and date the petition",
-            "Do not use expired or outdated form versions — always download from uscis.gov"
+            "Do not use expired or outdated form versions, always download from uscis.gov"
           ],
           "output": "Form I-130 completed accurately and ready for filing",
           "officialSource": "https://www.uscis.gov/i-130"
@@ -176,7 +176,7 @@
           "actions": [
             "Watch for the I-797C receipt notice by mail (allow several weeks)",
             "Verify the receipt number, petitioner name, and child's name are correct",
-            "Save the receipt number — use it to track case status at egov.uscis.gov",
+            "Save the receipt number, use it to track case status at egov.uscis.gov",
             "Contact USCIS if the notice does not arrive within the expected timeframe per their website"
           ],
           "output": "I-797C receipt notice received with correct case information"
@@ -275,7 +275,7 @@
             "Review the NVC required document list at travel.state.gov for the IR-2 category",
             "Upload child's birth certificate (certified copy)",
             "Upload child's valid passport (copy of bio page)",
-            "Upload police certificate(s) — required if the child is old enough to have lived in any country for 6+ months since age 16",
+            "Upload police certificate(s), required if the child is old enough to have lived in any country for 6+ months since age 16",
             "For stepchild: upload marriage certificate and any divorce decrees or death certificates",
             "For adopted child: upload final adoption decree and supporting custody/residence evidence",
             "Obtain certified English translations for all non-English documents",
@@ -328,7 +328,7 @@
           "description": "The U.S. embassy or consulate sends an appointment letter with the interview date, time, location, and specific instructions. For minor children, a parent or legal guardian must typically accompany the child to the interview.",
           "actions": [
             "Check CEAC and email registered with NVC for the interview appointment notice",
-            "Read the appointment letter carefully — note date, time, location, and instructions",
+            "Read the appointment letter carefully, note date, time, location, and instructions",
             "Review the specific U.S. embassy or consulate's immigrant visa page for local requirements",
             "Confirm the child's passport is valid for the interview date and travel",
             "Confirm a parent or legal guardian is available to accompany a minor child to the interview"
@@ -370,8 +370,8 @@
             "Attend the medical exam on time with all required documents",
             "Complete physical examination and any required lab tests",
             "Receive required vaccinations per CDC Vaccination Requirements for Immigrant Visas (published at cdc.gov/immigrantrefugeehealth)",
-            "Age-appropriate vaccination waivers may apply for very young children — the physician will advise",
-            "If physician provides a sealed envelope: do not open it — bring it to the visa interview",
+            "Age-appropriate vaccination waivers may apply for very young children, the physician will advise",
+            "If physician provides a sealed envelope: do not open it, bring it to the visa interview",
             "Obtain the vaccination record (DS-3025 or equivalent) from the physician"
           ],
           "output": "Medical examination completed; sealed results or electronic submission confirmed"
@@ -440,7 +440,7 @@
           "actions": [
             "Wait for the child's passport to be returned (mail or pickup as specified by the consulate)",
             "Verify the visa stamp: check name, date of birth, visa category (IR-2), and visa expiration date",
-            "The visa expiration date is the last date the child may use the visa to seek U.S. admission — plan travel before this date",
+            "The visa expiration date is the last date the child may use the visa to seek U.S. admission, plan travel before this date",
             "Report any errors to the consulate immediately"
           ],
           "output": "IR-2 immigrant visa affixed to passport and verified as correct"
@@ -453,7 +453,7 @@
             "Receive the sealed immigrant visa packet from the consulate",
             "Do NOT open the sealed packet under any circumstances",
             "Store the packet safely with travel documents",
-            "Note: the USCIS Immigrant Fee (for Permanent Resident Card production) may need to be paid — check current instructions at uscis.gov"
+            "Note: the USCIS Immigrant Fee (for Permanent Resident Card production) may need to be paid, check current instructions at uscis.gov"
           ],
           "output": "Sealed immigrant visa packet in hand and ready for travel"
         },
@@ -465,7 +465,7 @@
             "Check whether the USCIS Immigrant Fee applies at uscis.gov/forms/uscis-immigrant-fee",
             "If required, pay the fee at uscis.gov using the receipt number from the immigrant visa packet",
             "Save the payment receipt",
-            "Confirm the current fee amount at uscis.gov before paying — amounts may change"
+            "Confirm the current fee amount at uscis.gov before paying, amounts may change"
           ],
           "output": "USCIS Immigrant Fee paid (if applicable)"
         },
@@ -525,7 +525,7 @@
             "Confirm USCIS has the correct U.S. mailing address",
             "Check card production status at egov.uscis.gov if the card does not arrive within the expected timeframe",
             "If the card is lost or never received: file Form I-90 (Application to Replace Permanent Resident Card)",
-            "The passport stamp may be used as temporary LPR evidence — verify current USCIS guidance on valid timeframe"
+            "The passport stamp may be used as temporary LPR evidence, verify current USCIS guidance on valid timeframe"
           ],
           "output": "Permanent Resident Card (Green Card) received"
         },
@@ -560,9 +560,9 @@
           "description": "As a lawful permanent resident, the child (and the petitioner on their behalf) should be aware of ongoing obligations to protect LPR status, including maintaining U.S. residence and renewing the Green Card.",
           "actions": [
             "Review USCIS guidance on LPR rights and responsibilities at uscis.gov/green-card",
-            "Note that extended absences from the U.S. (generally over 6 months or 1 year) can jeopardize LPR status — consult an immigration attorney if extended travel is planned",
+            "Note that extended absences from the U.S. (generally over 6 months or 1 year) can jeopardize LPR status, consult an immigration attorney if extended travel is planned",
             "Renew the Green Card before it expires (Form I-90; most Green Cards are valid for 10 years)",
-            "U.S. federal income tax obligations may apply — consult a tax professional"
+            "U.S. federal income tax obligations may apply, consult a tax professional"
           ],
           "output": "LPR rights and responsibilities understood; reminder set for Green Card renewal"
         },

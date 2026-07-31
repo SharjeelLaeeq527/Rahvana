@@ -108,10 +108,10 @@ export async function fetchReceiptForJourney(
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// buildIR1TickerProps — main export
+// buildVisaTickerProps — main export
 // ─────────────────────────────────────────────────────────────────────────────
 
-export function buildIR1TickerProps(
+export function buildVisaTickerProps(
   state: WizardState,
   trackingStatus: Record<string, any>,
   nvcCaseNum: string | undefined,
@@ -119,7 +119,7 @@ export function buildIR1TickerProps(
   uploadedDocuments: UploadedDoc[],
   receiptRecord?: ReceiptRecord | null
 ): { user: CaseFields; journeyContext: NarrativeJourneyContext } {
-  console.log("DEBUG [buildIR1TickerProps] Inputs:", {
+  console.log("DEBUG [buildVisaTickerProps] Inputs:", {
     receiptRecord_type: typeof receiptRecord,
     receiptRecord_value:
       receiptRecord === undefined

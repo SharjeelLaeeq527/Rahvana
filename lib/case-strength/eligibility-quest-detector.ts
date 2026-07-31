@@ -36,10 +36,10 @@ export interface StepRefs {
 }
 
 export const IR1_STEP_REFS: StepRefs = {
-  documents: "Chapter 1 Step 2 — Gather Documents",
-  mainForm: "Chapter 1 Step 4 — Fill I-130",
-  beneForm: "Chapter 1 Step 5 — Fill I-130A",
-  reviewSubmit: "Chapter 1 Step 10 — Review & Submit",
+  documents: "Chapter 1 Step 2, Gather Documents",
+  mainForm: "Chapter 1 Step 4, Fill I-130",
+  beneForm: "Chapter 1 Step 5, Fill I-130A",
+  reviewSubmit: "Chapter 1 Step 10, Review & Submit",
 };
 
 function get(answers: EligibilityAnswers, quest: string, screen: string): string | undefined {
@@ -70,7 +70,7 @@ export function detectCommonEligibilityRisks(
   if (get(answers, "q5", "q5s1") === "yes") {
     flags.push({
       id: "prior_visa_refusal_or_fraud",
-      title: "Past visa issue — disclose it",
+      title: "Past visa issue, disclose it",
       severity: "critical",
       advisory: `Disclose every past visa refusal or issue in ${stepRefs.mainForm} and add supporting documents in ${stepRefs.documents}. Hiding it will hurt your case.`,
       source_basis: "INA 212(a)(6)(C)",
@@ -81,7 +81,7 @@ export function detectCommonEligibilityRisks(
   if (get(answers, "q5", "q5s2") === "yes") {
     flags.push({
       id: "beneficiary_criminal_history",
-      title: "Court / police record — disclose it",
+      title: "Court / police record, disclose it",
       severity: "critical",
       advisory: `Upload certified court documents and police records in ${stepRefs.documents}. Also mention them in ${stepRefs.mainForm}.`,
       source_basis: "INA 212(a)(2)",
@@ -92,7 +92,7 @@ export function detectCommonEligibilityRisks(
   if (get(answers, "q5", "q5s4") === "yes") {
     flags.push({
       id: "unlawful_presence_history",
-      title: "U.S. overstay — waiver needed",
+      title: "U.S. overstay, waiver needed",
       severity: "critical",
       advisory: `A provisional waiver (Form I-601A) will be needed before the interview. Disclose the overstay in ${stepRefs.mainForm} and Rahvana will guide you through the waiver later.`,
       source_basis: "INA 212(a)(9)(B)",
@@ -106,8 +106,8 @@ export function detectCommonEligibilityRisks(
       title: "Income may be too low",
       severity: "warning",
       advisory:
-        "The petitioner's income may not meet the required level. Rahvana will handle the Affidavit of Support (I-864) at NVC stage — start arranging a joint sponsor now if needed.",
-      source_basis: "INA 213A — Form I-864",
+        "The petitioner's income may not meet the required level. Rahvana will handle the Affidavit of Support (I-864) at NVC stage, start arranging a joint sponsor now if needed.",
+      source_basis: "INA 213A, Form I-864",
     });
   }
 

@@ -121,7 +121,7 @@ export default function AboutPage() {
                 variants={itemVariants}
                 className="text-sm sm:text-base md:text-lg 2xl:text-xl leading-relaxed text-gray-600"
               >
-                Rahvana was built for the space between people who belong together — the weeks that
+                Rahvana was built for the space between people who belong together, the weeks that
                 stretch too long, the forms that carry real lives, and the quiet hope families hold
                 onto while they wait to be reunited.
               </motion.p>
@@ -247,19 +247,19 @@ export default function AboutPage() {
           <div className="space-y-5 text-gray-600 leading-relaxed">
             <p>Behind every immigration case is a family trying to become whole again.</p>
             <p>
-              Rahvana was built from that reality — not as an abstract idea, but as a response to
+              Rahvana was built from that reality, not as an abstract idea, but as a response to
               what we saw people we love go through: complex form codes instead of clear language,
               critical steps spread across government sites, and long periods of silence while cases
               moved through opaque systems.
             </p>
             <p>
-              The paperwork is real. So is what it holds — someone waiting at home, children growing
+              The paperwork is real. So is what it holds, someone waiting at home, children growing
               up over video calls, milestones spent apart, and the steady effort of holding hope
               across distance.
             </p>
             <p>That&apos;s Rahvana: the space between people who belong together.</p>
             <p>
-              We're focused on a select set of visa journeys — starting with IR-1 and IR-5 — so we
+              We're focused on a select set of visa journeys, starting with IR-1 and IR-5, so we
               can go deep before expanding further.
             </p>
           </div>
@@ -308,7 +308,7 @@ export default function AboutPage() {
             {
               icon: <Users size={20} />,
               title: "Belonging",
-              desc: "The process makes you prove what should simply be felt — that you belong together.",
+              desc: "The process makes you prove what should simply be felt, that you belong together.",
             },
             {
               icon: <Heart size={20} />,
@@ -463,7 +463,7 @@ export default function AboutPage() {
             <p className="text-gray-600 text-[15px] leading-relaxed mb-8">
               We&apos;re not here to keep you in the feeling of distance. We&apos;re here to help
               you close it. Every tool, every guide, every step in Rahvana is designed to move you
-              forward — toward clarity, toward submission, toward reunion.
+              forward, toward clarity, toward submission, toward reunion.
             </p>
             <Link
               href={explorejourneyHref}
@@ -632,7 +632,7 @@ export default function AboutPage() {
         </h2>
         <p className="text-white/75 text-base md:text-lg max-w-lg mx-auto mb-10 leading-relaxed">
           You don&apos;t have to figure it out alone. Rahvana walks with you through your visa
-          process — one step, one form, one checkpoint at a time.
+          process, one step, one form, one checkpoint at a time.
         </p>
         <div className="flex flex-wrap gap-4 justify-center">
           <Link

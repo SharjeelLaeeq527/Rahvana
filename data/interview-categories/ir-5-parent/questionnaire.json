@@ -34,8 +34,8 @@
           "helpText": "Select the option that best describes the parent's current and prior marital history",
           "options": [
             "Never Married",
-            "Currently Married — No Prior Marriages",
-            "Currently Married — Has Prior Marriage(s)",
+            "Currently Married, No Prior Marriages",
+            "Currently Married, Has Prior Marriage(s)",
             "Divorced or Annulled",
             "Widowed",
             "Separated"
@@ -67,9 +67,9 @@
           "required": true,
           "helpText": "Select the option that best describes their living history",
           "options": [
-            "Yes — Currently Living Together",
-            "Yes — Lived Together Previously",
-            "No — Never Lived Together"
+            "Yes, Currently Living Together",
+            "Yes, Lived Together Previously",
+            "No, Never Lived Together"
           ]
         },
         {

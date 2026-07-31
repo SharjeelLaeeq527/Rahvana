@@ -804,7 +804,7 @@ export function HeroI130StepPanel({
         "Pakistan-context defaults where relevant",
       ],
       button_label: "Launch I-130 Autoform Filler",
-      note: "Opens in a new browser tab — you can return to the roadmap anytime",
+      note: "Opens in a new browser tab, you can return to the roadmap anytime",
     },
   };
 
@@ -823,8 +823,7 @@ export function HeroI130StepPanel({
             Fill Form I-130
           </h1>
           <p className="mb-[28px] max-w-[620px] text-[15px] leading-[1.65] text-[#3a4f63]">
-            Use Rahvana&apos;s guided Autoform Filler to complete the I-130 x for Alien Relative —
-            with structured step-by-step support, clear prompts, and a built-in review flow.
+            Use Rahvana&apos;s guided Autoform Filler to complete the I-130 x for Alien Relative, with structured step-by-step support, clear prompts, and a built-in review flow.
           </p>
 
           <div className="mb-[22px] flex flex-wrap gap-[8px]">
@@ -2374,7 +2373,7 @@ export function GuidedRoadmapScene() {
                 maxWidth: 300,
               }}
             >
-              Start your full journey — all chapters, steps, and built-in tools are free to use.
+              Start your full journey, all chapters, steps, and built-in tools are free to use.
             </motion.p>
 
             <motion.div
@@ -2703,7 +2702,7 @@ const toolContent: Record<string, any> = {
     eyebrow: "Case Review",
     title: "Case Strength Analyzer",
     headline: "Know if your case is ready before the officer does.",
-    subtext: "Review your evidence, spot the gaps, and fix them before you submit — not after.",
+    subtext: "Review your evidence, spot the gaps, and fix them before you submit, not after.",
     benefits: [
       "Evidence gaps flagged instantly",
       "Domicile & financial check",
@@ -2714,9 +2713,9 @@ const toolContent: Record<string, any> = {
     eyebrow: "Post-Interview",
     title: "221(g) Action Planner",
     headline: "Got a 221(g)? Here's exactly what to do next.",
-    subtext: "Step-by-step response guide — right documents, right format, right place.",
+    subtext: "Step-by-step response guide, right documents, right format, right place.",
     benefits: [
-      "Not a denial — act fast",
+      "Not a denial, act fast",
       "Document checklist included",
       "Embassy-specific guidance",
     ],
@@ -2775,7 +2774,7 @@ const toolContent: Record<string, any> = {
     eyebrow: "Photo Requirement",
     title: "Photo Booth",
     headline: "Compliant visa photo. Without the studio visit.",
-    subtext: "Upload any photo — get a 2×2 inch, white background, embassy-ready result.",
+    subtext: "Upload any photo, get a 2×2 inch, white background, embassy-ready result.",
     benefits: ["Auto-crop & format", "Meets USCIS standards", "Download in seconds"],
   },
   pdf: {
@@ -2789,14 +2788,14 @@ const toolContent: Record<string, any> = {
     eyebrow: "Signatures",
     title: "Snap & Sign",
     headline: "Every document needs a signature. Make yours in seconds.",
-    subtext: "Draw, type, or upload your signature — download as PNG and drop it anywhere.",
+    subtext: "Draw, type, or upload your signature, download as PNG and drop it anywhere.",
     benefits: ["Works on any form or doc", "Transparent PNG download", "Mobile & desktop ready"],
   },
   filler: {
     eyebrow: "Form Completion",
     title: "Smart Form Filler",
     headline: "I-130 done in minutes. Not hours.",
-    subtext: "Fill your details once and get a completed, submission-ready PDF — no blank fields.",
+    subtext: "Fill your details once and get a completed, submission-ready PDF, no blank fields.",
     benefits: ["I-130, DS-260, I-864", "Pakistan-specific defaults", "Review before you submit"],
   },
 };
@@ -3856,7 +3855,7 @@ export function StepDocsDemo({ onComplete }: { onComplete: () => void }) {
     {
       id: "doc_nikah_nama",
       name: "Nikah Nama (Original)",
-      subtitle: "Islamic marriage contract — foundational doc",
+      subtitle: "Islamic marriage contract, foundational doc",
       icon: <FileText className="size-5" />,
     },
     {
@@ -4012,7 +4011,7 @@ const signpostTools = [
   {
     id: "pdf-toolkit",
     title: "PDF Tool Kit",
-    description: "Merge • compress • convert • edit — all in one toolkit.",
+    description: "Merge • compress • convert • edit, all in one toolkit.",
     icon: Files,
     color: "#EC4899", // Pink
     href: "/pdf-processing",

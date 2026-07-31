@@ -37,7 +37,7 @@ export const StepCompletionFooter: React.FC<StepCompletionFooterProps> = ({
         {isCompleted ? (
           <>
             <CheckCircle2 size={18} />
-            <span>Completed — Well Done!</span>
+            <span>Completed, Well Done!</span>
           </>
         ) : incompletePrerequisite ? (
           <>

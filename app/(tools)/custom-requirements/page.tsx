@@ -225,7 +225,7 @@ export default function ArrivalGuidePage() {
                           "Who is your petitioner in the U.S.?",
                           "How long have you been married (if marriage-based)?",
                           "Where do you plan to live after entry?",
-                          "What is your spouse’s contact information?",
+                          "What is your spouse's contact information?",
                         ]}
                       />
                       <QuestionSection

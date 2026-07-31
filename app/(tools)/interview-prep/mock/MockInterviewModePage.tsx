@@ -841,7 +841,7 @@ export function MockInterviewModePage({
             <div className="rounded-xl border border-[#0d7377]/15 bg-[#e8f6f6]/60 p-4 mb-8">
               <p className="text-sm text-slate-700 leading-relaxed">
                 <span className="font-semibold text-[#0d7377]">
-                  {isExecutiveTier ? "Heads up —" : "Preview note —"}{" "}
+                  {isExecutiveTier ? "Heads up, " : "Preview note, "}{" "}
                 </span>
                 {isExecutiveTier
                   ? "this mode uses your existing prepared questions. The session will enter fullscreen and listen for your voice."
@@ -1530,8 +1530,8 @@ export function MockInterviewModePage({
                         <p className="text-sm text-slate-400 italic">
                           {isListening
                             ? answeringFlowMode === "pushToTalk"
-                              ? "Hold Space and speak naturally — your answer will appear here as you talk…"
-                              : "Speak naturally — your answer will appear here as you talk…"
+                              ? "Hold Space and speak naturally, your answer will appear here as you talk..."
+                              : "Speak naturally, your answer will appear here as you talk..."
                             : answeringFlowMode === "pushToTalk"
                               ? "Hold Space or press Start Answering to begin recording your answer."
                               : "Press Start Answering to begin recording your answer."}

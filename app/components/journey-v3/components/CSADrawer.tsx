@@ -433,7 +433,7 @@ export function CSADrawer({
                       {/* Required Documents */}
                       <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
                         <h3 className="text-[11px] font-bold uppercase tracking-widest text-slate-500 mb-3">
-                          Required Documents
+                          Completeness · Required Documents
                         </h3>
                         <div className="flex items-center gap-3 mb-2">
                           <div className="flex-1 h-2 bg-slate-200 rounded-full overflow-hidden">
@@ -478,7 +478,7 @@ export function CSADrawer({
                               </div>
                               <div className="text-[10px] text-slate-500">
                                 {evidenceAnswered > 0
-                                  ? `${evidenceAnswered} questions answered — update for deeper insights`
+                                  ? `${evidenceAnswered} questions answered, update for deeper insights`
                                   : "Answer questions across categories for deeper evidence analysis"}
                               </div>
                             </div>
@@ -573,7 +573,7 @@ export function CSADrawer({
                           </div>
                           <div className="text-[10px] text-slate-500">
                             {phase2Answered > 0
-                              ? `${phase2Answered} questions answered — update for deeper analysis`
+                              ? `${phase2Answered} questions answered, update for deeper analysis`
                               : "Answer optional questions for deeper consistency analysis"}
                           </div>
                         </div>

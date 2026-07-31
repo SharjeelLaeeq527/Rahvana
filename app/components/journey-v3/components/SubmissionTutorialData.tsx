@@ -129,7 +129,7 @@ export function SubmissionTutorialOverlay({
                 onClick={onClose}
                 className="flex-1 p-[12px_20px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-bold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center flex items-center justify-center gap-2"
               >
-                Done — return to step
+                Done, return to step
               </button>
             )}
           </div>

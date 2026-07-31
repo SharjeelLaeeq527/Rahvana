@@ -5,18 +5,13 @@ import { E, msg } from "@/lib/errors";
 import crypto from "crypto";
 import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
 import { auditLog, auditBlocked } from "@/lib/security/audit-log";
+import { validateStrongPassword } from "@/lib/security/password";
 
 const supabaseAdmin = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
   { auth: { autoRefreshToken: false, persistSession: false } }
 );
-
-// Strong password validation
-function validatePassword(password: string) {
-  const strongPassword = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,72}$/;
-  return strongPassword.test(password);
-}
 
 // Constant-time comparison
 function safeCompare(a: string, b: string) {
@@ -42,7 +37,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: msg(E.AUTH_RESET_LINK_INVALID) }, { status: 400 });
     }
 
-    if (!validatePassword(password)) {
+    if (!validateStrongPassword(password)) {
       console.warn("reset-password weak password");
       return NextResponse.json({ error: msg(E.AUTH_PASSWORD_TOO_WEAK) }, { status: 400 });
     }

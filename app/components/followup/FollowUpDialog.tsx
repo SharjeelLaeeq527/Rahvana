@@ -395,7 +395,7 @@ export function FollowUpDialog({
                                 ? "Check our comprehensive list of document guides."
                                 : hasGuide
                                   ? `Learn exactly how to obtain your ${selectedDocObj?.label}.`
-                                  : `We don't have a guide for ${selectedDocObj?.label} yet. Please let us know if you need one using the feedback button—your input helps us prioritize new guides!`}
+                                  : `We don't have a guide for ${selectedDocObj?.label} yet. Please let us know if you need one using the feedback button-your input helps us prioritize new guides!`}
                             </p>
                             <Button
                               asChild

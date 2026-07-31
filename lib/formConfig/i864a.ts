@@ -191,7 +191,7 @@ export const sectionIntroMessages = {
   "Part 1: Household Member": {
     greeting: "Let's start with your name.",
     message:
-      "Use the name exactly as it appears on your passport or government ID — including spelling and any accents.",
+      "Use the name exactly as it appears on your passport or government ID, including spelling and any accents.",
   },
   "Part 1: Mailing Address": {
     greeting: "Where does your mail go?",
@@ -206,7 +206,7 @@ export const sectionIntroMessages = {
   "Part 1: ID Numbers": {
     greeting: "A couple of ID numbers.",
     message:
-      "The government uses these to match your paperwork to the right file. Most people only have one of these — and some have none at all. That's completely fine.",
+      "The government uses these to match your paperwork to the right file. Most people only have one of these, and some have none at all. That's completely fine.",
   },
   "Part 2: Relationship": {
     greeting: "How do you know the sponsor?",
@@ -221,12 +221,12 @@ export const sectionIntroMessages = {
   "Part 3: Income": {
     greeting: "Let's talk about your income.",
     message:
-      "This is the main reason you're filling out this form — your income is being added to the sponsor's total. Have a recent pay stub or your most recent tax return handy if you can. Gross income means what you earn before taxes are taken out.",
+      "This is the main reason you're filling out this form, your income is being added to the sponsor's total. Have a recent pay stub or your most recent tax return handy if you can. Gross income means what you earn before taxes are taken out.",
   },
   "Part 4: Tax History": {
     greeting: "Your last three years of tax returns.",
     message:
-      "The government checks this to confirm your income is real. You'll also need to attach a copy of your most recent return.\n\nThe number to find: Open your Form 1040 and look for Line 11 — that's your \"Adjusted Gross Income\" (AGI). That's the figure immigration uses.",
+      "The government checks this to confirm your income is real. You'll also need to attach a copy of your most recent return.\n\nThe number to find: Open your Form 1040 and look for Line 11, that's your \"Adjusted Gross Income\" (AGI). That's the figure immigration uses.",
   },
   "Part 4: Assets": {
     greeting: "Do you own anything that could help?",
@@ -298,18 +298,18 @@ export const formFields: RichField[] = [
     key: "elig_income",
     pdfKey: "",
     label: "Is your income being used to help someone get a green card?",
-    hint: "The sponsor — the person filing the main form — needs to show they earn enough. If their income isn't quite enough, you can add yours. That's what this form is for.",
+    hint: "The sponsor, the person filing the main form, needs to show they earn enough. If their income isn't quite enough, you can add yours. That's what this form is for.",
     type: "radio",
     section: "Quick check",
     options: [
       {
         value: "yes",
-        label: "Yes — they asked me to add my income or savings",
+        label: "Yes, they asked me to add my income or savings",
         sublabel: "You're in the right place.",
       },
       {
         value: "no",
-        label: "No — I'm not sure why I'm filling this out",
+        label: "No, I'm not sure why I'm filling this out",
         sublabel: "Let's figure this out before going further.",
       },
     ],
@@ -327,13 +327,13 @@ export const formFields: RichField[] = [
         value: "household_member",
         label: "I live with the sponsor, or I'm on their taxes",
         sublabel:
-          "Most common — you're a spouse, family member, or someone listed on their tax return.",
+          "Most common, you're a spouse, family member, or someone listed on their tax return.",
       },
       {
         value: "immigrant_contributor",
-        label: "I'm the person being sponsored — and I have income that will keep coming in",
+        label: "I'm the person being sponsored, and I have income that will keep coming in",
         sublabel:
-          "Less common. Only if your income genuinely continues after you move — like remote work or investments.",
+          "Less common. Only if your income genuinely continues after you move, like remote work or investments.",
       },
     ],
   },
@@ -347,7 +347,7 @@ export const formFields: RichField[] = [
     key: "pt1_l1a_FamilyName",
     pdfKey: "pt1_l1a_familyname",
     label: "What is your last name?",
-    help: "Your family name — the one on your passport.",
+    help: "Your family name, the one on your passport.",
     type: "text",
     section: "Part 1: Household Member",
     placeholder: "Last name",
@@ -387,7 +387,7 @@ export const formFields: RichField[] = [
     key: "pt1_l6_CountryofBirth",
     pdfKey: "pt1_l6_countryofbirth",
     label: "Which country were you born in?",
-    help: "Where you were physically born — not where you grew up or currently live.",
+    help: "Where you were physically born, not where you grew up or currently live.",
     type: "country",
     section: "Part 1: Household Member",
     placeholder: "Select a country",
@@ -398,7 +398,7 @@ export const formFields: RichField[] = [
     key: "pt1_l2_InCareOfName",
     pdfKey: "pt1_l2_incareofname",
     label: "Does your mail arrive in someone else's name? (In Care Of)",
-    help: 'Use this if mail comes addressed to "c/o [someone else\'s name]" — for example, "c/o Maria Flores." Leave blank if mail comes in your own name.',
+    help: 'Use this if mail comes addressed to "c/o [someone else\'s name]", for example, "c/o Maria Flores." Leave blank if mail comes in your own name.',
     type: "text",
     section: "Part 1: Mailing Address",
     placeholder: "e.g. Maria Flores",
@@ -465,7 +465,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_mailUSConfirm",
     pdfKey: "",
-    label: "You entered a U.S. address, but you said you live outside the U.S. — just confirming:",
+    label: "You entered a U.S. address, but you said you live outside the U.S., just confirming:",
     hint: "That's fine if you already receive mail there. We just want to make sure it's not a future address.",
     type: "radio",
     section: "Part 1: Mailing Address",
@@ -473,7 +473,7 @@ export const formFields: RichField[] = [
     options: [
       {
         value: "yes_receives",
-        label: "Yes — I already get mail at this U.S. address",
+        label: "Yes, I already get mail at this U.S. address",
         sublabel: "For example: the sponsor's house, a lawyer's office, or a family member's home.",
       },
       {
@@ -498,7 +498,7 @@ export const formFields: RichField[] = [
     pdfKey: "pt1_l2_zipcode",
     label: "ZIP code?",
     help: "Just the 5-digit number. If you see a longer version like 90210-1234, only enter the first five.",
-    find: "Any piece of mail delivered here — it's on the last line of the address.",
+    find: "Any piece of mail delivered here, it's on the last line of the address.",
     example: "If mail shows 90210-1234, enter: 90210",
     type: "text",
     section: "Part 1: Mailing Address",
@@ -510,7 +510,7 @@ export const formFields: RichField[] = [
     key: "pt1_l2_Province",
     pdfKey: "pt1_l2_province",
     label: "Province or region?",
-    help: "The regional equivalent outside the U.S. — like Ontario, Maharashtra, or New South Wales.",
+    help: "The regional equivalent outside the U.S., like Ontario, Maharashtra, or New South Wales.",
     type: "text",
     section: "Part 1: Mailing Address",
     placeholder: "Province or region",
@@ -521,7 +521,7 @@ export const formFields: RichField[] = [
     key: "pt1_l2_PostalCode",
     pdfKey: "pt1_l2_postalcode",
     label: "Postal code?",
-    help: "The local postal code — like M5V 2T6 in Canada or 110001 in India.",
+    help: "The local postal code, like M5V 2T6 in Canada or 110001 in India.",
     type: "text",
     section: "Part 1: Mailing Address",
     placeholder: "e.g. M5V 2T6 / 110001",
@@ -538,8 +538,8 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 1: Home Address",
     options: [
-      { value: "Yes", label: "Yes — that's where I live too" },
-      { value: "No", label: "No — my home address is different" },
+      { value: "Yes", label: "Yes, that's where I live too" },
+      { value: "No", label: "No, my home address is different" },
     ],
     subQuestions: [
       {
@@ -669,21 +669,21 @@ export const formFields: RichField[] = [
     section: "Part 1: ID Numbers",
     options: [
       { value: "Yes", label: "Yes, I have one", sublabel: "You'll enter it next." },
-      { value: "No", label: "No, I don't have one", sublabel: "That's fine — we'll move on." },
+      { value: "No", label: "No, I don't have one", sublabel: "That's fine, we'll move on." },
     ],
     subQuestions: [
       {
         key: "pt1_l7_SSN_value",
         pdfKey: "pt1_l7_ssn",
         label: "What is your Social Security Number?",
-        help: "Enter only the 9 digits — no dashes. Your card shows it as 123-45-6789 but just type the numbers.",
+        help: "Enter only the 9 digits, no dashes. Your card shows it as 123-45-6789 but just type the numbers.",
         find: "Your Social Security card, or the top-left corner of any W-2 form.",
-        example: "Card shows 123-45-6789 — type: 123456789",
+        example: "Card shows 123-45-6789, type: 123456789",
         type: "text",
         section: "Part 1: ID Numbers",
         placeholder: "9 digits, no dashes",
         condition: (data) => data.pt1_hasSSN === "Yes",
-        validate: (v) => (/^\d{9}$/.test(v) ? null : "Exactly 9 digits — no dashes or spaces"),
+        validate: (v) => (/^\d{9}$/.test(v) ? null : "Exactly 9 digits, no dashes or spaces"),
       },
     ],
   },
@@ -697,12 +697,12 @@ export const formFields: RichField[] = [
     options: [
       {
         value: "Yes",
-        label: "Yes — my green card or work permit shows one",
+        label: "Yes, my green card or work permit shows one",
         sublabel: 'The card will say "A-Number" or "USCIS#."',
       },
       {
         value: "No",
-        label: "No — I don't have one of those documents",
+        label: "No, I don't have one of those documents",
         sublabel: "Most people filling out this form won't have one.",
       },
     ],
@@ -711,14 +711,14 @@ export const formFields: RichField[] = [
         key: "pt1_l8_AlienNumber_value",
         pdfKey: "pt1_l8_aliennumber",
         label: "What's your A-Number?",
-        help: 'Type just the digits — leave out the letter "A" at the start. So A123456789 → type 123456789.',
+        help: 'Type just the digits, leave out the letter "A" at the start. So A123456789 → type 123456789.',
         find: 'Front of your green card or work permit (EAD). Look for a number labeled "A-Number" or "USCIS#."',
-        example: "Card says A123456789 — type: 123456789",
+        example: "Card says A123456789, type: 123456789",
         type: "text",
         section: "Part 1: ID Numbers",
         placeholder: "8 or 9 digits (no letter A)",
         condition: (data) => data.pt1_hasANum === "Yes",
-        validate: (v) => (/^\d{8,9}$/.test(v) ? null : "8 or 9 digits only — no letter A"),
+        validate: (v) => (/^\d{8,9}$/.test(v) ? null : "8 or 9 digits only, no letter A"),
       },
     ],
   },
@@ -726,14 +726,14 @@ export const formFields: RichField[] = [
     key: "pt1_l9_USCISOnlineAcctNumber",
     pdfKey: "pt1_l9_uscisonlineacctnumber",
     label: "Do you have a USCIS Online Account Number?",
-    help: "Only assigned if you've personally created an account on my.uscis.gov. It's a website login number — not the same as an A-Number, and not on any physical card. If you've never set one up, you don't have one.",
+    help: "Only assigned if you've personally created an account on my.uscis.gov. It's a website login number, not the same as an A-Number, and not on any physical card. If you've never set one up, you don't have one.",
     type: "radio",
     section: "Part 1: ID Numbers",
     options: [
-      { value: "Yes", label: "Yes — I have an account on my.uscis.gov" },
+      { value: "Yes", label: "Yes, I have an account on my.uscis.gov" },
       {
         value: "No",
-        label: "No — I've never set one up",
+        label: "No, I've never set one up",
         sublabel: "Most people haven't. Select this and move on.",
       },
     ],
@@ -742,7 +742,7 @@ export const formFields: RichField[] = [
         key: "pt1_l9_USCISOnlineAcctNumber_value",
         pdfKey: "pt1_l9_uscisonlineacctnumber",
         label: "Your USCIS Online Account Number?",
-        help: "Usually 8 to 12 digits. It's not on any physical document — only on the website.",
+        help: "Usually 8 to 12 digits. It's not on any physical document, only on the website.",
         find: 'Log into my.uscis.gov → click your name or profile icon top-right → look for "USCIS Online Account Number."',
         type: "text",
         section: "Part 1: ID Numbers",
@@ -763,11 +763,11 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 2: Relationship",
     options: [
-      { value: "spouse", label: "I'm their spouse — husband or wife" },
+      { value: "spouse", label: "I'm their spouse, husband or wife" },
       { value: "child", label: "I'm their son or daughter (age 18 or older)" },
       { value: "parent", label: "I'm their parent" },
       { value: "sibling", label: "I'm their brother or sister" },
-      { value: "other", label: "Something else — doesn't fit the options above" },
+      { value: "other", label: "Something else, doesn't fit the options above" },
     ],
     subQuestions: [
       {
@@ -872,7 +872,7 @@ export const formFields: RichField[] = [
     label: "Sponsor's Social Security Number?",
     help: "The sponsor must be a U.S. citizen or permanent resident, so they'll have an SSN. If you don't know it, ask them directly. Type 9 digits, no dashes.",
     find: "Their Social Security card, or the top-left area of their Form 1040 tax return.",
-    example: "Card shows 123-45-6789 — type: 123456789",
+    example: "Card shows 123-45-6789, type: 123456789",
     type: "text",
     section: "Part 2: Sponsor Information",
     placeholder: "9 digits, no dashes",
@@ -923,8 +923,8 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l6_ApplicantSignature",
     pdfKey: "pt2_l6_applicantsignature",
-    label: "Sponsor — type your full legal name as your signature.",
-    help: "By typing here, the sponsor is making a legal declaration — under penalty of perjury — that everything in this form is true.",
+    label: "Sponsor, type your full legal name as your signature.",
+    help: "By typing here, the sponsor is making a legal declaration, under penalty of perjury, that everything in this form is true.",
     type: "text",
     section: "Part 2: Sponsor Information",
     placeholder: "Sponsor's full legal name",
@@ -1014,7 +1014,7 @@ export const formFields: RichField[] = [
       {
         value: "retired",
         label: "I'm retired",
-        sublabel: "Not working — may have a pension or retirement income.",
+        sublabel: "Not working, may have a pension or retirement income.",
       },
       {
         value: "unemployed",
@@ -1027,7 +1027,7 @@ export const formFields: RichField[] = [
         key: "pt3_l1a_Employed",
         pdfKey: "pt3_l1a_employed",
         label: "What's your job title?",
-        help: "Whatever your employer officially calls your role — as it would appear on a pay stub or offer letter.",
+        help: "Whatever your employer officially calls your role, as it would appear on a pay stub or offer letter.",
         example: "Registered Nurse / Delivery Driver / Accountant / Teacher",
         type: "text",
         section: "Part 3: Income",
@@ -1056,7 +1056,7 @@ export const formFields: RichField[] = [
         type: "radio",
         section: "Part 3: Income",
         options: [
-          { value: "Yes", label: "Yes — I have a second job" },
+          { value: "Yes", label: "Yes, I have a second job" },
           { value: "No", label: "No, just the one" },
         ],
       },
@@ -1133,13 +1133,13 @@ export const formFields: RichField[] = [
     key: "pt3_income",
     pdfKey: "pt3_l2_currentincome",
     label: "How much do you earn in a year, before taxes?",
-    help: "Your gross annual income — total earnings before anything is taken out. Salaried: your annual salary. Hourly: pay × hours per week × 52. Self-employed: total earnings minus business expenses.",
+    help: "Your gross annual income, total earnings before anything is taken out. Salaried: your annual salary. Hourly: pay × hours per week × 52. Self-employed: total earnings minus business expenses.",
     find: "Salaried: your offer letter or pay stub. Hourly: use the calculator below. Self-employed: Line 11 on your most recent Form 1040.",
     type: "text",
     section: "Part 3: Income",
-    placeholder: "Annual income in dollars — numbers only (e.g. 45000)",
+    placeholder: "Annual income in dollars, numbers only (e.g. 45000)",
     isIncomeField: true,
-    validate: (v) => (/^\d+(\.\d{1,2})?$/.test(v) ? null : "Numbers only — like 45000"),
+    validate: (v) => (/^\d+(\.\d{1,2})?$/.test(v) ? null : "Numbers only, like 45000"),
   },
 
   // ══════════════════════════════════════════════════════════════════════════
@@ -1158,12 +1158,12 @@ export const formFields: RichField[] = [
     options: [
       {
         value: "Yes",
-        label: "Yes — I filed U.S. taxes",
+        label: "Yes, I filed U.S. taxes",
         sublabel: "You'll enter the income figures from each return.",
       },
       {
         value: "No",
-        label: "No — I didn't file, or wasn't required to",
+        label: "No, I didn't file, or wasn't required to",
         sublabel: "You can briefly explain why.",
       },
       { value: "na", label: "Not applicable", sublabel: "Skip this section." },
@@ -1187,16 +1187,16 @@ export const formFields: RichField[] = [
     section: "Part 4: Tax History",
     placeholder: "e.g. My income was below the filing threshold",
     condition: (data) => data.pt4_filed === "No",
-    skip: "Skip — no explanation needed",
+    skip: "Skip, no explanation needed",
   },
 
   // Most recent tax year
   {
     key: "pt4_l2a_TaxYear",
     pdfKey: "pt4_l2a_taxyear",
-    label: "Most recent return — what year?",
+    label: "Most recent return, what year?",
     help: "The year on your return is the year you earned the money, not the year you filed. Filed in April 2025 for income earned in 2024? The tax year is 2024.",
-    find: 'The top of your Form 1040 — it says "20__ U.S. Individual Income Tax Return."',
+    find: 'The top of your Form 1040, it says "20__ U.S. Individual Income Tax Return."',
     example: "Filed April 2025 for income earned in 2024 → enter: 2024",
     type: "text",
     section: "Part 4: Tax History",
@@ -1208,14 +1208,14 @@ export const formFields: RichField[] = [
         key: "pt4_l2a_TotalIncome",
         pdfKey: "pt4_l2a_totalincome",
         label: "Income on that return?",
-        help: 'Look at your Form 1040, Line 11 — labeled "Adjusted Gross Income" or "AGI." That\'s the number.',
+        help: 'Look at your Form 1040, Line 11, labeled "Adjusted Gross Income" or "AGI." That\'s the number.',
         find: "Form 1040, Line 11. It's about a third of the way down the first page.",
-        example: "If Line 11 shows $52,100 — type: 52100",
+        example: "If Line 11 shows $52,100, type: 52100",
         type: "text",
         section: "Part 4: Tax History",
-        placeholder: "Dollar amount — numbers only",
+        placeholder: "Dollar amount, numbers only",
         condition: (data) => data.pt4_filed === "Yes",
-        validate: (v) => (/^\d+(\.\d{1,2})?$/.test(v) ? null : "Numbers only — like 52000"),
+        validate: (v) => (/^\d+(\.\d{1,2})?$/.test(v) ? null : "Numbers only, like 52000"),
       },
     ],
   },
@@ -1235,7 +1235,7 @@ export const formFields: RichField[] = [
         key: "pt4_l2b_TotalIncome",
         pdfKey: "pt4_l2b_totalincome",
         label: "Income on that return?",
-        help: "Same as before — Line 11 on that year's Form 1040.",
+        help: "Same as before, Line 11 on that year's Form 1040.",
         find: "Form 1040 for that year, Line 11.",
         type: "text",
         section: "Part 4: Tax History",
@@ -1282,10 +1282,10 @@ export const formFields: RichField[] = [
     options: [
       {
         value: "Yes",
-        label: "Yes — I'd like to include what I own",
+        label: "Yes, I'd like to include what I own",
         sublabel: "Bank accounts, real estate, investments.",
       },
-      { value: "No", label: "No — income covers it, or I'm skipping this" },
+      { value: "No", label: "No, income covers it, or I'm skipping this" },
     ],
   },
   {
@@ -1297,7 +1297,7 @@ export const formFields: RichField[] = [
     example: "Checking $3,000 + Savings $8,000 → enter: 11000",
     type: "text",
     section: "Part 4: Assets",
-    placeholder: "Dollar amount — numbers only",
+    placeholder: "Dollar amount, numbers only",
     condition: (data) => data.pt4_assets === "Yes",
     skip: "Skip this",
     validate: (v) => (!v || /^\d+(\.\d{1,2})?$/.test(v) ? null : "Numbers only"),
@@ -1310,7 +1310,7 @@ export const formFields: RichField[] = [
     example: "Worth $350,000 minus $200,000 still owed → enter: 150000",
     type: "text",
     section: "Part 4: Assets",
-    placeholder: "Dollar amount — numbers only",
+    placeholder: "Dollar amount, numbers only",
     condition: (data) => data.pt4_assets === "Yes",
     skip: "I don't own property",
     isAssetField: true,
@@ -1326,7 +1326,7 @@ export const formFields: RichField[] = [
     example: "Brokerage account shows $15,320 today → enter: 15320",
     type: "text",
     section: "Part 4: Assets",
-    placeholder: "Dollar amount — numbers only",
+    placeholder: "Dollar amount, numbers only",
     condition: (data) => data.pt4_assets === "Yes",
     skip: "I don't have any",
     validate: (v) => (!v || /^\d+(\.\d{1,2})?$/.test(v) ? null : "Numbers only"),
@@ -1367,7 +1367,7 @@ export const formFields: RichField[] = [
   {
     key: "pt5_l1a_FamilyName",
     pdfKey: "pt5_l1a_familyname",
-    label: "Person #1 being sponsored — last name?",
+    label: "Person #1 being sponsored, last name?",
     find: "Their passport.",
     type: "text",
     section: "Part 5: Sponsor Statement",
@@ -1376,7 +1376,7 @@ export const formFields: RichField[] = [
       {
         key: "pt5_l1b_GivenName",
         pdfKey: "pt5_l1b_givenname",
-        label: "Person #1 — first name?",
+        label: "Person #1, first name?",
         type: "text",
         section: "Part 5: Sponsor Statement",
         placeholder: "First name",
@@ -1384,7 +1384,7 @@ export const formFields: RichField[] = [
       {
         key: "pt5_l1c_MiddleName",
         pdfKey: "pt5_l1c_middlename",
-        label: "Person #1 — middle name? (if any)",
+        label: "Person #1, middle name? (if any)",
         type: "text",
         section: "Part 5: Sponsor Statement",
         placeholder: "Middle name",
@@ -1393,7 +1393,7 @@ export const formFields: RichField[] = [
       {
         key: "pt5_l1d_DateOfBirth",
         pdfKey: "pt5_l1d_dateofbirth",
-        label: "Person #1 — date of birth?",
+        label: "Person #1, date of birth?",
         find: "Their passport or birth certificate.",
         type: "date",
         section: "Part 5: Sponsor Statement",
@@ -1410,12 +1410,12 @@ export const formFields: RichField[] = [
     options: [
       {
         value: "Yes",
-        label: "Yes — they have one",
+        label: "Yes, they have one",
         sublabel: "It's on their green card or work permit.",
       },
       {
         value: "No",
-        label: "No — they don't have one yet",
+        label: "No, they don't have one yet",
         sublabel: "That's normal for most first-time applicants.",
       },
     ],
@@ -1430,7 +1430,7 @@ export const formFields: RichField[] = [
         section: "Part 5: Sponsor Statement",
         placeholder: "8 or 9 digits",
         condition: (data) => data.pt5_imm1_hasANum === "Yes",
-        validate: (v) => (/^\d{8,9}$/.test(v) ? null : "8 or 9 digits — no letter A"),
+        validate: (v) => (/^\d{8,9}$/.test(v) ? null : "8 or 9 digits, no letter A"),
       },
     ],
   },
@@ -1452,7 +1452,7 @@ export const formFields: RichField[] = [
         label: "Person #1's USCIS account number?",
         type: "text",
         section: "Part 5: Sponsor Statement",
-        placeholder: "8–12 digits",
+        placeholder: "8-12 digits",
         condition: (data) => data.pt5_imm1_hasUscis === "Yes",
         validate: (v) => (/^\d{8,12}$/.test(v) ? null : "8 to 12 digits"),
       },
@@ -1468,7 +1468,7 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 5: Sponsor Statement",
     options: [
-      { value: "Yes", label: "Yes — there's a second person" },
+      { value: "Yes", label: "Yes, there's a second person" },
       { value: "No", label: "No, just one person" },
     ],
   },
@@ -1477,7 +1477,7 @@ export const formFields: RichField[] = [
   {
     key: "pt5_l2a_FamilyName",
     pdfKey: "pt5_l2a_familyname",
-    label: "Person #2 being sponsored — last name?",
+    label: "Person #2 being sponsored, last name?",
     type: "text",
     section: "Part 5: Sponsor Statement",
     placeholder: "Last name",
@@ -1486,7 +1486,7 @@ export const formFields: RichField[] = [
       {
         key: "pt5_l2b_GivenName",
         pdfKey: "pt5_l2b_givenname",
-        label: "Person #2 — first name?",
+        label: "Person #2, first name?",
         type: "text",
         section: "Part 5: Sponsor Statement",
         placeholder: "First name",
@@ -1494,7 +1494,7 @@ export const formFields: RichField[] = [
       {
         key: "pt5_l2c_MiddleName",
         pdfKey: "pt5_l2c_middlename",
-        label: "Person #2 — middle name? (if any)",
+        label: "Person #2, middle name? (if any)",
         type: "text",
         section: "Part 5: Sponsor Statement",
         placeholder: "Middle name",
@@ -1503,7 +1503,7 @@ export const formFields: RichField[] = [
       {
         key: "pt5_l2d_DateOfBirth",
         pdfKey: "pt5_l2d_dateofbirth",
-        label: "Person #2 — date of birth?",
+        label: "Person #2, date of birth?",
         type: "date",
         section: "Part 5: Sponsor Statement",
       },
@@ -1523,7 +1523,7 @@ export const formFields: RichField[] = [
         label: "Person #2's USCIS Online Account Number? (if any)",
         type: "text",
         section: "Part 5: Sponsor Statement",
-        placeholder: "8–12 digits",
+        placeholder: "8-12 digits",
         skip: "No USCIS account number",
       },
     ],
@@ -1545,7 +1545,7 @@ export const formFields: RichField[] = [
   {
     key: "pt5_l3a_FamilyName",
     pdfKey: "pt5_l3a_familyname",
-    label: "Person #3 being sponsored — last name?",
+    label: "Person #3 being sponsored, last name?",
     type: "text",
     section: "Part 5: Sponsor Statement",
     placeholder: "Last name",
@@ -1554,7 +1554,7 @@ export const formFields: RichField[] = [
       {
         key: "pt5_l3b_GivenName",
         pdfKey: "pt5_l3b_givenname",
-        label: "Person #3 — first name?",
+        label: "Person #3, first name?",
         type: "text",
         section: "Part 5: Sponsor Statement",
         placeholder: "First name",
@@ -1562,7 +1562,7 @@ export const formFields: RichField[] = [
       {
         key: "pt5_l3c_MiddleName",
         pdfKey: "pt5_l3c_middlename",
-        label: "Person #3 — middle name? (if any)",
+        label: "Person #3, middle name? (if any)",
         type: "text",
         section: "Part 5: Sponsor Statement",
         placeholder: "Middle name",
@@ -1571,7 +1571,7 @@ export const formFields: RichField[] = [
       {
         key: "pt5_l3d_DateOfBirth",
         pdfKey: "pt5_l3d_dateofbirth",
-        label: "Person #3 — date of birth?",
+        label: "Person #3, date of birth?",
         type: "date",
         section: "Part 5: Sponsor Statement",
       },
@@ -1591,7 +1591,7 @@ export const formFields: RichField[] = [
         label: "Person #3's USCIS Online Account Number? (if any)",
         type: "text",
         section: "Part 5: Sponsor Statement",
-        placeholder: "8–12 digits",
+        placeholder: "8-12 digits",
         skip: "No USCIS account number",
       },
     ],
@@ -1615,7 +1615,7 @@ export const formFields: RichField[] = [
   {
     key: "pt5_imm4Last",
     pdfKey: "pt5_l4a_familyname",
-    label: "Person #4 being sponsored — last name?",
+    label: "Person #4 being sponsored, last name?",
     type: "text",
     section: "Part 5: Sponsor Statement",
     placeholder: "Last name",
@@ -1624,7 +1624,7 @@ export const formFields: RichField[] = [
       {
         key: "pt5_imm4First",
         pdfKey: "pt5_l4b_givenname",
-        label: "Person #4 — first name?",
+        label: "Person #4, first name?",
         type: "text",
         section: "Part 5: Sponsor Statement",
         placeholder: "First name",
@@ -1632,7 +1632,7 @@ export const formFields: RichField[] = [
       {
         key: "pt5_imm4Mid",
         pdfKey: "pt5_l4c_middlename",
-        label: "Person #4 — middle name?",
+        label: "Person #4, middle name?",
         type: "text",
         section: "Part 5: Sponsor Statement",
         placeholder: "Leave blank if none",
@@ -1641,7 +1641,7 @@ export const formFields: RichField[] = [
       {
         key: "pt5_imm4DOB",
         pdfKey: "pt5_l4d_dateofbirth",
-        label: "Person #4 — date of birth?",
+        label: "Person #4, date of birth?",
         type: "date",
         section: "Part 5: Sponsor Statement",
       },
@@ -1661,7 +1661,7 @@ export const formFields: RichField[] = [
         label: "Person #4's USCIS account number?",
         type: "text",
         section: "Part 5: Sponsor Statement",
-        placeholder: "8–12 digits",
+        placeholder: "8-12 digits",
         skip: "No USCIS account number",
       },
     ],
@@ -1676,8 +1676,8 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 5: Sponsor Statement",
     options: [
-      { value: "english", label: "Yes — they read it themselves in English" },
-      { value: "interpreter", label: "No — someone read and translated it for them" },
+      { value: "english", label: "Yes, they read it themselves in English" },
+      { value: "interpreter", label: "No, someone read and translated it for them" },
     ],
     subQuestions: [
       {
@@ -1714,8 +1714,8 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 5: Sponsor Statement",
     options: [
-      { value: "Yes", label: "Yes — someone helped fill it out" },
-      { value: "No", label: "No — the sponsor did it themselves" },
+      { value: "Yes", label: "Yes, someone helped fill it out" },
+      { value: "No", label: "No, the sponsor did it themselves" },
     ],
     subQuestions: [
       {
@@ -1761,8 +1761,8 @@ export const formFields: RichField[] = [
   {
     key: "pt5_sponsorSig",
     pdfKey: "pt2_l6_applicantsignature",
-    label: "Sponsor — type your full legal name as your signature.",
-    help: "By typing here, the sponsor is making a legal declaration — under penalty of perjury — that everything in this form is true.",
+    label: "Sponsor, type your full legal name as your signature.",
+    help: "By typing here, the sponsor is making a legal declaration, under penalty of perjury, that everything in this form is true.",
     type: "text",
     section: "Part 5: Sponsor Statement",
     placeholder: "Sponsor's full legal name",
@@ -1787,8 +1787,8 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 6: Household Statement",
     options: [
-      { value: "english", label: "Yes — I read it myself in English" },
-      { value: "interpreter", label: "No — someone translated it for me" },
+      { value: "english", label: "Yes, I read it myself in English" },
+      { value: "interpreter", label: "No, someone translated it for me" },
     ],
     subQuestions: [
       {
@@ -1865,7 +1865,7 @@ export const formFields: RichField[] = [
     key: "pt6_sig",
     pdfKey: "pt6_l6_applicantsignature",
     label: "Type your full legal name as your signature.",
-    help: "By typing your name here, you're making a legal declaration — under penalty of perjury — that everything in this form is complete and true.",
+    help: "By typing your name here, you're making a legal declaration, under penalty of perjury, that everything in this form is complete and true.",
     type: "text",
     section: "Part 6: Household Statement",
     placeholder: "Your full legal name",
@@ -1890,8 +1890,8 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 7: Interpreter",
     options: [
-      { value: "Yes", label: "Yes — someone translated the form" },
-      { value: "No", label: "No — everyone read it in English directly" },
+      { value: "Yes", label: "Yes, someone translated the form" },
+      { value: "No", label: "No, everyone read it in English directly" },
     ],
   },
   {
@@ -1967,7 +1967,7 @@ export const formFields: RichField[] = [
   {
     key: "pt7_sig",
     pdfKey: "pt7_l8_interpreterssignature",
-    label: "Interpreter — type your full name as your signature.",
+    label: "Interpreter, type your full name as your signature.",
     type: "text",
     section: "Part 7: Interpreter",
     placeholder: "Interpreter's full legal name",
@@ -1994,8 +1994,8 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 8: Preparer",
     options: [
-      { value: "Yes", label: "Yes — someone filled it out for me" },
-      { value: "No", label: "No — I filled it out myself" },
+      { value: "Yes", label: "Yes, someone filled it out for me" },
+      { value: "No", label: "No, I filled it out myself" },
     ],
   },
   {
@@ -2063,7 +2063,7 @@ export const formFields: RichField[] = [
   {
     key: "pt8_sig",
     pdfKey: "pt8_l6_preparerssignature",
-    label: "Preparer — type your full name as your signature.",
+    label: "Preparer, type your full name as your signature.",
     type: "text",
     section: "Part 8: Preparer",
     placeholder: "Full legal name",
@@ -2091,14 +2091,14 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 9: Additional Info",
     options: [
-      { value: "Yes", label: "Yes — I need to continue an earlier answer" },
-      { value: "No", label: "No — everything fit fine" },
+      { value: "Yes", label: "Yes, I need to continue an earlier answer" },
+      { value: "No", label: "No, everything fit fine" },
     ],
     subQuestions: [
       {
         key: "pt9_l0_Iamfluent",
         pdfKey: "pt9_l0_iamfluent",
-        label: 'Interpreter\'s certification — "I am fluent in English and [language]..."',
+        label: 'Interpreter\'s certification, "I am fluent in English and [language]..."',
         type: "text",
         section: "Part 9: Additional Info",
         placeholder: "Language (e.g. Spanish)",
@@ -2165,7 +2165,7 @@ export const formFields: RichField[] = [
   {
     key: "pt11_l4a_PageNumber",
     pdfKey: "pt11_l4a_pagenumber",
-    label: "Continuation entry 2 — page number?",
+    label: "Continuation entry 2, page number?",
     type: "text",
     section: "Part 9: Additional Info",
     placeholder: "Page number",
@@ -2219,7 +2219,7 @@ export const formFields: RichField[] = [
   {
     key: "pt11_l5a_PageNumber",
     pdfKey: "pt11_l5a_pagenumber",
-    label: "Continuation entry 3 — page number?",
+    label: "Continuation entry 3, page number?",
     type: "text",
     section: "Part 9: Additional Info",
     placeholder: "Page number",
@@ -2275,7 +2275,7 @@ export const formFields: RichField[] = [
   {
     key: "pt11_l6a_PageNumber",
     pdfKey: "pt11_l6a_pagenumber",
-    label: "Continuation entry 4 — page number?",
+    label: "Continuation entry 4, page number?",
     type: "text",
     section: "Part 9: Additional Info",
     placeholder: "Page number",

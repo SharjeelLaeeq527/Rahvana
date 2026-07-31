@@ -1,6 +1,6 @@
 {
   "title": "Australia Student Visa Journey",
-  "description": "Step-by-step roadmap for Pakistani students applying for an Australian Student visa (Subclass 500) — from choosing your course and receiving your CoE through arriving in Australia and maintaining your visa conditions.",
+  "description": "Step-by-step roadmap for Pakistani students applying for an Australian Student visa (Subclass 500), from choosing your course and receiving your CoE through arriving in Australia and maintaining your visa conditions.",
   "disclaimer": "Informational guidance only. Australian visa policies and requirements can change. Always confirm current requirements with the Department of Home Affairs before taking any action.",
   "disclaimerLinks": [
     {
@@ -9,7 +9,7 @@
     }
   ],
   "visaOverview": {
-    "title": "Student Visa – Subclass 500",
+    "title": "Student Visa, Subclass 500",
     "text": "The Australian Student visa (Subclass 500) allows you to study a full-time registered course at an Australian education provider. You must have a Confirmation of Enrolment (CoE) from a registered provider and meet the Genuine Student requirement. Applications are lodged online through ImmiAccount on the Home Affairs website.",
     "flag": "🇦🇺",
     "link": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500",
@@ -24,11 +24,11 @@
       "time": "Before applying",
       "sources": [
         {
-          "label": "Home Affairs – Student visa Subclass 500",
+          "label": "Home Affairs, Student visa Subclass 500",
           "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500"
         },
         {
-          "label": "CRICOS – Registered providers",
+          "label": "CRICOS, Registered providers",
           "url": "https://www.cricos.education.gov.au/"
         }
       ],
@@ -70,15 +70,15 @@
       "time": "Before lodging",
       "sources": [
         {
-          "label": "Home Affairs – Genuine Student requirement",
+          "label": "Home Affairs, Genuine Student requirement",
           "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/genuine-student-requirement"
         },
         {
-          "label": "Home Affairs – Student visa documents",
+          "label": "Home Affairs, Student visa documents",
           "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/documents"
         },
         {
-          "label": "Home Affairs – Financial capacity",
+          "label": "Home Affairs, Financial capacity",
           "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/financial-capacity"
         }
       ],
@@ -100,9 +100,9 @@
           "name": "Prepare Passport and Identity Documents",
           "description": "Your current Pakistani passport is required for the Student visa application. Confirm the current passport and identity document requirements on the Home Affairs website.",
           "actions": [
-            "Confirm your Pakistani passport is valid — check current requirements at immi.homeaffairs.gov.au",
+            "Confirm your Pakistani passport is valid, check current requirements at immi.homeaffairs.gov.au",
             "Scan your passport biographical page at high resolution for upload",
-            "Review whether previous passports need to be provided — check current guidance on Home Affairs",
+            "Review whether previous passports need to be provided, check current guidance on Home Affairs",
             "Prepare a recent passport-size photograph meeting Home Affairs specifications",
             "Review the current identity document requirements at immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/documents"
           ],
@@ -144,19 +144,19 @@
       "time": "Before or after lodging",
       "sources": [
         {
-          "label": "Home Affairs – Health requirement",
+          "label": "Home Affairs, Health requirement",
           "url": "https://immi.homeaffairs.gov.au/help-support/meeting-our-requirements/health"
         },
         {
-          "label": "Home Affairs – Health examinations",
+          "label": "Home Affairs, Health examinations",
           "url": "https://immi.homeaffairs.gov.au/help-support/meeting-our-requirements/health/health-examinations"
         },
         {
-          "label": "Home Affairs – Biometrics",
+          "label": "Home Affairs, Biometrics",
           "url": "https://immi.homeaffairs.gov.au/help-support/meeting-our-requirements/biometrics"
         },
         {
-          "label": "Home Affairs – OSHC",
+          "label": "Home Affairs, OSHC",
           "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/overseas-student-health-cover"
         }
       ],
@@ -165,13 +165,13 @@
           "id": "III-01",
           "name": "Undergo the Required Health Examination",
           "description": "Most Student visa applicants are required to undergo a health examination with an approved panel physician, booked using the Health Assessment Processing (HAP) ID generated at or after lodgement of the visa application.",
-          "info": "Home Affairs typically issues a HAP ID when you lodge your application — you use it to book the health examination with an approved panel physician in Pakistan. Review the current health examination guidance at immi.homeaffairs.gov.au/help-support/meeting-our-requirements/health/health-examinations.",
+          "info": "Home Affairs typically issues a HAP ID when you lodge your application, you use it to book the health examination with an approved panel physician in Pakistan. Review the current health examination guidance at immi.homeaffairs.gov.au/help-support/meeting-our-requirements/health/health-examinations.",
           "actions": [
             "Review the current health examination requirements at immi.homeaffairs.gov.au/help-support/meeting-our-requirements/health/health-examinations",
             "Find approved panel physicians in Pakistan using the Home Affairs panel doctor search tool",
             "Once you have your HAP ID (from ImmiAccount after lodgement): book the health examination at an approved panel physician",
             "Attend all required components of the examination as directed by the panel physician",
-            "Results are submitted electronically by the panel physician to Home Affairs — no separate submission required"
+            "Results are submitted electronically by the panel physician to Home Affairs, no separate submission required"
           ],
           "output": "Health examination completed at an approved panel physician; results transmitted to Home Affairs"
         },
@@ -179,7 +179,7 @@
           "id": "III-02",
           "name": "Provide Biometrics (if requested)",
           "description": "Home Affairs may request biometrics (fingerprints and photograph) as part of your application. If requested, you will be directed through ImmiAccount to provide them at a designated location.",
-          "info": "Not all applicants are asked to provide biometrics — Home Affairs will notify you through ImmiAccount. For Pakistan-based applicants, if biometrics are requested, check the instructions in your ImmiAccount notification for the current designated facility.",
+          "info": "Not all applicants are asked to provide biometrics, Home Affairs will notify you through ImmiAccount. For Pakistan-based applicants, if biometrics are requested, check the instructions in your ImmiAccount notification for the current designated facility.",
           "actions": [
             "Monitor your ImmiAccount for any biometrics request",
             "If biometrics are requested: follow the instructions in your ImmiAccount notification carefully",
@@ -213,15 +213,15 @@
       "time": "Online via ImmiAccount",
       "sources": [
         {
-          "label": "Home Affairs – ImmiAccount",
+          "label": "Home Affairs, ImmiAccount",
           "url": "https://immi.homeaffairs.gov.au/help-support/tools-and-tips/online-tools/immiaccount"
         },
         {
-          "label": "Home Affairs – Visa fees",
+          "label": "Home Affairs, Visa fees",
           "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/fees-and-charges/current-visa-pricing/student"
         },
         {
-          "label": "Home Affairs – How to apply",
+          "label": "Home Affairs, How to apply",
           "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/how-to-apply"
         }
       ],
@@ -229,7 +229,7 @@
         {
           "id": "IV-01",
           "name": "Create or Log In to ImmiAccount",
-          "description": "All Australian Student visa applications are lodged online through ImmiAccount — the Department of Home Affairs online portal. Create an account if you do not already have one.",
+          "description": "All Australian Student visa applications are lodged online through ImmiAccount, the Department of Home Affairs online portal. Create an account if you do not already have one.",
           "actions": [
             "Go to immi.homeaffairs.gov.au and navigate to ImmiAccount",
             "Create an ImmiAccount using your email address if you do not have one",
@@ -245,7 +245,7 @@
           "actions": [
             "In ImmiAccount, select New Application and choose Student visa (Subclass 500)",
             "Enter your CoE number(s) as requested",
-            "Complete all personal details — name, date of birth, and passport number must exactly match your documents",
+            "Complete all personal details, name, date of birth, and passport number must exactly match your documents",
             "Respond fully and honestly to the Genuine Student requirement questions",
             "Answer all travel history, immigration history, and character questions accurately",
             "Review all sections carefully before proceeding"
@@ -271,13 +271,13 @@
           "id": "IV-04",
           "name": "Pay the Visa Application Charge and Lodge",
           "description": "After completing the form and uploading documents, pay the visa application charge and submit the application. The charge is non-refundable even if the application is refused.",
-          "warn": "Check the current Student visa Subclass 500 application charge at immi.homeaffairs.gov.au/visas/getting-a-visa/fees-and-charges/current-visa-pricing/student before paying — do not rely on unofficial sources.",
+          "warn": "Check the current Student visa Subclass 500 application charge at immi.homeaffairs.gov.au/visas/getting-a-visa/fees-and-charges/current-visa-pricing/student before paying, do not rely on unofficial sources.",
           "actions": [
             "Verify the current visa application charge at the official Home Affairs fee page",
             "Pay the visa application charge online within ImmiAccount",
             "Save the payment receipt",
-            "Lodge (submit) the application — record your Transaction Reference Number (TRN)",
-            "Note your HAP ID from the confirmation — you will use it to book your health examination if not already done"
+            "Lodge (submit) the application, record your Transaction Reference Number (TRN)",
+            "Note your HAP ID from the confirmation, you will use it to book your health examination if not already done"
           ],
           "output": "Application lodged; TRN and HAP ID obtained"
         }
@@ -291,11 +291,11 @@
       "time": "After lodgement",
       "sources": [
         {
-          "label": "Home Affairs – Processing times",
+          "label": "Home Affairs, Processing times",
           "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/processing-times"
         },
         {
-          "label": "VEVO – Check visa details",
+          "label": "VEVO, Check visa details",
           "url": "https://immi.homeaffairs.gov.au/visas/already-have-a-visa/check-visa-details-and-conditions/check-conditions-online"
         }
       ],
@@ -316,11 +316,11 @@
         {
           "id": "V-02",
           "name": "Receive the Visa Grant Notice",
-          "description": "If approved, Home Affairs issues a visa grant letter to your ImmiAccount and registered email. The visa is electronic — there is no physical stamp in your passport.",
+          "description": "If approved, Home Affairs issues a visa grant letter to your ImmiAccount and registered email. The visa is electronic, there is no physical stamp in your passport.",
           "info": "Your Student visa is an electronic visa. Verify and share your visa status using VEVO (Visa Entitlement Verification Online) at immi.homeaffairs.gov.au/visas/already-have-a-visa/check-visa-details-and-conditions/check-conditions-online. The grant letter shows your visa validity and conditions.",
           "actions": [
             "Check ImmiAccount and your registered email for the visa grant notification",
-            "Read the visa grant letter carefully — note visa start date, end date, and conditions",
+            "Read the visa grant letter carefully, note visa start date, end date, and conditions",
             "Verify your visa details using VEVO",
             "Save a copy of the grant letter",
             "If refused: read the refusal notice for the stated reasons and review your options with reference to Home Affairs guidance"
@@ -337,11 +337,11 @@
       "time": "Ongoing",
       "sources": [
         {
-          "label": "Home Affairs – Student visa conditions",
+          "label": "Home Affairs, Student visa conditions",
           "url": "https://immi.homeaffairs.gov.au/visas/getting-a-visa/visa-listing/student-500/conditions"
         },
         {
-          "label": "VEVO – Check visa details",
+          "label": "VEVO, Check visa details",
           "url": "https://immi.homeaffairs.gov.au/visas/already-have-a-visa/check-visa-details-and-conditions/check-conditions-online"
         }
       ],
@@ -362,10 +362,10 @@
         {
           "id": "VI-02",
           "name": "Arrive in Australia and Clear Australian Border Force",
-          "description": "On arrival in Australia, present your valid passport to Australian Border Force. Your visa is electronic — no physical label is needed for entry.",
+          "description": "On arrival in Australia, present your valid passport to Australian Border Force. Your visa is electronic, no physical label is needed for entry.",
           "actions": [
             "Present your valid Pakistani passport to Australian Border Force on arrival",
-            "Your visa is electronic — carry your grant letter in case questions arise",
+            "Your visa is electronic, carry your grant letter in case questions arise",
             "Obtain and complete any incoming passenger card as required by current ABF process",
             "Proceed through customs following ABF instructions",
             "Confirm your entry on VEVO after arrival"
@@ -380,7 +380,7 @@
             "Attend your institution's orientation and complete enrolment by the required date",
             "Confirm your enrolment matches your CoE course",
             "Maintain active attendance and satisfactory academic progress per your institution's requirements",
-            "Contact your institution before making any changes to your course, provider, or deferral — understand the visa implications first"
+            "Contact your institution before making any changes to your course, provider, or deferral, understand the visa implications first"
           ],
           "output": "Enrolled in CRICOS course; attendance and enrolment requirements understood"
         },

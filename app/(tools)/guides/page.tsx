@@ -655,7 +655,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
           <>
             <ResourceSectionHeader
               title="Browse Guides"
-              subtitle="Explore more guides — preview them or unlock the full version."
+              subtitle="Explore more guides, preview them or unlock the full version."
               className="mt-12"
             />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 pt-6">
