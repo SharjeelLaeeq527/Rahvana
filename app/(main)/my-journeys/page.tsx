@@ -448,10 +448,10 @@ function JourneyCard({
           onOpen();
         }
       }}
-      className="relative flex h-full cursor-pointer flex-col overflow-hidden rounded-[28px] border border-white/80 bg-white/75 p-0 shadow-[0_18px_55px_rgba(15,61,63,0.08)] backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 hover:border-[#14a0a6]/30 hover:shadow-[0_28px_70px_rgba(13,115,119,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14a0a6]/50"
+      className="relative flex h-full cursor-pointer flex-col overflow-hidden rounded-3xl border border-white/80 bg-white/75 p-0 shadow-[0_18px_55px_rgba(15,61,63,0.08)] backdrop-blur-xl transition-all duration-500 hover:-translate-y-1.5 hover:border-[#14a0a6]/30 hover:shadow-[0_28px_70px_rgba(13,115,119,0.16)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#14a0a6]/50"
     >
       {/* Image */}
-      <div className="relative h-52 overflow-hidden bg-[#dbeeee]">
+      <div className="relative h-44 overflow-hidden bg-[#dbeeee]">
         <Image
           src={meta.image}
           alt={`${meta.name} journey cover`}
@@ -479,7 +479,7 @@ function JourneyCard({
         </div>
 
         {/* Image title */}
-        <div className="absolute inset-x-0 bottom-0 p-5 md:p-6">
+        <div className="absolute inset-x-0 bottom-0 p-5">
           <p className="mb-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-[#8ff5e6]">
             Immigration pathway
           </p>
@@ -490,16 +490,16 @@ function JourneyCard({
         </div>
       </div>
 
-      <CardContent className="relative flex flex-1 flex-col p-5 md:p-6">
+      <CardContent className="relative flex flex-1 flex-col px-4 py-2">
         {/* Decorative card glow */}
         <div className="pointer-events-none absolute -right-16 -top-20 h-40 w-40 rounded-full bg-[#32e0c4]/8 blur-3xl" />
 
-        <p className="relative line-clamp-2 min-h-12 text-sm leading-6 text-slate-600">
+        <p className="relative line-clamp-2 min-h-[44px] text-sm leading-6 text-slate-600">
           {meta.description}
         </p>
 
         {/* Progress block */}
-        <div className="relative mt-6 rounded-[20px] border border-[#0d7377]/8 bg-linear-to-br from-[#f2fbfb] to-white p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
+        <div className="relative mt-4 rounded-[20px] border border-[#0d7377]/8 bg-linear-to-br from-[#f2fbfb] to-white px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.9)]">
           <div className="flex items-end justify-between gap-4">
             <div>
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-slate-500">
@@ -522,7 +522,7 @@ function JourneyCard({
             </div>
           </div>
 
-          <div className="mt-4 h-2.5 overflow-hidden rounded-full bg-[#dceeed] shadow-inner">
+          <div className="mt-3 h-2.5 overflow-hidden rounded-full bg-[#dceeed] shadow-inner">
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${progress}%` }}
@@ -538,7 +538,7 @@ function JourneyCard({
         </div>
 
         {/* Activity */}
-        <div className="relative mt-5 flex items-center justify-between gap-3 border-t border-slate-100 pt-4">
+        <div className="relative mt-4 flex items-center justify-between gap-3 border-t border-slate-100 pt-3">
           <div className="flex min-w-0 items-center gap-2.5 text-xs text-slate-500">
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#e8f6f6] text-[#0d7377]">
               {progress >= 100 ? (
