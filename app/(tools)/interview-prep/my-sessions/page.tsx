@@ -3,7 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { E, msg } from "@/lib/errors";
-import { UsersRound, Plus, AlertTriangle, CheckCircle, BarChart3, Heart, FileText } from "lucide-react";
+import {
+  UsersRound,
+  Plus,
+  AlertTriangle,
+  CheckCircle,
+  BarChart3,
+  Heart,
+  FileText,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Pagination from "@/components/ui/pagination";
 import { Loader } from "@/components/ui/spinner";
@@ -12,6 +20,7 @@ import { DataTable, Column } from "@/app/components/shared/table";
 import { FilterPanel } from "@/app/components/shared/FilterPanel";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 type SessionStatus = "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
 type TimeFilter = "all" | "today" | "week" | "month";
@@ -27,7 +36,7 @@ interface SessionWithDetails {
   answerCount: number;
   questionCount: number;
   completionPercentage: number;
-  source: "tool" | "journey";
+  // source: "tool" | "journey";
   journey_id?: string | null;
 }
 
@@ -215,9 +224,9 @@ export default function MyInterviewSessions() {
     }
 
     // Source filter
-    if (selectedSource !== "all") {
-      filtered = filtered.filter((s) => s.source === selectedSource);
-    }
+    // if (selectedSource !== "all") {
+    //   filtered = filtered.filter((s) => s.source === selectedSource);
+    // }
 
     setFilteredSessions(filtered);
     setCurrentPage(1);
@@ -285,20 +294,20 @@ export default function MyInterviewSessions() {
         );
       },
     },
-    {
-      key: "source",
-      label: "Source",
-      width: "15%",
-      render: (session) => (
-        <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
-            session.source === "tool" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"
-          }`}
-        >
-          {session.source === "tool" ? "Tool" : "Journey"}
-        </span>
-      ),
-    },
+    // {
+    //   key: "source",
+    //   label: "Source",
+    //   width: "15%",
+    //   render: (session) => (
+    //     <span
+    //       className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${
+    //         session.source === "tool" ? "bg-blue-100 text-blue-800" : "bg-green-100 text-green-800"
+    //       }`}
+    //     >
+    //       {session.source === "tool" ? "Tool" : "Journey"}
+    //     </span>
+    //   ),
+    // },
     {
       key: "created",
       label: "Created",
@@ -380,6 +389,17 @@ export default function MyInterviewSessions() {
           <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             Track and manage all your interview preparation sessions
           </p>
+
+          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
+            <QuickAccessButton
+              item={{
+                id: "interview-prep",
+                title: "Interview Prep",
+                href: "/interview-prep",
+                icon_name: "MessageSquare",
+              }}
+            />
+          </div>
         </header>
 
         <div className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4">
@@ -411,16 +431,16 @@ export default function MyInterviewSessions() {
                     ],
                     value: selectedStatus,
                   },
-                  {
-                    key: "source",
-                    label: "Source",
-                    options: [
-                      { value: "all", label: "All Sources" },
-                      { value: "tool", label: "Tool" },
-                      { value: "journey", label: "Journey" },
-                    ],
-                    value: selectedSource,
-                  },
+                  // {
+                  //   key: "source",
+                  //   label: "Source",
+                  //   options: [
+                  //     { value: "all", label: "All Sources" },
+                  //     { value: "tool", label: "Tool" },
+                  //     { value: "journey", label: "Journey" },
+                  //   ],
+                  //   value: selectedSource,
+                  // },
                   {
                     key: "time",
                     label: "Created",
@@ -437,7 +457,6 @@ export default function MyInterviewSessions() {
                   setSelectedCategory(filters.category || "all");
                   setSelectedStatus(filters.status || "all");
                   setSelectedTime((filters.time || "all") as TimeFilter);
-                  setSelectedSource(filters.source || "all");
                 }}
                 itemCount={filteredSessions.length}
                 totalCount={sessions.length}
