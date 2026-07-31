@@ -231,7 +231,7 @@ export const PoliceClearanceTool: React.FC<PoliceClearanceToolProps> = ({
       {pccSaved && !pccReceived && (
         <div className="bg-amber-50 border border-amber-200 p-5 rounded-2xl flex flex-col gap-4">
           <div>
-            <div className="text-sm font-bold text-amber-900 mb-1">📌 {data.pendingCard.title}</div>
+            <div className="text-sm font-bold text-amber-900 mb-1">{data.pendingCard.title}</div>
             <div className="text-xs text-amber-800 leading-relaxed">{data.pendingCard.body}</div>
           </div>
           <button

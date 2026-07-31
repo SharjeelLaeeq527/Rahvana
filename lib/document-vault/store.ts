@@ -173,8 +173,8 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
         }
       }
 
-      // Fetch config from API
-      const configResponse = await fetch("/api/documents/config");
+      // Fetch config from API (filtered by journey if provided)
+      const configResponse = await fetch(journeyId ? `/api/documents/config?journeyId=${journeyId}` : "/api/documents/config");
       const configData = await configResponse.json();
       const config = configData.config;
 
@@ -248,12 +248,18 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
     }
 
     const { uploadedDocuments } = get();
+    const journeyId = config.journeyId !== undefined ? config.journeyId : get().currentJourneyId;
+    const configWithJourney = {
+      ...config,
+      journeyId,
+    };
+
     const uploadedDocIds = uploadedDocuments.map((d) => d.documentDefId);
-    const requiredDocs = generateRequiredDocuments(config, true, uploadedDocuments); // Include optional documents
+    const requiredDocs = generateRequiredDocuments(configWithJourney, true, uploadedDocuments); // Include optional documents
 
     // Set config in store IMMEDIATELY — don't wait for DB
     set({
-      config,
+      config: configWithJourney,
       requiredDocuments: requiredDocs,
     });
 
@@ -262,7 +268,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
       await fetch("/api/documents/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config),
+        body: JSON.stringify(configWithJourney),
       });
     } catch (error) {
       console.error("Failed to persist config to DB (config still active for session):", error);
@@ -370,7 +376,13 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
       set({ isReloadingDocs: true, currentJourneyId: targetJourneyId || null });
     }
     try {
-      // Fetch documents from API (filtered by journey if provided)
+      // 1. Fetch config from API for this journey
+      const configUrl = targetJourneyId ? `/api/documents/config?journeyId=${targetJourneyId}` : "/api/documents/config";
+      const configResponse = await fetch(configUrl);
+      const configData = await configResponse.json();
+      const config = configData.config;
+
+      // 2. Fetch documents from API (filtered by journey if provided)
       const url = targetJourneyId ? `/api/documents/list?journeyId=${targetJourneyId}` : "/api/documents/list";
       const response = await fetch(url);
       const data = await response.json();
@@ -383,11 +395,11 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
       const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
       const updatedDocs = updateDocumentStatuses(documents, defsMap);
 
-      // Also regenerate requiredDocuments if config is available
-      const { config } = get();
+      // 3. Regenerate requiredDocuments if config is available
       if (config) {
         const requiredDocs = generateRequiredDocuments(config, true, updatedDocs);
         set({
+          config,
           uploadedDocuments: updatedDocs,
           requiredDocuments: requiredDocs,
           isReloadingDocs: false,
@@ -395,7 +407,9 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
         });
       } else {
         set({
+          config: null,
           uploadedDocuments: updatedDocs,
+          requiredDocuments: [],
           isReloadingDocs: false,
           hasLoadedDocsInitial: true,
         });

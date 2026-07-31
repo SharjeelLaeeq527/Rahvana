@@ -114,14 +114,18 @@ export default function ResourceToolCard({
             className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold opacity-0 transition-all duration-200 group-hover:opacity-100"
             style={{ color: accent }}
           >
-            View details <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
+            View details{" "}
+            <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </span>
         )}
 
         {/* Footer */}
         <div className="mt-auto flex items-end justify-between pt-3">
           <div>
-            <div className="font-serif text-[20px] leading-none text-foreground" style={{ fontFamily: '"DM Serif Display", serif' }}>
+            <div
+              className="font-serif text-[20px] leading-none text-foreground"
+              style={{ fontFamily: '"DM Serif Display", serif' }}
+            >
               ${addon.price}
             </div>
             <div className="mt-1 text-[10px] text-muted-foreground">{addon.unit}</div>
@@ -138,6 +142,7 @@ export default function ResourceToolCard({
               </span>
             ) : (
               <button
+                title={isAdded ? "Added to order" : "Add to order"}
                 type="button"
                 disabled={disabled}
                 onClick={(e) => {
@@ -156,7 +161,7 @@ export default function ResourceToolCard({
                   </>
                 ) : (
                   <>
-                    <Plus className="h-3.5 w-3.5" /> Add to order
+                    <Plus className="h-3.5 w-3.5" /> Add
                   </>
                 )}
               </button>

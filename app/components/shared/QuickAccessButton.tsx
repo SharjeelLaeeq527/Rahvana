@@ -62,98 +62,118 @@ export function QuickAccessButton({
   // ── Icon-only mode ─────────────────────────────────────────────────────────
   if (mode === "icon") {
     return (
-      <motion.button
-        whileHover={{ scale: 1.08 }}
-        whileTap={{ scale: 0.95 }}
-        onClick={handleToggle}
-        disabled={isPending}
-        title={pinned ? "Remove from Favorites" : "Add to Favorites"}
-        aria-label={pinned ? "Remove from Favorites" : "Add to Favorites"}
-        className={`group relative flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
-          pinned
-            ? "text-[#0d7377] hover:text-red-500"
-            : "bg-transparent text-muted-foreground hover:text-[#0d7377] "
-        } ${isPending ? "opacity-60 cursor-wait" : "cursor-pointer"} ${className}`}
-      >
-        <AnimatePresence mode="wait" initial={false}>
-          {pinned ? (
-            <motion.span
-              key="pinned"
-              initial={{ scale: 0.6, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.6, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="flex"
-            >
-              <Heart className="w-5.5 h-5.5 fill-current" />
-            </motion.span>
-          ) : (
-            <motion.span
-              key="unpinned"
-              initial={{ scale: 0.6, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.6, opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="flex"
-            >
-              <Heart className="w-5 h-5" />
-            </motion.span>
-          )}
-        </AnimatePresence>
-      </motion.button>
+      <div className="group relative inline-flex">
+        <motion.button
+          whileHover={{ scale: 1.08 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={handleToggle}
+          disabled={isPending}
+          aria-label={pinned ? "Remove from Favorites" : "Add to Favorites"}
+          className={`relative flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
+            pinned
+              ? "text-[#0d7377] hover:text-red-500"
+              : "bg-transparent text-muted-foreground hover:text-[#0d7377]"
+          } ${isPending ? "opacity-60 cursor-wait" : "cursor-pointer"} ${className}`}
+        >
+          <AnimatePresence mode="wait" initial={false}>
+            {pinned ? (
+              <motion.span
+                key="pinned"
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.6, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="flex"
+              >
+                <Heart className="w-5.5 h-5.5 fill-current" />
+              </motion.span>
+            ) : (
+              <motion.span
+                key="unpinned"
+                initial={{ scale: 0.6, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.6, opacity: 0 }}
+                transition={{ duration: 0.15 }}
+                className="flex"
+              >
+                <Heart className="w-5 h-5" />
+              </motion.span>
+            )}
+          </AnimatePresence>
+        </motion.button>
+      </div>
     );
   }
 
   // ── Full button mode ───────────────────────────────────────────────────────
   return (
-    <motion.button
-      whileTap={{ scale: 0.97 }}
-      onClick={handleToggle}
-      disabled={isPending}
-      aria-label={pinned ? "Remove from Favorites" : "Add to Favorites"}
-      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
-        pinned
-          ? "bg-[#0d7377]/10 text-[#0d7377] hover:bg-red-50 hover:text-red-500 border border-[#0d7377]/20 hover:border-red-200"
-          : "bg-transparent text-muted-foreground hover:bg-[#0d7377]/10 hover:text-[#0d7377] border border-border hover:border-[#0d7377]/30"
-      } ${isPending ? "opacity-60 cursor-wait" : "cursor-pointer"} ${className}`}
-    >
-      <AnimatePresence mode="wait" initial={false}>
-        {pinned ? (
+    <div className="group relative inline-flex">
+      <motion.button
+        whileTap={{ scale: 0.97 }}
+        onClick={handleToggle}
+        disabled={isPending}
+        aria-label={pinned ? "Remove from Favorites" : "Add to Favorites"}
+        className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0d7377]/50 ${
+          pinned
+            ? "bg-[#0d7377]/10 text-[#0d7377] hover:bg-red-50 hover:text-red-500 border border-[#0d7377]/20 hover:border-red-200"
+            : "bg-transparent text-muted-foreground hover:bg-[#0d7377]/10 hover:text-[#0d7377] border border-border hover:border-[#0d7377]/30"
+        } ${isPending ? "opacity-60 cursor-wait" : "cursor-pointer"} ${className}`}
+      >
+        <AnimatePresence mode="wait" initial={false}>
+          {pinned ? (
+            <motion.span
+              key="pinned-icon"
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex shrink-0"
+            >
+              <HeartOff className="w-3.5 h-3.5" />
+            </motion.span>
+          ) : (
+            <motion.span
+              key="unpinned-icon"
+              initial={{ scale: 0.5, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.5, opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="flex shrink-0"
+            >
+              <Heart className="w-3.5 h-3.5" />
+            </motion.span>
+          )}
+        </AnimatePresence>
+        <AnimatePresence mode="wait" initial={false}>
           <motion.span
-            key="pinned-icon"
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.5, opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="flex shrink-0"
+            key={pinned ? "remove-label" : "add-label"}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.1 }}
+            className="whitespace-nowrap"
           >
-            <HeartOff className="w-3.5 h-3.5" />
+            {pinned ? "Remove from Favorites" : "Add to Favorites"}
           </motion.span>
-        ) : (
-          <motion.span
-            key="unpinned-icon"
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            exit={{ scale: 0.5, opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            className="flex shrink-0"
-          >
-            <Heart className="w-3.5 h-3.5" />
-          </motion.span>
-        )}
-      </AnimatePresence>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.span
-          key={pinned ? "remove-label" : "add-label"}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.1 }}
-          className="whitespace-nowrap"
-        >
-          {pinned ? "Remove from Favorites" : "Add to Favorites"}
-        </motion.span>
-      </AnimatePresence>
-    </motion.button>
+        </AnimatePresence>
+      </motion.button>
+
+      {/* Tooltip */}
+      <div className="absolute top-full left-0 mt-3 w-72 rounded-lg border border-slate-700 bg-slate-800 p-3 text-xs text-white shadow-xl z-[999] hidden group-hover:block">
+        <div className="mb-1 flex items-center gap-1 font-medium text-[#afdbdb]">
+          <Heart size={14} className="text-[#afdbdb]" />
+
+          {pinned ? `Remove ${item.title} from Favorites` : `Save ${item.title}`}
+        </div>
+
+        <p className="text-left leading-relaxed text-slate-200">
+          {pinned
+            ? "Remove this resource from your Favorites. You can save it again anytime."
+            : "Save this resource to your Favorites for quick access from the header menu."}
+        </p>
+
+        <div className="absolute bottom-full left-6 border-8 border-transparent border-b-slate-800" />
+      </div>
+    </div>
   );
 }
