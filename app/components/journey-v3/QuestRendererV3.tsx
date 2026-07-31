@@ -152,7 +152,13 @@ export function QuestRendererV3({
     actions.updateMetadata({ [metaAnswersKey]: finalAnswers });
 
     const logic = (activeQuest as any).result_logic || (activeQuest as any).resultLogic;
-    const result = evaluateLogic(logic, tempAnswers);
+    const allAnswers = {
+      ...(suiteAnswers["q2"] || {}),
+      ...(suiteAnswers["q1"] || {}),
+      ...tempAnswers
+  };
+  
+  const result = evaluateLogic(logic, allAnswers);
 
     setQuestResults((prev) => {
       const next = { ...prev, [activeQuest.id]: result };
