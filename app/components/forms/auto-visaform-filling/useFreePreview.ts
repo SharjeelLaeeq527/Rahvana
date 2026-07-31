@@ -16,10 +16,17 @@ export const countFilledFields = (fields: ConfigField[], data: Record<string, st
       // Check if field is visible/applicable based on parent answers
       if (f.condition && !f.condition(data)) return;
       
-      const val = data[f.key];
-      // Radio groups, checkboxes, and text inputs are considered filled if not empty
-      if (val && val.trim() !== "") {
-        count++;
+      if (f.type === "checkbox" && f.options) {
+        const isFilled = f.options.some((opt) => data[opt.pdfKey || opt.value] === "Yes");
+        if (isFilled) {
+          count++;
+        }
+      } else {
+        const val = data[f.key];
+        // Radio groups, checkboxes, and text inputs are considered filled if not empty
+        if (val && val.trim() !== "") {
+          count++;
+        }
       }
       
       if (f.subQuestions && f.subQuestions.length > 0) {

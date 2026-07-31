@@ -78,12 +78,26 @@ class PDFFillerService:
         self.pdf_path = find_pdf_template(self.form_id)
 
     def fill_pdf(self, form_data: Dict[str, any]) -> io.BytesIO:
+        # Extract petitioner details for autofilling page 12 (Additional Info)
+        petitioner_family = str(form_data.get("family_name", "")).strip()
+        petitioner_given = str(form_data.get("given_name", "")).strip()
+        petitioner_middle = str(form_data.get("middle_name", "")).strip()
+        petitioner_alien = str(form_data.get("a_number", "")).strip()
+
         doc = fitz.open(self.pdf_path)
         filled_count = 0
         unfilled = []
         
         # Extract additional info blocks if present
         additional_blocks = form_data.pop("additional_info_blocks", [])
+        if isinstance(additional_blocks, str):
+            import json
+            try:
+                additional_blocks = json.loads(additional_blocks)
+            except Exception as e:
+                logger.error(f"Error parsing additional_info_blocks JSON: {e}")
+                additional_blocks = []
+
 
         for frontend_key, value in form_data.items():
             pdf_field_name = self.field_mapping.get(frontend_key)
@@ -140,6 +154,25 @@ class PDFFillerService:
         # Fill additional blocks (this will duplicate Part 9 page if necessary)
         if additional_blocks:
             self._fill_additional_blocks(doc, additional_blocks)
+
+        # Autofill petitioner name and A-number on Page 12 + duplicated pages for I-130
+        if self.form_id == "i130":
+            for page_idx in range(11, len(doc)):
+                page = doc[page_idx]
+                for widget in page.widgets():
+                    w_name = widget.field_name or ""
+                    if "Pt2Line4a_FamilyName" in w_name:
+                        widget.field_value = petitioner_family
+                        widget.update()
+                    elif "Pt2Line4b_GivenName" in w_name:
+                        widget.field_value = petitioner_given
+                        widget.update()
+                    elif "Pt2Line4c_MiddleName" in w_name:
+                        widget.field_value = petitioner_middle
+                        widget.update()
+                    elif "Pt2Line1_AlienNumber" in w_name:
+                        widget.field_value = petitioner_alien
+                        widget.update()
 
         output = io.BytesIO()
         doc.save(output, garbage=4, deflate=True, clean=True)
