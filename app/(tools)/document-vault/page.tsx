@@ -69,6 +69,7 @@ import {
   getFriendlyJourneyName,
   setCachedUserJourneys,
   syncQuestionnaireAnswersToFlags,
+  mapDocumentNameToId,
 } from "@/lib/document-vault/journey-mapping";
 
 // ── Journey → Visa Category mapping ──────────────────────────────────────────
@@ -125,6 +126,41 @@ export default function DocumentVaultPage() {
   const [isInitializing, setIsInitializing] = useState(true);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [previewDoc, setPreviewDoc] = useState<UploadedDocument | null>(null);
+
+  const previewDocRelatedFiles = useMemo(() => {
+    if (!previewDoc) return [];
+    
+    const defId = previewDoc.documentDefId;
+    const parentDef = ALL_DOCUMENTS.find(
+      (d) =>
+        d.isDynamicCategory &&
+        (d.id === defId || d.suggestions?.some((opt) => mapDocumentNameToId(opt) === defId))
+    );
+    
+    let filtered: UploadedDocument[] = [];
+    if (parentDef) {
+      const parentCategory = (parentDef as any).category as string;
+      const suggestionsIds = (parentDef.suggestions || []).map((opt) => mapDocumentNameToId(opt));
+      
+      filtered = uploadedDocuments.filter((d) => {
+        if (d.documentDefId === parentDef.id) return true;
+        if (suggestionsIds.includes(d.documentDefId)) return true;
+        if (parentCategory && d.documentDefId.startsWith(`dynamic-${parentCategory}-`)) return true;
+        return false;
+      });
+    } else {
+      filtered = uploadedDocuments.filter((d) => d.documentDefId === defId);
+    }
+
+    // Deduplicate by storagePath
+    const seen = new Set<string>();
+    return filtered.filter((d) => {
+      const key = d.storagePath || d.id;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [previewDoc, uploadedDocuments]);
   const [viewMode, setViewMode] = useState<"grid" | "table">("table");
   const [activeTab, setActiveTab] = useState<string>("required");
   const [searchQuery, setSearchQuery] = useState("");
@@ -1606,6 +1642,7 @@ export default function DocumentVaultPage() {
             requiredDocuments.find((d) => d.id === previewDoc.documentDefId)!
           }
           uploadedDoc={previewDoc}
+          allUploadedDocs={previewDocRelatedFiles}
         />
       )}
 
