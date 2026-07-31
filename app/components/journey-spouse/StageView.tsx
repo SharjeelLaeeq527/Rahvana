@@ -2,7 +2,7 @@
 
 import React, { useMemo } from "react";
 import { ArrowLeft, CheckCircle2, ChevronRight, AlertTriangle } from "lucide-react";
-import { RoadmapData } from "../types";
+import { RoadmapData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage, getStageProgress } from "./journeyHelpers";
 

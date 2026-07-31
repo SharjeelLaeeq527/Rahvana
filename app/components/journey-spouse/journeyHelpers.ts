@@ -1,4 +1,4 @@
-import { RoadmapData, RoadmapStep, RoadmapChapter } from "../types";
+import { RoadmapData, RoadmapStep, RoadmapChapter } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 
 /**

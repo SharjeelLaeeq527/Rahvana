@@ -47,12 +47,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  RoadmapData,
-  QuestSuite,
-  TutorialStepData,
-  ActionCard,
-  DocumentGatheringItem,
-} from "../types";
+  RoadmapDataV3,
+  QuestSuiteV3,
+  TutorialStepV3,
+  DocumentGatheringItemV3,
+  // ActionCardV3,
+  // DocumentGatheringItemV3,
+} from "./types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getAllActiveSteps, getStageProgress } from "./journeyHelpers";
 import { getActiveStepsForStage } from "./journeyHelpers";
@@ -60,20 +61,17 @@ import CredentialFormModal from "@/app/(main)/portal-wallet/components/Credentia
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
-import { InlineGuideData } from "./InlineGuideData";
-import { USCIS_TUTORIAL_STEPS } from "./UscisTutorialData";
 import { TutorialVideo } from "@/app/components/shared/TutorialVideo";
 import Image from "next/image";
 import Link from "next/link";
-import { HOUSEHOLD_TUTORIAL_STEPS } from "./HouseholdTutorialData";
-import { SUBMISSION_TUTORIAL_STEPS, SubmissionTutorialOverlay } from "./SubmissionTutorialData";
-import { AWAITING_REVIEW_DATA } from "./AwaitingReviewData";
+import { SubmissionTutorialOverlay } from "./components/SubmissionTutorialData";
 import {
   mapDocumentNameToId,
   fetchUserJourneysCached,
   syncQuestionnaireAnswersToFlags,
 } from "@/lib/document-vault/journey-mapping";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { useInitDocumentVault } from "@/lib/document-vault/useInitDocumentVault";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
 import { MultipleDocumentUploadModal } from "@/app/components/document-vault/MultipleDocumentUploadModal";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
@@ -85,11 +83,12 @@ import { usePortalWallet } from "./hooks/usePortalWallet";
 import { useFilingQuiz } from "./hooks/useFilingQuiz";
 import { useSponsorship } from "./hooks/useSponsorship";
 import { DocActionModal } from "./components/DocActionModal";
-import { HouseholdMemberTool } from "./components/HouseholdMemberTool";
-import { EvidenceStrengthMeter } from "./components/EvidenceStrengthMeter";
+// import { HouseholdMemberTool } from "./components/HouseholdMemberTool";
+// import { EvidenceStrengthMeter } from "./components/EvidenceStrengthMeter";
 import { DocCaseStrengthMeter } from "./components/DocCaseStrengthMeter";
-import { EligibilityRiskBanner } from "./components/EligibilityRiskBanner";
+// import { EligibilityRiskBanner } from "./components/EligibilityRiskBanner";
 import { Chapter1HealthPanel } from "./components/Chapter1HealthPanel";
+import type { StepChecker } from "@/lib/case-strength/step-checkers";
 import { FloatingSidePanel } from "./components/FloatingSidePanel";
 import {
   ConsistencyBaselineCapture,
@@ -124,13 +123,13 @@ import { AppointmentReceivedTool } from "./components/AppointmentReceivedTool";
 import { MedicalExamTool } from "./components/MedicalExamTool";
 import { PolioCertificateTool } from "./components/PolioCertificateTool";
 import { PoliceClearanceTool } from "./components/PoliceClearanceTool";
-import { getStepIcon } from "./StepIcon";
+import { AwaitingReviewStep } from "./components/AwaitingReviewStep";
+// import { getStepIcon } from "./StepIcon";
 import { SubmissionReviewTool } from "./components/SubmissionReviewTool";
 import { MedicalExamGuideTool } from "./components/MedicalExamGuideTool";
 import { CourierRegistrationTool } from "./components/CourierRegistrationTool";
 import { InterviewPrepTool } from "./components/InterviewPrepTool";
 import { DocListSection } from "./components/DocListSection";
-import { InterviewSchedulingTool } from "./components/InterviewSchedulingTool";
 import { AdministrativeProcessingTool } from "./components/AdministrativeProcessingTool";
 import { InterviewDayTool } from "./components/InterviewDayTool";
 import { InterviewOutcomeTool } from "./components/InterviewOutcomeTool";
@@ -145,9 +144,9 @@ import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 import { ApprovalNoticeTool } from "./components/ApprovalNoticeTool";
+import { InterviewSchedulingTool } from "./components/InterviewSchedulingTool";
 import RegisterReceiptStep from "./components/RegisterReceiptStep";
 import TrackCaseStatusStep from "./components/TrackCaseStatusStep";
-import { AwaitingReviewStep } from "./components/AwaitingReviewStep";
 import { FinancialChecklistTool } from "./components/FinancialChecklistTool";
 import SponsorshipCalculatorTool from "./components/SponsorshipCalculatorTool";
 import { ApUpdateModal } from "./PortalWalletManager";
@@ -155,85 +154,6 @@ import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool"
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { QuestRenderer } from "./QuestRenderer";
 import { ActionStepRenderer } from "./ActionStepRenderer";
-
-const STEP_CITATIONS: Record<string, { text: string; link: string }[]> = {
-  step_1_3: [
-    {
-      text: "Submit your petition through your USCIS online account",
-      link: "https://www.uscis.gov/file-online",
-    },
-    {
-      text: "USCIS mailing addresses",
-      link: "https://www.uscis.gov/i-130-addresses",
-    },
-  ],
-  step_1_4: [
-    {
-      text: "Official form link",
-      link: "https://www.uscis.gov/i-130",
-    },
-  ],
-  step_1_5: [
-    {
-      text: "Official form link",
-      link: "https://www.uscis.gov/sites/default/files/document/forms/i-130a.pdf",
-    },
-  ],
-  step_1_12: [
-    {
-      text: "USCIS Filing Fees Guide",
-      link: "https://www.uscis.gov/forms/filing-fees",
-    },
-    {
-      text: "USCIS Form G‑1055 Fee Schedule",
-      link: "https://www.uscis.gov/g-1055",
-    },
-  ],
-  step_1_14: [
-    {
-      text: "USCIS Direct Filing Addresses",
-      link: "https://www.uscis.gov/i-130-addresses",
-    },
-  ],
-  step_1_16: [
-    {
-      text: "USCIS Case Status Tracker",
-      link: "https://egov.uscis.gov/",
-    },
-  ],
-  step_2_3: [
-    {
-      text: "Consular Electronic Application Center (CEAC)",
-      link: "https://ceac.state.gov/IV",
-    },
-  ],
-  step_2_7: [
-    {
-      text: "Affidavit of Support (Department of State)",
-      link: "https://travel.state.gov/content/travel/en/us-visas/immigrate/the-immigrant-visa-process/step-1-submit-a-petition/affidavit-of-support.html",
-    },
-    {
-      text: "USCIS Affidavit of Support Guidance",
-      link: "https://www.uscis.gov/green-card/green-card-processes-and-procedures/affidavit-of-support",
-    },
-  ],
-  step_3_1: [
-    {
-      text: "Medical Exam Instructions (Department of State)",
-      link: "https://travel.state.gov/content/travel/en/us-visas/Supplements/Supplements_by_Post/ISL-Islamabad.html",
-    },
-  ],
-  step_3_2: [
-    {
-      text: "Pakistan Polio Vaccination Certificate Information",
-      link: "https://www.poliofreepakistan.gov.pk/certificate/vaccination-certificate",
-    },
-    {
-      text: "NADRA NIMS Portal (certificate access)",
-      link: "https://nims.nadra.gov.pk/nims/",
-    },
-  ],
-};
 
 /**
  * Find a vault document that matches an item, considering dynamic categories.
@@ -325,8 +245,10 @@ export function getEffectiveDocDef(id: string | null) {
 }
 
 interface StepViewProps {
-  data: RoadmapData;
+  data: RoadmapDataV3;
   state: WizardState;
+  /** Category-specific step-checker registry (resolved from journey_type). */
+  registry?: Record<string, StepChecker>;
   actions: {
     toggleComplete: (id: string) => void;
     setCurrentStep: (idx: number | null) => void;
@@ -348,6 +270,7 @@ interface StepViewProps {
 export const StepView: React.FC<StepViewProps> = ({
   data,
   state,
+  registry,
   actions,
   onBack,
   onSelectChapter,
@@ -361,20 +284,22 @@ export const StepView: React.FC<StepViewProps> = ({
   const isChapter1 = sId.startsWith("step_1_");
   const isChapter2 = sId.startsWith("step_2_");
   const isChapter3 = sId.startsWith("step_3_");
+  const inlineGuideData = data.inline_guide_data || {};
   // ── Step-level entitlement gating ──────────────────────────────────────────
   const plan = usePlan();
   const stepEntitlement = useStepEntitlement(sId);
 
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+  const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
+
   useEffect(() => {
     fetchUserJourneysCached().catch(() => {});
   }, []);
-
-  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
-  const [isApUpdateModalOpen, setIsApUpdateModalOpen] = useState(false);
   // Add Evidence Note modal state
 
   const { user } = useAuth();
   const {
+    config,
     openUploadModal,
     uploadModalOpen,
     closeUploadModal,
@@ -386,6 +311,22 @@ export const StepView: React.FC<StepViewProps> = ({
     deleteDocument,
     requiredDocuments,
   } = useDocumentVaultStore();
+
+  // Safety-net vault init. The vault config is normally prefetched up in
+  // RoadmapLayoutParent (see lib/document-vault/useInitDocumentVault.ts), but tool steps
+  // like the I-797 approval upload have no init of their own — so if that single
+  // prefetch ever fails to land, `config` stays null and every upload modal opened
+  // from a step is permanently stuck on "Initializing..." (disabled button).
+  // Re-run the init here ONLY when config is missing, so we guarantee a usable config
+  // without ever clobbering a richer one already loaded (e.g. with dynamic slots).
+  useInitDocumentVault({
+    journeyType: data.journey_type,
+    backendId: state.backendId,
+    metadata: state.metadata,
+    userId: user?.id,
+    skip: !!config,
+  });
+
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [activeUploadType, setActiveUploadType] = useState<"doc" | "hh" | "financial" | null>(null);
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null);
@@ -474,52 +415,40 @@ export const StepView: React.FC<StepViewProps> = ({
 
   const handleToggleComplete = useCallback(() => {
     const stepKey = currentStep.step_key || sId;
-    // Map step keys to correct metadata fields for milestone tracking
+    const isIr5 = isIr5Journey;
+
     const milestoneMetaMap: Record<string, { key: string; value?: () => string }> = {
-      step_1_3: {
-        key: "receiptNum",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_1_6: {
-        key: "uscisPortalSaved",
-        value: () => "true",
-      },
-      step_1_7: {
-        key: "filingFeeDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_1_8: {
-        key: "submissionDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_2_10: {
-        key: "dqDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_3_1: {
-        key: "medicalDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
-      step_3_7: {
-        key: "interviewDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
+      ...(isIr5
+        ? {
+            // IR5 Chapter 1 (no I-130A form step, so numbers are shifted down by 1 vs IR1)
+            step_1_5: { key: "uscisAccountCreated", value: () => "true" }, // Create USCIS Account — triggers c1_portal_not_saved reminder
+            step_1_8: { key: "filingFeeDate", value: () => new Date().toISOString().slice(0, 10) }, // Pay Filing Fee
+            step_1_9: { key: "submissionDate", value: () => new Date().toISOString().slice(0, 10) }, // Review & Submit — triggers c1_receipt_missing reminder
+            step_1_15: { key: "approvalDate", value: () => new Date().toISOString().slice(0, 10) }, // Approval
+          }
+        : {
+            // IR1 Chapter 1 (has I-130A form step, so numbers include it)
+            step_1_6: { key: "uscisAccountCreated", value: () => "true" }, // Create USCIS Account — triggers c1_portal_not_saved reminder
+            step_1_9: { key: "filingFeeDate", value: () => new Date().toISOString().slice(0, 10) }, // Pay Filing Fee
+            step_1_10: {
+              key: "submissionDate",
+              value: () => new Date().toISOString().slice(0, 10),
+            }, // Review & Submit — triggers c1_receipt_missing reminder
+            step_1_17: { key: "approvalDate", value: () => new Date().toISOString().slice(0, 10) }, // Approval
+          }),
+      // Shared Chapter 2 & 3 milestones (step numbers align across IR1 and IR5)
+      step_2_10: { key: "dqDate", value: () => new Date().toISOString().slice(0, 10) },
+      step_3_1: { key: "med_date", value: () => new Date().toISOString().slice(0, 10) }, // Medical exam date (if manually entered)
+      step_3_7: { key: "interviewDate", value: () => new Date().toISOString().slice(0, 10) },
       step_2_1: {
         key: "nvcCaseNum",
         value: () => "NVC2026-" + Math.floor(Math.random() * 1000000),
       },
-      step_2_2: {
-        key: "nvcInvoice",
-        value: () => "INVC-" + Math.floor(Math.random() * 1000000),
-      },
+      step_2_2: { key: "nvcInvoice", value: () => "INVC-" + Math.floor(Math.random() * 1000000) },
       step_3_7b: { key: "interviewEmbassy", value: () => "Islamabad" },
-      step_1_17: {
-        key: "approvalDate",
-        value: () => new Date().toISOString().slice(0, 10),
-      },
     };
+
     actions.toggleComplete(stepKey);
-    // If this step is a milestone, set the metadata field if not already set
     const metaObj = milestoneMetaMap[stepKey];
     if (
       metaObj &&
@@ -749,9 +678,8 @@ export const StepView: React.FC<StepViewProps> = ({
   });
 
   const [isGatheringGuideOpen, setIsGatheringGuideOpen] = useState(false);
-  const [selectedGatheringItem, setSelectedGatheringItem] = useState<DocumentGatheringItem | null>(
-    null
-  );
+  const [selectedGatheringItem, setSelectedGatheringItem] =
+    useState<DocumentGatheringItemV3 | null>(null);
   const [gatheringGuideStep, setGatheringGuideStep] = useState(0);
 
   // --- UTILS & DERIVED ---
@@ -1039,7 +967,7 @@ export const StepView: React.FC<StepViewProps> = ({
   }, [state.metadata.filingMethodConfirmed]);
 
   // Document Vault init (setConfig + reloadDocuments) is now prefetched once, up in
-  // RoadmapLayoutV2 via useInitDocumentVault — so uploaded documents are already
+  // RoadmapLayoutParent via useInitDocumentVault — so uploaded documents are already
   // loaded before this (lazy) step ever mounts. See lib/document-vault/useInitDocumentVault.ts.
 
   // Disable body scroll when overlays are open
@@ -1172,7 +1100,7 @@ export const StepView: React.FC<StepViewProps> = ({
   };
 
   const renderCitationsSection = () => {
-    const citations = STEP_CITATIONS[sId];
+    const citations = currentStep.citations;
     if (!citations || citations.length === 0) return null;
 
     return (
@@ -1182,7 +1110,10 @@ export const StepView: React.FC<StepViewProps> = ({
           className="w-full bg-[#fafcff]/80 backdrop-blur-xs border border-[#d0e4f7] rounded-[20px] p-5 sm:p-6 shadow-xs flex items-center justify-between hover:border-primary hover:bg-[#fafcff] group transition-all text-left cursor-pointer"
         >
           <div className="flex items-center gap-2">
-            <Book className="h-[16px] w-[16px] text-primary shrink-0 group-hover:scale-110 transition-transform" strokeWidth={2.5} />
+            <Book
+              className="h-[16px] w-[16px] text-primary shrink-0 group-hover:scale-110 transition-transform"
+              strokeWidth={2.5}
+            />
             <span className="text-[12px] font-bold uppercase tracking-wider text-[#3a4f63] group-hover:text-primary transition-colors">
               Official References & Citations
             </span>
@@ -1201,7 +1132,7 @@ export const StepView: React.FC<StepViewProps> = ({
     if (!tool) return null;
 
     if (tool.type === "awaiting_review") {
-      return <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />;
+      return <AwaitingReviewStep data={tool} />;
     }
 
     // Theme detection based on icon or ID
@@ -1255,6 +1186,7 @@ export const StepView: React.FC<StepViewProps> = ({
           chapters={chapters}
           state={state}
           uploadedDocuments={uploadedDocuments}
+          checkerRegistry={registry}
         />
 
         {/* Page Shell */}
@@ -1301,22 +1233,31 @@ export const StepView: React.FC<StepViewProps> = ({
                 <span
                   key={i}
                   className={`text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${
-                    chip.type === "role" || chip.role === "role"
-                      ? isBeneficiaryTheme
-                        ? "bg-[#e9f4ee] text-[#1a5f3f] border-[#b0dcc0]"
-                        : "bg-[#e8f1fb] text-primary/80 border-[#d0e4f7]"
-                      : chip.type === "tool" || chip.tool === "tool"
+                    chip.type === "med"
+                      ? "bg-teal-50 text-teal-700 border-teal-200"
+                      : chip.type === "pcc" || chip.type === "nvc" || chip.type === "purple"
                         ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
-                        : chip.type === "pay"
-                          ? "bg-[#fffbec] text-[#c49a0a] border-[#e8d47a]"
-                          : chip.type === "final" || chip.type === "green"
-                            ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
-                            : chip.type === "purple"
-                              ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
-                              : chip.type === "sky"
-                                ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
-                                : chip.type === "gold"
-                                  ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                        : chip.type === "book" ||
+                            chip.type === "remind" ||
+                            chip.type === "compliance" ||
+                            chip.type === "track" ||
+                            chip.type === "pending" ||
+                            chip.type === "timeline" ||
+                            chip.type === "sky"
+                          ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                          : chip.type === "waiting" ||
+                              chip.type === "gold" ||
+                              chip.type === "pay" ||
+                              chip.type === "amber"
+                            ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
+                            : chip.type === "role" || chip.role === "role"
+                              ? isBeneficiaryTheme
+                                ? "bg-[#e9f4ee] text-[#1a5f3f] border-[#b0dcc0]"
+                                : "bg-[#e8f1fb] text-primary/80 border-[#d0e4f7]"
+                              : chip.type === "tool" || chip.tool === "tool"
+                                ? "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                                : chip.type === "final" || chip.type === "green"
+                                  ? "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]"
                                   : chip.type === "uscis" ||
                                       chip.uscis === "uscis" ||
                                       chip.type === "path"
@@ -1369,6 +1310,7 @@ export const StepView: React.FC<StepViewProps> = ({
           {/* DQ RECORDING TOOL RENDERING */}
           {tool.type === "dq_recording" && (
             <DqRecordingTool
+              tool={tool}
               actions={actions}
               dqState={{
                 dqSaved,
@@ -1393,11 +1335,13 @@ export const StepView: React.FC<StepViewProps> = ({
               state={state}
               actions={actions}
               guard={stepEntitlement.guard}
+              metadata={state.metadata}
             />
           )}
 
           {tool.type === "approval_notice" && (
             <ApprovalNoticeTool
+              tool={tool}
               state={state}
               actions={actions}
               approvalState={{
@@ -1421,6 +1365,7 @@ export const StepView: React.FC<StepViewProps> = ({
 
           {tool.type === "appointment_received" && (
             <AppointmentReceivedTool
+              tool={tool}
               actions={actions}
               interviewState={{
                 interviewSaved,
@@ -1440,6 +1385,7 @@ export const StepView: React.FC<StepViewProps> = ({
           {tool.type === "medical_exam" && (
             <StepLockedContent stepKey={sId} mode="overlay">
               <MedicalExamTool
+                tool={tool}
                 actions={actions}
                 medState={{
                   medSaved,
@@ -1466,6 +1412,7 @@ export const StepView: React.FC<StepViewProps> = ({
           {tool.type === "polio_certificate" && (
             <StepLockedContent stepKey={sId} mode="overlay">
               <PolioCertificateTool
+                tool={tool}
                 actions={actions}
                 polioState={{
                   polioLaunched,
@@ -1485,6 +1432,7 @@ export const StepView: React.FC<StepViewProps> = ({
 
           {tool.type === "police_clearance" && (
             <PoliceClearanceTool
+              tool={tool}
               actions={actions}
               pccState={{
                 pccSaved,
@@ -1606,7 +1554,7 @@ export const StepView: React.FC<StepViewProps> = ({
           )}
 
           {/* AWAITING NVC REVIEW (Step 2.9 SPECIFIC) */}
-          {tool.type === "awaiting_review" && <AwaitingReviewStep data={AWAITING_REVIEW_DATA} />}
+          {tool.type === "awaiting_review" && <AwaitingReviewStep data={tool} />}
 
           {/* GATHER ORIGINAL DOCUMENTS (Step 3.6) */}
           {tool.type === "gathering_checklist" && (() => {
@@ -3045,7 +2993,7 @@ export const StepView: React.FC<StepViewProps> = ({
                 className={`w-full min-h-[600px] flex flex-col items-center`}
               >
                 <QuestRenderer
-                  quest={currentStep.quest_data as unknown as QuestSuite}
+                  quest={currentStep.quest_data as unknown as QuestSuiteV3}
                   onComplete={handleToggleComplete}
                   state={state}
                   actions={actions}
@@ -3275,7 +3223,7 @@ export const StepView: React.FC<StepViewProps> = ({
                                             onClick={() => {
                                               const hasDocGuide =
                                                 Boolean(doc.guideUrl && doc.guideUrl !== "/guides") ||
-                                                Boolean(doc.id && InlineGuideData[doc.id]);
+                                                Boolean(doc.id && inlineGuideData[doc.id]);
 
                                               setDocActionModal({
                                                 isOpen: true,
@@ -3698,7 +3646,7 @@ export const StepView: React.FC<StepViewProps> = ({
                           onItemClick={(item) => {
                             const hasDocGuide =
                               Boolean(item.guideUrl && item.guideUrl !== "/guides") ||
-                              Boolean(item.id && InlineGuideData[item.id]);
+                              Boolean(item.id && inlineGuideData[item.id]);
 
                             setDocActionModal({
                               isOpen: true,
@@ -4254,7 +4202,7 @@ export const StepView: React.FC<StepViewProps> = ({
             <div className="p-6 pt-0">
               <div className="h-px bg-[#d0e4f7] mb-4" />
               <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-1">
-                {(STEP_CITATIONS[sId] || []).map((cite, index) => (
+                {(currentStep.citations || []).map((cite, index) => (
                   <a
                     key={index}
                     href={cite.link}
@@ -4309,7 +4257,7 @@ export const StepView: React.FC<StepViewProps> = ({
         />
       )}
 
-      {selectedGuideId && InlineGuideData[selectedGuideId] && (
+      {selectedGuideId && inlineGuideData[selectedGuideId] && (
         <div className="fixed inset-0 z-[100] flex flex-col animate-in slide-in-from-bottom-4 duration-300 ease-out bg-white">
           {/* Guide Topbar */}
           <div className="flex items-center p-[18px_24px] border-b border-[#d0e4f7] gap-[16px] shrink-0">
@@ -4343,19 +4291,19 @@ export const StepView: React.FC<StepViewProps> = ({
               </div>
               <div className="inline-flex items-center gap-[5px] bg-[#e8f1fb] border border-[#d0e4f7] rounded-full px-[12px] py-[4px] w-fit mb-6">
                 <div
-                  className={`w-[6px] h-[6px] rounded-full shrink-0 ${InlineGuideData[selectedGuideId].sourceType === "internal" ? "bg-[#3a4f63]" : "bg-primary"}`}
+                  className={`w-[6px] h-[6px] rounded-full shrink-0 ${inlineGuideData[selectedGuideId].sourceType === "internal" ? "bg-[#3a4f63]" : "bg-primary"}`}
                 />
                 <span className="text-[11px] font-medium text-[#3a4f63]">
-                  {InlineGuideData[selectedGuideId].sourceType === "internal"
+                  {inlineGuideData[selectedGuideId].sourceType === "internal"
                     ? "Roadmap Module"
-                    : `Rahvana Guide, ${InlineGuideData[selectedGuideId].title}`}
+                    : `Rahvana Guide, ${inlineGuideData[selectedGuideId].title}`}
                 </span>
               </div>
               <h2 className="font-black text-[clamp(22px,3.5vw,28px)] text-[#0f1f38] mb-[6px] leading-[1.25]">
-                {InlineGuideData[selectedGuideId].title}
+                {inlineGuideData[selectedGuideId].title}
               </h2>
               <p className="text-[14px] text-[#3a4f63] mb-[28px] leading-[1.6]">
-                {InlineGuideData[selectedGuideId].sub}
+                {inlineGuideData[selectedGuideId].sub}
               </p>
 
               {/* Sections */}
@@ -4373,7 +4321,7 @@ export const StepView: React.FC<StepViewProps> = ({
                     />
                   </div>
                 ) : (
-                  InlineGuideData[selectedGuideId].sections.map((section, idx) => (
+                  inlineGuideData[selectedGuideId].sections.map((section: any, idx: number) => (
                     <div
                       key={idx}
                       className="bg-[#f4f7fb] border border-[#d0e4f7] rounded-[16px] p-[20px_22px] mb-[14px]"
@@ -4437,6 +4385,7 @@ export const StepView: React.FC<StepViewProps> = ({
           onClose={() => setIsHhDocGuideOpen(false)}
           doc={activeHhDoc}
           status={hhDocsStatus[activeHhDoc.id]}
+          guideContent={data.household_guide_content}
           onMarkReviewed={() => {
             const next = {
               ...hhDocsStatus,
@@ -4525,8 +4474,8 @@ export const StepView: React.FC<StepViewProps> = ({
               isDynamic && dynamicSteps
                 ? dynamicSteps
                 : tool?.type === "household_member"
-                  ? HOUSEHOLD_TUTORIAL_STEPS
-                  : USCIS_TUTORIAL_STEPS;
+                  ? data.household_tutorial_steps || []
+                  : data.uscis_tutorial_steps || [];
 
             if (!Array.isArray(steps) || steps.length === 0) return null;
 
@@ -4745,8 +4694,8 @@ export const StepView: React.FC<StepViewProps> = ({
             isDynamic && dynamicSteps
               ? dynamicSteps
               : tool?.type === "household_member"
-                ? HOUSEHOLD_TUTORIAL_STEPS
-                : USCIS_TUTORIAL_STEPS;
+                ? data.household_tutorial_steps || []
+                : data.uscis_tutorial_steps || [];
 
           if (!Array.isArray(steps) || steps.length === 0) return null;
 
@@ -4787,9 +4736,7 @@ export const StepView: React.FC<StepViewProps> = ({
               <div className="flex-1 min-h-0 overflow-y-auto bg-[#fafcff] p-[48px_24px_40px] flex flex-col items-center bg-white">
                 <div className="w-full max-w-[580px] flex flex-col">
                   <div className="text-[11px] font-semibold tracking-widest uppercase text-primary mb-4">
-                    {isDynamic
-                      ? currentTutStep.label
-                      : (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).label}
+                    {isDynamic ? currentTutStep.label : (currentTutStep as TutorialStepV3).label}
                   </div>
                   <h2 className="text-[clamp(20px,3.2vw,26px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
                     {currentTutStep.heading}
@@ -4938,20 +4885,19 @@ export const StepView: React.FC<StepViewProps> = ({
                         <div className="w-[10px] h-[10px] rounded-full bg-[#34d399]" />
                         <div className="flex-1 h-[18px] bg-[#fafcff] rounded-[4px] border border-[#d0e4f7] ml-[8px] flex items-center px-[10px]">
                           <span className="text-[10px] text-[#6b8097] font-mono">
-                            {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).url}
+                            {(currentTutStep as TutorialStepV3).url}
                           </span>
                         </div>
                       </div>
 
                       {/* Content Area — aspectRatio only, no minHeight */}
                       <div className="relative w-full bg-[#f8f9fb]" style={{ aspectRatio: "4/3" }}>
-                        {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).media?.src ? (
-                          (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).media.type ===
-                          "img" ? (
+                        {(currentTutStep as TutorialStepV3).media?.src ? (
+                          (currentTutStep as TutorialStepV3).media.type === "img" ? (
                             <Image
-                              key={(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).media.src}
-                              src={(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).media.src!}
-                              alt={(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).screenTitle}
+                              key={(currentTutStep as TutorialStepV3).media.src}
+                              src={(currentTutStep as TutorialStepV3).media.src!}
+                              alt={(currentTutStep as TutorialStepV3).screenTitle}
                               fill
                               className="object-contain"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
@@ -4960,63 +4906,55 @@ export const StepView: React.FC<StepViewProps> = ({
                             />
                           ) : (
                             <TutorialVideo
-                              key={(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).media.src}
-                              src={(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).media.src!}
-                              poster={
-                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).videoMeta
-                                  ?.poster
-                              }
-                              alt={(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).screenTitle}
+                              key={(currentTutStep as TutorialStepV3).media.src}
+                              src={(currentTutStep as TutorialStepV3).media.src!}
+                              poster={(currentTutStep as TutorialStepV3).videoMeta?.poster}
+                              alt={(currentTutStep as TutorialStepV3).screenTitle}
                             />
                           )
                         ) : (
                           /* Fallback placeholder — absolute to fill ratio box */
                           <div className="absolute inset-0 flex flex-col gap-[16px] px-[24px] py-[12px] items-center justify-center overflow-hidden">
                             <div className="text-[18px] font-semibold text-[#0c1b33] text-center leading-snug">
-                              {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).ss_headline ||
-                                (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).screenTitle}
+                              {(currentTutStep as TutorialStepV3).ss_headline ||
+                                (currentTutStep as TutorialStepV3).screenTitle}
                             </div>
 
-                            {((currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).ss_desc ||
-                              (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).screenDesc) && (
+                            {((currentTutStep as TutorialStepV3).ss_desc ||
+                              (currentTutStep as TutorialStepV3).screenDesc) && (
                               <div className="text-[13px] text-[#5a6f85] leading-[1.55] bg-[#f8fafb] border-l-[3px] border-[#d0e4f7] pl-[12px] py-[8px] text-center">
-                                {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).ss_desc ||
-                                  (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).screenDesc}
+                                {(currentTutStep as TutorialStepV3).ss_desc ||
+                                  (currentTutStep as TutorialStepV3).screenDesc}
                               </div>
                             )}
 
-                            {Array.isArray(
-                              (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])?.fields
-                            ) &&
-                              ((currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])?.fields
-                                ?.length ?? 0) > 0 && (
+                            {Array.isArray((currentTutStep as TutorialStepV3)?.fields) &&
+                              ((currentTutStep as TutorialStepV3)?.fields?.length ?? 0) > 0 && (
                                 <div className="flex flex-col gap-[8px] w-full max-w-[320px]">
-                                  {(
-                                    (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0])?.fields ??
-                                    []
-                                  ).map((field, idx) =>
-                                    field?.type === "btn" ? (
-                                      <div
-                                        key={idx}
-                                        className="w-full px-[22px] py-[10px] bg-[#2f6fd4] text-white border-none rounded-[8px] text-[13px] font-semibold cursor-default opacity-90 text-center"
-                                      >
-                                        {field.label}
-                                      </div>
-                                    ) : (
-                                      <div key={idx} className="flex flex-col gap-[4px]">
-                                        {field.label && (
-                                          <label className="text-[12px] font-medium text-[#3a4f63]">
-                                            {field.label}
-                                          </label>
-                                        )}
-                                        <input
-                                          type={field.isPassword ? "password" : "text"}
-                                          placeholder={field.placeholder}
-                                          disabled
-                                          className="w-full px-[12px] py-[8px] border border-[#d0e4f7] rounded-[6px] text-[13px] bg-[#f8fafb] text-[#9a9a9a]"
-                                        />
-                                      </div>
-                                    )
+                                  {((currentTutStep as TutorialStepV3)?.fields ?? []).map(
+                                    (field, idx) =>
+                                      field?.type === "btn" ? (
+                                        <div
+                                          key={idx}
+                                          className="w-full px-[22px] py-[10px] bg-[#2f6fd4] text-white border-none rounded-[8px] text-[13px] font-semibold cursor-default opacity-90 text-center"
+                                        >
+                                          {field.label}
+                                        </div>
+                                      ) : (
+                                        <div key={idx} className="flex flex-col gap-[4px]">
+                                          {field.label && (
+                                            <label className="text-[12px] font-medium text-[#3a4f63]">
+                                              {field.label}
+                                            </label>
+                                          )}
+                                          <input
+                                            type={field.isPassword ? "password" : "text"}
+                                            placeholder={field.placeholder}
+                                            disabled
+                                            className="w-full px-[12px] py-[8px] border border-[#d0e4f7] rounded-[6px] text-[13px] bg-[#f8fafb] text-[#9a9a9a]"
+                                          />
+                                        </div>
+                                      )
                                   )}
                                 </div>
                               )}
@@ -5027,16 +4965,16 @@ export const StepView: React.FC<StepViewProps> = ({
                   )}
 
                   {/* Note Block */}
-                  {((isDynamic && (currentTutStep as TutorialStepData).note) ||
-                    (!isDynamic && (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).note)) && (
+                  {((isDynamic && (currentTutStep as TutorialStepV3).note) ||
+                    (!isDynamic && (currentTutStep as TutorialStepV3).note)) && (
                     <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[12px_15px] mb-[22px]">
                       <div className="text-[13px] text-[#8a6200] leading-[1.55]">
                         {isDynamic ? (
-                          (currentTutStep as TutorialStepData).note
+                          (currentTutStep as TutorialStepV3).note
                         ) : (
                           <div
                             dangerouslySetInnerHTML={{
-                              __html: (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).note!,
+                              __html: (currentTutStep as TutorialStepV3).note!,
                             }}
                           />
                         )}
@@ -5081,7 +5019,7 @@ export const StepView: React.FC<StepViewProps> = ({
         isOpen={isSubmissionGuideOpen}
         onClose={() => setIsSubmissionGuideOpen(false)}
         currentIdx={submissionGuideIdx}
-        steps={SUBMISSION_TUTORIAL_STEPS}
+        steps={data.submission_tutorial_steps || []}
         onSetIdx={setSubmissionGuideIdx}
       />
 

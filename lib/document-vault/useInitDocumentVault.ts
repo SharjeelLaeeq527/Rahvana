@@ -31,7 +31,7 @@ interface InitDocumentVaultArgs {
 /**
  * Prefetch the document vault for a journey.
  *
- * Call this from the ALWAYS-MOUNTED journey layout (RoadmapLayoutV2 / RoadmapLayoutV3)
+ * Call this from the ALWAYS-MOUNTED journey layout (RoadmapLayoutSpouse / RoadmapLayoutParent)
  * so the uploaded documents — and therefore the case-strength score — are loaded as
  * soon as the journey opens, while the user is still on the dashboard.
  *

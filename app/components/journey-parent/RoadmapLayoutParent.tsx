@@ -2,19 +2,19 @@
 
 import React, { useState, useEffect, useMemo, Suspense } from "react";
 import { RoadmapDataV3 } from "./types";
-import { DashboardViewV3 } from "./DashboardViewV3";
-import { ChapterViewV3 } from "./ChapterViewV3";
+import { DashboardView } from "./DashboardView";
+import { ChapterView } from "./ChapterView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-import { getActiveStepsForStage } from "./journeyHelpersV3";
+import { getActiveStepsForStage } from "./journeyHelpers";
 import { resolveCaseStrengthProfile } from "@/lib/case-strength/categories";
 import { ChevronRight, ArrowLeft, Check, X, LayoutDashboard } from "lucide-react";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { useAuth } from "@/app/context/AuthContext";
 import { useInitDocumentVault } from "@/lib/document-vault/useInitDocumentVault";
 
-/** Lazy-load StepViewV3 — only fetched when user navigates to a step */
-const LazyStepViewV3 = React.lazy(() =>
-  import("./StepViewV3").then((mod) => ({ default: mod.StepViewV3 }))
+/** Lazy-load StepView — only fetched when user navigates to a step */
+const LazyStepView = React.lazy(() =>
+  import("./StepView").then((mod) => ({ default: mod.StepView }))
 );
 
 function StepSkeleton() {
@@ -33,7 +33,7 @@ function StepSkeleton() {
   );
 }
 
-interface RoadmapLayoutV3Props {
+interface RoadmapLayoutParentProps {
   data: RoadmapDataV3;
   state: WizardState;
   actions: {
@@ -48,7 +48,7 @@ interface RoadmapLayoutV3Props {
 
 type ViewType = "dashboard" | "chapter" | "step";
 
-export default function RoadmapLayoutV3({ data, state, actions }: RoadmapLayoutV3Props) {
+export default function RoadmapLayoutParent({ data, state, actions }: RoadmapLayoutParentProps) {
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
 
@@ -257,7 +257,7 @@ export default function RoadmapLayoutV3({ data, state, actions }: RoadmapLayoutV
       {/* ── Main Content ── */}
       <main className="roadmap-main">
         {view === "dashboard" && (
-          <DashboardViewV3
+          <DashboardView
             data={data}
             state={state}
             registry={csProfile.stepCheckers}
@@ -274,7 +274,7 @@ export default function RoadmapLayoutV3({ data, state, actions }: RoadmapLayoutV
         )}
 
         {view === "chapter" && (
-          <ChapterViewV3
+          <ChapterView
             data={data}
             chapterIdx={selectedChapterIdx}
             state={state}
@@ -285,7 +285,7 @@ export default function RoadmapLayoutV3({ data, state, actions }: RoadmapLayoutV
 
         {view === "step" && (
           <Suspense fallback={<StepSkeleton />}>
-            <LazyStepViewV3
+            <LazyStepView
               data={data}
               state={state}
               registry={csProfile.stepCheckers}

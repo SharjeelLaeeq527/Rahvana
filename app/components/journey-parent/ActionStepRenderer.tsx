@@ -16,13 +16,13 @@ import {
   Lock,
   Crown,
 } from "lucide-react";
-import { InterviewOutcomeTool } from "./components/InterviewOutcomeTool";
-import { Input221gTool } from "./components/Input221gTool";
+// import { InterviewOutcomeTool } from "./components/InterviewOutcomeTool";
+// import { Input221gTool } from "./components/Input221gTool";
 import { useStepEntitlement } from "./useStepEntitlement";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useWizard } from "@/app/(main)/dashboard/hooks/useWizard";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
-import { RoadmapStep } from "../types";
+import { RoadmapStepV3 } from "./types";
 import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPreviewModal";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DOCUMENTS_BY_KEY } from "@/lib/document-vault/document-definitions";
@@ -34,7 +34,7 @@ import { usePlan } from "@/app/context/PlanContext";
 import { E, msg } from "@/lib/errors";
 
 interface ActionStepRendererProps {
-  step: RoadmapStep;
+  step: RoadmapStepV3;
   isCompleted: boolean;
   onToggleComplete: () => void;
   onBack?: () => void;

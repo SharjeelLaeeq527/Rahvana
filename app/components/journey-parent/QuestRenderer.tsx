@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { AlertTriangle, ChevronRight, CheckCircle2, XCircle, Info, Circle } from "lucide-react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-import { QuestSuite, QuestData } from "../types";
+import { QuestSuiteV3, QuestDataV3 } from "./types";
 import { EligibilityRiskBanner } from "./components/EligibilityRiskBanner";
 import { FloatingSidePanel } from "./components/FloatingSidePanel";
 import { E, msg } from "@/lib/errors";
 
 interface QuestRendererProps {
-  quest: QuestSuite;
+  quest: QuestSuiteV3;
   onComplete: () => void;
   state: WizardState;
   actions: {
@@ -21,6 +21,8 @@ interface QuestRendererProps {
   isChapter1?: boolean;
   isChapter2?: boolean;
   isChapter3?: boolean;
+  /** Visa journey type (e.g. "IR5") — routes eligibility alerts to the right detector. */
+  journeyType?: string;
 }
 
 export function QuestRenderer({
@@ -31,6 +33,7 @@ export function QuestRenderer({
   isChapter1 = false,
   isChapter2 = false,
   isChapter3 = false,
+  journeyType,
 }: QuestRendererProps) {
   const [activeQuestId, setActiveQuestId] = useState<string | null>(null);
   const [currentScreenIdx, setCurrentScreenIdx] = useState(0);
@@ -77,7 +80,7 @@ export function QuestRenderer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.metadata?.[metaAnswersKey]]);
 
-  const activeQuest: QuestData | undefined = suite.quests.find((q) => q.id === activeQuestId);
+  const activeQuest: QuestDataV3 | undefined = suite.quests.find((q) => q.id === activeQuestId);
 
   useEffect(() => {
     if (Object.keys(questResults).length > 0) {
@@ -429,6 +432,7 @@ export function QuestRenderer({
                     ? suiteAnswers
                     : ((state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers)
                 }
+                journeyType={journeyType}
                 compact={true}
               />
             </FloatingSidePanel>
@@ -441,6 +445,7 @@ export function QuestRenderer({
                     ? suiteAnswers
                     : ((state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers)
                 }
+                journeyType={journeyType}
               />
             </div>
           </>

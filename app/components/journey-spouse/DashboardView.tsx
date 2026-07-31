@@ -2,7 +2,7 @@
 
 import React, { useMemo, useState, useEffect, useRef } from "react";
 import { ChevronDown, ExternalLink, Clock, Shield } from "lucide-react";
-import { RoadmapData } from "../types";
+import { RoadmapData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getJourneyLockStatus } from "@/lib/journey-lock";
 import { getNextBestAction, getStageProgress, isStageUnlocked } from "./journeyHelpers";
@@ -522,7 +522,7 @@ export function DashboardView({
   // with user-provided-only evidence. Legacy model: 50/50 blend.
   // Returns { score, breakdown } so the CaseHealthOverview explainer can display
   // the SAME four ingredient numbers that produced the score — the worked example
-  // must reconcile exactly. Mirrors DashboardViewV3's weighted path (no
+  // must reconcile exactly. Mirrors DashboardView's weighted path (no
   // userProvided gate; `?? 0` fallbacks) so V2/V3 stay in lockstep.
   const caseScoreResult = useMemo(() => {
     const eligibilityAnswers =
@@ -610,7 +610,7 @@ export function DashboardView({
 
   // Band-cross detection: fire alert only on downward cross, recover on rise.
   // Declared AFTER overallCaseScore + healthNotStarted so its deps aren't read
-  // in the temporal dead zone (mirrors the ordering in DashboardViewV3).
+  // in the temporal dead zone (mirrors the ordering in DashboardView).
   useEffect(() => {
     if (!useWeightedScore || healthNotStarted) {
       prevBandRef.current = null;

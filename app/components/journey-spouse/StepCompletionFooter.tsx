@@ -1,6 +1,6 @@
 import React from "react";
 import { CheckCircle2, Lock } from "lucide-react";
-import { RoadmapStep } from "../types";
+import { RoadmapStep } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 
 interface StepCompletionFooterProps {
   currentStep: RoadmapStep;
