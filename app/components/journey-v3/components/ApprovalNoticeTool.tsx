@@ -1,13 +1,16 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { X, Info, RefreshCw, Upload, Lock } from "lucide-react";
+import { X, Info, RefreshCw, Upload, Lock, Eye } from "lucide-react";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { usePlan } from "@/app/context/PlanContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPreviewModal";
+import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
+import type { DocumentDefinition } from "@/lib/document-vault/types";
 import { E, msg } from "@/lib/errors";
 
 interface ApprovalNoticeToolProps {
@@ -70,6 +73,18 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
   const approvalDoc = (uploadedDocuments || []).find(
     (d) => d.documentDefId === "i797-approval-notice"
   );
+
+  // Preview of the uploaded I-797 — reuses the shared DocumentPreviewModal (same
+  // component the Document Vault and every step doc-list use). Resolve the catalog
+  // definition for the display title; synthesize a minimal one if it's ever absent.
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  const approvalDocDef: DocumentDefinition =
+    ALL_DOCUMENTS.find((d) => d.id === "i797-approval-notice") ||
+    ({
+      id: "i797-approval-notice",
+      name: "Notice of Approval (I-797)",
+      description: "",
+    } as DocumentDefinition);
 
   const [receiptError, setReceiptError] = useState("");
   const currentGuideStep = data.guideSteps[approvalGuideStep];
@@ -167,6 +182,20 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
       </button>
     </div>
   );
+  /** Preview the uploaded approval notice — only shown once a doc exists. */
+  const PreviewButton = () =>
+    approvalDoc ? (
+      <button
+        onClick={() => {
+          if (guard && !guard()) return;
+          setIsPreviewOpen(true);
+        }}
+        className="inline-flex items-center justify-center gap-[8px] p-[12px_14px] rounded-[10px] border-[1.5px] transition-all hover:-translate-y-[1px] text-[14.5px] font-semibold tracking-tight bg-white border-[var(--rv-line)] text-[var(--rv-navy)] hover:border-[var(--rv-blue)] hover:text-[var(--rv-blue)]"
+      >
+        <Eye size={15} className="stroke-[2.5px]" />
+        Preview
+      </button>
+    ) : null;
   const UploadLockedNote = () => (
     <div
       className="mt-2 flex items-start gap-2 rounded-xl p-3"
@@ -349,6 +378,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                 </p>
                 <div className="flex gap-[10px] flex-wrap">
                   <UploadButton replace />
+                  <PreviewButton />
                 </div>
                 {isBasic && <UploadLockedNote />}
                 <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[14px] p-[16px_18px] animate-in zoom-in-95 duration-200 mt-4">
@@ -416,6 +446,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                     </svg>
                     Enter Notice Details Manually
                   </button>
+                  <PreviewButton />
                 </div>
                 {isBasic && <UploadLockedNote />}
               </>
@@ -872,6 +903,16 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Preview uploaded approval notice (shared component) */}
+      {isPreviewOpen && approvalDoc && (
+        <DocumentPreviewModal
+          open={isPreviewOpen}
+          onClose={() => setIsPreviewOpen(false)}
+          documentDef={approvalDocDef}
+          uploadedDoc={approvalDoc}
+        />
+      )}
 
       {/* Upgrade modal */}
       {upgradeModalFeature && (

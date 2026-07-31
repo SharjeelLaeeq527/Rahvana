@@ -71,6 +71,7 @@ import {
   syncQuestionnaireAnswersToFlags,
 } from "@/lib/document-vault/journey-mapping";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { useInitDocumentVault } from "@/lib/document-vault/useInitDocumentVault";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
 import { MultipleDocumentUploadModal } from "@/app/components/document-vault/MultipleDocumentUploadModal";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
@@ -298,6 +299,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
 
   const { user } = useAuth();
   const {
+    config,
     openUploadModal,
     uploadModalOpen,
     closeUploadModal,
@@ -309,6 +311,22 @@ export const StepViewV3: React.FC<StepViewProps> = ({
     deleteDocument,
     requiredDocuments,
   } = useDocumentVaultStore();
+
+  // Safety-net vault init. The vault config is normally prefetched up in
+  // RoadmapLayoutV3 (see lib/document-vault/useInitDocumentVault.ts), but tool steps
+  // like the I-797 approval upload have no init of their own — so if that single
+  // prefetch ever fails to land, `config` stays null and every upload modal opened
+  // from a step is permanently stuck on "Initializing..." (disabled button).
+  // Re-run the init here ONLY when config is missing, so we guarantee a usable config
+  // without ever clobbering a richer one already loaded (e.g. with dynamic slots).
+  useInitDocumentVault({
+    journeyType: data.journey_type,
+    backendId: state.backendId,
+    metadata: state.metadata,
+    userId: user?.id,
+    skip: !!config,
+  });
+
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [activeUploadType, setActiveUploadType] = useState<"doc" | "hh" | "financial" | null>(null);
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null);
