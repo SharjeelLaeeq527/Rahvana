@@ -384,12 +384,14 @@ const step_3_7: StepChecker = ({ eligibilityAnswers }) => {
 
 // ─── Registry + profile ──────────────────────────────────────────────────────
 
-/** IR-5 registry = every shared checker + the five parent-specific overrides. */
 export const IR5_STEP_CHECKERS: Record<string, StepChecker> = {
   ...COMMON_STEP_CHECKERS,
   step_1_4,
   step_1_9,
   step_1_10,
+  step_1_11: COMMON_STEP_CHECKERS.step_1_12, // Prepare Filing Fee
+  step_1_12: COMMON_STEP_CHECKERS.step_1_13, // Assemble Filing Packet
+  step_1_13: COMMON_STEP_CHECKERS.step_1_14, // Mail Packet & Track Delivery
   step_2_3,
   step_3_7,
 };

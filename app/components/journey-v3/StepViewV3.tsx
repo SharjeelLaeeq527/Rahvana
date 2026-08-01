@@ -283,6 +283,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
   const isChapter1 = sId.startsWith("step_1_");
   const isChapter2 = sId.startsWith("step_2_");
   const isChapter3 = sId.startsWith("step_3_");
+  const isIr5Journey = data.journey_type?.toUpperCase() === "IR5";
   const inlineGuideData = data.inline_guide_data || {};
   // ── Step-level entitlement gating ──────────────────────────────────────────
   const plan = usePlan();
@@ -3028,8 +3029,8 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                   guard={stepEntitlement.guard}
                 />
 
-                {/* PACKET SECTION CHECKLIST — step_1_13 (Assemble Packet, mailing path) */}
-                {sId === "step_1_13" && (
+                {/* PACKET SECTION CHECKLIST — Assemble Packet, mailing path */}
+                {(currentStep as any).action_data?.packet_section_checklist && (
                   <PacketSectionChecklist
                     config={(currentStep as any).action_data?.packet_section_checklist}
                     checked={state.metadata?.packetChecklist as Record<string, boolean> | undefined}
