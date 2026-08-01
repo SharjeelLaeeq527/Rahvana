@@ -227,26 +227,14 @@
                         "value": "father_unmarried",
                         "outcome": "next"
                       },
-                      {
-                        "label": "Stepparent",
-                        "value": "stepparent",
-                        "outcome": "next"
-                      },
-                      {
-                        "label": "Adoptive parent",
-                        "value": "adoptive",
-                        "outcome": "next"
-                      },
+                      { "label": "Stepparent", "value": "stepparent", "outcome": "next" },
+                      { "label": "Adoptive parent", "value": "adoptive", "outcome": "next" },
                       {
                         "label": "Foster parent, guardian, relative, or person who raised the petitioner without a qualifying legal relationship",
                         "value": "guardian_other",
                         "outcome": "stop"
                       },
-                      {
-                        "label": "Not sure",
-                        "value": "unsure",
-                        "outcome": "review"
-                      }
+                      { "label": "Not sure", "value": "unsure", "outcome": "review" }
                     ]
                   },
                   {
@@ -276,11 +264,7 @@
                         "value": "unavailable",
                         "outcome": "review"
                       },
-                      {
-                        "label": "Not sure",
-                        "value": "unsure",
-                        "outcome": "review"
-                      }
+                      { "label": "Not sure", "value": "unsure", "outcome": "review" }
                     ]
                   },
                   {
@@ -305,11 +289,7 @@
                         "value": "no",
                         "outcome": "stop"
                       },
-                      {
-                        "label": "Not sure",
-                        "value": "unsure",
-                        "outcome": "review"
-                      }
+                      { "label": "Not sure", "value": "unsure", "outcome": "review" }
                     ]
                   }
                 ],
@@ -342,11 +322,7 @@
                         "value": "na",
                         "outcome": "next"
                       },
-                      {
-                        "label": "Not sure",
-                        "value": "unsure",
-                        "outcome": "review"
-                      }
+                      { "label": "Not sure", "value": "unsure", "outcome": "review" }
                     ]
                   },
                   {
@@ -371,11 +347,7 @@
                         "value": "na",
                         "outcome": "next"
                       },
-                      {
-                        "label": "Not sure",
-                        "value": "unsure",
-                        "outcome": "review"
-                      }
+                      { "label": "Not sure", "value": "unsure", "outcome": "review" }
                     ]
                   },
                   {
@@ -400,11 +372,7 @@
                         "value": "na",
                         "outcome": "next"
                       },
-                      {
-                        "label": "Not sure",
-                        "value": "unsure",
-                        "outcome": "review"
-                      }
+                      { "label": "Not sure", "value": "unsure", "outcome": "review" }
                     ]
                   },
                   {
@@ -429,11 +397,7 @@
                         "value": "na",
                         "outcome": "next"
                       },
-                      {
-                        "label": "Not sure",
-                        "value": "unsure",
-                        "outcome": "review"
-                      }
+                      { "label": "Not sure", "value": "unsure", "outcome": "review" }
                     ]
                   },
                   {
@@ -458,11 +422,7 @@
                         "value": "na",
                         "outcome": "next"
                       },
-                      {
-                        "label": "Not sure",
-                        "value": "unsure",
-                        "outcome": "review"
-                      }
+                      { "label": "Not sure", "value": "unsure", "outcome": "review" }
                     ]
                   },
                   {
@@ -487,11 +447,7 @@
                         "value": "na",
                         "outcome": "pass"
                       },
-                      {
-                        "label": "Not sure",
-                        "value": "unsure",
-                        "outcome": "review"
-                      }
+                      { "label": "Not sure", "value": "unsure", "outcome": "review" }
                     ]
                   }
                 ],
