@@ -20,7 +20,6 @@ import {
   InterviewSessionInput,
   InterviewPrepOutput,
   GeneratedQuestion,
-  InterviewSessionSource,
 } from "./types";
 import { categoryLoader } from "./category-loader";
 import { loadRulesForCategory, getAppliedRules } from "./rules-loader";
