@@ -756,7 +756,7 @@ export default function DocumentVaultPage() {
   if (noJourneyModalOpen) {
     return (
       <div
-        className="relative flex items-center justify-center min-h-[calc(100vh-55px)] mt-[55px] p-6 transition-all duration-500 selection:bg-amber-500/20 overflow-hidden"
+        className="relative flex items-center justify-center min-h-[calc(100vh-55px)] mt-13.75 p-6 transition-all duration-500 selection:bg-amber-500/20 overflow-hidden"
         style={{
           backgroundImage: "url('/assets/images/vault-bg-v6.png')",
           backgroundSize: "100% 100%",
