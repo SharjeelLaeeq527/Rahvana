@@ -286,7 +286,7 @@ export function AlertCenter({ issues, onOpenStep, onViewScore, notStarted }: Ale
       </div>
 
       {/* Issue list */}
-      <div className="p-2.5 space-y-2 max-h-[600px] overflow-y-auto overscroll-contain">
+      <div className="p-2.5 space-y-2 max-h-[600px] overflow-y-auto">
         {activeIssues.map((issue, i) => (
           <AlertRow
             key={`${issue.stepKey}-${i}`}
