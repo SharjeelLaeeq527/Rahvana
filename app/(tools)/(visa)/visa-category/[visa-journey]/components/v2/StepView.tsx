@@ -594,6 +594,10 @@ export const StepView: React.FC<StepViewProps> = ({
   // --- 2. Remaining Local State ---
   const [isLaunched, setIsLaunched] = useState(false);
 
+  useEffect(() => {
+    setIsLaunched(false);
+  }, [sId]);
+
   // Guarded upload — checks entitlement before opening the vault upload modal
   const guardedOpenUploadModal = useCallback(
     (defId: string) => {
