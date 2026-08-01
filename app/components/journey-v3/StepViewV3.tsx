@@ -284,6 +284,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
   const isChapter2 = sId.startsWith("step_2_");
   const isChapter3 = sId.startsWith("step_3_");
   const isIr5Journey = data.journey_type?.toUpperCase() === "IR5";
+  const isUscisAccountStep = sId === "step_1_6" || (isIr5Journey && sId === "step_1_5");
   const inlineGuideData = data.inline_guide_data || {};
   // ── Step-level entitlement gating ──────────────────────────────────────────
   const plan = usePlan();
@@ -1959,10 +1960,10 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                           ${
                             isLaunched && tool.launch_module.return_note
                               ? isChapter1
-                                ? "bg-[var(--rv-ch1)] pointer-events-none"
+                                ? "bg-[var(--rv-ch1)] hover:bg-[var(--rv-ch1-dark)] text-white/90 shadow-[0_2px_10px_rgba(130,132,191,0.15)]"
                                 : isChapter2
-                                  ? "bg-[var(--rv-ch2)] pointer-events-none"
-                                  : "bg-[var(--primary)] pointer-events-none"
+                                  ? "bg-[var(--rv-ch2)] text-white/90 shadow-[0_2px_10px_rgba(82,10,80,0.15)] hover:bg-[var(--rv-ch2-dark)]"
+                                  : "bg-[#2f6fd4] text-white/90 shadow-[0_2px_10px_rgba(47,111,212,0.2)] hover:bg-[#255ab3]"
                               : isChapter1
                                 ? "bg-[var(--rv-ch1)] hover:bg-[var(--rv-ch1-dark)] text-white shadow-[0_4px_20px_rgba(130,132,191,0.25)]"
                                 : isChapter2
@@ -1982,7 +1983,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                         {isLaunched && tool.launch_module.return_note ? (
                           <>
                             <span>
-                              {tool.launch_module.button_label || tool.launch_module.buttonText}
+                              {tool.launch_module.button_launched_label || tool.launch_module.button_label || tool.launch_module.buttonText}
                             </span>
                             <ArrowUpRight
                               size={18}
@@ -2006,7 +2007,9 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                         <div className="flex items-center justify-center gap-[6px] px-[12px] py-[10px] bg-white/5 border border-white/10 rounded-[10px] animate-in fade-in slide-in-from-top-1 duration-300">
                           <Info size={14} className="text-white/40" strokeWidth={2} />
                           <p className="text-[12px] text-white/50 font-medium text-center">
-                            {tool.launch_module.return_note}
+                            {typeof tool.launch_module.return_note === "object"
+                              ? tool.launch_module.return_note.body || tool.launch_module.return_note.title
+                              : tool.launch_module.return_note}
                           </p>
                         </div>
                       )}
@@ -2171,7 +2174,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
           )}
 
           {/* SECONDARY ACTIONS ROW (Step 6 SPECIFIC) */}
-          {(sId === "step_1_6" || sId === "step_2_1") && (
+          {(isUscisAccountStep || sId === "step_2_1") && (
             <div className="flex flex-col mb-[28px]">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-[12px] mb-[12px]">
                 {/* Tutorial / Guide Card */}
@@ -2189,12 +2192,12 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                     </div>
                   </div>
                   <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
-                    {sId === "step_1_6"
+                    {isUscisAccountStep
                       ? "Step-by-Step Account Setup Guide"
                       : "Step-by-Step CEAC Access Guide"}
                   </h3>
                   <p className="text-[12px] text-[#6b8097] leading-normal">
-                    {sId === "step_1_6"
+                    {isUscisAccountStep
                       ? "Walk through the USCIS account creation process screen by screen."
                       : "Show where to find your case number and invoice ID, and how first-time CEAC login works."}
                   </p>
@@ -2205,12 +2208,12 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                 </button>
 
                 {/* Credentials Card (Toggle Unsaved/Saved) */}
-                {(sId === "step_1_6" ? uscisCredentials : ceacCredentials) ? (
+                {(isUscisAccountStep ? uscisCredentials : ceacCredentials) ? (
                   /* Saved Card */
                   <button
                     onClick={() => {
                       if (!stepEntitlement.guard()) return;
-                      const portal = sId === "step_1_6" ? "USCIS" : "NVC";
+                      const portal = isUscisAccountStep ? "USCIS" : "NVC";
                       setWalletPortalType(portal);
                       if (portal === "USCIS") {
                         setIsWalletViewOpen(true);
@@ -2242,7 +2245,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                   <button
                     onClick={() => {
                       if (!stepEntitlement.guard()) return;
-                      const portal = sId === "step_1_6" ? "USCIS" : "NVC";
+                      const portal = isUscisAccountStep ? "USCIS" : "NVC";
                       setWalletPortalType(portal);
                       if (portal === "USCIS") {
                         setIsWalletFormOpen(true);
@@ -2258,10 +2261,10 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                       </div>
                     </div>
                     <h3 className="text-[14px] font-semibold text-[#0c1b33] mb-1">
-                      Save {sId === "step_1_6" ? "USCIS" : "CEAC"} Credentials
+                      Save {isUscisAccountStep ? "USCIS" : "CEAC"} Credentials
                     </h3>
                     <p className="text-[12px] text-[#6b8097] leading-normal">
-                      Securely store your {sId === "step_1_6" ? "USCIS" : "CEAC"} login details in
+                      Securely store your {isUscisAccountStep ? "USCIS" : "CEAC"} login details in
                       Rahvana&apos;s Portal Wallet.
                     </p>
                     <div className="flex items-center gap-1 mt-3 text-[12px] font-semibold text-primary">
@@ -2273,13 +2276,13 @@ export const StepViewV3: React.FC<StepViewProps> = ({
               </div>
 
               {/* Detailed View (Below Row, Only when saved) */}
-              {(sId === "step_1_6" ? uscisCredentials : ceacCredentials) && (
+              {(isUscisAccountStep ? uscisCredentials : ceacCredentials) && (
                 <div className="bg-[#e8f5ef] border-[1.5px] border-[#a8d9be] rounded-[16px] p-5 flex flex-col animate-in fade-in slide-in-from-top-2 duration-300">
                   <div className="text-[10px] font-bold uppercase tracking-widest text-[#15744f] mb-[10px]">
-                    {sId === "step_1_6" ? "USCIS" : "CEAC"} Credentials, Saved
+                    {isUscisAccountStep ? "USCIS" : "CEAC"} Credentials, Saved
                   </div>
                   <div className="flex-1 flex flex-col">
-                    {sId === "step_1_6" ? (
+                    {isUscisAccountStep ? (
                       <>
                         <div className="flex justify-between items-center py-1.5 border-b border-[#a8d9be]">
                           <span className="text-[12px] text-[#3a4f63] font-medium">

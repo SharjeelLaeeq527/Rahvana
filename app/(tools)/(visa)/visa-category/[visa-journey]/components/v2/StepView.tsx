@@ -2028,10 +2028,10 @@ export const StepView: React.FC<StepViewProps> = ({
                           ${
                             isLaunched && tool.launch_module.return_note
                               ? isChapter1
-                                ? "bg-[var(--rv-ch1)] pointer-events-none"
+                                ? "bg-[var(--rv-ch1)] hover:bg-[var(--rv-ch1-dark)] text-white/90 shadow-[0_2px_10px_rgba(130,132,191,0.15)]"
                                 : isChapter2
-                                  ? "bg-[var(--rv-ch2)] pointer-events-none"
-                                  : "bg-[var(--primary)] pointer-events-none"
+                                  ? "bg-[var(--rv-ch2)] text-white/90 shadow-[0_2px_10px_rgba(82,10,80,0.15)] hover:bg-[var(--rv-ch2-dark)]"
+                                  : "bg-[#2f6fd4] text-white/90 shadow-[0_2px_10px_rgba(47,111,212,0.2)] hover:bg-[#255ab3]"
                               : isChapter1
                                 ? "bg-[var(--rv-ch1)] hover:bg-[var(--rv-ch1-dark)] text-white shadow-[0_4px_20px_rgba(130,132,191,0.25)]"
                                 : isChapter2
@@ -2051,7 +2051,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         {isLaunched && tool.launch_module.return_note ? (
                           <>
                             <span>
-                              {tool.launch_module.button_label || tool.launch_module.buttonText}
+                              {tool.launch_module.button_launched_label || tool.launch_module.button_label || tool.launch_module.buttonText}
                             </span>
                             <ArrowUpRight
                               size={18}
@@ -2075,7 +2075,9 @@ export const StepView: React.FC<StepViewProps> = ({
                         <div className="flex items-center justify-center gap-[6px] px-[12px] py-[10px] bg-white/5 border border-white/10 rounded-[10px] animate-in fade-in slide-in-from-top-1 duration-300">
                           <Info size={14} className="text-white/40" strokeWidth={2} />
                           <p className="text-[12px] text-white/50 font-medium text-center">
-                            {tool.launch_module.return_note}
+                            {typeof tool.launch_module.return_note === "object"
+                              ? tool.launch_module.return_note.body || tool.launch_module.return_note.title
+                              : tool.launch_module.return_note}
                           </p>
                         </div>
                       )}

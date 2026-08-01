@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useParams } from "next/navigation";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { E, msg } from "@/lib/errors";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
@@ -61,7 +62,11 @@ interface UseWizardOptions {
 }
 
 export function useWizard(options: UseWizardOptions = {}) {
-  const { userId, journeyId = "ir1", roadmapData: externalRoadmapData } = options;
+  const params = useParams();
+  const routeJourney = params?.["visa-journey"];
+  const routeJourneyId = typeof routeJourney === "string" ? routeJourney.replace("-", "").toLowerCase() : undefined;
+
+  const { userId, journeyId = routeJourneyId || "ir1", roadmapData: externalRoadmapData } = options;
   const { profile, updateProfile } = useUserProfile();
 
   const activeRoadmap = externalRoadmapData;
