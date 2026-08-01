@@ -1787,44 +1787,6 @@
                   }
                 ],
                 "note": "Inconsistencies between your form and official documents can lead to a Request for Evidence (RFE), take time to be accurate."
-              },
-              {
-                "label": "Step 9 of 10, Go to I-130A Section",
-                "heading": "Complete Form I-130A for beneficiary",
-                "instruction": "After completing the I-130, you will proceed to <strong>Form I-130A</strong>, the supplemental form for information about the beneficiary (your spouse). Fill this section with your spouse's details.",
-                "url": "my.uscis.gov",
-                "screenTitle": "Form I-130A",
-                "screenDesc": "Beneficiary supplemental information",
-                "media": {
-                  "type": "img",
-                  "src": "/assets/images/ir1-journey/c1_step7/09-go-to-I-130A-section.png"
-                },
-                "fields": [
-                  {
-                    "type": "btn",
-                    "label": "Complete I-130A"
-                  }
-                ],
-                "note": null
-              },
-              {
-                "label": "Step 10 of 10, Upload I-130A Form",
-                "heading": "Upload the completed I-130A",
-                "instruction": "After completing Form I-130A, upload it along with your supporting evidence. Ensure all files are clearly named, legible, and in PDF or JPG format.",
-                "url": "my.uscis.gov",
-                "screenTitle": "Upload Documents",
-                "screenDesc": "Attach I-130A and supporting evidence",
-                "media": {
-                  "type": "img",
-                  "src": "/assets/images/ir1-journey/c1_step7/10-upload-130A-form.png"
-                },
-                "fields": [
-                  {
-                    "type": "btn",
-                    "label": "Upload Files"
-                  }
-                ],
-                "note": "All documents must be under 12 MB each. Foreign-language documents require certified English translations uploaded separately."
               }
             ],
             "disclaimer": "Rahvana provides structured guidance only. This is not legal advice. USCIS.gov is the official filing portal. Always verify information at uscis.gov before submitting."
@@ -2340,7 +2302,7 @@
             "filingMethod": "paper"
           },
           "display_number_override": 5,
-          "step_description": "Before mailing anything to USCIS, print the completed I-130 and I-130A from Rahvana in full, at normal size, and in a clear readable format.",
+          "step_description": "Before mailing anything to USCIS, print the completed I-130 from Rahvana in full, at normal size, and in a clear readable format.",
           "who": "Petitioner",
           "where": "uscis.gov/i-130",
           "timeline": "1-2 hours",
@@ -2384,7 +2346,7 @@
             "action_items": [
               {
                 "title": "Print both forms",
-                "description": "Make sure you print the completed I-130 and I-130A together so the packet is ready for assembly."
+                "description": "Make sure you print the completed I-130 together so the packet is ready for assembly."
               },
               {
                 "title": "Check page quality",
@@ -2395,7 +2357,7 @@
               {
                 "label": "Print guide · Step 1",
                 "title": "Navigate to the Print Hard Copies step",
-                "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of the Forms</strong> step, and click on either <strong>Print I-130</strong> or <strong>Print I-130A</strong> button.",
+                "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of the Forms</strong> step, and click on either <strong>Print I-130</strong> button.",
                 "url": "uscis-petition",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to print forms\" style=\"width:100%; \" />",
                 "note": "If you have not added this document in the Document Vault yet, you will get an error. First upload the document there, then try again."
@@ -2435,7 +2397,7 @@
               {
                 "label": "Download guide · Step 1",
                 "title": "Navigate to the Print Hard Copies step",
-                "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of Forms</strong> step, and click on either <strong>Print I-130</strong> or <strong>Print I-130A</strong> button.",
+                "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of Forms</strong> step, and click on either <strong>Print I-130</strong> button.",
                 "url": "uscis-petition",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to download forms\" style=\"width:100%; \" />",
                 "note": "If you have not added this document in the Document Vault yet, you will get an error. First upload the document there, then try again."
@@ -2451,7 +2413,7 @@
               {
                 "label": "Download guide · Step 3",
                 "title": "Choose save location and filename",
-                "text": "When the save dialog appears, select the destination folder on your computer where you want to store the file. Give it a clear name like <strong>I-130_Final.pdf</strong> or <strong>I-130A_Completed.pdf</strong> and click <strong>Save</strong>.",
+                "text": "When the save dialog appears, select the destination folder on your computer where you want to store the file. Give it a clear name like <strong>I-130_Final.pdf</strong> and click <strong>Save</strong>.",
                 "url": "save-location",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/7-save.png\" alt=\"Save file location\" style=\"width:100%; \" />",
                 "note": "Choose a memorable location such as a dedicated immigration folder so you can find it later."
@@ -2575,7 +2537,7 @@
                 "title": "Place payment at the front of the packet",
                 "text": "Once the payment item is ready, whether it is a completed Form G-1450 (card) or Form G-1650 (ACH), place it at the very front of the mailing packet. The payment form should be the first thing USCIS sees when they open the envelope.",
                 "url": "paper packet",
-                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card) or Form G-1650 (ACH), placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Forms</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130 and I-130A forms</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
+                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card) or Form G-1650 (ACH), placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Forms</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
                 "note": "Keep the payment form separate and easy to reach so packet assembly in the next step stays quick and organized."
               },
               {
@@ -2674,7 +2636,7 @@
               {
                 "label": "Assembly guide · Step 2",
                 "title": "Place the forms next",
-                "text": "Put the completed I-130 and I-130A right behind the payment section as the main filing forms.",
+                "text": "Put the completed I-130 right behind the payment section as the main filing forms.",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1_step8_mail/step2.png\" alt=\"Place the forms next\" style=\"width:100%; \" />",
                 "note": "Keep the pages complete and in order. Do not mix the form pages into the evidence stack."
               },
@@ -2712,7 +2674,7 @@
                 },
                 {
                   "id": "forms",
-                  "label": "Completed I-130 and I-130A, signed and dated",
+                  "label": "Completed I-130, signed and dated",
                   "position": "after payment",
                   "required": true
                 },
