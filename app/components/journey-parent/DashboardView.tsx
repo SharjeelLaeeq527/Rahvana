@@ -11,7 +11,7 @@ import {
   getStageProgress,
   isStageUnlocked,
   getActiveStepsForStage,
-} from "./journeyHelpersV3";
+} from "./journeyHelpers";
 import APTrackingTool from "./APTrackingTool";
 import WaitingStateCard from "./WaitingStateCard";
 // import { JourneyRiskCard } from "./components/JourneyRiskCard";
@@ -67,7 +67,7 @@ import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 // import { LockedFeature } from "@/app/components/entitlements/LockedFeature";
 import { STEP_PRIMARY_FEATURE } from "@/lib/entitlements/stepFeatureMap";
-// import { getActiveStepsForStage } from "./journeyHelpersV3";
+// import { getActiveStepsForStage } from "./journeyHelpers";
 import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
 import { E, msg } from "@/lib/errors";
 import VisaTicker from "@/app/components/home-page/VisaTicker";
@@ -109,7 +109,7 @@ const visaCategoryNames: Record<string, string> = {
   "ir5-journey": "IR-5 Parent",
 };
 
-export function DashboardViewV3({
+export function DashboardView({
   data,
   state,
   registry,

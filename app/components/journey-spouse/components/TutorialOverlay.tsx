@@ -2,7 +2,7 @@ import React from "react";
 import { X } from "lucide-react";
 import Image from "next/image";
 import { TutorialVideo } from "@/app/components/shared/TutorialVideo";
-import { TutorialStepData } from "../../types";
+import { TutorialStepData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { USCIS_TUTORIAL_STEPS } from "../UscisTutorialData";
 import { HOUSEHOLD_TUTORIAL_STEPS } from "../HouseholdTutorialData";
 

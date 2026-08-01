@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, Suspense } from "react";
-import { RoadmapData } from "../types";
+import { RoadmapData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { DashboardView } from "./DashboardView";
 import { ChapterView } from "./ChapterView";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
@@ -32,7 +32,7 @@ function StepSkeleton() {
   );
 }
 
-interface RoadmapLayoutV2Props {
+interface RoadmapLayoutSpouseProps {
   data: RoadmapData;
   state: WizardState;
   actions: {
@@ -47,7 +47,7 @@ interface RoadmapLayoutV2Props {
 
 type ViewType = "dashboard" | "chapter" | "step";
 
-export default function RoadmapLayoutV2({ data, state, actions }: RoadmapLayoutV2Props) {
+export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLayoutSpouseProps) {
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
 

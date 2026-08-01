@@ -20,12 +20,18 @@ interface InitDocumentVaultArgs {
    * behavior; V3 omits it so the category comes from the journey.
    */
   visaCategory?: VisaCategory;
+  /**
+   * Skip the init entirely (no config write, no document reload). Used by callers
+   * that only want a *fallback* init — e.g. a step view that re-inits solely when the
+   * store's config is missing, so it never clobbers a config already loaded upstream.
+   */
+  skip?: boolean;
 }
 
 /**
  * Prefetch the document vault for a journey.
  *
- * Call this from the ALWAYS-MOUNTED journey layout (RoadmapLayoutV2 / RoadmapLayoutV3)
+ * Call this from the ALWAYS-MOUNTED journey layout (RoadmapLayoutSpouse / RoadmapLayoutParent)
  * so the uploaded documents — and therefore the case-strength score — are loaded as
  * soon as the journey opens, while the user is still on the dashboard.
  *
@@ -45,6 +51,7 @@ export function useInitDocumentVault({
   metadata,
   userId,
   visaCategory,
+  skip = false,
 }: InitDocumentVaultArgs) {
   const setConfig = useDocumentVaultStore((s) => s.setConfig);
   const reloadDocuments = useDocumentVaultStore((s) => s.reloadDocuments);
@@ -57,6 +64,7 @@ export function useInitDocumentVault({
   metadataRef.current = metadata;
 
   useEffect(() => {
+    if (skip) return;
     const journeyKey = backendId || "__no-journey__";
     if (initedJourneyRef.current === journeyKey) return;
     initedJourneyRef.current = journeyKey;
@@ -83,5 +91,5 @@ export function useInitDocumentVault({
       // Best-effort prefetch; the store logs its own errors and the StepView
       // still functions if this fails (it just won't be pre-warmed).
     });
-  }, [backendId, journeyType, userId, visaCategory, setConfig, reloadDocuments]);
+  }, [backendId, journeyType, userId, visaCategory, skip, setConfig, reloadDocuments]);
 }

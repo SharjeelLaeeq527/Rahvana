@@ -10,7 +10,7 @@ import type { UploadedDocument } from "@/lib/document-vault/types";
 import { runStepChecks, IR1_STEP_CHECKERS, type StepChecker } from "./step-checkers";
 import { detectRiskFlagsFromEligibilityQuest } from "./eligibility-quest-detector";
 import { computeCaseStrength } from "./doc-scoring";
-import { getActiveStepsForStage as defaultGetActiveStepsForStage } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/v2/journeyHelpers";
+import { getActiveStepsForStage as defaultGetActiveStepsForStage } from "@/app/components/journey-spouse/journeyHelpers";
 import {
   runConsistencyIntelligence,
   runFullConsistencyAnalysis,
