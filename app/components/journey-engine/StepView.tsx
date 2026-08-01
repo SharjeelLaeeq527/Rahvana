@@ -313,7 +313,7 @@ export const StepView: React.FC<StepViewProps> = ({
   } = useDocumentVaultStore();
 
   // Safety-net vault init. The vault config is normally prefetched up in
-  // RoadmapLayoutParent (see lib/document-vault/useInitDocumentVault.ts), but tool steps
+  // RoadmapLayoutEngine (see lib/document-vault/useInitDocumentVault.ts), but tool steps
   // like the I-797 approval upload have no init of their own — so if that single
   // prefetch ever fails to land, `config` stays null and every upload modal opened
   // from a step is permanently stuck on "Initializing..." (disabled button).
@@ -967,7 +967,7 @@ export const StepView: React.FC<StepViewProps> = ({
   }, [state.metadata.filingMethodConfirmed]);
 
   // Document Vault init (setConfig + reloadDocuments) is now prefetched once, up in
-  // RoadmapLayoutParent via useInitDocumentVault — so uploaded documents are already
+  // RoadmapLayoutEngine via useInitDocumentVault — so uploaded documents are already
   // loaded before this (lazy) step ever mounts. See lib/document-vault/useInitDocumentVault.ts.
 
   // Disable body scroll when overlays are open

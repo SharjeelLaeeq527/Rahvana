@@ -81,7 +81,7 @@ import { RoadmapData } from "./components/types";
 import ScenarioSelectionModal from "./components/ScenarioSelectionModal";
 import VisaCategoryTooltip from "./components/VisaCategoryToolTip";
 import RoadmapLayoutSpouse from "@/app/components/journey-spouse/RoadmapLayoutSpouse";
-import RoadmapLayoutParent from "@/app/components/journey-parent/RoadmapLayoutParent";
+import RoadmapLayoutEngine from "@/app/components/journey-engine/RoadmapLayoutEngine";
 
 export default function IR1JourneyPage() {
   const { user } = useAuth();
@@ -230,17 +230,20 @@ export default function IR1JourneyPage() {
     );
   }
 
-  // Use V2 for IR-1/CR-1 journeys
+  // IR-1/CR-1 keep the dedicated (legacy) spouse UI.
   if (visaJourney === "ir-1" || visaJourney === "cr-1") {
     return <RoadmapLayoutSpouse data={roadmapData} state={state} actions={actions as any} />;
   }
 
-  // Use V3 for IR-5 parent journey (JSON-driven)
-  if (visaJourney === "ir-5") {
-    return <RoadmapLayoutParent data={roadmapData as any} state={state} actions={actions as any} />;
+  // Any JSON-driven journey (chapters-schema) renders through the generic engine —
+  // ir-5 today, and ANY future category whose JSON follows the chapters schema, with
+  // NO routing change needed. Old-schema journeys (f-1, germany: `stages`/no `chapters`)
+  // fall through to the legacy UI below.
+  if (Array.isArray((roadmapData as any).chapters)) {
+    return <RoadmapLayoutEngine data={roadmapData as any} state={state} actions={actions as any} />;
   }
 
-  // Fallback for other journeys (Old UI)
+  // Fallback for old-schema journeys (Old UI)
   return (
     <section id={visaJourneyParam} className="block">
       <div className="w-full site-main-px site-main-py">
