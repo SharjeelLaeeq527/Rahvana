@@ -607,7 +607,7 @@ export const ActionStepRendererV3: React.FC<ActionStepRendererProps> = ({
   // Filter guide steps for step_1_11 based on selected guide type
   const getFilteredGuideSteps = () => {
     if (!actionData.guide_steps) return [];
-    if (step.step_key === "step_1_11" && selectedGuideType) {
+    if (step.step_key === "step_1_10" && selectedGuideType) {
       return actionData.guide_steps.filter((gs: any) =>
         gs.label?.includes(selectedGuideType === "print" ? "Print" : "Download")
       );
@@ -1398,7 +1398,7 @@ export const ActionStepRendererV3: React.FC<ActionStepRendererProps> = ({
               style={{
                 fontSize: "13.5px",
                 lineHeight: 1.55,
-                color: step.step_key === "step_1_11" ? CHAPTER1.text : "rgba(255, 255, 255, 0.74)",
+                color: step.step_key === "step_1_10" ? CHAPTER1.text : "rgba(255, 255, 255, 0.74)",
                 maxWidth: "470px",
               }}
             >
@@ -1414,7 +1414,7 @@ export const ActionStepRendererV3: React.FC<ActionStepRendererProps> = ({
                 padding: "6px 11px",
                 borderRadius: "999px",
                 background:
-                  step.step_key === "step_1_11" ? CHAPTER1.feature : "rgba(255, 255, 255, 0.1)",
+                  step.step_key === "step_1_10" ? CHAPTER1.feature : "rgba(255, 255, 255, 0.1)",
                 fontSize: "10px",
                 fontWeight: 700,
                 letterSpacing: ".1em",
@@ -1459,11 +1459,11 @@ export const ActionStepRendererV3: React.FC<ActionStepRendererProps> = ({
           )}
 
           {/* Primary CTA Button */}
-          {step.step_key === "step_1_11" ? (
+          {step.step_key === "step_1_10" ? (
             <div
               style={{
                 display: "grid",
-                gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
+                // gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr",
                 gap: "12px",
                 marginTop: "12px",
               }}
@@ -1514,7 +1514,7 @@ export const ActionStepRendererV3: React.FC<ActionStepRendererProps> = ({
                 {stepEntitlement.isLocked && <Lock size={18} className="mr-2 opacity-80" />}
                 Print I-130
               </button>
-              <button
+              {/* <button
                 onClick={() => {
                   if (!stepEntitlement.guard()) return;
                   handlePreview("I130A_FORM");
@@ -1559,7 +1559,7 @@ export const ActionStepRendererV3: React.FC<ActionStepRendererProps> = ({
               >
                 {stepEntitlement.isLocked && <Lock size={18} className="mr-2 opacity-80" />}
                 Print I-130A
-              </button>
+              </button> */}
             </div>
           ) : (
             actionData.cta_button &&
@@ -1578,7 +1578,7 @@ export const ActionStepRendererV3: React.FC<ActionStepRendererProps> = ({
                   width: "100%",
                   background: stepEntitlement.isLocked
                     ? "#4a5568"
-                    : step.step_key === "step_1_11"
+                    : step.step_key === "step_1_10"
                       ? CHAPTER1.accent
                       : COLORS.accent,
                   color: "#fff",
@@ -1594,13 +1594,13 @@ export const ActionStepRendererV3: React.FC<ActionStepRendererProps> = ({
                 onMouseEnter={(e) => {
                   if (!stepEntitlement.isLocked) {
                     (e.target as HTMLElement).style.background =
-                      step.step_key === "step_1_11" ? CHAPTER1.accentDark : COLORS.accent2;
+                      step.step_key === "step_1_10" ? CHAPTER1.accentDark : COLORS.accent2;
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!stepEntitlement.isLocked) {
                     (e.target as HTMLElement).style.background =
-                      step.step_key === "step_1_11" ? CHAPTER1.accent : COLORS.accent;
+                      step.step_key === "step_1_10" ? CHAPTER1.accent : COLORS.accent;
                   }
                 }}
               >
@@ -1668,7 +1668,7 @@ export const ActionStepRendererV3: React.FC<ActionStepRendererProps> = ({
               <button
                 onClick={() => {
                   if (!stepEntitlement.guard()) return;
-                  if (step.step_key === "step_1_11") {
+                  if (step.step_key === "step_1_10") {
                     setShowGuideChoice(true);
                   } else {
                     setShowGuide(true);
