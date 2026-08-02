@@ -2359,7 +2359,7 @@
                 "title": "Navigate to the Print Hard Copies step",
                 "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of the Forms</strong> step, and click on either <strong>Print I-130</strong> button.",
                 "url": "uscis-petition",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to print forms\" style=\"width:100%; \" />",
+                "visual": "<img src=\"/assets/images/ir5-journey/c1_step10/1-click-button.png\" alt=\"Navigate to print forms\" style=\"width:100%; \" />",
                 "note": "If you have not added this document in the Document Vault yet, you will get an error. First upload the document there, then try again."
               },
               {
@@ -2399,7 +2399,7 @@
                 "title": "Navigate to the Print Hard Copies step",
                 "text": "In USCIS Petition Filing, navigate to the <strong>Print Hard Copies of Forms</strong> step, and click on either <strong>Print I-130</strong> button.",
                 "url": "uscis-petition",
-                "visual": "<img src=\"/assets/images/ir1-journey/c1_step11/1-click-button.png\" alt=\"Navigate to download forms\" style=\"width:100%; \" />",
+                "visual": "<img src=\"/assets/images/ir5-journey/c1_step10/1-click-button.png\" alt=\"Navigate to download forms\" style=\"width:100%; \" />",
                 "note": "If you have not added this document in the Document Vault yet, you will get an error. First upload the document there, then try again."
               },
               {
