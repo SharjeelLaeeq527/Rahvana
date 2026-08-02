@@ -2,6 +2,11 @@
 // Defines structure for all category configuration files.
 
 import { SectionUIConfig } from "@/types/review";
+import type {
+  ConditionExpression,
+  QuestionConditions,
+  SkipIfInput,
+} from "@/lib/interview-prep/condition-evaluator";
 
 // Category Configuration
 export interface InterviewCategoryConfig {
@@ -61,7 +66,7 @@ export interface DynamicQuestion {
   options?: string[];
   helpText?: string;
   placeholder?: string;
-  skipIf?: SkipCondition[];
+  skipIf?: SkipIfInput;
   dependsOn?: DependsOnCondition;
 }
 
@@ -93,7 +98,8 @@ export interface InterviewQuestion {
   priority: "high" | "medium" | "low";
   tier?: "free" | "basic" | "premium" | "executive";
   mockInterviewOrder?: number;
-  skipIf?: SkipCondition[];
+  conditions?: QuestionConditions | ConditionExpression;
+  skipIf?: SkipIfInput;
 }
 
 export interface QuestionBank {

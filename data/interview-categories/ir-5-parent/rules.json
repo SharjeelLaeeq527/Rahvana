@@ -11,8 +11,8 @@
   },
   "selectionStrategy": {
     "approach": "Layered category filtering with risk-based priority boosts.",
-    "baselineQuestionCount": 51,
-    "maxQuestionsPerSession": 66,
+    "baselineQuestionCount": 52,
+    "maxQuestionsPerSession": 60,
     "priorityHierarchy": ["critical", "high", "medium", "low"]
   },
   "questionSelectionRules": [
