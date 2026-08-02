@@ -34,6 +34,15 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
   const [email, setEmail] = useState(initialData?.username || "");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    if (isOpen) {
+      setCaseNumber(initialData?.nvc_case_number || "");
+      setInvoiceId(initialData?.nvc_invoice_id || "");
+      setEmail(initialData?.username || "");
+      setErrors({});
+    }
+  }, [isOpen, initialData]);
+
   const handleSave = async () => {
     const newErrors: Record<string, string> = {};
     const cleanCase = caseNumber.trim().toUpperCase();
