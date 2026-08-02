@@ -286,7 +286,7 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({ isOpen, onClose, data,
                 />
               </div>
 
-              <div className="flex flex-col gap-[5px]">
+              <div className="flex flex-col gap-[5px] pb-6">
                 <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097]">
                   Payment Note
                 </label>
