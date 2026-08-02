@@ -3,13 +3,13 @@
 import React, { useState, useEffect } from "react";
 import { AlertTriangle, ChevronRight, CheckCircle2, XCircle, Info, Circle } from "lucide-react";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-import { QuestSuiteV3, QuestDataV3 } from "./types";
+import { QuestSuite, QuestData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { EligibilityRiskBanner } from "./components/EligibilityRiskBanner";
 import { FloatingSidePanel } from "./components/FloatingSidePanel";
 import { E, msg } from "@/lib/errors";
 
 interface QuestRendererProps {
-  quest: QuestSuiteV3;
+  quest: QuestSuite;
   onComplete: () => void;
   state: WizardState;
   actions: {
@@ -21,11 +21,9 @@ interface QuestRendererProps {
   isChapter1?: boolean;
   isChapter2?: boolean;
   isChapter3?: boolean;
-  /** Visa journey type (e.g. "IR5") — routes eligibility alerts to the right detector. */
-  journeyType?: string;
 }
 
-export function QuestRendererV3({
+export function QuestRenderer({
   quest: suite,
   onComplete,
   state,
@@ -33,7 +31,6 @@ export function QuestRendererV3({
   isChapter1 = false,
   isChapter2 = false,
   isChapter3 = false,
-  journeyType,
 }: QuestRendererProps) {
   const [activeQuestId, setActiveQuestId] = useState<string | null>(null);
   const [currentScreenIdx, setCurrentScreenIdx] = useState(0);
@@ -80,7 +77,7 @@ export function QuestRendererV3({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state.metadata?.[metaAnswersKey]]);
 
-  const activeQuest: QuestDataV3 | undefined = suite.quests.find((q) => q.id === activeQuestId);
+  const activeQuest: QuestData | undefined = suite.quests.find((q) => q.id === activeQuestId);
 
   useEffect(() => {
     if (Object.keys(questResults).length > 0) {
@@ -432,7 +429,6 @@ export function QuestRendererV3({
                     ? suiteAnswers
                     : ((state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers)
                 }
-                journeyType={journeyType}
                 compact={true}
               />
             </FloatingSidePanel>
@@ -445,7 +441,6 @@ export function QuestRendererV3({
                     ? suiteAnswers
                     : ((state.metadata?.[metaAnswersKey] as any) ?? suiteAnswers)
                 }
-                journeyType={journeyType}
               />
             </div>
           </>

@@ -2,27 +2,31 @@
 
 import React, { useMemo, useState } from "react";
 import { ChevronRight, AlertTriangle } from "lucide-react";
-import { RoadmapDataV3 } from "./types";
+import { RoadmapData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-import { getActiveStepsForStage, getStageProgress } from "./journeyHelpersV3";
+import { getActiveStepsForStage, getStageProgress } from "./journeyHelpers";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
-import { getStepLockStatus, getModalFeatureForTier } from "@/lib/entitlements/hardLockRules";
-// import Image from "next/image";
+import { PlanTier } from "@/lib/entitlements/config";
+import {
+  getStepLockStatus,
+  HARD_LOCK_RULES,
+  getModalFeatureForTier,
+} from "@/lib/entitlements/hardLockRules";
 
 interface ChapterViewProps {
-  data: RoadmapDataV3;
+  data: RoadmapData;
   chapterIdx: number;
   state: WizardState;
   onBack: () => void;
   onSelectStep: (chapterIdx: number, stepIdx: number) => void;
 }
 
-export function ChapterViewV3({ data, chapterIdx, state, onBack, onSelectStep }: ChapterViewProps) {
+export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: ChapterViewProps) {
   const plan = usePlan();
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
 
-  const chapters = data.chapters;
+  const chapters = data.chapters || (data as any).stages;
   const chapter = chapters[chapterIdx];
 
   const filingMethod = state.metadata?.filingMethod || state.filingType;
@@ -38,7 +42,22 @@ export function ChapterViewV3({ data, chapterIdx, state, onBack, onSelectStep }:
   const isInProgress = prog.pct > 0 && prog.pct < 100;
 
   const isChapter1 = chapterIdx === 0;
-  
+  const isFreeTier = plan.tier === "free";
+  const upgradeIconClass =
+    plan.tier === "free"
+      ? "plan-icon--basic"
+      : plan.tier === "basic"
+        ? "plan-icon--premium"
+        : "plan-icon--executive";
+
+  // Chapter backgrounds
+  // const chapter1Bg = "/assets/images/chapter1-bg.png";
+  // const chapter1StepBg = "/assets/images/ch1steps-bg.png";
+  // const chapter2Bg = "/assets/images/chapter-2-bg.png";
+  // const chapter2StepBg = "/assets/images/ch2steps-bg.png";
+  // const chapter3Bg = "/assets/images/chapter-3-bg.png";
+  // const chapter3StepBg = "/assets/images/ch3steps-bg.png";
+
   const isChapter2 = chapterIdx === 1;
   const isChapter3 = chapterIdx === 2;
 
@@ -60,7 +79,52 @@ export function ChapterViewV3({ data, chapterIdx, state, onBack, onSelectStep }:
       className={`flex-1 overflow-y-auto py-8 px-6 pb-20 scrollbar-hide relative`}
       style={isChapter1 || isChapter2 || isChapter3 ? { minHeight: "100vh" } : undefined}
     >
+      {/* Fullscreen background for Chapter 1, 2, 3 and their steps */}
+      {/* Only show the special step background for Chapter 3 steps */}
+      {isChapter3 && !isChapter3Step && (
+        <div
+          className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
+          // style={{
+          //   backgroundImage: `url(${chapter3Bg})`,
+          //   opacity: 0.5,
+          // }}
+        />
+      )}
+      {isChapter1 && !isChapter1Step && (
+        <div
+          className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
+          // style={{
+          //   backgroundImage: `url(${chapter1Bg})`,
+          //   opacity: 0.35,
+          // }}
+        />
+      )}
+      {/* For Chapter 1 and 2, show only their main backgrounds, never the step backgrounds */}
+      {/* Only one Chapter 1 background overlay, toned down */}
+      {isChapter2 && !isChapter2Step && (
+        <div
+          className="pointer-events-none fixed inset-0 z-0 bg-cover bg-center bg-no-repeat bg-fixed"
+          // style={{
+          //   backgroundImage: `url(${chapter2Bg})`,
+          //   opacity: 0.5,
+          // }}
+        />
+      )}
+
       <div className="w-full max-w-[680px] mx-auto animate-in fade-in duration-700 relative z-10 mt-12">
+        {/* Removed Unlock Chapter 2 TEMP button */}
+        {/* <button
+          onClick={onBack}
+          className="flex items-center gap-2 text-[12.5px] font-bold text-primary hover:text-primary/80 transition-colors mb-6 group"
+        >
+          <ArrowLeft
+            size={16}
+            className="group-hover:-translate-x-1 transition-transform"
+            strokeWidth={2.5}
+          />
+          Back to Dashboard
+        </button> */}
+
         <div
           className={`bg-gradient-to-br from-white via-white/95 to-neutral-50 border-[1.5px] rounded-3xl p-[32px_32px] mb-7
             shadow-[0_8px_40px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]
@@ -139,27 +203,27 @@ export function ChapterViewV3({ data, chapterIdx, state, onBack, onSelectStep }:
         {/* Plan Card */}
         <div
           className={`rounded-2xl px-4 sm:px-5 py-3 sm:py-4 mb-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08)] border-[1.5px] transition-all duration-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] hover:scale-[1.01]
-            ${
-              plan.tier === "free"
-                ? "border-[#a8c4e0]"
-                : plan.tier === "basic"
-                  ? "border-[#7fbfba]"
-                  : plan.tier === "premium"
-                    ? "border-[#b399d8]"
-                    : "border-[#d4a855]"
-            }`}
+    ${
+      plan.tier === "free"
+        ? "border-[#a8c4e0]"
+        : plan.tier === "basic"
+          ? "border-[#7fbfba]"
+          : plan.tier === "premium"
+            ? "border-[#b399d8]"
+            : "border-[#d4a855]"
+    }`}
         >
           <div
             className={`rounded-full flex items-center justify-center flex-shrink-0 border-2 shadow-[0_2px_8px_rgba(0,0,0,0.09)] transition-all
-              ${
-                plan.tier === "free"
-                  ? "w-10 sm:w-12 h-10 sm:h-12 bg-[#f0f4fb] border-[#8fa8d4]"
-                  : plan.tier === "basic"
-                    ? "w-10 sm:w-12 h-10 sm:h-12 bg-[#eef9f8] border-[#bfe5e2]"
-                    : plan.tier === "premium"
-                      ? "w-10 sm:w-12 h-10 sm:h-12 bg-[#faf7fe] border-[#a088d8]"
-                      : "w-10 sm:w-12 h-10 sm:h-12 bg-[#fef9f0] border-[#c9a855]"
-              }`}
+      ${
+        plan.tier === "free"
+          ? "w-10 sm:w-12 h-10 sm:h-12 bg-[#f0f4fb] border-[#8fa8d4]"
+          : plan.tier === "basic"
+            ? "w-10 sm:w-12 h-10 sm:h-12 bg-[#eef9f8] border-[#bfe5e2]"
+            : plan.tier === "premium"
+              ? "w-10 sm:w-12 h-10 sm:h-12 bg-[#faf7fe] border-[#a088d8]"
+              : "w-10 sm:w-12 h-10 sm:h-12 bg-[#fef9f0] border-[#c9a855]"
+      }`}
           >
             <span
               className={`plan-icon ${
@@ -172,7 +236,8 @@ export function ChapterViewV3({ data, chapterIdx, state, onBack, onSelectStep }:
                       : "plan-icon--executive"
               }`}
               style={{
-                fontSize: 23,
+                fontSize: plan.tier === "executive" ? 23 : plan.tier === "basic" ? 23 : 23,
+                color: plan.tier === "basic" ? "#296d6c" : undefined,
                 fontWeight: 600,
               }}
               aria-hidden="true"
@@ -181,15 +246,15 @@ export function ChapterViewV3({ data, chapterIdx, state, onBack, onSelectStep }:
 
           <p
             className={`text-[12px] sm:text-[13px] leading-relaxed m-0 flex-1 font-semibold
-              ${
-                plan.tier === "free"
-                  ? "text-[#2e4f72]"
-                  : plan.tier === "basic"
-                    ? "text-[#0f6f6d]"
-                    : plan.tier === "premium"
-                      ? "text-[#332d80]"
-                      : "text-[#6b4a0d]"
-              }`}
+      ${
+        plan.tier === "free"
+          ? "text-[#2e4f72]"
+          : plan.tier === "basic"
+            ? "text-[#0f6f6d]"
+            : plan.tier === "premium"
+              ? "text-[#332d80]"
+              : "text-[#6b4a0d]"
+      }`}
           >
             {plan.tier === "free"
               ? "Upgrade to unlock the full roadmap, step-by-step guidance, and tools for your next steps."
@@ -204,13 +269,13 @@ export function ChapterViewV3({ data, chapterIdx, state, onBack, onSelectStep }:
             <button
               onClick={() => setUpgradeModalFeature("checklist_engine")}
               className={`flex-shrink-0 inline-flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-[12.5px] font-bold px-4 sm:px-5.5 py-2 sm:py-2.75 rounded-xl text-white transition-all active:scale-[0.96] shadow-md hover:shadow-xl hover:-translate-y-0.5 border border-white/15 group relative overflow-hidden whitespace-nowrap
-                ${
-                  plan.tier === "free"
-                    ? "bg-[#7fa8d8] hover:bg-[#6f98cc]"
-                    : plan.tier === "basic"
-                      ? "bg-[#2f9a95] hover:bg-[#257e7a]"
-                      : "bg-[#9b7dd8] hover:bg-[#8b6dcf]"
-                }`}
+        ${
+          plan.tier === "free"
+            ? "bg-[#7fa8d8] hover:bg-[#6f98cc]"
+            : plan.tier === "basic"
+              ? "bg-[#2f9a95] hover:bg-[#257e7a]"
+              : "bg-[#9b7dd8] hover:bg-[#8b6dcf]"
+        }`}
             >
               <span className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
               <span className="relative">Upgrade Plan</span>
@@ -222,7 +287,6 @@ export function ChapterViewV3({ data, chapterIdx, state, onBack, onSelectStep }:
             </button>
           )}
         </div>
-
         <div className="flex flex-col gap-1.5">
           {activeSteps.map((step, idx) => {
             const sId = step.step_key || (step as any).id;
@@ -243,6 +307,10 @@ export function ChapterViewV3({ data, chapterIdx, state, onBack, onSelectStep }:
             const accessTierLabel =
               accessTier === "basic" ? "Basic" : accessTier === "premium" ? "Premium" : "Executive";
 
+            // Accent and border colors to match screenshot
+            // Updated to a nicer shade of purple for Chapter 2, blue for Chapter 3
+            // --- Enhanced accent color palette and depth for step cards ---
+            // Harmonized, premium step card colors
             let borderColor = isChapter3
               ? "border-[#051738]"
               : isChapter2
@@ -262,7 +330,7 @@ export function ChapterViewV3({ data, chapterIdx, state, onBack, onSelectStep }:
             if (isStepLocked) {
               borderColor = "border-[#d0d7e0]";
               bgColor = "bg-[#f7f8fa]";
-              textColor = "text-[#8b94a5]";
+              textColor = "text-[#8b94a5]"; // darker title for legibility
               iconBg = "bg-[#e5eaef]";
               iconBorder = "border-[#c5cfd9]";
               iconText = "text-[#8b94a5]";
@@ -287,12 +355,12 @@ export function ChapterViewV3({ data, chapterIdx, state, onBack, onSelectStep }:
                 : isChapter2
                   ? "border-[#520a50]"
                   : "border-[#8284bf]";
-              bgColor = "bg-white/80 backdrop-blur-sm";
+              bgColor = "bg-white/80 backdrop-blur-sm"; // softly transparent for all chapters
               textColor = isChapter3
-                ? "text-[#051738]"
+                ? "text-[#051738]" // deep blue accent
                 : isChapter2
-                  ? "text-[#520a50]"
-                  : "text-[#8284bf]";
+                  ? "text-[#520a50]" // deep purple accent
+                  : "text-[#8284bf]"; // purple accent
               iconBg = "bg-white";
               iconBorder = borderColor;
               iconText = textColor;
@@ -318,10 +386,12 @@ export function ChapterViewV3({ data, chapterIdx, state, onBack, onSelectStep }:
                 key={sId}
                 onClick={() => {
                   if (isStepLocked) {
+                    // Show upgrade modal with tier-appropriate feature
                     const feat = getModalFeatureForTier(lockStatus.requiredPlan!);
                     setUpgradeModalFeature(feat);
                     return;
                   }
+                  // Step is accessible — open it normally
                   onSelectStep(chapterIdx, fullStepIdx);
                 }}
                 className={`group flex items-center gap-3 px-4 py-3 rounded-[13px] cursor-pointer transition-all border-[1.5px] animate-in fade-in slide-in-from-right-2 duration-500 ${borderColor} ${bgColor} relative
@@ -379,6 +449,7 @@ export function ChapterViewV3({ data, chapterIdx, state, onBack, onSelectStep }:
         </div>
       </div>
 
+      {/* Upgrade Modal for free tier step limit */}
       {upgradeModalFeature && (
         <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
       )}

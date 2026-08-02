@@ -14,7 +14,7 @@
 import React from "react";
 import { ArrowRight, Calendar, MapPin, Clock, ShieldCheck, AlertTriangle } from "lucide-react";
 import type { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-import type { RoadmapData } from "../../types";
+import type { RoadmapData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 
 export interface CaseStatusHeroProps {
   data: RoadmapData;

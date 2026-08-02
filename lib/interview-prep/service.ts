@@ -20,116 +20,11 @@ import {
   InterviewSessionInput,
   InterviewPrepOutput,
   GeneratedQuestion,
-  InterviewSessionSource,
 } from "./types";
 import { categoryLoader } from "./category-loader";
-import { loadRulesForCategory, getAppliedRules } from "./rules-loader";
+import { loadRulesForCategory } from "./rules-loader";
 import { initializeVariationSession, applyVariationsToQuestions } from "./variation-selector";
-import type { InterviewQuestion } from "@/data/interview-categories/schema";
-import type { RulesConfig, QuestionSelectionRule } from "./rules-loader";
-
-// Dynamic Question Selection Engine - Determines which questions are applicable based on user answers
-class DynamicQuestionSelectionEngine {
-  private rules: QuestionSelectionRule[] = [];
-  private categorySlug: string;
-
-  constructor(categorySlug: string, rulesConfig: RulesConfig | null) {
-    this.categorySlug = categorySlug;
-    if (rulesConfig?.questionSelectionRules) {
-      this.rules = rulesConfig.questionSelectionRules;
-    }
-  }
-
-  // Select applicable questions based on user answers and loaded rules
-  selectQuestions(
-    answers: Record<string, unknown>,
-    questionBank: InterviewQuestion[]
-  ): GeneratedQuestion[] {
-    const applicableQuestions: GeneratedQuestion[] = [];
-
-    for (const questionEntry of questionBank) {
-      const questionCategory = questionEntry.category;
-      let isApplicable = false;
-      let priority: "high" | "medium" | "low" = "low";
-      let reason = "Does not match selection criteria";
-
-      // Check if question should be skipped based on skipIf conditions
-      if (this.shouldSkipQuestion(questionEntry, answers)) {
-        continue;
-      }
-
-      // Check if any rules apply to this question's category
-      const appliedRules = getAppliedRules(questionCategory, answers, this.rules);
-
-      if (appliedRules.length > 0) {
-        isApplicable = true;
-        // Use highest priority from applied rules
-        const priorityOrder = { critical: 4, high: 3, medium: 2, low: 1 };
-        const maxPriority = Math.max(
-          ...appliedRules.map((r) => {
-            const boostedPriority = r.actions.priorityBoost?.[0] || "low";
-            return priorityOrder[boostedPriority];
-          })
-        );
-        priority = maxPriority >= 3 ? "high" : maxPriority === 2 ? "medium" : "low";
-        reason = appliedRules.map((r) => r.actions.reason).join("; ");
-      }
-
-      // ONLY add to results if applicable
-      if (isApplicable) {
-        applicableQuestions.push({
-          id: questionEntry.id,
-          category: questionEntry.category,
-          question: questionEntry.question,
-          sampleAnswer: questionEntry.sampleAnswer,
-          guidance: questionEntry.guidance,
-          tooltip: questionEntry.tooltip,
-          tier: questionEntry.tier,
-          applicable: true,
-          priority,
-          mockInterviewOrder: questionEntry.mockInterviewOrder,
-          variations: questionEntry.variations,
-          reason,
-        });
-      }
-    }
-
-    // Sort by priority (high first, then medium, then low)
-    return applicableQuestions.sort((a, b) => {
-      const priorityOrder = { high: 3, medium: 2, low: 1 };
-      return priorityOrder[b.priority] - priorityOrder[a.priority];
-    });
-  }
-
-  // Check if a question should be skipped based on skipIf conditions
-  private shouldSkipQuestion(question: any, answers: Record<string, unknown>): boolean {
-    if (!question.skipIf || !Array.isArray(question.skipIf)) {
-      return false;
-    }
-
-    // All skipIf conditions are OR'd together
-    // If any skipIf condition is true, skip the question
-    return question.skipIf.some((condition: any) => {
-      const fieldValue = answers[condition.field];
-
-      if (condition.equals !== undefined) {
-        return fieldValue === condition.equals;
-      }
-      if (condition.notEquals !== undefined) {
-        return fieldValue !== condition.notEquals;
-      }
-      return false;
-    });
-  }
-
-  // Generate unique question ID
-  private generateQuestionId(category: string, question: string): string {
-    return `${category.toLowerCase().replace(/[^a-z0-9]/g, "-")}-${question
-      .toLowerCase()
-      .replace(/[^a-z0-9\s]/g, "")
-      .replace(/\s+/g, "-")}`;
-  }
-}
+import { DynamicQuestionSelectionEngine } from "./question-selection-engine";
 
 // Answer Generation Engine - Personalizes answer templates with user-specific data
 class AnswerGenerationEngine {

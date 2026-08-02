@@ -18,6 +18,7 @@ import {
   AlertTriangle,
   CircleAlert,
   FileCheck,
+  ClipboardCheck,
   ArrowRight,
   Shield,
   Info,
@@ -41,12 +42,12 @@ export interface CaseHealthOverviewProps {
   consistencyScore?: number;
   /**
    * Completeness sub-score (0–100) — % of required checklist items the user has
-   * filled. Present only for the weighted score model. Omit → not shown.
+   * filled. Present only for the weighted score model (IR-5). Omit → not shown.
    */
   completenessScore?: number;
   /**
    * Risk penalty (0–100, higher = more risk) from detected red flags. Present
-   * only for the weighted score model. Omit → not shown.
+   * only for the weighted score model (IR-5). Omit → not shown.
    */
   riskPenalty?: number;
   healthLabel: string;
@@ -210,11 +211,12 @@ function MetricBadge({
   accentColor?: string;
   progress?: number;
 }) {
-  const isAnalysisCard = label === "Evidence" || label === "Consistency";
+  const isAnalysisCard =
+    label === "Evidence" || label === "Consistency" || label === "Completeness";
 
   if (isAnalysisCard) {
     return (
-      <div className="relative flex items-center rounded-xl border border-white/[0.10] bg-white/[0.06] overflow-hidden group transition-all duration-200 hover:bg-white/[0.09] hover:border-white/[0.14]">
+      <div className="w-full relative flex items-center rounded-xl border border-white/[0.10] bg-white/[0.06] overflow-hidden group transition-all duration-200 hover:bg-white/[0.09] hover:border-white/[0.14]">
         {/* LEFT SECTION */}
         <div className="flex-1 px-3 py-3 min-w-0">
           <div className="text-[10px] font-bold uppercase tracking-[0.14em] text-white/55 mb-2">
@@ -309,6 +311,10 @@ export function CaseHealthOverview({
 }: CaseHealthOverviewProps) {
   const colors = STATUS_COLORS[healthStatus];
 
+  // Weighted 4-ingredient model (IR-5) vs legacy 50/50 model (IR-1/CR-1). The
+  // presence of the completeness/risk props is the signal.
+  const isWeighted = completenessScore !== undefined || riskPenalty !== undefined;
+
   // ── Info modal & first-visit education tooltip ──
   const [showInfoModal, setShowInfoModal] = useState(false);
   const [showEducationTooltip, setShowEducationTooltip] = useState(false);
@@ -359,6 +365,11 @@ export function CaseHealthOverview({
 
   // Evidence coverage display
   const coverageValue = evidenceAnalysis ? `${strongCats} / ${totalCats} Strong` : "";
+
+  // Completeness display: how many required documents the user has provided.
+  // Mirrors the Evidence "coverage" phrasing so the three meters read alike.
+  const reqDocs = evidenceAnalysis?.requiredDocuments;
+  const completenessValue = reqDocs ? `${reqDocs.found} / ${reqDocs.total} Provided` : "";
 
   if (loading) {
     return (
@@ -537,9 +548,9 @@ export function CaseHealthOverview({
 
         {/* Body */}
         <div className="px-5 pb-5 pt-5">
-          <div className="flex items-start gap-5">
+        <div className="flex flex-col md:flex-row md:items-start gap-5">
             {/* Score pedestal — dark focal well, hero of this card */}
-            <div className="shrink-0 flex flex-col items-center gap-3">
+            <div className="shrink-0 flex flex-col items-center gap-3 md:items-center">
               <div
                 className="relative rounded-full p-[3px] bg-gradient-to-br from-slate-600/80 via-slate-700 to-slate-900"
                 style={{ boxShadow: ANALYSIS_PANEL.scoreWellShadow }}
@@ -609,7 +620,7 @@ export function CaseHealthOverview({
             </div>
 
             {/* Metrics — glass rows on dark surface */}
-            <div className="flex-1 min-w-0 flex flex-col gap-2 pt-1">
+            <div className="w-full md:flex-1 min-w-0 flex flex-col gap-2 pt-0 md:pt-1">
               <MetricBadge
                 icon={<FileCheck size={13} />}
                 label="Evidence"
@@ -629,6 +640,19 @@ export function CaseHealthOverview({
                 progress={consistencyScore}
                 accentColor={warningCount > 0 ? "#FBBF24" : "#5eead4"}
               />
+
+              {/* Completeness — a weighted score ingredient (20%). Shown only for the
+                  weighted model (IR-5); omitted for the legacy IR-1/CR-1 model where
+                  completenessScore is undefined. */}
+              {completenessScore !== undefined && (
+                <MetricBadge
+                  icon={<ClipboardCheck size={13} />}
+                  label="Completeness"
+                  value={completenessValue || "Not started"}
+                  progress={completenessScore}
+                  accentColor="#5eead4"
+                />
+              )}
 
               <MetricBadge
                 icon={<CircleAlert size={13} />}

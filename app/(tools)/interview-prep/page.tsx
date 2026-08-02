@@ -17,11 +17,9 @@ import {
   type CategoryWithPurchaseStatus,
 } from "@/app/components/interview-prep/category-selection-step";
 import { DynamicQuestionStep } from "@/app/components/interview-prep/dynamic-question-step";
-import CountrySelectionModal from "../../components/interview-prep/CountrySelectionModal";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import type { InterviewFormData } from "@/app/components/interview-prep/types";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
-import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { useToast } from "@/app/components/shared/ToastProvider";
 
 import type { DynamicQuestionnaire } from "@/data/interview-categories/schema";
@@ -52,7 +50,6 @@ export default function InterviewPreparation() {
 
   const [availableCategories, setAvailableCategories] = useState<CategoryWithPurchaseStatus[]>([]);
   const [questionnaire, setQuestionnaire] = useState<DynamicQuestionnaire | null>(null);
-  const [showCountryModal, setShowCountryModal] = useState<boolean>(true);
   const [noDataMessage, setNoDataMessage] = useState<string | null>(null);
 
   const [step, setStep] = useState<number>(0);
@@ -80,7 +77,8 @@ export default function InterviewPreparation() {
   const [journeyId, setJourneyId] = useState<string | null>(null);
   const [isJourneySession, setIsJourneySession] = useState(false);
 
-  const [selectedCountry, setSelectedCountry] = useState<string | null>(null);
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>("United States");
 
   const [repurchaseAddonId, setRepurchaseAddonId] = useState<string | null>(null);
 
@@ -190,6 +188,7 @@ export default function InterviewPreparation() {
   // Load available categories based on selected country
   const loadCategories = async (country: string): Promise<CategoryWithPurchaseStatus[]> => {
     try {
+      setCategoriesLoading(true);
       setLoadingMessage("Loading visa categories...");
       setLoading(true);
 
@@ -233,7 +232,6 @@ export default function InterviewPreparation() {
             ? "You already have sessions for every available category in this country."
             : null
         );
-        setShowCountryModal(false);
 
         return filteredCategories;
       }
@@ -254,19 +252,17 @@ export default function InterviewPreparation() {
 
       return [];
     } finally {
+      setCategoriesLoading(false);
       setLoading(false);
       setLoadingMessage("");
     }
   };
 
-  // Handle country selection from modal
-  const handleCountrySelected = (country: string) => {
-    setSelectedCountry(country);
-
-    localStorage.setItem("interview_prep_selected_country", country);
-
-    void loadCategories(country);
-  };
+  // Fetch categories
+  useEffect(() => {
+    if (!selectedCountry) return;
+    void loadCategories(selectedCountry);
+  }, []);
 
   const restoreSessionData = async (
     session: RestorableSession,
@@ -400,7 +396,6 @@ export default function InterviewPreparation() {
                   sections: catData.questionnaire?.sections || [],
                 });
                 setAvailableCategories(categoriesData.categories);
-                setShowCountryModal(false);
 
                 // Restore form data if available
                 if (journeyData.session.answers && Array.isArray(journeyData.session.answers)) {
@@ -1017,6 +1012,15 @@ export default function InterviewPreparation() {
       );
     }
 
+    if (categoriesLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <Loader size="md" />
+          <p className="text-slate-600">{loadingMessage || "Loading visa categories..."}</p>
+        </div>
+      );
+    }
+
     // Step 0: Category Selection
     if (step === 0) {
       return (
@@ -1029,7 +1033,6 @@ export default function InterviewPreparation() {
             setSelectedCategory(null);
             setError(null);
             setAvailableCategories([]);
-            setShowCountryModal(true);
           }}
           onPurchaseAgain={
             repurchaseAddonId ? () => redirectToInterviewPrepPurchase(repurchaseAddonId) : undefined
@@ -1322,82 +1325,65 @@ export default function InterviewPreparation() {
         </div>
       ) : (
         <>
-      {initialCheckDone && !sessionId && (
-        <CountrySelectionModal
-          isOpen={showCountryModal}
-          onCountrySelected={handleCountrySelected}
-          isLoading={loading && showCountryModal}
-          noDataMessage={noDataMessage || undefined}
-        />
-      )}
-
-      <div className="site-main-px site-main-py mt-12">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Interview Preparation Tool</h1>
-          <p className="text-slate-600">
-            {selectedCategory
-              ? selectedCategory.description
-              : "Prepare for your visa interview with personalized questions"}
-          </p>
-          <div className="mt-4 flex flex-wrap items-center justify-center gap-3">
-            <QuickAccessButton
-              item={{
-                id: "interview-prep",
-                title: "Interview Prep",
-                href: "/interview-prep",
-                icon_name: "MessageSquare",
-              }}
-            />
-          </div>
-        </div>
-
-        {renderProgressSections()}
-
-        <Card className="p-6 shadow-lg">
-          {!initialCheckDone ? (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <Loader size="md" />
-              <p className="text-slate-600">{loadingMessage || "Loading..."}</p>
+          <div className="site-main-px site-main-py mt-12">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-slate-900 mb-2">Interview Preparation Tool</h1>
+              <p className="text-slate-600">
+                {selectedCategory
+                  ? selectedCategory.description
+                  : "Prepare for your visa interview with personalized questions"}
+              </p>
             </div>
-          ) : (
-            renderStep()
-          )}
-        </Card>
-      </div>
 
-      {/* Session Restoration Confirmation Modal */}
-      <ConfirmationModal
-        open={restoreSessionModalOpen}
-        onOpenChange={(open) => {
-          setRestoreSessionModalOpen(open);
-          if (!open) setPendingRestoreSession(null);
-        }}
-        title="Resume Interview Session"
-        description={`We found an incomplete interview session from ${pendingRestoreSession?.updated_at ? new Date(pendingRestoreSession.updated_at).toLocaleDateString() : ""}. Would you like to continue where you left off?`}
-        confirmText="Resume Session"
-        confirmVariant="primary"
-        onConfirm={async () => {
-          if (pendingRestoreSession) {
-            try {
-              setLoading(true);
-              setLoadingMessage("Restoring your interview session...");
-              localStorage.setItem("interviewPrepSessionId", pendingRestoreSession.id);
+            {renderProgressSections()}
 
-              await restoreSessionData(pendingRestoreSession, (categorySlug: string) => {
-                const category = availableCategories.find((c) => c.categorySlug === categorySlug);
-                return category;
-              });
+            <Card className="p-6 shadow-lg">
+              {!initialCheckDone ? (
+                <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                  <Loader size="md" />
+                  <p className="text-slate-600">{loadingMessage || "Loading..."}</p>
+                </div>
+              ) : (
+                renderStep()
+              )}
+            </Card>
+          </div>
 
-              setRestoreSessionModalOpen(false);
-            } catch (error) {
-              console.error("Error restoring session:", error);
-              setRestoreSessionModalOpen(false);
-            } finally {
-              setLoading(false);
-            }
-          }
-        }}
-      />
+          {/* Session Restoration Confirmation Modal */}
+          <ConfirmationModal
+            open={restoreSessionModalOpen}
+            onOpenChange={(open) => {
+              setRestoreSessionModalOpen(open);
+              if (!open) setPendingRestoreSession(null);
+            }}
+            title="Resume Interview Session"
+            description={`We found an incomplete interview session from ${pendingRestoreSession?.updated_at ? new Date(pendingRestoreSession.updated_at).toLocaleDateString() : ""}. Would you like to continue where you left off?`}
+            confirmText="Resume Session"
+            confirmVariant="primary"
+            onConfirm={async () => {
+              if (pendingRestoreSession) {
+                try {
+                  setLoading(true);
+                  setLoadingMessage("Restoring your interview session...");
+                  localStorage.setItem("interviewPrepSessionId", pendingRestoreSession.id);
+
+                  await restoreSessionData(pendingRestoreSession, (categorySlug: string) => {
+                    const category = availableCategories.find(
+                      (c) => c.categorySlug === categorySlug
+                    );
+                    return category;
+                  });
+
+                  setRestoreSessionModalOpen(false);
+                } catch (error) {
+                  console.error("Error restoring session:", error);
+                  setRestoreSessionModalOpen(false);
+                } finally {
+                  setLoading(false);
+                }
+              }
+            }}
+          />
         </>
       )}
     </>

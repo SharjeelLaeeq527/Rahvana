@@ -1280,13 +1280,43 @@
       "guidance": "Confirm completeness. If something was omitted or entered incorrectly, explain it truthfully and be prepared to correct the record.",
       "tooltip": "Incomplete family or residence history can lead to document and credibility questions.",
       "conditions": {
-        "requireIntake": [
-          "parent_has_other_children",
-          "parent_marital_history",
-          "parent_employment_status"
-        ],
         "requireCaseTypes": [
           "parent"
+        ],
+        "anyOf": [
+          {
+            "field": "parent_has_other_children",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "parent_marital_history",
+            "operator": "NOT_IN",
+            "value": [
+              "Never Married"
+            ]
+          },
+          {
+            "field": "parent_employment_status",
+            "operator": "IN",
+            "value": [
+              "Employed",
+              "Self-Employed or Business Owner",
+              "Retired"
+            ]
+          },
+          {
+            "field": "foreign_residence_history",
+            "operator": "equals",
+            "value": true
+          },
+          {
+            "field": "civil_record_issue",
+            "operator": "NOT_IN",
+            "value": [
+              "No Known Issue"
+            ]
+          }
         ]
       },
       "inputPlaceholder": "Confirm whether all required history was disclosed",
@@ -1676,7 +1706,16 @@
         ],
         "requireCaseTypes": [
           "parent"
-        ]
+        ],
+        "requireIntakeValues": {
+          "us_immigration_history": {
+            "operator": "IN",
+            "value": [
+              "Previous U.S. Visa Refusal or Withdrawn Application",
+              "Multiple Prior U.S. Immigration Matters"
+            ]
+          }
+        }
       },
       "inputPlaceholder": "Describe any prior U.S. visa refusal or withdrawal",
       "minLength": 5,

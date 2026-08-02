@@ -55,8 +55,8 @@ import {
   // DocumentGatheringItemV3,
 } from "./types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
-import { getAllActiveSteps, getStageProgress } from "./journeyHelpersV3";
-import { getActiveStepsForStage } from "./journeyHelpersV3";
+import { getAllActiveSteps, getStageProgress } from "./journeyHelpers";
+import { getActiveStepsForStage } from "./journeyHelpers";
 import CredentialFormModal from "@/app/(main)/portal-wallet/components/CredentialFormModal";
 import ViewCredentialModal from "@/app/(main)/portal-wallet/components/ViewCredentialModal";
 import { useToast } from "@/app/components/shared/ToastProvider";
@@ -71,6 +71,7 @@ import {
   syncQuestionnaireAnswersToFlags,
 } from "@/lib/document-vault/journey-mapping";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
+import { useInitDocumentVault } from "@/lib/document-vault/useInitDocumentVault";
 import { DocumentUploadModal } from "@/app/components/document-vault/DocumentUploadModal";
 import { MultipleDocumentUploadModal } from "@/app/components/document-vault/MultipleDocumentUploadModal";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
@@ -151,8 +152,8 @@ import SponsorshipCalculatorTool from "./components/SponsorshipCalculatorTool";
 import { ApUpdateModal } from "./PortalWalletManager";
 import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool";
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
-import { QuestRendererV3 } from "./QuestRendererV3";
-import { ActionStepRendererV3 } from "./ActionStepRendererV3";
+import { QuestRenderer } from "./QuestRenderer";
+import { ActionStepRenderer } from "./ActionStepRenderer";
 
 /**
  * Find a vault document that matches an item, considering dynamic categories.
@@ -266,7 +267,7 @@ interface StepViewProps {
   onSelectStep?: (chapterIdx: number, stepIdx: number) => void;
 }
 
-export const StepViewV3: React.FC<StepViewProps> = ({
+export const StepView: React.FC<StepViewProps> = ({
   data,
   state,
   registry,
@@ -300,6 +301,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
 
   const { user } = useAuth();
   const {
+    config,
     openUploadModal,
     uploadModalOpen,
     closeUploadModal,
@@ -311,6 +313,22 @@ export const StepViewV3: React.FC<StepViewProps> = ({
     deleteDocument,
     requiredDocuments,
   } = useDocumentVaultStore();
+
+  // Safety-net vault init. The vault config is normally prefetched up in
+  // RoadmapLayoutEngine (see lib/document-vault/useInitDocumentVault.ts), but tool steps
+  // like the I-797 approval upload have no init of their own — so if that single
+  // prefetch ever fails to land, `config` stays null and every upload modal opened
+  // from a step is permanently stuck on "Initializing..." (disabled button).
+  // Re-run the init here ONLY when config is missing, so we guarantee a usable config
+  // without ever clobbering a richer one already loaded (e.g. with dynamic slots).
+  useInitDocumentVault({
+    journeyType: data.journey_type,
+    backendId: state.backendId,
+    metadata: state.metadata,
+    userId: user?.id,
+    skip: !!config,
+  });
+
   const [activeUploadId, setActiveUploadId] = useState<string | null>(null);
   const [activeUploadType, setActiveUploadType] = useState<"doc" | "hh" | "financial" | null>(null);
   const [selectedGuideId, setSelectedGuideId] = useState<string | null>(null);
@@ -955,7 +973,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
   }, [state.metadata.filingMethodConfirmed]);
 
   // Document Vault init (setConfig + reloadDocuments) is now prefetched once, up in
-  // RoadmapLayoutV3 via useInitDocumentVault — so uploaded documents are already
+  // RoadmapLayoutEngine via useInitDocumentVault — so uploaded documents are already
   // loaded before this (lazy) step ever mounts. See lib/document-vault/useInitDocumentVault.ts.
 
   // Disable body scroll when overlays are open
@@ -2982,7 +3000,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
                 //              className={`w-full min-h-[600px] flex flex-col items-center${isChapter2 ? " ch2step-bg" : ""}${isChapter3 ? " ch3step-bg" : ""}`}
                 className={`w-full min-h-[600px] flex flex-col items-center`}
               >
-                <QuestRendererV3
+                <QuestRenderer
                   quest={currentStep.quest_data as unknown as QuestSuiteV3}
                   onComplete={handleToggleComplete}
                   state={state}
@@ -3020,7 +3038,7 @@ export const StepViewV3: React.FC<StepViewProps> = ({
               //       : {}
               // }
               >
-                <ActionStepRendererV3
+                <ActionStepRenderer
                   step={currentStep}
                   isCompleted={state.completedSteps.has(currentStep.step_key)}
                   onToggleComplete={handleToggleComplete}
@@ -5267,4 +5285,4 @@ export const StepViewV3: React.FC<StepViewProps> = ({
   );
 };
 
-export default StepViewV3;
+export default StepView;

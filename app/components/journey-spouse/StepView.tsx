@@ -52,7 +52,7 @@ import {
   TutorialStepData,
   ActionCard,
   DocumentGatheringItem,
-} from "../types";
+} from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getAllActiveSteps, getStageProgress } from "./journeyHelpers";
 import { getActiveStepsForStage } from "./journeyHelpers";
@@ -1043,7 +1043,7 @@ export const StepView: React.FC<StepViewProps> = ({
   }, [state.metadata.filingMethodConfirmed]);
 
   // Document Vault init (setConfig + reloadDocuments) is now prefetched once, up in
-  // RoadmapLayoutV2 via useInitDocumentVault — so uploaded documents are already
+  // RoadmapLayoutSpouse via useInitDocumentVault — so uploaded documents are already
   // loaded before this (lazy) step ever mounts. See lib/document-vault/useInitDocumentVault.ts.
 
   // Disable body scroll when overlays are open
