@@ -57,7 +57,7 @@ export class CaseStrengthEngine {
       // SIGNAL 2: Financial Sufficiency (Income Check)
       // ─────────────────────────────────────────────────────────────
       // Preferred source: the Sponsorship Calculator's own determination. The
-      // journey-parent flow (IR-5 parent, and any calculator-driven case) saves that
+      // journey-engine flow (IR-5 parent, and any calculator-driven case) saves that
       // result to case_data under "sponsorshipResult" and NEVER populates the
       // legacy sponsor_annual_income / household_size keys. Without this branch,
       // every IR-5 case would be wrongly flagged LOW_INCOME (-15). We trust the

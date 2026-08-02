@@ -33,7 +33,7 @@ function StepSkeleton() {
   );
 }
 
-interface RoadmapLayoutParentProps {
+interface RoadmapLayoutEngineProps {
   data: RoadmapDataV3;
   state: WizardState;
   actions: {
@@ -48,7 +48,7 @@ interface RoadmapLayoutParentProps {
 
 type ViewType = "dashboard" | "chapter" | "step";
 
-export default function RoadmapLayoutParent({ data, state, actions }: RoadmapLayoutParentProps) {
+export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLayoutEngineProps) {
   const [view, setView] = useState<ViewType>("dashboard");
   const [selectedChapterIdx, setSelectedChapterIdx] = useState<number>(0);
 
