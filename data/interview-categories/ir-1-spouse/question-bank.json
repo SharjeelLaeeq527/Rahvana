@@ -847,6 +847,9 @@
       "tooltip": "Security screening is mandatory",
       "conditions": {
         "requireIntake": ["criminal_history"],
+        "requireIntakeValues": {
+          "criminal_history": true
+        },
         "requireCaseTypes": ["spouse"]
       },
       "inputPlaceholder": "Honestly declare any criminal history",
@@ -938,8 +941,12 @@
       "guidance": "Answer yes/no. If yes, explain reason and changes made since.",
       "tooltip": "Visa refusal history requires detailed explanation",
       "conditions": {
-        "requireIntake": ["previous_visa_refusal"],
-        "requireCaseTypes": ["spouse"]
+        "requireIntake": [
+          "visa_refusal"
+        ],
+        "requireIntakeValues": {
+          "visa_refusal": true
+        }
       },
       "inputPlaceholder": "Indicate any visa refusals if applicable",
       "minLength": 20,
@@ -962,6 +969,9 @@
       "tooltip": "Visa compliance history affects credibility",
       "conditions": {
         "requireIntake": ["visa_overstay_history"],
+        "requireIntakeValues": {
+          "visa_overstay_history": true
+        },
         "requireCaseTypes": ["spouse"]
       },
       "inputPlaceholder": "Honestly indicate visa compliance",
