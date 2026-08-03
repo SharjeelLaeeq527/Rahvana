@@ -203,6 +203,17 @@ export default function SponsorshipCalculatorTool({
 }: SponsorshipCalculatorToolProps) {
   const [stepIdx, setStepIdx] = useState(0);
   const [expandedOptions, setExpandedOptions] = useState<Record<string, boolean>>({});
+
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
   const [data, setData] = useState({
     sponsorStatus: initialData?.sponsorStatus || "",
     isMilitary: initialData?.isMilitary ?? null,

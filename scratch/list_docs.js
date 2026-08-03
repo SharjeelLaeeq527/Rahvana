@@ -1,28 +1,18 @@
-const { mapDocumentNameToId } = require("../lib/document-vault/journey-mapping");
-const { ALL_DOCUMENTS } = require("../lib/document-vault/document-definitions");
+const fs = require("fs");
 
-const titles = [
-  "Passport (current + any prior passports)",
-  "Original Birth Certificate",
-  "Original Marriage Certificate / Nikah Nama",
-  "Original Police Clearance Certificate (Fresh)",
-  "Interview Appointment Letter",
-  "Original Affidavit of Support, Petitioner",
-  "DS-260 Confirmation Page",
-  "Most Recent Tax Evidence, Petitioner",
-  "Employment Letter, Petitioner",
-  "Passport-Style Photos",
-  "Polio Vaccination Certificate (Original)",
-  "Medical Examination Results Packet Reference",
-  "Courier Registration Certificate",
-  "Labeled Folder System or Document Binder",
-  "Full Photocopy Set of All Documents"
+const files = [
+  "app/components/journey-engine/components/SponsorshipCalculatorTool.tsx",
+  "app/components/journey-spouse/components/SponsorshipCalculatorTool.tsx",
+  "components/tools/SponsorshipCalculatorTool.tsx"
 ];
 
-const reqDocsSet = new Set(ALL_DOCUMENTS.map(d => d.id));
-
-titles.forEach(title => {
-  const id = mapDocumentNameToId(title);
-  const exists = reqDocsSet.has(id);
-  console.log(`Title: "${title}" => ID: "${id}" (Exists in ALL_DOCUMENTS: ${exists})`);
+files.forEach(file => {
+  console.log(`=== File: ${file} ===`);
+  const content = fs.readFileSync(file, "utf8");
+  const lines = content.split("\n");
+  lines.forEach((line, idx) => {
+    if (line.includes("toLocaleString")) {
+      console.log(`Line ${idx + 1}: ${line.trim()}`);
+    }
+  });
 });
