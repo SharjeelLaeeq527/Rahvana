@@ -165,7 +165,9 @@ export const FinancialDocGuideOverlay: React.FC<DocumentGuideProps> = ({
                 <h3 className="text-[13px] font-semibold text-[#6b8097] uppercase tracking-[0.05em] mb-[12px]">
                   {section.title}
                 </h3>
-                <p className="text-sm text-[#3a4f63] leading-[1.7]">{section.body}</p>
+                <p className="text-sm text-[#3a4f63] leading-[1.7]" dangerouslySetInnerHTML={{
+    __html: section.body,
+  }} />
               </div>
             ))}
           </div>
