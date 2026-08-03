@@ -1615,17 +1615,23 @@ export const StepView: React.FC<StepViewProps> = ({
           {/* GATHER ORIGINAL DOCUMENTS (Step 3.6) */}
           {tool.type === "gathering_checklist" && (() => {
             const rawGroups = tool.doc_gathering?.groups || [];
-            const personalizedGroups = rawGroups.map((group: any) => {
-              const filteredItems = group.items.filter((item: any) => {
-                const docDefId = mapDocumentNameToId(item.title);
-                return requiredDocuments.some((rd) => rd.id === docDefId);
-              });
-              return { ...group, items: filteredItems };
-            }).filter((group: any) => group.items.length > 0);
+            // const personalizedGroups = rawGroups.map((group: any) => {
+            //   const filteredItems = group.items.filter((item: any) => {
+            //     const docDefId = mapDocumentNameToId(item.title);
+            //     // If it maps to misc-document or is not in the system's known documents, it is a general checklist item.
+            //     // Always show it so the user sees all checklist items.
+            //     if (docDefId === "misc-document" || !ALL_DOCUMENTS.some((d) => d.id === docDefId)) {
+            //       return true;
+            //     }
+            //     // Otherwise, it represents an uploadable document. Only show if required for the user's specific scenario.
+            //     return requiredDocuments.some((rd) => rd.id === docDefId);
+            //   });
+            //   return { ...group, items: filteredItems };
+            // }).filter((group: any) => group.items.length > 0);
 
             return (
               <DocListSection
-                groups={personalizedGroups}
+                groups={rawGroups}
                 docsStatus={gatheringStatus}
                 uploadedDocuments={uploadedDocuments}
                 isDeletingIds={isDeletingIds}
@@ -1682,7 +1688,7 @@ export const StepView: React.FC<StepViewProps> = ({
             />
           )}
 
-          {/* COURIER REGISTRATION (Step 3.6 SPECIFIC) */}
+          {/* COURIER REGISTRATION (Step 3.7 SPECIFIC) */}
           {tool.type === "courier_registration" && (
             <CourierRegistrationTool
               tool={tool}
