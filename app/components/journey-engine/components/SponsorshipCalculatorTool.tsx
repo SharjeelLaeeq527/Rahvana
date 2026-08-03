@@ -84,7 +84,12 @@ export const getSponsorshipResult = (d: any) => {
       isSelfPetition: true,
       householdSize: 1,
       requiredIncome: 0,
-      totalIncome: 0,
+      totalIncome: d.currentAnnualIncome || 0,
+      primaryIncome: d.currentAnnualIncome || 0,
+      hmIncome: 0,
+      jsIncome: 0,
+      assetIncome: 0,
+      shortfall: 0,
       forms: [
         {
           id: "i864w",
@@ -1014,8 +1019,8 @@ export default function SponsorshipCalculatorTool({
                       </span>
                     </div>
                     <div className="text-3xl font-black text-slate-900 mb-1">
-                      ${result.primaryIncome.toLocaleString()} / $
-                      {result.requiredIncome.toLocaleString()}
+                      ${(result.primaryIncome ?? 0).toLocaleString()} / $
+                      {(result.requiredIncome ?? 0).toLocaleString()}
                     </div>
                     <p className="text-[13px] text-slate-600 font-medium">
                       {result.isEligible
@@ -1455,12 +1460,12 @@ export default function SponsorshipCalculatorTool({
                       <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
                         Total Household Income:{" "}
                         <strong className="text-[#0c1b33] text-lg">
-                          ${result.totalIncome.toLocaleString()}
+                          ${(result.totalIncome ?? 0).toLocaleString()}
                         </strong>
                         <br />
                         Required (Household of {result.householdSize}):{" "}
                         <strong className="text-[#0c1b33] text-lg">
-                          ${result.requiredIncome.toLocaleString()}
+                          ${(result.requiredIncome ?? 0).toLocaleString()}
                         </strong>
                       </p>
                     </div>
