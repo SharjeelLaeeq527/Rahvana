@@ -670,22 +670,13 @@ export default function ActionPlanResults({
                   ) : isUploaded ? (
                     <div className="shrink-0 flex items-center gap-1.5">
                       <span className="text-[10px] font-bold text-[#15744f] uppercase tracking-wider">
-                        Saved ✓
+                        Saved 
                       </span>
-                      <ChevronRight
-                        size={13}
-                        className="text-[#15744f] opacity-50"
-                        strokeWidth={2.5}
-                      />
+                      <Check size={12} className="text-primary opacity-60" strokeWidth={2} />
                     </div>
                   ) : canUpload ? (
                     <div className="shrink-0 flex items-center gap-1">
                       <Upload size={12} className="text-primary opacity-60" strokeWidth={2} />
-                      <ChevronRight
-                        size={13}
-                        className="text-[#6b8097] opacity-40"
-                        strokeWidth={2.5}
-                      />
                     </div>
                   ) : (
                     <span className="shrink-0 text-[10px] font-semibold text-[#6b8097] bg-[#f4f7fb] px-2 py-0.5 rounded-full border border-[#d0e4f7]">

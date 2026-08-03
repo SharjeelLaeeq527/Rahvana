@@ -99,19 +99,33 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
     actions.updateMetadata({ apUpdateLog: nextLog });
   };
 
+  const outcomeSubtype =
+  state.metadata?.outcome221gSubtype || "both";
+
+const explainer =
+  tool.explainer.dynamic
+    ? tool.explainer.variants[outcomeSubtype] ??
+      tool.explainer.variants["both"]
+    : tool.explainer;
+
   return (
     <div className="flex flex-col mt-4">
       {/* Explainer Banner */}
       <div className="relative bg-[#0e1e38] rounded-[16px] p-6 mb-4 overflow-hidden border border-white/10 shadow-[0_4px_24px_rgba(12,27,51,0.08)]">
-        <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#8a6200] via-[#f0d98a] to-transparent opacity-85" />
-        <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-2">
-          {tool.explainer.eyebrow}
-        </div>
-        <div className="text-[20px] text-white/95 mb-2.5 leading-tight">{tool.explainer.title}</div>
-        <div className="text-[13px] text-white/55 leading-relaxed max-w-[560px]">
-          {tool.explainer.body}
-        </div>
-      </div>
+  <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[#8a6200] via-[#f0d98a] to-transparent opacity-85" />
+
+  <div className="text-[10px] font-bold uppercase tracking-widest text-white/35 mb-2">
+    {explainer.eyebrow}
+  </div>
+
+  <div className="text-[20px] text-white/95 mb-2.5 leading-tight">
+    {explainer.title}
+  </div>
+
+  <div className="text-[13px] text-white/55 leading-relaxed max-w-[560px]">
+    {explainer.body}
+  </div>
+</div>
 
       {/* AP Status Recorder Card */}
       {!isApSaved ? (
@@ -231,23 +245,6 @@ export const AdministrativeProcessingTool: React.FC<AdministrativeProcessingTool
                   </div>
                 );
               })()}
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[11px] font-bold uppercase tracking-wide text-[#6b8097]">
-                  Additional Docs Requested?
-                </label>
-                <CustomDropdown
-                  value={apDetails.docsRequested}
-                  onChange={(value) =>
-                    setApDetails({
-                      ...apDetails,
-                      docsRequested: value,
-                    })
-                  }
-                  options={tool.recorder.docs_requested_options}
-                  placeholder="Select..."
-                  className="w-full [&_button]:w-full [&_button]:min-w-0"
-                />
-              </div>
             </div>
 
             <div className="flex flex-col gap-1.5">

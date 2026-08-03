@@ -71,11 +71,11 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
               <ExternalLink size={21} className="text-white" />
             </div>
             <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--rv-ch2-text)] mb-[4px]">
-                {tool.launch_module.label}
+            <div className="text-[10px] font-bold uppercase tracking-widest text-[#9C8E9C] mb-[4px]">
+                {tool.launch_module.eyebrow}
               </div>
-              <div className="text-[clamp(18px,2.6vw,22px)] text-[var(--rv-ch2-text)] leading-[1.25]">
-                {tool.launch_module.title}
+              <div className="text-[clamp(18px,2.6vw,22px)] text-[#F4E6F3] leading-[1.25]">
+                {tool.launch_module.heading}
               </div>
             </div>
           </div>
