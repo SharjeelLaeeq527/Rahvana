@@ -129,7 +129,7 @@ export const getSponsorshipResult = (d: any) => {
   const usableAssets = (d.assetValue || 0) / assetMultiplier;
 
   const totalIncome = primaryIncome + hmIncome + jsIncome + usableAssets;
-  const isEligible = totalIncome >= requiredIncome || d.sponsorDeceased; // Substitute sponsor logic simplified
+  const isEligible = totalIncome >= requiredIncome;
 
   const forms: any[] = [];
   if (d.sponsorDeceased) {

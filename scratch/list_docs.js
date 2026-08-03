@@ -11,7 +11,7 @@ files.forEach(file => {
   const content = fs.readFileSync(file, "utf8");
   const lines = content.split("\n");
   lines.forEach((line, idx) => {
-    if (line.includes("toLocaleString")) {
+    if (line.includes("isEligible = ")) {
       console.log(`Line ${idx + 1}: ${line.trim()}`);
     }
   });
