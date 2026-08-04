@@ -65,7 +65,6 @@ export function FloatingSidePanel({
         style={{
           height: "100%",
           overflowY: "auto",
-          overscrollBehavior: "contain",
           paddingRight: 6,
         }}
       >
