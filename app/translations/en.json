@@ -639,10 +639,10 @@
         "deleteFailed": "Failed to delete document",
         "exportCompleted": "Export completed",
         "exportAllFailed": "Failed to export documents",
-        "deleteAllConfirmWarning": "⚠️ Are you sure you want to delete ALL documents? This action cannot be undone!",
-        "deleteAllFinalConfirm": "⚠️ Final confirmation: Delete ALL uploaded documents?",
+        "deleteAllConfirmWarning": "Are you sure you want to delete ALL documents? This action cannot be undone!",
+        "deleteAllFinalConfirm": "Final confirmation: Delete ALL uploaded documents?",
         "deletingAll": "Deleting all documents...",
-        "deletedAllSuccess": "✅ Deleted {{count}} documents successfully!",
+        "deletedAllSuccess": "Deleted {{count}} documents successfully!",
         "deleteAllFailed": "Failed to delete all documents"
       }
     },
@@ -853,7 +853,7 @@
         "standardizedFilename": "Standardized Filename:",
         "sizePrefix": "Size: ",
         "typePrefix": "Type: ",
-        "warning": "⚠️ Warning: Set Case Information in left panel for proper USCIS naming!",
+        "warning": "Warning: Set Case Information in left panel for proper USCIS naming!",
         "cancel": "Cancel",
         "uploadBtnLoading": "Uploading...",
         "uploadBtn": "Upload Document",
@@ -939,8 +939,8 @@
         "saving": "Saving...",
         "fillRequiredAbove": "Fill Required Fields Above",
         "saveCaseInfo": "Save Case Information",
-        "namingPreview": "📋 Naming Preview:",
-        "requiredWarning": "⚠️ Required for USCIS naming!",
+        "namingPreview": "Naming Preview:",
+        "requiredWarning": "Required for USCIS naming!",
         "requiredWarningDesc": "Fill all fields above to enable proper file naming."
       },
       "notificationCenter": {

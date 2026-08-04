@@ -126,7 +126,7 @@ export const GERMANY_DATA: CountryData = {
     const notes = [];
     if (a.origin?.toLowerCase() === "pakistan") {
       notes.push(
-        "⚠️ Official 2026 Policy: The German Embassy in Islamabad usually conducts a mandatory verification of all Pakistani documents (birth, marriage certificates, degrees). This can add ~€350, €400 in fees and 3-4 months to processing."
+        "Official 2026 Policy: The German Embassy in Islamabad usually conducts a mandatory verification of all Pakistani documents (birth, marriage certificates, degrees). This can add ~€350, €400 in fees and 3-4 months to processing."
       );
     }
     return notes;

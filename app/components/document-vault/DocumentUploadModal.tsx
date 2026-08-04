@@ -613,7 +613,7 @@ export function DocumentUploadModal({
                   {journeyMarriageClash && (
                     <div className="bg-red-50 border border-red-300 rounded-xl p-4 text-sm text-red-800">
                       <p className="font-semibold mb-1">
-                        ⚠️ Please review, this may not match an earlier answer
+                        Please review, this may not match an earlier answer
                       </p>
                       <p>
                         This document suggests a <strong>previous marriage</strong>, but earlier in

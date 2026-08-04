@@ -102,7 +102,7 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: appointmentsError.message }, { status: 500 });
     }
 
-    console.log(`✅ Found ${appointments?.length || 0} appointments`);
+    console.log(`Found ${appointments?.length || 0} appointments`);
 
     // Fetch all applicants
     const { data: applicants, error: applicantsError } = await supabase
@@ -111,12 +111,12 @@ export async function GET(req: NextRequest) {
       .order("created_at", { ascending: true });
 
     if (applicantsError) {
-      console.error("⚠️ Error fetching applicants:", applicantsError);
+      console.error("Error fetching applicants:", applicantsError);
       // Continue without applicants if there's an error
       return Response.json({ data: appointments || [] });
     }
 
-    console.log(`✅ Found ${applicants?.length || 0} total applicants`);
+    console.log(`Found ${applicants?.length || 0} total applicants`);
 
     // Define type for applicants
     type ApplicantData = typeof applicants extends (infer U)[] ? U : never;
@@ -145,10 +145,10 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    console.log("✅ Successfully prepared appointments with applicants");
+    console.log("Successfully prepared appointments with applicants");
     return Response.json({ data });
   } catch (error) {
-    console.error("❌ Unexpected error:", error);
+    console.error("Unexpected error:", error);
     return Response.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }

@@ -268,10 +268,10 @@ export const UK_DATA: CountryData = {
     const notes = [];
     if (a.origin?.toLowerCase() === "pakistan") {
       notes.push(
-        "⚠️ Mandatory: Tuberculosis (TB) test certificate from a UKVI-approved clinic (IOM Pakistan) is required for stays longer than 6 months."
+        "Mandatory: Tuberculosis (TB) test certificate from a UKVI-approved clinic (IOM Pakistan) is required for stays longer than 6 months."
       );
       notes.push(
-        "⚠️ Official 2026 Policy: UK visit visas for Pakistanis are now fully digital (e-visas). No physical sticker will be placed in your passport."
+        "Official 2026 Policy: UK visit visas for Pakistanis are now fully digital (e-visas). No physical sticker will be placed in your passport."
       );
     }
     return notes;

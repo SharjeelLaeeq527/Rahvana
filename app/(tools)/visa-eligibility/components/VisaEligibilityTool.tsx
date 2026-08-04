@@ -1075,7 +1075,7 @@ export function VisaEligibilityTool() {
                 </div>
 
                 <p className="text-xs text-gray-400 text-center">
-                  ⚠️ This tool provides guidance only and does not guarantee visa approval.
+                  This tool provides guidance only and does not guarantee visa approval.
                 </p>
 
                 <div className="pt-4 border-t text-center">

@@ -867,7 +867,7 @@ export const roadmapData = {
           ],
           pakistanSpecific:
             "Address: Diplomatic Enclave, Ramna 5, Islamabad. NO mobile phones allowed.",
-          possibleOutcomes: ["Approved ✅", "Administrative Processing 221(g) ⚠️", "Denied ❌"],
+          possibleOutcomes: ["Approved", "Administrative Processing 221(g)", "Denied"],
           notes:
             "Common questions: How did you meet? Tell me about your wedding. Where will you live?",
           notesUr: "عام سوالات: آپ کیسے ملے؟ اپنی شادی کے بارے میں بتائیں۔ آپ کہاں رہیں گے؟",
