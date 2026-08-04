@@ -34,7 +34,5 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error("List documents error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-    console.error("List documents error:", error);
-    return NextResponse.json({ error: msg(E.VAULT_SYNC_FAILED) }, { status: 500 });
   }
 }

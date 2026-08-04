@@ -410,10 +410,6 @@ export function DocumentTableView({
                                   </DropdownMenuItem>
                                 )}
                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => onUpload(doc.id, latestDoc.id)}>
-                                  <Upload className="w-4 h-4 mr-2" />{" "}
-                                  {t("documentVaultPage.components.tableView.replace")}
-                                </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => onOpenWizard(doc.id)}>
                                   <ExternalLink className="w-4 h-4 mr-2" />{" "}
                                   {t("documentVaultPage.components.tableView.instructions")}

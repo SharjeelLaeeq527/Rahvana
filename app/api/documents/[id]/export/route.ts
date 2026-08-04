@@ -21,8 +21,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      console.error("[documents/export] Unauthorized:", authError);
-      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { id } = await params;
@@ -34,7 +32,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     if (!document) {
       return NextResponse.json({ error: "Document not found" }, { status: 404 });
-      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // Get document definition for naming
@@ -52,13 +49,13 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       const zip = new JSZip();
 
       // Add original file
-      const originalResult = await fileManager.readFile(document.storagePath);
+      const originalResult = await fileManager.readFile(document.storagePath, user.id);
       if (originalResult.success && originalResult.buffer) {
         zip.file(document.standardizedFilename, originalResult.buffer);
       }
 
       // Add compressed file
-      const compressedResult = await fileManager.readFile(document.compressedStoragePath);
+      const compressedResult = await fileManager.readFile(document.compressedStoragePath, user.id);
       if (compressedResult.success && compressedResult.buffer) {
         zip.file(document.compressedFilename, compressedResult.buffer);
       }
@@ -86,12 +83,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // No compressed version - return single file directly
-    const readResult = await fileManager.readFile(document.storagePath);
+    const readResult = await fileManager.readFile(document.storagePath, user.id);
 
     if (!readResult.success || !readResult.buffer) {
       return NextResponse.json({ error: readResult.error || "File not found" }, { status: 404 });
-      console.error("[documents/export] read error:", readResult.error);
-      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     return new NextResponse(new Uint8Array(readResult.buffer), {
@@ -103,9 +98,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       },
     });
   } catch (error) {
-    console.error("Export document error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-    console.error("Export document error:", error);
     console.error("Export document error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
