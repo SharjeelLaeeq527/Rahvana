@@ -36,6 +36,20 @@ export async function POST(request: NextRequest) {
     // Step 2: Update each tracker
     for (const caseId of activeCases) {
       try {
+        const statusData = await db.getCaseDataByKeyDB(caseId, "tracking_status");
+
+        const terminalStatuses = [
+          "delivered",
+          "failure",
+        ];
+        
+        if (terminalStatuses.includes(statusData?.data_value ?? "")) {
+          console.log(
+            `[Cron API] Skipping completed tracker for case ${caseId} (${statusData?.data_value})`
+          );
+          continue;
+        }
+
         // Get tracker ID from case_data
         const trackerIdData = await db.getCaseDataByKeyDB(caseId, "easypost_tracker_id");
 

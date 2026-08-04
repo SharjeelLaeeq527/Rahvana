@@ -465,7 +465,7 @@ const BasicInfoStep = ({
           <Button
             onClick={onBack}
             variant="outline"
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-teal-600 hover:bg-teal-700 text-white hover:text-white"
           >
             {t("bookAppointment.basicInfoStep.prevBtn")}
           </Button>
@@ -489,10 +489,7 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
   return (
     <div className="border border-gray-200 rounded-lg p-4 sm:p-6 mb-6 bg-gray-50">
       <h3 className="text-lg font-semibold text-slate-900 mb-4">
-        {t("bookAppointment.personalInfoStep.applicantNumber").replace(
-          "{index}",
-          (index + 1).toString()
-        )}
+        Applicant {index + 1}
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -701,10 +698,7 @@ const ApplicantPassportInfo = ({
   return (
     <div className="border border-gray-200 rounded-lg p-4 sm:p-6 mb-6 bg-gray-50">
       <h3 className="text-lg font-semibold text-slate-900 mb-4">
-        {t("bookAppointment.passportDetailsStep.applicantNumber").replace(
-          "{index}",
-          (index + 1).toString()
-        )}
+        Applicant {index + 1}
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1604,10 +1598,7 @@ const ReviewStep = ({
                     className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
                   >
                     <h5 className="font-semibold text-slate-900 mb-2">
-                      {t("bookAppointment.reviewStep.applicantIndex").replace(
-                        "{index}",
-                        (index + 1).toString()
-                      )}
+                      Applicant {index + 1}
                     </h5>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -1727,10 +1718,7 @@ const ReviewStep = ({
                     className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
                   >
                     <h5 className="font-semibold text-slate-900 mb-2">
-                      {t("bookAppointment.reviewStep.applicantIndex").replace(
-                        "{index}",
-                        (index + 1).toString()
-                      )}
+                      Applicant {index + 1}
                     </h5>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -1911,6 +1899,20 @@ interface CheckoutStepProps {
   error: string | null;
   loading: boolean;
   tier: string;
+  isAMC: boolean;
+  isIOM: boolean;
+  onBack: () => void;
+  onSubmit: (e: React.FormEvent) => void;
+  formatDate: (dateString: string) => string;
+}
+
+interface CheckoutStepProps {
+  formData: FormData;
+  error: string | null;
+  loading: boolean;
+  tier: string;
+  isAMC: boolean;
+  isIOM: boolean;
   onBack: () => void;
   onSubmit: (e: React.FormEvent) => void;
   formatDate: (dateString: string) => string;
@@ -1921,6 +1923,8 @@ const CheckoutStep = ({
   error,
   loading,
   tier,
+  isAMC,
+  isIOM,
   onBack,
   onSubmit,
   formatDate,
@@ -1943,9 +1947,11 @@ const CheckoutStep = ({
               Booking Summary
             </h4>
             <div className="mt-3 space-y-2">
-              <p className="text-sm font-semibold text-slate-800">
-                {formData.surname}, {formData.givenName}
-              </p>
+              {isAMC && (
+                <p className="text-sm font-semibold text-slate-800">
+                  {formData.surname}, {formData.givenName}
+                </p>
+              )}
               <p className="text-xs text-slate-500">
                 Center:{" "}
                 <span className="capitalize font-medium text-slate-700">{formData.location}</span>
@@ -2221,12 +2227,14 @@ export default function WilcareAppointmentForm() {
       // If the number of applicants changes, update the applicants array
       if (name === "numberOfApplicants") {
         const numApplicants = parseInt(value) || 0;
+        // Number of additional applicants (excluding primary)
+        const numAdditional = numApplicants - 1;
         const currentApplicants = prev.applicants || [];
 
         // If increasing number of applicants, add new empty applicant objects
-        if (numApplicants > currentApplicants.length) {
+        if (numAdditional > currentApplicants.length) {
           const newApplicants = [...currentApplicants];
-          for (let i = currentApplicants.length; i < numApplicants; i++) {
+          for (let i = currentApplicants.length; i < numAdditional; i++) {
             newApplicants.push({
               id: `applicant-${i + 1}`,
               surname: "",
@@ -2243,8 +2251,12 @@ export default function WilcareAppointmentForm() {
           updatedData.applicants = newApplicants;
         }
         // If decreasing number of applicants, remove the extra ones
-        else if (numApplicants < currentApplicants.length) {
-          updatedData.applicants = currentApplicants.slice(0, numApplicants);
+        else if (numAdditional < currentApplicants.length) {
+          updatedData.applicants = currentApplicants.slice(0, numAdditional);
+        }
+        // If numAdditional is 0 (only primary applicant), clear the array
+        else if (numAdditional === 0) {
+          updatedData.applicants = [];
         }
       }
 
@@ -2737,6 +2749,8 @@ export default function WilcareAppointmentForm() {
             error={error}
             loading={loading}
             tier={tier}
+            isAMC={isAMC}
+            isIOM={isIOM}
             onBack={handleGoBack}
             onSubmit={(e) => {
               e.preventDefault();

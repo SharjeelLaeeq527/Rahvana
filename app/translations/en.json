@@ -864,7 +864,7 @@
         "close": "Close",
         "howToObtain": "How to Obtain: ",
         "documentUploaded": "Document Uploaded ✓",
-        "stepProgress": "Step {{current}} of {{total}}",
+        "stepProgress": "Step {current} of {total}",
         "resetConfirm": "Reset progress for this document?",
         "resetProgress": "Reset Progress",
         "progressOverview": "Progress Overview",

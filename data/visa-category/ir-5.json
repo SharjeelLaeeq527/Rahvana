@@ -7726,9 +7726,9 @@
           "step_key": "step_3_12",
           "step_number": 12,
           "step_type": "tool",
-          "step_name": "Track Post-Interview Review",
-          "step_description": "Your case has been placed in further review or administrative processing after the interview. Use this step to monitor CEAC status and stay organized during the wait.",
-          "step_short_description": "Administrative processing and review tracker",
+          "step_name": "Track Administrative Processing",
+          "step_description": "Monitor your CEAC case status, track updates, and stay informed while the U.S. embassy completes post-interview processing.",
+          "step_short_description": "Administrative processing tracker",
           "who": "Parent Beneficiary",
           "where": "ceac.state.gov",
           "estimated_duration_days": 90,
@@ -7736,197 +7736,119 @@
           "display_order": 12,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": ["further_review", "both"]
+            "outcome221gSubtype": [
+              "docs_requested",
+              "further_review",
+              "both"
+            ]
           },
           "actions": [
-            "Monitor CEAC periodically",
-            "Monitor the registered email address for embassy correspondence",
-            "Record meaningful status changes",
-            "Respond promptly if the embassy requests information or documents",
-            "Keep the passport and supporting records valid and accessible"
+            "Monitor CEAC status weekly",
+            "Monitor your registered email for embassy correspondence",
+            "Record significant status updates",
+            "Respond promptly if additional information is requested",
+            "Keep your passport and supporting documents readily available"
           ],
           "tool_data": {
             "type": "adm_processing",
             "chips": [
               {
-                "label": "Post-Interview Review",
+                "label": "221(g)",
                 "type": "gold"
-              },
-              {
-                "label": "CEAC Tracking",
-                "type": "sky"
               },
               {
                 "label": "Administrative Processing",
                 "type": "amber"
-              }
-            ],
-            "explainer": {
-              "eyebrow": "What post-interview review means",
-              "title": "Your case is under review, this is not a refusal",
-              "body": "Administrative Processing after a visa interview means the consulate needs additional time, for security checks, background review, or other internal processing. Most cases in AP eventually result in visa issuance. Timelines vary and are entirely within the U.S. government's control."
-            },
-            "recorder": {
-              "title": "Record your AP/review details",
-              "subtitle": "Save this so Rahvana can track and remind you",
-              "ceac_options": [
-                "Ready",
-                "Approved",
-                "Issued",
-                "Refused",
-                "Administrative Processing, if displayed",
-                "Case Status Not Available",
-                "Other"
-              ],
-              "docs_requested_options": [
-                {
-                  "label": "Select...",
-                  "value": ""
-                },
-                {
-                  "label": "Yes, documents requested",
-                  "value": "yes"
-                },
-                {
-                  "label": "No, no additional docs requested",
-                  "value": "no"
-                },
-                {
-                  "label": "Unknown / not confirmed",
-                  "value": "unknown"
-                }
-              ]
-            },
-            "info_sections": [
-              {
-                "title": "What to do during review",
-                "type": "sky",
-                "icon": "info",
-                "items": [
-                  "Check CEAC status weekly, note any changes and log them below",
-                  "Monitor the email registered with the consulate, correspondence may arrive at any time",
-                  "Respond immediately if the consulate contacts you",
-                  "Ensure your passport remains valid throughout the review period",
-                  "If processing is substantially longer than expected, review the embassy's current inquiry instructions and consider qualified legal advice where appropriate."
-                ]
               },
               {
-                "title": "What post-interview review does not mean",
-                "type": "teal",
-                "icon": "check",
-                "items": [
-                  "A 221(g) administrative-processing case is legally refused at that time, but the refusal may later be overcome",
-                  "A CEAC status of 'Refused' does not necessarily mean the case is permanently denied",
-                  "The written refusal notice and embassy instructions provide the most reliable explanation of the case",
-                  "Administrative processing does not have a guaranteed completion time",
-                  "Repeated inquiries generally do not accelerate required government processing"
-                ]
-              }
-            ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
-          }
-        },
-        {
-          "step_key": "step_3_13",
-          "step_number": 13,
-          "step_type": "tool",
-          "step_name": "Monitor Case Status",
-          "step_description": "Your documents have been submitted in response to the 221(g). Now monitor CEAC for updates and stay organized as the consulate reviews your submission.",
-          "step_short_description": "Post-submission case monitoring",
-          "who": "Parent Beneficiary",
-          "where": "ceac.state.gov",
-          "estimated_duration_days": 60,
-          "is_required": false,
-          "display_order": 13,
-          "visible_when": {
-            "interviewOutcome": "221g",
-            "outcome221gSubtype": ["docs_requested", "both"]
-          },
-          "actions": [
-            "Confirm submission was received",
-            "Check CEAC weekly for status changes",
-            "Log updates in the tracker",
-            "Watch email for consulate correspondence",
-            "Track toward resolution"
-          ],
-          "tool_data": {
-            "type": "adm_processing",
-            "chips": [
-              {
-                "label": "Post-Submission",
+                "label": "CEAC Tracking",
                 "type": "sky"
-              },
-              {
-                "label": "Case Monitoring",
-                "type": "purple"
-              },
-              {
-                "label": "Awaiting Resolution",
-                "type": "gold"
               }
             ],
             "explainer": {
-              "eyebrow": "Post-submission monitoring",
-              "title": "Documents submitted, now monitoring for resolution",
-              "body": "You have submitted your 221(g) response. The consulate is now reviewing your submission alongside any required background processing. This phase can take days to months depending on the case. Use this tracker to log status checks and stay organized while you wait."
+              "dynamic": true,
+              "variants": {
+                "further_review": {
+                  "eyebrow": "Administrative Processing",
+                  "title": "Your case is currently under additional review",
+                  "body": "Your interview is complete and the embassy is conducting additional administrative processing. No additional documents have been requested at this time. Continue monitoring your case status and your registered email until a final decision is made."
+                },
+                "docs_requested": {
+                  "eyebrow": "Documents Submitted",
+                  "title": "Your documents have been submitted and are under review",
+                  "body": "The embassy has received your requested documents and is now reviewing them alongside any required administrative processing. Continue monitoring your case status and your registered email while awaiting the next update."
+                },
+                "both": {
+                  "eyebrow": "Administrative Processing",
+                  "title": "Your case remains under embassy review",
+                  "body": "Your case is currently undergoing administrative processing. Continue monitoring CEAC and your registered email for any updates or additional instructions from the embassy."
+                }
+              }
             },
             "recorder": {
-              "title": "Record status updates",
-              "subtitle": "Log each CEAC check to track progress over time",
+              "title": "Track your case progress",
+              "subtitle": "Log each CEAC status update to maintain a complete history",
               "ceac_options": [
-                "Ready",
-                "Approved",
-                "Issued",
-                "Refused",
-                "Administrative Processing, if displayed",
-                "Case Status Not Available",
-                "Other"
-              ],
-              "docs_requested_options": [
                 {
-                  "label": "Select...",
-                  "value": ""
+                  "label": "Ready",
+                  "value": "Ready"
                 },
                 {
-                  "label": "Yes, documents requested",
-                  "value": "yes"
+                  "label": "Approved",
+                  "value": "Approved"
                 },
                 {
-                  "label": "No, no additional docs requested",
-                  "value": "no"
+                  "label": "Issued",
+                  "value": "Issued"
                 },
                 {
-                  "label": "Unknown / not confirmed",
-                  "value": "unknown"
+                  "label": "Refused",
+                  "value": "Refused"
+                },
+                {
+                  "label": "Administrative Processing",
+                  "value": "Administrative Processing"
+                },
+                {
+                  "label": "Case Status Not Available",
+                  "value": "Case Status Not Available"
+                },
+                {
+                  "label": "Other",
+                  "value": "Other"
                 }
               ]
             },
             "info_sections": [
               {
-                "title": "What to do while monitoring",
+                "title": "What to do while waiting",
                 "type": "sky",
                 "icon": "info",
                 "items": [
-                  "Check CEAC weekly and log each check, note the status and any changes",
-                  "Watch for an 'Issued' status, which indicates that the visa has been printed or issued; wait until the passport is returned before making irreversible travel arrangements",
-                  "Monitor your registered email for any additional requests from the consulate",
-                  "If CEAC changes from AP to 'Refused', read your written notice carefully before drawing conclusions",
-                  "If the case remains unresolved for an extended period, follow the current U.S. Embassy Islamabad inquiry instructions and consider qualified legal advice where appropriate."
+                  "Check your CEAC status approximately once a week and record any changes.",
+                  "Monitor the email address registered with the embassy for additional requests or updates.",
+                  "Respond promptly if the embassy requests further documents or information.",
+                  "Ensure your passport remains valid throughout the review process.",
+                  "If your case remains pending significantly longer than normal, follow your embassy's official inquiry instructions before contacting them."
                 ]
               },
               {
-                "title": "Possible outcomes from this stage",
+                "title": "Possible next updates",
                 "type": "teal",
                 "icon": "check",
                 "items": [
-                  "Approved, CEAC shows 'Issued', passport delivered via courier",
-                  "Additional review, AP continues; keep monitoring and logging",
-                  "Further documents, respond promptly to any new requests",
-                  "Refused, read the written notice carefully; consult an attorney"
+                  "Issued — Your visa has been approved and printed.",
+                  "Administrative Processing — Additional review is still underway.",
+                  "Additional Documents Requested — The embassy requires more information.",
+                  "Refused — Review your written notice carefully for the official reason and next steps."
                 ]
               }
             ],
-            "disclaimer": "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."
+            "timeline_note": {
+              "title": "Processing times vary",
+              "body": "Administrative Processing has no guaranteed completion time. Cases may resolve within days, weeks, or several months depending on the individual circumstances."
+            },
+            "disclaimer": "Rahvana provides structured guidance only and does not provide legal advice. Always follow instructions provided by the U.S. Embassy or Consulate handling your case."
           }
         }
       ]

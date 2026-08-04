@@ -168,28 +168,12 @@ const IOMInfoStep = ({
             <Label htmlFor="destinationCountry">
               {t("bookAppointment.iomInfoStep.destinationCountry")}
             </Label>
-            <CustomDropdown
-              value={formData.destinationCountry || ""}
-              onChange={onSelectChange("destinationCountry")}
-              options={[
-                { value: "United States", label: t("bookAppointment.iomInfoStep.countries.us") },
-                { value: "Canada", label: t("bookAppointment.iomInfoStep.countries.canada") },
-                {
-                  value: "Australia",
-                  label: t("bookAppointment.iomInfoStep.countries.australia"),
-                },
-                {
-                  value: "United Kingdom",
-                  label: t("bookAppointment.iomInfoStep.countries.uk"),
-                },
-                {
-                  value: "New Zealand",
-                  label: t("bookAppointment.iomInfoStep.countries.newZealand"),
-                },
-                { value: "Other", label: t("bookAppointment.iomInfoStep.countries.other") },
-              ]}
-              placeholder={t("bookAppointment.iomInfoStep.selectDestinationCountry")}
-              className="w-full [&_button]:w-full [&_button]:min-w-0"
+            <Input
+              id="destinationCountry"
+              name="destinationCountry"
+              value="United States"
+              disabled
+              className="bg-gray-100 cursor-not-allowed text-gray-700 font-medium"
             />
           </div>
         </div>

@@ -111,22 +111,22 @@ export const InterviewOutcomeTool: React.FC<InterviewOutcomeToolProps> = ({
   };
 
   useEffect(() => {
-    if (selectedOutcome !== "approved") return;
-    const end = Date.now() + 2200;
-    const colors = [
-      "var(--rv-green)",
-      "var(--rv-launch-blue)",
-      "var(--rv-amber)",
-      "#a8d9be",
-      "#ffffff",
-    ];
-    const frame = () => {
-      confetti({ particleCount: 6, angle: 60, spread: 55, origin: { x: 0 }, colors });
-      confetti({ particleCount: 6, angle: 120, spread: 55, origin: { x: 1 }, colors });
-      if (Date.now() < end) requestAnimationFrame(frame);
-    };
-    frame();
-  }, [selectedOutcome]);
+      if (selectedOutcome !== "approved") return;
+      const end = Date.now() + 2200;
+      const colors = [
+        "var(--rv-green)",
+        "var(--rv-launch-blue)",
+        "var(--rv-amber)",
+        "#a8d9be",
+        "#ffffff",
+      ];
+      const frame = () => {
+        confetti({ particleCount: 6, angle: 60, spread: 55, origin: { x: 0 }, colors });
+        confetti({ particleCount: 6, angle: 120, spread: 55, origin: { x: 1 }, colors });
+        if (Date.now() < end) requestAnimationFrame(frame);
+      };
+      frame();
+    }, [selectedOutcome]);
 
   const recommendation = getRecommendation();
   const currentQuestion = tool.clarification_questions?.[currentQuestionIdx];
