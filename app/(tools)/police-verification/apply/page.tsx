@@ -35,6 +35,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
+import { Input } from "@/components/ui/input";
 
 const purposeOptions = [
   { value: "Immigration", label: "Immigration" },
@@ -1168,15 +1169,13 @@ function PoliceApplyContent() {
                   <label className="text-sm font-bold text-gray-700 ml-1">
                     Name of Country for which Certificate is required
                   </label>
-                  <CustomDropdown
-                    value={formData.targetCountry}
-                    onChange={(value) =>
-                      setFormData((prev) => ({ ...prev, targetCountry: value }))
-                    }
-                    options={countryOptions}
-                    placeholder="Select country"
-                    className="w-full [&_button]:h-[58px] [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-2xl [&_button]:bg-gray-50 [&_button]:p-4"
-                  />
+                  <Input
+              id="destinationCountry"
+              name="destinationCountry"
+              value="United States"
+              disabled
+              className="bg-gray-100 cursor-not-allowed text-gray-700 font-medium"
+            />
                 </div>
 
                 {/* Arrest History & Review Moved inside Step 3 for compact flow */}
