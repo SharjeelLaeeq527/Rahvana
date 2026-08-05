@@ -1294,11 +1294,15 @@ export default function DocumentVaultPage() {
                                       const uploadedDoc = uploadedDocuments.find(
                                         (ud) => ud.documentDefId === doc.id
                                       );
+                                      const count = uploadedDocuments.filter(
+                                        (ud) => ud.documentDefId === doc.id
+                                      ).length;
                                       return (
                                         <DocumentCard
-                                          key={doc.id}
-                                          documentDef={doc}
-                                          uploadedDoc={uploadedDoc}
+                                            key={doc.id}
+                                            documentDef={doc}
+                                            uploadedDoc={uploadedDoc}
+                                            uploadedDocsCount={count}
                                           onUpload={(replaceId) =>
                                             openUploadModal(doc.id, replaceId)
                                           }
@@ -1426,11 +1430,15 @@ export default function DocumentVaultPage() {
                                       const uploadedDoc = uploadedDocuments.find(
                                         (ud) => ud.documentDefId === doc.id
                                       );
+                                      const count = uploadedDocuments.filter(
+                                        (ud) => ud.documentDefId === doc.id
+                                      ).length;
                                       return (
                                         <DocumentCard
-                                          key={doc.id}
-                                          documentDef={doc}
-                                          uploadedDoc={uploadedDoc}
+                                            key={doc.id}
+                                            documentDef={doc}
+                                            uploadedDoc={uploadedDoc}
+                                            uploadedDocsCount={count}
                                           onUpload={(replaceId) =>
                                             openUploadModal(doc.id, replaceId)
                                           }
@@ -1494,11 +1502,15 @@ export default function DocumentVaultPage() {
                                     const uploadedDoc = uploadedDocuments.find(
                                       (ud) => ud.documentDefId === doc.id
                                     );
+                                      const count = uploadedDocuments.filter(
+                                        (ud) => ud.documentDefId === doc.id
+                                      ).length;
                                     return (
                                       <DocumentCard
-                                        key={doc.id}
-                                        documentDef={doc}
-                                        uploadedDoc={uploadedDoc}
+                                            key={doc.id}
+                                            documentDef={doc}
+                                            uploadedDoc={uploadedDoc}
+                                            uploadedDocsCount={count}
                                         onUpload={(replaceId) => openUploadModal(doc.id, replaceId)}
                                         onPreview={
                                           uploadedDoc ? () => handlePreview(uploadedDoc) : undefined
@@ -1559,11 +1571,15 @@ export default function DocumentVaultPage() {
                                     const uploadedDoc = uploadedDocuments.find(
                                       (ud) => ud.documentDefId === doc.id
                                     );
+                                      const count = uploadedDocuments.filter(
+                                        (ud) => ud.documentDefId === doc.id
+                                      ).length;
                                     return (
                                       <DocumentCard
-                                        key={doc.id}
-                                        documentDef={doc}
-                                        uploadedDoc={uploadedDoc}
+                                            key={doc.id}
+                                            documentDef={doc}
+                                            uploadedDoc={uploadedDoc}
+                                            uploadedDocsCount={count}
                                         onUpload={() => openUploadModal(doc.id)}
                                         onPreview={
                                           uploadedDoc ? () => handlePreview(uploadedDoc) : undefined

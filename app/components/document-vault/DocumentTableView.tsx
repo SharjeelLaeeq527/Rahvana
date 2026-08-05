@@ -184,8 +184,8 @@ export function DocumentTableView({
                 .sort((a, b) => b.displayVersion - a.displayVersion); // Show latest version first
 
               const latestDoc = docVariants[0];
-              const hasVariants = docVariants.length > 1;
-              const isExpanded = expandedRows[doc.id];
+              const hasVariants = docVariants.length > 1 && !doc.multipleFilesAllowed;
+              const isExpanded = expandedRows[doc.id] && !doc.multipleFilesAllowed;
 
               const docName =
                 t(`documentVaultPage.documents.${doc.id}.name`) !==
@@ -329,23 +329,34 @@ export function DocumentTableView({
                     <TableCell>{getStatusBadge(doc, latestDoc)}</TableCell>
                     <TableCell>
                       {latestDoc ? (
-                        <div className="space-y-1">
-                          <div className="text-xs font-medium truncate max-w-[150px]">
-                            {getShortDisplayName(latestDoc.standardizedFilename, doc.name)}
+                        doc.multipleFilesAllowed ? (
+                          <div className="space-y-1">
+                            <div className="text-xs font-semibold text-primary">
+                              {docVariants.length} {docVariants.length === 1 ? "File" : "Files"} Uploaded
+                            </div>
+                            <div className="text-[10px] text-muted-foreground truncate max-w-[150px]">
+                              Latest: {getShortDisplayName(latestDoc.standardizedFilename, doc.name)}
+                            </div>
                           </div>
-                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                            <span>{formatFileSize(latestDoc.fileSize, t)}</span>
-                            <span>•</span>
-                            <span className="font-bold text-primary">
-                              v{latestDoc.displayVersion} (Latest)
-                            </span>
-                            {latestDoc.hasCompressedVersion && (
-                              <Badge className="h-4 px-1 text-[9px] bg-blue-100 text-blue-700 border-none hover:bg-blue-100">
-                                {t("documentVaultPage.components.tableView.zip")}
-                              </Badge>
-                            )}
+                        ) : (
+                          <div className="space-y-1">
+                            <div className="text-xs font-medium truncate max-w-[150px]">
+                              {getShortDisplayName(latestDoc.standardizedFilename, doc.name)}
+                            </div>
+                            <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                              <span>{formatFileSize(latestDoc.fileSize, t)}</span>
+                              <span>•</span>
+                              <span className="font-bold text-primary">
+                                v{latestDoc.displayVersion} (Latest)
+                              </span>
+                              {latestDoc.hasCompressedVersion && (
+                                <Badge className="h-4 px-1 text-[9px] bg-blue-100 text-blue-700 border-none hover:bg-blue-100">
+                                  {t("documentVaultPage.components.tableView.zip")}
+                                </Badge>
+                              )}
+                            </div>
                           </div>
-                        </div>
+                        )
                       ) : (
                         <span className="text-xs text-muted-foreground italic">
                           {t("documentVaultPage.components.tableView.noFileUploaded")}
@@ -405,6 +416,18 @@ export function DocumentTableView({
                           </>
                         ) : (
                           <div className="flex items-center gap-1">
+                            {doc.multipleFilesAllowed && (
+                              <Button
+                                onClick={() => onUpload(doc.id)}
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10"
+                                title="Upload More"
+                              >
+                                <Plus className="w-4 h-4" />
+                              </Button>
+                            )}
+
                             <Button
                               onClick={() => onPreview(latestDoc)}
                               size="sm"
