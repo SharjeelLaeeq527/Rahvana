@@ -277,11 +277,11 @@ export function DocumentCard({
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-5 border border-slate-100 dark:border-slate-700/50 space-y-3 relative overflow-hidden">
             <div className="flex items-center justify-between text-[11px]">
               <span className="font-bold text-slate-500 uppercase tracking-tight">
-                {documentDef.multipleFilesAllowed
+                {documentDef.multipleFilesAllowed && !documentDef.id.startsWith("dynamic-")
                   ? "Latest Upload"
                   : t("documentVaultPage.components.documentCard.activeVersion")}
               </span>
-              {!documentDef.multipleFilesAllowed && (
+              {!(documentDef.multipleFilesAllowed && !documentDef.id.startsWith("dynamic-")) && (
                 <Badge
                   variant="secondary"
                   className="h-5 px-1.5 text-[10px] font-black bg-white dark:bg-slate-700 shadow-sm border-none"
@@ -355,6 +355,17 @@ export function DocumentCard({
               </Button>
 
               <div className="flex-1 flex gap-1">
+                {documentDef.multipleFilesAllowed && !documentDef.id.startsWith("dynamic-") && (
+                  <Button
+                    onClick={() => onUpload()}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-9 font-bold text-xs border-2 text-primary border-primary/20 hover:bg-primary/5"
+                  >
+                    <Upload className="w-3.5 h-3.5 mr-1.5" />
+                    Upload
+                  </Button>
+                )}
                 <Button
                   onClick={onDownload}
                   variant="outline"
@@ -372,7 +383,7 @@ export function DocumentCard({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    {documentDef.multipleFilesAllowed ? (
+                    {documentDef.multipleFilesAllowed && !documentDef.id.startsWith("dynamic-") ? (
                       <DropdownMenuItem onClick={() => onUpload()}>
                         <Plus className="w-4 h-4 mr-2 text-primary" /> Upload / Manage Files
                       </DropdownMenuItem>

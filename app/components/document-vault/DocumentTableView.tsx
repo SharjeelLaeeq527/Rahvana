@@ -185,7 +185,7 @@ export function DocumentTableView({
 
               const latestDoc = docVariants[0];
               const hasVariants = docVariants.length > 1;
-              const showVersionHistoryTray = hasVariants && !doc.multipleFilesAllowed;
+              const showVersionHistoryTray = hasVariants && !(doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-"));
               const isExpanded = expandedRows[doc.id] && showVersionHistoryTray;
 
               const docName =
@@ -292,7 +292,7 @@ export function DocumentTableView({
                               </div>
                             )}
                             {doc.required && <span className="text-destructive font-bold">*</span>}
-                            {doc.multipleFilesAllowed ? (
+                            {doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-") ? (
                               docVariants.length > 0 && (
                                 <Badge
                                   variant="outline"
@@ -347,7 +347,7 @@ export function DocumentTableView({
                           </div>
                           <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                             <span>{formatFileSize(latestDoc.fileSize, t)}</span>
-                            {!doc.multipleFilesAllowed && (
+                            {!(doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-")) && (
                               <>
                                 <span>•</span>
                                 <span className="font-bold text-primary">
@@ -424,6 +424,17 @@ export function DocumentTableView({
                           </>
                         ) : (
                           <div className="flex items-center gap-1">
+                            {doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-") && (
+                              <Button
+                                onClick={() => onUpload(doc.id)}
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10"
+                                title="Upload / Manage Files"
+                              >
+                                <Upload className="w-4 h-4" />
+                              </Button>
+                            )}
                             <Button
                               onClick={() => onPreview(latestDoc)}
                               size="sm"
@@ -453,9 +464,15 @@ export function DocumentTableView({
                                   <Download className="w-4 h-4 mr-2" />{" "}
                                   {t("documentVaultPage.components.tableView.download")}
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => onUpload(doc.id)}>
-                                  <Plus className="w-4 h-4 mr-2 text-primary" /> Add New Version
-                                </DropdownMenuItem>
+                                 {doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-") ? (
+                                   <DropdownMenuItem onClick={() => onUpload(doc.id)}>
+                                     <Plus className="w-4 h-4 mr-2 text-primary" /> Upload / Manage Files
+                                   </DropdownMenuItem>
+                                 ) : (
+                                   <DropdownMenuItem onClick={() => onUpload(doc.id)}>
+                                     <Plus className="w-4 h-4 mr-2 text-primary" /> Add New Version
+                                   </DropdownMenuItem>
+                                 )}
                                 {onExport && (
                                    <DropdownMenuItem
                                      onClick={() =>
@@ -491,11 +508,15 @@ export function DocumentTableView({
                                       </DropdownMenuItem>
                                     </>
                                   )}
-                                 <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => onUpload(doc.id, latestDoc.id)}>
-                                  <Upload className="w-4 h-4 mr-2" />{" "}
-                                  {t("documentVaultPage.components.tableView.replace")}
-                                </DropdownMenuItem>
+                                 {!(doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-")) && (
+                                   <>
+                                     <DropdownMenuSeparator />
+                                     <DropdownMenuItem onClick={() => onUpload(doc.id, latestDoc.id)}>
+                                       <Upload className="w-4 h-4 mr-2" />{" "}
+                                       {t("documentVaultPage.components.tableView.replace")}
+                                     </DropdownMenuItem>
+                                   </>
+                                 )}
                                 <DropdownMenuItem onClick={() => onOpenWizard(doc.id)}>
                                   <ExternalLink className="w-4 h-4 mr-2" />{" "}
                                   {t("documentVaultPage.components.tableView.instructions")}
