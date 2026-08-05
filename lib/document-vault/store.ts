@@ -61,6 +61,7 @@ interface DocumentVaultStore {
   addDynamicSlot: (category: string) => void;
   addNamedDynamicSlot: (category: string, name: string) => Promise<string>;
   renameDynamicSlot: (categoryId: string, slotId: string, newName: string) => void;
+  deleteDynamicSlot: (category: string, slotId: string) => Promise<void>;
 
   // UI actions
   setSelectedDocument: (documentDefId: string | null) => void;
@@ -517,6 +518,50 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
     };
 
     get().setConfig(updatedConfig);
+  },
+
+  deleteDynamicSlot: async (category: string, slotId: string) => {
+    const { config, uploadedDocuments } = get();
+    if (!config) return;
+
+    // 1. Delete all uploaded files associated with this slot ID from the server
+    const docsToDelete = uploadedDocuments.filter((d) => d.documentDefId === slotId);
+    for (const doc of docsToDelete) {
+      try {
+        await fetch(`/api/documents/${doc.id}`, {
+          method: "DELETE",
+        });
+      } catch (error) {
+        console.error(`Failed to delete dynamic file ${doc.id}:`, error);
+      }
+    }
+
+    // 2. Remove the slot from dynamicDocuments config
+    const dynamicDocs = config.dynamicDocuments || {};
+    const slots = dynamicDocs[category] || [];
+    const updatedSlots = slots.filter((slot) => slot.id !== slotId);
+
+    const updatedDynamicDocs = {
+      ...dynamicDocs,
+      [category]: updatedSlots,
+    };
+
+    const updatedConfig = {
+      ...config,
+      dynamicDocuments: updatedDynamicDocs,
+    };
+
+    // 3. Update the config and set the store state
+    await get().setConfig(updatedConfig);
+
+    // 4. Update the uploaded documents state locally
+    set({
+      uploadedDocuments: get().uploadedDocuments.filter((d) => d.documentDefId !== slotId),
+    });
+
+    // 5. Refresh statuses and notifications
+    get().refreshDocumentStatuses();
+    get().refreshNotifications();
   },
 
   setSelectedDocument: (documentDefId: string | null) => {

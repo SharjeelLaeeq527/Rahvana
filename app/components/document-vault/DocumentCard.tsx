@@ -48,6 +48,7 @@ interface DocumentCardProps {
   onExport?: () => void;
   onPreview?: () => void;
   onRename?: (newName: string) => void;
+  onDeleteSlot?: () => void;
 }
 
 export function DocumentCard({
@@ -60,6 +61,7 @@ export function DocumentCard({
   onExport,
   onPreview,
   onRename,
+  onDeleteSlot,
 }: DocumentCardProps) {
   const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
@@ -209,17 +211,33 @@ export function DocumentCard({
                       ? t(`documentVaultPage.documents.${documentDef.id}.name`)
                       : documentDef.name}
                     {documentDef.id.startsWith("dynamic-") && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => {
-                          setIsEditing(true);
-                          setEditValue(documentDef.name);
-                        }}
-                      >
-                        <Edit2 className="w-3.5 h-3.5 text-slate-400" />
-                      </Button>
+                      <div className="inline-flex items-center gap-0.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsEditing(true);
+                            setEditValue(documentDef.name);
+                          }}
+                          title="Rename"
+                        >
+                          <Edit2 className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteSlot?.();
+                          }}
+                          title="Delete Slot"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
                     )}
                     {documentDef.required && (
                       <span className="text-red-500 ml-1 font-black">*</span>
@@ -368,6 +386,17 @@ export function DocumentCard({
                       {t("documentVaultPage.components.documentCard.instructions")}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    {documentDef.id.startsWith("dynamic-") && (
+                      <>
+                        <DropdownMenuItem
+                          onClick={onDeleteSlot}
+                          className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" /> Delete Slot
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
                     <DropdownMenuItem
                       onClick={onDelete}
                       className="text-destructive focus:text-destructive focus:bg-destructive/10"

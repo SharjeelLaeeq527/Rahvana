@@ -66,6 +66,7 @@ interface DocumentTableViewProps {
   onExport: (docId: string, hasCompressed: boolean) => void;
   onPreview: (doc: UploadedDocument) => void;
   onRename?: (category: string, docId: string, newName: string) => void;
+  onDeleteSlot?: (category: string, docId: string) => void;
 }
 
 export function DocumentTableView({
@@ -78,6 +79,7 @@ export function DocumentTableView({
   onExport,
   onPreview,
   onRename,
+  onDeleteSlot,
 }: DocumentTableViewProps) {
   const { t } = useLanguage();
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -257,20 +259,34 @@ export function DocumentTableView({
                                     <p className="text-sm font-medium">{docName}</p>
                                   </TooltipContent>
                                 </Tooltip>
-                                {doc.id.startsWith("dynamic-") && (
-                                  <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      setEditingId(doc.id);
-                                      setEditValue(doc.name);
-                                    }}
-                                    title="Rename"
-                                  >
-                                    <Edit2 className="w-3 h-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" />
-                                  </Button>
+                                 {doc.id.startsWith("dynamic-") && (
+                                  <div className="inline-flex items-center gap-0.5">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditingId(doc.id);
+                                        setEditValue(doc.name);
+                                      }}
+                                      title="Rename"
+                                    >
+                                      <Edit2 className="w-3 h-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDeleteSlot?.(doc.category, doc.id);
+                                      }}
+                                      title="Delete Slot"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </Button>
+                                  </div>
                                 )}
                               </div>
                             )}
@@ -375,6 +391,17 @@ export function DocumentTableView({
                             >
                               <Info className="w-4 h-4" />
                             </Button>
+                            {doc.id.startsWith("dynamic-") && (
+                              <Button
+                                onClick={() => onDeleteSlot?.(doc.category, doc.id)}
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                title="Delete Slot"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
                           </>
                         ) : (
                           <div className="flex items-center gap-1">
@@ -426,17 +453,25 @@ export function DocumentTableView({
                                        : ""}
                                    </DropdownMenuItem>
                                  )}
-                                 {doc.id.startsWith("dynamic-") && (
-                                   <DropdownMenuItem
-                                     onClick={() => {
-                                       setEditingId(doc.id);
-                                       setEditValue(doc.name);
-                                     }}
-                                   >
-                                     <Edit2 className="w-4 h-4 mr-2" />{" "}
-                                     {t("documentVaultPage.components.tableView.rename") || "Rename"}
-                                   </DropdownMenuItem>
-                                 )}
+                                  {doc.id.startsWith("dynamic-") && (
+                                    <>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          setEditingId(doc.id);
+                                          setEditValue(doc.name);
+                                        }}
+                                      >
+                                        <Edit2 className="w-4 h-4 mr-2" />{" "}
+                                        {t("documentVaultPage.components.tableView.rename") || "Rename"}
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => onDeleteSlot?.(doc.category, doc.id)}
+                                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                                      >
+                                        <Trash2 className="w-4 h-4 mr-2" /> Delete Slot
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
                                  <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => onUpload(doc.id, latestDoc.id)}>
                                   <Upload className="w-4 h-4 mr-2" />{" "}
