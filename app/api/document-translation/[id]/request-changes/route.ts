@@ -3,6 +3,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
+import { triggerTranslationChangesRequestedNotification } from "@/lib/notifications";
+
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
@@ -30,7 +32,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     const { data: existing, error: checkError } = await supabase
       .from("translation_documents")
-      .select("status")
+      .select("status, document_type, user_name")
       .eq("id", id)
       .eq("user_id", user.id)
       .single();
@@ -63,6 +65,18 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       console.error("Update error:", updateError);
       return NextResponse.json({ error: "Failed to request changes" }, { status: 500 });
     }
+
+    // Trigger admin notification asynchronously
+    const docLabel = existing.document_type || "Document";
+    const userName = existing.user_name || "User";
+    triggerTranslationChangesRequestedNotification(
+      undefined,
+      userName,
+      docLabel,
+      reason
+    ).catch((err) => {
+      console.error("Error triggering change request notification:", err);
+    });
 
     return NextResponse.json({
       success: true,
