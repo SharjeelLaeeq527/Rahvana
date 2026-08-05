@@ -44,13 +44,9 @@ import {
   AlertCircle,
   List,
   LayoutGrid,
-  ArrowLeftRight,
   Compass,
-  MapPin,
   Route,
   ArrowLeft,
-  Folder,
-  ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
