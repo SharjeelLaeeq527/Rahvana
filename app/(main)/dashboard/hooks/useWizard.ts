@@ -66,7 +66,7 @@ export function useWizard(options: UseWizardOptions = {}) {
   const routeJourney = params?.["visa-journey"];
   const routeJourneyId = typeof routeJourney === "string" ? routeJourney.replace("-", "").toLowerCase() : undefined;
 
-  const { userId, journeyId = routeJourneyId || "ir1", roadmapData: externalRoadmapData } = options;
+  const { userId, journeyId = routeJourneyId, roadmapData: externalRoadmapData } = options;
   const { profile, updateProfile } = useUserProfile();
 
   const activeRoadmap = externalRoadmapData;
@@ -159,7 +159,10 @@ export function useWizard(options: UseWizardOptions = {}) {
     let cancelled = false;
 
     async function loadProgress() {
-      if (!userId) return;
+      if (!userId || !journeyId) {
+        setIsLoaded(true);
+        return;
+      }
       setIsLoaded(false);
 
       try {
