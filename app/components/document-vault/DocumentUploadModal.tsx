@@ -384,6 +384,11 @@ export function DocumentUploadModal({
       formData.append("role", role);
       formData.append("caseId", config.caseId || "CASE");
 
+      if (documentDef.id.startsWith("dynamic-")) {
+        formData.append("dynamicName", documentDef.name);
+        formData.append("dynamicCategory", documentDef.category || "MISC");
+      }
+
       // Determine person name based on role
       let personName = "Unknown";
       if (role === "PETITIONER" && config.petitionerName) {
