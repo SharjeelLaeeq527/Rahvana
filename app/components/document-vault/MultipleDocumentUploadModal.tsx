@@ -401,19 +401,10 @@ export function MultipleDocumentUploadModal({
   // Derive already uploaded documents and their types for this category
   const uploadedDocuments = useMemo(() => {
     const allowedIds = [categoryId, ...options.map((opt) => mapDocumentNameToId(opt))];
-    const currentCategory = (documentDef as any).category || categoryId;
 
     const filtered = vaultDocuments.filter((d) => {
       // Direct ID match
       if (allowedIds.includes(d.documentDefId)) return true;
-
-      // Dynamic slot match
-      if (d.documentDefId.startsWith("dynamic-")) {
-        const docCategory = d.documentDefId.split("-")[1];
-
-        // Match current category OR generic categories
-        return docCategory === currentCategory || docCategory === "OTHER" || docCategory === "MISC";
-      }
 
       return false;
     });
@@ -426,7 +417,7 @@ export function MultipleDocumentUploadModal({
       seen.add(key);
       return true;
     });
-  }, [vaultDocuments, categoryId, options, documentDef]);
+  }, [vaultDocuments, categoryId, options]);
 
   const uploadedTypes = useMemo(() => {
     return uploadedDocuments
