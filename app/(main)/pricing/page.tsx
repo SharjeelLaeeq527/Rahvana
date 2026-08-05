@@ -23,6 +23,7 @@ import {
   ArrowRight,
   ArrowUpRight,
   ChevronDown,
+  ShoppingCart,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { E, msg, errorCode } from "@/lib/errors";
@@ -912,6 +913,86 @@ function PricingContent() {
     </div>
   );
 
+  // Order-summary header — a cart glyph with a live item-count badge, matching
+  // the pattern shoppers expect from any standard cart. Reused by both the
+  // journey-review and resources summaries so the two never drift apart.
+  const summaryHeader = (count: number) => (
+    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-border">
+      <span className="relative inline-flex shrink-0">
+        <ShoppingCart className="w-[18px] h-[18px] text-primary" strokeWidth={2} />
+        {count > 0 && (
+          <span className="absolute -top-1.5 -right-1.5 min-w-[15px] h-[15px] px-1 inline-flex items-center justify-center rounded-full bg-primary text-[9px] font-bold leading-none text-white tabular-nums">
+            {count}
+          </span>
+        )}
+      </span>
+      <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+        Order Summary
+      </span>
+      {count > 0 && (
+        <span className="ml-auto text-[11px] font-medium text-muted-foreground">
+          {count} {count === 1 ? "item" : "items"}
+        </span>
+      )}
+    </div>
+  );
+
+  // Compact checkout control for the mobile sticky bar — same auth/loading
+  // branches as checkoutBtn, minus the caption so it fits on one line.
+  const mobileCheckoutButton = isLoadingUser ? (
+    <button
+      disabled
+      className="w-full py-2.5 px-4 rounded-full text-[13px] font-semibold bg-primary/50 text-white/70 cursor-not-allowed text-center"
+    >
+      Loading...
+    </button>
+  ) : userId ? (
+    <CheckoutButton
+      productTier={mode === "plans" && selectedPlan !== "free" ? selectedPlan : undefined}
+      addons={checkoutAddonIds}
+      visaCategory={visa}
+      userId={userId}
+      onLoadingChange={setIsManualCheckoutLoading}
+      className="w-full py-2.5 px-4 rounded-full text-[13px] font-semibold bg-primary hover:bg-primary/90 text-white text-center"
+    >
+      Checkout →
+    </CheckoutButton>
+  ) : (
+    <Link
+      href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${checkoutAddonIds.join(",")}&visa=${encodeURIComponent(visa)}`)}`}
+      className="block w-full py-2.5 px-4 rounded-full text-[13px] font-semibold bg-primary hover:bg-primary/90 text-white text-center"
+    >
+      Sign in →
+    </Link>
+  );
+
+  // Mobile-only sticky checkout bar. On phones the summary aside stacks well
+  // below the content, so the running total + checkout would otherwise be out
+  // of reach — this keeps them pinned to the viewport (standard cart behavior).
+  const mobileSummaryBar = (count: number, total: number) => (
+    <div className="lg:hidden fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur-md shadow-[0_-6px_24px_rgba(0,0,0,0.10)] pb-[env(safe-area-inset-bottom)]">
+      <div className="mx-auto flex max-w-[1440px] items-center gap-3 px-4 py-3">
+        <span className="relative inline-flex shrink-0">
+          <ShoppingCart className="w-6 h-6 text-primary" strokeWidth={2} />
+          {count > 0 && (
+            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-1 inline-flex items-center justify-center rounded-full bg-primary text-[9.5px] font-bold leading-none text-white tabular-nums">
+              {count}
+            </span>
+          )}
+        </span>
+        <div className="min-w-0 leading-tight">
+          <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Total</div>
+          <div className="mt-0.5 text-[19px] font-bold leading-none tracking-tight text-primary">
+            ${total}
+          </div>
+        </div>
+        <div className="ml-auto w-[150px] min-[420px]:w-[190px] shrink-0">{mobileCheckoutButton}</div>
+      </div>
+    </div>
+  );
+
+  const reviewItemCount = (currentPlanData.id !== "free" ? 1 : 0) + activeAddons.length;
+
   return (
     <div className="min-h-[100dvh] overflow-x-hidden text-foreground font-sans selection:bg-primary/20 pb-12 sm:pb-20">
       {/* ── Mode Toggle ──────────────────────────────────────────────────────── */}
@@ -1502,9 +1583,7 @@ function PricingContent() {
 
               {/* Right: sticky order summary */}
               <aside className="lg:sticky lg:top-[88px] bg-card border border-border rounded-[22px] p-5 shadow-md">
-                <div className="text-[11px] uppercase tracking-widest text-muted-foreground font-bold mb-4">
-                  Order Summary
-                </div>
+                {summaryHeader(reviewItemCount)}
 
                 <div className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[13px]">
                   <span className="text-muted-foreground">Visa</span>
@@ -1562,7 +1641,12 @@ function PricingContent() {
                 {checkoutBtn}
               </aside>
             </div>
+
+            {/* Spacer so the last content clears the mobile sticky bar */}
+            <div className="h-24 lg:hidden" aria-hidden="true" />
           </div>
+
+          {reviewItemCount > 0 && mobileSummaryBar(reviewItemCount, summaryTotal)}
         </div>
       )}
 
@@ -1614,9 +1698,7 @@ function PricingContent() {
 
               {/* Order summary sidebar */}
               <aside className="lg:sticky lg:top-[88px] bg-card border border-border rounded-[22px] p-5 shadow-md">
-                <div className="text-[11px] uppercase tracking-widest text-muted-foreground font-bold mb-4">
-                  Order Summary
-                </div>
+                {summaryHeader(activeAddons.length)}
 
                 {activeAddons.length === 0 ? (
                   <div className="py-5 text-center text-muted-foreground text-[13px]">
@@ -1659,7 +1741,12 @@ function PricingContent() {
                 )}
               </aside>
             </div>
+
+            {/* Spacer so the last content clears the mobile sticky bar */}
+            {activeAddons.length > 0 && <div className="h-24 lg:hidden" aria-hidden="true" />}
           </div>
+
+          {activeAddons.length > 0 && mobileSummaryBar(activeAddons.length, summaryAddonsTotal)}
         </div>
       )}
 
