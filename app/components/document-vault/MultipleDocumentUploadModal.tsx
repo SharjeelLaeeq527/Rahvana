@@ -602,66 +602,11 @@ export function MultipleDocumentUploadModal({
     });
 
     try {
-      // Step 1: Create all necessary dynamic slots SEQUENTIALLY first
-      // This prevents race conditions where multiple uploads try to create slots at the same time
+      // Step 1: Map all uploads to the main category document ID
+      // This ensures they stay grouped inside this category's file list and do not leak as separate slots
       const uploadItemToDefId: Record<string, string> = {};
-      const batchSpecificDefIds: Record<string, string> = {};
-
       for (const uploadItem of validUploads) {
-        let specificDefId: string;
-        const currentCategory = (documentDef as any).category || categoryId || "CIVIL";
-        const normalizedType =
-          (uploadItem.type === OTHER_OPTION ? uploadItem.customName : uploadItem.type)
-            ?.trim()
-            .toLowerCase() || "";
-
-        // Check our local batch cache first to ensure consistency within this upload session
-        if (batchSpecificDefIds[normalizedType]) {
-          uploadItemToDefId[uploadItem.id] = batchSpecificDefIds[normalizedType];
-          continue;
-        }
-
-        // Determine target category
-        let targetCategory = currentCategory;
-        if (
-          uploadItem.type === OTHER_OPTION &&
-          uploadItem.customName &&
-          targetCategory !== "TRANSLATIONS"
-        ) {
-          targetCategory = "OTHER";
-        }
-
-        // CRITICAL: Get FRESH config from store
-        const latestConfig = useDocumentVaultStore.getState().config;
-
-        // Check if we already have a slot for this name in the target category (Case-insensitive)
-        const existingSlot = latestConfig?.dynamicDocuments?.[targetCategory]?.find(
-          (s: any) => s.name.trim().toLowerCase() === normalizedType
-        );
-
-        const mappedId = mapDocumentNameToId(uploadItem.type);
-        const staticMatch =
-          mappedId &&
-          mappedId !== "misc-document" &&
-          ALL_DOCUMENTS.find((d) => d.id === mappedId)?.category === targetCategory;
-
-        if (existingSlot) {
-          specificDefId = existingSlot.id;
-        } else if (staticMatch) {
-          specificDefId = mappedId;
-        } else {
-          // Create new slot
-          if (uploadItem.type === OTHER_OPTION && uploadItem.customName) {
-            specificDefId = await addNamedDynamicSlot(targetCategory, uploadItem.customName);
-          } else if ((documentDef as any).isDynamicCategory) {
-            specificDefId = await addNamedDynamicSlot(targetCategory, uploadItem.type);
-          } else {
-            specificDefId = mapDocumentNameToId(uploadItem.type);
-          }
-        }
-
-        uploadItemToDefId[uploadItem.id] = specificDefId;
-        batchSpecificDefIds[normalizedType] = specificDefId;
+        uploadItemToDefId[uploadItem.id] = categoryId;
       }
 
       // Need a role, if we can deduce from definition or default to BENEFICIARY
