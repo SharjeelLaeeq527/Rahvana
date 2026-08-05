@@ -1291,9 +1291,14 @@ export default function DocumentVaultPage() {
                                 viewMode === "grid" ? (
                                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                                     {flatFilteredDocuments.map((doc) => {
-                                      const uploadedDoc = uploadedDocuments.find(
+                                      const docUploads = uploadedDocuments.filter(
                                         (ud) => ud.documentDefId === doc.id
                                       );
+                                      const uploadedDoc = docUploads.length > 0
+                                        ? [...docUploads].sort(
+                                            (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+                                          )[0]
+                                        : undefined;
                                       return (
                                         <DocumentCard
                                           key={doc.id}
@@ -1423,9 +1428,14 @@ export default function DocumentVaultPage() {
                                 {viewMode === "grid" ? (
                                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                                     {docs.map((doc) => {
-                                      const uploadedDoc = uploadedDocuments.find(
+                                      const docUploads = uploadedDocuments.filter(
                                         (ud) => ud.documentDefId === doc.id
                                       );
+                                      const uploadedDoc = docUploads.length > 0
+                                        ? [...docUploads].sort(
+                                            (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+                                          )[0]
+                                        : undefined;
                                       return (
                                         <DocumentCard
                                           key={doc.id}
@@ -1491,9 +1501,14 @@ export default function DocumentVaultPage() {
                                   {getFilteredDocumentsForSpecialFilter[
                                     activeTab as "required" | "optional"
                                   ]?.map((doc) => {
-                                    const uploadedDoc = uploadedDocuments.find(
+                                    const docUploads = uploadedDocuments.filter(
                                       (ud) => ud.documentDefId === doc.id
                                     );
+                                    const uploadedDoc = docUploads.length > 0
+                                      ? [...docUploads].sort(
+                                          (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+                                        )[0]
+                                      : undefined;
                                     return (
                                       <DocumentCard
                                         key={doc.id}
@@ -1556,9 +1571,14 @@ export default function DocumentVaultPage() {
                               {viewMode === "grid" ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                                   {documentsByCategory[activeTab]?.map((doc) => {
-                                    const uploadedDoc = uploadedDocuments.find(
+                                    const docUploads = uploadedDocuments.filter(
                                       (ud) => ud.documentDefId === doc.id
                                     );
+                                    const uploadedDoc = docUploads.length > 0
+                                      ? [...docUploads].sort(
+                                          (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+                                        )[0]
+                                      : undefined;
                                     return (
                                       <DocumentCard
                                         key={doc.id}

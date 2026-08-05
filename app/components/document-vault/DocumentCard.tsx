@@ -277,14 +277,18 @@ export function DocumentCard({
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-5 border border-slate-100 dark:border-slate-700/50 space-y-3 relative overflow-hidden">
             <div className="flex items-center justify-between text-[11px]">
               <span className="font-bold text-slate-500 uppercase tracking-tight">
-                {t("documentVaultPage.components.documentCard.activeVersion")}
+                {documentDef.multipleFilesAllowed
+                  ? "Latest Upload"
+                  : t("documentVaultPage.components.documentCard.activeVersion")}
               </span>
-              <Badge
-                variant="secondary"
-                className="h-5 px-1.5 text-[10px] font-black bg-white dark:bg-slate-700 shadow-sm border-none"
-              >
-                v{uploadedDoc.version}
-              </Badge>
+              {!documentDef.multipleFilesAllowed && (
+                <Badge
+                  variant="secondary"
+                  className="h-5 px-1.5 text-[10px] font-black bg-white dark:bg-slate-700 shadow-sm border-none"
+                >
+                  v{uploadedDoc.version}
+                </Badge>
+              )}
             </div>
 
             <div className="space-y-1">
@@ -368,13 +372,21 @@ export function DocumentCard({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => onUpload()}>
-                      <Plus className="w-4 h-4 mr-2 text-primary" /> Add New Version
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onUpload(uploadedDoc.id)}>
-                      <Upload className="w-4 h-4 mr-2" />{" "}
-                      {t("documentVaultPage.components.documentCard.replace")}
-                    </DropdownMenuItem>
+                    {documentDef.multipleFilesAllowed ? (
+                      <DropdownMenuItem onClick={() => onUpload()}>
+                        <Plus className="w-4 h-4 mr-2 text-primary" /> Upload / Manage Files
+                      </DropdownMenuItem>
+                    ) : (
+                      <>
+                        <DropdownMenuItem onClick={() => onUpload()}>
+                          <Plus className="w-4 h-4 mr-2 text-primary" /> Add New Version
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onUpload(uploadedDoc.id)}>
+                          <Upload className="w-4 h-4 mr-2" />{" "}
+                          {t("documentVaultPage.components.documentCard.replace")}
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     {onExport && (
                       <DropdownMenuItem onClick={onExport}>
                         <Package className="w-4 h-4 mr-2" />{" "}

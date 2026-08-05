@@ -185,7 +185,8 @@ export function DocumentTableView({
 
               const latestDoc = docVariants[0];
               const hasVariants = docVariants.length > 1;
-              const isExpanded = expandedRows[doc.id];
+              const showVersionHistoryTray = hasVariants && !doc.multipleFilesAllowed;
+              const isExpanded = expandedRows[doc.id] && showVersionHistoryTray;
 
               const docName =
                 t(`documentVaultPage.documents.${doc.id}.name`) !==
@@ -291,13 +292,24 @@ export function DocumentTableView({
                               </div>
                             )}
                             {doc.required && <span className="text-destructive font-bold">*</span>}
-                            {hasVariants && (
-                              <Badge
-                                variant="outline"
-                                className="ml-2 text-[10px] bg-primary/5 text-primary border-primary/20 whitespace-nowrap"
-                              >
-                                {docVariants.length} Variants
-                              </Badge>
+                            {doc.multipleFilesAllowed ? (
+                              docVariants.length > 0 && (
+                                <Badge
+                                  variant="outline"
+                                  className="ml-2 text-[10px] bg-primary/5 text-primary border-primary/20 whitespace-nowrap"
+                                >
+                                  {docVariants.length} {docVariants.length === 1 ? "File" : "Files"}
+                                </Badge>
+                              )
+                            ) : (
+                              hasVariants && (
+                                <Badge
+                                  variant="outline"
+                                  className="ml-2 text-[10px] bg-primary/5 text-primary border-primary/20 whitespace-nowrap"
+                                >
+                                  {docVariants.length} Variants
+                                </Badge>
+                              )
                             )}
                           </div>
                           <Tooltip>
@@ -335,14 +347,21 @@ export function DocumentTableView({
                           </div>
                           <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                             <span>{formatFileSize(latestDoc.fileSize, t)}</span>
-                            <span>•</span>
-                            <span className="font-bold text-primary">
-                              v{latestDoc.displayVersion} (Latest)
-                            </span>
+                            {!doc.multipleFilesAllowed && (
+                              <>
+                                <span>•</span>
+                                <span className="font-bold text-primary">
+                                  v{latestDoc.displayVersion} (Latest)
+                                </span>
+                              </>
+                            )}
                             {latestDoc.hasCompressedVersion && (
-                              <Badge className="h-4 px-1 text-[9px] bg-blue-100 text-blue-700 border-none hover:bg-blue-100">
-                                {t("documentVaultPage.components.tableView.zip")}
-                              </Badge>
+                              <>
+                                <span>•</span>
+                                <Badge className="h-4 px-1 text-[9px] bg-blue-100 text-blue-700 border-none hover:bg-blue-100">
+                                  {t("documentVaultPage.components.tableView.zip")}
+                                </Badge>
+                              </>
                             )}
                           </div>
                         </div>
@@ -492,7 +511,7 @@ export function DocumentTableView({
                               </DropdownMenuContent>
                             </DropdownMenu>
 
-                            {hasVariants && (
+                            {showVersionHistoryTray && (
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -513,7 +532,7 @@ export function DocumentTableView({
                   </TableRow>
 
                   {/* Expanded Variants Row */}
-                  {isExpanded && hasVariants && (
+                  {isExpanded && showVersionHistoryTray && (
                     <TableRow className="bg-muted/10 border-l-4 border-l-primary/30">
                       <TableCell colSpan={6} className="p-0">
                         <div className="py-3 px-6 animate-in slide-in-from-top-2 duration-200">
