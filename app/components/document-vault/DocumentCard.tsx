@@ -41,7 +41,6 @@ import { Input } from "@/components/ui/input";
 interface DocumentCardProps {
   documentDef: DocumentDefinition;
   uploadedDoc?: UploadedDocument;
-  uploadedDocsCount?: number;
   onUpload: (replaceId?: string) => void;
   onDownload?: () => void;
   onDelete?: () => void;
@@ -55,7 +54,6 @@ interface DocumentCardProps {
 export function DocumentCard({
   documentDef,
   uploadedDoc,
-  uploadedDocsCount,
   onUpload,
   onDownload,
   onDelete,
@@ -279,13 +277,13 @@ export function DocumentCard({
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-5 border border-slate-100 dark:border-slate-700/50 space-y-3 relative overflow-hidden">
             <div className="flex items-center justify-between text-[11px]">
               <span className="font-bold text-slate-500 uppercase tracking-tight">
-                {documentDef.multipleFilesAllowed ? "Files Uploaded" : t("documentVaultPage.components.documentCard.activeVersion")}
+                {t("documentVaultPage.components.documentCard.activeVersion")}
               </span>
               <Badge
                 variant="secondary"
                 className="h-5 px-1.5 text-[10px] font-black bg-white dark:bg-slate-700 shadow-sm border-none"
               >
-                {documentDef.multipleFilesAllowed ? (uploadedDocsCount || 1) : `v${uploadedDoc.version}`}
+                v{uploadedDoc.version}
               </Badge>
             </div>
 
@@ -342,36 +340,25 @@ export function DocumentCard({
             </div>
           ) : (
             <div className="flex items-center gap-2">
-              {documentDef.multipleFilesAllowed ? (
-                <Button
-                  onClick={() => onUpload()}
-                  className="flex-1 font-bold h-9 shadow-md shadow-primary/10 bg-primary hover:bg-primary/95 text-xs"
-                >
-                  <Upload className="w-3.5 h-3.5 mr-1.5" />
-                  Upload More
-                </Button>
-              ) : (
-                <Button
-                  onClick={onPreview}
-                  variant="secondary"
-                  size="sm"
-                  className="h-9 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200"
-                  title={t("documentVaultPage.components.documentCard.preview")}
-                >
-                  <Eye className="w-4 h-4" />
-                </Button>
-              )}
+              <Button
+                onClick={onPreview}
+                variant="secondary"
+                size="sm"
+                className="h-9 px-3 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200"
+                title={t("documentVaultPage.components.documentCard.preview")}
+              >
+                <Eye className="w-4 h-4" />
+              </Button>
 
               <div className="flex-1 flex gap-1">
                 <Button
                   onClick={onDownload}
                   variant="outline"
                   size="sm"
-                  className={documentDef.multipleFilesAllowed ? "h-9 w-9 p-0 border-2 shrink-0" : "flex-1 h-9 font-bold text-xs border-2"}
-                  title={documentDef.multipleFilesAllowed ? t("documentVaultPage.components.documentCard.files") : undefined}
+                  className="flex-1 h-9 font-bold text-xs border-2"
                 >
-                  <Download className={documentDef.multipleFilesAllowed ? "w-4 h-4" : "w-3.5 h-3.5 mr-1.5"} />
-                  {!documentDef.multipleFilesAllowed && t("documentVaultPage.components.documentCard.files")}
+                  <Download className="w-3.5 h-3.5 mr-1.5" />
+                  {t("documentVaultPage.components.documentCard.files")}
                 </Button>
 
                 <DropdownMenu>
