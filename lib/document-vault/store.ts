@@ -434,16 +434,21 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
     const baseName = displayName.replace(/ (Documents|Evidence)$/, "");
 
     if (updatedSlots.length === 0) {
-      // If empty, materialize the first virtual slot (ID matching the engine's default)
-      // AND add the second one so the user sees a new card immediately.
+      // Materialize the first slot (ID matching the engine's default)
       updatedSlots.push({
         id: `dynamic-${category}-1`,
         name: `${baseName} Document (1)`,
       });
-      updatedSlots.push({
-        id: `dynamic-${category}-${Date.now()}-2`,
-        name: `${baseName} Document (2)`,
-      });
+
+      // Only add the second one if the category normally shows a default virtual slot.
+      // For CIVIL, MISC, TRANSLATIONS, and OTHER, no default virtual slot is shown,
+      // so adding just the first slot is enough to show a single card.
+      if (!["CIVIL", "MISC", "TRANSLATIONS", "OTHER"].includes(category)) {
+        updatedSlots.push({
+          id: `dynamic-${category}-${Date.now()}-2`,
+          name: `${baseName} Document (2)`,
+        });
+      }
     } else {
       // Standard addition
       const newIndex = updatedSlots.length + 1;
