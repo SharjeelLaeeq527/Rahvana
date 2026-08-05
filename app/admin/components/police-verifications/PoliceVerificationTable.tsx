@@ -836,7 +836,7 @@ export default function PoliceVerificationTable() {
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <Upload className="text-primary w-5 h-5" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900">Step 3: Documents Required</h3>
+                  <h3 className="text-lg font-bold text-gray-900">Step 3: Required Documents</h3>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">

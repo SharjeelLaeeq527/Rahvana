@@ -67,6 +67,73 @@ async function checkAdminRole(request: NextRequest) {
   return { isAdmin: true, error: null };
 }
 
+async function signAppointmentUrls(supabase: any, appointments: any[]) {
+  if (!appointments || appointments.length === 0) return;
+
+  const urlFields = [
+    "scanned_passport_url",
+    "k_one_letter_url",
+    "appointment_confirmation_letter_url",
+  ] as const;
+
+  const pathsToSign: string[] = [];
+
+  for (const row of appointments) {
+    for (const field of urlFields) {
+      const url = row[field];
+      if (url && typeof url === "string") {
+        const parts = url.split("/document-vault/");
+        if (parts.length >= 2) {
+          const storagePath = decodeURIComponent(parts[1]);
+          pathsToSign.push(storagePath);
+        }
+      }
+    }
+  }
+
+  if (pathsToSign.length === 0) return;
+
+  const uniquePaths = Array.from(new Set(pathsToSign));
+
+  try {
+    const { data: signedData, error: signingError } = await supabase.storage
+      .from("document-vault")
+      .createSignedUrls(uniquePaths, 86400); // 24 hours
+
+    if (signingError) {
+      console.error("Error batch signing URLs:", signingError);
+      return;
+    }
+
+    if (signedData) {
+      const signedUrlMap = new Map<string, string>();
+      for (const item of signedData) {
+        if (item.signedUrl && !item.error) {
+          signedUrlMap.set(item.path, item.signedUrl);
+        }
+      }
+
+      for (const row of appointments) {
+        for (const field of urlFields) {
+          const url = row[field];
+          if (url && typeof url === "string") {
+            const parts = url.split("/document-vault/");
+            if (parts.length >= 2) {
+              const storagePath = decodeURIComponent(parts[1]);
+              const signedUrl = signedUrlMap.get(storagePath);
+              if (signedUrl) {
+                row[field] = signedUrl;
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Failed to sign URLs:", err);
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { isAdmin, error: authError } = await checkAdminRole(req);
@@ -144,6 +211,10 @@ export async function GET(req: NextRequest) {
         applicants: appointmentApplicants,
       };
     });
+
+    if (data) {
+      await signAppointmentUrls(supabase, data);
+    }
 
     console.log("Successfully prepared appointments with applicants");
     return Response.json({ data });
