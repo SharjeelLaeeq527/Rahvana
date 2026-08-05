@@ -3254,7 +3254,7 @@
       "employment": "Employment-Based Preference"
     },
     "cityLabel": "U.S. Embassy or Consulate City",
-    "cityExamples": "Examples: Islamabad, Mumbai, Dubai, Ankara, New Delhi",
+    "cityExamples": "Examples: Islamabad",
     "cityPlaceholder": "Start typing city name...",
     "cityError": "Please enter a city name.",
     "search": "Search",
