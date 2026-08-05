@@ -819,7 +819,8 @@
         "exportZip": "Export ZIP",
         "replace": "Replace",
         "instructions": "Instructions",
-        "delete": "Delete"
+        "delete": "Delete",
+        "rename": "Rename"
       },
       "previewModal": {
         "close": "Close",

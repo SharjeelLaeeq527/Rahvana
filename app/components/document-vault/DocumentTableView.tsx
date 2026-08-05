@@ -246,16 +246,33 @@ export function DocumentTableView({
                                 </Button>
                               </div>
                             ) : (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="line-clamp-2 text-left max-w-[220px]">
-                                    {docName}
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" className="max-w-[300px] z-100">
-                                  <p className="text-sm font-medium">{docName}</p>
-                                </TooltipContent>
-                              </Tooltip>
+                              <div className="flex items-center gap-1">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="line-clamp-2 text-left max-w-[220px]">
+                                      {docName}
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-[300px] z-100">
+                                    <p className="text-sm font-medium">{docName}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                                {doc.id.startsWith("dynamic-") && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setEditingId(doc.id);
+                                      setEditValue(doc.name);
+                                    }}
+                                    title="Rename"
+                                  >
+                                    <Edit2 className="w-3 h-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" />
+                                  </Button>
+                                )}
+                              </div>
                             )}
                             {doc.required && <span className="text-destructive font-bold">*</span>}
                             {hasVariants && (
@@ -394,22 +411,33 @@ export function DocumentTableView({
                                   <Plus className="w-4 h-4 mr-2 text-primary" /> Add New Version
                                 </DropdownMenuItem>
                                 {onExport && (
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      onExport(
-                                        latestDoc.id,
-                                        latestDoc.hasCompressedVersion || false
-                                      )
-                                    }
-                                  >
-                                    <Package className="w-4 h-4 mr-2" />{" "}
-                                    {t("documentVaultPage.components.tableView.export")}{" "}
-                                    {latestDoc.hasCompressedVersion
-                                      ? t("documentVaultPage.components.tableView.zip")
-                                      : ""}
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuSeparator />
+                                   <DropdownMenuItem
+                                     onClick={() =>
+                                       onExport(
+                                         latestDoc.id,
+                                         latestDoc.hasCompressedVersion || false
+                                       )
+                                     }
+                                   >
+                                     <Package className="w-4 h-4 mr-2" />{" "}
+                                     {t("documentVaultPage.components.tableView.export")}{" "}
+                                     {latestDoc.hasCompressedVersion
+                                       ? t("documentVaultPage.components.tableView.zip")
+                                       : ""}
+                                   </DropdownMenuItem>
+                                 )}
+                                 {doc.id.startsWith("dynamic-") && (
+                                   <DropdownMenuItem
+                                     onClick={() => {
+                                       setEditingId(doc.id);
+                                       setEditValue(doc.name);
+                                     }}
+                                   >
+                                     <Edit2 className="w-4 h-4 mr-2" />{" "}
+                                     {t("documentVaultPage.components.tableView.rename") || "Rename"}
+                                   </DropdownMenuItem>
+                                 )}
+                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem onClick={() => onUpload(doc.id, latestDoc.id)}>
                                   <Upload className="w-4 h-4 mr-2" />{" "}
                                   {t("documentVaultPage.components.tableView.replace")}

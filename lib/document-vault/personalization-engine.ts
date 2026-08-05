@@ -454,6 +454,12 @@ export function generateRequiredDocuments(
     const isGeneric = d.name.includes(" Document (") || d.name.includes(" Evidence (");
     if (!isGeneric) return true;
 
+    // Never filter out a dynamic slot that has been explicitly stored in the user's config
+    const isStoredDynamicSlot = config.dynamicDocuments?.[d.category]?.some(
+      (slot) => slot.id === d.id
+    );
+    if (isStoredDynamicSlot) return true;
+
     // Check if there's any named version of this category's docs uploaded
     const baseName = d.name.split(" Document (")[0].split(" Evidence (")[0].toLowerCase().trim();
 
