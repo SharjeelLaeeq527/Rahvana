@@ -3,6 +3,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
+import { PhoneInput } from "@/components/ui/phone-input";
+import type { Value as E164Number } from "react-phone-number-input";
 
 interface IOMInfoStepProps {
   formData: {
@@ -29,6 +31,7 @@ interface IOMInfoStepProps {
       destinationCountry?: string;
     }
   ) => (value: string) => void;
+  onPhoneChange?: (value: E164Number) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -38,6 +41,7 @@ const IOMInfoStep = ({
   error,
   onChange,
   onSelectChange,
+  onPhoneChange,
   onNext,
   onBack,
 }: IOMInfoStepProps) => {
@@ -113,28 +117,17 @@ const IOMInfoStep = ({
 
           <div className="space-y-2">
             <Label htmlFor="contactNumber">{t("bookAppointment.iomInfoStep.contactNumber")}</Label>
-            <div className="flex gap-2">
-              <div className="flex items-center justify-center w-24 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-medium">
-                🇵🇰 92
-              </div>
-              <Input
-                id="contactNumber"
-                name="contactNumber"
-                value={formData.contactNumber || ""}
-                onChange={(e) => {
-                  const cleaned = e.target.value.replace(/\D/g, "").slice(0, 10);
-                  e.target.value = cleaned;
-                  onChange(e);
-                }}
-                placeholder={t(
-                  "bookAppointment.iomInfoStep.contactNumberPlaceholder",
-                )}
-                type="tel"
-                maxLength={10}
-                inputMode="numeric"
-                className="flex-1"
-              />
-            </div>
+            <PhoneInput
+              id="contactNumber"
+              value={formData.contactNumber || ""}
+              onChange={(value) => {
+                if (onPhoneChange) {
+                  onPhoneChange(value);
+                }
+              }}
+              defaultCountry="PK"
+              placeholder={t("bookAppointment.iomInfoStep.contactNumberPlaceholder")}
+            />
           </div>
 
           <div className="space-y-2">

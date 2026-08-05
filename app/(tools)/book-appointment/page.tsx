@@ -15,6 +15,9 @@ import { usePlan } from "@/app/context/PlanContext";
 import { Crown, CreditCard, ShoppingBag, Sparkles } from "lucide-react";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
+import { PhoneInput } from "@/components/ui/phone-input";
+import type { Value as E164Number } from "react-phone-number-input";
+import { validatePhoneNumber, formatPhoneNumber } from "@/lib/validation/phone";
 
 type Location = "karachi" | "lahore" | "islamabad";
 type IslamabadProvider = "amc" | "iom";
@@ -209,6 +212,7 @@ interface BasicInfoStepProps {
   isWilcare: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectChange: (name: keyof FormData) => (value: string) => void;
+  onPhoneChange: (value: E164Number) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -220,6 +224,7 @@ const BasicInfoStep = ({
   isWilcare,
   onChange,
   onSelectChange,
+  onPhoneChange,
   onNext,
   onBack,
 }: BasicInfoStepProps) => {
@@ -293,27 +298,13 @@ const BasicInfoStep = ({
 
           <div className="space-y-2">
             <Label htmlFor="primaryContact">{t("bookAppointment.basicInfoStep.mobileNo")}</Label>
-            <div className="flex gap-2">
-              <div className="flex items-center justify-center w-24 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-medium">
-                🇵🇰 92
-              </div>
-              <Input
-                id="primaryContact"
-                name="primaryContact"
-                value={formData.primaryContact}
-                // onChange={onChange}
-                onChange={(e) => {
-                  const cleaned = e.target.value.replace(/\D/g, "").slice(0, 10);
-                  e.target.value = cleaned;
-                  onChange(e);
-                }}
-                placeholder="3001234567"
-                type="tel"
-                className="flex-1"
-                maxLength={10}
-                inputMode="numeric"
-              />
-            </div>
+            <PhoneInput
+              id="primaryContact"
+              value={formData.primaryContact || ""}
+              onChange={onPhoneChange}
+              defaultCountry="PK"
+              placeholder="3001234567"
+            />
           </div>
 
           <div className="space-y-2">
@@ -1341,7 +1332,7 @@ const ReviewStep = ({
                 <p className="text-sm text-slate-600">
                   {t("bookAppointment.reviewStep.contactNumber")}
                 </p>
-                <p className="font-medium">+92 {formData.contactNumber}</p>
+                <p className="font-medium">{formatPhoneNumber(formData.contactNumber)}</p>
               </div>
               <div>
                 <p className="text-sm text-slate-600">{t("bookAppointment.reviewStep.email")}</p>
@@ -1465,7 +1456,7 @@ const ReviewStep = ({
               <p className="text-sm text-slate-600">
                 {t("bookAppointment.reviewStep.primaryContact")}
               </p>
-              <p className="font-medium">+92 {formData.primaryContact}</p>
+              <p className="font-medium">{formatPhoneNumber(formData.primaryContact)}</p>
             </div>
             <div>
               <p className="text-sm text-slate-600">{t("bookAppointment.reviewStep.email")}</p>
@@ -1514,7 +1505,7 @@ const ReviewStep = ({
                   <p className="text-sm text-slate-600">
                     {t("bookAppointment.reviewStep.contactNumber")}
                   </p>
-                  <p className="font-medium">+92 {formData.contactNumber}</p>
+                  <p className="font-medium">{formatPhoneNumber(formData.contactNumber)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-600">
@@ -2679,6 +2670,7 @@ export default function WilcareAppointmentForm() {
             isWilcare={isWilcare}
             onChange={handleInputChange}
             onSelectChange={handleSelectChange}
+            onPhoneChange={(value) => setFormData((prev) => ({ ...prev, primaryContact: value || "" }))}
             onNext={handleNextStep}
             onBack={handleGoBack}
           />
@@ -2770,6 +2762,7 @@ export default function WilcareAppointmentForm() {
             onSelectChange={(name) => (value) => {
               setFormData((prev) => ({ ...prev, [name]: value }));
             }}
+            onPhoneChange={(value) => setFormData((prev) => ({ ...prev, contactNumber: value || "" }))}
             onNext={handleNextStep}
             onBack={handleGoBack}
           />
