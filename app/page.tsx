@@ -1601,7 +1601,7 @@ function HomePageContent() {
                               icon={Icons.ArrowRight}
                               label="Start Your Journey"
                               color="green"
-                              href={ir1journeyHref}
+                              href={"/visa-category"}
                             />
                           </RoadmapAnchor>
                           {/* <Annotation text="Reunited at last!" direction="left" /> */}

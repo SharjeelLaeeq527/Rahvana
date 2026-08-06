@@ -289,7 +289,7 @@ export default function CaseStatusPage() {
   const theme = result ? getStatusTheme(result.status) : null;
 
   return (
-    <div className="bg-linear-to-b from-primary/10 to-white site-main-px site-main-py">
+    <div className="bg-linear-to-b from-primary/10 to-white site-main-px site-main-py mt-10">
       <div className="">
         {/* Header Section */}
         <div className="mb-8">
