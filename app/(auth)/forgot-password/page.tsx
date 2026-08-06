@@ -249,7 +249,7 @@ export default function ForgotPasswordPage() {
 
           {/* Form */}
           <div className="px-6 sm:px-8 py-6 sm:py-8">
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} noValidate className="space-y-5">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-foreground">Email address</label>
                 <Input

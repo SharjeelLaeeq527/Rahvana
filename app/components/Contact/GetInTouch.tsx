@@ -129,6 +129,7 @@ export default function GetInTouch() {
               id="contactForm"
               onSubmit={handleSubmit}
               ref={formRef}
+              noValidate
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">

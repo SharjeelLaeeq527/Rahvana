@@ -277,7 +277,7 @@ export default function SignupPage() {
 
         {/* Email Sign Up Form */}
         <Card className="p-6 bg-card shadow-lg border-border rounded-2xl">
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} noValidate className="space-y-5">
             <div className="space-y-2">
               <label className="block text-sm font-medium text-foreground">Email Address</label>
               <Input
@@ -285,7 +285,7 @@ export default function SignupPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="name@company.com"
-                required
+                // required
                 disabled={isSubmitting}
                 autoFocus
               />

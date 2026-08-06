@@ -295,7 +295,7 @@ function LoginContent() {
         {/* Email Sign In Form */}
         <Card className="p-6 bg-card shadow-lg border-border rounded-2xl">
           {mfaRequired ? (
-            <form onSubmit={handleMfaSubmit} className="space-y-5">
+            <form onSubmit={handleMfaSubmit} noValidate className="space-y-5">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-foreground">
                   Authentication Code
@@ -344,7 +344,7 @@ function LoginContent() {
               </Button>
             </form>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} noValidate className="space-y-5">
               <div className="space-y-2">
                 <label className="block text-sm font-medium text-foreground">Email Address</label>
                 <Input
