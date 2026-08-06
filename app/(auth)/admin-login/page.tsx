@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Loader } from "@/components/ui/spinner";
 import { msg, E, errorCode } from "@/lib/errors";
+import { validateEmail } from "@/lib/validation/email";
 
 function AdminLoginPageContent() {
   const router = useRouter();
@@ -28,34 +29,43 @@ function AdminLoginPageContent() {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+  
     setError("");
+    setSuccess("");
     setIsSubmitting(true);
-
-    const {
-      error,
-      mfaRequired: isMfaRequired,
-      factorId: fId,
-      challengeId: cId,
-    } = await signIn(email, password);
-
-    if (error) {
-      setError(`${msg(E.AUTH_ADMIN_LOGIN_FAILED)}`);
+  
+    // Validate email
+    const emailError = validateEmail(email);
+  
+    if (emailError) {
+      setError(emailError);
       setIsSubmitting(false);
       return;
     }
-
-    if (isMfaRequired && fId && cId) {
-      // MFA is required
+  
+    const {
+      error: signInError,
+      mfaRequired,
+      factorId,
+      challengeId,
+    } = await signIn(email, password);
+  
+    if (signInError) {
+      setError(signInError.message || msg(E.AUTH_ADMIN_LOGIN_FAILED));
+      setIsSubmitting(false);
+      return;
+    }
+  
+    if (mfaRequired && factorId && challengeId) {
       setMfaRequired(true);
-      setFactorId(fId);
-      setChallengeId(cId);
+      setFactorId(factorId);
+      setChallengeId(challengeId);
       setSuccess("Please enter your authentication code");
       setIsSubmitting(false);
       return;
     }
-
-    // ✅ Session cookie browser me set ho chuki hoti hai
-    // 🔁 Middleware + AuthContext handle kar lenge
+  
+    // Session cookie has already been set by Supabase
     router.replace("/admin");
   };
 
@@ -96,14 +106,14 @@ function AdminLoginPageContent() {
   }
 
   return (
-    <div className="min-h-[85vh] flex items-center justify-center bg-background px-4 py-12">
+    <div className="bg-background flex min-h-[85vh] items-center justify-center px-4 py-12">
       <div className="w-full max-w-md">
-        <Card className="p-6 bg-card shadow-lg border-border rounded-2xl">
-          <h1 className="text-2xl font-bold mb-6 text-center">Admin Login</h1>
+        <Card className="bg-card border-border rounded-2xl p-6 shadow-lg">
+          <h1 className="mb-6 text-center text-2xl font-bold">Admin Login</h1>
           {mfaRequired ? (
             <form onSubmit={handleMfaSubmit} noValidate className="space-y-5">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">
+                <label className="text-foreground block text-sm font-medium">
                   Authentication Code
                 </label>
                 <Input
@@ -114,18 +124,18 @@ function AdminLoginPageContent() {
                   maxLength={6}
                   required
                   disabled={isSubmitting}
-                  className="h-12 rounded-xl border-border focus:border-primary focus:ring-primary"
+                  className="border-border focus:border-primary focus:ring-primary h-12 rounded-xl"
                 />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Enter the code from your authenticator app
                 </p>
               </div>
 
               {/* Error Message */}
               {error && (
-                <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+                <div className="flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
                   <svg
-                    className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
+                    className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -145,7 +155,7 @@ function AdminLoginPageContent() {
               <Button
                 type="submit"
                 disabled={isSubmitting || mfaCode.length !== 6}
-                className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50"
+                className="bg-primary hover:bg-primary/90 h-12 w-full rounded-xl font-medium text-white transition-all disabled:opacity-50"
               >
                 {isSubmitting ? <Loader size="sm" text="Verifying..." /> : "Verify Code"}
               </Button>
@@ -153,7 +163,7 @@ function AdminLoginPageContent() {
           ) : (
             <form onSubmit={handleSubmit} noValidate className="space-y-5">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">Email Address</label>
+                <label className="text-foreground block text-sm font-medium">Email Address</label>
                 <Input
                   type="email"
                   value={email}
@@ -161,13 +171,13 @@ function AdminLoginPageContent() {
                   placeholder="you@example.com"
                   required
                   disabled={isSubmitting}
-                  className="h-12 rounded-xl border-border focus:border-primary focus:ring-primary"
+                  className="border-border focus:border-primary focus:ring-primary h-12 rounded-xl"
                 />
               </div>
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="block text-sm font-medium text-foreground">Password</label>
+                  <label className="text-foreground block text-sm font-medium">Password</label>
                 </div>
                 <div className="relative">
                   <Input
@@ -177,16 +187,16 @@ function AdminLoginPageContent() {
                     placeholder="Enter your password"
                     required
                     disabled={isSubmitting}
-                    className="h-12 rounded-xl border-border focus:border-primary focus:ring-primary pr-12"
+                    className="border-border focus:border-primary focus:ring-primary h-12 rounded-xl pr-12"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-4 -translate-y-1/2"
                   >
                     {showPassword ? (
                       <svg
-                        className="w-5 h-5"
+                        className="h-5 w-5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -206,7 +216,7 @@ function AdminLoginPageContent() {
                       </svg>
                     ) : (
                       <svg
-                        className="w-5 h-5"
+                        className="h-5 w-5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -225,9 +235,9 @@ function AdminLoginPageContent() {
 
               {/* Success Message */}
               {success && (
-                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-start gap-3">
+                <div className="flex items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
                   <svg
-                    className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5"
+                    className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -245,9 +255,9 @@ function AdminLoginPageContent() {
 
               {/* Error Message */}
               {error && (
-                <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+                <div className="flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
                   <svg
-                    className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
+                    className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -267,7 +277,7 @@ function AdminLoginPageContent() {
               <Button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50"
+                className="bg-primary hover:bg-primary/90 h-12 w-full rounded-xl font-medium text-white transition-all disabled:opacity-50"
               >
                 {isSubmitting ? "Signing in..." : "Sign In"}
               </Button>
