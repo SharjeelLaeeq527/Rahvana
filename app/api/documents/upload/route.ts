@@ -3,6 +3,7 @@
 // Uses Supabase Storage (works on BOTH local AND Vercel)
 // Files are encrypted with AES-256-GCM BEFORE upload — owner cannot read stored files
 
+import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import {

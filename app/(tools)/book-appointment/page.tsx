@@ -15,6 +15,9 @@ import { usePlan } from "@/app/context/PlanContext";
 import { Crown, CreditCard, ShoppingBag, Sparkles } from "lucide-react";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
+import { PhoneInput } from "@/components/ui/phone-input";
+import type { Value as E164Number } from "react-phone-number-input";
+import { validatePhoneNumber, formatPhoneNumber } from "@/lib/validation/phone";
 
 type Location = "karachi" | "lahore" | "islamabad";
 type IslamabadProvider = "amc" | "iom";
@@ -209,6 +212,7 @@ interface BasicInfoStepProps {
   isWilcare: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectChange: (name: keyof FormData) => (value: string) => void;
+  onPhoneChange: (value: E164Number) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -220,6 +224,7 @@ const BasicInfoStep = ({
   isWilcare,
   onChange,
   onSelectChange,
+  onPhoneChange,
   onNext,
   onBack,
 }: BasicInfoStepProps) => {
@@ -293,27 +298,13 @@ const BasicInfoStep = ({
 
           <div className="space-y-2">
             <Label htmlFor="primaryContact">{t("bookAppointment.basicInfoStep.mobileNo")}</Label>
-            <div className="flex gap-2">
-              <div className="flex items-center justify-center w-24 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-medium">
-                🇵🇰 92
-              </div>
-              <Input
-                id="primaryContact"
-                name="primaryContact"
-                value={formData.primaryContact}
-                // onChange={onChange}
-                onChange={(e) => {
-                  const cleaned = e.target.value.replace(/\D/g, "").slice(0, 10);
-                  e.target.value = cleaned;
-                  onChange(e);
-                }}
-                placeholder="3001234567"
-                type="tel"
-                className="flex-1"
-                maxLength={10}
-                inputMode="numeric"
-              />
-            </div>
+            <PhoneInput
+              id="primaryContact"
+              value={formData.primaryContact || ""}
+              onChange={onPhoneChange}
+              defaultCountry="PK"
+              placeholder="3001234567"
+            />
           </div>
 
           <div className="space-y-2">
@@ -465,7 +456,7 @@ const BasicInfoStep = ({
           <Button
             onClick={onBack}
             variant="outline"
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-teal-600 hover:bg-teal-700 text-white hover:text-white"
           >
             {t("bookAppointment.basicInfoStep.prevBtn")}
           </Button>
@@ -489,10 +480,7 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
   return (
     <div className="border border-gray-200 rounded-lg p-4 sm:p-6 mb-6 bg-gray-50">
       <h3 className="text-lg font-semibold text-slate-900 mb-4">
-        {t("bookAppointment.personalInfoStep.applicantNumber").replace(
-          "{index}",
-          (index + 1).toString()
-        )}
+        Applicant {index + 1}
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -701,10 +689,7 @@ const ApplicantPassportInfo = ({
   return (
     <div className="border border-gray-200 rounded-lg p-4 sm:p-6 mb-6 bg-gray-50">
       <h3 className="text-lg font-semibold text-slate-900 mb-4">
-        {t("bookAppointment.passportDetailsStep.applicantNumber").replace(
-          "{index}",
-          (index + 1).toString()
-        )}
+        Applicant {index + 1}
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1347,7 +1332,7 @@ const ReviewStep = ({
                 <p className="text-sm text-slate-600">
                   {t("bookAppointment.reviewStep.contactNumber")}
                 </p>
-                <p className="font-medium">+92 {formData.contactNumber}</p>
+                <p className="font-medium">{formatPhoneNumber(formData.contactNumber)}</p>
               </div>
               <div>
                 <p className="text-sm text-slate-600">{t("bookAppointment.reviewStep.email")}</p>
@@ -1471,7 +1456,7 @@ const ReviewStep = ({
               <p className="text-sm text-slate-600">
                 {t("bookAppointment.reviewStep.primaryContact")}
               </p>
-              <p className="font-medium">+92 {formData.primaryContact}</p>
+              <p className="font-medium">{formatPhoneNumber(formData.primaryContact)}</p>
             </div>
             <div>
               <p className="text-sm text-slate-600">{t("bookAppointment.reviewStep.email")}</p>
@@ -1520,7 +1505,7 @@ const ReviewStep = ({
                   <p className="text-sm text-slate-600">
                     {t("bookAppointment.reviewStep.contactNumber")}
                   </p>
-                  <p className="font-medium">+92 {formData.contactNumber}</p>
+                  <p className="font-medium">{formatPhoneNumber(formData.contactNumber)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-600">
@@ -1604,10 +1589,7 @@ const ReviewStep = ({
                     className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
                   >
                     <h5 className="font-semibold text-slate-900 mb-2">
-                      {t("bookAppointment.reviewStep.applicantIndex").replace(
-                        "{index}",
-                        (index + 1).toString()
-                      )}
+                      Applicant {index + 1}
                     </h5>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -1727,10 +1709,7 @@ const ReviewStep = ({
                     className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
                   >
                     <h5 className="font-semibold text-slate-900 mb-2">
-                      {t("bookAppointment.reviewStep.applicantIndex").replace(
-                        "{index}",
-                        (index + 1).toString()
-                      )}
+                      Applicant {index + 1}
                     </h5>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -1911,6 +1890,20 @@ interface CheckoutStepProps {
   error: string | null;
   loading: boolean;
   tier: string;
+  isAMC: boolean;
+  isIOM: boolean;
+  onBack: () => void;
+  onSubmit: (e: React.FormEvent) => void;
+  formatDate: (dateString: string) => string;
+}
+
+interface CheckoutStepProps {
+  formData: FormData;
+  error: string | null;
+  loading: boolean;
+  tier: string;
+  isAMC: boolean;
+  isIOM: boolean;
   onBack: () => void;
   onSubmit: (e: React.FormEvent) => void;
   formatDate: (dateString: string) => string;
@@ -1921,6 +1914,8 @@ const CheckoutStep = ({
   error,
   loading,
   tier,
+  isAMC,
+  isIOM,
   onBack,
   onSubmit,
   formatDate,
@@ -1943,9 +1938,11 @@ const CheckoutStep = ({
               Booking Summary
             </h4>
             <div className="mt-3 space-y-2">
-              <p className="text-sm font-semibold text-slate-800">
-                {formData.surname}, {formData.givenName}
-              </p>
+              {isAMC && (
+                <p className="text-sm font-semibold text-slate-800">
+                  {formData.surname}, {formData.givenName}
+                </p>
+              )}
               <p className="text-xs text-slate-500">
                 Center:{" "}
                 <span className="capitalize font-medium text-slate-700">{formData.location}</span>
@@ -2221,12 +2218,14 @@ export default function WilcareAppointmentForm() {
       // If the number of applicants changes, update the applicants array
       if (name === "numberOfApplicants") {
         const numApplicants = parseInt(value) || 0;
+        // Number of additional applicants (excluding primary)
+        const numAdditional = numApplicants - 1;
         const currentApplicants = prev.applicants || [];
 
         // If increasing number of applicants, add new empty applicant objects
-        if (numApplicants > currentApplicants.length) {
+        if (numAdditional > currentApplicants.length) {
           const newApplicants = [...currentApplicants];
-          for (let i = currentApplicants.length; i < numApplicants; i++) {
+          for (let i = currentApplicants.length; i < numAdditional; i++) {
             newApplicants.push({
               id: `applicant-${i + 1}`,
               surname: "",
@@ -2243,8 +2242,12 @@ export default function WilcareAppointmentForm() {
           updatedData.applicants = newApplicants;
         }
         // If decreasing number of applicants, remove the extra ones
-        else if (numApplicants < currentApplicants.length) {
-          updatedData.applicants = currentApplicants.slice(0, numApplicants);
+        else if (numAdditional < currentApplicants.length) {
+          updatedData.applicants = currentApplicants.slice(0, numAdditional);
+        }
+        // If numAdditional is 0 (only primary applicant), clear the array
+        else if (numAdditional === 0) {
+          updatedData.applicants = [];
         }
       }
 
@@ -2667,6 +2670,7 @@ export default function WilcareAppointmentForm() {
             isWilcare={isWilcare}
             onChange={handleInputChange}
             onSelectChange={handleSelectChange}
+            onPhoneChange={(value) => setFormData((prev) => ({ ...prev, primaryContact: value || "" }))}
             onNext={handleNextStep}
             onBack={handleGoBack}
           />
@@ -2737,6 +2741,8 @@ export default function WilcareAppointmentForm() {
             error={error}
             loading={loading}
             tier={tier}
+            isAMC={isAMC}
+            isIOM={isIOM}
             onBack={handleGoBack}
             onSubmit={(e) => {
               e.preventDefault();
@@ -2756,6 +2762,7 @@ export default function WilcareAppointmentForm() {
             onSelectChange={(name) => (value) => {
               setFormData((prev) => ({ ...prev, [name]: value }));
             }}
+            onPhoneChange={(value) => setFormData((prev) => ({ ...prev, contactNumber: value || "" }))}
             onNext={handleNextStep}
             onBack={handleGoBack}
           />

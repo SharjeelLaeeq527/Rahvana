@@ -364,7 +364,7 @@ export default function SponsorshipCalculatorTool({
                     Sponsorship Calculator · Step 1 of 11
                   </div>
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
-                    Welcome to the Integrated Sponsorship Calculator
+                    Welcome to the Sponsorship Calculator
                   </h2>
                   <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
                     This tool determines your sponsorship strategy based on USCIS requirements. We

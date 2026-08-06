@@ -34,7 +34,9 @@ export const CustomDropdown = ({
   disabled = false,
 }: CustomDropdownProps) => {
   const [searchTerm, setSearchTerm] = useState("");
-  const displayOptions = options.filter((option) => option.value !== "");
+  const displayOptions = (options ?? []).filter(
+    (option) => option.value !== ""
+  );
 
   const handleSelect = (selectedValue: string) => {
     const optionExists = displayOptions.some((option) => option.value === selectedValue);

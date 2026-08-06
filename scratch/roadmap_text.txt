@@ -1,0 +1,272 @@
+===== PAGE 1 =====
+SECURITY ROADMAP
+Building a Secure SaaS 
+Product
+From “it works” to “it is safe, observable, and 
+resilient.”
+Developer-focused Secure by Design Startup-ready
+Prepared for engineering & product teams
+01
+===== PAGE 2 =====
+Security Roadmap
+Why security matters in SaaS
+SaaS Security
+Your product stores customer data, identity, and 
+business workflows
+One auth or tenant-isolation bug can become a 
+company-level incident
+Security reduces churn, sales friction, downtime, 
+and legal/compliance risk
+Trust is part of the product experience — not a 
+separate feature
+01
+Trust
+02
+Continuity
+03
+Compliance
+Security goal:
+Prevent predictable failures 
+before production, detect abuse 
+quickly, and recover without 
+chaos.
+CISA Secure by Design emphasizes shifting security responsibility into 
+product design and engineering practices.
+02
+===== PAGE 3 =====
+Security Roadmap
+Our security “north star”
+SaaS Security
+Use known standards as guardrails — not as bureaucracy.
+01
+OWASP Top 
+10:2025
+awareness of critical 
+web risks
+02
+OWASP ASVS 
+5.0
+testable app security 
+requirements
+03
+NIST SSDF
+secure software 
+development 
+practices
+04
+CIS Controls 
+IG1
+practical baseline 
+cyber hygiene
+05
+MITRE 
+ATT&CK
+attacker behavior & 
+threat modeling
+Working rule: map every new feature to identity, access, data, abuse, and 
+observability controls before merge.
+03
+===== PAGE 4 =====
+Security Roadmap
+What attackers target ﬁrst
+SaaS Security
+Authentication and sessions
+APIs and object IDs
+Tenant boundaries
+Databases and storage
+CI/CD secrets and dependencies
+Attack surface = every place where input, 
+identity, data, or code crosses a trust 
+boundary.
+04
+===== PAGE 5 =====
+Security Roadmap
+Common startup security mistakes
+SaaS Security
+Hardcoded secrets → key leakage → account takeover
+Frontend-only permission 
+checks → IDOR / broken access control
+No rate limits → brute force, scraping, spam
+Public buckets / broad IAM → data exposure
+No security logs → incident becomes guesswork
+Rushed dependency 
+updates → supply-chain risk
+Core lesson: speed without guardrails creates invisible debt
+05
+===== PAGE 6 =====
+Security Roadmap
+How hackers attack a website
+SaaS Security
+Recon Scan Exploit Escalate Access data Exfiltrate
+Most breaches are chains of small weaknesses — not one “Hollywood hack.”
+06
+===== PAGE 7 =====
+Security Roadmap
+OWASP Top 10:2025 — what matters for us
+SaaS Security
+A01 Broken Access Control A02 Security Misconfiguration
+A03 Supply Chain Failures A04 Cryptographic Failures
+A05 Injection A06 Insecure Design
+A07 Authentication Failures A08 Software/Data Integrity
+A09 Logging & Alerting A10 Exceptional Conditions
+Priority order for SaaS: Access Control → Misconfiguration → Supply Chain → Auth → Logging
+07
+===== PAGE 8 =====
+Security Roadmap
+Authentication & session security
+SaaS Security
+Login MFA / Risk 
+Check
+Session / 
+JWT Rate Limits Audit Log
+Use secure cookies: HttpOnly, Secure, SameSite
+Rotate refresh tokens; revoke on suspicious activity
+Lock/rate-limit login, OTP, reset-password, and invite flows
+Never expose secrets or sensitive claims in frontend storage
+08
+===== PAGE 9 =====
+Security Roadmap
+Authorization & tenant isolation
+SaaS Security
+User API Route Policy Check
+RBAC / ABAC Tenant Data
+Object-level checks on every read/write
+Tenant ID must come from trusted server-side context
+Admin paths require separate privileges and audit logs
+Rule: frontend visibility is UX — backend authorization is security
+09
+===== PAGE 10 =====
+Security Roadmap
+API security best practices
+SaaS Security
+Validate request schema and types
+Rate-limit by IP, user, tenant, and route 
+sensitivity
+Restrict CORS; avoid wildcard origins with 
+credentials
+Return safe errors; log full details 
+server-side
+Set request body, upload, and pagination 
+limits
+API gateway mindset
+Every endpoint is a contract: 
+who can call it, what input is 
+valid, what data can leave, and 
+what abuse is expected.
+Input Identity Limits Logs
+10
+===== PAGE 11 =====
+Security Roadmap
+Data & database security
+SaaS Security
+Protect the data lifecycle: collect less, store safely, access narrowly, recover 
+reliably.
+Minimize
+store only what product 
+needs
+Encrypt
+TLS + encryption at 
+rest
+Isolate
+tenant scoping + least 
+privilege
+Backup
+restore tests, not only 
+snapshots
+Audit
+who accessed 
+sensitive data
+Database users should have role-specific permissions — application, migration, analytics, and 
+admin should not share one superuser.
+11
+===== PAGE 12 =====
+Security Roadmap
+Secrets & conﬁguration management
+SaaS Security
+SECRET
+VAULT
+Never commit .env files, tokens, private keys, or service 
+credentials
+Use a secret manager; inject secrets at runtime
+Rotate keys after exposure, role changes, or vendor changes
+Separate dev, staging, and production credentials
+Least privilege for cloud IAM and third-party integrations
+Pre-commit secret scan + protected CI secrets should be mandatory
+12
+===== PAGE 13 =====
+Security Roadmap
+Secure Development Lifecycle
+SaaS Security
+Plan
+threat model
+Code
+safe patterns
+Review
+PR security
+Test
+SAST/DAST
+Deploy
+gates
+Monitor
+alerts
+Shift-left is not “more work for developers” — it means security 
+feedback arrives before release pressure.
+13
+===== PAGE 14 =====
+Security Roadmap
+Cloud, DevOps & CI/CD security
+SaaS Security
+Protected branches + required reviews
+CI secrets masked and scoped
+SCA + container image scanning
+IaC review before cloud changes
+Least-privilege IAM for services
+Separate prod deployment approval
+Pipeline risk:
+If attackers own CI/CD, they 
+can ship their own “feature” 
+into production.
+Build Scan Sign Approve
+14
+===== PAGE 15 =====
+Security Roadmap
+Monitoring, logging & incident response
+SaaS Security
+Centralize app, auth, API, DB, and cloud logs
+Alert on failed logins, privilege changes, 
+unusual exports
+Track tenant/admin actions with actor, target, 
+time, and IP
+Prepare an incident playbook: contain → 
+eradicate → recover → learn
+Detection principle
+If a breach happened 
+yesterday, what evidence 
+would we have today?
+Log Alert Contain Review
+15
+===== PAGE 16 =====
+Security Roadmap
+90-day SaaS security roadmap
+SaaS Security
+30 DAYS
+Baseline
+Security audit
+Secrets cleanup
+Dependency scan
+Auth/API review
+60 DAYS
+Harden
+RBAC/tenant isolation
+Rate limiting
+Central logs
+Backup restore test
+90 DAYS
+Automate
+Threat modeling
+CI/CD gates
+Incident drill
+Pentest readiness
+Final takeaway: every engineer owns security — but the product must make 
+secure choices the default.
+16

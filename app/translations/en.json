@@ -865,7 +865,7 @@
         "close": "Close",
         "howToObtain": "How to Obtain: ",
         "documentUploaded": "Document Uploaded ✓",
-        "stepProgress": "Step {{current}} of {{total}}",
+        "stepProgress": "Step {current} of {total}",
         "resetConfirm": "Reset progress for this document?",
         "resetProgress": "Reset Progress",
         "progressOverview": "Progress Overview",
@@ -3255,7 +3255,7 @@
       "employment": "Employment-Based Preference"
     },
     "cityLabel": "U.S. Embassy or Consulate City",
-    "cityExamples": "Examples: Islamabad, Mumbai, Dubai, Ankara, New Delhi",
+    "cityExamples": "Examples: Islamabad",
     "cityPlaceholder": "Start typing city name...",
     "cityError": "Please enter a city name.",
     "search": "Search",

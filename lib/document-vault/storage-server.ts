@@ -4,6 +4,15 @@
 import { getRelativeStoragePath } from "./file-utils";
 import fs from "fs/promises";
 import path from "path";
+import { createClient as createClientJs } from "@supabase/supabase-js";
+import { decryptFile } from "./file-encryption";
+
+function getStorageSupabase() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+  return createClientJs(supabaseUrl, serviceRoleKey);
+}
 
 /**
  * Server-side file storage manager
@@ -60,17 +69,37 @@ export class DocumentFileManager {
    * Reads file from filesystem
    */
   async readFile(
-    storagePath: string
+    storagePath: string,
+    userId: string
   ): Promise<{ success: boolean; buffer?: Buffer; error?: string }> {
     try {
-      const fullPath = path.join(process.cwd(), "uploads", storagePath);
-      const buffer = await fs.readFile(fullPath);
-      return { success: true, buffer };
+      const supabase = getStorageSupabase();
+  
+      const { data, error } = await supabase.storage
+        .from("document-vault")
+        .download(storagePath);
+  
+      if (error || !data) {
+        return {
+          success: false,
+          error: error?.message ?? "File not found",
+        };
+      }
+  
+      const encryptedBuffer = Buffer.from(await data.arrayBuffer());
+  
+      const decryptedBuffer = decryptFile(encryptedBuffer, userId);
+  
+      return {
+        success: true,
+        buffer: decryptedBuffer,
+      };
     } catch (error) {
       console.error("Error reading file:", error);
+  
       return {
         success: false,
-        error: error instanceof Error ? error.message : "File not found",
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
