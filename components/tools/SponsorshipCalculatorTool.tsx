@@ -86,7 +86,12 @@ export const getSponsorshipResult = (d: any) => {
       isSelfPetition: true,
       householdSize: 1,
       requiredIncome: 0,
-      totalIncome: 0,
+      totalIncome: d.currentAnnualIncome || 0,
+      primaryIncome: d.currentAnnualIncome || 0,
+      hmIncome: 0,
+      jsIncome: 0,
+      assetIncome: 0,
+      shortfall: 0,
       forms: [
         {
           id: "i864w",
@@ -124,7 +129,7 @@ export const getSponsorshipResult = (d: any) => {
   const usableAssets = (d.assetValue || 0) / assetMultiplier;
 
   const totalIncome = primaryIncome + hmIncome + jsIncome + usableAssets;
-  const isEligible = totalIncome >= requiredIncome || d.sponsorDeceased; // Substitute sponsor logic simplified
+  const isEligible = totalIncome >= requiredIncome;
 
   const forms: any[] = [];
   if (d.sponsorDeceased) {
@@ -205,6 +210,17 @@ export default function SponsorshipCalculatorTool({
 }: SponsorshipCalculatorToolProps) {
   const [stepIdx, setStepIdx] = useState(0);
   const [expandedOptions, setExpandedOptions] = useState<Record<string, boolean>>({});
+
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
   const [data, setData] = useState({
     sponsorStatus: initialData?.sponsorStatus || "",
     isMilitary: initialData?.isMilitary ?? null,
@@ -996,7 +1012,7 @@ export default function SponsorshipCalculatorTool({
                         </span>
                       </div>
                       <div className="text-3xl font-black text-slate-900 mb-1">
-                        ${result.primaryIncome.toLocaleString()} / ${result.requiredIncome.toLocaleString()}
+                        ${(result.primaryIncome ?? 0).toLocaleString()} / ${(result.requiredIncome ?? 0).toLocaleString()}
                       </div>
                       <p className="text-[13px] text-slate-600 font-medium">
                         {result.isEligible
@@ -1277,8 +1293,8 @@ export default function SponsorshipCalculatorTool({
                           {result.isEligible ? "ELIGIBLE \u2713" : "NOT ELIGIBLE \u2717"}
                         </div>
                         <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
-                          Total Household Income: <strong className="text-[#0c1b33] text-lg">${result.totalIncome.toLocaleString()}</strong><br/>
-                          Required (Household of {result.householdSize}): <strong className="text-[#0c1b33] text-lg">${result.requiredIncome.toLocaleString()}</strong>
+                          Total Household Income: <strong className="text-[#0c1b33] text-lg">${(result.totalIncome ?? 0).toLocaleString()}</strong><br/>
+                          Required (Household of {result.householdSize}): <strong className="text-[#0c1b33] text-lg">${(result.requiredIncome ?? 0).toLocaleString()}</strong>
                         </p>
                       </div>
 

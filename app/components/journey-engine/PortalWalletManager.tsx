@@ -34,6 +34,15 @@ export const CeacCredsModal: React.FC<CeacCredsModalProps> = ({
   const [email, setEmail] = useState(initialData?.username || "");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  useEffect(() => {
+    if (isOpen) {
+      setCaseNumber(initialData?.nvc_case_number || "");
+      setInvoiceId(initialData?.nvc_invoice_id || "");
+      setEmail(initialData?.username || "");
+      setErrors({});
+    }
+  }, [isOpen, initialData]);
+
   const handleSave = async () => {
     const newErrors: Record<string, string> = {};
     const cleanCase = caseNumber.trim().toUpperCase();
@@ -277,7 +286,7 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({ isOpen, onClose, data,
                 />
               </div>
 
-              <div className="flex flex-col gap-[5px]">
+              <div className="flex flex-col gap-[5px] pb-6">
                 <label className="text-[12px] font-semibold uppercase tracking-[0.04em] text-[#6b8097]">
                   Payment Note
                 </label>

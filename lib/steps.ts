@@ -64,12 +64,12 @@ export const immigrationSteps: Step[] = [
       </div>
 
       <div style="background-color: #ffebee; border-left: 4px solid #d32f2f; padding: 15px; margin: 15px 0; border-radius: 4px;">
-        <strong style="color: #c62828;">⚠️ Common Mistakes to Avoid:</strong>
+        <strong style="color: #c62828;">Common Mistakes to Avoid:</strong>
         <ul style="margin: 10px 0; padding-left: 20px; color: #b71c1c;">
-          <li>❌ Missing signatures or dates</li>
-          <li>❌ Incomplete translations (ALL foreign documents must be translated)</li>
-          <li>❌ Insufficient evidence of genuine marriage</li>
-          <li>❌ Spelling inconsistencies across documents</li>
+          <li>Missing signatures or dates</li>
+          <li>Incomplete translations (ALL foreign documents must be translated)</li>
+          <li>Insufficient evidence of genuine marriage</li>
+          <li>Spelling inconsistencies across documents</li>
         </ul>
       </div>
 
@@ -158,10 +158,10 @@ export const immigrationSteps: Step[] = [
       <div style="background-color: #ffebee; border-left: 4px solid #d32f2f; padding: 15px; margin: 15px 0; border-radius: 4px;">
         <strong style="color: #c62828;">💡 Pro Tips:</strong>
         <ul style="margin: 10px 0; padding-left: 20px; color: #b71c1c;">
-          <li>✅ Save your case number and invoice IDs immediately</li>
-          <li>✅ Pay fees as soon as you receive invoice IDs</li>
-          <li>✅ Don't start DS-260 until fees are paid and processed</li>
-          <li>✅ Keep all NVC correspondence emails</li>
+          <li>Save your case number and invoice IDs immediately</li>
+          <li>Pay fees as soon as you receive invoice IDs</li>
+          <li>Don't start DS-260 until fees are paid and processed</li>
+          <li>Keep all NVC correspondence emails</li>
         </ul>
       </div>
     `,
@@ -212,11 +212,11 @@ export const immigrationSteps: Step[] = [
       <div style="background-color: #fff9c4; border-left: 4px solid #f57f17; padding: 15px; margin: 15px 0; border-radius: 4px;">
         <strong style="color: #f57f17;">💡 DS-260 Tips:</strong>
         <ul style="margin: 10px 0; padding-left: 20px; color: #f57f17;">
-          <li>✅ Answer every question honestly and completely</li>
-          <li>✅ Use same name spelling as passport throughout</li>
-          <li>✅ Have all documents ready before starting</li>
-          <li>✅ Save frequently - session times out after 20 minutes</li>
-          <li>✅ You can unlock to edit after submission if needed (but causes delays)</li>
+          <li>Answer every question honestly and completely</li>
+          <li>Use same name spelling as passport throughout</li>
+          <li>Have all documents ready before starting</li>
+          <li>Save frequently - session times out after 20 minutes</li>
+          <li>You can unlock to edit after submission if needed (but causes delays)</li>
         </ul>
       </div>
     `,
@@ -289,7 +289,7 @@ export const immigrationSteps: Step[] = [
         <strong style="color: #1976D2;">👤 Who:</strong> Pakistani Beneficiary (Immigrating Spouse)<br>
         <strong style="color: #1976D2;">⏰ When:</strong> After NVC schedules your interview (typically 30-60 days before)<br>
         <strong style="color: #1976D2;">📍 Where:</strong> Panel physicians in Islamabad, Karachi, or Lahore<br>
-        <strong style="color: #1976D2;">✅ Validity:</strong> Medical exam valid for 6 months
+        <strong style="color: #1976D2;">Validity:</strong> Medical exam valid for 6 months
       </div>
 
       <h3>💉 Required Vaccinations</h3>
@@ -341,27 +341,27 @@ export const immigrationSteps: Step[] = [
         </ul>
       </div>
 
-      <h3>✅ What to Bring to Interview</h3>
+      <h3>What to Bring to Interview</h3>
       <div style="background-color: #e8f5e9; padding: 15px; border-radius: 4px; margin: 10px 0;">
         <ul style="margin: 0; padding-left: 20px;">
-          <li>✅ Valid passport</li>
-          <li>✅ Appointment letter from NVC</li>
-          <li>✅ Medical examination results (sealed)</li>
-          <li>✅ All required documents (originals + copies)</li>
-          <li>✅ Police clearance certificate</li>
-          <li>✅ Birth certificate</li>
-          <li>✅ Marriage certificate</li>
+          <li>Valid passport</li>
+          <li>Appointment letter from NVC</li>
+          <li>Medical examination results (sealed)</li>
+          <li>All required documents (originals + copies)</li>
+          <li>Police clearance certificate</li>
+          <li>Birth certificate</li>
+          <li>Marriage certificate</li>
         </ul>
       </div>
 
       <div style="background-color: #fff9c4; border-left: 4px solid #f57f17; padding: 15px; margin: 15px 0; border-radius: 4px;">
         <strong style="color: #f57f17;">💡 Interview Tips:</strong>
         <ul style="margin: 10px 0; padding-left: 20px; color: #f57f17;">
-          <li>✅ Arrive 15 minutes early</li>
-          <li>✅ Dress professionally</li>
-          <li>✅ Be honest and straightforward with answers</li>
-          <li>✅ Keep answers concise and relevant</li>
-          <li>✅ Bring both originals and copies of all documents</li>
+          <li>Arrive 15 minutes early</li>
+          <li>Dress professionally</li>
+          <li>Be honest and straightforward with answers</li>
+          <li>Keep answers concise and relevant</li>
+          <li>Bring both originals and copies of all documents</li>
         </ul>
       </div>
     `,
@@ -419,11 +419,11 @@ export const immigrationSteps: Step[] = [
       <div style="background-color: #fff9c4; border-left: 4px solid #f57f17; padding: 15px; margin: 15px 0; border-radius: 4px;">
         <strong style="color: #f57f17;">Important Actions Within First Month:</strong>
         <ul style="margin: 10px 0; padding-left: 20px; color: #f57f17;">
-          <li>✅ Apply for Social Security Number (SSN)</li>
-          <li>✅ Get a driver's license or state ID</li>
-          <li>✅ Open a bank account</li>
-          <li>✅ Apply for U.S. address and update information</li>
-          <li>✅ Register for health insurance if needed</li>
+          <li>Apply for Social Security Number (SSN)</li>
+          <li>Get a driver's license or state ID</li>
+          <li>Open a bank account</li>
+          <li>Apply for U.S. address and update information</li>
+          <li>Register for health insurance if needed</li>
         </ul>
       </div>
 
@@ -442,8 +442,8 @@ export const immigrationSteps: Step[] = [
       <p>If you were married for less than 2 years when you became a permanent resident, you'll receive a <strong style="color: #d32f2f;">conditional Green Card valid for 2 years</strong>. You must file Form I-751 to remove conditions.</p>
       
       <div style="background-color: #e3f2fd; border-left: 4px solid #2196F3; padding: 15px; margin: 15px 0; border-radius: 4px;">
-        <strong style="color: #1976D2;">✅ Applies To:</strong> CR-1 visa holders (married less than 2 years)<br>
-        <strong style="color: #1976D2;">❌ Does NOT Apply To:</strong> IR-1 visa holders (married 2+ years)<br>
+        <strong style="color: #1976D2;">Applies To:</strong> CR-1 visa holders (married less than 2 years)<br>
+        <strong style="color: #1976D2;">Does NOT Apply To:</strong> IR-1 visa holders (married 2+ years)<br>
         <strong style="color: #1976D2;">📅 When to File:</strong> 90-day window before 2-year anniversary of becoming LPR<br>
         <strong style="color: #1976D2;">👥 Who Files:</strong> Both spouses jointly
       </div>
@@ -482,7 +482,7 @@ export const immigrationSteps: Step[] = [
           <li>📅 <strong>90 days before</strong> 2-year anniversary: Start filing I-751</li>
           <li>📧 <strong>1-3 weeks:</strong> Receive receipt notice (I-797)</li>
           <li>🕐 <strong>12-18 months:</strong> Average processing time</li>
-          <li>✅ <strong>Upon approval:</strong> Receive 10-year permanent resident card</li>
+          <li><strong>Upon approval:</strong> Receive 10-year permanent resident card</li>
         </ul>
       </div>
 
@@ -493,12 +493,12 @@ export const immigrationSteps: Step[] = [
       </div>
 
       <div style="background-color: #ffebee; border-left: 4px solid #d32f2f; padding: 15px; margin: 15px 0; border-radius: 4px;">
-        <strong style="color: #c62828;">⚠️ Important Reminders:</strong>
+        <strong style="color: #c62828;">Important Reminders:</strong>
         <ul style="margin: 10px 0; padding-left: 20px; color: #b71c1c;">
-          <li>❌ Do NOT file after the 90-day window closes</li>
-          <li>❌ Missing the deadline can result in deportation</li>
-          <li>✅ File jointly with your spouse - dual filing is required</li>
-          <li>✅ Include strong evidence of genuine marriage</li>
+          <li>Do NOT file after the 90-day window closes</li>
+          <li>Missing the deadline can result in deportation</li>
+          <li>File jointly with your spouse - dual filing is required</li>
+          <li>Include strong evidence of genuine marriage</li>
         </ul>
       </div>
     `,

@@ -454,6 +454,12 @@ export function generateRequiredDocuments(
     const isGeneric = d.name.includes(" Document (") || d.name.includes(" Evidence (");
     if (!isGeneric) return true;
 
+    // Never filter out a dynamic slot that has been explicitly stored in the user's config
+    const isStoredDynamicSlot = config.dynamicDocuments?.[d.category]?.some(
+      (slot) => slot.id === d.id
+    );
+    if (isStoredDynamicSlot) return true;
+
     // Check if there's any named version of this category's docs uploaded
     const baseName = d.name.split(" Document (")[0].split(" Evidence (")[0].toLowerCase().trim();
 
@@ -491,7 +497,7 @@ export function generateRequiredDocuments(
         "interview-originals": "Interview Originals and Certified Copies Set",
         
         // Petitioner financial templates
-        "i864-affidavit": "Form I-864 Affidavit of Support - Petitioner",
+        "i-864-affidavit": "Form I-864 Affidavit of Support - Petitioner",
         "tax-returns-petitioner": "Most Recent IRS Tax Transcript or Complete Federal Tax Return - Petitioner",
         "w2-forms": "W-2, 1099, and Relevant Tax Schedules (if applicable)",
         "pay-stubs": "Current Pay Stubs and Employment Verification Letter (if current income must be documented)",
@@ -513,7 +519,7 @@ export function generateRequiredDocuments(
         "death-cert-prior-spouse": "Death Certificate of Former Spouse",
         "certified-translations": "Translations",
         "passport-photos": "Passport Photos",
-        "i864-affidavit": "Form I-864 Affidavit of Support - Petitioner",
+        "i-864-affidavit": "Form I-864 Affidavit of Support - Petitioner",
         "tax-returns-petitioner": "Federal Tax Returns (Past 3 Years)",
         "w2-forms": "W-2 Forms",
         "pay-stubs": "Employment Letter & Pay Stubs",

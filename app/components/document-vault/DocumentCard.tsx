@@ -48,6 +48,7 @@ interface DocumentCardProps {
   onExport?: () => void;
   onPreview?: () => void;
   onRename?: (newName: string) => void;
+  onDeleteSlot?: () => void;
 }
 
 export function DocumentCard({
@@ -60,6 +61,7 @@ export function DocumentCard({
   onExport,
   onPreview,
   onRename,
+  onDeleteSlot,
 }: DocumentCardProps) {
   const { t } = useLanguage();
   const [isEditing, setIsEditing] = useState(false);
@@ -209,17 +211,33 @@ export function DocumentCard({
                       ? t(`documentVaultPage.documents.${documentDef.id}.name`)
                       : documentDef.name}
                     {documentDef.id.startsWith("dynamic-") && (
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                        onClick={() => {
-                          setIsEditing(true);
-                          setEditValue(documentDef.name);
-                        }}
-                      >
-                        <Edit2 className="w-3.5 h-3.5 text-slate-400" />
-                      </Button>
+                      <div className="inline-flex items-center gap-0.5">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setIsEditing(true);
+                            setEditValue(documentDef.name);
+                          }}
+                          title="Rename"
+                        >
+                          <Edit2 className="w-3.5 h-3.5 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onDeleteSlot?.();
+                          }}
+                          title="Delete Slot"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </div>
                     )}
                     {documentDef.required && (
                       <span className="text-red-500 ml-1 font-black">*</span>
@@ -259,14 +277,18 @@ export function DocumentCard({
           <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-4 mb-5 border border-slate-100 dark:border-slate-700/50 space-y-3 relative overflow-hidden">
             <div className="flex items-center justify-between text-[11px]">
               <span className="font-bold text-slate-500 uppercase tracking-tight">
-                {t("documentVaultPage.components.documentCard.activeVersion")}
+                {documentDef.multipleFilesAllowed && !documentDef.id.startsWith("dynamic-")
+                  ? "Latest Upload"
+                  : t("documentVaultPage.components.documentCard.activeVersion")}
               </span>
-              <Badge
-                variant="secondary"
-                className="h-5 px-1.5 text-[10px] font-black bg-white dark:bg-slate-700 shadow-sm border-none"
-              >
-                v{uploadedDoc.version}
-              </Badge>
+              {!(documentDef.multipleFilesAllowed && !documentDef.id.startsWith("dynamic-")) && (
+                <Badge
+                  variant="secondary"
+                  className="h-5 px-1.5 text-[10px] font-black bg-white dark:bg-slate-700 shadow-sm border-none"
+                >
+                  v{uploadedDoc.version}
+                </Badge>
+              )}
             </div>
 
             <div className="space-y-1">
@@ -333,6 +355,17 @@ export function DocumentCard({
               </Button>
 
               <div className="flex-1 flex gap-1">
+                {documentDef.multipleFilesAllowed && !documentDef.id.startsWith("dynamic-") && (
+                  <Button
+                    onClick={() => onUpload()}
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 h-9 font-bold text-xs border-2 text-primary border-primary/20 hover:bg-primary/5"
+                  >
+                    <Upload className="w-3.5 h-3.5 mr-1.5" />
+                    Upload
+                  </Button>
+                )}
                 <Button
                   onClick={onDownload}
                   variant="outline"
@@ -350,13 +383,21 @@ export function DocumentCard({
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuItem onClick={() => onUpload()}>
-                      <Plus className="w-4 h-4 mr-2 text-primary" /> Add New Version
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => onUpload(uploadedDoc.id)}>
-                      <Upload className="w-4 h-4 mr-2" />{" "}
-                      {t("documentVaultPage.components.documentCard.replace")}
-                    </DropdownMenuItem>
+                    {documentDef.multipleFilesAllowed && !documentDef.id.startsWith("dynamic-") ? (
+                      <DropdownMenuItem onClick={() => onUpload()}>
+                        <Plus className="w-4 h-4 mr-2 text-primary" /> Upload / Manage Files
+                      </DropdownMenuItem>
+                    ) : (
+                      <>
+                        <DropdownMenuItem onClick={() => onUpload()}>
+                          <Plus className="w-4 h-4 mr-2 text-primary" /> Add New Version
+                        </DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => onUpload(uploadedDoc.id)}>
+                          <Upload className="w-4 h-4 mr-2" />{" "}
+                          {t("documentVaultPage.components.documentCard.replace")}
+                        </DropdownMenuItem>
+                      </>
+                    )}
                     {onExport && (
                       <DropdownMenuItem onClick={onExport}>
                         <Package className="w-4 h-4 mr-2" />{" "}
@@ -368,6 +409,17 @@ export function DocumentCard({
                       {t("documentVaultPage.components.documentCard.instructions")}
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
+                    {documentDef.id.startsWith("dynamic-") && (
+                      <>
+                        <DropdownMenuItem
+                          onClick={onDeleteSlot}
+                          className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" /> Delete Slot
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
                     <DropdownMenuItem
                       onClick={onDelete}
                       className="text-destructive focus:text-destructive focus:bg-destructive/10"

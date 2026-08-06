@@ -384,6 +384,11 @@ export function DocumentUploadModal({
       formData.append("role", role);
       formData.append("caseId", config.caseId || "CASE");
 
+      if (documentDef.id.startsWith("dynamic-")) {
+        formData.append("dynamicName", documentDef.name);
+        formData.append("dynamicCategory", documentDef.category || "MISC");
+      }
+
       // Determine person name based on role
       let personName = "Unknown";
       if (role === "PETITIONER" && config.petitionerName) {
@@ -613,7 +618,7 @@ export function DocumentUploadModal({
                   {journeyMarriageClash && (
                     <div className="bg-red-50 border border-red-300 rounded-xl p-4 text-sm text-red-800">
                       <p className="font-semibold mb-1">
-                        ⚠️ Please review, this may not match an earlier answer
+                        Please review, this may not match an earlier answer
                       </p>
                       <p>
                         This document suggests a <strong>previous marriage</strong>, but earlier in

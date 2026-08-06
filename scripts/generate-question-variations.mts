@@ -344,7 +344,7 @@ async function main(): Promise<void> {
   log(colors.green, "\n✓ API Key detected");
   log(colors.cyan, `\nProcessing ${CATEGORIES.length} categories...\n`);
 
-  log(colors.yellow, "⚠️  Optimized Batching Strategy for Free Tier:");
+  log(colors.yellow, "Optimized Batching Strategy for Free Tier:");
   log(colors.yellow, `   • Groups ${BATCH_SIZE} questions per API call (instead of 1)`);
   log(colors.yellow, `   • Reduces API calls from ~80 to ~10 (80x more efficient!)`);
   log(colors.yellow, `   • Per category: 1 API call per ~${BATCH_SIZE} questions`);

@@ -67,6 +67,73 @@ async function checkAdminRole(request: NextRequest) {
   return { isAdmin: true, error: null };
 }
 
+async function signAppointmentUrls(supabase: any, appointments: any[]) {
+  if (!appointments || appointments.length === 0) return;
+
+  const urlFields = [
+    "scanned_passport_url",
+    "k_one_letter_url",
+    "appointment_confirmation_letter_url",
+  ] as const;
+
+  const pathsToSign: string[] = [];
+
+  for (const row of appointments) {
+    for (const field of urlFields) {
+      const url = row[field];
+      if (url && typeof url === "string") {
+        const parts = url.split("/document-vault/");
+        if (parts.length >= 2) {
+          const storagePath = decodeURIComponent(parts[1]);
+          pathsToSign.push(storagePath);
+        }
+      }
+    }
+  }
+
+  if (pathsToSign.length === 0) return;
+
+  const uniquePaths = Array.from(new Set(pathsToSign));
+
+  try {
+    const { data: signedData, error: signingError } = await supabase.storage
+      .from("document-vault")
+      .createSignedUrls(uniquePaths, 86400); // 24 hours
+
+    if (signingError) {
+      console.error("Error batch signing URLs:", signingError);
+      return;
+    }
+
+    if (signedData) {
+      const signedUrlMap = new Map<string, string>();
+      for (const item of signedData) {
+        if (item.signedUrl && !item.error) {
+          signedUrlMap.set(item.path, item.signedUrl);
+        }
+      }
+
+      for (const row of appointments) {
+        for (const field of urlFields) {
+          const url = row[field];
+          if (url && typeof url === "string") {
+            const parts = url.split("/document-vault/");
+            if (parts.length >= 2) {
+              const storagePath = decodeURIComponent(parts[1]);
+              const signedUrl = signedUrlMap.get(storagePath);
+              if (signedUrl) {
+                row[field] = signedUrl;
+              }
+            }
+          }
+        }
+      }
+    }
+  } catch (err) {
+    console.error("Failed to sign URLs:", err);
+  }
+}
+
 export async function GET(req: NextRequest) {
   try {
     const { isAdmin, error: authError } = await checkAdminRole(req);
@@ -102,7 +169,7 @@ export async function GET(req: NextRequest) {
       return Response.json({ error: appointmentsError.message }, { status: 500 });
     }
 
-    console.log(`✅ Found ${appointments?.length || 0} appointments`);
+    console.log(`Found ${appointments?.length || 0} appointments`);
 
     // Fetch all applicants
     const { data: applicants, error: applicantsError } = await supabase
@@ -111,12 +178,12 @@ export async function GET(req: NextRequest) {
       .order("created_at", { ascending: true });
 
     if (applicantsError) {
-      console.error("⚠️ Error fetching applicants:", applicantsError);
+      console.error("Error fetching applicants:", applicantsError);
       // Continue without applicants if there's an error
       return Response.json({ data: appointments || [] });
     }
 
-    console.log(`✅ Found ${applicants?.length || 0} total applicants`);
+    console.log(`Found ${applicants?.length || 0} total applicants`);
 
     // Define type for applicants
     type ApplicantData = typeof applicants extends (infer U)[] ? U : never;
@@ -145,10 +212,14 @@ export async function GET(req: NextRequest) {
       };
     });
 
-    console.log("✅ Successfully prepared appointments with applicants");
+    if (data) {
+      await signAppointmentUrls(supabase, data);
+    }
+
+    console.log("Successfully prepared appointments with applicants");
     return Response.json({ data });
   } catch (error) {
-    console.error("❌ Unexpected error:", error);
+    console.error("Unexpected error:", error);
     return Response.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }

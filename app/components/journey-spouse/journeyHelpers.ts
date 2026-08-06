@@ -144,6 +144,10 @@ export function isStageUnlocked(
 ): boolean {
   if (chapterIdx === 0) return true; // First chapter is always unlocked
 
+  // If this chapter itself has any progress or is completed, it must be unlocked
+  const currentChapterProgress = getStageProgress(data, chapterIdx, state);
+  if (currentChapterProgress.done > 0 || currentChapterProgress.pct === 100) return true;
+
   const prevChapterProgress = getStageProgress(data, chapterIdx - 1, state);
   return prevChapterProgress.done === prevChapterProgress.total && prevChapterProgress.total > 0;
 }

@@ -221,7 +221,7 @@ export default function Actual221GFormChecker({
               </Label>
               {!!selectedItems.nikah_nama && (
                 <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2 mt-2 font-medium">
-                  ⚠️ Note: You must also submit a Computerized Marriage Registration Certificate
+                  Note: You must also submit a Computerized Marriage Registration Certificate
                   (MRC) and the beneficiary&apos;s CNIC showing husband&apos;s name.
                 </div>
               )}

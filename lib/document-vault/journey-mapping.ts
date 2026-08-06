@@ -53,6 +53,41 @@ export function isDocUploadedInVault(
 export function mapDocumentNameToId(name: string): string {
   const normalized = name.toLowerCase().trim();
 
+  // Passport matching (avoiding passport photos)
+  if (normalized.includes("passport") && !normalized.includes("photo")) {
+    if (normalized.includes("petitioner") || normalized.includes("sponsor")) {
+      return "passport-petitioner";
+    }
+    if (normalized.includes("child")) {
+      return "children-passports";
+    }
+    return "passport-beneficiary";
+  }
+
+  // Police Clearance matching
+  if (normalized.includes("police") || normalized.includes("pcc")) {
+    return "police-certificate-pakistan";
+  }
+
+  // Affidavit of Support matching
+  if (normalized.includes("affidavit of support") || normalized.includes("i-864") || normalized.includes("i864")) {
+    if (normalized.includes("joint")) {
+      return "joint-i864";
+    }
+    if (normalized.includes("contract") || normalized.includes("i-864a") || normalized.includes("i864a")) {
+      return "i-864a-contract";
+    }
+    if (normalized.includes("ez") || normalized.includes("i-864ez") || normalized.includes("i864ez")) {
+      return "i-864ez-affidavit";
+    }
+    return "i-864-affidavit";
+  }
+
+  // DS-260 matching
+  if (normalized.includes("ds-260") || normalized.includes("ds260")) {
+    return "ds-260";
+  }
+
   // Petitioner birth certificate check
   if (normalized.includes("birth certificate of petitioner") || normalized.includes("birth certificate (petitioner)")) {
     return "birth-cert-petitioner";
@@ -250,7 +285,7 @@ export function mapDocumentNameToId(name: string): string {
     "w-2, 1099, and relevant tax schedules (if applicable)": "w2-forms",
     "current pay stubs and employment verification letter (if current income must be documented)": "pay-stubs",
     "most recent irs tax transcript or complete federal tax return - petitioner": "tax-returns-petitioner",
-    "form i-864 affidavit of support - petitioner": "i864-affidavit",
+    "form i-864 affidavit of support - petitioner": "i-864-affidavit",
     "proof of u.s. domicile - petitioner": "domicile-proof-petitioner",
 
     // Exact matches from IR-1 journey JSON (lowercased for matching)

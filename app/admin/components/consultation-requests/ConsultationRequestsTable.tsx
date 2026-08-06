@@ -106,7 +106,18 @@ const ConsultationRequestsTable = () => {
       const response = await fetch("/api/consultation/slots?status=available");
       if (response.ok) {
         const data = await response.json();
-        setAvailableSlots(data);
+        const now = new Date();
+        const futureSlots = data.filter((slot: TimeSlot) => {
+          if (!slot.date || !slot.start_time) return false;
+          const datePart = typeof slot.date === "string"
+            ? slot.date.split("T")[0]
+            : (slot.date instanceof Date
+                ? slot.date.toISOString().split("T")[0]
+                : String(slot.date));
+          const slotDateTime = new Date(`${datePart}T${slot.start_time}-05:00`);
+          return !isNaN(slotDateTime.getTime()) && slotDateTime > now;
+        });
+        setAvailableSlots(futureSlots);
       }
     } catch (error) {
       console.error("Error fetching available slots:", error);

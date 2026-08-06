@@ -669,7 +669,7 @@ const AvailabilityGrid = () => {
                 <DialogDescription>
                   {isActiveSlotPast ? (
                     <span className="text-red-500 font-bold block mt-1">
-                      ⚠️ This time slot has already passed. It cannot be edited, but you can still delete it.
+                      This time slot has already passed. It cannot be edited, but you can still delete it.
                     </span>
                   ) : (
                     "Modify the availability date, time range, status, or delete this slot entirely."

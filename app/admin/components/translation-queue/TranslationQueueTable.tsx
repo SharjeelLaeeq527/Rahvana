@@ -199,7 +199,7 @@ export default function TranslationQueueTable() {
 
   return (
     <>
-      <Card className="max-w-6xl mx-auto">
+      <Card className="max-w-6xl mx-auto mt-4">
         <CardHeader className="flex flex-row items-center justify-between">
           {/* Search Field - Left side */}
           <div className="relative border border-gray-300 rounded-lg p-2">

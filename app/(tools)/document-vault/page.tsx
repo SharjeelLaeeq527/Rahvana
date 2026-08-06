@@ -44,13 +44,9 @@ import {
   AlertCircle,
   List,
   LayoutGrid,
-  ArrowLeftRight,
   Compass,
-  MapPin,
   Route,
   ArrowLeft,
-  Folder,
-  ChevronLeft,
   ChevronRight,
 } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
@@ -118,6 +114,7 @@ export default function DocumentVaultPage() {
     reloadDocuments,
     addDynamicSlot,
     renameDynamicSlot,
+    deleteDynamicSlot,
     isReloadingDocs,
   } = useDocumentVaultStore();
 
@@ -167,6 +164,8 @@ export default function DocumentVaultPage() {
   const [deleteModalOpen, setDeleteModalOpen] = useState(false);
   const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteSlotModalOpen, setDeleteSlotModalOpen] = useState(false);
+  const [slotToDelete, setSlotToDelete] = useState<{ category: string; id: string } | null>(null);
   const [welcomeModalOpen, setWelcomeModalOpen] = useState(false);
   const [hasShownWelcome, setHasShownWelcome] = useState(false);
 
@@ -664,6 +663,34 @@ export default function DocumentVaultPage() {
       console.error("Delete error:", error);
       showToast(t("documentVaultPage.page.messages.deleteFailed"), "error", {
         id: "delete-doc",
+      });
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
+
+  const handleDeleteSlot = (category: string, slotId: string) => {
+    setSlotToDelete({ category, id: slotId });
+    setDeleteSlotModalOpen(true);
+  };
+
+  const confirmDeleteSlot = async () => {
+    if (!slotToDelete) return;
+    try {
+      setDeleteLoading(true);
+      showToast("Deleting document slot...", "loading", {
+        id: "delete-slot",
+      });
+      await deleteDynamicSlot(slotToDelete.category, slotToDelete.id);
+      showToast("Document slot deleted successfully", "success", {
+        id: "delete-slot",
+      });
+      setDeleteSlotModalOpen(false);
+      setSlotToDelete(null);
+    } catch (error) {
+      console.error("Delete slot error:", error);
+      showToast("Failed to delete document slot", "error", {
+        id: "delete-slot",
       });
     } finally {
       setDeleteLoading(false);
@@ -1264,9 +1291,14 @@ export default function DocumentVaultPage() {
                                 viewMode === "grid" ? (
                                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                                     {flatFilteredDocuments.map((doc) => {
-                                      const uploadedDoc = uploadedDocuments.find(
+                                      const docUploads = uploadedDocuments.filter(
                                         (ud) => ud.documentDefId === doc.id
                                       );
+                                      const uploadedDoc = docUploads.length > 0
+                                        ? [...docUploads].sort(
+                                            (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+                                          )[0]
+                                        : undefined;
                                       return (
                                         <DocumentCard
                                           key={doc.id}
@@ -1303,6 +1335,7 @@ export default function DocumentVaultPage() {
                                           onRename={(newName) =>
                                             renameDynamicSlot(doc.category, doc.id, newName)
                                           }
+                                          onDeleteSlot={() => handleDeleteSlot(doc.category, doc.id)}
                                         />
                                       );
                                     })}
@@ -1318,6 +1351,7 @@ export default function DocumentVaultPage() {
                                     onExport={handleExportSingle}
                                     onOpenWizard={openWizard}
                                     onRename={renameDynamicSlot}
+                                    onDeleteSlot={handleDeleteSlot}
                                   />
                                 )
                               ) : (
@@ -1394,9 +1428,14 @@ export default function DocumentVaultPage() {
                                 {viewMode === "grid" ? (
                                   <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                                     {docs.map((doc) => {
-                                      const uploadedDoc = uploadedDocuments.find(
+                                      const docUploads = uploadedDocuments.filter(
                                         (ud) => ud.documentDefId === doc.id
                                       );
+                                      const uploadedDoc = docUploads.length > 0
+                                        ? [...docUploads].sort(
+                                            (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+                                          )[0]
+                                        : undefined;
                                       return (
                                         <DocumentCard
                                           key={doc.id}
@@ -1433,6 +1472,7 @@ export default function DocumentVaultPage() {
                                           onRename={(newName) =>
                                             renameDynamicSlot(doc.category, doc.id, newName)
                                           }
+                                          onDeleteSlot={() => handleDeleteSlot(doc.category, doc.id)}
                                         />
                                       );
                                     })}
@@ -1448,6 +1488,7 @@ export default function DocumentVaultPage() {
                                     onExport={handleExportSingle}
                                     onOpenWizard={openWizard}
                                     onRename={renameDynamicSlot}
+                                    onDeleteSlot={handleDeleteSlot}
                                   />
                                 )}
                               </div>
@@ -1460,9 +1501,14 @@ export default function DocumentVaultPage() {
                                   {getFilteredDocumentsForSpecialFilter[
                                     activeTab as "required" | "optional"
                                   ]?.map((doc) => {
-                                    const uploadedDoc = uploadedDocuments.find(
+                                    const docUploads = uploadedDocuments.filter(
                                       (ud) => ud.documentDefId === doc.id
                                     );
+                                    const uploadedDoc = docUploads.length > 0
+                                      ? [...docUploads].sort(
+                                          (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+                                        )[0]
+                                      : undefined;
                                     return (
                                       <DocumentCard
                                         key={doc.id}
@@ -1495,6 +1541,7 @@ export default function DocumentVaultPage() {
                                         onRename={(newName) =>
                                           renameDynamicSlot(doc.category, doc.id, newName)
                                         }
+                                        onDeleteSlot={() => handleDeleteSlot(doc.category, doc.id)}
                                       />
                                     );
                                   })}
@@ -1514,6 +1561,7 @@ export default function DocumentVaultPage() {
                                   onExport={handleExportSingle}
                                   onOpenWizard={openWizard}
                                   onRename={renameDynamicSlot}
+                                  onDeleteSlot={handleDeleteSlot}
                                 />
                               )}
                             </div>
@@ -1523,9 +1571,14 @@ export default function DocumentVaultPage() {
                               {viewMode === "grid" ? (
                                 <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5">
                                   {documentsByCategory[activeTab]?.map((doc) => {
-                                    const uploadedDoc = uploadedDocuments.find(
+                                    const docUploads = uploadedDocuments.filter(
                                       (ud) => ud.documentDefId === doc.id
                                     );
+                                    const uploadedDoc = docUploads.length > 0
+                                      ? [...docUploads].sort(
+                                          (a, b) => new Date(b.uploadedAt).getTime() - new Date(a.uploadedAt).getTime()
+                                        )[0]
+                                      : undefined;
                                     return (
                                       <DocumentCard
                                         key={doc.id}
@@ -1573,6 +1626,7 @@ export default function DocumentVaultPage() {
                                   onExport={handleExportSingle}
                                   onOpenWizard={openWizard}
                                   onRename={renameDynamicSlot}
+                                  onDeleteSlot={handleDeleteSlot}
                                 />
                               )}
                             </div>
@@ -1591,7 +1645,7 @@ export default function DocumentVaultPage() {
       {/* Modals */}
       {selectedDoc && (
         <>
-          {selectedDoc.multipleFilesAllowed ? (
+          {selectedDoc.multipleFilesAllowed && !selectedDoc.id.startsWith("dynamic-") ? (
             <MultipleDocumentUploadModal
               open={uploadModalOpen}
               onClose={closeUploadModal}
@@ -1707,6 +1761,19 @@ export default function DocumentVaultPage() {
         confirmVariant="danger"
         loading={deleteLoading}
         onConfirm={confirmDelete}
+      />
+
+      {/* Delete Slot Confirmation Modal */}
+      <ConfirmationModal
+        open={deleteSlotModalOpen}
+        onOpenChange={setDeleteSlotModalOpen}
+        title="Delete Document Slot?"
+        description="Are you sure you want to delete this document slot? This will permanently delete any uploaded files associated with this slot. This cannot be undone."
+        confirmText="Delete"
+        cancelText="Cancel"
+        confirmVariant="danger"
+        loading={deleteLoading}
+        onConfirm={confirmDeleteSlot}
       />
       {/* </div> */}
     </TooltipProvider>

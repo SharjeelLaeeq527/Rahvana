@@ -405,7 +405,7 @@ async function handleInvoicePaymentFailed(invoice: Stripe.Invoice) {
         subject: "Action Required, Rahvana Payment Failed",
         html: `
           <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <h1 style="color: #dc2626;">Payment Failed ⚠️</h1>
+            <h1 style="color: #dc2626;">Payment Failed</h1>
             <p>We were unable to process your monthly Rahvana subscription payment.</p>
             <p>Please update your payment method to keep your plan active.</p>
             <a href="${process.env.NEXT_PUBLIC_APP_URL}/dashboard/billing" 

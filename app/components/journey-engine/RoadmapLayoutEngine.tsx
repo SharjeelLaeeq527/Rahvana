@@ -142,7 +142,11 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
     const chapter = data.chapters?.[state.currentStage];
     const step = chapter?.steps[state.currentStep ?? 0];
     const sKey = step?.step_key;
-    if (sKey) actions.toggleComplete(sKey);
+    // if (sKey) actions.toggleComplete(sKey);
+    if (sKey) {
+      if (state.completedSteps.has(sKey)) return;
+      actions.toggleComplete(sKey);
+    }
   };
 
   const currentStepDisplayNum = (() => {
@@ -227,7 +231,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
               onClick={handleToggleComplete}
               className={`complete-btn ${isStepDone ? "complete-btn--done" : "complete-btn--idle"}`}
               aria-pressed={!!isStepDone}
-              title={isStepDone ? "Mark incomplete" : "Mark complete"}
+              title={isStepDone ? "Completed" : "Mark complete"}
             >
               <Check size={12} strokeWidth={3} aria-hidden="true" />
               <span className="complete-label complete-label--full">
@@ -490,6 +494,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
           background: #eaf7f2;
           border-color: #b5e0d0;
           color: #1a7a5e;
+          cursor: default;
         }
 
         .complete-label--full {

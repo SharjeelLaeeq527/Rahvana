@@ -166,7 +166,7 @@ export default function AdminPanel() {
                 <AvailabilityGrid />
               </div> */}
               <div>
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 pt-4">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   Booked Appointments
                 </h3>
