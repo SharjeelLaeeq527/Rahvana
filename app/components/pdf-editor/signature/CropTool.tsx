@@ -217,14 +217,15 @@ export default function CropTool({
   }, []);
 
   useEffect(() => {
-    if (isDragging || isRotating) {
-      document.addEventListener("mousemove", handleMouseMove);
-      showToast(t("pdfProcessing.editor.signature.failed"), "error");
-      return () => {
-        document.removeEventListener("mousemove", handleMouseMove);
-        document.removeEventListener("mouseup", handleMouseUp);
-      };
-    }
+    if (!(isDragging || isRotating)) return;
+  
+    document.addEventListener("mousemove", handleMouseMove);
+    document.addEventListener("mouseup", handleMouseUp);
+  
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
   }, [isDragging, isRotating, handleMouseMove, handleMouseUp]);
 
   const handleApplyCrop = async () => {
@@ -519,7 +520,7 @@ export default function CropTool({
 
       <div className="flex justify-center">
         <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center max-w-2xl">
-          <p className="text-gray-700 font-medium">{t("editor.crop.tip")}</p>
+          <p className="text-gray-700 font-medium">Adjust the crop box to include only your signature. Use the corner handles to resize, drag to reposition, and rotate if needed. Click Done when you&apos;re satisfied.</p>
         </div>
       </div>
     </div>

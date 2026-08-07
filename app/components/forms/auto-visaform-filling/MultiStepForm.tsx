@@ -1590,9 +1590,6 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             }}
             transition={{ type: "spring", damping: 28, stiffness: 240 }}
             className="hidden lg:block shrink-0 -ml-4 md:-ml-8"
-            style={{
-              display: (showSectionIntro && introVisible) ? "none" : "block",
-            }}
           >
             <aside
               className="sticky top-16 mt-12 h-[calc(100vh-280px)] w-full overflow-hidden"
@@ -1671,7 +1668,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                         <div className="w-full max-w-2xl">
                           <div className="bg-white border-2 border-[#14a0a6] rounded-2xl shadow-xl p-8 md:p-10">
                             {/* Top Label */}
-                            <p className="text-sm uppercase tracking-[0.2em] text-[#14a0a6] font-semibold text-center rounded-full bg-white/10 border border-white/20">
+                            <p className="text-xs sm:text-sm uppercase tracking-[0.2em] text-[#14a0a6] font-semibold text-center rounded-full bg-white/10 border border-white/20">
                               Moving on to {currentSection?.title || "Next Section"}
                             </p>
 
@@ -1681,7 +1678,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           </h3> */}
 
                             {/* Message */}
-                            <p className="mt-2 text-sm text-gray-600 leading-relaxed text-center font-semibold">
+                            <p className="mt-2 text-xs sm:text-sm text-gray-600 leading-relaxed text-center font-semibold">
                               {getSectionIntroMessage(currentSection.title).message}
                             </p>
 
