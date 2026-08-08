@@ -749,24 +749,24 @@ export function MockInterviewModePage({
 
   if (phase === "intro") {
     return (
-      <div className="relative min-h-screen overflow-hidden flex items-start justify-center px-4 pt-4 pb-4 sm:pt-6 sm:pb-6">
+      <div className="relative flex min-h-screen items-start justify-center overflow-hidden px-4 pt-4 pb-4 sm:pt-6 sm:pb-6">
         <div className="relative w-full max-w-2xl">
-          <div className="rounded-3xl border border-[rgba(13,115,119,0.08)] bg-white/90 backdrop-blur-xl shadow-[0_30px_80px_-30px_rgba(13,115,119,0.2)] p-8 sm:p-10 relative overflow-hidden">
+          <div className="relative overflow-hidden rounded-3xl border border-[rgba(13,115,119,0.08)] bg-white/90 p-8 shadow-[0_30px_80px_-30px_rgba(13,115,119,0.2)] backdrop-blur-xl sm:p-10">
             {/* Decorative radial glow */}
-            <div className="pointer-events-none absolute -top-24 -right-24 w-64 h-64 rounded-full bg-[#afdbdb]/12 blur-3xl" />
-            <div className="pointer-events-none absolute -bottom-20 -left-20 w-56 h-56 rounded-full bg-[#cdadcc]/10 blur-3xl" />
-            <div className="text-center mb-8 relative z-10">
-              <h2 className="text-4xl sm:text-5xl font-semibold text-slate-900 mb-4 tracking-tight">
+            <div className="pointer-events-none absolute -top-24 -right-24 h-64 w-64 rounded-full bg-[#afdbdb]/12 blur-3xl" />
+            <div className="pointer-events-none absolute -bottom-20 -left-20 h-56 w-56 rounded-full bg-[#cdadcc]/10 blur-3xl" />
+            <div className="relative z-10 mb-8 text-center">
+              <h2 className="mb-4 text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">
                 Mock Interview Mode
               </h2>
-              <p className="text-slate-600 text-base sm:text-lg leading-relaxed max-w-md mx-auto">
+              <p className="mx-auto max-w-md text-base leading-relaxed text-slate-600 sm:text-lg">
                 {isExecutiveTier
                   ? "Step into a focused, distraction-free environment and rehearse with realistic pacing and live voice transcription."
                   : "Try a short mock interview preview before you upgrade to the full executive experience."}
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-8">
+            <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3">
               {(isExecutiveTier
                 ? [
                     {
@@ -817,7 +817,7 @@ export function MockInterviewModePage({
               ).map((item) => (
                 <div
                   key={item.title}
-                  className="group rounded-2xl border border-slate-200 bg-white hover:shadow-[0_8px_24px_-12px_rgba(13,115,119,0.2)] transition-all duration-200 p-4 cursor-default"
+                  className="group cursor-default rounded-2xl border border-slate-200 bg-white p-4 transition-all duration-200 hover:shadow-[0_8px_24px_-12px_rgba(13,115,119,0.2)]"
                   style={{ "--hover-bg": item.bg } as React.CSSProperties}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.backgroundColor = item.bg;
@@ -827,19 +827,19 @@ export function MockInterviewModePage({
                   }}
                 >
                   <div
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg mb-3 transition group-hover:opacity-90"
+                    className="mb-3 inline-flex h-9 w-9 items-center justify-center rounded-lg transition group-hover:opacity-90"
                     style={{ background: item.bg, border: `1px solid ${item.color}20` }}
                   >
                     <item.icon className="h-4.5 w-4.5 transition" style={{ color: item.color }} />
                   </div>
                   <div className="text-sm font-semibold text-slate-900">{item.title}</div>
-                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">{item.desc}</p>
+                  <p className="mt-1 text-xs leading-relaxed text-slate-500">{item.desc}</p>
                 </div>
               ))}
             </div>
 
-            <div className="rounded-xl border border-[#0d7377]/15 bg-[#e8f6f6]/60 p-4 mb-8">
-              <p className="text-sm text-slate-700 leading-relaxed">
+            <div className="mb-8 rounded-xl border border-[#0d7377]/15 bg-[#e8f6f6]/60 p-4">
+              <p className="text-sm leading-relaxed text-slate-700">
                 <span className="font-semibold text-[#0d7377]">
                   {isExecutiveTier ? "Heads up, " : "Preview note, "}{" "}
                 </span>
@@ -849,21 +849,21 @@ export function MockInterviewModePage({
               </p>
             </div>
 
-            <div className="flex justify-center items-center mx-auto">
+            <div className="mx-auto flex items-center justify-center">
               <Button
                 onClick={handleBeginInterviewClick}
-                className="h-14 px-10 bg-[#0d7377] hover:bg-[#0a5a5d] text-white font-semibold rounded-2xl text-lg shadow-[0_8px_30px_-8px_rgba(13,115,119,0.5)] hover:shadow-[0_12px_36px_-8px_rgba(13,115,119,0.6)] transition-all duration-300 hover:-translate-y-0.5"
+                className="h-14 rounded-2xl bg-[#0d7377] px-10 text-lg font-semibold text-white shadow-[0_8px_30px_-8px_rgba(13,115,119,0.5)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a5a5d] hover:shadow-[0_12px_36px_-8px_rgba(13,115,119,0.6)]"
               >
-                <Play className="h-5 w-5 mr-2" />
+                <Play className="mr-2 h-5 w-5" />
                 Begin Interview
               </Button>
             </div>
           </div>
 
           {showAnsweringFlowModal && (
-            <div className="fixed inset-0 z-10000 flex items-center justify-center bg-slate-950/60 backdrop-blur-sm px-4">
-              <div className="w-full max-w-lg rounded-3xl border bg-[#fffdfd] border-[#f0d6dc] p-6 sm:p-8 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)]">
-                <div className="text-center mb-6">
+            <div className="fixed inset-0 z-10000 flex items-center justify-center bg-slate-950/60 px-4 backdrop-blur-sm">
+              <div className="w-full max-w-lg rounded-3xl border border-[#f0d6dc] bg-[#fffdfd] p-6 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)] sm:p-8">
+                <div className="mb-6 text-center">
                   <h3 className="text-2xl font-semibold text-slate-900">
                     Choose your answering flow
                   </h3>
@@ -872,7 +872,7 @@ export function MockInterviewModePage({
                   </p>
                 </div>
 
-                <div className="space-y-3 mb-6">
+                <div className="mb-6 space-y-3">
                   <button
                     type="button"
                     onClick={() => setAnsweringFlowMode("pushToTalk")}
@@ -898,7 +898,7 @@ export function MockInterviewModePage({
                           Hold Space to speak and release to stop, while the answer button still
                           works.
                         </p>
-                        <span className="mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-medium bg-[#f3ede7] text-[#9c6f38]">
+                        <span className="mt-2 inline-flex rounded-full bg-[#f3ede7] px-2.5 py-1 text-xs font-medium text-[#9c6f38]">
                           Most Popular
                         </span>
                       </div>
@@ -934,20 +934,16 @@ export function MockInterviewModePage({
                   </button>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-3">
+                <div className="flex flex-col gap-3 sm:flex-row">
                   <Button
                     variant="outline"
-                    className="h-12 flex-1 border-[#f0d6dc]
-                    text-slate-700
-                    hover:bg-[#fff7f8]"
+                    className="h-12 flex-1 border-[#f0d6dc] text-slate-700 hover:bg-[#fff7f8]"
                     onClick={() => setShowAnsweringFlowModal(false)}
                   >
                     Cancel
                   </Button>
                   <Button
-                    className="h-12 flex-1 bg-[#db8090]
-                    hover:bg-[#c96f80]
-                    shadow-[0_4px_16px_-4px_rgba(219,128,144,0.35)] text-white font-semibold"
+                    className="h-12 flex-1 bg-[#db8090] font-semibold text-white shadow-[0_4px_16px_-4px_rgba(219,128,144,0.35)] hover:bg-[#c96f80]"
                     onClick={() => {
                       setShowAnsweringFlowModal(false);
                       void startInterview();
@@ -1004,17 +1000,17 @@ export function MockInterviewModePage({
     const { metrics, insights, validity } = report;
 
     return (
-      <div className="interview-dots-bg relative min-h-screen overflow-hidden bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 flex items-center justify-center px-4 py-12 sm:py-16">
+      <div className="interview-dots-bg relative flex min-h-screen items-center justify-center overflow-hidden bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 px-4 py-12 sm:py-16">
         <div className="pointer-events-none absolute -top-40 -left-40 h-112 w-md rounded-full bg-[#afdbdb]/15 blur-3xl" />
-        <div className="pointer-events-none absolute -bottom-40 -right-40 h-112 w-md rounded-full bg-[#0d7377]/10 blur-3xl" />
+        <div className="pointer-events-none absolute -right-40 -bottom-40 h-112 w-md rounded-full bg-[#0d7377]/10 blur-3xl" />
 
         <div className="relative w-full max-w-3xl">
-          <div className="rounded-3xl border border-slate-200/80 bg-white/90 backdrop-blur-xl shadow-[0_30px_80px_-30px_rgba(13,115,119,0.25)] p-8 sm:p-10">
-            <div className="text-center mb-10">
-              <div className="mx-auto mb-5 inline-flex h-16 w-16 items-center justify-center rounded-2xl bg-[#e8f6f6] border border-[#0d7377]/20">
+          <div className="rounded-3xl border border-slate-200/80 bg-white/90 p-8 shadow-[0_30px_80px_-30px_rgba(13,115,119,0.25)] backdrop-blur-xl sm:p-10">
+            <div className="mb-10 text-center">
+              <div className="mx-auto mb-5 inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-[#0d7377]/20 bg-[#e8f6f6]">
                 <CheckCircle2 className="h-8 w-8 text-[#0d7377]" />
               </div>
-              <h2 className="text-4xl font-semibold text-slate-900 mb-2 tracking-tight">
+              <h2 className="mb-2 text-4xl font-semibold tracking-tight text-slate-900">
                 Session Complete
               </h2>
               <p className="text-slate-500">
@@ -1025,12 +1021,12 @@ export function MockInterviewModePage({
             </div>
 
             {/* Session Snapshot */}
-            <div className="rounded-2xl border border-[#0d7377]/15 bg-[#e8f6f6]/50 p-5 mb-6">
+            <div className="mb-6 rounded-2xl border border-[#0d7377]/15 bg-[#e8f6f6]/50 p-5">
               <p className="text-sm leading-relaxed text-slate-800">{insights.snapshot}</p>
             </div>
 
             {/* Key Metrics */}
-            <div className="grid grid-cols-3 gap-3 mb-6">
+            <div className="mb-6 grid grid-cols-1 gap-3 md:grid-cols-3">
               {[
                 {
                   label: "Attempted",
@@ -1050,13 +1046,13 @@ export function MockInterviewModePage({
               ].map((stat) => (
                 <div
                   key={stat.label}
-                  className="rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-4 text-center hover:shadow-[0_4px_16px_-8px_rgba(13,115,119,0.15)] transition-shadow duration-200 relative overflow-hidden"
+                  className="relative overflow-hidden rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-4 text-center transition-shadow duration-200 hover:shadow-[0_4px_16px_-8px_rgba(13,115,119,0.15)]"
                 >
-                  <div className="pointer-events-none absolute -top-8 -right-8 w-24 h-24 rounded-full bg-[#afdbdb]/8 blur-xl" />
-                  <div className="text-3xl font-semibold text-slate-900 tracking-tight relative z-10">
+                  <div className="pointer-events-none absolute -top-8 -right-8 h-24 w-24 rounded-full bg-[#afdbdb]/8 blur-xl" />
+                  <div className="relative z-10 text-3xl font-semibold tracking-tight text-slate-900">
                     {stat.value}
                   </div>
-                  <p className="text-[11px] uppercase tracking-wider text-slate-500 mt-1.5 relative z-10">
+                  <p className="relative z-10 mt-1.5 text-[11px] tracking-wider text-slate-500 uppercase">
                     {stat.label}
                   </p>
                 </div>
@@ -1065,7 +1061,7 @@ export function MockInterviewModePage({
 
             {/* Validity Notice (for partial sessions) */}
             {!validity.isFullSession && (
-              <div className="rounded-xl border border-[#db8090]/25 bg-[#db8090]/8 p-4 mb-6">
+              <div className="mb-6 rounded-xl border border-[#db8090]/25 bg-[#db8090]/8 p-4">
                 <p className="text-sm text-[#9e4a5a]">
                   <span className="font-semibold">Note:</span> This analysis is based on a
                   {report.sessionEndReason === "aborted_focus"
@@ -1081,7 +1077,7 @@ export function MockInterviewModePage({
             {/* Strengths */}
             {insights.strengths.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wide">
+                <h3 className="mb-3 text-sm font-semibold tracking-wide text-slate-900 uppercase">
                   Your Strengths
                 </h3>
                 <div className="space-y-2">
@@ -1100,7 +1096,7 @@ export function MockInterviewModePage({
             {/* Needs Improvement */}
             {insights.improvements.length > 0 && (
               <div className="mb-6">
-                <h3 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wide">
+                <h3 className="mb-3 text-sm font-semibold tracking-wide text-slate-900 uppercase">
                   Areas to Improve
                 </h3>
                 <div className="space-y-2">
@@ -1119,16 +1115,16 @@ export function MockInterviewModePage({
             {/* Next Practice Focus */}
             {insights.nextFocus.length > 0 && (
               <div className="mb-8">
-                <h3 className="text-sm font-semibold text-slate-900 mb-3 uppercase tracking-wide">
+                <h3 className="mb-3 text-sm font-semibold tracking-wide text-slate-900 uppercase">
                   Next Practice Focus
                 </h3>
                 <div className="space-y-2">
                   {insights.nextFocus.map((focus, idx) => (
                     <div
                       key={idx}
-                      className="rounded-lg border border-[#afdbdb]/50 bg-[#afdbdb]/20 p-3 text-sm text-[#0d7377] flex items-start gap-2"
+                      className="flex items-start gap-2 rounded-lg border border-[#afdbdb]/50 bg-[#afdbdb]/20 p-3 text-sm text-[#0d7377]"
                     >
-                      <span className="text-[#0d7377] font-semibold mt-0.5">•</span>
+                      <span className="mt-0.5 font-semibold text-[#0d7377]">•</span>
                       <span>{focus}</span>
                     </div>
                   ))}
@@ -1136,23 +1132,23 @@ export function MockInterviewModePage({
               </div>
             )}
 
-            <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row">
               <Button
                 onClick={() => {
                   setPhase("intro");
                   setSessionEndReason(null);
                 }}
                 variant="outline"
-                className="flex-1 h-12 border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
+                className="h-12 flex-1 border-slate-200 bg-white text-slate-700 hover:bg-slate-50 hover:text-slate-900"
               >
                 Try Again
               </Button>
               <Button
                 onClick={onExit}
-                className="flex-1 h-12 bg-[#0d7377] hover:bg-[#0a5a5d] text-white font-semibold shadow-[0_10px_30px_-12px_rgba(13,115,119,0.6)]"
+                className="h-12 flex-1 bg-[#0d7377] font-semibold text-white shadow-[0_10px_30px_-12px_rgba(13,115,119,0.6)] hover:bg-[#0a5a5d]"
               >
                 Back to Prep
-                <ArrowRight className="h-4 w-4 ml-2" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             </div>
           </div>
@@ -1181,22 +1177,22 @@ export function MockInterviewModePage({
   ];
 
   return (
-    <div className="fixed inset-0 z-9999 overflow-hidden flex flex-col bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 text-slate-900">
+    <div className="fixed inset-0 z-9999 flex flex-col overflow-hidden bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 text-slate-900">
       {/* ambient color */}
       <div className="pointer-events-none absolute -top-40 left-1/3 h-120 w-120 rounded-full bg-[#afdbdb]/10 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-40 right-0 h-104 w-104 rounded-full bg-[#0d7377]/5 blur-3xl" />
+      <div className="pointer-events-none absolute right-0 -bottom-40 h-104 w-104 rounded-full bg-[#0d7377]/5 blur-3xl" />
 
       {/* Alerts */}
-      <div className="pointer-events-none fixed bottom-6 right-6 z-60 flex flex-col items-end gap-2 max-w-sm">
+      <div className="pointer-events-none fixed right-6 bottom-6 z-60 flex max-w-sm flex-col items-end gap-2">
         {focusWarningMessage && (
-          <div className="pointer-events-auto w-full rounded-xl border border-[#db8090]/30 bg-[#db8090]/10 backdrop-blur-md p-3 flex items-start gap-3 shadow-lg animate-in slide-in-from-right-5 fade-in duration-300">
-            <AlertTriangle className="h-5 w-5 text-[#db8090] mt-0.5 shrink-0" />
+          <div className="animate-in slide-in-from-right-5 fade-in pointer-events-auto flex w-full items-start gap-3 rounded-xl border border-[#db8090]/30 bg-[#db8090]/10 p-3 shadow-lg backdrop-blur-md duration-300">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#db8090]" />
             <p className="text-sm text-[#9e4a5a]">{focusWarningMessage}</p>
           </div>
         )}
         {micError && (
-          <div className="pointer-events-auto w-full max-w-md rounded-xl border border-red-200 bg-red-50/95 backdrop-blur-md p-3 flex items-start gap-3 shadow-lg animate-in slide-in-from-right-5 fade-in duration-300">
-            <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5 shrink-0" />
+          <div className="animate-in slide-in-from-right-5 fade-in pointer-events-auto flex w-full max-w-md items-start gap-3 rounded-xl border border-red-200 bg-red-50/95 p-3 shadow-lg backdrop-blur-md duration-300">
+            <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-red-600" />
             <p className="text-sm text-red-900">{micError}</p>
           </div>
         )}
@@ -1204,7 +1200,7 @@ export function MockInterviewModePage({
 
       {/* HEADER */}
       <header className="relative shrink-0 border-b border-slate-200/70 bg-white/80 backdrop-blur-xl">
-        <div className="flex items-center gap-4 px-4 sm:px-8 py-3.5">
+        <div className="flex items-center gap-4 px-4 py-3.5 sm:px-8">
           {/* Left: exit */}
           <div className="flex items-center gap-3">
             <button
@@ -1213,7 +1209,7 @@ export function MockInterviewModePage({
                 showExitModalRef.current = true;
                 setShowExitModal(true);
               }}
-              className="h-10 w-10 inline-flex items-center justify-center rounded-lg border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 text-slate-600 hover:text-slate-900 transition"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
               aria-label="Exit interview"
             >
               <X className="h-5 w-5" />
@@ -1221,10 +1217,12 @@ export function MockInterviewModePage({
           </div>
 
           {/* Center: title */}
-          <div className="flex-1 flex justify-center">
+          <div className="flex flex-1 justify-center">
             <div className="text-center">
-              <h2 className="text-lg font-semibold text-slate-900">Mock Interview Mode</h2>
-              <p className="text-[11px] uppercase tracking-[0.18em] text-slate-500 mt-1">
+              <h2 className="text-sm font-semibold text-slate-900 md:text-lg">
+                Mock Interview Mode
+              </h2>
+              <p className="mt-1 text-[9px] tracking-[0.18em] text-slate-500 uppercase md:text-[11px]">
                 {isExecutiveTier
                   ? `Executive session • ${interviewQuestions.length} questions`
                   : `Preview session • ${interviewQuestions.length} questions`}
@@ -1235,7 +1233,7 @@ export function MockInterviewModePage({
           {/* Right: timer */}
           <div className="flex items-center gap-3 sm:gap-4">
             <div
-              className={`flex items-center gap-2.5 rounded-xl border px-3 sm:px-4 py-2 transition duration-200 ${
+              className={`flex items-center gap-2.5 rounded-xl border px-3 py-2 transition duration-200 sm:px-4 ${
                 secondsRemaining < 60
                   ? "border-[#db8090]/30 bg-[#db8090]/10"
                   : "border-[#0d7377]/15 bg-[#e8f6f6]"
@@ -1243,27 +1241,27 @@ export function MockInterviewModePage({
             >
               <Timer
                 className={`h-4 w-4 ${
-                  secondsRemaining < 60 ? "text-[#db8090] animate-pulse" : "text-[#0d7377]"
+                  secondsRemaining < 60 ? "animate-pulse text-[#db8090]" : "text-[#0d7377]"
                 }`}
               />
-              <div className="leading-none">
-                <p className="text-[10px] uppercase tracking-[0.16em] text-[#89a4a0]">
-                  {isExecutiveTier ? "Session Timer" : "Preview Timer"}
-                </p>
-                <div
-                  className={`text-xl sm:text-2xl font-semibold tabular-nums tracking-tight ${
-                    secondsRemaining < 60 ? "text-[#db8090]" : "text-slate-900"
-                  }`}
-                >
-                  {formatTime(secondsRemaining)}
-                </div>
+
+              <span className="hidden md:inline">
+                {isExecutiveTier ? "Session Timer" : "Preview Timer"}
+              </span>
+
+              <div
+                className={`text-xl font-semibold tracking-tight tabular-nums sm:text-2xl ${
+                  secondsRemaining < 60 ? "text-[#db8090]" : "text-slate-900"
+                }`}
+              >
+                {formatTime(secondsRemaining)}
               </div>
             </div>
           </div>
         </div>
 
         {/* progress bar */}
-        <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-slate-100">
+        <div className="absolute right-0 bottom-0 left-0 h-0.5 bg-slate-100">
           <div
             className="h-full bg-linear-to-r from-[#0d7377] to-[#afdbdb] transition-all duration-300"
             style={{
@@ -1275,22 +1273,22 @@ export function MockInterviewModePage({
 
       {/* MAIN */}
       <main
-        className={`relative flex-1 min-h-0 ${
+        className={`relative min-h-0 flex-1 ${
           isPhaseOpening || isPhaseClosing ? "overflow-hidden" : "overflow-auto"
         }`}
       >
-        <div className="mx-auto max-w-6xl w-full px-4 sm:px-8 py-6 sm:py-8">
+        <div className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-8 sm:py-8">
           {isPhaseOpening && (
-            <div className="flex items-center justify-center min-h-[70vh] px-4">
+            <div className="flex min-h-[70vh] items-center justify-center px-4">
               <div className="w-full max-w-2xl">
-                <div className="bg-white border border-[rgba(13,115,119,0.08)] rounded-2xl shadow-[0_8px_30px_rgba(13,115,119,0.1)] p-8 md:p-10 relative overflow-hidden">
+                <div className="relative overflow-hidden rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-8 shadow-[0_8px_30px_rgba(13,115,119,0.1)] md:p-10">
                   {/* Soft radial glow */}
-                  <div className="pointer-events-none absolute -top-20 -right-20 w-56 h-56 rounded-full bg-[#afdbdb]/12 blur-3xl" />
-                  <p className="text-sm uppercase tracking-[0.2em] text-[#0d7377] font-semibold text-center relative z-10">
+                  <div className="pointer-events-none absolute -top-20 -right-20 h-56 w-56 rounded-full bg-[#afdbdb]/12 blur-3xl" />
+                  <p className="relative z-10 text-center text-sm font-semibold tracking-[0.2em] text-[#0d7377] uppercase">
                     Mock Interview Intro
                   </p>
 
-                  <div className="mt-4 space-y-4 text-sm text-gray-700 leading-relaxed font-medium">
+                  <div className="mt-4 space-y-4 text-sm leading-relaxed font-medium text-gray-700">
                     <p>Greetings, and welcome to your mock immigrant visa interview.</p>
                     <p>
                       My name is Officer Alexa, and I will be conducting your interview today.
@@ -1317,7 +1315,7 @@ export function MockInterviewModePage({
                       // console.log("About to call proceedToRun");
                       void proceedToRun();
                     }}
-                    className="mt-8 w-full py-3.5 rounded-xl font-semibold text-white bg-[#0d7377] hover:bg-[#0a5a5d] shadow-[0_6px_24px_-6px_rgba(13,115,119,0.5)] transition-all duration-300 hover:-translate-y-0.5"
+                    className="mt-8 w-full rounded-xl bg-[#0d7377] py-3.5 font-semibold text-white shadow-[0_6px_24px_-6px_rgba(13,115,119,0.5)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a5a5d]"
                   >
                     Continue
                   </button>
@@ -1327,16 +1325,16 @@ export function MockInterviewModePage({
           )}
 
           {isPhaseClosing && (
-            <div className="flex items-center justify-center min-h-[70vh] px-4">
+            <div className="flex min-h-[70vh] items-center justify-center px-4">
               <div className="w-full max-w-2xl">
-                <div className="bg-white border border-[rgba(13,115,119,0.08)] rounded-2xl shadow-[0_8px_30px_rgba(13,115,119,0.1)] p-8 md:p-10 relative overflow-hidden">
+                <div className="relative overflow-hidden rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-8 shadow-[0_8px_30px_rgba(13,115,119,0.1)] md:p-10">
                   {/* Soft radial glow */}
-                  <div className="pointer-events-none absolute -top-20 -right-20 w-56 h-56 rounded-full bg-[#afdbdb]/12 blur-3xl" />
-                  <p className="text-sm uppercase tracking-[0.2em] text-[#0d7377] font-semibold text-center relative z-10">
+                  <div className="pointer-events-none absolute -top-20 -right-20 h-56 w-56 rounded-full bg-[#afdbdb]/12 blur-3xl" />
+                  <p className="relative z-10 text-center text-sm font-semibold tracking-[0.2em] text-[#0d7377] uppercase">
                     Interview Complete
                   </p>
 
-                  <div className="mt-4 space-y-4 text-sm text-gray-700 leading-relaxed font-medium">
+                  <div className="mt-4 space-y-4 text-sm leading-relaxed font-medium text-gray-700">
                     <p>Thank you. That concludes your interview.</p>
                     <p>
                       Your responses have been recorded for performance evaluation. You may now
@@ -1351,7 +1349,7 @@ export function MockInterviewModePage({
                       setPhase("completed");
                       clearTranscript();
                     }}
-                    className="mt-8 w-full py-3.5 rounded-xl font-semibold text-white bg-[#0d7377] hover:bg-[#0a5a5d] shadow-[0_6px_24px_-6px_rgba(13,115,119,0.5)] transition-all duration-300 hover:-translate-y-0.5"
+                    className="mt-8 w-full rounded-xl bg-[#0d7377] py-3.5 font-semibold text-white shadow-[0_6px_24px_-6px_rgba(13,115,119,0.5)] transition-all duration-300 hover:-translate-y-0.5 hover:bg-[#0a5a5d]"
                   >
                     Continue to Summary
                   </button>
@@ -1361,11 +1359,11 @@ export function MockInterviewModePage({
           )}
 
           {phase === "running" && currentQuestion && (
-            <div className="flex flex-col lg:flex-row gap-6 items-start">
+            <div className="flex flex-col items-start gap-6 lg:flex-row">
               {/* LEFT: Stats column */}
-              <aside className="w-full lg:w-72 shrink-0 flex flex-col gap-3 lg:mt-4">
+              <aside className="flex w-full shrink-0 flex-col gap-3 lg:mt-4 lg:w-72">
                 <div className="rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-5 shadow-[0_4px_20px_-12px_rgba(13,115,119,0.1)]">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#0d7377]">
+                  <p className="text-[10px] font-semibold tracking-[0.18em] text-[#0d7377] uppercase">
                     Progress
                   </p>
                   <div className="mt-2 flex items-baseline gap-1.5">
@@ -1374,7 +1372,7 @@ export function MockInterviewModePage({
                     </span>
                     <span className="text-sm text-slate-400">/ {interviewQuestions.length}</span>
                   </div>
-                  <div className="mt-3 h-1.5 w-full rounded-full bg-[#afdbdb]/30 overflow-hidden">
+                  <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-[#afdbdb]/30">
                     <div
                       className="h-full bg-linear-to-r from-[#0d7377] to-[#afdbdb] transition-all duration-500"
                       style={{ width: `${progressPercent}%` }}
@@ -1388,31 +1386,31 @@ export function MockInterviewModePage({
                 {sidebarStats.map((stat) => (
                   <div
                     key={stat.label}
-                    className="rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-5 flex items-center gap-3 shadow-[0_4px_20px_-12px_rgba(13,115,119,0.08)] hover:border-[#0d7377]/20 transition-colors duration-200"
+                    className="flex items-center gap-3 rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-5 shadow-[0_4px_20px_-12px_rgba(13,115,119,0.08)] transition-colors duration-200 hover:border-[#0d7377]/20"
                   >
-                    <div className="h-10 w-10 shrink-0 inline-flex items-center justify-center rounded-xl bg-[#e8f6f6] text-[#0d7377]">
+                    <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e8f6f6] text-[#0d7377]">
                       <stat.icon className="h-5 w-5" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                      <p className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase">
                         {stat.label}
                       </p>
-                      <p className="text-base font-semibold text-slate-900 truncate">
+                      <p className="truncate text-base font-semibold text-slate-900">
                         {stat.value}
                       </p>
-                      <p className="text-[11px] text-slate-400 truncate">{stat.hint}</p>
+                      <p className="truncate text-[11px] text-slate-400">{stat.hint}</p>
                     </div>
                   </div>
                 ))}
 
                 {/* Avg response card */}
-                <div className="rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-5 flex items-center gap-3 shadow-[0_4px_20px_-12px_rgba(13,115,119,0.08)] hover:border-[#0d7377]/20 transition-colors duration-200">
-                  <div className="h-10 w-10 shrink-0 inline-flex items-center justify-center rounded-xl bg-[#e8f6f6] text-[#0d7377]">
+                <div className="flex items-center gap-3 rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-5 shadow-[0_4px_20px_-12px_rgba(13,115,119,0.08)] transition-colors duration-200 hover:border-[#0d7377]/20">
+                  <div className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#e8f6f6] text-[#0d7377]">
                     <TrendingUp className="h-5 w-5" />
                   </div>
 
                   <div className="min-w-0 flex-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+                    <p className="text-[10px] font-semibold tracking-wider text-slate-500 uppercase">
                       Avg Response
                     </p>
 
@@ -1424,45 +1422,45 @@ export function MockInterviewModePage({
               </aside>
 
               {/* RIGHT: Question + transcript */}
-              <section className="flex-1 min-w-0 w-full flex flex-col">
-                <div className="mb-2 -mt-4 flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-[#e8f6f6] border border-[#0d7377]/15 text-[#0d7377] text-[11px] font-semibold rounded-full uppercase tracking-wider">
+              <section className="flex w-full min-w-0 flex-1 flex-col">
+                <div className="-mt-4 mb-2 flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1.5 rounded-full border border-[#0d7377]/15 bg-[#e8f6f6] px-3 py-1 text-[11px] font-semibold tracking-wider text-[#0d7377] uppercase">
                     {currentQuestion.category}
                   </span>
                 </div>
 
-                <div className="rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-6 sm:p-7 shadow-[0_8px_30px_-16px_rgba(13,115,119,0.18)] relative overflow-hidden">
+                <div className="relative overflow-hidden rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white p-6 shadow-[0_8px_30px_-16px_rgba(13,115,119,0.18)] sm:p-7">
                   {/* Soft radial glow */}
-                  <div className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[#afdbdb]/12 blur-2xl" />
+                  <div className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-[#afdbdb]/12 blur-2xl" />
                   {/* Decorative watermark */}
-                  <div className="pointer-events-none absolute bottom-4 right-4 opacity-[0.035]">
-                    <Mic className="w-24 h-24 text-[#0d7377]" strokeWidth={1} />
+                  <div className="pointer-events-none absolute right-4 bottom-4 opacity-[0.035]">
+                    <Mic className="h-24 w-24 text-[#0d7377]" strokeWidth={1} />
                   </div>
-                  <div className="flex items-center justify-between mb-3 relative z-10">
-                    <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-[#89a4a0]">
+                  <div className="relative z-10 mb-3 flex items-center justify-between">
+                    <p className="text-[10px] font-semibold tracking-[0.2em] text-[#89a4a0] uppercase">
                       Current Question
                     </p>
                     <button
                       onClick={handleReplayQuestion}
                       disabled={isQuestionSpeaking || isListening}
-                      className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg mr-16 text-[11px] font-semibold text-[#0d7377] bg-[#e8f6f6] border border-[#0d7377]/15 hover:bg-[#d6f0f0] hover:border-[#0d7377]/30 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                      className="mr-16 inline-flex items-center gap-1.5 rounded-lg border border-[#0d7377]/15 bg-[#e8f6f6] px-3 py-1.5 text-[11px] font-semibold text-[#0d7377] transition-all hover:border-[#0d7377]/30 hover:bg-[#d6f0f0] disabled:cursor-not-allowed disabled:opacity-40"
                       title="Listen to question again"
                     >
                       <Volume2 className="h-3.5 w-3.5" />
                       Replay
                     </button>
                   </div>
-                  <h3 className="text-2xl sm:text-3xl font-semibold text-slate-900 leading-snug tracking-tight relative z-10">
+                  <h3 className="relative z-10 text-2xl leading-snug font-semibold tracking-tight text-slate-900 sm:text-3xl">
                     {currentQuestion.selectedQuestion || currentQuestion.question}
                   </h3>
                 </div>
 
                 {/* Transcript card */}
-                <div className="mt-5 h-80 flex flex-col rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white shadow-[0_12px_40px_-20px_rgba(13,115,119,0.15)] overflow-hidden">
-                  <div className="flex items-center justify-between px-5 py-3.5 border-b border-[rgba(13,115,119,0.06)] shrink-0 bg-[#f0faf9]/60">
+                <div className="mt-5 flex h-80 flex-col overflow-hidden rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white shadow-[0_12px_40px_-20px_rgba(13,115,119,0.15)]">
+                  <div className="flex shrink-0 items-center justify-between border-b border-[rgba(13,115,119,0.06)] bg-[#f0faf9]/60 px-5 py-3.5">
                     <div className="flex items-center gap-3">
                       <div className="flex items-center gap-2">
-                        <p className="text-xs font-semibold text-slate-700 uppercase tracking-wider">
+                        <p className="text-xs font-semibold tracking-wider text-slate-700 uppercase">
                           {voiceStatusLabel}
                         </p>
 
@@ -1488,7 +1486,7 @@ export function MockInterviewModePage({
                               setIsEditingTranscript(true);
                             }
                           }}
-                          className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all ${
+                          className={`inline-flex items-center gap-1 rounded-lg px-2.5 py-1 text-[11px] font-semibold transition-all ${
                             isEditingTranscript
                               ? "bg-[#0d7377] text-white"
                               : "bg-[#e8f6f6] text-[#0d7377] hover:bg-[#d6f0f0]"
@@ -1507,23 +1505,23 @@ export function MockInterviewModePage({
                           )}
                         </button>
                       )}
-                      <p className="text-[11px] text-slate-400 uppercase tracking-wider hidden sm:block">
+                      <p className="hidden text-[11px] tracking-wider text-slate-400 uppercase sm:block">
                         {isEditingTranscript ? "Editing" : "Live Transcript"}
                       </p>
                     </div>
                   </div>
 
                   <ScrollArea className="flex-1">
-                    <div className="px-5 py-5 space-y-2 pr-7">
+                    <div className="space-y-2 px-5 py-5 pr-7">
                       {isEditingTranscript ? (
                         <textarea
                           value={editedTranscript}
                           onChange={(e) => setEditedTranscript(e.target.value)}
-                          className="w-full h-full min-h-[200px] text-base text-slate-800 leading-relaxed bg-transparent border-0 outline-none focus:outline-none focus-visible:outline-none focus-visible:ring-0 resize-none p-0"
+                          className="h-full min-h-[200px] w-full resize-none border-0 bg-transparent p-0 text-base leading-relaxed text-slate-800 outline-none focus:outline-none focus-visible:ring-0 focus-visible:outline-none"
                           placeholder="Type your answer here..."
                         />
                       ) : editedTranscript || currentTranscript ? (
-                        <p className="text-base text-slate-800 leading-relaxed">
+                        <p className="text-base leading-relaxed text-slate-800">
                           {editedTranscript || currentTranscript}
                         </p>
                       ) : (
@@ -1538,12 +1536,12 @@ export function MockInterviewModePage({
                         </p>
                       )}
                       {interimTranscript && !isEditingTranscript && (
-                        <p className="text-base text-slate-400 italic leading-relaxed">
+                        <p className="text-base leading-relaxed text-slate-400 italic">
                           {interimTranscript}
                         </p>
                       )}
                       {silenceNotice && isListening && (
-                        <p className="text-xs text-slate-500 pt-1">
+                        <p className="pt-1 text-xs text-slate-500">
                           Still recording. Continue speaking or press Next.
                         </p>
                       )}
@@ -1552,7 +1550,7 @@ export function MockInterviewModePage({
                 </div>
 
                 {/* Controls */}
-                <div className="mt-5 flex flex-col sm:flex-row gap-3">
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
                   <Button
                     onClick={() => {
                       if (answeringFlowMode === "pushToTalk") {
@@ -1567,20 +1565,20 @@ export function MockInterviewModePage({
                       handleListeningToggle();
                     }}
                     disabled={micUnsupported || isQuestionSpeaking}
-                    className={`flex-1 h-12 font-semibold transition-all ${
+                    className={`h-12 flex-1 font-semibold transition-all ${
                       isListening
-                        ? "bg-red-600 hover:bg-red-500 text-white shadow-[0_10px_30px_-12px_rgba(220,38,38,0.5)]"
-                        : "bg-[#0d7377] hover:bg-[#0a5a5d] text-white shadow-[0_10px_30px_-12px_rgba(13,115,119,0.55)]"
+                        ? "bg-red-600 text-white shadow-[0_10px_30px_-12px_rgba(220,38,38,0.5)] hover:bg-red-500"
+                        : "bg-[#0d7377] text-white shadow-[0_10px_30px_-12px_rgba(13,115,119,0.55)] hover:bg-[#0a5a5d]"
                     }`}
                   >
                     {isListening ? (
                       <>
-                        <MicOff className="h-4 w-4 mr-2" />
+                        <MicOff className="mr-2 h-4 w-4" />
                         Stop Answering
                       </>
                     ) : (
                       <>
-                        <Mic className="h-4 w-4 mr-2" />
+                        <Mic className="mr-2 h-4 w-4" />
                         Start Answering
                       </>
                     )}
@@ -1592,18 +1590,18 @@ export function MockInterviewModePage({
                       advanceQuestion();
                     }}
                     disabled={isListening || isQuestionSpeaking}
-                    className="flex-1 h-12 bg-white border border-slate-200 hover:bg-slate-50 hover:border-slate-300 text-slate-900 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-12 flex-1 border border-slate-200 bg-white font-semibold text-slate-900 hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                     title={isListening ? "Stop Answering to advance" : "Move to the next question"}
                   >
                     {currentQuestionIndex + 1 >= interviewQuestions.length
                       ? "Finish Interview"
                       : "Next Question"}
-                    <ArrowRight className="h-4 w-4 ml-2" />
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
 
                 {isListening && (
-                  <p className="mt-2 text-[11px] text-slate-400 text-center sm:text-right">
+                  <p className="mt-2 text-center text-[11px] text-slate-400 sm:text-right">
                     {answeringFlowMode === "pushToTalk"
                       ? "Release Space or Stop Answering to enable the Next button."
                       : "Stop Answering to enable the Next button."}

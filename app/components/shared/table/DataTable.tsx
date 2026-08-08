@@ -42,22 +42,22 @@ export function DataTable<T>({
 }: DataTableProps<T>) {
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-teal-600"></div>
       </div>
     );
   }
 
   if (!data || data.length === 0) {
-    return emptyState || <div className="text-center py-12">No data found</div>;
+    return emptyState || <div className="py-12 text-center">No data found</div>;
   }
 
   return (
-    <div className="relative bg-white rounded-xl shadow-lg border border-slate-200 overflow-visible">
+    <div className="relative overflow-visible rounded-xl border border-slate-200 bg-white shadow-lg">
       {refreshing && (
-        <div className="absolute right-4 top-3 z-20 flex items-center gap-2 rounded-full border border-teal-100 bg-white px-3 py-1.5 text-xs font-medium text-teal-700 shadow-sm pointer-events-none">
+        <div className="pointer-events-none absolute top-3 right-4 z-20 flex items-center gap-2 rounded-full border border-teal-100 bg-white px-3 py-1.5 text-xs font-medium text-teal-700 shadow-sm">
           <Loader size="sm" />
-          Updating...
+          <span className="hidden lg:inline">Updating...</span>
         </div>
       )}
 
@@ -69,7 +69,7 @@ export function DataTable<T>({
                 {columns.map((column) => (
                   <TableHead
                     key={column.key}
-                    className={`text-lg font-bold text-slate-800 py-4 ${column.className || ""}`}
+                    className={`py-4 text-lg font-bold text-slate-800 ${column.className || ""}`}
                     style={column.width ? { width: column.width } : {}}
                   >
                     {column.label}
