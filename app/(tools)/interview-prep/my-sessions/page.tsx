@@ -104,9 +104,9 @@ const CompletionBadge = ({ status }: { status: SessionStatus }) => {
     <div className="flex items-center gap-3">
       <div>
         <span
-          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${config.color}`}
+          className={`inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium ${config.color}`}
         >
-          <Icon className="w-3 h-3" />
+          <Icon className="h-3 w-3" />
           {config.label}
         </span>
       </div>
@@ -284,9 +284,10 @@ export default function MyInterviewSessions() {
         const Icon = getCategoryIcon(session.category_slug);
         return (
           <div className="flex items-center">
-            <div className="bg-teal-100 text-teal-800 w-10 h-10 rounded-full flex items-center justify-center mr-3">
-              <Icon className="w-5 h-5 text-teal-600" />
+            <div className="mr-3 flex h-10 w-10 items-center justify-center rounded-full bg-transparent text-teal-800 sm:bg-teal-100">
+              <Icon className="h-5 w-5 text-teal-600" />
             </div>
+
             <div className="text-base font-semibold text-slate-900">
               {getCategoryLabel(session.category_slug)}
             </div>
@@ -338,7 +339,7 @@ export default function MyInterviewSessions() {
         <Button
           size="sm"
           onClick={() => (window.location.href = `/interview-prep/result?sessionId=${session.id}`)}
-          className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white"
+          className="bg-[#0d7377] text-white hover:bg-[#0a5a5d]"
         >
           View Session
         </Button>
@@ -349,7 +350,7 @@ export default function MyInterviewSessions() {
   const emptyState = (
     <div className="overflow-hidden rounded-3xl border border-slate-200 bg-white text-center shadow-sm">
       <div className="mx-auto flex max-w-2xl flex-col items-center px-6 py-16 sm:px-10">
-        <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+        <div className="bg-primary/10 text-primary mb-6 flex h-16 w-16 items-center justify-center rounded-2xl">
           <FileText className="h-8 w-8" />
         </div>
         <h3 className="text-2xl font-semibold tracking-tight text-slate-950">No sessions found</h3>
@@ -359,7 +360,7 @@ export default function MyInterviewSessions() {
         </p>
         <Button
           onClick={() => router.push("/interview-prep?newSession=1")}
-          className="mt-8 h-11 rounded-full bg-primary px-5 text-white shadow-sm shadow-primary/20 hover:bg-primary/90"
+          className="bg-primary shadow-primary/20 hover:bg-primary/90 mt-8 h-11 rounded-full px-5 text-white shadow-sm"
         >
           <Plus className="mr-2 h-5 w-5" />
           Start Your First Session
@@ -371,7 +372,7 @@ export default function MyInterviewSessions() {
   const showInitialLoader = loading && sessions.length === 0;
 
   return (
-    <div className="bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-py site-main-px">
+    <div className="site-main-py site-main-px bg-linear-to-br from-slate-50 to-slate-100 text-gray-800">
       <div className="mt-12">
         <NarrativeModal
           isOpen={showNarrative}
@@ -383,10 +384,10 @@ export default function MyInterviewSessions() {
         />
 
         <header className="mb-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-bold text-slate-900 mb-3">
+          <h1 className="mb-3 text-4xl font-bold text-slate-900 md:text-5xl">
             My Interview Sessions
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          <p className="mx-auto max-w-2xl text-lg text-gray-600">
             Track and manage all your interview preparation sessions
           </p>
 
@@ -402,9 +403,10 @@ export default function MyInterviewSessions() {
           </div>
         </header>
 
-        <div className="flex flex-col sm:flex-row justify-between items-center mb-10 gap-4">
-          <h2 className="text-2xl font-bold text-slate-800">All Sessions</h2>
-          <div className="flex items-center gap-3">
+        <div className="mb-10 flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <h2 className="-mt-8 text-2xl font-bold text-slate-800 sm:mt-0">All Sessions</h2>
+
+          <div className="flex w-full items-center justify-between gap-3 sm:w-auto sm:justify-end">
             {sessions.length > 0 && (
               <FilterPanel
                 fields={[
@@ -431,16 +433,6 @@ export default function MyInterviewSessions() {
                     ],
                     value: selectedStatus,
                   },
-                  // {
-                  //   key: "source",
-                  //   label: "Source",
-                  //   options: [
-                  //     { value: "all", label: "All Sources" },
-                  //     { value: "tool", label: "Tool" },
-                  //     { value: "journey", label: "Journey" },
-                  //   ],
-                  //   value: selectedSource,
-                  // },
                   {
                     key: "time",
                     label: "Created",
@@ -462,11 +454,12 @@ export default function MyInterviewSessions() {
                 totalCount={sessions.length}
               />
             )}
+
             <Button
               onClick={() => router.push("/interview-prep?newSession=1")}
-              className="h-11 rounded-full bg-primary px-5 text-white shadow-sm shadow-primary/20 hover:bg-primary/90"
+              className="bg-primary shadow-primary/20 hover:bg-primary/90 h-11 rounded-full px-5 text-white shadow-sm"
             >
-              <Plus className="w-5 h-5 mr-2" />
+              <Plus className="mr-2 h-5 w-5" />
               New Session
             </Button>
           </div>
@@ -475,17 +468,17 @@ export default function MyInterviewSessions() {
         {!loading && sessions.length > 0 && null}
 
         {showInitialLoader ? (
-          <div className="flex justify-center items-center h-64">
+          <div className="flex h-64 items-center justify-center">
             <Loader size="md" />
           </div>
         ) : error ? (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden text-center py-16">
-            <AlertTriangle className="w-16 h-16 text-red-500 mx-auto mb-6" />
-            <h3 className="text-2xl font-bold text-gray-900 mb-2">Error Loading Sessions</h3>
-            <p className="text-lg text-gray-500 mb-6">{error}</p>
+          <div className="overflow-hidden rounded-xl bg-white py-16 text-center shadow-lg">
+            <AlertTriangle className="mx-auto mb-6 h-16 w-16 text-red-500" />
+            <h3 className="mb-2 text-2xl font-bold text-gray-900">Error Loading Sessions</h3>
+            <p className="mb-6 text-lg text-gray-500">{error}</p>
             <Button
               onClick={() => window.location.reload()}
-              className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white py-4 px-6 text-lg"
+              className="bg-[#0d7377] px-6 py-4 text-lg text-white hover:bg-[#0a5a5d]"
             >
               Try Again
             </Button>
@@ -504,7 +497,7 @@ export default function MyInterviewSessions() {
 
             {/* Pagination */}
             {filteredSessions.length > ITEMS_PER_PAGE && totalPages > 1 && (
-              <div className="py-6 flex justify-center">
+              <div className="flex justify-center py-6">
                 <Pagination
                   currentPage={currentPage}
                   totalItems={filteredSessions.length}

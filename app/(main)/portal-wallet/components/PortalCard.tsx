@@ -7,6 +7,7 @@ interface PortalCardProps {
   icon: React.ReactNode;
   portalUrl: string;
   hasCredentials: boolean;
+  lastUpdated?: string;
   onAction: () => void;
   iconBgColor?: string;
   iconHoverBgColor?: string;
@@ -19,6 +20,7 @@ const PortalCard: React.FC<PortalCardProps> = ({
   icon,
   portalUrl,
   hasCredentials,
+  lastUpdated,
   onAction,
   iconBgColor,
   iconHoverBgColor,
@@ -26,23 +28,26 @@ const PortalCard: React.FC<PortalCardProps> = ({
 }) => {
   return (
     <div
-      className={`mx-auto flex w-full max-w-85 lg:max-w-100 flex-col items-center
-      bg-white rounded-2xl border border-[#e0f0f0] p-6
-      hover:shadow-lg hover:border-[#0d7377]/30 transition-all duration-300 group
-      ${loading ? "opacity-70 pointer-events-none" : ""}`}
+      className={`group relative mx-auto flex w-full max-w-85 flex-col items-center rounded-2xl border border-[#e0f0f0] bg-white p-6 transition-all duration-300 hover:border-[#0d7377]/30 hover:shadow-lg lg:max-w-100 ${
+        loading ? "pointer-events-none opacity-70" : ""
+      }`}
     >
+      {hasCredentials && (
+        <div className="absolute top-[-10px] right-[-32px] inline-flex items-center gap-1.5 rounded-full border border-[#f3ddb0] bg-[#fff7e6] px-2.5 py-1">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#d97706]" />
+          <span className="text-[10px] font-semibold text-[#92400e]">Credentials Stored</span>
+        </div>
+      )}
       {/* Icon */}
       <div
-        className={`w-16 h-16 rounded-2xl flex items-center justify-center mb-5 
-  text-white transition-all duration-300 py-2 px-1
-  ${iconBgColor} ${iconHoverBgColor} group-hover:scale-105`}
+        className={`mb-5 flex h-16 w-16 items-center justify-center rounded-2xl px-1 py-2 text-white transition-all duration-300 ${iconBgColor} ${iconHoverBgColor} group-hover:scale-105`}
       >
-        <div className="w-16 h-16 flex items-center justify-center">{icon}</div>
+        <div className="flex h-16 w-16 items-center justify-center">{icon}</div>
       </div>
 
       {/* Title & description */}
-      <h3 className="text-[18px] font-bold text-[#0a1128] mb-1.5 text-center">{title}</h3>
-      <p className="text-[13px] text-[#67737e] text-center leading-relaxed mb-5 min-h-10">
+      <h3 className="mb-1.5 text-center text-[18px] font-bold text-[#0a1128]">{title}</h3>
+      <p className="mb-5 min-h-10 text-center text-[13px] leading-relaxed text-[#67737e]">
         {description}
       </p>
 
@@ -51,18 +56,18 @@ const PortalCard: React.FC<PortalCardProps> = ({
         href={portalUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#0d7377] hover:text-[#0a5a5d] transition-colors mb-6"
+        className="mb-6 inline-flex items-center gap-1.5 text-[13px] font-semibold text-[#0d7377] transition-colors hover:text-[#0a5a5d]"
       >
         Visit Portal <ExternalLink size={13} />
       </a>
 
       {/* Divider */}
-      <div className="w-full h-px bg-[#e0f0f0] mb-5" />
-
-      {hasCredentials && (
-        <div className="mb-4 inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200">
-          <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-          <span className="text-[11px] font-semibold text-emerald-700">Credentials Stored</span>
+      <div className="mb-5 h-px w-full bg-[#e0f0f0]" />
+      {lastUpdated && (
+        <div className="mb-4 inline-flex items-center gap-2 rounded-full border border-[#e0f0f0] bg-[#f9fafb] px-3 py-1">
+          <span className="text-[11px] font-semibold text-[#6b7280]">
+            Last updated: {lastUpdated}
+          </span>
         </div>
       )}
 
@@ -70,11 +75,11 @@ const PortalCard: React.FC<PortalCardProps> = ({
       <button
         onClick={onAction}
         disabled={loading}
-        className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-[13px] font-semibold transition-all duration-200 cursor-pointer shadow-sm hover:shadow-md bg-primary text-white hover:bg-[#0a5a5d]"
+        className="bg-primary flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl py-3 text-[13px] font-semibold text-white shadow-sm transition-all duration-200 hover:bg-[#0a5a5d] hover:shadow-md"
       >
         {loading ? (
           <>
-            <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
           </>
         ) : (
           <>

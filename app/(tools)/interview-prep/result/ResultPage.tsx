@@ -6,7 +6,7 @@ import { msg, E } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Textarea } from "@/components/ui/textarea";
-import { BookOpen, Check, Info, Loader2, Mic, Shuffle, X, Zap } from "lucide-react";
+import { BookOpen, Check, Info, Loader2, Menu, Mic, Shuffle, X, Zap } from "lucide-react";
 import { InterviewPrepOutput, GeneratedQuestion } from "@/lib/interview-prep";
 import { RapidFireModePage } from "../rapid-fire/RapidFireModePage";
 import { MockInterviewModePage } from "../mock/MockInterviewModePage";
@@ -17,6 +17,7 @@ import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { getEntitlement } from "@/lib/entitlements/config";
 import { InterviewModeTabs } from "@/app/components/interview-prep/InterviewModeTabs";
+import { MobileBottomSheet } from "@/app/components/shared/table/MobileBottomSheet";
 
 interface ResultPageProps {
   sessionId: string;
@@ -31,6 +32,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
   const [selectedQuestion, setSelectedQuestion] = useState<GeneratedQuestion | null>(null);
   const [isFlipped, setIsFlipped] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [isQuestionsTrayOpen, setIsQuestionsTrayOpen] = useState(false);
 
   const [showRapidFirePage, setShowRapidFirePage] = useState(false);
   const [showMockInterviewPage, setShowMockInterviewPage] = useState(false);
@@ -394,7 +396,7 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
               onMock={handleMockInterviewPageStart}
             />
 
-            <h2 className="mb-2 text-3xl font-bold text-slate-900">
+            <h2 className="my-2 text-3xl font-bold text-slate-900">
               {mode === "prep"
                 ? "Interview Preparation Flashcards"
                 : mode === "rapid"
@@ -423,22 +425,51 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
           )}
 
           {/* Action Button - Only show in prep mode */}
+          {/* Action Buttons - Only show in prep mode */}
           {mode === "prep" && (
-            <div className="mb-6 flex justify-center gap-4">
-              <Button
-                onClick={handleShuffle}
-                className="flex items-center gap-2 rounded-lg bg-[#6b5b7b] px-6 py-2 font-semibold text-white shadow-[0_4px_16px_-4px_rgba(107,91,123,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#5a4a6a]"
-              >
-                <Shuffle className="h-4 w-4" />
-                Shuffle Questions
-              </Button>
+            <div className="mb-6">
+              {/* Mobile + Tablet */}
+              <div className="flex items-center justify-between lg:hidden">
+                {/* Questions */}
+                <button
+                  type="button"
+                  onClick={() => setIsQuestionsTrayOpen(true)}
+                  aria-label="Open questions"
+                  className="inline-flex items-center gap-2 rounded-lg border border-[#dceaea] bg-white px-3.5 py-2 text-sm font-semibold text-[#0d7377] shadow-sm transition-all hover:border-[#0d7377]/30 hover:shadow-md active:scale-[0.98]"
+                >
+                  <Menu className="h-4 w-4" />
+                  <span>Questions</span>
+                </button>
+
+                {/* Shuffle */}
+                <button
+                  type="button"
+                  onClick={handleShuffle}
+                  aria-label="Shuffle questions"
+                  className="flex px-4 py-1 gap-2 items-center justify-center rounded-lg bg-[#6b5b7b] text-white shadow-[0_4px_16px_-4px_rgba(107,91,123,0.35)] transition-all duration-200 hover:bg-[#5a4a6a] active:scale-95"
+                >
+                  <Shuffle className="h-4 w-4" />
+                  Shuffle
+                </button>
+              </div>
+
+              {/* Desktop */}
+              <div className="hidden justify-center gap-4 lg:flex">
+                <Button
+                  onClick={handleShuffle}
+                  className="flex items-center gap-2 rounded-lg bg-[#6b5b7b] px-6 py-2 font-semibold text-white shadow-[0_4px_16px_-4px_rgba(107,91,123,0.35)] transition-all duration-200 hover:-translate-y-0.5 hover:bg-[#5a4a6a]"
+                >
+                  <Shuffle className="h-4 w-4" />
+                  Shuffle Questions
+                </Button>
+              </div>
             </div>
           )}
 
           <div className="flex flex-col gap-4 lg:flex-row lg:gap-6">
             {/* Questions Sidebar - Only in prep mode */}
             {mode === "prep" && !sidebarCollapsed && (
-              <div className="px-4 lg:w-1/3 lg:px-0">
+              <div className="hidden px-4 lg:block lg:w-1/3 lg:px-0">
                 <div className="sticky top-6 flex h-87.5 flex-col rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white/90 p-4 shadow-[0_8px_30px_rgba(13,115,119,0.08)] backdrop-blur-sm transition-shadow duration-200 sm:h-100 lg:h-126">
                   <div className="mb-4 flex items-center justify-between border-b border-[rgba(13,115,119,0.08)] pb-3">
                     <h3 className="flex items-center gap-2 text-base font-bold text-slate-800">
@@ -526,6 +557,51 @@ export const ResultPage = ({ sessionId, results, onRestart }: ResultPageProps) =
                 </button>
               </div>
             )}
+
+            <MobileBottomSheet
+              isOpen={isQuestionsTrayOpen && mode === "prep"}
+              onClose={() => setIsQuestionsTrayOpen(false)}
+              title={`Questions (${questionsList.length})`}
+              height="80vh"
+            >
+              <div className="space-y-3">
+                {questionsList.map((item: GeneratedQuestion, index: number) => (
+                  <div
+                    key={index}
+                    onClick={() => {
+                      handleQuestionSelect(item);
+                      setIsQuestionsTrayOpen(false);
+                    }}
+                    className={`group flex w-full cursor-pointer gap-3 rounded-lg border p-4 transition-all duration-200 ${
+                      selectedQuestion?.id === item.id
+                        ? "border-2 border-[#faf8fb] bg-[#cdadcc] shadow-[0_4px_16px_-6px_rgba(107,91,123,0.2)]"
+                        : "border-[#f0e7f1] bg-white hover:border-[#cdadcc] hover:bg-[#faf8fb]"
+                    }`}
+                  >
+                    {/* Question Number */}
+                    <span
+                      className={`mt-1 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white ${
+                        selectedQuestion?.id === item.id ? "bg-[#6b5b7b]" : "bg-[#89a4a0]"
+                      }`}
+                    >
+                      {index + 1}
+                    </span>
+
+                    {/* Question */}
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm leading-relaxed font-medium text-slate-900">
+                        {item.selectedQuestion || item.question}
+                      </p>
+
+                      <span className="mt-2 inline-block rounded-full bg-[#faf8fb] px-2.5 py-1 text-[10px] font-semibold text-[#6b5b7b]">
+                        {item.category}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </MobileBottomSheet>
+
             {/* Flashcard Area - Only in prep mode */}
             {mode === "prep" && (
               <div

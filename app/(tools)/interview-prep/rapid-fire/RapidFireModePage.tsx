@@ -699,7 +699,7 @@ export const RapidFireModePage = ({
 
   if (isHydratingProgress) {
     return (
-      <div className="flex justify-center items-center my-48">
+      <div className="my-48 flex items-center justify-center">
         <Loader size="md" text="Restoring session..." />
       </div>
     );
@@ -707,16 +707,16 @@ export const RapidFireModePage = ({
 
   if (!currentQuestion) {
     return (
-      <div className="interview-dots-bg bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 site-main-py site-main-px min-h-screen relative overflow-hidden">
-        <div className="pointer-events-none absolute top-20 -left-32 w-96 h-96 rounded-full bg-[#afdbdb]/12 blur-3xl" />
-        <div className="pointer-events-none absolute bottom-32 -right-32 w-80 h-80 rounded-full bg-[#cdadcc]/10 blur-3xl" />
+      <div className="interview-dots-bg site-main-py site-main-px relative min-h-screen overflow-hidden bg-linear-to-br from-[#e8f6f6] via-white to-slate-50">
+        <div className="pointer-events-none absolute top-20 -left-32 h-96 w-96 rounded-full bg-[#afdbdb]/12 blur-3xl" />
+        <div className="pointer-events-none absolute -right-32 bottom-32 h-80 w-80 rounded-full bg-[#cdadcc]/10 blur-3xl" />
         <div className="">
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-[0_8px_30px_rgba(13,115,119,0.08)] p-8 border border-[rgba(13,115,119,0.08)]">
-            <h3 className="text-xl font-bold mb-4">No Questions Available</h3>
-            <p className="text-slate-600 mb-6">
+          <div className="rounded-xl border border-[rgba(13,115,119,0.08)] bg-white/90 p-8 shadow-[0_8px_30px_rgba(13,115,119,0.08)] backdrop-blur-sm">
+            <h3 className="mb-4 text-xl font-bold">No Questions Available</h3>
+            <p className="mb-6 text-slate-600">
               No applicable questions found for rapid fire mode.
             </p>
-            <div className="flex gap-3 justify-center">
+            <div className="flex justify-center gap-3">
               <Button onClick={onSwitchToPrep} className="bg-[#0d7377] hover:bg-[#0a5a5d]">
                 Switch to Prep Mode
               </Button>
@@ -739,13 +739,13 @@ export const RapidFireModePage = ({
         <motion.div
           initial={{ scale: 0.94, opacity: 0, y: 16 }}
           animate={{ scale: 1, opacity: 1, y: 0 }}
-          className="relative w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)] text-center"
+          className="relative w-full max-w-md rounded-3xl border border-slate-200 bg-white p-8 text-center shadow-[0_30px_80px_-30px_rgba(15,23,42,0.35)]"
         >
-          <div className="w-16 h-16 rounded-2xl bg-[#0d7377]/10 text-[#0d7377] flex items-center justify-center mx-auto mb-6">
-            <Zap className="w-8 h-8" />
+          <div className="mx-auto mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-[#0d7377]/10 text-[#0d7377]">
+            <Zap className="h-8 w-8" />
           </div>
-          <h3 className="text-2xl font-bold text-slate-900 mb-3">Restoring Rapid Fire</h3>
-          <p className="text-slate-500 leading-relaxed">
+          <h3 className="mb-3 text-2xl font-bold text-slate-900">Restoring Rapid Fire</h3>
+          <p className="leading-relaxed text-slate-500">
             Resuming your last round and restoring timer state.
           </p>
         </motion.div>
@@ -761,13 +761,13 @@ export const RapidFireModePage = ({
         description="Upgrade to Basic or above to view your readiness score, question breakdown, and performance review."
         minHeight="400px"
       >
-        <div className="interview-dots-bg bg-linear-to-br from-[#e8f6f6] via-white to-slate-50 site-main-py site-main-px min-h-screen relative overflow-hidden">
+        <div className="interview-dots-bg site-main-py site-main-px relative min-h-screen overflow-hidden bg-linear-to-br from-[#e8f6f6] via-white to-slate-50">
           {/* Ambient gradient blobs */}
-          <div className="pointer-events-none absolute top-20 -left-32 w-96 h-96 rounded-full bg-[#afdbdb]/12 blur-3xl" />
-          <div className="pointer-events-none absolute bottom-32 -right-32 w-80 h-80 rounded-full bg-[#cdadcc]/10 blur-3xl" />
+          <div className="pointer-events-none absolute top-20 -left-32 h-96 w-96 rounded-full bg-[#afdbdb]/12 blur-3xl" />
+          <div className="pointer-events-none absolute -right-32 bottom-32 h-80 w-80 rounded-full bg-[#cdadcc]/10 blur-3xl" />
           <div className="relative z-10">
-            <div className="text-center mb-8">
-              <h1 className="text-3xl font-bold text-slate-900 mb-2">
+            <div className="mb-8 text-center">
+              <h1 className="mb-2 text-3xl font-bold text-slate-900">
                 {screen === "completed" ? "Training Complete!" : "Round Complete"}
               </h1>
               <p className="text-slate-600">
@@ -777,20 +777,20 @@ export const RapidFireModePage = ({
               </p>
             </div>
 
-            <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-[0_8px_30px_rgba(13,115,119,0.1)] p-8 border border-[rgba(13,115,119,0.08)]">
-              <div className="text-center mb-8">
-                <div className="relative inline-block mb-6">
-                  <div className="w-40 h-40 rounded-full border-8 border-[#afdbdb] flex items-center justify-center bg-linear-to-br from-[#f0faf9] to-[#afdbdb]/20">
+            <div className="rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white/90 p-8 shadow-[0_8px_30px_rgba(13,115,119,0.1)] backdrop-blur-sm">
+              <div className="mb-8 text-center">
+                <div className="relative mb-6 inline-block">
+                  <div className="flex h-40 w-40 items-center justify-center rounded-full border-8 border-[#afdbdb] bg-linear-to-br from-[#f0faf9] to-[#afdbdb]/20">
                     <div className="text-center">
                       <span className="text-4xl font-bold text-[#0d7377]">
                         {roundScore ?? totalScore ?? 0}%
                       </span>
-                      <div className="text-sm text-[#0d7377] font-medium mt-1">Readiness Score</div>
+                      <div className="mt-1 text-sm font-medium text-[#0d7377]">Readiness Score</div>
                     </div>
                   </div>
-                  <div className="absolute -bottom-2 left-1/2 transform -translate-x-1/2">
+                  <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 transform">
                     <div
-                      className={`px-4 py-2 rounded-full text-sm font-semibold ${
+                      className={`rounded-full px-4 py-2 text-sm font-semibold ${
                         (roundScore ?? totalScore ?? 0) >= 80
                           ? "bg-green-100 text-green-800"
                           : (roundScore ?? totalScore ?? 0) >= 60
@@ -808,7 +808,7 @@ export const RapidFireModePage = ({
                 </div>
 
                 <div className="space-y-3">
-                  <p className="text-lg text-slate-700 font-medium">
+                  <p className="text-lg font-medium text-slate-700">
                     {(roundScore ?? totalScore ?? 0) >= 80
                       ? "Outstanding interview preparation!"
                       : (roundScore ?? totalScore ?? 0) >= 60
@@ -827,11 +827,11 @@ export const RapidFireModePage = ({
                     </span>{" "}
                     possible
                   </p>
-                  <div className="flex justify-center gap-2 mt-4">
-                    <div className="bg-slate-100 px-3 py-1 rounded-full text-sm">
+                  <div className="mt-4 flex justify-center gap-2">
+                    <div className="rounded-full bg-slate-100 px-3 py-1 text-sm">
                       Questions: {shuffledQuestions.length}
                     </div>
-                    <div className="bg-slate-100 px-3 py-1 rounded-full text-sm">
+                    <div className="rounded-full bg-slate-100 px-3 py-1 text-sm">
                       Time: {shuffledQuestions.length * 10}s
                     </div>
                   </div>
@@ -839,22 +839,22 @@ export const RapidFireModePage = ({
               </div>
 
               <>
-                <div className="grid grid-cols-3 gap-4 mb-8">
-                  <div className="text-center p-4 bg-[#0d7377]/8 rounded-lg border border-[#0d7377]/15">
+                <div className="mb-8 grid grid-cols-3 gap-4">
+                  <div className="rounded-lg border border-[#0d7377]/15 bg-[#0d7377]/8 p-4 text-center">
                     <div className="text-2xl font-bold text-[#0d7377]">
                       {roundSummary?.coveredCount ??
                         questionResponses.filter((r) => r.response === "covered").length}
                     </div>
                     <div className="text-sm text-[#0d7377]/80">Covered Well</div>
                   </div>
-                  <div className="text-center p-4 bg-[#cdadcc]/12 rounded-lg border border-[#cdadcc]/25">
+                  <div className="rounded-lg border border-[#cdadcc]/25 bg-[#cdadcc]/12 p-4 text-center">
                     <div className="text-2xl font-bold text-[#6b5b7b]">
                       {roundSummary?.partialCount ??
                         questionResponses.filter((r) => r.response === "partial").length}
                     </div>
                     <div className="text-sm text-[#6b5b7b]/80">Partial Coverage</div>
                   </div>
-                  <div className="text-center p-4 bg-[#db8090]/10 rounded-lg border border-[#db8090]/20">
+                  <div className="rounded-lg border border-[#db8090]/20 bg-[#db8090]/10 p-4 text-center">
                     <div className="text-2xl font-bold text-[#9e4a5a]">
                       {roundSummary?.missedCount ??
                         questionResponses.filter((r) => r.response === "missed").length}
@@ -864,8 +864,8 @@ export const RapidFireModePage = ({
                 </div>
 
                 {skippedQuestions > 0 && (
-                  <div className="text-center mb-6">
-                    <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-full">
+                  <div className="mb-6 text-center">
+                    <div className="inline-flex items-center gap-2 rounded-full bg-slate-100 px-4 py-2">
                       <span className="text-slate-600">Questions skipped:</span>
                       <span className="font-bold text-slate-800">{skippedQuestions}</span>
                     </div>
@@ -874,14 +874,14 @@ export const RapidFireModePage = ({
 
                 {/* Reviewable Progress Bar */}
                 <div className="mb-8">
-                  <h3 className="text-lg font-semibold text-slate-900 mb-4">Performance Review</h3>
-                  <div className="mt-4 p-3 bg-[#afdbdb]/30 rounded-lg border border-[#afdbdb]/50">
+                  <h3 className="mb-4 text-lg font-semibold text-slate-900">Performance Review</h3>
+                  <div className="mt-4 rounded-lg border border-[#afdbdb]/50 bg-[#afdbdb]/30 p-3">
                     <p className="text-sm text-[#0d7377]">
                       <span className="font-medium">Note:</span> Click on any of the color-coded
                       tabs to review the Q&A.
                     </p>
                   </div>
-                  <div className="flex gap-1 mb-4 mt-2">
+                  <div className="mt-2 mb-4 flex gap-1">
                     {shuffledQuestions.map((_, index) => {
                       const response = questionResponses.find((r) => r.index === index);
                       let bgColor = "bg-[#89a4a0]/30"; // Muted for unanswered/skipped
@@ -906,7 +906,7 @@ export const RapidFireModePage = ({
                       return (
                         <div
                           key={index}
-                          className={`h-3 flex-1 rounded-sm cursor-pointer transition-all hover:opacity-80 ${bgColor}`}
+                          className={`h-3 flex-1 cursor-pointer rounded-sm transition-all hover:opacity-80 ${bgColor}`}
                           onClick={() => {
                             const questionResp = questionResponses.find((r) => r.index === index);
                             if (questionResp) {
@@ -918,21 +918,24 @@ export const RapidFireModePage = ({
                       );
                     })}
                   </div>
-                  <div className="flex justify-center gap-6 text-sm text-slate-600">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-x-5 gap-y-3 max-w-3xl mx-auto text-sm text-slate-600">
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-[#0d7377] rounded-sm"></div>
+                      <div className="h-3 w-3 shrink-0 rounded-sm bg-green-500" />
                       <span>Covered Well</span>
                     </div>
+
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-[#cdadcc] rounded-sm"></div>
+                      <div className="h-3 w-3 shrink-0 rounded-sm bg-amber-500" />
                       <span>Partial Coverage</span>
                     </div>
+
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-[#db8090] rounded-sm"></div>
+                      <div className="h-3 w-3 shrink-0 rounded-sm bg-red-500" />
                       <span>Missed</span>
                     </div>
+
                     <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-[#89a4a0]/50 rounded-sm"></div>
+                      <div className="h-3 w-3 shrink-0 rounded-sm bg-gray-400" />
                       <span>Skipped</span>
                     </div>
                   </div>
@@ -940,16 +943,16 @@ export const RapidFireModePage = ({
 
                 {/* Review Question Card */}
                 {reviewQuestion && (
-                  <div className="mb-8 bg-white/90 backdrop-blur-sm rounded-2xl p-6 border border-[rgba(13,115,119,0.08)] shadow-[0_8px_30px_rgba(13,115,119,0.08)]">
-                    <div className="flex justify-between items-center mb-4">
-                      <h4 className="font-semibold text-slate-900 text-lg">Question Review</h4>
+                  <div className="mb-8 rounded-2xl border border-[rgba(13,115,119,0.08)] bg-white/90 p-6 shadow-[0_8px_30px_rgba(13,115,119,0.08)] backdrop-blur-sm">
+                    <div className="mb-4 flex items-center justify-between">
+                      <h4 className="text-lg font-semibold text-slate-900">Question Review</h4>
                       <Button variant="ghost" size="sm" onClick={() => setReviewQuestion(null)}>
                         Close
                       </Button>
                     </div>
                     <div
-                      className={`relative w-full h-72 cursor-pointer transition-transform duration-700 ease-out-cubic ${
-                        isReviewFlipped ? "transform rotate-y-180" : ""
+                      className={`ease-out-cubic relative h-72 w-full cursor-pointer transition-transform duration-700 ${
+                        isReviewFlipped ? "rotate-y-180 transform" : ""
                       }`}
                       style={{
                         transformStyle: "preserve-3d",
@@ -959,39 +962,39 @@ export const RapidFireModePage = ({
                     >
                       {/* Front of Card - Question */}
                       <div
-                        className="absolute inset-0 backface-hidden rounded-xl flex flex-col justify-between text-slate-900 shadow-[0_8px_30px_rgba(13,115,119,0.1)] border border-[rgba(13,115,119,0.08)] overflow-hidden"
+                        className="absolute inset-0 flex flex-col justify-between overflow-hidden rounded-xl border border-[rgba(13,115,119,0.08)] text-slate-900 shadow-[0_8px_30px_rgba(13,115,119,0.1)] backface-hidden"
                         style={{
                           background:
                             "linear-gradient(145deg, #ffffff 0%, #fdfbf8 35%, #faf6f0 70%, #f7f1e8 100%)",
                         }}
                       >
                         {/* Soft radial glow */}
-                        <div className="pointer-events-none absolute -top-16 -right-16 w-48 h-48 rounded-full bg-[#afdbdb]/15 blur-2xl" />
+                        <div className="pointer-events-none absolute -top-16 -right-16 h-48 w-48 rounded-full bg-[#afdbdb]/15 blur-2xl" />
                         {/* Decorative watermark */}
-                        <div className="pointer-events-none absolute bottom-6 right-6 opacity-[0.035]">
-                          <Zap className="w-28 h-28 text-[#0d7377]" strokeWidth={1} />
+                        <div className="pointer-events-none absolute right-6 bottom-6 opacity-[0.035]">
+                          <Zap className="h-28 w-28 text-[#0d7377]" strokeWidth={1} />
                         </div>
-                        <div className="p-6 flex flex-col justify-between flex-1 relative z-10">
+                        <div className="relative z-10 flex flex-1 flex-col justify-between p-6">
                           <div>
-                            <div className="flex justify-between items-start mb-4">
-                              <span className="bg-[#f3ede7] text-[#9c6f38] px-2 py-1 rounded-full text-xs font-semibold">
+                            <div className="mb-4 flex items-start justify-between">
+                              <span className="rounded-full bg-[#f3ede7] px-2 py-1 text-xs font-semibold text-[#9c6f38]">
                                 {reviewQuestion.category}
                               </span>
-                              <span className="text-[#89a4a0] text-xs bg-[#89a4a0]/10 px-2 py-1 rounded-full font-medium">
+                              <span className="hidden md:block rounded-full bg-[#89a4a0]/10 px-2 py-1 text-xs font-medium text-[#89a4a0]">
                                 Review Mode
                               </span>
                             </div>
-                            <h3 className="text-lg font-bold leading-tight text-slate-800">
+                            <h3 className="text-lg leading-tight font-bold text-slate-800">
                               {reviewQuestion.selectedQuestion || reviewQuestion.question}
                             </h3>
                           </div>
                           <div className="text-center">
-                            <p className="text-[#89a4a0] text-sm">
+                            <p className="text-sm text-[#89a4a0]">
                               Click to see answer and guidance
                             </p>
-                            <div className="flex justify-center mt-2">
-                              <div className="w-6 h-6 border-2 border-[#0d7377]/30 rounded-full animate-bounce flex items-center justify-center">
-                                <div className="w-1.5 h-1.5 bg-[#0d7377]/50 rounded-full"></div>
+                            <div className="mt-2 flex justify-center">
+                              <div className="flex h-6 w-6 animate-bounce items-center justify-center rounded-full border-2 border-[#0d7377]/30">
+                                <div className="h-1.5 w-1.5 rounded-full bg-[#0d7377]/50"></div>
                               </div>
                             </div>
                           </div>
@@ -999,49 +1002,49 @@ export const RapidFireModePage = ({
                       </div>
 
                       {/* Back of Card - Answer & Guidance */}
-                      <div className="absolute inset-0 backface-hidden rotate-y-180 bg-linear-to-br from-teal-600 to-teal-800 rounded-xl p-6 flex flex-col text-white shadow-lg border border-teal-500/30">
-                        <div className="flex justify-between items-start mb-4">
-                          <span className="bg-white/20 px-2 py-1 rounded text-xs font-medium">
+                      <div className="absolute inset-0 flex rotate-y-180 flex-col rounded-xl border border-teal-500/30 bg-linear-to-br from-teal-600 to-teal-800 p-6 text-white shadow-lg backface-hidden">
+                        <div className="mb-4 flex items-start justify-between">
+                          <span className="rounded bg-white/20 px-2 py-1 text-xs font-medium">
                             Answer & Guidance
                           </span>
                         </div>
 
-                        <div className="space-y-4 flex-1 overflow-y-auto pr-2 scrollbar-premium">
+                        <div className="scrollbar-premium flex-1 space-y-4 overflow-y-auto pr-2">
                           {savedAnswers[reviewQuestion.id] && (
                             <div>
-                              <h4 className="text-emerald-200 font-semibold mb-2 flex items-center gap-2 text-sm">
-                                <span className="w-2 h-2 bg-emerald-200 rounded-full"></span>
+                              <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-200">
+                                <span className="h-2 w-2 rounded-full bg-emerald-200"></span>
                                 Your Saved Answer
                               </h4>
-                              <p className="text-slate-100 text-sm leading-relaxed">
+                              <p className="text-sm leading-relaxed text-slate-100">
                                 {savedAnswers[reviewQuestion.id]}
                               </p>
                             </div>
                           )}
 
                           <div>
-                            <h4 className="text-teal-200 font-semibold mb-2 flex items-center gap-2 text-sm">
-                              <span className="w-2 h-2 bg-teal-200 rounded-full"></span>
+                            <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-teal-200">
+                              <span className="h-2 w-2 rounded-full bg-teal-200"></span>
                               Sample Answer
                             </h4>
-                            <p className="text-slate-100 text-sm leading-relaxed">
+                            <p className="text-sm leading-relaxed text-slate-100">
                               {reviewQuestion.sampleAnswer}
                             </p>
                           </div>
 
                           <div>
-                            <h4 className="text-blue-200 font-semibold mb-2 flex items-center gap-2 text-sm">
-                              <span className="w-2 h-2 bg-blue-200 rounded-full"></span>
+                            <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-blue-200">
+                              <span className="h-2 w-2 rounded-full bg-blue-200"></span>
                               Guidance
                             </h4>
-                            <p className="text-slate-200 text-sm leading-relaxed">
+                            <p className="text-sm leading-relaxed text-slate-200">
                               {reviewQuestion.guidance}
                             </p>
                           </div>
                         </div>
 
-                        <div className="text-center mt-4">
-                          <p className="text-slate-300 text-xs">Click to flip back</p>
+                        <div className="mt-4 text-center">
+                          <p className="text-xs text-slate-300">Click to flip back</p>
                         </div>
                       </div>
                     </div>
@@ -1049,18 +1052,18 @@ export const RapidFireModePage = ({
                 )}
               </>
 
-              <div className="flex gap-3 justify-center">
+              <div className="flex justify-center gap-3">
                 <Button
                   onClick={() => {
                     onExit();
                   }}
-                  className="bg-[#0d7377] hover:bg-[#0a5a5d] cursor-pointer shadow-[0_4px_16px_-4px_rgba(13,115,119,0.4)] transition-all duration-200"
+                  className="cursor-pointer bg-[#0d7377] shadow-[0_4px_16px_-4px_rgba(13,115,119,0.4)] transition-all duration-200 hover:bg-[#0a5a5d]"
                 >
                   Continue Training Later
                 </Button>
                 <Button
                   onClick={startNextRound}
-                  className="bg-[#6b5b7b] hover:bg-[#7d6d8d] cursor-pointer shadow-[0_4px_16px_-4px_rgba(107,91,123,0.4)] transition-all duration-200"
+                  className="cursor-pointer bg-[#6b5b7b] shadow-[0_4px_16px_-4px_rgba(107,91,123,0.4)] transition-all duration-200 hover:bg-[#7d6d8d]"
                   disabled={screen === "completed"}
                 >
                   Start Next Round
