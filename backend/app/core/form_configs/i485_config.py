@@ -285,7 +285,7 @@ FIELD_MAPPING = {
     # PAGE 7: Part 2 (Asylee/Refugee, Crime Victim, Special Programs, Additional Options)
     # ============================================
     # Page 7 Header & Barcode
-    "p7_barcode": "form1[0].#pageSet[0].Page1[6].PDF417BarCode2[0]",
+    # "p7_barcode": "form1[0].#pageSet[0].Page1[6].PDF417BarCode2[0]",
     "p7_header_alien_number": "form1[0].#subform[6].AlienNumber[6]",
 
     # Line 3.d: Asylee or Refugee
@@ -329,7 +329,7 @@ FIELD_MAPPING = {
     # PAGE 8: Part 3 (Affidavit of Support Exemption) & Part 4 (Additional Info & Employment)
     # ============================================
     # Page 8 Header & Barcode
-    "p8_barcode": "form1[0].#pageSet[0].Page1[7].PDF417BarCode2[0]",
+    # "p8_barcode": "form1[0].#pageSet[0].Page1[7].PDF417BarCode2[0]",
     "p8_header_alien_number": "form1[0].#subform[7].AlienNumber[7]",
 
     # Part 3 Item 1: Request for Exemption (Form I-864)
@@ -367,7 +367,7 @@ FIELD_MAPPING = {
     # PAGE 9: Part 4 (Employment 1 Address/Dates & Foreign Employer) & Part 5 (Parent 1)
     # ============================================
     # Page 9 Header & Barcode
-    "p9_barcode": "form1[0].#pageSet[0].Page1[8].PDF417BarCode2[0]",
+    # "p9_barcode": "form1[0].#pageSet[0].Page1[8].PDF417BarCode2[0]",
     "p9_header_alien_number": "form1[0].#subform[8].AlienNumber[8]",
 
     # Part 4 Item 7 Continued: Employer 1 Address & Dates
@@ -417,7 +417,7 @@ FIELD_MAPPING = {
     # PAGE 10: Part 5 (Parent 1 Country & Parent 2) & Part 6 (Marital History & Current Spouse)
     # ============================================
     # Page 10 Header & Barcode
-    "p10_barcode": "form1[0].#pageSet[0].Page1[9].PDF417BarCode2[0]",
+    # "p10_barcode": "form1[0].#pageSet[0].Page1[9].PDF417BarCode2[0]",
     "p10_header_alien_number": "form1[0].#subform[9].AlienNumber[9]",
 
     # Part 5 Parent 1 Country of Birth
@@ -474,7 +474,7 @@ FIELD_MAPPING = {
     # PAGE 11: Part 6 (Current Marriage Details & Prior Marriage 1)
     # ============================================
     # Page 11 Header & Barcode
-    "p11_barcode": "form1[0].#pageSet[0].Page1[10].PDF417BarCode2[0]",
+    # "p11_barcode": "form1[0].#pageSet[0].Page1[10].PDF417BarCode2[0]",
     "p11_header_alien_number": "form1[0].#subform[10].AlienNumber[10]",
 
     # Part 6 Item 9: Place & Date of Marriage to Current Spouse
@@ -525,7 +525,7 @@ FIELD_MAPPING = {
     # PAGE 12: Part 7 (Information About Your Children)
     # ============================================
     # Page 12 Header & Barcode
-    "p12_barcode": "form1[0].#pageSet[0].Page1[11].PDF417BarCode2[0]",
+    # "p12_barcode": "form1[0].#pageSet[0].Page1[11].PDF417BarCode2[0]",
     "p12_header_alien_number": "form1[0].#subform[11].AlienNumber[11]",
 
     # Part 7 Item 1: Total Children Count
@@ -557,7 +557,7 @@ FIELD_MAPPING = {
     # PAGE 13: Part 8 (Biographic Info) & Part 9 (Eligibility & Organizations 1 & 2)
     # ============================================
     # Page 13 Header & Barcode
-    "p13_barcode": "form1[0].#pageSet[0].Page1[12].PDF417BarCode2[0]",
+    # "p13_barcode": "form1[0].#pageSet[0].Page1[12].PDF417BarCode2[0]",
     "p13_header_alien_number": "form1[0].#subform[12].AlienNumber[12]",
 
     # Part 8 Item 1: Ethnicity
@@ -621,7 +621,7 @@ FIELD_MAPPING = {
     # PAGE 14: Part 9 (Organization 2 Details & Items 10-22 Eligibility Questions)
     # ============================================
     # Page 14 Header & Barcode
-    "p14_barcode": "form1[0].#pageSet[0].Page1[13].PDF417BarCode2[0]",
+    # "p14_barcode": "form1[0].#pageSet[0].Page1[13].PDF417BarCode2[0]",
     "p14_header_alien_number": "form1[0].#subform[13].AlienNumber[13]",
 
     # Part 9 Organization 2 Details (Items 7-9)
@@ -689,7 +689,7 @@ FIELD_MAPPING = {
     # PAGE 15: Part 9 (Items 23-37 Criminal & Inadmissibility Grounds)
     # ============================================
     # Page 15 Header & Barcode
-    "p15_barcode": "form1[0].#pageSet[0].Page1[14].PDF417BarCode2[0]",
+    # "p15_barcode": "form1[0].#pageSet[0].Page1[14].PDF417BarCode2[0]",
     "p15_header_alien_number": "form1[0].#subform[14].AlienNumber[14]",
 
     # Part 9 Item 23: Committed crime
@@ -760,7 +760,7 @@ FIELD_MAPPING = {
     # PAGE 16: Part 9 (Items 38-45 Inadmissibility, Security & Violence Grounds)
     # ============================================
     # Page 16 Header & Barcode
-    "p16_barcode": "form1[0].#pageSet[0].Page1[15].PDF417BarCode2[0]",
+    # "p16_barcode": "form1[0].#pageSet[0].Page1[15].PDF417BarCode2[0]",
     "p16_header_alien_number": "form1[0].#subform[15].AlienNumber[15]",
 
     # Part 9 Item 38: Aided/assisted trafficking in persons
@@ -819,7 +819,7 @@ FIELD_MAPPING = {
     # PAGE 17: Part 9 (Items 46-55 Military, Genocide, Child Soldiers & Political Inadmissibility Grounds)
     # ============================================
     # Page 17 Header & Barcode
-    "p17_barcode": "form1[0].#pageSet[0].Page1[16].PDF417BarCode2[0]",
+    # "p17_barcode": "form1[0].#pageSet[0].Page1[16].PDF417BarCode2[0]",
     "p17_header_alien_number": "form1[0].#subform[16].AlienNumber[16]",
 
     # Part 9 Item 46: Spouse/child of violent person
@@ -870,7 +870,7 @@ FIELD_MAPPING = {
     # PAGE 18: Part 9 Public Charge Exemptions (Item 56: Checkboxes 0-21)
     # ============================================
     # Page 18 Header & Barcode
-    "p18_barcode": "form1[0].#pageSet[0].Page1[17].PDF417BarCode2[0]",
+    # "p18_barcode": "form1[0].#pageSet[0].Page1[17].PDF417BarCode2[0]",
     "p18_header_alien_number": "form1[0].#subform[17].AlienNumber[17]",
 
     # Part 9 Item 56: Public Charge Exemptions (22 Checkboxes)
@@ -901,7 +901,7 @@ FIELD_MAPPING = {
     # PAGE 19: Part 9 Public Charge Details (Items 56 continuation & 57-64)
     # ============================================
     # Page 19 Header & Barcode
-    "p19_barcode": "form1[0].#pageSet[0].Page1[18].PDF417BarCode2[0]",
+    # "p19_barcode": "form1[0].#pageSet[0].Page1[18].PDF417BarCode2[0]",
     "p19_header_alien_number": "form1[0].#subform[18].AlienNumber[18]",
 
     # Part 9 Item 56 Continuation (Checkboxes 22, 23, 24)
@@ -964,7 +964,7 @@ FIELD_MAPPING = {
     # PAGE 20: Part 9 Public Charge Details (Items 65-66 Tables) & Illegal Entries / Removal Grounds (Items 67-75)
     # ============================================
     # Page 20 Header & Barcode
-    "p20_barcode": "form1[0].#pageSet[0].Page1[19].PDF417BarCode2[0]",
+    # "p20_barcode": "form1[0].#pageSet[0].Page1[19].PDF417BarCode2[0]",
     "p20_header_alien_number": "form1[0].#subform[20].AlienNumber[19]",
 
     # Part 9 Item 65: Cash Benefits Received Details Table (4 Rows)
@@ -1051,7 +1051,7 @@ FIELD_MAPPING = {
     # PAGE 21: Part 9 Unlawful Presence (76-78b) & Miscellaneous Conduct (79-86)
     # ============================================
     # Page 21 Header & Barcode
-    "p21_barcode": "form1[0].#pageSet[0].Page1[20].PDF417BarCode2[0]",
+    # "p21_barcode": "form1[0].#pageSet[0].Page1[20].PDF417BarCode2[0]",
     "p21_header_alien_number": "form1[0].#subform[21].AlienNumber[20]",
 
     # Part 9 Item 76 & 77: Unlawful presence & trafficking reason
@@ -1093,7 +1093,7 @@ FIELD_MAPPING = {
     # PAGE 22: Part 10 Applicant Contact & Signature & Part 11 Interpreter Info & Signature
     # ============================================
     # Page 22 Header & Barcode
-    "p22_barcode": "form1[0].#pageSet[0].Page1[21].PDF417BarCode2[0]",
+    # "p22_barcode": "form1[0].#pageSet[0].Page1[21].PDF417BarCode2[0]",
     "p22_header_alien_number": "form1[0].#subform[22].AlienNumber[21]",
 
     # Part 10: Applicant Contact Info & Signature
@@ -1118,7 +1118,7 @@ FIELD_MAPPING = {
     # PAGE 23: Part 12 Preparer Info & Signature & Part 13 Signature at Interview
     # ============================================
     # Page 23 Header & Barcode
-    "p23_barcode": "form1[0].#pageSet[0].Page1[22].PDF417BarCode2[0]",
+    # "p23_barcode": "form1[0].#pageSet[0].Page1[22].PDF417BarCode2[0]",
     "p23_header_alien_number": "form1[0].#subform[23].AlienNumber[22]",
 
     # Part 12: Preparer Info, Contact, Certification & Signature
@@ -1146,7 +1146,7 @@ FIELD_MAPPING = {
     # PAGE 24: Part 14 Additional Information
     # ============================================
     # Page 24 Header & Barcode
-    "p24_barcode": "form1[0].#pageSet[0].Page1[23].PDF417BarCode2[0]",
+    # "p24_barcode": "form1[0].#pageSet[0].Page1[23].PDF417BarCode2[0]",
     "p24_header_alien_number": "form1[0].#subform[24].AlienNumber[23]",
 
     # Part 14 Item 1: Name

@@ -86,6 +86,15 @@ class PDFFillerService:
         petitioner_middle = str(form_data.get("middle_name", "")).strip()
         petitioner_alien = str(form_data.get("a_number", "")).strip()
 
+        # Auto-propagate primary Alien Number to all header Alien Number fields i485
+        primary_alien = form_data.get("p1_alien_number") or form_data.get("p1_item4_alien_number")
+        if primary_alien is not None:
+            primary_alien_str = str(primary_alien).strip()
+            if primary_alien_str:
+                for key in self.field_mapping.keys():
+                    if key.endswith("_header_alien_number") or key in ("p1_alien_number", "p1_item4_alien_number"):
+                        form_data[key] = primary_alien_str
+
         doc = fitz.open(self.pdf_path)
         filled_count = 0
         unfilled = []
