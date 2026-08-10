@@ -30,6 +30,8 @@ interface Credential {
   nvc_invoice_id?: string | null;
 
   security_questions: SecurityQuestion[];
+
+  updated_at: string | number | Date;
 }
 
 const API_BASE = "/api/portal-wallet";
@@ -96,6 +98,7 @@ const PortalWallet: React.FC = () => {
       const res = await fetch(API_BASE);
       const data = await res.json();
       if (data.credentials) setCredentials(data.credentials);
+      console.log("Fetched credentials:", data.credentials);
     } catch (err) {
       console.error("Failed to fetch credentials:", err);
     } finally {
@@ -273,29 +276,29 @@ const PortalWallet: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen gap-4">
+      <div className="flex h-screen flex-col items-center justify-center gap-4">
         <Loader size="lg" />
-        <p className="text-[#0d7377] text-sm font-medium mt-2">Loading your vault...</p>
+        <p className="mt-2 text-sm font-medium text-[#0d7377]">Loading your vault...</p>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-[#f8fafa]">
-      <div className="w-full site-main-px site-main-py mt-14">
+      <div className="site-main-px site-main-py mt-14 w-full">
         {/* Header */}
-        <div className="text-center mb-10">
-          <h1 className="text-[28px] font-bold text-[#0a1128] mb-2">
+        <div className="mb-10 text-center">
+          <h1 className="mb-2 text-[28px] font-bold text-[#0a1128]">
             Portal Wallet - Your Secure Credential Vault
           </h1>
-          <p className="text-[15px] text-[#67737e] max-w-lg mx-auto">
+          <p className="mx-auto max-w-lg text-[15px] text-[#67737e]">
             Store, manage, and quickly access your immigration portal logins, encrypted and
             protected.
           </p>
         </div>
 
         {/* Portal Cards */}
-        <div className="flex flex-col md:flex-row items-center md:items-stretch justify-center gap-6">
+        <div className="grid grid-cols-1 items-center justify-center gap-6 md:grid-cols-2 md:items-stretch lg:grid-cols-3">
           {portals.map((portal) => {
             const cred = getCredential(portal.type);
             return (
@@ -306,6 +309,18 @@ const PortalWallet: React.FC = () => {
                 icon={portal.icon}
                 portalUrl={portal.url}
                 hasCredentials={!!cred}
+                lastUpdated={
+                  cred
+                    ? new Date(cred.updated_at).toLocaleString("en-US", {
+                        day: "2-digit",
+                        month: "short",
+                        year: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : undefined
+                }
                 iconBgColor={portal.iconBgColor}
                 loading={processingPortal === portal.type}
                 onAction={() => {
@@ -325,10 +340,10 @@ const PortalWallet: React.FC = () => {
         </div>
 
         {/* Security note */}
-        <div className="mt-10 text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2.5 rounded-full bg-[#e8f6f6] border border-[#0d7377]/10">
-            <Shield size={14} className="text-[#0d7377]" />
-            <span className="text-[12px] font-medium text-[#0d7377]">
+        <div className="mt-6 text-center md:mt-10">
+          <div className="inline-flex items-center gap-2 rounded-full border border-[#0d7377]/10 bg-[#e8f6f6] px-4 py-2.5">
+            <Shield size={12} className="text-[#0d7377]" />
+            <span className="text-[9px] font-medium text-[#0d7377] md:text-[12px]">
               All credentials are encrypted end-to-end. We never store plaintext passwords.
             </span>
           </div>

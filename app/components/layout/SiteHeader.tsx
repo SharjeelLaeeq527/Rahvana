@@ -1887,7 +1887,6 @@ export function SiteHeader({
           <div className="flex-1 overflow-y-auto py-4">
             <nav className="flex flex-col px-4 gap-1">
               {/* Explore Journey Link */}
-              <div className="relative pt-2 pb-0">
               <Link
                 href={journeyButtonHref}
                 onClick={(e) => handleNav(journeyNavigationId, e)}
@@ -1903,31 +1902,12 @@ export function SiteHeader({
                         : "text-muted-foreground hover:bg-muted hover:text-[#0d7377]"
                 }`}
               >
-                {journeyButtonText}
-              </Link>
-            </div>
-              {/* Commented out - Explore Journeys - Now using IR-1 Journey */}
-              {/* <HydrationSafeButton
-                onClick={() => {
-                  setExpandedSections((prev) =>
-                    prev.includes("journeys")
-                      ? prev.filter((s) => s !== "journeys")
-                      : [...prev, "journeys"],
-                  );
-                }}
-                className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-muted-foreground hover:bg-muted transition-all cursor-pointer"
-              >
                 <div className="flex items-center gap-3">
                   <Briefcase className="w-5 h-5 text-[#0d7377]" />
-                  <span className="font-bold">Explore Journeys</span>
+                  <span className="font-bold">{journeyButtonText}</span>
                 </div>
-                <ChevronDown
-                  className={`h-4 w-4 transition-transform duration-400 ${
-                    expandedSections.includes("journeys") ? "rotate-180" : ""
-                  }`}
-                />
-              </HydrationSafeButton>
-              */}
+              </Link>
+             
 
               {/* Resources Section - Mobile */}
               <div className="mt-2">

@@ -257,7 +257,7 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
                     {loadingCaseNumber ? "Decrypting..." : revealedCaseNumber || "••••••••"}
                   </span>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-4">
                     {revealedCaseNumber && (
                       <button
                         onClick={() => copyToClipboard(revealedCaseNumber, "case_number")}
@@ -293,7 +293,7 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
                     {loadingInvoiceId ? "Decrypting..." : revealedInvoiceId || "••••••••"}
                   </span>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-4">
                     {revealedInvoiceId && (
                       <button
                         onClick={() => copyToClipboard(revealedInvoiceId, "invoice_id")}
@@ -357,7 +357,7 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
                     {loadingPassword ? "Decrypting..." : revealedPassword || "••••••••••"}
                   </span>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-4">
                     {revealedPassword && (
                       <button
                         onClick={() => copyToClipboard(revealedPassword, "password")}
@@ -411,7 +411,7 @@ const ViewCredentialModal: React.FC<ViewCredentialModalProps> = ({
                             : revealedAnswers[sq.id] || "••••••••"}
                         </span>
 
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-4">
                           {revealedAnswers[sq.id] && (
                             <button
                               onClick={() => copyToClipboard(revealedAnswers[sq.id], sq.id)}

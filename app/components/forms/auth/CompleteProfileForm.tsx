@@ -1348,7 +1348,7 @@ export default function CompleteProfileForm() {
       {/* Progress bar */}
       <div className="h-1 bg-slate-100">
         <div
-          className="h-full bg-slate-700 transition-all duration-300"
+          className="h-full bg-[#0d7377] transition-all duration-300"
           style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
         />
       </div>

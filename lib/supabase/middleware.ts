@@ -49,8 +49,23 @@ export async function updateSession(request: NextRequest) {
     "/visa-checker",
     "/visa-eligibility",
     "/visa-category/ir1-journey",
+    "/visa-category/ir5-journey",
     "/interview-prep",
     "/interview-prep/my-sessions",
+    "/document-translation",
+    "/document-translation/my-requests",
+    "/document-translation/request/[id]",
+    "/user-dashboard-v2",
+    "/courier-registration",
+    "/view-security-questions",
+    "/pdf-processing",
+    "/police-verification",
+    "/police-verification/apply",
+    "/case-status",
+    "/book-appointment",
+    "/interview-prep/result",
+    "/visa-forms/[formCode]/wizard",
+    "/visa-checker/result",
   ];
 
   const adminRoutes = ["/admin"];

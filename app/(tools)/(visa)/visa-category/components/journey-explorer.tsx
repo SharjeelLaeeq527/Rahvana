@@ -104,7 +104,7 @@ export function JourneyExplorerPage() {
             initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.24, ease: "easeOut" }}
-            className="mt-5 flex flex-wrap justify-center gap-2"
+            className="mt-5 hidden md:flex flex-wrap justify-center gap-2"
           >
             {HERO_BADGES.map((badge) => {
               const Icon = badge.icon;

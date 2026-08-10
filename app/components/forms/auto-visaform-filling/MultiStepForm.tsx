@@ -9,13 +9,11 @@ import { ProgressFooter } from "./ProgressFooter";
 import { FormStep } from "./FormStep";
 import { ReviewPage } from "./ReviewPage";
 import type { Field as ConfigField } from "@/lib/formConfig/types";
-import { X, ChevronLeft, ChevronRight, Check, Sparkles, FileText, Lock } from "lucide-react";
-import { createBrowserClient } from "@supabase/ssr";
+import { ChevronLeft, ChevronRight, Check, Sparkles, FileText, Lock } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { autoFillForm, mapFormToProfile } from "@/lib/autoFill/mapper";
 import { getFormFieldOverrides, firstProfileValue } from "@/lib/autoFill/formOverrides";
-import type { MasterProfile } from "@/types/profile";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DocumentRole } from "@/lib/document-vault/types";
 import { useToast } from "@/app/components/shared/ToastProvider";
@@ -26,6 +24,7 @@ import { AlertCircle } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useFreePreview } from "./useFreePreview";
+import { MobileBottomSheet } from "@/app/components/shared/table/MobileBottomSheet";
 
 // ============ TYPE DEFINITIONS ============
 interface FormProgressDraft {
@@ -791,7 +790,10 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       );
 
       // Handle sub-questions (including conditional ones)
-      if (applicableSubQuestions.length > 0 && currentSubCount < applicableSubQuestions.length - 1) {
+      if (
+        applicableSubQuestions.length > 0 &&
+        currentSubCount < applicableSubQuestions.length - 1
+      ) {
         setProgressiveSubQuestionIndices((prev) => ({
           ...prev,
           [currentField.key]: (currentSubCount ?? -1) + 1,
@@ -1066,7 +1068,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     if (config.overflowFields) {
       config.overflowFields.forEach((overConfig) => {
         const count = Number(formData[overConfig.countKey]) || 0;
-        const maxIdx = overConfig.maxIndex ?? (count + 1);
+        const maxIdx = overConfig.maxIndex ?? count + 1;
         for (let i = overConfig.startIndex; i <= count + 1; i++) {
           if (i > maxIdx) break;
 
@@ -1348,7 +1350,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             <motion.div
               key={section.title}
               whileHover={{ x: isSidebarCollapsed ? 0 : 2 }}
-              className="group w-full text-left rounded-xl transition-colors relative cursor-pointer"
+              className="group relative w-full cursor-pointer rounded-xl text-left transition-colors"
               style={{
                 backgroundColor: isActive && !isSidebarCollapsed ? "#e8f6f6" : "transparent",
                 boxShadow:
@@ -1363,7 +1365,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             >
               <div className="flex items-center gap-3 px-3 py-2.5">
                 <div
-                  className="flex items-center justify-center rounded-lg shrink-0 text-xs font-bold transition-all"
+                  className="flex shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-all"
                   style={{
                     width: 32,
                     height: 32,
@@ -1377,26 +1379,26 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                       isActive || isDone ? "0 4px 10px -2px rgba(13, 115, 119, 0.4)" : "none",
                   }}
                 >
-                  {isDone ? <Check className="w-4 h-4" strokeWidth={3} /> : stepNum}
+                  {isDone ? <Check className="h-4 w-4" strokeWidth={3} /> : stepNum}
                 </div>
 
                 {showLabels && (
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p
-                      className="text-sm font-semibold truncate"
+                      className="truncate text-sm font-semibold"
                       style={{
                         color: isActive ? "#0a5a5d" : "#374151",
                       }}
                     >
                       {label}
                     </p>
-                    <p className="text-[11px] truncate">
+                    <p className="truncate text-[11px]">
                       {isCompleted ? (
-                        <span className="text-emerald-600 font-medium">✓ Completed</span>
+                        <span className="font-medium text-emerald-600">✓ Completed</span>
                       ) : isSkipped || isUnansweredSkipped ? (
-                        <span className="text-amber-600 font-medium">Skipped</span>
+                        <span className="font-medium text-amber-600">Skipped</span>
                       ) : isActive ? (
-                        <span className="text-sky-600 font-medium">In Progress</span>
+                        <span className="font-medium text-sky-600">In Progress</span>
                       ) : (
                         ""
                       )}
@@ -1413,10 +1415,10 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                       e.stopPropagation();
                       toggleSectionExpanded(section.title);
                     }}
-                    className="shrink-0 p-1 hover:bg-[#d4edee] rounded transition-colors"
+                    className="shrink-0 rounded p-1 transition-colors hover:bg-[#d4edee]"
                     style={{ color: "#0a5a5d" }}
                   >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="h-4 w-4" />
                   </motion.button>
                 )}
               </div>
@@ -1431,16 +1433,19 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-3 py-2 space-y-1 bg-[#f9fdfb] border-t border-[#e8f6f6]">
+                    <div className="space-y-1 border-t border-[#e8f6f6] bg-[#f9fdfb] px-3 py-2">
                       {section.fields.map((field) => {
                         // Skip conditional fields that don't match
                         if (field.condition && !field.condition(formData)) return null;
 
                         // Remove numbering from label
                         const cleanLabel = field.label.replace(/^\d+[a-z]?\.\s*/, "");
-                        const fieldAnswered = field.type === "checkbox" && field.options
-                          ? field.options.some((opt) => formData[opt.pdfKey || opt.value] === "Yes")
-                          : formData[field.key] && formData[field.key] !== "";
+                        const fieldAnswered =
+                          field.type === "checkbox" && field.options
+                            ? field.options.some(
+                                (opt) => formData[opt.pdfKey || opt.value] === "Yes"
+                              )
+                            : formData[field.key] && formData[field.key] !== "";
                         const isActiveQuestion =
                           isActive && visibleFields[currentQuestionIndex]?.key === field.key;
 
@@ -1457,9 +1462,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                               );
                               handleJumpToQuestion(idx, actualIndex);
                             }}
-                            className={`w-full text-left text-xs p-2 rounded transition-colors flex items-center gap-2 group ${
+                            className={`group flex w-full items-center gap-2 rounded p-2 text-left text-xs transition-colors ${
                               isActiveQuestion
-                                ? "bg-[#0d7377]/10 font-semibold pl-1.5"
+                                ? "bg-[#0d7377]/10 pl-1.5 font-semibold"
                                 : "hover:bg-[#e8f6f6]"
                             }`}
                             style={{
@@ -1471,9 +1476,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                             }}
                           >
                             {fieldAnswered && (
-                              <Check className="w-3 h-3" style={{ color: "#0d7377" }} />
+                              <Check className="h-3 w-3" style={{ color: "#0d7377" }} />
                             )}
-                            <span className="truncate line-clamp-1">
+                            <span className="line-clamp-1 truncate">
                               {cleanLabel.substring(0, 35)}
                               {cleanLabel.length > 35 ? "..." : ""}
                             </span>
@@ -1507,9 +1512,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   // Show loading state until ready
   if (!isReady || (user && !draftLoaded)) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen gap-4">
+      <div className="flex h-screen flex-col items-center justify-center gap-4">
         <Loader size="lg" />
-        <p className="text-[#0d7377] text-sm font-medium mt-2">
+        <p className="mt-2 text-sm font-medium text-[#0d7377]">
           {user && !draftLoaded
             ? `Restoring your draft for ${formCode.toUpperCase()}...`
             : `Loading ${formCode.toUpperCase()} Form...`}
@@ -1520,25 +1525,25 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   if (!config) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f7fbfb]">
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-10 text-center max-w-md shadow-sm">
-          <h2 className="text-2xl font-bold text-red-800 mb-3">Form Not Found</h2>
+      <div className="flex min-h-screen items-center justify-center bg-[#f7fbfb]">
+        <div className="max-w-md rounded-2xl border border-red-200 bg-red-50 p-10 text-center shadow-sm">
+          <h2 className="mb-3 text-2xl font-bold text-red-800">Form Not Found</h2>
           <p className="text-red-700">
             Sorry, the form &quot;<strong>{formCode.toUpperCase()}</strong>
             &quot; is not available yet.
           </p>
-          <p className="text-sm text-gray-600 mt-4">Available: I-130, I-130A, I-864, DS-260</p>
+          <p className="mt-4 text-sm text-gray-600">Available: I-130, I-130A, I-864, DS-260</p>
         </div>
       </div>
     );
   }
 
   if (totalSteps === 0) {
-    return <div className="text-center py-20 text-gray-500">No questions in this form.</div>;
+    return <div className="py-20 text-center text-gray-500">No questions in this form.</div>;
   }
 
   return (
-    <div className="w-full min-h-screen flex flex-col" style={{ backgroundColor: "#f7fbfb" }}>
+    <div className="flex min-h-screen w-full flex-col" style={{ backgroundColor: "#f7fbfb" }}>
       {/* Sticky Header */}
       <Header
         formTitle={config.formTitle}
@@ -1550,61 +1555,19 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       />
 
       {/* Mobile Bottom Tray */}
-      <AnimatePresence>
-        {isDrawerOpen && (
-          <>
-            {/* Overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsDrawerOpen(false)}
-              className="fixed inset-0 bg-black/40 z-40"
-            />
-
-            {/* Bottom Sheet */}
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 260 }}
-              drag="y"
-              dragConstraints={{ top: 0 }}
-              dragElastic={0.2}
-              onDragEnd={(e, info) => {
-                if (info.offset.y > 120) {
-                  setIsDrawerOpen(false);
-                }
-              }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl h-[80vh] flex flex-col"
-            >
-              {/* Drag Handle */}
-              <div className="flex flex-col items-center py-3 border-b bg-gray-50 rounded-t-3xl">
-                <div className="w-12 h-1.5 bg-gray-400 rounded-full mb-1" />
-              </div>
-
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 py-3 border-b">
-                <h2 className="text-lg font-bold text-gray-900">Navigation</h2>
-                <button
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="p-2 rounded-lg hover:bg-gray-100"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Content (Scrollable) */}
-              <div className="flex-1 overflow-y-auto px-5 py-4">
-                {renderSectionList({ onPick: () => setIsDrawerOpen(false), showLabels: true })}
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <MobileBottomSheet
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        title="Navigation"
+      >
+        {renderSectionList({
+          onPick: () => setIsDrawerOpen(false),
+          showLabels: true,
+        })}
+      </MobileBottomSheet>
 
       {/* Main Layout - Centered Content */}
-      <div className="flex gap-6 px-4 md:px-8 py-0 guide-grid-bg justify-center items-stretch flex-1 min-h-0">
+      <div className="guide-grid-bg flex min-h-0 flex-1 items-stretch justify-center gap-6 px-4 py-0 md:px-8">
         {/* Desktop Sidebar (stays within header/footer zone) */}
         {view === "form" && (
           <motion.div
@@ -1613,10 +1576,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
               width: isSidebarCollapsed ? 24 : 325,
             }}
             transition={{ type: "spring", damping: 28, stiffness: 240 }}
-            className="hidden lg:block shrink-0 -ml-4 md:-ml-8"
-            style={{
-              display: (showSectionIntro && introVisible) ? "none" : "block",
-            }}
+            className="-ml-4 hidden shrink-0 md:-ml-8 lg:block"
           >
             <aside
               className="sticky top-16 mt-12 h-[calc(100vh-280px)] w-full overflow-hidden"
@@ -1624,7 +1584,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             >
               <div
                 className={[
-                  "relative h-full overflow-hidden custom-scrollbar flex flex-col",
+                  "custom-scrollbar relative flex h-full flex-col overflow-hidden",
                   isSidebarCollapsed ? "" : "rounded-r-2xl border border-l-0 p-4",
                 ].join(" ")}
                 style={{
@@ -1639,9 +1599,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                 {!isSidebarCollapsed && (
                   <>
                     {/* Header Row */}
-                    <div className="flex items-center justify-between mb-4 px-1">
+                    <div className="mb-4 flex items-center justify-between px-1">
                       <h3
-                        className="text-[11px] font-bold uppercase tracking-[0.14em]"
+                        className="text-[11px] font-bold tracking-[0.14em] uppercase"
                         style={{ color: "#0a5a5d" }}
                       >
                         Sections
@@ -1649,7 +1609,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
+                    <div className="custom-scrollbar flex-1 overflow-y-auto pr-1">
                       {renderSectionList({})}
                     </div>
                   </>
@@ -1657,7 +1617,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
                 <motion.button
                   onClick={() => setIsSidebarCollapsed((prev) => !prev)}
-                  className="absolute top-1/2 -translate-y-1/2 -right-2 z-50"
+                  className="absolute top-1/2 -right-2 z-50 -translate-y-1/2"
                   style={{
                     width: 28,
                     height: 64,
@@ -1676,8 +1636,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         )}
 
         {/* Right Content Area */}
-        <div className="flex-1 min-w-0 flex flex-col">
-          <div className="flex-1 flex items-start justify-center py-6 w-full">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex w-full flex-1 items-start justify-center py-6">
             <div className="w-full max-w-2xl px-4 md:px-0">
               {view === "form" && currentSection && (
                 <>
@@ -1690,12 +1650,12 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.4, ease: "easeOut" }}
-                        className="flex items-center justify-center min-h-[60vh] px-4"
+                        className="flex min-h-[60vh] items-center justify-center px-4"
                       >
                         <div className="w-full max-w-2xl">
-                          <div className="bg-white border-2 border-[#14a0a6] rounded-2xl shadow-xl p-8 md:p-10">
+                          <div className="rounded-2xl border-2 border-[#14a0a6] bg-white p-8 shadow-xl md:p-10">
                             {/* Top Label */}
-                            <p className="text-sm uppercase tracking-[0.2em] text-[#14a0a6] font-semibold text-center rounded-full bg-white/10 border border-white/20">
+                            <p className="rounded-full border border-white/20 bg-white/10 text-center text-xs font-semibold tracking-[0.2em] text-[#14a0a6] uppercase sm:text-sm">
                               Moving on to {currentSection?.title || "Next Section"}
                             </p>
 
@@ -1705,7 +1665,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           </h3> */}
 
                             {/* Message */}
-                            <p className="mt-2 text-sm text-gray-600 leading-relaxed text-center font-semibold">
+                            <p className="mt-2 text-center text-xs leading-relaxed font-semibold text-gray-600 sm:text-sm">
                               {getSectionIntroMessage(currentSection.title).message}
                             </p>
 
@@ -1721,13 +1681,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
                             {/* Progress */}
                             <div className="mt-6">
-                              <div className="flex justify-between text-xs text-gray-500 mb-2">
+                              <div className="mb-2 flex justify-between text-xs text-gray-500">
                                 <span>Section Progress</span>
                                 <span>
                                   {currentStep}/{totalSteps}
                                 </span>
                               </div>
-                              <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                              <div className="h-2 overflow-hidden rounded-full bg-gray-100">
                                 <motion.div
                                   initial={{ width: 0 }}
                                   animate={{
@@ -1747,7 +1707,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                               }}
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
-                              className="mt-8 w-full py-3 rounded-xl font-semibold text-white shadow-md"
+                              className="mt-8 w-full rounded-xl py-3 font-semibold text-white shadow-md"
                               style={{
                                 background: "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
                               }}
@@ -1781,11 +1741,11 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                         />
 
                         {/* Navigation Buttons */}
-                        <div className="flex flex-row justify-between items-center gap-3 mt-10 pt-6 border-t border-[#e8f6f6]">
+                        <div className="mt-10 flex flex-row items-center justify-between gap-3 border-t border-[#e8f6f6] pt-6">
                           <button
                             onClick={handlePrevious}
                             disabled={currentStep === 1 && currentQuestionIndex === 0}
-                            className="px-6 py-3 rounded-lg font-medium text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#0d7377] hover:text-[#0d7377] whitespace-nowrap inline-flex items-center gap-2"
+                            className="inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-medium whitespace-nowrap transition-all hover:border-[#0d7377] hover:text-[#0d7377] disabled:cursor-not-allowed disabled:opacity-40"
                             style={{
                               background: "transparent",
                               color: "#8C8C85",
@@ -1799,7 +1759,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                           <motion.button
                             whileTap={{ scale: 0.97 }}
                             onClick={handleNext}
-                            className="w-full px-6 md:px-8 py-3 rounded-lg text-white font-semibold transition-all text-sm"
+                            className="w-full rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all md:px-8"
                             style={{
                               background: "#0d7377",
                               letterSpacing: "0.02em",
@@ -1830,7 +1790,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
               {view === "review" && (
                 <div
-                  className="rounded-2xl bg-white p-4 md:p-8 border-2 animated-border"
+                  className="animated-border rounded-2xl border-2 bg-white p-4 md:p-8"
                   style={{
                     boxShadow:
                       "0 1px 3px rgba(0,0,0,0.03), 0 12px 40px -16px rgba(13,115,119,0.12)",
@@ -1858,9 +1818,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       </div>
 
       {saveError && (
-        <div className="px-4 md:px-8 pt-1 pb-4">
-          <div className="flex items-center gap-2 rounded-lg px-3 py-2 bg-red-50 border border-red-200">
-            <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+        <div className="px-4 pt-1 pb-4 md:px-8">
+          <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+            <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
             <p className="text-xs text-red-600">{saveError}</p>
           </div>
         </div>

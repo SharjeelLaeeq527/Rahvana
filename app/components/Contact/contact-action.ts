@@ -2,6 +2,7 @@
 
 import { sendEmail } from "@/lib/email/resend";
 import { E, msg } from "@/lib/errors";
+import {validateEmail} from "@/lib/validation/email";
 
 export async function submitContactForm(formData: FormData) {
   const firstName = formData.get("firstName") as string;
@@ -11,6 +12,10 @@ export async function submitContactForm(formData: FormData) {
 
   if (!firstName || !lastName || !email || !message) {
     return { success: false, error: msg(E.CONTACT_ALL_FIELDS_REQUIRED) };
+  }
+
+  if (!validateEmail(email)) {
+    return { success: false, error: msg(E.AUTH_EMAIL_FORMAT_INVALID) };
   }
 
   const subject = `New Contact Form Submission from ${firstName} ${lastName}`;

@@ -2290,7 +2290,7 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip, isVisible = true 
           <motion.button
             type="button"
             onClick={() => {
-              window.location.href = "/visa-category/ir1-journey";
+              window.location.href = hasJourney ? "/my-journeys" : "/visa-category";
             }}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -2321,7 +2321,6 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip, isVisible = true 
             }}
           >
             {hasJourney ? "Resume your journey" : "Start your journey"}
-            {/* <Icons.ArrowRight size={16} /> */}
           </motion.button>
         </div>
 
