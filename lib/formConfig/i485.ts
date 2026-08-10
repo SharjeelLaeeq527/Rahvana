@@ -4,6 +4,117 @@ export const formId = "i485";
 export const formTitle = "Form I-485";
 export const formSubtitle = "Application to Register Permanent Residence or Adjust Status";
 
+const generatePriorAddressesFields = (startIndex: number, endIndex: number): Field[] => {
+  const fields: Field[] = [];
+  for (let i = startIndex; i <= endIndex; i++) {
+    fields.push({
+      key: `p1_prior_addr_${i}_note`,
+      pdfKey: "N/A",
+      label: `Previous Address ${i}`,
+      type: "hidden",
+      section: "Address History & Social Security",
+      condition: (d) => d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= i,
+      subQuestions: [
+        // {
+        //   key: `p1_prior_addr_${i}_in_care_of`,
+        //   pdfKey: "N/A",
+        //   label: "Who received mail for you at this address? (In Care Of Name - Leave blank if none)",
+        //   type: "text",
+        //   section: "Address History & Social Security",
+        // },
+        {
+          key: `p1_prior_addr_${i}_street`,
+          pdfKey: "N/A",
+          label: "What was the House Number and Street Name?",
+          type: "text",
+          section: "Address History & Social Security",
+        },
+        {
+          key: `p1_prior_addr_${i}_unit_type`,
+          pdfKey: "_",
+          label: "Was this home an Apartment, Suite, or Floor?",
+          type: "radio",
+          options: [
+            { label: "Apt.", value: "Apt" },
+            { label: "Ste.", value: "Ste" },
+            { label: "Flr.", value: "Flr" },
+          ],
+          section: "Address History & Social Security",
+        },
+        {
+          key: `p1_prior_addr_${i}_unit_val`,
+          pdfKey: "N/A",
+          label: "What was the Apartment, Suite, or Floor Number? (Leave blank if none)",
+          type: "text",
+          section: "Address History & Social Security",
+        },
+        {
+          key: `p1_prior_addr_${i}_city`,
+          pdfKey: "N/A",
+          label: "What City or Town was it in?",
+          type: "text",
+          section: "Address History & Social Security",
+        },
+        {
+          key: `p1_prior_addr_${i}_state`,
+          pdfKey: "N/A",
+          label: "What U.S. state was it in? (if in the U.S.)",
+          type: "dropdown",
+          isState: true,
+          section: "Address History & Social Security",
+          condition: (d) => !d[`p1_prior_addr_${i}_province`],
+        },
+        {
+          key: `p1_prior_addr_${i}_zip`,
+          pdfKey: "N/A",
+          label: "What was the ZIP Code? (if in the U.S.)",
+          type: "text",
+          section: "Address History & Social Security",
+          condition: (d) => !d[`p1_prior_addr_${i}_postal`],
+        },
+        {
+          key: `p1_prior_addr_${i}_province`,
+          pdfKey: "N/A",
+          label: "What province was it in? (if outside the U.S.)",
+          type: "text",
+          section: "Address History & Social Security",
+          condition: (d) => !d[`p1_prior_addr_${i}_state`],
+        },
+        {
+          key: `p1_prior_addr_${i}_postal`,
+          pdfKey: "N/A",
+          label: "What was the Postal Code? (if outside the U.S.)",
+          type: "text",
+          section: "Address History & Social Security",
+          condition: (d) => !d[`p1_prior_addr_${i}_zip`],
+        },
+        {
+          key: `p1_prior_addr_${i}_country`,
+          pdfKey: "N/A",
+          label: "What country was it in?",
+          type: "text",
+          section: "Address History & Social Security",
+        },
+        {
+          key: `p1_prior_addr_${i}_date_from`,
+          pdfKey: "N/A",
+          label: "When did you start living here? (mm/dd/yyyy)",
+          type: "date",
+          section: "Address History & Social Security",
+        },
+        {
+          key: `p1_prior_addr_${i}_date_to`,
+          pdfKey: "N/A",
+          label: "When did you move out? (mm/dd/yyyy)",
+          type: "date",
+          section: "Address History & Social Security",
+        },
+      ],
+    });
+  }
+  return fields;
+};
+
 export const formFields: Field[] = [
   // ============================================
   // Header Information
@@ -349,7 +460,7 @@ export const formFields: Field[] = [
     key: "p1_last_arrival_state",
     pdfKey: "p1_last_arrival_state",
     label: "What State did you arrive at in the U.S.?",
-    type: "select",
+    type: "dropdown",
     isState: true,
     section: "Part 1. Information About You",
   },
@@ -592,7 +703,7 @@ export const formFields: Field[] = [
     key: "p1_phys_state",
     pdfKey: "p1_phys_state",
     label: "What State do you live in?",
-    type: "select",
+    type: "dropdown",
     isState: true,
     section: "Current U.S. Physical Address",
   },
@@ -670,7 +781,7 @@ export const formFields: Field[] = [
         key: "p1_mail_state",
         pdfKey: "p1_mail_state",
         label: "What State is your mailing address in?",
-        type: "select",
+        type: "dropdown",
         isState: true,
         condition: (d) => d.p1_is_current_mailing_same === "No",
       },
@@ -697,20 +808,41 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p1_resided_5yrs_Yes" },
       { label: "No", value: "No", pdfKey: "p1_resided_5yrs_No" },
     ],
+  },
+  {
+    key: "p1_address_count",
+    pdfKey: "N/A",
+    label:
+      "How many other places have you lived in the last 5 years? (excluding your current address)",
+    type: "text",
+    section: "Address History & Social Security",
+    pattern: "[0-9]*",
+    inputMode: "numeric",
+    maxLength: 2,
+    placeholder: "E.g. 1, 2, 3...",
+    condition: (d) => d.p1_resided_5yrs === "No",
+  },
+  {
+    key: "p1_prior_address_note",
+    pdfKey: "N/A",
+    label: "Let's add your first previous address (a place you lived before your current home).",
+    type: "hidden",
+    section: "Address History & Social Security",
+    condition: (d) => d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= 1,
     subQuestions: [
       {
         key: "p1_prior_in_care_of",
         pdfKey: "p1_prior_in_care_of",
         label: "Who received mail for you at your prior address? (In Care Of Name)",
         type: "text",
-        condition: (d) => d.p1_resided_5yrs === "No",
+        condition: (d) => d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= 1,
       },
       {
         key: "p1_prior_street",
         pdfKey: "p1_prior_street",
         label: "What was your prior street address?",
         type: "text",
-        condition: (d) => d.p1_resided_5yrs === "No",
+        condition: (d) => d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= 1,
       },
       {
         key: "p1_prior_unit_type",
@@ -722,74 +854,78 @@ export const formFields: Field[] = [
           { label: "Ste.", value: "Ste", pdfKey: "p1_prior_unit_ste" },
           { label: "Flr.", value: "Flr", pdfKey: "p1_prior_unit_flr" },
         ],
-        condition: (d) => d.p1_resided_5yrs === "No",
+        condition: (d) => d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= 1,
       },
       {
         key: "p1_prior_unit_val",
         pdfKey: "p1_prior_unit_val",
         label: "What was your prior Apartment, Suite, or Floor Number?",
         type: "text",
-        condition: (d) => d.p1_resided_5yrs === "No",
+        condition: (d) => d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= 1,
       },
       {
         key: "p1_prior_city",
         pdfKey: "p1_prior_city",
         label: "What City or Town was your prior home in?",
         type: "text",
-        condition: (d) => d.p1_resided_5yrs === "No",
+        condition: (d) => d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= 1,
       },
       {
         key: "p1_prior_state",
         pdfKey: "p1_prior_state",
         label: "What State was your prior home in? (if in U.S.)",
-        type: "select",
+        type: "dropdown",
         isState: true,
-        condition: (d) => d.p1_resided_5yrs === "No",
+        condition: (d) => d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= 1,
       },
       {
         key: "p1_prior_zip",
         pdfKey: "p1_prior_zip",
         label: "What was your prior home ZIP Code? (if in U.S.)",
         type: "text",
-        condition: (d) => d.p1_resided_5yrs === "No",
+        condition: (d) =>
+          d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= 1 && !d.p1_prior_postal,
       },
       {
         key: "p1_prior_province",
         pdfKey: "p1_prior_province",
         label: "What Province was your prior home in? (if outside U.S.)",
         type: "text",
-        condition: (d) => d.p1_resided_5yrs === "No",
+        condition: (d) =>
+          d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= 1 && !d.p1_prior_state,
       },
       {
         key: "p1_prior_postal",
         pdfKey: "p1_prior_postal",
         label: "What was your prior home Postal Code? (if outside U.S.)",
         type: "text",
-        condition: (d) => d.p1_resided_5yrs === "No",
+        condition: (d) =>
+          d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= 1 && !d.p1_prior_zip,
       },
       {
         key: "p1_prior_country",
         pdfKey: "p1_prior_country",
         label: "What Country was your prior home in?",
         type: "text",
-        condition: (d) => d.p1_resided_5yrs === "No",
+        condition: (d) => d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= 1,
       },
       {
         key: "p1_prior_date_from",
         pdfKey: "p1_prior_date_from",
         label: "When did you start living at your prior home? (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p1_resided_5yrs === "No",
+        condition: (d) => d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= 1,
       },
       {
         key: "p1_prior_date_to",
         pdfKey: "p1_prior_date_to",
         label: "When did you move out of your prior home? (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p1_resided_5yrs === "No",
+        condition: (d) => d.p1_resided_5yrs === "No" && Number(d.p1_address_count) >= 1,
       },
     ],
   },
+  ...generatePriorAddressesFields(2, 8),
 
   // ============================================
   // Most Recent Address Outside the United States
@@ -1654,7 +1790,7 @@ export const formFields: Field[] = [
     key: "p4_emp1_state",
     pdfKey: "p4_emp1_state",
     label: "State of Employer/School",
-    type: "select",
+    type: "dropdown",
     isState: true,
     section: "Employment & Educational History",
   },
@@ -1761,7 +1897,7 @@ export const formFields: Field[] = [
     key: "p4_emp2_foreign_state",
     pdfKey: "p4_emp2_foreign_state",
     label: "State/Region of Foreign Employer/School",
-    type: "select",
+    type: "dropdown",
     isState: true,
     section: "Employment & Educational History",
   },
@@ -2060,7 +2196,7 @@ export const formFields: Field[] = [
     key: "p6_spouse_phys_state",
     pdfKey: "p6_spouse_phys_state",
     label: "What State does your spouse live in?",
-    type: "select",
+    type: "dropdown",
     isState: true,
     section: "Information About Your Current Marriage",
   },
@@ -3474,7 +3610,8 @@ export const formFields: Field[] = [
         pdfKey: "p9_public_charge_haitian_cb",
       },
       {
-        label: "Dependent Status under Haitian Refugee Immigrant Fairness Act (HRIFA) Battered Spouses and Children",
+        label:
+          "Dependent Status under Haitian Refugee Immigrant Fairness Act (HRIFA) Battered Spouses and Children",
         value: "HRIFABattered",
         pdfKey: "p9_public_charge_haitian_battered_cb",
       },
@@ -3645,7 +3782,8 @@ export const formFields: Field[] = [
     pdfKey: "p9_certifications_row1",
     label: "Certifications, licenses, or skills (Item 1)",
     placeholder: "e.g., CPA, RN, Commercial Driver License, Plumbing License",
-    tooltip:"List your certifications, lincense, skills obtained through work experience and educational certificates.",
+    tooltip:
+      "List your certifications, lincense, skills obtained through work experience and educational certificates.",
     type: "text",
     section: "Part 9. General Eligibility and Inadmissibility Grounds",
     condition: (d) => d.p9_public_charge_exemption_category === "NotExempt",
@@ -3706,7 +3844,7 @@ export const formFields: Field[] = [
     section: "Part 9. General Eligibility and Inadmissibility Grounds",
     condition: (d) => d.p9_public_charge_exemption_category === "NotExempt",
   },
-  
+
   {
     key: "p9_public_cash_assistance",
     pdfKey: "_",
@@ -3723,44 +3861,57 @@ export const formFields: Field[] = [
       {
         key: "p9_cash_benefit_row1_name",
         pdfKey: "_",
-        label: "If your answer is \"Yes,\" list the specific benefit(s) you received, the start and end dates of each period of receipt, the dollar amount of benefits received, and whether you received the benefits while you were in an immigration category exempt from the public charge ground of inadmissibility.",
+        label:
+          'If your answer is "Yes," list the specific benefit(s) you received, the start and end dates of each period of receipt, the dollar amount of benefits received, and whether you received the benefits while you were in an immigration category exempt from the public charge ground of inadmissibility.',
         type: "hidden",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row1_name",
         pdfKey: "p9_cash_benefit_row1_name",
         label: "Benefit 1 - Specific Benefit Received",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row1_start_date",
         pdfKey: "p9_cash_benefit_row1_start_date",
         label: "Benefit 1 - Start Date (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row1_end_date",
         pdfKey: "p9_cash_benefit_row1_end_date",
         label: "Benefit 1 - End Date (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row1_amount",
         pdfKey: "p9_cash_benefit_row1_amount",
         label: "Benefit 1 - Total Dollar Amount Received",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row1_exempt",
         pdfKey: "_",
         label: "Benefit 1 - Were you in an exempt category when you received this benefit?",
         type: "radio",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
         options: [
           { label: "Yes", value: "Yes", pdfKey: "p9_cash_benefit_row1_exempt_Yes" },
           { label: "No", value: "No", pdfKey: "p9_cash_benefit_row1_exempt_No" },
@@ -3772,35 +3923,45 @@ export const formFields: Field[] = [
         pdfKey: "p9_cash_benefit_row2_name",
         label: "Benefit 2 - Specific Benefit Received",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row2_start_date",
         pdfKey: "p9_cash_benefit_row2_start_date",
         label: "Benefit 2 - Start Date (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row2_end_date",
         pdfKey: "p9_cash_benefit_row2_end_date",
         label: "Benefit 2 - End Date (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row2_amount",
         pdfKey: "p9_cash_benefit_row2_amount",
         label: "Benefit 2 - Total Dollar Amount Received",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row2_exempt",
         pdfKey: "_",
         label: "Benefit 2 - Were you in an exempt category when you received this benefit?",
         type: "radio",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
         options: [
           { label: "Yes", value: "Yes", pdfKey: "p9_cash_benefit_row2_exempt_Yes" },
           { label: "No", value: "No", pdfKey: "p9_cash_benefit_row2_exempt_No" },
@@ -3812,35 +3973,45 @@ export const formFields: Field[] = [
         pdfKey: "p9_cash_benefit_row3_name",
         label: "Benefit 3 - Specific Benefit Received",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row3_start_date",
         pdfKey: "p9_cash_benefit_row3_start_date",
         label: "Benefit 3 - Start Date (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row3_end_date",
         pdfKey: "p9_cash_benefit_row3_end_date",
         label: "Benefit 3 - End Date (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row3_amount",
         pdfKey: "p9_cash_benefit_row3_amount",
         label: "Benefit 3 - Total Dollar Amount Received",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row3_exempt",
         pdfKey: "_",
         label: "Benefit 3 - Were you in an exempt category when you received this benefit?",
         type: "radio",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
         options: [
           { label: "Yes", value: "Yes", pdfKey: "p9_cash_benefit_row3_exempt_Yes" },
           { label: "No", value: "No", pdfKey: "p9_cash_benefit_row3_exempt_No" },
@@ -3852,35 +4023,45 @@ export const formFields: Field[] = [
         pdfKey: "p9_cash_benefit_row4_name",
         label: "Benefit 4 - Specific Benefit Received",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row4_start_date",
         pdfKey: "p9_cash_benefit_row4_start_date",
         label: "Benefit 4 - Start Date (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row4_end_date",
         pdfKey: "p9_cash_benefit_row4_end_date",
         label: "Benefit 4 - End Date (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row4_amount",
         pdfKey: "p9_cash_benefit_row4_amount",
         label: "Benefit 4 - Total Dollar Amount Received",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
       },
       {
         key: "p9_cash_benefit_row4_exempt",
         pdfKey: "_",
         label: "Benefit 4 - Were you in an exempt category when you received this benefit?",
         type: "radio",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_public_cash_assistance === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
         options: [
           { label: "Yes", value: "Yes", pdfKey: "p9_cash_benefit_row4_exempt_Yes" },
           { label: "No", value: "No", pdfKey: "p9_cash_benefit_row4_exempt_No" },
@@ -3903,44 +4084,57 @@ export const formFields: Field[] = [
       {
         key: "p9_inst_care_row1_institution_tooltip",
         pdfKey: "_",
-        label: "If your answer is \"Yes,\" list the name, city, and state for each institution, the start and end dates of each period of institutionalization, the reason you were institutionalized, and whether you were institutionalized while you were in an immigration category exempt from the public charge ground of inadmissibility.",
+        label:
+          'If your answer is "Yes," list the name, city, and state for each institution, the start and end dates of each period of institutionalization, the reason you were institutionalized, and whether you were institutionalized while you were in an immigration category exempt from the public charge ground of inadmissibility.',
         type: "hidden",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row1_institution",
         pdfKey: "p9_inst_care_row1_institution",
         label: "Institution 1 - Name, City, and State",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row1_date_from",
         pdfKey: "p9_inst_care_row1_date_from",
         label: "Institution 1 - Date From (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row1_date_to",
         pdfKey: "p9_inst_care_row1_date_to",
         label: "Institution 1 - Date To (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row1_reason",
         pdfKey: "p9_inst_care_row1_reason",
         label: "Institution 1 - Reason for Institutionalization",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row1_exempt",
         pdfKey: "_",
         label: "Institution 1 - Were you in an exempt category during this institutionalization?",
         type: "radio",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
         options: [
           { label: "Yes", value: "Yes", pdfKey: "p9_inst_care_row1_exempt_Yes" },
           { label: "No", value: "No", pdfKey: "p9_inst_care_row1_exempt_No" },
@@ -3952,35 +4146,45 @@ export const formFields: Field[] = [
         pdfKey: "p9_inst_care_row2_institution",
         label: "Institution 2 - Name, City, and State",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row2_date_from",
         pdfKey: "p9_inst_care_row2_date_from",
         label: "Institution 2 - Date From (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row2_date_to",
         pdfKey: "p9_inst_care_row2_date_to",
         label: "Institution 2 - Date To (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row2_reason",
         pdfKey: "p9_inst_care_row2_reason",
         label: "Institution 2 - Reason for Institutionalization",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row2_exempt",
         pdfKey: "_",
         label: "Institution 2 - Were you in an exempt category during this institutionalization?",
         type: "radio",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
         options: [
           { label: "Yes", value: "Yes", pdfKey: "p9_inst_care_row2_exempt_Yes" },
           { label: "No", value: "No", pdfKey: "p9_inst_care_row2_exempt_No" },
@@ -3992,35 +4196,45 @@ export const formFields: Field[] = [
         pdfKey: "p9_inst_care_row3_institution",
         label: "Institution 3 - Name, City, and State",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row3_date_from",
         pdfKey: "p9_inst_care_row3_date_from",
         label: "Institution 3 - Date From (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row3_date_to",
         pdfKey: "p9_inst_care_row3_date_to",
         label: "Institution 3 - Date To (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row3_reason",
         pdfKey: "p9_inst_care_row3_reason",
         label: "Institution 3 - Reason for Institutionalization",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row3_exempt",
         pdfKey: "_",
         label: "Institution 3 - Were you in an exempt category during this institutionalization?",
         type: "radio",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
         options: [
           { label: "Yes", value: "Yes", pdfKey: "p9_inst_care_row3_exempt_Yes" },
           { label: "No", value: "No", pdfKey: "p9_inst_care_row3_exempt_No" },
@@ -4032,35 +4246,45 @@ export const formFields: Field[] = [
         pdfKey: "p9_inst_care_row4_institution",
         label: "Institution 4 - Name, City, and State",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row4_date_from",
         pdfKey: "p9_inst_care_row4_date_from",
         label: "Institution 4 - Date From (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row4_date_to",
         pdfKey: "p9_inst_care_row4_date_to",
         label: "Institution 4 - Date To (mm/dd/yyyy)",
         type: "date",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row4_reason",
         pdfKey: "p9_inst_care_row4_reason",
         label: "Institution 4 - Reason for Institutionalization",
         type: "text",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
       },
       {
         key: "p9_inst_care_row4_exempt",
         pdfKey: "_",
         label: "Institution 4 - Were you in an exempt category during this institutionalization?",
         type: "radio",
-        condition: (d) => d.p9_public_charge_exemption_category === "NotExempt" && d.p9_institutional_care_govt === "Yes",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
         options: [
           { label: "Yes", value: "Yes", pdfKey: "p9_inst_care_row4_exempt_Yes" },
           { label: "No", value: "No", pdfKey: "p9_inst_care_row4_exempt_No" },
@@ -4109,8 +4333,7 @@ export const formFields: Field[] = [
   {
     key: "p9_falsely_claimed_us_citizen",
     pdfKey: "_",
-    label:
-      "Have you EVER falsely claimed to be a U.S. citizen (in writing or in any other way)?",
+    label: "Have you EVER falsely claimed to be a U.S. citizen (in writing or in any other way)?",
     type: "radio",
     section: "Part 9. General Eligibility and Inadmissibility Grounds",
     options: [
@@ -4121,8 +4344,7 @@ export const formFields: Field[] = [
   {
     key: "p9_stowaway",
     pdfKey: "_",
-    label:
-      "Have you EVER been a stowaway on a ship or aircraft arriving in the United States?",
+    label: "Have you EVER been a stowaway on a ship or aircraft arriving in the United States?",
     type: "radio",
     section: "Part 9. General Eligibility and Inadmissibility Grounds",
     options: [
@@ -4197,7 +4419,8 @@ export const formFields: Field[] = [
         pdfKey: "_",
         label:
           "If your answer is 'Yes', was human trafficking a main reason for your unlawful presence in the United States?",
-        tooltip:"NOTE: Severe trafficking in persons involves sex trafficking (the recruitment, harboring, transportation, provision, or obtaining of a person to commit a commercial sex act) induced by force, fraud, coercion, or in which the person is induced to perform such act has not reached 18 years of age, or the recruitment, harboring, transportation, provision, or obtaining of a person for labor or services, through the use of force, fraud, or coercion for the purpose of subjection to involuntary servitude, peonage, debt bondage, or slavery.",
+        tooltip:
+          "NOTE: Severe trafficking in persons involves sex trafficking (the recruitment, harboring, transportation, provision, or obtaining of a person to commit a commercial sex act) induced by force, fraud, coercion, or in which the person is induced to perform such act has not reached 18 years of age, or the recruitment, harboring, transportation, provision, or obtaining of a person for labor or services, through the use of force, fraud, or coercion for the purpose of subjection to involuntary servitude, peonage, debt bondage, or slavery.",
         type: "radio",
         condition: (d) => d.p9_unlawfully_present_since_1997 === "Yes",
         options: [
@@ -4282,8 +4505,7 @@ export const formFields: Field[] = [
   {
     key: "p9_renounced_us_citizenship_tax",
     pdfKey: "_",
-    label:
-      "Have you EVER renounced U.S. citizenship to avoid being taxed by the United States?",
+    label: "Have you EVER renounced U.S. citizenship to avoid being taxed by the United States?",
     type: "radio",
     section: "Part 9. General Eligibility and Inadmissibility Grounds",
     options: [
@@ -4318,8 +4540,7 @@ export const formFields: Field[] = [
   {
     key: "p9_convicted_military_desertion",
     pdfKey: "_",
-    label:
-      "Have you EVER been convicted of desertion from the U.S. armed forces?",
+    label: "Have you EVER been convicted of desertion from the U.S. armed forces?",
     type: "radio",
     section: "Part 9. General Eligibility and Inadmissibility Grounds",
     options: [
@@ -4374,7 +4595,8 @@ export const formFields: Field[] = [
     key: "p10_signature",
     pdfKey: "p10_signature",
     label: "Applicant's Signature (Type your full legal name)",
-    tooltip:"I certify, under penalty of perjury, that I provided or authorized all of the responses and information contained in and submitted with my application, I read and understand or, if interpreted to me in a language in which I am fluent by the interpreter listed in Part 11., understood, all of the responses and information contained in, and submitted with, my application, and that all of the responses and the information are complete, true, and correct. Furthermore, I authorize the release of any information from any and all of my records that USCIS may need to determine my eligibility for an immigration request and to other entities and persons where necessary for the administration and enforcement of U.S. immigration law.",
+    tooltip:
+      "I certify, under penalty of perjury, that I provided or authorized all of the responses and information contained in and submitted with my application, I read and understand or, if interpreted to me in a language in which I am fluent by the interpreter listed in Part 11., understood, all of the responses and information contained in, and submitted with, my application, and that all of the responses and the information are complete, true, and correct. Furthermore, I authorize the release of any information from any and all of my records that USCIS may need to determine my eligibility for an immigration request and to other entities and persons where necessary for the administration and enforcement of U.S. immigration law.",
     type: "text",
     section: "Part 10. Applicant's Contact Information, Certification, and Signature",
   },
@@ -4466,7 +4688,8 @@ export const formFields: Field[] = [
     pdfKey: "_",
     label: "Did someone else (a preparer or attorney) prepare this application for you?",
     type: "radio",
-    section: "Part 12. Contact Information, Certification, and Signature of the Person Preparing this Application, if Other Than the Applicant",
+    section:
+      "Part 12. Contact Information, Certification, and Signature of the Person Preparing this Application, if Other Than the Applicant",
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p12_used_preparer_Yes" },
       { label: "No", value: "No", pdfKey: "p12_used_preparer_No" },
@@ -4518,7 +4741,8 @@ export const formFields: Field[] = [
         key: "p12_preparer_signature",
         pdfKey: "p12_preparer_signature",
         label: "Preparer's Signature (Type full legal name)",
-        tooltip:"I certify, under penalty of perjury, that I prepared this application for the applicant at his or her request and with express consent and that all of the responses and information contained in and submitted with the application are complete, true, and correct and reflects only information provided by the applicant. The applicant reviewed the responses and information and informed me that he or she understands the responses and information in or submitted with the application.",
+        tooltip:
+          "I certify, under penalty of perjury, that I prepared this application for the applicant at his or her request and with express consent and that all of the responses and information contained in and submitted with the application are complete, true, and correct and reflects only information provided by the applicant. The applicant reviewed the responses and information and informed me that he or she understands the responses and information in or submitted with the application.",
         type: "text",
         condition: (d) => d.p12_used_preparer === "Yes",
       },
@@ -4617,12 +4841,73 @@ export const sectionIntroMessages = {
     message:
       "If an interpreter helped you complete this form by translating the questions and answers, provide their contact details and signature.",
   },
-  "Part 12. Contact Information, Certification, and Signature of the Person Preparing this Application, if Other Than the Applicant": {
-    greeting: "Preparer Information & Certification",
-    message:
-      "If an attorney or preparer completed this application on your behalf, provide their contact details and certification signature.",
-  },
+  "Part 12. Contact Information, Certification, and Signature of the Person Preparing this Application, if Other Than the Applicant":
+    {
+      greeting: "Preparer Information & Certification",
+      message:
+        "If an attorney or preparer completed this application on your behalf, provide their contact details and certification signature.",
+    },
 };
+
+export const overflowFields = [
+  {
+    prefix: "p1_prior_addr",
+    countKey: "p1_address_count",
+    startIndex: 2,
+    maxIndex: 8,
+    pageNumber: "4",
+    partNumber: "1",
+    itemNumber: "18",
+    labelPrefix: "Prior Address",
+    fields: [
+      // { suffix: "in_care_of", label: "In Care Of Name" },
+      { suffix: "street", label: "Street" },
+      { suffix: "unit_type", label: "Unit Type" },
+      { suffix: "unit_val", label: "Unit Number" },
+      { suffix: "city", label: "City" },
+      { suffix: "state", label: "State" },
+      { suffix: "zip", label: "Zip" },
+      { suffix: "province", label: "Province" },
+      { suffix: "postal", label: "Postal Code" },
+      { suffix: "country", label: "Country" },
+      { suffix: "date_from", label: "From" },
+      { suffix: "date_to", label: "To" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const careOf = data[`p1_prior_addr_${index}_in_care_of`] || "";
+      const street = data[`p1_prior_addr_${index}_street`] || "";
+      const unitType = data[`p1_prior_addr_${index}_unit_type`] || "";
+      const unitVal = data[`p1_prior_addr_${index}_unit_val`] || "";
+      const city = data[`p1_prior_addr_${index}_city`] || "";
+      const state = data[`p1_prior_addr_${index}_state`] || "";
+      const zip = data[`p1_prior_addr_${index}_zip`] || "";
+      const province = data[`p1_prior_addr_${index}_province`] || "";
+      const postal = data[`p1_prior_addr_${index}_postal`] || "";
+      const country = data[`p1_prior_addr_${index}_country`] || "";
+      const from = data[`p1_prior_addr_${index}_date_from`] || "";
+      const to = data[`p1_prior_addr_${index}_date_to`] || "";
+
+      const lines: string[] = [];
+      lines.push(`Previous Address ${index}:`);
+      // if (careOf) lines.push(`In care of: ${careOf}`);
+      if (street) lines.push(`Street number/name: ${street}`);
+      if (unitType) {
+        lines.push(`Unit type: ${unitType}`);
+      }
+      if (unitVal) lines.push(`Unit number: ${unitVal}`);
+      if (city) lines.push(`City/town: ${city}`);
+      if (state) lines.push(`State: ${state}`);
+      if (zip) lines.push(`ZIP Code: ${zip}`);
+      if (province) lines.push(`Province: ${province}`);
+      if (postal) lines.push(`Postal Code: ${postal}`);
+      if (country) lines.push(`Country: ${country}`);
+      if (from) lines.push(`Date from: ${from}`);
+      if (to) lines.push(`Date to: ${to}`);
+
+      return lines.join(", ");
+    },
+  },
+];
 
 export const i485Config = {
   formId,
@@ -4631,6 +4916,7 @@ export const i485Config = {
   formFields,
   getInitialFormData,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i485Config;
