@@ -190,7 +190,7 @@ export function MFASetup() {
     return (
       <div className="mx-auto mt-8 w-full max-w-xl px-4 py-10 sm:py-16">
         <Card className="relative overflow-hidden rounded-3xl border border-[#0d7377]/15 bg-white p-0 shadow-[0_24px_60px_-30px_rgba(13,115,119,0.45)]">
-          {/* accent header */}
+          {/* Accent header */}
           <div className="relative overflow-hidden bg-[#0d7377] px-6 py-8 sm:px-9 sm:py-10">
             <div className="pointer-events-none absolute -top-16 -right-10 h-48 w-48 rounded-full bg-[#32e0c4]/25 blur-2xl" />
             <div className="pointer-events-none absolute -bottom-20 left-10 h-40 w-40 rounded-full bg-[#8284bf]/30 blur-2xl" />
