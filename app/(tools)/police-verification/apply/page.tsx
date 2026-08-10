@@ -1154,8 +1154,10 @@ function PoliceApplyContent() {
                   <Input
                     id="targetCountry"
                     name="targetCountry"
-                    value={formData.targetCountry || "United States"}
+                    // value={formData.targetCountry || "United States"}
+                    value="United States"
                     disabled
+                    readOnly
                     className="bg-gray-100 cursor-not-allowed text-gray-700 font-medium"
                   />
                 </div>
@@ -1173,7 +1175,6 @@ function PoliceApplyContent() {
                       </p>
                     </div>
                   </div>
-
 
                   <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 px-1">
                     <button
