@@ -435,6 +435,30 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
 
+  // Automatically initialize/reset progressive sub-question index when formData changes
+  useEffect(() => {
+    const currentField = visibleFields[currentQuestionIndex];
+    if (currentField?.subQuestions && currentField.subQuestions.length > 0) {
+      const currentSubCount = progressiveSubQuestionIndices[currentField.key];
+      const hasVisibleSubQ = currentField.subQuestions.some(
+        (subQ) => !subQ.condition || subQ.condition(formData)
+      );
+
+      if (currentSubCount === undefined && hasVisibleSubQ) {
+        setProgressiveSubQuestionIndices((prev) => ({
+          ...prev,
+          [currentField.key]: 0,
+        }));
+      } else if (currentSubCount !== undefined && !hasVisibleSubQ) {
+        setProgressiveSubQuestionIndices((prev) => {
+          const copy = { ...prev };
+          delete copy[currentField.key];
+          return copy;
+        });
+      }
+    }
+  }, [formData, visibleFields, currentQuestionIndex, progressiveSubQuestionIndices]);
+
   // Auto-expand first section on mount, and auto-expand/collapse on step change
   useEffect(() => {
     // Only expand/collapse when step actually changes, not on every render
