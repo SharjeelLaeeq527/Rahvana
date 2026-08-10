@@ -35,6 +35,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import Input from "@/components/ui/input";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface CheckoutStepProps {
   formData: any;
