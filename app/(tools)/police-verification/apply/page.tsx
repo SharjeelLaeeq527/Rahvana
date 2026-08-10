@@ -34,50 +34,7 @@ import { E, msg } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
-import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
-import { Input } from "@/components/ui/input";
-
-const purposeOptions = [
-  { value: "Immigration", label: "Immigration" },
-  { value: "Visa", label: "Visa" },
-];
-
-const deliveryTypeOptions = [
-  { value: "Hard Copy", label: "Hard Copy (Sign with Stamp)" },
-  { value: "Digital", label: "Delivered via Email (Digital copy)" },
-];
-
-const districtOptions = [
-  { value: "Karachi Central", label: "Karachi Central" },
-  { value: "Karachi East", label: "Karachi East" },
-  { value: "Karachi South", label: "Karachi South" },
-  { value: "Karachi West", label: "Karachi West" },
-  { value: "Korangi", label: "Korangi" },
-  { value: "Malir", label: "Malir" },
-  { value: "Hyderabad", label: "Hyderabad" },
-  { value: "Sukkur", label: "Sukkur" },
-];
-
-const countryOptions = [
-  { value: "USA", label: "USA" },
-  { value: "UK", label: "UK" },
-  { value: "Canada", label: "Canada" },
-  { value: "Australia", label: "Australia" },
-  { value: "UAE", label: "UAE" },
-  { value: "Saudi Arabia", label: "Saudi Arabia" },
-];
-
-const policeStationOptions = [
-  { value: "Clifton", label: "Clifton" },
-  { value: "Defense", label: "Defense" },
-  { value: "Gulshan", label: "Gulshan" },
-];
-
-const policeCaseStatusOptions = [
-  { value: "Acquitted", label: "Acquitted" },
-  { value: "Released", label: "Released US 169/497 crpc" },
-  { value: "Pending", label: "Pending Trial" },
-];
+import Input from "@/components/ui/input";
 
 interface CheckoutStepProps {
   formData: any;
@@ -255,7 +212,7 @@ function PoliceApplyContent() {
     district: "",
     residingIn: "Pakistan",
     residingCountry: "",
-    targetCountry: "",
+    targetCountry: "United States",
     arrested: "No",
     firNo: "",
     firYear: "",
@@ -435,6 +392,12 @@ function PoliceApplyContent() {
     // let newErrors = { ...errors }; // Keep existing regex errors
 
     if (step === 1) {
+      if (Object.keys(errors).length > 0) {
+        const firstErr = Object.values(errors)[0];
+        showToast(firstErr || "Please fix validation errors in Step 1", "error");
+        return false;
+      }
+
       if (!formData.purpose) isValid = false;
       if (!formData.deliveryType) isValid = false;
       if (!formData.email) isValid = false;
@@ -1170,12 +1133,12 @@ function PoliceApplyContent() {
                     Name of Country for which Certificate is required
                   </label>
                   <Input
-              id="destinationCountry"
-              name="destinationCountry"
-              value="United States"
-              disabled
-              className="bg-gray-100 cursor-not-allowed text-gray-700 font-medium"
-            />
+                    id="targetCountry"
+                    name="targetCountry"
+                    value={formData.targetCountry || "United States"}
+                    disabled
+                    className="bg-gray-100 cursor-not-allowed text-gray-700 font-medium"
+                  />
                 </div>
 
                 {/* Arrest History & Review Moved inside Step 3 for compact flow */}
