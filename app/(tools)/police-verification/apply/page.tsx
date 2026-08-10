@@ -34,6 +34,7 @@ import { E, msg } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import Input from "@/components/ui/input";
 
 interface CheckoutStepProps {
   formData: any;
@@ -211,7 +212,7 @@ function PoliceApplyContent() {
     district: "",
     residingIn: "Pakistan",
     residingCountry: "",
-    targetCountry: "",
+    targetCountry: "United States",
     arrested: "No",
     firNo: "",
     firYear: "",
@@ -391,6 +392,12 @@ function PoliceApplyContent() {
     // let newErrors = { ...errors }; // Keep existing regex errors
 
     if (step === 1) {
+      if (Object.keys(errors).length > 0) {
+        const firstErr = Object.values(errors)[0];
+        showToast(firstErr || "Please fix validation errors in Step 1", "error");
+        return false;
+      }
+
       if (!formData.purpose) isValid = false;
       if (!formData.deliveryType) isValid = false;
       if (!formData.email) isValid = false;
@@ -1144,20 +1151,13 @@ function PoliceApplyContent() {
                   <label className="text-sm font-bold text-gray-700 ml-1">
                     Name of Country for which Certificate is required
                   </label>
-                  <select
+                  <Input
+                    id="targetCountry"
                     name="targetCountry"
-                    value={formData.targetCountry}
-                    onChange={handleChange}
-                    className="w-full p-4 rounded-2xl bg-gray-50 border border-transparent focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all"
-                  >
-                    <option value="">Select Country</option>
-                    <option value="USA">USA</option>
-                    <option value="UK">UK</option>
-                    <option value="Canada">Canada</option>
-                    <option value="Australia">Australia</option>
-                    <option value="UAE">UAE</option>
-                    <option value="Saudi Arabia">Saudi Arabia</option>
-                  </select>
+                    value={formData.targetCountry || "United States"}
+                    disabled
+                    className="bg-gray-100 cursor-not-allowed text-gray-700 font-medium"
+                  />
                 </div>
 
                 {/* Arrest History & Review Moved inside Step 3 for compact flow */}
