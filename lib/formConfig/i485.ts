@@ -115,6 +115,131 @@ const generatePriorAddressesFields = (startIndex: number, endIndex: number): Fie
   return fields;
 };
 
+const generatePriorEmploymentsFields = (startIndex: number, endIndex: number): Field[] => {
+  const fields: Field[] = [];
+  for (let i = startIndex; i <= endIndex; i++) {
+    fields.push({
+      key: `p4_emp_${i}_note`,
+      pdfKey: "N/A",
+      label: `Previous Employer/School ${i}`,
+      type: "hidden",
+      section: "Employment & Educational History",
+      condition: (d) => Number(d.p4_employment_count) >= i - 1,
+      subQuestions: [
+        {
+          key: `p4_emp_${i}_name`,
+          pdfKey: "N/A",
+          label: "What was the name of this Employer, Company, or School?",
+          type: "text",
+          section: "Employment & Educational History",
+        },
+        {
+          key: `p4_emp_${i}_occupation`,
+          pdfKey: "N/A",
+          label: "What was your Occupation? (If unemployed or retired, please state so)",
+          type: "text",
+          section: "Employment & Educational History",
+        },
+        {
+          key: `p4_emp_${i}_street`,
+          pdfKey: "N/A",
+          label: "Employer/School Street Number and Name",
+          type: "text",
+          section: "Employment & Educational History",
+        },
+        {
+          key: `p4_emp_${i}_unit_type`,
+          pdfKey: "_",
+          label: "Is this employer or school address an Apartment, Suite, or Floor?",
+          type: "radio",
+          options: [
+            { label: "Apt.", value: "Apt" },
+            { label: "Ste.", value: "Ste" },
+            { label: "Flr.", value: "Flr" },
+          ],
+          section: "Employment & Educational History",
+        },
+        {
+          key: `p4_emp_${i}_unit_val`,
+          pdfKey: "N/A",
+          label: "Apartment, Suite, or Floor Number",
+          type: "text",
+          section: "Employment & Educational History",
+        },
+        {
+          key: `p4_emp_${i}_city`,
+          pdfKey: "N/A",
+          label: "City or Town of Employer/School",
+          type: "text",
+          section: "Employment & Educational History",
+        },
+        {
+          key: `p4_emp_${i}_state`,
+          pdfKey: "N/A",
+          label: "State of Employer/School",
+          type: "dropdown",
+          isState: true,
+          section: "Employment & Educational History",
+          condition: (d) => !d[`p4_emp_${i}_province`],
+        },
+        {
+          key: `p4_emp_${i}_zip`,
+          pdfKey: "N/A",
+          label: "ZIP Code of Employer/School",
+          type: "text",
+          section: "Employment & Educational History",
+          condition: (d) => !d[`p4_emp_${i}_postal`],
+        },
+        {
+          key: `p4_emp_${i}_province`,
+          pdfKey: "N/A",
+          label: "Province (if outside U.S.)",
+          type: "text",
+          section: "Employment & Educational History",
+          condition: (d) => !d[`p4_emp_${i}_state`],
+        },
+        {
+          key: `p4_emp_${i}_postal`,
+          pdfKey: "N/A",
+          label: "Postal Code (if outside U.S.)",
+          type: "text",
+          section: "Employment & Educational History",
+          condition: (d) => !d[`p4_emp_${i}_zip`],
+        },
+        {
+          key: `p4_emp_${i}_country`,
+          pdfKey: "N/A",
+          label: "Country of Employer/School",
+          type: "text",
+          section: "Employment & Educational History",
+        },
+        {
+          key: `p4_emp_${i}_date_from`,
+          pdfKey: "N/A",
+          label: "When did you start working or studying here? (mm/dd/yyyy)",
+          type: "date",
+          section: "Employment & Educational History",
+        },
+        {
+          key: `p4_emp_${i}_date_to`,
+          pdfKey: "N/A",
+          label: "When did you finish working or studying here? (mm/dd/yyyy)",
+          type: "date",
+          section: "Employment & Educational History",
+        },
+        {
+          key: `p4_emp_${i}_support_source`,
+          pdfKey: "N/A",
+          label: "If unemployed or retired, what was your source of financial support?",
+          type: "text",
+          section: "Employment & Educational History",
+        },
+      ],
+    });
+  }
+  return fields;
+};
+
 export const formFields: Field[] = [
   // ============================================
   // Header Information
@@ -1843,6 +1968,17 @@ export const formFields: Field[] = [
     type: "text",
     section: "Employment & Educational History",
   },
+  {
+    key: "p4_employment_count",
+    pdfKey: "N/A",
+    label:
+      "How many other employers or schools have you had in the last 5 years? (excluding your current/most recent one)",
+    type: "text",
+    section: "Employment & Educational History",
+    pattern: "[0-9]*",
+    placeholder: "0",
+  },
+  ...generatePriorEmploymentsFields(2, 8),
 
   // Foreign Employer / School (Item 8)
   {
@@ -4888,7 +5024,7 @@ export const overflowFields = [
       const to = data[`p1_prior_addr_${index}_date_to`] || "";
 
       const lines: string[] = [];
-      lines.push(`Previous Address ${index}:`);
+      lines.push(`Previous Address ${index}:\n`);
       // if (careOf) lines.push(`In care of: ${careOf}`);
       if (street) lines.push(`Street number/name: ${street}`);
       if (unitType) {
@@ -4903,6 +5039,67 @@ export const overflowFields = [
       if (country) lines.push(`Country: ${country}`);
       if (from) lines.push(`Date from: ${from}`);
       if (to) lines.push(`Date to: ${to}`);
+
+      return lines.join(", ");
+    },
+  },
+  {
+    prefix: "p4_emp",
+    countKey: "p4_employment_count",
+    startIndex: 2,
+    maxIndex: 8,
+    pageNumber: "8",
+    partNumber: "4",
+    itemNumber: "7",
+    labelPrefix: "Prior Employer",
+    fields: [
+      { suffix: "name", label: "Employer/School Name" },
+      { suffix: "occupation", label: "Occupation" },
+      { suffix: "street", label: "Street" },
+      { suffix: "unit_type", label: "Unit Type" },
+      { suffix: "unit_val", label: "Unit Number" },
+      { suffix: "city", label: "City" },
+      { suffix: "state", label: "State" },
+      { suffix: "zip", label: "Zip" },
+      { suffix: "province", label: "Province" },
+      { suffix: "postal", label: "Postal Code" },
+      { suffix: "country", label: "Country" },
+      { suffix: "date_from", label: "From" },
+      { suffix: "date_to", label: "To" },
+      { suffix: "support_source", label: "Support Source" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const name = data[`p4_emp_${index}_name`] || "";
+      const occupation = data[`p4_emp_${index}_occupation`] || "";
+      const street = data[`p4_emp_${index}_street`] || "";
+      const unitType = data[`p4_emp_${index}_unit_type`] || "";
+      const unitVal = data[`p4_emp_${index}_unit_val`] || "";
+      const city = data[`p4_emp_${index}_city`] || "";
+      const state = data[`p4_emp_${index}_state`] || "";
+      const zip = data[`p4_emp_${index}_zip`] || "";
+      const province = data[`p4_emp_${index}_province`] || "";
+      const postal = data[`p4_emp_${index}_postal`] || "";
+      const country = data[`p4_emp_${index}_country`] || "";
+      const from = data[`p4_emp_${index}_date_from`] || "";
+      const to = data[`p4_emp_${index}_date_to`] || "";
+      const support = data[`p4_emp_${index}_support_source`] || "";
+
+      const lines: string[] = [];
+      lines.push(`Previous Employer/School ${index}:\n`);
+      if (name) lines.push(`Name: ${name}`);
+      if (occupation) lines.push(`Occupation: ${occupation}`);
+      if (street) lines.push(`Street number/name: ${street}`);
+      if (unitType) lines.push(`Unit type: ${unitType}`);
+      if (unitVal) lines.push(`Unit number: ${unitVal}`);
+      if (city) lines.push(`City/town: ${city}`);
+      if (state) lines.push(`State: ${state}`);
+      if (zip) lines.push(`ZIP Code: ${zip}`);
+      if (province) lines.push(`Province: ${province}`);
+      if (postal) lines.push(`Postal Code: ${postal}`);
+      if (country) lines.push(`Country: ${country}`);
+      if (from) lines.push(`Date from: ${from}`);
+      if (to) lines.push(`Date to: ${to}`);
+      if (support) lines.push(`Support source: ${support}`);
 
       return lines.join(", ");
     },
