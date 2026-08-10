@@ -1156,6 +1156,7 @@ function PoliceApplyContent() {
                     </div>
                   </div>
 
+
                   <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 px-1">
                     <button
                       type="button"
