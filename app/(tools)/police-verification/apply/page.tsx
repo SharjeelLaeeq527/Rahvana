@@ -35,7 +35,6 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import Input from "@/components/ui/input";
-import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface CheckoutStepProps {
   formData: any;
@@ -535,6 +534,7 @@ function PoliceApplyContent() {
           },
           body: JSON.stringify({
             policeVerificationId: id,
+            userId: user.id,
           }),
         });
 
@@ -618,6 +618,7 @@ function PoliceApplyContent() {
               },
               body: JSON.stringify({
                 policeVerificationId: id,
+                userId: user.id,
               }),
             });
 
@@ -685,7 +686,7 @@ function PoliceApplyContent() {
               </h1>
               <QuickAccessButton
                 item={{
-                  id: "service-pcc-filing-service-, -sindh",
+                  id: "service-pcc-filing-service-—-sindh",
                   title: "Sindh Police Verification Service",
                   href: "/police-verification/apply",
                   icon_name: "Shield",
@@ -774,27 +775,30 @@ function PoliceApplyContent() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 ml-1">Purpose</label>
-                    <CustomDropdown
+                    <select
+                      name="purpose"
                       value={formData.purpose}
-                      onChange={(value) => setFormData((prev) => ({ ...prev, purpose: value }))}
-                      options={purposeOptions}
-                      placeholder="Select purpose"
-                      className="w-full [&_button]:h-[58px] [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-2xl [&_button]:bg-gray-50 [&_button]:p-4"
-                    />
+                      onChange={handleChange}
+                      className="w-full p-4 rounded-2xl bg-gray-50 border border-transparent focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="Immigration">Immigration</option>
+                      <option value="Visa">Visa</option>
+                    </select>
                   </div>
                   <div className="space-y-2">
                     <label className="text-sm font-bold text-gray-700 ml-1">
                       Certificate Delivery Type
                     </label>
-                    <CustomDropdown
+                    <select
+                      name="deliveryType"
                       value={formData.deliveryType}
-                      onChange={(value) =>
-                        setFormData((prev) => ({ ...prev, deliveryType: value }))
-                      }
-                      options={deliveryTypeOptions}
-                      placeholder="Select type"
-                      className="w-full [&_button]:h-[58px] [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-2xl [&_button]:bg-gray-50 [&_button]:p-4"
-                    />
+                      onChange={handleChange}
+                      className="w-full p-4 rounded-2xl bg-gray-50 border border-transparent focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all appearance-none cursor-pointer"
+                    >
+                      <option value="">Select Type</option>
+                      <option value="Hard Copy">Hard Copy (Sign with Stamp)</option>
+                      <option value="Digital">Delivered via Email (Digital copy)</option>
+                    </select>
                   </div>
                 </div>
 
@@ -1059,13 +1063,22 @@ function PoliceApplyContent() {
                   <label className="text-sm font-bold text-gray-700 ml-1">
                     Select Your Current District
                   </label>
-                  <CustomDropdown
+                  <select
+                    name="district"
                     value={formData.district}
-                    onChange={(value) => setFormData((prev) => ({ ...prev, district: value }))}
-                    options={districtOptions}
-                    placeholder="Select district"
-                    className="w-full [&_button]:h-[58px] [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-2xl [&_button]:bg-gray-50 [&_button]:p-4"
-                  />
+                    onChange={handleChange}
+                    className="w-full p-4 rounded-2xl bg-gray-50 border border-transparent focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all"
+                  >
+                    <option value="">Select District</option>
+                    <option value="Karachi Central">Karachi Central</option>
+                    <option value="Karachi East">Karachi East</option>
+                    <option value="Karachi South">Karachi South</option>
+                    <option value="Karachi West">Karachi West</option>
+                    <option value="Korangi">Korangi</option>
+                    <option value="Malir">Malir</option>
+                    <option value="Hyderabad">Hyderabad</option>
+                    <option value="Sukkur">Sukkur</option>
+                  </select>
                 </div>
 
                 <div className="bg-gray-50 p-6 md:p-8 rounded-3xl md:rounded-[2.5rem] border border-gray-100 space-y-6">
@@ -1116,15 +1129,20 @@ function PoliceApplyContent() {
                       className="space-y-2"
                     >
                       <label className="text-sm font-bold text-gray-700 ml-1">Select Country</label>
-                      <CustomDropdown
+                      <select
+                        name="residingCountry"
                         value={formData.residingCountry}
-                        onChange={(value) =>
-                          setFormData((prev) => ({ ...prev, residingCountry: value }))
-                        }
-                        options={countryOptions}
-                        placeholder="Select country"
-                        className="w-full [&_button]:h-[58px] [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-2xl [&_button]:bg-white [&_button]:p-4"
-                      />
+                        onChange={handleChange}
+                        className="w-full p-4 rounded-2xl bg-white border border-gray-100 focus:border-primary outline-none transition-all"
+                      >
+                        <option value="">Select Country</option>
+                        <option value="USA">USA</option>
+                        <option value="UK">UK</option>
+                        <option value="Canada">Canada</option>
+                        <option value="Australia">Australia</option>
+                        <option value="UAE">UAE</option>
+                        <option value="Saudi Arabia">Saudi Arabia</option>
+                      </select>
                     </motion.div>
                   )}
                 </div>
@@ -1136,8 +1154,10 @@ function PoliceApplyContent() {
                   <Input
                     id="targetCountry"
                     name="targetCountry"
-                    value={formData.targetCountry || "United States"}
+                    // value={formData.targetCountry || "United States"}
+                    value="United States"
                     disabled
+                    readOnly
                     className="bg-gray-100 cursor-not-allowed text-gray-700 font-medium"
                   />
                 </div>
@@ -1155,7 +1175,6 @@ function PoliceApplyContent() {
                       </p>
                     </div>
                   </div>
-
 
                   <div className="flex flex-col sm:flex-row gap-4 sm:gap-8 px-1">
                     <button
@@ -1233,15 +1252,17 @@ function PoliceApplyContent() {
                           <label className="text-xs font-bold text-gray-500 uppercase ml-1">
                             Police Station
                           </label>
-                          <CustomDropdown
+                          <select
+                            name="policeStation"
                             value={formData.policeStation}
-                            onChange={(value) =>
-                              setFormData((prev) => ({ ...prev, policeStation: value }))
-                            }
-                            options={policeStationOptions}
-                            placeholder="Select station"
-                            className="w-full [&_button]:h-[58px] [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-xl [&_button]:bg-white [&_button]:p-4"
-                          />
+                            onChange={handleChange}
+                            className="w-full p-4 rounded-xl bg-white border border-orange-100 focus:border-orange-500 outline-none transition-all cursor-pointer"
+                          >
+                            <option value="">Select Station</option>
+                            <option value="Clifton">Clifton</option>
+                            <option value="Defense">Defense</option>
+                            <option value="Gulshan">Gulshan</option>
+                          </select>
                         </div>
                       </div>
 
@@ -1297,13 +1318,17 @@ function PoliceApplyContent() {
                         <label className="text-xs font-bold text-gray-500 uppercase ml-1">
                           Status
                         </label>
-                        <CustomDropdown
+                        <select
+                          name="status"
                           value={formData.status}
-                          onChange={(value) => setFormData((prev) => ({ ...prev, status: value }))}
-                          options={policeCaseStatusOptions}
-                          placeholder="Select status"
-                          className="w-full [&_button]:h-[58px] [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-xl [&_button]:bg-white [&_button]:p-4"
-                        />
+                          onChange={handleChange}
+                          className="w-full p-4 rounded-xl bg-white border border-orange-100 focus:border-orange-500 outline-none transition-all cursor-pointer"
+                        >
+                          <option value="">Select Status</option>
+                          <option value="Acquitted">Acquitted</option>
+                          <option value="Released">Released US 169/497 crpc</option>
+                          <option value="Pending">Pending Trial</option>
+                        </select>
                       </div>
                     </motion.div>
                   )}
