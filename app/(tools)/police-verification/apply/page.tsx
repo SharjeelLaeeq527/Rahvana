@@ -255,7 +255,7 @@ function PoliceApplyContent() {
     district: "",
     residingIn: "Pakistan",
     residingCountry: "",
-    targetCountry: "",
+    targetCountry: "United States",
     arrested: "No",
     firNo: "",
     firYear: "",
@@ -435,6 +435,12 @@ function PoliceApplyContent() {
     // let newErrors = { ...errors }; // Keep existing regex errors
 
     if (step === 1) {
+      if (Object.keys(errors).length > 0) {
+        const firstErr = Object.values(errors)[0];
+        showToast(firstErr || "Please fix validation errors in Step 1", "error");
+        return false;
+      }
+
       if (!formData.purpose) isValid = false;
       if (!formData.deliveryType) isValid = false;
       if (!formData.email) isValid = false;
