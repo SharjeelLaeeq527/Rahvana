@@ -1227,12 +1227,12 @@ export default function CombinedIntakeForm({
   // ──────────────────────────────────────────────
   
   const ProgressIndicator = () => (
-    <div className="flex items-center justify-between mb-8 px-2 max-w-2xl mx-auto">
+    <div className="flex items-center justify-between mb-8 px-1 sm:px-2 max-w-2xl mx-auto">
       {STEPS.map((step, idx) => (
         <div key={step.id} className="flex items-center flex-1 last:flex-none">
           <div className="flex flex-col items-center">
             <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-300
+              className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 sm:h-10 sm:w-10 sm:text-sm
                 ${
                   currentStep === step.id
                     ? "bg-primary text-white scale-110 shadow-md ring-4 ring-primary/20"
@@ -1242,7 +1242,12 @@ export default function CombinedIntakeForm({
                 }`}
             >
               {currentStep > step.id ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="h-4 w-4 sm:h-5 sm:w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1255,7 +1260,7 @@ export default function CombinedIntakeForm({
               )}
             </div>
             <span
-              className={`mt-1.5 text-[10px] md:text-xs text-center max-w-[80px] leading-tight font-medium ${
+              className={`mt-1.5 max-w-[64px] text-center text-[10px] font-medium leading-tight sm:max-w-[80px] md:text-xs ${
                 currentStep === step.id ? "text-primary font-bold" : "text-muted-foreground"
               }`}
             >
@@ -1264,7 +1269,7 @@ export default function CombinedIntakeForm({
           </div>
           {idx < STEPS.length - 1 && (
             <div
-              className={`flex-1 h-0.5 mx-2 mb-5 rounded transition-colors duration-300 ${
+              className={`h-0.5 flex-1 mx-1 mb-5 rounded transition-colors duration-300 sm:mx-2 ${
                 currentStep > step.id ? "bg-teal-600/50" : "bg-border"
               }`}
             />

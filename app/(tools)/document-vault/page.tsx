@@ -969,8 +969,8 @@ export default function DocumentVaultPage() {
             {/* Top Professional Header */}
             <div className="bg-white dark:bg-slate-900 border-b shadow-sm sticky top-0 z-30">
               <div className="site-main-px py-4">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-4">
+                <div className="flex flex-row items-start justify-between gap-4 md:items-center">
+                  <div className="flex items-center gap-4 min-w-0 flex-1">
                     {userJourneys.length > 1 && activeJourneyId ? (
                       <Button
                         variant="ghost"
@@ -1013,7 +1013,7 @@ export default function DocumentVaultPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 shrink-0">
                     <NotificationBell />
                   </div>
                 </div>

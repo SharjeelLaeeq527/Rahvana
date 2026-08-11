@@ -320,7 +320,6 @@ export default function TranslationRequestDetails({ params }: { params: Promise<
                       <p className="font-medium">
                         {t(`documentTranslation.uploadPage.types.${request.document_type}`)}
                       </p>
-                      <p className="font-medium">{formatDate(request.translatedUploadedAt)}</p>
                     </div>
                   </div>
 

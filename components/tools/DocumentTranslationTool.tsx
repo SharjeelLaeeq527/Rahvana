@@ -387,11 +387,11 @@ export default function DocumentTranslationTool({
                 </div>
               )}
 
-              <div className="flex justify-between pt-6 mt-6 border-t border-slate-200">
+              <div className="flex flex-col-reverse gap-3 pt-6 mt-6 border-t border-slate-200 sm:flex-row sm:justify-between">
                 <Button
                   onClick={onBack}
                   variant="outline"
-                  className="bg-teal-600 hover:bg-teal-700 text-white"
+                  className="w-full border-slate-300 text-slate-700 hover:bg-slate-100 sm:w-auto"
                 >
                   Back
                 </Button>
@@ -399,7 +399,7 @@ export default function DocumentTranslationTool({
                 <Button
                   onClick={onSubmit}
                   disabled={loading}
-                  className="bg-teal-600 hover:bg-teal-700 text-white"
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white sm:w-auto"
                 >
                   {loading
                     ? "Processing..."
@@ -439,6 +439,52 @@ export default function DocumentTranslationTool({
         </header>
       )}
 
+      {/* Step indicator — orients the user across the 2-step flow */}
+      {!uploadSuccess && (
+        <div className="mx-auto mb-8 flex w-full max-w-sm items-center justify-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2">
+            <span
+              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${
+                currentStep >= 1 ? "bg-teal-600 text-white" : "bg-slate-200 text-slate-500"
+              }`}
+            >
+              {currentStep > 1 ? <CheckCircle className="h-4 w-4" /> : "1"}
+            </span>
+            <span
+              className={`text-sm font-semibold ${currentStep >= 1 ? "text-slate-900" : "text-slate-400"}`}
+            >
+              {t("documentTranslation.uploadPage.steps.details") !==
+              "documentTranslation.uploadPage.steps.details"
+                ? t("documentTranslation.uploadPage.steps.details")
+                : "Details"}
+            </span>
+          </div>
+
+          <div
+            className={`h-0.5 min-w-[24px] flex-1 rounded-full transition-colors ${
+              currentStep >= 2 ? "bg-teal-600" : "bg-slate-200"
+            }`}
+          />
+
+          <div className="flex items-center gap-2">
+            <span
+              className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-bold transition-colors ${
+                currentStep >= 2 ? "bg-teal-600 text-white" : "bg-slate-200 text-slate-500"
+              }`}
+            >
+              2
+            </span>
+            <span
+              className={`text-sm font-semibold ${currentStep >= 2 ? "text-slate-900" : "text-slate-400"}`}
+            >
+              {t("documentTranslation.uploadPage.steps.checkout") !==
+              "documentTranslation.uploadPage.steps.checkout"
+                ? t("documentTranslation.uploadPage.steps.checkout")
+                : "Checkout"}
+            </span>
+          </div>
+        </div>
+      )}
 
       {!uploadSuccess ? (
         currentStep === 1 ? (

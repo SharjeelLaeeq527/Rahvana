@@ -94,7 +94,7 @@ export function NotificationCenter() {
     <div className="flex flex-col h-full">
       {/* Header with Title and Counts */}
       <SheetHeader className="px-1 text-left">
-        <div className="flex items-center justify-between gap-3 mb-4">
+        <div className="flex items-center justify-between gap-3 mb-4 pr-12">
           <SheetTitle className="text-xl sm:text-2xl">Pending Documents</SheetTitle>
         </div>
         <SheetDescription className="text-sm sm:text-base">

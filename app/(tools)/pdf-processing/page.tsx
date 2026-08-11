@@ -41,8 +41,8 @@ export default function PDFProcessingPage() {
     <main className="bg-gray-50 flex flex-col items-center justify-center site-main-py site-main-px mt-[55px]">
       {/* Full Screen Editor (only for "Edit" flow) */}
       {pdfFile && (
-        <div className="fixed inset-0 z-50 bg-white">
-          <div className="flex justify-between items-center p-4 border-b border-gray-200">
+        <div className="fixed inset-0 z-[110] flex flex-col bg-white">
+          <div className="flex shrink-0 justify-between items-center p-4 border-b border-gray-200">
             <button
               onClick={handleCloseEditor}
               className="bg-rahvana-primary text-white px-4 py-2 rounded-lg font-semibold hover:bg-rahvana-primary-dark transition"
@@ -50,7 +50,7 @@ export default function PDFProcessingPage() {
               ← {t("pdfProcessing.back")}
             </button>
           </div>
-          <div className="h-[calc(100vh-64px)] w-full">
+          <div className="min-h-0 w-full flex-1">
             <ResultGate feature="pdf_toolkit">
               <PDFEditor />
             </ResultGate>
@@ -79,11 +79,11 @@ export default function PDFProcessingPage() {
             </div>
           </div>
 
-          {/* Tabs */}
-          <div className="flex flex-wrap gap-2 md:gap-4 mb-8 bg-white shadow-md rounded-full p-2 justify-center">
+          {/* Tabs — 2x2 grid on mobile, single pill row on larger screens */}
+          <div className="mb-8 grid w-full max-w-md grid-cols-2 gap-2 rounded-2xl bg-white p-2 shadow-md sm:flex sm:w-auto sm:max-w-none sm:flex-wrap sm:justify-center sm:gap-4 sm:rounded-full">
             <button
               onClick={() => setActiveTab("upload")}
-              className={`px-4 py-2.5 md:px-6 md:py-3 rounded-full font-semibold transition text-sm md:text-base ${
+              className={`w-full rounded-full px-4 py-2.5 text-center text-sm font-semibold transition sm:w-auto md:px-6 md:py-3 md:text-base ${
                 activeTab === "upload"
                   ? "bg-rahvana-primary text-white shadow-md"
                   : "text-gray-600 hover:bg-gray-100"
@@ -93,7 +93,7 @@ export default function PDFProcessingPage() {
             </button>
             <button
               onClick={() => setActiveTab("merge")}
-              className={`px-4 py-2.5 md:px-6 md:py-3 rounded-full font-semibold transition text-sm md:text-base ${
+              className={`w-full rounded-full px-4 py-2.5 text-center text-sm font-semibold transition sm:w-auto md:px-6 md:py-3 md:text-base ${
                 activeTab === "merge"
                   ? "bg-rahvana-primary text-white shadow-md"
                   : "text-gray-600 hover:bg-gray-100"
@@ -103,7 +103,7 @@ export default function PDFProcessingPage() {
             </button>
             <button
               onClick={() => setActiveTab("compress")}
-              className={`px-4 py-2.5 md:px-6 md:py-3 rounded-full font-semibold transition text-sm md:text-base ${
+              className={`w-full rounded-full px-4 py-2.5 text-center text-sm font-semibold transition sm:w-auto md:px-6 md:py-3 md:text-base ${
                 activeTab === "compress"
                   ? "bg-rahvana-primary text-white shadow-md"
                   : "text-gray-600 hover:bg-gray-100"
@@ -113,7 +113,7 @@ export default function PDFProcessingPage() {
             </button>
             <button
               onClick={() => setActiveTab("convert")}
-              className={`px-4 py-2.5 md:px-6 md:py-3 rounded-full font-semibold transition text-sm md:text-base ${
+              className={`w-full rounded-full px-4 py-2.5 text-center text-sm font-semibold transition sm:w-auto md:px-6 md:py-3 md:text-base ${
                 activeTab === "convert"
                   ? "bg-rahvana-primary text-white shadow-md"
                   : "text-gray-600 hover:bg-gray-100"
