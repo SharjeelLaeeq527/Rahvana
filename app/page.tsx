@@ -43,6 +43,7 @@ import AnimationCard from "./(main)/home-page/AnimationCard";
 import Intro from "./(main)/home-page/intro";
 import SectionBird from "./(main)/home-page/SectionBird";
 import ConsultationSection from "./components/home-page/ConsultationSection";
+import { Star, User, ShieldCheck } from "lucide-react";
 
 import { ir1journeyHref } from "@/lib/constants/routes";
 
@@ -1626,48 +1627,105 @@ function HomePageContent() {
                     Voices From The Journey
                   </span>
                 </div>
+
                 <h2 className="mx-auto mb-14 max-w-4xl font-serif text-3xl leading-tight font-bold text-[#121e2e] md:text-5xl">
                   Words from people{" "}
                   <em className="font-normal text-[#0d7a75] italic">who&apos;ve been there.</em>
                 </h2>
 
-                <div className="mx-auto grid max-w-4xl grid-cols-1 gap-6 md:grid-cols-2">
+                <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-3">
                   {[
                     {
                       bg: "bg-[#fde8ec]",
-                      iconBg: "bg-[#fbc8d2]",
                       author: "Ayesha W.",
                       role: "IR-1 applicant · Islamabad",
-                      text: "For the first time, I felt like someone had actually thought about what this process feels like to go through, not just the steps, but the weight of it.",
+                      rating: 5,
+                      text: "The uncertainty of the IR-1 process felt like a weight. Rahvana's clear roadmap gave me the clarity I needed to finally breathe again. My visa was approved last month.",
                     },
                     {
                       bg: "bg-[#e3edf9]",
-                      iconBg: "bg-[#c4d9f5]",
                       author: "Karim U.",
                       role: "US Citizen sponsor · Chicago",
-                      text: "Three years of waiting. Rahvana helped me understand where I was in the process without the constant anxiety of not knowing what comes next.",
+                      rating: 5,
+                      text: "After three years of waiting, we were lost in the system. Rahvana helped us understand exactly where we stood. Now, my family is finally together in Chicago.",
+                    },
+                    {
+                      bg: "bg-[#f0f7f4]",
+                      author: "Elena M.",
+                      role: "IR-1 applicant · Bogota",
+                      rating: 4.5,
+                      text: "The document requirements were overwhelming. Rahvana's vault made organizing our case effortless. We just received our interview date!",
                     },
                   ].map((item, i) => (
                     <div
                       key={i}
-                      className={`${item.bg} flex flex-col gap-6 rounded-[20px] p-9 text-left shadow-sm`}
+                      className={`${item.bg} flex flex-col gap-5 rounded-[20px] p-8 text-left shadow-sm`}
                     >
-                      <div
-                        className={`${item.iconBg} flex h-9 w-9 items-center justify-center rounded-lg text-[#0d7a75]`}
-                      >
-                        <Icons.Quote size={20} fill="currentColor" />
+                      <div className="flex gap-1 text-[#0d7a75]">
+                        {[...Array(5)].map((_, j) => {
+                          const isHalfStar = item.rating === 4.5 && j === 4;
+
+                          return (
+                            <div key={j} className="relative h-4 w-4">
+                              {/* Empty star */}
+                              <Star
+                                size={16}
+                                className="absolute inset-0"
+                                fill="none"
+                                strokeWidth={2}
+                              />
+
+                              {/* Full / half fill */}
+                              <div
+                                className={`absolute inset-0 overflow-hidden ${
+                                  isHalfStar ? "w-1/2" : "w-full"
+                                }`}
+                              >
+                                <Star size={16} fill="currentColor" strokeWidth={2} />
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                      <blockquote className="grow text-sm leading-relaxed text-gray-600 italic">
-                        &quot;{item.text}&quot;
+
+                      <blockquote className="grow text-[15px] leading-relaxed text-[#4a5567] italic">
+                        {item.text}
                       </blockquote>
-                      <div className="text-sm">
-                        <strong className="block font-semibold text-[#121e2e]">
-                          {item.author}
-                        </strong>
-                        <span className="text-xs text-gray-500">{item.role}</span>
+
+                      <div className="flex items-center gap-3 text-sm">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/70 text-[#0d7a75]">
+                          <User size={20} />
+                        </div>
+
+                        <div>
+                          <strong className="block font-semibold text-[#121e2e]">
+                            {item.author}
+                          </strong>
+                          <span className="text-xs text-[#64748b]">{item.role}</span>
+                        </div>
                       </div>
                     </div>
                   ))}
+                </div>
+
+                <div className="mx-auto mt-10 max-w-2xl text-center">
+                  <h3 className="mb-6 text-2xl font-bold text-[#121e2e] md:text-3xl">
+                    Ready to start your own journey?
+                  </h3>
+
+                  <Link
+                    href="/visa-category"
+                    className="inline-flex items-center justify-center rounded-full bg-[#0d7a75] px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0a5f5b]"
+                  >
+                    Start Your Journey
+                  </Link>
+                </div>
+
+                <div className="mx-auto mt-8 max-w-3xl border-t border-[#e2e8f0]" />
+
+                <div className="mx-auto mt-8 flex max-w-3xl items-center justify-center gap-2 text-xs md:text-sm text-[#64748b]">
+                  <ShieldCheck size={16} className="text-[#0d7a75]" />
+                  <span>Helping families navigate U.S. immigration with confidence.</span>
                 </div>
               </section>
 
