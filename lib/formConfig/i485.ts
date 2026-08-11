@@ -240,6 +240,85 @@ const generatePriorEmploymentsFields = (startIndex: number, endIndex: number): F
   return fields;
 };
 
+const generatePriorChildrenFields = (startIndex: number, endIndex: number): Field[] => {
+  const fields: Field[] = [];
+  for (let i = startIndex; i <= endIndex; i++) {
+    fields.push({
+      key: `p7_child_${i}_note`,
+      pdfKey: "N/A",
+      label: `Child ${i}`,
+      type: "hidden",
+      section: "Part 7. Information About Your Children",
+      condition: (d) => Number(d.p7_total_children_count) >= i,
+      subQuestions: [
+        {
+          key: `p7_child_${i}_family_name`,
+          pdfKey: "N/A",
+          label: "What is your Child's Legal Last Name (Family Name)?",
+          type: "text",
+          section: "Part 7. Information About Your Children",
+        },
+        {
+          key: `p7_child_${i}_given_name`,
+          pdfKey: "N/A",
+          label: "What is your Child's Legal First Name (Given Name)?",
+          type: "text",
+          section: "Part 7. Information About Your Children",
+        },
+        {
+          key: `p7_child_${i}_middle_name`,
+          pdfKey: "N/A",
+          label: "What is your Child's Legal Middle Name?",
+          type: "text",
+          section: "Part 7. Information About Your Children",
+        },
+        {
+          key: `p7_child_${i}_alien_number`,
+          pdfKey: "N/A",
+          label: "What is your Child's Alien Registration Number (A-Number)? (If any)",
+          placeholder: "123456789",
+          type: "text",
+          maxLength: 9,
+          section: "Part 7. Information About Your Children",
+        },
+        {
+          key: `p7_child_${i}_dob`,
+          pdfKey: "N/A",
+          label: "What is your Child's Birthday? (Date of Birth mm/dd/yyyy)",
+          type: "date",
+          section: "Part 7. Information About Your Children",
+        },
+        {
+          key: `p7_child_${i}_country_of_birth`,
+          pdfKey: "N/A",
+          label: "What is your Child's Country of Birth?",
+          type: "text",
+          section: "Part 7. Information About Your Children",
+        },
+        {
+          key: `p7_child_${i}_relationship`,
+          pdfKey: "N/A",
+          label: "What is your Child's relationship to you? (e.g., biological child, stepchild, legally adopted child)",
+          type: "text",
+          section: "Part 7. Information About Your Children",
+        },
+        {
+          key: `p7_child_${i}_applying_with_you`,
+          pdfKey: "_",
+          label: "Is this Child also applying now on a separate Form I-485?",
+          type: "radio",
+          section: "Part 7. Information About Your Children",
+          options: [
+            { label: "Yes", value: "Yes" },
+            { label: "No", value: "No" },
+          ],
+        },
+      ],
+    });
+  }
+  return fields;
+};
+
 export const formFields: Field[] = [
   // ============================================
   // Header Information
@@ -2552,6 +2631,7 @@ export const formFields: Field[] = [
     label: "What is your Child 1's Legal Last Name (Family Name)?",
     type: "text",
     section: "Part 7. Information About Your Children",
+    condition: (d) => Number(d.p7_total_children_count) >= 1,
   },
   {
     key: "p7_child1_given_name",
@@ -2559,6 +2639,7 @@ export const formFields: Field[] = [
     label: "What is your Child 1's Legal First Name (Given Name)?",
     type: "text",
     section: "Part 7. Information About Your Children",
+    condition: (d) => Number(d.p7_total_children_count) >= 1,
   },
   {
     key: "p7_child1_middle_name",
@@ -2566,6 +2647,7 @@ export const formFields: Field[] = [
     label: "What is your Child 1's Legal Middle Name?",
     type: "text",
     section: "Part 7. Information About Your Children",
+    condition: (d) => Number(d.p7_total_children_count) >= 1,
   },
   {
     key: "p7_child1_alien_number",
@@ -2575,6 +2657,7 @@ export const formFields: Field[] = [
     type: "text",
     maxLength: 9,
     section: "Part 7. Information About Your Children",
+    condition: (d) => Number(d.p7_total_children_count) >= 1,
   },
   {
     key: "p7_child1_dob",
@@ -2582,6 +2665,7 @@ export const formFields: Field[] = [
     label: "What is your Child 1's Birthday? (Date of Birth mm/dd/yyyy)",
     type: "date",
     section: "Part 7. Information About Your Children",
+    condition: (d) => Number(d.p7_total_children_count) >= 1,
   },
   {
     key: "p7_child1_country_of_birth",
@@ -2589,6 +2673,7 @@ export const formFields: Field[] = [
     label: "What is your Child 1's Country of Birth?",
     type: "text",
     section: "Part 7. Information About Your Children",
+    condition: (d) => Number(d.p7_total_children_count) >= 1,
   },
   {
     key: "p7_child1_relationship",
@@ -2597,6 +2682,7 @@ export const formFields: Field[] = [
       "What is your Child 1's relationship to you? (e.g., biological child, stepchild, legally adopted child)",
     type: "text",
     section: "Part 7. Information About Your Children",
+    condition: (d) => Number(d.p7_total_children_count) >= 1,
   },
   {
     key: "p7_child1_applying_with_you",
@@ -2608,6 +2694,7 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p7_child1_applying_with_you_Yes" },
       { label: "No", value: "No", pdfKey: "p7_child1_applying_with_you_No" },
     ],
+    condition: (d) => Number(d.p7_total_children_count) >= 1,
   },
 
   // Child 2 Details
@@ -2617,6 +2704,7 @@ export const formFields: Field[] = [
     label: "What is your Child 2's Legal Last Name (Family Name)?",
     type: "text",
     section: "Part 7. Information About Your Children",
+    condition: (d) => Number(d.p7_total_children_count) >= 2,
   },
   {
     key: "p7_child2_given_name",
@@ -2624,6 +2712,7 @@ export const formFields: Field[] = [
     label: "What is your Child 2's Legal First Name (Given Name)?",
     type: "text",
     section: "Part 7. Information About Your Children",
+    condition: (d) => Number(d.p7_total_children_count) >= 2,
   },
   {
     key: "p7_child2_middle_name",
@@ -2631,6 +2720,7 @@ export const formFields: Field[] = [
     label: "What is your Child 2's Legal Middle Name?",
     type: "text",
     section: "Part 7. Information About Your Children",
+    condition: (d) => Number(d.p7_total_children_count) >= 2,
   },
   {
     key: "p7_child2_alien_number",
@@ -2640,6 +2730,7 @@ export const formFields: Field[] = [
     type: "text",
     maxLength: 9,
     section: "Part 7. Information About Your Children",
+    condition: (d) => Number(d.p7_total_children_count) >= 2,
   },
   {
     key: "p7_child2_dob",
@@ -2647,6 +2738,7 @@ export const formFields: Field[] = [
     label: "What is your Child 2's Birthday? (Date of Birth mm/dd/yyyy)",
     type: "date",
     section: "Part 7. Information About Your Children",
+    condition: (d) => Number(d.p7_total_children_count) >= 2,
   },
   {
     key: "p7_child2_country_of_birth",
@@ -2654,6 +2746,7 @@ export const formFields: Field[] = [
     label: "What is your Child 2's Country of Birth?",
     type: "text",
     section: "Part 7. Information About Your Children",
+    condition: (d) => Number(d.p7_total_children_count) >= 2,
   },
   {
     key: "p7_child2_relationship",
@@ -2662,6 +2755,7 @@ export const formFields: Field[] = [
       "What is your Child 2's relationship to you? (e.g., biological child, stepchild, legally adopted child)",
     type: "text",
     section: "Part 7. Information About Your Children",
+    condition: (d) => Number(d.p7_total_children_count) >= 2,
   },
   {
     key: "p7_child2_applying_with_you",
@@ -2673,7 +2767,9 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p7_child2_applying_with_you_Yes" },
       { label: "No", value: "No", pdfKey: "p7_child2_applying_with_you_No" },
     ],
+    condition: (d) => Number(d.p7_total_children_count) >= 2,
   },
+  ...generatePriorChildrenFields(3, 8),
 
   // ============================================
   // Part 8. Biographic Information (Page 13)
@@ -5100,6 +5196,49 @@ export const overflowFields = [
       if (from) lines.push(`Date from: ${from}`);
       if (to) lines.push(`Date to: ${to}`);
       if (support) lines.push(`Support source: ${support}`);
+
+      return lines.join(", ");
+    },
+  },
+  {
+    prefix: "p7_child",
+    countKey: "p7_total_children_count",
+    startIndex: 3,
+    maxIndex: 8,
+    pageNumber: "12",
+    partNumber: "7",
+    itemNumber: "2",
+    labelPrefix: "Prior Child",
+    fields: [
+      { suffix: "family_name", label: "Last Name" },
+      { suffix: "given_name", label: "First Name" },
+      { suffix: "middle_name", label: "Middle Name" },
+      { suffix: "alien_number", label: "A-Number" },
+      { suffix: "dob", label: "Date of Birth" },
+      { suffix: "country_of_birth", label: "Country of Birth" },
+      { suffix: "relationship", label: "Relationship" },
+      { suffix: "applying_with_you", label: "Applying With You" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const family = data[`p7_child_${index}_family_name`] || "";
+      const given = data[`p7_child_${index}_given_name`] || "";
+      const middle = data[`p7_child_${index}_middle_name`] || "";
+      const alien = data[`p7_child_${index}_alien_number`] || "";
+      const dob = data[`p7_child_${index}_dob`] || "";
+      const country = data[`p7_child_${index}_country_of_birth`] || "";
+      const rel = data[`p7_child_${index}_relationship`] || "";
+      const apply = data[`p7_child_${index}_applying_with_you`] || "";
+
+      const lines: string[] = [];
+      lines.push(`Child ${index}:\n`);
+      if (family) lines.push(`Last Name: ${family}`);
+      if (given) lines.push(`First Name: ${given}`);
+      if (middle) lines.push(`Middle Name: ${middle}`);
+      if (alien) lines.push(`A-Number: ${alien}`);
+      if (dob) lines.push(`Date of Birth: ${dob}`);
+      if (country) lines.push(`Country of Birth: ${country}`);
+      if (rel) lines.push(`Relationship: ${rel}`);
+      if (apply) lines.push(`Applying With You: ${apply}`);
 
       return lines.join(", ");
     },
