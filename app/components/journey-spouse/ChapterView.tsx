@@ -76,7 +76,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
 
   return (
     <div
-      className={`flex-1 overflow-y-auto py-8 px-6 pb-20 scrollbar-hide relative`}
+      className={`flex-1 overflow-y-auto py-8 px-4 sm:px-6 pb-20 scrollbar-hide relative`}
       style={isChapter1 || isChapter2 || isChapter3 ? { minHeight: "100vh" } : undefined}
     >
       {/* Fullscreen background for Chapter 1, 2, 3 and their steps */}
@@ -126,7 +126,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
         </button> */}
 
         <div
-          className={`bg-gradient-to-br from-white via-white/95 to-neutral-50 border-[1.5px] rounded-3xl p-[32px_32px] mb-7
+          className={`bg-gradient-to-br from-white via-white/95 to-neutral-50 border-[1.5px] rounded-3xl p-6 sm:p-8 mb-7
             shadow-[0_8px_40px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]
             transition-all duration-300 hover:scale-[1.018] hover:shadow-[0_16px_56px_rgba(36,42,66,0.22),0_6px_24px_rgba(44,62,80,0.18)]
             border-solid
