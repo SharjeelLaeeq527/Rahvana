@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleSwitch } from "@/app/components/interview-prep/ToggleSwitch";
-import CountryAutocomplete from "@/app/components/shared/CountryAutoComplete";
+import CountryAutocomplete from "@/app/components/shared/LocationAutoComplete";
 import { QuestionStepProps } from "../types";
 import { Question } from "@/lib/visa-checker/engine-types";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
