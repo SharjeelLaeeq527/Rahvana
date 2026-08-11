@@ -319,6 +319,81 @@ const generatePriorChildrenFields = (startIndex: number, endIndex: number): Fiel
   return fields;
 };
 
+const generatePriorOrgsFields = (startIndex: number, endIndex: number): Field[] => {
+  const fields: Field[] = [];
+  for (let i = startIndex; i <= endIndex; i++) {
+    fields.push({
+      key: `p9_org_${i}_note`,
+      pdfKey: "N/A",
+      label: `Organization/Group ${i}`,
+      type: "hidden",
+      section: "Part 9. General Eligibility and Inadmissibility Grounds",
+      condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= i,
+      subQuestions: [
+        {
+          key: `p9_org_${i}_name`,
+          pdfKey: "N/A",
+          label: "What is the name of this organization, association, club, or group?",
+          type: "text",
+          section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        },
+        {
+          key: `p9_org_${i}_city`,
+          pdfKey: "N/A",
+          label: "What is the City or Town of the Organization?",
+          type: "text",
+          section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        },
+        {
+          key: `p9_org_${i}_state_province`,
+          pdfKey: "N/A",
+          label: "What is the State or Province of the Organization?",
+          type: "text",
+          section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        },
+        {
+          key: `p9_org_${i}_country`,
+          pdfKey: "N/A",
+          label: "What is the Country of the Organization?",
+          type: "text",
+          section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        },
+        {
+          key: `p9_org_${i}_nature`,
+          pdfKey: "N/A",
+          label: "What does this group do? (What are its goals and activities?)",
+          type: "text",
+          section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        },
+        {
+          key: `p9_org_${i}_involvement`,
+          pdfKey: "N/A",
+          label: "What was your role or job in this group?",
+          type: "text",
+          section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        },
+        {
+          key: `p9_org_${i}_date_from`,
+          pdfKey: "N/A",
+          label: "Date From (mm/dd/yyyy)",
+          tooltip: "Date of Membership or Dates of Involvement",
+          type: "date",
+          section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        },
+        {
+          key: `p9_org_${i}_date_to`,
+          pdfKey: "N/A",
+          label: "Date To (mm/dd/yyyy)",
+          tooltip: "Ending Date of Membership or Date of Involvement",
+          type: "date",
+          section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        },
+      ],
+    });
+  }
+  return fields;
+};
+
 export const formFields: Field[] = [
   // ============================================
   // Header Information
@@ -2889,46 +2964,57 @@ export const formFields: Field[] = [
     ],
     subQuestions: [
       {
+        key: "p9_org_count",
+        pdfKey: "N/A",
+        label:
+          "How many organizations, clubs, or societies have you been a member of or associated with?",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_associated_organizations === "Yes",
+        pattern: "[0-9]*",
+        placeholder: "0",
+      },
+      {
         key: "p9_org1_name",
         pdfKey: "p9_org1_name",
         label: "Organization 1 - Name of Organization",
         type: "text",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 1,
       },
       {
         key: "p9_org1_city",
         pdfKey: "p9_org1_city",
         label: "Organization 1 - City or Town",
         type: "text",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 1,
       },
       {
         key: "p9_org1_state_province",
         pdfKey: "p9_org1_state_province",
         label: "Organization 1 - State or Province",
         type: "text",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 1,
       },
       {
         key: "p9_org1_country",
         pdfKey: "p9_org1_country",
         label: "Organization 1 - Country",
         type: "text",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 1,
       },
       {
         key: "p9_org1_nature",
         pdfKey: "p9_org1_nature",
         label: "Organization 1 - What does this group do? (What are its goals and activities?)",
         type: "text",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 1,
       },
       {
         key: "p9_org1_involvement",
         pdfKey: "p9_org1_involvement",
         label: "Organization 1 - What was your role or job in this group?",
         type: "text",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 1,
       },
       {
         key: "p9_org1_date_from",
@@ -2936,7 +3022,7 @@ export const formFields: Field[] = [
         label: "Organization 1 - Date From (mm/dd/yyyy)",
         tooltip: "Date of Membership or Dates of Involvement",
         type: "date",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 1,
       },
       {
         key: "p9_org1_date_to",
@@ -2944,49 +3030,49 @@ export const formFields: Field[] = [
         label: "Organization 1 - Date To (mm/dd/yyyy)",
         tooltip: "Ending Date of Membership or Date of Involvement",
         type: "date",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 1,
       },
       {
         key: "p9_org2_name",
         pdfKey: "p9_org2_name",
         label: "Organization 2 - Name of Organization",
         type: "text",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 2,
       },
       {
         key: "p9_org2_city",
         pdfKey: "p9_org2_city",
         label: "Organization 2 - City or Town",
         type: "text",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 2,
       },
       {
         key: "p9_org2_state_province",
         pdfKey: "p9_org2_state_province",
         label: "Organization 2 - State or Province",
         type: "text",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 2,
       },
       {
         key: "p9_org2_country",
         pdfKey: "p9_org2_country",
         label: "Organization 2 - Country",
         type: "text",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 2,
       },
       {
         key: "p9_org2_nature",
         pdfKey: "p9_org2_nature",
         label: "Organization 2 - What does this group do? (What are its goals and activities?)",
         type: "text",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 2,
       },
       {
         key: "p9_org2_involvement",
         pdfKey: "p9_org2_involvement",
         label: "Organization 2 - What was your role or job in this group?",
         type: "text",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 2,
       },
       {
         key: "p9_org2_date_from",
@@ -2994,7 +3080,7 @@ export const formFields: Field[] = [
         label: "Organization 2 - Date From (mm/dd/yyyy)",
         tooltip: "Date of Membership or Dates of Involvement",
         type: "date",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 2,
       },
       {
         key: "p9_org2_date_to",
@@ -3002,8 +3088,9 @@ export const formFields: Field[] = [
         label: "Organization 2 - Date To (mm/dd/yyyy)",
         tooltip: "End Date of Membership or Date of Involvement",
         type: "date",
-        condition: (d) => d.p9_associated_organizations === "Yes",
+        condition: (d) => d.p9_associated_organizations === "Yes" && Number(d.p9_org_count) >= 2,
       },
+      ...generatePriorOrgsFields(3, 8),
     ],
   },
 
@@ -5239,6 +5326,49 @@ export const overflowFields = [
       if (country) lines.push(`Country of Birth: ${country}`);
       if (rel) lines.push(`Relationship: ${rel}`);
       if (apply) lines.push(`Applying With You: ${apply}`);
+
+      return lines.join(", ");
+    },
+  },
+  {
+    prefix: "p9_org",
+    countKey: "p9_org_count",
+    startIndex: 3,
+    maxIndex: 8,
+    pageNumber: "13",
+    partNumber: "9",
+    itemNumber: "1",
+    labelPrefix: "Associated Organization",
+    fields: [
+      { suffix: "name", label: "Organization Name" },
+      { suffix: "city", label: "City" },
+      { suffix: "state_province", label: "State/Province" },
+      { suffix: "country", label: "Country" },
+      { suffix: "nature", label: "Nature/Activities" },
+      { suffix: "involvement", label: "Involvement" },
+      { suffix: "date_from", label: "From" },
+      { suffix: "date_to", label: "To" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const name = data[`p9_org_${index}_name`] || "";
+      const city = data[`p9_org_${index}_city`] || "";
+      const stateProv = data[`p9_org_${index}_state_province`] || "";
+      const country = data[`p9_org_${index}_country`] || "";
+      const nature = data[`p9_org_${index}_nature`] || "";
+      const involvement = data[`p9_org_${index}_involvement`] || "";
+      const from = data[`p9_org_${index}_date_from`] || "";
+      const to = data[`p9_org_${index}_date_to`] || "";
+
+      const lines: string[] = [];
+      lines.push(`Associated Organization ${index}:\n`);
+      if (name) lines.push(`Name: ${name}`);
+      if (city) lines.push(`City: ${city}`);
+      if (stateProv) lines.push(`State/Province: ${stateProv}`);
+      if (country) lines.push(`Country: ${country}`);
+      if (nature) lines.push(`Nature/Activities: ${nature}`);
+      if (involvement) lines.push(`Involvement/Role: ${involvement}`);
+      if (from) lines.push(`Date from: ${from}`);
+      if (to) lines.push(`Date to: ${to}`);
 
       return lines.join(", ");
     },
