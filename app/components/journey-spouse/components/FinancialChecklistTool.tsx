@@ -335,7 +335,7 @@ export const FinancialChecklistTool: React.FC<FinancialChecklistToolProps> = ({
             value: key,
             label: sc.label,
           }))}
-          className="flex-1 min-w-[180px] [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-[#f4f7fb]"
+          className="flex-1 min-w-[180px] [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-[#f4f7fb] overflow-x-auto"
         />
       </div>
 
