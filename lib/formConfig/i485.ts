@@ -3689,6 +3689,15 @@ export const formFields: Field[] = [
     ],
   },
   {
+    key: "_p9_explanation",
+    pdfKey: "_",
+    type: "hidden",
+    label:
+      'NOTE: If you answered "Yes" to any of the questions in this section regarding weapons training, weapon usage, child soldiers, or harming/injuring others, then explain what occurred, including the dates and locations of the circumstances.',
+    section: "Part 9. General Eligibility and Inadmissibility Grounds",
+    tooltip: "",
+  },
+  {
     key: "p9_espionage_sabotage",
     pdfKey: "_",
     label:
@@ -3698,6 +3707,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_espionage_sabotage_Yes" },
       { label: "No", value: "No", pdfKey: "p9_espionage_sabotage_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_espionage_sabotage_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_espionage_sabotage === "Yes",
+      },
     ],
   },
   {
@@ -3711,6 +3730,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_export_laws_violation_Yes" },
       { label: "No", value: "No", pdfKey: "p9_export_laws_violation_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_export_laws_violation_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_export_laws_violation === "Yes",
+      },
+    ],
   },
   {
     key: "p9_overthrow_govt_force",
@@ -3723,6 +3752,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_overthrow_govt_force_Yes" },
       { label: "No", value: "No", pdfKey: "p9_overthrow_govt_force_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_overthrow_govt_force_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_overthrow_govt_force === "Yes",
+      },
+    ],
   },
   {
     key: "p9_other_unlawful_activity",
@@ -3733,6 +3772,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_other_unlawful_activity_Yes" },
       { label: "No", value: "No", pdfKey: "p9_other_unlawful_activity_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_other_unlawful_activity_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_other_unlawful_activity === "Yes",
+      },
     ],
   },
   {
@@ -3746,6 +3795,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_weapons_paramilitary_training_Yes" },
       { label: "No", value: "No", pdfKey: "p9_weapons_paramilitary_training_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_weapons_paramilitary_training_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_weapons_paramilitary_training === "Yes",
+      },
+    ],
   },
   {
     key: "p9_kidnapping_assassination_hijacking",
@@ -3757,6 +3816,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_kidnapping_assassination_hijacking_Yes" },
       { label: "No", value: "No", pdfKey: "p9_kidnapping_assassination_hijacking_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_kidnapping_assassination_hijacking_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_kidnapping_assassination_hijacking === "Yes",
+      },
     ],
   },
   {
@@ -3770,6 +3839,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_used_weapon_explosive_danger_Yes" },
       { label: "No", value: "No", pdfKey: "p9_used_weapon_explosive_danger_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_used_weapon_explosive_danger_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_used_weapon_explosive_danger === "Yes",
+      },
+    ],
   },
   {
     key: "p9_planned_kidnapping_weapon_acts",
@@ -3781,6 +3860,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_planned_kidnapping_weapon_acts_Yes" },
       { label: "No", value: "No", pdfKey: "p9_planned_kidnapping_weapon_acts_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_planned_kidnapping_weapon_acts_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_planned_kidnapping_weapon_acts === "Yes",
+      },
     ],
   },
   {
@@ -3794,6 +3883,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_incited_death_harm_acts_Yes" },
       { label: "No", value: "No", pdfKey: "p9_incited_death_harm_acts_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_incited_death_harm_acts_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_incited_death_harm_acts === "Yes",
+      },
+    ],
   },
   {
     key: "p9_member_group_violent_acts",
@@ -3805,6 +3904,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_member_group_violent_acts_Yes" },
       { label: "No", value: "No", pdfKey: "p9_member_group_violent_acts_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_member_group_violent_acts_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_member_group_violent_acts === "Yes",
+      },
     ],
   },
   {
@@ -3818,6 +3927,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_recruited_solicited_violent_group_Yes" },
       { label: "No", value: "No", pdfKey: "p9_recruited_solicited_violent_group_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_recruited_solicited_violent_group_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_recruited_solicited_violent_group === "Yes",
+      },
+    ],
   },
   {
     key: "p9_provided_support_violent_activities",
@@ -3829,6 +3948,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_provided_support_violent_activities_Yes" },
       { label: "No", value: "No", pdfKey: "p9_provided_support_violent_activities_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_provided_support_violent_activities_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_provided_support_violent_activities === "Yes",
+      },
     ],
   },
   {
@@ -3842,6 +3971,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_provided_support_violent_group_Yes" },
       { label: "No", value: "No", pdfKey: "p9_provided_support_violent_group_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_provided_support_violent_group_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_provided_support_violent_group === "Yes",
+      },
+    ],
   },
   {
     key: "p9_intend_violent_acts",
@@ -3854,6 +3993,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_intend_violent_acts_Yes" },
       { label: "No", value: "No", pdfKey: "p9_intend_violent_acts_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_intend_violent_acts_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_intend_violent_acts === "Yes",
+      },
+    ],
   },
   {
     key: "p9_endanger_us_security",
@@ -3865,6 +4014,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_endanger_us_security_Yes" },
       { label: "No", value: "No", pdfKey: "p9_endanger_us_security_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_endanger_us_security_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_endanger_us_security === "Yes",
+      },
     ],
   },
   {
@@ -3880,6 +4039,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_spouse_child_violent_person_Yes" },
       { label: "No", value: "No", pdfKey: "p9_spouse_child_violent_person_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_spouse_child_violent_person_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_spouse_child_violent_person === "Yes",
+      },
+    ],
   },
   {
     key: "p9_sold_transported_weapons",
@@ -3891,6 +4060,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_sold_transported_weapons_Yes" },
       { label: "No", value: "No", pdfKey: "p9_sold_transported_weapons_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_sold_transported_weapons_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_sold_transported_weapons === "Yes",
+      },
     ],
   },
   {
@@ -3904,6 +4083,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_worked_prison_detention_Yes" },
       { label: "No", value: "No", pdfKey: "p9_worked_prison_detention_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_worked_prison_detention_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_worked_prison_detention === "Yes",
+      },
+    ],
   },
   {
     key: "p9_group_used_weapons",
@@ -3915,6 +4104,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_group_used_weapons_Yes" },
       { label: "No", value: "No", pdfKey: "p9_group_used_weapons_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_group_used_weapons_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_group_used_weapons === "Yes",
+      },
     ],
   },
   {
@@ -3928,19 +4127,39 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_served_military_police_Yes" },
       { label: "No", value: "No", pdfKey: "p9_served_military_police_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_served_military_police_expl_1_text",
+        pdfKey: "N/A",
+        label: "Please provide a detailed explanation, including the name of the country, the name of the armed group, your rank or position, and your dates of involvement.",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_served_military_police === "Yes",
+      },
+    ],
   },
   {
     key: "p9_served_armed_rebel_group",
     pdfKey: "_",
     label:
-      "Have you EVER served in, been a member of, assisted, or participated in any armed group (such as a paramilitary, vigilante, rebel, or guerrilla group)?",
+      "Have you EVER served in, been a member of, assisted, or participated in any armed group (such as a paramilitary, self-defense unit, vigilante, rebel, or guerrilla group)?",
     type: "radio",
-    tooltip:
-      "If you answered Yes, in previous or this question, then include the name of the country, the name of the military unit or armed group, your rank or position and your dates of involvement in your explanation.",
+    // tooltip:
+    //   "If you answered Yes, in previous or this question, then include the name of the country, the name of the military unit or armed group, your rank or position and your dates of involvement in your explanation.",
     section: "Part 9. General Eligibility and Inadmissibility Grounds",
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_served_armed_rebel_group_Yes" },
       { label: "No", value: "No", pdfKey: "p9_served_armed_rebel_group_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_served_armed_rebel_group_expl_1_text",
+        pdfKey: "N/A",
+        label: "Please provide a detailed explanation, including the name of the country, the name of the armed group, your rank or position, and your dates of involvement.",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_served_armed_rebel_group === "Yes",
+      },
     ],
   },
   {
@@ -3954,6 +4173,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_communist_totalitarian_party_Yes" },
       { label: "No", value: "No", pdfKey: "p9_communist_totalitarian_party_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_communist_totalitarian_party_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_communist_totalitarian_party === "Yes",
+      },
+    ],
   },
   {
     key: "p9_torture",
@@ -3965,6 +4194,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_torture_Yes" },
       { label: "No", value: "No", pdfKey: "p9_torture_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_torture_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_torture === "Yes",
+      },
     ],
   },
   {
@@ -3978,6 +4217,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_genocide_Yes" },
       { label: "No", value: "No", pdfKey: "p9_genocide_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_genocide_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_genocide === "Yes",
+      },
+    ],
   },
   {
     key: "p9_killing_trying_kill",
@@ -3989,6 +4238,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_killing_trying_kill_Yes" },
       { label: "No", value: "No", pdfKey: "p9_killing_trying_kill_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_killing_trying_kill_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_killing_trying_kill === "Yes",
+      },
     ],
   },
   {
@@ -4002,6 +4261,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_severely_injuring_person_Yes" },
       { label: "No", value: "No", pdfKey: "p9_severely_injuring_person_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_severely_injuring_person_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_severely_injuring_person === "Yes",
+      },
+    ],
   },
   {
     key: "p9_child_soldiers_under15_recruited",
@@ -4013,6 +4282,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_child_soldiers_under15_recruited_Yes" },
       { label: "No", value: "No", pdfKey: "p9_child_soldiers_under15_recruited_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_child_soldiers_under15_recruited_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_child_soldiers_under15_recruited === "Yes",
+      },
     ],
   },
   {
@@ -4026,16 +4305,18 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_child_soldiers_under15_used_Yes" },
       { label: "No", value: "No", pdfKey: "p9_child_soldiers_under15_used_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_child_soldiers_under15_used_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_child_soldiers_under15_used === "Yes",
+      },
+    ],
   },
-  {
-    key: "_p9_explanation",
-    pdfKey: "_",
-    type: "hidden",
-    label:
-      'NOTE: If you answered "Yes" to any of the questions above regarding weapons training, weapon usage, child soldiers, or harming/injuring others, then explain what occurred, including the dates and locations of the circumstances, in the space provided in Part 14. Additional Information.',
-    section: "Part 9. General Eligibility and Inadmissibility Grounds",
-    tooltip: "",
-  },
+  
   {
     key: "p9_public_charge_exemption_category",
     pdfKey: "_",
@@ -5815,6 +6096,426 @@ export const overflowFields = [
     formatInfo: (index: number, data: Record<string, string>) => {
       const val = data[`p9_money_laundering_expl_1_text`] || "";
       return `Explanation for Engaged in money laundering:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_espionage_sabotage_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "42.a",
+    labelPrefix: "Espionage/Sabotage Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_espionage_sabotage_expl_1_text`] || "";
+      return `Explanation for Violating espionage/sabotage laws:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_export_laws_violation_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "42.b",
+    labelPrefix: "Export Laws Violation Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_export_laws_violation_expl_1_text`] || "";
+      return `Explanation for Violating goods/technology export laws:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_overthrow_govt_force_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "42.c",
+    labelPrefix: "Overthrow Govt Force Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_overthrow_govt_force_expl_1_text`] || "";
+      return `Explanation for Opposing/overthrowing U.S. government by force:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_other_unlawful_activity_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "42.d",
+    labelPrefix: "Other Unlawful Activity Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_other_unlawful_activity_expl_1_text`] || "";
+      return `Explanation for Other unlawful activity:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_weapons_paramilitary_training_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "43.a",
+    labelPrefix: "Weapons/Paramilitary Training Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_weapons_paramilitary_training_expl_1_text`] || "";
+      return `Explanation for Weapons, military or paramilitary training:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_kidnapping_assassination_hijacking_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "43.b",
+    labelPrefix: "Kidnapping/Assassination/Hijacking Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_kidnapping_assassination_hijacking_expl_1_text`] || "";
+      return `Explanation for Kidnapping, assassination, hijacking, or sabotage:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_used_weapon_explosive_danger_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "43.c",
+    labelPrefix: "Used Weapon/Explosive Danger Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_used_weapon_explosive_danger_expl_1_text`] || "";
+      return `Explanation for Used weapon or explosive to endanger others:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_planned_kidnapping_weapon_acts_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "43.d",
+    labelPrefix: "Planned Kidnapping/Weapon Acts Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_planned_kidnapping_weapon_acts_expl_1_text`] || "";
+      return `Explanation for Threatened/planned kidnapping, assassination, hijacking, weapon acts:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_incited_death_harm_acts_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "43.e",
+    labelPrefix: "Incited Death/Harm Acts Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_incited_death_harm_acts_expl_1_text`] || "";
+      return `Explanation for Incited death or serious bodily harm acts:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_member_group_violent_acts_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "43.f",
+    labelPrefix: "Member Group Violent Acts Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_member_group_violent_acts_expl_1_text`] || "";
+      return `Explanation for Member of group committing violent acts:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_recruited_solicited_violent_group_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "43.g",
+    labelPrefix: "Recruited/Solicited Violent Group Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_recruited_solicited_violent_group_expl_1_text`] || "";
+      return `Explanation for Recruited members or solicited funds for violent group:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_provided_support_violent_activities_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "43.h",
+    labelPrefix: "Provided Support Violent Activities Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_provided_support_violent_activities_expl_1_text`] || "";
+      return `Explanation for Provided support for violent activities:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_provided_support_violent_group_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "43.i",
+    labelPrefix: "Provided Support Violent Group Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_provided_support_violent_group_expl_1_text`] || "";
+      return `Explanation for Provided support for violent group or individual:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_intend_violent_acts_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "44",
+    labelPrefix: "Intend Violent Acts Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_intend_violent_acts_expl_1_text`] || "";
+      return `Explanation for Intend to engage in violent activities:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_endanger_us_security_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "45",
+    labelPrefix: "Endanger US Security Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_endanger_us_security_expl_1_text`] || "";
+      return `Explanation for Intend to engage in activity endangering U.S. security:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_spouse_child_violent_person_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "17",
+    partNumber: "9",
+    itemNumber: "46",
+    labelPrefix: "Spouse/Child Violent Person Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_spouse_child_violent_person_expl_1_text`] || "";
+      return `Explanation for Spouse or child of individual who engaged in violent acts:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_sold_transported_weapons_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "17",
+    partNumber: "9",
+    itemNumber: "47",
+    labelPrefix: "Sold/Transported Weapons Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_sold_transported_weapons_expl_1_text`] || "";
+      return `Explanation for Sold, provided, or transported weapons:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_worked_prison_detention_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "17",
+    partNumber: "9",
+    itemNumber: "48",
+    labelPrefix: "Worked Prison/Detention Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_worked_prison_detention_expl_1_text`] || "";
+      return `Explanation for Worked/served in prison, jail, or detention facility:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_group_used_weapons_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "17",
+    partNumber: "9",
+    itemNumber: "49",
+    labelPrefix: "Group Used Weapons Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_group_used_weapons_expl_1_text`] || "";
+      return `Explanation for Member of group in which weapons were used:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_served_military_police_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "17",
+    partNumber: "9",
+    itemNumber: "50",
+    labelPrefix: "Served Military/Police Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_served_military_police_expl_1_text`] || "";
+      return `Explanation for Served in military, police, or security unit:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_served_armed_rebel_group_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "17",
+    partNumber: "9",
+    itemNumber: "51",
+    labelPrefix: "Served Armed Rebel Group Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_served_armed_rebel_group_expl_1_text`] || "";
+      return `Explanation for Served in armed rebel, guerrilla, or paramilitary group:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_communist_totalitarian_party_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "17",
+    partNumber: "9",
+    itemNumber: "52",
+    labelPrefix: "Communist/Totalitarian Party Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_communist_totalitarian_party_expl_1_text`] || "";
+      return `Explanation for Communist Party or totalitarian party affiliation:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_torture_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "17",
+    partNumber: "9",
+    itemNumber: "53.a",
+    labelPrefix: "Torture Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_torture_expl_1_text`] || "";
+      return `Explanation for Ordered/assisted in torture:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_genocide_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "17",
+    partNumber: "9",
+    itemNumber: "53.b",
+    labelPrefix: "Genocide Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_genocide_expl_1_text`] || "";
+      return `Explanation for Ordered/assisted in genocide:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_killing_trying_kill_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "17",
+    partNumber: "9",
+    itemNumber: "53.c",
+    labelPrefix: "Killing Trying Kill Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_killing_trying_kill_expl_1_text`] || "";
+      return `Explanation for Ordered/assisted in killing or trying to kill:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_severely_injuring_person_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "17",
+    partNumber: "9",
+    itemNumber: "53.d",
+    labelPrefix: "Severely Injuring Person Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_severely_injuring_person_expl_1_text`] || "";
+      return `Explanation for Ordered/assisted in severely injuring any person:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_child_soldiers_under15_recruited_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "17",
+    partNumber: "9",
+    itemNumber: "54",
+    labelPrefix: "Child Soldiers Recruited Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_child_soldiers_under15_recruited_expl_1_text`] || "";
+      return `Explanation for Recruited/used child soldiers under 15:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_child_soldiers_under15_used_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "17",
+    partNumber: "9",
+    itemNumber: "55",
+    labelPrefix: "Child Soldiers Used Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_child_soldiers_under15_used_expl_1_text`] || "";
+      return `Explanation for Used child soldiers under 15 in hostilities:\n${val}`;
     },
   },
 ];
