@@ -1701,7 +1701,7 @@ export function NarrativeModal({
             className={[
               "relative flex w-full max-w-5xl max-h-[calc(100svh-0.75rem)] min-h-0 flex-col overflow-hidden border border-[#cfe3e3] bg-[linear-gradient(180deg,#ffffff_0%,#fcffff_100%)] shadow-[0_32px_80px_-34px_rgba(13,115,119,0.35)] ring-1 ring-white/90 antialiased sm:max-h-[calc(100svh-1.5rem)] sm:rounded-[2.5rem] sm:ring-2 md:max-h-[calc(100svh-4rem)]",
               isCompactView
-                ? "!w-[98vw] !h-[98vh] !max-w-full !max-h-[98vh] rounded-[1.2rem] overflow-y-auto welcome-thick-scrollbar"
+                ? "!w-[98vw] !h-[98svh] !max-w-full !max-h-[98svh] rounded-[1.2rem] overflow-y-auto welcome-thick-scrollbar"
                 : "rounded-[1.65rem]",
             ].join(" ")}
             style={
@@ -1709,9 +1709,12 @@ export function NarrativeModal({
                 ? {
                     scrollbarWidth: "none",
                     width: "98vw",
-                    height: "98vh",
+                    // Use svh (small viewport height) so the card always fits the
+                    // VISIBLE area on mobile. With vh, mobile browser chrome made
+                    // the card taller than the screen and cropped the footer.
+                    height: "98svh",
                     maxWidth: "100vw",
-                    maxHeight: "98vh",
+                    maxHeight: "98svh",
                   }
                 : undefined
             }
@@ -1889,7 +1892,7 @@ export function NarrativeModal({
               </AnimatePresence>
             </div>
 
-            <div className="relative z-20 border-t border-[#d5e7e7] bg-white/97 px-2.5 py-2.5 shadow-[0_-8px_24px_-18px_rgba(13,115,119,0.32)] sm:px-6 sm:py-4">
+            <div className="relative z-20 shrink-0 border-t border-[#d5e7e7] bg-white/97 px-2.5 py-2.5 shadow-[0_-8px_24px_-18px_rgba(13,115,119,0.32)] sm:px-6 sm:py-4">
               <img
                 src="/assets/images/mascot.png"
                 alt="Rahvana bird mascot"
