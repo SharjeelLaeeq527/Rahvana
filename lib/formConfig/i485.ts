@@ -3243,7 +3243,7 @@ export const formFields: Field[] = [
     key: "p9_criminal_instructions_info",
     pdfKey: "_",
     label:
-      "Important Notice Regarding Criminal History: For questions 22 to 41, you must answer Yes if any question applies to you—even if your records were sealed or cleared, or even if anyone (including a judge, law enforcement officer, or attorney) told you that you no longer have a record.",
+      "Important Notice Regarding Criminal History: For all of the following questions in this section, you must answer Yes if any question applies to you—even if your records were sealed or cleared, or even if anyone (including a judge, law enforcement officer, or attorney) told you that you no longer have a record.\n\nIf you answer \"Yes\" to any question in this section, provide an explanation for each offense, if applicable, that includes a description of the criminal offense; where the criminal offense occurred; when the criminal offense occurred; whether you were arrested, cited, charged, or detained for the criminal offense you committed; and the outcome or disposition of that criminal offense (for example, convicted, placement in a diversion program, no charges filed, charges dismissed, jail, prison, detention, probation, or community service). Your explanation must include the duration of any sentence to confinement (even if suspended).",
     type: "hidden",
     section: "Part 9. General Eligibility and Inadmissibility Grounds",
   },
@@ -3258,6 +3258,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_arrested_cited_charged_Yes" },
       { label: "No", value: "No", pdfKey: "p9_arrested_cited_charged_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_arrested_cited_charged_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_arrested_cited_charged === "Yes",
+      },
+    ],
   },
   {
     key: "p9_committed_crime",
@@ -3270,6 +3280,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_committed_crime_Yes" },
       { label: "No", value: "No", pdfKey: "p9_committed_crime_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_committed_crime_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_committed_crime === "Yes",
+      },
+    ],
   },
   {
     key: "p9_pled_guilty_convicted",
@@ -3281,6 +3301,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_pled_guilty_convicted_Yes" },
       { label: "No", value: "No", pdfKey: "p9_pled_guilty_convicted_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_pled_guilty_convicted_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_pled_guilty_convicted === "Yes",
+      },
     ],
   },
   {
@@ -3303,6 +3333,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_punished_by_judge_Yes" },
       { label: "No", value: "No", pdfKey: "p9_punished_by_judge_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_punished_by_judge_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_punished_by_judge === "Yes",
+      },
+    ],
   },
   {
     key: "p9_violated_controlled_substance",
@@ -3315,6 +3355,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_violated_controlled_substance_Yes" },
       { label: "No", value: "No", pdfKey: "p9_violated_controlled_substance_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_violated_controlled_substance_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_violated_controlled_substance === "Yes",
+      },
+    ],
   },
   {
     key: "p9_trafficked_controlled_substance",
@@ -3326,6 +3376,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_trafficked_controlled_substance_Yes" },
       { label: "No", value: "No", pdfKey: "p9_trafficked_controlled_substance_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_trafficked_controlled_substance_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_trafficked_controlled_substance === "Yes",
+      },
     ],
   },
   {
@@ -3352,6 +3412,14 @@ export const formFields: Field[] = [
           { label: "No", value: "No", pdfKey: "p9_knew_benefit_trafficking_No" },
         ],
       },
+      {
+        key: "p9_trafficker_relative_benefit_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_trafficker_relative_benefit === "Yes",
+      },
     ],
   },
   {
@@ -3365,6 +3433,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_engaged_prostitution_Yes" },
       { label: "No", value: "No", pdfKey: "p9_engaged_prostitution_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_engaged_prostitution_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_engaged_prostitution === "Yes",
+      },
+    ],
   },
   {
     key: "p9_procured_prostitutes",
@@ -3377,6 +3455,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_procured_prostitutes_Yes" },
       { label: "No", value: "No", pdfKey: "p9_procured_prostitutes_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_procured_prostitutes_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_procured_prostitutes === "Yes",
+      },
+    ],
   },
   {
     key: "p9_received_prostitution_proceeds",
@@ -3387,6 +3475,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_received_prostitution_proceeds_Yes" },
       { label: "No", value: "No", pdfKey: "p9_received_prostitution_proceeds_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_received_prostitution_proceeds_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_received_prostitution_proceeds === "Yes",
+      },
     ],
   },
   {
@@ -3400,6 +3498,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_intend_illegal_vice_Yes" },
       { label: "No", value: "No", pdfKey: "p9_intend_illegal_vice_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_intend_illegal_vice_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_intend_illegal_vice === "Yes",
+      },
+    ],
   },
   {
     key: "p9_exercised_immunity",
@@ -3411,6 +3519,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_exercised_immunity_Yes" },
       { label: "No", value: "No", pdfKey: "p9_exercised_immunity_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_exercised_immunity_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_exercised_immunity === "Yes",
+      },
     ],
   },
   {
@@ -3436,6 +3554,14 @@ export const formFields: Field[] = [
           { label: "No", value: "No", pdfKey: "p9_religious_freedom_violations_No" },
         ],
       },
+      {
+        key: "p9_foreign_govt_official_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_foreign_govt_official === "Yes",
+      },
     ],
   },
   {
@@ -3451,6 +3577,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_sex_trafficking_Yes" },
       { label: "No", value: "No", pdfKey: "p9_sex_trafficking_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_sex_trafficking_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_sex_trafficking === "Yes",
+      },
+    ],
   },
   {
     key: "p9_involuntary_servitude_slavery",
@@ -3463,6 +3599,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes", pdfKey: "p9_involuntary_servitude_slavery_Yes" },
       { label: "No", value: "No", pdfKey: "p9_involuntary_servitude_slavery_No" },
     ],
+    subQuestions: [
+      {
+        key: "p9_involuntary_servitude_slavery_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_involuntary_servitude_slavery === "Yes",
+      },
+    ],
   },
   {
     key: "p9_assisted_trafficking_persons",
@@ -3474,6 +3620,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_assisted_trafficking_persons_Yes" },
       { label: "No", value: "No", pdfKey: "p9_assisted_trafficking_persons_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_assisted_trafficking_persons_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_assisted_trafficking_persons === "Yes",
+      },
     ],
   },
   {
@@ -3500,6 +3656,14 @@ export const formFields: Field[] = [
           { label: "No", value: "No", pdfKey: "p9_knew_benefit_human_trafficking_No" },
         ],
       },
+      {
+        key: "p9_human_trafficker_relative_benefit_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_human_trafficker_relative_benefit === "Yes",
+      },
     ],
   },
   {
@@ -3512,6 +3676,16 @@ export const formFields: Field[] = [
     options: [
       { label: "Yes", value: "Yes", pdfKey: "p9_money_laundering_Yes" },
       { label: "No", value: "No", pdfKey: "p9_money_laundering_No" },
+    ],
+    subQuestions: [
+      {
+        key: "p9_money_laundering_expl_1_text",
+        pdfKey: "N/A",
+        label: "Provide a detailed explanation (including dates, location, and details of what occurred)",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_money_laundering === "Yes",
+      },
     ],
   },
   {
@@ -3858,7 +4032,7 @@ export const formFields: Field[] = [
     pdfKey: "_",
     type: "hidden",
     label:
-      'NOTE: If you answered "Yes" to any part of "from transporting weapons question to the above question", then explain what occurred, including the dates and location of the circumstances, in the space provided in Part 14. Additional Information.',
+      'NOTE: If you answered "Yes" to any of the questions above regarding weapons training, weapon usage, child soldiers, or harming/injuring others, then explain what occurred, including the dates and locations of the circumstances, in the space provided in Part 14. Additional Information.',
     section: "Part 9. General Eligibility and Inadmissibility Grounds",
     tooltip: "",
   },
@@ -5371,6 +5545,276 @@ export const overflowFields = [
       if (to) lines.push(`Date to: ${to}`);
 
       return lines.join(", ");
+    },
+  },
+  {
+    prefix: "p9_arrested_cited_charged_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "14",
+    partNumber: "9",
+    itemNumber: "22",
+    labelPrefix: "Arrested/Charged Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_arrested_cited_charged_expl_1_text`] || "";
+      return `Explanation for Arrested, cited, charged, or detained:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_committed_crime_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "15",
+    partNumber: "9",
+    itemNumber: "23",
+    labelPrefix: "Committed Crime Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_committed_crime_expl_1_text`] || "";
+      return `Explanation for Committed a crime of any kind:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_pled_guilty_convicted_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "15",
+    partNumber: "9",
+    itemNumber: "24",
+    labelPrefix: "Pled Guilty/Convicted Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_pled_guilty_convicted_expl_1_text`] || "";
+      return `Explanation for Pled guilty or been convicted:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_punished_by_judge_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "15",
+    partNumber: "9",
+    itemNumber: "25",
+    labelPrefix: "Ordered Punished Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_punished_by_judge_expl_1_text`] || "";
+      return `Explanation for Ordered punished by a judge:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_violated_controlled_substance_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "15",
+    partNumber: "9",
+    itemNumber: "26",
+    labelPrefix: "Controlled Substance Violation Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_violated_controlled_substance_expl_1_text`] || "";
+      return `Explanation for Violated controlled substance law:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_trafficked_controlled_substance_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "15",
+    partNumber: "9",
+    itemNumber: "27",
+    labelPrefix: "Controlled Substance Trafficking Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_trafficked_controlled_substance_expl_1_text`] || "";
+      return `Explanation for Illegal trafficking of controlled substances:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_trafficker_relative_benefit_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "15",
+    partNumber: "9",
+    itemNumber: "28",
+    labelPrefix: "Trafficker Relative Benefit Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_trafficker_relative_benefit_expl_1_text`] || "";
+      return `Explanation for Benefited from controlled substance trafficker spouse/parent:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_engaged_prostitution_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "15",
+    partNumber: "9",
+    itemNumber: "30",
+    labelPrefix: "Prostitution Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_engaged_prostitution_expl_1_text`] || "";
+      return `Explanation for Engaged in prostitution:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_procured_prostitutes_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "15",
+    partNumber: "9",
+    itemNumber: "31",
+    labelPrefix: "Procured Prostitutes Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_procured_prostitutes_expl_1_text`] || "";
+      return `Explanation for Procured prostitutes:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_received_prostitution_proceeds_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "15",
+    partNumber: "9",
+    itemNumber: "32",
+    labelPrefix: "Prostitution Proceeds Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_received_prostitution_proceeds_expl_1_text`] || "";
+      return `Explanation for Received proceeds from prostitution:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_intend_illegal_vice_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "15",
+    partNumber: "9",
+    itemNumber: "33",
+    labelPrefix: "Illegal Vice Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_intend_illegal_vice_expl_1_text`] || "";
+      return `Explanation for Intend illegal gambling or commercialized vice:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_exercised_immunity_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "15",
+    partNumber: "9",
+    itemNumber: "34",
+    labelPrefix: "Exercised Immunity Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_exercised_immunity_expl_1_text`] || "";
+      return `Explanation for Exercised immunity to avoid prosecution:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_foreign_govt_official_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "15",
+    partNumber: "9",
+    itemNumber: "35.a",
+    labelPrefix: "Foreign Government Official Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_foreign_govt_official_expl_1_text`] || "";
+      return `Explanation for Served as foreign government official:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_sex_trafficking_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "15",
+    partNumber: "9",
+    itemNumber: "36",
+    labelPrefix: "Sex Trafficking Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_sex_trafficking_expl_1_text`] || "";
+      return `Explanation for Involved in sex trafficking:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_involuntary_servitude_slavery_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "15",
+    partNumber: "9",
+    itemNumber: "37",
+    labelPrefix: "Slavery Trafficking Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_involuntary_servitude_slavery_expl_1_text`] || "";
+      return `Explanation for Trafficked person into servitude/slavery:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_assisted_trafficking_persons_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "38",
+    labelPrefix: "Assisted Trafficking Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_assisted_trafficking_persons_expl_1_text`] || "";
+      return `Explanation for Assisted in trafficking in persons:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_human_trafficker_relative_benefit_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "39",
+    labelPrefix: "Human Trafficker Relative Benefit Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_human_trafficker_relative_benefit_expl_1_text`] || "";
+      return `Explanation for Benefited from human trafficker spouse/parent:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_money_laundering_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "16",
+    partNumber: "9",
+    itemNumber: "41",
+    labelPrefix: "Money Laundering Explanation",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_money_laundering_expl_1_text`] || "";
+      return `Explanation for Engaged in money laundering:\n${val}`;
     },
   },
 ];
