@@ -5373,8 +5373,14 @@ type: "text",
       { label: "No", value: "No", pdfKey: "p9_unlawfully_present_since_1997_No" },
     ],
     subQuestions: [
-
-
+      {
+        key: "p9_unlawfully_present_since_1997_expl_1_text",
+        pdfKey: "N/A",
+        label: "Please give the dates of unlawful presence.",
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) => d.p9_unlawfully_present_since_1997 === "Yes",
+      },
       {
         key: "p9_unlawful_presence_trafficking_reason",
         pdfKey: "_",
@@ -6768,6 +6774,21 @@ export const overflowFields = [
       const reason = data[`p9_inst_care_row${index}_reason`] || "";
       const exempt = data[`p9_inst_care_row${index}_exempt`] || "";
       return `Additional Institutional Care ${index}:\nInstitution: ${inst}\nStart Date: ${start}\nEnd Date: ${end}\nReason: ${reason}\nExempt category: ${exempt}`;
+    },
+  },
+  {
+    prefix: "p9_unlawfully_present_since_1997_expl",
+    countKey: "",
+    startIndex: 1,
+    maxIndex: 1,
+    pageNumber: "21",
+    partNumber: "9",
+    itemNumber: "76",
+    labelPrefix: "Unlawful Presence Dates",
+    fields: [{ suffix: "text", label: "Explanation" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const val = data[`p9_unlawfully_present_since_1997_expl_1_text`] || "";
+      return `Dates of Unlawful Presence:\n${val}`;
     },
   },
 ];
