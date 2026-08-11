@@ -300,17 +300,9 @@ export const NvcFeeModal: React.FC<NvcFeeModalProps> = ({ isOpen, onClose, data,
               </div>
             </div>
 
-            {/* <div className="flex items-start gap-[13px] bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_13px] mt-[18px] mb-[18px]">
-              <ShieldCheck size={13} className="text-[#8a6200] mt-1 shrink-0" />
-              <span className="text-[12px] text-[#8a6200] leading-normal">
-                Details are stored locally for this session. Manage or update
-                them in your Portal Wallet.
-              </span>
-            </div> */}
-
             <button
               onClick={() => onSave(localData)}
-              className="w-full p-[14px_24px] bg-[#0d7377] text-white rounded-[10px] font-semibold text-[15px] hover:bg-[#0d7377]/90 hover:-translate-y-px transition-all active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)]"
+              className="w-full p-[14px_24px] bg-[#0d7377] text-white rounded-[10px] font-semibold text-[15px] hover:bg-[#0d7377]/90 hover:-translate-y-px transition-all active:translate-y-0 shadow-[0_4px_20px_rgba(47,111,212,0.35)] mt-6"
             >
               Save Payment Status
             </button>
