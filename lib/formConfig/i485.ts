@@ -394,6 +394,159 @@ const generatePriorOrgsFields = (startIndex: number, endIndex: number): Field[] 
   return fields;
 };
 
+const generatePriorCertificationsFields = (startIndex: number, endIndex: number): Field[] => {
+  const fields: Field[] = [];
+  for (let i = startIndex; i <= endIndex; i++) {
+    fields.push({
+      key: `p9_certifications_row${i}`,
+      pdfKey: "N/A",
+      label: `Additional Certification, License, or Skill (${i})`,
+      type: "text",
+      section: "Part 9. General Eligibility and Inadmissibility Grounds",
+      condition: (d) =>
+        d.p9_public_charge_exemption_category === "NotExempt" &&
+        Number(d.p9_additional_certifications_count) >= (i - startIndex + 1),
+    });
+  }
+  return fields;
+};
+
+const generatePriorCashBenefitsFields = (startIndex: number, endIndex: number): Field[] => {
+  const fields: Field[] = [];
+  for (let i = startIndex; i <= endIndex; i++) {
+    fields.push(
+      {
+        key: `p9_cash_benefit_row${i}_name`,
+        pdfKey: "N/A",
+        label: `Benefit ${i} - Specific Benefit Received`,
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes" &&
+          Number(d.p9_additional_cash_benefits_count) >= (i - startIndex + 1),
+      },
+      {
+        key: `p9_cash_benefit_row${i}_start_date`,
+        pdfKey: "N/A",
+        label: `Benefit ${i} - Start Date (mm/dd/yyyy)`,
+        type: "date",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes" &&
+          Number(d.p9_additional_cash_benefits_count) >= (i - startIndex + 1),
+      },
+      {
+        key: `p9_cash_benefit_row${i}_end_date`,
+        pdfKey: "N/A",
+        label: `Benefit ${i} - End Date (mm/dd/yyyy)`,
+        type: "date",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes" &&
+          Number(d.p9_additional_cash_benefits_count) >= (i - startIndex + 1),
+      },
+      {
+        key: `p9_cash_benefit_row${i}_amount`,
+        pdfKey: "N/A",
+        label: `Benefit ${i} - Total Dollar Amount Received`,
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes" &&
+          Number(d.p9_additional_cash_benefits_count) >= (i - startIndex + 1),
+      },
+      {
+        key: `p9_cash_benefit_row${i}_exempt`,
+        pdfKey: "N/A",
+        label: `Benefit ${i} - Were you in an exempt category when you received this benefit?`,
+        type: "radio",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes" &&
+          Number(d.p9_additional_cash_benefits_count) >= (i - startIndex + 1),
+        options: [
+          { label: "Yes", value: "Yes" },
+          { label: "No", value: "No" },
+        ],
+      }
+    );
+  }
+  return fields;
+};
+
+const generatePriorInstCaresFields = (startIndex: number, endIndex: number): Field[] => {
+  const fields: Field[] = [];
+  for (let i = startIndex; i <= endIndex; i++) {
+    fields.push(
+      {
+        key: `p9_inst_care_row${i}_institution`,
+        pdfKey: "N/A",
+        label: `Institution ${i} - Name, City, and State`,
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes" &&
+          Number(d.p9_additional_inst_care_count) >= (i - startIndex + 1),
+      },
+      {
+        key: `p9_inst_care_row${i}_date_from`,
+        pdfKey: "N/A",
+        label: `Institution ${i} - Date From (mm/dd/yyyy)`,
+        type: "date",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes" &&
+          Number(d.p9_additional_inst_care_count) >= (i - startIndex + 1),
+      },
+      {
+        key: `p9_inst_care_row${i}_date_to`,
+        pdfKey: "N/A",
+        label: `Institution ${i} - Date To (mm/dd/yyyy)`,
+        type: "date",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes" &&
+          Number(d.p9_additional_inst_care_count) >= (i - startIndex + 1),
+      },
+      {
+        key: `p9_inst_care_row${i}_reason`,
+        pdfKey: "N/A",
+        label: `Institution ${i} - Reason for Institutionalization`,
+        type: "text",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes" &&
+          Number(d.p9_additional_inst_care_count) >= (i - startIndex + 1),
+      },
+      {
+        key: `p9_inst_care_row${i}_exempt`,
+        pdfKey: "N/A",
+        label: `Institution ${i} - Were you in an exempt category during this institutionalization?`,
+        type: "radio",
+        section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes" &&
+          Number(d.p9_additional_inst_care_count) >= (i - startIndex + 1),
+        options: [
+          { label: "Yes", value: "Yes" },
+          { label: "No", value: "No" },
+        ],
+      }
+    );
+  }
+  return fields;
+};
+
 export const formFields: Field[] = [
   // ============================================
   // Header Information
@@ -4618,6 +4771,16 @@ export const formFields: Field[] = [
     section: "Part 9. General Eligibility and Inadmissibility Grounds",
     condition: (d) => d.p9_public_charge_exemption_category === "NotExempt",
   },
+  {
+    key: "p9_additional_certifications_count",
+    pdfKey: "_",
+    label: "How many additional certifications, licenses, or skills do you have (beyond the 8 listed above)?",
+    type: "text",
+    placeholder:"3, 4, 5",
+    section: "Part 9. General Eligibility and Inadmissibility Grounds",
+    condition: (d) => d.p9_public_charge_exemption_category === "NotExempt",
+  },
+  ...generatePriorCertificationsFields(9, 15),
 
   {
     key: "p9_public_cash_assistance",
@@ -4841,6 +5004,18 @@ export const formFields: Field[] = [
           { label: "No", value: "No", pdfKey: "p9_cash_benefit_row4_exempt_No" },
         ],
       },
+      {
+        key: "p9_additional_cash_benefits_count",
+        pdfKey: "_",
+        label: "How many additional cash benefits have you received (beyond the 4 listed above)?",
+type: "text",
+    placeholder:"3, 4, 5",
+            section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_public_cash_assistance === "Yes",
+      },
+      ...generatePriorCashBenefitsFields(5, 10),
     ],
   },
   {
@@ -5064,6 +5239,18 @@ export const formFields: Field[] = [
           { label: "No", value: "No", pdfKey: "p9_inst_care_row4_exempt_No" },
         ],
       },
+      {
+        key: "p9_additional_inst_care_count",
+        pdfKey: "_",
+        label: "How many additional institutional care events have you had (beyond the 4 listed above)?",
+type: "text",
+    placeholder:"3, 4, 5",
+            section: "Part 9. General Eligibility and Inadmissibility Grounds",
+        condition: (d) =>
+          d.p9_public_charge_exemption_category === "NotExempt" &&
+          d.p9_institutional_care_govt === "Yes",
+      },
+      ...generatePriorInstCaresFields(5, 10),
     ],
   },
   {
@@ -5178,9 +5365,7 @@ export const formFields: Field[] = [
     key: "p9_unlawfully_present_since_1997",
     pdfKey: "_",
     label:
-      "Since April 1, 1997, have you been in the United States without permission (unlawfully present)?",
-    tooltip:
-      "NOTE: If you answered Yes, give the dates of unlawful presence in Part 14. Additional Information.",
+      "Since April 1, 1997, have you been in the United States without permission (unlawfully present)? You were unlawfully present in the United States if you were present in the United States after the expiration of the period of stay authorized by the Department of Homeland Security (DHS) Secretary or were present in the United States without being admitted or paroled.",
     type: "radio",
     section: "Part 9. General Eligibility and Inadmissibility Grounds",
     options: [
@@ -5188,6 +5373,8 @@ export const formFields: Field[] = [
       { label: "No", value: "No", pdfKey: "p9_unlawfully_present_since_1997_No" },
     ],
     subQuestions: [
+
+
       {
         key: "p9_unlawful_presence_trafficking_reason",
         pdfKey: "_",
@@ -6516,6 +6703,71 @@ export const overflowFields = [
     formatInfo: (index: number, data: Record<string, string>) => {
       const val = data[`p9_child_soldiers_under15_used_expl_1_text`] || "";
       return `Explanation for Used child soldiers under 15 in hostilities:\n${val}`;
+    },
+  },
+  {
+    prefix: "p9_certifications",
+    countKey: "p9_additional_certifications_count",
+    startIndex: 9,
+    maxIndex: 15,
+    pageNumber: "19",
+    partNumber: "9",
+    itemNumber: "62",
+    labelPrefix: "Certification/License/Skill",
+    fields: [{ suffix: "", label: "Skill" }],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const skill = data[`p9_certifications_row${index}`] || "";
+      return `Additional Certification/License/Skill ${index}:\n${skill}`;
+    },
+  },
+  {
+    prefix: "p9_cash_benefit",
+    countKey: "p9_additional_cash_benefits_count",
+    startIndex: 5,
+    maxIndex: 10,
+    pageNumber: "20",
+    partNumber: "9",
+    itemNumber: "65",
+    labelPrefix: "Cash Benefit",
+    fields: [
+      { suffix: "name", label: "Benefit Received" },
+      { suffix: "start_date", label: "Start Date" },
+      { suffix: "end_date", label: "End Date" },
+      { suffix: "amount", label: "Amount" },
+      { suffix: "exempt", label: "Exempt" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const name = data[`p9_cash_benefit_row${index}_name`] || "";
+      const start = data[`p9_cash_benefit_row${index}_start_date`] || "";
+      const end = data[`p9_cash_benefit_row${index}_end_date`] || "";
+      const amount = data[`p9_cash_benefit_row${index}_amount`] || "";
+      const exempt = data[`p9_cash_benefit_row${index}_exempt`] || "";
+      return `Additional Cash Benefit ${index}:\nBenefit: ${name}\nStart Date: ${start}\nEnd Date: ${end}\nAmount: ${amount}\nExempt category: ${exempt}`;
+    },
+  },
+  {
+    prefix: "p9_inst_care",
+    countKey: "p9_additional_inst_care_count",
+    startIndex: 5,
+    maxIndex: 10,
+    pageNumber: "20",
+    partNumber: "9",
+    itemNumber: "66",
+    labelPrefix: "Institutional Care",
+    fields: [
+      { suffix: "institution", label: "Institution" },
+      { suffix: "date_from", label: "Date From" },
+      { suffix: "date_to", label: "Date To" },
+      { suffix: "reason", label: "Reason" },
+      { suffix: "exempt", label: "Exempt" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const inst = data[`p9_inst_care_row${index}_institution`] || "";
+      const start = data[`p9_inst_care_row${index}_date_from`] || "";
+      const end = data[`p9_inst_care_row${index}_date_to`] || "";
+      const reason = data[`p9_inst_care_row${index}_reason`] || "";
+      const exempt = data[`p9_inst_care_row${index}_exempt`] || "";
+      return `Additional Institutional Care ${index}:\nInstitution: ${inst}\nStart Date: ${start}\nEnd Date: ${end}\nReason: ${reason}\nExempt category: ${exempt}`;
     },
   },
 ];
