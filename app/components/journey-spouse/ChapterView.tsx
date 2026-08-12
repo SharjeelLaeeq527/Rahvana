@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useMemo, useState } from "react";
-import { ChevronRight, AlertTriangle } from "lucide-react";
+import { ChevronRight, AlertTriangle, Lock } from "lucide-react";
 import { RoadmapData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { getActiveStepsForStage, getStageProgress } from "./journeyHelpers";
@@ -111,7 +111,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
         />
       )}
 
-      <div className="w-full max-w-[680px] mx-auto animate-in fade-in duration-700 relative z-10 mt-12">
+      <div className="w-full max-w-[680px] mx-auto animate-in fade-in duration-700 relative z-10 mt-6 sm:mt-12">
         {/* Removed Unlock Chapter 2 TEMP button */}
         {/* <button
           onClick={onBack}
@@ -405,30 +405,17 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
                 `}
                 style={{ animationDelay: `${idx * 40}ms` }}
               >
-                <div className="relative shrink-0 flex items-center gap-2">
+                <div className="relative shrink-0 flex items-center">
                   <div
                     className={`rounded-full border-2 flex items-center justify-center text-[10px] font-bold tracking-[0.04em] transition-all ${iconBg} ${iconBorder} ${iconText}
                       shadow-[0_1.5px_6px_rgba(36,42,66,0.10)]
-                      ${isStepLocked ? "w-7 h-7" : "w-7 h-7"}
+                      w-7 h-7
                     `}
                   >
                     {isCompleted ? "✓" : idx + 1}
                   </div>
-                  {isStepLocked && (
-                    <div
-                      className={`pointer-events-none absolute left-8 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-full border px-2.5 py-1 text-[10px] font-semibold tracking-[0.04em] opacity-0 shadow-sm transition-all duration-150 group-hover:opacity-100 group-hover:translate-x-0 translate-x-[-4px] ${
-                        accessTier === "basic"
-                          ? "bg-[#e7f7f5] border-[#7ecfc6] text-[#166b62]"
-                          : accessTier === "premium"
-                            ? "bg-[#f0ebff] border-[#c5b9ff] text-[#4b3587]"
-                            : "bg-[#fff4cf] border-[#d8b95d] text-[#7a560f]"
-                      }`}
-                    >
-                      Unlocks with {accessTierLabel}
-                    </div>
-                  )}
                 </div>
-                <div className="flex-1">
+                <div className="min-w-0 flex-1">
                   <div className={`text-[14px] font-semibold leading-[1.3] ${textColor}`}>
                     {step.step_name || (step as any).name}
                   </div>
@@ -438,11 +425,26 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
                     {step.step_short_description || ""}
                   </div>
                 </div>
-                <ChevronRight
-                  className={`shrink-0 ${isStepLocked ? "text-[#c5cfd9] opacity-50" : "text-[#b3a6b3] opacity-30"}`}
-                  size={14}
-                  strokeWidth={3}
-                />
+                {isStepLocked ? (
+                  <div
+                    className={`shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-[0.03em] ${
+                      accessTier === "basic"
+                        ? "bg-[#e7f7f5] border-[#7ecfc6] text-[#166b62]"
+                        : accessTier === "premium"
+                          ? "bg-[#f0ebff] border-[#c5b9ff] text-[#4b3587]"
+                          : "bg-[#fff4cf] border-[#d8b95d] text-[#7a560f]"
+                    }`}
+                  >
+                    <Lock size={10} strokeWidth={2.5} />
+                    <span>{accessTierLabel}</span>
+                  </div>
+                ) : (
+                  <ChevronRight
+                    className="shrink-0 text-[#b3a6b3] opacity-30"
+                    size={14}
+                    strokeWidth={3}
+                  />
+                )}
               </div>
             );
           })}
