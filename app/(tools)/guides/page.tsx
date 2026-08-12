@@ -527,15 +527,6 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
         {/* Hero Section — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
           <section className="text-center mb-5 md:mb-10 pt-1 relative flex flex-col items-center">
-            <div className="w-full flex justify-end mb-6 md:absolute md:top-0 md:right-0 md:mb-0 md:w-auto md:block">
-              <Link
-                href="/guides/my-guides"
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-bold text-slate-600 hover:text-teal-600 hover:border-teal-200 shadow-sm transition-all"
-              >
-                <LayoutGrid size={16} />
-                My Guides
-              </Link>
-            </div>
             <h1 className="text-3xl md:text-5xl font-bold mb-4 mt-2 md:mt-0 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
               Master the Paperwork.
             </h1>

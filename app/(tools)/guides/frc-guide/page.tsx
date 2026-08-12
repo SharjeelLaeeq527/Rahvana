@@ -326,7 +326,9 @@ const FrcGuide = () => {
                     className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
                   >
                     <ArrowLeft className="w-4 h-4" />
-                    Back
+                    <span className="hidden md:inline-block">
+                      Back
+                    </span>
                   </motion.button>
                 ) : (
                   <div className="hidden sm:block w-20" />
@@ -351,7 +353,10 @@ const FrcGuide = () => {
             : "bg-gray-200 text-gray-400 cursor-not-allowed"
         }`}
                   >
-                    Continue <ArrowRight className="w-4 h-4" />
+                    <span className="hidden md:inline-block">
+                      Continue
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
                   </motion.button>
                 ) : (
                   <div className="hidden sm:block w-20" />

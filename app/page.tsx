@@ -1621,7 +1621,7 @@ function HomePageContent() {
               <ConsultationSection onConsultationClick={handleConsultationClick} />
 
               {/* TESTIMONIALS (moved from About page) */}
-              <section className="px-8 py-24 text-center md:px-20">
+              <section className="px-8 py-4 text-center md:px-20">
                 <div className="mb-5 flex justify-center">
                   <span className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-[#b5451b] px-4 py-1.5 text-[11px] font-semibold tracking-widest text-[#b5451b] uppercase">
                     Voices From The Journey
@@ -1640,6 +1640,7 @@ function HomePageContent() {
                       author: "Ayesha W.",
                       role: "IR-1 applicant · Islamabad",
                       rating: 5,
+                      image: "/assets/images/ayesha.jpg",
                       text: "The uncertainty of the IR-1 process felt like a weight. Rahvana's clear roadmap gave me the clarity I needed to finally breathe again. My visa was approved last month.",
                     },
                     {
@@ -1647,13 +1648,15 @@ function HomePageContent() {
                       author: "Karim U.",
                       role: "US Citizen sponsor · Chicago",
                       rating: 5,
+                      image: "/assets/images/karim.jpg",
                       text: "After three years of waiting, we were lost in the system. Rahvana helped us understand exactly where we stood. Now, my family is finally together in Chicago.",
                     },
                     {
                       bg: "bg-[#f0f7f4]",
-                      author: "Elena M.",
-                      role: "IR-1 applicant · Bogota",
+                      author: "Wasay C.",
+                      role: "IR-1 applicant · Karachi",
                       rating: 4.5,
+                      image: "/assets/images/Wasay.png",
                       text: "The document requirements were overwhelming. Rahvana's vault made organizing our case effortless. We just received our interview date!",
                     },
                   ].map((item, i) => (
@@ -1693,8 +1696,14 @@ function HomePageContent() {
                       </blockquote>
 
                       <div className="flex items-center gap-3 text-sm">
-                        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/70 text-[#0d7a75]">
-                          <User size={20} />
+                        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-white/70">
+                          <Image
+                            src={item.image}
+                            alt={item.author}
+                            fill
+                            sizes="56px"
+                            className="object-cover"
+                          />
                         </div>
 
                         <div>
@@ -1723,7 +1732,7 @@ function HomePageContent() {
 
                 <div className="mx-auto mt-8 max-w-3xl border-t border-[#e2e8f0]" />
 
-                <div className="mx-auto mt-8 flex max-w-3xl items-center justify-center gap-2 text-xs md:text-sm text-[#64748b]">
+                <div className="mx-auto mt-8 flex max-w-3xl items-center justify-center gap-2 text-[11px] text-[#64748b] md:text-sm">
                   <ShieldCheck size={16} className="text-[#0d7a75]" />
                   <span>Helping families navigate U.S. immigration with confidence.</span>
                 </div>
