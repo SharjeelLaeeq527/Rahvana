@@ -319,7 +319,7 @@ export default function CaseStatusPage() {
         <div className="min-w-0">
           {/* Header */}
           <header className="mb-9">
-            <div className="inline-flex items-center gap-2 rounded-full border border-[#0d7377]/15 bg-[#afdbdb]/40 px-3 py-1.5 text-[11px] font-semibold tracking-[0.18em] text-[#0d7377] uppercase">
+            <div className="inline-flex items-center gap-2 rounded-full border border-[#0d7377]/15 bg-[#E0F8FE] px-3 py-1.5 text-[11px] font-semibold tracking-[0.18em] text-[#157674] uppercase">
               <span className="relative flex h-1.5 w-1.5">
                 <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[#0d7377]/60" />
                 <span className="relative inline-flex h-1.5 w-1.5 rounded-full bg-[#0d7377]" />
@@ -328,7 +328,7 @@ export default function CaseStatusPage() {
             </div>
 
             <div className="mt-5 flex items-center justify-between gap-4">
-              <h1 className="text-4xl font-bold tracking-tight text-[#0d7377] md:text-5xl">
+              <h1 className="text-4xl font-bold tracking-tight text-[#00595C] md:text-5xl">
                 USCIS Case Status
               </h1>
 
@@ -361,7 +361,7 @@ export default function CaseStatusPage() {
                   onClick={() => setShowHistory((v) => !v)}
                   aria-expanded={showHistory}
                   aria-controls="search-history"
-                  className="inline-flex items-center gap-1.5 rounded-full border border-[#0d7377]/15 bg-[#0d7377]/5 px-3 py-1.5 text-xs font-semibold text-[#0d7377] transition-colors hover:bg-[#0d7377]/10"
+                  className="inline-flex items-center gap-1.5 rounded-full border border-[#0d7377]/15 bg-[#0d7377]/5 px-3 py-1.5 text-xs font-semibold text-[#087890] transition-colors hover:bg-[#0d7377]/10"
                 >
                   <Clock className="h-3.5 w-3.5" />
                   History ({history.length})
@@ -381,7 +381,7 @@ export default function CaseStatusPage() {
                 }`}
               >
                 <div className="overflow-hidden">
-                  <div className="rounded-2xl border border-[#c9dddd] bg-[#edf5f4]/40">
+                  <div className="rounded-2xl border border-[#c9dddd] bg-[#FFFFFF]">
                     <div className="flex items-center justify-between border-b border-[#c9dddd] px-4 py-2.5">
                       <span className="text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
                         Recent Searches
@@ -392,7 +392,7 @@ export default function CaseStatusPage() {
                           setHistory([]);
                           localStorage.removeItem("uscis_history");
                         }}
-                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#db8090] transition-opacity hover:opacity-75"
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-[#BE211A] transition-opacity hover:opacity-75"
                       >
                         <Trash2 className="h-3 w-3" /> Clear All
                       </button>
@@ -451,7 +451,7 @@ export default function CaseStatusPage() {
                     onKeyDown={(e) => e.key === "Enter" && handleCheck()}
                     placeholder="e.g. MSC2490000001"
                     maxLength={13}
-                    className="w-full rounded-2xl border border-[#c9dddd] bg-[#edf5f4]/40 py-4 pr-16 pl-12 font-mono text-[15px] font-semibold tracking-wide transition-all outline-none placeholder:font-sans placeholder:font-normal placeholder:text-[#5f7777] hover:border-[#0d7377]/25 focus:border-[#0d7377] focus:bg-[#ffffff] focus:ring-4 focus:ring-[#0d7377]/10"
+                    className="w-full rounded-2xl border border-[#c9dddd] py-4 pr-16 pl-12 font-mono text-[15px] font-semibold tracking-wide transition-all outline-none placeholder:font-sans placeholder:font-normal placeholder:text-[#5f7777] hover:border-[#0d7377]/25 focus:border-[#0d7377] focus:ring-4 focus:ring-[#0d7377]/10"
                   />
                   <span
                     className={`absolute top-1/2 right-4 -translate-y-1/2 rounded-md border bg-[#ffffff] px-2 py-0.5 font-mono text-[11px] font-semibold tabular-nums ${
@@ -466,7 +466,7 @@ export default function CaseStatusPage() {
 
                 {/* Prefix Decoder */}
                 {decoded && receipt.length >= 3 && (
-                  <div className="mt-3 flex w-fit items-center gap-2 rounded-xl border border-[#0d7377]/12 bg-[#afdbdb]/30 px-3 py-1.5">
+                  <div className="mt-3 flex w-fit items-center gap-2 rounded-xl border border-[#0d7377]/12 bg-[#EFF4FF] px-3 py-1.5">
                     <Building2 className="h-3.5 w-3.5 text-[#0d7377]" />
                     <span className="text-[11px] font-semibold tracking-tight text-[#0d7377]">
                       {decoded.center}
@@ -482,7 +482,7 @@ export default function CaseStatusPage() {
                 type="button"
                 onClick={handleCheck}
                 disabled={loading || receipt.length < 13}
-                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#0C7276] px-8 py-4 text-sm font-semibold tracking-wide text-white transition-all active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#0D7377] px-8 py-4 text-sm font-semibold tracking-wide text-white transition-all active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-45 sm:w-auto"
               >
                 {loading ? (
                   <>
@@ -591,7 +591,7 @@ export default function CaseStatusPage() {
 
                     {/* Case Description */}
                     {result.description && (
-                      <div className="mt-4 rounded-2xl border border-[#0d7377]/10 bg-[#afdbdb]/25 p-5 md:p-6">
+                      <div className="mt-4 rounded-2xl border border-[#0d7377]/10 bg-[#EFF4FF] p-5 md:p-6">
                         <h4 className="mb-3 flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
                           <Info className="h-3.5 w-3.5" /> Official Case Update
                         </h4>
@@ -656,7 +656,7 @@ export default function CaseStatusPage() {
 
         {/* ── Sidebar ─────────────────────────────────────── */}
         <aside className="space-y-5 lg:pt-[8.5rem]">
-          <div className="rounded-3xl border border-[#0d7377]/10 bg-[#afdbdb]/25 p-6">
+          <div className="rounded-3xl border border-[#0d7377]/10 bg-[#EFF4FF] p-6">
             <span className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-[#0d7377]/15 bg-[#ffffff] text-[#0d7377]">
               <FileText className="h-4 w-4" />
             </span>
@@ -672,7 +672,7 @@ export default function CaseStatusPage() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-[#0d7377]/10 bg-[#afdbdb]/25 p-6">
+          <div className="rounded-3xl border border-[#0d7377]/10 bg-[#EFF4FF] p-6">
             <h3 className="flex items-center gap-2 text-sm font-semibold text-[#183b3b]">
               <Landmark className="h-4 w-4 text-[#0d7377]" /> Official Resources
             </h3>
