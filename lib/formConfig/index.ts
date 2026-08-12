@@ -9,6 +9,7 @@ import * as i864a from "./i864a";
 import * as i864ez from "./i864ez";
 import * as i693 from "./i693";
 import * as ds260 from "./ds260";
+import * as i485 from "./i485";
 
 import type { FormConfig } from "./types"; // import your FormConfig type
 
@@ -23,6 +24,7 @@ const configs: Record<string, FormConfig> = {
   i864ez,
   i693,
   ds260,
+  i485,
 };
 
 // Function to get the form config based on the form code

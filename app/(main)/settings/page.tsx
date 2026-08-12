@@ -3,15 +3,22 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { createBrowserClient } from "@supabase/ssr";
 import { useRouter } from "next/navigation";
-import { KeyRound, LogOut, Trash2, Loader2, User, Eye, EyeOff } from "lucide-react";
+import {
+  KeyRound,
+  LogOut,
+  Trash2,
+  Loader2,
+  User,
+  Eye,
+  EyeOff,
+  ChevronRight,
+} from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader } from "@/components/ui/spinner";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import { MFACodeModal } from "@/app/components/shared/MFACodeModal";
@@ -35,7 +42,7 @@ export default function SettingsPage() {
     []
   );
 
-  const [activeTab, setActiveTab] = useState("account");
+  const [openSection, setOpenSection] = useState<string | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
   const [profile, setProfile] = useState<{ mfa_enabled: boolean } | null>(null);
   const [isPasswordSaving, setIsPasswordSaving] = useState(false);
@@ -265,59 +272,70 @@ export default function SettingsPage() {
     return null;
   }
 
+  const accountOpen = openSection === "account";
+  const passwordOpen = openSection === "password";
+  const toggleSection = (id: string) => setOpenSection((prev) => (prev === id ? null : id));
+
   return (
-    <div className="mx-auto w-full max-w-4xl space-y-6 mt-10">
+    <div className="mx-auto w-full max-w-2xl space-y-6 px-4 pb-16 pt-8 sm:px-6 sm:pt-10">
       <div className="space-y-2">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
           {t("pages.settings.title")}
         </h1>
-        <p className="max-w-2xl text-sm leading-6 text-muted-foreground sm:text-base">
+        <p className="text-sm leading-6 text-muted-foreground sm:text-base">
           {t("pages.settings.subtitle")}
         </p>
       </div>
 
+      {/* Account summary cards */}
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-2xl border border-border bg-card px-4 py-3 shadow-sm">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Signed in as</p>
-          <p className="mt-1 truncate text-sm font-medium text-foreground">{user.email}</p>
+        <div className="flex items-start gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-sm">
+          <User className="mt-0.5 h-5 w-5 shrink-0 text-[#0d7377]" />
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Signed in as
+            </p>
+            <p className="mt-0.5 truncate text-sm font-medium text-foreground">{user.email}</p>
+          </div>
         </div>
-        <div className="rounded-2xl border border-border bg-card px-4 py-3 shadow-sm">
-          <p className="text-xs uppercase tracking-wide text-muted-foreground">Security status</p>
-          <p className="mt-1 text-sm font-medium text-foreground">
-            {profile?.mfa_enabled
-              ? "Two-factor authentication enabled"
-              : "Two-factor authentication off"}
-          </p>
+        <div className="flex items-start gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-sm">
+          <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-[#0d7377]" />
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Security status
+            </p>
+            <p className="mt-0.5 text-sm font-medium text-foreground">
+              {profile?.mfa_enabled
+                ? "Two-factor authentication enabled"
+                : "Two-factor authentication off"}
+            </p>
+          </div>
         </div>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid h-auto w-full grid-cols-2 gap-2 rounded-2xl border border-border bg-card p-1.5 shadow-sm">
-          <TabsTrigger
-            value="account"
-            className="rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
+      {/* Security & Access */}
+      <section className="space-y-2.5">
+        <h2 className="px-1 text-base font-semibold text-foreground">Security &amp; Access</h2>
+        <div className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          {/* Account Settings row */}
+          <button
+            type="button"
+            onClick={() => toggleSection("account")}
+            aria-expanded={accountOpen}
+            className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition hover:bg-muted/40"
           >
-            Account Settings
-          </TabsTrigger>
-          <TabsTrigger
-            value="security"
-            className="rounded-xl px-4 py-2.5 text-sm font-medium text-muted-foreground data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm"
-          >
-            Security
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="account" className="mt-6">
-          <Card className="border-border bg-card shadow-sm">
-            <CardHeader className="border-b border-border/60 pb-4">
-              <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-                <User className="h-4 w-4 text-[#0d7377]" />
-                Account Settings
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-5 pt-2">
-              <div className="flex items-center justify-between gap-4 rounded-2xl border border-border bg-background p-4">
-                <div className="space-y-1">
+            <User className="h-5 w-5 shrink-0 text-[#0d7377]" />
+            <span className="flex-1 text-sm font-medium text-foreground">Account Settings</span>
+            <ChevronRight
+              className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+                accountOpen ? "rotate-90" : ""
+              }`}
+            />
+          </button>
+          {accountOpen && (
+            <div className="space-y-4 bg-muted/20 px-4 py-4">
+              <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-background p-4">
+                <div className="min-w-0 space-y-1">
                   <Label htmlFor="two-factor" className="text-sm font-medium text-foreground">
                     Two-Factor Authentication
                   </Label>
@@ -327,7 +345,6 @@ export default function SettingsPage() {
                 </div>
                 <Switch id="two-factor" checked={!!profile?.mfa_enabled} disabled />
               </div>
-
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-foreground">Manage authentication</p>
@@ -336,26 +353,33 @@ export default function SettingsPage() {
                 <Button
                   onClick={() => router.push("/mfa-setup")}
                   variant="outline"
-                  className="w-full sm:w-auto cursor-pointer"
+                  className="w-full cursor-pointer sm:w-auto"
                 >
                   {profile?.mfa_enabled ? "Manage 2FA" : "Set Up 2FA"}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
+            </div>
+          )}
 
-        <TabsContent value="security" className="mt-6">
-          <div className="grid gap-6">
-            {canChangePassword && (
-              <Card className="border-border bg-card shadow-sm">
-                <CardHeader className="border-b border-border/60 pb-4">
-                  <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-                    <KeyRound className="h-4 w-4 text-[#0d7377]" />
-                    Change Password
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-6 pt-6">
+          {/* Change Password row */}
+          {canChangePassword && (
+            <>
+              <button
+                type="button"
+                onClick={() => toggleSection("password")}
+                aria-expanded={passwordOpen}
+                className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition hover:bg-muted/40"
+              >
+                <KeyRound className="h-5 w-5 shrink-0 text-[#0d7377]" />
+                <span className="flex-1 text-sm font-medium text-foreground">Change Password</span>
+                <ChevronRight
+                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+                    passwordOpen ? "rotate-90" : ""
+                  }`}
+                />
+              </button>
+              {passwordOpen && (
+                <div className="bg-muted/20 px-4 py-4">
                   <form onSubmit={handlePasswordChange} className="space-y-5">
                     <div className="flex flex-col gap-4 lg:flex-row">
                       <div className="flex-1 space-y-2">
@@ -468,7 +492,7 @@ export default function SettingsPage() {
                       <Button
                         type="submit"
                         disabled={isPasswordSaving}
-                        className="w-full sm:w-auto cursor-pointer"
+                        className="w-full cursor-pointer sm:w-auto"
                       >
                         {isPasswordSaving ? (
                           <>
@@ -481,62 +505,61 @@ export default function SettingsPage() {
                       </Button>
                     </div>
                   </form>
-                </CardContent>
-              </Card>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+
+      {/* Device & Sessions */}
+      <section className="space-y-2.5">
+        <h2 className="px-1 text-base font-semibold text-foreground">Device &amp; Sessions</h2>
+        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <button
+            type="button"
+            onClick={() => setConfirmSignOutOpen(true)}
+            className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition hover:bg-muted/40"
+          >
+            <LogOut className="h-5 w-5 shrink-0 text-[#0d7377]" />
+            <span className="flex-1">
+              <span className="block text-sm font-medium text-foreground">Sign Out</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                Sign out of all devices connected to your account.
+              </span>
+            </span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </button>
+        </div>
+      </section>
+
+      {/* Danger Zone */}
+      <section className="space-y-2.5">
+        <h2 className="px-1 text-base font-semibold text-[#c0596a]">Danger Zone</h2>
+        <div className="overflow-hidden rounded-2xl border border-[#c0596a]/30 bg-card shadow-sm">
+          <button
+            type="button"
+            onClick={() => setDeleteAccountModalOpen(true)}
+            disabled={isDeletingAccount}
+            className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition hover:bg-[#c0596a]/5 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isDeletingAccount ? (
+              <Loader2 className="h-5 w-5 shrink-0 animate-spin text-[#c0596a]" />
+            ) : (
+              <Trash2 className="h-5 w-5 shrink-0 text-[#c0596a]" />
             )}
-
-            <Card className="border-border bg-card shadow-sm">
-              <CardHeader className="border-b border-border/60 pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-                  <LogOut className="h-4 w-4 text-[#0d7377]" />
-                  Sign Out
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Sign out of all devices connected to your account.
-                </p>
-                <Button
-                  variant="outline"
-                  className="w-full sm:w-auto cursor-pointer"
-                  onClick={() => setConfirmSignOutOpen(true)}
-                >
-                  Sign Out All Devices
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="border-border bg-card shadow-sm">
-              <CardHeader className="border-b border-border/60 pb-4">
-                <CardTitle className="flex items-center gap-2 text-lg text-foreground">
-                  <Trash2 className="h-4 w-4 text-[#c0596a]" />
-                  Delete Account
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                <p className="text-sm text-muted-foreground">
-                  Permanently delete your account and related settings data.
-                </p>
-                <Button
-                  variant="destructive"
-                  className="w-full sm:w-auto cursor-pointer"
-                  onClick={() => setDeleteAccountModalOpen(true)}
-                  disabled={isDeletingAccount}
-                >
-                  {isDeletingAccount ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    "Delete Account"
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </TabsContent>
-      </Tabs>
+            <span className="flex-1">
+              <span className="block text-sm font-medium text-[#c0596a]">
+                {isDeletingAccount ? "Deleting..." : "Delete Account"}
+              </span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                Permanently delete your account and related settings data.
+              </span>
+            </span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-[#c0596a]/70" />
+          </button>
+        </div>
+      </section>
 
       <ConfirmationModal
         open={confirmSignOutOpen}
