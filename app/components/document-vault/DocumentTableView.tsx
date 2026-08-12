@@ -130,15 +130,19 @@ export function DocumentTableView({
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead className="w-[300px]">
+              <TableHead className="min-w-[160px]">
                 {t("documentVaultPage.components.tableView.columns.documentName")}
               </TableHead>
-              <TableHead>
+              <TableHead className="hidden lg:table-cell">
                 {t("documentVaultPage.components.tableView.columns.requiredFor")}
               </TableHead>
               <TableHead>{t("documentVaultPage.components.tableView.columns.status")}</TableHead>
-              <TableHead>{t("documentVaultPage.components.tableView.columns.fileInfo")}</TableHead>
-              <TableHead>{t("documentVaultPage.components.tableView.columns.validity")}</TableHead>
+              <TableHead className="hidden lg:table-cell">
+                {t("documentVaultPage.components.tableView.columns.fileInfo")}
+              </TableHead>
+              <TableHead className="hidden lg:table-cell">
+                {t("documentVaultPage.components.tableView.columns.validity")}
+              </TableHead>
               <TableHead className="text-right">
                 {t("documentVaultPage.components.tableView.columns.actions")}
               </TableHead>
@@ -325,7 +329,7 @@ export function DocumentTableView({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden lg:table-cell">
                       <div className="flex flex-wrap gap-1">
                         {doc.roles.map((role) => (
                           <Badge
@@ -339,7 +343,7 @@ export function DocumentTableView({
                       </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(doc, latestDoc)}</TableCell>
-                    <TableCell>
+                    <TableCell className="hidden lg:table-cell">
                       {latestDoc ? (
                         <div className="space-y-1">
                           <div className="text-xs font-medium truncate max-w-[150px]">
@@ -371,7 +375,7 @@ export function DocumentTableView({
                         </span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden lg:table-cell">
                       {latestDoc?.expirationDate ? (
                         <div
                           className={`text-xs flex items-center gap-1.5 ${

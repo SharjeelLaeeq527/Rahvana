@@ -2760,11 +2760,12 @@ const ConsultationBookingPageContent = () => {
       <div className="max-w-7xl mx-auto px-4 relative z-20">
         {activeView === "booking" && (
           <div className="bg-white rounded-3xl shadow-2xl border border-teal-100 overflow-hidden slide-up">
-            {/* Improved Progress Tracker */}
-            <div className="bg-gray-50/50 border-b border-gray-100 p-8">
-              <div className="flex justify-between items-center max-w-2xl mx-auto relative">
-                {/* Connecting Lines */}
-                <div className="absolute top-5 left-0 w-full h-0.5 bg-gray-200 -z-10">
+            {/* Improved Progress Tracker — metro-line stepper */}
+            <div className="bg-gray-50/50 border-b border-gray-100 px-3 py-6 sm:p-8">
+              <div className="flex items-start justify-between max-w-2xl mx-auto relative">
+                {/* Connecting rail — inset so it runs exactly dot-to-dot
+                    (first/last station centers sit at 12.5% / 87.5% of the row) */}
+                <div className="absolute top-4 sm:top-5 left-[12.5%] right-[12.5%] h-0.5 bg-gray-200 -z-10">
                   <div
                     className="h-full bg-teal-600 transition-all duration-500"
                     style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
@@ -2777,24 +2778,27 @@ const ConsultationBookingPageContent = () => {
                   { step: 3, label: "Select Time", icon: Clock },
                   { step: 4, label: "Checkout", icon: CreditCard },
                 ].map((item) => (
-                  <div key={item.step} className="flex flex-col items-center gap-2">
+                  <div
+                    key={item.step}
+                    className="flex flex-1 flex-col items-center gap-1.5 px-0.5 sm:gap-2"
+                  >
                     <div
                       className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border-2",
+                        "flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300 sm:h-10 sm:w-10",
                         currentStep >= item.step
                           ? "bg-teal-600 border-teal-600 text-white shadow-lg shadow-teal-200"
                           : "bg-white border-gray-200 text-gray-400"
                       )}
                     >
                       {currentStep > item.step ? (
-                        <CheckCircle className="h-5 w-5" />
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                       ) : (
-                        <item.icon className="h-5 w-5" />
+                        <item.icon className="h-4 w-4 sm:h-5 sm:w-5" />
                       )}
                     </div>
                     <span
                       className={cn(
-                        "text-xs font-bold tracking-tight uppercase",
+                        "text-center text-[10px] font-bold uppercase leading-tight tracking-tight sm:text-xs",
                         currentStep >= item.step ? "text-teal-900" : "text-gray-400"
                       )}
                     >

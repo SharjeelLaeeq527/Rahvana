@@ -114,7 +114,7 @@ export function Ds260BaselineCapture({
   }, [hasI130, i130Baseline, baseline]);
 
   return (
-    <div className="mt-[12px]" role="region" aria-label="Capture DS-260 dates for consistency">
+    <div className="mt-[12px] mb-6" role="region" aria-label="Capture DS-260 dates for consistency">
       <div
         className="rounded-[12px] border-[1.5px] p-4 sm:p-5"
         style={{ background: "#fafaf9", borderColor: "#e7e5e4" }}

@@ -19,16 +19,24 @@ export default function AffidavitSupportCalculatorPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#fafcff] flex items-center justify-center p-6">
+    <div className="flex min-h-screen items-center justify-center p-6"
+    style={{
+      backgroundImage: "url('/assets/images/affidavit-bg.png')",
+      backgroundSize: "100% 100%",
+      backgroundPosition: "center",
+      backgroundRepeat: "no-repeat",
+    }}
+    >
       {!isOpen && (
-        <div className="text-center animate-in fade-in duration-700">
-          <h1 className="text-3xl font-black text-[#0f1f38] mb-4">Affidavit Support Calculator</h1>
-          <p className="text-[#3a4f63] mb-8">
+        <div
+          className="animate-in fade-in text-center duration-700">
+          <h1 className="mb-4 text-3xl font-black text-[#0f1f38]">Affidavit Support Calculator</h1>
+          <p className="mb-8 text-[#3a4f63]">
             Determine your sponsorship setup based on USCIS requirements.
           </p>
           <button
             onClick={() => setIsOpen(true)}
-            className="p-[14px_32px] bg-[#0d7377] text-white rounded-[12px] font-semibold shadow-lg hover:opacity-90 transition-all"
+            className="rounded-[12px] bg-[#0d7377] p-[14px_32px] font-semibold text-white shadow-lg transition-all hover:opacity-90"
           >
             Launch Calculator
           </button>
