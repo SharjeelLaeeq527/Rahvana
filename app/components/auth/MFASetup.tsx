@@ -71,7 +71,6 @@ export function MFASetup() {
 
   const handleEnableMFA = async () => {
     setLoading(true);
-    setError("");
 
     const result = await enableMFA();
 
@@ -81,7 +80,7 @@ export function MFASetup() {
       setFactorId(result.factorId);
       setStep("qr");
     } else {
-      setError(result.error || msg(E.AUTH_MFA_ENABLE_FAILED));
+      showToast(result.error || msg(E.AUTH_MFA_ENABLE_FAILED), "error");
     }
 
     setLoading(false);
@@ -89,12 +88,11 @@ export function MFASetup() {
 
   const handleVerifyCode = async () => {
     if (!code.trim() || !factorId) {
-      setError(`${msg(E.AUTH_CLIENT_ENTER_VERIFICATION_CODE)}`);
+      showToast(`${msg(E.AUTH_CLIENT_ENTER_VERIFICATION_CODE)}`, "error");
       return;
     }
 
     setLoading(true);
-    setError("");
 
     try {
       const result = await verifyMFASetup(factorId, code);
@@ -107,10 +105,10 @@ export function MFASetup() {
 
         return;
       } else {
-        setError(result.error || `${msg(E.AUTH_MFA_CODE_INVALID)}`);
+        showToast(result.error || `${msg(E.AUTH_MFA_CODE_INVALID)}`, "error");
       }
     } catch {
-      setError(`${msg(E.AUTH_MFA_VERIFY_FAILED)}`);
+      showToast(`${msg(E.AUTH_MFA_VERIFY_FAILED)}`, "error");
     }
 
     setLoading(false);
@@ -118,7 +116,7 @@ export function MFASetup() {
 
   const handleDisableMFA = async () => {
     if (!disableOTP.trim()) {
-      setError(`${msg(E.AUTH_CLIENT_ENTER_VERIFICATION_CODE)}`);
+      showToast(`${msg(E.AUTH_CLIENT_ENTER_VERIFICATION_CODE)}`, "error");
       return;
     }
 
@@ -132,12 +130,11 @@ export function MFASetup() {
     }
 
     if (!currentFactorId) {
-      setError(`${msg(E.AUTH_MFA_FACTOR_NOT_FOUND)}`);
+      showToast(`${msg(E.AUTH_MFA_FACTOR_NOT_FOUND)}`, "error");
       return;
     }
 
     setLoading(true);
-    setError("");
 
     try {
       // Call the disable API
@@ -147,7 +144,6 @@ export function MFASetup() {
         // Close modal and reset state
         setIsDisableModalOpen(false);
         setDisableOTP("");
-        setError("");
         showToast("Two-factor authentication has been disabled.", "success");
 
         await supabase.auth.signOut();
@@ -156,10 +152,10 @@ export function MFASetup() {
 
         return;
       } else {
-        setError(result.error || `${msg(E.AUTH_MFA_DISABLE_FAILED)}`);
+        showToast(result.error || `${msg(E.AUTH_MFA_DISABLE_FAILED)}`, "error");
       }
     } catch {
-      setError(`${msg(E.AUTH_MFA_DISABLE_FAILED)}`);
+      showToast(`${msg(E.AUTH_MFA_DISABLE_FAILED)}`, "error");
     }
 
     setLoading(false);
@@ -233,7 +229,7 @@ export function MFASetup() {
           </div>
 
           <div className="px-6 py-4 sm:px-9">
-            <p className="text-sm leading-relaxed text-[#0d7377]/70">
+            <p className="text-sm leading-relaxed text-black/70">
               {enabled
                 ? "Control and update your existing two-factor authentication settings."
                 : "Add an extra layer of security to your account with a time-based one-time code from your authenticator app."}
@@ -249,20 +245,11 @@ export function MFASetup() {
                   key={f.t}
                   className="rounded-2xl border border-[#0d7377]/12 bg-[#0d7377]/[0.04] p-3.5"
                 >
-                  <p className="text-[13px] font-semibold text-[#0d7377]">{f.t}</p>
-                  <p className="mt-1 text-[11px] leading-snug text-[#0d7377]/60">{f.d}</p>
+                  <p className="text-[13px] font-semibold text-black">{f.t}</p>
+                  <p className="mt-1 text-[11px] leading-snug text-black/70">{f.d}</p>
                 </div>
               ))}
             </div>
-
-            {error && (
-              <Alert
-                variant="destructive"
-                className="mt-6 rounded-2xl border-[#c0596a]/30 bg-[#c0596a]/8 text-[#c0596a]"
-              >
-                <AlertDescription className="text-[#c0596a]">{error}</AlertDescription>
-              </Alert>
-            )}
 
             {profile && !enabled && (
               <Button
@@ -322,7 +309,7 @@ export function MFASetup() {
               <h2 className="mt-4 text-2xl font-semibold tracking-tight text-[#0d7377] sm:text-3xl">
                 Scan the QR code
               </h2>
-              <p className="mt-2 max-w-lg text-sm leading-relaxed text-[#0d7377]/65">
+              <p className="mt-2 max-w-lg text-sm leading-relaxed text-black/70">
                 Open Google Authenticator (or any TOTP app), scan the code on the right, then enter
                 the 6-digit code it generates to finish enabling 2FA.
               </p>
@@ -335,7 +322,7 @@ export function MFASetup() {
 
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-3">
                   <div className="min-w-0 flex-1 rounded-xl border border-[#0d7377]/15 bg-[#0d7377]/[0.04] px-4 py-3">
-                    <p className="font-mono text-[13px] leading-relaxed tracking-[0.14em] break-all text-[#0d7377] sm:text-sm">
+                    <p className="font-mono text-[13px] leading-relaxed tracking-[0.14em] break-all text-black/70 sm:text-sm">
                       {secret.match(/.{1,4}/g)?.join(" ")}
                     </p>
                   </div>
@@ -357,7 +344,7 @@ export function MFASetup() {
 
               {/* app downloads */}
               <div className="mt-7">
-                <p className="text-sm font-semibold text-[#0d7377]">
+                <p className="text-sm font-semibold text-[#8284bf]">
                   Don&apos;t have Google Authenticator?
                 </p>
                 <div className="mt-3 flex flex-col gap-3 sm:flex-row">
@@ -391,7 +378,7 @@ export function MFASetup() {
 
               {/* verify */}
               <div className="mt-8 rounded-2xl border border-[#0d7377]/12 bg-[#0d7377]/[0.03] p-5">
-                <label className="text-[11px] font-semibold tracking-[0.16em] text-[#0d7377] uppercase">
+                <label className="text-[11px] font-semibold tracking-[0.16em] text-black uppercase">
                   Verification code
                 </label>
                 <div className="mt-3 flex flex-col gap-3 sm:flex-row">
@@ -412,15 +399,6 @@ export function MFASetup() {
                     {loading ? "Verifying..." : "Verify Code"}
                   </Button>
                 </div>
-
-                {error && (
-                  <Alert
-                    variant="destructive"
-                    className="mt-4 rounded-xl border-[#c0596a]/30 bg-[#c0596a]/8"
-                  >
-                    <AlertDescription className="text-[#c0596a]">{error}</AlertDescription>
-                  </Alert>
-                )}
               </div>
             </div>
 

@@ -401,6 +401,7 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
             <ResourceSectionHeader
               title="My Tools"
               subtitle="Tools you've unlocked with your plan or add-ons."
+              className="-mt-16"
             />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
               {ownedTools.map((tool, index) => renderToolCard(tool, index))}
@@ -417,7 +418,6 @@ export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean
                 <ResourceSectionHeader
                   title="Browse Tools"
                   subtitle="Explore more tools, try a demo or unlock the full version."
-                  className="mt-12"
                 />
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
                   {browseTools.map((tool, index) => renderToolCard(tool, index))}
@@ -547,7 +547,7 @@ function ToolCard({
     }
   };
 
-  const cardClasses = `group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
+  const cardClasses = `group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6 mx-2 md:mx-0
     transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
     ${
       // isPinned
@@ -588,12 +588,12 @@ function ToolCard({
 
       {/* Floating icon box */}
       <div
-        className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-40 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg ${styles.iconBox}`}
+        className={`absolute -top-6 left-6 w-12 h-12 md:w-14 md:h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-40 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg ${styles.iconBox}`}
       >
         <div
           className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
         />
-        <Icon className="w-6 h-6 stroke-2" />
+        <Icon className="w-5 h-5 md:w-6 md:h-6 stroke-2" />
       </div>
 
       {/* Radial glow */}

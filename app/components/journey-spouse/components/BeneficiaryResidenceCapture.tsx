@@ -117,7 +117,7 @@ export function BeneficiaryResidenceCapture({
     config?.source_basis ?? "9 FAM 504.4-4(B)(2), Police Certificate Requirement";
 
   return (
-    <div className="mt-[12px]" role="region" aria-label="Beneficiary residence history">
+    <div className="mt-[12px] mb-6" role="region" aria-label="Beneficiary residence history">
       <div
         className="rounded-[12px] border-[1.5px] p-4 sm:p-5"
         style={{ background: "#fafaf9", borderColor: "#e7e5e4" }}

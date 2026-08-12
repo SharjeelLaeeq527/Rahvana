@@ -111,7 +111,7 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
   const allFlagsCount = flags.length + (gapAdvisory ? 1 : 0);
 
   return (
-    <div className="mt-[12px]" role="region" aria-label="Capture key dates">
+    <div className="mt-[12px] mb-6" role="region" aria-label="Capture key dates">
       <div
         className="rounded-[12px] border-[1.5px] p-4 sm:p-5"
         style={{ background: "#fafaf9", borderColor: "#e7e5e4" }}
