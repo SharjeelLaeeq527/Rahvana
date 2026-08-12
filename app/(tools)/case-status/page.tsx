@@ -602,19 +602,6 @@ export default function CaseStatusPage() {
                     )}
                   </div>
 
-                  {/* Spanish copy, when the API returns it */}
-                  {result.rawData.current_case_status_desc_es && (
-                    <div className="rounded-2xl border border-[#cdadcc]/35 bg-[#cdadcc]/12 p-5 md:p-6">
-                      <h4 className="mb-3 flex items-center gap-2 text-[10px] font-semibold tracking-[0.18em] text-[#5f7777] uppercase">
-                        <Info className="h-3.5 w-3.5" />
-                        {result.rawData.current_case_status_text_es ?? "En Español"}
-                      </h4>
-                      <p className="text-[15px] leading-relaxed text-[#183b3b]/80 italic">
-                        &ldquo;{result.rawData.current_case_status_desc_es}&rdquo;
-                      </p>
-                    </div>
-                  )}
-
                   {/* Next Steps */}
                   {result.nextSteps.length > 0 && (
                     <div>

@@ -404,7 +404,10 @@ const PolioVaccinationGuide = () => {
                     onClick={goBack}
                     className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
                   >
-                    <ArrowLeft className="w-4 h-4" /> Back
+                    <ArrowLeft className="w-4 h-4" /> 
+                    <span className="hidden md:inline-block">
+                      Back
+                    </span>
                   </motion.button>
                 ) : (
                   <div />
@@ -433,7 +436,10 @@ const PolioVaccinationGuide = () => {
                     }
                   `}
                     >
-                      Continue <ArrowRight className="w-4 h-4" />
+                      <span className="hidden md:inline-block">
+                        Continue
+                      </span>
+                      <ArrowRight className="w-4 h-4" />
                     </motion.button>
                   )}
               </div>
