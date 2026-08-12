@@ -1621,7 +1621,7 @@ function HomePageContent() {
               <ConsultationSection onConsultationClick={handleConsultationClick} />
 
               {/* TESTIMONIALS (moved from About page) */}
-              <section className="px-8 py-24 text-center md:px-20">
+              <section className="px-8 py-4 text-center md:px-20">
                 <div className="mb-5 flex justify-center">
                   <span className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-[#b5451b] px-4 py-1.5 text-[11px] font-semibold tracking-widest text-[#b5451b] uppercase">
                     Voices From The Journey
@@ -1732,7 +1732,7 @@ function HomePageContent() {
 
                 <div className="mx-auto mt-8 max-w-3xl border-t border-[#e2e8f0]" />
 
-                <div className="mx-auto mt-8 flex max-w-3xl items-center justify-center gap-2 text-xs text-[#64748b] md:text-sm">
+                <div className="mx-auto mt-8 flex max-w-3xl items-center justify-center gap-2 text-[11px] text-[#64748b] md:text-sm">
                   <ShieldCheck size={16} className="text-[#0d7a75]" />
                   <span>Helping families navigate U.S. immigration with confidence.</span>
                 </div>
