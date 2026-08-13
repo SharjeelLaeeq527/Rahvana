@@ -350,7 +350,7 @@ const BirthCertificateGuidePage = () => {
                 </AnimatePresence>
               </div>
 
-              <div className="flex flex-col justify-between items-center gap-4 mt-5 pb-6 w-full sm:flex-row">
+              <div className="flex justify-between items-center gap-4 mt-5 pb-6 w-full sm:flex-row">
                 {currentStep > 0 ? (
                   <motion.button
                     whileHover={{ scale: 1.03 }}
@@ -359,7 +359,9 @@ const BirthCertificateGuidePage = () => {
                     className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer ${isUrdu ? "font-urdu-body" : ""}`}
                   >
                     <ArrowLeft className={`w-4 h-4 ${isUrdu ? "rotate-180" : ""}`} />{" "}
-                    {t("wizard.common.back")}
+                    <span className="hidden md:inline-block">
+                      {t("wizard.common.back")}
+                    </span>
                   </motion.button>
                 ) : (
                   <div className="hidden sm:block w-20" />
@@ -394,7 +396,9 @@ const BirthCertificateGuidePage = () => {
                     ${isUrdu ? "font-urdu-body" : ""}
                   `}
                     >
-                      {t("wizard.common.continue")}{" "}
+                      <span className="hidden md:inline-block">
+                        {t("wizard.common.continue")}
+                      </span>
                       <ArrowRight className={`w-4 h-4 ${isUrdu ? "rotate-180" : ""}`} />
                     </motion.button>
                   )}

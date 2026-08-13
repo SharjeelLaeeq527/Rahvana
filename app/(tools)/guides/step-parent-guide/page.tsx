@@ -325,11 +325,14 @@ const StepParentGuidePage = () => {
 
             {/* Question 1 */}
             <div className="border border-slate-100 p-6 rounded-2xl bg-slate-50/50">
-              <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-teal-500 text-white text-xs flex items-center justify-center font-bold">
+            <h3 className="mb-4 flex items-start gap-2 text-base font-bold text-slate-800">
+                <span className="mt-0.5 flex h-6 min-h-6 w-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-teal-500 text-xs leading-none font-bold text-white">
                   1
                 </span>
+
+                <span className="flex-1 leading-6">
                 Was the marriage between your biological parent and step-parent legally recognized?
+                </span>
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button
@@ -367,11 +370,13 @@ const StepParentGuidePage = () => {
 
             {/* Question 2 */}
             <div className="border border-slate-100 p-6 rounded-2xl bg-slate-50/50">
-              <h3 className="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-teal-500 text-white text-xs flex items-center justify-center font-bold">
+              <h3 className="text-base font-bold text-slate-800 mb-4 flex items-start gap-2">
+                <span className="mt-0.5 flex h-6 min-h-6 w-6 min-w-6 shrink-0 items-center justify-center rounded-full bg-teal-500 text-xs leading-none font-bold text-white">
                   2
                 </span>
-                How old was the child when this marriage took place?
+                <span className="flex-1 leading-6">
+                  How old was the child when this marriage took place?
+                </span>
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <button
@@ -798,7 +803,10 @@ const StepParentGuidePage = () => {
                       onClick={goBack}
                       className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-slate-300 bg-white text-slate-700 font-semibold text-xs transition-colors hover:bg-slate-50 cursor-pointer"
                     >
-                      <ArrowLeft className="w-4 h-4" /> Back
+                      <ArrowLeft className="w-4 h-4" /> 
+                      <span className="hidden md:inline-block">
+                        Back
+                      </span>
                     </motion.button>
                   ) : (
                     <div />
@@ -822,7 +830,10 @@ const StepParentGuidePage = () => {
                         }
                       `}
                     >
-                      Continue <ArrowRight className="w-4 h-4" />
+                      <span className="hidden md:inline-block">
+                        Continue
+                      </span>
+                      <ArrowRight className="w-4 h-4" />
                     </motion.button>
                   ) : (
                     <div />
