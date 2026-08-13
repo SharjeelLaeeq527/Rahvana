@@ -166,26 +166,30 @@ export function DocListSection({
         {groups.map((group) => (
           <div key={group.id} className="flex flex-col">
             {/* Group header */}
-            <div className="flex items-center gap-[8px] sm:gap-[10px] mb-[12px] sm:mb-[14px]">
+            <div className="flex items-center gap-[6px] sm:gap-[10px] mb-[12px] sm:mb-[14px]">
               <span className="text-[11px] font-semibold uppercase tracking-[0.09em] text-[#6b8097]">
                 {group.label}
               </span>
               <span
-                className={`text-[9px] sm:text-[10px] font-semibold px-[8px] sm:px-[9px] py-[3px] rounded-full uppercase tracking-[0.06em] border ${
+                className={`text-[9px] sm:text-[10px] font-semibold px-[7px] sm:px-[9px] py-[2px] sm:py-[3px] rounded-full uppercase tracking-[0.06em] border whitespace-nowrap shrink-0 ${
                   group.badge === "req" || group.badge === "Required"
                     ? "bg-[#ffeaea] text-[#a01c1c] border-[#f5bebe]"
-                    : group.badge === "cond" || group.badge === "Required if applicable"
+                    : group.badge === "cond" ||
+                        group.badge === "Required if applicable" ||
+                        group.badge === "Required if Applicable"
                       ? "bg-[#fef8e8] text-[#8a6200] border-[#f0d98a]"
                       : "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
                 }`}
               >
                 {group.badge === "req"
                   ? "Required"
-                  : group.badge === "cond"
-                    ? "Required if Applicable"
+                  : group.badge === "cond" ||
+                      group.badge === "Required if applicable" ||
+                      group.badge === "Required if Applicable"
+                    ? "If Applicable"
                     : group.badge}
               </span>
-              <div className="flex-1 h-px bg-[#d0e4f7]" />
+              <div className="flex-1 h-px bg-[#d0e4f7] min-w-[12px]" />
             </div>
 
             {/* Items */}
