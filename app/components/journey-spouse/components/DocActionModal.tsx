@@ -96,47 +96,47 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
         open={isOpen}
         onOpenChange={(open) => setDocActionModal({ ...docActionModal, isOpen: open })}
       >
-        <DialogContent className="max-w-xl w-[95vw] p-0 overflow-hidden border-none rounded-[28px] shadow-2xl">
+        <DialogContent className="max-w-xl w-[92vw] sm:w-[95vw] p-0 overflow-hidden border-none rounded-[20px] sm:rounded-[28px] shadow-2xl">
           <div className="relative overflow-hidden bg-white">
             {/* Background Decorations */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
             <div className="absolute bottom-0 left-0 w-48 h-48 bg-primary/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-2xl" />
 
-            <div className="relative p-8">
-              <div className="flex items-center gap-4 mb-6">
-                <div className="w-12 h-12 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+            <div className="relative p-4 sm:p-8">
+              <div className="flex items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
+                <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                   {(() => {
                     switch (doc.icon) {
                       case "ShieldCheck":
-                        return <ShieldCheck size={24} />;
+                        return <ShieldCheck size={22} />;
                       case "User":
-                        return <User size={24} />;
+                        return <User size={22} />;
                       case "FileText":
-                        return <FileText size={24} />;
+                        return <FileText size={22} />;
                       case "FileCheck":
-                        return <FileCheck size={24} />;
+                        return <FileCheck size={22} />;
                       case "MessageSquare":
-                        return <MessageSquare size={24} />;
+                        return <MessageSquare size={22} />;
                       case "Scale":
-                        return <Scale size={24} />;
+                        return <Scale size={22} />;
                       case "Globe":
-                        return <Globe size={24} />;
+                        return <Globe size={22} />;
                       case "ClipboardList":
-                        return <ClipboardList size={24} />;
+                        return <ClipboardList size={22} />;
                       case "Lock":
-                        return <Lock size={24} />;
+                        return <Lock size={22} />;
                       case "Camera":
-                        return <Camera size={24} />;
+                        return <Camera size={22} />;
                       default:
-                        return <FileText size={24} />;
+                        return <FileText size={22} />;
                     }
                   })()}
                 </div>
                 <div>
-                  <DialogTitle className="text-xl font-bold text-[#0f1f38]">
+                  <DialogTitle className="text-base sm:text-xl font-bold text-[#0f1f38] leading-tight sm:leading-normal">
                     {title || doc.name || doc.title}
                   </DialogTitle>
-                  <p className="text-sm text-[#6b8097]">
+                  <p className="text-xs sm:text-sm text-[#6b8097] mt-0.5 leading-snug sm:leading-normal">
                     {subtitle ||
                       doc.subtitle ||
                       doc.sub ||
@@ -146,7 +146,7 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
               </div>
 
               <div
-                className={`grid grid-cols-1 gap-4 ${
+                className={`grid grid-cols-1 gap-3 sm:gap-4 ${
                   availableActionsCount > 1 ? "sm:grid-cols-2" : "sm:grid-cols-1"
                 }`}
               >
@@ -171,7 +171,7 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
 
                       onReadGuide();
                     }}
-                    className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all ${
+                    className={`group relative text-left p-4 sm:p-6 rounded-xl sm:rounded-2xl border-[1.5px] bg-white transition-all ${
                       canReadGuide
                         ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
                         : "border-[#e8d47a] hover:border-[#c49a0a] hover:shadow-[0_12px_24px_rgba(196,154,10,0.10)] hover:-translate-y-1"
@@ -191,26 +191,26 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
                     )}
 
                     <div
-                      className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors ${
+                      className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center mb-2.5 sm:mb-4 transition-colors ${
                         canReadGuide
                           ? "bg-[#e8f1fb] text-primary group-hover:bg-primary group-hover:text-white"
                           : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
                       }`}
                     >
                       {isTranslation ? (
-                        <Sparkles size={20} />
+                        <Sparkles size={18} />
                       ) : isPassportPhoto ? (
-                        <Camera size={20} />
+                        <Camera size={18} />
                       ) : (
-                        <BookOpen size={20} />
+                        <BookOpen size={18} />
                       )}
                     </div>
 
-                    <h4 className="font-bold text-[#0f1f38] mb-1">
+                    <h4 className="font-bold text-sm sm:text-base text-[#0f1f38] mb-0.5 sm:mb-1">
                       {isTranslation || isPassportPhoto ? "Launch the Tool" : "Read the Guide"}
                     </h4>
 
-                    <p className="text-xs text-[#6b8097] leading-relaxed">
+                    <p className="text-[11px] sm:text-xs text-[#6b8097] leading-relaxed">
                       {isTranslation
                         ? "Use our automated tool to prepare certified translations for your documents."
                         : isPassportPhoto
@@ -225,7 +225,7 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
 
                         if (ent.state === "limited") {
                           return (
-                            <div className="mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
+                            <div className="mt-2.5 sm:mt-3 flex items-center gap-1.5 bg-amber-50 border border-amber-100 rounded-lg px-2 py-1">
                               <div className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
 
                               <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider">
@@ -271,7 +271,7 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
                     setDocActionModal({ ...docActionModal, isOpen: false });
                     if (onUpload) onUpload();
                   }}
-                  className={`group relative text-left p-6 rounded-2xl border-[1.5px] bg-white transition-all
+                  className={`group relative text-left p-4 sm:p-6 rounded-xl sm:rounded-2xl border-[1.5px] bg-white transition-all
                   ${
                     canUpload
                       ? "border-[#d0e4f7] hover:border-primary hover:shadow-[0_12px_24px_rgba(15,31,56,0.08)] hover:-translate-y-1"
@@ -291,18 +291,18 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
                   )}
 
                   <div
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center mb-4 transition-colors
+                    className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl flex items-center justify-center mb-2.5 sm:mb-4 transition-colors
                     ${
                       canUpload
                         ? "bg-[#eaf7f2] text-[#1a7a5e] group-hover:bg-[#1a7a5e] group-hover:text-white"
                         : "bg-[#fffbec] text-[#c49a0a] group-hover:bg-[#c49a0a] group-hover:text-white"
                     }`}
                   >
-                    <Upload size={20} />
+                    <Upload size={18} />
                   </div>
 
-                  <h4 className="font-bold text-[#0f1f38] mb-1">Upload Document</h4>
-                  <p className="text-xs text-[#6b8097] leading-relaxed">
+                  <h4 className="font-bold text-sm sm:text-base text-[#0f1f38] mb-0.5 sm:mb-1">Upload Document</h4>
+                  <p className="text-[11px] sm:text-xs text-[#6b8097] leading-relaxed">
                     Attach and submit your document for processing.
                   </p>
 
@@ -315,10 +315,10 @@ export const DocActionModal: React.FC<DocActionModalProps> = ({
                 </button>
               </div>
 
-              <div className="mt-8 pt-6 border-t border-[#d0e4f7]/50 flex justify-end">
+              <div className="mt-4 sm:mt-8 pt-3 sm:pt-6 border-t border-[#d0e4f7]/50 flex justify-end">
                 <button
                   onClick={() => setDocActionModal({ ...docActionModal, isOpen: false })}
-                  className="px-6 py-2.5 rounded-full text-sm font-semibold text-[#6b8097] hover:bg-slate-100 transition-colors"
+                  className="px-5 sm:px-6 py-2 sm:py-2.5 rounded-full text-xs sm:text-sm font-semibold text-[#6b8097] hover:bg-slate-100 transition-colors"
                 >
                   Close
                 </button>
