@@ -233,11 +233,95 @@ export function DocListSection({
                     role="button"
                     tabIndex={0}
                     onClick={() => onItemClick(item)}
-                    className={rowClasses}
+                    className={`bg-white border-[1.5px] rounded-[14px] sm:rounded-[16px] p-[14px] sm:p-[18px_20px] flex flex-col sm:flex-row items-stretch sm:items-center gap-[10px] sm:gap-[16px] cursor-pointer transition-all hover:border-primary hover:shadow-[0_4px_20px_rgba(47,111,212,0.1)] hover:-translate-y-px active:translate-y-0 text-left w-full ${
+                      st === "reviewed"
+                        ? "border-[#a8d9be] bg-[#e8f5ef]"
+                        : st === "in-progress"
+                          ? "border-[#f0d98a] bg-[#fef8e8]"
+                          : "border-[#d0e4f7]"
+                    }`}
                   >
-                    {/* Icon */}
+                    {/* MOBILE ONLY (< sm): Header Row with Icon + Title + Dropdown */}
+                    <div className="flex sm:hidden items-start justify-between gap-2.5 w-full">
+                      <div className="flex items-start gap-2.5 flex-1 min-w-0">
+                        {/* Icon */}
+                        <div
+                          className={`w-[36px] h-[36px] rounded-[10px] border flex items-center justify-center shrink-0 text-[16px] transition-colors ${
+                            st === "reviewed"
+                              ? "bg-[#e8f5ef] border-[#a8d9be]"
+                              : "bg-[#e8f1fb] border-[#d0e4f7]"
+                          }`}
+                        >
+                          <div className="text-primary/70">
+                            {getStepIcon(item.icon || "") || getStepIcon("file-text")}
+                          </div>
+                        </div>
+
+                        {/* Title */}
+                        <div className="text-[14px] font-semibold text-[#0c1b33] leading-[1.3] break-words pt-1">
+                          {item.title}
+                        </div>
+                      </div>
+
+                      {/* Dropdown Menu on Mobile top-right */}
+                      {uploadedDoc && !isDeleting && (
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <button
+                              onClick={(e) => e.stopPropagation()}
+                              className="h-8 w-8 rounded-full hover:bg-muted flex items-center justify-center transition-colors text-muted-foreground hover:text-foreground border border-transparent hover:border-muted-foreground/20 shrink-0"
+                            >
+                              <MoreVertical size={18} />
+                            </button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent
+                            side="top"
+                            align="end"
+                            className="w-[140px] rounded-xl shadow-xl border-muted/20"
+                          >
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const defId = getVaultId(item);
+                                let docDef = ALL_DOCUMENTS.find((d) => d.id === defId);
+                                if (!docDef) {
+                                  docDef = {
+                                    id: defId || item.id,
+                                    name: item.title || "Document",
+                                    description: item.sub || "",
+                                  } as any;
+                                }
+                                const related = findRelatedDocs(item, getVaultId, uploadedDocuments);
+                                setPreviewState({
+                                  isOpen: true,
+                                  uploadedDoc,
+                                  docDef,
+                                  allUploadedDocs: related,
+                                });
+                              }}
+                              className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5"
+                            >
+                              <Eye size={16} className="text-primary" />
+                              Preview
+                            </DropdownMenuItem>
+                            <DropdownMenuItem
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                onDelete(uploadedDoc.id, item.title);
+                              }}
+                              className="flex items-center gap-2 cursor-pointer font-medium text-[13px] py-2.5 text-red-600 focus:text-red-700 focus:bg-red-50"
+                            >
+                              <Trash2 size={16} />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      )}
+                    </div>
+
+                    {/* DESKTOP ONLY (>= sm): Icon */}
                     <div
-                      className={`w-[36px] h-[36px] sm:w-[40px] sm:h-[40px] rounded-[10px] border flex items-center justify-center shrink-0 text-[16px] sm:text-[17px] transition-colors ${
+                      className={`hidden sm:flex w-[40px] h-[40px] rounded-[10px] border items-center justify-center shrink-0 text-[17px] transition-colors ${
                         st === "reviewed"
                           ? "bg-[#e8f5ef] border-[#a8d9be]"
                           : "bg-[#e8f1fb] border-[#d0e4f7]"
@@ -246,18 +330,91 @@ export function DocListSection({
                       <div className="text-primary/70">{getStepIcon(item.icon || "") || getStepIcon("file-text")}</div>
                     </div>
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0 w-full">
-                      <div className="text-[14px] sm:text-[15px] font-semibold text-[#0c1b33] mb-[4px] leading-[1.3] break-words">
+                    {/* Content (Middle on Desktop, Subtitle + Footer on Mobile) */}
+                    <div className="flex-1 min-w-0 w-full flex flex-col">
+                      {/* Title (Desktop only) */}
+                      <div className="hidden sm:block text-[15px] font-semibold text-[#0c1b33] mb-[4px] leading-[1.3] break-words">
                         {item.title}
                       </div>
+
+                      {/* Subtitle (Mobile & Desktop) */}
                       {item.sub && (
                         <div className="text-[12px] sm:text-[13px] text-[#6b8097] leading-[1.4] break-words">
                           {item.sub}
                         </div>
                       )}
+
+                      {/* Footer Row on Mobile: Tags on left + Status Badge on right */}
+                      <div className="flex sm:hidden items-center justify-between gap-2 mt-2 pt-1 border-t border-[#d0e4f7]/40 w-full">
+                        {/* Tags */}
+                        <div className="flex gap-[6px] flex-wrap flex-1 min-w-0">
+                          {showTags &&
+                            item.tags &&
+                            item.tags.length > 0 &&
+                            item.tags.map((t: any, tagIdx: number) => {
+                              if (typeof t === "object" && t !== null) {
+                                const label = t.label;
+                                let cls = "bg-[#f4f7fb] text-[#6b8097] border-[#d0e4f7]";
+                                if (t.cls === "tag-pet" || t.cls === "pet") {
+                                  cls = "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]";
+                                } else if (t.cls === "tag-js" || t.cls === "js") {
+                                  cls = "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]";
+                                } else if (t.cls === "tag-hm" || t.cls === "hm" || t.cls === "bene" || t.cls === "tag-res") {
+                                  cls = "bg-[#e8f5ef] text-[#15744f] border-[#a8d9be]";
+                                } else if (t.cls === "tag-tax" || t.cls === "tax" || t.cls === "tag-gov") {
+                                  cls = "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]";
+                                } else if (t.cls === "tag-cur" || t.cls === "cur" || t.cls === "tag-id") {
+                                  cls = "bg-[#eef3fa] text-[#3a4f63] border-[#d0e4f7]";
+                                } else if (t.cls) {
+                                  cls = t.cls;
+                                }
+                                return (
+                                  <span
+                                    key={typeof t === "string" ? t : (t.label || "") + "-" + tagIdx}
+                                    className={`text-[10px] font-semibold px-[8px] py-[2px] rounded-full border tracking-[0.04em] ${cls}`}
+                                  >
+                                    {label}
+                                  </span>
+                                );
+                              }
+                              const tag = TAG_MAP[t];
+                              if (!tag) return null;
+                              return (
+                                <span
+                                  key={t}
+                                  className={`text-[10px] font-semibold px-[8px] py-[2px] rounded-full border tracking-[0.04em] ${tag.cls}`}
+                                >
+                                  {tag.label}
+                                </span>
+                              );
+                            })}
+                        </div>
+
+                        {/* Status Badge on Mobile */}
+                        <div className="shrink-0">
+                          {isReloadingDocs && !uploadedDoc ? (
+                            <div className="flex items-center gap-1.5 px-[9px] py-[4px] text-[11px] text-muted-foreground font-medium animate-pulse">
+                              <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
+                              Checking...
+                            </div>
+                          ) : isDeleting ? (
+                            <div className="flex items-center gap-1.5 px-[9px] py-[4px] text-[11px] text-red-500 font-medium animate-pulse">
+                              <div className="h-3 w-3 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
+                              Deleting...
+                            </div>
+                          ) : (
+                            <div
+                              className={`px-[9px] py-[4px] rounded-full border text-[11px] font-medium tracking-normal transition-all ${statusClasses}`}
+                            >
+                              {displayStatus}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Desktop Tags */}
                       {showTags && item.tags && item.tags.length > 0 && (
-                        <div className="flex gap-[6px] mt-[7px] flex-wrap">
+                        <div className="hidden sm:flex gap-[6px] mt-[7px] flex-wrap">
                           {item.tags.map((t: any, tagIdx: number) => {
                             if (typeof t === "object" && t !== null) {
                               const label = t.label;
@@ -278,7 +435,7 @@ export function DocListSection({
                               return (
                                 <span
                                   key={typeof t === "string" ? t : (t.label || "") + "-" + tagIdx}
-                                  className={`text-[10px] sm:text-[11px] font-semibold px-[8px] sm:px-[9px] py-[3px] rounded-full border tracking-[0.04em] ${cls}`}
+                                  className={`text-[11px] font-semibold px-[9px] py-[3px] rounded-full border tracking-[0.04em] ${cls}`}
                                 >
                                   {label}
                                 </span>
@@ -289,7 +446,7 @@ export function DocListSection({
                             return (
                               <span
                                 key={t}
-                                className={`text-[10px] sm:text-[11px] font-semibold px-[8px] sm:px-[9px] py-[3px] rounded-full border tracking-[0.04em] ${tag.cls}`}
+                                className={`text-[11px] font-semibold px-[9px] py-[3px] rounded-full border tracking-[0.04em] ${tag.cls}`}
                               >
                                 {tag.label}
                               </span>
@@ -299,21 +456,21 @@ export function DocListSection({
                       )}
                     </div>
 
-                    {/* Right: status badge + dropdown */}
-                    <div className="shrink-0 flex items-center justify-between sm:justify-start gap-2 w-full sm:w-auto">
+                    {/* Desktop Right (Status badge + dropdown) */}
+                    <div className="hidden sm:flex shrink-0 items-center gap-2">
                       {isReloadingDocs && !uploadedDoc ? (
-                        <div className="flex items-center gap-1.5 px-[10px] sm:px-[11px] py-[5px] text-[11px] sm:text-[12px] text-muted-foreground font-medium animate-pulse">
+                        <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-muted-foreground font-medium animate-pulse">
                           <div className="h-3 w-3 rounded-full border-2 border-muted-foreground/30 border-t-muted-foreground animate-spin" />
                           Checking...
                         </div>
                       ) : isDeleting ? (
-                        <div className="flex items-center gap-1.5 px-[10px] sm:px-[11px] py-[5px] text-[11px] sm:text-[12px] text-red-500 font-medium animate-pulse">
+                        <div className="flex items-center gap-1.5 px-[11px] py-[5px] text-[12px] text-red-500 font-medium animate-pulse">
                           <div className="h-3 w-3 rounded-full border-2 border-red-500/30 border-t-red-500 animate-spin" />
                           Deleting...
                         </div>
                       ) : (
                         <div
-                          className={`px-[10px] sm:px-[11px] py-[5px] rounded-full border text-[11px] sm:text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}
+                          className={`px-[11px] py-[5px] rounded-full border text-[12px] font-medium tracking-normal transition-all ${statusClasses}`}
                         >
                           {displayStatus}
                         </div>
