@@ -1315,7 +1315,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         )} */}
         {/* Title */}
         <h1
-          className={`page-title text-[clamp(28px,4.5vw,38px)] leading-[1.12] tracking-tight mb-1 font-bold sm:font-black ${isChapter1 ? "text-[#0c1b33]" : isChapter2 ? "text-[#27192e]" : "text-[#0c1b33]"}`}
+          className={`page-title text-[clamp(28px,4vw,36px)] font-bold leading-[1.15] tracking-tight mb-1 ${isChapter1 ? "text-[#0c1b33]" : isChapter2 ? "text-[#27192e]" : "text-[#0c1b33]"}`}
         >
           {step.step_name}
         </h1>

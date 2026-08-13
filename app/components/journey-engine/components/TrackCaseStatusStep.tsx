@@ -165,7 +165,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
       {/* CHANGE 1: px-4 py-8 on mobile, md:px-6 md:py-12 on desktop */}
       <div className="max-w-[760px] mx-auto px-4 pt-5 pb-4 md:px-6 md:py-8 flex flex-col step">
         
-        <h1 className="page-title text-[clamp(28px,4.5vw,38px)] text-[#0c1b33] leading-[1.12] tracking-tight mb-1 font-bold sm:font-black">
+        <h1 className="page-title text-[clamp(28px,4vw,36px)] font-bold text-[#0c1b33] leading-[1.15] tracking-tight mb-1">
           Monitor USCIS Case Status
         </h1>
         <p className="page-desc text-[15px] text-[#3a4f63] leading-[1.72] max-w-[620px] mb-2.5 sm:mb-4">

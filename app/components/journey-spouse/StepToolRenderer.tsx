@@ -47,7 +47,7 @@ export const AwaitingReviewStep: React.FC<{
   data: typeof AWAITING_REVIEW_DATA;
 }> = ({ data }) => {
   return (
-    <div className="w-full max-w-[720px] px-[24px] pt-4 md:pt-8 pb-[96px] flex flex-col mx-auto">
+    <div className="w-full max-w-[720px] px-[24px] pt-5 md:pt-8 pb-[96px] flex flex-col mx-auto">
       {/* <div className="flex items-center gap-[8px] mb-[6px] animate-in fade-in slide-in-from-top-2 duration-300">
         <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097]">
           {data.eyebrow.chapter}
@@ -57,7 +57,7 @@ export const AwaitingReviewStep: React.FC<{
           {data.eyebrow.step}
         </span>
       </div> */}
-      <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0c1b33] mb-[10px]">
+      <h1 className="text-[clamp(28px,4vw,36px)] font-bold text-[#0c1b33] leading-[1.15] tracking-tight mb-[10px]">
         {data.title}
       </h1>
       <p className="text-[#3a4f63] text-[15px] leading-[1.7] mb-3.5 sm:mb-[22px] max-w-[500px]">

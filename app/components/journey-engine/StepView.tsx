@@ -3641,7 +3641,7 @@ export const StepView: React.FC<StepViewProps> = ({
 
                     return (
                       <div className="w-full max-w-[740px] px-0 mb-10">
-                        <h1 className="text-[#28151C] text-4xl font-extrabold mb-2">Gather Required Documents</h1>
+                        <h1 className="text-[#0c1b33] text-[clamp(28px,4vw,36px)] font-bold mb-2">Gather Required Documents</h1>
       <p className="text-[#8284BF] text-[14px] sm:text-[16px] mb-4 leading-relaxed">
         Prepare the documents needed for your petition. Open each item to see exactly what is
         needed, where to get it, and what to watch out for.
@@ -3740,10 +3740,12 @@ export const StepView: React.FC<StepViewProps> = ({
                   <h1
                     className="
                 mt-0
-                text-[clamp(26px,4vw,34px)]
-                font-black
-                text-[#0f1f38]
-                leading-[1.2]
+                text-[clamp(28px,4vw,36px)]
+                font-bold
+                text-[#0c1b33]
+                leading-[1.15]
+                tracking-tight
+                mb-1
                 "
                   >
                     {currentStep.step_name}

@@ -71,8 +71,8 @@ export const AwaitingReviewStep: React.FC<{
       `}</style>
 
       {/* Page Shell */}
-      <div className="w-full max-w-[720px] px-[24px] pt-1 md:pt-8 pb-20 flex flex-col mx-auto">
-        <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0c1b33] leading-[1.2] mb-[10px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[40ms]">
+      <div className="w-full max-w-[720px] px-[24px] pt-5 md:pt-8 pb-20 flex flex-col mx-auto">
+        <h1 className="text-[clamp(28px,4vw,36px)] font-bold text-[#0c1b33] leading-[1.15] tracking-tight mb-[10px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[40ms]">
           {data.title}
         </h1>
 

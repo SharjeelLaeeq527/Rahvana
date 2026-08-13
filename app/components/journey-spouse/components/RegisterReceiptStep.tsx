@@ -1037,7 +1037,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
             </span>
           </div> */}
 
-          <h1 className="text-[2rem] sm:text-[2.3rem] md:text-[2.4rem] lg:text-[2.5rem] leading-[1.15] tracking-tight mb-2 text-[#0c1b33] font-bold">
+          <h1 className="page-title text-[clamp(28px,4vw,36px)] font-bold text-[#0c1b33] leading-[1.15] tracking-tight mb-1">
             {tool.title}
           </h1>
           <p className="text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-3.5 sm:mb-6 text-[#3a4f63]">
