@@ -242,7 +242,7 @@ export function QuestRenderer({
     const progressPct = (completedCount / suite.quests.length) * 100;
 
     return (
-      <div className="w-full max-w-[740px] mx-auto px-4 sm:px-6 pt-12 sm:pt-14 pb-8 animate-in fade-in duration-500">
+      <div className="w-full max-w-[740px] mx-auto px-4 sm:px-6 pt-5 md:pt-8 pb-8 animate-in fade-in duration-500">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1

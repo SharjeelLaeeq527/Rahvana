@@ -1196,7 +1196,7 @@ export const StepView: React.FC<StepViewProps> = ({
         />
 
         {/* Page Shell */}
-        <div className="w-full max-w-[680px] px-[24px] pb-10 flex flex-col">
+        <div className="w-full max-w-[680px] px-[24px] pt-5 md:pt-8 pb-10 flex flex-col">
           {/* Step Header */}
           <StepHeader
             stepNumber={localIdx + 1}
@@ -3736,10 +3736,10 @@ export const StepView: React.FC<StepViewProps> = ({
               </>
             ) : currentStep.step_type === "filing" ? (
               <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                <div className="flex flex-col w-full max-w-[660px] pb-[35px]">
+                <div className="flex flex-col w-full max-w-[660px] pt-5 md:pt-8 pb-[35px]">
                   <h1
                     className="
-                mt-8 sm:mt-10 md:mt-0
+                mt-0
                 text-[clamp(26px,4vw,34px)]
                 font-black
                 text-[#0f1f38]
