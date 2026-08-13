@@ -1654,7 +1654,7 @@ function HomePageContent() {
                     {
                       bg: "bg-[#f0f7f4]",
                       author: "Wasay C.",
-                      role: "IR-1 applicant · Karachi",
+                      role: "US Citizen sponsor · Bogota",
                       rating: 4.5,
                       image: "/assets/images/Wasay.png",
                       text: "The document requirements were overwhelming. Rahvana's vault made organizing our case effortless. We just received our interview date!",

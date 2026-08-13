@@ -78,7 +78,6 @@ const policeCaseStatusOptions = [
   { value: "Released", label: "Released US 169/497 crpc" },
   { value: "Pending", label: "Pending Trial" },
 ];
-import Input from "@/components/ui/input";
 
 interface CheckoutStepProps {
   formData: any;
@@ -821,12 +820,18 @@ function PoliceApplyContent() {
                     <label className="ml-1 text-sm font-bold text-gray-700">Purpose</label>
                     <CustomDropdown
                       value={formData.purpose}
-                      onChange={handleChange}
-                      className="w-full p-4 rounded-2xl bg-gray-50 border border-transparent focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all appearance-none cursor-pointer"
-                    >
-                      <option value="Immigration">Immigration</option>
-                      <option value="Visa">Visa</option>
-                    </select>
+                      onChange={(value) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          purpose: value,
+                        }))
+                      }
+                      options={[
+                        { value: "Immigration", label: "Immigration" },
+                        { value: "Visa", label: "Visa" },
+                      ]}
+                      className="w-full [&_button]:w-full [&_button]:min-w-0"
+                    />
                   </div>
                   <div className="space-y-2">
                     <label className="ml-1 text-sm font-bold text-gray-700">
@@ -836,7 +841,7 @@ function PoliceApplyContent() {
                       name="deliveryType"
                       value={formData.deliveryType}
                       onChange={handleChange}
-                      className="w-full p-4 rounded-2xl bg-gray-50 border border-transparent focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all appearance-none cursor-pointer"
+                      className="focus:border-primary focus:ring-primary/5 w-full cursor-pointer appearance-none rounded-2xl border border-transparent bg-gray-50 p-4 transition-all outline-none focus:bg-white focus:ring-4"
                     >
                       <option value="">Select Type</option>
                       <option value="Hard Copy">Hard Copy (Sign with Stamp)</option>
@@ -1110,7 +1115,7 @@ function PoliceApplyContent() {
                     name="district"
                     value={formData.district}
                     onChange={handleChange}
-                    className="w-full p-4 rounded-2xl bg-gray-50 border border-transparent focus:bg-white focus:border-primary focus:ring-4 focus:ring-primary/5 outline-none transition-all"
+                    className="focus:border-primary focus:ring-primary/5 w-full rounded-2xl border border-transparent bg-gray-50 p-4 transition-all outline-none focus:bg-white focus:ring-4"
                   >
                     <option value="">Select District</option>
                     <option value="Karachi Central">Karachi Central</option>
@@ -1174,17 +1179,23 @@ function PoliceApplyContent() {
                       <label className="ml-1 text-sm font-bold text-gray-700">Select Country</label>
                       <CustomDropdown
                         value={formData.residingCountry}
-                        onChange={handleChange}
-                        className="w-full p-4 rounded-2xl bg-white border border-gray-100 focus:border-primary outline-none transition-all"
-                      >
-                        <option value="">Select Country</option>
-                        <option value="USA">USA</option>
-                        <option value="UK">UK</option>
-                        <option value="Canada">Canada</option>
-                        <option value="Australia">Australia</option>
-                        <option value="UAE">UAE</option>
-                        <option value="Saudi Arabia">Saudi Arabia</option>
-                      </select>
+                        onChange={(value) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            residingCountry: value,
+                          }))
+                        }
+                        options={[
+                          { value: "", label: "Select Country" },
+                          { value: "USA", label: "USA" },
+                          { value: "UK", label: "UK" },
+                          { value: "Canada", label: "Canada" },
+                          { value: "Australia", label: "Australia" },
+                          { value: "UAE", label: "UAE" },
+                          { value: "Saudi Arabia", label: "Saudi Arabia" },
+                        ]}
+                        className="w-full [&_button]:w-full [&_button]:min-w-0"
+                      />
                     </motion.div>
                   )}
                 </div>
@@ -1200,7 +1211,7 @@ function PoliceApplyContent() {
                     value="United States"
                     disabled
                     readOnly
-                    className="bg-gray-100 cursor-not-allowed text-gray-700 font-medium"
+                    className="cursor-not-allowed bg-gray-100 font-medium text-gray-700"
                   />
                 </div>
 
@@ -1298,7 +1309,7 @@ function PoliceApplyContent() {
                             name="policeStation"
                             value={formData.policeStation}
                             onChange={handleChange}
-                            className="w-full p-4 rounded-xl bg-white border border-orange-100 focus:border-orange-500 outline-none transition-all cursor-pointer"
+                            className="w-full cursor-pointer rounded-xl border border-orange-100 bg-white p-4 transition-all outline-none focus:border-orange-500"
                           >
                             <option value="">Select Station</option>
                             <option value="Clifton">Clifton</option>
@@ -1364,7 +1375,7 @@ function PoliceApplyContent() {
                           name="status"
                           value={formData.status}
                           onChange={handleChange}
-                          className="w-full p-4 rounded-xl bg-white border border-orange-100 focus:border-orange-500 outline-none transition-all cursor-pointer"
+                          className="w-full cursor-pointer rounded-xl border border-orange-100 bg-white p-4 transition-all outline-none focus:border-orange-500"
                         >
                           <option value="">Select Status</option>
                           <option value="Acquitted">Acquitted</option>
