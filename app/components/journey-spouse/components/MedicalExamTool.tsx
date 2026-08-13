@@ -77,11 +77,11 @@ export const MedicalExamTool: React.FC<MedicalExamToolProps> = ({ actions, medSt
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
-      <div className="flex gap-1.5 flex-wrap mb-8">
+      <div className="flex gap-1.5 flex-wrap mb-3.5 sm:mb-8">
         {data.chips.map((chip: any, i: number) => (
           <span
             key={i}
-            className={`text-[10px] font-bold uppercase tracking-[0.06em] px-3 py-1.5 rounded-full border ${chip.type === "med" ? "bg-teal-50 text-teal-700 border-teal-200" : "bg-blue-50 text-blue-700 border-blue-100"}`}
+            className={`text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${chip.type === "med" ? "bg-teal-50 text-teal-700 border-teal-200" : "bg-blue-50 text-blue-700 border-blue-100"}`}
           >
             {chip.label}
           </span>

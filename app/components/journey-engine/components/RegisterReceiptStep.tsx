@@ -1040,23 +1040,28 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
           <h1 className="text-[2rem] sm:text-[2.3rem] md:text-[2.4rem] lg:text-[2.5rem] leading-[1.15] tracking-tight mb-2 text-[#0c1b33] font-bold">
             {tool.title}
           </h1>
-          <p className="text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-6 text-[#3a4f63]">
+          <p className="text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-3.5 sm:mb-6 text-[#3a4f63]">
             {tool.subtitle}
           </p>
 
           {/* Chips */}
-          <div className="flex gap-2 flex-wrap mb-9">
-            {["Petitioner", "Online Filing", "Tracking"].map((label) => (
+          <div className="flex gap-[7px] flex-wrap mb-3.5 sm:mb-8">
+            {[
+              { label: "Petitioner", type: "role" },
+              { label: "Online Filing", type: "path" },
+              { label: "Tracking", type: "track" },
+            ].map((chip) => (
               <span
-                key={label}
-                className="text-[11px] font-semibold uppercase px-3 py-1 rounded-full"
-                style={{
-                  background: "#fff",
-                  color: "#28151c",
-                  border: "1px solid #28151c",
-                }}
+                key={chip.label}
+                className={`text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${
+                  chip.type === "role"
+                    ? "bg-[#e8f1fb] text-[#2d4a6e] border-[#d0e4f7]"
+                    : chip.type === "path"
+                      ? "bg-[#fff7ed] text-[#b45309] border-[#fed7aa]"
+                      : "bg-[#f3f0fb] text-[#4a2d8a] border-[#c9bef2]"
+                }`}
               >
-                {label}
+                {chip.label}
               </span>
             ))}
           </div>

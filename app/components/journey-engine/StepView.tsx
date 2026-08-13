@@ -1233,9 +1233,9 @@ export const StepView: React.FC<StepViewProps> = ({
           )}
 
           {/* Meta Chips */}
-          {tool.chips && (
-            <div className="flex flex-wrap gap-[7px] mb-8">
-              {tool.chips.map((chip: any, i: number) => (
+          {(tool.chips || currentStep.chips) && (
+            <div className="flex flex-wrap gap-[7px] mb-3.5 sm:mb-8">
+              {(tool.chips || currentStep.chips).map((chip: any, i: number) => (
                 <span
                   key={i}
                   className={`text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${
@@ -3748,11 +3748,11 @@ export const StepView: React.FC<StepViewProps> = ({
                   >
                     {currentStep.step_name}
                   </h1>
-                  <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[28px] max-w-[500px]">
+                  <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-3.5 sm:mb-[28px] max-w-[500px]">
                     {currentStep.filing_data?.subtitle || currentStep.step_description}
                   </p>
 
-                  <div className="flex flex-wrap gap-[8px] mb-[36px]">
+                  <div className="flex flex-wrap gap-[8px] mb-3.5 sm:mb-8">
                     <span className="text-[11px] font-semibold tracking-[0.06em] uppercase px-[12px] py-[5px] rounded-full bg-[#e8f1fb] text-primary/80 border border-[#d0e4f7]">
                       Petitioner
                     </span>

@@ -55,11 +55,11 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) 
           {data.title}
         </h1>
 
-        <p className="text-[#3a4f63] text-[15px] leading-[1.7] mb-[22px] max-w-[500px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[80ms]">
+        <p className="text-[#3a4f63] text-[15px] leading-[1.7] mb-3.5 sm:mb-[22px] max-w-[500px] animate-in fade-in slide-in-from-top-2 duration-300 delay-[80ms]">
           {data.description}
         </p>
 
-        <div className="flex flex-wrap gap-[7px] mb-[32px] animate-in fade-in slide-in-from-top-2 duration-300 delay-120">
+        <div className="flex flex-wrap gap-[7px] mb-3.5 sm:mb-[32px] animate-in fade-in slide-in-from-top-2 duration-300 delay-120">
           {data.chips.map((chip: any, i: number) => (
             <span
               key={i}

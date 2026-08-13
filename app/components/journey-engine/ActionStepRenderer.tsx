@@ -1321,13 +1321,13 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         </h1>
 
         {/* Subtitle */}
-        <p className="page-desc text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-6 text-[#3a4f63]">
+        <p className="page-desc text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-3.5 sm:mb-6 text-[#3a4f63]">
           {step.step_description}
         </p>
 
         {/* Chips - Pastel colors */}
         {actionData.chips && actionData.chips.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="flex flex-wrap gap-2 mb-3.5 sm:mb-6">
             {actionData.chips.map((chip, idx) => (
               <span
                 key={idx}
