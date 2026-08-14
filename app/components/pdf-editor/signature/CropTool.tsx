@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Crop, Move, Check } from "lucide-react";
+import { Crop, Check, RotateCcw, RotateCw, X, Info } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import * as Errors from "@/lib/errors";
@@ -16,15 +16,15 @@ interface CropBox {
 interface CropToolProps {
   currentImage: string;
   onApplyCrop: (croppedDataUrl: string) => void;
-  onToggleTilt: () => void;
   onExit: () => void;
+  isApplying?: boolean;
 }
 
 export default function CropTool({
   currentImage,
   onApplyCrop,
-  onToggleTilt,
-  // onExit,
+  onExit,
+  isApplying = false,
 }: CropToolProps) {
   const { t } = useLanguage();
   const { showToast } = useToast();
@@ -218,10 +218,10 @@ export default function CropTool({
 
   useEffect(() => {
     if (!(isDragging || isRotating)) return;
-  
+
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
-  
+
     return () => {
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
@@ -336,56 +336,39 @@ export default function CropTool({
   };
 
   return (
-    <div className="space-y-8 animate-fade-in max-w-7xl mx-auto">
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-xl p-6 shadow-md">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <h2 className="text-2xl font-bold text-gray-900">
+    <div className="animate-fade-in mx-auto w-full max-w-5xl">
+      <div className="overflow-hidden rounded-3xl bg-[#1b2b41] shadow-[0_20px_60px_rgba(12,26,45,0.35)]">
+        {/* Top bar */}
+        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 px-4 py-4 sm:px-6">
+          <button
+            type="button"
+            onClick={onExit}
+            disabled={isApplying}
+            className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-white/70 transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <X className="h-4 w-4" />
+            <span className="hidden sm:inline">{t("pdfProcessing.editor.signature.cancel")}</span>
+          </button>
+
+          <h2 className="min-w-0 truncate text-center text-base font-bold text-white sm:text-xl">
             {t("pdfProcessing.editor.crop.title")}
           </h2>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={handleApplyCrop}
-              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2 text-base shadow-md"
-            >
-              <Crop className="w-5 h-5" />
-              {t("signatureProcessing.crop")}
-            </button>
-            <button
-              onClick={onToggleTilt}
-              className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2 text-base shadow-md"
-            >
-              <Move className="w-5 h-5" />
-              {t("pdfProcessing.editor.crop.tilt")}
-            </button>
-            <button
-              onClick={async () => {
-                // Apply crop first, then exit
-                await handleApplyCrop();
-                setRotation(0);
-              }}
-              className="px-6 py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2 text-base shadow-md"
-            >
-              <Check className="w-5 h-5" />
-              {t("signatureProcessing.done")}
-            </button>
-          </div>
-        </div>
-      </div>
 
-      <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-        <div
-          className="p-8 flex items-center justify-center"
-          style={{
-            backgroundImage: `
-              linear-gradient(45deg, #e5e7eb 25%, transparent 25%),
-              linear-gradient(-45deg, #e5e7eb 25%, transparent 25%),
-              linear-gradient(45deg, transparent 75%, #e5e7eb 75%),
-              linear-gradient(-45deg, transparent 75%, #e5e7eb 75%)
-            `,
-            backgroundSize: "20px 20px",
-            backgroundPosition: "0 0, 0 10px, 10px -10px, -10px 0px",
-          }}
-        >
+          <button
+            onClick={async () => {
+              // Apply crop first, then exit
+              await handleApplyCrop();
+              setRotation(0);
+            }}
+            className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-[#7fe6ea] transition-colors hover:text-white"
+          >
+            <span className="hidden sm:inline">{t("signatureProcessing.done")}</span>
+            <Check className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Canvas */}
+        <div className="flex min-h-[320px] items-center justify-center px-4 py-8 sm:min-h-[440px] sm:px-8 sm:py-12">
           {/* This container wraps ONLY the image and crop overlay - they share exact same size */}
           <div
             ref={containerRef}
@@ -400,7 +383,7 @@ export default function CropTool({
               ref={imageRef}
               src={currentImage}
               alt="Signature"
-              className="block max-w-full max-h-[500px] rounded-xl select-none border-2 border-gray-300 shadow-md"
+              className="block max-h-[300px] max-w-full rounded-lg shadow-[0_16px_40px_rgba(0,0,0,0.45)] select-none sm:max-h-[440px]"
               draggable={false}
               onLoad={handleImageLoad}
               style={{
@@ -412,21 +395,48 @@ export default function CropTool({
             {imageLoaded && (
               <>
                 {/* Dark overlay with cutout for crop area */}
-                <div
-                  className="absolute inset-0 pointer-events-none rounded-xl"
-                  style={{
-                    background: `
-                      linear-gradient(to right, rgba(0,0,0,0.5) ${cropBox.x}px, transparent ${cropBox.x}px),
-                      linear-gradient(to left, rgba(0,0,0,0.5) ${imageBounds.width - cropBox.x - cropBox.width}px, transparent ${imageBounds.width - cropBox.x - cropBox.width}px),
-                      linear-gradient(to bottom, rgba(0,0,0,0.5) ${cropBox.y}px, transparent ${cropBox.y}px),
-                      linear-gradient(to top, rgba(0,0,0,0.5) ${imageBounds.height - cropBox.y - cropBox.height}px, transparent ${imageBounds.height - cropBox.y - cropBox.height}px)
-                    `,
-                  }}
-                />
+                {/* Crop overlay — keeps the selected area completely clear */}
+                <div className="pointer-events-none absolute inset-0 rounded-lg">
+                  {/* Top */}
+                  <div
+                    className="absolute top-0 right-0 left-0 bg-[#0c1626]/25"
+                    style={{
+                      height: `${cropBox.y}px`,
+                    }}
+                  />
+
+                  {/* Bottom */}
+                  <div
+                    className="absolute right-0 bottom-0 left-0 bg-[#0c1626]/25"
+                    style={{
+                      height: `${imageBounds.height - cropBox.y - cropBox.height}px`,
+                    }}
+                  />
+
+                  {/* Left */}
+                  <div
+                    className="absolute left-0 bg-[#0c1626]/25"
+                    style={{
+                      top: `${cropBox.y}px`,
+                      width: `${cropBox.x}px`,
+                      height: `${cropBox.height}px`,
+                    }}
+                  />
+
+                  {/* Right */}
+                  <div
+                    className="absolute right-0 bg-[#0c1626]/25"
+                    style={{
+                      top: `${cropBox.y}px`,
+                      width: `${imageBounds.width - cropBox.x - cropBox.width}px`,
+                      height: `${cropBox.height}px`,
+                    }}
+                  />
+                </div>
 
                 {/* Crop box */}
                 <div
-                  className="absolute border-[3px] border-purple-600 cursor-move"
+                  className="absolute cursor-move border border-white/70"
                   style={{
                     left: `${cropBox.x}px`,
                     top: `${cropBox.y}px`,
@@ -437,32 +447,32 @@ export default function CropTool({
                 >
                   {/* Corner handles */}
                   <div
-                    className="absolute -left-3 -top-3 w-6 h-6 bg-purple-600 border-[3px] border-white rounded-full cursor-nwse-resize hover:scale-125 transition-transform z-10 shadow-lg"
+                    className="absolute -top-1 -left-1 z-10 h-5 w-5 cursor-nwse-resize border-t-4 border-l-4 border-[#7fe6ea] sm:h-6 sm:w-6"
                     onMouseDown={(e) => handleMouseDown(e, "nw")}
                   />
                   <div
-                    className="absolute -right-3 -top-3 w-6 h-6 bg-purple-600 border-[3px] border-white rounded-full cursor-nesw-resize hover:scale-125 transition-transform z-10 shadow-lg"
+                    className="absolute -top-1 -right-1 z-10 h-5 w-5 cursor-nesw-resize border-t-4 border-r-4 border-[#7fe6ea] sm:h-6 sm:w-6"
                     onMouseDown={(e) => handleMouseDown(e, "ne")}
                   />
                   <div
-                    className="absolute -left-3 -bottom-3 w-6 h-6 bg-purple-600 border-[3px] border-white rounded-full cursor-nesw-resize hover:scale-125 transition-transform z-10 shadow-lg"
+                    className="absolute -bottom-1 -left-1 z-10 h-5 w-5 cursor-nesw-resize border-b-4 border-l-4 border-[#7fe6ea] sm:h-6 sm:w-6"
                     onMouseDown={(e) => handleMouseDown(e, "sw")}
                   />
                   <div
-                    className="absolute -right-3 -bottom-3 w-6 h-6 bg-purple-600 border-[3px] border-white rounded-full cursor-nwse-resize hover:scale-125 transition-transform z-10 shadow-lg"
+                    className="absolute -right-1 -bottom-1 z-10 h-5 w-5 cursor-nwse-resize border-r-4 border-b-4 border-[#7fe6ea] sm:h-6 sm:w-6"
                     onMouseDown={(e) => handleMouseDown(e, "se")}
                   />
 
                   {/* Rotation handle */}
                   <div
-                    className="absolute left-1/2 -translate-x-1/2 flex flex-col items-center cursor-grab active:cursor-grabbing z-20"
-                    style={{ top: "-60px" }}
+                    className="absolute left-1/2 z-20 flex -translate-x-1/2 cursor-grab flex-col items-center active:cursor-grabbing"
+                    style={{ top: "-56px" }}
                     onMouseDown={(e) => handleMouseDown(e, "rotate")}
                   >
-                    <div className="w-1 h-10 bg-purple-600 rounded-full"></div>
-                    <div className="w-8 h-8 bg-purple-600 border-[3px] border-white rounded-full hover:scale-125 transition-transform shadow-lg flex items-center justify-center">
+                    <div className="h-9 w-px bg-[#7fe6ea]/70"></div>
+                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#7fe6ea] shadow-lg transition-transform hover:scale-110">
                       <svg
-                        className="w-5 h-5 text-white"
+                        className="h-4 w-4 text-[#123f42]"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -476,23 +486,23 @@ export default function CropTool({
                       </svg>
                     </div>
                     {isRotating && (
-                      <div className="absolute -bottom-10 bg-purple-600 text-white text-sm font-bold px-3 py-1.5 rounded-lg shadow-lg whitespace-nowrap">
+                      <div className="absolute -bottom-9 rounded-md bg-[#7fe6ea] px-2.5 py-1 text-xs font-bold whitespace-nowrap text-[#123f42] shadow-lg">
                         {rotation}°
                       </div>
                     )}
                   </div>
 
                   {/* Grid lines */}
-                  <div className="absolute top-1/3 left-0 right-0 h-0.5 bg-white/50" />
-                  <div className="absolute top-2/3 left-0 right-0 h-0.5 bg-white/50" />
-                  <div className="absolute left-1/3 top-0 bottom-0 w-0.5 bg-white/50" />
-                  <div className="absolute left-2/3 top-0 bottom-0 w-0.5 bg-white/50" />
+                  <div className="absolute top-1/3 right-0 left-0 h-px bg-white/25" />
+                  <div className="absolute top-2/3 right-0 left-0 h-px bg-white/25" />
+                  <div className="absolute top-0 bottom-0 left-1/3 w-px bg-white/25" />
+                  <div className="absolute top-0 bottom-0 left-2/3 w-px bg-white/25" />
                 </div>
 
                 {/* Rotation indicator */}
                 {rotation !== 0 && !isRotating && (
-                  <div className="absolute top-4 right-4 bg-purple-600 text-white px-4 py-2 rounded-lg shadow-lg font-bold flex items-center gap-3 text-base">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="absolute top-3 right-3 flex items-center gap-2 rounded-lg bg-[#7fe6ea] px-3 py-1.5 text-xs font-semibold text-[#123f42] shadow-lg sm:text-sm">
+                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -506,7 +516,7 @@ export default function CropTool({
                         e.stopPropagation();
                         setRotation(0);
                       }}
-                      className="ml-2 text-sm bg-white/20 hover:bg-white/30 px-3 py-1 rounded-md transition font-bold"
+                      className="ml-1 rounded bg-[#123f42]/15 px-2 py-0.5 text-[11px] font-bold transition hover:bg-[#123f42]/25"
                     >
                       {t("editor.crop.reset")}
                     </button>
@@ -516,12 +526,62 @@ export default function CropTool({
             )}
           </div>
         </div>
+
+        {/* Bottom control bar */}
+        <div className="border-t border-white/5 bg-[#16233a] px-4 py-5 sm:px-8">
+          <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+            <p className="min-w-0 truncate text-sm font-semibold text-white/90">
+              {t("pdfProcessing.editor.crop.tilt")}
+            </p>
+            <span className="shrink-0 rounded-md bg-[#7fe6ea] px-2.5 py-1 text-xs font-bold text-[#123f42]">
+              {rotation}°
+            </span>
+          </div>
+
+          <input
+            type="range"
+            min="-45"
+            max="45"
+            value={rotation}
+            onChange={(e) => setRotation(parseInt(e.target.value))}
+            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/20 accent-[#7fe6ea]"
+            aria-label="Tilt"
+          />
+
+          <div className="mt-2 flex justify-between text-[10px] text-white/40 sm:text-xs">
+            <span>-45°</span>
+            <span>-15°</span>
+            <span>0°</span>
+            <span>15°</span>
+            <span>45°</span>
+          </div>
+
+          <div className="mt-6 flex items-center justify-center gap-4">
+            <button
+              onClick={() => setRotation((prev) => prev - 1)}
+              aria-label="Rotate left"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#7fe6ea] text-[#123f42] shadow-md transition-colors hover:bg-white"
+            >
+              <RotateCcw className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setRotation((prev) => prev + 1)}
+              aria-label="Rotate right"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#7fe6ea] text-[#123f42] shadow-md transition-colors hover:bg-white"
+            >
+              <RotateCw className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
       </div>
 
-      <div className="flex justify-center">
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center max-w-2xl">
-          <p className="text-gray-700 font-medium">Adjust the crop box to include only your signature. Use the corner handles to resize, drag to reposition, and rotate if needed. Click Done when you&apos;re satisfied.</p>
-        </div>
+      <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-[#cde6e7] bg-[#EAF1FF] px-4 py-3.5 text-[12px] leading-relaxed text-[#645961]">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#0d7377]" />
+
+        <p>
+          Adjust the crop box to include only your signature. Use the corner handles to resize, drag
+          to reposition, and rotate if needed. Click Done when you&apos;re satisfied.
+        </p>
       </div>
     </div>
   );

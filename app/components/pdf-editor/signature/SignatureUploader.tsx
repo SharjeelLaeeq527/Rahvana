@@ -2,7 +2,7 @@
 
 import type React from "react";
 import { useRef, useState } from "react";
-import { Upload, ImageIcon, type File } from "lucide-react";
+import { UploadCloud, ImageIcon, type File } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 interface SignatureUploaderProps {
@@ -55,56 +55,76 @@ export default function SignatureUploader({
   };
 
   return (
-    <div
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onClick={handleClick}
-      className={`
-        border-2 rounded-lg p-6 sm:p-12 text-center
-        transition-all cursor-pointer
-        ${disabled ? "opacity-50 cursor-not-allowed" : ""}
-        ${
-          isDragging
-            ? "border-rahvana-primary bg-rahvana-primary-pale scale-[1.02]"
-            : "border-slate-200 bg-white hover:border-rahvana-primary/40 hover:bg-rahvana-primary-pale/30"
-        }
-      `}
-    >
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept="image/*"
-        onChange={handleFileInput}
-        className="hidden"
-        disabled={disabled}
-      />
-
-      <div className="flex flex-col items-center">
-        {isDragging ? (
-          <ImageIcon className="w-12 h-12 text-rahvana-primary mb-4" />
-        ) : (
-          <Upload className="w-12 h-12 text-slate-400 mb-4" />
-        )}
-
-        <h3 className="text-lg font-semibold text-slate-900 mb-2">
-          {isDragging
-            ? t("signatureProcessing.uploader.dropzone")
-            : t("signatureProcessing.uploader.uploadTitle")}
-        </h3>
-
-        <p className="text-slate-600 mb-6 text-sm">{t("signatureProcessing.uploader.browse")}</p>
-
-        <button
-          type="button"
+    <div className="mx-auto w-full max-w-md">
+      <div
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onClick={handleClick}
+        role="button"
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") handleClick();
+        }}
+        className={`
+          group relative rounded-3xl bg-white text-center cursor-pointer
+          px-6 py-12 sm:px-10 sm:py-16
+          transition-all duration-300 outline-none
+          ${disabled ? "opacity-50 cursor-not-allowed" : ""}
+          ${
+            isDragging
+              ? "border-2 border-[#0d7377] shadow-[0_18px_50px_rgba(13,115,119,0.18)] scale-[1.01]"
+              : "border border-[#dcecf1] shadow-[0_10px_40px_rgba(13,115,119,0.10)] hover:border-[#afdbdb] hover:shadow-[0_16px_48px_rgba(13,115,119,0.14)]"
+          }
+        `}
+      >
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*"
+          onChange={handleFileInput}
+          className="hidden"
           disabled={disabled}
-          className="text-white bg-rahvana-primary px-6 py-2.5 rounded transition-colors text-sm
-                     hover:bg-rahvana-primary-dark disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {t("signatureProcessing.uploader.chooseFile")}
-        </button>
+        />
 
-        <p className="text-xs text-slate-500 mt-4">{t("signatureProcessing.uploader.supported")}</p>
+        <div className="flex flex-col items-center">
+          <div
+            className={`w-16 h-16 sm:w-[72px] sm:h-[72px] rounded-2xl flex items-center justify-center mb-6 transition-colors ${
+              isDragging ? "bg-[#0d7377]" : "bg-[#eaf3fb] group-hover:bg-[#e0f0f4]"
+            }`}
+          >
+            {isDragging ? (
+              <ImageIcon className="w-8 h-8 text-white" />
+            ) : (
+              <UploadCloud className="w-8 h-8 text-[#0d7377]" />
+            )}
+          </div>
+
+          <h3 className="text-xl sm:text-2xl font-bold text-[#123f42] mb-1.5">
+            {isDragging
+              ? t("signatureProcessing.uploader.dropzone")
+              : t("signatureProcessing.uploader.uploadTitle")}
+          </h3>
+
+          <p className="text-[#6b8a8f] text-xs sm:text-sm mb-7">
+            {t("signatureProcessing.uploader.browse")}
+          </p>
+
+          <button
+            type="button"
+            disabled={disabled}
+            className="w-full sm:w-auto text-white bg-[#0d7377] px-7 py-3 rounded-xl text-sm font-semibold
+                       shadow-[0_8px_20px_rgba(13,115,119,0.25)]
+                       transition-all hover:bg-[#0a5c60] hover:shadow-[0_10px_26px_rgba(13,115,119,0.32)]
+                       disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {t("signatureProcessing.uploader.chooseFile")}
+          </button>
+
+          <p className="text-[11px] sm:text-xs text-[#8aa5a8] mt-5">
+            {t("signatureProcessing.uploader.supported")}
+          </p>
+        </div>
       </div>
     </div>
   );
