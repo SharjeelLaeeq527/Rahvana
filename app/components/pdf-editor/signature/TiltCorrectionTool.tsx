@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { Move, RotateCcw, Check } from "lucide-react";
+import { RotateCcw, RotateCw, Check, X, Info } from "lucide-react";
 import domtoimage from "dom-to-image-more";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { Loader } from "@/components/ui/spinner";
@@ -95,127 +95,167 @@ export default function TiltCorrectionTool({
   };
 
   return (
-    <div className="space-y-6 animate-fade-in max-w-7xl mx-auto">
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 shadow-sm">
-        <h2 className="text-2xl font-bold text-gray-900 mb-2 flex items-center gap-3">
-          <Move className="w-7 h-7 text-blue-600" />
-          {t("pdfProcessing.editor.tilt.title")}
-        </h2>
-        <p className="text-gray-700">{t("pdfProcessing.editor.tilt.subtitle")}</p>
-      </div>
+    <div className="animate-fade-in mx-auto w-full max-w-5xl">
+      <div className="overflow-hidden rounded-3xl bg-[#1b2b41] shadow-[0_20px_60px_rgba(12,26,45,0.35)]">
+        {/* Top bar */}
+        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 border-b border-white/5 px-4 py-4 sm:px-6">
+          <button
+            onClick={onCancel}
+            disabled={isApplying}
+            className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-white/70 transition-colors hover:text-white disabled:opacity-50"
+          >
+            <X className="h-4 w-4" />
+            <span className="hidden sm:inline">{t("pdfProcessing.editor.signature.cancel")}</span>
+          </button>
 
-      <div className="grid lg:grid-cols-2 gap-6">
-        {/* Controls Panel */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 p-6">
-          <div className="space-y-6">
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  {t("pdfProcessing.editor.tilt.horizontalLabel")}:{" "}
-                  <span className="font-bold text-blue-600">{horizontalTilt}°</span>
-                </label>
-                <button
-                  onClick={handleResetHorizontal}
-                  className="text-gray-500 hover:text-blue-600 transition p-1"
-                  title="Reset horizontal tilt"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </button>
-              </div>
-              <input
-                type="range"
-                min="-30"
-                max="30"
-                value={horizontalTilt}
-                onChange={(e) => setHorizontalTilt(parseInt(e.target.value))}
-                className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-              />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>{t("pdfProcessing.editor.tilt.left")}</span>
-                <span>{t("pdfProcessing.editor.tilt.center")}</span>
-                <span>{t("pdfProcessing.editor.tilt.right")}</span>
-              </div>
-            </div>
+          <h2 className="min-w-0 truncate text-center text-base font-bold text-white sm:text-xl">
+            {t("pdfProcessing.editor.tilt.title")}
+          </h2>
 
-            <div>
-              <div className="flex justify-between items-center mb-2">
-                <label className="block text-sm font-medium text-gray-700">
-                  {t("pdfProcessing.editor.tilt.verticalLabel")}:{" "}
-                  <span className="font-bold text-blue-600">{verticalTilt}°</span>
-                </label>
-                <button
-                  onClick={handleResetVertical}
-                  className="text-gray-500 hover:text-blue-600 transition p-1"
-                  title="Reset vertical tilt"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                </button>
-              </div>
-              <input
-                type="range"
-                min="-30"
-                max="30"
-                value={verticalTilt}
-                onChange={(e) => setVerticalTilt(parseInt(e.target.value))}
-                className="w-full h-3 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-              />
-              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                <span>{t("pdfProcessing.editor.tilt.up")}</span>
-                <span>{t("pdfProcessing.editor.tilt.center")}</span>
-                <span>{t("pdfProcessing.editor.tilt.down")}</span>
-              </div>
-            </div>
-
-            {/* Full Reset Button */}
-            <button
-              onClick={handleResetAll}
-              className="w-full px-4 py-2 bg-rahvana-primary hover:bg-rahvana-primary-dark text-white rounded-lg transition text-sm flex items-center justify-center gap-2 font-semibold"
-            >
-              <RotateCcw className="w-4 h-4" />
-              {t("pdfProcessing.editor.tilt.resetTilt")}
-            </button>
-          </div>
+          <button
+            onClick={handleApply}
+            disabled={isApplying}
+            className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-[#7fe6ea] transition-colors hover:text-white disabled:opacity-50"
+          >
+            {isApplying ? (
+              <Loader size="sm" text={t("pdfProcessing.editor.tilt.applying")} />
+            ) : (
+              <>
+                <span className="hidden sm:inline">
+                  {t("pdfProcessing.editor.tilt.applyContinue")}
+                </span>
+                <Check className="h-4 w-4" />
+              </>
+            )}
+          </button>
         </div>
 
         {/* Preview with CSS 3D Transform */}
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-b border-green-200 px-6 py-4 font-bold text-gray-900 text-lg flex items-center gap-3">
-            <Check className="w-6 h-6 text-green-600" />
-            <span>{t("pdfProcessing.editor.tilt.preview")}</span>
-          </div>
-          <div
-            ref={previewContainerRef}
-            className="p-6 flex items-center justify-center min-h-[500px] bg-gray-50"
-            style={{
-              backgroundImage: `
-                linear-gradient(45deg, #e5e7eb 25%, transparent 25%),
-                linear-gradient(-45deg, #e5e7eb 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, #e5e7eb 75%),
-                linear-gradient(-45deg, transparent 75%, #e5e7eb 75%)
-              `,
-              backgroundSize: "30px 30px",
-              backgroundPosition: "0 0, 0 15px, 15px -15px, -15px 0px",
-            }}
-          >
-            {imageDimensions && (
-              <div
-                style={{
-                  transform: getTransformStyle(),
-                  transformStyle: "preserve-3d",
-                  transition: "transform 0.15s ease-out",
-                  transformOrigin: "center center",
-                }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={processedImage}
-                  alt="Preview"
-                  className="max-w-full max-h-[450px] object-contain rounded-lg shadow-md"
-                />
-              </div>
-            )}
-          </div>
+        <div
+          ref={previewContainerRef}
+          className="flex min-h-[320px] items-center justify-center px-4 py-8 sm:min-h-[460px] sm:px-8 sm:py-14"
+        >
+          {imageDimensions && (
+            <div
+              style={{
+                transform: getTransformStyle(),
+                transformStyle: "preserve-3d",
+                transition: "transform 0.15s ease-out",
+                transformOrigin: "center center",
+              }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={processedImage}
+                alt="Preview"
+                className="max-h-[280px] max-w-full rounded-lg object-contain shadow-[0_16px_40px_rgba(0,0,0,0.45)] sm:max-h-[420px]"
+              />
+            </div>
+          )}
         </div>
+
+        {/* Control bar */}
+        <div className="space-y-7 border-t border-white/5 bg-[#16233a] px-4 py-6 sm:px-8">
+          {/* Horizontal */}
+          <div>
+            <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+              <label className="min-w-0 truncate text-sm font-semibold text-white/90">
+                {t("pdfProcessing.editor.tilt.horizontalLabel")}
+              </label>
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="rounded-md bg-[#7fe6ea] px-2.5 py-1 text-xs font-bold text-[#123f42]">
+                  {horizontalTilt}°
+                </span>
+                <button
+                  onClick={handleResetHorizontal}
+                  className="p-1 text-white/50 transition hover:text-[#7fe6ea]"
+                  title="Reset horizontal tilt"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <input
+              type="range"
+              min="-30"
+              max="30"
+              value={horizontalTilt}
+              onChange={(e) => setHorizontalTilt(parseInt(e.target.value))}
+              className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/20 accent-[#7fe6ea]"
+            />
+            <div className="mt-2 flex justify-between text-[10px] text-white/40 sm:text-xs">
+              <span>{t("pdfProcessing.editor.tilt.left")}</span>
+              <span>{t("pdfProcessing.editor.tilt.center")}</span>
+              <span>{t("pdfProcessing.editor.tilt.right")}</span>
+            </div>
+          </div>
+
+          {/* Vertical */}
+          <div>
+            <div className="mb-3 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
+              <label className="min-w-0 truncate text-sm font-semibold text-white/90">
+                {t("pdfProcessing.editor.tilt.verticalLabel")}
+              </label>
+              <div className="flex shrink-0 items-center gap-2">
+                <span className="rounded-md bg-[#7fe6ea] px-2.5 py-1 text-xs font-bold text-[#123f42]">
+                  {verticalTilt}°
+                </span>
+                <button
+                  onClick={handleResetVertical}
+                  className="p-1 text-white/50 transition hover:text-[#7fe6ea]"
+                  title="Reset vertical tilt"
+                >
+                  <RotateCcw className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+            <input
+              type="range"
+              min="-30"
+              max="30"
+              value={verticalTilt}
+              onChange={(e) => setVerticalTilt(parseInt(e.target.value))}
+              className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/20 accent-[#7fe6ea]"
+            />
+            <div className="mt-2 flex justify-between text-[10px] text-white/40 sm:text-xs">
+              <span>{t("pdfProcessing.editor.tilt.up")}</span>
+              <span>{t("pdfProcessing.editor.tilt.center")}</span>
+              <span>{t("pdfProcessing.editor.tilt.down")}</span>
+            </div>
+          </div>
+
+          {/* Quick rotate + reset */}
+          <div className="flex items-center justify-center gap-4">
+            <button
+              onClick={() => setHorizontalTilt((prev) => Math.max(-30, prev - 1))}
+              aria-label="Tilt left"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#7fe6ea] text-[#123f42] shadow-md transition-colors hover:bg-white"
+            >
+              <RotateCcw className="h-5 w-5" />
+            </button>
+            <button
+              onClick={() => setHorizontalTilt((prev) => Math.min(30, prev + 1))}
+              aria-label="Tilt right"
+              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#7fe6ea] text-[#123f42] shadow-md transition-colors hover:bg-white"
+            >
+              <RotateCw className="h-5 w-5" />
+            </button>
+          </div>
+
+          <button
+            onClick={handleResetAll}
+            className="flex w-full items-center justify-center gap-2 rounded-xl bg-white/10 px-4 py-3 text-sm font-semibold text-white transition hover:bg-white/15"
+          >
+            <RotateCcw className="h-4 w-4" />
+            {t("pdfProcessing.editor.tilt.resetTilt")}
+          </button>
+        </div>
+      </div>
+
+      <div className="mt-5 flex items-start gap-2.5 rounded-xl border border-[#cde6e7] bg-[#EAF1FF] px-4 py-3.5 text-[12px] leading-relaxed text-[#645961]">
+        <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#0d7377]" />
+
+        <p>{t("pdfProcessing.editor.tilt.subtitle")}</p>
       </div>
 
       {/* Hidden capture container - positioned offscreen but visible for html2canvas */}
@@ -259,31 +299,6 @@ export default function TiltCorrectionTool({
             </div>
           )}
         </div>
-      </div>
-
-      <div className="flex flex-wrap justify-center gap-4">
-        <button
-          onClick={onCancel}
-          disabled={isApplying}
-          className="px-10 py-4 bg-gray-200 hover:bg-gray-300 text-gray-900 rounded-xl font-bold transition-all flex items-center gap-3 text-lg shadow-md disabled:opacity-50"
-        >
-          <RotateCcw className="w-6 h-6" />
-          {t("pdfProcessing.editor.signature.cancel")}
-        </button>
-        <button
-          onClick={handleApply}
-          disabled={isApplying}
-          className="px-10 py-4 bg-rahvana-primary hover:bg-rahvana-primary-dark text-white rounded-xl font-bold transition-all flex items-center gap-3 text-lg shadow-md disabled:opacity-50"
-        >
-          {isApplying ? (
-            <Loader size="sm" text={t("pdfProcessing.editor.tilt.applying")} />
-          ) : (
-            <>
-              <Check className="w-6 h-6" />
-              {t("pdfProcessing.editor.tilt.applyContinue")}
-            </>
-          )}
-        </button>
       </div>
     </div>
   );

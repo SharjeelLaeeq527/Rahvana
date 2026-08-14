@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import NextImage from "next/image";
-import { Download, RotateCcw, Check, Crop, Move } from "lucide-react";
+import { Download, RotateCcw, CheckCircle2, Crop, BadgeCheck } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import TiltCorrectionTool from "./TiltCorrectionTool";
 import CropTool from "./CropTool";
@@ -80,110 +80,108 @@ export default function SignaturePreview({
     );
   }
 
+  const checkerboard = {
+    backgroundImage: `
+      linear-gradient(45deg, #e5e7eb 25%, transparent 25%),
+      linear-gradient(-45deg, #e5e7eb 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #e5e7eb 75%),
+      linear-gradient(-45deg, transparent 75%, #e5e7eb 75%)
+    `,
+    backgroundSize: "20px 20px",
+    backgroundPosition: "0 0, 0 10px, 10px -10px, -10px 0px",
+  };
+
   return (
-    <div className="space-y-8 animate-fade-in">
-      <div className="bg-linear-to-r from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6 shadow-md">
-        <div className="flex items-center justify-between flex-wrap gap-4">
-          <h2 className="text-xl sm:text-2xl font-bold text-gray-900 w-full sm:w-auto text-center sm:text-left">
-            {t("signatureProcessing.adjust")}
-          </h2>
-          <div className="flex flex-wrap justify-center sm:justify-end gap-3 w-full sm:w-auto">
-            <button
-              onClick={() => setShowCropMode(true)}
-              className="flex-1 sm:flex-none justify-center px-4 py-2 sm:px-6 sm:py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2 text-sm sm:text-base shadow-md"
-            >
-              <Crop className="w-4 h-4 sm:w-5 sm:h-5" />
-              {t("signatureProcessing.crop")}
-            </button>
-            <button
-              onClick={() => setShowTiltMode(true)}
-              className="flex-1 sm:flex-none justify-center px-4 py-2 sm:px-6 sm:py-3 bg-rahvana-primary hover:bg-rahvana-primary-dark text-white rounded-lg font-semibold transition-all flex items-center gap-2 text-sm sm:text-base shadow-md"
-            >
-              <Move className="w-4 h-4 sm:w-5 sm:h-5" />
-              {t("signatureProcessing.tilt")}
-            </button>
-            <button
-              onClick={handleDownloadCropped}
-              className="flex-1 sm:flex-none justify-center px-4 py-2 sm:px-6 sm:py-3 bg-green-600 hover:bg-green-700 text-white rounded-lg font-semibold transition-all flex items-center gap-2 text-sm sm:text-base shadow-md"
-            >
-              <Check className="w-4 h-4 sm:w-5 sm:h-5" />
-              {t("signatureProcessing.done")}
-            </button>
+    <div className="animate-fade-in mx-auto w-full max-w-2xl">
+      {/* Success header */}
+      <div className="mb-8 text-center">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-[#00595C] shadow-[0_10px_28px_rgba(13,115,119,0.28)] sm:h-[72px] sm:w-[72px]">
+          <CheckCircle2 className="h-8 w-8 text-white" />
+        </div>
+        <h2 className="mt-4 text-2xl font-extrabold text-[#123f42] sm:text-3xl">
+          {t("signatureProcessing.adjust")}
+        </h2>
+        <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#eaf3fb] px-4 py-2 text-xs font-semibold text-[#00595C] sm:text-sm mt-3">
+          <BadgeCheck className="h-4 w-4" />
+          {t("signatureProcessing.transparentBg")}
+        </span>
+      </div>
+
+      {/* Comparison card */}
+      <div className="overflow-hidden rounded-3xl border border-[#e4eff2] bg-white shadow-[0_10px_40px_rgba(13,115,119,0.10)] lg:flex lg:flex-row">
+        {/* Original */}
+        <div className="relative flex-1">
+          <span className="absolute top-3 left-3 z-10 rounded-md bg-white/90 px-2.5 py-1 text-[11px] font-bold tracking-wide text-[#123f42] uppercase shadow-sm">
+            {t("signatureProcessing.originalPhoto")}
+          </span>
+
+          <div className="relative h-52 bg-[#f7fbfc] sm:h-64 lg:h-[360px]">
+            <NextImage
+              src={originalImage}
+              alt="Original signature"
+              fill
+              className="object-contain p-6"
+              unoptimized
+            />
+          </div>
+        </div>
+
+        {/* Divider */}
+        <div className="h-px bg-[#e4eff2] lg:h-auto lg:w-px" />
+
+        {/* Result */}
+        <div className="relative flex-1" style={checkerboard}>
+          <span className="absolute top-3 left-3 z-10 rounded-md bg-[#00595C] px-2.5 py-1 text-[11px] font-bold tracking-wide text-white uppercase shadow-sm">
+            {editedImage
+              ? t("signatureProcessing.finalSignature")
+              : t("signatureProcessing.transparentBg")}
+          </span>
+
+          <div className="relative h-52 sm:h-64 lg:h-[360px]">
+            <NextImage
+              key={currentImage}
+              src={currentImage}
+              alt="Enhanced signature"
+              fill
+              className="object-contain p-6"
+              unoptimized
+            />
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="bg-linear-to-r from-gray-100 to-gray-200 border-b border-gray-300 px-6 py-4">
-            <p className="text-gray-900 font-bold text-xl">
-              {t("signatureProcessing.originalPhoto")}
-            </p>
-          </div>
-          <div className="p-8 bg-white">
-            <div className="relative rounded-xl overflow-hidden border-2 border-gray-200 shadow-sm min-h-[200px]">
-              <NextImage
-                src={originalImage}
-                alt="Original signature"
-                fill
-                className="object-contain"
-                unoptimized
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="bg-linear-to-r from-purple-100 to-pink-100 border-b border-purple-300 px-6 py-4">
-            <p className="text-gray-900 font-bold text-xl">
-              {editedImage
-                ? t("signatureProcessing.finalSignature")
-                : t("signatureProcessing.transparentBg")}
-            </p>
-          </div>
-          <div
-            className="p-8"
-            style={{
-              backgroundImage: `
-                linear-gradient(45deg, #e5e7eb 25%, transparent 25%),
-                linear-gradient(-45deg, #e5e7eb 25%, transparent 25%),
-                linear-gradient(45deg, transparent 75%, #e5e7eb 75%),
-                linear-gradient(-45deg, transparent 75%, #e5e7eb 75%)
-              `,
-              backgroundSize: "20px 20px",
-            }}
-          >
-            <div className="relative min-h-[200px]">
-              {/* ✅ CRITICAL FIX: key={currentImage} forces React to re-render the image tag when the source changes */}
-              <NextImage
-                key={currentImage}
-                src={currentImage}
-                alt="Enhanced signature"
-                fill
-                className="rounded-xl object-contain border-2 border-gray-300 shadow-md"
-                unoptimized
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex justify-end">
+      {/* Actions */}
+      <div className="mt-8 space-y-3">
         <button
           onClick={handleDownloadCropped}
-          className="w-full sm:w-auto bg-linear-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white px-6 py-3 sm:px-12 sm:py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-3 text-base sm:text-lg shadow-lg"
+          className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#00595C] px-6 py-4 text-base font-bold text-white shadow-[0_10px_26px_rgba(13,115,119,0.25)] transition-all hover:bg-[#004a4c] hover:shadow-[0_10px_26px_rgba(13,115,119,0.32)] sm:text-lg"
         >
-          <Download className="w-5 h-5 sm:w-6 sm:h-6" />
+          <Download className="h-5 w-5" />
           {t("signatureProcessing.download")}
         </button>
-      </div>
 
-      <div className="flex justify-center">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <button
+            onClick={() => setShowCropMode(true)}
+            className="flex w-full items-center justify-center gap-2.5 rounded-2xl border-2 border-[#afdbdb] bg-white px-6 py-3.5 text-sm font-semibold text-[#00595C] transition-all hover:bg-[#f0f9fa] sm:text-base"
+          >
+            <Crop className="h-5 w-5" />
+            {t("signatureProcessing.crop")}
+          </button>
+          <button
+            onClick={() => setShowTiltMode(true)}
+            className="flex w-full items-center justify-center gap-2.5 rounded-2xl border-2 border-[#afdbdb] bg-white px-6 py-3.5 text-sm font-semibold text-[#00595C] transition-all hover:bg-[#f0f9fa] sm:text-base"
+          >
+            <RotateCcw className="h-5 w-5" />
+            {t("signatureProcessing.tilt")}
+          </button>
+        </div>
+
         <button
           onClick={handleReset}
-          className="w-full sm:w-auto bg-gray-200 hover:bg-gray-300 text-gray-900 px-6 py-3 sm:px-10 sm:py-4 rounded-xl font-bold transition-all flex items-center justify-center gap-3 text-base sm:text-lg shadow-md"
+          className="flex w-full items-center justify-center gap-2.5 rounded-2xl px-6 py-3 text-sm font-semibold text-[#5c7b80] transition-colors hover:text-[#00595C] sm:text-base"
         >
-          <RotateCcw className="w-5 h-5 sm:w-6 sm:h-6" />
+          <RotateCcw className="h-4 w-4" />
           {t("signatureProcessing.startOver")}
         </button>
       </div>
