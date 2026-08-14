@@ -1,26 +1,15 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { AlertCircle, ChevronLeft, ChevronRight, Contrast, Sun, Scan } from "lucide-react";
+import { ChevronLeft, ChevronRight, Contrast, Sun, Scan } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import dynamic from "next/dynamic";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import FileUpload from "@/app/components/shared/FileUpload";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
-// Dynamically import components that use browser APIs - disable SSR
-const SignatureUploader = dynamic(
-  () => import("@/app/components/pdf-editor/signature/SignatureUploader"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex justify-center p-8">
-        <Loader size="md" />
-      </div>
-    ),
-  }
-);
 const SignaturePreview = dynamic(
   () => import("@/app/components/pdf-editor/signature/SignaturePreview"),
   {
@@ -42,8 +31,9 @@ export default function SignatureRemoverPage() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [, setIsModuleLoaded] = useState(false);
+
+  const { showToast } = useToast();
 
   // Pro tips carousel
   const tipsTrackRef = useRef<HTMLDivElement>(null);
@@ -65,17 +55,16 @@ export default function SignatureRemoverPage() {
 
   const handleFileSelect = async (file: File) => {
     if (!imageProcessorModule) {
-      setError(t("signatureProcessing.errors.loading"));
+      showToast(t("signatureProcessing.errors.loading"), "error");
       return;
     }
 
-    setError(null);
     setOriginalImage(null);
     setProcessedImage(null);
 
     const validation = imageProcessorModule.validateImageFile(file);
     if (!validation.valid) {
-      setError(validation.error || t("pdfProcessing.errors.invalidFile"));
+      showToast(validation.error || t("pdfProcessing.errors.invalidFile"), "error");
       return;
     }
 
@@ -104,7 +93,7 @@ export default function SignatureRemoverPage() {
       }, 500);
     } catch (err) {
       console.error("Processing error:", err);
-      setError(t("signatureProcessing.errors.failed"));
+      showToast(t("signatureProcessing.errors.failed"), "error");
       setIsProcessing(false);
     }
   };
@@ -119,7 +108,6 @@ export default function SignatureRemoverPage() {
   const handleReset = () => {
     setOriginalImage(null);
     setProcessedImage(null);
-    setError(null);
   };
 
   const proTips = [
@@ -169,16 +157,6 @@ export default function SignatureRemoverPage() {
           </div>
         </header>
 
-        {/* Error Message */}
-        {error && (
-          <div className="mx-auto mb-6 max-w-xl rounded-2xl border border-[#db8090]/40 bg-[#fdf2f4] p-4">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="h-5 w-5 shrink-0 text-[#c2566b]" />
-              <p className="text-sm font-medium text-[#8f3a4a]">{error}</p>
-            </div>
-          </div>
-        )}
-
         {/* Main Content */}
         <div className="mx-auto max-w-3xl">
           {!originalImage && !isProcessing && (
@@ -218,7 +196,7 @@ export default function SignatureRemoverPage() {
               <h2 className="min-w-0 truncate text-base font-semibold text-[#123f42] sm:text-lg">
                 {t("signatureProcessing.bestPractices")}
               </h2>
-              <div className="flex lg:hidden shrink-0 items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2 lg:hidden">
                 <button
                   type="button"
                   onClick={() => scrollTips("prev")}

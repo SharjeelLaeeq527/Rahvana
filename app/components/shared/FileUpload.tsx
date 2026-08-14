@@ -24,22 +24,18 @@ interface FileUploadProps {
   /**
    * Controls the visual style.
    * - default: existing Rahvana uploader
-   * - premium: richer uploader for tools such as Snap & Sign
+   * - premium: richer uploader for tools such as Snap & Sign, etc
    */
   variant?: "default" | "premium";
 
-  /**
-   * Optional custom content for premium uploader.
-   */
+  // Optional custom content for premium uploader.
   title?: string;
   description?: string;
   buttonText?: string;
   helperText?: string;
   icon?: React.ReactNode;
 
-  /**
-   * Show image preview when an image is uploaded.
-   */
+  // Show image preview when an image is uploaded.
   showPreview?: boolean;
 }
 
@@ -170,13 +166,9 @@ const FileUpload: React.FC<FileUploadProps> = ({
     return <File className="h-5 w-5" />;
   };
 
-  const isImageFile = (file: File) => file.type.startsWith("image/");
-
   return (
     <div className="w-full">
-      {/* =========================
-          LABEL
-      ========================= */}
+      {/* LABEL */}
       {label && (
         <div className="mb-2.5 flex items-center justify-between">
           <label
@@ -195,9 +187,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         </div>
       )}
 
-      {/* =========================
-          UPLOAD CONTAINER
-      ========================= */}
+      {/* UPLOAD CONTAINER */}
       <div
         onClick={() => !hasFiles && inputRef.current?.click()}
         onDragOver={handleDragOver}
@@ -220,9 +210,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
                 }`
         }`}
       >
-        {/* =========================
-            BACKGROUND DECORATION
-        ========================= */}
+        {/* BACKGROUND DECORATION */}
         {!hasFiles && (
           <div className="pointer-events-none absolute inset-0 overflow-hidden">
             <div className="absolute -right-16 -top-16 h-32 w-32 rounded-full bg-[#0d7377]/[0.025]" />
@@ -231,9 +219,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
         )}
 
         {!hasFiles ? (
-          /* =========================
-             EMPTY / UPLOAD STATE
-          ========================= */
+          // EMPTY / UPLOAD STATE
           <div className="relative z-10 flex flex-col items-center justify-center">
             {/* ICON */}
             <div
@@ -331,9 +317,7 @@ const FileUpload: React.FC<FileUploadProps> = ({
             </p>
           </div>
         ) : (
-          /* =========================
-             UPLOADED STATE
-          ========================= */
+          // UPLOADED STATE
           <div className="w-full">
             {uploadedFiles.map((file, index) => {
               const previewUrl = previewUrls[file.name] ?? null;
