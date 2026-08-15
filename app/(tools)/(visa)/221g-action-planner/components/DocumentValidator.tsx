@@ -5,8 +5,6 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
 import {
   DocumentType,
   DocumentValidationResult,
@@ -14,6 +12,7 @@ import {
 } from "../utils/documentValidation";
 import { AlertTriangle, CheckCircle, Eye, FileText, Scan, Upload, XCircle } from "lucide-react";
 import Image from "next/image";
+import FileUpload from "@/app/components/shared/FileUpload";
 
 interface DocumentValidatorProps {
   documentType: DocumentType;
@@ -33,8 +32,7 @@ const DocumentValidator = ({
   const [progress, setProgress] = useState(0);
   const [validationResult, setValidationResult] = useState<DocumentValidationResult | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
+  
   // Cleanup preview URL on unmount
   useEffect(() => {
     return () => {
@@ -190,7 +188,7 @@ const DocumentValidator = ({
     <Card className="w-full">
       <CardHeader>
         <div className="flex items-center justify-between">
-          <CardTitle className="text-xl font-bold text-primary">{title}</CardTitle>
+          <CardTitle className="text-primary text-xl font-bold">{title}</CardTitle>
           {file && (
             <Badge variant="outline" className="capitalize">
               {documentType.replace("_", " ")}
@@ -202,34 +200,43 @@ const DocumentValidator = ({
       <CardContent>
         <div className="space-y-6">
           {/* File upload section */}
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-            <Upload className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">Upload document</h3>
-            <p className="mt-1 text-sm text-gray-500">PNG, JPG, PDF up to 10MB</p>
-            <div className="mt-4">
-              <Input
-                type="file"
-                accept=".jpg,.jpeg,.png,.pdf,image/*,application/pdf"
-                onChange={handleFileChange}
-                ref={fileInputRef}
-                className="hidden"
-                id="document-upload"
-              />
-              <Label
-                htmlFor="document-upload"
-                className="cursor-pointer inline-flex items-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary"
-              >
-                <Upload className="h-4 w-4 mr-2" />
-                Select File
-              </Label>
-            </div>
-            {file && <p className="mt-2 text-sm text-gray-600 truncate">Selected: {file.name}</p>}
-          </div>
+          <FileUpload
+            label="Upload document"
+            fieldName="document-upload"
+            accept=".jpg,.jpeg,.png,.pdf,image/*,application/pdf"
+            multiple={false}
+            height="180px"
+            variant="default"
+            title="Drag & drop your document here"
+            description="or choose a file from your device"
+            buttonText="Browse files"
+            helperText="PNG, JPG, PDF up to 10MB"
+            onFileUpload={(_, uploadedFile) => {
+              if (!uploadedFile || Array.isArray(uploadedFile)) {
+                handleFileChange({
+                  target: { files: null },
+                } as React.ChangeEvent<HTMLInputElement>);
+                return;
+              }
+
+              // Reuse your existing file handling
+              setFile(uploadedFile);
+
+              if (previewUrl) {
+                URL.revokeObjectURL(previewUrl);
+              }
+
+              const url = URL.createObjectURL(uploadedFile);
+              setPreviewUrl(url);
+
+              setValidationResult(null);
+            }}
+          />
 
           {/* Preview section */}
           {previewUrl && file && (
-            <div className="border rounded-lg p-4">
-              <h4 className="font-medium mb-2">Document Preview</h4>
+            <div className="rounded-lg border p-4">
+              <h4 className="mb-2 font-medium">Document Preview</h4>
               {file.type.startsWith("image/") ? (
                 <Image
                   src={previewUrl!}
@@ -241,7 +248,7 @@ const DocumentValidator = ({
                   className="max-w-full rounded border"
                 />
               ) : (
-                <div className="flex items-center justify-center p-8 bg-gray-50 rounded border">
+                <div className="flex items-center justify-center rounded border bg-gray-50 p-8">
                   <FileText className="h-12 w-12 text-gray-400" />
                   <span className="ml-2 text-gray-600">PDF Preview not available</span>
                 </div>
@@ -256,7 +263,7 @@ const DocumentValidator = ({
               disabled={!file || isProcessing}
               className="bg-primary hover:bg-primary/70"
             >
-              <Scan className="h-4 w-4 mr-2" />
+              <Scan className="mr-2 h-4 w-4" />
               {isProcessing ? "Validating..." : "Validate Document"}
             </Button>
           </div>
@@ -275,7 +282,7 @@ const DocumentValidator = ({
           {/* Validation results */}
           {validationResult && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+              <div className="flex items-center justify-between rounded-lg bg-gray-50 p-4">
                 <div>
                   <h4 className="font-medium">Validation Result</h4>
                   <p
@@ -297,9 +304,9 @@ const DocumentValidator = ({
                       key={idx}
                       className={`${
                         issue.severity === "critical"
-                          ? "bg-red-50 border-red-200"
+                          ? "border-red-200 bg-red-50"
                           : issue.severity === "warning"
-                            ? "bg-yellow-50 border-yellow-200"
+                            ? "border-yellow-200 bg-yellow-50"
                             : "bg-primary/10 border-primary/30"
                       }`}
                     >
@@ -308,7 +315,7 @@ const DocumentValidator = ({
                         <div>
                           <AlertDescription>
                             <span className="font-medium">{issue.message}</span>
-                            <p className="text-sm mt-1">{issue.suggestion}</p>
+                            <p className="mt-1 text-sm">{issue.suggestion}</p>
                           </AlertDescription>
                         </div>
                       </div>
@@ -316,7 +323,7 @@ const DocumentValidator = ({
                   ))}
                 </div>
               ) : (
-                <Alert className="bg-green-50 border-green-200">
+                <Alert className="border-green-200 bg-green-50">
                   <CheckCircle className="h-4 w-4 text-green-600" />
                   <AlertDescription className="text-green-700">
                     No issues detected. Document appears ready for submission.
@@ -327,12 +334,12 @@ const DocumentValidator = ({
           )}
 
           {/* Document-specific guidance */}
-          <div className="mt-6 p-4 bg-primary/10 rounded-lg border border-C/30">
-            <h4 className="font-medium text-primary flex items-center">
+          <div className="bg-primary/10 border-C/30 mt-6 rounded-lg border p-4">
+            <h4 className="text-primary flex items-center font-medium">
               <AlertTriangle className="mr-2 h-4 w-4" />
               Document-Specific Guidance
             </h4>
-            <ul className="mt-2 space-y-1 text-sm text-primary">
+            <ul className="text-primary mt-2 space-y-1 text-sm">
               {documentType === "passport" && (
                 <>
                   <li>

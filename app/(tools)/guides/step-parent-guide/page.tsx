@@ -14,11 +14,7 @@ import {
   Check,
   AlertTriangle,
   Info,
-  Languages,
-  Upload,
   CheckCircle2,
-  Loader2,
-  FileText,
 } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 
@@ -76,8 +72,6 @@ const StepParentGuidePage = () => {
   });
 
   const [isUploading, setIsUploading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const hasInitializedModal = useRef(false);
 
   const { saveWizardStep, session, loading } = useWizardSession(
@@ -122,33 +116,6 @@ const StepParentGuidePage = () => {
     } finally {
       setIsUploading(false);
     }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!state.uploadedFile && !isUploading) setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    if (state.uploadedFile || isUploading) return;
-    const file = e.dataTransfer.files?.[0];
-    if (file) handleUploadFile(file);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleUploadFile(file);
-    e.target.value = "";
   };
 
   const handleSubmitFeedback = async (
@@ -610,74 +577,6 @@ const StepParentGuidePage = () => {
                 </div>
               </div>
             </div>
-
-            {/* File upload zone simulation */}
-            {/* <div className="mt-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-
-              {!state.uploadedFile ? (
-                <div
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => !isUploading && fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all duration-200 ${
-                    isDragging
-                      ? "border-teal-500 bg-teal-50/15"
-                      : "border-slate-200 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300"
-                  }`}
-                >
-                  {isUploading ? (
-                    <>
-                      <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
-                      <p className="text-sm font-bold text-teal-900 text-center">
-                        Analyzing document format...
-                      </p>
-                      <p className="text-slate-400 text-xs text-center">
-                        Running verification checks
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-8 h-8 text-slate-400" />
-                      <p className="text-sm font-bold text-slate-700 text-center">
-                        Upload Document to Validate Format
-                      </p>
-                      <p className="text-slate-400 text-xs text-center">
-                        Supported formats: PDF, JPG, PNG (Max 5MB)
-                      </p>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="p-5 border border-emerald-200 bg-emerald-50/40 rounded-2xl flex items-center gap-4 text-emerald-900"
-                >
-                  <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
-                  <div className="flex-1 flex flex-col gap-0.5">
-                    <span className="font-bold text-sm">Document Uploaded!</span>
-                    <span className="text-xs leading-normal opacity-90">
-                      Our vault has successfully run verification checks and flagged no formatting errors.
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setState((s) => ({ ...s, uploadedFile: false }))}
-                    className="text-xs text-slate-400 hover:text-slate-600 underline"
-                  >
-                    Reset
-                  </button>
-                </motion.div>
-              )}
-            </div> */}
           </div>
         );
 
