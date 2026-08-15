@@ -477,27 +477,27 @@ export function QuestRenderer({
     const meta = getStatusMeta(activeQuest.id, 36);
 
     return (
-      <div className="animate-in zoom-in-95 fade-in mx-auto flex min-h-[500px] w-full max-w-[600px] flex-col items-center justify-center px-4 pt-12 pb-10 duration-500 sm:px-6 sm:pt-14">
+      <div className="animate-in zoom-in-95 fade-in mx-auto flex min-h-0 w-full max-w-[600px] flex-col items-center justify-center px-4 pt-8 pb-4 duration-500 sm:px-6 sm:pt-10 sm:pb-6">
         <div className="w-full text-center">
           <div
-            className={`h-16 w-16 rounded-full sm:h-20 sm:w-20 ${meta.bg} ${meta.color} mx-auto mb-6 flex items-center justify-center border border-current/10 text-3xl sm:mb-8`}
+            className={`h-14 w-14 rounded-full sm:h-20 sm:w-20 ${meta.bg} ${meta.color} mx-auto mb-4 flex items-center justify-center border border-current/10 text-2xl sm:mb-6 sm:text-3xl`}
           >
             {meta.icon}
           </div>
           <div
-            className={`inline-block rounded-full px-4 py-1.5 ${meta.bg} ${meta.color} mb-4 border border-current/20 text-[10px] font-bold tracking-[0.15em] uppercase sm:mb-6`}
+            className={`inline-block rounded-full px-3.5 py-1 ${meta.bg} ${meta.color} mb-3 border border-current/20 text-[10px] font-bold tracking-[0.15em] uppercase sm:mb-5`}
           >
             {meta.label}
           </div>
           <h2
-            className={`mb-3 text-2xl tracking-tight break-words italic sm:mb-4 sm:text-3xl md:text-4xl ${
+            className={`mb-2.5 text-xl tracking-tight break-words italic sm:mb-4 sm:text-3xl md:text-4xl ${
               isChapter1 ? "accent-brown" : isChapter2 ? "text-[#520a50]" : "text-[#051738]"
             }`}
           >
             {result?.title || "Evaluating Result..."}
           </h2>
           <p
-            className={`mx-auto mb-8 max-w-[400px] text-[14px] leading-relaxed sm:mb-10 sm:text-[16px] ${
+            className={`mx-auto mb-5 max-w-[400px] text-[13px] leading-relaxed sm:mb-8 sm:text-[15px] ${
               isChapter1
                 ? "text-[#8284bf]"
                 : isChapter2
@@ -509,16 +509,16 @@ export function QuestRenderer({
           >
             {result?.body || "Please wait while we calculate your status."}
           </p>
-          <div className="mx-auto flex w-full max-w-[280px] flex-col gap-3">
+          <div className="mx-auto flex w-full max-w-[280px] flex-col gap-2.5 sm:gap-3">
             <button
               onClick={() => setView("landing")}
-              className={`w-full rounded-[16px] px-6 py-3.5 text-[15px] font-bold shadow-md transition-all active:scale-95 ${meta.btnSolid}`}
+              className={`w-full rounded-[16px] px-6 py-3 text-[14px] font-bold shadow-md transition-all active:scale-95 sm:py-3.5 sm:text-[15px] ${meta.btnSolid}`}
             >
               Back to Overview
             </button>
             <button
               onClick={() => setView("quest")}
-              className={`w-full rounded-[16px] px-6 py-3.5 text-[14px] font-medium transition-all ${meta.btnOutline}`}
+              className={`w-full rounded-[16px] px-6 py-3 text-[13px] font-medium transition-all sm:py-3.5 sm:text-[14px] ${meta.btnOutline}`}
             >
               Review my answers
             </button>

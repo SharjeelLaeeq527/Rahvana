@@ -3000,7 +3000,7 @@ export const StepView: React.FC<StepViewProps> = ({
             {currentStep.step_type === "quest" ? (
               <div
                 //              className={`w-full min-h-[600px] flex flex-col items-center${isChapter2 ? " ch2step-bg" : ""}${isChapter3 ? " ch3step-bg" : ""}`}
-                className={`flex min-h-[600px] w-full flex-col items-center`}
+                className={`flex min-h-0 w-full flex-col items-center`}
               >
                 <QuestRenderer
                   quest={currentStep.quest_data as unknown as QuestSuiteV3}
