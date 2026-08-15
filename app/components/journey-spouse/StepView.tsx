@@ -4247,21 +4247,21 @@ export const StepView: React.FC<StepViewProps> = ({
       {isCitationsModalOpen && (
         <div className="fixed inset-0 z-300 bg-black/40 backdrop-blur-xs flex items-center justify-center p-5 animate-in fade-in duration-200">
           <div className="bg-white rounded-[16px] shadow-[0_24px_80px_rgba(12,27,51,0.32),0_4px_20px_rgba(12,27,51,0.16)] w-full max-w-[500px] animate-in slide-in-from-bottom-4 duration-300">
-            <div className="flex items-start justify-between p-6 pb-0 mb-4">
-              <div className="flex items-center gap-2">
+            <div className="mb-3 sm:mb-4 flex items-start justify-between gap-3 p-4 sm:p-6 pb-0">
+              <div className="flex items-start gap-2.5">
                 <Book
-                  className="h-[20px] w-[20px] text-primary shrink-0 animate-pulse"
+                  className="text-primary mt-0.5 sm:mt-1 h-5 w-5 shrink-0 animate-pulse"
                   strokeWidth={2.5}
                 />
-                <h2 className="text-[20px] font-bold text-[#0c1b33]">
-                  Official References & Citations
+                <h2 className="text-[17px] sm:text-[20px] font-bold leading-snug text-[#0c1b33]">
+                  Official References &amp; Citations
                 </h2>
               </div>
               <button
                 onClick={() => setIsCitationsModalOpen(false)}
-                className="w-[30px] h-[30px] rounded-full bg-[#f4f7fb] flex items-center justify-center hover:bg-[#d0e4f7] transition-all cursor-pointer border-none outline-none"
+                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] outline-none transition-all hover:bg-[#d0e4f7] hover:text-[#0c1b33] active:scale-95"
               >
-                <X size={13} className="text-[#3a4f63]" />
+                <X size={14} />
               </button>
             </div>
 
