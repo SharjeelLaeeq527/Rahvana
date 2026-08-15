@@ -86,6 +86,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
     actions.setStage(idx);
     setView("chapter");
     actions.setCurrentStep(-1);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
 
   const handleSelectStep = (cIdx: number, sIdx: number) => {
@@ -109,16 +110,19 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
     actions.setStage(cIdx);
     actions.setCurrentStep(sIdx);
     setView("step");
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
 
   const handleBackToDashboard = () => {
     setView("dashboard");
     actions.setCurrentStep(-1);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
 
   const handleBackToChapter = () => {
     setView("chapter");
     actions.setCurrentStep(-1);
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
   };
 
   const handleBack = () => {

@@ -2,7 +2,7 @@
 // Dynamic refactoring in progress
 "use client";
 
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { E, msg } from "@/lib/errors";
 import {
   ArrowLeft,
@@ -297,6 +297,19 @@ export const StepView: React.FC<StepViewProps> = ({
   useEffect(() => {
     fetchUserJourneysCached().catch(() => {});
   }, []);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const customScrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+    if (customScrollContainerRef.current) {
+      customScrollContainerRef.current.scrollTop = 0;
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [sId, state.currentStep, state.currentStage]);
   // Add Evidence Note modal state
 
   const { user } = useAuth();
@@ -2734,12 +2747,16 @@ export const StepView: React.FC<StepViewProps> = ({
       className={`relative flex h-full flex-1 flex-col overflow-hidden font-sans ${customRenderer ? "bg-slate-50" : ""}`}
     >
       {customRenderer ? (
-        <div className="scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[100px]">
+        <div
+          ref={customScrollContainerRef}
+          className="scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[100px]"
+        >
           {customRenderer}
           {renderCitationsSection()}
         </div>
       ) : (
         <div
+          ref={scrollContainerRef}
           className={`scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[100px] ${
             currentStep.step_type === "quest"
               ? ""
