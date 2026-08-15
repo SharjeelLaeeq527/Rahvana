@@ -346,7 +346,7 @@ const StepParentGuidePage = () => {
                 >
                   <span className="font-bold text-slate-800 text-sm">Yes, it is legally valid</span>
                   <span className="text-slate-500 text-xs leading-normal">
-                    The marriage was legally registered and either spouse's previous marriages
+                    The marriage was legally registered and either spouse&apos;s previous marriages
                     legally ended beforehand.
                   </span>
                 </button>
@@ -390,7 +390,7 @@ const StepParentGuidePage = () => {
                 >
                   <span className="font-bold text-slate-800 text-sm">Under 18 Years Old</span>
                   <span className="text-slate-500 text-xs leading-normal">
-                    The marriage occurred before the child's 18th birthday.
+                    The marriage occurred before the child&apos;s 18th birthday.
                   </span>
                 </button>
                 <button
@@ -404,7 +404,7 @@ const StepParentGuidePage = () => {
                 >
                   <span className="font-bold text-slate-800 text-sm">18 Years Old or Older</span>
                   <span className="text-slate-500 text-xs leading-normal">
-                    The marriage took place on or after the child's 18th birthday.
+                    The marriage took place on or after the child&apos;s 18th birthday.
                   </span>
                 </button>
               </div>
@@ -558,7 +558,7 @@ const StepParentGuidePage = () => {
               <Info className="w-5 h-5 text-teal-600 shrink-0 mt-0.5" />
               <p className="text-teal-900 text-xs leading-relaxed">
                 <strong>CRITICAL RULE:</strong> Do not translate the documents yourself. Even if you
-                are bilingual, USCIS requires a third-party certifier to confirm the translation's
+                are bilingual, USCIS requires a third-party certifier to confirm the translation&apos;s
                 completeness and accuracy.
               </p>
             </div>
@@ -589,8 +589,8 @@ const StepParentGuidePage = () => {
                     Translator Certification Statement
                   </h4>
                   <p className="text-slate-500 text-xs leading-normal">
-                    A signed statement stating: "I certify that I am competent to translate from
-                    [Language] into English, and that the translation is complete and accurate."
+                    A signed statement stating: &quot;I certify that I am competent to translate from
+                    [Language] into English, and that the translation is complete and accurate.&quot;
                   </p>
                 </div>
               </div>
@@ -601,10 +601,10 @@ const StepParentGuidePage = () => {
                 </span>
                 <div>
                   <h4 className="font-bold text-slate-800 text-sm mb-0.5">
-                    Translator's Credentials
+                    Translator&apos;s Credentials
                   </h4>
                   <p className="text-slate-500 text-xs leading-normal">
-                    The statement must list the translator's printed name, signature, date, and
+                    The statement must list the translator&apos;s printed name, signature, date, and
                     contact details (phone, email, and address).
                   </p>
                 </div>

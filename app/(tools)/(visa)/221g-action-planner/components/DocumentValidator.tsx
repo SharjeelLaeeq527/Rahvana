@@ -12,6 +12,8 @@ import {
   DocumentValidationResult,
   validateByDocumentType,
 } from "../utils/documentValidation";
+import { AlertTriangle, CheckCircle, Eye, FileText, Scan, Upload, XCircle } from "lucide-react";
+import Image from "next/image";
 
 interface DocumentValidatorProps {
   documentType: DocumentType;

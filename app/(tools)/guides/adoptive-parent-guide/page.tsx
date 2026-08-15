@@ -396,7 +396,7 @@ const AdoptionGuidePage = () => {
                 >
                   <span className="text-sm font-bold text-slate-800">Under 16 Years Old</span>
                   <span className="text-xs leading-normal text-slate-500">
-                    The relationship was legally created before the child's 16th birthday.
+                    The relationship was legally created before the child&apos;s 16th birthday.
                   </span>
                 </button>
                 <button
@@ -410,7 +410,7 @@ const AdoptionGuidePage = () => {
                 >
                   <span className="text-sm font-bold text-slate-800">16 Years Old or Older</span>
                   <span className="text-xs leading-normal text-slate-500">
-                    The relationship was established on or after the child's 16th birthday.
+                    The relationship was established on or after the child&apos;s 16th birthday.
                   </span>
                 </button>
               </div>
@@ -630,7 +630,7 @@ const AdoptionGuidePage = () => {
               <Info className="mt-0.5 h-5 w-5 shrink-0 text-teal-600" />
               <p className="text-xs leading-relaxed text-teal-900">
                 <strong>CRITICAL RULE:</strong> Do not translate the documents yourself. Even if you
-                are bilingual, USCIS requires a third-party certifier to confirm the translation's
+                are bilingual, USCIS requires a third-party certifier to confirm the translation&apos;s
                 completeness and accuracy.
               </p>
             </div>
@@ -661,8 +661,8 @@ const AdoptionGuidePage = () => {
                     Translator Certification Statement
                   </h4>
                   <p className="text-xs leading-normal text-slate-500">
-                    A signed statement stating: "I certify that I am competent to translate from
-                    [Language] into English, and that the translation is complete and accurate."
+                    A signed statement stating: &quot;I certify that I am competent to translate from
+                    [Language] into English, and that the translation is complete and accurate.&quot;
                   </p>
                 </div>
               </div>
@@ -673,10 +673,10 @@ const AdoptionGuidePage = () => {
                 </span>
                 <div>
                   <h4 className="mb-0.5 text-sm font-bold text-slate-800">
-                    Translator's Credentials
+                    Translator&apos;s Credentials
                   </h4>
                   <p className="text-xs leading-normal text-slate-500">
-                    The statement must list the translator's printed name, signature, date, and
+                    The statement must list the translator&apos;s printed name, signature, date, and
                     contact details (phone, email, and address).
                   </p>
                 </div>
