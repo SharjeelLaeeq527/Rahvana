@@ -4169,10 +4169,10 @@ export const StepView: React.FC<StepViewProps> = ({
       {isCitationsModalOpen && (
         <div className="animate-in fade-in fixed inset-0 z-300 flex items-center justify-center bg-black/40 p-5 backdrop-blur-xs duration-200">
           <div className="animate-in slide-in-from-bottom-4 w-full max-w-[500px] rounded-[16px] bg-white shadow-[0_24px_80px_rgba(12,27,51,0.32),0_4px_20px_rgba(12,27,51,0.16)] duration-300">
-            <div className="mb-3 sm:mb-4 flex items-start justify-between gap-3 p-4 sm:p-6 pb-0">
-              <div className="flex items-start gap-2.5">
+            <div className="mb-2 sm:mb-2 flex items-center justify-between gap-3 p-4 sm:p-5 pb-0 sm:pb-0">
+              <div className="flex items-center gap-2.5">
                 <Book
-                  className="text-primary mt-0.5 sm:mt-1 h-5 w-5 shrink-0 animate-pulse"
+                  className="text-primary h-5 w-5 shrink-0"
                   strokeWidth={2.5}
                 />
                 <h2 className="text-[17px] sm:text-[20px] font-bold leading-snug text-[#0c1b33]">
@@ -4187,8 +4187,8 @@ export const StepView: React.FC<StepViewProps> = ({
               </button>
             </div>
 
-            <div className="p-6 pt-0">
-              <div className="mb-4 h-px bg-[#d0e4f7]" />
+            <div className="p-4 sm:p-5 pt-0">
+              <div className="mb-3 sm:mb-3 h-px bg-[#d0e4f7]" />
               <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto pr-1">
                 {(currentStep.citations || []).map((cite, index) => (
                   <a
