@@ -30,6 +30,10 @@ const __dirname = path.dirname(__filename);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Hide the framework/version banner (X-Powered-By) so we don't advertise our
+  // stack to attackers during reconnaissance.
+  poweredByHeader: false,
+
   images: {
     remotePatterns: [
       {

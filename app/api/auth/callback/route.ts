@@ -3,6 +3,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { safeRedirectPath } from "@/lib/security/safeRedirect";
 
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
@@ -12,7 +13,9 @@ export async function GET(request: Request) {
   const match = cookieHeader.match(/(?:^|;)\s*oauth_redirect\s*=\s*([^;]+)/);
   const nextCookie = match ? decodeURIComponent(match[1]) : null;
 
-  const next = searchParams.get("next") ?? nextCookie ?? "/";
+  // Only allow same-origin relative redirect targets (prevents open redirect
+  // to an attacker-controlled site after login).
+  const next = safeRedirectPath(searchParams.get("next") ?? nextCookie);
 
   if (code) {
     const supabase = await createClient();

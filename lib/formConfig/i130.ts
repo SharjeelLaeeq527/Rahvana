@@ -1785,13 +1785,16 @@ export const formFields: Field[] = [
       "Do you have a Certificate of Naturalization or Citizenship? (A paper proving you are a citizen)",
     type: "radio",
     section: "Your Marital Information",
+    // Only U.S. citizens can have a Certificate of Naturalization/Citizenship.
+    // Green Card holders (LPR) skip this and the certificate detail questions below.
+    condition: (d) => d.citizenship_status === "USCitizen",
     options: [
       { label: "Yes", value: "Yes", pdfKey: "Pt2Line36_Yes" },
       { label: "No", value: "No", pdfKey: "Pt2Line36_No" },
     ],
   },
 
-  // Certificate Details
+  // Certificate Details (only if the petitioner actually has a certificate)
   {
     key: "certificate_number",
     pdfKey: "Pt2Line37a_CertificateNumber",
@@ -1799,6 +1802,8 @@ export const formFields: Field[] = [
       "What is your Certificate Number? (This is usually printed in red on your Certificate of Naturalization or Citizenship)",
     type: "text",
     section: "Your Marital Information",
+    condition: (d) =>
+      d.citizenship_status === "USCitizen" && d.naturalization_certificate === "Yes",
   },
   {
     key: "certificate_place",
@@ -1806,6 +1811,8 @@ export const formFields: Field[] = [
     label: "Where was this certificate given to you? (For example: Los Angeles, CA)",
     type: "text",
     section: "Your Marital Information",
+    condition: (d) =>
+      d.citizenship_status === "USCitizen" && d.naturalization_certificate === "Yes",
   },
   {
     key: "certificate_date",
@@ -1814,6 +1821,8 @@ export const formFields: Field[] = [
     type: "date",
     section: "Your Marital Information",
     placeholder: "MM/DD/YYYY",
+    condition: (d) =>
+      d.citizenship_status === "USCitizen" && d.naturalization_certificate === "Yes",
   },
   // ============================================
   // PAGE 4: ADDITIONAL INFORMATION (Petitioner)
@@ -1856,18 +1865,43 @@ export const formFields: Field[] = [
     section: "Your U.S. Entry Information",
   },
 
+  // ITEM 41: Green Card through marriage (only asked of Green Card holders)
+  {
+    key: "lpr_through_marriage",
+    pdfKey: "Pt2Line41",
+    label:
+      "Did you get your Green Card (lawful permanent resident status) through marriage to a U.S. citizen or Green Card holder?",
+    type: "radio",
+    section: "Your U.S. Entry Information",
+    condition: (d) => d.citizenship_status === "LPR",
+    options: [
+      { label: "Yes", value: "Yes", pdfKey: "Pt2Line41_Yes" },
+      { label: "No", value: "No", pdfKey: "Pt2Line41_No" },
+    ],
+  },
+
   // ============================================
-  // ITEM 41: CURRENT EMPLOYMENT ADDRESS (If different)
+  // ITEM 40-41: CURRENT EMPLOYER (name + address)
   // ============================================
   {
+    key: "current_employer_name",
+    pdfKey: "Pt2Line40_EmployerOrCompName",
+    label: "What is the name of your current employer or company?",
+    type: "text",
+    section: "Employment Information",
+    placeholder: "Company name",
+  },
+  {
     key: "employment_different_address",
-    pdfKey: "employment_different_address",
+    // UI-only gate. Do NOT map to a PDF key — Pt2Line41_Yes/No belongs to the
+    // "Green Card through marriage" question above, so mapping here would clobber it.
+    pdfKey: "N/A",
     label: "Is the address where you work different from the address where you live?",
     type: "radio",
     section: "Employment Information",
     options: [
-      { label: "Yes", value: "Yes", pdfKey: "Pt2Line41_Yes" },
-      { label: "No", value: "No", pdfKey: "Pt2Line41_No" },
+      { label: "Yes", value: "Yes" },
+      { label: "No", value: "No" },
     ],
     subQuestions: [
       // Employment Address (Conditional)
@@ -2201,374 +2235,6 @@ export const formFields: Field[] = [
     ],
   },
 
-  // ============================================
-  // PAGE 4: ADDITIONAL INFORMATION
-  // ============================================
-  {
-    key: "Pt2Line40a_ClassOfAdmission",
-    label:
-      "What visa or status did you use to enter the U.S. last time? (For example: B2, F1, H1B)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line40a_ClassOfAdmission",
-    placeholder: "e.g., B-2, F-1, etc.",
-  },
-  {
-    key: "Pt2Line40b_DateOfAdmission",
-    label: "When did you last enter the U.S.?",
-    section: "Immigration & Employment Information",
-    type: "date",
-    pdfKey: "Pt2Line40b_DateOfAdmission",
-    placeholder: "MM/DD/YYYY",
-  },
-  {
-    key: "Pt2Line40d_CityOrTown",
-    label: "What U.S. city or town did you arrive in when you last entered?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line40d_CityOrTown",
-    placeholder: "City or Town",
-  },
-  {
-    key: "Pt2Line40e_State",
-    label: "What U.S. state did you arrive in when you last entered?",
-    section: "Immigration & Employment Information",
-    type: "dropdown",
-    isState: true,
-    pdfKey: "Pt2Line40e_State",
-    placeholder: "State",
-    maxLength: 2,
-  },
-  {
-    key: "Pt2Line41_LPR",
-    label:
-      "Did you get your Green Card (lawful permanent resident status) through marriage to a U.S. citizen or Green Card holder?",
-    section: "Immigration & Employment Information",
-    type: "radio",
-    pdfKey: "Pt2Line41",
-    options: [
-      { label: "Yes", value: "Yes", pdfKey: "Pt2Line41_Yes" },
-      { label: "No", value: "No", pdfKey: "Pt2Line41_No" },
-    ],
-  },
-  {
-    key: "Pt2Line40_EmployerOrCompName",
-    label: "What is the name of your company? (Employer 1)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line40_EmployerOrCompName",
-    placeholder: "Company name",
-  },
-  {
-    key: "Pt2Line41_StreetNumberName",
-    label: "What is the street address of Employer 1?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line41_StreetNumberName",
-    placeholder: "Street address",
-  },
-  {
-    key: "Pt2Line41_UnitType",
-    label: "Is Employer 1 located in an Apartment, Suite, or Floor?",
-    section: "Immigration & Employment Information",
-    type: "radio",
-    pdfKey: "Pt2Line41_UnitType",
-    options: [
-      { label: "Ste.", value: "ste", pdfKey: "Pt2Line41_Unit[1]" },
-      { label: "Apt.", value: "apt", pdfKey: "Pt2Line41_Unit[0]" },
-      { label: "Flr.", value: "flr", pdfKey: "Pt2Line41_Unit[2]" },
-    ],
-  },
-  {
-    key: "Pt2Line41_AptSteFlrNumber",
-    label: "What is the Apartment, Suite, or Floor number? (Employer 1)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line41_AptSteFlrNumber",
-    placeholder: "Number",
-  },
-  {
-    key: "Pt2Line41_CityOrTown",
-    label: "What city or town is Employer 1 in?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line41_CityOrTown",
-    placeholder: "City",
-  },
-  {
-    key: "Pt2Line41_State",
-    label: "What state is Employer 1 in? (If in U.S.)",
-    section: "Immigration & Employment Information",
-    type: "dropdown",
-    isState: true,
-    pdfKey: "Pt2Line41_State",
-    placeholder: "State",
-    maxLength: 2,
-  },
-  {
-    key: "Pt2Line41_ZipCode",
-    label: "What is the ZIP code for Employer 1? (If in U.S.)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line41_ZipCode",
-    placeholder: "ZIP",
-    maxLength: 10,
-  },
-  {
-    key: "Pt2Line41_Province",
-    label: "What province is Employer 1 in? (If outside U.S.)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line41_Province",
-    placeholder: "Province",
-  },
-  {
-    key: "Pt2Line41_PostalCode",
-    label: "What is the postal code for Employer 1? (If outside U.S.)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line41_PostalCode",
-    placeholder: "Postal Code",
-  },
-  {
-    key: "Pt2Line41_Country",
-    label: "What country is Employer 1 in?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line41_Country",
-    placeholder: "Country",
-  },
-  {
-    key: "Pt2Line42_Occupation",
-    label: "What is your current job title? (Employer 1)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line42_Occupation",
-    placeholder: "Your occupation",
-  },
-  {
-    key: "Pt2Line43a_DateFrom",
-    label: "When did you start working at Employer 1?",
-    section: "Immigration & Employment Information",
-    type: "date",
-    pdfKey: "Pt2Line43a_DateFrom",
-    placeholder: "MM/DD/YYYY",
-  },
-  {
-    key: "Pt2Line43b_DateTo",
-    label: "When did you stop working at Employer 1? (Or type 'PRESENT' if you still work there)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line43b_DateTo",
-    placeholder: "MM/DD/YYYY or PRESENT",
-  },
-  {
-    key: "Pt2Line44_EmployerOrOrgName",
-    label: "What is the name of your company? (Employer 2)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line44_EmployerOrOrgName",
-    placeholder: "Company name",
-  },
-  {
-    key: "Pt2Line45_StreetNumberName",
-    label: "What is the street address of Employer 2?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line45_StreetNumberName",
-    placeholder: "Street address",
-  },
-  {
-    key: "Pt2Line45_UnitType",
-    label: "Is Employer 2 located in an Apartment, Suite, or Floor?",
-    section: "Immigration & Employment Information",
-    type: "radio",
-    pdfKey: "Pt2Line45_UnitType",
-    options: [
-      { label: "Ste.", value: "ste", pdfKey: "Pt2Line45_Unit[1]" },
-      { label: "Apt.", value: "apt", pdfKey: "Pt2Line45_Unit[0]" },
-      { label: "Flr.", value: "flr", pdfKey: "Pt2Line45_Unit[2]" },
-    ],
-  },
-  {
-    key: "Pt2Line45_AptSteFlrNumber",
-    label: "What is the Apartment, Suite, or Floor number? (Employer 2)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line45_AptSteFlrNumber",
-    placeholder: "Number",
-  },
-  {
-    key: "Pt2Line45_CityOrTown",
-    label: "What city or town is Employer 2 in?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line45_CityOrTown",
-    placeholder: "City",
-  },
-  {
-    key: "Pt2Line45_State",
-    label: "What state is Employer 2 in? (If in U.S.)",
-    section: "Immigration & Employment Information",
-    type: "dropdown",
-    isState: true,
-    pdfKey: "Pt2Line45_State",
-    placeholder: "State",
-    maxLength: 2,
-  },
-  {
-    key: "Pt2Line45_ZipCode",
-    label: "What is the ZIP code for Employer 2? (If in U.S.)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line45_ZipCode",
-    placeholder: "ZIP",
-    maxLength: 10,
-  },
-  {
-    key: "Pt2Line45_Province",
-    label: "What province is Employer 2 in? (If outside U.S.)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line45_Province",
-    placeholder: "Province",
-  },
-  {
-    key: "Pt2Line45_PostalCode",
-    label: "What is the postal code for Employer 2? (If outside U.S.)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line45_PostalCode",
-    placeholder: "Postal Code",
-  },
-  {
-    key: "Pt2Line45_Country",
-    label: "What country is Employer 2 in?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line45_Country",
-    placeholder: "Country",
-  },
-  {
-    key: "Pt2Line46_Occupation",
-    label: "What was your job title? (Employer 2)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line46_Occupation",
-    placeholder: "Your occupation",
-  },
-  {
-    key: "Pt2Line47a_DateFrom",
-    label: "When did you start working at Employer 2?",
-    section: "Immigration & Employment Information",
-    type: "date",
-    pdfKey: "Pt2Line47a_DateFrom",
-    placeholder: "MM/DD/YYYY",
-  },
-  {
-    key: "Pt2Line47b_DateTo",
-    label: "When did you stop working at Employer 2?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line47b_DateTo",
-    placeholder: "MM/DD/YYYY or PRESENT",
-  },
-  // ============================================
-  // PART 3: BIOGRAPHIC INFORMATION
-  // ============================================
-  {
-    key: "Pt3Line1_Ethnicity",
-    label: "Are you Hispanic or Latino?",
-    section: "Biographic Information",
-    type: "radio",
-    pdfKey: "Pt3Line1_Ethnicity",
-    options: [
-      {
-        label: "I am Hispanic or Latino",
-        value: "Hispanic",
-        pdfKey: "Pt3Line1_Ethnicity[0]",
-      },
-      {
-        label: "I am not Hispanic or Latino",
-        value: "NotHispanic",
-        pdfKey: "Pt3Line1_Ethnicity[1]",
-      },
-    ],
-  },
-  {
-    key: "Pt3Line2_Race",
-    pdfKey: "Pt3Line2_Race",
-    label: "What is your race? (Select all that apply)",
-    section: "Biographic Information",
-    type: "checkbox",
-    options: [
-      {
-        label: "White",
-        value: "White",
-        pdfKey: "Pt3Line2_Race_White",
-      },
-      {
-        label: "Asian",
-        value: "Asian",
-        pdfKey: "Pt3Line2_Race_Asian",
-      },
-      {
-        label: "Black or African American",
-        value: "Black",
-        pdfKey: "Pt3Line2_Race_Black",
-      },
-      {
-        label: "American Indian or Alaska Native",
-        value: "AmericanIndianAlaskaNative",
-        pdfKey: "Pt3Line2_Race_AmericanIndianAlaskaNative",
-      },
-      {
-        label: "Native Hawaiian or Other Pacific Islander",
-        value: "NativeHawaiianOtherPacificIslander",
-        pdfKey: "Pt3Line2_Race_NativeHawaiianOtherPacificIslander",
-      },
-    ],
-  },
-  {
-    key: "Pt3Line3_HeightFeet",
-    label: "What is your height in Feet?",
-    section: "Biographic Information",
-    type: "text",
-    pdfKey: "Pt3Line3_HeightFeet",
-    placeholder: "Feet",
-    maxLength: 1,
-  },
-  {
-    key: "Pt3Line3_HeightInches",
-    label: "What is your height in Inches?",
-    section: "Biographic Information",
-    type: "text",
-    pdfKey: "Pt3Line3_HeightInches",
-    placeholder: "Inches",
-    maxLength: 2,
-  },
-  {
-    key: "Pt3Line5_EyeColor",
-    label: "What is your eye color?",
-    section: "Biographic Information",
-    type: "radio",
-    pdfKey: "Pt3Line5_EyeColor",
-    options: [
-      { label: "Black", value: "Black", pdfKey: "Pt3Line5_EyeColor[0]" },
-      { label: "Blue", value: "Blue", pdfKey: "Pt3Line5_EyeColor[1]" },
-      { label: "Brown", value: "Brown", pdfKey: "Pt3Line5_EyeColor[2]" },
-      { label: "Gray", value: "Gray", pdfKey: "Pt3Line5_EyeColor[3]" },
-      { label: "Green", value: "Green", pdfKey: "Pt3Line5_EyeColor[4]" },
-      { label: "Hazel", value: "Hazel", pdfKey: "Pt3Line5_EyeColor[5]" },
-      { label: "Maroon", value: "Maroon", pdfKey: "Pt3Line5_EyeColor[6]" },
-      { label: "Pink", value: "Pink", pdfKey: "Pt3Line5_EyeColor[7]" },
-      {
-        label: "Unknown/Other",
-        value: "Unknown",
-        pdfKey: "Pt3Line5_EyeColor[8]",
-      },
-    ],
-  },
   // =============================================
   // PAGE 5 - PART 3: Biographic Information
   // =============================================
@@ -2576,7 +2242,7 @@ export const formFields: Field[] = [
     key: "hairColor",
     label: "What is your hair color?",
     type: "radio",
-    section: "Biographic Information",
+    section: "Physical Characteristics",
     pdfKey: "Pt3Line6_HairColor_Black", // ← Dummy (backend ignore karega)
     options: [
       { label: "Black", value: "black", pdfKey: "Pt3Line6_HairColor_Black" },
