@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import NextImage from "next/image";
 import { Download, RotateCcw, CheckCircle2, Crop, BadgeCheck } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
-import TiltCorrectionTool from "./TiltCorrectionTool";
 import CropTool from "./CropTool";
 
 interface SignaturePreviewProps {
@@ -21,8 +20,7 @@ export default function SignaturePreview({
   onReset,
 }: SignaturePreviewProps) {
   const { t } = useLanguage();
-  const [showCropMode, setShowCropMode] = useState(false);
-  const [showTiltMode, setShowTiltMode] = useState(false);
+  const [showEditMode, setShowEditMode] = useState(false);
 
   // ✅ Step 1: Single State for the latest image
   const [editedImage, setEditedImage] = useState<string | null>(null);
@@ -45,37 +43,17 @@ export default function SignaturePreview({
     onReset();
   };
 
-  // ✅ Step 3: Callback when Tilt is applied
-  const handleTiltApply = (newImage: string) => {
-    console.log("📸 New Tilt Image Received, Length:", newImage.length);
-    setEditedImage(newImage); // Update State
-    setShowTiltMode(false); // Close Modal
-  };
-
-  // ✅ Step 4: Callback when Crop is applied
-  const handleCropApply = (newImage: string) => {
-    console.log("✂️ New Crop Image Received");
+  const handleEditApply = (newImage: string) => {
     setEditedImage(newImage);
-    setShowCropMode(false);
+    setShowEditMode(false);
   };
 
-  if (showTiltMode) {
-    return (
-      <TiltCorrectionTool
-        processedImage={currentImage} // Pass latest image
-        onApply={handleTiltApply}
-        onCancel={() => setShowTiltMode(false)}
-      />
-    );
-  }
-
-  if (showCropMode) {
+  if (showEditMode) {
     return (
       <CropTool
         currentImage={currentImage}
-        onApplyCrop={handleCropApply}
-        onToggleTilt={() => setShowTiltMode(true)}
-        onExit={() => setShowCropMode(false)}
+        onApplyCrop={handleEditApply}
+        onExit={() => setShowEditMode(false)}
       />
     );
   }
@@ -101,7 +79,7 @@ export default function SignaturePreview({
         <h2 className="mt-4 text-2xl font-extrabold text-[#123f42] sm:text-3xl">
           {t("signatureProcessing.adjust")}
         </h2>
-        <span className="inline-flex shrink-0 items-center gap-2 rounded-full bg-[#eaf3fb] px-4 py-2 text-xs font-semibold text-[#00595C] sm:text-sm mt-3">
+        <span className="mt-3 inline-flex shrink-0 items-center gap-2 rounded-full bg-[#eaf3fb] px-4 py-2 text-xs font-semibold text-[#00595C] sm:text-sm">
           <BadgeCheck className="h-4 w-4" />
           {t("signatureProcessing.transparentBg")}
         </span>
@@ -152,6 +130,7 @@ export default function SignaturePreview({
 
       {/* Actions */}
       <div className="mt-8 space-y-3">
+        {/* Primary action */}
         <button
           onClick={handleDownloadCropped}
           className="flex w-full items-center justify-center gap-3 rounded-2xl bg-[#00595C] px-6 py-4 text-base font-bold text-white shadow-[0_10px_26px_rgba(13,115,119,0.25)] transition-all hover:bg-[#004a4c] hover:shadow-[0_10px_26px_rgba(13,115,119,0.32)] sm:text-lg"
@@ -160,30 +139,24 @@ export default function SignaturePreview({
           {t("signatureProcessing.download")}
         </button>
 
+        {/* Secondary actions */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <button
-            onClick={() => setShowCropMode(true)}
+            onClick={() => setShowEditMode(true)}
             className="flex w-full items-center justify-center gap-2.5 rounded-2xl border-2 border-[#afdbdb] bg-white px-6 py-3.5 text-sm font-semibold text-[#00595C] transition-all hover:bg-[#f0f9fa] sm:text-base"
           >
             <Crop className="h-5 w-5" />
-            {t("signatureProcessing.crop")}
+            Edit Signature
           </button>
+
           <button
-            onClick={() => setShowTiltMode(true)}
-            className="flex w-full items-center justify-center gap-2.5 rounded-2xl border-2 border-[#afdbdb] bg-white px-6 py-3.5 text-sm font-semibold text-[#00595C] transition-all hover:bg-[#f0f9fa] sm:text-base"
+            onClick={handleReset}
+            className="flex w-full items-center justify-center gap-2.5 rounded-2xl border-2 border-[#e1e8ea] bg-white px-6 py-3.5 text-sm font-semibold text-[#5c7b80] transition-all hover:border-[#afdbdb] hover:bg-[#f8fbfb] hover:text-[#00595C] sm:text-base"
           >
             <RotateCcw className="h-5 w-5" />
-            {t("signatureProcessing.tilt")}
+            {t("signatureProcessing.startOver")}
           </button>
         </div>
-
-        <button
-          onClick={handleReset}
-          className="flex w-full items-center justify-center gap-2.5 rounded-2xl px-6 py-3 text-sm font-semibold text-[#5c7b80] transition-colors hover:text-[#00595C] sm:text-base"
-        >
-          <RotateCcw className="h-4 w-4" />
-          {t("signatureProcessing.startOver")}
-        </button>
       </div>
     </div>
   );

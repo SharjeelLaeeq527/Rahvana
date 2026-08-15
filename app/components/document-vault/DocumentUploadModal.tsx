@@ -95,7 +95,8 @@ export function DocumentUploadModal({
     if (cached && cached.length > 0) {
       setInternalUserJourneys(cached);
       if (!resolvedActiveId) {
-        const saved = typeof window !== "undefined" ? sessionStorage.getItem("doc_vault_active_journey") : null;
+        const saved =
+          typeof window !== "undefined" ? sessionStorage.getItem("doc_vault_active_journey") : null;
         if (saved && cached.some((j) => j.id === saved)) {
           setInternalActiveJourneyId(saved);
         } else {
@@ -111,7 +112,10 @@ export function DocumentUploadModal({
         if (journeys && journeys.length > 0) {
           setInternalUserJourneys(journeys);
           if (!resolvedActiveId) {
-            const saved = typeof window !== "undefined" ? sessionStorage.getItem("doc_vault_active_journey") : null;
+            const saved =
+              typeof window !== "undefined"
+                ? sessionStorage.getItem("doc_vault_active_journey")
+                : null;
             if (saved && journeys.some((j) => j.id === saved)) {
               setInternalActiveJourneyId(saved);
             } else {
@@ -136,10 +140,7 @@ export function DocumentUploadModal({
 
   const [sharedJourneyIds, setSharedJourneyIds] = useState<string[]>([]);
 
-  const otherJourneysKey = useMemo(
-    () => otherJourneys.map((j) => j.id).join(","),
-    [otherJourneys]
-  );
+  const otherJourneysKey = useMemo(() => otherJourneys.map((j) => j.id).join(","), [otherJourneys]);
 
   useEffect(() => {
     if (open) {
@@ -492,11 +493,11 @@ export function DocumentUploadModal({
       <DialogContent
         className={`${
           ocrPhase === "confirm" ? "max-w-4xl" : "max-w-2xl"
-        } w-[95vw] sm:w-full p-0 overflow-hidden rounded-2xl border-none shadow-2xl`}
+        } w-[95vw] overflow-hidden rounded-2xl border-none p-0 shadow-2xl sm:w-full`}
       >
         <div className="max-h-[90vh] overflow-y-auto p-4 sm:p-6">
           <DialogHeader className="relative pb-4">
-            <DialogTitle className="text-lg sm:text-xl pr-8 font-bold text-[#0c1b33]">
+            <DialogTitle className="pr-8 text-lg font-bold text-[#0c1b33] sm:text-xl">
               {t("documentVaultPage.components.uploadModal.titlePrefix")}
               {t(`documentVaultPage.documents.${documentDef.id}.name`) !==
               `documentVaultPage.documents.${documentDef.id}.name`
@@ -506,18 +507,18 @@ export function DocumentUploadModal({
             <Button
               variant="ghost"
               size="icon"
-              className="h-8 w-8 rounded-full absolute top-0 right-0 hover:bg-slate-100 transition-colors"
+              className="absolute top-0 right-0 h-8 w-8 rounded-full transition-colors hover:bg-slate-100"
               onClick={handleClose}
             >
-              <X className="w-4 h-4 text-slate-500" />
+              <X className="h-4 w-4 text-slate-500" />
               <span className="sr-only">{t("documentVaultPage.components.uploadModal.close")}</span>
             </Button>
           </DialogHeader>
 
           {/* Config not ready warning */}
           {!config && (
-            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6 flex items-start gap-3 text-sm text-amber-800 shadow-sm">
-              <span className="text-lg leading-none mt-0.5">⏳</span>
+            <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 shadow-sm">
+              <span className="mt-0.5 text-lg leading-none">⏳</span>
               <span className="leading-relaxed">
                 Document Vault is initializing&hellip; please wait a moment before uploading.
               </span>
@@ -528,11 +529,11 @@ export function DocumentUploadModal({
           {ocrPhase !== "idle" && (
             <div className="space-y-4">
               <div className="flex items-center gap-2 text-[#0c1b33]">
-                <div className="w-9 h-9 rounded-xl bg-[#e8f1fb] text-brand flex items-center justify-center">
-                  <ScanLine className="w-5 h-5" />
+                <div className="text-brand flex h-9 w-9 items-center justify-center rounded-xl bg-[#e8f1fb]">
+                  <ScanLine className="h-5 w-5" />
                 </div>
                 <div className="flex-1">
-                  <p className="font-bold text-sm">
+                  <p className="text-sm font-bold">
                     {ocrPhase === "reading"
                       ? "Reading your document..."
                       : ocrPhase === "error"
@@ -555,9 +556,9 @@ export function DocumentUploadModal({
                     variant="outline"
                     onClick={() => runOcr(selectedFile)}
                     disabled={ocrSaving}
-                    className="rounded-xl border-[#d0e4f7] text-[#6b8097] hover:bg-slate-50 text-xs font-semibold gap-1.5"
+                    className="gap-1.5 rounded-xl border-[#d0e4f7] text-xs font-semibold text-[#6b8097] hover:bg-slate-50"
                   >
-                    <ScanLine className="w-3.5 h-3.5" />
+                    <ScanLine className="h-3.5 w-3.5" />
                     Re-read
                   </Button>
                 )}
@@ -565,15 +566,15 @@ export function DocumentUploadModal({
 
               {ocrPhase === "reading" && (
                 <div className="flex items-center justify-center gap-3 py-10 text-[#6b8097]">
-                  <div className="w-5 h-5 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
+                  <div className="border-brand/30 border-t-brand h-5 w-5 animate-spin rounded-full border-2" />
                   <span className="text-sm font-medium">Extracting fields...</span>
                 </div>
               )}
 
               {ocrPhase === "error" && (
                 <>
-                  <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-                    <p className="font-semibold mb-1">
+                  <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                    <p className="mb-1 font-semibold">
                       Your document is saved, we just couldn&apos;t auto-read it.
                     </p>
                     <p className="leading-relaxed">
@@ -586,16 +587,16 @@ export function DocumentUploadModal({
                     <Button
                       variant="outline"
                       onClick={handleClose}
-                      className="flex-1 rounded-xl border-[#d0e4f7] text-[#6b8097] hover:bg-slate-50 font-semibold"
+                      className="flex-1 rounded-xl border-[#d0e4f7] font-semibold text-[#6b8097] hover:bg-slate-50"
                     >
                       Fill in manually
                     </Button>
                     <Button
                       onClick={() => selectedFile && runOcr(selectedFile)}
                       disabled={!selectedFile}
-                      className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold gap-1.5"
+                      className="bg-primary hover:bg-primary/90 flex-1 gap-1.5 rounded-xl font-semibold text-white"
                     >
-                      <ScanLine className="w-4 h-4" />
+                      <ScanLine className="h-4 w-4" />
                       Re-read document
                     </Button>
                   </div>
@@ -605,9 +606,9 @@ export function DocumentUploadModal({
               {ocrPhase === "confirm" && (
                 <>
                   {ocrWarnings.length > 0 && (
-                    <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-                      <p className="font-semibold mb-1">Please double-check these</p>
-                      <ul className="list-disc pl-4 space-y-1">
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800">
+                      <p className="mb-1 font-semibold">Please double-check these</p>
+                      <ul className="list-disc space-y-1 pl-4">
                         {ocrWarnings.map((w, i) => (
                           <li key={i}>{w}</li>
                         ))}
@@ -616,8 +617,8 @@ export function DocumentUploadModal({
                   )}
 
                   {journeyMarriageClash && (
-                    <div className="bg-red-50 border border-red-300 rounded-xl p-4 text-sm text-red-800">
-                      <p className="font-semibold mb-1">
+                    <div className="rounded-xl border border-red-300 bg-red-50 p-4 text-sm text-red-800">
+                      <p className="mb-1 font-semibold">
                         Please review, this may not match an earlier answer
                       </p>
                       <p>
@@ -631,11 +632,11 @@ export function DocumentUploadModal({
                   )}
 
                   {crossCheck && crossCheck.mismatches.length > 0 && (
-                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-800">
-                      <p className="font-semibold mb-1">
+                    <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">
+                      <p className="mb-1 font-semibold">
                         These don&apos;t match what&apos;s already saved
                       </p>
-                      <ul className="list-disc pl-4 space-y-1">
+                      <ul className="list-disc space-y-1 pl-4">
                         {crossCheck.mismatches.map((m) => (
                           <li key={m.key}>
                             <strong>{m.label}:</strong> this document says &ldquo;{m.newValue}
@@ -647,7 +648,7 @@ export function DocumentUploadModal({
                     </div>
                   )}
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 items-start">
+                  <div className="grid grid-cols-1 items-start gap-x-4 gap-y-3 sm:grid-cols-2 lg:grid-cols-3">
                     {OCR_FIELD_ORDER.map(({ key, label }) => {
                       const isMismatch = mismatchKeys.has(key);
                       return (
@@ -686,14 +687,14 @@ export function DocumentUploadModal({
                       variant="outline"
                       onClick={handleClose}
                       disabled={ocrSaving}
-                      className="flex-1 rounded-xl border-[#d0e4f7] text-[#6b8097] hover:bg-slate-50 font-semibold"
+                      className="flex-1 rounded-xl border-[#d0e4f7] font-semibold text-[#6b8097] hover:bg-slate-50"
                     >
                       Skip
                     </Button>
                     <Button
                       onClick={handleSaveOcr}
                       disabled={ocrSaving}
-                      className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold"
+                      className="bg-primary hover:bg-primary/90 flex-1 rounded-xl font-semibold text-white"
                     >
                       {ocrSaving ? "Saving..." : "Confirm & Save"}
                     </Button>
@@ -706,65 +707,159 @@ export function DocumentUploadModal({
           <div className={`space-y-4 sm:space-y-6 ${ocrPhase !== "idle" ? "hidden" : ""}`}>
             {/* File upload area */}
             <div className="space-y-2">
-              <Label className="text-sm font-semibold text-[#3a4f63]">
+              <Label className="text-sm font-semibold text-[#263342]">
                 {t("documentVaultPage.components.uploadModal.selectFile")}
               </Label>
+
               <div
-                onClick={() => fileInputRef.current?.click()}
+                onClick={() => !selectedFile && fileInputRef.current?.click()}
                 onDragOver={handleDragOver}
                 onDragLeave={handleDragLeave}
                 onDrop={handleDrop}
-                className={`group border-2 border-dashed rounded-xl p-6 sm:p-10 text-center cursor-pointer transition-all duration-300 ${
-                  isDragging
-                    ? "border-brand bg-brand/10 shadow-md"
-                    : "border-[#d0e4f7] hover:border-brand hover:bg-brand/5 bg-slate-50/50"
+                className={`relative flex min-h-[300px] w-full flex-col justify-center overflow-hidden rounded-2xl transition-all duration-300 bg-transparent ${
+                  selectedFile
+                    ? "border border-[#0d7377]/25 p-4"
+                    : isDragging
+                      ? "cursor-pointer border border-[#0d7377] shadow-[0_18px_50px_rgba(13,115,119,0.18)]"
+                      : "cursor-pointer border border-[#dcecf1] px-6 py-10 shadow-[0_10px_40px_rgba(13,115,119,0.10)] hover:border-[#afdbdb] hover:shadow-[0_16px_48px_rgba(13,115,119,0.14)] sm:px-10 sm:py-12"
                 }`}
               >
-                {selectedFile ? (
-                  <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-brand/10 text-brand flex items-center justify-center">
-                      <Upload className="w-5 h-5" />
-                    </div>
-                    <div className="text-left">
-                      <p className="font-bold text-[#0c1b33] break-all">{selectedFile.name}</p>
-                      <p className="text-xs text-brand/80">
-                        ({(selectedFile.size / 1024 / 1024).toFixed(2)} MB)
-                      </p>
-                    </div>
-                    <Button
-                      type="button"
-                      size="icon"
-                      variant="ghost"
-                      className="h-8 w-8 rounded-full ml-auto hover:bg-red-50 hover:text-red-500 transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setSelectedFile(null);
-                      }}
-                    >
-                      <X className="w-4 h-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div>
-                    <div className="w-12 h-12 rounded-2xl bg-[#e8f1fb] text-brand flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
-                      <Upload className="w-6 h-6" />
-                    </div>
-                    <p className="font-bold text-[#0c1b33] mb-1">
-                      Click to Upload or Drag and Drop
-                    </p>
-                    <p className="text-xs text-[#6b8097]">
-                      {t("documentVaultPage.components.uploadModal.allowedTypes")}
-                    </p>
+                {!selectedFile && (
+                  <div className="pointer-events-none absolute inset-0 overflow-hidden">
+                    <div className="absolute -top-16 -right-16 h-32 w-32 rounded-full bg-[#0d7377]/[0.025]" />
+                    <div className="absolute -bottom-20 -left-16 h-36 w-36 rounded-full bg-[#32e0c4]/[0.025]" />
                   </div>
                 )}
+
+                {!selectedFile ? (
+                  <div className="relative z-10 flex flex-col items-center justify-center">
+                    {/* Icon */}
+                    <div
+                      className={`mb-5 flex h-16 w-16 items-center justify-center rounded-2xl transition-all duration-300 sm:h-[72px] sm:w-[72px] ${
+                        isDragging
+                          ? "scale-105 bg-[#0d7377] shadow-[0_10px_30px_rgba(13,115,119,0.22)]"
+                          : "border border-[#0d7377]/10 bg-[#edf8f8]"
+                      }`}
+                    >
+                      <Upload
+                        className={`h-7 w-7 ${isDragging ? "text-white" : "text-[#0d7377]"}`}
+                      />
+                    </div>
+
+                    {/* Title */}
+                    <p className="text-center text-lg font-bold text-[#123f42] sm:text-xl">
+                      {isDragging ? "Drop your file here" : "Drag & drop your file here"}
+                    </p>
+
+                    {/* Description */}
+                    <p className="mt-1.5 text-center text-xs text-[#6b8a8f] sm:text-sm">
+                      or choose a file from your device
+                    </p>
+
+                    {/* Divider */}
+                    <div className="my-5 flex w-[200px] items-center gap-3">
+                      <span className="h-px flex-1 bg-[#e6ecee]" />
+
+                      <span className="text-[10px] font-medium tracking-wider text-[#9aa4ab]">
+                        OR
+                      </span>
+
+                      <span className="h-px flex-1 bg-[#e6ecee]" />
+                    </div>
+
+                    {/* Browse */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        fileInputRef.current?.click();
+                      }}
+                      className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-[#00595C] px-7 py-3 text-sm font-semibold text-white shadow-[0_8px_20px_rgba(13,115,119,0.25)] transition-all hover:bg-[#004a4c] hover:shadow-[0_10px_26px_rgba(13,115,119,0.32)] active:scale-[0.98] sm:w-auto"
+                    >
+                      <Upload className="h-4 w-4" />
+                      Browse files
+                    </button>
+
+                    {/* Helper */}
+                    <p className="mt-4 text-center text-[11px] text-[#8aa5a8] sm:text-xs">
+                      PDF, JPG, PNG or GIF • Maximum file size 10 MB
+                    </p>
+                  </div>
+                ) : (
+                  <div className="w-full">
+                    <div className="flex items-center gap-3 rounded-xl border border-[#dceaea] bg-white p-3.5 shadow-[0_4px_14px_rgba(35,53,78,0.05)] sm:p-4">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-[#edf8f8] text-[#0d7377]">
+                        <Upload className="h-5 w-5" />
+                      </div>
+
+                      <div className="min-w-0 flex-1 text-left">
+                        <p
+                          className="truncate text-sm font-semibold text-[#263342]"
+                          title={selectedFile.name}
+                        >
+                          {selectedFile.name}
+                        </p>
+
+                        <div className="mt-1 flex items-center gap-2">
+                          <span className="text-[11px] text-[#7a858e]">
+                            {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
+                          </span>
+
+                          <span className="h-1 w-1 rounded-full bg-[#b8c4c9]" />
+
+                          <span className="flex items-center gap-1 text-[11px] font-medium text-[#0d7377]">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#0d7377]" />
+                            Ready
+                          </span>
+                        </div>
+                      </div>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedFile(null);
+
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = "";
+                          }
+                        }}
+                        aria-label="Remove selected file"
+                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-[#8a969e] transition-all hover:bg-[#fff1f1] hover:text-[#c75c5c] active:scale-95"
+                      >
+                        <X className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    <div className="mt-3 flex items-center justify-between px-1">
+                      <span className="text-[11px] text-[#7a858e]">File ready to upload</span>
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+
+                          if (fileInputRef.current) {
+                            fileInputRef.current.value = "";
+                            fileInputRef.current.click();
+                          }
+                        }}
+                        className="text-[11px] font-semibold text-[#0d7377] transition-colors hover:text-[#095c60]"
+                      >
+                        Change file
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png,.gif"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
               </div>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png,.gif"
-                onChange={handleFileSelect}
-                className="hidden"
-              />
             </div>
 
             {/* Expiration date (if needed) */}
@@ -773,7 +868,7 @@ export function DocumentUploadModal({
                 <Label className="text-sm font-semibold text-[#3a4f63]">
                   {t("documentVaultPage.components.uploadModal.expirationDate")}
                   {documentDef.validityType === "user_set" && (
-                    <span className="text-red-500 ml-1">*</span>
+                    <span className="ml-1 text-red-500">*</span>
                   )}
                 </Label>
                 <Input
@@ -781,7 +876,7 @@ export function DocumentUploadModal({
                   value={expirationDate}
                   onChange={(e) => setExpirationDate(e.target.value)}
                   min={new Date().toISOString().split("T")[0]}
-                  className="rounded-lg border-[#d0e4f7] focus:ring-brand/20"
+                  className="focus:ring-brand/20 rounded-lg border-[#d0e4f7]"
                 />
                 <p className="text-[11px] text-[#6b8097] italic">
                   {documentDef.validityType === "user_set"
@@ -801,17 +896,17 @@ export function DocumentUploadModal({
                 onChange={(e) => setNotes(e.target.value)}
                 placeholder={t("documentVaultPage.components.uploadModal.notesPlaceholder")}
                 rows={3}
-                className="rounded-lg border-[#d0e4f7] focus:ring-brand/20 resize-none"
+                className="focus:ring-brand/20 resize-none rounded-lg border-[#d0e4f7]"
               />
             </div>
 
             {/* Sibling Journeys Cross-Sharing Checkboxes */}
             {otherJourneys.length > 0 && (
-              <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-inner">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+              <div className="space-y-3 rounded-2xl border border-slate-100 bg-slate-50 p-4 shadow-inner dark:border-slate-800/80 dark:bg-slate-800/40">
+                <label className="text-xs font-bold tracking-wider text-slate-700 uppercase dark:text-slate-300">
                   Cross-share this document
                 </label>
-                <p className="text-[11px] text-slate-500 leading-normal mb-1">
+                <p className="mb-1 text-[11px] leading-normal text-slate-500">
                   Select which of your other active immigration journeys should also receive this
                   uploaded file:
                 </p>
@@ -828,23 +923,23 @@ export function DocumentUploadModal({
                             setSharedJourneyIds([...sharedJourneyIds, j.id]);
                           }
                         }}
-                        className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer select-none transition-all duration-300 ${
+                        className={`flex cursor-pointer items-center justify-between rounded-xl border p-3.5 transition-all duration-300 select-none ${
                           isChecked
                             ? "bg-primary/5 border-primary shadow-xs"
-                            : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                            : "border-slate-200 bg-white hover:border-slate-300 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-slate-700"
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           <div
-                            className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all duration-300 ${
+                            className={`flex h-5 w-5 items-center justify-center rounded-md border transition-all duration-300 ${
                               isChecked
-                                ? "bg-primary border-primary text-white scale-100"
-                                : "border-slate-300 dark:border-slate-700 bg-transparent"
+                                ? "bg-primary border-primary scale-100 text-white"
+                                : "border-slate-300 bg-transparent dark:border-slate-700"
                             }`}
                           >
                             {isChecked && (
                               <svg
-                                className="w-3.5 h-3.5 stroke-[3] stroke-white fill-none"
+                                className="h-3.5 w-3.5 fill-none stroke-white stroke-[3]"
                                 viewBox="0 0 24 24"
                               >
                                 <polyline points="20 6 9 17 4 12" />
@@ -862,7 +957,7 @@ export function DocumentUploadModal({
                           </span>
                         </div>
                         {isChecked && (
-                          <span className="text-[10px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md animate-in fade-in zoom-in-95 duration-200">
+                          <span className="text-primary bg-primary/10 animate-in fade-in zoom-in-95 rounded-md px-2 py-0.5 text-[10px] font-black tracking-wider uppercase duration-200">
                             Shared
                           </span>
                         )}
@@ -875,17 +970,17 @@ export function DocumentUploadModal({
 
             {/* USCIS Naming Preview */}
             {selectedFile && config && (
-              <div className="bg-blue-50/50 border border-blue-100 rounded-xl p-5 space-y-4 shadow-sm">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="w-1.5 h-1.5 rounded-full bg-brand" />
-                  <p className="text-xs font-bold uppercase tracking-wider text-blue-900/60">
+              <div className="space-y-4 rounded-xl border border-blue-100 bg-blue-50/50 p-5 shadow-sm">
+                <div className="mb-1 flex items-center gap-2">
+                  <div className="bg-brand h-1.5 w-1.5 rounded-full" />
+                  <p className="text-xs font-bold tracking-wider text-blue-900/60 uppercase">
                     {t("documentVaultPage.components.uploadModal.namingPreview")}
                   </p>
                 </div>
 
                 {/* Display name */}
                 <div className="grid grid-cols-1 gap-1">
-                  <p className="text-[11px] font-bold text-blue-800/50 uppercase tracking-tight">
+                  <p className="text-[11px] font-bold tracking-tight text-blue-800/50 uppercase">
                     {t("documentVaultPage.components.uploadModal.displayName")}
                   </p>
                   <p className="text-sm font-bold text-[#0c1b33]">
@@ -907,11 +1002,11 @@ export function DocumentUploadModal({
 
                 {/* Standardized filename */}
                 <div className="grid grid-cols-1 gap-2">
-                  <p className="text-[11px] font-bold text-blue-800/50 uppercase tracking-tight">
+                  <p className="text-[11px] font-bold tracking-tight text-blue-800/50 uppercase">
                     {t("documentVaultPage.components.uploadModal.standardizedFilename")}
                   </p>
-                  <div className="bg-white/80 border border-blue-100 p-3 rounded-lg shadow-inner group">
-                    <code className="text-xs text-blue-900 font-mono break-all leading-relaxed">
+                  <div className="group rounded-lg border border-blue-100 bg-white/80 p-3 shadow-inner">
+                    <code className="font-mono text-xs leading-relaxed break-all text-blue-900">
                       {`${role}_${documentDef.key}_${new Date().toISOString().split("T")[0]}_v1.${selectedFile.name
                         .split(".")
                         .pop()
@@ -921,25 +1016,25 @@ export function DocumentUploadModal({
                 </div>
 
                 {/* File info */}
-                <div className="flex items-center justify-between text-[11px] font-bold text-blue-800/60 uppercase pt-2 border-t border-blue-100/50">
+                <div className="flex items-center justify-between border-t border-blue-100/50 pt-2 text-[11px] font-bold text-blue-800/60 uppercase">
                   <span>
                     {t("documentVaultPage.components.uploadModal.sizePrefix")}
-                    <span className="text-blue-900 ml-1">
+                    <span className="ml-1 text-blue-900">
                       {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                     </span>
                   </span>
                   <span>
                     {t("documentVaultPage.components.uploadModal.typePrefix")}
-                    <span className="text-blue-900 ml-1">
+                    <span className="ml-1 text-blue-900">
                       {selectedFile.name.split(".").pop()?.toUpperCase()}
                     </span>
                   </span>
                 </div>
 
                 {(!config.caseId || !config.petitionerName || !config.beneficiaryName) && (
-                  <div className="bg-red-50 border border-red-100 rounded-lg p-3 flex items-start gap-2 shadow-sm">
+                  <div className="flex items-start gap-2 rounded-lg border border-red-100 bg-red-50 p-3 shadow-sm">
                     <span className="text-xs">⚠️</span>
-                    <p className="text-[11px] text-red-800 leading-relaxed font-medium">
+                    <p className="text-[11px] leading-relaxed font-medium text-red-800">
                       {t("documentVaultPage.components.uploadModal.warning")}
                     </p>
                   </div>
@@ -948,8 +1043,8 @@ export function DocumentUploadModal({
             )}
 
             {/* Security Guarantee */}
-            <div className="flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-50 border border-[#d0e4f7]/40 rounded-xl text-[#3a4f63] text-xs font-semibold shadow-sm">
-              <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <div className="flex items-center justify-center gap-2 rounded-xl border border-[#d0e4f7]/40 bg-slate-50 px-4 py-2.5 text-xs font-semibold text-[#3a4f63] shadow-sm">
+              <Lock className="h-3.5 w-3.5 shrink-0 text-emerald-600" />
               <span>{t("documentVaultPage.components.uploadModal.securityNotice")}</span>
             </div>
 
@@ -958,7 +1053,7 @@ export function DocumentUploadModal({
               <Button
                 variant="outline"
                 onClick={handleClose}
-                className="flex-1 rounded-xl border-[#d0e4f7] text-[#6b8097] hover:bg-slate-50 transition-all font-semibold"
+                className="flex-1 rounded-xl border-[#d0e4f7] font-semibold text-[#6b8097] transition-all hover:bg-slate-50"
               >
                 {t("documentVaultPage.components.uploadModal.cancel")}
               </Button>
@@ -972,11 +1067,11 @@ export function DocumentUploadModal({
                     documentDef.validityType === "user_set" &&
                     !expirationDate)
                 }
-                className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-brand/20 transition-all font-semibold disabled:bg-primary/70 disabled:text-white disabled:border-slate-300 disabled:shadow-none disabled:cursor-not-allowed"
+                className="bg-primary hover:bg-primary/90 shadow-brand/20 disabled:bg-primary/70 flex-1 rounded-xl font-semibold text-white shadow-lg transition-all disabled:cursor-not-allowed disabled:border-slate-300 disabled:text-white disabled:shadow-none"
               >
                 {uploading ? (
                   <div className="flex items-center gap-2 text-white">
-                    <div className="w-4 h-4 border-2 border-white border-t-white rounded-full animate-spin" />
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-white" />
                     {replaceDocumentId ? "Replacing..." : "Uploading..."}
                   </div>
                 ) : !config ? (

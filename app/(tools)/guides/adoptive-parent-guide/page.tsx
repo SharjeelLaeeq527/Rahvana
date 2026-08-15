@@ -14,10 +14,7 @@ import {
   Check,
   AlertTriangle,
   Info,
-  Languages,
-  Upload,
   CheckCircle2,
-  Loader2,
 } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 
@@ -75,8 +72,6 @@ const AdoptionGuidePage = () => {
   });
 
   const [isUploading, setIsUploading] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const hasInitializedModal = useRef(false);
 
   const { saveWizardStep, session, loading } = useWizardSession(
@@ -121,33 +116,6 @@ const AdoptionGuidePage = () => {
     } finally {
       setIsUploading(false);
     }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!state.uploadedFile && !isUploading) setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    setIsDragging(false);
-    if (state.uploadedFile || isUploading) return;
-    const file = e.dataTransfer.files?.[0];
-    if (file) handleUploadFile(file);
-  };
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) handleUploadFile(file);
-    e.target.value = "";
   };
 
   const handleSubmitFeedback = async (
@@ -396,7 +364,7 @@ const AdoptionGuidePage = () => {
                 >
                   <span className="text-sm font-bold text-slate-800">Under 16 Years Old</span>
                   <span className="text-xs leading-normal text-slate-500">
-                    The relationship was legally created before the child's 16th birthday.
+                    The relationship was legally created before the child&apos;s 16th birthday.
                   </span>
                 </button>
                 <button
@@ -410,7 +378,7 @@ const AdoptionGuidePage = () => {
                 >
                   <span className="text-sm font-bold text-slate-800">16 Years Old or Older</span>
                   <span className="text-xs leading-normal text-slate-500">
-                    The relationship was established on or after the child's 16th birthday.
+                    The relationship was established on or after the child&apos;s 16th birthday.
                   </span>
                 </button>
               </div>
@@ -630,7 +598,7 @@ const AdoptionGuidePage = () => {
               <Info className="mt-0.5 h-5 w-5 shrink-0 text-teal-600" />
               <p className="text-xs leading-relaxed text-teal-900">
                 <strong>CRITICAL RULE:</strong> Do not translate the documents yourself. Even if you
-                are bilingual, USCIS requires a third-party certifier to confirm the translation's
+                are bilingual, USCIS requires a third-party certifier to confirm the translation&apos;s
                 completeness and accuracy.
               </p>
             </div>
@@ -661,8 +629,8 @@ const AdoptionGuidePage = () => {
                     Translator Certification Statement
                   </h4>
                   <p className="text-xs leading-normal text-slate-500">
-                    A signed statement stating: "I certify that I am competent to translate from
-                    [Language] into English, and that the translation is complete and accurate."
+                    A signed statement stating: &quot;I certify that I am competent to translate from
+                    [Language] into English, and that the translation is complete and accurate.&quot;
                   </p>
                 </div>
               </div>
@@ -673,10 +641,10 @@ const AdoptionGuidePage = () => {
                 </span>
                 <div>
                   <h4 className="mb-0.5 text-sm font-bold text-slate-800">
-                    Translator's Credentials
+                    Translator&apos;s Credentials
                   </h4>
                   <p className="text-xs leading-normal text-slate-500">
-                    The statement must list the translator's printed name, signature, date, and
+                    The statement must list the translator&apos;s printed name, signature, date, and
                     contact details (phone, email, and address).
                   </p>
                 </div>
@@ -695,74 +663,6 @@ const AdoptionGuidePage = () => {
                 case-by-case basis.
               </p>
             </div>
-
-            {/* File upload zone simulation */}
-            {/* <div className="mt-2">
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png"
-                onChange={handleFileChange}
-                className="hidden"
-              />
-
-              {!state.uploadedFile ? (
-                <div
-                  onDragOver={handleDragOver}
-                  onDragLeave={handleDragLeave}
-                  onDrop={handleDrop}
-                  onClick={() => !isUploading && fileInputRef.current?.click()}
-                  className={`border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center gap-3 cursor-pointer transition-all duration-200 ${
-                    isDragging
-                      ? "border-teal-500 bg-teal-50/15"
-                      : "border-slate-200 bg-slate-50/50 hover:bg-slate-50 hover:border-slate-300"
-                  }`}
-                >
-                  {isUploading ? (
-                    <>
-                      <Loader2 className="w-8 h-8 text-teal-600 animate-spin" />
-                      <p className="text-sm font-bold text-teal-900 text-center">
-                        Analyzing document format...
-                      </p>
-                      <p className="text-slate-400 text-xs text-center">
-                        Running verification checks
-                      </p>
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-8 h-8 text-slate-400" />
-                      <p className="text-sm font-bold text-slate-700 text-center">
-                        Upload Document to Validate Format
-                      </p>
-                      <p className="text-slate-400 text-xs text-center">
-                        Supported formats: PDF, JPG, PNG (Max 5MB)
-                      </p>
-                    </>
-                  )}
-                </div>
-              ) : (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="p-5 border border-emerald-200 bg-emerald-50/40 rounded-2xl flex items-center gap-4 text-emerald-900"
-                >
-                  <CheckCircle2 className="w-6 h-6 text-emerald-600 shrink-0" />
-                  <div className="flex-1 flex flex-col gap-0.5">
-                    <span className="font-bold text-sm">Document Uploaded!</span>
-                    <span className="text-xs leading-normal opacity-90">
-                      Our vault has successfully run verification checks and flagged no formatting errors.
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setState((s) => ({ ...s, uploadedFile: false }))}
-                    className="text-xs text-slate-400 hover:text-slate-600 underline"
-                  >
-                    Reset
-                  </button>
-                </motion.div>
-              )}
-          </div> */}
           </div>
         );
 

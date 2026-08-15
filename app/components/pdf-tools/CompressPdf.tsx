@@ -11,7 +11,7 @@ import {
   TrendingDown,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { Loader } from "@/components/ui/spinner";
+import FileUpload from "@/app/components/shared/FileUpload";
 
 interface CompressionResult {
   originalSize: number;
@@ -26,8 +26,6 @@ export default function Compress() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CompressionResult | null>(null);
   const [error, setError] = useState("");
-  const [isDragging, setIsDragging] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
@@ -35,49 +33,22 @@ export default function Compress() {
     setMounted(true);
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
+  const handleFileUpload = (fieldName: string, uploadedFile: File | File[] | null) => {
+    if (!uploadedFile || Array.isArray(uploadedFile)) return;
 
-      if (!selectedFile.name.toLowerCase().endsWith(".pdf")) {
-        setError(t("pdfProcessing.errors.invalidFile"));
-        return;
-      }
-
-      if (selectedFile.size > 100 * 1024 * 1024) {
-        setError(t("pdfProcessing.errors.tooLarge"));
-        return;
-      }
-
-      setFile(selectedFile);
-      setError("");
-      setResult(null);
+    if (!uploadedFile.name.toLowerCase().endsWith(".pdf")) {
+      setError(t("pdfProcessing.errors.invalidFile"));
+      return;
     }
-  };
 
-  const handleDrop = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const droppedFile = e.dataTransfer.files?.[0];
-    if (droppedFile?.type === "application/pdf") {
-      const dataTransfer = new DataTransfer();
-      dataTransfer.items.add(droppedFile);
-      if (fileInputRef.current) {
-        fileInputRef.current.files = dataTransfer.files;
-        const event = new Event("change", { bubbles: true });
-        fileInputRef.current.dispatchEvent(event);
-      }
+    if (uploadedFile.size > 100 * 1024 * 1024) {
+      setError(t("pdfProcessing.errors.tooLarge"));
+      return;
     }
-  };
 
-  const handleDragOver = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = (e: React.DragEvent<HTMLLabelElement>) => {
-    e.preventDefault();
-    setIsDragging(false);
+    setFile(uploadedFile);
+    setError("");
+    setResult(null);
   };
 
   const handleCompress = async () => {
@@ -157,69 +128,35 @@ export default function Compress() {
 
   return (
     <div className="w-full">
-      <div className="bg-gradient-to-r from-rahvana-primary to-rahvana-primary-dark p-6 md:p-10 text-white rounded-t-2xl">
-        <h1 className="text-3xl md:text-5xl font-bold text-center mb-2 md:mb-3">
+      <div className="from-rahvana-primary to-rahvana-primary-dark rounded-t-2xl bg-gradient-to-r p-6 text-white md:p-10">
+        <h1 className="mb-2 text-center text-3xl font-bold md:mb-3 md:text-5xl">
           {t("pdfProcessing.compress.title")}
         </h1>
       </div>
 
       <div className="p-6 md:p-12">
         {/* File Upload */}
+        {/* File Upload */}
         <div className="mb-6 md:mb-8">
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            {t("pdfProcessing.compress.selectLabel")}
-          </label>
-          <input
-            ref={fileInputRef}
-            type="file"
+          <FileUpload
+            label={t("pdfProcessing.compress.selectLabel")}
+            fieldName="compress-file"
+            onFileUpload={handleFileUpload}
             accept=".pdf"
-            onChange={handleFileChange}
-            className="hidden"
-            id="file-upload"
-            disabled={loading}
+            multiple={false}
+            variant="default"
+            title={t("pdfProcessing.compress.dropzone")}
+            buttonText="Browse files"
+            helperText="PDF files only • Max 100 MB"
+            showPreview={false}
           />
-          <label
-            htmlFor="file-upload"
-            onDrop={handleDrop}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            className={`block border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-              loading
-                ? "border-gray-300 bg-gray-50 cursor-not-allowed"
-                : isDragging
-                  ? "border-rahvana-primary bg-rahvana-primary-pale scale-[1.02] cursor-copy"
-                  : "border-rahvana-primary/40 hover:border-rahvana-primary hover:bg-rahvana-primary-pale/50 cursor-pointer"
-            }`}
-          >
-            <Upload
-              className={`mx-auto h-16 w-16 mb-3 ${file ? "text-rahvana-primary" : "text-gray-400"}`}
-            />
-            {file ? (
-              <div>
-                <p className="text-rahvana-primary font-semibold text-lg mb-1 truncate max-w-xs mx-auto">
-                  {file.name}
-                </p>
-                <p className="text-sm text-gray-500">{formatBytes(file.size)}</p>
-                <p className="text-xs text-gray-400 mt-2">
-                  {t("pdfProcessing.compress.changeFile")}
-                </p>
-              </div>
-            ) : (
-              <div>
-                <p className="text-gray-700 font-medium mb-1">
-                  {t("pdfProcessing.compress.dropzone")}
-                </p>
-                <p className="text-sm text-gray-500">{t("pdfProcessing.compress.pdffilesOnly")}</p>
-              </div>
-            )}
-          </label>
         </div>
 
         {/* Compress Button */}
         <button
           onClick={handleCompress}
           disabled={!file || loading}
-          className="w-full lg:w-1/2 mx-auto bg-rahvana-primary text-white py-4 rounded-xl font-semibold text-lg hover:bg-rahvana-primary-dark disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed disabled:shadow-none transition-all flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          className="bg-rahvana-primary hover:bg-rahvana-primary-dark mx-auto flex w-full transform items-center justify-center rounded-xl py-4 text-lg font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none lg:w-1/2"
         >
           {loading ? (
             <>{t("pdfProcessing.compress.compressing")}</>
@@ -233,12 +170,12 @@ export default function Compress() {
 
         {/* Error Message */}
         {error && (
-          <div className="mt-6 p-5 bg-red-50 border-l-4 border-red-500 rounded-lg">
+          <div className="mt-6 rounded-lg border-l-4 border-red-500 bg-red-50 p-5">
             <div className="flex items-start">
-              <AlertCircle className="h-6 w-6 text-red-500 mr-3 mt-0.5 shrink-0" />
+              <AlertCircle className="mt-0.5 mr-3 h-6 w-6 shrink-0 text-red-500" />
               <div>
-                <h3 className="text-red-800 font-semibold mb-1">Error</h3>
-                <p className="text-red-700 text-sm">{error}</p>
+                <h3 className="mb-1 font-semibold text-red-800">Error</h3>
+                <p className="text-sm text-red-700">{error}</p>
               </div>
             </div>
           </div>
@@ -246,53 +183,53 @@ export default function Compress() {
 
         {/* Success Result */}
         {result && (
-          <div className="mt-8 bg-white rounded-2xl border border-gray-100 shadow-lg overflow-hidden">
+          <div className="mt-8 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg">
             {/* Header */}
-            <div className="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4 flex items-center gap-3">
-              <div className="bg-white/20 p-2 rounded-full">
+            <div className="flex items-center gap-3 bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4">
+              <div className="rounded-full bg-white/20 p-2">
                 <FileCheck className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h3 className="text-white font-bold text-lg">
+                <h3 className="text-lg font-bold text-white">
                   {t("pdfProcessing.compress.success")}
                 </h3>
-                <p className="text-white/80 text-sm">Your PDF has been compressed successfully</p>
+                <p className="text-sm text-white/80">Your PDF has been compressed successfully</p>
               </div>
             </div>
             {/* Stats Grid */}
             <div className="p-6">
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
-                  <div className="flex items-center justify-center mb-2">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-center">
+                  <div className="mb-2 flex items-center justify-center">
                     <FileText className="h-4 w-4 text-gray-400" />
                   </div>
-                  <p className="text-gray-500 text-xs font-medium mb-1">
+                  <p className="mb-1 text-xs font-medium text-gray-500">
                     {t("pdfProcessing.compress.originalSize")}
                   </p>
-                  <p className="text-gray-800 font-bold text-lg">
+                  <p className="text-lg font-bold text-gray-800">
                     {formatBytes(result.originalSize)}
                   </p>
                 </div>
-                <div className="bg-gray-50 rounded-xl p-4 text-center border border-gray-100">
-                  <div className="flex items-center justify-center mb-2">
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-center">
+                  <div className="mb-2 flex items-center justify-center">
                     <Zap className="h-4 w-4 text-emerald-500" />
                   </div>
-                  <p className="text-gray-500 text-xs font-medium mb-1">
+                  <p className="mb-1 text-xs font-medium text-gray-500">
                     {t("pdfProcessing.compress.compressedSize")}
                   </p>
-                  <p className="text-emerald-600 font-bold text-lg">
+                  <p className="text-lg font-bold text-emerald-600">
                     {formatBytes(result.compressedSize)}
                   </p>
                 </div>
-                <div className="bg-emerald-50 rounded-xl p-4 text-center border border-emerald-100">
-                  <div className="flex items-center justify-center mb-2">
+                <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4 text-center">
+                  <div className="mb-2 flex items-center justify-center">
                     <TrendingDown className="h-4 w-4 text-emerald-600" />
                   </div>
-                  <p className="text-emerald-600 text-xs font-medium mb-1">
+                  <p className="mb-1 text-xs font-medium text-emerald-600">
                     {t("pdfProcessing.compress.spaceSaved")}
                   </p>
-                  <p className="text-emerald-700 font-bold text-2xl">{result.reduction}%</p>
-                  <p className="text-emerald-500 text-xs mt-1">
+                  <p className="text-2xl font-bold text-emerald-700">{result.reduction}%</p>
+                  <p className="mt-1 text-xs text-emerald-500">
                     {formatBytes(result.originalSize - result.compressedSize)}{" "}
                     {t("pdfProcessing.compress.saved")}
                   </p>
