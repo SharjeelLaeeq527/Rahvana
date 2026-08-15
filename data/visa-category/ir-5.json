@@ -1496,7 +1496,11 @@
               ],
               "button_label": "Create USCIS Account",
               "href": "https://myaccount.uscis.gov/create-account",
-              "note": "Opens USCIS account creation page in a new tab"
+              "note": "Opens USCIS account creation page in a new tab",
+              "return_note": {
+                "title": "USCIS portal opened in a new tab",
+                "body": "Create your USCIS account and then return here."
+              }
             },
             "secondary_actions": [
               {
@@ -7736,11 +7740,7 @@
           "display_order": 12,
           "visible_when": {
             "interviewOutcome": "221g",
-            "outcome221gSubtype": [
-              "docs_requested",
-              "further_review",
-              "both"
-            ]
+            "outcome221gSubtype": ["docs_requested", "further_review", "both"]
           },
           "actions": [
             "Monitor CEAC status weekly",

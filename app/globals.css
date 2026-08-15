@@ -170,7 +170,7 @@
 }
 
 .step-modal-spacing {
-  margin-top: 48px;
+  margin-top: 0px;
 }
 /* Chapter 1 Step Background Utility */
 @import "tailwindcss";

@@ -20,7 +20,7 @@ export const StepHeader: React.FC<StepHeaderProps> = ({
   isBeneficiaryTheme,
 }) => {
   return (
-    <div className="flex flex-col mb-8 mt-2 pt-6 md:pt-0 animate-in fade-in slide-in-from-top-4 duration-500">
+    <div className="flex flex-col mb-3.5 sm:mb-8 mt-0 pt-0 animate-in fade-in slide-in-from-top-4 duration-500">
       {/* Breadcrumbs */}
       {/* <div className="flex items-center gap-2 mb-4">
         <span className="text-[11px] font-bold uppercase tracking-widest text-[#636b97]">
@@ -37,7 +37,7 @@ export const StepHeader: React.FC<StepHeaderProps> = ({
       </div> */}
 
       {/* Main Title */}
-      <h1 className="text-[clamp(28px,4.5vw,38px)] font-semibold sm:font-black text-[#0c1b33] leading-tight tracking-tight mb-2">
+      <h1 className="text-[clamp(28px,4vw,36px)] font-bold text-[#0c1b33] leading-[1.15] tracking-tight mb-2">
         {stepName}
       </h1>
 

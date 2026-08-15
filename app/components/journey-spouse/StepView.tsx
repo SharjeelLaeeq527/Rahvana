@@ -1262,7 +1262,7 @@ export const StepView: React.FC<StepViewProps> = ({
         />
 
         {/* Page Shell */}
-        <div className="w-full max-w-[680px] px-[24px] pb-10 flex flex-col">
+        <div className="w-full max-w-[680px] px-[24px] pt-5 md:pt-8 pb-10 flex flex-col">
           {/* Step Header */}
           <StepHeader
             stepNumber={localIdx + 1}
@@ -1299,9 +1299,9 @@ export const StepView: React.FC<StepViewProps> = ({
           )}
 
           {/* Meta Chips */}
-          {tool.chips && (
-            <div className="flex flex-wrap gap-[7px] mb-8">
-              {tool.chips.map((chip: any, i: number) => (
+          {(tool.chips || currentStep.chips) && (
+            <div className="flex flex-wrap gap-[7px] mb-3.5 sm:mb-8">
+              {(tool.chips || currentStep.chips).map((chip: any, i: number) => (
                 <span
                   key={i}
                   className={`text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${
@@ -3054,7 +3054,7 @@ export const StepView: React.FC<StepViewProps> = ({
             {currentStep.step_type === "quest" ? (
               <div
                 //              className={`w-full min-h-[600px] flex flex-col items-center${isChapter2 ? " ch2step-bg" : ""}${isChapter3 ? " ch3step-bg" : ""}`}
-                className={`w-full min-h-[600px] flex flex-col items-center`}
+                className={`w-full min-h-0 flex flex-col items-center`}
               >
                 <QuestRenderer
                   quest={currentStep.quest_data as unknown as QuestSuite}
@@ -3691,7 +3691,7 @@ export const StepView: React.FC<StepViewProps> = ({
 
                     return (
                       <div className="w-full max-w-[740px] px-0 mb-10">
-                        <h1 className="text-[#28151C] text-4xl font-extrabold mb-2">Gather Required Documents</h1>
+                        <h1 className="text-[#0c1b33] text-[clamp(28px,4vw,36px)] font-bold mb-2">Gather Required Documents</h1>
       <p className="text-[#8284BF] text-[14px] sm:text-[16px] mb-4 leading-relaxed">
         Prepare the documents needed for your petition. Open each item to see exactly what is
         needed, where to get it, and what to watch out for.
@@ -3786,23 +3786,25 @@ export const StepView: React.FC<StepViewProps> = ({
               </>
             ) : currentStep.step_type === "filing" ? (
               <div className="w-full flex flex-col items-center animate-in fade-in slide-in-from-bottom-6 duration-1000">
-                <div className="flex flex-col w-full max-w-[660px] pb-[35px]">
+                <div className="flex flex-col w-full max-w-[660px] pt-5 md:pt-8 pb-[35px]">
                   <h1
                     className="
-                mt-8 sm:mt-10 md:mt-0
-                text-[clamp(26px,4vw,34px)]
-                font-black
-                text-[#0f1f38]
-                leading-[1.2]
+                mt-0
+                text-[clamp(28px,4vw,36px)]
+                font-bold
+                text-[#0c1b33]
+                leading-[1.15]
+                tracking-tight
+                mb-1
                 "
                   >
                     {currentStep.step_name}
                   </h1>
-                  <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-[28px] max-w-[500px]">
+                  <p className="text-[#3a4f63] text-[15px] leading-[1.65] mb-3.5 sm:mb-[28px] max-w-[500px]">
                     {currentStep.filing_data?.subtitle || currentStep.step_description}
                   </p>
 
-                  <div className="flex flex-wrap gap-[8px] mb-[36px]">
+                  <div className="flex flex-wrap gap-[8px] mb-3.5 sm:mb-8">
                     <span className="text-[11px] font-semibold tracking-[0.06em] uppercase px-[12px] py-[5px] rounded-full bg-[#e8f1fb] text-primary/80 border border-[#d0e4f7]">
                       Petitioner
                     </span>

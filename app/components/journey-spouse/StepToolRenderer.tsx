@@ -47,7 +47,7 @@ export const AwaitingReviewStep: React.FC<{
   data: typeof AWAITING_REVIEW_DATA;
 }> = ({ data }) => {
   return (
-    <div className="w-full max-w-[720px] px-[24px] pt-4 md:pt-8 pb-[96px] flex flex-col mx-auto">
+    <div className="w-full max-w-[720px] px-[24px] pt-5 md:pt-8 pb-[96px] flex flex-col mx-auto">
       {/* <div className="flex items-center gap-[8px] mb-[6px] animate-in fade-in slide-in-from-top-2 duration-300">
         <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097]">
           {data.eyebrow.chapter}
@@ -57,13 +57,13 @@ export const AwaitingReviewStep: React.FC<{
           {data.eyebrow.step}
         </span>
       </div> */}
-      <h1 className="text-[clamp(26px,4vw,34px)] font-black text-[#0c1b33] mb-[10px]">
+      <h1 className="text-[clamp(28px,4vw,36px)] font-bold text-[#0c1b33] leading-[1.15] tracking-tight mb-[10px]">
         {data.title}
       </h1>
-      <p className="text-[#3a4f63] text-[15px] leading-[1.7] mb-[22px] max-w-[500px]">
+      <p className="text-[#3a4f63] text-[15px] leading-[1.7] mb-3.5 sm:mb-[22px] max-w-[500px]">
         {data.description}
       </p>
-      <div className="flex flex-wrap gap-[7px] mb-[32px]">
+      <div className="flex flex-wrap gap-[7px] mb-3.5 sm:mb-[32px]">
         {data.chips.map((chip, i) => (
           <span
             key={i}
@@ -516,11 +516,11 @@ export const MedicalExamTool: React.FC<{
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
-      <div className="flex gap-1.5 flex-wrap mb-8">
+      <div className="flex gap-1.5 flex-wrap mb-3.5 sm:mb-8">
         {data.chips.map((chip: any, i: number) => (
           <span
             key={i}
-            className={`text-[10px] font-bold uppercase tracking-[0.06em] px-3 py-1.5 rounded-full border ${chip.type === "med" ? "bg-teal-50 text-teal-700 border-teal-200" : "bg-blue-50 text-blue-700 border-blue-100"}`}
+            className={`text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${chip.type === "med" ? "bg-teal-50 text-teal-700 border-teal-200" : "bg-blue-50 text-blue-700 border-blue-100"}`}
           >
             {chip.label}
           </span>
@@ -796,11 +796,11 @@ export const PolioCertificateTool: React.FC<{
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380">
-      <div className="flex gap-1.5 flex-wrap mb-8">
+      <div className="flex gap-1.5 flex-wrap mb-3.5 sm:mb-8">
         {data.chips.map((chip: any, i: number) => (
           <span
             key={i}
-            className={`text-[10px] font-bold uppercase tracking-[0.06em] px-3 py-1.5 rounded-full border ${chip.type === "med" ? "bg-teal-50 text-teal-700 border-teal-200" : "bg-amber-50 text-amber-700 border-amber-100"}`}
+            className={`text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${chip.type === "med" ? "bg-teal-50 text-teal-700 border-teal-200" : "bg-amber-50 text-amber-700 border-amber-100"}`}
           >
             {chip.label}
           </span>
@@ -1003,11 +1003,11 @@ export const PoliceClearanceTool: React.FC<{
 
   return (
     <div className="flex flex-col animate-in fade-in slide-in-from-bottom-2 duration-380 shadow-xs border p-6 rounded-2xl bg-white">
-      <div className="flex items-center gap-1.5 flex-wrap mb-8">
+      <div className="flex items-center gap-1.5 flex-wrap mb-3.5 sm:mb-8">
         {data.chips.map((chip: any, i: number) => (
           <span
             key={i}
-            className={`text-[10px] font-bold uppercase tracking-[0.06em] px-3 py-1.5 rounded-full border ${chip.type === "pcc" ? "bg-blue-50 text-blue-700 border-blue-100" : "bg-purple-50 text-purple-700 border-purple-100"}`}
+            className={`text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border ${chip.type === "pcc" ? "bg-blue-50 text-blue-700 border-blue-100" : "bg-purple-50 text-purple-700 border-purple-100"}`}
           >
             {chip.label}
           </span>

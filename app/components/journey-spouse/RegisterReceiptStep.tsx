@@ -1036,7 +1036,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
           color: "#28151c",
         }}
       >
-        Always confirm the receipt number with the user before turning on tracking.
+        Always confirm the receipt number with the user before enabling tracking.
       </div>
       <div className="flex gap-2 justify-end">
         <button

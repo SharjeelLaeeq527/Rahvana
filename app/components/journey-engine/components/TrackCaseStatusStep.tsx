@@ -145,14 +145,14 @@ const TrackCaseStatusStep: React.FC<any> = ({
   // MetaChips
   function MetaChips() {
     return (
-      <div className="flex gap-2 flex-wrap mb-3 sm:mb-4 accent-rose">
-        <span className="chip chip-role bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
+      <div className="flex gap-[7px] flex-wrap mb-3 sm:mb-5 accent-rose">
+        <span className="chip chip-role bg-[#e8f1fb] text-[#2d4a6e] border border-[#d0e4f7] text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full">
           Petitioner
         </span>
-        <span className="chip chip-path bg-[#fff7ed] text-[#b45309] border border-[#fed7aa] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
+        <span className="chip chip-path bg-[#fff7ed] text-[#b45309] border border-[#fed7aa] text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full">
           Online Filing
         </span>
-        <span className="chip chip-track bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2] text-[11px] font-semibold uppercase px-3 py-1 rounded-full">
+        <span className="chip chip-track bg-[#f3f0fb] text-[#4a2d8a] border border-[#c9bef2] text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full">
           USCIS Tracking
         </span>
       </div>
@@ -163,21 +163,12 @@ const TrackCaseStatusStep: React.FC<any> = ({
     // <div className="min-h-screen w-full ch1step-bg">
     <div className="min-h-screen w-full">
       {/* CHANGE 1: px-4 py-8 on mobile, md:px-6 md:py-12 on desktop */}
-      <div className="max-w-[760px] mx-auto px-4 py-8 md:px-6 md:py-12 flex flex-col gap-3 step step-modal-spacing">
-        {/* Title & Desc */}
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6b8097]">
-            Chapter 1 · USCIS Petition Filing
-          </span>
-          <span className="text-[11px] text-[#b8d4f0]">›</span>
-          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#6b8097]">
-            Monitor USCIS Case Status
-          </span>
-        </div>
-        <h1 className="page-title text-[clamp(28px,4.5vw,38px)] text-[#0c1b33] leading-[1.12] tracking-tight mb-1 font-bold sm:font-black">
+      <div className="max-w-[760px] mx-auto px-4 pt-5 pb-4 md:px-6 md:py-8 flex flex-col step">
+        
+        <h1 className="page-title text-[clamp(28px,4vw,36px)] font-bold text-[#0c1b33] leading-[1.15] tracking-tight mb-1">
           Monitor USCIS Case Status
         </h1>
-        <p className="page-desc text-[15px] text-[#3a4f63] leading-[1.72] max-w-[620px] mb-3">
+        <p className="page-desc text-[15px] text-[#3a4f63] leading-[1.72] max-w-[620px] mb-2.5 sm:mb-4">
           Stay prepared while USCIS reviews your case. Rahvana keeps the tracking context in one
           place, explains what the current status means, and gives you useful next-step prep so the
           waiting period does not become dead time.

@@ -227,7 +227,7 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
 
   return (
     <div
-      className={`flex flex-col gap-[16px] sm:gap-[22px] animate-in fade-in slide-in-from-bottom-2 duration-360 w-full text-[var(--rv-ink)] min-h-screen`}
+      className={`flex flex-col gap-3 sm:gap-4 animate-in fade-in slide-in-from-bottom-2 duration-360 w-full text-[var(--rv-ink)] min-h-screen`}
     >
       {/* LAUNCH MODULE */}
       <section

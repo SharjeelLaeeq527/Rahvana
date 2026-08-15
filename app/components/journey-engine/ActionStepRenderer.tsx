@@ -1295,7 +1295,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         .asr-spin { animation: spin 1s linear infinite; }
       `}</style>
       {/* Main Content */}
-      <div className="max-w-[660px] w-full mx-auto px-2 sm:px-4 md:px-8 pt-1 sm:pt-10 md:pt-3 pb-8 md:pb-12 flex flex-col gap-3 step step-modal-spacing">
+      <div className="max-w-[660px] w-full mx-auto px-2 sm:px-4 md:px-8 pt-5 md:pt-3 pb-8 md:pb-12 flex flex-col step">
         {/* Eyebrow for Paper Filing Path steps */}
         {/* {(step.step_key === "step_1_11" || 
           step.step_key === "step_1_12" || 
@@ -1315,30 +1315,24 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         )} */}
         {/* Title */}
         <h1
-          className={`page-title text-[clamp(28px,4.5vw,38px)] leading-[1.12] tracking-tight mb-1 font-bold sm:font-black ${isChapter1 ? "text-[#0c1b33]" : isChapter2 ? "text-[#27192e]" : "text-[#0c1b33]"}`}
+          className={`page-title text-[clamp(28px,4vw,36px)] font-bold leading-[1.15] tracking-tight mb-1 ${isChapter1 ? "text-[#0c1b33]" : isChapter2 ? "text-[#27192e]" : "text-[#0c1b33]"}`}
         >
           {step.step_name}
         </h1>
 
         {/* Subtitle */}
-        <p className="page-desc text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-6 text-[#3a4f63]">
+        <p className="page-desc text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-2.5 sm:mb-4 text-[#3a4f63]">
           {step.step_description}
         </p>
 
         {/* Chips - Pastel colors */}
         {actionData.chips && actionData.chips.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-6">
+          <div className="flex flex-wrap gap-2 mb-3 sm:mb-5">
             {actionData.chips.map((chip, idx) => (
               <span
                 key={idx}
+                className="text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border whitespace-nowrap"
                 style={{
-                  fontSize: "11px",
-                  fontWeight: "bold",
-                  textTransform: "uppercase",
-                  padding: "6px 14px",
-                  borderRadius: "999px",
-                  border: "1px solid",
-                  whiteSpace: "nowrap",
                   backgroundColor: isChapter1 ? "#f3f0fb" : isChapter2 ? "#f4e6f3" : "#f0f1fb",
                   borderColor: isChapter1 ? "#c9bef2" : isChapter2 ? "#d5abd2" : "#d0e4f7",
                   color: isChapter1 ? "#4a2d8a" : isChapter2 ? "#520a50" : "#2d4a6e",
