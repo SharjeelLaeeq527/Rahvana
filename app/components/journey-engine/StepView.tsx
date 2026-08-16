@@ -2,7 +2,7 @@
 // Dynamic refactoring in progress
 "use client";
 
-import React, { useEffect, useMemo, useState, useCallback } from "react";
+import React, { useEffect, useMemo, useState, useCallback, useRef } from "react";
 import { E, msg } from "@/lib/errors";
 import {
   ArrowLeft,
@@ -297,6 +297,19 @@ export const StepView: React.FC<StepViewProps> = ({
   useEffect(() => {
     fetchUserJourneysCached().catch(() => {});
   }, []);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const customScrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTop = 0;
+    }
+    if (customScrollContainerRef.current) {
+      customScrollContainerRef.current.scrollTop = 0;
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [sId, state.currentStep, state.currentStage]);
   // Add Evidence Note modal state
 
   const { user } = useAuth();
@@ -2734,12 +2747,16 @@ export const StepView: React.FC<StepViewProps> = ({
       className={`relative flex h-full flex-1 flex-col overflow-hidden font-sans ${customRenderer ? "bg-slate-50" : ""}`}
     >
       {customRenderer ? (
-        <div className="scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[100px]">
+        <div
+          ref={customScrollContainerRef}
+          className="scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[100px]"
+        >
           {customRenderer}
           {renderCitationsSection()}
         </div>
       ) : (
         <div
+          ref={scrollContainerRef}
           className={`scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[100px] ${
             currentStep.step_type === "quest"
               ? ""
@@ -4169,26 +4186,26 @@ export const StepView: React.FC<StepViewProps> = ({
       {isCitationsModalOpen && (
         <div className="animate-in fade-in fixed inset-0 z-300 flex items-center justify-center bg-black/40 p-5 backdrop-blur-xs duration-200">
           <div className="animate-in slide-in-from-bottom-4 w-full max-w-[500px] rounded-[16px] bg-white shadow-[0_24px_80px_rgba(12,27,51,0.32),0_4px_20px_rgba(12,27,51,0.16)] duration-300">
-            <div className="mb-4 flex items-start justify-between p-6 pb-0">
-              <div className="flex items-center gap-2">
+            <div className="mb-2 sm:mb-2 flex items-center justify-between gap-3 p-4 sm:p-5 pb-0 sm:pb-0">
+              <div className="flex items-center gap-2.5">
                 <Book
-                  className="text-primary h-[20px] w-[20px] shrink-0 animate-pulse"
+                  className="text-primary h-5 w-5 shrink-0"
                   strokeWidth={2.5}
                 />
-                <h2 className="text-[20px] font-bold text-[#0c1b33]">
-                  Official References & Citations
+                <h2 className="text-[17px] sm:text-[20px] font-bold leading-snug text-[#0c1b33]">
+                  Official References &amp; Citations
                 </h2>
               </div>
               <button
                 onClick={() => setIsCitationsModalOpen(false)}
-                className="flex h-[30px] w-[30px] cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] transition-all outline-none hover:bg-[#d0e4f7]"
+                className="flex h-8 w-8 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] outline-none transition-all hover:bg-[#d0e4f7] hover:text-[#0c1b33] active:scale-95"
               >
-                <X size={13} className="text-[#3a4f63]" />
+                <X size={14} />
               </button>
             </div>
 
-            <div className="p-6 pt-0">
-              <div className="mb-4 h-px bg-[#d0e4f7]" />
+            <div className="p-4 sm:p-5 pt-0">
+              <div className="mb-3 sm:mb-3 h-px bg-[#d0e4f7]" />
               <div className="flex max-h-[60vh] flex-col gap-3 overflow-y-auto pr-1">
                 {(currentStep.citations || []).map((cite, index) => (
                   <a
