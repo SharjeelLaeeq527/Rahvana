@@ -85,9 +85,18 @@ export function DocumentTableView({
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
+  // Mobile-only: reveals the columns hidden on small screens (Required For, File Info, Validity)
+  const [expandedDetails, setExpandedDetails] = useState<Record<string, boolean>>({});
 
   const toggleRow = (id: string) => {
     setExpandedRows((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const toggleDetails = (id: string) => {
+    setExpandedDetails((prev) => ({
       ...prev,
       [id]: !prev[id],
     }));
@@ -191,6 +200,7 @@ export function DocumentTableView({
               const hasVariants = docVariants.length > 1;
               const showVersionHistoryTray = hasVariants && !(doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-"));
               const isExpanded = expandedRows[doc.id] && showVersionHistoryTray;
+              const isDetailsOpen = !!expandedDetails[doc.id];
 
               const docName =
                 t(`documentVaultPage.documents.${doc.id}.name`) !==
@@ -394,7 +404,21 @@ export function DocumentTableView({
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
+                      <div className="flex justify-end items-center gap-1">
+                        {/* Mobile-only: reveal the hidden detail columns */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 lg:hidden text-muted-foreground data-[open=true]:text-primary data-[open=true]:bg-primary/10"
+                          data-open={isDetailsOpen}
+                          aria-expanded={isDetailsOpen}
+                          aria-label={t("documentVaultPage.components.tableView.columns.fileInfo")}
+                          onClick={() => toggleDetails(doc.id)}
+                        >
+                          <ChevronDown
+                            className={`w-4 h-4 transition-transform duration-200 ${isDetailsOpen ? "rotate-180" : ""}`}
+                          />
+                        </Button>
                         {!latestDoc ? (
                           <>
                             <Button
@@ -555,6 +579,97 @@ export function DocumentTableView({
                       </div>
                     </TableCell>
                   </TableRow>
+
+                  {/* Mobile-only details drawer: brings back Required For / File Info / Validity */}
+                  {isDetailsOpen && (
+                    <TableRow className="lg:hidden border-l-4 border-l-primary/30 bg-muted/10 hover:bg-muted/10">
+                      <TableCell colSpan={6} className="p-0">
+                        <div className="grid grid-cols-1 gap-3 px-4 py-3 animate-in slide-in-from-top-1 duration-200 sm:grid-cols-3">
+                          {/* Required For */}
+                          <div className="flex flex-col gap-1.5">
+                            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                              <Package className="w-3 h-3" />
+                              {t("documentVaultPage.components.tableView.columns.requiredFor")}
+                            </span>
+                            <div className="flex flex-wrap gap-1">
+                              {doc.roles.length ? (
+                                doc.roles.map((role) => (
+                                  <Badge
+                                    key={role}
+                                    variant="outline"
+                                    className="text-[10px] uppercase tracking-wider py-0 px-1.5 font-bold border-muted-foreground/20 text-muted-foreground"
+                                  >
+                                    {t(`documentVaultPage.roles.${role}`)}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-xs text-muted-foreground">-</span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* File Info */}
+                          <div className="flex flex-col gap-1.5">
+                            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                              <FileArchive className="w-3 h-3" />
+                              {t("documentVaultPage.components.tableView.columns.fileInfo")}
+                            </span>
+                            {latestDoc ? (
+                              <div className="space-y-0.5">
+                                <div className="text-xs font-medium break-all">
+                                  {getShortDisplayName(latestDoc.standardizedFilename, doc.name)}
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
+                                  <span>{formatFileSize(latestDoc.fileSize, t)}</span>
+                                  {!(doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-")) && (
+                                    <>
+                                      <span>•</span>
+                                      <span className="font-bold text-primary">
+                                        v{latestDoc.displayVersion} (Latest)
+                                      </span>
+                                    </>
+                                  )}
+                                  {latestDoc.hasCompressedVersion && (
+                                    <Badge className="h-4 px-1 text-[9px] bg-blue-100 text-blue-700 border-none hover:bg-blue-100">
+                                      {t("documentVaultPage.components.tableView.zip")}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-xs italic text-muted-foreground">
+                                {t("documentVaultPage.components.tableView.noFileUploaded")}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Validity */}
+                          <div className="flex flex-col gap-1.5">
+                            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                              <Clock className="w-3 h-3" />
+                              {t("documentVaultPage.components.tableView.columns.validity")}
+                            </span>
+                            {latestDoc?.expirationDate ? (
+                              <div
+                                className={`flex items-center gap-1.5 text-xs ${
+                                  getExpirationStatusColor(latestDoc) === "red"
+                                    ? "text-destructive font-medium"
+                                    : getExpirationStatusColor(latestDoc) === "yellow"
+                                      ? "text-amber-600"
+                                      : "text-emerald-600"
+                                }`}
+                              >
+                                <Clock className="w-3 h-3" />
+                                {formatExpirationDate(latestDoc.expirationDate, t)}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">-</span>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
 
                   {/* Expanded Variants Row */}
                   {isExpanded && showVersionHistoryTray && (

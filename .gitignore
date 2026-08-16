@@ -200,3 +200,6 @@ nul
 *.pth
 *.ckpt
 *.onnx
+
+# Uploaded user documents (contain PII - must never be committed)
+/uploads/

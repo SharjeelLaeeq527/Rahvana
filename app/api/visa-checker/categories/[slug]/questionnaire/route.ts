@@ -5,14 +5,15 @@ import { E, msg } from "@/lib/errors";
 export async function GET(request: NextRequest, { params }: { params: { slug: string } }) {
   try {
     const { slug } = params;
-    const filePath = path.join(
-      process.cwd(),
-      "data",
-      "visa-checker",
-      "categories",
-      slug,
-      "questionnaire.json"
-    );
+    // Prevent path traversal: strip any directory components from the slug and
+    // confirm the resolved path stays inside the categories base directory.
+    const safeSlug = path.basename(slug);
+    const baseDir = path.join(process.cwd(), "data", "visa-checker", "categories");
+    const filePath = path.join(baseDir, safeSlug, "questionnaire.json");
+
+    if (!path.resolve(filePath).startsWith(path.resolve(baseDir) + path.sep)) {
+      return NextResponse.json({ error: msg(E.TOOL_INTERVIEW_SELECT_CATEGORY) }, { status: 404 });
+    }
 
     if (!fs.existsSync(filePath)) {
       return NextResponse.json({ error: msg(E.TOOL_INTERVIEW_SELECT_CATEGORY) }, { status: 404 });
