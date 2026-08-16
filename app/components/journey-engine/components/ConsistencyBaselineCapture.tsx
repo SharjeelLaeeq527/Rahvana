@@ -117,29 +117,29 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
         style={{ background: "#fafaf9", borderColor: "#e7e5e4" }}
       >
         {/* Header */}
-        <div className="flex items-start gap-3 mb-4">
-          <div
-            className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
-            style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}
-          >
-            <CalendarDays size={18} color="#1e40af" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-[14px] sm:text-[15px] font-bold text-[#1c1917] leading-snug">
+        <div className="mb-4">
+          <div className="mb-2 flex items-center gap-3">
+            <div
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px]"
+              style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}
+            >
+              <CalendarDays size={18} color="#1e40af" />
+            </div>
+            <h3 className="text-[14px] leading-snug font-bold text-[#1c1917] sm:text-[15px]">
               Save key dates for consistency checking
             </h3>
-            <p className="text-[12px] text-[#57534e] mt-0.5 leading-relaxed">
-              Saving these here lets Rahvana detect date-driven risk patterns (e.g., short marriage
-              duration, age gap) and cross-check the same values against DS-260 and I-864 later.
-              Independent of the I-130 form data.
-            </p>
           </div>
+          <p className="text-[12px] leading-relaxed text-[#57534e]">
+            Saving these here lets Rahvana detect date-driven risk patterns (e.g., short marriage
+            duration, age gap) and cross-check the same values against DS-260 and I-864 later.
+            Independent of the I-130 form data.
+          </p>
         </div>
 
         {/* Fields */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
+        <div className="mb-3 grid grid-cols-1 gap-3 sm:grid-cols-3">
           <div className="flex flex-col gap-1">
-            <label className="text-[10.5px] font-semibold uppercase tracking-wider text-[#57534e]">
+            <label className="text-[10.5px] font-semibold tracking-wider text-[#57534e] uppercase">
               Marriage date
             </label>
             <input
@@ -147,12 +147,12 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
               max={TODAY}
               value={marriageDate}
               onChange={(e) => setMarriageDate(e.target.value)}
-              className="rounded-md px-3 py-2 text-[13px] outline-none border bg-white"
+              className="w-full rounded-md border bg-white px-3 py-2 text-[13px] outline-none"
               style={{ borderColor: "#d6d3d1" }}
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-[10.5px] font-semibold uppercase tracking-wider text-[#57534e]">
+            <label className="text-[10.5px] font-semibold tracking-wider text-[#57534e] uppercase">
               Petitioner DOB
             </label>
             <input
@@ -160,12 +160,12 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
               max={TODAY}
               value={petitionerDob}
               onChange={(e) => setPetitionerDob(e.target.value)}
-              className="rounded-md px-3 py-2 text-[13px] outline-none border bg-white"
+              className="w-full rounded-md border bg-white px-3 py-2 text-[13px] outline-none"
               style={{ borderColor: "#d6d3d1" }}
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label className="text-[10.5px] font-semibold uppercase tracking-wider text-[#57534e]">
+            <label className="text-[10.5px] font-semibold tracking-wider text-[#57534e] uppercase">
               Beneficiary DOB
             </label>
             <input
@@ -173,7 +173,7 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
               max={TODAY}
               value={beneficiaryDob}
               onChange={(e) => setBeneficiaryDob(e.target.value)}
-              className="rounded-md px-3 py-2 text-[13px] outline-none border bg-white"
+              className="w-full rounded-md border bg-white px-3 py-2 text-[13px] outline-none"
               style={{ borderColor: "#d6d3d1" }}
             />
           </div>
@@ -185,7 +185,7 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
             type="button"
             onClick={handleSave}
             disabled={!marriageDate && !petitionerDob && !beneficiaryDob}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-[12.5px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
             style={{ background: "#0e1e38" }}
           >
             {justSaved ? <Check size={14} /> : <Save size={14} />}
@@ -203,7 +203,7 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
           <div className="mt-4 flex flex-col gap-2">
             <div className="flex items-center gap-2">
               <ShieldAlert size={14} color="#991b1b" />
-              <span className="text-[11.5px] font-semibold uppercase tracking-wider text-[#991b1b]">
+              <span className="text-[11.5px] font-semibold tracking-wider text-[#991b1b] uppercase">
                 {allFlagsCount} date-driven advisor{allFlagsCount === 1 ? "y" : "ies"}
               </span>
             </div>
@@ -218,22 +218,22 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
               return (
                 <div
                   key={flag.id}
-                  className="rounded-[10px] border p-3 flex items-start gap-3"
+                  className="flex items-start gap-3 rounded-[10px] border p-3"
                   style={{ background: bg, borderColor: border }}
                 >
-                  <Icon size={16} className="shrink-0 mt-0.5" />
+                  <Icon size={16} className="mt-0.5 shrink-0" />
                   <div className="min-w-0">
                     <h5
-                      className="text-[12.5px] font-semibold leading-snug"
+                      className="text-[12.5px] leading-snug font-semibold"
                       style={{ color: titleColor }}
                     >
                       {flag.title}
                     </h5>
-                    <p className="text-[12px] mt-1 leading-relaxed" style={{ color: fg }}>
+                    <p className="mt-1 text-[12px] leading-relaxed" style={{ color: fg }}>
                       {flag.advisory}
                     </p>
                     <p
-                      className="text-[10.5px] mt-1.5 leading-relaxed italic opacity-80"
+                      className="mt-1.5 text-[10.5px] leading-relaxed italic opacity-80"
                       style={{ color: fg }}
                     >
                       Source: {flag.source_basis}
@@ -245,22 +245,22 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
 
             {gapAdvisory && (
               <div
-                className="rounded-[10px] border p-3 flex items-start gap-3"
+                className="flex items-start gap-3 rounded-[10px] border p-3"
                 style={{ background: "#fffbeb", borderColor: "#fde68a" }}
               >
-                <AlertTriangle size={16} className="shrink-0 mt-0.5" color="#92400e" />
+                <AlertTriangle size={16} className="mt-0.5 shrink-0" color="#92400e" />
                 <div className="min-w-0">
                   <h5
-                    className="text-[12.5px] font-semibold leading-snug"
+                    className="text-[12.5px] leading-snug font-semibold"
                     style={{ color: "#92400e" }}
                   >
                     {gapAdvisory.title}
                   </h5>
-                  <p className="text-[12px] mt-1 leading-relaxed" style={{ color: "#78350f" }}>
+                  <p className="mt-1 text-[12px] leading-relaxed" style={{ color: "#78350f" }}>
                     {gapAdvisory.advisory}
                   </p>
                   <p
-                    className="text-[10.5px] mt-1.5 leading-relaxed italic opacity-80"
+                    className="mt-1.5 text-[10.5px] leading-relaxed italic opacity-80"
                     style={{ color: "#78350f" }}
                   >
                     Source: {gapAdvisory.source_basis}
@@ -271,7 +271,7 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
           </div>
         )}
 
-        <p className="text-[10.5px] text-[#78716c] mt-3 leading-relaxed italic">
+        <p className="mt-3 text-[10.5px] leading-relaxed text-[#78716c] italic">
           Advisory only, not legal advice. Rahvana stores these values separately from the I-130
           form data.
         </p>

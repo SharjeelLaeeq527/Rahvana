@@ -120,23 +120,23 @@ export function Ds260BaselineCapture({
         style={{ background: "#fafaf9", borderColor: "#e7e5e4" }}
       >
         {/* Header */}
-        <div className="flex items-start gap-3 mb-4">
-          <div
-            className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
-            style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}
-          >
-            <CalendarDays size={18} color="#1e40af" />
-          </div>
-          <div className="flex-1 min-w-0">
+        <div className="mb-4">
+          <div className="flex items-center gap-3 mb-2">
+            <div
+              className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
+              style={{ background: "#eff6ff", border: "1px solid #bfdbfe" }}
+            >
+              <CalendarDays size={18} color="#1e40af" />
+            </div>
             <h3 className="text-[14px] sm:text-[15px] font-bold text-[#1c1917] leading-snug">
               Confirm these dates match your DS-260
             </h3>
-            <p className="text-[12px] text-[#57534e] mt-0.5 leading-relaxed">
-              Enter the dates exactly as you put them on the DS-260. Rahvana compares them against
-              what you filed on the I-130, any mismatch between the two forms is flagged so you can
-              correct it before submitting. Independent of the DS-260 form data.
-            </p>
           </div>
+          <p className="text-[12px] text-[#57534e] leading-relaxed">
+            Enter the dates exactly as you put them on the DS-260. Rahvana compares them against
+            what you filed on the I-130, any mismatch between the two forms is flagged so you can
+            correct it before submitting. Independent of the DS-260 form data.
+          </p>
         </div>
 
         {/* If no I-130 baseline yet, tell the user to capture it first */}
@@ -164,7 +164,7 @@ export function Ds260BaselineCapture({
               max={TODAY}
               value={marriageDate}
               onChange={(e) => setMarriageDate(e.target.value)}
-              className="rounded-md px-3 py-2 text-[13px] outline-none border bg-white"
+              className="w-full rounded-md px-3 py-2 text-[13px] outline-none border bg-white"
               style={{ borderColor: "#d6d3d1" }}
             />
             {i130Baseline?.marriageDate && (
@@ -182,7 +182,7 @@ export function Ds260BaselineCapture({
               max={TODAY}
               value={petitionerDob}
               onChange={(e) => setPetitionerDob(e.target.value)}
-              className="rounded-md px-3 py-2 text-[13px] outline-none border bg-white"
+              className="w-full rounded-md px-3 py-2 text-[13px] outline-none border bg-white"
               style={{ borderColor: "#d6d3d1" }}
             />
             {i130Baseline?.petitionerDateOfBirth && (
@@ -200,7 +200,7 @@ export function Ds260BaselineCapture({
               max={TODAY}
               value={beneficiaryDob}
               onChange={(e) => setBeneficiaryDob(e.target.value)}
-              className="rounded-md px-3 py-2 text-[13px] outline-none border bg-white"
+              className="w-full rounded-md px-3 py-2 text-[13px] outline-none border bg-white"
               style={{ borderColor: "#d6d3d1" }}
             />
             {i130Baseline?.beneficiaryDateOfBirth && (
