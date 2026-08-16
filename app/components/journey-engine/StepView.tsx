@@ -3907,15 +3907,14 @@ export const StepView: React.FC<StepViewProps> = ({
                             setQuizAnswers({});
                             setQuizResult(null);
                           }}
-                          className="hover:border-primary hover:text-primary hover:bg-primary/[0.12] group flex w-full items-center justify-center gap-[9px] rounded-[14px] border-[1.5px] border-[#d0e4f7] bg-transparent p-[14px_24px] text-[14px] font-medium text-[#3a4f63] transition-all"
+                          className="hover:border-primary hover:text-primary hover:bg-primary/[0.08] group flex self-center max-w-full items-center justify-center gap-2 sm:gap-[9px] rounded-[12px] sm:rounded-[14px] border-[1.5px] border-[#d0e4f7] bg-white sm:bg-transparent px-4 py-2.5 sm:px-6 sm:py-3 text-[12.5px] sm:text-[14px] font-medium text-[#3a4f63] transition-all active:scale-[0.99]"
                         >
                           <div
-                            className="flex h-[20px] w-[20px] shrink-0 items-center justify-center border-[1.5px] border-current text-[11px] font-bold"
-                            style={{ borderRadius: "50%" }}
+                            className="flex h-[18px] w-[18px] sm:h-[20px] sm:w-[20px] shrink-0 items-center justify-center rounded-full border-[1.5px] border-current text-[10px] sm:text-[11px] font-bold"
                           >
                             ?
                           </div>
-                          <span>Not sure? Help me choose the right method</span>
+                          <span className="text-center leading-snug">Not sure? Help me choose the right method</span>
                         </button>
                       </div>
 
