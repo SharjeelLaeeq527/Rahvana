@@ -180,12 +180,12 @@ export function ConsistencyBaselineCapture({ baseline, onSave }: ConsistencyBase
         </div>
 
         {/* Save button */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:gap-3">
           <button
             type="button"
             onClick={handleSave}
             disabled={!marriageDate && !petitionerDob && !beneficiaryDob}
-            className="inline-flex items-center gap-1.5 rounded-md px-4 py-2 text-[12.5px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md px-4 py-2 text-[12.5px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50 w-full sm:w-auto"
             style={{ background: "#0e1e38" }}
           >
             {justSaved ? <Check size={14} /> : <Save size={14} />}
