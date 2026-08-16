@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { Crop, Check, RotateCcw, RotateCw, X, Info } from "lucide-react";
+import { Check, RotateCcw, RotateCw, X, Info, SlidersHorizontal } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import * as Errors from "@/lib/errors";
+import domtoimage from "dom-to-image-more";
 
 interface CropBox {
   x: number;
@@ -35,12 +36,25 @@ export default function CropTool({
   );
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
   const [rotation, setRotation] = useState(0);
+  const [horizontalTilt, setHorizontalTilt] = useState(0);
+  const [verticalTilt, setVerticalTilt] = useState(0);
   const [isRotating, setIsRotating] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageBounds, setImageBounds] = useState({ width: 0, height: 0 });
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);
+
+  const getTransformStyle = useCallback(() => {
+    const perspective = Math.max(imageBounds.width, imageBounds.height) * 2 || 1000;
+    return `perspective(${perspective}px) rotateX(${verticalTilt}deg) rotateY(${horizontalTilt}deg) rotate(${rotation}deg)`;
+  }, [imageBounds, horizontalTilt, verticalTilt, rotation]);
+
+  const getTiltTransformStyle = useCallback(() => {
+    const perspective = Math.max(imageBounds.width, imageBounds.height) * 2 || 1000;
+    return `perspective(${perspective}px) rotateX(${verticalTilt}deg) rotateY(${horizontalTilt}deg)`;
+  }, [imageBounds, horizontalTilt, verticalTilt]);
 
   // When image loads, set up initial crop box
   const handleImageLoad = useCallback(() => {
@@ -229,8 +243,9 @@ export default function CropTool({
   }, [isDragging, isRotating, handleMouseMove, handleMouseUp]);
 
   const handleApplyCrop = async () => {
-    if (!currentImage || !imageRef.current) return;
+    if (!currentImage || !imageRef.current || isProcessing) return;
 
+    setIsProcessing(true);
     try {
       const img = document.createElement("img");
       img.crossOrigin = "anonymous";
@@ -328,10 +343,38 @@ export default function CropTool({
         finalImageData = canvas.toDataURL("image/png");
       }
 
+      if (horizontalTilt !== 0 || verticalTilt !== 0) {
+        const capture = document.createElement("div");
+        const transformedImage = document.createElement("img");
+
+        capture.style.cssText =
+          "position:fixed;left:-100000px;top:0;display:inline-block;padding:50px;overflow:visible;background:transparent;";
+        transformedImage.style.cssText = `display:block;transform:${getTiltTransformStyle()};transform-style:preserve-3d;transform-origin:center center;`;
+
+        document.body.appendChild(capture);
+        capture.appendChild(transformedImage);
+
+        await new Promise<void>((resolve, reject) => {
+          transformedImage.onload = () => resolve();
+          transformedImage.onerror = () => reject(new Error("Unable to prepare transformed image"));
+          transformedImage.src = finalImageData;
+        });
+
+        finalImageData = await domtoimage.toPng(capture, {
+          bgcolor: "transparent",
+          quality: 1,
+          scale: 2,
+        });
+
+        document.body.removeChild(capture);
+      }
+
       onApplyCrop(finalImageData);
     } catch (error) {
       console.error("Crop error:", error);
       showToast(Errors.msg(Errors.E.PDF_CROP_FAILED), "error");
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -343,7 +386,7 @@ export default function CropTool({
           <button
             type="button"
             onClick={onExit}
-            disabled={isApplying}
+            disabled={isApplying || isProcessing}
             className="inline-flex shrink-0 items-center gap-2 text-sm font-medium text-white/70 transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
             <X className="h-4 w-4" />
@@ -351,7 +394,7 @@ export default function CropTool({
           </button>
 
           <h2 className="min-w-0 truncate text-center text-base font-bold text-white sm:text-xl">
-            {t("pdfProcessing.editor.crop.title")}
+            Edit Your Signature
           </h2>
 
           <button
@@ -359,218 +402,270 @@ export default function CropTool({
               // Apply crop first, then exit
               await handleApplyCrop();
               setRotation(0);
+              setHorizontalTilt(0);
+              setVerticalTilt(0);
             }}
-            className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-[#7fe6ea] transition-colors hover:text-white"
+            disabled={isApplying || isProcessing}
+            className="inline-flex shrink-0 items-center gap-2 text-sm font-semibold text-[#7fe6ea] transition-colors hover:text-white disabled:cursor-not-allowed disabled:opacity-50"
           >
-            <span className="hidden sm:inline">{t("signatureProcessing.done")}</span>
+            <span className="hidden sm:inline">{isProcessing ? "Applying..." : "Done"}</span>
             <Check className="h-4 w-4" />
           </button>
         </div>
 
-        {/* Canvas */}
-        <div className="flex min-h-[320px] items-center justify-center px-4 py-8 sm:min-h-[440px] sm:px-8 sm:py-12">
-          {/* This container wraps ONLY the image and crop overlay - they share exact same size */}
-          <div
-            ref={containerRef}
-            className="relative inline-block"
-            style={{
-              width: imageLoaded ? `${imageBounds.width}px` : "auto",
-              height: imageLoaded ? `${imageBounds.height}px` : "auto",
-            }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              ref={imageRef}
-              src={currentImage}
-              alt="Signature"
-              className="block max-h-[300px] max-w-full rounded-lg shadow-[0_16px_40px_rgba(0,0,0,0.45)] select-none sm:max-h-[440px]"
-              draggable={false}
-              onLoad={handleImageLoad}
+        <div className="md:grid md:grid-cols-[minmax(0,1fr)_300px] md:items-stretch">
+          {/* Canvas */}
+          <div className="flex min-h-[320px] items-center justify-center px-4 py-8 sm:min-h-[440px] sm:px-8 sm:py-12 md:min-h-[560px] md:px-10 md:py-14">
+            {/* This container wraps ONLY the image and crop overlay - they share exact same size */}
+            <div
+              ref={containerRef}
+              className="relative inline-block"
               style={{
-                transform: `rotate(${rotation}deg)`,
-                transition: isRotating ? "none" : "transform 0.1s ease-out",
+                width: imageLoaded ? `${imageBounds.width}px` : "auto",
+                height: imageLoaded ? `${imageBounds.height}px` : "auto",
               }}
-            />
+            >
+              <div
+                className="relative inline-block"
+                style={{
+                  transform: imageLoaded ? getTransformStyle() : undefined,
+                  transformStyle: "preserve-3d",
+                  transition: isRotating ? "none" : "transform 0.15s ease-out",
+                  transformOrigin: "center center",
+                }}
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  ref={imageRef}
+                  src={currentImage}
+                  alt="Signature"
+                  className="block max-h-[300px] max-w-full rounded-lg shadow-[0_16px_40px_rgba(0,0,0,0.45)] select-none sm:max-h-[440px]"
+                  draggable={false}
+                  onLoad={handleImageLoad}
+                />
 
-            {imageLoaded && (
-              <>
-                {/* Dark overlay with cutout for crop area */}
-                {/* Crop overlay — keeps the selected area completely clear */}
-                <div className="pointer-events-none absolute inset-0 rounded-lg">
-                  {/* Top */}
-                  <div
-                    className="absolute top-0 right-0 left-0 bg-[#0c1626]/25"
-                    style={{
-                      height: `${cropBox.y}px`,
-                    }}
-                  />
+                {imageLoaded && (
+                  <>
+                    {/* Dark overlay with cutout for crop area */}
+                    {/* Crop overlay — keeps the selected area completely clear */}
+                    <div className="pointer-events-none absolute inset-0 rounded-lg">
+                      {/* Top */}
+                      <div
+                        className="absolute top-0 right-0 left-0 bg-[#0c1626]/25"
+                        style={{
+                          height: `${cropBox.y}px`,
+                        }}
+                      />
 
-                  {/* Bottom */}
-                  <div
-                    className="absolute right-0 bottom-0 left-0 bg-[#0c1626]/25"
-                    style={{
-                      height: `${imageBounds.height - cropBox.y - cropBox.height}px`,
-                    }}
-                  />
+                      {/* Bottom */}
+                      <div
+                        className="absolute right-0 bottom-0 left-0 bg-[#0c1626]/25"
+                        style={{
+                          height: `${imageBounds.height - cropBox.y - cropBox.height}px`,
+                        }}
+                      />
 
-                  {/* Left */}
-                  <div
-                    className="absolute left-0 bg-[#0c1626]/25"
-                    style={{
-                      top: `${cropBox.y}px`,
-                      width: `${cropBox.x}px`,
-                      height: `${cropBox.height}px`,
-                    }}
-                  />
+                      {/* Left */}
+                      <div
+                        className="absolute left-0 bg-[#0c1626]/25"
+                        style={{
+                          top: `${cropBox.y}px`,
+                          width: `${cropBox.x}px`,
+                          height: `${cropBox.height}px`,
+                        }}
+                      />
 
-                  {/* Right */}
-                  <div
-                    className="absolute right-0 bg-[#0c1626]/25"
-                    style={{
-                      top: `${cropBox.y}px`,
-                      width: `${imageBounds.width - cropBox.x - cropBox.width}px`,
-                      height: `${cropBox.height}px`,
-                    }}
-                  />
-                </div>
-
-                {/* Crop box */}
-                <div
-                  className="absolute cursor-move border border-white/70"
-                  style={{
-                    left: `${cropBox.x}px`,
-                    top: `${cropBox.y}px`,
-                    width: `${cropBox.width}px`,
-                    height: `${cropBox.height}px`,
-                  }}
-                  onMouseDown={(e) => handleMouseDown(e, "move")}
-                >
-                  {/* Corner handles */}
-                  <div
-                    className="absolute -top-1 -left-1 z-10 h-5 w-5 cursor-nwse-resize border-t-4 border-l-4 border-[#7fe6ea] sm:h-6 sm:w-6"
-                    onMouseDown={(e) => handleMouseDown(e, "nw")}
-                  />
-                  <div
-                    className="absolute -top-1 -right-1 z-10 h-5 w-5 cursor-nesw-resize border-t-4 border-r-4 border-[#7fe6ea] sm:h-6 sm:w-6"
-                    onMouseDown={(e) => handleMouseDown(e, "ne")}
-                  />
-                  <div
-                    className="absolute -bottom-1 -left-1 z-10 h-5 w-5 cursor-nesw-resize border-b-4 border-l-4 border-[#7fe6ea] sm:h-6 sm:w-6"
-                    onMouseDown={(e) => handleMouseDown(e, "sw")}
-                  />
-                  <div
-                    className="absolute -right-1 -bottom-1 z-10 h-5 w-5 cursor-nwse-resize border-r-4 border-b-4 border-[#7fe6ea] sm:h-6 sm:w-6"
-                    onMouseDown={(e) => handleMouseDown(e, "se")}
-                  />
-
-                  {/* Rotation handle */}
-                  <div
-                    className="absolute left-1/2 z-20 flex -translate-x-1/2 cursor-grab flex-col items-center active:cursor-grabbing"
-                    style={{ top: "-56px" }}
-                    onMouseDown={(e) => handleMouseDown(e, "rotate")}
-                  >
-                    <div className="h-9 w-px bg-[#7fe6ea]/70"></div>
-                    <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#7fe6ea] shadow-lg transition-transform hover:scale-110">
-                      <svg
-                        className="h-4 w-4 text-[#123f42]"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2.5}
-                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                        />
-                      </svg>
+                      {/* Right */}
+                      <div
+                        className="absolute right-0 bg-[#0c1626]/25"
+                        style={{
+                          top: `${cropBox.y}px`,
+                          width: `${imageBounds.width - cropBox.x - cropBox.width}px`,
+                          height: `${cropBox.height}px`,
+                        }}
+                      />
                     </div>
-                    {isRotating && (
-                      <div className="absolute -bottom-9 rounded-md bg-[#7fe6ea] px-2.5 py-1 text-xs font-bold whitespace-nowrap text-[#123f42] shadow-lg">
-                        {rotation}°
+
+                    {/* Crop box */}
+                    <div
+                      className="absolute cursor-move border border-white/70"
+                      style={{
+                        left: `${cropBox.x}px`,
+                        top: `${cropBox.y}px`,
+                        width: `${cropBox.width}px`,
+                        height: `${cropBox.height}px`,
+                      }}
+                      onMouseDown={(e) => handleMouseDown(e, "move")}
+                    >
+                      {/* Corner handles */}
+                      <div
+                        className="absolute -top-1 -left-1 z-10 h-5 w-5 cursor-nwse-resize border-t-4 border-l-4 border-[#7fe6ea] sm:h-6 sm:w-6"
+                        onMouseDown={(e) => handleMouseDown(e, "nw")}
+                      />
+                      <div
+                        className="absolute -top-1 -right-1 z-10 h-5 w-5 cursor-nesw-resize border-t-4 border-r-4 border-[#7fe6ea] sm:h-6 sm:w-6"
+                        onMouseDown={(e) => handleMouseDown(e, "ne")}
+                      />
+                      <div
+                        className="absolute -bottom-1 -left-1 z-10 h-5 w-5 cursor-nesw-resize border-b-4 border-l-4 border-[#7fe6ea] sm:h-6 sm:w-6"
+                        onMouseDown={(e) => handleMouseDown(e, "sw")}
+                      />
+                      <div
+                        className="absolute -right-1 -bottom-1 z-10 h-5 w-5 cursor-nwse-resize border-r-4 border-b-4 border-[#7fe6ea] sm:h-6 sm:w-6"
+                        onMouseDown={(e) => handleMouseDown(e, "se")}
+                      />
+
+                      {/* Rotation handle */}
+                      <div
+                        className="absolute left-1/2 z-20 flex -translate-x-1/2 cursor-grab flex-col items-center active:cursor-grabbing"
+                        style={{ top: "-56px" }}
+                        onMouseDown={(e) => handleMouseDown(e, "rotate")}
+                      >
+                        <div className="h-9 w-px bg-[#7fe6ea]/70"></div>
+                        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[#7fe6ea] shadow-lg transition-transform hover:scale-110">
+                          <RotateCw className="h-4 w-4 text-[#123f42]" />
+                        </div>
+                        {isRotating && (
+                          <div className="absolute -bottom-9 rounded-md bg-[#7fe6ea] px-2.5 py-1 text-xs font-bold whitespace-nowrap text-[#123f42] shadow-lg">
+                            {rotation}°
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Grid lines */}
+                      <div className="absolute top-1/3 right-0 left-0 h-px bg-white/25" />
+                      <div className="absolute top-2/3 right-0 left-0 h-px bg-white/25" />
+                      <div className="absolute top-0 bottom-0 left-1/3 w-px bg-white/25" />
+                      <div className="absolute top-0 bottom-0 left-2/3 w-px bg-white/25" />
+                    </div>
+
+                    {/* Rotation indicator */}
+                    {rotation !== 0 && !isRotating && (
+                      <div className="absolute top-3 right-3 flex items-center gap-2 rounded-lg bg-[#7fe6ea] px-3 py-1.5 text-xs font-semibold text-[#123f42] shadow-lg sm:text-sm">
+                        <RotateCw className="h-4 w-4" />
+                        Rotated {rotation}°
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setRotation(0);
+                          }}
+                          className="ml-1 rounded bg-[#123f42]/15 px-2 py-0.5 text-[11px] font-bold transition hover:bg-[#123f42]/25"
+                        >
+                          Reset
+                        </button>
                       </div>
                     )}
-                  </div>
-
-                  {/* Grid lines */}
-                  <div className="absolute top-1/3 right-0 left-0 h-px bg-white/25" />
-                  <div className="absolute top-2/3 right-0 left-0 h-px bg-white/25" />
-                  <div className="absolute top-0 bottom-0 left-1/3 w-px bg-white/25" />
-                  <div className="absolute top-0 bottom-0 left-2/3 w-px bg-white/25" />
-                </div>
-
-                {/* Rotation indicator */}
-                {rotation !== 0 && !isRotating && (
-                  <div className="absolute top-3 right-3 flex items-center gap-2 rounded-lg bg-[#7fe6ea] px-3 py-1.5 text-xs font-semibold text-[#123f42] shadow-lg sm:text-sm">
-                    <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2.5}
-                        d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                      />
-                    </svg>
-                    {t("editor.crop.rotated", { degrees: rotation })}
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setRotation(0);
-                      }}
-                      className="ml-1 rounded bg-[#123f42]/15 px-2 py-0.5 text-[11px] font-bold transition hover:bg-[#123f42]/25"
-                    >
-                      {t("editor.crop.reset")}
-                    </button>
-                  </div>
+                  </>
                 )}
-              </>
-            )}
-          </div>
-        </div>
-
-        {/* Bottom control bar */}
-        <div className="border-t border-white/5 bg-[#16233a] px-4 py-5 sm:px-8">
-          <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
-            <p className="min-w-0 truncate text-sm font-semibold text-white/90">
-              {t("pdfProcessing.editor.crop.tilt")}
-            </p>
-            <span className="shrink-0 rounded-md bg-[#7fe6ea] px-2.5 py-1 text-xs font-bold text-[#123f42]">
-              {rotation}°
-            </span>
+              </div>
+            </div>
           </div>
 
-          <input
-            type="range"
-            min="-45"
-            max="45"
-            value={rotation}
-            onChange={(e) => setRotation(parseInt(e.target.value))}
-            className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/20 accent-[#7fe6ea]"
-            aria-label="Tilt"
-          />
+          {/* Unified crop, tilt, and rotation controls */}
+          <div className="border-t border-white/5 bg-[#16233a] px-4 py-5 sm:px-8 md:border-t-0 md:border-l md:px-6 md:py-8">
+            <div className="mb-4 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+              <p className="min-w-0 truncate text-sm font-semibold text-white/90">Adjustments</p>
+              <SlidersHorizontal className="h-4 w-4 text-[#7fe6ea]" />
+            </div>
 
-          <div className="mt-2 flex justify-between text-[10px] text-white/40 sm:text-xs">
-            <span>-45°</span>
-            <span>-15°</span>
-            <span>0°</span>
-            <span>15°</span>
-            <span>45°</span>
-          </div>
+            <div className="space-y-6">
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <label className="text-sm font-semibold text-white/90">Rotate</label>
+                  <span className="rounded-md bg-[#7fe6ea] px-2.5 py-1 text-xs font-bold text-[#123f42]">
+                    {rotation}°
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="-45"
+                  max="45"
+                  value={rotation}
+                  onChange={(e) => setRotation(parseInt(e.target.value))}
+                  className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/20 accent-[#7fe6ea]"
+                  aria-label="Rotate"
+                />
+                <div className="mt-2 flex justify-between text-[10px] text-white/40">
+                  <span>-45°</span>
+                  <span>0°</span>
+                  <span>45°</span>
+                </div>
+              </div>
 
-          <div className="mt-6 flex items-center justify-center gap-4">
-            <button
-              onClick={() => setRotation((prev) => prev - 1)}
-              aria-label="Rotate left"
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#7fe6ea] text-[#123f42] shadow-md transition-colors hover:bg-white"
-            >
-              <RotateCcw className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => setRotation((prev) => prev + 1)}
-              aria-label="Rotate right"
-              className="flex h-11 w-11 items-center justify-center rounded-full bg-[#7fe6ea] text-[#123f42] shadow-md transition-colors hover:bg-white"
-            >
-              <RotateCw className="h-5 w-5" />
-            </button>
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <label className="text-sm font-semibold text-white/90">Horizontal tilt</label>
+                  <span className="rounded-md bg-[#7fe6ea] px-2.5 py-1 text-xs font-bold text-[#123f42]">
+                    {horizontalTilt}°
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="-30"
+                  max="30"
+                  value={horizontalTilt}
+                  onChange={(e) => setHorizontalTilt(parseInt(e.target.value))}
+                  className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/20 accent-[#7fe6ea]"
+                  aria-label="Horizontal tilt"
+                />
+                <div className="mt-2 flex justify-between text-[10px] text-white/40">
+                  <span>Left</span>
+                  <span>Center</span>
+                  <span>Right</span>
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <label className="text-sm font-semibold text-white/90">Vertical tilt</label>
+                  <span className="rounded-md bg-[#7fe6ea] px-2.5 py-1 text-xs font-bold text-[#123f42]">
+                    {verticalTilt}°
+                  </span>
+                </div>
+                <input
+                  type="range"
+                  min="-30"
+                  max="30"
+                  value={verticalTilt}
+                  onChange={(e) => setVerticalTilt(parseInt(e.target.value))}
+                  className="h-1.5 w-full cursor-pointer appearance-none rounded-full bg-white/20 accent-[#7fe6ea]"
+                  aria-label="Vertical tilt"
+                />
+                <div className="mt-2 flex justify-between text-[10px] text-white/40">
+                  <span>Up</span>
+                  <span>Center</span>
+                  <span>Down</span>
+                </div>
+              </div>
+
+              <div className="flex items-center justify-center gap-3 border-t border-white/10 pt-5">
+                <button
+                  onClick={() => setRotation((prev) => Math.max(-45, prev - 1))}
+                  aria-label="Rotate left"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#7fe6ea] text-[#123f42] shadow-md transition-colors hover:bg-white"
+                >
+                  <RotateCcw className="h-5 w-5" />
+                </button>
+                <button
+                  onClick={() => setRotation((prev) => Math.min(45, prev + 1))}
+                  aria-label="Rotate right"
+                  className="flex h-10 w-10 items-center justify-center rounded-full bg-[#7fe6ea] text-[#123f42] shadow-md transition-colors hover:bg-white"
+                >
+                  <RotateCw className="h-5 w-5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setRotation(0);
+                    setHorizontalTilt(0);
+                    setVerticalTilt(0);
+                  }}
+                  className="ml-2 rounded-lg bg-white/10 px-3 py-2 text-xs font-semibold text-white/80 transition hover:bg-white/15 hover:text-white"
+                >
+                  Reset
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -579,8 +674,9 @@ export default function CropTool({
         <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#0d7377]" />
 
         <p>
-          Adjust the crop box to include only your signature. Use the corner handles to resize, drag
-          to reposition, and rotate if needed. Click Done when you&apos;re satisfied.
+          Adjust the crop box to include only your signature. Drag to reposition and use the corner
+          handles to resize. Use the controls to rotate or tilt the signature if needed. Click Done
+          when you&apos;re satisfied.
         </p>
       </div>
     </div>
