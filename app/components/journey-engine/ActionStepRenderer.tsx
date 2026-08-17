@@ -2357,8 +2357,8 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
                     {/* Important Note */}
                     {filteredSteps[guideStep]?.note && (
-                      <div className="mb-5 flex items-start gap-3 rounded-[12px] border border-[#f0c878]/50 bg-[#fffdf5] p-3.5 sm:p-4 text-[13px] leading-relaxed text-[#7a5800]">
-                        <span className="font-bold shrink-0">Important:</span>
+                      <div className="mb-5 flex flex-col gap-1.5 rounded-[12px] border border-[#f0c878]/50 bg-[#fffdf5] p-3.5 sm:p-4 text-[13px] leading-relaxed text-[#7a5800]">
+                        <span className="font-bold">Important:</span>
                         <span>{filteredSteps[guideStep]?.note}</span>
                       </div>
                     )}
