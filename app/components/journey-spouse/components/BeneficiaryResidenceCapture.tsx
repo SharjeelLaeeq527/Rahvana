@@ -123,22 +123,22 @@ export function BeneficiaryResidenceCapture({
         style={{ background: "#fafaf9", borderColor: "#e7e5e4" }}
       >
         {/* Header */}
-        <div className="flex items-start gap-3 mb-4">
-          <div
-            className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
-            style={{ background: "#ecfeff", border: "1px solid #a5f3fc" }}
-          >
-            <Globe size={18} color="#155e75" />
-          </div>
-          <div className="flex-1 min-w-0">
+        <div className="mb-4">
+          <div className="flex items-center gap-3 mb-2">
+            <div
+              className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
+              style={{ background: "#ecfeff", border: "1px solid #a5f3fc" }}
+            >
+              <Globe size={18} color="#155e75" />
+            </div>
             <h3 className="text-[14px] sm:text-[15px] font-bold text-[#1c1917] leading-snug">
               {config?.title ?? "Beneficiary residence history"}
             </h3>
-            <p className="text-[12px] text-[#57534e] mt-0.5 leading-relaxed">
-              {config?.subtitle ??
-                "Save the beneficiary's residence countries here so Rahvana can pre-prepare police certificate requirements."}
-            </p>
           </div>
+          <p className="text-[12px] text-[#57534e] leading-relaxed">
+            {config?.subtitle ??
+              "Save the beneficiary's residence countries here so Rahvana can pre-prepare police certificate requirements."}
+          </p>
         </div>
 
         {/* Rule summary */}
@@ -196,14 +196,14 @@ export function BeneficiaryResidenceCapture({
                 }
               }}
               placeholder="Add a country and press Enter"
-              className="flex-1 rounded-md px-3 py-2 text-[13px] outline-none border bg-white"
+              className="flex-1 min-w-0 rounded-md px-3 py-2 text-[12.5px] sm:text-[13px] outline-none border bg-white"
               style={{ borderColor: "#d6d3d1" }}
             />
             <button
               type="button"
               onClick={addCountry}
               disabled={!newCountry.trim()}
-              className="inline-flex items-center gap-1 px-3 py-2 rounded-md text-[12px] font-semibold border disabled:opacity-50 disabled:cursor-not-allowed"
+              className="inline-flex shrink-0 items-center justify-center gap-1 px-3 py-2 rounded-md text-[12px] font-semibold border disabled:opacity-50 disabled:cursor-not-allowed"
               style={{ borderColor: "#d6d3d1", color: "#1c1917", background: "white" }}
             >
               <Plus size={14} /> Add
@@ -238,12 +238,12 @@ export function BeneficiaryResidenceCapture({
         </div>
 
         {/* Save button */}
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col items-start gap-1.5 sm:flex-row sm:items-center sm:gap-3">
           <button
             type="button"
             onClick={handleSave}
             disabled={!currentCountry.trim()}
-            className="inline-flex items-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-md text-[12.5px] font-semibold text-white disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
             style={{ background: "#0e1e38" }}
           >
             {justSaved ? <Check size={14} /> : <Save size={14} />}
@@ -259,29 +259,29 @@ export function BeneficiaryResidenceCapture({
         {/* Police certificate advisory */}
         {policeCertCountries.length > 0 && (
           <div
-            className="mt-4 rounded-[10px] border p-3 flex items-start gap-3"
+            className="mt-4 rounded-[10px] border p-3"
             style={{ background: "#ecfeff", borderColor: "#a5f3fc" }}
           >
-            <FileCheck size={18} color="#155e75" className="shrink-0 mt-0.5" />
-            <div className="min-w-0">
+            <div className="flex items-center gap-2 mb-1.5">
+              <FileCheck size={18} color="#155e75" className="shrink-0" />
               <h5 className="text-[12.5px] font-semibold leading-snug" style={{ color: "#155e75" }}>
                 Police certificates likely required from {policeCertCountries.length}{" "}
                 {policeCertCountries.length === 1 ? "country" : "countries"}
               </h5>
-              <ul
-                className="text-[12px] mt-1.5 leading-relaxed list-disc pl-5"
-                style={{ color: "#0e7490" }}
-              >
-                {policeCertCountries.map((c) => (
-                  <li key={c}>{c}</li>
-                ))}
-              </ul>
-              <p className="text-[11px] mt-2 leading-relaxed italic" style={{ color: "#0e7490" }}>
-                Refer to the <strong>travel.state.gov Reciprocity Schedule</strong> for each
-                country&apos;s police certificate process and any exemptions.
-                {config?.exempt_country_note ? ` ${config.exempt_country_note}` : ""}
-              </p>
             </div>
+            <ul
+              className="text-[12px] mt-1 leading-relaxed list-disc pl-5"
+              style={{ color: "#0e7490" }}
+            >
+              {policeCertCountries.map((c) => (
+                <li key={c}>{c}</li>
+              ))}
+            </ul>
+            <p className="text-[11px] mt-2 leading-relaxed italic" style={{ color: "#0e7490" }}>
+              Refer to the <strong>travel.state.gov Reciprocity Schedule</strong> for each
+              country&apos;s police certificate process and any exemptions.
+              {config?.exempt_country_note ? ` ${config.exempt_country_note}` : ""}
+            </p>
           </div>
         )}
 
