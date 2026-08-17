@@ -80,7 +80,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
     return (
       <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out bg-white">
-        <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
+        <div className="flex items-center h-[54px] sm:h-[72px] border-b border-[#d0e4f7] px-3.5 sm:px-6 gap-3 sm:gap-4 shrink-0 bg-[#fafcff]">
           <button
             onClick={() => {
               onClose();
@@ -257,7 +257,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   return (
     <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out bg-white">
       {/* Tutorial Topbar */}
-      <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
+      <div className="flex items-center h-[54px] sm:h-[72px] border-b border-[#d0e4f7] px-3.5 sm:px-6 gap-3 sm:gap-4 shrink-0 bg-[#fafcff]">
         <button
           onClick={() => {
             onClose();

@@ -4504,13 +4504,13 @@ export const StepView: React.FC<StepViewProps> = ({
             return (
               <div className="animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[120] flex flex-col bg-[#fafcff] duration-[0.28s] ease-in-out">
                 {/* Tutorial Topbar */}
-                <div className="flex h-[72px] shrink-0 items-center gap-4 border-b border-[#d0e4f7] bg-[#fafcff] px-6">
+                <div className="flex h-[54px] sm:h-[72px] shrink-0 items-center gap-3 sm:gap-4 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:px-6">
                   <button
                     onClick={() => {
                       setIsTutorialOpen(false);
                       setUseCeacGuideData(false);
                     }}
-                    className="hover:bg-primary/30 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all"
+                    className="hover:bg-primary/30 flex h-8 w-8 sm:h-9 sm:w-9 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all"
                   >
                     <X size={16} strokeWidth={2} />
                   </button>
@@ -4530,7 +4530,7 @@ export const StepView: React.FC<StepViewProps> = ({
                 </div>
 
                 {/* Tutorial Body */}
-                <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto bg-white p-[48px_24px_40px]">
+                <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto bg-white p-4 pt-5 sm:p-[48px_24px_40px]">
                   <div className="flex w-full max-w-[580px] flex-col">
                     <div
                       className={`mb-4 text-[11px] font-semibold tracking-widest uppercase ${isChapter1 ? "accent-rose" : "text-primary"}`}
@@ -4718,14 +4718,14 @@ export const StepView: React.FC<StepViewProps> = ({
           return (
             <div className="animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[120] flex flex-col bg-[#fafcff] bg-white duration-[0.28s] ease-in-out">
               {/* Tutorial Topbar */}
-              <div className="flex h-[72px] shrink-0 items-center gap-4 border-b border-[#d0e4f7] bg-[#fafcff] px-6">
+              <div className="flex h-[54px] sm:h-[72px] shrink-0 items-center gap-3 sm:gap-4 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:px-6">
                 <button
                   onClick={() => {
                     setIsTutorialOpen(false);
                     setTutorialPath(null);
                     setUseCeacGuideData(false);
                   }}
-                  className="hover:bg-primary/30 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all"
+                  className="hover:bg-primary/30 flex h-8 w-8 sm:h-9 sm:w-9 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all"
                 >
                   <X size={16} strokeWidth={2} />
                 </button>
@@ -4745,7 +4745,7 @@ export const StepView: React.FC<StepViewProps> = ({
               </div>
 
               {/* Tutorial Body */}
-              <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto bg-[#fafcff] bg-white p-[48px_24px_40px]">
+              <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto bg-[#fafcff] bg-white p-4 pt-5 sm:p-[48px_24px_40px]">
                 <div className="flex w-full max-w-[580px] flex-col">
                   <div className="text-primary mb-4 text-[11px] font-semibold tracking-widest uppercase">
                     {isDynamic ? currentTutStep.label : (currentTutStep as TutorialStepV3).label}
