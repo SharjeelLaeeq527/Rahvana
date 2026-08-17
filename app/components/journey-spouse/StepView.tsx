@@ -1901,35 +1901,35 @@ export const StepView: React.FC<StepViewProps> = ({
 
                 <div className="p-4 sm:p-6 lg:p-[36px_36px_32px]">
                   {/* Module Header */}
-                  <div className="mb-4 flex items-start gap-3 sm:mb-6 sm:gap-4">
-                    <div
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border sm:h-12 sm:w-12 ${isChapter1 ? "border-[var(--rv-ch1)]" : isChapter2 ? "border-[var(--rv-ch2)]" : "border-white/10 bg-white/[0.055]"}`}
-                      style={
-                        isChapter1
-                          ? { backgroundColor: "var(--rv-ch1)" }
-                          : isChapter2
-                            ? { backgroundColor: "var(--rv-ch2)" }
-                            : undefined
-                      }
-                    >
-                      <IconComponent
-                        size={20}
-                        className={isChapter1 || isChapter2 ? "text-white" : "text-white/75"}
-                        strokeWidth={1.6}
-                      />
-                    </div>
-                    <div className="flex-1">
+                  <div className="mb-4 flex flex-col gap-2 sm:mb-6 sm:gap-2.5">
+                    <div className="flex items-center gap-3 sm:gap-4">
                       <div
-                        className={`mb-1 text-[10px] font-bold tracking-widest uppercase sm:mb-[5px] ${isChapter1 ? "text-[var(--rv-ch1)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/35"}`}
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border sm:h-12 sm:w-12 ${isChapter1 ? "border-[var(--rv-ch1)]" : isChapter2 ? "border-[var(--rv-ch2)]" : "border-white/10 bg-white/[0.055]"}`}
+                        style={
+                          isChapter1
+                            ? { backgroundColor: "var(--rv-ch1)" }
+                            : isChapter2
+                              ? { backgroundColor: "var(--rv-ch2)" }
+                              : undefined
+                        }
+                      >
+                        <IconComponent
+                          size={20}
+                          className={isChapter1 || isChapter2 ? "text-white" : "text-white/75"}
+                          strokeWidth={1.6}
+                        />
+                      </div>
+                      <div
+                        className={`text-[10px] font-bold tracking-widest uppercase sm:text-[11px] ${isChapter1 ? "text-[var(--rv-ch1)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/35"}`}
                       >
                         {tool.launch_module.eyebrow || tool.launch_module.label}
                       </div>
-                      <h2
-                        className={`text-[clamp(18px,4vw,24px)] leading-[1.25] ${isChapter1 ? "text-white" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/90"}`}
-                      >
-                        {tool.launch_module.heading || tool.launch_module.title}
-                      </h2>
                     </div>
+                    <h2
+                      className={`w-full text-[clamp(18px,4vw,24px)] leading-[1.25] ${isChapter1 ? "text-white" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/90"}`}
+                    >
+                      {tool.launch_module.heading || tool.launch_module.title}
+                    </h2>
                   </div>
 
                   <div

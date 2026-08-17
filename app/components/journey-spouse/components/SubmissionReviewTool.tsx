@@ -66,17 +66,17 @@ export const SubmissionReviewTool: React.FC<SubmissionReviewToolProps> = ({
       <div className="relative bg-[var(--rv-ch2-module-bg)] border border-[var(--rv-ch2)]/30 rounded-[16px] overflow-hidden mb-[28px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[var(--rv-ch2)] via-[var(--rv-ch2-dark)] to-transparent opacity-70" />
         <div className="p-[30px_32px_26px]">
-          <div className="flex items-start gap-[16px] mb-[20px]">
-            <div className="w-[44px] h-[44px] rounded-[10px] bg-[var(--rv-ch2)] border border-[var(--rv-ch2)]/50 flex items-center justify-center shrink-0">
-              <ExternalLink size={21} className="text-white" />
-            </div>
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-[#9C8E9C] mb-[4px]">
+          <div className="flex flex-col gap-2 mb-[20px]">
+            <div className="flex items-center gap-[14px]">
+              <div className="w-[44px] h-[44px] rounded-[10px] bg-[var(--rv-ch2)] border border-[var(--rv-ch2)]/50 flex items-center justify-center shrink-0">
+                <ExternalLink size={21} className="text-white" />
+              </div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[#9C8E9C]">
                 {tool.launch_module.eyebrow}
               </div>
-              <div className="text-[clamp(18px,2.6vw,22px)] text-[#F4E6F3] leading-[1.25]">
-                {tool.launch_module.heading}
-              </div>
+            </div>
+            <div className="w-full text-[clamp(18px,2.6vw,22px)] text-[#F4E6F3] leading-[1.25]">
+              {tool.launch_module.heading}
             </div>
           </div>
           <div className="h-px bg-[var(--rv-ch2)]/30 mb-[18px]" />
