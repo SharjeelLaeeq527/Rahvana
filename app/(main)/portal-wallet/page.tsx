@@ -153,6 +153,7 @@ const PortalWallet: React.FC = () => {
       showToast("Credentials deleted successfully!", "success");
 
       setShowConfirmation(false);
+      setViewModal({ open: false, portalType: "USCIS" });
       setDeletePortal(null);
 
       await fetchCredentials();
@@ -361,13 +362,13 @@ const PortalWallet: React.FC = () => {
           formModal.mode === "edit" && formCredential
             ? {
                 username: formCredential.username,
-                password: "",
+                password: formCredential.password || "",
                 nvcCaseNumber: formCredential.nvc_case_number || "",
                 nvcInvoiceId: formCredential.nvc_invoice_id || "",
                 securityQuestions: formCredential.security_questions.map((sq) => ({
                   id: sq.id,
                   question: sq.question,
-                  answer: "",
+                  answer: sq.answer || "",
                 })),
               }
             : undefined
@@ -397,8 +398,6 @@ const PortalWallet: React.FC = () => {
           });
         }}
         onDelete={() => {
-          setViewModal({ open: false, portalType: viewModal.portalType });
-
           setDeletePortal(viewModal.portalType);
           setShowConfirmation(true);
         }}

@@ -4120,11 +4120,13 @@ export const StepView: React.FC<StepViewProps> = ({
           return creds
             ? {
                 username: creds.username,
-                password: "",
+                password: creds.password || "",
+                nvcCaseNumber: creds.nvc_case_number || "",
+                nvcInvoiceId: creds.nvc_invoice_id || "",
                 securityQuestions: creds.security_questions.map((sq) => ({
                   id: sq.id,
                   question: sq.question,
-                  answer: "",
+                  answer: sq.answer || "",
                 })),
               }
             : undefined;
@@ -4159,7 +4161,6 @@ export const StepView: React.FC<StepViewProps> = ({
           setIsWalletFormOpen(true);
         }}
         onDelete={() => {
-          setIsWalletViewOpen(false);
           setShowDeleteConfirmation(true);
         }}
       />
@@ -4193,6 +4194,7 @@ export const StepView: React.FC<StepViewProps> = ({
         onConfirm={async () => {
           await handleDeleteCredentials(walletPortalType);
           setShowDeleteConfirmation(false);
+          setIsWalletViewOpen(false);
         }}
         loading={isSubmittingCreds}
       />
