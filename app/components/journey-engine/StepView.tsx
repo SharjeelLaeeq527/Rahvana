@@ -2558,14 +2558,20 @@ export const StepView: React.FC<StepViewProps> = ({
                           </p>
                         </div>
                         <div
-                          className={`mt-0 flex items-center gap-1 self-start text-[12px] font-bold sm:mt-0 sm:self-auto sm:text-[13px] ${
+                          className={`mt-0 flex items-center gap-1.5 self-start text-[12px] font-semibold sm:mt-0 sm:self-auto sm:text-[13px] ${
                             isGuideLocked ? "text-[#a06000]" : "text-primary"
                           }`}
                         >
                           {isGuideLocked ? (
-                            <Lock size={15} strokeWidth={2.5} />
+                            <>
+                              <span>Unlock</span>
+                              <Lock size={14} strokeWidth={2.5} />
+                            </>
                           ) : (
-                            <ArrowRight size={18} strokeWidth={2.5} />
+                            <>
+                              <span>{card.cta_label || "View guide"}</span>
+                              <ArrowRight size={14} strokeWidth={2.5} />
+                            </>
                           )}
                         </div>
                       </button>
