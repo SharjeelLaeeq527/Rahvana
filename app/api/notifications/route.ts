@@ -1,6 +1,7 @@
 // app/api/notifications/route.ts
 import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { safeError } from "@/lib/api/safeError";
 
 /**
  * Helper: Create an authenticated Supabase client from the request cookies
@@ -67,7 +68,7 @@ export async function GET(req: NextRequest) {
 
     if (error) {
       console.error("Error fetching notifications:", error);
-      return Response.json({ error: error.message }, { status: 500 });
+      return safeError(error);
     }
 
     return Response.json({ notifications: notifications ?? [] });
@@ -142,7 +143,7 @@ export async function PATCH(req: NextRequest) {
 
     if (error) {
       console.error("Error updating notifications:", error);
-      return Response.json({ error: error.message }, { status: 500 });
+      return safeError(error);
     }
 
     return Response.json({ success: true });
