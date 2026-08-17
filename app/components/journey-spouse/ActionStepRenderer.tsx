@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Lock,
   Crown,
+  X,
 } from "lucide-react";
 import { InterviewOutcomeTool } from "./components/InterviewOutcomeTool";
 import { Input221gTool } from "./components/Input221gTool";
@@ -1295,7 +1296,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         .asr-spin { animation: spin 1s linear infinite; }
       `}</style>
       {/* Main Content */}
-      <div className="max-w-[660px] w-full mx-auto px-2 sm:px-4 md:px-8 pt-5 md:pt-3 pb-8 md:pb-12 flex flex-col step">
+      <div className="step mx-auto flex w-full max-w-[660px] flex-col px-2 pt-5 pb-8 sm:px-4 md:px-8 md:pt-3 md:pb-12">
         {/* Eyebrow for Paper Filing Path steps */}
         {/* {(step.step_key === "step_1_11" || 
           step.step_key === "step_1_12" || 
@@ -1315,23 +1316,23 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         )} */}
         {/* Title */}
         <h1
-          className={`page-title text-[clamp(28px,4vw,36px)] font-bold leading-[1.15] tracking-tight mb-1 ${isChapter1 ? "text-[#0c1b33]" : isChapter2 ? "text-[#27192e]" : "text-[#0c1b33]"}`}
+          className={`page-title mb-1 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight ${isChapter1 ? "text-[#0c1b33]" : isChapter2 ? "text-[#27192e]" : "text-[#0c1b33]"}`}
         >
           {step.step_name}
         </h1>
 
         {/* Subtitle */}
-        <p className="page-desc text-[15px] md:text-[16px] leading-[1.7] max-w-full md:max-w-[560px] mb-2.5 sm:mb-4 text-[#3a4f63]">
+        <p className="page-desc mb-2.5 max-w-full text-[15px] leading-[1.7] text-[#3a4f63] sm:mb-4 md:max-w-[560px] md:text-[16px]">
           {step.step_description}
         </p>
 
         {/* Chips - Pastel colors */}
         {actionData.chips && actionData.chips.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3 sm:mb-5">
+          <div className="mb-3 flex flex-wrap gap-2 sm:mb-5">
             {actionData.chips.map((chip, idx) => (
               <span
                 key={idx}
-                className="text-[11px] font-semibold uppercase tracking-[0.06em] px-[12px] py-[5px] rounded-full border whitespace-nowrap"
+                className="rounded-full border px-[12px] py-[5px] text-[11px] font-semibold tracking-[0.06em] whitespace-nowrap uppercase"
                 style={{
                   backgroundColor: isChapter1 ? "#f3f0fb" : isChapter2 ? "#f4e6f3" : "#f0f1fb",
                   borderColor: isChapter1 ? "#c9bef2" : isChapter2 ? "#d5abd2" : "#d0e4f7",
@@ -1784,7 +1785,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       }
                     }}
                     disabled={!selectedDropdown || isSavingPayment}
-                    className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:translate-y-0 disabled:hover:shadow-sm"
+                    className="w-full rounded-xl px-6 py-3 font-bold text-white shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 disabled:cursor-not-allowed disabled:opacity-60 disabled:hover:translate-y-0 disabled:hover:shadow-sm sm:w-auto"
                     style={{
                       backgroundColor: "var(--rv-ch1)",
                     }}
@@ -2297,7 +2298,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
               flexDirection: "column",
               animation: "fadeIn 0.3s ease",
             }}
-            className="px-1 sm:px-3 md:px-6 pt-2 sm:pt- md:"
+            className="sm:pt- md: px-1 pt-2 sm:px-3 md:px-6"
           >
             {/* Topbar */}
             <div
@@ -2660,61 +2661,32 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       {showGuideChoice &&
         createPortal(
           <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0, 0, 0, 0.5)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 300,
-              padding: isMobile ? "16px" : "0",
-            }}
+            className="animate-in fade-in fixed inset-0 z-300 flex items-center justify-center bg-slate-900/60 p-4 backdrop-blur-xs duration-200 sm:p-6"
             onClick={() => setShowGuideChoice(false)}
           >
             <div
-              style={{
-                background: "#fff",
-                borderRadius: "24px",
-                padding: isMobile ? "24px 20px" : "40px",
-                maxWidth: "500px",
-                width: "90%",
-                boxShadow: "0 20px 60px rgba(12, 27, 51, 0.16)",
-                animation: "slideUp 0.3s ease",
-                position: "relative",
-              }}
+              className="animate-in zoom-in-95 relative w-full max-w-[440px] rounded-3xl border border-slate-100 bg-white p-6 shadow-2xl duration-200 sm:p-8"
               onClick={(e) => e.stopPropagation()}
             >
-              <div style={{ textAlign: "center", marginBottom: "32px" }}>
-                <h2
-                  style={{
-                    fontSize: isMobile ? "22px" : "26px",
-                    fontWeight: 900,
-                    color: COLORS.navy,
-                    marginBottom: "12px",
-                    lineHeight: 1.3,
-                  }}
-                >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowGuideChoice(false)}
+                className="absolute top-4 right-4 z-10 flex h-7 w-7 cursor-pointer items-center justify-center rounded-full border-none bg-slate-100 text-slate-500 transition-all hover:bg-slate-200 hover:text-slate-700 sm:h-9 sm:w-9"
+                aria-label="Close modal"
+              >
+                <X size={14} strokeWidth={2} />
+              </button>
+
+              <div className="mb-6 pr-6 pl-2 text-center">
+                <h2 className="mb-1.5 text-xl leading-tight font-black text-[#0c1b33] sm:text-2xl">
                   Choose Your Guide
                 </h2>
-                <p
-                  style={{
-                    fontSize: "15px",
-                    color: COLORS.soft,
-                    lineHeight: 1.6,
-                  }}
-                >
+                <p className="text-xs leading-relaxed text-[#6b8097] sm:text-sm">
                   Select how you would like to proceed with your forms
                 </p>
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "14px",
-                }}
-              >
+              <div className="flex flex-col gap-3">
                 {/* Print Guide Option */}
                 <button
                   onClick={() => {
@@ -2722,56 +2694,16 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     setShowGuideChoice(false);
                     setShowGuide(true);
                   }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                    padding: isMobile ? "14px 16px" : "18px 20px",
-                    background: "#fff",
-                    border: `2px solid ${COLORS.line}`,
-                    borderRadius: "16px",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    textAlign: "left",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.target as HTMLElement).style.borderColor = COLORS.accent;
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.target as HTMLElement).style.borderColor = COLORS.line;
-                  }}
+                  className="group flex w-full cursor-pointer items-center gap-4 rounded-2xl border-2 border-slate-200/80 bg-white p-4 text-left transition-all hover:border-[#0d7377] hover:bg-teal-50/40"
                 >
-                  <div
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "12px",
-                      background: COLORS.sky,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Printer size={24} color={COLORS.accent} />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-[#0d7377] transition-colors group-hover:bg-[#0d7377] group-hover:text-white">
+                    <Printer size={22} strokeWidth={2} />
                   </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "15px",
-                        fontWeight: 700,
-                        color: COLORS.navy,
-                        marginBottom: "2px",
-                      }}
-                    >
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-0.5 text-sm font-bold text-[#0c1b33] transition-colors group-hover:text-[#0d7377] sm:text-base">
                       View Print Guide
                     </div>
-                    <div
-                      style={{
-                        fontSize: "13px",
-                        color: COLORS.muted,
-                      }}
-                    >
+                    <div className="text-xs text-[#6b8097] sm:text-sm">
                       Step-by-step guide to print your forms
                     </div>
                   </div>
@@ -2784,56 +2716,16 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     setShowGuideChoice(false);
                     setShowGuide(true);
                   }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                    padding: isMobile ? "14px 16px" : "18px 20px",
-                    background: "#fff",
-                    border: `2px solid ${COLORS.line}`,
-                    borderRadius: "16px",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    textAlign: "left",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.target as HTMLElement).style.borderColor = COLORS.accent;
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.target as HTMLElement).style.borderColor = COLORS.line;
-                  }}
+                  className="group flex w-full cursor-pointer items-center gap-4 rounded-2xl border-2 border-slate-200/80 bg-white p-4 text-left transition-all hover:border-[#0d7377] hover:bg-teal-50/40"
                 >
-                  <div
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "12px",
-                      background: COLORS.sky,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Download size={24} color={COLORS.accent} />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-[#0d7377] transition-colors group-hover:bg-[#0d7377] group-hover:text-white">
+                    <Download size={22} strokeWidth={2} />
                   </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "15px",
-                        fontWeight: 700,
-                        color: COLORS.navy,
-                        marginBottom: "2px",
-                      }}
-                    >
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-0.5 text-sm font-bold text-[#0c1b33] transition-colors group-hover:text-[#0d7377] sm:text-base">
                       View Download Guide
                     </div>
-                    <div
-                      style={{
-                        fontSize: "13px",
-                        color: COLORS.muted,
-                      }}
-                    >
+                    <div className="text-xs text-[#6b8097] sm:text-sm">
                       Step-by-step guide to download your forms
                     </div>
                   </div>

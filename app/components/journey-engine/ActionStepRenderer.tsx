@@ -15,6 +15,7 @@ import {
   RefreshCw,
   Lock,
   Crown,
+  X,
 } from "lucide-react";
 // import { InterviewOutcomeTool } from "./components/InterviewOutcomeTool";
 // import { Input221gTool } from "./components/Input221gTool";
@@ -2660,61 +2661,32 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       {showGuideChoice &&
         createPortal(
           <div
-            style={{
-              position: "fixed",
-              inset: 0,
-              background: "rgba(0, 0, 0, 0.5)",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              zIndex: 300,
-              padding: isMobile ? "16px" : "0",
-            }}
+            className="fixed inset-0 z-[300] flex items-center justify-center p-4 sm:p-6 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
             onClick={() => setShowGuideChoice(false)}
           >
             <div
-              style={{
-                background: "#fff",
-                borderRadius: "24px",
-                padding: isMobile ? "24px 20px" : "40px",
-                maxWidth: "500px",
-                width: "90%",
-                boxShadow: "0 20px 60px rgba(12, 27, 51, 0.16)",
-                animation: "slideUp 0.3s ease",
-                position: "relative",
-              }}
+              className="relative w-full max-w-[440px] rounded-3xl bg-white p-6 sm:p-8 shadow-2xl border border-slate-100 animate-in zoom-in-95 duration-200"
               onClick={(e) => e.stopPropagation()}
             >
-              <div style={{ textAlign: "center", marginBottom: "32px" }}>
-                <h2
-                  style={{
-                    fontSize: isMobile ? "22px" : "26px",
-                    fontWeight: 900,
-                    color: COLORS.navy,
-                    marginBottom: "12px",
-                    lineHeight: 1.3,
-                  }}
-                >
+              {/* Close Button */}
+              <button
+                onClick={() => setShowGuideChoice(false)}
+                className="absolute top-4 right-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-700 transition-all cursor-pointer border-none"
+                aria-label="Close modal"
+              >
+                <X size={16} strokeWidth={2} />
+              </button>
+
+              <div className="text-center mb-6 pr-6 pl-2">
+                <h2 className="text-xl sm:text-2xl font-black text-[#0c1b33] mb-1.5 leading-tight">
                   Choose Your Guide
                 </h2>
-                <p
-                  style={{
-                    fontSize: "15px",
-                    color: COLORS.soft,
-                    lineHeight: 1.6,
-                  }}
-                >
+                <p className="text-xs sm:text-sm text-[#6b8097] leading-relaxed">
                   Select how you would like to proceed with your forms
                 </p>
               </div>
 
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "14px",
-                }}
-              >
+              <div className="flex flex-col gap-3">
                 {/* Print Guide Option */}
                 <button
                   onClick={() => {
@@ -2722,56 +2694,16 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     setShowGuideChoice(false);
                     setShowGuide(true);
                   }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                    padding: isMobile ? "14px 16px" : "18px 20px",
-                    background: "#fff",
-                    border: `2px solid ${COLORS.line}`,
-                    borderRadius: "16px",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    textAlign: "left",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.target as HTMLElement).style.borderColor = COLORS.accent;
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.target as HTMLElement).style.borderColor = COLORS.line;
-                  }}
+                  className="group flex w-full items-center gap-4 rounded-2xl border-2 border-slate-200/80 bg-white p-4 text-left transition-all hover:border-[#0d7377] hover:bg-teal-50/40 cursor-pointer"
                 >
-                  <div
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "12px",
-                      background: COLORS.sky,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Printer size={24} color={COLORS.accent} />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-[#0d7377] transition-colors group-hover:bg-[#0d7377] group-hover:text-white">
+                    <Printer size={22} strokeWidth={2} />
                   </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "15px",
-                        fontWeight: 700,
-                        color: COLORS.navy,
-                        marginBottom: "2px",
-                      }}
-                    >
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-0.5 text-sm sm:text-base font-bold text-[#0c1b33] transition-colors group-hover:text-[#0d7377]">
                       View Print Guide
                     </div>
-                    <div
-                      style={{
-                        fontSize: "13px",
-                        color: COLORS.muted,
-                      }}
-                    >
+                    <div className="text-xs sm:text-sm text-[#6b8097]">
                       Step-by-step guide to print your forms
                     </div>
                   </div>
@@ -2784,56 +2716,16 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     setShowGuideChoice(false);
                     setShowGuide(true);
                   }}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    gap: "16px",
-                    padding: isMobile ? "14px 16px" : "18px 20px",
-                    background: "#fff",
-                    border: `2px solid ${COLORS.line}`,
-                    borderRadius: "16px",
-                    cursor: "pointer",
-                    transition: "all 0.2s",
-                    textAlign: "left",
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.target as HTMLElement).style.borderColor = COLORS.accent;
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.target as HTMLElement).style.borderColor = COLORS.line;
-                  }}
+                  className="group flex w-full items-center gap-4 rounded-2xl border-2 border-slate-200/80 bg-white p-4 text-left transition-all hover:border-[#0d7377] hover:bg-teal-50/40 cursor-pointer"
                 >
-                  <div
-                    style={{
-                      width: "48px",
-                      height: "48px",
-                      borderRadius: "12px",
-                      background: COLORS.sky,
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}
-                  >
-                    <Download size={24} color={COLORS.accent} />
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-teal-50 text-[#0d7377] transition-colors group-hover:bg-[#0d7377] group-hover:text-white">
+                    <Download size={22} strokeWidth={2} />
                   </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "15px",
-                        fontWeight: 700,
-                        color: COLORS.navy,
-                        marginBottom: "2px",
-                      }}
-                    >
+                  <div className="min-w-0 flex-1">
+                    <div className="mb-0.5 text-sm sm:text-base font-bold text-[#0c1b33] transition-colors group-hover:text-[#0d7377]">
                       View Download Guide
                     </div>
-                    <div
-                      style={{
-                        fontSize: "13px",
-                        color: COLORS.muted,
-                      }}
-                    >
+                    <div className="text-xs sm:text-sm text-[#6b8097]">
                       Step-by-step guide to download your forms
                     </div>
                   </div>
