@@ -2283,247 +2283,71 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         )}
       </div>
 
-      {/* Full-Screen Guide Modal */}
+      {/* Step Guide Overlay */}
       {showGuide &&
         filteredSteps &&
         filteredSteps.length > 0 &&
         createPortal(
-          <div
-            style={{
-              display: "flex",
-              position: "fixed",
-              inset: 0,
-              background: "#fafcff",
-              zIndex: 200,
-              flexDirection: "column",
-              animation: "fadeIn 0.3s ease",
-            }}
-            className="sm:pt- md: px-1 pt-2 sm:px-3 md:px-6"
-          >
-            {/* Topbar */}
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                height: "72px",
-                borderBottom: `1px solid ${COLORS.line}`,
-                paddingLeft: isMobile ? "12px" : "20px",
-                paddingRight: isMobile ? "12px" : "20px",
-                gap: "16px",
-                flexShrink: 0,
-                background: "#fafcff",
-              }}
-            >
+          <div className="animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[120] flex flex-col bg-[#fafcff] duration-[0.28s] ease-in-out">
+            {/* Guide Topbar */}
+            <div className="flex h-[54px] sm:h-[72px] shrink-0 items-center gap-3 sm:gap-4 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:px-6">
               <button
                 onClick={() => setShowGuide(false)}
-                style={{
-                  width: "36px",
-                  height: "36px",
-                  borderRadius: "50%",
-                  background: "#f4f7fb",
-                  border: "none",
-                  cursor: "pointer",
-                  color: COLORS.soft,
-                  fontSize: "20px",
-                  fontWeight: "bold",
-                  transition: "background 0.2s",
-                  flexShrink: 0,
-                }}
-                onMouseEnter={(e) => {
-                  (e.target as HTMLElement).style.background = "#e8f1fb";
-                }}
-                onMouseLeave={(e) => {
-                  (e.target as HTMLElement).style.background = "#f4f7fb";
-                }}
+                className="hover:bg-primary/20 flex h-8 w-8 sm:h-9 sm:w-9 shrink-0 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all"
+                aria-label="Close guide"
               >
-                ×
+                <X size={16} strokeWidth={2} />
               </button>
 
-              <div
-                style={{
-                  flex: 1,
-                  height: "6px",
-                  background: "#d0e4f7",
-                  borderRadius: "10px",
-                  overflow: "hidden",
-                }}
-              >
+              <div className="bg-primary/30 h-[5px] flex-1 overflow-hidden rounded-[10px]">
                 <div
+                  className="from-primary to-primary h-full rounded-[10px] bg-linear-to-r transition-all duration-[0.4s] ease-out"
                   style={{
-                    height: "100%",
-                    background: COLORS.primary,
                     width: `${guideProgress * 100}%`,
-                    transition: "width 0.4s ease-out",
                   }}
                 />
               </div>
 
-              <div
-                style={{
-                  fontSize: "12px",
-                  fontWeight: 700,
-                  color: COLORS.muted,
-                  minWidth: "60px",
-                  textAlign: "right",
-                }}
-              >
-                {guideStep + 1} / {filteredSteps?.length || 0}
+              <div className="shrink-0 text-[12px] font-medium whitespace-nowrap text-[#6b8097]">
+                {guideStep + 1} / {filteredSteps.length}
               </div>
             </div>
 
-            {/* Body */}
-            <div
-              style={{
-                flex: 1,
-                overflowY: "auto",
-                background: "#fafcff",
-                padding: isMobile ? "24px 16px 32px" : "48px 24px 40px",
-                display: "flex",
-                flexDirection: "column",
-                alignItems: "center",
-              }}
-            >
-              <div
-                style={{
-                  maxWidth: "580px",
-                  width: "100%",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
+            {/* Guide Body */}
+            <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto bg-white p-4 pt-5 sm:p-[48px_24px_40px]">
+              <div className="flex w-full max-w-[580px] flex-col">
                 {filteredSteps[guideStep] && (
                   <>
-                    <div
-                      style={{
-                        fontSize: "11px",
-                        fontWeight: 800,
-                        letterSpacing: ".1em",
-                        textTransform: "uppercase",
-                        color: COLORS.accent,
-                        marginBottom: "12px",
-                      }}
-                    >
+                    <div className="text-primary mb-4 text-[11px] font-semibold tracking-widest uppercase">
                       {filteredSteps[guideStep]?.label}
                     </div>
 
-                    <h2
-                      style={{
-                        fontSize: isMobile ? "20px" : "clamp(20px, 3.2vw, 26px)",
-                        fontWeight: 900,
-                        color: COLORS.navy,
-                        marginBottom: "10px",
-                        lineHeight: 1.3,
-                      }}
-                    >
+                    <h2 className="mb-2 text-[clamp(20px,3.2vw,26px)] leading-[1.3] font-black text-[#0c1b33]">
                       {filteredSteps[guideStep]?.title}
                     </h2>
 
                     <div
-                      style={{
-                        fontSize: "14px",
-                        color: COLORS.soft,
-                        lineHeight: 1.7,
-                        marginBottom: "18px",
-                      }}
+                      className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
                       dangerouslySetInnerHTML={{
                         __html: filteredSteps[guideStep]?.text || "",
                       }}
                     />
 
-                    {/* Browser mockup */}
-                    <div
-                      style={{
-                        border: `1.5px solid ${COLORS.line}`,
-                        borderRadius: "10px",
-                        overflow: "hidden",
-                        background: "#fff",
-                        boxShadow: "0 14px 32px rgba(12, 27, 51, 0.08)",
-                        marginBottom: "18px",
-                      }}
-                    >
-                      {/* Header with three dots and URL - only show if url exists */}
+                    {/* Browser Mockup */}
+                    <div className="relative mb-5 overflow-hidden rounded-xl border border-slate-200/80 bg-white shadow-sm">
                       {filteredSteps[guideStep]?.url && (
-                        <div
-                          style={{
-                            height: "34px",
-                            background: "#eef3fa",
-                            borderBottom: `1px solid ${COLORS.line}`,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "7px",
-                            paddingLeft: "12px",
-                            overflow: "hidden",
-                          }}
-                        >
-                          <div
-                            style={{
-                              width: "9px",
-                              height: "9px",
-                              borderRadius: "50%",
-                              background: "#f26b6b",
-                              flexShrink: 0,
-                            }}
-                          />
-                          <div
-                            style={{
-                              width: "9px",
-                              height: "9px",
-                              borderRadius: "50%",
-                              background: "#f5c56a",
-                              flexShrink: 0,
-                            }}
-                          />
-                          <div
-                            style={{
-                              width: "9px",
-                              height: "9px",
-                              borderRadius: "50%",
-                              background: "#63c48f",
-                              flexShrink: 0,
-                            }}
-                          />
-                          <div
-                            style={{
-                              marginLeft: "8px",
-                              height: "20px",
-                              display: "flex",
-                              alignItems: "center",
-                              paddingLeft: "10px",
-                              paddingRight: "10px",
-                              background: "#fff",
-                              borderRadius: "8px",
-                              fontSize: "10px",
-                              color: COLORS.muted,
-                              fontFamily: "monospace",
-                              overflow: "hidden",
-                              textOverflow: "ellipsis",
-                              whiteSpace: "nowrap",
-                              maxWidth: isMobile ? "160px" : "none",
-                            }}
-                          >
+                        <div className="flex h-[34px] items-center gap-1.5 border-b border-slate-200/80 bg-[#eef3fa] px-3">
+                          <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#f26b6b]" />
+                          <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#f5c56a]" />
+                          <div className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#63c48f]" />
+                          <div className="ml-2 flex h-5 max-w-[160px] items-center overflow-hidden text-ellipsis whitespace-nowrap rounded-md bg-white px-2.5 text-[10px] font-mono text-slate-500 sm:max-w-none">
                             {filteredSteps[guideStep]?.url}
                           </div>
                         </div>
                       )}
-                      <div
-                        style={{
-                          minHeight: isMobile ? "200px" : "280px",
-                          background: "linear-gradient(180deg, #fcfeff 0%, #f7fbff 100%)",
-                          color: COLORS.muted,
-                          fontSize: "13px",
-                          display: "flex",
-                          justifyContent: "center",
-                          alignItems: "center",
-                        }}
-                      >
+                      <div className="relative flex min-h-[200px] sm:min-h-[280px] items-center justify-center bg-gradient-to-b from-[#fcfeff] to-[#f7fbff] p-2 text-slate-400">
                         <div
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
+                          className="flex h-full w-full items-center justify-center"
                           dangerouslySetInnerHTML={{
                             __html: filteredSteps[guideStep]?.visual || "Step visual here",
                           }}
@@ -2531,87 +2355,28 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       </div>
                     </div>
 
-                    {/* Note */}
+                    {/* Important Note */}
                     {filteredSteps[guideStep]?.note && (
-                      <div
-                        style={{
-                          padding: "12px 14px",
-                          borderRadius: "14px",
-                          background: "#fef8e8",
-                          border: "1px solid #f0d98a",
-                          color: "#8a6200",
-                          fontSize: "13px",
-                          lineHeight: 1.55,
-                          marginBottom: "20px",
-                        }}
-                      >
-                        <strong>Important:</strong> {filteredSteps[guideStep]?.note}
+                      <div className="mb-5 flex items-start gap-3 rounded-[12px] border border-[#f0c878]/50 bg-[#fffdf5] p-3.5 sm:p-4 text-[13px] leading-relaxed text-[#7a5800]">
+                        <span className="font-bold shrink-0">Important:</span>
+                        <span>{filteredSteps[guideStep]?.note}</span>
                       </div>
                     )}
 
                     {/* Navigation */}
-                    <div
-                      style={{
-                        display: "flex",
-                        gap: "10px",
-                        marginTop: "auto",
-                      }}
-                    >
+                    <div className="mt-auto flex items-center gap-3 pt-4">
                       {guideStep > 0 && (
                         <button
                           onClick={handlePrevGuide}
-                          style={{
-                            padding: "12px 20px",
-                            background: "transparent",
-                            color: COLORS.soft,
-                            border: `1.5px solid ${COLORS.line}`,
-                            borderRadius: "10px",
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            fontSize: "14px",
-                            transition: "all 0.2s",
-                            fontFamily: "inherit",
-                          }}
-                          onMouseEnter={(e) => {
-                            const ele = e.target as HTMLElement;
-                            ele.style.borderColor = COLORS.soft;
-                            ele.style.color = COLORS.navy;
-                          }}
-                          onMouseLeave={(e) => {
-                            const ele = e.target as HTMLElement;
-                            ele.style.borderColor = COLORS.line;
-                            ele.style.color = COLORS.soft;
-                          }}
+                          className="rounded-[14px] border border-slate-200 bg-white px-5 py-3 font-semibold text-[#3a4f63] text-xs sm:text-sm transition-all hover:border-slate-300 hover:bg-slate-50 cursor-pointer"
                         >
                           ← Back
                         </button>
                       )}
-                      {guideStep < (filteredSteps?.length || 0) - 1 ? (
+                      {guideStep < filteredSteps.length - 1 ? (
                         <button
                           onClick={handleNextGuide}
-                          style={{
-                            flex: 1,
-                            padding: "12px 20px",
-                            // background: COLORS.accent,
-                            border: "none",
-                            borderRadius: "10px",
-                            color: "#fff",
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            fontSize: "14px",
-                            transition: "all 0.2s",
-                            fontFamily: "inherit",
-                            textAlign: "center",
-                          }}
-                          className="bg-primary"
-                          onMouseEnter={(e) => {
-                            (e.target as HTMLElement).style.background = COLORS.primaryDark;
-                            (e.target as HTMLElement).style.transform = "translateY(-2px)";
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.target as HTMLElement).style.background = COLORS.primary;
-                            (e.target as HTMLElement).style.transform = "translateY(0)";
-                          }}
+                          className="flex-1 rounded-[14px] bg-[#0d7377] px-6 py-3 text-center text-xs sm:text-sm font-bold text-white transition-all hover:bg-[#095457] hover:-translate-y-px shadow-sm cursor-pointer"
                         >
                           Next →
                         </button>
@@ -2622,28 +2387,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                             onToggleComplete();
                             setShowGuide(false);
                           }}
-                          style={{
-                            flex: 1,
-                            padding: "12px 20px",
-                            background: COLORS.green,
-                            border: "none",
-                            borderRadius: "10px",
-                            color: "#fff",
-                            fontWeight: 700,
-                            cursor: "pointer",
-                            fontSize: "14px",
-                            transition: "all 0.2s",
-                            fontFamily: "inherit",
-                            textAlign: "center",
-                          }}
-                          onMouseEnter={(e) => {
-                            (e.target as HTMLElement).style.background = "#0e5c3c";
-                            (e.target as HTMLElement).style.transform = "translateY(-2px)";
-                          }}
-                          onMouseLeave={(e) => {
-                            (e.target as HTMLElement).style.background = COLORS.green;
-                            (e.target as HTMLElement).style.transform = "translateY(0)";
-                          }}
+                          className="flex-1 rounded-[14px] bg-[#15744f] px-6 py-3 text-center text-xs sm:text-sm font-bold text-white transition-all hover:bg-[#0e5c3c] hover:-translate-y-px shadow-sm cursor-pointer"
                         >
                           Done, return to step
                         </button>
