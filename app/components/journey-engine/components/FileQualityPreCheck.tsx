@@ -98,57 +98,57 @@ export function FileQualityPreCheck({ uploadedDocuments }: FileQualityPreCheckPr
         style={{ background: "#fafaf9", borderColor: "#e7e5e4" }}
       >
         {/* Header */}
-        <div className="flex items-start gap-3 mb-3">
-          <div
-            className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
-            style={{
-              background: allPass ? "#ecfdf5" : "#fef2f2",
-              border: `1px solid ${allPass ? "#a7f3d0" : "#fecaca"}`,
-            }}
-          >
-            {allPass ? (
-              <FileCheck size={18} color="#065f46" />
-            ) : (
-              <FileWarning size={18} color="#991b1b" />
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-[14px] sm:text-[15px] font-bold text-[#1c1917] leading-snug">
+        <div className="flex flex-col gap-2 mb-3">
+          <div className="flex items-center gap-3">
+            <div
+              className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
+              style={{
+                background: allPass ? "#ecfdf5" : "#fef2f2",
+                border: `1px solid ${allPass ? "#a7f3d0" : "#fecaca"}`,
+              }}
+            >
+              {allPass ? (
+                <FileCheck size={18} color="#065f46" />
+              ) : (
+                <FileWarning size={18} color="#991b1b" />
+              )}
+            </div>
+            <h3 className="text-[14px] sm:text-[15px] font-bold text-[#1c1917] leading-snug truncate">
               USCIS portal upload pre-check
             </h3>
-            <p className="text-[12px] text-[#57534e] mt-0.5 leading-relaxed">
-              We checked the {total} document{total === 1 ? "" : "s"} in your vault against the
-              USCIS online portal limits ({MAX_SIZE_MB} MB max, formats:{" "}
-              {ACCEPTED_EXTENSIONS.map((e) => "." + e).join(", ")}).
-            </p>
           </div>
+          <p className="text-[12px] text-[#57534e] leading-relaxed w-full">
+            We checked the {total} document{total === 1 ? "" : "s"} in your vault against the
+            USCIS online portal limits ({MAX_SIZE_MB} MB max, formats:{" "}
+            {ACCEPTED_EXTENSIONS.map((e) => "." + e).join(", ")}).
+          </p>
         </div>
 
         {/* Result */}
         {allPass ? (
           <div
-            className="rounded-[10px] border p-3 flex items-start gap-3"
+            className="rounded-[10px] border p-3 flex flex-col gap-1.5"
             style={{ background: "#ecfdf5", borderColor: "#a7f3d0" }}
           >
-            <FileCheck size={16} color="#065f46" className="shrink-0 mt-0.5" />
-            <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <FileCheck size={16} color="#065f46" className="shrink-0" />
               <h5 className="text-[12.5px] font-semibold leading-snug" style={{ color: "#065f46" }}>
                 All {total} document{total === 1 ? "" : "s"} pass the USCIS portal pre-check
               </h5>
-              <p className="text-[12px] mt-1 leading-relaxed" style={{ color: "#065f46" }}>
-                Your vault documents are within the USCIS portal size and format limits. You can
-                proceed to upload them through the USCIS online portal.
-              </p>
             </div>
+            <p className="text-[12px] leading-relaxed w-full" style={{ color: "#065f46" }}>
+              Your vault documents are within the USCIS portal size and format limits. You can
+              proceed to upload them through the USCIS online portal.
+            </p>
           </div>
         ) : (
           <div
             className="rounded-[10px] border p-3"
             style={{ background: "#fef2f2", borderColor: "#fecaca" }}
           >
-            <div className="flex items-start gap-3 mb-3">
-              <AlertCircle size={16} color="#991b1b" className="shrink-0 mt-0.5" />
-              <div className="min-w-0">
+            <div className="flex flex-col gap-1.5 mb-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle size={16} color="#991b1b" className="shrink-0" />
                 <h5
                   className="text-[12.5px] font-semibold leading-snug"
                   style={{ color: "#991b1b" }}
@@ -156,11 +156,11 @@ export function FileQualityPreCheck({ uploadedDocuments }: FileQualityPreCheckPr
                   {issues.length} document{issues.length === 1 ? "" : "s"} need attention before
                   USCIS upload
                 </h5>
-                <p className="text-[12px] mt-1 leading-relaxed" style={{ color: "#7f1d1d" }}>
-                  Fix each item below before attempting to upload to USCIS, the portal will reject
-                  these.
-                </p>
               </div>
+              <p className="text-[12px] leading-relaxed w-full" style={{ color: "#7f1d1d" }}>
+                Fix each item below before attempting to upload to USCIS, the portal will reject
+                these.
+              </p>
             </div>
             <ul className="flex flex-col gap-2 mt-2">
               {issues.map((iss) => (

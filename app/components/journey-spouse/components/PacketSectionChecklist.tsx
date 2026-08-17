@@ -67,34 +67,36 @@ export function PacketSectionChecklist({ config, checked, onToggle }: PacketSect
           style={{ background: "#fafaf9", borderColor: "#e7e5e4" }}
         >
           {/* Header */}
-          <div className="flex items-start gap-3 mb-3">
-            <div
-              className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
-              style={{
-                background: allRequiredDone ? "#ecfdf5" : "#eff6ff",
-                border: `1px solid ${allRequiredDone ? "#a7f3d0" : "#bfdbfe"}`,
-              }}
-            >
-              <PackageCheck size={18} color={allRequiredDone ? "#065f46" : "#1e40af"} />
+          <div className="flex flex-col gap-2 mb-3">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3 min-w-0">
+                <div
+                  className="w-9 h-9 rounded-[10px] flex items-center justify-center shrink-0"
+                  style={{
+                    background: allRequiredDone ? "#ecfdf5" : "#eff6ff",
+                    border: `1px solid ${allRequiredDone ? "#a7f3d0" : "#bfdbfe"}`,
+                  }}
+                >
+                  <PackageCheck size={18} color={allRequiredDone ? "#065f46" : "#1e40af"} />
+                </div>
+                <h3 className="text-[14px] sm:text-[15px] font-bold text-[#1c1917] leading-snug truncate">
+                  {config.title ?? "Packet section checklist"}
+                </h3>
+              </div>
+              <div
+                className="text-[12px] font-bold whitespace-nowrap px-2 py-0.5 rounded shrink-0"
+                style={{
+                  background: allRequiredDone ? "#dcfce7" : "#dbeafe",
+                  color: allRequiredDone ? "#065f46" : "#1e40af",
+                }}
+              >
+                {requiredDone} / {requiredSections.length}
+              </div>
             </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="text-[14px] sm:text-[15px] font-bold text-[#1c1917] leading-snug">
-                {config.title ?? "Packet section checklist"}
-              </h3>
-              <p className="text-[12px] text-[#57534e] mt-0.5 leading-relaxed">
-                {config.instruction ??
-                  "Confirm each section is present and in correct order before mailing."}
-              </p>
-            </div>
-            <div
-              className="text-[12px] font-bold whitespace-nowrap px-2 py-0.5 rounded shrink-0"
-              style={{
-                background: allRequiredDone ? "#dcfce7" : "#dbeafe",
-                color: allRequiredDone ? "#065f46" : "#1e40af",
-              }}
-            >
-              {requiredDone} / {requiredSections.length}
-            </div>
+            <p className="text-[12px] text-[#57534e] leading-relaxed w-full">
+              {config.instruction ??
+                "Confirm each section is present and in correct order before mailing."}
+            </p>
           </div>
 
           {/* Progress bar */}
