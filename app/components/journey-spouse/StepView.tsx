@@ -1955,7 +1955,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         {tool.fee_block.details.map((d: string, i: number) => (
                           <div
                             key={i}
-                            className="flex items-start gap-[8px] text-[12px] leading-[1.45] text-white/55"
+                            className="flex items-start gap-[8px] text-[12px] font-medium leading-[1.45] text-white/85"
                           >
                             <div className="mt-[5px] h-[4px] w-[4px] shrink-0 rounded-full bg-[rgba(200,170,100,0.7)]" />
                             <span>{d}</span>
@@ -1967,20 +1967,47 @@ export const StepView: React.FC<StepViewProps> = ({
 
                   {/* Review Checklist (Step 10 — Review & Submit) */}
                   {tool.review_checklist && tool.review_checklist.length > 0 && (
-                    <div className="mb-[20px] flex flex-col gap-3 sm:gap-2">
+                    <div className="mb-[20px] flex flex-col gap-2.5 sm:gap-2">
                       {tool.review_checklist.map((item: string, i: number) => (
                         <div
                           key={i}
-                          className="flex items-start gap-[12px] rounded-[10px] border border-white/10 bg-white/[0.06] p-3 sm:p-[12px_14px]"
+                          className={`${
+                            isChapter1
+                              ? "border"
+                              : isChapter2
+                                ? "border border-[var(--rv-ch2)]/30 bg-[var(--rv-ch2-panel)]"
+                                : "border border-white/12 bg-white/[0.08]"
+                          } flex items-start gap-3 rounded-[12px] p-3 sm:p-[12px_16px]`}
+                          style={
+                            isChapter1
+                              ? {
+                                  backgroundColor: "var(--rv-ch1-feature-bg)",
+                                  borderColor: "rgba(130,132,191,0.3)",
+                                }
+                              : isChapter2
+                                ? {
+                                    backgroundColor: "var(--rv-ch2-feature-bg)",
+                                    borderColor: "rgba(82,10,80,0.28)",
+                                  }
+                                : {}
+                          }
                         >
-                          <div className="mt-[1px] flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full border border-[rgba(21,116,79,0.4)] bg-[rgba(21,116,79,0.25)]">
+                          <div className="mt-[1px] flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full border border-emerald-500/40 bg-emerald-500/20">
                             <Check
-                              size={11}
+                              size={12}
                               strokeWidth={2.5}
-                              className="text-[rgba(100,220,160,0.9)]"
+                              className="text-emerald-400"
                             />
                           </div>
-                          <div className="text-[12px] leading-[1.45] text-white/55 sm:text-[13px]">
+                          <div
+                            className={`text-[12px] font-medium leading-[1.45] sm:text-[13px] ${
+                              isChapter1
+                                ? "text-[var(--rv-ch1-text)]"
+                                : isChapter2
+                                  ? "text-[var(--rv-ch2-text)]"
+                                  : "text-white/90"
+                            }`}
+                          >
                             {item}
                           </div>
                         </div>
@@ -2026,7 +2053,7 @@ export const StepView: React.FC<StepViewProps> = ({
                           }`}
                         />
                         <div
-                          className={`text-[12px] leading-[1.4] sm:text-[13px] ${isChapter1 ? "text-[var(--rv-ch1-text)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/55"}`}
+                          className={`text-[12px] leading-[1.4] sm:text-[13px] ${isChapter1 ? "text-[var(--rv-ch1-text)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/85"}`}
                         >
                           {feat}
                         </div>
@@ -2044,7 +2071,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         {tool.upload_requirements?.map((req: string, i: number) => (
                           <div
                             key={i}
-                            className="flex items-start gap-2.5 text-[12px] leading-[1.45] text-white/55 sm:gap-[10px] sm:text-[13px]"
+                            className="flex items-start gap-2.5 text-[12px] font-medium leading-[1.45] text-white/85 sm:gap-[10px] sm:text-[13px]"
                           >
                             <div className="mt-[5px] h-[4px] w-[4px] shrink-0 rounded-full bg-[var(--rv-launch-blue)]/60" />
                             <span>{req}</span>
