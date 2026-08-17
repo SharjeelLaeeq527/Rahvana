@@ -27,6 +27,7 @@ interface FileQualityPreCheckProps {
 interface QualityIssue {
   docId: string;
   filename: string;
+  savedFilename: string;
   docName: string;
   sizeMb: number;
   extension: string;
@@ -52,6 +53,7 @@ export function FileQualityPreCheck({ uploadedDocuments }: FileQualityPreCheckPr
     for (const doc of uploadedDocuments) {
       // USCIS receives the compressed file when one exists
       const filename = doc.compressedFilename ?? doc.originalFilename;
+      const savedFilename = doc.originalFilename || doc.standardizedFilename || filename;
       const sizeBytes = doc.hasCompressedVersion
         ? (doc.compressedFileSize ?? doc.fileSize)
         : doc.fileSize;
@@ -74,6 +76,7 @@ export function FileQualityPreCheck({ uploadedDocuments }: FileQualityPreCheckPr
         issuesList.push({
           docId: doc.id,
           filename,
+          savedFilename,
           docName: findDocName(doc.documentDefId),
           sizeMb,
           extension: ext,
@@ -177,8 +180,11 @@ export function FileQualityPreCheck({ uploadedDocuments }: FileQualityPreCheckPr
                       {iss.sizeMb.toFixed(1)} MB · .{iss.extension || "?"}
                     </span>
                   </div>
-                  <p className="text-[11px] text-[#78716c] mb-1.5 italic truncate">
-                    {iss.filename}
+                  <p
+                    title={iss.savedFilename}
+                    className="text-[11px] text-[#78716c] mb-1.5 italic line-clamp-2 break-all cursor-help"
+                  >
+                    {iss.savedFilename}
                   </p>
                   <ul
                     className="text-[11.5px] leading-relaxed list-disc pl-5"
