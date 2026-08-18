@@ -32,6 +32,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { PlanTier } from "@/lib/entitlements/config";
 import { usePlan } from "@/app/context/PlanContext";
 import { E, msg } from "@/lib/errors";
+import { SafeHtml } from "../shared/SafeHTML";
 
 interface ActionStepRendererProps {
   step: RoadmapStepV3;
@@ -2417,17 +2418,15 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                       {filteredSteps[guideStep]?.title}
                     </h2>
 
-                    <div
-                      style={{
-                        fontSize: "14px",
-                        color: COLORS.soft,
-                        lineHeight: 1.7,
-                        marginBottom: "18px",
-                      }}
-                      dangerouslySetInnerHTML={{
-                        __html: filteredSteps[guideStep]?.text || "",
-                      }}
-                    />
+                    <SafeHtml
+  style={{
+    fontSize: "14px",
+    color: COLORS.soft,
+    lineHeight: 1.7,
+    marginBottom: "18px",
+  }}
+  html={filteredSteps[guideStep]?.text || ""}
+/>
 
                     {/* Browser mockup */}
                     <div
@@ -2515,18 +2514,16 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           alignItems: "center",
                         }}
                       >
-                        <div
-                          style={{
-                            width: "100%",
-                            height: "100%",
-                            display: "flex",
-                            justifyContent: "center",
-                            alignItems: "center",
-                          }}
-                          dangerouslySetInnerHTML={{
-                            __html: filteredSteps[guideStep]?.visual || "Step visual here",
-                          }}
-                        />
+                        <SafeHtml
+  style={{
+    padding: "18px",
+    minHeight: "140px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  }}
+  html={filteredSteps[guideStep]?.visual || "Step visual here"}
+/>
                       </div>
                     </div>
 

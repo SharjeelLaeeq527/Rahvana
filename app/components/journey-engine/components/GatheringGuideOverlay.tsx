@@ -1,6 +1,7 @@
 import React from "react";
 import { X, Check, ChevronLeft } from "lucide-react";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { SafeHtml } from "../../shared/SafeHTML";
 
 interface GatheringGuideOverlayProps {
   isOpen: boolean;
@@ -66,10 +67,10 @@ export const GatheringGuideOverlay: React.FC<GatheringGuideOverlayProps> = ({
                 <div className="text-[11px] sm:text-[12px] font-[700] tracking-[0.06em] uppercase text-[#6b8097] mb-[8px]">
                   {sec.t}
                 </div>
-                <div
-                  className="text-[13px] sm:text-[14px] text-[#3a4f63] leading-[1.7] prose-sm break-words"
-                  dangerouslySetInnerHTML={{ __html: sec.c }}
-                />
+                <SafeHtml
+  className="text-[13px] sm:text-[14px] text-[#3a4f63] leading-[1.7] prose-sm break-words"
+  html={sec.c}
+/>
               </div>
             ))}
           </div>

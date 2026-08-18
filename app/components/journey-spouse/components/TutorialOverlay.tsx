@@ -5,6 +5,7 @@ import { TutorialVideo } from "@/app/components/shared/TutorialVideo";
 import { TutorialStepData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { USCIS_TUTORIAL_STEPS } from "../UscisTutorialData";
 import { HOUSEHOLD_TUTORIAL_STEPS } from "../HouseholdTutorialData";
+import { SafeHtml } from "../../shared/SafeHTML";
 
 interface TutorialOverlayProps {
   isOpen: boolean;
@@ -112,12 +113,10 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             <h2 className="text-[clamp(20px,3.2vw,26px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
               {ceacTutStep.heading}
             </h2>
-            <div
-              className="text-[14px] text-[#3a4f63] leading-[1.7] mb-5"
-              dangerouslySetInnerHTML={{
-                __html: ceacTutStep.instruction,
-              }}
-            />
+            <SafeHtml
+  className="text-[14px] text-[#3a4f63] leading-[1.7] mb-5"
+  html={ceacTutStep.instruction}
+/>
 
             {ceacTutStep.choiceOptions ? (
               <div className="mb-5">
@@ -291,12 +290,10 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
           <h2 className="text-[clamp(20px,3.2vw,26px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
             {currentTutStep.heading}
           </h2>
-          <div
-            className="text-[14px] text-[#3a4f63] leading-[1.7] mb-5"
-            dangerouslySetInnerHTML={{
-              __html: currentTutStep.instruction,
-            }}
-          />
+          <SafeHtml
+  className="text-[14px] text-[#3a4f63] leading-[1.7] mb-5"
+  html={currentTutStep.instruction}
+/>
 
           {/* Screenshot Block */}
           {isDynamic ? (
@@ -515,11 +512,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 {isDynamic ? (
                   (currentTutStep as TutorialStepData).note
                 ) : (
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: (currentTutStep as any).note!,
-                    }}
-                  />
+                  <SafeHtml html={(currentTutStep as any).note!} />
                 )}
               </div>
             </div>
