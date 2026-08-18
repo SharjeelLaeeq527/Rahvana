@@ -93,10 +93,13 @@ the diff, then commit.
 
 ## C. Do soon (harden - medium effort)
 
-- [ ] **Rate-limit the real login path** (Owner: Dev)
-  - Route email+password login through a server action that calls `checkRateLimit`
-    (from `lib/security/rate-limit.ts`), keyed on email + IP, before
-    `signInWithPassword`. Add account lockout + exponential backoff.
+- [x] **Rate-limit the real login path** (Owner: Dev) - DONE (staged)
+  - New server route `app/api/auth/login/route.ts` (rate limit per IP + per
+    email+IP, audit log, generic errors, MFA preserved). `AuthContext.signIn`
+    now calls it instead of client-side `signInWithPassword`. Compile-clean
+    (0 TS errors). See `LEARN_Rate_Limiting_And_Login_Security.md`.
+  - STILL TODO: account lockout + exponential backoff (nice-to-have).
+  - MUST test the login + MFA flow in a running app before merging.
 - [ ] **Back rate limiting with Redis (Upstash)** (Owner: Dev/Ops)
   - Makes limits survive serverless cold starts and work across instances.
 - [ ] **Switch on server-side upload content validation** (Owner: Dev)
@@ -151,7 +154,7 @@ the diff, then commit.
 |--------|------|---------|
 | A. Already done (staged) | 6 | 1 (commit) |
 | B. Do now | 1 | 4 |
-| C. Do soon | 0 | 9 |
+| C. Do soon | 1 | 8 |
 | D. Do later | 0 | 6 |
 | E. Decided not to do | 2 | 0 |
 
