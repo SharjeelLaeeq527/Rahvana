@@ -12,6 +12,7 @@ import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPr
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import type { DocumentDefinition } from "@/lib/document-vault/types";
 import { E, msg } from "@/lib/errors";
+import { ZoomableGuideImage } from "@/app/components/shared/ZoomableGuideImage";
 
 interface ApprovalNoticeToolProps {
   state: any;
@@ -828,11 +829,13 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                   </div>
                   {currentGuideStep.media ? (
                     currentGuideStep.media.frame === false ? (
-                      <img
-                        src={currentGuideStep.media.src}
-                        alt={currentGuideStep.media.alt || currentGuideStep.head}
-                        className="block w-full h-auto rounded-[12px] border border-[#d0e4f7] mb-[14px]"
-                      />
+                      <div className="mb-[14px] w-full relative rounded-[12px] overflow-hidden border border-[#d0e4f7]" style={{ aspectRatio: "4/3" }}>
+                        <ZoomableGuideImage
+                          src={currentGuideStep.media.src}
+                          alt={currentGuideStep.media.alt || currentGuideStep.head}
+                          isStandardImg
+                        />
+                      </div>
                     ) : (
                       <div className="mb-[14px] overflow-hidden rounded-[12px] border border-[#d0e4f7] bg-white">
                         {currentGuideStep.media.type === "video" ? (
@@ -847,11 +850,13 @@ export const ApprovalNoticeTool: React.FC<ApprovalNoticeToolProps> = ({
                             <source src={currentGuideStep.media.src} type="video/mp4" />
                           </video>
                         ) : (
-                          <img
-                            src={currentGuideStep.media.src}
-                            alt={currentGuideStep.media.alt || currentGuideStep.head}
-                            className="block w-full h-auto"
-                          />
+                          <div className="w-full relative overflow-hidden" style={{ aspectRatio: "4/3" }}>
+                            <ZoomableGuideImage
+                              src={currentGuideStep.media.src}
+                              alt={currentGuideStep.media.alt || currentGuideStep.head}
+                              isStandardImg
+                            />
+                          </div>
                         )}
                       </div>
                     )

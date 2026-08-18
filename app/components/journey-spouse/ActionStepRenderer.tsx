@@ -28,6 +28,7 @@ import { DocumentPreviewModal } from "@/app/components/document-vault/DocumentPr
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DOCUMENTS_BY_KEY } from "@/lib/document-vault/document-definitions";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { ZoomableGuideImage } from "@/app/components/shared/ZoomableGuideImage";
 import { UploadedDocument, DocumentDefinition } from "@/lib/document-vault/types";
 import { useAuth } from "@/app/context/AuthContext";
 import { PlanTier } from "@/lib/entitlements/config";
@@ -2345,13 +2346,41 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                           </div>
                         </div>
                       )}
-                      <div className="relative flex min-h-[200px] sm:min-h-[280px] items-center justify-center bg-gradient-to-b from-[#fcfeff] to-[#f7fbff] p-2 text-slate-400">
-                        <div
-                          className="flex h-full w-full items-center justify-center"
-                          dangerouslySetInnerHTML={{
-                            __html: filteredSteps[guideStep]?.visual || "Step visual here",
-                          }}
-                        />
+                      <div className="relative flex min-h-[200px] sm:min-h-[280px] items-center justify-center bg-gradient-to-b from-[#fcfeff] to-[#f7fbff] text-slate-400">
+                        {(() => {
+                          const stepItem = filteredSteps[guideStep];
+                          const imgSrc =
+                            stepItem?.media?.src ||
+                            stepItem?.image ||
+                            stepItem?.src ||
+                            (stepItem?.visual && /<img\b/i.test(stepItem.visual)
+                              ? stepItem.visual.match(/src=["']([^"']+)["']/i)?.[1]
+                              : null);
+
+                          if (imgSrc) {
+                            return (
+                              <div
+                                className="relative w-full overflow-hidden bg-[#f8f9fb]"
+                                style={{ aspectRatio: "4/3" }}
+                              >
+                                <ZoomableGuideImage
+                                  src={imgSrc}
+                                  alt={stepItem?.title || stepItem?.heading || "Step guide visual"}
+                                  isStandardImg
+                                />
+                              </div>
+                            );
+                          }
+
+                          return (
+                            <div
+                              className="flex h-full w-full items-center justify-center p-2"
+                              dangerouslySetInnerHTML={{
+                                __html: stepItem?.visual || "Step visual here",
+                              }}
+                            />
+                          );
+                        })()}
                       </div>
                     </div>
 

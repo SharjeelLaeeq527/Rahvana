@@ -1,6 +1,7 @@
 import React from "react";
 import { X } from "lucide-react";
 import Image from "next/image";
+import { ZoomableGuideImage } from "@/app/components/shared/ZoomableGuideImage";
 import { TutorialVideo } from "@/app/components/shared/TutorialVideo";
 import { TutorialStepData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { USCIS_TUTORIAL_STEPS } from "../UscisTutorialData";
@@ -325,12 +326,11 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                       alt={(currentTutStep as TutorialStepData).screenTitle}
                     />
                   ) : (
-                    <Image
+                    <ZoomableGuideImage
                       key={(currentTutStep as TutorialStepData).media?.src!}
                       src={(currentTutStep as TutorialStepData).media?.src!}
                       alt={(currentTutStep as TutorialStepData).screenTitle}
                       fill
-                      className="object-contain"
                       sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                       quality={95}
                       priority={tutorialIdx === 0}
@@ -441,12 +441,11 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               <div className="relative w-full bg-[#f8f9fb]" style={{ aspectRatio: "4/3" }}>
                 {(currentTutStep as any).media?.src ? (
                   (currentTutStep as any).media.type === "img" ? (
-                    <Image
+                    <ZoomableGuideImage
                       key={(currentTutStep as any).media.src}
                       src={(currentTutStep as any).media.src!}
                       alt={(currentTutStep as any).screenTitle}
                       fill
-                      className="object-contain"
                       sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                       quality={95}
                       priority

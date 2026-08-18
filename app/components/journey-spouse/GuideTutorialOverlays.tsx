@@ -1,5 +1,6 @@
 "use client";
 import Image from "next/image";
+import { ZoomableGuideImage } from "@/app/components/shared/ZoomableGuideImage";
 
 // Generic tutorial overlay for status guides (used for 'What does this status mean?')
 export const GuideTutorialOverlay: React.FC<TutorialOverlayProps> = (props) => {
@@ -45,16 +46,27 @@ export const GuideTutorialOverlay: React.FC<TutorialOverlayProps> = (props) => {
               {s.ssDesc || s.copy}
             </div>
           )}
-          {s.visual && (
-            <div
-              className={
-                hasImageVisual
-                  ? "-mx-[18px] -mb-[18px] [&_img]:block [&_img]:w-full [&_img]:h-auto [&_img]:object-contain [&_img]:object-top"
-                  : "mb-3"
-              }
-              dangerouslySetInnerHTML={{ __html: s.visual || "" }}
-            />
-          )}
+          {s.visual && (() => {
+            const imgSrc = hasImageVisual ? s.visual.match(/src=["']([^"']+)["']/i)?.[1] : null;
+            if (imgSrc) {
+              return (
+                <div className="relative w-full min-h-[200px] flex items-center justify-center overflow-hidden bg-[#f8f9fb] rounded-lg border border-[#d0e4f7] mb-3">
+                  <ZoomableGuideImage
+                    src={imgSrc}
+                    alt={s.heading || s.label || "Guide step visual"}
+                    isStandardImg
+                    controlsPosition="top-right"
+                  />
+                </div>
+              );
+            }
+            return (
+              <div
+                className="mb-3"
+                dangerouslySetInnerHTML={{ __html: s.visual || "" }}
+              />
+            );
+          })()}
           {(s.ssHighlight || s.highlight) && (
             <div className="text-[12px] sm:text-[13px] font-semibold text-[#2f6fd4] px-3 py-2 bg-[#2f6fd4]/10 border border-[#2f6fd4]/20 rounded-lg mb-2">
               {s.ssHighlight || s.highlight}
@@ -240,15 +252,15 @@ export const InterviewDayTutOverlay: React.FC<TutorialOverlayProps> = (props) =>
       </h2>
       <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">{s.instruction}</p>
       {s.media?.type === "img" && s.media.src ? (
-        <Image
-          src={s.media.src}
-          alt={s.heading || "Interview day guide image"}
-          width={1200}
-          height={900}
-          className="mb-[18px] w-full h-auto object-contain"
-          sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
-          quality={95}
-        />
+        <div className="mb-[18px] w-full relative rounded-[10px] overflow-hidden border border-[#d0e4f7]" style={{ aspectRatio: "4/3" }}>
+          <ZoomableGuideImage
+            src={s.media.src}
+            alt={s.heading || "Interview day guide image"}
+            fill
+            sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
+            quality={95}
+          />
+        </div>
       ) : (
         <div
           className="mb-[18px] leading-relaxed"

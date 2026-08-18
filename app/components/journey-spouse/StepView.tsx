@@ -46,6 +46,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ZoomableGuideImage } from "@/app/components/shared/ZoomableGuideImage";
 import {
   RoadmapData,
   QuestSuite,
@@ -4687,10 +4688,10 @@ export const StepView: React.FC<StepViewProps> = ({
                           style={{ aspectRatio: "4/3" }}
                         >
                           {currentTutStep.media && currentTutStep.media.type === "img" ? (
-                            <img
+                            <ZoomableGuideImage
                               src={currentTutStep.media.src}
                               alt={currentTutStep.heading}
-                              className="h-full w-full object-contain"
+                              isStandardImg
                             />
                           ) : (
                             <div className="absolute inset-0 flex w-full flex-col items-center justify-center gap-[16px] overflow-hidden px-[24px] py-[28px]">
@@ -4865,12 +4866,11 @@ export const StepView: React.FC<StepViewProps> = ({
                               alt={(currentTutStep as TutorialStepData).screenTitle}
                             />
                           ) : (
-                            <Image
+                            <ZoomableGuideImage
                               key={(currentTutStep as TutorialStepData).media!.src || tutorialIdx}
                               src={(currentTutStep as TutorialStepData).media!.src!}
                               alt={(currentTutStep as TutorialStepData).screenTitle}
                               fill
-                              className="object-contain"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                               quality={95}
                               priority={tutorialIdx === 0}
@@ -4883,11 +4883,10 @@ export const StepView: React.FC<StepViewProps> = ({
                             alt={(currentTutStep as TutorialStepData).screenTitle}
                           />
                         ) : (currentTutStep as TutorialStepData).screenshot ? (
-                          <Image
+                          <ZoomableGuideImage
                             src={((currentTutStep as TutorialStepData).screenshot as string) || ""}
                             alt={(currentTutStep as TutorialStepData).screenTitle}
                             fill
-                            className="object-contain"
                             sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                             quality={95}
                             priority={tutorialIdx === 0}
@@ -4985,12 +4984,11 @@ export const StepView: React.FC<StepViewProps> = ({
                         {(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).media?.src ? (
                           (currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).media.type ===
                           "img" ? (
-                            <Image
+                            <ZoomableGuideImage
                               key={(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).media.src}
                               src={(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).media.src!}
                               alt={(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).screenTitle}
                               fill
-                              className="object-contain"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                               quality={95}
                               priority
