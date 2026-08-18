@@ -12,5 +12,11 @@ export function SafeHtml({ html, as: Tag = "div", className, ...rest }: SafeHtml
   const sanitized = sanitizeHtml(html);
   if (!sanitized) return null;
 
-  return <Tag className={className} dangerouslySetInnerHTML={{ __html: sanitized }} {...rest} />;
+  return (
+    <Tag
+      {...rest}
+      className={className}
+      dangerouslySetInnerHTML={{ __html: sanitized }}
+    />
+  );
 }

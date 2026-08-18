@@ -1,29 +1,26 @@
-import DOMPurify from "isomorphic-dompurify";
+"use client";
 
-/**
- * Sanitizes HTML while allowing only standard safe HTML elements/attributes.
- * DOMPurify automatically removes scripts, event handlers, javascript: URLs, etc.
- */
+import createDOMPurify from "dompurify";
+
 const SANITIZE_CONFIG = {
   USE_PROFILES: { html: true },
 } as const;
 
-//Sanitize untrusted HTML before rendering it with dangerouslySetInnerHTML.
+const DOMPurify =
+  typeof window !== "undefined"
+    ? createDOMPurify(window)
+    : null;
+
 export function sanitizeHtml(
   html: string | null | undefined
 ): string {
-  if (!html) {
+  if (!html || !DOMPurify) {
     return "";
   }
 
-  // Force a plain string in case DOMPurify returns TrustedHTML.
   return String(DOMPurify.sanitize(html, SANITIZE_CONFIG));
 }
 
-/**
- * Escape plain user-provided text when it must be represented as HTML.
- * Use this when the value should be displayed as text, not interpreted as HTML.
- */
 export function escapeHtml(
   text: string | null | undefined
 ): string {
