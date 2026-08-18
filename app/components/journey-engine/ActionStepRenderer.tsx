@@ -1296,7 +1296,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
         .asr-spin { animation: spin 1s linear infinite; }
       `}</style>
       {/* Main Content */}
-      <div className="max-w-[660px] w-full mx-auto px-2 sm:px-4 md:px-8 pt-5 md:pt-3 pb-8 md:pb-12 flex flex-col step">
+      <div className="step mx-auto flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
         {/* Eyebrow for Paper Filing Path steps */}
         {/* {(step.step_key === "step_1_11" || 
           step.step_key === "step_1_12" || 

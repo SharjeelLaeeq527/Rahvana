@@ -1276,7 +1276,7 @@ export const StepView: React.FC<StepViewProps> = ({
         />
 
         {/* Page Shell */}
-        <div className="flex w-full max-w-[680px] flex-col px-[24px] pt-5 pb-10 md:pt-8">
+        <div className="flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
           {/* Step Header */}
           <StepHeader
             stepNumber={localIdx + 1}
@@ -3828,7 +3828,7 @@ export const StepView: React.FC<StepViewProps> = ({
               </>
             ) : currentStep.step_type === "filing" ? (
               <div className="animate-in fade-in slide-in-from-bottom-6 flex w-full flex-col items-center duration-1000">
-                <div className="flex w-full max-w-[660px] flex-col pt-5 pb-[35px] md:pt-8">
+                <div className="flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
                   <h1 className="mt-0 mb-1 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight text-[#0c1b33]">
                     {currentStep.step_name}
                   </h1>
@@ -4020,7 +4020,7 @@ export const StepView: React.FC<StepViewProps> = ({
               </div>
             ) : (
               <div
-                className={`animate-in fade-in zoom-in-95 mx-auto mt-4 w-full max-w-[740px] rounded-[20px] border border-[#d0e4f7] bg-white p-4 shadow-xl shadow-[#0f1f38]/5 duration-700 sm:mt-8 sm:rounded-[28px] sm:p-8 md:mt-12 md:rounded-[32px] md:p-12 lg:p-20 ${isChapter1 ? "step-modal-spacing" : ""}`}
+                className={`animate-in fade-in zoom-in-95 mx-auto mt-4 w-full max-w-[680px] rounded-[20px] border border-[#d0e4f7] bg-white p-4 shadow-xl shadow-[#0f1f38]/5 duration-700 sm:mt-8 sm:rounded-[28px] sm:p-8 md:mt-12 md:rounded-[32px] md:p-12 lg:p-20 ${isChapter1 ? "step-modal-spacing" : ""}`}
               >
                 <div
                   className={`mb-4 text-[11px] font-bold tracking-[0.2em] uppercase opacity-70 ${isChapter1 ? "accent-rose" : "text-primary"}`}

@@ -1158,7 +1158,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
     //<div className="min-h-screen w-full ch1step-bg">
     <div className="min-h-screen w-full">
       <div className="bg-cover bg-center w-full min-h-screen relative">
-        <div className="max-w-[720px] w-full mx-auto px-4 sm:px-6 md:px-8 py-8 md:py-12 flex flex-col step-modal-spacing">
+        <div className="flex w-full max-w-[680px] flex-col mx-auto px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
           {/* Eyebrow */}
           <div className="flex flex-wrap items-center gap-2 mb-1">
             <span className="text-[11px] font-semibold uppercase tracking-wider accent-brown">
