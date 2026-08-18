@@ -3242,11 +3242,11 @@
               },
               {
                 "label": "Mail or online account",
-                "type": "channel"
+                "type": "waiting"
               },
               {
                 "label": "USCIS approved",
-                "type": "stage"
+                "type": "purple"
               }
             ],
             "launchModule": {
