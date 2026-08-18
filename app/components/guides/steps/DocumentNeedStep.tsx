@@ -24,6 +24,7 @@ import {
   Heart,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { SafeHtml } from "../../shared/SafeHTML";
 
 const ICONS: Record<string, React.ElementType> = {
   new_certificate: FileText,
@@ -271,7 +272,7 @@ const DocumentNeedStep = ({ selected, onSelect, data, onNext }: DocumentNeedStep
                 {q.note && internalStep === stepNumber && (
                   <div className="mt-4 p-3 bg-slate-50 rounded-lg border border-slate-100 flex gap-3 text-slate-600 text-xs shadow-sm">
                     <AlertCircle className="w-4 h-4 text-slate-400 shrink-0" />
-                    <p className="font-urdu-body" dangerouslySetInnerHTML={{ __html: q.note }} />
+                    <SafeHtml as="p" className="font-urdu-body" html={q.note} />
                   </div>
                 )}
               </div>

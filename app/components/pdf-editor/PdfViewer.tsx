@@ -12,18 +12,9 @@ import ShapeFormattingToolbar from "./shapes/ShapeFormattingToolbar";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
-import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
+import type { PDFDocumentProxy, RenderTask } from "@/lib/pdfjs/client";
+import { loadPdfDocument, renderPdfPage } from "@/lib/pdfjs/client";
 import type { TextFormat } from "./text/TextFormattingToolbar";
-
-let pdfjsLib: typeof import("pdfjs-dist") | null = null;
-
-async function initPdfJs() {
-  if (pdfjsLib) return pdfjsLib;
-  const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-  pdfjsLib = pdfjs;
-  return pdfjs;
-}
 
 export function PDFViewer({
   activeTool,
@@ -104,8 +95,7 @@ export function PDFViewer({
     if (!pdfFile) return;
     const loadPdf = async () => {
       try {
-        const pdfjs = await initPdfJs();
-        const loadedPdf = await pdfjs.getDocument(await pdfFile.arrayBuffer()).promise;
+        const loadedPdf = await loadPdfDocument(await pdfFile.arrayBuffer());
         setPdfDoc(loadedPdf);
         setTotalPages(loadedPdf.numPages);
       } catch (error: unknown) {
@@ -139,7 +129,6 @@ export function PDFViewer({
         setPageHeight(originalViewport.height);
 
         const canvas = canvasRef.current!;
-        const context = canvas.getContext("2d")!;
         canvas.width = viewport.width;
         canvas.height = viewport.height;
 
@@ -151,7 +140,7 @@ export function PDFViewer({
           }
         }
 
-        renderTask = page.render({ canvasContext: context, viewport });
+        renderTask = renderPdfPage(page, canvas, viewport);
         await renderTask.promise;
 
         if (!cancelled) setIsLoading(false);

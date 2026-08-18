@@ -2,6 +2,7 @@
 
 import React, { useEffect } from "react";
 import { X, Check } from "lucide-react";
+import { SafeHtml } from "../shared/SafeHTML";
 interface DocumentGuideProps {
   isOpen: boolean;
   onClose: () => void;
@@ -65,12 +66,10 @@ export const CivilDocGuideOverlay: React.FC<DocumentGuideProps> = ({
                 <h3 className="text-[13px] font-semibold text-[#6b8097] uppercase tracking-[0.05em] mb-[10px]">
                   {section.t || section.title}
                 </h3>
-                <div
-                  className="text-sm text-[#3a4f63] leading-[1.7]"
-                  dangerouslySetInnerHTML={{
-                    __html: section.c || section.htmlContent,
-                  }}
-                />
+                <SafeHtml
+  className="text-sm text-[#3a4f63] leading-[1.7]"
+  html={section.c || section.htmlContent}
+/>
               </div>
             ))}
           </div>
@@ -164,9 +163,11 @@ export const FinancialDocGuideOverlay: React.FC<DocumentGuideProps> = ({
                 <h3 className="text-[13px] font-semibold text-[#6b8097] uppercase tracking-[0.05em] mb-[12px]">
                   {section.title}
                 </h3>
-                <p className="text-sm text-[#3a4f63] leading-[1.7]" dangerouslySetInnerHTML={{
-    __html: section.body,
-  }} />
+                <SafeHtml
+  as="p"
+  className="text-sm text-[#3a4f63] leading-[1.7]"
+  html={section.body}
+/>
               </div>
             ))}
           </div>
@@ -261,10 +262,7 @@ export const HouseholdDocGuideOverlay: React.FC<DocumentGuideProps> = ({
                 <h3 className="text-[13px] font-semibold text-[#6b8097] uppercase tracking-[0.05em] mb-[12px]">
                   {section.title}
                 </h3>
-                <div
-                  className="text-sm text-[#3a4f63] leading-[1.7]"
-                  dangerouslySetInnerHTML={{ __html: section.body }}
-                />
+                <SafeHtml className="text-sm text-[#3a4f63] leading-[1.7]" html={section.body} />
               </div>
             ))}
           </div>
