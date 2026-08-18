@@ -144,29 +144,30 @@ const TutorialShell: React.FC<TutorialOverlayProps & { children: React.ReactNode
 
   return (
     <div className="fixed inset-0 z-500 flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans bg-white">
-      <div className="flex items-center px-3 sm:px-6 md:px-8 py-4 sm:py-[18px] border-b border-[#d0e4f7] gap-3 sm:gap-4 shrink-0 bg-white">
-        <button onClick={onClose}>
-          <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
-        </button>
-        <div className="flex-1 h-[5px] bg-[#d0e4f7] rounded-[10px] overflow-hidden">
-          <div
-            className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out"
-            style={{ width: `${progress}%` }}
-          />
+      {/* ── Progress bar header ── */}
+      <div className="flex items-center px-5 sm:px-8 py-4 sm:py-5 border-b border-[#d0e4f7] gap-4 shrink-0 bg-white">
+          <button onClick={onClose} className="shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-[#f4f7fb] transition-colors">
+            <X size={16} strokeWidth={2} className="text-[#3a4f63]" />
+          </button>
+          <div className="flex-1 h-[6px] bg-[#d0e4f7] rounded-full overflow-hidden">
+            <div
+              className="h-full bg-gradient-to-r from-primary to-primary/70 transition-all duration-400 ease-in-out rounded-full"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          <div className="text-[13px] font-semibold text-[#6b8097] whitespace-nowrap shrink-0">
+            {index + 1} / {total}
+          </div>
         </div>
-        <div className="text-[12px] font-medium text-[#6b8097] whitespace-nowrap shrink-0">
-          {index + 1} / {total}
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto flex flex-col items-center px-3 sm:px-6 md:px-8 py-5 sm:py-12">
-        <div className="w-full max-w-full sm:max-w-[600px] md:max-w-[650px] flex flex-col min-h-full">
+      {/* ── Scrollable content + nav ── */}
+      <div className="flex-1 overflow-y-auto flex flex-col items-center px-5 sm:px-8 md:px-10 py-7 sm:py-10">
+        <div className="w-full max-w-full sm:max-w-[600px] md:max-w-[650px] flex flex-col">
           {children}
-          <div className="mt-auto pt-6 flex flex-col sm:flex-row gap-2.5">
+          <div className="mt-8 mb-2 flex flex-row gap-3">
             {!isFirst && (
               <button
                 onClick={() => setIndex(index - 1)}
-                className="w-full sm:w-auto p-[13px_22px] bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-sans text-[14px] font-medium cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a]"
+                className="shrink-0 px-6 py-3.5 bg-transparent text-[#3a4f63] border-[1.5px] border-[#d0e4f7] rounded-[10px] font-sans text-[14px] font-medium cursor-pointer transition-all hover:border-[#3a4f63] hover:text-[#1c2b3a]"
               >
                 ← Back
               </button>
@@ -177,14 +178,14 @@ const TutorialShell: React.FC<TutorialOverlayProps & { children: React.ReactNode
                   setIndex(0);
                   onClose();
                 }}
-                className="w-full flex-1 p-[13px_22px] bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
+                className="flex-1 py-3.5 bg-[#15744f] text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-[#0e5c3c] hover:-translate-y-px text-center"
               >
                 Done, return to step
               </button>
             ) : (
               <button
                 onClick={() => setIndex(index + 1)}
-                className="w-full flex-1 p-[13px_22px] bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px active:translate-y-0 text-center"
+                className="flex-1 py-3.5 bg-primary text-white border-none rounded-[10px] font-sans text-[14px] font-semibold cursor-pointer transition-all hover:bg-primary/80 hover:-translate-y-px active:translate-y-0 text-center"
               >
                 Next →
               </button>

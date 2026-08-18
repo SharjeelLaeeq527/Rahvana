@@ -170,7 +170,7 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({ record }) =>
       style={{
         background: "#8284bf",
         border: "1.5px solid #c6c8ea",
-        boxShadow: "0 24px 64px rgba(0,0,0,0.5)",
+        boxShadow: "0 12px 30px rgba(0, 0, 0, 0.15)",
       }}
     >
       <div className="px-6 py-4" style={{ borderBottom: "1px solid #8284bf33" }}>
@@ -178,7 +178,7 @@ const StatusTimelinePanel: React.FC<{ record: ReceiptRecord }> = ({ record }) =>
           className="text-[10px] font-bold uppercase tracking-widest"
           style={{ color: "#8284bf" }}
         >
-          Post-Filing Checkpoint
+          Post-Filing 
         </div>
         <div className="text-[18px] font-semibold text-white">
           Receipt Registered · Status Timeline
@@ -360,10 +360,21 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
       return;
     }
     if (guard && !guard()) return;
+    // Client-side validation — all required fields
+    const rn = fields.receiptNumber.trim();
+    if (!rn || !fields.noticeDate || !fields.priorityDate) {
+      setError("Please fill in all required fields.");
+      return;
+    }
+    if (rn.length !== 13) {
+      setError(msg(E.TOOL_CASE_RECEIPT_LENGTH));
+      return;
+    }
     setLoading(true);
     setError("");
     const { record, error: err } = await postReceipt(journeyId, {
       ...fields,
+      receiptNumber: rn,
       source: "manual",
     });
     setLoading(false);
@@ -376,7 +387,7 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
 
   return (
     <div
-      className="rounded-2xl p-8 md:p-10 mb-6"
+      className="rounded-2xl p-5 md:p-10 mb-6"
       style={{
         background: "#fff",
         border: "1.5px solid rgba(130,132,191,0.4)",
@@ -497,7 +508,8 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
         </div>
       )}
 
-      <div className="flex gap-2">
+      {/* Desktop Buttons */}
+      <div className="hidden md:flex gap-2">
         <button
           className="px-5 py-2 rounded-full text-[14px] font-semibold"
           style={{
@@ -526,6 +538,36 @@ const ManualForm: React.FC<ManualFormProps & { journeyId: string }> = ({
               : trackingLocked
                 ? "Save Receipt (Tracking Locked)"
                 : "Save Receipt & Enable Tracking"}
+        </button>
+      </div>
+
+      {/* Mobile Buttons */}
+      <div className="flex md:hidden flex-col gap-2 w-full mt-2">
+        <button
+          className="w-full py-3 rounded-xl text-[15px] font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          style={{ background: "#8284bf" }}
+          onClick={handleSubmit}
+          disabled={loading}
+        >
+          {trackingLocked && !isUpdate && <Lock className="w-3.5 h-3.5" />}
+          {loading
+            ? "Saving..."
+            : isUpdate
+              ? "Save Changes"
+              : trackingLocked
+                ? "Save Receipt"
+                : "Save & Enable Tracking"}
+        </button>
+        <button
+          className="w-full py-2.5 text-[14px] font-medium"
+          style={{
+            background: "transparent",
+            color: "#6b8097",
+          }}
+          onClick={onBack}
+          disabled={loading}
+        >
+          Cancel and go back
         </button>
       </div>
     </div>
@@ -644,20 +686,29 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
 
   async function handleSubmit() {
     if (guard && !guard()) return;
-    setLoading(true);
-    setError("");
-    if (!uploadFile) {
-      setError(msg(E.UPLOAD_NO_FILE));
-      setLoading(false);
+    // Client-side validation — all required fields
+    const rn = fields.receiptNumber.trim();
+    if (!rn || !fields.noticeDate || !fields.priorityDate) {
+      setError("Please fill in all required fields.");
       return;
     }
+    if (rn.length !== 13) {
+      setError(msg(E.TOOL_CASE_RECEIPT_LENGTH));
+      return;
+    }
+    if (!uploadFile) {
+      setError(msg(E.UPLOAD_NO_FILE));
+      return;
+    }
+    setLoading(true);
+    setError("");
     try {
       const formData = new FormData();
       formData.append("file", uploadFile);
       formData.append("documentDefId", RECEIPT_NOTICE_DOC_ID);
       formData.append("role", "PETITIONER");
       formData.append("personName", "Petitioner");
-      formData.append("caseId", fields.receiptNumber);
+      formData.append("caseId", rn);
       formData.append("notes", "Uploaded via receipt registration step");
       const response = await fetch("/api/documents/upload", {
         method: "POST",
@@ -676,6 +727,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
     }
     const { record, error: err2 } = await postReceipt(journeyId, {
       ...fields,
+      receiptNumber: rn,
       source: "upload",
     });
     setLoading(false);
@@ -688,7 +740,7 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
 
   return (
     <div
-      className="rounded-2xl p-8 md:p-10 mb-6"
+      className="rounded-2xl p-5 md:p-10 mb-6"
       style={{
         background: "#fff",
         border: "1.5px solid rgba(130,132,191,0.4)",
@@ -897,7 +949,8 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
       >
         Please confirm the receipt number before enabling tracking.
       </div>
-      <div className="flex gap-2 justify-end">
+      {/* Desktop Buttons */}
+      <div className="hidden md:flex gap-2 justify-end">
         <button
           className="px-5 py-2 rounded-full text-[14px] font-semibold"
           style={{
@@ -919,6 +972,29 @@ const UploadForm: React.FC<UploadFormProps & { journeyId: string }> = ({
           onMouseLeave={(e) => !loading && (e.currentTarget.style.background = "#8284bf")}
         >
           {loading ? "Saving..." : isUpdate ? "Save Changes" : "Save Receipt & Enable Tracking"}
+        </button>
+      </div>
+
+      {/* Mobile Buttons */}
+      <div className="flex md:hidden flex-col gap-2 w-full mt-2">
+        <button
+          className="w-full py-3 rounded-xl text-[15px] font-semibold text-white disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          style={{ background: "#8284bf" }}
+          onClick={handleSubmit}
+          disabled={loading || ocrLoading}
+        >
+          {loading ? "Saving..." : isUpdate ? "Save Changes" : "Save & Enable Tracking"}
+        </button>
+        <button
+          className="w-full py-2.5 text-[14px] font-medium"
+          style={{
+            background: "transparent",
+            color: "#6b8097",
+          }}
+          onClick={onBack}
+          disabled={loading}
+        >
+          Cancel and go back
         </button>
       </div>
     </div>
@@ -1007,10 +1083,17 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
 
   const hasExistingReceipt = savedRecord !== null;
 
+  const formRef = useRef<HTMLDivElement>(null);
+
   const handleRegisterCardClick = () => {
     setShowTrackingNudge(false);
     setActiveTab("manual");
     setUiState(hasExistingReceipt ? "update" : "register");
+    setTimeout(() => {
+      if (window.innerWidth < 768) {
+        formRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    }, 100);
   };
 
   // Called when Basic user clicks "Upload Receipt Notice" tab or upload button
@@ -1079,33 +1162,36 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
               }}
             />
             <div className="p-5 sm:p-8 md:p-[32px_34px_28px]">
-              <div className="flex flex-col sm:flex-row items-start gap-4 mb-6">
-                <div
-                  className="w-[46px] h-[46px] rounded-[11px] flex items-center justify-center shrink-0"
-                  style={{ background: "#8284bf" }}
-                >
-                  <Globe className="w-6 h-6 text-white" />
+              <div className="mb-6">
+                <div className="flex items-center gap-4 mb-4">
+                  <div
+                    className="w-[46px] h-[46px] rounded-[11px] flex items-center justify-center shrink-0"
+                    style={{ background: "#8284bf" }}
+                  >
+                    <Globe className="w-6 h-6 text-white" />
+                  </div>
+                  <div
+                    className="text-[10px] font-bold uppercase tracking-widest"
+                    style={{ color: "#8284bf" }}
+                  >
+                    Post-Filing Checkpoint
+                    <span className="hidden sm:inline"> · </span>
+                    <br className="sm:hidden" />
+                    Receipt Registration
+                  </div>
                 </div>
-                <div>
-                  <div
-                    className="text-[10px] font-bold uppercase tracking-widest mb-1"
-                    style={{ color: "#6b8097" }}
-                  >
-                    Post-Filing Checkpoint · Receipt Registration
-                  </div>
-                  <div
-                    className="text-[clamp(19px,2.8vw,23px)] leading-tight"
-                    style={{ color: "#fff" }}
-                  >
-                    Wait for the notice, register it, then let Rahvana monitor the case
-                  </div>
+                <div
+                  className="text-[clamp(19px,2.8vw,23px)] leading-tight"
+                  style={{ color: "#fff" }}
+                >
+                  Wait for the notice, register it, then let Rahvana monitor the case
                 </div>
               </div>
               <div className="h-px mb-5" style={{ background: "#8284bf33" }} />
               {tool.phases?.map((p: any, i: number) => (
                 <div
                   key={i}
-                  className="flex gap-2 items-start rounded-[10px] px-4 py-3 mb-2"
+                  className="flex flex-col gap-2.5 items-start rounded-[10px] px-4 py-3 mb-2"
                   style={{
                     background: "rgba(130,132,191,0.18)",
                     border: "1px solid #8284bf55",
@@ -1326,7 +1412,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
 
           {/* ── Registration / update form ── */}
           {(uiState === "register" || uiState === "update") && (
-            <>
+            <div ref={formRef}>
               {hasExistingReceipt ? (
                 savedRecord?.source === "manual" ? (
                   <ManualForm
@@ -1419,7 +1505,7 @@ const RegisterReceiptStep: React.FC<RegisterReceiptStepProps> = ({
                   )}
                 </>
               )}
-            </>
+            </div>
           )}
 
           {/* ── Confirmation + timeline ── */}

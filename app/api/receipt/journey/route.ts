@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { E, msg } from "@/lib/errors";
 import { upsertCaseDataDB, getCaseDataByKeyDB } from "@/lib/journey/data-access";
 import { isValidReceiptNumber, normalizeReceipt } from "@/lib/register-receipt";
+import { safeError } from "@/lib/api/safeError";
 
 const RECEIPT_KEY = "uscis_receipt_number";
 
@@ -29,7 +30,7 @@ export async function GET(req: NextRequest) {
       saved_at: caseData.updated_at,
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return safeError(error);
   }
 }
 
