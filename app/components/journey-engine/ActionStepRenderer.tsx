@@ -34,6 +34,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { PlanTier } from "@/lib/entitlements/config";
 import { usePlan } from "@/app/context/PlanContext";
 import { E, msg } from "@/lib/errors";
+import { SafeHtml } from "../shared/SafeHTML";
 
 interface ActionStepRendererProps {
   step: RoadmapStepV3;

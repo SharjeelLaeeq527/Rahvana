@@ -3,6 +3,7 @@ import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { E, msg } from "@/lib/errors";
 import { triggerAppointmentNotification } from "@/lib/notifications";
+import { safeError } from "@/lib/api/safeError";
 
 // Specific admin emails - ONLY these emails can access admin panel
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "hammadnooralam@gmail.com")
@@ -270,7 +271,7 @@ export async function PUT(req: NextRequest) {
 
     if (error) {
       console.error("Error updating appointment status:", error);
-      return Response.json({ error: error.message }, { status: 500 });
+      return safeError(error);
     }
 
     // Trigger notification when appointment status changes

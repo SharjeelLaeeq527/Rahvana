@@ -1,6 +1,7 @@
 // app/api/quick-access/route.ts
 import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { safeError } from "@/lib/api/safeError";
 
 /**
  * Helper: build an authenticated Supabase server client from cookies.
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
 
   if (error) {
     console.error("[quick-access GET]", error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return safeError(error);
   }
 
   return Response.json({ items: data ?? [] });
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest) {
 
   if (error) {
     console.error("[quick-access POST]", error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return safeError(error);
   }
 
   return Response.json({ item: data }, { status: 201 });
@@ -140,7 +141,7 @@ export async function DELETE(request: NextRequest) {
       .eq("user_id", user.id);
     if (error) {
       console.error("[quick-access DELETE all]", error);
-      return Response.json({ error: error.message }, { status: 500 });
+      return safeError(error);
     }
     return Response.json({ success: true });
   }
@@ -157,7 +158,7 @@ export async function DELETE(request: NextRequest) {
 
   if (error) {
     console.error("[quick-access DELETE]", error);
-    return Response.json({ error: error.message }, { status: 500 });
+    return safeError(error);
   }
 
   return Response.json({ success: true });

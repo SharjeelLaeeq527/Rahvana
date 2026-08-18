@@ -155,6 +155,7 @@ import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool"
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { QuestRenderer } from "./QuestRenderer";
 import { ActionStepRenderer } from "./ActionStepRenderer";
+import { SafeHtml } from "../shared/SafeHTML";
 
 /**
  * Find a vault document that matches an item, considering dynamic categories.
@@ -4369,12 +4370,7 @@ export const StepView: React.FC<StepViewProps> = ({
                       <div className="mb-[10px] text-[13px] font-semibold tracking-[0.05em] text-[#6b8097] uppercase">
                         {section.title}
                       </div>
-                      <div
-                        className="guide-content"
-                        dangerouslySetInnerHTML={{
-                          __html: section.htmlContent,
-                        }}
-                      />
+                      <SafeHtml className="guide-content" html={section.htmlContent} />
                     </div>
                   ))
                 )}
@@ -4570,12 +4566,10 @@ export const StepView: React.FC<StepViewProps> = ({
                     >
                       {currentTutStep.heading}
                     </h2>
-                    <div
-                      className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
-                      dangerouslySetInnerHTML={{
-                        __html: currentTutStep.instruction,
-                      }}
-                    />
+                    <SafeHtml
+  className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
+  html={currentTutStep.instruction}
+/>
 
                     {branchChoiceActive && (currentTutStep as any).choiceOptions && (
                       <div className="mb-5">
@@ -4781,12 +4775,10 @@ export const StepView: React.FC<StepViewProps> = ({
                   <h2 className="mb-2 text-[clamp(20px,3.2vw,26px)] leading-[1.3] font-black text-[#0c1b33]">
                     {currentTutStep.heading}
                   </h2>
-                  <div
-                    className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
-                    dangerouslySetInnerHTML={{
-                      __html: currentTutStep.instruction,
-                    }}
-                  />
+                  <SafeHtml
+  className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
+  html={currentTutStep.instruction}
+/>
 
                   {/* Screenshot Block */}
                   {isDynamic ? (
@@ -5009,11 +5001,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         {isDynamic ? (
                           (currentTutStep as TutorialStepV3).note
                         ) : (
-                          <div
-                            dangerouslySetInnerHTML={{
-                              __html: (currentTutStep as TutorialStepV3).note!,
-                            }}
-                          />
+                          <SafeHtml html={(currentTutStep as TutorialStepV3).note!} />
                         )}
                       </div>
                     </div>
@@ -5102,10 +5090,10 @@ export const StepView: React.FC<StepViewProps> = ({
                     <div className="mb-[8px] text-[11px] font-[700] tracking-[0.06em] text-[#6b8097] uppercase sm:text-[12px]">
                       {sec.t}
                     </div>
-                    <div
-                      className="prose-sm text-[13px] leading-[1.7] break-words text-[#3a4f63] sm:text-[14px]"
-                      dangerouslySetInnerHTML={{ __html: sec.c }}
-                    />
+                    <SafeHtml
+  className="prose-sm text-[13px] leading-[1.7] break-words text-[#3a4f63] sm:text-[14px]"
+  html={sec.c}
+/>
                   </div>
                 ))}
               </div>
@@ -5202,10 +5190,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         {s.vlabel}
                       </div>
                     </div>
-                    <div
-                      className="medical-mock-visual p-[18px]"
-                      dangerouslySetInnerHTML={{ __html: s.visual }}
-                    />
+                    <SafeHtml className="medical-mock-visual p-[18px]" html={s.visual} />
                   </div>
 
                   {s.note && (

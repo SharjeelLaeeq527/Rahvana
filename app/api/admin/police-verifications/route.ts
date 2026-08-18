@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { E, msg } from "@/lib/errors";
 import { triggerPoliceVerificationNotification } from "@/lib/notifications";
+import { safeError } from "@/lib/api/safeError";
 
 export const dynamic = "force-dynamic";
 
@@ -150,7 +151,7 @@ export async function PUT(req: NextRequest) {
       .single();
 
     if (error) {
-      return Response.json({ error: error.message }, { status: 500 });
+      return safeError(error);
     }
 
     if (data) {

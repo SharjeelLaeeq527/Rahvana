@@ -1,5 +1,6 @@
 import React from "react";
 import { X, Info, ChevronLeft, ArrowRight } from "lucide-react";
+import { SafeHtml } from "../../shared/SafeHTML";
 
 interface MedicalExamGuideOverlayProps {
   isOpen: boolean;
@@ -65,10 +66,7 @@ export const MedicalExamGuideOverlay: React.FC<MedicalExamGuideOverlayProps> = (
                 {s.vlabel}
               </div>
             </div>
-            <div
-              className="p-[18px] medical-mock-visual"
-              dangerouslySetInnerHTML={{ __html: s.visual }}
-            />
+            <SafeHtml className="p-[18px] medical-mock-visual" html={s.visual} />
           </div>
 
           {s.note && (

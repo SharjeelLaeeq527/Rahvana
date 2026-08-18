@@ -9,7 +9,7 @@ export const APPROVAL_NOTICE_DATA = {
   chips: [
     { label: "Petitioner", type: "role" },
     { label: "Mail or online account", type: "channel" },
-    { label: "USCIS approved", type: "stage" },
+    { label: "USCIS approved", type: "purple" },
   ],
   launchModule: {
     eyebrow: "USCIS milestone · petition approved",

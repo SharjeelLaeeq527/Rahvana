@@ -3166,7 +3166,7 @@
             },
             {
               "label": "USCIS approved",
-              "type": "stage"
+              "type": "purple"
             }
           ],
           "display_order": 17,

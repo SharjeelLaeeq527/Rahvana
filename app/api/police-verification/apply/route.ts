@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { triggerPCCNotification } from "@/lib/notifications";
+import { safeError } from "@/lib/api/safeError";
 
 interface PoliceVerificationData {
   user_id?: string;
@@ -133,7 +134,7 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error("Error creating police verification request:", error);
-      return Response.json({ error: error.message }, { status: 500 });
+      return safeError(error);
     }
     // Notify admins of the new PCC request (non-blocking)
     const locationParts = [verificationData.district, verificationData.province].filter(Boolean);
