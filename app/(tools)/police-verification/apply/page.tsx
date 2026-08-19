@@ -98,7 +98,7 @@ const CheckoutStep = ({
 }: CheckoutStepProps) => {
   return (
     <div className="space-y-6 md:space-y-8">
-      <div className="mb-6 flex items-center gap-2">
+      <div className="mb-6 flex flex-col items-start gap-2 md:flex-row md:items-center">
         <div className="bg-primary rounded px-3 py-1 font-semibold text-white">Checkout</div>
         <h2 className="text-xl font-bold text-gray-900 sm:text-2xl">Payment & Confirmation</h2>
       </div>
@@ -127,17 +127,17 @@ const CheckoutStep = ({
             </div>
           </div>
 
-          <div className="flex items-start gap-3 rounded-2xl border border-gray-200/60 bg-gray-50 p-5">
-            <CreditCard className="text-primary mt-0.5 h-5 w-5 flex-shrink-0" />
-            <div>
+          <div className="flex flex-col gap-2 rounded-2xl border border-gray-200/60 bg-gray-50 p-5">
+            <div className="flex items-center gap-2">
+              <CreditCard className="text-primary h-4 w-4 shrink-0" />
               <h5 className="text-xs font-bold tracking-wide text-gray-900 uppercase">
                 Secure Transaction
               </h5>
-              <p className="mt-1 text-xs leading-relaxed text-gray-500">
-                Your details are handled securely. One-time card payments are processed securely via
-                Stripe.
-              </p>
             </div>
+            <p className="w-full text-xs leading-relaxed text-gray-500">
+              Your details are handled securely. One-time card payments are processed securely via
+              Stripe.
+            </p>
           </div>
         </div>
 
@@ -190,17 +190,19 @@ const CheckoutStep = ({
               </div>
             )}
 
-            <div className="mt-6 flex justify-between border-t border-gray-200 pt-6">
+            <div className="mt-6 flex flex-col-reverse gap-3 border-t border-gray-200 pt-6 sm:flex-row sm:items-center sm:justify-between">
               <button
+                type="button"
                 onClick={onBack}
-                className="rounded-2xl bg-gray-100 px-6 py-3 font-bold text-gray-700 transition-all hover:bg-gray-200"
+                className="w-full rounded-2xl bg-gray-100 px-6 py-3.5 text-center text-sm font-bold text-gray-700 transition-all hover:bg-gray-200 active:scale-[0.99] sm:w-auto sm:py-3"
               >
                 Back
               </button>
               <button
+                type="button"
                 onClick={onSubmit}
                 disabled={loading}
-                className="bg-primary hover:bg-primary/90 rounded-2xl px-8 py-3 font-bold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50"
+                className="bg-primary hover:bg-primary/90 flex w-full items-center justify-center gap-2 rounded-2xl px-6 py-3.5 text-sm font-bold whitespace-nowrap text-white shadow-sm transition-all active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto sm:px-8 sm:py-3"
               >
                 {loading
                   ? "Processing..."
@@ -714,10 +716,10 @@ function PoliceApplyContent() {
   };
 
   return (
-    <div className="site-main-px site-main-py flex w-full flex-col items-center bg-[#f8fafc] pt-[55px] md:mt-8">
-      <div className="flex min-h-[700px] w-full flex-col overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-2xl shadow-gray-200/50 md:rounded-[2.5rem]">
+    <div className="sm:site-main-px site-main-py flex w-full flex-col items-center bg-[#f8fafc] px-2 pt-24 sm:pt-28 md:mt-8 md:pt-4">
+      <div className="flex min-h-[700px] w-full flex-col overflow-hidden rounded-none border-0 bg-transparent shadow-none md:rounded-[2.5rem] md:border md:border-gray-100 md:bg-white md:shadow-2xl md:shadow-gray-200/50">
         {/* Header */}
-        <div className="sticky top-0 z-20 border-b border-gray-100 bg-white/80 p-6 pb-4 backdrop-blur-md md:p-8 md:pb-6">
+        <div className="sticky top-[36px] z-20 mb-4 border-b border-gray-100 bg-white px-3 py-4 shadow-sm backdrop-blur-md sm:mb-6 sm:p-6 md:top-0 md:bg-white/80 md:p-8 md:pb-6">
           <div className="mb-6 flex flex-col justify-between gap-4 sm:flex-row sm:items-center sm:gap-6">
             <div className="flex flex-wrap items-center gap-6">
               <h1 className="flex items-center gap-3 text-xl font-bold text-gray-900 sm:text-2xl">
@@ -811,7 +813,7 @@ function PoliceApplyContent() {
         </div>
 
         {/* Form Body */}
-        <div className="flex-1 overflow-y-auto p-6 md:p-12">
+        <div className="flex-1 overflow-y-auto px-3 pt-8 pb-8 sm:p-6 sm:pt-10 md:p-12 md:pt-8">
           <AnimatePresence mode="wait">
             {currentStep === 1 && (
               <motion.div key="step1" {...fadeIn} className="space-y-6 md:space-y-8">
@@ -1849,7 +1851,7 @@ function PoliceApplyContent() {
                       </p>
                     </div>
                   </div>
-                  <div className="bg-primary/5 border-primary/10 flex items-start gap-4 rounded-2xl border p-4">
+                  <div className="bg-primary/5 border-primary/10 flex flex-col items-start gap-2 rounded-2xl border p-4 md:flex-row md:gap-4">
                     <div className="bg-primary/10 shrink-0 rounded-xl p-2">
                       <Clock className="text-primary" size={20} />
                     </div>
@@ -1888,7 +1890,7 @@ function PoliceApplyContent() {
 
         {/* Footer */}
         {currentStep < 4 && (
-          <div className="flex flex-col-reverse items-center justify-between gap-4 border-t border-gray-100 bg-white p-6 sm:flex-row md:p-8">
+          <div className="flex flex-col-reverse items-center justify-between gap-4 border-t border-gray-100 bg-white/90 px-2 py-4 sm:flex-row sm:p-6 md:bg-white md:p-8">
             <button
               onClick={handleBack}
               className="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gray-50 px-8 py-4 font-bold text-gray-600 transition-all hover:bg-gray-100 sm:w-auto"
@@ -1900,7 +1902,7 @@ function PoliceApplyContent() {
               <button
                 onClick={handleNext}
                 disabled={Object.keys(errors).length > 0}
-                className="bg-primary hover:bg-primary/90 group shadow-primary/25 flex w-full items-center justify-center gap-2 rounded-2xl px-10 py-4 font-bold text-white shadow-xl transition-all disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
+                className="bg-primary hover:bg-primary/90 group md:shadow-primary/25 flex w-full items-center justify-center gap-2 rounded-2xl px-10 py-4 font-bold text-white transition-all disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto md:not-first:shadow-xl"
               >
                 Continue{" "}
                 <ChevronRight
