@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
-import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
+import { rateLimitResponse } from "@/lib/security/rate-limit";
+import { checkRateLimitRedis } from "@/lib/security/rate-limit-redis";
 import { auditAuthSuccess, auditAuthFailure, auditBlocked } from "@/lib/security/audit-log";
+import { maybeRunSecurityScan } from "@/lib/security/alerting";
 
 /**
  * POST /api/auth/login
@@ -20,7 +22,7 @@ import { auditAuthSuccess, auditAuthFailure, auditBlocked } from "@/lib/security
 export async function POST(request: NextRequest) {
   // ── 1. Rate limit (fail closed on abuse) ─────────────────────────────────
   // Per-IP: stops one machine spraying many accounts.
-  const ipLimit = checkRateLimit(request, "auth-login", { maxAttempts: 10 });
+  const ipLimit = await checkRateLimitRedis(request, "auth-login", { maxAttempts: 10 });
   if (!ipLimit.allowed) {
     auditBlocked(request, "auth.login", { reason: "rate_limited_ip" });
     return rateLimitResponse(ipLimit);
@@ -41,7 +43,7 @@ export async function POST(request: NextRequest) {
   }
 
   // Per-account (email+IP): tighter cap so one account can't be hammered.
-  const emailLimit = checkRateLimit(request, `auth-login:${email}`, { maxAttempts: 5 });
+  const emailLimit = await checkRateLimitRedis(request, `auth-login:${email}`, { maxAttempts: 5 });
   if (!emailLimit.allowed) {
     auditBlocked(request, "auth.login", { reason: "rate_limited_email", email });
     return rateLimitResponse(emailLimit);
@@ -80,6 +82,8 @@ export async function POST(request: NextRequest) {
       // We never reveal whether the email exists or the password was wrong -
       // that distinction helps an attacker enumerate accounts.
       auditAuthFailure(request, "auth.login", { email, reason: error.code || "invalid_credentials" });
+      // Near-real-time brute-force detection (fire-and-forget, self-throttled).
+      maybeRunSecurityScan().catch(() => {});
 
       if (error.code === "email_not_confirmed") {
         return NextResponse.json(

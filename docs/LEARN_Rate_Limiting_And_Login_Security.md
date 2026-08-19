@@ -275,5 +275,113 @@ Because this touches the login path, verify in a running app:
 
 ---
 
+---
+
+## 14. The Redis/Upstash upgrade (what we shipped)
+
+We turned the single-server limiter into one that works across a serverless
+fleet - **without adding a dependency**.
+
+File: `lib/security/rate-limit-redis.ts`, function `checkRateLimitRedis()`.
+
+How it decides:
+- If `UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN` are set -> use Upstash.
+- Otherwise -> fall back to the in-memory limiter (so dev/local still works).
+- If Upstash errors or times out -> also fall back (fail OPEN, so a Redis outage
+  never bricks login).
+
+The Redis mechanic (fixed window) in one pipeline round trip:
+```
+INCR key            # atomic +1, returns the new count
+PEXPIRE key ms NX   # set the window expiry only on the first hit
+PTTL key            # ms left -> Retry-After
+```
+`INCR` is **atomic**, so even if 10 servers hit Redis at the same millisecond,
+the count is exact - no race. That atomicity is the whole reason a shared store
+beats per-instance memory.
+
+To activate in production: create an Upstash Redis database, copy its REST URL +
+token into the two env vars. No code change, no redeploy of logic - the limiter
+detects the env vars and switches backends.
+
+> Interview soundbite: *"We made the backend pluggable. In-memory for a single
+> node, Redis for a fleet, and it fails open on a Redis outage so availability
+> is never sacrificed for rate limiting."*
+
+---
+
+## 15. Detection and alerting (turning logs into an alarm)
+
+Rate limiting is **prevention** - it slows the attack. **Detection** answers a
+different question: *if someone keeps trying anyway, would we notice - in minutes
+or in months?* Both security decks end on this exact point.
+
+We already recorded events in `audit_logs` (every login success/failure/blocked).
+The missing half was that **nobody was watching**. We added the watcher.
+
+### What we built
+- `lib/security/alerting.ts` -> `runSecurityScan()`: queries recent `audit_logs`,
+  aggregates by IP and by account, and compares to thresholds:
+  - 5+ failed logins from one IP in 5 min (brute force)
+  - 5+ failed logins for one account in 5 min (targeted)
+  - 10+ blocked/rate-limited hits from one IP in 10 min (probing/spray)
+- When a threshold trips, it emails a human (Resend) and logs to the console.
+- A **cooldown** (30 min per finding) stops alert spam.
+- Two triggers:
+  1. **Periodic** - Vercel Cron hits `GET /api/cron/security-scan` every 10 min
+     (`vercel.json`), protected by a `CRON_SECRET` bearer token.
+  2. **Near-real-time** - the login route calls a **self-throttled**
+     `maybeRunSecurityScan()` (max once / 30s per instance) right after a failed
+     login, so a burst is caught fast without flooding the DB.
+
+### Key design ideas (interview-worthy)
+- **Prevention vs detection**: *"You cannot prevent every attack, so you invest
+  in noticing fast. Prevention closes the door; detection tells you if someone
+  kept knocking."*
+- **Thresholds + windows**: an alert is "N events of type X in the last M
+  minutes." Too sensitive = alert fatigue; too loose = missed attacks.
+- **Alert fatigue / cooldown**: if every event pages you, you stop reading the
+  pages. Dedupe and cooldown are part of good alerting, not an afterthought.
+- **Throttling the trigger**: detection must not become its own DoS. During a
+  flood we run at most one scan per 30s, and the cron is the reliable backstop.
+- **Protect the endpoint**: a cron route that anyone can call is itself an
+  attack surface - hence the `CRON_SECRET` bearer check.
+- **What to alert on** (the deck's list): failed-login bursts, unusual data
+  export (one user reading many others' files), 403 spikes, admin/role changes
+  outside business hours.
+
+### How we proved it works (live)
+Fired 6 failed logins from one spoofed IP, then called the scan:
+```json
+{ "findings": [ { "type": "failed_login_ip", "key": "203.0.113.55",
+                  "count": 6, "threshold": 5, "windowMin": 5 } ],
+  "alerted": true, "checked": { "failedLogins": 6, "blocked": 0 } }
+```
+And an unauthenticated call to the cron route returned `401` - the secret check
+works.
+
+### Env to set in production
+| Var | Purpose |
+|-----|---------|
+| `CRON_SECRET` | Bearer token Vercel Cron sends; blocks public triggering |
+| `SECURITY_ALERT_EMAIL` | Where alert emails go (falls back to first `ADMIN_EMAILS`) |
+| `UPSTASH_REDIS_REST_URL` / `_TOKEN` | Activate distributed rate limiting |
+
+### Q&A additions
+**Q: Difference between logging and monitoring/alerting?**
+A: Logging records what happened; alerting watches those logs against thresholds
+and notifies a human. Logs with nobody watching = evidence you only read after
+the damage.
+
+**Q: How do you avoid alert fatigue?**
+A: Tune thresholds, dedupe, add cooldowns, and rank by severity. An alert nobody
+reads is worse than none because it creates false confidence.
+
+**Q: Isn't running a scan on every failed login expensive?**
+A: Yes, so we self-throttle (once / 30s) and lean on a periodic cron as the
+backstop. Detection must never become a self-inflicted DoS.
+
+---
+
 *Companion to `SECURITY_AUDIT_Breaking_and_Entering.md` and
 `SECURITY_FIX_CHECKLIST.md`.*
