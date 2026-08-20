@@ -100,8 +100,20 @@ the diff, then commit.
     (0 TS errors). See `LEARN_Rate_Limiting_And_Login_Security.md`.
   - STILL TODO: account lockout + exponential backoff (nice-to-have).
   - MUST test the login + MFA flow in a running app before merging.
-- [ ] **Back rate limiting with Redis (Upstash)** (Owner: Dev/Ops)
-  - Makes limits survive serverless cold starts and work across instances.
+- [x] **Back rate limiting with Redis (Upstash)** (Owner: Dev/Ops) - DONE (staged)
+  - `lib/security/rate-limit-redis.ts`: `checkRateLimitRedis()` uses Upstash REST
+    (via fetch, no new dependency) when `UPSTASH_REDIS_REST_URL` +
+    `UPSTASH_REDIS_REST_TOKEN` are set; otherwise falls back to the in-memory
+    limiter. Login route now uses it. Fails open to in-memory if Redis errors.
+  - TODO (Ops): create an Upstash Redis DB and set the two env vars in prod.
+- [x] **Add detection/alerting on `audit_logs`** (Owner: Dev) - DONE (staged)
+  - `lib/security/alerting.ts` (`runSecurityScan()`) + cron route
+    `app/api/cron/security-scan/route.ts` (protected by `CRON_SECRET`) +
+    `vercel.json` cron every 10 min. Also fires near-real-time (self-throttled)
+    from the login route on failures. Emails via Resend to `SECURITY_ALERT_EMAIL`
+    / `ADMIN_EMAILS`. **Live-tested:** detected 6 failed logins from one IP and
+    set `alerted: true`.
+  - TODO (Ops): set `SECURITY_ALERT_EMAIL` (recipient) and `CRON_SECRET` in prod.
 - [ ] **Switch on server-side upload content validation** (Owner: Dev)
   - Add a magic-byte check (`file-type` package) in
     `app/api/documents/upload/route.ts` before storing, in addition to the
@@ -154,7 +166,7 @@ the diff, then commit.
 |--------|------|---------|
 | A. Already done (staged) | 6 | 1 (commit) |
 | B. Do now | 1 | 4 |
-| C. Do soon | 1 | 8 |
+| C. Do soon | 3 | 6 |
 | D. Do later | 0 | 6 |
 | E. Decided not to do | 2 | 0 |
 
