@@ -22,7 +22,7 @@ import {
   Trash2,
 } from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { ResultGate } from "@/app/components/entitlements/ResultGate";
+// import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { E, msg } from "@/lib/errors";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
@@ -523,7 +523,7 @@ export default function CaseStatusPage() {
 
           {/* Results */}
           {result && theme && !loading && (
-            <ResultGate feature="dq_status_check">
+            // <ResultGate feature="dq_status_check">
               <section className="mt-8 overflow-hidden rounded-3xl border border-[#0d7377]/10 bg-[#ffffff] shadow-[0_12px_32px_rgba(13,115,119,0.12)]">
                 <div
                   className={`flex flex-col gap-4 border-b px-6 py-6 md:flex-row md:items-center md:justify-between md:px-8 ${theme.bg} ${theme.border}`}
@@ -650,7 +650,7 @@ export default function CaseStatusPage() {
                   </div>
                 </div>
               </section>
-            </ResultGate>
+            // </ResultGate>
           )}
         </div>
 

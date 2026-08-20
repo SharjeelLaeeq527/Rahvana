@@ -125,7 +125,7 @@ export function SubmissionTutorialOverlay({
   return (
     <div className="fixed inset-0 bg-[#fafcff] z-[200] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans bg-white">
       {/* Topbar */}
-      <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
+      <div className="flex items-center h-[54px] sm:h-[72px] border-b border-[#d0e4f7] px-3.5 sm:px-6 gap-3 sm:gap-4 shrink-0 bg-[#fafcff]">
         <button
           onClick={onClose}
           className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-[#d0e4f7] transition-all cursor-pointer"

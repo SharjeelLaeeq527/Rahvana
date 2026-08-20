@@ -1,6 +1,7 @@
 import React from "react";
 import { X } from "lucide-react";
 import Image from "next/image";
+import { ZoomableGuideImage } from "@/app/components/shared/ZoomableGuideImage";
 import { TutorialVideo } from "@/app/components/shared/TutorialVideo";
 import { TutorialStepV3 as TutorialStepData } from "../types";
 import { SafeHtml } from "../../shared/SafeHTML";
@@ -81,7 +82,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
     return (
       <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out bg-white">
-        <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
+        <div className="flex items-center h-[54px] sm:h-[72px] border-b border-[#d0e4f7] px-3.5 sm:px-6 gap-3 sm:gap-4 shrink-0 bg-[#fafcff]">
           <button
             onClick={() => {
               onClose();
@@ -256,7 +257,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   return (
     <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out bg-white">
       {/* Tutorial Topbar */}
-      <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
+      <div className="flex items-center h-[54px] sm:h-[72px] border-b border-[#d0e4f7] px-3.5 sm:px-6 gap-3 sm:gap-4 shrink-0 bg-[#fafcff]">
         <button
           onClick={() => {
             onClose();
@@ -323,12 +324,11 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                       alt={(currentTutStep as TutorialStepData).screenTitle}
                     />
                   ) : (
-                    <Image
+                    <ZoomableGuideImage
                       key={(currentTutStep as TutorialStepData).media?.src!}
                       src={(currentTutStep as TutorialStepData).media?.src!}
                       alt={(currentTutStep as TutorialStepData).screenTitle}
                       fill
-                      className="object-contain"
                       sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                       quality={95}
                       priority={tutorialIdx === 0}
@@ -439,12 +439,11 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               <div className="relative w-full bg-[#f8f9fb]" style={{ aspectRatio: "4/3" }}>
                 {(currentTutStep as any).media?.src ? (
                   (currentTutStep as any).media.type === "img" ? (
-                    <Image
+                    <ZoomableGuideImage
                       key={(currentTutStep as any).media.src}
                       src={(currentTutStep as any).media.src!}
                       alt={(currentTutStep as any).screenTitle}
                       fill
-                      className="object-contain"
                       sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                       quality={95}
                       priority

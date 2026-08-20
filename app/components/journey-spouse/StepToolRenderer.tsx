@@ -47,7 +47,7 @@ export const AwaitingReviewStep: React.FC<{
   data: typeof AWAITING_REVIEW_DATA;
 }> = ({ data }) => {
   return (
-    <div className="w-full max-w-[720px] px-[24px] pt-5 md:pt-8 pb-[96px] flex flex-col mx-auto">
+    <div className="flex w-full max-w-[680px] flex-col mx-auto px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
       {/* <div className="flex items-center gap-[8px] mb-[6px] animate-in fade-in slide-in-from-top-2 duration-300">
         <span className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#6b8097]">
           {data.eyebrow.chapter}

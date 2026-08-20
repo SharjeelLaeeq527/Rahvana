@@ -77,11 +77,13 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
     (securityQuestionsData as Record<string, string[]>)[questionsKey] || [];
 
   useEffect(() => {
+    let isMounted = true;
+
     if (isOpen) {
       document.body.style.overflow = "hidden";
       if (mode === "edit" && initialData) {
         setUsername(initialData.username || "");
-        setPassword("");
+        setPassword(initialData.password || "");
         setNvcCaseNumber(initialData.nvcCaseNumber || "");
         setNvcInvoiceId(initialData.nvcInvoiceId || "");
         const sq = initialData.securityQuestions || [];
@@ -93,6 +95,36 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
               answer: sq[i]?.answer || "",
             }))
         );
+
+        // Fetch decrypted values for editing
+        const fetchDecryptedForEdit = async () => {
+          try {
+            const res = await fetch("/api/portal-wallet/reveal", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ portalType, type: "full_edit" }),
+            });
+            const data = await res.json();
+            if (isMounted && data) {
+              if (data.password) setPassword(data.password);
+              if (data.securityQuestions && data.securityQuestions.length > 0) {
+                const sq = data.securityQuestions;
+                setSecurityQuestions(
+                  Array(questionLimit)
+                    .fill(null)
+                    .map((_, i) => ({
+                      question: sq[i]?.question || "",
+                      answer: sq[i]?.answer || "",
+                    }))
+                );
+              }
+            }
+          } catch (err) {
+            console.error("Failed to fetch decrypted values for edit:", err);
+          }
+        };
+
+        fetchDecryptedForEdit();
       } else {
         setUsername("");
         setPassword("");
@@ -107,9 +139,10 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
     }
 
     return () => {
+      isMounted = false;
       document.body.style.overflow = "unset";
     };
-  }, [isOpen, mode, initialData, questionLimit]);
+  }, [isOpen, mode, initialData, portalType, questionLimit]);
 
   const handleQuestionChange = (index: number, question: string) => {
     setSecurityQuestions((prev) => prev.map((sq, i) => (i === index ? { ...sq, question } : sq)));
