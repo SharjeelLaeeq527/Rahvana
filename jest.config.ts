@@ -16,6 +16,8 @@ const config: Config = {
     'lib/stripe/**/*.ts',
     'lib/plan/**/*.ts',
     'lib/services/paymentService.ts',
+    'lib/security/**/*.ts',
+    'lib/pdfjs/**/*.ts',
   ],
 }
 
