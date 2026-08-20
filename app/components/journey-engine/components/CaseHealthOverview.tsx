@@ -380,10 +380,10 @@ export function CaseHealthOverview({
         <div className="relative z-10 p-7 animate-pulse">
           <div className="flex items-center gap-5">
             <div className="w-[118px] h-[118px] rounded-full bg-white/8" />
-            <div className="flex-1 space-y-3">
-              <div className="w-36 h-5 bg-white/10 rounded" />
-              <div className="w-52 h-3 bg-white/8 rounded" />
-              <div className="w-28 h-3 bg-white/8 rounded" />
+            <div className="flex-1 min-w-0 space-y-3">
+              <div className="w-36 max-w-full h-5 bg-white/10 rounded" />
+              <div className="w-52 max-w-full h-3 bg-white/8 rounded" />
+              <div className="w-28 max-w-full h-3 bg-white/8 rounded" />
             </div>
           </div>
         </div>

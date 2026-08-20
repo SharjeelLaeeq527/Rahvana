@@ -157,11 +157,11 @@ export default function IR1JourneyPage() {
         </div>
 
         {/* Skeleton dashboard content */}
-        <div className="max-w-5xl mx-auto px-5 py-8 space-y-6">
+        <div className="max-w-5xl mx-auto px-4 sm:px-5 py-6 sm:py-8 space-y-6">
           {/* Hero skeleton */}
-          <div className="rounded-2xl bg-white border border-[#d0e4f7] p-8 space-y-4">
-            <div className="h-4 w-32 bg-slate-200 rounded animate-pulse" />
-            <div className="h-8 w-72 bg-slate-200 rounded animate-pulse" />
+          <div className="rounded-2xl bg-white border border-[#d0e4f7] p-5 sm:p-8 space-y-4 overflow-hidden">
+            <div className="h-4 w-32 max-w-full bg-slate-200 rounded animate-pulse" />
+            <div className="h-8 w-full max-w-[288px] bg-slate-200 rounded animate-pulse" />
             <div className="h-4 w-full max-w-md bg-slate-100 rounded animate-pulse" />
           </div>
 

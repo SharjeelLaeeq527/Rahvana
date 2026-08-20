@@ -19,9 +19,9 @@ const LazyStepView = React.lazy(() =>
 
 function StepSkeleton() {
   return (
-    <div className="flex-1 p-6 md:p-10 animate-pulse">
-      <div className="h-5 w-48 bg-slate-200 rounded mb-4" />
-      <div className="h-8 w-80 bg-slate-200 rounded mb-3" />
+    <div className="flex-1 p-4 sm:p-6 md:p-10 animate-pulse overflow-hidden">
+      <div className="h-5 w-48 max-w-full bg-slate-200 rounded mb-4" />
+      <div className="h-8 w-full max-w-xs bg-slate-200 rounded mb-3" />
       <div className="h-4 w-full max-w-lg bg-slate-100 rounded mb-2" />
       <div className="h-4 w-full max-w-md bg-slate-100 rounded mb-8" />
       <div className="space-y-4">
