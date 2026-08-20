@@ -1123,7 +1123,7 @@ export const StepView: React.FC<StepViewProps> = ({
     if (!citations || citations.length === 0) return null;
 
     return (
-      <div className="animate-in fade-in mx-auto mt-4 mb-7 w-full max-w-[660px] duration-500">
+      <div className="animate-in fade-in mx-auto mt-2.5 mb-2.5 w-full max-w-[660px] px-4 duration-500 sm:mt-4 sm:mb-7 sm:px-6 md:px-8">
         <button
           onClick={() => setIsCitationsModalOpen(true)}
           className="hover:border-primary group flex w-full cursor-pointer items-center justify-between rounded-[20px] border border-[#d0e4f7] bg-[#fafcff]/80 p-5 text-left shadow-xs backdrop-blur-xs transition-all hover:bg-[#fafcff] sm:p-6"
@@ -2760,7 +2760,7 @@ export const StepView: React.FC<StepViewProps> = ({
           )}
           {/* Disclaimer */}
           <p
-            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-5" : "mt-5"} pt-[8px] text-center text-[11.5px] leading-[1.65] text-[#6b8097]`}
+            className="mt-2.5 sm:mt-5 pt-1 text-center text-[11.5px] leading-[1.65] text-[#6b8097]"
           >
             {tool.disclaimer ||
               "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."}
@@ -2784,7 +2784,7 @@ export const StepView: React.FC<StepViewProps> = ({
       {customRenderer ? (
         <div
           ref={customScrollContainerRef}
-          className="scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[100px]"
+          className="scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[72px] sm:pb-[100px]"
         >
           {customRenderer}
           {renderCitationsSection()}
@@ -2792,7 +2792,7 @@ export const StepView: React.FC<StepViewProps> = ({
       ) : (
         <div
           ref={scrollContainerRef}
-          className={`scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[100px] ${
+          className={`scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[72px] sm:pb-[100px] ${
             currentStep.step_type === "quest"
               ? ""
               : "px-2 pt-6 pb-6 sm:px-4 sm:pt-10 md:px-8 md:pt-14 md:pb-10 lg:px-12 lg:pb-12"
@@ -3796,7 +3796,7 @@ export const StepView: React.FC<StepViewProps> = ({
 
                   {isLocked ? (
                     <div
-                      className={`animate-in zoom-in-95 mb-[20px] flex items-center gap-[16px] rounded-[14px] border-2 border-transparent p-[22px_20px] duration-300 ${state.metadata.filingMethod === "online" ? "border-[#0a4330] bg-[#0e5c42]" : "border-[#1e1348] bg-[#2e1f72]"}`}
+                      className={`animate-in zoom-in-95 mb-2.5 sm:mb-[20px] flex items-center gap-[16px] rounded-[14px] border-2 border-transparent p-[18px_16px] sm:p-[22px_20px] duration-300 ${state.metadata.filingMethod === "online" ? "border-[#0a4330] bg-[#0e5c42]" : "border-[#1e1348] bg-[#2e1f72]"}`}
                     >
                       <div
                         className={`flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full text-[18px] font-bold ${state.metadata.filingMethod === "online" ? "bg-[#6dddb8] text-[#0e5c42]" : "bg-[#a89af5] text-[#2e1f72]"}`}
@@ -3919,7 +3919,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         })}
                       </div>
 
-                      <div className="mb-[28px] flex flex-col gap-[10px]">
+                      <div className="mb-3 sm:mb-[28px] flex flex-col gap-[10px]">
                         <button
                           onClick={() => handleConfirmation(state.metadata.filingMethod as string)}
                           className={`w-full transform rounded-[14px] p-[15px_24px] text-[15px] font-semibold text-white shadow-sm transition-all duration-[0.24s] ${!state.metadata.filingMethod ? "hidden" : "block"} ${
@@ -3953,7 +3953,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         </button>
                       </div>
 
-                      <p className="m-0 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097]">
+                      <p className="m-0 mt-2.5 sm:mt-4 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097]">
                         {currentStep.filing_data?.footerNote ||
                           "Fees as of March 2026 per the USCIS G-1055 fee schedule. Processing time is the same for both methods. Always verify at uscis.gov before filing."}
                       </p>
@@ -3961,7 +3961,7 @@ export const StepView: React.FC<StepViewProps> = ({
                   )}
 
                   {currentStep.tool_data?.disclaimer && (
-                    <div className="m-0 mt-8 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097]">
+                    <div className="m-0 mt-2.5 sm:mt-4 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097]">
                       <span>{currentStep.tool_data.disclaimer}</span>
                     </div>
                   )}
