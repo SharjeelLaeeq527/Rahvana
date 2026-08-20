@@ -130,27 +130,45 @@ async function sendSecurityAlert(findings: SecurityFinding[]): Promise<boolean> 
  * tripped. Returns a summary (so an API/cron caller can show what happened).
  * Called both by the periodic cron and fire-and-forget from the login route.
  */
-export async function runSecurityScan(): Promise<SecurityScanResult> {
+export interface ScanOptions {
+  /** Lookback window (minutes) for failed logins. Default 5. */
+  failWindowMin?: number;
+  /** Failed-login count that trips an alert. Default 5. */
+  failThreshold?: number;
+  /** Lookback window (minutes) for blocked hits. Default 10. */
+  blockedWindowMin?: number;
+  /** Blocked-hit count that trips an alert. Default 10. */
+  blockedThreshold?: number;
+}
+
+export async function runSecurityScan(opts: ScanOptions = {}): Promise<SecurityScanResult> {
+  // Real-time trigger uses the tight defaults; a once-a-day cron passes a wide
+  // 24h window (with higher thresholds) so a single daily run is still useful.
+  const failWindowMin = opts.failWindowMin ?? FAILED_LOGIN_WINDOW_MIN;
+  const failThreshold = opts.failThreshold ?? FAILED_LOGIN_THRESHOLD;
+  const blockedWindowMin = opts.blockedWindowMin ?? BLOCKED_WINDOW_MIN;
+  const blockedThreshold = opts.blockedThreshold ?? BLOCKED_THRESHOLD;
+
   const findings: SecurityFinding[] = [];
 
-  // 1. Failed logins (last 5 min)
+  // 1. Failed logins
   const { data: failRows } = await supabase
     .from("audit_logs")
     .select("ip_address, metadata")
     .eq("action", "auth.login")
     .eq("status", "failure")
-    .gte("created_at", sinceIso(FAILED_LOGIN_WINDOW_MIN));
+    .gte("created_at", sinceIso(failWindowMin));
 
   const fails = (failRows ?? []) as Array<Record<string, unknown>>;
 
   for (const [ip, count] of tally(fails, (r) => r.ip_address as string)) {
-    if (count >= FAILED_LOGIN_THRESHOLD) {
+    if (count >= failThreshold) {
       findings.push({
         type: "failed_login_ip",
         key: ip,
         count,
-        threshold: FAILED_LOGIN_THRESHOLD,
-        windowMin: FAILED_LOGIN_WINDOW_MIN,
+        threshold: failThreshold,
+        windowMin: failWindowMin,
       });
     }
   }
@@ -159,34 +177,34 @@ export async function runSecurityScan(): Promise<SecurityScanResult> {
     fails,
     (r) => (r.metadata as { email?: string } | null)?.email
   )) {
-    if (count >= FAILED_LOGIN_THRESHOLD) {
+    if (count >= failThreshold) {
       findings.push({
         type: "failed_login_account",
         key: email,
         count,
-        threshold: FAILED_LOGIN_THRESHOLD,
-        windowMin: FAILED_LOGIN_WINDOW_MIN,
+        threshold: failThreshold,
+        windowMin: failWindowMin,
       });
     }
   }
 
-  // 2. Blocked / rate-limited hits (last 10 min)
+  // 2. Blocked / rate-limited hits
   const { data: blockedRows } = await supabase
     .from("audit_logs")
     .select("ip_address")
     .eq("status", "blocked")
-    .gte("created_at", sinceIso(BLOCKED_WINDOW_MIN));
+    .gte("created_at", sinceIso(blockedWindowMin));
 
   const blocked = (blockedRows ?? []) as Array<Record<string, unknown>>;
 
   for (const [ip, count] of tally(blocked, (r) => r.ip_address as string)) {
-    if (count >= BLOCKED_THRESHOLD) {
+    if (count >= blockedThreshold) {
       findings.push({
         type: "blocked_ip",
         key: ip,
         count,
-        threshold: BLOCKED_THRESHOLD,
-        windowMin: BLOCKED_WINDOW_MIN,
+        threshold: blockedThreshold,
+        windowMin: blockedWindowMin,
       });
     }
   }
