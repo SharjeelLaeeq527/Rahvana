@@ -4,6 +4,8 @@ import jsPDF from "jspdf";
 import sharp from "sharp";
 import mammoth from "mammoth";
 import { E, msg } from "@/lib/errors";
+import { validateUploadedFile } from "@/lib/security/file-content";
+import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
 
 type FileFormat = "text" | "html" | "markdown" | "image" | "docx";
 
@@ -22,20 +24,24 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: msg(E.ADMIN_INVALID_INPUT) }, { status: 400 });
     }
 
-    const maxSize = format === "image" ? 50 * 1024 * 1024 : 10 * 1024 * 1024;
-    if (file.size > maxSize) {
-      const maxMb = format === "image" ? 50 : 10;
-      return NextResponse.json(
-        { error: msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: maxMb }) },
-        { status: 413 }
-      );
-      return NextResponse.json(
-        { message: `File too large (max ${maxSize / (1024 * 1024)}MB)` },
-        { status: 413 }
-      );
+    const profile =
+      format === "image" ? UPLOAD_PROFILES.convertPdfImage : UPLOAD_PROFILES.convertPdfDefault;
+
+    const checked = await validateUploadedFile(file, profile);
+
+    if (!checked.ok) {
+      return NextResponse.json({ error: checked.error }, { status: checked.status });
     }
 
-    const pdfBuffer = await convertToPDF(file, format);
+    const safeArrayBuffer = new ArrayBuffer(checked.buffer.byteLength);
+
+    new Uint8Array(safeArrayBuffer).set(checked.buffer);
+
+    const safeFile = new File([safeArrayBuffer], file.name, {
+      type: checked.detectedMime,
+    });
+
+    const pdfBuffer = await convertToPDF(safeFile, format);
 
     // Create user-friendly filename from original file name
     const originalName = file.name.replace(/\.[^/.]+$/, ""); // Remove extension

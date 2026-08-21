@@ -1,6 +1,8 @@
 import { NextRequest } from "next/server";
 import { msg, E } from "@/lib/errors";
 import { getAuthenticatedUser, getServiceRoleClient } from "@/lib/api/authGuards";
+import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
+import { validateUploadedFile } from "@/lib/security/file-content";
 
 export async function POST(req: NextRequest) {
   try {
@@ -20,12 +22,6 @@ export async function POST(req: NextRequest) {
     const validFileTypes = ["scannedPassport", "kOneLetter", "appointmentConfirmationLetter"];
     if (!validFileTypes.includes(fileType)) {
       return Response.json({ error: msg(E.UPLOAD_INVALID_FILE_TYPE) }, { status: 400 });
-    }
-
-    // Validate file size (max 20MB) — prevent storage-fill abuse
-    const maxSize = 20 * 1024 * 1024;
-    if (file.size > maxSize) {
-      return Response.json({ error: msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: 20 }) }, { status: 400 });
     }
 
     // AUTH: caller must be logged in
@@ -51,8 +47,11 @@ export async function POST(req: NextRequest) {
       return Response.json({ error: "Forbidden" }, { status: 403 });
     }
 
-    // Convert File to ArrayBuffer for upload
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const checked = await validateUploadedFile(file, UPLOAD_PROFILES.appointment);
+    if (!checked.ok) {
+      return Response.json({ error: checked.error }, { status: checked.status });
+    }
+    const buffer = checked.buffer;
 
     // Generate a unique filename
     const fileName = `${appointmentId}/${fileType}/${Date.now()}_${file.name}`;
@@ -61,7 +60,7 @@ export async function POST(req: NextRequest) {
     const { error: uploadError } = await supabase.storage
       .from("document-vault") // Using existing document-vault bucket
       .upload(fileName, buffer, {
-        contentType: file.type,
+        contentType: checked.detectedMime,
         upsert: true, // Overwrite if file exists
       });
 
