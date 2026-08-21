@@ -1193,7 +1193,7 @@ export const StepView: React.FC<StepViewProps> = ({
     if (!citations || citations.length === 0) return null;
 
     return (
-      <div className="animate-in fade-in mx-auto mt-4 mb-7 w-full max-w-[660px] duration-500">
+      <div className="animate-in fade-in mx-auto mt-2.5 mb-2.5 w-full max-w-[660px] px-4 duration-500 sm:mt-4 sm:mb-7 sm:px-6 md:px-8">
         <button
           onClick={() => setIsCitationsModalOpen(true)}
           className="hover:border-primary group flex w-full cursor-pointer items-center justify-between rounded-[20px] border border-[#d0e4f7] bg-[#fafcff]/80 p-5 text-left shadow-xs backdrop-blur-xs transition-all hover:bg-[#fafcff] sm:p-6"
@@ -1278,7 +1278,7 @@ export const StepView: React.FC<StepViewProps> = ({
         />
 
         {/* Page Shell */}
-        <div className="flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
+        <div className="flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
           {/* Step Header */}
           <StepHeader
             stepNumber={localIdx + 1}
@@ -1957,7 +1957,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         {tool.fee_block.details.map((d: string, i: number) => (
                           <div
                             key={i}
-                            className="flex items-start gap-[8px] text-[12px] font-medium leading-[1.45] text-white/85"
+                            className="flex items-start gap-[8px] text-[12px] leading-[1.45] font-medium text-white/85"
                           >
                             <div className="mt-[5px] h-[4px] w-[4px] shrink-0 rounded-full bg-[rgba(200,170,100,0.7)]" />
                             <span>{d}</span>
@@ -1995,14 +1995,10 @@ export const StepView: React.FC<StepViewProps> = ({
                           }
                         >
                           <div className="mt-[1px] flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full border border-emerald-500/40 bg-emerald-500/20">
-                            <Check
-                              size={12}
-                              strokeWidth={2.5}
-                              className="text-emerald-400"
-                            />
+                            <Check size={12} strokeWidth={2.5} className="text-emerald-400" />
                           </div>
                           <div
-                            className={`text-[12px] font-medium leading-[1.45] sm:text-[13px] ${
+                            className={`text-[12px] leading-[1.45] font-medium sm:text-[13px] ${
                               isChapter1
                                 ? "text-[var(--rv-ch1-text)]"
                                 : isChapter2
@@ -2073,7 +2069,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         {tool.upload_requirements?.map((req: string, i: number) => (
                           <div
                             key={i}
-                            className="flex items-start gap-2.5 text-[12px] font-medium leading-[1.45] text-white/85 sm:gap-[10px] sm:text-[13px]"
+                            className="flex items-start gap-2.5 text-[12px] leading-[1.45] font-medium text-white/85 sm:gap-[10px] sm:text-[13px]"
                           >
                             <div className="mt-[5px] h-[4px] w-[4px] shrink-0 rounded-full bg-[var(--rv-launch-blue)]/60" />
                             <span>{req}</span>
@@ -2812,9 +2808,7 @@ export const StepView: React.FC<StepViewProps> = ({
             </div>
           )}
           {/* Disclaimer */}
-          <p
-            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-5" : "mt-5"} pt-[8px] text-center text-[11.5px] leading-[1.65] text-[#6b8097]`}
-          >
+          <p className="mt-2.5 pt-1 text-center text-[11.5px] leading-[1.65] text-[#6b8097] sm:mt-5">
             {tool.disclaimer ||
               "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."}
           </p>
@@ -2837,7 +2831,7 @@ export const StepView: React.FC<StepViewProps> = ({
       {customRenderer ? (
         <div
           ref={customScrollContainerRef}
-          className="scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[100px]"
+          className="scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[72px] sm:pb-[100px]"
         >
           {customRenderer}
           {renderCitationsSection()}
@@ -2845,7 +2839,7 @@ export const StepView: React.FC<StepViewProps> = ({
       ) : (
         <div
           ref={scrollContainerRef}
-          className={`scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[100px] ${
+          className={`scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[72px] sm:pb-[100px] ${
             currentStep.step_type === "quest"
               ? ""
               : "px-2 pt-6 pb-6 sm:px-4 sm:pt-10 md:px-8 md:pt-14 md:pb-10 lg:px-12 lg:pb-12"
@@ -3830,7 +3824,7 @@ export const StepView: React.FC<StepViewProps> = ({
               </>
             ) : currentStep.step_type === "filing" ? (
               <div className="animate-in fade-in slide-in-from-bottom-6 flex w-full flex-col items-center duration-1000">
-                <div className="flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
+                <div className="flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
                   <h1 className="mt-0 mb-1 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight text-[#0c1b33]">
                     {currentStep.step_name}
                   </h1>
@@ -3849,7 +3843,7 @@ export const StepView: React.FC<StepViewProps> = ({
 
                   {isLocked ? (
                     <div
-                      className={`animate-in zoom-in-95 mb-[20px] flex items-center gap-[16px] rounded-[14px] border-2 border-transparent p-[22px_20px] duration-300 ${state.metadata.filingMethod === "online" ? "border-[#0a4330] bg-[#0e5c42]" : "border-[#1e1348] bg-[#2e1f72]"}`}
+                      className={`animate-in zoom-in-95 mb-2.5 flex items-center gap-[16px] rounded-[14px] border-2 border-transparent p-[18px_16px] duration-300 sm:mb-[20px] sm:p-[22px_20px] ${state.metadata.filingMethod === "online" ? "border-[#0a4330] bg-[#0e5c42]" : "border-[#1e1348] bg-[#2e1f72]"}`}
                     >
                       <div
                         className={`flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full text-[18px] font-bold ${state.metadata.filingMethod === "online" ? "bg-[#6dddb8] text-[#0e5c42]" : "bg-[#a89af5] text-[#2e1f72]"}`}
@@ -3972,7 +3966,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         })}
                       </div>
 
-                      <div className="mb-[28px] flex flex-col gap-[10px]">
+                      <div className="mb-3 flex flex-col gap-[10px] sm:mb-[28px]">
                         <button
                           onClick={() => handleConfirmation(state.metadata.filingMethod as string)}
                           className={`w-full transform rounded-[14px] p-[15px_24px] text-[15px] font-semibold text-white shadow-sm transition-all duration-[0.24s] ${!state.metadata.filingMethod ? "hidden" : "block"} ${
@@ -3995,18 +3989,18 @@ export const StepView: React.FC<StepViewProps> = ({
                             setQuizAnswers({});
                             setQuizResult(null);
                           }}
-                          className="hover:border-primary hover:text-primary hover:bg-primary/[0.08] group flex self-center max-w-full items-center justify-center gap-2 sm:gap-[9px] rounded-[12px] sm:rounded-[14px] border-[1.5px] border-[#d0e4f7] bg-white sm:bg-transparent px-4 py-2.5 sm:px-6 sm:py-3 text-[12.5px] sm:text-[14px] font-medium text-[#3a4f63] transition-all active:scale-[0.99]"
+                          className="hover:border-primary hover:text-primary hover:bg-primary/[0.08] group flex max-w-full items-center justify-center gap-2 self-center rounded-[12px] border-[1.5px] border-[#d0e4f7] bg-white px-4 py-2.5 text-[12.5px] font-medium text-[#3a4f63] transition-all active:scale-[0.99] sm:gap-[9px] sm:rounded-[14px] sm:bg-transparent sm:px-6 sm:py-3 sm:text-[14px]"
                         >
-                          <div
-                            className="flex h-[18px] w-[18px] sm:h-[20px] sm:w-[20px] shrink-0 items-center justify-center rounded-full border-[1.5px] border-current text-[10px] sm:text-[11px] font-bold"
-                          >
+                          <div className="flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border-[1.5px] border-current text-[10px] font-bold sm:h-[20px] sm:w-[20px] sm:text-[11px]">
                             ?
                           </div>
-                          <span className="text-center leading-snug">Not sure? Help me choose the right method</span>
+                          <span className="text-center leading-snug">
+                            Not sure? Help me choose the right method
+                          </span>
                         </button>
                       </div>
 
-                      <p className="m-0 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097]">
+                      <p className="m-0 mt-2.5 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097] sm:mt-4">
                         {currentStep.filing_data?.footerNote ||
                           "Fees as of March 2026 per the USCIS G-1055 fee schedule. Processing time is the same for both methods. Always verify at uscis.gov before filing."}
                       </p>
@@ -4014,7 +4008,7 @@ export const StepView: React.FC<StepViewProps> = ({
                   )}
 
                   {currentStep.tool_data?.disclaimer && (
-                    <div className="m-0 mt-8 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097]">
+                    <div className="m-0 mt-2.5 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097] sm:mt-4">
                       <span>{currentStep.tool_data.disclaimer}</span>
                     </div>
                   )}
@@ -4577,13 +4571,13 @@ export const StepView: React.FC<StepViewProps> = ({
             return (
               <div className="animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[120] flex flex-col bg-[#fafcff] duration-[0.28s] ease-in-out">
                 {/* Tutorial Topbar */}
-                <div className="flex h-[54px] sm:h-[72px] shrink-0 items-center gap-3 sm:gap-4 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:px-6">
+                <div className="flex h-[54px] shrink-0 items-center gap-3 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:h-[72px] sm:gap-4 sm:px-6">
                   <button
                     onClick={() => {
                       setIsTutorialOpen(false);
                       setUseCeacGuideData(false);
                     }}
-                    className="hover:bg-primary/30 flex h-8 w-8 sm:h-9 sm:w-9 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all"
+                    className="hover:bg-primary/30 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all sm:h-9 sm:w-9"
                   >
                     <X size={16} strokeWidth={2} />
                   </button>
@@ -4616,9 +4610,9 @@ export const StepView: React.FC<StepViewProps> = ({
                       {currentTutStep.heading}
                     </h2>
                     <SafeHtml
-  className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
-  html={currentTutStep.instruction}
-/>
+                      className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
+                      html={currentTutStep.instruction}
+                    />
 
                     {branchChoiceActive && (currentTutStep as any).choiceOptions && (
                       <div className="mb-5">
@@ -4789,14 +4783,14 @@ export const StepView: React.FC<StepViewProps> = ({
           return (
             <div className="animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[120] flex flex-col bg-[#fafcff] bg-white duration-[0.28s] ease-in-out">
               {/* Tutorial Topbar */}
-              <div className="flex h-[54px] sm:h-[72px] shrink-0 items-center gap-3 sm:gap-4 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:px-6">
+              <div className="flex h-[54px] shrink-0 items-center gap-3 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:h-[72px] sm:gap-4 sm:px-6">
                 <button
                   onClick={() => {
                     setIsTutorialOpen(false);
                     setTutorialPath(null);
                     setUseCeacGuideData(false);
                   }}
-                  className="hover:bg-primary/30 flex h-8 w-8 sm:h-9 sm:w-9 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all"
+                  className="hover:bg-primary/30 flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all sm:h-9 sm:w-9"
                 >
                   <X size={16} strokeWidth={2} />
                 </button>
@@ -4827,9 +4821,9 @@ export const StepView: React.FC<StepViewProps> = ({
                     {currentTutStep.heading}
                   </h2>
                   <SafeHtml
-  className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
-  html={currentTutStep.instruction}
-/>
+                    className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
+                    html={currentTutStep.instruction}
+                  />
 
                   {/* Screenshot Block */}
                   {isDynamic ? (
@@ -5061,7 +5055,9 @@ export const StepView: React.FC<StepViewProps> = ({
                         {isDynamic ? (
                           (currentTutStep as TutorialStepData).note
                         ) : (
-                          <SafeHtml html={(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).note!} />
+                          <SafeHtml
+                            html={(currentTutStep as (typeof USCIS_TUTORIAL_STEPS)[0]).note!}
+                          />
                         )}
                       </div>
                     </div>
@@ -5151,9 +5147,9 @@ export const StepView: React.FC<StepViewProps> = ({
                       {sec.t}
                     </div>
                     <SafeHtml
-  className="prose-sm text-[13px] leading-[1.7] break-words text-[#3a4f63] sm:text-[14px]"
-  html={sec.c}
-/>
+                      className="prose-sm text-[13px] leading-[1.7] break-words text-[#3a4f63] sm:text-[14px]"
+                      html={sec.c}
+                    />
                   </div>
                 ))}
               </div>
