@@ -1,5 +1,5 @@
 {
-  "name": "rahvana-frontend",
+  "name": "rahvana",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -9,7 +9,7 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:security": "jest --testPathPattern=__tests__/security",
+    "test:security": "jest --testPathPatterns=__tests__/security",
     "security:deps": "node scripts/check-security-deps.mjs",
     "security:audit": "npm audit --omit=dev --audit-level=high",
     "lint": "eslint",
