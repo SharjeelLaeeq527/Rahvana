@@ -22,17 +22,17 @@ export const SponsorshipModule: React.FC<SponsorshipModuleProps> = ({
       <div className="relative bg-[var(--rv-ch2-module-bg)] border border-[var(--rv-ch2)]/30 rounded-[16px] overflow-hidden mb-[28px] shadow-[0_20px_60px_rgba(12,27,51,0.18),0_4px_16px_rgba(12,27,51,0.12)]">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-linear-to-r from-[var(--rv-ch2)] to-[var(--rv-ch2-module-bg)] opacity-70" />
         <div className="p-[32px_34px_28px]">
-          <div className="flex items-start gap-[16px] mb-[22px]">
-            <div className="w-[46px] h-[46px] rounded-[11px] bg-[var(--rv-ch2)] border border-[var(--rv-ch2)]/50 flex items-center justify-center shrink-0">
-              <Calculator size={22} className="text-white" strokeWidth={1.6} />
-            </div>
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--rv-ch2-text)] mb-[4px]">
+          <div className="flex flex-col gap-2 mb-[22px]">
+            <div className="flex items-center gap-[14px]">
+              <div className="w-[46px] h-[46px] rounded-[11px] bg-[var(--rv-ch2)] border border-[var(--rv-ch2)]/50 flex items-center justify-center shrink-0">
+                <Calculator size={22} className="text-white" strokeWidth={1.6} />
+              </div>
+              <div className="text-[10px] font-bold uppercase tracking-widest text-[var(--rv-ch2-text)]">
                 {tool.launch_module.label || "Affidavit Support Calculator"}
               </div>
-              <div className="text-[clamp(19px,2.8vw,23px)] text-[var(--rv-ch2-text)] leading-[1.25]">
-                {tool.launch_module.title || "Determine your sponsorship setup first"}
-              </div>
+            </div>
+            <div className="w-full text-[clamp(19px,2.8vw,23px)] text-[var(--rv-ch2-text)] leading-[1.25]">
+              {tool.launch_module.title || "Determine your sponsorship setup first"}
             </div>
           </div>
           <div className="h-px bg-[var(--rv-ch2)]/30 mb-[20px]" />

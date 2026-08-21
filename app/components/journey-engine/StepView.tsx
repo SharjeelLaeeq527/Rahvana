@@ -46,6 +46,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { ZoomableGuideImage } from "@/app/components/shared/ZoomableGuideImage";
 import {
   RoadmapDataV3,
   QuestSuiteV3,
@@ -154,6 +155,7 @@ import { HouseholdSponsorshipTool } from "./components/HouseholdSponsorshipTool"
 import { DocumentQuestionnaire } from "@/app/components/questionnaire/DocumentQuestionnaire";
 import { QuestRenderer } from "./QuestRenderer";
 import { ActionStepRenderer } from "./ActionStepRenderer";
+import { SafeHtml } from "../shared/SafeHTML";
 
 /**
  * Find a vault document that matches an item, considering dynamic categories.
@@ -1121,7 +1123,7 @@ export const StepView: React.FC<StepViewProps> = ({
     if (!citations || citations.length === 0) return null;
 
     return (
-      <div className="animate-in fade-in mx-auto mt-4 mb-7 w-full max-w-[660px] duration-500">
+      <div className="animate-in fade-in mx-auto mt-2.5 mb-2.5 w-full max-w-[660px] px-4 duration-500 sm:mt-4 sm:mb-7 sm:px-6 md:px-8">
         <button
           onClick={() => setIsCitationsModalOpen(true)}
           className="hover:border-primary group flex w-full cursor-pointer items-center justify-between rounded-[20px] border border-[#d0e4f7] bg-[#fafcff]/80 p-5 text-left shadow-xs backdrop-blur-xs transition-all hover:bg-[#fafcff] sm:p-6"
@@ -1207,7 +1209,7 @@ export const StepView: React.FC<StepViewProps> = ({
         />
 
         {/* Page Shell */}
-        <div className="flex w-full max-w-[680px] flex-col px-[24px] pt-5 pb-10 md:pt-8">
+        <div className="flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
           {/* Step Header */}
           <StepHeader
             stepNumber={localIdx + 1}
@@ -1848,35 +1850,35 @@ export const StepView: React.FC<StepViewProps> = ({
 
                 <div className="p-4 sm:p-6 lg:p-[36px_36px_32px]">
                   {/* Module Header */}
-                  <div className="mb-4 flex items-start gap-3 sm:mb-6 sm:gap-4">
-                    <div
-                      className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border sm:h-12 sm:w-12 ${isChapter1 ? "border-[var(--rv-ch1)]" : isChapter2 ? "border-[var(--rv-ch2)]" : "border-white/10 bg-white/[0.055]"}`}
-                      style={
-                        isChapter1
-                          ? { backgroundColor: "var(--rv-ch1)" }
-                          : isChapter2
-                            ? { backgroundColor: "var(--rv-ch2)" }
-                            : undefined
-                      }
-                    >
-                      <IconComponent
-                        size={20}
-                        className={isChapter1 || isChapter2 ? "text-white" : "text-white/75"}
-                        strokeWidth={1.6}
-                      />
-                    </div>
-                    <div className="flex-1">
+                  <div className="mb-4 flex flex-col gap-2 sm:mb-6 sm:gap-2.5">
+                    <div className="flex items-center gap-3 sm:gap-4">
                       <div
-                        className={`mb-1 text-[10px] font-bold tracking-widest uppercase sm:mb-[5px] ${isChapter1 ? "text-[var(--rv-ch1)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/35"}`}
+                        className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-[12px] border sm:h-12 sm:w-12 ${isChapter1 ? "border-[var(--rv-ch1)]" : isChapter2 ? "border-[var(--rv-ch2)]" : "border-white/10 bg-white/[0.055]"}`}
+                        style={
+                          isChapter1
+                            ? { backgroundColor: "var(--rv-ch1)" }
+                            : isChapter2
+                              ? { backgroundColor: "var(--rv-ch2)" }
+                              : undefined
+                        }
+                      >
+                        <IconComponent
+                          size={20}
+                          className={isChapter1 || isChapter2 ? "text-white" : "text-white/75"}
+                          strokeWidth={1.6}
+                        />
+                      </div>
+                      <div
+                        className={`text-[10px] font-bold tracking-widest uppercase sm:text-[11px] ${isChapter1 ? "text-[var(--rv-ch1)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/35"}`}
                       >
                         {tool.launch_module.eyebrow || tool.launch_module.label}
                       </div>
-                      <h2
-                        className={`text-[clamp(18px,4vw,24px)] leading-[1.25] ${isChapter1 ? "text-white" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/90"}`}
-                      >
-                        {tool.launch_module.heading || tool.launch_module.title}
-                      </h2>
                     </div>
+                    <h2
+                      className={`w-full text-[clamp(18px,4vw,24px)] leading-[1.25] ${isChapter1 ? "text-white" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/90"}`}
+                    >
+                      {tool.launch_module.heading || tool.launch_module.title}
+                    </h2>
                   </div>
 
                   <div
@@ -1902,7 +1904,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         {tool.fee_block.details.map((d: string, i: number) => (
                           <div
                             key={i}
-                            className="flex items-start gap-[8px] text-[12px] leading-[1.45] text-white/55"
+                            className="flex items-start gap-[8px] text-[12px] font-medium leading-[1.45] text-white/85"
                           >
                             <div className="mt-[5px] h-[4px] w-[4px] shrink-0 rounded-full bg-[rgba(200,170,100,0.7)]" />
                             <span>{d}</span>
@@ -1914,20 +1916,47 @@ export const StepView: React.FC<StepViewProps> = ({
 
                   {/* Review Checklist (Step 10 — Review & Submit) */}
                   {tool.review_checklist && tool.review_checklist.length > 0 && (
-                    <div className="mb-[20px] flex flex-col gap-3 sm:gap-2">
+                    <div className="mb-[20px] flex flex-col gap-2.5 sm:gap-2">
                       {tool.review_checklist.map((item: string, i: number) => (
                         <div
                           key={i}
-                          className="flex items-start gap-[12px] rounded-[10px] border border-white/10 bg-white/[0.06] p-3 sm:p-[12px_14px]"
+                          className={`${
+                            isChapter1
+                              ? "border"
+                              : isChapter2
+                                ? "border border-[var(--rv-ch2)]/30 bg-[var(--rv-ch2-panel)]"
+                                : "border border-white/12 bg-white/[0.08]"
+                          } flex items-start gap-3 rounded-[12px] p-3 sm:p-[12px_16px]`}
+                          style={
+                            isChapter1
+                              ? {
+                                  backgroundColor: "var(--rv-ch1-feature-bg)",
+                                  borderColor: "rgba(130,132,191,0.3)",
+                                }
+                              : isChapter2
+                                ? {
+                                    backgroundColor: "var(--rv-ch2-feature-bg)",
+                                    borderColor: "rgba(82,10,80,0.28)",
+                                  }
+                                : {}
+                          }
                         >
-                          <div className="mt-[1px] flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full border border-[rgba(21,116,79,0.4)] bg-[rgba(21,116,79,0.25)]">
+                          <div className="mt-[1px] flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full border border-emerald-500/40 bg-emerald-500/20">
                             <Check
-                              size={11}
+                              size={12}
                               strokeWidth={2.5}
-                              className="text-[rgba(100,220,160,0.9)]"
+                              className="text-emerald-400"
                             />
                           </div>
-                          <div className="text-[12px] leading-[1.45] text-white/55 sm:text-[13px]">
+                          <div
+                            className={`text-[12px] font-medium leading-[1.45] sm:text-[13px] ${
+                              isChapter1
+                                ? "text-[var(--rv-ch1-text)]"
+                                : isChapter2
+                                  ? "text-[var(--rv-ch2-text)]"
+                                  : "text-white/90"
+                            }`}
+                          >
                             {item}
                           </div>
                         </div>
@@ -1973,7 +2002,7 @@ export const StepView: React.FC<StepViewProps> = ({
                           }`}
                         />
                         <div
-                          className={`text-[12px] leading-[1.4] sm:text-[13px] ${isChapter1 ? "text-[var(--rv-ch1-text)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/55"}`}
+                          className={`text-[12px] leading-[1.4] sm:text-[13px] ${isChapter1 ? "text-[var(--rv-ch1-text)]" : isChapter2 ? "text-[var(--rv-ch2-text)]" : "text-white/85"}`}
                         >
                           {feat}
                         </div>
@@ -1991,7 +2020,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         {tool.upload_requirements?.map((req: string, i: number) => (
                           <div
                             key={i}
-                            className="flex items-start gap-2.5 text-[12px] leading-[1.45] text-white/55 sm:gap-[10px] sm:text-[13px]"
+                            className="flex items-start gap-2.5 text-[12px] font-medium leading-[1.45] text-white/85 sm:gap-[10px] sm:text-[13px]"
                           >
                             <div className="mt-[5px] h-[4px] w-[4px] shrink-0 rounded-full bg-[var(--rv-launch-blue)]/60" />
                             <span>{req}</span>
@@ -2558,14 +2587,20 @@ export const StepView: React.FC<StepViewProps> = ({
                           </p>
                         </div>
                         <div
-                          className={`mt-0 flex items-center gap-1 self-start text-[12px] font-bold sm:mt-0 sm:self-auto sm:text-[13px] ${
+                          className={`mt-0 flex items-center gap-1.5 self-start text-[12px] font-semibold sm:mt-0 sm:self-auto sm:text-[13px] ${
                             isGuideLocked ? "text-[#a06000]" : "text-primary"
                           }`}
                         >
                           {isGuideLocked ? (
-                            <Lock size={15} strokeWidth={2.5} />
+                            <>
+                              <span>Unlock</span>
+                              <Lock size={14} strokeWidth={2.5} />
+                            </>
                           ) : (
-                            <ArrowRight size={18} strokeWidth={2.5} />
+                            <>
+                              <span>{card.cta_label || "View guide"}</span>
+                              <ArrowRight size={14} strokeWidth={2.5} />
+                            </>
                           )}
                         </div>
                       </button>
@@ -2725,7 +2760,7 @@ export const StepView: React.FC<StepViewProps> = ({
           )}
           {/* Disclaimer */}
           <p
-            className={`${currentStep.step_key === "step_2_4" || currentStep.step_key === "step_2_6" || currentStep.step_key === "step_2_7" || currentStep.step_key === "step_1_17" ? "mt-5" : "mt-5"} pt-[8px] text-center text-[11.5px] leading-[1.65] text-[#6b8097]`}
+            className="mt-2.5 sm:mt-5 pt-1 text-center text-[11.5px] leading-[1.65] text-[#6b8097]"
           >
             {tool.disclaimer ||
               "Rahvana provides structured guidance only. This is not legal advice, always verify with official sources."}
@@ -2749,7 +2784,7 @@ export const StepView: React.FC<StepViewProps> = ({
       {customRenderer ? (
         <div
           ref={customScrollContainerRef}
-          className="scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[100px]"
+          className="scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[72px] sm:pb-[100px]"
         >
           {customRenderer}
           {renderCitationsSection()}
@@ -2757,7 +2792,7 @@ export const StepView: React.FC<StepViewProps> = ({
       ) : (
         <div
           ref={scrollContainerRef}
-          className={`scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[100px] ${
+          className={`scrollbar-hide relative flex flex-1 flex-col items-center overflow-y-auto pb-[72px] sm:pb-[100px] ${
             currentStep.step_type === "quest"
               ? ""
               : "px-2 pt-6 pb-6 sm:px-4 sm:pt-10 md:px-8 md:pt-14 md:pb-10 lg:px-12 lg:pb-12"
@@ -3742,7 +3777,7 @@ export const StepView: React.FC<StepViewProps> = ({
               </>
             ) : currentStep.step_type === "filing" ? (
               <div className="animate-in fade-in slide-in-from-bottom-6 flex w-full flex-col items-center duration-1000">
-                <div className="flex w-full max-w-[660px] flex-col pt-5 pb-[35px] md:pt-8">
+                <div className="flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
                   <h1 className="mt-0 mb-1 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight text-[#0c1b33]">
                     {currentStep.step_name}
                   </h1>
@@ -3761,7 +3796,7 @@ export const StepView: React.FC<StepViewProps> = ({
 
                   {isLocked ? (
                     <div
-                      className={`animate-in zoom-in-95 mb-[20px] flex items-center gap-[16px] rounded-[14px] border-2 border-transparent p-[22px_20px] duration-300 ${state.metadata.filingMethod === "online" ? "border-[#0a4330] bg-[#0e5c42]" : "border-[#1e1348] bg-[#2e1f72]"}`}
+                      className={`animate-in zoom-in-95 mb-2.5 sm:mb-[20px] flex items-center gap-[16px] rounded-[14px] border-2 border-transparent p-[18px_16px] sm:p-[22px_20px] duration-300 ${state.metadata.filingMethod === "online" ? "border-[#0a4330] bg-[#0e5c42]" : "border-[#1e1348] bg-[#2e1f72]"}`}
                     >
                       <div
                         className={`flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-full text-[18px] font-bold ${state.metadata.filingMethod === "online" ? "bg-[#6dddb8] text-[#0e5c42]" : "bg-[#a89af5] text-[#2e1f72]"}`}
@@ -3884,7 +3919,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         })}
                       </div>
 
-                      <div className="mb-[28px] flex flex-col gap-[10px]">
+                      <div className="mb-3 sm:mb-[28px] flex flex-col gap-[10px]">
                         <button
                           onClick={() => handleConfirmation(state.metadata.filingMethod as string)}
                           className={`w-full transform rounded-[14px] p-[15px_24px] text-[15px] font-semibold text-white shadow-sm transition-all duration-[0.24s] ${!state.metadata.filingMethod ? "hidden" : "block"} ${
@@ -3918,7 +3953,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         </button>
                       </div>
 
-                      <p className="m-0 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097]">
+                      <p className="m-0 mt-2.5 sm:mt-4 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097]">
                         {currentStep.filing_data?.footerNote ||
                           "Fees as of March 2026 per the USCIS G-1055 fee schedule. Processing time is the same for both methods. Always verify at uscis.gov before filing."}
                       </p>
@@ -3926,7 +3961,7 @@ export const StepView: React.FC<StepViewProps> = ({
                   )}
 
                   {currentStep.tool_data?.disclaimer && (
-                    <div className="m-0 mt-8 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097]">
+                    <div className="m-0 mt-2.5 sm:mt-4 rounded-[9px] bg-[#e8f1fb] p-[12px_16px] text-[12px] leading-[1.6] text-[#6b8097]">
                       <span>{currentStep.tool_data.disclaimer}</span>
                     </div>
                   )}
@@ -3934,7 +3969,7 @@ export const StepView: React.FC<StepViewProps> = ({
               </div>
             ) : (
               <div
-                className={`animate-in fade-in zoom-in-95 mx-auto mt-4 w-full max-w-[740px] rounded-[20px] border border-[#d0e4f7] bg-white p-4 shadow-xl shadow-[#0f1f38]/5 duration-700 sm:mt-8 sm:rounded-[28px] sm:p-8 md:mt-12 md:rounded-[32px] md:p-12 lg:p-20 ${isChapter1 ? "step-modal-spacing" : ""}`}
+                className={`animate-in fade-in zoom-in-95 mx-auto mt-4 w-full max-w-[680px] rounded-[20px] border border-[#d0e4f7] bg-white p-4 shadow-xl shadow-[#0f1f38]/5 duration-700 sm:mt-8 sm:rounded-[28px] sm:p-8 md:mt-12 md:rounded-[32px] md:p-12 lg:p-20 ${isChapter1 ? "step-modal-spacing" : ""}`}
               >
                 <div
                   className={`mb-4 text-[11px] font-bold tracking-[0.2em] uppercase opacity-70 ${isChapter1 ? "accent-rose" : "text-primary"}`}
@@ -4067,11 +4102,13 @@ export const StepView: React.FC<StepViewProps> = ({
           return creds
             ? {
                 username: creds.username,
-                password: "",
+                password: creds.password || "",
+                nvcCaseNumber: creds.nvc_case_number || "",
+                nvcInvoiceId: creds.nvc_invoice_id || "",
                 securityQuestions: creds.security_questions.map((sq) => ({
                   id: sq.id,
                   question: sq.question,
-                  answer: "",
+                  answer: sq.answer || "",
                 })),
               }
             : undefined;
@@ -4106,7 +4143,6 @@ export const StepView: React.FC<StepViewProps> = ({
           setIsWalletFormOpen(true);
         }}
         onDelete={() => {
-          setIsWalletViewOpen(false);
           setShowDeleteConfirmation(true);
         }}
       />
@@ -4140,6 +4176,7 @@ export const StepView: React.FC<StepViewProps> = ({
         onConfirm={async () => {
           await handleDeleteCredentials(walletPortalType);
           setShowDeleteConfirmation(false);
+          setIsWalletViewOpen(false);
         }}
         loading={isSubmittingCreds}
       />
@@ -4333,12 +4370,7 @@ export const StepView: React.FC<StepViewProps> = ({
                       <div className="mb-[10px] text-[13px] font-semibold tracking-[0.05em] text-[#6b8097] uppercase">
                         {section.title}
                       </div>
-                      <div
-                        className="guide-content"
-                        dangerouslySetInnerHTML={{
-                          __html: section.htmlContent,
-                        }}
-                      />
+                      <SafeHtml className="guide-content" html={section.htmlContent} />
                     </div>
                   ))
                 )}
@@ -4496,13 +4528,13 @@ export const StepView: React.FC<StepViewProps> = ({
             return (
               <div className="animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[120] flex flex-col bg-[#fafcff] duration-[0.28s] ease-in-out">
                 {/* Tutorial Topbar */}
-                <div className="flex h-[72px] shrink-0 items-center gap-4 border-b border-[#d0e4f7] bg-[#fafcff] px-6">
+                <div className="flex h-[54px] sm:h-[72px] shrink-0 items-center gap-3 sm:gap-4 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:px-6">
                   <button
                     onClick={() => {
                       setIsTutorialOpen(false);
                       setUseCeacGuideData(false);
                     }}
-                    className="hover:bg-primary/30 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all"
+                    className="hover:bg-primary/30 flex h-8 w-8 sm:h-9 sm:w-9 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all"
                   >
                     <X size={16} strokeWidth={2} />
                   </button>
@@ -4522,7 +4554,7 @@ export const StepView: React.FC<StepViewProps> = ({
                 </div>
 
                 {/* Tutorial Body */}
-                <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto bg-white p-[48px_24px_40px]">
+                <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto bg-white p-4 pt-5 sm:p-[48px_24px_40px]">
                   <div className="flex w-full max-w-[580px] flex-col">
                     <div
                       className={`mb-4 text-[11px] font-semibold tracking-widest uppercase ${isChapter1 ? "accent-rose" : "text-primary"}`}
@@ -4534,12 +4566,10 @@ export const StepView: React.FC<StepViewProps> = ({
                     >
                       {currentTutStep.heading}
                     </h2>
-                    <div
-                      className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
-                      dangerouslySetInnerHTML={{
-                        __html: currentTutStep.instruction,
-                      }}
-                    />
+                    <SafeHtml
+  className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
+  html={currentTutStep.instruction}
+/>
 
                     {branchChoiceActive && (currentTutStep as any).choiceOptions && (
                       <div className="mb-5">
@@ -4603,10 +4633,10 @@ export const StepView: React.FC<StepViewProps> = ({
                           style={{ aspectRatio: "4/3" }}
                         >
                           {currentTutStep.media && currentTutStep.media.type === "img" ? (
-                            <img
+                            <ZoomableGuideImage
                               src={currentTutStep.media.src}
                               alt={currentTutStep.heading}
-                              className="h-full w-full object-contain"
+                              isStandardImg
                             />
                           ) : (
                             <div className="absolute inset-0 flex w-full flex-col items-center justify-center gap-[16px] overflow-hidden px-[24px] py-[28px]">
@@ -4710,14 +4740,14 @@ export const StepView: React.FC<StepViewProps> = ({
           return (
             <div className="animate-in slide-in-from-bottom-[18px] fixed inset-0 z-[120] flex flex-col bg-[#fafcff] bg-white duration-[0.28s] ease-in-out">
               {/* Tutorial Topbar */}
-              <div className="flex h-[72px] shrink-0 items-center gap-4 border-b border-[#d0e4f7] bg-[#fafcff] px-6">
+              <div className="flex h-[54px] sm:h-[72px] shrink-0 items-center gap-3 sm:gap-4 border-b border-[#d0e4f7] bg-[#fafcff] px-3.5 sm:px-6">
                 <button
                   onClick={() => {
                     setIsTutorialOpen(false);
                     setTutorialPath(null);
                     setUseCeacGuideData(false);
                   }}
-                  className="hover:bg-primary/30 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all"
+                  className="hover:bg-primary/30 flex h-8 w-8 sm:h-9 sm:w-9 cursor-pointer items-center justify-center rounded-full border-none bg-[#f4f7fb] text-[#3a4f63] transition-all"
                 >
                   <X size={16} strokeWidth={2} />
                 </button>
@@ -4737,7 +4767,7 @@ export const StepView: React.FC<StepViewProps> = ({
               </div>
 
               {/* Tutorial Body */}
-              <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto bg-[#fafcff] bg-white p-[48px_24px_40px]">
+              <div className="flex min-h-0 flex-1 flex-col items-center overflow-y-auto bg-[#fafcff] bg-white p-4 pt-5 sm:p-[48px_24px_40px]">
                 <div className="flex w-full max-w-[580px] flex-col">
                   <div className="text-primary mb-4 text-[11px] font-semibold tracking-widest uppercase">
                     {isDynamic ? currentTutStep.label : (currentTutStep as TutorialStepV3).label}
@@ -4745,12 +4775,10 @@ export const StepView: React.FC<StepViewProps> = ({
                   <h2 className="mb-2 text-[clamp(20px,3.2vw,26px)] leading-[1.3] font-black text-[#0c1b33]">
                     {currentTutStep.heading}
                   </h2>
-                  <div
-                    className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
-                    dangerouslySetInnerHTML={{
-                      __html: currentTutStep.instruction,
-                    }}
-                  />
+                  <SafeHtml
+  className="mb-5 text-[14px] leading-[1.7] text-[#3a4f63]"
+  html={currentTutStep.instruction}
+/>
 
                   {/* Screenshot Block */}
                   {isDynamic ? (
@@ -4779,12 +4807,11 @@ export const StepView: React.FC<StepViewProps> = ({
                               alt={(currentTutStep as TutorialStepData).screenTitle}
                             />
                           ) : (
-                            <Image
+                            <ZoomableGuideImage
                               key={(currentTutStep as TutorialStepData).media!.src || tutorialIdx}
                               src={(currentTutStep as TutorialStepData).media!.src!}
                               alt={(currentTutStep as TutorialStepData).screenTitle}
                               fill
-                              className="object-contain"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                               quality={95}
                               priority={tutorialIdx === 0}
@@ -4797,11 +4824,10 @@ export const StepView: React.FC<StepViewProps> = ({
                             alt={(currentTutStep as TutorialStepData).screenTitle}
                           />
                         ) : (currentTutStep as TutorialStepData).screenshot ? (
-                          <Image
+                          <ZoomableGuideImage
                             src={((currentTutStep as TutorialStepData).screenshot as string) || ""}
                             alt={(currentTutStep as TutorialStepData).screenTitle}
                             fill
-                            className="object-contain"
                             sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                             quality={95}
                             priority={tutorialIdx === 0}
@@ -4898,12 +4924,11 @@ export const StepView: React.FC<StepViewProps> = ({
                       <div className="relative w-full bg-[#f8f9fb]" style={{ aspectRatio: "4/3" }}>
                         {(currentTutStep as TutorialStepV3).media?.src ? (
                           (currentTutStep as TutorialStepV3).media.type === "img" ? (
-                            <Image
+                            <ZoomableGuideImage
                               key={(currentTutStep as TutorialStepV3).media.src}
                               src={(currentTutStep as TutorialStepV3).media.src!}
                               alt={(currentTutStep as TutorialStepV3).screenTitle}
                               fill
-                              className="object-contain"
                               sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                               quality={95}
                               priority
@@ -4976,11 +5001,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         {isDynamic ? (
                           (currentTutStep as TutorialStepV3).note
                         ) : (
-                          <div
-                            dangerouslySetInnerHTML={{
-                              __html: (currentTutStep as TutorialStepV3).note!,
-                            }}
-                          />
+                          <SafeHtml html={(currentTutStep as TutorialStepV3).note!} />
                         )}
                       </div>
                     </div>
@@ -5069,10 +5090,10 @@ export const StepView: React.FC<StepViewProps> = ({
                     <div className="mb-[8px] text-[11px] font-[700] tracking-[0.06em] text-[#6b8097] uppercase sm:text-[12px]">
                       {sec.t}
                     </div>
-                    <div
-                      className="prose-sm text-[13px] leading-[1.7] break-words text-[#3a4f63] sm:text-[14px]"
-                      dangerouslySetInnerHTML={{ __html: sec.c }}
-                    />
+                    <SafeHtml
+  className="prose-sm text-[13px] leading-[1.7] break-words text-[#3a4f63] sm:text-[14px]"
+  html={sec.c}
+/>
                   </div>
                 ))}
               </div>
@@ -5169,10 +5190,7 @@ export const StepView: React.FC<StepViewProps> = ({
                         {s.vlabel}
                       </div>
                     </div>
-                    <div
-                      className="medical-mock-visual p-[18px]"
-                      dangerouslySetInnerHTML={{ __html: s.visual }}
-                    />
+                    <SafeHtml className="medical-mock-visual p-[18px]" html={s.visual} />
                   </div>
 
                   {s.note && (

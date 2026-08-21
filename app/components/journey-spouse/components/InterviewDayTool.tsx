@@ -30,18 +30,18 @@ export const InterviewDayTool: React.FC<InterviewDayToolProps> = ({
         <div className="absolute top-0 left-0 right-0 h-[2.5px] bg-linear-to-r from-[#4a2d8a] via-[#6aa8f0] to-transparent opacity-80" />
 
         <div className="p-7 sm:p-8">
-          <div className="flex items-start gap-4 mb-5">
-            <div className="w-[44px] h-[44px] rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
-              <Briefcase className="text-white/75" size={21} strokeWidth={1.6} />
-            </div>
-            <div>
-              <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35 mb-1">
+          <div className="flex flex-col gap-2 mb-5">
+            <div className="flex items-center gap-3">
+              <div className="w-[44px] h-[44px] rounded-xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                <Briefcase className="text-white/75" size={21} strokeWidth={1.6} />
+              </div>
+              <div className="text-[10px] font-bold uppercase tracking-[0.12em] text-white/35">
                 {tool.launch_module.title}
               </div>
-              <h3 className=" text-[20px] sm:text-[22px] text-white/95 leading-tight">
-                {tool.launch_module.heading}
-              </h3>
             </div>
+            <h3 className="w-full text-[20px] sm:text-[22px] text-white/95 leading-tight">
+              {tool.launch_module.heading}
+            </h3>
           </div>
 
           <div className="h-px bg-white/10 mb-[18px]" />

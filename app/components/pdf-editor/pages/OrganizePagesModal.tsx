@@ -12,6 +12,7 @@ import { useToast } from "@/app/components/shared/ToastProvider";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import * as Errors from "@/lib/errors";
+import { loadPdfDocument, renderPdfPage } from "@/lib/pdfjs/client";
 
 interface PageItem {
   index: number;
@@ -45,10 +46,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
     try {
       if (!pdfFile) return;
 
-      const pdfjs = await import("pdfjs-dist");
-      pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-
-      const pdf = await pdfjs.getDocument(await pdfFile.arrayBuffer()).promise;
+      const pdf = await loadPdfDocument(await pdfFile.arrayBuffer());
       const pageItems: PageItem[] = [];
 
       // If modifications exist, use them, otherwise load all pages
@@ -68,7 +66,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
           if (context) {
             canvas.width = viewport.width;
             canvas.height = viewport.height;
-            await page.render({ canvasContext: context, viewport }).promise;
+            await renderPdfPage(page, canvas, viewport).promise;
             pageItems.push({
               index: pageItems.length,
               thumbnail: canvas.toDataURL(),
@@ -88,7 +86,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
           if (context) {
             canvas.width = viewport.width;
             canvas.height = viewport.height;
-            await page.render({ canvasContext: context, viewport }).promise;
+            await renderPdfPage(page, canvas, viewport).promise;
             pageItems.push({
               index: i - 1,
               thumbnail: canvas.toDataURL(),
@@ -155,8 +153,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
 
     // Regenerate thumbnail with new rotation
     try {
-      const pdfjs = await import("pdfjs-dist");
-      const pdf = await pdfjs.getDocument(await pdfFile!.arrayBuffer()).promise;
+      const pdf = await loadPdfDocument(await pdfFile!.arrayBuffer());
       const pdfPage = await pdf.getPage(page.originalIndex + 1);
       const viewport = pdfPage.getViewport({
         scale: 0.5,
@@ -168,7 +165,7 @@ export function OrganizePagesModal({ isOpen, onClose }: OrganizePagesModalProps)
       if (context) {
         canvas.width = viewport.width;
         canvas.height = viewport.height;
-        await pdfPage.render({ canvasContext: context, viewport }).promise;
+        await renderPdfPage(pdfPage, canvas, viewport).promise;
 
         // Update thumbnail with rotated version
         setPages((prev) =>

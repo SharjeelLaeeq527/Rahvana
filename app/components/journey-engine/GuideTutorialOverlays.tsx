@@ -1,5 +1,7 @@
 "use client";
 import Image from "next/image";
+import { ZoomableGuideImage } from "@/app/components/shared/ZoomableGuideImage";
+import { SafeHtml } from "../shared/SafeHTML";
 
 // Generic tutorial overlay for status guides (used for 'What does this status mean?')
 export const GuideTutorialOverlay: React.FC<TutorialOverlayProps> = (props) => {
@@ -14,10 +16,11 @@ export const GuideTutorialOverlay: React.FC<TutorialOverlayProps> = (props) => {
       <h2 className="text-[clamp(18px,3.2vw,26px)] text-[#0c1b33] leading-tight mb-2">
         {s.heading}
       </h2>
-      <p
-        className="text-[13px] sm:text-[14px] text-[#3a4f63] leading-relaxed mb-4 sm:mb-[18px]"
-        dangerouslySetInnerHTML={{ __html: s.instruction || "" }}
-      />
+      <SafeHtml
+  as="p"
+  className="text-[13px] sm:text-[14px] text-[#3a4f63] leading-relaxed mb-4 sm:mb-[18px]"
+  html={s.instruction || ""}
+/>
       <div className="bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-4 sm:mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
         {showBrowserHeader && (
           <div className="bg-[#eef3fa] border-b border-[#d0e4f7] p-[8px_10px] sm:p-[10px_14px] flex items-center gap-1.5 min-w-0">
@@ -45,16 +48,27 @@ export const GuideTutorialOverlay: React.FC<TutorialOverlayProps> = (props) => {
               {s.ssDesc || s.copy}
             </div>
           )}
-          {s.visual && (
-            <div
-              className={
-                hasImageVisual
-                  ? "-mx-[18px] -mb-[18px] [&_img]:block [&_img]:w-full [&_img]:h-auto [&_img]:object-contain [&_img]:object-top"
-                  : "mb-3"
-              }
-              dangerouslySetInnerHTML={{ __html: s.visual || "" }}
-            />
-          )}
+          {s.visual && (() => {
+            const imgSrc = hasImageVisual ? s.visual.match(/src=["']([^"']+)["']/i)?.[1] : null;
+            if (imgSrc) {
+              return (
+                <div className="relative w-full min-h-[200px] flex items-center justify-center overflow-hidden bg-[#f8f9fb] rounded-lg border border-[#d0e4f7] mb-3">
+                  <ZoomableGuideImage
+                    src={imgSrc}
+                    alt={s.heading || s.label || "Guide step visual"}
+                    isStandardImg
+                    controlsPosition="top-right"
+                  />
+                </div>
+              );
+            }
+            return (
+              <div
+                className="mb-3"
+                dangerouslySetInnerHTML={{ __html: s.visual || "" }}
+              />
+            );
+          })()}
           {(s.ssHighlight || s.highlight) && (
             <div className="text-[12px] sm:text-[13px] font-semibold text-[#2f6fd4] px-3 py-2 bg-[#2f6fd4]/10 border border-[#2f6fd4]/20 rounded-lg mb-2">
               {s.ssHighlight || s.highlight}
@@ -215,10 +229,7 @@ export const MedicalTutOverlay: React.FC<TutorialOverlayProps> = (props) => {
             {s.vlabel}
           </div>
         </div>
-        <div
-          className="p-[18px] leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: s.visual || "" }}
-        />
+        <SafeHtml className="p-[18px] leading-relaxed" html={s.visual || ""} />
       </div>
       {s.note && (
         <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">
@@ -241,20 +252,17 @@ export const InterviewDayTutOverlay: React.FC<TutorialOverlayProps> = (props) =>
       </h2>
       <p className="text-[14px] text-[#3a4f63] leading-relaxed mb-[18px]">{s.instruction}</p>
       {s.media?.type === "img" && s.media.src ? (
-        <Image
-          src={s.media.src}
-          alt={s.heading || "Interview day guide image"}
-          width={1200}
-          height={900}
-          className="mb-[18px] w-full h-auto object-contain"
-          sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
-          quality={95}
-        />
+        <div className="mb-[18px] w-full relative rounded-[10px] overflow-hidden border border-[#d0e4f7]" style={{ aspectRatio: "4/3" }}>
+          <ZoomableGuideImage
+            src={s.media.src}
+            alt={s.heading || "Interview day guide image"}
+            fill
+            sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
+            quality={95}
+          />
+        </div>
       ) : (
-        <div
-          className="mb-[18px] leading-relaxed"
-          dangerouslySetInnerHTML={{ __html: s.visual || "" }}
-        />
+        <SafeHtml className="mb-[18px] leading-relaxed" html={s.visual || ""} />
       )}
       {s.note && (
         <div className="bg-[#fef8e8] border border-[#f0d98a] rounded-[10px] p-[11px_14px] text-[13px] text-[#8a6200] leading-relaxed mb-[24px]">

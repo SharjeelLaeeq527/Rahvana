@@ -241,7 +241,7 @@ export function QuestRenderer({
     const progressPct = (completedCount / suite.quests.length) * 100;
 
     return (
-      <div className="animate-in fade-in mx-auto w-full max-w-[740px] px-4 pt-5 pb-8 duration-500 sm:px-6 md:pt-8">
+      <div className="animate-in fade-in mx-auto flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 duration-500 md:pt-8">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
           <h1 className="mt-4 mb-2 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight break-words text-[#0c1b33]">

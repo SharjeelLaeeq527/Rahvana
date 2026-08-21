@@ -7,19 +7,7 @@ import { AlertCircle, FileCheck } from "lucide-react";
 import FileUpload from "@/app/components/shared/FileUpload";
 import { useLanguage } from "@/app/context/LanguageContext";
 
-let pdfjsLib: typeof import("pdfjs-dist/build/pdf") | null = null;
-
-async function initPdfJs() {
-  if (pdfjsLib) return pdfjsLib;
-
-  const pdfjs = await import("pdfjs-dist/build/pdf");
-
-  pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-
-  pdfjsLib = pdfjs;
-
-  return pdfjs;
-}
+import { loadPdfDocument } from "@/lib/pdfjs/client";
 
 interface UploadResult {
   originalSize: number;
@@ -62,9 +50,7 @@ export function PDFUpload() {
       const pdfDoc = await loadPDF(file);
 
       // Load PDF using pdf.js to get page count
-      const pdfjs = await initPdfJs();
-
-      const pdf = await pdfjs.getDocument(await file.arrayBuffer()).promise;
+      const pdf = await loadPdfDocument(await file.arrayBuffer());
 
       // Update PDF store
       setPdfFile(file);

@@ -67,6 +67,24 @@ export async function POST(req: Request) {
       });
     }
 
+    // FULL EDIT REVEAL (for editing credentials)
+    if (type === "full_edit") {
+      const password = credential.encrypted_password
+        ? decrypt(credential.encrypted_password)
+        : "";
+      const securityQuestions =
+        credential.portal_wallet_security_questions?.map((q: any) => ({
+          id: q.id,
+          question: q.question,
+          answer: q.encrypted_answer ? decrypt(q.encrypted_answer) : "",
+        })) || [];
+
+      return NextResponse.json({
+        password,
+        securityQuestions,
+      });
+    }
+
     // NVC case number reveal
     if (type === "nvc_case_number") {
       const value = revealEncryptedValue(credential.nvc_case_number);
