@@ -34,6 +34,15 @@ export function ZoomableGuideImage({
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const containerRef = useRef<HTMLDivElement>(null);
+  const pinchStartDistRef = useRef<number | null>(null);
+  const pinchStartScaleRef = useRef<number>(1);
+
+  const getTouchDistance = (touches: React.TouchList) => {
+    return Math.hypot(
+      touches[0].clientX - touches[1].clientX,
+      touches[0].clientY - touches[1].clientY
+    );
+  };
 
   const handleZoomIn = (e?: React.MouseEvent) => {
     e?.stopPropagation();
@@ -74,24 +83,62 @@ export function ZoomableGuideImage({
   };
 
   const handleTouchStart = (e: React.TouchEvent) => {
-    if (scale <= 1 || e.touches.length !== 1) return;
-    setIsDragging(true);
-    setDragStart({
-      x: e.touches[0].clientX - position.x,
-      y: e.touches[0].clientY - position.y,
-    });
+    if (e.touches.length === 2) {
+      setIsDragging(false);
+      pinchStartDistRef.current = getTouchDistance(e.touches);
+      pinchStartScaleRef.current = scale;
+      return;
+    }
+
+    if (e.touches.length === 1 && scale > 1) {
+      setIsDragging(true);
+      setDragStart({
+        x: e.touches[0].clientX - position.x,
+        y: e.touches[0].clientY - position.y,
+      });
+    }
   };
 
   const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || scale <= 1 || e.touches.length !== 1) return;
-    setPosition({
-      x: e.touches[0].clientX - dragStart.x,
-      y: e.touches[0].clientY - dragStart.y,
-    });
+    if (e.touches.length === 2 && pinchStartDistRef.current !== null) {
+      const currentDist = getTouchDistance(e.touches);
+      if (pinchStartDistRef.current > 0) {
+        const ratio = currentDist / pinchStartDistRef.current;
+        const newScale = Math.min(Math.max(pinchStartScaleRef.current * ratio, 1), 3.5);
+        setScale(newScale);
+        if (newScale === 1) {
+          setPosition({ x: 0, y: 0 });
+        }
+      }
+      return;
+    }
+
+    if (isDragging && scale > 1 && e.touches.length === 1) {
+      setPosition({
+        x: e.touches[0].clientX - dragStart.x,
+        y: e.touches[0].clientY - dragStart.y,
+      });
+    }
   };
 
-  const handleTouchEnd = () => {
-    setIsDragging(false);
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    if (e.touches.length < 2) {
+      pinchStartDistRef.current = null;
+    }
+    if (e.touches.length === 0) {
+      setIsDragging(false);
+    }
+  };
+
+  const handleWheel = (e: React.WheelEvent) => {
+    if (e.ctrlKey || e.metaKey || scale > 1) {
+      const zoomDelta = e.deltaY < 0 ? 0.25 : -0.25;
+      setScale((prev) => {
+        const next = Math.min(Math.max(prev + zoomDelta, 1), 3.5);
+        if (next === 1) setPosition({ x: 0, y: 0 });
+        return next;
+      });
+    }
   };
 
   const renderControls = (inFullscreenModal = false) => {
@@ -213,6 +260,7 @@ export function ZoomableGuideImage({
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
+        onWheel={handleWheel}
       >
         {renderControls(false)}
         {imageElement}
@@ -243,6 +291,7 @@ export function ZoomableGuideImage({
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
+              onWheel={handleWheel}
             >
               {isStandardImg ? (
                 <img
