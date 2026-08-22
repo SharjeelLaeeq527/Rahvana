@@ -3,6 +3,11 @@
 import React, { useState, useRef } from "react";
 import Image from "next/image";
 import { ZoomIn, ZoomOut, RotateCcw, Maximize2, X } from "lucide-react";
+import {
+  TransformWrapper,
+  TransformComponent,
+  ReactZoomPanPinchContentRef,
+} from "react-zoom-pan-pinch";
 
 interface ZoomableGuideImageProps {
   src: string;
@@ -28,120 +33,38 @@ export function ZoomableGuideImage({
   controlsPosition = "bottom-right",
 }: ZoomableGuideImageProps) {
   const [scale, setScale] = useState(1);
-  const [position, setPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+  const [fullscreenScale, setFullscreenScale] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
-  const containerRef = useRef<HTMLDivElement>(null);
-  const pinchStartDistRef = useRef<number | null>(null);
-  const pinchStartScaleRef = useRef<number>(1);
+  const transformRef = useRef<ReactZoomPanPinchContentRef>(null);
+  const transformFullscreenRef = useRef<ReactZoomPanPinchContentRef>(null);
 
-  const getTouchDistance = (touches: React.TouchList) => {
-    return Math.hypot(
-      touches[0].clientX - touches[1].clientX,
-      touches[0].clientY - touches[1].clientY
-    );
-  };
-
-  const handleZoomIn = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setScale((prev) => Math.min(prev + 0.5, 3.5));
-  };
-
-  const handleZoomOut = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setScale((prev) => {
-      const next = Math.max(prev - 0.5, 1);
-      if (next === 1) setPosition({ x: 0, y: 0 });
-      return next;
-    });
-  };
-
-  const handleReset = (e?: React.MouseEvent) => {
-    e?.stopPropagation();
-    setScale(1);
-    setPosition({ x: 0, y: 0 });
-  };
-
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (scale <= 1) return;
-    setIsDragging(true);
-    setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y });
-  };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    if (!isDragging || scale <= 1) return;
-    setPosition({
-      x: e.clientX - dragStart.x,
-      y: e.clientY - dragStart.y,
-    });
-  };
-
-  const handleMouseUp = () => {
-    setIsDragging(false);
-  };
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      setIsDragging(false);
-      pinchStartDistRef.current = getTouchDistance(e.touches);
-      pinchStartScaleRef.current = scale;
-      return;
-    }
-
-    if (e.touches.length === 1 && scale > 1) {
-      setIsDragging(true);
-      setDragStart({
-        x: e.touches[0].clientX - position.x,
-        y: e.touches[0].clientY - position.y,
-      });
+  const handleZoomIn = (inFullscreen = false) => {
+    if (inFullscreen) {
+      transformFullscreenRef.current?.zoomIn(0.5);
+    } else {
+      transformRef.current?.zoomIn(0.5);
     }
   };
 
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (e.touches.length === 2 && pinchStartDistRef.current !== null) {
-      const currentDist = getTouchDistance(e.touches);
-      if (pinchStartDistRef.current > 0) {
-        const ratio = currentDist / pinchStartDistRef.current;
-        const newScale = Math.min(Math.max(pinchStartScaleRef.current * ratio, 1), 3.5);
-        setScale(newScale);
-        if (newScale === 1) {
-          setPosition({ x: 0, y: 0 });
-        }
-      }
-      return;
-    }
-
-    if (isDragging && scale > 1 && e.touches.length === 1) {
-      setPosition({
-        x: e.touches[0].clientX - dragStart.x,
-        y: e.touches[0].clientY - dragStart.y,
-      });
+  const handleZoomOut = (inFullscreen = false) => {
+    if (inFullscreen) {
+      transformFullscreenRef.current?.zoomOut(0.5);
+    } else {
+      transformRef.current?.zoomOut(0.5);
     }
   };
 
-  const handleTouchEnd = (e: React.TouchEvent) => {
-    if (e.touches.length < 2) {
-      pinchStartDistRef.current = null;
-    }
-    if (e.touches.length === 0) {
-      setIsDragging(false);
-    }
-  };
-
-  const handleWheel = (e: React.WheelEvent) => {
-    if (e.ctrlKey || e.metaKey || scale > 1) {
-      const zoomDelta = e.deltaY < 0 ? 0.25 : -0.25;
-      setScale((prev) => {
-        const next = Math.min(Math.max(prev + zoomDelta, 1), 3.5);
-        if (next === 1) setPosition({ x: 0, y: 0 });
-        return next;
-      });
+  const handleReset = (inFullscreen = false) => {
+    if (inFullscreen) {
+      transformFullscreenRef.current?.resetTransform();
+    } else {
+      transformRef.current?.resetTransform();
     }
   };
 
   const renderControls = (inFullscreenModal = false) => {
+    const currentScale = inFullscreenModal ? fullscreenScale : scale;
     const posClass = inFullscreenModal
       ? "top-3 right-3 opacity-100"
       : controlsPosition === "top-right"
@@ -151,11 +74,17 @@ export function ZoomableGuideImage({
     return (
       <div
         className={`absolute ${posClass} z-30 flex items-center gap-0.5 rounded-full border border-[#d0e4f7]/30 bg-[#0c1b33]/85 px-2 py-0.5 text-white shadow-md backdrop-blur-md transition-all duration-200 select-none hover:bg-[#0c1b33]/95`}
+        onClick={(e) => e.stopPropagation()}
+        onMouseDown={(e) => e.stopPropagation()}
+        onTouchStart={(e) => e.stopPropagation()}
       >
         <button
           type="button"
-          onClick={handleZoomOut}
-          disabled={scale <= 1}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleZoomOut(inFullscreenModal);
+          }}
+          disabled={currentScale <= 1.01}
           title="Zoom out"
           aria-label="Zoom out"
           className="flex h-6.5 w-6.5 items-center justify-center rounded-full text-white/80 transition-all hover:bg-white/15 hover:text-white active:scale-95 disabled:opacity-30 disabled:hover:bg-transparent"
@@ -164,13 +93,16 @@ export function ZoomableGuideImage({
         </button>
 
         <span className="min-w-[34px] px-1 text-center font-mono text-[10.5px] font-bold tracking-tight text-white/95">
-          {Math.round(scale * 100)}%
+          {Math.round(currentScale * 100)}%
         </span>
 
         <button
           type="button"
-          onClick={handleZoomIn}
-          disabled={scale >= 3.5}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleZoomIn(inFullscreenModal);
+          }}
+          disabled={currentScale >= 3.49}
           title="Zoom in"
           aria-label="Zoom in"
           className="flex h-6.5 w-6.5 items-center justify-center rounded-full text-white/80 transition-all hover:bg-white/15 hover:text-white active:scale-95 disabled:opacity-30 disabled:hover:bg-transparent"
@@ -178,10 +110,13 @@ export function ZoomableGuideImage({
           <ZoomIn size={13} />
         </button>
 
-        {scale > 1 && (
+        {currentScale > 1.01 && (
           <button
             type="button"
-            onClick={handleReset}
+            onClick={(e) => {
+              e.stopPropagation();
+              handleReset(inFullscreenModal);
+            }}
             title="Reset zoom"
             aria-label="Reset zoom"
             className="ml-0.5 flex h-6.5 w-6.5 items-center justify-center rounded-full text-white/80 transition-all hover:bg-white/15 hover:text-white active:scale-95"
@@ -211,7 +146,7 @@ export function ZoomableGuideImage({
             onClick={(e) => {
               e.stopPropagation();
               setIsFullscreen(false);
-              handleReset();
+              setFullscreenScale(1);
             }}
             title="Close fullscreen"
             aria-label="Close fullscreen"
@@ -224,46 +159,55 @@ export function ZoomableGuideImage({
     );
   };
 
-  const imageStyle: React.CSSProperties = {
-    transform: `scale(${scale}) translate(${position.x / scale}px, ${position.y / scale}px)`,
-    transition: isDragging ? "none" : "transform 0.2s ease-out",
+  const renderImageContent = () => {
+    if (isStandardImg || !fill) {
+      return (
+        <img
+          src={src}
+          alt={alt}
+          className={`h-full w-full object-contain pointer-events-none ${className}`}
+        />
+      );
+    }
+    return (
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        sizes={sizes}
+        quality={quality}
+        priority={priority}
+        className={`pointer-events-none ${className}`}
+      />
+    );
   };
-
-  const imageElement = isStandardImg ? (
-    <img src={src} alt={alt} className={`h-full w-full ${className}`} style={imageStyle} />
-  ) : fill ? (
-    <Image
-      src={src}
-      alt={alt}
-      fill
-      sizes={sizes}
-      quality={quality}
-      priority={priority}
-      className={className}
-      style={imageStyle}
-    />
-  ) : (
-    <img src={src} alt={alt} className={`h-full w-full ${className}`} style={imageStyle} />
-  );
 
   return (
     <>
-      <div
-        ref={containerRef}
-        className={`group relative h-full w-full overflow-hidden select-none ${
-          scale > 1 ? "cursor-grab active:cursor-grabbing" : ""
-        }`}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onWheel={handleWheel}
-      >
+      <div className="group relative h-full w-full overflow-hidden select-none touch-none">
         {renderControls(false)}
-        {imageElement}
+        <TransformWrapper
+          ref={transformRef}
+          initialScale={1}
+          minScale={1}
+          maxScale={3.5}
+          centerOnInit
+          centerZoomedOut
+          wheel={{ step: 0.15 }}
+          pinch={{ disabled: false }}
+          panning={{ disabled: false }}
+          doubleClick={{ disabled: false, mode: "reset" }}
+          onTransform={(ref) => setScale(ref.state.scale)}
+        >
+          <TransformComponent
+            wrapperClass={`relative h-full w-full touch-none overflow-hidden select-none flex items-center justify-center ${
+              scale > 1.01 ? "cursor-grab active:cursor-grabbing" : ""
+            }`}
+            contentClass="relative h-full w-full flex items-center justify-center"
+          >
+            {renderImageContent()}
+          </TransformComponent>
+        </TransformWrapper>
       </div>
 
       {/* Fullscreen Lightbox Modal */}
@@ -272,45 +216,50 @@ export function ZoomableGuideImage({
           className="animate-in fade-in fixed inset-0 z-[99999] flex items-center justify-center bg-[#0c1b33]/65 p-3 backdrop-blur-md duration-200 sm:p-6"
           onClick={() => {
             setIsFullscreen(false);
-            handleReset();
+            setFullscreenScale(1);
           }}
         >
           <div
-            className="relative flex h-full max-h-[92vh] w-full max-w-5xl flex-col items-center justify-center overflow-hidden rounded-2xl bg-[#0f1f38] shadow-2xl"
+            className="relative flex h-full max-h-[92vh] w-full max-w-5xl flex-col items-center justify-center overflow-hidden rounded-2xl bg-[#0f1f38] shadow-2xl touch-none"
             onClick={(e) => e.stopPropagation()}
           >
             {renderControls(true)}
-            <div
-              className={`relative flex h-full w-full items-center justify-center overflow-hidden p-3 sm:p-5 ${
-                scale > 1 ? "cursor-grab active:cursor-grabbing" : ""
-              }`}
-              onMouseDown={handleMouseDown}
-              onMouseMove={handleMouseMove}
-              onMouseUp={handleMouseUp}
-              onMouseLeave={handleMouseUp}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
-              onWheel={handleWheel}
+            <TransformWrapper
+              ref={transformFullscreenRef}
+              initialScale={1}
+              minScale={1}
+              maxScale={3.5}
+              centerOnInit
+              centerZoomedOut
+              wheel={{ step: 0.15 }}
+              pinch={{ disabled: false }}
+              panning={{ disabled: false }}
+              doubleClick={{ disabled: false, mode: "reset" }}
+              onTransform={(ref) => setFullscreenScale(ref.state.scale)}
             >
-              {isStandardImg ? (
-                <img
-                  src={src}
-                  alt={alt}
-                  className="max-h-full max-w-full object-contain drop-shadow-sm"
-                  style={imageStyle}
-                />
-              ) : (
-                <Image
-                  src={src}
-                  alt={alt}
-                  fill
-                  quality={100}
-                  className="object-contain drop-shadow-sm"
-                  style={imageStyle}
-                />
-              )}
-            </div>
+              <TransformComponent
+                wrapperClass={`relative h-full w-full touch-none overflow-hidden select-none flex items-center justify-center p-3 sm:p-5 ${
+                  fullscreenScale > 1.01 ? "cursor-grab active:cursor-grabbing" : ""
+                }`}
+                contentClass="relative h-full w-full flex items-center justify-center"
+              >
+                {isStandardImg ? (
+                  <img
+                    src={src}
+                    alt={alt}
+                    className="max-h-full max-w-full object-contain drop-shadow-sm pointer-events-none"
+                  />
+                ) : (
+                  <Image
+                    src={src}
+                    alt={alt}
+                    fill
+                    quality={100}
+                    className="object-contain drop-shadow-sm pointer-events-none"
+                  />
+                )}
+              </TransformComponent>
+            </TransformWrapper>
           </div>
         </div>
       )}
