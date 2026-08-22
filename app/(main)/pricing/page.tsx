@@ -300,8 +300,8 @@ function VisaSelector({
   size = "md",
 }: {
   categories: { id: string; label: string }[];
-  value: string;
-  onChange: (id: string) => void;
+  value: string | null;
+onChange: (id: string) => void;
   size?: "md" | "sm";
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -319,7 +319,7 @@ function VisaSelector({
   }, []);
 
   const activeLabel =
-    categories.find((cat) => cat.id === value)?.label ?? categories[0]?.label ?? value;
+  categories.find((cat) => cat.id === value)?.label ?? "I'm applying for";
   const baseClass =
     size === "sm"
       ? "w-fit max-w-[280px] text-[12px] py-2 px-3"
@@ -340,7 +340,7 @@ function VisaSelector({
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-[calc(100%+6px)] z-[60] w-max min-w-[180px] max-w-[240px] overflow-hidden rounded-lg border border-[#4A7772]/25 bg-white shadow-xl">
+        <div className="absolute left-0 top-[calc(100%+6px)] z-[60] w-max min-w-[180px] max-w-[240px] overflow-hidden rounded-lg border border-[#4A7772]/25 bg-white shadow-xl ml-3">
           {categories.map((cat) => {
             const isSelected = cat.id === value;
             return (
@@ -604,7 +604,7 @@ function PricingContent() {
   const [mode, setMode] = useState<"plans" | ResourceMode>("plans");
   const [purchaseStep, setPurchaseStep] = useState<"browse" | "review">("browse");
 
-  const [visa, setVisa] = useState("IR-1 / CR-1");
+  const [visa, setVisa] = useState<string | null>(null);
   const billing = "monthly";
 
   const [selectedPlan, setSelectedPlan] = useState("premium");
@@ -1096,10 +1096,7 @@ function PricingContent() {
             {/* Visa category — a required choice up front, since pricing,
                 checkout, and later the roadmap all key off it and there's no
                 case on file yet to default it from. */}
-            <div className="mt-5">
-              <div className="font-serif italic text-[14px] text-[#2E5450] mb-2">
-                I&apos;m applying for
-              </div>
+            <div className="mt-4 -ml-3">
               {visaSelectorLg}
             </div>
 
