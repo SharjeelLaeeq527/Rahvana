@@ -301,7 +301,7 @@ function VisaSelector({
 }: {
   categories: { id: string; label: string }[];
   value: string | null;
-onChange: (id: string) => void;
+  onChange: (id: string) => void;
   size?: "md" | "sm";
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -318,8 +318,7 @@ onChange: (id: string) => void;
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const activeLabel =
-  categories.find((cat) => cat.id === value)?.label ?? "I'm applying for";
+  const activeLabel = categories.find((cat) => cat.id === value)?.label ?? "I'm applying for";
   const baseClass =
     size === "sm"
       ? "w-fit max-w-[280px] text-[12px] py-2 px-3"
@@ -340,7 +339,7 @@ onChange: (id: string) => void;
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-[calc(100%+6px)] z-[60] w-max min-w-[180px] max-w-[240px] overflow-hidden rounded-lg border border-[#4A7772]/25 bg-white shadow-xl ml-3">
+        <div className="absolute top-[calc(100%+6px)] left-0 z-[60] ml-3 w-max max-w-[240px] min-w-[180px] overflow-hidden rounded-lg border border-[#4A7772]/25 bg-white shadow-xl">
           {categories.map((cat) => {
             const isSelected = cat.id === value;
             return (
@@ -371,32 +370,34 @@ onChange: (id: string) => void;
 function ComparisonCell({ value }: { value: string }) {
   const v = value.trim();
   if (v === "Included" || v === "Unlimited") {
-    return <IconCheck className="w-5 h-5 mx-auto text-primary" />;
+    return <IconCheck className="text-primary mx-auto h-5 w-5" />;
   }
   if (v === "Not Included") {
-    return <IconX className="w-5 h-5 mx-auto text-red-500" />;
+    return <IconX className="mx-auto h-5 w-5 text-red-500" />;
   }
   if (v === "") {
     return (
-      <span className="block text-center text-muted-foreground/40 font-bold text-xl leading-none">, </span>
+      <span className="text-muted-foreground/40 block text-center text-xl leading-none font-bold">
+        ,{" "}
+      </span>
     );
   }
   if (/included/i.test(v) && v !== "Included") {
     return (
-      <span className="inline-flex items-center gap-1 mx-auto px-2.5 py-1 rounded-full text-[11px] font-bold border bg-primary/10 text-primary border-primary/20">
-        <IconCheck className="w-3 h-3" /> {v}
+      <span className="bg-primary/10 text-primary border-primary/20 mx-auto inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-[11px] font-bold">
+        <IconCheck className="h-3 w-3" /> {v}
       </span>
     );
   }
   if (/add on/i.test(v)) {
     return (
-      <span className="inline-flex items-center mx-auto px-2.5 py-1 rounded-full text-[10.5px] font-bold border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">
+      <span className="mx-auto inline-flex items-center rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-[10.5px] font-bold text-amber-700 dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-400">
         {v}
       </span>
     );
   }
   return (
-    <span className="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold border bg-muted text-muted-foreground border-border">
+    <span className="bg-muted text-muted-foreground border-border inline-block rounded-full border px-2.5 py-1 text-[11px] font-bold">
       {v}
     </span>
   );
@@ -433,58 +434,58 @@ function CompareModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[1000] p-2 sm:p-6 md:p-10 flex items-center justify-center animate-in fade-in duration-150"
+      className="animate-in fade-in fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-2 backdrop-blur-sm duration-150 sm:p-6 md:p-10"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[960px] h-[92vh] sm:h-auto sm:max-h-[calc(100vh-48px)] md:max-h-[calc(100vh-80px)] bg-card border border-border rounded-[20px] sm:rounded-[28px] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
+        className="bg-card border-border animate-in zoom-in-95 flex h-[92vh] w-full max-w-[960px] flex-col overflow-hidden rounded-[20px] border shadow-2xl duration-200 sm:h-auto sm:max-h-[calc(100vh-48px)] sm:rounded-[28px] md:max-h-[calc(100vh-80px)]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
         aria-labelledby="cmp-title"
       >
         {/* Header */}
-        <div className="px-4 sm:px-6 py-3.5 sm:py-5 border-b border-border flex justify-between items-start sm:items-center gap-3 shrink-0 bg-gradient-to-b from-muted/30 to-transparent">
+        <div className="border-border from-muted/30 flex shrink-0 items-start justify-between gap-3 border-b bg-gradient-to-b to-transparent px-4 py-3.5 sm:items-center sm:px-6 sm:py-5">
           <div>
             <h2
               id="cmp-title"
-              className="text-[17px] sm:text-[20px] font-bold m-0 leading-tight text-foreground"
+              className="text-foreground m-0 text-[17px] leading-tight font-bold sm:text-[20px]"
             >
               Compare Rahvana plans
             </h2>
-            <p className="text-muted-foreground text-[12px] sm:text-[13px] mt-0.5 m-0">
+            <p className="text-muted-foreground m-0 mt-0.5 text-[12px] sm:text-[13px]">
               See exactly what&apos;s included in Basic, Premium, and Executive.
             </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 sm:p-[7px] rounded-full border border-border bg-card hover:bg-muted/60 transition-colors cursor-pointer shrink-0 mt-0.5 sm:mt-0"
+            className="border-border bg-card hover:bg-muted/60 mt-0.5 shrink-0 cursor-pointer rounded-full border p-1.5 transition-colors sm:mt-0 sm:p-[7px]"
             aria-label="Close"
           >
-            <IconX className="w-4 h-4 sm:w-[15px] sm:h-[15px]" />
+            <IconX className="h-4 w-4 sm:h-[15px] sm:w-[15px]" />
           </button>
         </div>
 
         {/* Scrollable area — unified container for headers, table rows, and CTAs */}
-        <div className="overflow-auto flex-1 scrollbar-premium bg-card">
-          <div className="min-w-[580px] w-full flex flex-col min-h-full">
+        <div className="scrollbar-premium bg-card flex-1 overflow-auto">
+          <div className="flex min-h-full w-full min-w-[580px] flex-col">
             {/* Sticky plan headers bar */}
-            <div className="sticky top-0 z-20 bg-card/95 backdrop-blur-md px-4 sm:px-6 py-3 border-b border-border shadow-xs shrink-0">
-              <div className="grid grid-cols-[minmax(140px,180px)_repeat(3,minmax(0,1fr))] gap-2 sm:gap-3 items-center">
+            <div className="bg-card/95 border-border sticky top-0 z-20 shrink-0 border-b px-4 py-3 shadow-xs backdrop-blur-md sm:px-6">
+              <div className="grid grid-cols-[minmax(140px,180px)_repeat(3,minmax(0,1fr))] items-center gap-2 sm:gap-3">
                 <div className="flex items-center gap-2 sm:gap-3">
                   <button
                     type="button"
                     role="switch"
                     aria-checked={differencesOnly}
                     onClick={() => setDifferencesOnly(!differencesOnly)}
-                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${differencesOnly ? "bg-primary" : "bg-muted"}`}
+                    className={`ring-offset-background focus-visible:ring-ring relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${differencesOnly ? "bg-primary" : "bg-muted"}`}
                   >
                     <span className="sr-only">Differences only</span>
                     <span
                       className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ${differencesOnly ? "translate-x-4" : "translate-x-0"}`}
                     />
                   </button>
-                  <span className="text-[11px] sm:text-[12px] font-medium text-muted-foreground leading-tight select-none">
+                  <span className="text-muted-foreground text-[11px] leading-tight font-medium select-none sm:text-[12px]">
                     Differences
                     <br />
                     only
@@ -495,16 +496,16 @@ function CompareModal({
                   return (
                     <div
                       key={plan.id}
-                      className={`rounded-[14px] sm:rounded-[16px] px-2.5 sm:px-3 py-2 sm:py-2.5 text-center border ${tc.border} ${tc.cardBg} ${tc.glow} shadow-sm`}
+                      className={`rounded-[14px] border px-2.5 py-2 text-center sm:rounded-[16px] sm:px-3 sm:py-2.5 ${tc.border} ${tc.cardBg} ${tc.glow} shadow-sm`}
                     >
                       <div
-                        className={`text-[9.5px] sm:text-[10px] font-extrabold tracking-wider sm:tracking-widest uppercase mb-0.5 ${tc.textAccent}`}
+                        className={`mb-0.5 text-[9.5px] font-extrabold tracking-wider uppercase sm:text-[10px] sm:tracking-widest ${tc.textAccent}`}
                       >
                         {plan.name}
                       </div>
-                      <div className="text-[13.5px] sm:text-[15px] font-bold leading-tight">
+                      <div className="text-[13.5px] leading-tight font-bold sm:text-[15px]">
                         ${planDisplayPrice(plan)}
-                        <span className="text-[10px] sm:text-[11px] font-normal text-muted-foreground ml-0.5">
+                        <span className="text-muted-foreground ml-0.5 text-[10px] font-normal sm:text-[11px]">
                           /mo
                         </span>
                       </div>
@@ -522,20 +523,20 @@ function CompareModal({
                   : group.rows;
                 if (!rows.length) return null;
                 return (
-                  <div key={gi} className="border-b border-border/50 last:border-0">
-                    <div className="px-4 sm:px-6 py-2 bg-muted/30 border-y border-border/30">
-                      <span className="text-[10px] sm:text-[10.5px] font-extrabold tracking-[0.12em] uppercase text-primary">
+                  <div key={gi} className="border-border/50 border-b last:border-0">
+                    <div className="bg-muted/30 border-border/30 border-y px-4 py-2 sm:px-6">
+                      <span className="text-primary text-[10px] font-extrabold tracking-[0.12em] uppercase sm:text-[10.5px]">
                         {group.label}
                       </span>
                     </div>
                     {rows.map((row, ri) => (
                       <div
                         key={ri}
-                        className={`grid grid-cols-[minmax(140px,180px)_repeat(3,minmax(0,1fr))] gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-[11px] border-t border-border/20 items-center ${
+                        className={`border-border/20 grid grid-cols-[minmax(140px,180px)_repeat(3,minmax(0,1fr))] items-center gap-2 border-t px-4 py-2.5 sm:gap-3 sm:px-6 sm:py-[11px] ${
                           ri % 2 === 0 ? "bg-card" : "bg-muted/[0.04]"
                         }`}
                       >
-                        <span className="text-[12px] sm:text-[13px] font-medium text-foreground leading-snug">
+                        <span className="text-foreground text-[12px] leading-snug font-medium sm:text-[13px]">
                           {row[0]}
                         </span>
                         {row.slice(1).map((val, vi) => (
@@ -553,17 +554,17 @@ function CompareModal({
         </div>
 
         {/* Fixed CTA Footer with centered text, balanced padding, and aligned icons */}
-        <div className="px-4 sm:px-8 py-4 sm:py-5 border-t border-border shrink-0 bg-card/95 backdrop-blur-md rounded-b-[20px] sm:rounded-b-[28px]">
-          <p className="text-[10.5px] sm:text-[11.5px] font-extrabold tracking-[0.12em] uppercase text-muted-foreground text-center mb-3 sm:mb-4">
+        <div className="border-border bg-card/95 shrink-0 rounded-b-[20px] border-t px-4 py-4 backdrop-blur-md sm:rounded-b-[28px] sm:px-8 sm:py-5">
+          <p className="text-muted-foreground mb-3 text-center text-[10.5px] font-extrabold tracking-[0.12em] uppercase sm:mb-4 sm:text-[11.5px]">
             Select a plan to get started
           </p>
-          <div className="grid grid-cols-3 gap-2.5 sm:gap-4 max-w-[720px] mx-auto">
+          <div className="mx-auto grid max-w-[720px] grid-cols-3 gap-2.5 sm:gap-4">
             {paidPlans.map((plan) => {
               const tc = TIER[plan.id as TierKey];
               return (
                 <button
                   key={plan.id}
-                  className={`group inline-flex w-full items-center justify-center gap-1 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 rounded-full text-[11.5px] min-[380px]:text-[12.5px] sm:text-[14px] font-bold transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 text-center leading-none ${tc.btn}`}
+                  className={`group inline-flex w-full cursor-pointer items-center justify-center gap-1 rounded-full px-2 py-2.5 text-center text-[11.5px] leading-none font-bold shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 min-[380px]:text-[12.5px] sm:gap-2 sm:px-4 sm:py-3 sm:text-[14px] ${tc.btn}`}
                   onClick={() => {
                     onSelectPlan(plan.id);
                     onClose();
@@ -573,7 +574,7 @@ function CompareModal({
                     <span className="hidden sm:inline">Choose </span>
                     {plan.name}
                   </span>
-                  <span className="text-[13px] sm:text-[15px] leading-none shrink-0 transition-transform duration-150 group-hover:translate-x-0.5">
+                  <span className="shrink-0 text-[13px] leading-none transition-transform duration-150 group-hover:translate-x-0.5 sm:text-[15px]">
                     →
                   </span>
                 </button>
@@ -886,7 +887,7 @@ function PricingContent() {
       {isLoadingUser ? (
         <button
           disabled
-          className="w-full py-[11px] px-5 rounded-full text-[14px] font-semibold bg-primary/50 text-white/70 cursor-not-allowed text-center"
+          className="bg-primary/50 w-full cursor-not-allowed rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white/70"
         >
           Loading...
         </button>
@@ -897,19 +898,19 @@ function PricingContent() {
           visaCategory={visa}
           userId={userId}
           onLoadingChange={setIsManualCheckoutLoading}
-          className="w-full py-[11px] px-5 rounded-full text-[14px] font-semibold bg-primary hover:bg-primary/90 text-white text-center"
+          className="bg-primary hover:bg-primary/90 w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
         >
           Continue to Secure Checkout →
         </CheckoutButton>
       ) : (
         <Link
           href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${checkoutAddonIds.join(",")}&visa=${encodeURIComponent(visa)}`)}`}
-          className="w-full py-[11px] px-5 rounded-full text-[14px] font-semibold bg-primary hover:bg-primary/90 text-white text-center block"
+          className="bg-primary hover:bg-primary/90 block w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
         >
           Sign in to Checkout →
         </Link>
       )}
-      <p className="text-center text-[11px] text-muted-foreground">Secure checkout via Stripe</p>
+      <p className="text-muted-foreground text-center text-[11px]">Secure checkout via Stripe</p>
     </div>
   );
 
@@ -917,20 +918,20 @@ function PricingContent() {
   // the pattern shoppers expect from any standard cart. Reused by both the
   // journey-review and resources summaries so the two never drift apart.
   const summaryHeader = (count: number) => (
-    <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-border">
+    <div className="border-border mb-4 flex items-center gap-2.5 border-b pb-3">
       <span className="relative inline-flex shrink-0">
-        <ShoppingCart className="w-[18px] h-[18px] text-primary" strokeWidth={2} />
+        <ShoppingCart className="text-primary h-[18px] w-[18px]" strokeWidth={2} />
         {count > 0 && (
-          <span className="absolute -top-1.5 -right-1.5 min-w-[15px] h-[15px] px-1 inline-flex items-center justify-center rounded-full bg-primary text-[9px] font-bold leading-none text-white tabular-nums">
+          <span className="bg-primary absolute -top-1.5 -right-1.5 inline-flex h-[15px] min-w-[15px] items-center justify-center rounded-full px-1 text-[9px] leading-none font-bold text-white tabular-nums">
             {count}
           </span>
         )}
       </span>
-      <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground">
+      <span className="text-muted-foreground text-[11px] font-bold tracking-widest uppercase">
         Order Summary
       </span>
       {count > 0 && (
-        <span className="ml-auto text-[11px] font-medium text-muted-foreground">
+        <span className="text-muted-foreground ml-auto text-[11px] font-medium">
           {count} {count === 1 ? "item" : "items"}
         </span>
       )}
@@ -942,7 +943,7 @@ function PricingContent() {
   const mobileCheckoutButton = isLoadingUser ? (
     <button
       disabled
-      className="w-full py-2.5 px-4 rounded-full text-[13px] font-semibold bg-primary/50 text-white/70 cursor-not-allowed text-center"
+      className="bg-primary/50 w-full cursor-not-allowed rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white/70"
     >
       Loading...
     </button>
@@ -953,14 +954,14 @@ function PricingContent() {
       visaCategory={visa}
       userId={userId}
       onLoadingChange={setIsManualCheckoutLoading}
-      className="w-full py-2.5 px-4 rounded-full text-[13px] font-semibold bg-primary hover:bg-primary/90 text-white text-center"
+      className="bg-primary hover:bg-primary/90 w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"
     >
       Checkout →
     </CheckoutButton>
   ) : (
     <Link
       href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${checkoutAddonIds.join(",")}&visa=${encodeURIComponent(visa)}`)}`}
-      className="block w-full py-2.5 px-4 rounded-full text-[13px] font-semibold bg-primary hover:bg-primary/90 text-white text-center"
+      className="bg-primary hover:bg-primary/90 block w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"
     >
       Sign in →
     </Link>
@@ -970,23 +971,25 @@ function PricingContent() {
   // below the content, so the running total + checkout would otherwise be out
   // of reach — this keeps them pinned to the viewport (standard cart behavior).
   const mobileSummaryBar = (count: number, total: number) => (
-    <div className="lg:hidden fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card/95 backdrop-blur-md shadow-[0_-6px_24px_rgba(0,0,0,0.10)] pb-[env(safe-area-inset-bottom)]">
+    <div className="border-border bg-card/95 fixed inset-x-0 bottom-0 z-40 border-t pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_24px_rgba(0,0,0,0.10)] backdrop-blur-md lg:hidden">
       <div className="mx-auto flex max-w-[1440px] items-center gap-3 px-4 py-3">
         <span className="relative inline-flex shrink-0">
-          <ShoppingCart className="w-6 h-6 text-primary" strokeWidth={2} />
+          <ShoppingCart className="text-primary h-6 w-6" strokeWidth={2} />
           {count > 0 && (
-            <span className="absolute -top-1.5 -right-1.5 min-w-[16px] h-[16px] px-1 inline-flex items-center justify-center rounded-full bg-primary text-[9.5px] font-bold leading-none text-white tabular-nums">
+            <span className="bg-primary absolute -top-1.5 -right-1.5 inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 text-[9.5px] leading-none font-bold text-white tabular-nums">
               {count}
             </span>
           )}
         </span>
         <div className="min-w-0 leading-tight">
-          <div className="text-[10px] uppercase tracking-wide text-muted-foreground">Total</div>
-          <div className="mt-0.5 text-[19px] font-bold leading-none tracking-tight text-primary">
+          <div className="text-muted-foreground text-[10px] tracking-wide uppercase">Total</div>
+          <div className="text-primary mt-0.5 text-[19px] leading-none font-bold tracking-tight">
             ${total}
           </div>
         </div>
-        <div className="ml-auto w-[150px] min-[420px]:w-[190px] shrink-0">{mobileCheckoutButton}</div>
+        <div className="ml-auto w-[150px] shrink-0 min-[420px]:w-[190px]">
+          {mobileCheckoutButton}
+        </div>
       </div>
     </div>
   );
@@ -994,11 +997,11 @@ function PricingContent() {
   const reviewItemCount = (currentPlanData.id !== "free" ? 1 : 0) + activeAddons.length;
 
   return (
-    <div className="min-h-[100dvh] overflow-x-hidden text-foreground font-sans selection:bg-primary/20 pb-12 sm:pb-20">
+    <div className="text-foreground selection:bg-primary/20 min-h-[100dvh] overflow-x-hidden pb-12 font-sans sm:pb-20">
       {/* ── Mode Toggle ──────────────────────────────────────────────────────── */}
       <div className={`${W} pt-[88px] pb-0`}>
         <nav
-          className="grid grid-cols-2 md:grid-cols-4 items-end gap-1 border-b-2 border-border/40"
+          className="border-border/40 grid grid-cols-2 items-end gap-1 border-b-2 md:grid-cols-4"
           aria-label="Pricing mode"
         >
           {(
@@ -1031,7 +1034,7 @@ function PricingContent() {
                 setMode(id);
                 setPurchaseStep("browse");
               }}
-              className={`relative px-6 pb-3 pt-2 text-left cursor-pointer transition-all rounded-t-[10px] group ${
+              className={`group relative cursor-pointer rounded-t-[10px] px-6 pt-2 pb-3 text-left transition-all ${
                 mode === id ? "bg-primary/[0.07]" : "hover:bg-muted/40"
               }`}
             >
@@ -1045,14 +1048,14 @@ function PricingContent() {
                 {label}
               </span>
               <span
-                className={`block text-[11px] mt-0.5 font-medium transition-colors ${
+                className={`mt-0.5 block text-[11px] font-medium transition-colors ${
                   mode === id ? "text-primary/60" : "text-muted-foreground/35"
                 }`}
               >
                 {sub}
               </span>
               {mode === id && (
-                <span className="absolute bottom-[-2px] left-0 right-0 h-[3px] bg-primary rounded-t-full" />
+                <span className="bg-primary absolute right-0 bottom-[-2px] left-0 h-[3px] rounded-t-full" />
               )}
             </button>
           ))}
@@ -1066,8 +1069,8 @@ function PricingContent() {
           <div className="flex items-start gap-3 rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-900/20">
             <IcoInfo className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
             <div className="flex-1 text-[13px] leading-relaxed text-amber-800 dark:text-amber-300">
-              <strong className="font-semibold">Checkout canceled, no charge was made.</strong>{" "}
-              Your selection is saved below. Continue whenever you&apos;re ready.
+              <strong className="font-semibold">Checkout canceled, no charge was made.</strong> Your
+              selection is saved below. Continue whenever you&apos;re ready.
             </div>
             <button
               onClick={() => setCheckoutCanceled(false)}
@@ -1089,26 +1092,28 @@ function PricingContent() {
           <section className={`${W} pt-7 pb-6`}>
             <div className={eyebrow}>Journey Plans</div>
             <h1 className="page-heading m-0">Choose your Rahvana journey plan</h1>
-            <p className="page-description mt-2 text-muted-foreground">
+            <p className="page-description text-muted-foreground mt-2">
               Pick the level of guidance, tools, and support that fits your case.
             </p>
 
-            {/* Visa category — a required choice up front, since pricing,
-                checkout, and later the roadmap all key off it and there's no
-                case on file yet to default it from. */}
+            {/* Visa category + Compare plans */}
             <div className="mt-4 -ml-3">
-              {visaSelectorLg}
+              <div className="flex flex-wrap items-center justify-between gap-2 md:flex-row md:flex-nowrap">
+                {visaSelectorLg}
+
+                <button className={`${secBtn} shrink-0`} onClick={() => setComparePlansOpen(true)}>
+                  <IcoTableCompare className="h-4 w-4 opacity-60" />
+                  Compare plans
+                </button>
+              </div>
             </div>
 
-            <div className="mt-5 flex items-center gap-3 flex-wrap">
-              <button className={secBtn} onClick={() => setComparePlansOpen(true)}>
-                <IcoTableCompare className="w-4 h-4 opacity-60" />
-                Compare plans
-              </button>
+            {/* Checkout error + Government fees */}
+            <div className="mt-4 -ml-3">
               {checkoutError && (
-                <div className="w-full mt-3 p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+                <div className="mb-3 flex w-full items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
                   <svg
-                    className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
+                    className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -1120,13 +1125,18 @@ function PricingContent() {
                       d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
+
                   <p className="text-sm text-red-700">{checkoutError}</p>
                 </div>
               )}
-              <span className="text-[12px] text-muted-foreground/50 hidden md:inline">·</span>
-              <span className="text-[12px] text-muted-foreground hidden md:inline">
-                Government fees are not included in any plan
-              </span>
+
+              <div className="flex items-center gap-3">
+                <span className="text-muted-foreground/50 text-[12px]">·</span>
+
+                <span className="text-muted-foreground text-[12px]">
+                  Government fees are not included in any plan
+                </span>
+              </div>
             </div>
           </section>
 
@@ -1141,7 +1151,7 @@ function PricingContent() {
               };
               const activeTierRank = TIER_RANK[userActiveTier ?? "free"] ?? 0;
               return (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
                   {paidPlans.map((plan) => {
                     const tc = TIER[plan.id as TierKey];
                     const isSelected = selectedPlan === plan.id;
@@ -1151,37 +1161,37 @@ function PricingContent() {
                     return (
                       <article
                         key={plan.id}
-                        className={`${tc.cardBg} border rounded-[24px] p-6 flex flex-col relative transition-all duration-200 ${
+                        className={`${tc.cardBg} relative flex flex-col rounded-[24px] border p-6 transition-all duration-200 ${
                           isDowngrade
-                            ? "opacity-50 cursor-not-allowed"
-                            : `cursor-pointer ${isSelected ? `${tc.selBorder} ${tc.ring} ${tc.glow}` : `${tc.border} hover:shadow-lg hover:-translate-y-0.5`}`
+                            ? "cursor-not-allowed opacity-50"
+                            : `cursor-pointer ${isSelected ? `${tc.selBorder} ${tc.ring} ${tc.glow}` : `${tc.border} hover:-translate-y-0.5 hover:shadow-lg`}`
                         }`}
                         onClick={() => {
                           if (!isDowngrade) setSelectedPlan(plan.id);
                         }}
                       >
                         {isCurrentPlan && (
-                          <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.06em] uppercase bg-green-100 text-green-700 border border-green-300">
+                          <div className="absolute top-4 right-4 rounded-full border border-green-300 bg-green-100 px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] text-green-700 uppercase">
                             Current Plan
                           </div>
                         )}
                         {!isCurrentPlan && plan.recommended && !isDowngrade && (
                           <div
-                            className={`absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.06em] uppercase ${tc.badgeBg} ${tc.badgeText}`}
+                            className={`absolute top-4 right-4 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] uppercase ${tc.badgeBg} ${tc.badgeText}`}
                           >
                             Most Popular
                           </div>
                         )}
                         {isSelected && !plan.recommended && !isCurrentPlan && !isDowngrade && (
                           <div
-                            className={`absolute top-4 right-4 w-6 h-6 rounded-full ${tc.btn} flex items-center justify-center`}
+                            className={`absolute top-4 right-4 h-6 w-6 rounded-full ${tc.btn} flex items-center justify-center`}
                           >
-                            <IconCheck className="w-3.5 h-3.5" />
+                            <IconCheck className="h-3.5 w-3.5" />
                           </div>
                         )}
 
                         {/* Icon + Name/Price row */}
-                        <div className="flex items-center gap-0 mb-4 -ml-3">
+                        <div className="mb-4 -ml-3 flex items-center gap-0">
                           <span
                             aria-hidden="true"
                             className={`plan-icon plan-icon--${plan.id}`}
@@ -1194,25 +1204,25 @@ function PricingContent() {
                               {plan.name}
                             </div>
                             <div className="flex items-baseline gap-1">
-                              <span className="text-[34px] font-bold tracking-tight leading-none">
+                              <span className="text-[34px] leading-none font-bold tracking-tight">
                                 ${planDisplayPrice(plan)}
                               </span>
-                              <span className="text-[12px] text-muted-foreground">/mo</span>
+                              <span className="text-muted-foreground text-[12px]">/mo</span>
                             </div>
-                            <div className="text-[11px] text-muted-foreground">
+                            <div className="text-muted-foreground text-[11px]">
                               ${plan.annualPrice} total
                             </div>
                           </div>
                         </div>
-                        <p className="text-muted-foreground text-[13px] leading-[1.5] mb-4">
+                        <p className="text-muted-foreground mb-4 text-[13px] leading-[1.5]">
                           {plan.tagline}
                         </p>
 
                         {/* Key features — single line each */}
-                        <ul className="list-none p-0 m-0 space-y-2 flex-1">
+                        <ul className="m-0 flex-1 list-none space-y-2 p-0">
                           {plan.bullets.slice(0, 5).map((item, idx) => (
-                            <li key={idx} className="flex gap-2 items-center text-[13px]">
-                              <IconCheck className={`w-4 h-4 flex-shrink-0 ${tc.checkCol}`} />
+                            <li key={idx} className="flex items-center gap-2 text-[13px]">
+                              <IconCheck className={`h-4 w-4 flex-shrink-0 ${tc.checkCol}`} />
                               <span className="truncate">{item}</span>
                             </li>
                           ))}
@@ -1221,22 +1231,22 @@ function PricingContent() {
                         {/* "See what else is included" → opens compare modal */}
                         {plan.bullets.length > 5 && (
                           <button
-                            className={`mt-3 flex items-center gap-1 text-[12px] font-semibold ${tc.textAccent} cursor-pointer bg-transparent border-0 p-0 text-left`}
+                            className={`mt-3 flex items-center gap-1 text-[12px] font-semibold ${tc.textAccent} cursor-pointer border-0 bg-transparent p-0 text-left`}
                             onClick={(e) => {
                               e.stopPropagation();
                               setComparePlansOpen(true);
                             }}
                           >
                             Click here to see what else is included
-                            <IcoChevron className="w-3.5 h-3.5 -rotate-90" />
+                            <IcoChevron className="h-3.5 w-3.5 -rotate-90" />
                           </button>
                         )}
 
                         <button
                           disabled={isDowngrade || !!isCurrentPlan}
-                          className={`mt-4 w-full py-[10px] px-4 rounded-full text-[13.5px] font-semibold transition-all duration-150 ${
+                          className={`mt-4 w-full rounded-full px-4 py-[10px] text-[13.5px] font-semibold transition-all duration-150 ${
                             isDowngrade || isCurrentPlan
-                              ? "cursor-not-allowed opacity-60 bg-muted text-muted-foreground border border-border"
+                              ? "bg-muted text-muted-foreground border-border cursor-not-allowed border opacity-60"
                               : `cursor-pointer ${isSelected ? tc.btn : `${tc.btnOut} border`}`
                           }`}
                           onClick={(e) => {
@@ -1263,12 +1273,12 @@ function PricingContent() {
             })()}
 
             {/* Free plan strip */}
-            <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-muted/30 border border-border rounded-[18px] px-5 py-4">
+            <div className="bg-muted/30 border-border mt-4 flex flex-col items-start justify-between gap-3 rounded-[18px] border px-5 py-4 sm:flex-row sm:items-center">
               <div>
-                <p className="font-semibold text-[14px] m-0">
+                <p className="m-0 text-[14px] font-semibold">
                   Not ready to commit? Start with a free preview.
                 </p>
-                <p className="text-muted-foreground text-[13px] m-0 mt-0.5">
+                <p className="text-muted-foreground m-0 mt-0.5 text-[13px]">
                   Preview the roadmap structure, access public tools, no payment required.
                 </p>
               </div>
@@ -1279,26 +1289,26 @@ function PricingContent() {
 
             {/* Help me choose — full width */}
             <div className="mt-10">
-              <h3 className="text-[17px] font-bold m-0 mb-1">Help me choose</h3>
-              <p className="text-[13.5px] text-muted-foreground mb-4">
+              <h3 className="m-0 mb-1 text-[17px] font-bold">Help me choose</h3>
+              <p className="text-muted-foreground mb-4 text-[13.5px]">
                 Pick the description that matches you.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 {HELPER_DATA.map((card, idx) => {
                   const tc = TIER[card.plan as TierKey];
                   const isActive = selectedPlan === card.plan;
                   return (
                     <button
                       key={idx}
-                      className={`border rounded-[18px] p-5 text-left cursor-pointer transition-all ${
+                      className={`cursor-pointer rounded-[18px] border p-5 text-left transition-all ${
                         isActive
                           ? `${tc.cardBg} ${tc.selBorder} ${tc.ring}`
                           : "bg-card border-border hover:bg-muted/20"
                       }`}
                       onClick={() => setSelectedPlan(card.plan)}
                     >
-                      <strong className="block text-[14.5px] mb-2">{card.title}</strong>
-                      <p className="m-0 text-muted-foreground text-[13px] leading-[1.55] mb-3">
+                      <strong className="mb-2 block text-[14.5px]">{card.title}</strong>
+                      <p className="text-muted-foreground m-0 mb-3 text-[13px] leading-[1.55]">
                         {card.copy}
                       </p>
                       <span className={`text-[12px] font-bold ${tc.textAccent}`}>
@@ -1312,27 +1322,27 @@ function PricingContent() {
 
             {/* FAQs — full width */}
             <div className="mt-10">
-              <h2 className="text-[22px] font-bold m-0 mb-1">Common questions</h2>
-              <p className="text-muted-foreground text-[13.5px] mb-4">
+              <h2 className="m-0 mb-1 text-[22px] font-bold">Common questions</h2>
+              <p className="text-muted-foreground mb-4 text-[13.5px]">
                 Everything you need to know before purchasing.
               </p>
-              <div className="bg-card border border-border rounded-[20px] overflow-hidden">
+              <div className="bg-card border-border overflow-hidden rounded-[20px] border">
                 {FAQS.map(([q, a], idx) => (
                   <div
                     key={idx}
-                    className={`border-t border-border first:border-0 ${openFaqIndex === idx ? "bg-muted/20" : ""}`}
+                    className={`border-border border-t first:border-0 ${openFaqIndex === idx ? "bg-muted/20" : ""}`}
                   >
                     <button
-                      className="w-full bg-transparent border-0 p-[16px_22px] flex justify-between items-center gap-4 text-left cursor-pointer hover:bg-muted/25 transition-colors"
+                      className="hover:bg-muted/25 flex w-full cursor-pointer items-center justify-between gap-4 border-0 bg-transparent p-[16px_22px] text-left transition-colors"
                       onClick={() => setOpenFaqIndex(openFaqIndex === idx ? -1 : idx)}
                     >
-                      <span className="font-semibold text-[14px]">{q}</span>
-                      <span className="text-xl text-muted-foreground font-normal leading-none shrink-0">
+                      <span className="text-[14px] font-semibold">{q}</span>
+                      <span className="text-muted-foreground shrink-0 text-xl leading-none font-normal">
                         {openFaqIndex === idx ? "−" : "+"}
                       </span>
                     </button>
                     {openFaqIndex === idx && (
-                      <div className="px-[22px] pb-4 text-muted-foreground leading-[1.65] text-[13.5px]">
+                      <div className="text-muted-foreground px-[22px] pb-4 text-[13.5px] leading-[1.65]">
                         {a}
                       </div>
                     )}
@@ -1342,24 +1352,24 @@ function PricingContent() {
             </div>
 
             {/* CTA Banner — full width */}
-            <div className="mt-8 bg-primary rounded-[22px] p-7 text-white flex flex-col md:flex-row justify-between gap-4 md:items-center">
+            <div className="bg-primary mt-8 flex flex-col justify-between gap-4 rounded-[22px] p-7 text-white md:flex-row md:items-center">
               <div>
                 <h2 className="m-[0_0_6px] text-[22px] font-bold tracking-tight">
                   Start with the level that fits you.
                 </h2>
-                <p className="m-0 text-white/80 text-[14px]">
+                <p className="m-0 text-[14px] text-white/80">
                   Pick a plan, then add only the extras that apply to your case.
                 </p>
               </div>
-              <div className="flex gap-3 flex-wrap shrink-0">
+              <div className="flex shrink-0 flex-wrap gap-3">
                 <button
-                  className="px-5 py-[9px] bg-white text-primary rounded-full text-[13.5px] font-semibold hover:bg-white/90 transition-colors cursor-pointer"
+                  className="text-primary cursor-pointer rounded-full bg-white px-5 py-[9px] text-[13.5px] font-semibold transition-colors hover:bg-white/90"
                   onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 >
                   Review Plans
                 </button>
                 <Link href="/#contact">
-                  <button className="px-5 py-[9px] border border-white/30 text-white rounded-full text-[13.5px] font-semibold hover:bg-white/10 transition-colors cursor-pointer">
+                  <button className="cursor-pointer rounded-full border border-white/30 px-5 py-[9px] text-[13.5px] font-semibold text-white transition-colors hover:bg-white/10">
                     Talk to Support
                   </button>
                 </Link>
@@ -1376,21 +1386,21 @@ function PricingContent() {
         <div className="animate-in fade-in duration-300">
           <div className={`${W} pt-6`}>
             {/* Back button + visa selector */}
-            <div className="flex items-center justify-between gap-3 mb-6">
+            <div className="mb-6 flex items-center justify-between gap-3">
               <button
-                className="inline-flex items-center gap-1.5 text-[13.5px] text-muted-foreground hover:text-foreground font-medium cursor-pointer bg-transparent border-0 p-0 transition-colors"
+                className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[13.5px] font-medium transition-colors"
                 onClick={() => {
                   setPurchaseStep("browse");
                   window.scrollTo({ top: 0 });
                 }}
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="h-4 w-4" />
                 Back to plans
               </button>
               {visaSelectorSm}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
+            <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px]">
               {/* Left: add-ons */}
               <div>
                 {/* Selected plan summary */}
@@ -1398,30 +1408,30 @@ function PricingContent() {
                   const tc = TIER[currentPlanData.id as TierKey];
                   if (!tc) return null;
                   return (
-                    <div className={`${tc.cardBg} border ${tc.selBorder} rounded-[22px] p-5 mb-8`}>
-                      <div className="flex justify-between items-start">
+                    <div className={`${tc.cardBg} border ${tc.selBorder} mb-8 rounded-[22px] p-5`}>
+                      <div className="flex items-start justify-between">
                         <div>
                           <div
-                            className={`text-[11px] font-extrabold tracking-widest uppercase mb-1 ${tc.textAccent}`}
+                            className={`mb-1 text-[11px] font-extrabold tracking-widest uppercase ${tc.textAccent}`}
                           >
                             Selected Plan
                           </div>
                           <div className="text-[20px] font-bold">{currentPlanData.name}</div>
-                          <p className="text-muted-foreground text-[13px] mt-0.5 m-0">
+                          <p className="text-muted-foreground m-0 mt-0.5 text-[13px]">
                             {currentPlanData.tagline}
                           </p>
                         </div>
                         <div className="text-right">
-                          <div className="text-[32px] font-bold tracking-tight leading-none">
+                          <div className="text-[32px] leading-none font-bold tracking-tight">
                             ${planDisplayPrice(currentPlanData)}
                           </div>
-                          <div className="text-[12px] text-muted-foreground">
+                          <div className="text-muted-foreground text-[12px]">
                             /mo · ${currentPlanData.annualPrice} total
                           </div>
                         </div>
                       </div>
                       <button
-                        className={`mt-3 text-[12.5px] font-medium ${tc.textAccent} cursor-pointer bg-transparent border-0 p-0`}
+                        className={`mt-3 text-[12.5px] font-medium ${tc.textAccent} cursor-pointer border-0 bg-transparent p-0`}
                         onClick={() => setPurchaseStep("browse")}
                       >
                         Change plan →
@@ -1433,8 +1443,8 @@ function PricingContent() {
                 {/* Want to add extra help? */}
                 <div>
                   <div className={eyebrow}>Optional add-ons</div>
-                  <h2 className="text-[21px] font-bold m-0 mb-1">Want to add extra help?</h2>
-                  <p className="text-[13.5px] text-muted-foreground mb-5">
+                  <h2 className="m-0 mb-1 text-[21px] font-bold">Want to add extra help?</h2>
+                  <p className="text-muted-foreground mb-5 text-[13.5px]">
                     Add only what you need. Recommended for the {currentPlanData.name} plan, or
                     browse all below.
                   </p>
@@ -1442,10 +1452,10 @@ function PricingContent() {
                   {/* Recommended add-ons */}
                   {reviewAddons.length > 0 && (
                     <div className="mb-7">
-                      <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                      <div className="text-muted-foreground mb-3 text-[11px] font-bold tracking-widest uppercase">
                         Recommended for {currentPlanData.name}
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {reviewAddons.map((addon) => {
                           const isAdded = isAddonSelected(addon.id);
                           const cfg = ADDON_CONFIG[addon.id];
@@ -1470,7 +1480,7 @@ function PricingContent() {
                                           : "bg-[#FEF0F0] text-[#903030]"
                                 }`}
                               >
-                                <Icon className="w-7 h-7 opacity-70" />
+                                <Icon className="h-7 w-7 opacity-70" />
                               </div>
 
                               <div className="resource-fcard-body">
@@ -1500,25 +1510,25 @@ function PricingContent() {
                   )}
 
                   {/* All other add-ons — collapsed by default */}
-                  <div className="mt-4 border-t border-border pt-4">
+                  <div className="border-border mt-4 border-t pt-4">
                     <button
-                      className="w-full flex justify-between items-center cursor-pointer bg-transparent border-0 p-0 group mb-0"
+                      className="group mb-0 flex w-full cursor-pointer items-center justify-between border-0 bg-transparent p-0"
                       onClick={() => setAllAddonsOpen(!allAddonsOpen)}
                     >
-                      <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
+                      <span className="text-muted-foreground group-hover:text-foreground text-[11px] font-bold tracking-widest uppercase transition-colors">
                         All available add-ons
                       </span>
-                      <span className="flex items-center gap-1.5 text-[12px] text-muted-foreground group-hover:text-foreground transition-colors">
+                      <span className="text-muted-foreground group-hover:text-foreground flex items-center gap-1.5 text-[12px] transition-colors">
                         <span className="font-medium">
                           {allAddonsOpen ? "Collapse" : "Show all"}
                         </span>
                         <IcoChevron
-                          className={`w-3.5 h-3.5 transition-transform duration-200 ${allAddonsOpen ? "rotate-180" : ""}`}
+                          className={`h-3.5 w-3.5 transition-transform duration-200 ${allAddonsOpen ? "rotate-180" : ""}`}
                         />
                       </span>
                     </button>
                     {allAddonsOpen && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
+                      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
                         {ADDONS.filter((a) => !(PLAN_RECS[selectedPlan] || []).includes(a.id)).map(
                           (addon) => {
                             const isAdded = isAddonSelected(addon.id);
@@ -1545,7 +1555,7 @@ function PricingContent() {
                                             : "bg-[#FEF0F0] text-[#903030]"
                                   }`}
                                 >
-                                  <Icon className="w-7 h-7 opacity-70" />
+                                  <Icon className="h-7 w-7 opacity-70" />
                                 </div>
 
                                 <div className="resource-fcard-body">
@@ -1579,16 +1589,16 @@ function PricingContent() {
               </div>
 
               {/* Right: sticky order summary */}
-              <aside className="lg:sticky lg:top-[88px] bg-card border border-border rounded-[22px] p-5 shadow-md">
+              <aside className="bg-card border-border rounded-[22px] border p-5 shadow-md lg:sticky lg:top-[88px]">
                 {summaryHeader(reviewItemCount)}
 
-                <div className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[13px]">
+                <div className="border-border flex justify-between gap-3 border-b border-dashed py-2.5 text-[13px]">
                   <span className="text-muted-foreground">Visa</span>
                   <strong className="text-[12.5px]">{activeVisaCategory.label}</strong>
                 </div>
 
                 {currentPlanData.id !== "free" && (
-                  <div className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[13px]">
+                  <div className="border-border flex justify-between gap-3 border-b border-dashed py-2.5 text-[13px]">
                     <span className="text-muted-foreground">Plan</span>
                     <div className="text-right">
                       <strong
@@ -1596,7 +1606,7 @@ function PricingContent() {
                       >
                         {currentPlanData.name}
                       </strong>
-                      <span className="text-[11px] text-muted-foreground">
+                      <span className="text-muted-foreground text-[11px]">
                         ${currentPlanData.monthlyPrice}/mo · ${currentPlanData.annualPrice} total
                       </span>
                     </div>
@@ -1606,14 +1616,14 @@ function PricingContent() {
                 {activeAddons.map((a) => (
                   <div
                     key={a.id}
-                    className="flex justify-between gap-3 py-2 border-b border-dashed border-border text-[13px]"
+                    className="border-border flex justify-between gap-3 border-b border-dashed py-2 text-[13px]"
                   >
-                    <span className="text-[12.5px] truncate pr-2">{a.title}</span>
-                    <div className="text-right shrink-0">
+                    <span className="truncate pr-2 text-[12.5px]">{a.title}</span>
+                    <div className="shrink-0 text-right">
                       <strong>${a.price}</strong>
                       <button
                         disabled={isAnyCheckoutLoading}
-                        className={`ml-2 text-muted-foreground transition-colors ${isAnyCheckoutLoading ? "opacity-30 cursor-not-allowed" : "hover:text-red-500 cursor-pointer"} text-[11px]`}
+                        className={`text-muted-foreground ml-2 transition-colors ${isAnyCheckoutLoading ? "cursor-not-allowed opacity-30" : "cursor-pointer hover:text-red-500"} text-[11px]`}
                         onClick={() => toggleAddon(a.id)}
                       >
                         ✕
@@ -1622,14 +1632,14 @@ function PricingContent() {
                   </div>
                 ))}
 
-                <div className="flex justify-between items-end mt-4 pt-4 border-t border-border">
-                  <span className="text-[12px] text-muted-foreground">Total commitment</span>
-                  <span className="font-bold text-[28px] tracking-tight text-primary leading-none">
+                <div className="border-border mt-4 flex items-end justify-between border-t pt-4">
+                  <span className="text-muted-foreground text-[12px]">Total commitment</span>
+                  <span className="text-primary text-[28px] leading-none font-bold tracking-tight">
                     ${summaryTotal}
                   </span>
                 </div>
 
-                <p className="text-[11px] text-muted-foreground leading-relaxed mt-3 mb-4 p-3 bg-muted/40 rounded-[12px] border border-dashed border-border">
+                <p className="text-muted-foreground bg-muted/40 border-border mt-3 mb-4 rounded-[12px] border border-dashed p-3 text-[11px] leading-relaxed">
                   Billed monthly at $
                   {currentPlanData.id !== "free" ? currentPlanData.monthlyPrice : 0}
                   /mo. Add-ons are one-time. Government fees excluded.
@@ -1653,13 +1663,13 @@ function PricingContent() {
       {mode !== "plans" && (
         <div className="animate-in fade-in duration-300">
           <section className={`${W} pt-7 pb-5`}>
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
               <div>
                 <div className={eyebrow}>{RESOURCE_TABS[mode].label}</div>
-                <h1 className="text-[clamp(24px,3.5vw,42px)] font-bold leading-[1.1] tracking-tight m-0">
+                <h1 className="m-0 text-[clamp(24px,3.5vw,42px)] leading-[1.1] font-bold tracking-tight">
                   {RESOURCE_TABS[mode].heading}
                 </h1>
-                <p className="mt-2 text-muted-foreground text-[14.5px] max-w-[520px]">
+                <p className="text-muted-foreground mt-2 max-w-[520px] text-[14.5px]">
                   {RESOURCE_TABS[mode].blurb}
                 </p>
               </div>
@@ -1667,10 +1677,10 @@ function PricingContent() {
           </section>
 
           <div className={`${W}`}>
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_284px] gap-6 items-start">
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_284px]">
               <div>
                 {/* Resource cards — clickable, open the tool detail page */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {resourcesForMode.map((addon) => (
                     <ResourceToolCard
                       key={addon.id}
@@ -1684,35 +1694,35 @@ function PricingContent() {
 
                 <div className="mt-6 text-center">
                   <button
-                    className="text-[13.5px] text-primary font-semibold inline-flex items-center gap-1.5 cursor-pointer bg-transparent border-0 p-0"
+                    className="text-primary inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[13.5px] font-semibold"
                     onClick={() => setMode("plans")}
                   >
-                    <ArrowLeft className="w-4 h-4" />
+                    <ArrowLeft className="h-4 w-4" />
                     View full journey plans
                   </button>
                 </div>
               </div>
 
               {/* Order summary sidebar */}
-              <aside className="lg:sticky lg:top-[88px] bg-card border border-border rounded-[22px] p-5 shadow-md">
+              <aside className="bg-card border-border rounded-[22px] border p-5 shadow-md lg:sticky lg:top-[88px]">
                 {summaryHeader(activeAddons.length)}
 
                 {activeAddons.length === 0 ? (
-                  <div className="py-5 text-center text-muted-foreground text-[13px]">
+                  <div className="text-muted-foreground py-5 text-center text-[13px]">
                     No items selected yet.
                   </div>
                 ) : (
                   activeAddons.map((a) => (
                     <div
                       key={a.id}
-                      className="flex justify-between gap-3 py-2 border-b border-dashed border-border text-[13px]"
+                      className="border-border flex justify-between gap-3 border-b border-dashed py-2 text-[13px]"
                     >
-                      <span className="text-[12.5px] truncate pr-2">{a.title}</span>
-                      <div className="text-right shrink-0">
+                      <span className="truncate pr-2 text-[12.5px]">{a.title}</span>
+                      <div className="shrink-0 text-right">
                         <strong>${a.price}</strong>
                         <button
                           disabled={isAnyCheckoutLoading}
-                          className={`ml-2 text-muted-foreground transition-colors ${isAnyCheckoutLoading ? "opacity-30 cursor-not-allowed" : "hover:text-red-500 cursor-pointer"} text-[11px]`}
+                          className={`text-muted-foreground ml-2 transition-colors ${isAnyCheckoutLoading ? "cursor-not-allowed opacity-30" : "cursor-pointer hover:text-red-500"} text-[11px]`}
                           onClick={() => toggleAddon(a.id)}
                         >
                           ✕
@@ -1724,13 +1734,13 @@ function PricingContent() {
 
                 {activeAddons.length > 0 && (
                   <>
-                    <div className="flex justify-between items-end mt-4 pt-4 border-t border-border">
-                      <span className="text-[12px] text-muted-foreground">Total</span>
-                      <span className="font-bold text-[28px] tracking-tight text-primary leading-none">
+                    <div className="border-border mt-4 flex items-end justify-between border-t pt-4">
+                      <span className="text-muted-foreground text-[12px]">Total</span>
+                      <span className="text-primary text-[28px] leading-none font-bold tracking-tight">
                         ${summaryAddonsTotal}
                       </span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed mt-3 mb-4 p-3 bg-muted/40 rounded-[12px] border border-dashed border-border">
+                    <p className="text-muted-foreground bg-muted/40 border-border mt-3 mb-4 rounded-[12px] border border-dashed p-3 text-[11px] leading-relaxed">
                       Add-ons are one-time charges. Government fees are not included.
                     </p>
                     {checkoutBtn}
@@ -1770,9 +1780,9 @@ export default function PricingSection() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4 mx-auto" />
-          <h2 className="text-xl font-bold mb-2">Loading Pricing...</h2>
+        <div className="bg-background flex min-h-screen flex-col items-center justify-center p-6 text-center">
+          <div className="border-primary mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-t-transparent" />
+          <h2 className="mb-2 text-xl font-bold">Loading Pricing...</h2>
           <p className="text-muted-foreground">Preparing your plan options.</p>
         </div>
       }
