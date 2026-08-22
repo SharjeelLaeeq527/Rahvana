@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { E, msg } from '@/lib/errors';
+import { E, msg } from "@/lib/errors";
+import { assertRequestBodySize } from "@/lib/security/request-body";
+import { validateUploadedFile } from "@/lib/security/file-content";
+import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
 
 // Initialize Supabase client
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -20,17 +23,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: msg(E.UPLOAD_NO_FILE) }, { status: 400 });
     }
 
-    // Generate unique name
+    const checked = await validateUploadedFile(file, UPLOAD_PROFILES.consultation);
+    if (!checked.ok) {
+      return NextResponse.json({ error: checked.error }, { status: checked.status });
+    }
+
     const timestamp = Date.now();
     const uniqueId = crypto.randomUUID().substring(0, 8);
     const storagePath = `consultation-attachments/${timestamp}_${uniqueId}_${file.name}`;
+    const buffer = checked.buffer;
 
-    // Upload to Supabase Storage
-    const buffer = Buffer.from(await file.arrayBuffer());
     const { error: uploadError } = await supabase.storage
       .from("document-vault")
       .upload(storagePath, buffer, {
-        contentType: file.type,
+        contentType: checked.detectedMime,
         upsert: false,
       });
 

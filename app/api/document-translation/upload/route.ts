@@ -4,6 +4,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 import { triggerTranslationNotification } from "@/lib/notifications";
+import { validateUploadedFile } from "@/lib/security/file-content";
+import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -41,20 +43,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Validate file type (PDF only)
-    if (file.type !== "application/pdf") {
-      return NextResponse.json({ error: msg(E.UPLOAD_INVALID_PDF) }, { status: 400 });
-    }
-
-    // Validate file size (max 50MB)
-    const maxSize = 50 * 1024 * 1024;
-    if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: 50 }) },
-        { status: 400 }
-      );
-    }
-
     // Extract file name
     const fileName = file.name;
 
@@ -82,11 +70,16 @@ export async function POST(request: NextRequest) {
     const storagePath = `${user.id}/translation-originals/${docId}/${timestamp}_${storageFileName}`;
 
     // Upload to Supabase Storage
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const checked = await validateUploadedFile(file, UPLOAD_PROFILES.translation);
+    if (!checked.ok) {
+      return NextResponse.json({ error: checked.error }, { status: checked.status });
+    }
+    const buffer = checked.buffer;
+
     const { error: uploadError } = await supabase.storage
       .from("document-vault")
       .upload(storagePath, buffer, {
-        contentType: file.type,
+        contentType: checked.detectedMime,
         upsert: false,
       });
 
@@ -107,7 +100,7 @@ export async function POST(request: NextRequest) {
         original_file_path: storagePath,
         original_filename: storageFileName,
         original_file_size: file.size,
-        original_mime_type: file.type,
+        original_mime_type: checked.detectedMime,
         user_notes: userNotes,
         status: "PENDING",
         metadata: {
@@ -124,7 +117,7 @@ export async function POST(request: NextRequest) {
       await supabase.storage.from("document-vault").remove([storagePath]);
       return NextResponse.json({ error: "Failed to create database record" }, { status: 500 });
     }
-    // Trigger admin notification
+
     // Trigger admin notification
     try {
       await triggerTranslationNotification(document.id);

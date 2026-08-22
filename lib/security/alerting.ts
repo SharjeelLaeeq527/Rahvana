@@ -143,7 +143,7 @@ export interface ScanOptions {
 
 export async function runSecurityScan(opts: ScanOptions = {}): Promise<SecurityScanResult> {
   // Real-time trigger uses the tight defaults; a once-a-day cron passes a wide
-  // 24h window (with higher thresholds) so a single daily run is still useful.
+  // 24h window (with higher thresholds) so a single daily run is still useful
   const failWindowMin = opts.failWindowMin ?? FAILED_LOGIN_WINDOW_MIN;
   const failThreshold = opts.failThreshold ?? FAILED_LOGIN_THRESHOLD;
   const blockedWindowMin = opts.blockedWindowMin ?? BLOCKED_WINDOW_MIN;
