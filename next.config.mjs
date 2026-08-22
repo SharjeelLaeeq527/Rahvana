@@ -167,10 +167,9 @@ const nextConfig = {
   // Turbopack (used by `next build --turbopack`) doesn't accept `false` as an
   // alias, so point `canvas` at a harmless mock module instead.
   turbopack: {
-    resolve: {
-      alias: {
-        canvas: path.join(__dirname, 'lib/mock-canvas.js'),
-      },
+    root: __dirname,
+    resolveAlias: {
+      canvas: path.join(__dirname, 'lib/mock-canvas.js'),
     },
   },
 
