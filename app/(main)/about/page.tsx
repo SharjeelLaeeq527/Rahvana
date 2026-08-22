@@ -37,8 +37,10 @@ const dmSans = DM_Sans({
 export default function AboutPage() {
   const [hoveredTeamIndex, setHoveredTeamIndex] = useState<number | null>(null);
   const [activeFragment, setActiveFragment] = useState(0);
+  const [activeTeam, setActiveTeam] = useState(0);
   const [openValue, setOpenValue] = useState<number | null>(0);
   const fragmentTrackRef = useRef<HTMLDivElement | null>(null);
+  const teamTrackRef = useRef<HTMLDivElement>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -91,6 +93,32 @@ export default function AboutPage() {
     setActiveFragment(Math.max(0, Math.min(fragmentCards.length - 1, index)));
   };
 
+  const handleTeamScroll = () => {
+    const track = teamTrackRef.current;
+
+    if (!track) return;
+
+    const cards = Array.from(track.children) as HTMLElement[];
+    if (!cards.length) return;
+
+    const trackCenter = track.scrollLeft + track.clientWidth / 2;
+
+    let closestIndex = 0;
+    let closestDistance = Infinity;
+
+    cards.forEach((card, index) => {
+      const cardCenter = card.offsetLeft + card.offsetWidth / 2;
+      const distance = Math.abs(cardCenter - trackCenter);
+
+      if (distance < closestDistance) {
+        closestDistance = distance;
+        closestIndex = index;
+      }
+    });
+
+    setActiveTeam(closestIndex);
+  };
+
   const scrollToFragment = (index: number) => {
     const track = fragmentTrackRef.current;
     if (!track) return;
@@ -101,6 +129,24 @@ export default function AboutPage() {
       behavior: "smooth",
     });
     setActiveFragment(index);
+  };
+
+  const scrollToTeam = (index: number) => {
+    const track = teamTrackRef.current;
+
+    if (!track) return;
+
+    const card = track.children[index] as HTMLElement | undefined;
+
+    if (!card) return;
+
+    card.scrollIntoView({
+      behavior: "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+
+    setActiveTeam(index);
   };
 
   const valueCards = [
@@ -252,7 +298,7 @@ export default function AboutPage() {
       </section>
 
       {/* FRAGMENTS */}
-      <section className="bg-[#faf7f2] px-8 py-24 text-center">
+      <section className="bg-[#faf7f2] px-8 py-16 text-center">
         <div className="mb-5 flex justify-center">
           <span className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-[#b5451b] px-4 py-1.5 text-[11px] font-semibold tracking-widest text-[#b5451b] uppercase">
             Fragments From The Journey
@@ -308,7 +354,7 @@ export default function AboutPage() {
       </section>
 
       {/* WHY WE BUILT THIS */}
-      <section className="bg-[#f3ede3] px-8 py-24 md:px-20">
+      <section className="bg-[#f3ede3] px-8 py-16 md:px-20">
         <div className="mx-auto max-w-3xl">
           <div className="mb-5 flex justify-start">
             <span className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-[#b5451b] px-4 py-1.5 text-[11px] font-semibold tracking-widest text-[#b5451b] uppercase">
@@ -333,8 +379,8 @@ export default function AboutPage() {
             </p>
             <p>That&apos;s Rahvana: the space between people who belong together.</p>
             <p>
-              We&apos;re focused on a select set of visa journeys, starting with IR-1 and IR-5, so we can
-              go deep before expanding further.
+              We&apos;re focused on a select set of visa journeys, starting with IR-1 and IR-5, so
+              we can go deep before expanding further.
             </p>
           </div>
           <div className="mt-10 rounded-r-xl border-l-4 border-[#0d7a75] bg-white p-5 text-lg leading-relaxed text-[#121e2e] italic shadow-sm md:p-7">
@@ -346,7 +392,7 @@ export default function AboutPage() {
       </section>
 
       {/* EMOTIONAL REALITY */}
-      <section className="bg-[#121e2e] px-8 py-24 md:px-20">
+      <section className="bg-[#121e2e] px-8 py-16 md:px-20">
         <div className="mb-5 flex justify-center">
           <span className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-[#b5451b] px-4 py-1.5 text-[11px] font-semibold tracking-widest text-[#b5451b] uppercase">
             What This Really Feels Like
@@ -406,7 +452,7 @@ export default function AboutPage() {
       </section>
 
       {/* VALUES */}
-      <section className="bg-[#faf7f2] px-8 py-24 md:px-20">
+      <section className="bg-[#faf7f2] px-8 py-16 md:px-20">
         <div className="mx-auto flex max-w-6xl flex-col items-start gap-16 md:gap-20">
           <div>
             <div className="mb-5 flex justify-start">
@@ -535,8 +581,8 @@ export default function AboutPage() {
                 Distance
               </span>
               <h3 className="mb-4 font-serif text-2xl leading-tight text-[#121e2e]">
-                Being far from your loved ones is already hard enough. The tools you use shouldn&apos;t
-                add to that burden.
+                Being far from your loved ones is already hard enough. The tools you use
+                shouldn&apos;t add to that burden.
               </h3>
             </motion.div>
 
@@ -576,7 +622,7 @@ export default function AboutPage() {
       </section>
 
       {/* MEMORY TO MOVEMENT */}
-      <section className="bg-[#edf6f5] px-8 py-24 md:px-20">
+      <section className="bg-[#edf6f5] px-8 py-16 md:px-20">
         <div className="mx-auto grid max-w-6xl items-center gap-16 md:grid-cols-2 md:gap-20">
           <div className="relative aspect-4/3 overflow-hidden rounded-2xl shadow-xl">
             <Image
@@ -615,19 +661,25 @@ export default function AboutPage() {
       </section>
 
       {/* TEAM */}
-      <section className="bg-[#f8f8f8] px-8 py-24 text-center md:px-20">
+      <section className="bg-[#f8f8f8] px-8 py-16 text-center md:px-20">
         <div className="mb-5 flex justify-center">
           <span className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-[#b5451b] px-4 py-1.5 text-[11px] font-semibold tracking-widest text-[#b5451b] uppercase">
             The People Behind It
           </span>
         </div>
+
         <h2 className="mb-14 font-serif text-3xl leading-tight font-bold text-[#121e2e] md:text-5xl">
           Built by people who{" "}
           <em className="font-normal text-[#0d7a75] italic">have lived this too.</em>
         </h2>
 
+        {/* ================================================================
+      DESKTOP TEAM LAYOUT
+      Keeps the existing hover-expand behavior.
+      Visible only on lg and above.
+      ================================================================ */}
         <div
-          className="mx-auto flex max-w-[1100px] flex-col gap-6 md:flex-row md:items-stretch"
+          className="mx-auto hidden max-w-[1100px] flex-row items-stretch gap-6 lg:flex"
           onMouseLeave={handleTeamMouseLeave}
         >
           {[
@@ -658,6 +710,7 @@ export default function AboutPage() {
           ].map((member, i) => {
             const isHovered = hoveredTeamIndex === i;
             const isOther = hoveredTeamIndex !== null && !isHovered;
+
             return (
               <div
                 key={i}
@@ -669,12 +722,11 @@ export default function AboutPage() {
                   opacity: isOther ? 0.55 : 1,
                   filter: isOther ? "blur(1px)" : "blur(0px)",
                   transform: isOther ? "scale(0.985)" : "scale(1)",
-                  // Single CSS transition — runs on compositor, zero JS per frame
                   transition:
                     "flex-grow 480ms cubic-bezier(0.4,0,0.2,1), opacity 350ms ease, filter 350ms ease, transform 350ms ease",
                   willChange: "flex-grow, opacity, filter, transform",
                 }}
-                className="hidden min-h-[360px] flex-col overflow-hidden rounded-3xl border border-black/5 bg-white p-9 shadow-sm md:flex"
+                className="min-h-[360px] flex-col overflow-hidden rounded-3xl border border-black/5 bg-white p-9 shadow-sm"
               >
                 <div className="relative mx-auto mb-7 flex h-30 w-30 flex-shrink-0 items-center justify-center overflow-hidden rounded-full shadow-lg ring-4 ring-[#0d7a75]/10">
                   <Image
@@ -683,18 +735,22 @@ export default function AboutPage() {
                     fill
                     className="object-cover object-top"
                   />
+
                   <div
-                    className={`absolute inset-0 flex items-center justify-center rounded-full text-3xl font-bold text-white ${member.color} hidden`}
+                    className={`absolute inset-0 hidden items-center justify-center rounded-full text-3xl font-bold text-white ${member.color}`}
                   >
                     {member.initials}
                   </div>
                 </div>
+
                 <p className="mb-1 overflow-hidden font-serif text-2xl font-bold text-ellipsis whitespace-nowrap text-[#121e2e]">
                   {member.name}
                 </p>
+
                 <p className="mb-4 text-[11px] font-semibold tracking-[0.12em] text-[#0d7a75] uppercase">
                   {member.role}
                 </p>
+
                 <p
                   style={{
                     opacity: isHovered ? 1 : 0.75,
@@ -712,59 +768,101 @@ export default function AboutPage() {
               </div>
             );
           })}
+        </div>
 
-          {/* Mobile layout — stacked, no animation */}
-          {[
-            {
-              name: "Hams",
-              initials: "HL",
-              image: "/assets/images/Hams.PNG",
-              color: "bg-[#0d7a75]",
-              role: "Co-Founder",
-              desc: "Rahvana exists because people deserve clarity during one of the most important processes of their lives. I've personally helped multiple people navigate these procedures and seen how overwhelming it can be, from trying to understand complicated requirements, second-guessing every step, and feeling completely alone. As a Co-Founder, my focus is making sure Rahvana is truly supportive, giving people clarity, structure, and peace of mind at every stage.",
-            },
-            {
-              name: "Sharjeel",
-              initials: "SL",
-              image: "/assets/images/Sharjeel.PNG",
-              color: "bg-[#e8a020]",
-              role: "Co-Founder",
-              desc: "Rahvana came from a personal place. I watched someone close to me navigate the IR-1 process alone, confused, overwhelmed, and constantly unsure if they were doing things right. There was no real support, just paperwork and waiting. I built Rahvana so others wouldn't have to face that process without clarity and guidance.",
-            },
-            {
-              name: "Javeria",
-              initials: "JL",
-              image: "/assets/images/Javeria.PNG",
-              color: "bg-[#d9406a]",
-              role: "Co-Founder",
-              desc: "Behind every decision is the responsibility to build something people can rely on. At Rahvana, that means making sure we grow sustainably while staying focused on what actually matters is helping people through a difficult process without adding financial stress or uncertainty. We keep that balance intact.",
-            },
-          ].map((member, i) => (
-            <div
-              key={`mobile-${i}`}
-              className="flex flex-col rounded-3xl border border-black/5 bg-white p-9 shadow-sm md:hidden"
-            >
-              <div className="relative mx-auto mb-7 flex h-20 w-20 flex-shrink-0 items-center justify-center overflow-hidden rounded-full shadow-lg ring-4 ring-[#0d7a75]/10">
-                <Image
-                  src={member.image}
-                  alt={member.name}
-                  fill
-                  className="object-cover object-top"
-                />
+        {/* ================================================================
+      MOBILE + TABLET TEAM CAROUSEL
+      Same interaction pattern as the Fragments section.
+      Visible below lg.
+      ================================================================ */}
+        <div className="lg:hidden">
+          <div
+            ref={teamTrackRef}
+            onScroll={handleTeamScroll}
+            className="scrollbar-hide flex snap-x snap-mandatory flex-nowrap gap-6 overflow-x-auto scroll-smooth px-2 pb-6"
+          >
+            {[
+              {
+                name: "Hams",
+                initials: "HL",
+                image: "/assets/images/Hams.PNG",
+                color: "bg-[#0d7a75]",
+                role: "Co-Founder",
+                desc: "Rahvana exists because people deserve clarity during one of the most important processes of their lives. I've personally helped multiple people navigate these procedures and seen how overwhelming it can be, from trying to understand complicated requirements, second-guessing every step, and feeling completely alone. As a Co-Founder, my focus is making sure Rahvana is truly supportive, giving people clarity, structure, and peace of mind at every stage.",
+              },
+              {
+                name: "Sharjeel",
+                initials: "SL",
+                image: "/assets/images/Sharjeel.PNG",
+                color: "bg-[#e8a020]",
+                role: "Co-Founder",
+                desc: "Rahvana came from a personal place. I watched someone close to me navigate the IR-1 process alone, confused, overwhelmed, and constantly unsure if they were doing things right. There was no real support, just paperwork and waiting. I built Rahvana so others wouldn't have to face that process without clarity and guidance.",
+              },
+              {
+                name: "Javeria",
+                initials: "JL",
+                image: "/assets/images/Javeria.PNG",
+                color: "bg-[#d9406a]",
+                role: "Co-Founder",
+                desc: "Behind every decision is the responsibility to build something people can rely on. At Rahvana, that means making sure we grow sustainably while staying focused on what actually matters is helping people through a difficult process without adding financial stress or uncertainty. We keep that balance intact.",
+              },
+            ].map((member, i) => (
+              <div
+                key={`team-mobile-${i}`}
+                className="w-[82vw] shrink-0 snap-center rounded-3xl border border-black/5 bg-white p-8 shadow-sm sm:w-[62vw] md:w-[48vw]"
+              >
+                <div className="relative mx-auto mb-7 flex h-24 w-24 flex-shrink-0 items-center justify-center overflow-hidden rounded-full shadow-lg ring-4 ring-[#0d7a75]/10">
+                  <Image
+                    src={member.image}
+                    alt={member.name}
+                    fill
+                    className="object-cover object-top"
+                  />
+
+                  <div
+                    className={`absolute inset-0 hidden items-center justify-center rounded-full text-3xl font-bold text-white ${member.color}`}
+                  >
+                    {member.initials}
+                  </div>
+                </div>
+
+                <p className="mb-1 font-serif text-2xl font-bold text-[#121e2e]">{member.name}</p>
+
+                <p className="mb-5 text-[11px] font-semibold tracking-[0.12em] text-[#0d7a75] uppercase">
+                  {member.role}
+                </p>
+
+                <p className="text-left text-sm leading-relaxed text-gray-600">{member.desc}</p>
               </div>
-              <p className="mb-1 font-serif text-2xl font-bold text-[#121e2e]">{member.name}</p>
-              <p className="mb-4 text-[11px] font-semibold tracking-[0.12em] text-[#0d7a75] uppercase">
-                {member.role}
-              </p>
-              <p className="text-left text-sm leading-relaxed text-gray-600">{member.desc}</p>
-            </div>
-          ))}
+            ))}
+          </div>
+
+          {/* Pagination dots */}
+          <div className="flex items-center justify-center gap-2.5 pb-4">
+            {[0, 1, 2].map((i) => (
+              <button
+                key={`team-dot-${i}`}
+                type="button"
+                aria-label={`Go to team member ${i + 1}`}
+                onClick={() => scrollToTeam(i)}
+                className={`rounded-full transition-all duration-300 ${
+                  activeTeam === i
+                    ? "h-2 w-6 bg-[#0d7a75]"
+                    : "h-2 w-2 bg-[#0d7a75]/25 hover:bg-[#0d7a75]/50"
+                }`}
+              />
+            ))}
+          </div>
+
+          <p className="text-[11px] font-medium tracking-widest text-gray-400 uppercase">
+            Swipe to explore
+          </p>
         </div>
       </section>
 
       {/* CTA BANNER */}
-      <section className="bg-[#0d7a75] px-8 py-20 text-center text-white">
-        <h2 className="mx-auto mb-5 max-w-4xl font-serif text-3xl leading-tight font-bold md:text-5xl">
+      <section className="bg-[#0d7a75] px-8 py-16 text-center text-white md:py-20">
+        <h2 className="mx-auto mb-5 max-w-4xl font-serif text-2xl leading-tight font-bold md:text-5xl">
           If this journey is part of
           <br />
           your story too, <em className="font-normal text-[#a8e8e5] italic">we&apos;re here.</em>
