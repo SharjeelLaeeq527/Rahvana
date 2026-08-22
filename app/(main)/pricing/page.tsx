@@ -371,32 +371,34 @@ function VisaSelector({
 function ComparisonCell({ value }: { value: string }) {
   const v = value.trim();
   if (v === "Included" || v === "Unlimited") {
-    return <IconCheck className="w-5 h-5 mx-auto text-primary" />;
+    return <IconCheck className="w-4 h-4 sm:w-5 sm:h-5 mx-auto text-primary shrink-0" />;
   }
   if (v === "Not Included") {
-    return <IconX className="w-5 h-5 mx-auto text-red-500" />;
+    return <IconX className="w-4 h-4 sm:w-5 sm:h-5 mx-auto text-red-500 shrink-0" />;
   }
   if (v === "") {
     return (
-      <span className="block text-center text-muted-foreground/40 font-bold text-xl leading-none">, </span>
+      <span className="block text-center text-muted-foreground/30 font-bold text-base sm:text-xl leading-none select-none">
+        —
+      </span>
     );
   }
   if (/included/i.test(v) && v !== "Included") {
     return (
-      <span className="inline-flex items-center gap-1 mx-auto px-2.5 py-1 rounded-full text-[11px] font-bold border bg-primary/10 text-primary border-primary/20">
-        <IconCheck className="w-3 h-3" /> {v}
+      <span className="inline-flex items-center justify-center gap-0.5 sm:gap-1 mx-auto px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9.5px] sm:text-[11px] font-bold border bg-primary/10 text-primary border-primary/20 leading-tight">
+        <IconCheck className="w-2.5 h-2.5 sm:w-3 sm:h-3 shrink-0" /> {v}
       </span>
     );
   }
   if (/add on/i.test(v)) {
     return (
-      <span className="inline-flex items-center mx-auto px-2.5 py-1 rounded-full text-[10.5px] font-bold border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">
+      <span className="inline-flex items-center justify-center mx-auto px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9.5px] sm:text-[10.5px] font-bold border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800 leading-tight">
         {v}
       </span>
     );
   }
   return (
-    <span className="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold border bg-muted text-muted-foreground border-border">
+    <span className="inline-block px-1.5 sm:px-2.5 py-0.5 sm:py-1 rounded-full text-[9.5px] sm:text-[11px] font-bold border bg-muted text-muted-foreground border-border leading-tight">
       {v}
     </span>
   );
@@ -448,11 +450,11 @@ function CompareModal({
           <div>
             <h2
               id="cmp-title"
-              className="text-[17px] sm:text-[20px] font-bold m-0 leading-tight text-foreground"
+              className="text-[16px] sm:text-[20px] font-bold m-0 leading-tight text-foreground"
             >
               Compare Rahvana plans
             </h2>
-            <p className="text-muted-foreground text-[12px] sm:text-[13px] mt-0.5 m-0">
+            <p className="text-muted-foreground text-[11.5px] sm:text-[13px] mt-0.5 m-0">
               See exactly what&apos;s included in Basic, Premium, and Executive.
             </p>
           </div>
@@ -466,22 +468,53 @@ function CompareModal({
         </div>
 
         {/* Scrollable area — unified container for headers, table rows, and CTAs */}
-        <div className="overflow-auto flex-1 scrollbar-premium bg-card">
-          <div className="min-w-[580px] w-full flex flex-col min-h-full">
+        <div className="overflow-y-auto overflow-x-hidden flex-1 scrollbar-premium bg-card">
+          <div className="w-full flex flex-col min-h-full">
             {/* Sticky plan headers bar */}
-            <div className="sticky top-0 z-20 bg-card/95 backdrop-blur-md px-4 sm:px-6 py-3 border-b border-border shadow-xs shrink-0">
-              <div className="grid grid-cols-[minmax(140px,180px)_repeat(3,minmax(0,1fr))] gap-2 sm:gap-3 items-center">
-                <div className="flex items-center gap-2 sm:gap-3">
+            <div className="sticky top-0 z-20 bg-card/95 backdrop-blur-md px-3 sm:px-6 py-2.5 sm:py-3 border-b border-border shadow-xs shrink-0">
+              {/* Mobile controls bar (Differences switch) */}
+              <div className="flex sm:hidden items-center justify-between gap-2 mb-2 pb-2 border-b border-border/40">
+                <div className="flex items-center gap-2">
                   <button
                     type="button"
                     role="switch"
                     aria-checked={differencesOnly}
                     onClick={() => setDifferencesOnly(!differencesOnly)}
-                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${differencesOnly ? "bg-primary" : "bg-muted"}`}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ring-offset-background focus-visible:outline-none ${
+                      differencesOnly ? "bg-primary" : "bg-muted"
+                    }`}
                   >
                     <span className="sr-only">Differences only</span>
                     <span
-                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ${differencesOnly ? "translate-x-4" : "translate-x-0"}`}
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ${
+                        differencesOnly ? "translate-x-4" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                  <span className="text-[11.5px] font-medium text-muted-foreground leading-tight select-none">
+                    Show differences only
+                  </span>
+                </div>
+              </div>
+
+              {/* Plan headers grid */}
+              <div className="grid grid-cols-3 sm:grid-cols-[minmax(140px,180px)_repeat(3,minmax(0,1fr))] gap-1.5 sm:gap-3 items-center">
+                {/* Desktop switch column */}
+                <div className="hidden sm:flex items-center gap-2 sm:gap-3">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={differencesOnly}
+                    onClick={() => setDifferencesOnly(!differencesOnly)}
+                    className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${
+                      differencesOnly ? "bg-primary" : "bg-muted"
+                    }`}
+                  >
+                    <span className="sr-only">Differences only</span>
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ${
+                        differencesOnly ? "translate-x-4" : "translate-x-0"
+                      }`}
                     />
                   </button>
                   <span className="text-[11px] sm:text-[12px] font-medium text-muted-foreground leading-tight select-none">
@@ -490,21 +523,22 @@ function CompareModal({
                     only
                   </span>
                 </div>
+
                 {paidPlans.map((plan) => {
                   const tc = TIER[plan.id as TierKey];
                   return (
                     <div
                       key={plan.id}
-                      className={`rounded-[14px] sm:rounded-[16px] px-2.5 sm:px-3 py-2 sm:py-2.5 text-center border ${tc.border} ${tc.cardBg} ${tc.glow} shadow-sm`}
+                      className={`rounded-[12px] sm:rounded-[16px] px-1.5 sm:px-3 py-1.5 sm:py-2.5 text-center border ${tc.border} ${tc.cardBg} ${tc.glow} shadow-sm`}
                     >
                       <div
-                        className={`text-[9.5px] sm:text-[10px] font-extrabold tracking-wider sm:tracking-widest uppercase mb-0.5 ${tc.textAccent}`}
+                        className={`text-[9px] sm:text-[10px] font-extrabold tracking-wider sm:tracking-widest uppercase mb-0.5 ${tc.textAccent}`}
                       >
                         {plan.name}
                       </div>
-                      <div className="text-[13.5px] sm:text-[15px] font-bold leading-tight">
+                      <div className="text-[12px] sm:text-[15px] font-bold leading-tight">
                         ${planDisplayPrice(plan)}
-                        <span className="text-[10px] sm:text-[11px] font-normal text-muted-foreground ml-0.5">
+                        <span className="text-[9.5px] sm:text-[11px] font-normal text-muted-foreground ml-0.5">
                           /mo
                         </span>
                       </div>
@@ -523,26 +557,43 @@ function CompareModal({
                 if (!rows.length) return null;
                 return (
                   <div key={gi} className="border-b border-border/50 last:border-0">
-                    <div className="px-4 sm:px-6 py-2 bg-muted/30 border-y border-border/30">
-                      <span className="text-[10px] sm:text-[10.5px] font-extrabold tracking-[0.12em] uppercase text-primary">
+                    <div className="px-3 sm:px-6 py-1.5 sm:py-2 bg-muted/30 border-y border-border/30">
+                      <span className="text-[9.5px] sm:text-[10.5px] font-extrabold tracking-[0.12em] uppercase text-primary">
                         {group.label}
                       </span>
                     </div>
                     {rows.map((row, ri) => (
                       <div
                         key={ri}
-                        className={`grid grid-cols-[minmax(140px,180px)_repeat(3,minmax(0,1fr))] gap-2 sm:gap-3 px-4 sm:px-6 py-2.5 sm:py-[11px] border-t border-border/20 items-center ${
+                        className={`border-t border-border/20 ${
                           ri % 2 === 0 ? "bg-card" : "bg-muted/[0.04]"
                         }`}
                       >
-                        <span className="text-[12px] sm:text-[13px] font-medium text-foreground leading-snug">
-                          {row[0]}
-                        </span>
-                        {row.slice(1).map((val, vi) => (
-                          <div key={vi} className="flex justify-center text-center">
-                            <ComparisonCell value={val} />
+                        {/* Mobile view (< sm): label on top, 3 plan values below in 3 columns */}
+                        <div className="block sm:hidden px-3 py-2">
+                          <div className="text-[11.5px] font-medium text-foreground leading-snug mb-1.5">
+                            {row[0]}
                           </div>
-                        ))}
+                          <div className="grid grid-cols-3 gap-1.5 items-center">
+                            {row.slice(1).map((val, vi) => (
+                              <div key={vi} className="flex justify-center text-center">
+                                <ComparisonCell value={val} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Desktop view (>= sm): 4-column layout side-by-side */}
+                        <div className="hidden sm:grid grid-cols-[minmax(140px,180px)_repeat(3,minmax(0,1fr))] gap-3 px-6 py-[11px] items-center">
+                          <span className="text-[13px] font-medium text-foreground leading-snug">
+                            {row[0]}
+                          </span>
+                          {row.slice(1).map((val, vi) => (
+                            <div key={vi} className="flex justify-center text-center">
+                              <ComparisonCell value={val} />
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -552,18 +603,18 @@ function CompareModal({
           </div>
         </div>
 
-        {/* Fixed CTA Footer with centered text, balanced padding, and aligned icons */}
-        <div className="px-4 sm:px-8 py-4 sm:py-5 border-t border-border shrink-0 bg-card/95 backdrop-blur-md rounded-b-[20px] sm:rounded-b-[28px]">
-          <p className="text-[10.5px] sm:text-[11.5px] font-extrabold tracking-[0.12em] uppercase text-muted-foreground text-center mb-3 sm:mb-4">
+        {/* Fixed CTA Footer */}
+        <div className="px-3 sm:px-8 py-3.5 sm:py-5 border-t border-border shrink-0 bg-card/95 backdrop-blur-md rounded-b-[20px] sm:rounded-b-[28px]">
+          <p className="text-[10px] sm:text-[11.5px] font-extrabold tracking-[0.12em] uppercase text-muted-foreground text-center mb-2.5 sm:mb-4">
             Select a plan to get started
           </p>
-          <div className="grid grid-cols-3 gap-2.5 sm:gap-4 max-w-[720px] mx-auto">
+          <div className="grid grid-cols-3 gap-1.5 sm:gap-4 max-w-[720px] mx-auto">
             {paidPlans.map((plan) => {
               const tc = TIER[plan.id as TierKey];
               return (
                 <button
                   key={plan.id}
-                  className={`group inline-flex w-full items-center justify-center gap-1 sm:gap-2 py-2.5 sm:py-3 px-2 sm:px-4 rounded-full text-[11.5px] min-[380px]:text-[12.5px] sm:text-[14px] font-bold transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 text-center leading-none ${tc.btn}`}
+                  className={`group inline-flex w-full items-center justify-center gap-1 sm:gap-2 py-2 sm:py-3 px-1.5 sm:px-4 rounded-full text-[11px] min-[380px]:text-[12.5px] sm:text-[14px] font-bold transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 text-center leading-none ${tc.btn}`}
                   onClick={() => {
                     onSelectPlan(plan.id);
                     onClose();
@@ -573,7 +624,7 @@ function CompareModal({
                     <span className="hidden sm:inline">Choose </span>
                     {plan.name}
                   </span>
-                  <span className="text-[13px] sm:text-[15px] leading-none shrink-0 transition-transform duration-150 group-hover:translate-x-0.5">
+                  <span className="text-[12px] sm:text-[15px] leading-none shrink-0 transition-transform duration-150 group-hover:translate-x-0.5">
                     →
                   </span>
                 </button>
