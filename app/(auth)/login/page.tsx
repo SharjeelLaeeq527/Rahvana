@@ -26,6 +26,9 @@ function LoginContent() {
   const [success, setSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // Seconds remaining on a rate-limit lock (0 = not locked). Drives the
+  // Sign In button countdown after a 429 "too many attempts" response.
+  const [lockSeconds, setLockSeconds] = useState(0);
   const { user, signIn, signInWithGoogle, isLoading, mfaPending, verifyMFALogin } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
@@ -50,6 +53,15 @@ function LoginContent() {
       setChallengeId(challengeIdStored);
     }
   }, [isMfaActive]);
+
+  // Tick the rate-limit lock down once per second until it reaches zero.
+  useEffect(() => {
+    if (lockSeconds <= 0) return;
+    const id = setInterval(() => {
+      setLockSeconds((s) => (s <= 1 ? 0 : s - 1));
+    }, 1000);
+    return () => clearInterval(id);
+  }, [lockSeconds]);
 
   // Check for messages from URL params
   useEffect(() => {
@@ -125,6 +137,8 @@ function LoginContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Locked out by a previous 429 - ignore submits until the timer expires.
+    if (lockSeconds > 0) return;
     setError("");
     setIsSubmitting(true);
 
@@ -143,6 +157,7 @@ function LoginContent() {
         mfaRequired: isMfaRequired,
         factorId: fId,
         challengeId: cId,
+        retryAfterSeconds,
       } = await signIn(email, password);
       if (signInError) {
         const code = String((signInError as { code?: string }).code || "");
@@ -151,6 +166,11 @@ function LoginContent() {
           setError(msg(E.AUTH_EMAIL_NOT_CONFIRMED));
         } else if (code === "AUTH_LOGIN_SERVER_ERROR") {
           setError(msg(E.AUTH_LOGIN_SERVER_ERROR));
+        } else if (code === "AUTH_RATE_LIMITED") {
+          // Start the countdown so the button stays disabled until it expires.
+          // Fall back to 15 min if the server did not send Retry-After.
+          setLockSeconds(retryAfterSeconds && retryAfterSeconds > 0 ? retryAfterSeconds : 15 * 60);
+          setError(signInError.message || msg(E.AUTH_RATE_LIMITED, { minutes: 15 }));
         } else if (code === "AUTH_LOGIN_FAILED") {
           setError(msg(E.AUTH_LOGIN_FAILED));
         } else {
@@ -475,10 +495,14 @@ function LoginContent() {
               {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={isSubmitting}
+                disabled={isSubmitting || lockSeconds > 0}
                 className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full rounded-xl font-medium transition-all disabled:opacity-50"
               >
-                {isSubmitting ? "Signing in..." : "Sign In"}
+                {lockSeconds > 0
+                  ? `Try again in ${Math.floor(lockSeconds / 60)}:${String(lockSeconds % 60).padStart(2, "0")}`
+                  : isSubmitting
+                    ? "Signing in..."
+                    : "Sign In"}
               </Button>
             </form>
           )}

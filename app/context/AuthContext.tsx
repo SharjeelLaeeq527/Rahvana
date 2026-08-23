@@ -57,6 +57,7 @@ interface AuthContextType {
     mfaRequired?: boolean;
     factorId?: string;
     challengeId?: string;
+    retryAfterSeconds?: number;
   }>;
   signUp: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
@@ -491,13 +492,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       const data = await response.json().catch(() => ({}));
 
-      // Too many attempts -> surface the friendly 429 message.
+      // Too many attempts -> surface the friendly 429 message plus the
+      // Retry-After window (seconds) so the login page can run a countdown.
       if (response.status === 429) {
+        const retryHeader = response.headers.get("Retry-After");
+        const retryAfterSeconds = retryHeader ? parseInt(retryHeader, 10) : NaN;
         return {
           error: {
             message: data.message || msg(E.AUTH_RATE_LIMITED, { minutes: 15 }),
             code: "AUTH_RATE_LIMITED",
           } as unknown as AuthError,
+          retryAfterSeconds: Number.isFinite(retryAfterSeconds)
+            ? retryAfterSeconds
+            : undefined,
         };
       }
 
