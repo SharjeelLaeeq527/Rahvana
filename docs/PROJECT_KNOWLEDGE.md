@@ -1,4 +1,4 @@
-# Arachnie (Rahvana) — Project Knowledge Document
+# Rahvana — Project Knowledge Document
 
 > **Purpose of this file.** A single source of truth describing how the entire Rahvana
 > platform works, so an LLM (or a new senior engineer) can reason about the system

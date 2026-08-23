@@ -2426,7 +2426,7 @@ function OriginalHomepageFaq({
                 onClick={() => setOpenFAQ(openFAQ === i ? null : i)}
                 className="flex w-full items-center justify-between px-5 py-6 text-left md:px-8"
               >
-                <span className="pr-4 text-lg font-bold text-foreground md:pr-8">
+                <span className="pr-4 text-md font-bold text-foreground md:pr-8">
                   {t(`homePage.faqs.q${i + 1}.q`) || faq.q}
                 </span>
                 <div

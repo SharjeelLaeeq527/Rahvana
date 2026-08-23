@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { E, msg } from "@/lib/errors";
 import { isValidReceiptNumber, normalizeReceipt } from "@/lib/register-receipt";
+import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
+import { validateUploadedFile } from "@/lib/security/file-content";
 
 const OCR_SPACE_ENDPOINT = "https://api.ocr.space/parse/image";
 const OCR_FREE_FILE_LIMIT_BYTES = 1 * 1024 * 1024;
@@ -235,34 +237,31 @@ export async function POST(request: NextRequest) {
       `[receipt/ocr] Received upload from user=${authData.user?.id ?? "unknown"} file=${file.name} size=${file.size}`
     );
 
-    if (file.size > OCR_FREE_FILE_LIMIT_BYTES) {
-      console.log(
-        "[receipt/ocr] File too large:",
-        file.size,
-        "bytes (limit:",
-        OCR_FREE_FILE_LIMIT_BYTES,
-        ")"
-      );
-      return NextResponse.json(
-        {
-          error: msg(E.UPLOAD_FILE_TOO_LARGE, {
-            maxSize: OCR_FREE_FILE_LIMIT_BYTES / (1024 * 1024),
-          }),
-        },
-        { status: 413 }
-      );
+    const checked = await validateUploadedFile(file, UPLOAD_PROFILES.ocrReceipt);
+
+    if (!checked.ok) {
+      return NextResponse.json({ error: checked.error }, { status: checked.status });
     }
 
+    const safeArrayBuffer = new ArrayBuffer(checked.buffer.byteLength);
+
+    new Uint8Array(safeArrayBuffer).set(checked.buffer);
+
+    const safeFile = new File([safeArrayBuffer], file.name, { type: checked.detectedMime });
+
     const ocrApiKey = process.env.OCR_SPACE_API_KEY;
+
     if (!ocrApiKey) {
       console.log("[receipt/ocr] OCR_SPACE_API_KEY not configured in environment");
+
       return NextResponse.json({ error: "OCR_SPACE_API_KEY is not configured." }, { status: 500 });
     }
 
     console.log("[receipt/ocr] Calling OCR.space API...");
 
     const ocrFormData = new FormData();
-    ocrFormData.append("file", file, file.name);
+
+    ocrFormData.append("file", safeFile, file.name);
     ocrFormData.append("language", "eng");
     ocrFormData.append("isOverlayRequired", "false");
     ocrFormData.append("detectOrientation", "true");

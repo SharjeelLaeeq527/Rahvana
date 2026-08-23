@@ -223,7 +223,143 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
           )}
         </div>
 
-        <div className="flex flex-col gap-1.5">
+        {/* Mobile Vertical Timeline Stepper View (< sm) */}
+        <div className="relative flex flex-col gap-5 pl-8 sm:hidden">
+          {/* Vertical Connecting Track Line */}
+          <div
+            className={`absolute left-[13px] top-3 bottom-3 w-[2px] ${
+              isChapter3 ? "bg-[#051738]/25" : isChapter2 ? "bg-[#520a50]/25" : "bg-[#8284bf]/25"
+            }`}
+          />
+
+          {activeSteps.map((step, idx) => {
+            const sId = step.step_key || (step as any).id;
+            const isCompleted = state.completedSteps.has(sId);
+            const isCurrent =
+              !isCompleted &&
+              activeSteps
+                .slice(0, idx)
+                .every((s) => state.completedSteps.has(s.step_key || (s as any).id));
+            const fullStepIdx = chapter.steps.findIndex(
+              (s) => (s.step_key || (s as any).id) === sId
+            );
+
+            const lockStatus = getStepLockStatusLocal(idx, sId);
+            const isStepLocked = lockStatus.isLocked;
+            const accessTier = lockStatus.requiredPlan || "basic";
+            const accessTierLabel =
+              accessTier === "basic" ? "Basic" : accessTier === "premium" ? "Premium" : "Executive";
+
+            const chapterBg = isChapter3
+              ? "bg-[#051738]"
+              : isChapter2
+                ? "bg-[#520a50]"
+                : "bg-[#8284bf]";
+            const chapterText = isChapter3
+              ? "text-[#051738]"
+              : isChapter2
+                ? "text-[#520a50]"
+                : "text-[#8284bf]";
+            const chapterBorder = isChapter3
+              ? "border-[#051738]"
+              : isChapter2
+                ? "border-[#520a50]"
+                : "border-[#8284bf]";
+            const chapterSoftBg = isChapter3
+              ? "bg-[#051738]/10 text-[#051738] border-[#051738]/20"
+              : isChapter2
+                ? "bg-[#520a50]/10 text-[#520a50] border-[#520a50]/20"
+                : "bg-[#8284bf]/10 text-[#8284bf] border-[#8284bf]/20";
+
+            return (
+              <div
+                key={`mobile-${sId}`}
+                onClick={() => {
+                  if (isStepLocked) {
+                    const feat = getModalFeatureForTier(lockStatus.requiredPlan!);
+                    setUpgradeModalFeature(feat);
+                    return;
+                  }
+                  onSelectStep(chapterIdx, fullStepIdx);
+                }}
+                className="relative cursor-pointer select-none"
+              >
+                {/* Timeline Circle Node */}
+                <div
+                  className={`absolute -left-[31px] top-0.5 z-10 flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-extrabold shadow-xs transition-all ${
+                    isCompleted
+                      ? `${chapterBg} text-white`
+                      : isCurrent
+                        ? `${chapterBg} text-white ring-4 ring-purple-900/15 scale-105`
+                        : isStepLocked
+                          ? "border border-slate-300 bg-slate-200 text-slate-400"
+                          : "border-2 border-slate-300 bg-white text-slate-600"
+                  }`}
+                >
+                  {isCompleted ? "✓" : isStepLocked ? <Lock size={10} /> : idx + 1}
+                </div>
+
+                {/* Content Box */}
+                {isCurrent ? (
+                  <div className={`rounded-2xl border-2 ${chapterBorder} bg-white p-3.5 shadow-md`}>
+                    <h4 className={`text-[14.5px] font-extrabold ${chapterText}`}>
+                      {step.step_name || (step as any).name}
+                    </h4>
+                    {step.step_short_description && (
+                      <p className="mt-0.5 text-[12px] font-semibold leading-relaxed text-slate-600">
+                        {step.step_short_description}
+                      </p>
+                    )}
+                    <div className="mt-2.5 flex items-center">
+                      <span className={`rounded-md ${chapterBg} px-2.5 py-1 text-[9.5px] font-extrabold uppercase tracking-wider text-white shadow-xs`}>
+                        Current Step
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="pt-0.5">
+                    <h4 className={`text-[14px] font-bold leading-snug ${isCompleted ? "text-slate-900" : isStepLocked ? "text-slate-400" : "text-slate-800"}`}>
+                      {step.step_name || (step as any).name}
+                    </h4>
+                    {step.step_short_description && (
+                      <p className={`mt-0.5 text-[11.5px] font-semibold leading-normal ${isCompleted ? "text-slate-500" : isStepLocked ? "text-slate-400" : "text-slate-500"}`}>
+                        {step.step_short_description}
+                      </p>
+                    )}
+
+                    {isCompleted && (
+                      <div className="mt-1.5 flex items-center">
+                        <span className={`inline-flex items-center gap-1 rounded-md border ${chapterSoftBg} px-2 py-0.5 text-[10px] font-bold`}>
+                          Completed
+                        </span>
+                      </div>
+                    )}
+
+                    {isStepLocked && (
+                      <div className="mt-1.5 flex items-center">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold ${
+                            accessTier === "basic"
+                              ? "border-[#7ecfc6] bg-[#e7f7f5] text-[#166b62]"
+                              : accessTier === "premium"
+                                ? "border-[#c5b9ff] bg-[#f0ebff] text-[#4b3587]"
+                                : "border-[#d8b95d] bg-[#fff4cf] text-[#7a560f]"
+                          }`}
+                        >
+                          <Lock size={10} />
+                          <span>{accessTierLabel}</span>
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Desktop Step Cards View (sm:flex) */}
+        <div className="hidden sm:flex flex-col gap-1.5">
           {activeSteps.map((step, idx) => {
             const sId = step.step_key || (step as any).id;
             const isCompleted = state.completedSteps.has(sId);
