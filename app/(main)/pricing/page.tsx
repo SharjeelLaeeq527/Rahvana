@@ -30,6 +30,7 @@ import { E, msg, errorCode } from "@/lib/errors";
 import { VISA_CATEGORIES, HELPER_DATA, COMPARISON_GROUPS, ADDONS, FAQS } from "./data/pricing";
 import type { PlanData } from "./data/pricing";
 import ResourceToolCard from "@/components/pricing/ResourceToolCard";
+import ResourceCarousel from "@/components/pricing/ResourceCarousel";
 
 /* ===========================================================================
    TIER VISUAL CONFIG
@@ -1737,8 +1738,7 @@ function PricingContent() {
           <div className={`${W}`}>
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_284px]">
               <div>
-                {/* Resource cards — clickable, open the tool detail page */}
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
                   {resourcesForMode.map((addon) => (
                     <ResourceToolCard
                       key={addon.id}
