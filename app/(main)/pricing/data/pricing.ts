@@ -259,7 +259,7 @@ export const COMPARISON_GROUPS = [
       ["Smart Form Filler (I-130 / I-130A)", "", "Included", "Included"],
       ["Sponsorship Calculator", "", "Included", "Included"],
       ["Photo Booth", "", "2 included", "Unlimited"],
-      ["Medical Appointment Booking", "Add On · $5", "Included", "Included"],
+      ["Medical Appointment Booking", "", "Included", "Included"],
       ["Civil Document Guides", "", "Included", "Included"],
     ],
   },
@@ -281,7 +281,7 @@ export const COMPARISON_GROUPS = [
   {
     label: "Services",
     rows: [
-      ["PCC Filing (Sindh Only)", "Add On · $25", "Add On · $25", "Included"],
+      ["PCC Filing (Sindh Only)", "", "", "Included"],
       ["Document Translation", "", "", "2 included"],
       // ["Dedicated Case Manager",                    "—",             "—",             "—"],
     ],
