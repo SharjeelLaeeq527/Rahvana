@@ -22,18 +22,16 @@ Key principle: **do not strip IR-5 from the code.** We only hide the entry point
 New file: `lib/feature-flags.ts`
 
 ```ts
-/**
- * Feature flags gated by deploy environment.
- * IR-5 is hidden on production until it is ready to launch.
- *
- * Rule: IR-5 is visible when EITHER
- *   - NEXT_PUBLIC_ENABLE_IR5 === "true"  (explicit force-on, e.g. prod launch), OR
- *   - NEXT_PUBLIC_ENVIRONMENT !== "production"  (staging/local show it by default)
- */
 export const IR5_ENABLED =
   process.env.NEXT_PUBLIC_ENABLE_IR5 === "true" ||
-  process.env.NEXT_PUBLIC_ENVIRONMENT !== "production";
+  (process.env.NEXT_PUBLIC_ENABLE_IR5 !== "false" &&
+    process.env.NEXT_PUBLIC_ENVIRONMENT !== "production");
 ```
+
+Resolution order for `NEXT_PUBLIC_ENABLE_IR5`:
+- `"true"`  -> force ON (production launch day)
+- `"false"` -> force OFF regardless of environment (preview the hidden state on staging WITHOUT flipping `NEXT_PUBLIC_ENVIRONMENT`, so the tier toggle and other dev-only features stay on)
+- unset -> follow the environment (shown everywhere except production)
 
 Why this rule:
 - Staging already has `NEXT_PUBLIC_ENVIRONMENT=development` (confirmed in `.env.local`), so IR-5 shows there automatically. No staging change needed.
@@ -154,8 +152,13 @@ IMPORTANT: `NEXT_PUBLIC_` vars are baked in at build time, so after changing the
 |---|---|---|---|
 | Local dev | development (or unset) | unset | YES |
 | Staging | development | unset | YES |
+| Staging (testing hidden state) | development | false | NO (only IR-5 hidden; tier toggle etc. unaffected) |
 | Production (now) | production | unset / false | NO |
 | Production (after launch) | production | true | YES |
+
+### Testing the hidden state before production
+
+Do NOT set `NEXT_PUBLIC_ENVIRONMENT=production` on staging to test - that also disables the plan tier toggle and other dev-only features that key off the same variable. Instead, on the staging Vercel project add `NEXT_PUBLIC_ENABLE_IR5=false`, redeploy, run the section 7 checklist, then remove the variable and redeploy to restore IR-5 on staging. Or test locally by setting the same var in `.env.local`.
 
 ---
 
