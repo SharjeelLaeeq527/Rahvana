@@ -591,7 +591,8 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
     (async () => {
       await sleep(420);
 
-      const TI = "Family-Based Immigration";
+      const TI = "Marriage-Based Immigration";
+      // const TI = "Family-Based Immigration";
       setCur("ti");
       for (let i = 1; i <= TI.length; i++) {
         if (!alive || skipRef.current) return;
@@ -600,7 +601,8 @@ export default function Intro({ skipToEnd = false, onSkip }: IntroProps = {}) {
       }
       await sleep(180);
 
-      const SB = "for spouses and parents of US citizens";
+      const SB = "for spouses of US citizens";
+      // const SB = "for spouses and parents of US citizens";
       setCur("sb");
       for (let i = 1; i <= SB.length; i++) {
         if (!alive || skipRef.current) return;

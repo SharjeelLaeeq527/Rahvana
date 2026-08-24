@@ -1602,7 +1602,8 @@ function HomePageContent() {
                               icon={Icons.ArrowRight}
                               label="Start Your Journey"
                               color="green"
-                              href={"/visa-category"}
+                              href={"/visa-category/ir1-journey"}
+                              // href={"/visa-category"}
                             />
                           </RoadmapAnchor>
                           {/* <Annotation text="Reunited at last!" direction="left" /> */}
@@ -1723,7 +1724,8 @@ function HomePageContent() {
                   </h3>
 
                   <Link
-                    href="/visa-category"
+                    // href="/visa-category"
+                    href="/visa-category/ir1-journey"
                     className="inline-flex items-center justify-center rounded-full bg-[#0d7a75] px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0a5f5b]"
                   >
                     Start Your Journey
