@@ -1,5 +1,6 @@
 import React, { useEffect } from "react";
 import { X } from "lucide-react";
+import { SafeHtml } from "../shared/SafeHTML";
 
 export interface SubmissionStep {
   label: string;
@@ -124,7 +125,7 @@ export function SubmissionTutorialOverlay({
   return (
     <div className="fixed inset-0 bg-[#fafcff] z-[200] flex flex-col overflow-hidden animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out font-sans bg-white">
       {/* Topbar */}
-      <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
+      <div className="flex items-center h-[54px] sm:h-[72px] border-b border-[#d0e4f7] px-3.5 sm:px-6 gap-3 sm:gap-4 shrink-0 bg-[#fafcff]">
         <button
           onClick={onClose}
           className="w-9 h-9 rounded-full bg-[#f4f7fb] border-none flex items-center justify-center text-[#3a4f63] hover:bg-[#d0e4f7] transition-all cursor-pointer"
@@ -155,12 +156,10 @@ export function SubmissionTutorialOverlay({
           <h2 className="text-[clamp(20px,3.2vw,26px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
             {currentStep.heading}
           </h2>
-          <div
-            className="text-[14px] text-[#3a4f63] leading-[1.7] mb-[18px]"
-            dangerouslySetInnerHTML={{
-              __html: currentStep.instruction,
-            }}
-          />
+          <SafeHtml
+  className="text-[14px] text-[#3a4f63] leading-[1.7] mb-[18px]"
+  html={currentStep.instruction}
+/>
 
           {/* Screenshot / Visual Mockup */}
           <div className="w-full bg-white border-[1.5px] border-[#d0e4f7] rounded-[10px] overflow-hidden mb-[18px] shadow-[0_2px_12px_rgba(12,27,51,0.06)]">
@@ -172,10 +171,10 @@ export function SubmissionTutorialOverlay({
                 {currentStep.vlabel}
               </div>
             </div>
-            <div
-              className="p-[18px] bg-white transition-all min-h-[140px] flex flex-col justify-center"
-              dangerouslySetInnerHTML={{ __html: currentStep.visual }}
-            />
+            <SafeHtml
+  className="p-[18px] bg-white transition-all min-h-[140px] flex flex-col justify-center"
+  html={currentStep.visual}
+/>
           </div>
 
           {/* Note Block */}

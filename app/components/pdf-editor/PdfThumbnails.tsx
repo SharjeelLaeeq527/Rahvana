@@ -6,17 +6,7 @@ import { usePDFStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/spinner";
 
-import type * as PDFJS from "pdfjs-dist";
-
-let pdfjsLib: typeof PDFJS | null = null;
-
-async function initPdfJs() {
-  if (pdfjsLib) return pdfjsLib;
-  const pdfjs = await import("pdfjs-dist/build/pdf");
-  pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-  pdfjsLib = pdfjs;
-  return pdfjs;
-}
+import { loadPdfDocument, renderPdfPage } from "@/lib/pdfjs/client";
 
 export function PDFThumbnails() {
   const { currentPage, setCurrentPage, pdfFile, totalPages, pageModifications } = usePDFStore();
@@ -31,8 +21,7 @@ export function PDFThumbnails() {
     const generateThumbnails = async () => {
       try {
         setIsLoading(true);
-        const pdfjs = await initPdfJs();
-        const pdf = await pdfjs.getDocument(await pdfFile.arrayBuffer()).promise;
+        const pdf = await loadPdfDocument(await pdfFile.arrayBuffer());
 
         // If no modifications yet, generate from original pages
         if (pageModifications.length === 0) {
@@ -46,12 +35,10 @@ export function PDFThumbnails() {
             const page = await pdf.getPage(i);
             const viewport = page.getViewport({ scale: 0.3 });
             const canvas = document.createElement("canvas");
-            const context = canvas.getContext("2d")!;
-
             canvas.width = viewport.width;
             canvas.height = viewport.height;
 
-            await page.render({ canvasContext: context, viewport }).promise;
+            await renderPdfPage(page, canvas, viewport).promise;
             thumbs.push({
               thumbnail: canvas.toDataURL(),
               rotation: 0,
@@ -74,12 +61,10 @@ export function PDFThumbnails() {
             const page = await pdf.getPage(mod.originalIndex + 1);
             const viewport = page.getViewport({ scale: 0.3 });
             const canvas = document.createElement("canvas");
-            const context = canvas.getContext("2d")!;
-
             canvas.width = viewport.width;
             canvas.height = viewport.height;
 
-            await page.render({ canvasContext: context, viewport }).promise;
+            await renderPdfPage(page, canvas, viewport).promise;
             thumbs.push({
               thumbnail: canvas.toDataURL(),
               rotation: mod.rotation,

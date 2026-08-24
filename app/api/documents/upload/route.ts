@@ -3,13 +3,11 @@
 // Uses Supabase Storage (works on BOTH local AND Vercel)
 // Files are encrypted with AES-256-GCM BEFORE upload — owner cannot read stored files
 
-import crypto from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import {
   generateStandardizedFilename,
   isValidFileType,
-  isValidFileSize,
   getFileExtension,
 } from "@/lib/document-vault/file-utils";
 import { generateDocumentId, getNextVersionNumber } from "@/lib/document-vault/storage-client";
@@ -19,6 +17,9 @@ import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { UploadedDocument, DocumentRole, DocumentCategory } from "@/lib/document-vault/types";
 import { createClient as createClientJs } from "@supabase/supabase-js";
 import { encryptFile } from "@/lib/document-vault/file-encryption";
+import { assertRequestBodySize } from "@/lib/security/request-body";
+import { validateUploadedFile } from "@/lib/security/file-content";
+import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
 
 // NVC/USCIS file size limit (4MB)
 const NVC_FILE_SIZE_LIMIT = 4 * 1024 * 1024;
@@ -135,10 +136,13 @@ export async function POST(request: NextRequest) {
     const notes = formData.get("notes") as string | undefined;
     const journeyId = formData.get("journeyId") as string | undefined;
     const shareWithJourneyIdsStr = formData.get("shareWithJourneyIds") as string | undefined;
-    
+
     let shareWithJourneyIds: string[] = [];
     if (shareWithJourneyIdsStr) {
       try {
+        const tooLarge = assertRequestBodySize(request);
+        if (tooLarge) return tooLarge;
+
         shareWithJourneyIds = JSON.parse(shareWithJourneyIdsStr);
       } catch (e) {
         console.error("Failed to parse shareWithJourneyIds:", e);
@@ -150,16 +154,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Validate file type
+    // Fast reject on declared MIME/extension (keep — cheap first pass)
     const fileTypeValidation = isValidFileType(file.name, file.type);
     if (!fileTypeValidation.valid) {
       return NextResponse.json({ error: fileTypeValidation.message }, { status: 400 });
     }
 
-    // Validate file size (10MB limit)
-    const fileSizeValidation = isValidFileSize(file.size, 10);
-    if (!fileSizeValidation.valid) {
-      return NextResponse.json({ error: fileSizeValidation.message }, { status: 400 });
+    // Magic-byte validation (authoritative)
+    const checked = await validateUploadedFile(file, UPLOAD_PROFILES.vault);
+    if (!checked.ok) {
+      return NextResponse.json({ error: checked.error }, { status: checked.status });
     }
 
     // Find document definition
@@ -181,7 +185,7 @@ export async function POST(request: NextRequest) {
         "hh-marriage",
         "hh-id",
         "hh-birth",
-        "hh-family-link"
+        "hh-family-link",
       ];
       for (const baseId of baseIds) {
         if (documentDefId.startsWith(baseId)) {
@@ -236,7 +240,11 @@ export async function POST(request: NextRequest) {
 
     // Get existing documents for this definition in this journey
     const dbStorage = new DocumentDatabaseStorage(supabase);
-    let existingDocs = await dbStorage.getDocumentsByDefId(documentDefId, user.id, journeyId || undefined);
+    let existingDocs = await dbStorage.getDocumentsByDefId(
+      documentDefId,
+      user.id,
+      journeyId || undefined
+    );
 
     // Safety check for rapid sequential uploads
     // If the specific query missed a very recent upload, fallback to global list
@@ -291,7 +299,7 @@ export async function POST(request: NextRequest) {
 
     // Generate document ID
     const documentId = generateDocumentId();
-    const rawBuffer = Buffer.from(await file.arrayBuffer());
+    const rawBuffer = checked.buffer;
 
     // ─── ENCRYPT FILE BEFORE UPLOAD ───────────────────────────────────────────
     // File is encrypted with AES-256-GCM using a per-user key derived from
@@ -412,9 +420,13 @@ export async function POST(request: NextRequest) {
       for (const sharedJourneyId of shareWithJourneyIds) {
         try {
           // Calculate version for this definition in the target shared journey
-          const sharedExisting = await dbStorage.getDocumentsByDefId(documentDefId, user.id, sharedJourneyId);
+          const sharedExisting = await dbStorage.getDocumentsByDefId(
+            documentDefId,
+            user.id,
+            sharedJourneyId
+          );
           const sharedVersion = getNextVersionNumber(sharedExisting);
-          
+
           const sharedDocId = generateDocumentId();
           const sharedDocument: UploadedDocument = {
             ...uploadedDocument,

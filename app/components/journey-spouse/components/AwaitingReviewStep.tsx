@@ -37,7 +37,7 @@ export const AwaitingReviewStep: React.FC<AwaitingReviewStepProps> = ({ data }) 
       `}</style>
 
       {/* Page Shell */}
-      <div className="w-full max-w-[720px] px-[24px] pt-4 md:pt-8 pb-20 flex flex-col mx-auto">
+      <div className="flex w-full max-w-[680px] flex-col mx-auto px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
         {/* Eyebrow */}
         {/* {data.eyebrow && (
           <div className="flex items-center gap-[8px] mb-[6px] animate-in fade-in slide-in-from-top-2 duration-300">

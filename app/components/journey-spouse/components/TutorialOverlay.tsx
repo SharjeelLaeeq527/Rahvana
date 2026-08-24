@@ -1,10 +1,12 @@
 import React from "react";
 import { X } from "lucide-react";
 import Image from "next/image";
+import { ZoomableGuideImage } from "@/app/components/shared/ZoomableGuideImage";
 import { TutorialVideo } from "@/app/components/shared/TutorialVideo";
 import { TutorialStepData } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/types";
 import { USCIS_TUTORIAL_STEPS } from "../UscisTutorialData";
 import { HOUSEHOLD_TUTORIAL_STEPS } from "../HouseholdTutorialData";
+import { SafeHtml } from "../../shared/SafeHTML";
 
 interface TutorialOverlayProps {
   isOpen: boolean;
@@ -79,7 +81,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
 
     return (
       <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out bg-white">
-        <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
+        <div className="flex items-center h-[54px] sm:h-[72px] border-b border-[#d0e4f7] px-3.5 sm:px-6 gap-3 sm:gap-4 shrink-0 bg-[#fafcff]">
           <button
             onClick={() => {
               onClose();
@@ -112,12 +114,10 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
             <h2 className="text-[clamp(20px,3.2vw,26px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
               {ceacTutStep.heading}
             </h2>
-            <div
-              className="text-[14px] text-[#3a4f63] leading-[1.7] mb-5"
-              dangerouslySetInnerHTML={{
-                __html: ceacTutStep.instruction,
-              }}
-            />
+            <SafeHtml
+  className="text-[14px] text-[#3a4f63] leading-[1.7] mb-5"
+  html={ceacTutStep.instruction}
+/>
 
             {ceacTutStep.choiceOptions ? (
               <div className="mb-5">
@@ -256,7 +256,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
   return (
     <div className="fixed inset-0 bg-[#fafcff] z-[120] flex flex-col animate-in slide-in-from-bottom-[18px] duration-[0.28s] ease-in-out bg-white">
       {/* Tutorial Topbar */}
-      <div className="flex items-center h-[72px] border-b border-[#d0e4f7] px-6 gap-4 shrink-0 bg-[#fafcff]">
+      <div className="flex items-center h-[54px] sm:h-[72px] border-b border-[#d0e4f7] px-3.5 sm:px-6 gap-3 sm:gap-4 shrink-0 bg-[#fafcff]">
         <button
           onClick={() => {
             onClose();
@@ -291,12 +291,10 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
           <h2 className="text-[clamp(20px,3.2vw,26px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
             {currentTutStep.heading}
           </h2>
-          <div
-            className="text-[14px] text-[#3a4f63] leading-[1.7] mb-5"
-            dangerouslySetInnerHTML={{
-              __html: currentTutStep.instruction,
-            }}
-          />
+          <SafeHtml
+  className="text-[14px] text-[#3a4f63] leading-[1.7] mb-5"
+  html={currentTutStep.instruction}
+/>
 
           {/* Screenshot Block */}
           {isDynamic ? (
@@ -325,12 +323,11 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                       alt={(currentTutStep as TutorialStepData).screenTitle}
                     />
                   ) : (
-                    <Image
+                    <ZoomableGuideImage
                       key={(currentTutStep as TutorialStepData).media?.src!}
                       src={(currentTutStep as TutorialStepData).media?.src!}
                       alt={(currentTutStep as TutorialStepData).screenTitle}
                       fill
-                      className="object-contain"
                       sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                       quality={95}
                       priority={tutorialIdx === 0}
@@ -441,12 +438,11 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
               <div className="relative w-full bg-[#f8f9fb]" style={{ aspectRatio: "4/3" }}>
                 {(currentTutStep as any).media?.src ? (
                   (currentTutStep as any).media.type === "img" ? (
-                    <Image
+                    <ZoomableGuideImage
                       key={(currentTutStep as any).media.src}
                       src={(currentTutStep as any).media.src!}
                       alt={(currentTutStep as any).screenTitle}
                       fill
-                      className="object-contain"
                       sizes="(max-width: 640px) 95vw, (max-width: 1024px) 90vw, 580px"
                       quality={95}
                       priority
@@ -515,11 +511,7 @@ export const TutorialOverlay: React.FC<TutorialOverlayProps> = ({
                 {isDynamic ? (
                   (currentTutStep as TutorialStepData).note
                 ) : (
-                  <div
-                    dangerouslySetInnerHTML={{
-                      __html: (currentTutStep as any).note!,
-                    }}
-                  />
+                  <SafeHtml html={(currentTutStep as any).note!} />
                 )}
               </div>
             </div>

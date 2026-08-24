@@ -1773,7 +1773,7 @@ function HomePageContent() {
                           onClick={() => setOpenFAQ(openFAQ === i ? null : i)}
                           className="flex w-full items-center justify-between px-4 py-4 text-left sm:px-5 md:px-5 md:py-5"
                         >
-                          <span className="text-foreground pr-3 text-lg font-bold md:pr-5">
+                          <span className="text-foreground pr-3 text-md md:text-lg font-bold md:pr-5">
                             {t(`homePage.faqs.q${i + 1}.q`) || faq.q}
                           </span>
                           <div

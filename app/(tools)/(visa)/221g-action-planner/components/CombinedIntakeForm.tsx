@@ -7,11 +7,9 @@ import { Label } from "@/components/ui/label";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  ArrowRight,
   CircleHelp,
   CopyIcon,
   FileText,
-  Mail,
   ListChecks,
   Info,
   MapPin,
@@ -29,6 +27,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { save221gCase } from "@/lib/supabase/twentyTwoOneG";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
+import { escapeHtml } from "@/lib/security/sanitize";
 
 interface CombinedIntakeFormProps {
   onSubmit: (data: FormData, selectedItems: FormSelections) => void;
@@ -1565,26 +1564,27 @@ export default function CombinedIntakeForm({
     };
 
     const generateHtmlContent = (text: string, title: string) => {
+      const esc = escapeHtml;
       let htmlBody = "";
       let isTableOpen = false;
 
       text.split("\n").forEach((line) => {
         if (line.startsWith("# ")) {
-          htmlBody += `<h1 style="font-size:24pt; font-weight:bold; margin-top:20pt; margin-bottom:12pt; border-bottom:1px solid #ddd; padding-bottom:5pt;">${line.substring(2)}</h1>`;
+          htmlBody += `<h1 style="font-size:24pt; font-weight:bold; margin-top:20pt; margin-bottom:12pt; border-bottom:1px solid #ddd; padding-bottom:5pt;">${esc(line.substring(2))}</h1>`;
           return;
         }
         if (line.startsWith("## ")) {
           htmlBody += `<div class="page-break-sentinel"></div>`;
-          htmlBody += `<h2 style="font-size:18pt; font-weight:bold; margin-top:16pt; margin-bottom:10pt; color:#0d7377;">${line.substring(3)}</h2>`;
+          htmlBody += `<h2 style="font-size:18pt; font-weight:bold; margin-top:16pt; margin-bottom:10pt; color:#0d7377;">${esc(line.substring(3))}</h2>`;
           return;
         }
         if (line.startsWith("### ")) {
-          htmlBody += `<h3 style="font-size:14pt; font-weight:bold; margin-top:12pt; margin-bottom:8pt;">${line.substring(4)}</h3>`;
+          htmlBody += `<h3 style="font-size:14pt; font-weight:bold; margin-top:12pt; margin-bottom:8pt;">${esc(line.substring(4))}</h3>`;
           return;
         }
 
         if (line.match(/^\*\*(.*?)\*\*$/)) {
-          htmlBody += `<p style="font-weight:bold; margin-top:8pt; margin-bottom:8pt; color:#111;">${line.replace(/\*\*/g, "")}</p>`;
+          htmlBody += `<p style="font-weight:bold; margin-top:8pt; margin-bottom:8pt; color:#111;">${esc(line.replace(/\*\*/g, ""))}</p>`;
           return;
         }
 
@@ -1632,18 +1632,24 @@ export default function CombinedIntakeForm({
             isTableOpen = true;
             htmlBody += `<table style="width:100%; text-align:left; border-collapse:collapse; margin:15pt 0; border: 1px solid #ddd;">`;
             htmlBody += `<thead style="background:#f9fafb; color:#374151;"><tr>`;
-            cells.forEach(
-              (c) =>
-                (htmlBody += `<th style="padding:8pt; border:1px solid #ddd; font-weight:bold;">${c.trim().replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</th>`)
-            );
+            cells.forEach((c) => {
+              const cell = esc(c.trim()).replace(
+                /\*\*(.*?)\*\*/g,
+                (_, m) => `<strong>${esc(m)}</strong>`
+              );
+              htmlBody += `<th style="padding:8pt; border:1px solid #ddd; font-weight:bold;">${cell}</th>`;
+            });
             htmlBody += `</tr></thead><tbody>`;
             return;
           } else {
             htmlBody += `<tr>`;
-            cells.forEach(
-              (c) =>
-                (htmlBody += `<td style="padding:8pt; border:1px solid #ddd; color:#4b5563;">${c.trim().replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</td>`)
-            );
+            cells.forEach((c) => {
+              const cell = esc(c.trim()).replace(
+                /\*\*(.*?)\*\*/g,
+                (_, m) => `<strong>${esc(m)}</strong>`
+              );
+              htmlBody += `<td style="padding:8pt; border:1px solid #ddd; color:#4b5563;">${cell}</td>`;
+            });
             htmlBody += `</tr>`;
             return;
           }
@@ -1658,18 +1664,18 @@ export default function CombinedIntakeForm({
         if (line.startsWith("☐ ")) {
           htmlBody += `<p style="margin-bottom:8pt; margin-top:4pt;">
                     <span style="font-size:16pt; margin-right:8pt; font-family:serif;">&#9744;</span>
-                    ${line.substring(2)}
+                    ${esc(line.substring(2))}
                 </p>`;
           return;
         }
 
         if (line.startsWith("* ") || line.startsWith("- ")) {
           const txt = line.substring(2).trim();
-          htmlBody += `<li style="margin-left:20pt; margin-bottom:6pt;">${txt}</li>`;
+          htmlBody += `<li style="margin-left:20pt; margin-bottom:6pt;">${esc(txt)}</li>`;
           return;
         }
         if (line.match(/^\d+\.\s/)) {
-          htmlBody += `<li style="margin-left:20pt; margin-bottom:6pt;">${line.replace(/^\d+\.\s/, "")}</li>`;
+          htmlBody += `<li style="margin-left:20pt; margin-bottom:6pt;">${esc(line.replace(/^\d+\.\s/, ""))}</li>`;
           return;
         }
 
@@ -1682,9 +1688,9 @@ export default function CombinedIntakeForm({
         let pContent = "";
         parts.forEach((p) => {
           if (p.startsWith("**") && p.endsWith("**")) {
-            pContent += `<strong>${p.replace(/\*\*/g, "")}</strong>`;
+            pContent += `<strong>${esc(p.replace(/\*\*/g, ""))}</strong>`;
           } else {
-            pContent += p;
+            pContent += esc(p);
           }
         });
         htmlBody += `<p style="margin-bottom:8pt;">${pContent}</p>`;
@@ -1696,7 +1702,7 @@ export default function CombinedIntakeForm({
             <html>
                 <head>
                     <meta charset="utf-8">
-                    <title>${title}</title>
+                    <title>${esc(title)}</title>
                     <base href="${typeof window !== "undefined" ? window.location.origin : ""}/">
                     <style>
                         @page {
@@ -1949,7 +1955,8 @@ export default function CombinedIntakeForm({
                     block.className = "print-page-block";
                     var footer = document.createElement("div");
                     footer.className = "print-page-footer";
-                    footer.innerHTML = '<div class="footer-logo-wrap"><img class="footer-logo" src="/assets/images/RahvanaLogo.png" alt="Rahvana"></div><span class="footer-page">' + p + '</span>';
+                    footer.innerHTML = '<div class="footer-logo-wrap"><img class="footer-logo" src="/assets/images/RahvanaLogo.png" alt="Rahvana"></div><span class="footer-page"></span>';
+footer.querySelector(".footer-page").textContent = String(p);
                     block.appendChild(footer);
                     overlayRoot.appendChild(block);
                   }

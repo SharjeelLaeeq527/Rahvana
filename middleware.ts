@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { updateSession } from "./lib/supabase/middleware";
+import { assertMiddlewareBodySize } from "@/lib/security/request-body";
 
 /**
  * Paid/private route prefixes.
@@ -75,6 +76,11 @@ function isPrivatePath(pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
+  if (request.nextUrl.pathname.startsWith("/api/")) {
+    const blocked = assertMiddlewareBodySize(request);
+    if (blocked) return blocked;
+  }
+
   const { pathname } = request.nextUrl;
 
   // Run the Supabase session refresh first (existing behavior)

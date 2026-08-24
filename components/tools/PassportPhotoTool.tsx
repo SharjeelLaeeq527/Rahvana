@@ -7,10 +7,10 @@ import { useLanguage } from "@/app/context/LanguageContext";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
 import { usePlan } from "@/app/context/PlanContext";
-import { Loader } from "../ui/spinner";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 import FileUpload from "@/app/components/shared/FileUpload";
+import { Loader } from "../ui/spinner";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
@@ -239,22 +239,13 @@ export default function PassportPhotoTool({
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex h-screen flex-col items-center justify-center gap-4">
-        <Loader size="lg" />
-        <p className="mt-2 text-sm font-medium text-[#0d7377]">Loading...</p>
-      </div>
-    );
-  }
-
   return (
     <div className={`w-full ${className}`}>
       {/* Page content */}
-      <div className="relative z-10 flex w-full flex-col items-center px-4 py-6">
+      <div className="relative z-10 flex w-full flex-col items-center px-4 pt-1 pb-4 sm:py-6">
         {/* Header */}
         {showHeader && (
-          <header className="mb-8 w-full max-w-2xl text-center md:mb-10">
+          <header className="mb-4 w-full max-w-2xl text-center sm:mb-8 md:mb-10">
             <h1
               className="text-primary/90 text-3xl leading-tight font-bold md:text-5xl"
               style={{
@@ -296,7 +287,7 @@ export default function PassportPhotoTool({
             }}
           >
             <h2 className="text-primary/90 mb-4 flex items-center gap-2 text-xl font-semibold md:mb-6 md:text-2xl">
-              <AlertCircle className="h-5 w-5 shrink-0 md:h-6 md:w-6" />
+              <AlertCircle className="hidden h-5 w-5 shrink-0 sm:block md:h-6 md:w-6" />
               {t("passportPhoto.requirementsTitle")}
             </h2>
 
@@ -438,7 +429,10 @@ export default function PassportPhotoTool({
               }`}
             >
               {loading ? (
-                t("passportPhoto.processing")
+                <>
+                  <Loader size="sm" />
+                  <span>{t("passportPhoto.processing")}</span>
+                </>
               ) : (
                 <>
                   <Upload className="h-5 w-5" />
