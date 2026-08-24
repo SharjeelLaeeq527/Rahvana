@@ -52,14 +52,14 @@ export async function GET(request: NextRequest) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("Error in GET /api/journeys:", error);
-
     if (error instanceof Error && error.message === "Unauthorized") {
       return NextResponse.json(
         { error: msg(E.JOURNEYS_UNAUTHORIZED), code: "UNAUTHORIZED" },
         { status: 401 }
       );
     }
+
+    console.error("Error in GET /api/journeys:", error);
 
     return NextResponse.json(
       {

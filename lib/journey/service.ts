@@ -1180,6 +1180,9 @@ export class JourneyService {
 
       return journeysWithProgress;
     } catch (error) {
+      if (error instanceof Error && error.message === "Unauthorized") {
+        throw error;
+      }
       console.error("Error getting all journeys with progress:", error);
       throw error;
     }

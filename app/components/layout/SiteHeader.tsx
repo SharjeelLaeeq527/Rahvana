@@ -504,10 +504,10 @@ export function SiteHeader({
           journeyReminders = results.flat();
 
           // Set active journey ID as fallback/context if not already set
-          if (!notifJourneyId && journeys.length > 0) {
+          if (journeys.length > 0) {
             const active = journeys.find((j: any) => j.journey?.status === "in_progress") || journeys[0];
             const activeId = active?.journey?.id;
-            if (activeId) setNotifJourneyId(activeId);
+            if (activeId) setNotifJourneyId((prev) => prev || activeId);
           }
         }
       } catch {}
@@ -532,7 +532,7 @@ export function SiteHeader({
 
       setNotifList(merged);
     } catch {}
-  }, [notifJourneyId]);
+  }, []);
 
   // Fetch on mount — so bell badge and data are ready before user clicks
   useEffect(() => {

@@ -30,8 +30,7 @@ import { E, msg, errorCode } from "@/lib/errors";
 import { VISA_CATEGORIES, HELPER_DATA, COMPARISON_GROUPS, ADDONS, FAQS } from "./data/pricing";
 import type { PlanData } from "./data/pricing";
 import ResourceToolCard from "@/components/pricing/ResourceToolCard";
-import ResourceToolCarousel from "@/components/pricing/ResourceToolCarousel";
-import ResourceCarousel from "@/components/pricing/ResourceToolCarousel";
+import ResourceCarousel from "@/components/pricing/ResourceCarousel";
 
 /* ===========================================================================
    TIER VISUAL CONFIG
@@ -369,10 +368,13 @@ function VisaSelector({
 /* ===========================================================================
    COMPARISON CELL
    =========================================================================== */
-function ComparisonCell({ value }: { value: string }) {
+function ComparisonCell({ value, planId }: { value: string; planId?: string }) {
   const v = value.trim();
+  const tc = planId && planId in TIER ? TIER[planId as TierKey] : null;
+  const checkColor = tc ? tc.checkCol : "text-primary";
+
   if (v === "Included" || v === "Unlimited") {
-    return <IconCheck className="text-primary mx-auto h-4 w-4 shrink-0 sm:h-5 sm:w-5" />;
+    return <IconCheck className={`${checkColor} mx-auto h-4 w-4 shrink-0 sm:h-5 sm:w-5`} />;
   }
   if (v === "Not Included") {
     return <IconX className="mx-auto h-4 w-4 shrink-0 text-red-500 sm:h-5 sm:w-5" />;
@@ -386,8 +388,14 @@ function ComparisonCell({ value }: { value: string }) {
   }
   if (/included/i.test(v) && v !== "Included") {
     return (
-      <span className="bg-primary/10 text-primary border-primary/20 mx-auto inline-flex items-center justify-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[9.5px] leading-tight font-bold sm:gap-1 sm:px-2.5 sm:py-1 sm:text-[11px]">
-        <IconCheck className="h-2.5 w-2.5 shrink-0 sm:h-3 sm:w-3" /> {v}
+      <span
+        className={`mx-auto inline-flex items-center justify-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[9.5px] leading-tight font-bold sm:gap-1 sm:px-2.5 sm:py-1 sm:text-[11px] ${
+          tc
+            ? `${tc.badgeBg} ${tc.badgeText} border-transparent`
+            : "bg-primary/10 text-primary border-primary/20"
+        }`}
+      >
+        <IconCheck className={`h-2.5 w-2.5 shrink-0 sm:h-3 sm:w-3 ${tc ? tc.checkCol : ""}`} /> {v}
       </span>
     );
   }
@@ -436,11 +444,11 @@ function CompareModal({
 
   return (
     <div
-      className="animate-in fade-in fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-2 backdrop-blur-sm duration-150 sm:p-6 md:p-10"
+      className="animate-in fade-in fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 px-3 py-5 backdrop-blur-sm duration-150 sm:p-6 md:p-10"
       onClick={onClose}
     >
       <div
-        className="bg-card border-border animate-in zoom-in-95 flex h-[92vh] w-full max-w-[960px] flex-col overflow-hidden rounded-[20px] border shadow-2xl duration-200 sm:h-auto sm:max-h-[calc(100vh-48px)] sm:rounded-[28px] md:max-h-[calc(100vh-80px)]"
+        className="bg-card border-border animate-in zoom-in-95 flex h-auto max-h-[86vh] w-full max-w-[960px] flex-col overflow-hidden rounded-[20px] border shadow-2xl duration-200 sm:max-h-[calc(100vh-48px)] sm:rounded-[28px] md:max-h-[calc(100vh-80px)]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -578,7 +586,7 @@ function CompareModal({
                           <div className="grid grid-cols-3 items-center gap-1.5">
                             {row.slice(1).map((val, vi) => (
                               <div key={vi} className="flex justify-center text-center">
-                                <ComparisonCell value={val} />
+                                <ComparisonCell value={val} planId={paidPlans[vi]?.id} />
                               </div>
                             ))}
                           </div>
@@ -591,7 +599,7 @@ function CompareModal({
                           </span>
                           {row.slice(1).map((val, vi) => (
                             <div key={vi} className="flex justify-center text-center">
-                              <ComparisonCell value={val} />
+                              <ComparisonCell value={val} planId={paidPlans[vi]?.id} />
                             </div>
                           ))}
                         </div>
@@ -1052,7 +1060,7 @@ function PricingContent() {
       {/* ── Mode Toggle ──────────────────────────────────────────────────────── */}
       <div className={`${W} pt-[88px] pb-0`}>
         <nav
-          className="border-border/40 grid grid-cols-2 items-end gap-1 border-b-2 md:grid-cols-4"
+          className="border-border/40 flex scrollbar-none items-center justify-between gap-4 overflow-x-auto border-b px-1 sm:justify-start sm:gap-8 md:grid md:grid-cols-4 md:gap-1 md:px-0"
           aria-label="Pricing mode"
         >
           {(
@@ -1068,14 +1076,14 @@ function PricingContent() {
                 sub: RESOURCE_TABS.tools.sub,
               },
               {
-                id: "services" as const,
-                label: RESOURCE_TABS.services.label,
-                sub: RESOURCE_TABS.services.sub,
-              },
-              {
                 id: "guides" as const,
                 label: RESOURCE_TABS.guides.label,
                 sub: RESOURCE_TABS.guides.sub,
+              },
+              {
+                id: "services" as const,
+                label: RESOURCE_TABS.services.label,
+                sub: RESOURCE_TABS.services.sub,
               },
             ] as const
           ).map(({ id, label, sub }) => (
@@ -1085,12 +1093,12 @@ function PricingContent() {
                 setMode(id);
                 setPurchaseStep("browse");
               }}
-              className={`group relative cursor-pointer rounded-t-[10px] px-6 pt-2 pb-3 text-left transition-all ${
-                mode === id ? "bg-primary/[0.07]" : "hover:bg-muted/40"
+              className={`group relative shrink-0 cursor-pointer px-1 py-3 text-left text-sm transition-all md:rounded-t-[10px] md:px-6 md:pt-2 md:pb-3 ${
+                mode === id ? "md:bg-primary/[0.07]" : "hover:bg-muted/40"
               }`}
             >
               <span
-                className={`block text-[15px] font-bold tracking-tight transition-colors ${
+                className={`block text-[13px] font-bold tracking-tight transition-colors sm:text-[15px] ${
                   mode === id
                     ? "text-primary"
                     : "text-muted-foreground/60 group-hover:text-foreground"
@@ -1099,14 +1107,14 @@ function PricingContent() {
                 {label}
               </span>
               <span
-                className={`mt-0.5 block text-[11px] font-medium transition-colors ${
+                className={`mt-0.5 hidden text-[11px] font-medium transition-colors md:block ${
                   mode === id ? "text-primary/60" : "text-muted-foreground/35"
                 }`}
               >
                 {sub}
               </span>
               {mode === id && (
-                <span className="bg-primary absolute right-0 bottom-[-2px] left-0 h-[3px] rounded-t-full" />
+                <span className="bg-primary absolute right-0 bottom-0 left-0 h-[2.5px] rounded-full md:bottom-[-2px] md:h-[3px] md:rounded-t-full" />
               )}
             </button>
           ))}
@@ -1729,8 +1737,7 @@ function PricingContent() {
 
           <div className={`${W}`}>
             <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_284px]">
-            <div>
-                {/* Resource cards — clickable, open the tool detail page */}
+              <div>
                 <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
                   {resourcesForMode.map((addon) => (
                     <ResourceToolCard
