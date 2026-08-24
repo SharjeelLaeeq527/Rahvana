@@ -1,8 +1,8 @@
 "use client";
 
-import type { CSSProperties } from "react";
-import Link from "next/link";
-import { ArrowRight, Check, Plus } from "lucide-react";
+import type { CSSProperties, KeyboardEvent } from "react";
+import { useRouter } from "next/navigation";
+import { ArrowRight, Check, ExternalLink, Plus } from "lucide-react";
 
 import { RESOURCE_DETAILS } from "@/app/(main)/pricing/data/resourceDetails";
 import { getResourceLaunchHref } from "@/app/(main)/pricing/data/pricing";
@@ -18,12 +18,6 @@ export type ResourceCardAddon = {
   kind?: string;
 };
 
-/**
- * Attractive, clickable add-on card. The whole card links to the tool's detail
- * page (/resources/[slug]); the "Add to order" button toggles selection without
- * navigating (stopPropagation + preventDefault). The secondary CTA launches the
- * live tool/service/guide route.
- */
 export default function ResourceToolCard({
   addon,
   isAdded,
@@ -35,31 +29,44 @@ export default function ResourceToolCard({
   disabled?: boolean;
   onToggle: (id: string) => void;
 }) {
+  const router = useRouter();
+
   const detail = RESOURCE_DETAILS[addon.id];
   const theme = getSlugTheme(addon.id);
   const { accent, tint } = theme;
   const Icon = getIcon(theme.icon);
+
   const title = addon.title ?? addon.id;
   const launchHref = getResourceLaunchHref(addon.id, addon.kind);
 
-  // Services are not "added to cart" — the user explores them, gives info on a
-  // guided flow page, and pays at checkout there. So a service card shows an
-  // "Explore" button (no toggle) that just follows the card link to its detail
-  // page, instead of the "Add to order" toggle used by tools/guides.
   const isService = addon.kind === "services";
-
-  // Some add-ons (e.g. individual document guides) have no rich detail page.
-  // For those the card must not navigate — it would 404. The whole card only
-  // links through when a RESOURCE_DETAILS entry exists.
   const navigable = Boolean(detail);
 
+  const handleCardClick = () => {
+    if (navigable) {
+      router.push(`/resources/${addon.id}`);
+    }
+  };
+
+  const handleCardKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
+    if (!navigable) return;
+
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handleCardClick();
+    }
+  };
+
   return (
-    <Link
-      href={navigable ? `/resources/${addon.id}` : "#"}
-      onClick={navigable ? undefined : (e) => e.preventDefault()}
-      aria-disabled={navigable ? undefined : true}
-      className={`group relative flex flex-col rounded-[18px] bg-card transition-all duration-300 hover:-translate-y-[3px] ${
-        navigable ? "" : "cursor-default"
+    <div
+      role={navigable ? "link" : undefined}
+      tabIndex={navigable ? 0 : undefined}
+      onClick={handleCardClick}
+      onKeyDown={handleCardKeyDown}
+      className={`group relative flex min-w-0 flex-col rounded-[18px] bg-card transition-all duration-300 ${
+        navigable
+          ? "cursor-pointer hover:-translate-y-[3px]"
+          : "cursor-default"
       }`}
       style={{
         boxShadow: isAdded
@@ -67,27 +74,33 @@ export default function ResourceToolCard({
           : "0 1px 2px rgba(0,0,0,0.05), 0 12px 28px -22px rgba(0,0,0,0.3)",
       }}
     >
-      {/* Top: tool icon tile + badge / added check */}
-      <div className="flex items-start justify-between px-5 pt-5">
+      {/* Top */}
+      <div className="flex items-start justify-between px-3 pt-3 sm:px-5 sm:pt-5">
         <span
           aria-hidden
-          className="flex h-11 w-11 items-center justify-center rounded-[12px] transition-transform duration-300 group-hover:scale-105"
-          style={{ backgroundColor: tint, color: accent }}
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-[10px] transition-transform duration-300 group-hover:scale-105 sm:h-11 sm:w-11 sm:rounded-[12px]"
+          style={{
+            backgroundColor: tint,
+            color: accent,
+          }}
         >
-          <Icon className="h-[22px] w-[22px]" strokeWidth={1.75} />
+          <Icon
+            className="h-[18px] w-[18px] sm:h-[22px] sm:w-[22px]"
+            strokeWidth={1.75}
+          />
         </span>
 
         {isAdded ? (
           <span
-            className="flex h-6 w-6 items-center justify-center rounded-full text-white"
+            className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-white sm:h-6 sm:w-6"
             style={{ backgroundColor: accent }}
           >
-            <Check className="h-3.5 w-3.5" />
+            <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
           </span>
         ) : (
           detail?.badge && (
             <span
-              className="mt-1 text-[10px] font-semibold uppercase tracking-[0.13em]"
+              className="mt-1 max-w-[55%] text-right text-[8px] font-semibold uppercase tracking-[0.08em] sm:text-[10px] sm:tracking-[0.13em]"
               style={{ color: accent }}
             >
               {detail.badge}
@@ -97,86 +110,206 @@ export default function ResourceToolCard({
       </div>
 
       {/* Body */}
-      <div className="flex flex-1 flex-col px-5 pb-5">
-        {/* thin accent rule that grows on hover */}
+      <div className="flex flex-1 flex-col px-3 pb-3 sm:px-5 sm:pb-5">
+        {/* Accent rule */}
         <span
-          className="mb-4 mt-3 block h-[2px] w-7 rounded-full transition-all duration-300 group-hover:w-12"
+          className="mb-3 mt-2 block h-[2px] w-6 rounded-full transition-all duration-300 group-hover:w-10 sm:mb-4 sm:mt-3 sm:w-7 sm:group-hover:w-12"
           style={{ backgroundColor: accent }}
         />
-        <h3 className="text-[15.5px] font-semibold leading-snug text-foreground">{title}</h3>
-        <p className="mt-1.5 line-clamp-2 text-[12.5px] leading-relaxed text-muted-foreground">
+
+        {/* Title */}
+        <h3 className="text-[13px] font-semibold leading-snug text-foreground sm:text-[15.5px]">
+          {title}
+        </h3>
+
+        {/* Description
+            Mobile: no line clamp
+            Desktop: line clamp
+        */}
+        <p className="mt-1.5 text-[10.5px] leading-[1.45] text-muted-foreground sm:line-clamp-2 sm:text-[12.5px] sm:leading-relaxed">
           {addon.copy}
         </p>
 
-        {/* "View details" affordance — only when a detail page exists */}
+        {/* View details - desktop only */}
         {navigable && (
           <span
-            className="mt-2 inline-flex items-center gap-1 text-[12px] font-semibold opacity-0 transition-all duration-200 group-hover:opacity-100"
+            className="mt-2 hidden items-center gap-1 text-[12px] font-semibold opacity-0 transition-all duration-200 group-hover:opacity-100 sm:inline-flex"
             style={{ color: accent }}
           >
-            View details{" "}
+            View details
             <ArrowRight className="h-3 w-3 transition-transform group-hover:translate-x-0.5" />
           </span>
         )}
 
         {/* Footer */}
-        <div className="mt-auto flex items-end justify-between pt-3">
-          <div>
+        <div className="mt-auto flex items-end justify-between gap-2 pt-4 sm:pt-5">
+          {/* Price */}
+          <div className="min-w-0 shrink-0">
             <div
-              className="font-serif text-[20px] leading-none text-foreground"
-              style={{ fontFamily: '"DM Serif Display", serif' }}
+              className="font-serif text-[17px] leading-none text-foreground sm:text-[20px]"
+              style={{
+                fontFamily: '"DM Serif Display", serif',
+              }}
             >
               ${addon.price}
             </div>
-            <div className="mt-1 text-[10px] text-muted-foreground">{addon.unit}</div>
+
+            <div className="mt-1 whitespace-nowrap text-[8px] text-muted-foreground sm:text-[10px]">
+              {addon.unit}
+            </div>
           </div>
 
-          <div className="ml-auto flex items-center justify-end gap-1.5">
+          {/* Actions */}
+          <div className="ml-auto flex min-w-0 items-center justify-end gap-1 sm:gap-1.5">
             {isService ? (
-              // Services still navigate to the detail page via the card body.
-              <span
-                className="addon-pill inline-flex items-center gap-1 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-150"
-                style={{ ["--pill" as string]: accent } as CSSProperties}
-              >
-                Explore <ArrowRight className="h-3.5 w-3.5" />
-              </span>
+              <>
+                {/* MOBILE Explore */}
+                <button
+                  type="button"
+                  aria-label="Explore"
+                  title="Explore"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (navigable) {
+                      router.push(`/resources/${addon.id}`);
+                    }
+                  }}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border sm:hidden"
+                  style={
+                    {
+                      color: accent,
+                      borderColor: accent,
+                    } as CSSProperties
+                  }
+                >
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+
+                {/* DESKTOP Explore */}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (navigable) {
+                      router.push(`/resources/${addon.id}`);
+                    }
+                  }}
+                  className="addon-pill hidden items-center gap-1 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-150 sm:inline-flex"
+                  style={
+                    {
+                      "--pill": accent,
+                      color: accent,
+                      borderColor: accent,
+                    } as CSSProperties
+                  }
+                >
+                  Explore
+                  <ArrowRight className="h-3.5 w-3.5" />
+                </button>
+              </>
             ) : (
-              <button
-                title={isAdded ? "Added to order" : "Add to order"}
-                type="button"
-                disabled={disabled}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  onToggle(addon.id);
-                }}
-                className={`addon-pill inline-flex items-center gap-1 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
-                  isAdded ? "is-added" : ""
-                }`}
-                style={{ ["--pill" as string]: accent } as CSSProperties}
-              >
-                {isAdded ? (
-                  <>
-                    <Check className="h-3.5 w-3.5" /> Added
-                  </>
-                ) : (
-                  <>
-                    <Plus className="h-3.5 w-3.5" /> Add
-                  </>
-                )}
-              </button>
-            )}
-            {!isService && (
-              <ResourceLaunchButton
-                href={launchHref}
-                size="card"
-                kind={addon.kind === "guides" ? "guides" : "tools"}
-                className="shrink-0"
-              />
+              <>
+                {/* MOBILE Add */}
+                <button
+                  type="button"
+                  disabled={disabled}
+                  title={isAdded ? "Added to order" : "Add to order"}
+                  aria-label={isAdded ? "Added to order" : "Add to order"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onToggle(addon.id);
+                  }}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border transition-all disabled:cursor-not-allowed disabled:opacity-50 sm:hidden"
+                  style={
+                    {
+                      color: accent,
+                      borderColor: accent,
+                    } as CSSProperties
+                  }
+                >
+                  {isAdded ? (
+                    <Check className="h-3.5 w-3.5" />
+                  ) : (
+                    <Plus className="h-3.5 w-3.5" />
+                  )}
+                </button>
+
+                {/* DESKTOP Add */}
+                <button
+                  type="button"
+                  disabled={disabled}
+                  title={isAdded ? "Added to order" : "Add to order"}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    onToggle(addon.id);
+                  }}
+                  className={`addon-pill hidden items-center gap-1 rounded-full border px-3.5 py-1.5 text-[12px] font-semibold transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-50 sm:inline-flex ${
+                    isAdded ? "is-added" : ""
+                  }`}
+                  style={
+                    {
+                      "--pill": accent,
+                    } as CSSProperties
+                  }
+                >
+                  {isAdded ? (
+                    <>
+                      <Check className="h-3.5 w-3.5" />
+                      Added
+                    </>
+                  ) : (
+                    <>
+                      <Plus className="h-3.5 w-3.5" />
+                      Add
+                    </>
+                  )}
+                </button>
+
+                {/* MOBILE Launch */}
+                <button
+                  type="button"
+                  aria-label="Launch tool"
+                  title="Launch tool"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    router.push(launchHref);
+                  }}
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border sm:hidden"
+                  style={
+                    {
+                      color: accent,
+                      borderColor: accent,
+                    } as CSSProperties
+                  }
+                >
+                  <ExternalLink className="h-3.5 w-3.5" />
+                </button>
+
+                {/* DESKTOP Launch */}
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="hidden sm:block"
+                >
+                  <ResourceLaunchButton
+                    href={launchHref}
+                    size="card"
+                    kind={addon.kind === "guides" ? "guides" : "tools"}
+                    className="shrink-0"
+                  />
+                </div>
+              </>
             )}
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   );
 }
