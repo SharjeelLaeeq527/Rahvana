@@ -367,10 +367,13 @@ function VisaSelector({
 /* ===========================================================================
    COMPARISON CELL
    =========================================================================== */
-function ComparisonCell({ value }: { value: string }) {
+function ComparisonCell({ value, planId }: { value: string; planId?: string }) {
   const v = value.trim();
+  const tc = planId && planId in TIER ? TIER[planId as TierKey] : null;
+  const checkColor = tc ? tc.checkCol : "text-primary";
+
   if (v === "Included" || v === "Unlimited") {
-    return <IconCheck className="text-primary mx-auto h-4 w-4 shrink-0 sm:h-5 sm:w-5" />;
+    return <IconCheck className={`${checkColor} mx-auto h-4 w-4 shrink-0 sm:h-5 sm:w-5`} />;
   }
   if (v === "Not Included") {
     return <IconX className="mx-auto h-4 w-4 shrink-0 text-red-500 sm:h-5 sm:w-5" />;
@@ -384,8 +387,14 @@ function ComparisonCell({ value }: { value: string }) {
   }
   if (/included/i.test(v) && v !== "Included") {
     return (
-      <span className="bg-primary/10 text-primary border-primary/20 mx-auto inline-flex items-center justify-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[9.5px] leading-tight font-bold sm:gap-1 sm:px-2.5 sm:py-1 sm:text-[11px]">
-        <IconCheck className="h-2.5 w-2.5 shrink-0 sm:h-3 sm:w-3" /> {v}
+      <span
+        className={`mx-auto inline-flex items-center justify-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[9.5px] leading-tight font-bold sm:gap-1 sm:px-2.5 sm:py-1 sm:text-[11px] ${
+          tc
+            ? `${tc.badgeBg} ${tc.badgeText} border-transparent`
+            : "bg-primary/10 text-primary border-primary/20"
+        }`}
+      >
+        <IconCheck className={`h-2.5 w-2.5 shrink-0 sm:h-3 sm:w-3 ${tc ? tc.checkCol : ""}`} /> {v}
       </span>
     );
   }
@@ -434,11 +443,11 @@ function CompareModal({
 
   return (
     <div
-      className="animate-in fade-in fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 p-2 backdrop-blur-sm duration-150 sm:p-6 md:p-10"
+      className="animate-in fade-in fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 px-3 py-5 backdrop-blur-sm duration-150 sm:p-6 md:p-10"
       onClick={onClose}
     >
       <div
-        className="bg-card border-border animate-in zoom-in-95 flex h-[92vh] w-full max-w-[960px] flex-col overflow-hidden rounded-[20px] border shadow-2xl duration-200 sm:h-auto sm:max-h-[calc(100vh-48px)] sm:rounded-[28px] md:max-h-[calc(100vh-80px)]"
+        className="bg-card border-border animate-in zoom-in-95 flex h-auto max-h-[86vh] w-full max-w-[960px] flex-col overflow-hidden rounded-[20px] border shadow-2xl duration-200 sm:max-h-[calc(100vh-48px)] sm:rounded-[28px] md:max-h-[calc(100vh-80px)]"
         onClick={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
@@ -576,7 +585,7 @@ function CompareModal({
                           <div className="grid grid-cols-3 items-center gap-1.5">
                             {row.slice(1).map((val, vi) => (
                               <div key={vi} className="flex justify-center text-center">
-                                <ComparisonCell value={val} />
+                                <ComparisonCell value={val} planId={paidPlans[vi]?.id} />
                               </div>
                             ))}
                           </div>
@@ -589,7 +598,7 @@ function CompareModal({
                           </span>
                           {row.slice(1).map((val, vi) => (
                             <div key={vi} className="flex justify-center text-center">
-                              <ComparisonCell value={val} />
+                              <ComparisonCell value={val} planId={paidPlans[vi]?.id} />
                             </div>
                           ))}
                         </div>
