@@ -783,20 +783,20 @@ export default function AboutPage() {
           >
             {[
               {
-                name: "Hams",
-                initials: "HL",
-                image: "/assets/images/Hams.PNG",
-                color: "bg-[#0d7a75]",
-                role: "Co-Founder",
-                desc: "Rahvana exists because people deserve clarity during one of the most important processes of their lives. I've personally helped multiple people navigate these procedures and seen how overwhelming it can be, from trying to understand complicated requirements, second-guessing every step, and feeling completely alone. As a Co-Founder, my focus is making sure Rahvana is truly supportive, giving people clarity, structure, and peace of mind at every stage.",
-              },
-              {
                 name: "Sharjeel",
                 initials: "SL",
                 image: "/assets/images/Sharjeel.PNG",
                 color: "bg-[#e8a020]",
                 role: "Co-Founder",
                 desc: "Rahvana came from a personal place. I watched someone close to me navigate the IR-1 process alone, confused, overwhelmed, and constantly unsure if they were doing things right. There was no real support, just paperwork and waiting. I built Rahvana so others wouldn't have to face that process without clarity and guidance.",
+              },
+              {
+                name: "Hams",
+                initials: "HL",
+                image: "/assets/images/Hams.PNG",
+                color: "bg-[#0d7a75]",
+                role: "Co-Founder",
+                desc: "Rahvana exists because people deserve clarity during one of the most important processes of their lives. I've personally helped multiple people navigate these procedures and seen how overwhelming it can be, from trying to understand complicated requirements, second-guessing every step, and feeling completely alone. As a Co-Founder, my focus is making sure Rahvana is truly supportive, giving people clarity, structure, and peace of mind at every stage.",
               },
               {
                 name: "Javeria",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { E, msg } from "@/lib/errors";
 import {
@@ -21,6 +21,7 @@ import { FilterPanel } from "@/app/components/shared/FilterPanel";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { vision } from "googleapis/build/src/apis/vision";
 
 type SessionStatus = "COMPLETED" | "IN_PROGRESS" | "NOT_STARTED";
 type TimeFilter = "all" | "today" | "week" | "month";
@@ -124,11 +125,12 @@ export default function MyInterviewSessions() {
 
   const { showToast } = useToast();
 
+  const environment = process.env.NEXT_PUBLIC_ENVIRONMENT === "development";
+
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedTime, setSelectedTime] = useState<TimeFilter>("all");
-  const [selectedSource, setSelectedSource] = useState("all");
   const [showNarrative, setShowNarrative] = useState(false);
   const [dontShowAgain, setDontShowAgain] = useState(false);
   const hasShownNarrative = useRef(false);
@@ -136,6 +138,14 @@ export default function MyInterviewSessions() {
   // pagination state
   const [currentPage, setCurrentPage] = useState<number>(1);
   const ITEMS_PER_PAGE = 10;
+
+  const visibleSessions = useMemo(() => {
+    if (environment) {
+      return sessions;
+    }
+
+    return sessions.filter((session) => session.category_slug !== "ir-5-parent");
+  }, [sessions, environment]);
 
   // fetch user sessions
   const fetchUserSessions = async (isRefresh = false) => {
@@ -190,7 +200,7 @@ export default function MyInterviewSessions() {
 
   // Apply filters
   useEffect(() => {
-    let filtered = sessions;
+    let filtered = visibleSessions;
 
     // Category filter
     if (selectedCategory !== "all") {
@@ -205,6 +215,7 @@ export default function MyInterviewSessions() {
     // Time filter
     if (selectedTime !== "all") {
       const now = new Date();
+
       filtered = filtered.filter((s) => {
         const createdDate = new Date(s.created_at);
         const diffMs = now.getTime() - createdDate.getTime();
@@ -223,14 +234,9 @@ export default function MyInterviewSessions() {
       });
     }
 
-    // Source filter
-    // if (selectedSource !== "all") {
-    //   filtered = filtered.filter((s) => s.source === selectedSource);
-    // }
-
     setFilteredSessions(filtered);
     setCurrentPage(1);
-  }, [sessions, selectedCategory, selectedStatus, selectedTime, selectedSource]);
+  }, [selectedCategory, selectedStatus, selectedTime, visibleSessions]);
 
   const hasShownToast = useRef(false);
 
@@ -410,18 +416,23 @@ export default function MyInterviewSessions() {
             {sessions.length > 0 && (
               <FilterPanel
                 fields={[
-                  {
-                    key: "category",
-                    label: "Visa Category",
-                    options: [
-                      { value: "all", label: "All Categories" },
-                      ...uniqueCategories.map((cat) => ({
-                        value: cat,
-                        label: getCategoryLabel(cat),
-                      })),
-                    ],
-                    value: selectedCategory,
-                  },
+                  ...(environment
+                    ? [
+                        {
+                          key: "category",
+                          label: "Visa Category",
+                          options: [
+                            { value: "all", label: "All Categories" },
+                            ...uniqueCategories.map((cat) => ({
+                              value: cat,
+                              label: getCategoryLabel(cat),
+                            })),
+                          ],
+                          value: selectedCategory,
+                        },
+                      ]
+                    : []),
+
                   {
                     key: "status",
                     label: "Status",
@@ -433,6 +444,7 @@ export default function MyInterviewSessions() {
                     ],
                     value: selectedStatus,
                   },
+
                   {
                     key: "time",
                     label: "Created",
@@ -451,7 +463,7 @@ export default function MyInterviewSessions() {
                   setSelectedTime((filters.time || "all") as TimeFilter);
                 }}
                 itemCount={filteredSessions.length}
-                totalCount={sessions.length}
+                totalCount={visibleSessions.length}
               />
             )}
 
@@ -465,7 +477,7 @@ export default function MyInterviewSessions() {
           </div>
         </div>
 
-        {!loading && sessions.length > 0 && null}
+        {!loading && visibleSessions.length > 0 && null}
 
         {showInitialLoader ? (
           <div className="flex h-64 items-center justify-center">
