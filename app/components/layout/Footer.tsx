@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Instagram, Facebook, Linkedin, ArrowRight, Youtube } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -78,7 +79,8 @@ export default function Footer() {
               >
                 IR-1 Journey
               </Link>
-              {showToggle && (
+              {/* IR-5 is hidden on production (see lib/feature-flags) until it launches. */}
+              {IR5_ENABLED && (
                 <Link
                   href={ir5journeyHref}
                   className="hidden text-slate-400 transition-colors hover:text-white sm:block"
