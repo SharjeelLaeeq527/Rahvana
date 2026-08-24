@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -23,6 +23,12 @@ interface CustomDropdownProps {
   placeholder?: string;
   className?: string;
   disabled?: boolean;
+  /**
+   * When only one option is available, render it as a static field (and
+   * auto-select it) instead of a pointless single-choice dropdown. Used where a
+   * category list can shrink to one entry, e.g. IR-5 hidden on production.
+   */
+  collapseWhenSingle?: boolean;
 }
 
 export const CustomDropdown = ({
@@ -32,11 +38,33 @@ export const CustomDropdown = ({
   placeholder = "Select an option",
   className = "",
   disabled = false,
+  collapseWhenSingle = false,
 }: CustomDropdownProps) => {
   const [searchTerm, setSearchTerm] = useState("");
   const displayOptions = (options ?? []).filter(
     (option) => option.value !== ""
   );
+
+  // When collapsed to a single option, auto-select it so any dependent form
+  // validation (e.g. "category is required") still passes.
+  const soleOption =
+    collapseWhenSingle && displayOptions.length === 1 ? displayOptions[0] : null;
+
+  useEffect(() => {
+    if (soleOption && value !== soleOption.value) {
+      onChange(soleOption.value);
+    }
+  }, [soleOption, value, onChange]);
+
+  if (soleOption) {
+    return (
+      <div className={`w-full max-w-full ${className}`}>
+        <div className="flex min-h-[42px] w-full items-center rounded-lg border border-transparent bg-white px-3 py-2 text-[13.5px] font-semibold text-slate-700 shadow-sm">
+          {soleOption.label}
+        </div>
+      </div>
+    );
+  }
 
   const handleSelect = (selectedValue: string) => {
     const optionExists = displayOptions.some((option) => option.value === selectedValue);

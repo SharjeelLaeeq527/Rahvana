@@ -3,6 +3,7 @@
 import * as React from "react";
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createBrowserClient } from "@supabase/ssr";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -2051,10 +2052,10 @@ export default function ProfilePage() {
                       value: "K-1",
                       label: t("profile.fields.visaType.options.k1"),
                     },
-                    {
-                      value: "IR-5",
-                      label: t("profile.fields.visaType.options.ir5"),
-                    },
+                    // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+                    ...(IR5_ENABLED
+                      ? [{ value: "IR-5", label: t("profile.fields.visaType.options.ir5") }]
+                      : []),
                     {
                       value: "F-1",
                       label: t("profile.fields.visaType.options.f1"),

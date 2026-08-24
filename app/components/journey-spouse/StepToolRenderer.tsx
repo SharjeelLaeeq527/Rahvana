@@ -19,6 +19,7 @@ import {
   Upload,
 } from "lucide-react";
 import { AWAITING_REVIEW_DATA } from "./AwaitingReviewData";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import { DQ_RECORDING_DATA } from "./DqRecordingData";
 import { INTERVIEW_SCHEDULING_DATA } from "./InterviewSchedulingData";
 import { APPOINTMENT_RECEIVED_DATA } from "./AppointmentReceivedData";
@@ -119,7 +120,8 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({ dqState, acti
   // -----------------------------
   const categoryOptions = [
     { value: "IR-1", label: "IR-1" },
-    { value: "IR-5", label: "IR-5" },
+    // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+    ...(IR5_ENABLED ? [{ value: "IR-5", label: "IR-5" }] : []),
   ];
 
   const postOptions = [
@@ -192,6 +194,7 @@ export const DqRecordingTool: React.FC<StepToolRendererProps> = ({ dqState, acti
                   onChange={(val) => setDqCategory(val)}
                   options={categoryOptions}
                   placeholder="Select Category"
+                  collapseWhenSingle
                 />
               </div>
               {showErrors && !dqCategory && (
