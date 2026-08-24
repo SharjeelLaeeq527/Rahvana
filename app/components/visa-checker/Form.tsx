@@ -117,12 +117,20 @@ export default function Form() {
           <label className="block text-sm sm:text-base font-bold text-gray-700 mb-1.5 sm:mb-2">
             {t("visaChecker.form.categoryLabel")}
           </label>
-          <CustomDropdown
-            value={form.category}
-            onChange={(value) => setForm({ ...form, category: value })}
-            options={visaCategoryOptions}
-            placeholder="Select category"
-          />
+          {visaCategoryOptions.length > 1 ? (
+            <CustomDropdown
+              value={form.category}
+              onChange={(value) => setForm({ ...form, category: value })}
+              options={visaCategoryOptions}
+              placeholder="Select category"
+            />
+          ) : (
+            // Only one visa category available (e.g. IR-5 hidden on production):
+            // show it as a static field instead of a single-option dropdown.
+            <div className="w-full p-2.5 sm:p-3 text-sm sm:text-base border border-gray-300 rounded-lg bg-gray-50 text-gray-700">
+              {visaCategoryOptions[0]?.label ?? form.category}
+            </div>
+          )}
         </div>
 
         {/* Priority Date */}
