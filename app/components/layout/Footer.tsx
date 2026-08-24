@@ -167,7 +167,7 @@ export default function Footer() {
             <h4 className="mb-6 text-xs font-bold tracking-normal text-white uppercase sm:text-sm sm:tracking-wider">
               {t("footer.connectWithUs") || "Connect With Us"}
             </h4>
-            <nav className="flex flex-row flex-wrap gap-4 text-sm sm:flex-col">
+            <nav className="grid grid-cols-3 max-w-[150px] gap-y-3.5 gap-x-2 text-sm sm:max-w-none sm:flex sm:flex-col sm:gap-4">
               <Link
                 href="https://www.instagram.com/rahvana.co?igsh=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr"
                 target="_blank"
