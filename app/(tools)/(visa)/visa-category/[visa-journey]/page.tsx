@@ -25,7 +25,8 @@ function resolveJourneyData(visaJourney: string): any | null {
 import { useAuth } from "@/app/context/AuthContext";
 import { useWizard, type WizardState } from "@/app/(main)/dashboard/hooks/useWizard";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import { motion } from "framer-motion";
 import {
   ChevronDown,
@@ -89,6 +90,23 @@ export default function IR1JourneyPage() {
   const { t, language } = useLanguage();
   const params = useParams();
   const visaJourneyParam = (params?.["visa-journey"] as string) || "ir-1";
+
+  // IR-5 is hidden on production (see lib/feature-flags). Block both the detail
+  // slug (`ir-5`) and the roadmap slug (`ir5-journey`) so a leaked or bookmarked
+  // link cannot open IR-5. Hooks are declared before any early return to keep a
+  // stable hook order across renders.
+  const router = useRouter();
+  const isIr5Route = visaJourneyParam === "ir-5" || visaJourneyParam === "ir5-journey";
+
+  useEffect(() => {
+    if (isIr5Route && !IR5_ENABLED) {
+      router.replace("/visa-category");
+    }
+  }, [isIr5Route, router]);
+
+  if (isIr5Route && !IR5_ENABLED) {
+    return null;
+  }
 
   if (isJourneySlug(visaJourneyParam)) {
     return <JourneyDetailPage slug={visaJourneyParam} />;
