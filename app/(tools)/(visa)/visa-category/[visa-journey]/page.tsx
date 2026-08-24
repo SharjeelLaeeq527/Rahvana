@@ -100,7 +100,8 @@ export default function IR1JourneyPage() {
 
   useEffect(() => {
     if (isIr5Route && !IR5_ENABLED) {
-      router.replace("/visa-category");
+      router.replace("/visa-category/ir1-journey");
+      // router.replace("/visa-category");
     }
   }, [isIr5Route, router]);
 

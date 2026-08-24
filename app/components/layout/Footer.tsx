@@ -88,7 +88,7 @@ export default function Footer() {
                   IR-5 Journey
                 </Link>
               )}
-              {showToggle && (
+              {/* {showToggle && (
                 <Link
                   href="/visa-category"
                   className="font-medium text-white underline transition-colors hover:text-slate-200"
@@ -96,7 +96,7 @@ export default function Footer() {
                   Explore<span className="hidden sm:inline"> all</span> Journeys
                   <ArrowRight size={14} className="ml-1 inline-block" />
                 </Link>
-              )}
+              )} */}
             </nav>
           </div>
 
@@ -169,7 +169,7 @@ export default function Footer() {
             <h4 className="mb-6 text-xs font-bold tracking-normal text-white uppercase sm:text-sm sm:tracking-wider">
               {t("footer.connectWithUs") || "Connect With Us"}
             </h4>
-            <nav className="grid grid-cols-3 max-w-[150px] gap-y-3.5 gap-x-2 text-sm sm:max-w-none sm:flex sm:flex-col sm:gap-4">
+            <nav className="grid max-w-[150px] grid-cols-3 gap-x-2 gap-y-3.5 text-sm sm:flex sm:max-w-none sm:flex-col sm:gap-4">
               <Link
                 href="https://www.instagram.com/rahvana.co?igsh=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr"
                 target="_blank"
@@ -217,7 +217,7 @@ export default function Footer() {
                 title="Youtube"
                 className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
               >
-                <Youtube size={18} className="transition-transform group-hover:scale-110" />
+                <Youtube size={22} className="transition-transform group-hover:scale-110" />
                 <span className="hidden sm:inline">{t("footer.youtube") || "Youtube"}</span>
               </Link>
               <Link

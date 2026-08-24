@@ -825,10 +825,12 @@ export default function DocumentVaultPage() {
 
             {/* Actions */}
             <div className="relative z-10 w-full space-y-3">
-              <Link href="/visa-category">
+              <Link href="/visa-category/ir1-journey">
+              {/* <Link href="/visa-category"> */}
                 <Button className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-white font-bold text-base shadow-lg shadow-primary/20 transition-all hover:scale-[1.02] active:scale-95">
                   <Route className="w-5 h-5 mr-2" />
-                  Browse Available Journeys
+                  Browse Visa Journey
+                  {/* Browse Available Journeys */}
                 </Button>
               </Link>
               <p className="text-xs text-slate-400 dark:text-slate-500 pt-3">
