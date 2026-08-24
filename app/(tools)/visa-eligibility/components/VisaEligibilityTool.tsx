@@ -6,6 +6,7 @@ import { useUserProfile } from "@/app/context/UserProfileContext";
 import { MasterProfile } from "@/types/profile";
 import { motion, AnimatePresence } from "framer-motion";
 import { autoFillForm } from "@/lib/autoFill/mapper";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import {
   CheckCircle,
   // ChevronLeft,
@@ -327,7 +328,9 @@ export function VisaEligibilityTool() {
     }
 
     // IR-5 (Parent of US Citizen)
+    // IR-5 is hidden on production (see lib/feature-flags) until it launches.
     if (
+      IR5_ENABLED &&
       petitionerStatus === "US_CITIZEN" &&
       petitionerAgeGroup === "OVER_21" &&
       relationship === "PARENT" &&
