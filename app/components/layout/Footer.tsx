@@ -75,10 +75,10 @@ export default function Footer() {
             <nav className="flex flex-col gap-4 text-sm">
               <Link
                 href={ir1journeyHref}
-                className="text-white underline font-medium sm:font-normal transition-colors hover:text-white sm:text-slate-400 sm:no-underline"
+                className="font-medium text-white underline transition-colors hover:text-white sm:font-normal sm:text-slate-400 sm:no-underline"
               >
                 IR-1 Journey
-                <ArrowRight size={14} className="ml-1 inline-block" />
+                <ArrowRight size={14} className="ml-1 inline-block sm:hidden" />
               </Link>
               {/* IR-5 is hidden on production (see lib/feature-flags) until it launches. */}
               {IR5_ENABLED && (
