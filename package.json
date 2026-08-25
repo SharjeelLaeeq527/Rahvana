@@ -89,7 +89,7 @@
     "path": "^0.12.7",
     "pdf-lib": "^1.17.1",
     "pdfjs-dist": "6.2.108",
-    "pdfkit": "^0.17.2",
+    "pdfkit": "^0.19.1",
     "pdfmake": "^0.2.20",
     "react": "^19.1.0",
     "react-confetti": "^6.4.0",
