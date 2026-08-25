@@ -62,7 +62,7 @@
     "express": "^5.1.0",
     "file-saver": "^2.0.5",
     "file-type": "^22.0.2",
-    "framer-motion": "11.18.2",
+    "framer-motion": "13.1.1",
     "fs": "^0.0.1-security",
     "fs-extra": "^11.3.2",
     "googleapis": "^171.4.0",
