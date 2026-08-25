@@ -1,8 +1,8 @@
 "use client";
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Image from "next/image";
-import { ZoomIn, ZoomOut, RotateCcw, Maximize2, X } from "lucide-react";
+import { ZoomIn, ZoomOut, RotateCcw, Maximize2, X, ImageOff, Loader2 } from "lucide-react";
 import {
   TransformWrapper,
   TransformComponent,
@@ -29,15 +29,23 @@ export function ZoomableGuideImage({
   sizes,
   quality = 95,
   priority = false,
-  isStandardImg = false,
+  isStandardImg = true,
   controlsPosition = "bottom-right",
 }: ZoomableGuideImageProps) {
   const [scale, setScale] = useState(1);
   const [fullscreenScale, setFullscreenScale] = useState(1);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [hasError, setHasError] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const transformRef = useRef<ReactZoomPanPinchContentRef>(null);
   const transformFullscreenRef = useRef<ReactZoomPanPinchContentRef>(null);
+
+  // Reset image error and loading states when src changes
+  useEffect(() => {
+    setHasError(false);
+    setIsLoading(true);
+  }, [src]);
 
   const handleZoomIn = (inFullscreen = false) => {
     if (inFullscreen) {
@@ -159,26 +167,33 @@ export function ZoomableGuideImage({
     );
   };
 
+  const renderFallback = () => (
+    <div className="flex h-full min-h-[180px] w-full flex-col items-center justify-center gap-2 rounded-lg bg-[#f8f9fb] p-6 text-center text-slate-400 select-none">
+      <ImageOff className="h-9 w-9 stroke-[1.5] text-slate-400 opacity-70" />
+      <span className="text-xs font-medium text-slate-500">Image unavailable</span>
+    </div>
+  );
+
   const renderImageContent = () => {
-    if (isStandardImg || !fill) {
-      return (
+    if (!src || hasError) {
+      return renderFallback();
+    }
+
+    return (
+      <div className="relative flex h-full w-full items-center justify-center">
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#f8f9fb]/80 backdrop-blur-[1px] z-10">
+            <Loader2 className="h-6 w-6 animate-spin text-[#0c1b33]/60" />
+          </div>
+        )}
         <img
           src={src}
-          alt={alt}
-          className={`h-full w-full object-contain pointer-events-none ${className}`}
+          alt={alt || "Guide visual"}
+          onLoad={() => setIsLoading(false)}
+          onError={() => setHasError(true)}
+          className={`max-h-full max-w-full object-contain pointer-events-none ${className}`}
         />
-      );
-    }
-    return (
-      <Image
-        src={src}
-        alt={alt}
-        fill
-        sizes={sizes}
-        quality={quality}
-        priority={priority}
-        className={`pointer-events-none ${className}`}
-      />
+      </div>
     );
   };
 
@@ -243,19 +258,15 @@ export function ZoomableGuideImage({
                 }`}
                 contentClass="relative h-full w-full flex items-center justify-center"
               >
-                {isStandardImg ? (
+                {!src || hasError ? (
+                  renderFallback()
+                ) : (
                   <img
                     src={src}
-                    alt={alt}
+                    alt={alt || "Guide visual"}
+                    onLoad={() => setIsLoading(false)}
+                    onError={() => setHasError(true)}
                     className="max-h-full max-w-full object-contain drop-shadow-sm pointer-events-none"
-                  />
-                ) : (
-                  <Image
-                    src={src}
-                    alt={alt}
-                    fill
-                    quality={100}
-                    className="object-contain drop-shadow-sm pointer-events-none"
                   />
                 )}
               </TransformComponent>
@@ -266,3 +277,4 @@ export function ZoomableGuideImage({
     </>
   );
 }
+
