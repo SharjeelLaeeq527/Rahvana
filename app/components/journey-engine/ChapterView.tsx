@@ -38,7 +38,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
   const isInProgress = prog.pct > 0 && prog.pct < 100;
 
   const isChapter1 = chapterIdx === 0;
-  
+
   const isChapter2 = chapterIdx === 1;
   const isChapter3 = chapterIdx === 2;
 
@@ -57,55 +57,49 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
 
   return (
     <div
-      className={`flex-1 overflow-y-auto py-8 px-4 sm:px-6 pb-20 scrollbar-hide relative`}
+      className={`scrollbar-hide relative flex-1 overflow-y-auto px-4 py-8 pb-20 sm:px-6`}
       style={isChapter1 || isChapter2 || isChapter3 ? { minHeight: "100vh" } : undefined}
     >
-      <div className="w-full max-w-[680px] mx-auto animate-in fade-in duration-700 relative z-10 mt-6 sm:mt-12">
+      <div className="animate-in fade-in relative z-10 mx-auto mt-6 w-full max-w-[680px] duration-700 sm:mt-12">
         <div
-          className={`bg-gradient-to-br from-white via-white/95 to-neutral-50 border-[1.5px] rounded-3xl p-6 sm:p-8 mb-7
-            shadow-[0_8px_40px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]
-            transition-all duration-300 hover:scale-[1.018] hover:shadow-[0_16px_56px_rgba(36,42,66,0.22),0_6px_24px_rgba(44,62,80,0.18)]
-            border-solid
-            ${isChapter3 ? "border-[#051738]" : isChapter2 ? "border-[#520a50]" : "border-[#8284bf]"}
-          `}
+          className={`mb-7 rounded-3xl border-[1.5px] border-solid bg-gradient-to-br from-white via-white/95 to-neutral-50 p-6 shadow-[0_8px_40px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)] transition-all duration-300 hover:scale-[1.018] hover:shadow-[0_16px_56px_rgba(36,42,66,0.22),0_6px_24px_rgba(44,62,80,0.18)] sm:p-8 ${isChapter3 ? "border-[#051738]" : isChapter2 ? "border-[#520a50]" : "border-[#8284bf]"} `}
         >
           <div
-            className={`inline-flex items-center gap-1.5 px-[13px] py-[4px] rounded-full text-[11px] font-bold tracking-[0.07em] uppercase mb-3 border
-              ${
-                isDone
+            className={`mb-3 inline-flex items-center gap-1.5 rounded-full border px-[13px] py-[4px] text-[11px] font-bold tracking-[0.07em] uppercase ${
+              isDone
+                ? isChapter3
+                  ? "border-[#051738] bg-[#e8ecf3] text-[#051738]"
+                  : isChapter2
+                    ? "border-[#520a50] bg-[#f4e6f3] text-[#520a50]"
+                    : "border-[#8284bf] bg-[#f0f1fb] text-[#8284bf]"
+                : isInProgress
                   ? isChapter3
-                    ? "bg-[#e8ecf3] border-[#051738] text-[#051738]"
+                    ? "border-[#051738] bg-[#e8ecf3] text-[#051738]"
                     : isChapter2
-                      ? "bg-[#f4e6f3] border-[#520a50] text-[#520a50]"
-                      : "bg-[#f0f1fb] border-[#8284bf] text-[#8284bf]"
-                  : isInProgress
-                    ? isChapter3
-                      ? "bg-[#e8ecf3] border-[#051738] text-[#051738]"
-                      : isChapter2
-                        ? "bg-[#f4e6f3] border-[#520a50] text-[#520a50]"
-                        : "bg-[#f0f1fb] border-[#8284bf] text-[#8284bf]"
-                    : isChapter3
-                      ? "bg-[#e8ecf3] border-[#051738] text-[#051738]"
-                      : isChapter2
-                        ? "bg-[#f4e6f3] border-[#520a50] text-[#520a50]"
-                        : "bg-[#f0f1fb] border-[#8284bf] text-[#8284bf]"
-              }`}
+                      ? "border-[#520a50] bg-[#f4e6f3] text-[#520a50]"
+                      : "border-[#8284bf] bg-[#f0f1fb] text-[#8284bf]"
+                  : isChapter3
+                    ? "border-[#051738] bg-[#e8ecf3] text-[#051738]"
+                    : isChapter2
+                      ? "border-[#520a50] bg-[#f4e6f3] text-[#520a50]"
+                      : "border-[#8284bf] bg-[#f0f1fb] text-[#8284bf]"
+            }`}
           >
             {isDone ? "✓ Completed" : isInProgress ? "In Progress" : "Not Started"}
           </div>
-          <h1 className="text-[clamp(22px,3vw,28px)] font-extrabold text-[#1a2236] mb-1 tracking-tight">
+          <h1 className="mb-1 text-[clamp(22px,3vw,28px)] font-extrabold tracking-tight text-[#1a2236]">
             {(chapter.chapter_name || (chapter as any).name).replace(/^Stage\s[IVX]+:\s/, "")}
           </h1>
-          <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-4">
+          <p className="mb-4 text-[14px] leading-[1.7] text-[#3a4f63]">
             {chapter.chapter_description || chapter.description}
           </p>
 
           <div className="flex items-center gap-2.5">
             <div
-              className={`flex-1 h-[7px] rounded-[13px] overflow-hidden ${isChapter3 ? "bg-[#e8ecf3]" : isChapter2 ? "bg-[#f4e6f3]" : "bg-[#f0f1fb]"}`}
+              className={`h-[7px] flex-1 overflow-hidden rounded-[13px] ${isChapter3 ? "bg-[#e8ecf3]" : isChapter2 ? "bg-[#f4e6f3]" : "bg-[#f0f1fb]"}`}
             >
               <div
-                className="h-full rounded-[13px] transition-all duration-500 shadow-[0_2.5px_12px_rgba(36,42,66,0.18)]"
+                className="h-full rounded-[13px] shadow-[0_2.5px_12px_rgba(36,42,66,0.18)] transition-all duration-500"
                 style={{
                   width: `${prog.pct}%`,
                   background: isChapter3 ? "#051738" : isChapter2 ? "#520a50" : "#8284bf",
@@ -122,10 +116,10 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
 
         {/* Branch Warning (Chapter 1 specific) */}
         {isChapter1 && !filingMethod && (
-          <div className="bg-[#fff6f6] border border-[#f7c6c6] rounded-[10px] p-[11px_14px] mb-3 text-[12.5px] text-[#c85a5a] flex gap-2 items-start animate-in slide-in-from-top-2 duration-500">
-            <AlertTriangle size={16} className="shrink-0 mt-0.5" />
+          <div className="animate-in slide-in-from-top-2 mb-3 flex items-start gap-2 rounded-[10px] border border-[#f7c6c6] bg-[#fff6f6] p-[11px_14px] text-[12.5px] text-[#c85a5a] duration-500">
+            <AlertTriangle size={16} className="mt-0.5 shrink-0" />
             <div>
-              <strong className="font-bold block mb-0.5">
+              <strong className="mb-0.5 block font-bold">
                 Action Required: Filing Method Not Selected
               </strong>
               <span>
@@ -138,28 +132,26 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
 
         {/* Plan Card */}
         <div
-          className={`rounded-2xl px-4 sm:px-5 py-3 sm:py-4 mb-4 flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 bg-white shadow-[0_4px_16px_rgba(0,0,0,0.08)] border-[1.5px] transition-all duration-300 hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] hover:scale-[1.01]
-            ${
-              plan.tier === "free"
-                ? "border-[#a8c4e0]"
-                : plan.tier === "basic"
-                  ? "border-[#7fbfba]"
-                  : plan.tier === "premium"
-                    ? "border-[#b399d8]"
-                    : "border-[#d4a855]"
-            }`}
+          className={`mb-4 flex flex-col gap-3 rounded-2xl border-[1.5px] bg-white px-4 py-3 shadow-[0_4px_16px_rgba(0,0,0,0.08)] transition-all duration-300 hover:scale-[1.01] hover:shadow-[0_8px_24px_rgba(0,0,0,0.12)] sm:flex-row sm:items-center sm:gap-4 sm:px-5 sm:py-4 ${
+            plan.tier === "free"
+              ? "border-[#a8c4e0]"
+              : plan.tier === "basic"
+                ? "border-[#7fbfba]"
+                : plan.tier === "premium"
+                  ? "border-[#b399d8]"
+                  : "border-[#d4a855]"
+          }`}
         >
           <div
-            className={`rounded-full flex items-center justify-center flex-shrink-0 border-2 shadow-[0_2px_8px_rgba(0,0,0,0.09)] transition-all
-              ${
-                plan.tier === "free"
-                  ? "w-10 sm:w-12 h-10 sm:h-12 bg-[#f0f4fb] border-[#8fa8d4]"
-                  : plan.tier === "basic"
-                    ? "w-10 sm:w-12 h-10 sm:h-12 bg-[#eef9f8] border-[#bfe5e2]"
-                    : plan.tier === "premium"
-                      ? "w-10 sm:w-12 h-10 sm:h-12 bg-[#faf7fe] border-[#a088d8]"
-                      : "w-10 sm:w-12 h-10 sm:h-12 bg-[#fef9f0] border-[#c9a855]"
-              }`}
+            className={`flex flex-shrink-0 items-center justify-center rounded-full border-2 shadow-[0_2px_8px_rgba(0,0,0,0.09)] transition-all ${
+              plan.tier === "free"
+                ? "h-10 w-10 border-[#8fa8d4] bg-[#f0f4fb] sm:h-12 sm:w-12"
+                : plan.tier === "basic"
+                  ? "h-10 w-10 border-[#bfe5e2] bg-[#eef9f8] sm:h-12 sm:w-12"
+                  : plan.tier === "premium"
+                    ? "h-10 w-10 border-[#a088d8] bg-[#faf7fe] sm:h-12 sm:w-12"
+                    : "h-10 w-10 border-[#c9a855] bg-[#fef9f0] sm:h-12 sm:w-12"
+            }`}
           >
             <span
               className={`plan-icon ${
@@ -180,16 +172,15 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
           </div>
 
           <p
-            className={`text-[12px] sm:text-[13px] leading-relaxed m-0 flex-1 font-semibold
-              ${
-                plan.tier === "free"
-                  ? "text-[#2e4f72]"
-                  : plan.tier === "basic"
-                    ? "text-[#0f6f6d]"
-                    : plan.tier === "premium"
-                      ? "text-[#332d80]"
-                      : "text-[#6b4a0d]"
-              }`}
+            className={`m-0 flex-1 text-[12px] leading-relaxed font-semibold sm:text-[13px] ${
+              plan.tier === "free"
+                ? "text-[#2e4f72]"
+                : plan.tier === "basic"
+                  ? "text-[#0f6f6d]"
+                  : plan.tier === "premium"
+                    ? "text-[#332d80]"
+                    : "text-[#6b4a0d]"
+            }`}
           >
             {plan.tier === "free"
               ? "Upgrade to unlock the full roadmap, step-by-step guidance, and tools for your next steps."
@@ -203,31 +194,30 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
           {plan.tier !== "executive" && (
             <button
               onClick={() => setUpgradeModalFeature("checklist_engine")}
-              className={`flex-shrink-0 inline-flex items-center gap-1 sm:gap-1.5 text-[11px] sm:text-[12.5px] font-bold px-4 sm:px-5.5 py-2 sm:py-2.75 rounded-xl text-white transition-all active:scale-[0.96] shadow-md hover:shadow-xl hover:-translate-y-0.5 border border-white/15 group relative overflow-hidden whitespace-nowrap
-                ${
-                  plan.tier === "free"
-                    ? "bg-[#7fa8d8] hover:bg-[#6f98cc]"
-                    : plan.tier === "basic"
-                      ? "bg-[#2f9a95] hover:bg-[#257e7a]"
-                      : "bg-[#9b7dd8] hover:bg-[#8b6dcf]"
-                }`}
+              className={`group relative inline-flex flex-shrink-0 items-center gap-1 overflow-hidden rounded-xl border border-white/15 px-4 py-2 text-[11px] font-bold whitespace-nowrap text-white shadow-md transition-all hover:-translate-y-0.5 hover:shadow-xl active:scale-[0.96] sm:gap-1.5 sm:px-5.5 sm:py-2.75 sm:text-[12.5px] ${
+                plan.tier === "free"
+                  ? "bg-[#7fa8d8] hover:bg-[#6f98cc]"
+                  : plan.tier === "basic"
+                    ? "bg-[#2f9a95] hover:bg-[#257e7a]"
+                    : "bg-[#9b7dd8] hover:bg-[#8b6dcf]"
+              }`}
             >
-              <span className="absolute inset-0 bg-white/10 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700 pointer-events-none" />
+              <span className="pointer-events-none absolute inset-0 translate-x-[-100%] bg-white/10 transition-transform duration-700 group-hover:translate-x-[100%]" />
               <span className="relative">Upgrade Plan</span>
               <ChevronRight
                 size={14}
                 strokeWidth={3}
-                className="relative sm:w-[16px] sm:h-[16px]"
+                className="relative sm:h-[16px] sm:w-[16px]"
               />
             </button>
           )}
         </div>
 
         {/* Mobile Vertical Timeline Stepper View (< sm) */}
-        <div className="relative flex flex-col gap-5 pl-8 sm:hidden">
+        <div className="relative flex flex-col gap-6 pl-10 sm:hidden">
           {/* Vertical Connecting Track Line */}
           <div
-            className={`absolute left-[13px] top-3 bottom-3 w-[2px] ${
+            className={`absolute top-3 bottom-3 left-[14px] w-[2px] ${
               isChapter3 ? "bg-[#051738]/25" : isChapter2 ? "bg-[#520a50]/25" : "bg-[#8284bf]/25"
             }`}
           />
@@ -286,11 +276,11 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
               >
                 {/* Timeline Circle Node */}
                 <div
-                  className={`absolute -left-[31px] top-0.5 z-10 flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-extrabold shadow-xs transition-all ${
+                  className={`absolute top-0.5 -left-[37px] z-10 flex h-7 w-7 items-center justify-center rounded-full text-[11px] font-extrabold shadow-xs transition-all ${
                     isCompleted
                       ? `${chapterBg} text-white`
                       : isCurrent
-                        ? `${chapterBg} text-white ring-4 ring-purple-900/15 scale-105`
+                        ? `${chapterBg} scale-105 text-white ring-4 ring-purple-900/15`
                         : isStepLocked
                           ? "border border-slate-300 bg-slate-200 text-slate-400"
                           : "border-2 border-slate-300 bg-white text-slate-600"
@@ -306,30 +296,38 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
                       {step.step_name || (step as any).name}
                     </h4>
                     {step.step_short_description && (
-                      <p className="mt-0.5 text-[12px] font-semibold leading-relaxed text-slate-600">
+                      <p className="mt-0.5 text-[12px] leading-relaxed font-semibold text-slate-600">
                         {step.step_short_description}
                       </p>
                     )}
                     <div className="mt-2.5 flex items-center">
-                      <span className={`rounded-md ${chapterBg} px-2.5 py-1 text-[9.5px] font-extrabold uppercase tracking-wider text-white shadow-xs`}>
+                      <span
+                        className={`rounded-md ${chapterBg} px-2.5 py-1 text-[9.5px] font-extrabold tracking-wider text-white uppercase shadow-xs`}
+                      >
                         Current Step
                       </span>
                     </div>
                   </div>
                 ) : (
                   <div className="pt-0.5">
-                    <h4 className={`text-[14px] font-bold leading-snug ${isCompleted ? "text-slate-900" : isStepLocked ? "text-slate-400" : "text-slate-800"}`}>
+                    <h4
+                      className={`text-[14px] leading-snug font-bold ${isCompleted ? "text-slate-900" : isStepLocked ? "text-slate-400" : "text-slate-800"}`}
+                    >
                       {step.step_name || (step as any).name}
                     </h4>
                     {step.step_short_description && (
-                      <p className={`mt-0.5 text-[11.5px] font-semibold leading-normal ${isCompleted ? "text-slate-500" : isStepLocked ? "text-slate-400" : "text-slate-500"}`}>
+                      <p
+                        className={`mt-0.5 text-[11.5px] leading-normal font-semibold ${isCompleted ? "text-slate-500" : isStepLocked ? "text-slate-400" : "text-slate-500"}`}
+                      >
                         {step.step_short_description}
                       </p>
                     )}
 
                     {isCompleted && (
                       <div className="mt-1.5 flex items-center">
-                        <span className={`inline-flex items-center gap-1 rounded-md border ${chapterSoftBg} px-2 py-0.5 text-[10px] font-bold`}>
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-md border ${chapterSoftBg} px-2 py-0.5 text-[10px] font-bold`}
+                        >
                           Completed
                         </span>
                       </div>
@@ -359,7 +357,7 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
         </div>
 
         {/* Desktop Step Cards View (sm:flex) */}
-        <div className="hidden sm:flex flex-col gap-1.5">
+        <div className="hidden flex-col gap-2.5 sm:flex">
           {activeSteps.map((step, idx) => {
             const sId = step.step_key || (step as any).id;
             const isCompleted = state.completedSteps.has(sId);
@@ -460,45 +458,38 @@ export function ChapterView({ data, chapterIdx, state, onBack, onSelectStep }: C
                   }
                   onSelectStep(chapterIdx, fullStepIdx);
                 }}
-                className={`group flex items-center gap-3 px-4 py-3 rounded-[13px] cursor-pointer transition-all border-[1.5px] animate-in fade-in slide-in-from-right-2 duration-500 ${borderColor} ${bgColor} relative
-                  ${
-                    isCompleted
-                      ? "shadow-[0_8px_32px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]"
-                      : "shadow-[0_4px_20px_rgba(36,42,66,0.13),0_2px_8px_rgba(44,62,80,0.10)] hover:shadow-[0_8px_32px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]"
-                  }
-                  active:scale-[0.98]
-                  ${!isStepLocked && isCurrent ? (isChapter3 ? "before:bg-[#051738]" : isChapter2 ? "before:bg-[#520a50]" : "before:bg-[#8284bf]") + ' before:content-[" "] before:absolute before:inset-y-1 before:left-0 before:w-1.5 before:rounded-full' : ""}
-                `}
+                className={`group animate-in fade-in slide-in-from-right-2 flex cursor-pointer items-center gap-5 rounded-[13px] border-[1.5px] px-5 py-3.5 transition-all duration-500 ${borderColor} ${bgColor} relative ${
+                  isCompleted
+                    ? "shadow-[0_8px_32px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]"
+                    : "shadow-[0_4px_20px_rgba(36,42,66,0.13),0_2px_8px_rgba(44,62,80,0.10)] hover:shadow-[0_8px_32px_rgba(36,42,66,0.18),0_3px_16px_rgba(44,62,80,0.13)]"
+                } active:scale-[0.98] ${!isStepLocked && isCurrent ? (isChapter3 ? "before:bg-[#051738]" : isChapter2 ? "before:bg-[#520a50]" : "before:bg-[#8284bf]") + ' before:content-[" "] before:absolute before:inset-y-1 before:left-0 before:w-1.5 before:rounded-full' : ""} `}
                 style={{ animationDelay: `${idx * 40}ms` }}
               >
-                <div className="relative shrink-0 flex items-center">
+                <div className="relative flex shrink-0 items-center">
                   <div
-                    className={`rounded-full border-2 flex items-center justify-center text-[10px] font-bold tracking-[0.04em] transition-all ${iconBg} ${iconBorder} ${iconText}
-                      shadow-[0_1.5px_6px_rgba(36,42,66,0.10)]
-                      w-7 h-7
-                    `}
+                    className={`flex items-center justify-center rounded-full border-2 text-[10px] font-bold tracking-[0.04em] transition-all ${iconBg} ${iconBorder} ${iconText} h-7 w-7 shadow-[0_1.5px_6px_rgba(36,42,66,0.10)]`}
                   >
                     {isCompleted ? "✓" : idx + 1}
                   </div>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className={`text-[14px] font-semibold leading-[1.3] ${textColor}`}>
+                  <div className={`text-[14px] leading-[1.3] font-semibold ${textColor}`}>
                     {step.step_name || (step as any).name}
                   </div>
                   <div
-                    className={`text-[11.5px] font-semibold mt-0.25 ${isStepLocked ? "text-[#a8b5c0]" : isCompleted ? "text-white" : "text-[#23232b]"}`}
+                    className={`mt-0.25 text-[11.5px] font-semibold ${isStepLocked ? "text-[#a8b5c0]" : isCompleted ? "text-white" : "text-[#23232b]"}`}
                   >
                     {step.step_short_description || ""}
                   </div>
                 </div>
                 {isStepLocked ? (
                   <div
-                    className={`shrink-0 inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-[0.03em] ${
+                    className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-bold tracking-[0.03em] ${
                       accessTier === "basic"
-                        ? "bg-[#e7f7f5] border-[#7ecfc6] text-[#166b62]"
+                        ? "border-[#7ecfc6] bg-[#e7f7f5] text-[#166b62]"
                         : accessTier === "premium"
-                          ? "bg-[#f0ebff] border-[#c5b9ff] text-[#4b3587]"
-                          : "bg-[#fff4cf] border-[#d8b95d] text-[#7a560f]"
+                          ? "border-[#c5b9ff] bg-[#f0ebff] text-[#4b3587]"
+                          : "border-[#d8b95d] bg-[#fff4cf] text-[#7a560f]"
                     }`}
                   >
                     <Lock size={10} strokeWidth={2.5} />
