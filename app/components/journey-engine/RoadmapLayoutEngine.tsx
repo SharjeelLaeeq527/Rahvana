@@ -19,14 +19,14 @@ const LazyStepView = React.lazy(() =>
 
 function StepSkeleton() {
   return (
-    <div className="flex-1 p-4 sm:p-6 md:p-10 animate-pulse overflow-hidden">
-      <div className="h-5 w-48 max-w-full bg-slate-200 rounded mb-4" />
-      <div className="h-8 w-full max-w-xs bg-slate-200 rounded mb-3" />
-      <div className="h-4 w-full max-w-lg bg-slate-100 rounded mb-2" />
-      <div className="h-4 w-full max-w-md bg-slate-100 rounded mb-8" />
+    <div className="flex-1 animate-pulse overflow-hidden p-4 sm:p-6 md:p-10">
+      <div className="mb-4 h-5 w-48 max-w-full rounded bg-slate-200" />
+      <div className="mb-3 h-8 w-full max-w-xs rounded bg-slate-200" />
+      <div className="mb-2 h-4 w-full max-w-lg rounded bg-slate-100" />
+      <div className="mb-8 h-4 w-full max-w-md rounded bg-slate-100" />
       <div className="space-y-4">
         {[1, 2, 3].map((i) => (
-          <div key={i} className="h-20 w-full bg-slate-100 rounded-xl" />
+          <div key={i} className="h-20 w-full rounded-xl bg-slate-100" />
         ))}
       </div>
     </div>
@@ -63,6 +63,8 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
 
   const { showToast } = useToast();
   const { user } = useAuth();
+
+  const isDevelopment = process.env.NEXT_PUBLIC_ENVIRONMENT === "development";
 
   // Prefetch the document vault as soon as the journey opens (on the dashboard),
   // not when the lazy StepView mounts. This is why the "Get Required Documents"
@@ -168,15 +170,15 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
   })();
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-[#f4f7fb] font-sans text-[#1c2b3a] animate-in fade-in duration-500 pt-10">
+    <div className="animate-in fade-in flex min-h-screen w-full flex-col bg-[#f4f7fb] pt-10 font-sans text-[#1c2b3a] duration-500">
       {/* Top Navigation */}
-      <nav className="sticky top-15 h-[52px] bg-white border-b border-[#d0e4f7] flex items-center px-5 gap-3 shrink-0 z-40">
+      <nav className="sticky top-15 z-40 flex h-[52px] shrink-0 items-center gap-3 border-b border-[#d0e4f7] bg-white px-5">
         {/* Dynamic Back / Logo */}
         <div className="flex items-center gap-3">
           {view !== "dashboard" && (
             <button
               onClick={handleBack}
-              className="w-8 h-8 rounded-full border border-[#d0e4f7] flex items-center justify-center text-[#6b8097] hover:bg-[#f4f7fb] hover:text-primary transition-all active:scale-95 cursor-pointer"
+              className="hover:text-primary flex h-8 w-8 cursor-pointer items-center justify-center rounded-full border border-[#d0e4f7] text-[#6b8097] transition-all hover:bg-[#f4f7fb] active:scale-95"
               title="Back"
             >
               <ArrowLeft size={14} strokeWidth={2.5} />
@@ -189,7 +191,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
           <li>
             <button className="breadcrumb-item breadcrumb-link" onClick={handleBackToDashboard}>
               <LayoutDashboard size={12} strokeWidth={3} aria-hidden="true" />
-              <span className={`bc-text${view !== "dashboard" ? " bc-text--dashboard" : ""}`}>
+              <span className={`bc-text${view !== "dashboard" ? "bc-text--dashboard" : ""}`}>
                 Dashboard
               </span>
             </button>
@@ -246,19 +248,24 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
               </span>
             </button>
           )}
-          <button
-            onClick={async () => {
-              if (confirm("Are you sure you want to reset your progress? This cannot be undone.")) {
-                await actions.resetProgress();
-                window.location.reload();
-              }
-            }}
-            className="reset-btn"
-            title="Reset Journey"
-            aria-label="Reset progress"
-          >
-            <X size={14} />
-          </button>
+          {/* DEV ONLY — reset button, uncomment for local testing */}
+          {isDevelopment && (
+            <button
+              onClick={async () => {
+                if (
+                  confirm("Are you sure you want to reset your progress? This cannot be undone.")
+                ) {
+                  await actions.resetProgress();
+                  window.location.reload();
+                }
+              }}
+              className="reset-btn"
+              title="Reset Journey"
+              aria-label="Reset progress"
+            >
+              <X size={14} />
+            </button>
+          )}
         </div>
       </nav>
 

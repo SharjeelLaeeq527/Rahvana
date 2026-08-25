@@ -382,8 +382,18 @@ export default function MyInterviewSessions() {
       <div className="mt-12">
         <NarrativeModal
           isOpen={showNarrative}
-          onClose={() => setShowNarrative(false)}
-          onComplete={() => setShowNarrative(false)}
+          onClose={() => {
+            if (dontShowAgain) {
+              localStorage.setItem("dont_show_interview_narrative", "true");
+            }
+            setShowNarrative(false);
+          }}
+          onComplete={() => {
+            if (dontShowAgain) {
+              localStorage.setItem("dont_show_interview_narrative", "true");
+            }
+            setShowNarrative(false);
+          }}
           dontShowAgain={dontShowAgain}
           onDontShowAgainChange={setDontShowAgain}
           variant="interview-prep"
