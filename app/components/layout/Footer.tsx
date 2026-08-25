@@ -17,7 +17,7 @@ export default function Footer() {
 
     const routes: Record<string, string> = {
       contact: "/#contact",
-      about: "/#about",
+      about: "/about",
     };
 
     const targetRoute = routes[id] || "/";
@@ -68,16 +68,17 @@ export default function Footer() {
           </div>
 
           {/* Journeys Column */}
-          <div>
+          <div className="">
             <h4 className="mb-6 hidden text-xs font-bold tracking-normal text-white uppercase sm:block sm:text-sm sm:tracking-wider">
               {t("footer.journeys") || "Journeys"}
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
               <Link
                 href={ir1journeyHref}
-                className="hidden text-slate-400 transition-colors hover:text-white sm:block"
+                className="text-white underline font-medium sm:font-normal transition-colors hover:text-white sm:text-slate-400 sm:no-underline"
               >
                 IR-1 Journey
+                <ArrowRight size={14} className="ml-1 inline-block" />
               </Link>
               {/* IR-5 is hidden on production (see lib/feature-flags) until it launches. */}
               {IR5_ENABLED && (
@@ -132,7 +133,7 @@ export default function Footer() {
                 {t("toolsPage.toolsItems.pdf-toolkit.title")}
               </Link>
               <Link
-                href="/tools"
+                href="/resources?tab=toolbox"
                 className="font-medium text-white underline transition-colors hover:text-slate-200"
               >
                 Explore<span className="hidden sm:inline"> all</span> Tools
@@ -148,7 +149,7 @@ export default function Footer() {
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
               <Link
-                href="/#about"
+                href="/about"
                 onClick={(e) => handleNav("about", e)}
                 className="text-slate-400 transition-colors hover:text-white"
               >
