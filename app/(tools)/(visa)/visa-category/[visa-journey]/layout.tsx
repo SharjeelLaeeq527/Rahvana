@@ -1,6 +1,11 @@
 import type { Metadata } from "next";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://rahvana.com";
+
+/** IR-5 is hidden on production (see lib/feature-flags): true when this slug is IR-5 and gated off. */
+const isGatedIr5 = (slug: string) =>
+  !IR5_ENABLED && (slug === "ir-5" || slug === "ir5-journey");
 
 /**
  * Per-journey metadata for /visa-category/[visa-journey].
@@ -91,6 +96,17 @@ export async function generateMetadata({
   params: Promise<{ "visa-journey": string }>;
 }): Promise<Metadata> {
   const { "visa-journey": slug } = await params;
+
+  // IR-5 hidden on production: emit generic, non-indexed metadata so the title,
+  // keywords, and social preview never expose IR-5.
+  if (isGatedIr5(slug)) {
+    return {
+      title: DEFAULT_META.title,
+      description: DEFAULT_META.description,
+      robots: { index: false, follow: false },
+    };
+  }
+
   const meta = JOURNEY_META[slug] ?? DEFAULT_META;
   const canonicalUrl = `${SITE_URL}/visa-category/${slug}`;
 
@@ -188,7 +204,8 @@ export default async function VisaJourneyLayout({
   params: Promise<{ "visa-journey": string }>;
 }) {
   const { "visa-journey": slug } = await params;
-  const howToSchema = JOURNEY_HOWTO_SCHEMAS[slug];
+  // IR-5 hidden on production: do not inject IR-5 HowTo structured data.
+  const howToSchema = isGatedIr5(slug) ? undefined : JOURNEY_HOWTO_SCHEMAS[slug];
 
   return (
     <>

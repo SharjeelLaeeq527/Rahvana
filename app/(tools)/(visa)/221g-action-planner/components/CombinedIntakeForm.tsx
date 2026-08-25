@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -303,7 +304,8 @@ const VISA_TYPES = [
 
 const VISA_CATEGORIES = [
   { value: "IR-1", label: "IR-1 (Immediate Relative Spouse)" },
-  { value: "IR-5", label: "IR-5 (Immediate Relative Parent)" },
+  // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+  ...(IR5_ENABLED ? [{ value: "IR-5", label: "IR-5 (Immediate Relative Parent)" }] : []),
   // { value: "IR-2", label: "IR-2 (Immediate Relative - Child)" },
   // { value: "IR-5", label: "IR-5 (Immediate Relative - Parent)" },
   // { value: "CR-1", label: "CR-1 (Conditional Resident - Spouse)" },
@@ -2485,6 +2487,7 @@ footer.querySelector(".footer-page").textContent = String(p);
                     options={VISA_CATEGORIES}
                     placeholder="Select..."
                     className="w-full [&_button]:w-full [&_button]:min-w-0"
+                    collapseWhenSingle
                   />
                 </div>
               </div>

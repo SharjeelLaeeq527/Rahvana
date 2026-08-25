@@ -1,6 +1,8 @@
 // ─── Pricing data — single source of truth for the /pricing page ─────────────
 // Keep in sync with lib/entitlements/config.ts (TIER_PRICES, ENTITLEMENTS, ADDON).
 
+import { IR5_ENABLED } from "@/lib/feature-flags";
+
 export type PlanData = {
   id: string;
   name: string;
@@ -195,7 +197,10 @@ export const CR2Plans: PlanData[] = [
 export const VISA_CATEGORIES: VisaCategoryData[] = [
   { id: "IR-1 / CR-1", label: "IR-1 / CR-1 · Spouse Visa", plans: defaultPlans },
   { id: "IR-2 / CR-2", label: "IR-2 / CR-2 · Child of U.S. Citizen", plans: CR2Plans },
-  { id: "IR-5", label: "IR-5 · Parent of U.S. Citizen", plans: defaultPlans },
+  // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+  ...(IR5_ENABLED
+    ? [{ id: "IR-5", label: "IR-5 · Parent of U.S. Citizen", plans: defaultPlans }]
+    : []),
   { id: "F-2A", label: "F-2A · Spouse / Child of Permanent Resident", plans: defaultPlans },
   { id: "K-1 / K-2", label: "K-1 / K-2 · Fiancé Visa", plans: defaultPlans },
   { id: "F-1", label: "F-1 · Student Visa", plans: defaultPlans },

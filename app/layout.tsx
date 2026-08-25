@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import "./globals.css";
 import { ClientHeader } from "./components/layout/ClientHeader";
 import { AuthProvider } from "./context/AuthContext";
@@ -18,6 +19,11 @@ import { JsonLd } from "./components/seo/JsonLd";
 
 const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://rahvana.com";
 
+// IR-5 is hidden on production (see lib/feature-flags): drop IR-5 from the
+// site-wide SEO copy so the category is not advertised while it is gated off.
+const VISA_LIST_FULL = IR5_ENABLED ? "IR-1, IR-5, CR-1, and F-1" : "IR-1, CR-1, and F-1";
+const VISA_LIST_SHORT = IR5_ENABLED ? "IR-1, IR-5, and family" : "IR-1 and family";
+
 const ROOT_STRUCTURED_DATA = [
   {
     "@context": "https://schema.org",
@@ -25,8 +31,7 @@ const ROOT_STRUCTURED_DATA = [
     name: "Rahvana",
     url: SITE_URL,
     logo: `${SITE_URL}/favicon-512.png`,
-    description:
-      "Rahvana provides step-by-step guidance, smart tools, and expert support for U.S. immigration journeys including IR-1, IR-5, CR-1, and F-1 visas.",
+    description: `Rahvana provides step-by-step guidance, smart tools, and expert support for U.S. immigration journeys including ${VISA_LIST_FULL} visas.`,
     sameAs: [
       "https://twitter.com/rahvana",
       "https://www.linkedin.com/company/rahvana",
@@ -59,16 +64,15 @@ export const metadata: Metadata = {
     default: "Rahvana — U.S. Immigration Made Simple",
     template: "%s · Rahvana",
   },
-  description:
-    "Rahvana guides couples and families through the IR-1, IR-5, CR-1, and F-1 visa process with step-by-step roadmaps, smart document tools, and expert support.",
+  description: `Rahvana guides couples and families through the ${VISA_LIST_FULL} visa process with step-by-step roadmaps, smart document tools, and expert support.`,
 
   // ── Keywords (GEO signal — helps AI models understand the site topic) ───────
   keywords: [
     "IR-1 visa",
-    "IR-5 visa",
+    ...(IR5_ENABLED ? ["IR-5 visa"] : []),
     "CR-1 visa",
     "spouse visa",
-    "parent visa",
+    ...(IR5_ENABLED ? ["parent visa"] : []),
     "U.S. immigration",
     "immigration platform",
     "visa roadmap",
@@ -90,8 +94,7 @@ export const metadata: Metadata = {
     locale: "en_US",
     siteName: "Rahvana",
     title: "Rahvana — U.S. Immigration Made Simple",
-    description:
-      "Guided IR-1, IR-5, and family visa journeys with smart tools, document vaults, and expert support.",
+    description: `Guided ${VISA_LIST_SHORT} visa journeys with smart tools, document vaults, and expert support.`,
     url: SITE_URL,
     images: [
       {
@@ -107,8 +110,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     title: "Rahvana — U.S. Immigration Made Simple",
-    description:
-      "Guided IR-1, IR-5, and family visa journeys with smart tools, document vaults, and expert support.",
+    description: `Guided ${VISA_LIST_SHORT} visa journeys with smart tools, document vaults, and expert support.`,
     images: ["/opengraph-image.png"],
   },
 

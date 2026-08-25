@@ -6,6 +6,7 @@ import { ArrowRight, Clock3, FileCheck2, Search, ShieldCheck } from "lucide-reac
 import { ExplorerJourneyCard } from "./journey-explorer-card";
 import { ExplorerSupportSection } from "./journey-explorer-support";
 import { EXPLORER_CARDS } from "../data/journeys";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 
 const HERO_BADGES = [
   {
@@ -32,20 +33,26 @@ const HERO_BADGES = [
 export function JourneyExplorerPage() {
   const [query, setQuery] = useState("");
 
+  // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+  const baseCards = useMemo(
+    () => EXPLORER_CARDS.filter((card) => IR5_ENABLED || card.slug !== "ir-5"),
+    []
+  );
+
   const filteredCards = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
 
     if (!normalizedQuery) {
-      return EXPLORER_CARDS;
+      return baseCards;
     }
 
-    return EXPLORER_CARDS.filter((card) =>
+    return baseCards.filter((card) =>
       [card.code, card.title, card.audience, card.summary, card.category, ...card.highlights]
         .join(" ")
         .toLowerCase()
         .includes(normalizedQuery)
     );
-  }, [query]);
+  }, [query, baseCards]);
 
   return (
     <main className="guide-grid-bg bg-[var(--rv-sky)] text-[var(--rv-ink)]">

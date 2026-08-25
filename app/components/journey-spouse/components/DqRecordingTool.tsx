@@ -2,6 +2,7 @@
 
 import React from "react";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 
 interface DqRecordingToolProps {
   dqState: {
@@ -25,10 +26,15 @@ const DQ_CATEGORY_OPTIONS = [
     value: "IR-1",
     label: "IR-1",
   },
-  {
-    value: "IR-5",
-    label: "IR-5",
-  },
+  // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+  ...(IR5_ENABLED
+    ? [
+        {
+          value: "IR-5",
+          label: "IR-5",
+        },
+      ]
+    : []),
 ];
 
 export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({
@@ -127,6 +133,7 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({
               options={DQ_CATEGORY_OPTIONS}
               placeholder="Select visa category"
               className="w-full"
+              collapseWhenSingle
             />
           </div>
 

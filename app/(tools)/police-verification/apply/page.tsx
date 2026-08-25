@@ -839,16 +839,18 @@ function PoliceApplyContent() {
                     <label className="ml-1 text-sm font-bold text-gray-700">
                       Certificate Delivery Type
                     </label>
-                    <select
-                      name="deliveryType"
+                    <CustomDropdown
                       value={formData.deliveryType}
-                      onChange={handleChange}
-                      className="focus:border-primary focus:ring-primary/5 w-full cursor-pointer appearance-none rounded-2xl border border-transparent bg-gray-50 p-4 transition-all outline-none focus:bg-white focus:ring-4"
-                    >
-                      <option value="">Select Type</option>
-                      <option value="Hard Copy">Hard Copy (Sign with Stamp)</option>
-                      <option value="Digital">Delivered via Email (Digital copy)</option>
-                    </select>
+                      onChange={(value) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          deliveryType: value,
+                        }))
+                      }
+                      options={deliveryTypeOptions}
+                      placeholder="Select Type"
+                      className="w-full [&_button]:w-full [&_button]:min-w-0"
+                    />
                   </div>
                 </div>
 

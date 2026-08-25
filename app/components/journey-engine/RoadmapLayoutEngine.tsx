@@ -248,7 +248,7 @@ export default function RoadmapLayoutEngine({ data, state, actions }: RoadmapLay
               </span>
             </button>
           )}
-          {/* DEV ONLY — reset button, uncomment for local testing */}
+          {/* DEV ONLY — reset button */}
           {isDevelopment && (
             <button
               onClick={async () => {
