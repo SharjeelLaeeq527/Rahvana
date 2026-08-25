@@ -209,8 +209,7 @@ function LoginContent() {
         // on the server can never silently leave the button clickable. Persist
         // the lock so a page refresh cannot re-enable it before the window ends.
         if (code === "AUTH_RATE_LIMITED" || (retryAfterSeconds && retryAfterSeconds > 0)) {
-          const seconds =
-            retryAfterSeconds && retryAfterSeconds > 0 ? retryAfterSeconds : 15 * 60;
+          const seconds = retryAfterSeconds && retryAfterSeconds > 0 ? retryAfterSeconds : 15 * 60;
           startLock(seconds);
           setError(signInError.message || msg(E.AUTH_RATE_LIMITED, { minutes: 15 }));
         } else if (code === "AUTH_EMAIL_NOT_CONFIRMED") {
@@ -542,7 +541,11 @@ function LoginContent() {
               <Button
                 type="submit"
                 disabled={isSubmitting || lockSeconds > 0}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full rounded-xl font-medium transition-all disabled:opacity-50"
+                className={`bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full rounded-xl font-medium transition-all ${
+                  isSubmitting || lockSeconds > 0
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer"
+                }`}
               >
                 {lockSeconds > 0
                   ? `Try again in ${Math.floor(lockSeconds / 60)}:${String(lockSeconds % 60).padStart(2, "0")}`
