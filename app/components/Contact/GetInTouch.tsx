@@ -1,13 +1,7 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import {
-  Send,
-  MessageSquare,
-  Instagram,
-  Linkedin,
-  Facebook,
-} from "lucide-react";
+import { Send, MessageSquare, Instagram, Linkedin, Facebook, Youtube } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import { submitContactForm } from "./contact-action";
 import { useLanguage } from "../../context/LanguageContext";
@@ -52,14 +46,14 @@ export default function GetInTouch() {
 
   return (
     <section
-      className="relative overflow-hidden py-8 md:py-16 font-sans"
+      className="relative overflow-hidden py-8 font-sans md:py-16"
       id="contact"
       suppressHydrationWarning
       style={{ background: "linear-gradient(180deg,#f7fffd 0%,#f3f8ff 30%,#fffafc 100%)" }}
     >
       {/* Texture overlay - matching opacity from original */}
       <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage: "url('assets/images/footer-texture.png')",
           backgroundSize: "cover",
@@ -68,49 +62,55 @@ export default function GetInTouch() {
         aria-hidden="true"
       ></div>
 
-      <div className="relative z-10 w-full mx-auto px-6 sm:px-8 md:px-12 2xl:px-30">
+      <div className="relative z-10 mx-auto w-full px-6 sm:px-8 md:px-12 2xl:px-30">
         {/* Section Header */}
-        <div className="text-center mb-6">
-          <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full mb-5">
+        <div className="mb-6 text-center">
+          <span className="bg-primary/10 text-primary mb-5 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium">
             <MessageSquare size={16} />
             {t("homePage.contactSection.badge") || "Let's Connect"}
           </span>
-          <h2 className="text-4xl font-bold text-foreground mb-4">
+          <h2 className="text-foreground mb-4 text-4xl font-bold">
             {t("homePage.contactSection.title") || "Get in Touch"}
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-muted-foreground text-lg">
             {t("homePage.contactSection.description") ||
               "Have questions or need support? We're here to help."}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
           {/* Social Column */}
           <div className="flex flex-col items-center justify-center text-center">
-            <h3 className="text-xl font-semibold text-foreground mb-6">
+            <h3 className="text-foreground mb-6 text-xl font-semibold">
               {t("homePage.contactSection.followUs") || "Follow Us"}
             </h3>
-            <div className="flex justify-between items-center gap-4 w-full max-w-[380px]">
+            <div className="flex w-full items-center justify-center gap-2.5 sm:gap-3.5 flex-wrap sm:flex-nowrap">
               <SocialCard
-                icon={<Instagram size={28} />}
+                icon={<Instagram size={24} />}
                 href="https://www.instagram.com/rahvana.co?igsh=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr"
                 target="_blank"
                 ariaLabel="Follow us on Instagram"
               />
               <SocialCard
-                icon={<Linkedin size={28} />}
+                icon={<Youtube size={24} />}
+                href="https://youtube.com/@rahvana_co?si=Mb5-OwJmc5ThTxJs"
+                target="_blank"
+                ariaLabel="Subscribe on YouTube"
+              />
+              <SocialCard
+                icon={<Linkedin size={24} />}
                 href="https://www.linkedin.com/company/rahvana/posts/?feedView=all"
                 target="_blank"
                 ariaLabel="Connect on LinkedIn"
               />
               <SocialCard
-                icon={<XIcon size={28} />}
+                icon={<XIcon size={24} />}
                 href="https://x.com/rahvanaco?s=21&t=a8CQwdRgHqBFZmUfsX8Gpg"
                 target="_blank"
                 ariaLabel="Follow us on X"
               />
               <SocialCard
-                icon={<Facebook size={28} />}
+                icon={<Facebook size={24} />}
                 href="https://www.facebook.com/profile.php?id=61587967827317&mibextid=wwXIfr"
                 target="_blank"
                 ariaLabel="Follow us on Facebook"
@@ -120,7 +120,7 @@ export default function GetInTouch() {
 
           {/* Contact Form Wrapper */}
           <div>
-            <h3 className="text-xl font-semibold text-foreground mb-6">
+            <h3 className="text-foreground mb-6 text-xl font-semibold">
               {t("homePage.contactSection.sendMessage") || "Send a Message"}
             </h3>
 
@@ -131,9 +131,9 @@ export default function GetInTouch() {
               ref={formRef}
               noValidate
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="firstName" className="text-sm font-medium text-foreground">
+                  <label htmlFor="firstName" className="text-foreground text-sm font-medium">
                     {t("homePage.contactSection.firstName") || "First Name"}
                   </label>
                   <input
@@ -143,12 +143,12 @@ export default function GetInTouch() {
                     placeholder={t("homePage.contactSection.placeholderFirstName") || "John"}
                     required
                     disabled={isSubmitting}
-                    className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
+                    className="border-border bg-muted/50 focus:bg-background focus:border-primary focus:ring-primary/10 rounded-lg border p-3 text-base transition-all focus:ring-4 focus:outline-none disabled:opacity-60"
                     suppressHydrationWarning
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label htmlFor="lastName" className="text-sm font-medium text-foreground">
+                  <label htmlFor="lastName" className="text-foreground text-sm font-medium">
                     {t("homePage.contactSection.lastName") || "Last Name"}
                   </label>
                   <input
@@ -158,13 +158,13 @@ export default function GetInTouch() {
                     placeholder="Smith"
                     required
                     disabled={isSubmitting}
-                    className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
+                    className="border-border bg-muted/50 focus:bg-background focus:border-primary focus:ring-primary/10 rounded-lg border p-3 text-base transition-all focus:ring-4 focus:outline-none disabled:opacity-60"
                     suppressHydrationWarning
                   />
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <label htmlFor="email" className="text-sm font-medium text-foreground">
+                <label htmlFor="email" className="text-foreground text-sm font-medium">
                   {t("homePage.contactSection.email") || "Email Address"}
                 </label>
                 <input
@@ -174,12 +174,12 @@ export default function GetInTouch() {
                   placeholder={t("homePage.contactSection.placeholderEmail") || "john@example.com"}
                   required
                   disabled={isSubmitting}
-                  className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
+                  className="border-border bg-muted/50 focus:bg-background focus:border-primary focus:ring-primary/10 rounded-lg border p-3 text-base transition-all focus:ring-4 focus:outline-none disabled:opacity-60"
                   suppressHydrationWarning
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label htmlFor="message" className="text-sm font-medium text-foreground">
+                <label htmlFor="message" className="text-foreground text-sm font-medium">
                   {t("homePage.contactSection.message") || "Message"}
                 </label>
                 <textarea
@@ -190,14 +190,14 @@ export default function GetInTouch() {
                   }
                   required
                   disabled={isSubmitting}
-                  className="p-3 border border-border rounded-lg text-base bg-muted/50 min-h-28 resize-y focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
+                  className="border-border bg-muted/50 focus:bg-background focus:border-primary focus:ring-primary/10 min-h-28 resize-y rounded-lg border p-3 text-base transition-all focus:ring-4 focus:outline-none disabled:opacity-60"
                   suppressHydrationWarning
                 ></textarea>
               </div>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="self-start inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 hover:-translate-y-0.5 hover:shadow-md transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:transform-none"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center gap-2 self-start rounded-lg px-6 py-3 font-semibold transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:transform-none"
                 suppressHydrationWarning
               >
                 {isSubmitting ? (
@@ -235,7 +235,8 @@ function SocialCard({
     <a
       href={href}
       target={target}
-      className="flex items-center justify-center w-16 h-14 md:w-20 md:h-20 bg-muted/30 border border-border rounded-2xl text-primary no-underline transition-all hover:bg-primary hover:text-primary-foreground hover:border-primary hover:-translate-y-1 hover:shadow-lg group"
+      rel={target === "_blank" ? "noopener noreferrer" : undefined}
+      className="bg-muted/30 border-border text-primary hover:bg-primary hover:text-primary-foreground hover:border-primary group flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl border no-underline transition-all hover:-translate-y-1 hover:shadow-lg shrink-0"
       aria-label={ariaLabel}
     >
       <div className="transition-transform duration-300 group-hover:scale-110">{icon}</div>
