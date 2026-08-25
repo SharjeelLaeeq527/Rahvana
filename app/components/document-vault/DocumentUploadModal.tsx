@@ -518,7 +518,7 @@ export function DocumentUploadModal({
           {/* Config not ready warning */}
           {!config && (
             <div className="mb-6 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800 shadow-sm">
-              <span className="mt-0.5 text-lg leading-none">⏳</span>
+              {/* <span className="mt-0.5 text-lg leading-none">⏳</span> */}
               <span className="leading-relaxed">
                 Document Vault is initializing&hellip; please wait a moment before uploading.
               </span>
