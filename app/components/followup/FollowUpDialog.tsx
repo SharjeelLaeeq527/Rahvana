@@ -3,18 +3,12 @@
 import { useState, useMemo, useCallback } from "react";
 import { Dialog, DialogContent, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import Link from "next/link";
 import { FormSelections } from "@/app/(tools)/(visa)/221g-action-planner/types/221g";
 import { Check, X as XIcon, Bookmark } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useGuideSave } from "@/lib/guides/useGuideSave";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface FollowUpDialogProps {
   isOpen: boolean;
@@ -372,23 +366,16 @@ export function FollowUpDialog({
                   </div>
 
                   <div className="max-w-md mx-auto w-full space-y-4">
-                    <Select value={difficultyDoc} onValueChange={setDifficultyDoc}>
-                      <SelectTrigger className="h-14 bg-white border-slate-200 shadow-sm text-base">
-                        <SelectValue placeholder="Select a document..." />
-                      </SelectTrigger>
-                      <SelectContent
-                        position="popper"
-                        sideOffset={8}
-                        className="max-h-[300px] z-9999 w-[--radix-select-trigger-width]"
-                      >
-                        {relevantDocs.map((doc) => (
-                          <SelectItem key={doc.id} value={doc.id}>
-                            {doc.label}
-                          </SelectItem>
-                        ))}
-                        <SelectItem value="other">Other / Not in list</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <CustomDropdown
+                      value={difficultyDoc}
+                      onChange={setDifficultyDoc}
+                      options={[
+                        ...relevantDocs.map((doc) => ({ value: doc.id, label: doc.label })),
+                        { value: "other", label: "Other / Not in list" },
+                      ]}
+                      placeholder="Select a document..."
+                      className="w-full [&_button]:h-14 [&_button]:w-full [&_button]:min-w-0"
+                    />
 
                     {difficultyDoc &&
                       (() => {
@@ -408,7 +395,7 @@ export function FollowUpDialog({
                                 ? "Check our comprehensive list of document guides."
                                 : hasGuide
                                   ? `Learn exactly how to obtain your ${selectedDocObj?.label}.`
-                                  : `We don't have a guide for ${selectedDocObj?.label} yet. Please let us know if you need one using the feedback button—your input helps us prioritize new guides!`}
+                                  : `We don't have a guide for ${selectedDocObj?.label} yet. Please let us know if you need one using the feedback button-your input helps us prioritize new guides!`}
                             </p>
                             <Button
                               asChild

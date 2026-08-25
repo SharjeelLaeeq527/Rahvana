@@ -1,3 +1,9 @@
+import type {
+  ConditionExpression,
+  QuestionConditions,
+  SkipIfInput,
+} from "./condition-evaluator";
+
 // Session source type - determines how the session was created
 export type InterviewSessionSource = "journey" | "tool";
 
@@ -142,6 +148,8 @@ export interface QuestionBankEntry {
   tooltip: string;
   tier?: "free" | "basic" | "premium" | "executive";
   mockInterviewOrder?: number;
+  conditions?: QuestionConditions | ConditionExpression;
+  skipIf?: SkipIfInput;
 }
 
 export interface QuestionBank {

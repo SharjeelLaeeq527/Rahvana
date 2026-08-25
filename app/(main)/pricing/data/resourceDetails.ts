@@ -71,7 +71,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "It scores across income, relationship strength, document completeness and immigration history, and even screens for administrative-processing risks. Instead of guessing whether your packet is 'good enough,' you get a prioritized, fixable list: what's strong, what's weak, and what to do about it before you submit.",
     ],
     highlights: [
-      { icon: "Gauge", title: "Instant 0–100 score", text: "A clear strength rating with a breakdown across income, relationship, documents and history." },
+      { icon: "Gauge", title: "Instant 0-100 score", text: "A clear strength rating with a breakdown across income, relationship, documents and history." },
       { icon: "AlertTriangle", title: "Flagged gaps & risks", text: "Every missing document or weak spot is surfaced and ranked HIGH / MEDIUM / LOW." },
       { icon: "ListChecks", title: "Prioritized fix list", text: "Improvement suggestions ordered by impact so you fix what matters first." },
       { icon: "ShieldCheck", title: "AP & RFE risk screening", text: "Catches inconsistencies and administrative-processing triggers before they cost you months." },
@@ -79,7 +79,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     steps: [
       { title: "Share your case details", text: "Pull from your Rahvana profile or answer a short guided intake, no re-typing." },
       { title: "AI reviews everything", text: "The analyzer checks income, relationship, documents and history for gaps and risks." },
-      { title: "Get your score + gaps", text: "See your 0–100 strength score with each gap explained in plain English." },
+      { title: "Get your score + gaps", text: "See your 0-100 strength score with each gap explained in plain English." },
       { title: "Fix and re-run", text: "Resolve items and re-analyze, your case analysis isn't capped." },
     ],
     audience: [
@@ -88,7 +88,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "Couples who want to avoid an RFE or 221(g) delay",
     ],
     outcomes: [
-      "A clear 0–100 case strength score",
+      "A clear 0-100 case strength score",
       "A prioritized list of gaps ranked by severity",
       "Re-analysis for your case as you fix things",
       "Confidence before you submit",
@@ -99,7 +99,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       ["Does it use my real data?", "Yes, it can pull directly from your Rahvana profile so you don't re-enter anything. Your data stays private."],
     ],
     media: [
-      imgFile("case-strength_hero.jpg", "Case Strength Analyzer score screen", "Your instant 0–100 case strength score with flagged gaps"),
+      imgFile("case-strength_hero.jpg", "Case Strength Analyzer score screen", "Your instant 0-100 case strength score with flagged gaps"),
       imgFile("case_strength_Sub_img.jpg", "Prioritized list of gaps to fix", "Every gap explained and ranked by severity"),
       imgFile("case_Strength_Sub.jpg", "Case Strength Analyzer detail view"),
     ],
@@ -290,7 +290,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     tagline: "Every PDF fix the embassy needs, in one place.",
     overview: [
       "Embassies and USCIS are unforgiving about file format: pages out of order, files too large to upload, the wrong format entirely. The PDF Tool Kit puts merge, edit, compress and convert in one place so every document goes in exactly the way it's supposed to.",
-      "Combine multiple scans into a single packet, shrink an oversized file under the upload limit, convert images or office files to PDF, and edit pages — all in your browser, no extra software to install.",
+      "Combine multiple scans into a single packet, shrink an oversized file under the upload limit, convert images or office files to PDF, and edit pages, all in your browser, no extra software to install.",
     ],
     highlights: [
       { icon: "Combine", title: "Merge into one packet", text: "Combine multiple PDFs and scans into a single, correctly ordered document." },
@@ -301,7 +301,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     steps: [
       { title: "Upload your file", text: "Drop in the PDF, image or document you need to fix." },
       { title: "Pick a tool", text: "Choose merge, compress, convert or edit." },
-      { title: "Process in-browser", text: "The toolkit handles it instantly — nothing to install." },
+      { title: "Process in-browser", text: "The toolkit handles it instantly, nothing to install." },
       { title: "Download", text: "Get a clean, submission-ready PDF." },
     ],
     audience: [
@@ -315,12 +315,12 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "Format conversion to embassy-ready PDFs",
     ],
     faqs: [
-      ["Is this included in my plan?", "Yes — the PDF Tool Kit is included free with Basic, Premium and Executive. It's sold standalone only for free-tier users."],
+      ["Is this included in my plan?", "Yes, the PDF Tool Kit is included free with Basic, Premium and Executive. It's sold standalone only for free-tier users."],
       ["Do my files stay private?", "Processing happens in your browser session; your documents aren't shared."],
       ["What can it convert?", "Common images and office files to PDF, plus merging, compressing and editing existing PDFs."],
     ],
     media: [
-      imgFile("pdf-toolkit_hero.jpg", "PDF Tool Kit — merge, compress, convert, edit"),
+      imgFile("pdf-toolkit_hero.jpg", "PDF Tool Kit, merge, compress, convert, edit"),
     ],
     related: ["smart", "snap", "photo"],
   },
@@ -332,13 +332,13 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     tagline: "A clean digital signature from a quick photo.",
     overview: [
       "Forms often need a signature image, but a phone photo of your signature comes with a grey background and shadows that look messy on an official document. Snap & Sign cleans that up: it removes the background and gives you a crisp, transparent signature you can drop straight into your forms.",
-      "Snap a photo of your handwritten signature on paper, upload it, and download a clean, ready-to-place signature image — no scanner or design tool needed.",
+      "Snap a photo of your handwritten signature on paper, upload it, and download a clean, ready-to-place signature image, no scanner or design tool needed.",
     ],
     highlights: [
       { icon: "Eraser", title: "Background removed", text: "Strips the paper, shadows and noise so only your signature remains." },
       { icon: "FileImage", title: "Transparent output", text: "Get a clean transparent image that sits naturally on any form." },
-      { icon: "Smartphone", title: "Just use your phone", text: "A normal photo of your signature on paper is all you need — no scanner." },
-      { icon: "Zap", title: "Ready in seconds", text: "Upload, preview and download — done in moments." },
+      { icon: "Smartphone", title: "Just use your phone", text: "A normal photo of your signature on paper is all you need, no scanner." },
+      { icon: "Zap", title: "Ready in seconds", text: "Upload, preview and download, done in moments." },
     ],
     steps: [
       { title: "Sign on paper", text: "Write your signature clearly on plain white paper." },
@@ -357,12 +357,12 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "No scanner or design software required",
     ],
     faqs: [
-      ["Is this included in my plan?", "Yes — Snap & Sign is included free with Basic, Premium and Executive. It's sold standalone only for free-tier users."],
+      ["Is this included in my plan?", "Yes, Snap & Sign is included free with Basic, Premium and Executive. It's sold standalone only for free-tier users."],
       ["What should I upload?", "A clear photo of your handwritten signature on plain white paper, well lit, works best."],
-      ["Is the output transparent?", "Yes — the background is removed so the signature drops cleanly onto your forms."],
+      ["Is the output transparent?", "Yes, the background is removed so the signature drops cleanly onto your forms."],
     ],
     media: [
-      imgFile("snap-and-sign_hero.jpg", "Snap & Sign — clean digital signature"),
+      imgFile("snap-and-sign_hero.jpg", "Snap & Sign, clean digital signature"),
     ],
     related: ["pdf", "smart", "photo"],
   },
@@ -648,9 +648,9 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       { title: "Passport Collection or Delivery", text: "You will receive an SMS when your passport is ready. Collect it from the passport office or receive it via courier if delivery was selected. Verify name spelling, CNIC number, date of birth, and other details before leaving." },
     ],
     audience: [
-      "New Passport — First-time passport application or expired passport",
-      "Renewal — Renew your existing valid or recently expired passport",
-      "Lost / Damaged — Replace a lost, stolen, or damaged passport",
+      "New Passport, First-time passport application or expired passport",
+      "Renewal, Renew your existing valid or recently expired passport",
+      "Lost / Damaged, Replace a lost, stolen, or damaged passport",
     ],
     outcomes: [
       "Step-by-step guidance tailored to your passport application type",
@@ -663,8 +663,8 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       ["What is a Pakistani Passport?", "A Pakistani passport is an official travel document issued for international travel that also proves Pakistani citizenship and identity."],
       ["When is it required?", "Required for all international travel; most countries require at least 6 months validity on your passport beyond your planned stay."],
       ["Who can apply?", "Every Pakistani citizen including newborns. No minimum age. Dual nationals must show their foreign passport with photocopy, NOC is required for government employees, and minors need both parents' IDs or legal guardianship documents."],
-      ["How long does processing take?", "Normal: approx. 10 working days. Urgent: approx. 4 working days. Fast Track: 2 working days at select offices. Online delivery via courier typically adds 2–3 additional days."],
-      ["Any pro tips?", "Renew 7–12 months before expiry. Use official DGIP portals/apps only. Keep your CNIC valid and complete all documents. Incorrect or incomplete documents cause rejections."],
+      ["How long does processing take?", "Normal: approx. 10 working days. Urgent: approx. 4 working days. Fast Track: 2 working days at select offices. Online delivery via courier typically adds 2-3 additional days."],
+      ["Any pro tips?", "Renew 7-12 months before expiry. Use official DGIP portals/apps only. Keep your CNIC valid and complete all documents. Incorrect or incomplete documents cause rejections."],
       ["Is this official legal advice?", "This wizard provides general guidance based on publicly available DGIP information and should not be considered legal advice. Requirements may vary and can change. Always verify current procedures with your local RPO/EPO office."],
     ],
     media: [
@@ -700,10 +700,10 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "General verification",
     ],
     outcomes: [
-      "Punjab — Rs 500, 3 working days",
-      "Balochistan — Rs 350, 3 working days",
-      "Sindh — Rs 500–1000, 7–15 working days",
-      "KPK — Rs 3000, varies by verification",
+      "Punjab, Rs 500, 3 working days",
+      "Balochistan, Rs 350, 3 working days",
+      "Sindh, Rs 500-1000, 7-15 working days",
+      "KPK, Rs 3000, varies by verification",
     ],
     faqs: [
       ["What is a Police Character Certificate used for?", "It is often required for traveling abroad, international jobs, immigration, and general verification."],
@@ -735,9 +735,9 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       { title: "Review & Receipt", text: "Review the printed application form carefully. Sign it and collect your tracking receipt." },
     ],
     audience: [
-      "New CNIC — Applying for the very first time (age 18+)",
-      "Correction / Update — Fixing details (name, DOB, marital status, address)",
-      "Replacement / Renewal — CNIC is expired, lost, stolen, or damaged",
+      "New CNIC, Applying for the very first time (age 18+)",
+      "Correction / Update, Fixing details (name, DOB, marital status, address)",
+      "Replacement / Renewal, CNIC is expired, lost, stolen, or damaged",
     ],
     outcomes: [
       "Answer a few questions about your application type",
@@ -745,7 +745,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "Validate your application against pre-submission requirements",
     ],
     faqs: [
-      ["How long does it take and what does it cost?", "Around 7–10 days on the Executive track. Fees: Executive Rs 2500, Urgent Rs 1500, Normal Rs 750 (excluding delivery fee)."],
+      ["How long does it take and what does it cost?", "Around 7-10 days on the Executive track. Fees: Executive Rs 2500, Urgent Rs 1500, Normal Rs 750 (excluding delivery fee)."],
       ["Is this official legal advice?", "This wizard provides general guidance based on publicly available information and should not be considered legal advice. Requirements may vary and can change over time. Always verify current procedures with your local NADRA office."],
     ],
     media: [
@@ -764,10 +764,10 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
     ],
     highlights: [
       { icon: "Users", title: "Parents' CNIC / NICOP (Valid)", text: "Originals of both parents required for verification." },
-      { icon: "ScrollText", title: "Nikah Nama Copy", text: "Proof of parents' marriage — relationship verification." },
+      { icon: "ScrollText", title: "Nikah Nama Copy", text: "Proof of parents' marriage, relationship verification." },
       { icon: "MapPin", title: "Proof of Residence", text: "Utility bill, tenancy agreement, or domicile certificate." },
-      { icon: "FileText", title: "Hospital Discharge / Birth Notification Slip", text: "Required only for hospital births — primary evidence of birth." },
-      { icon: "Users", title: "2 Witness CNICs", text: "Required only for home births — witnesses must be non-relatives." },
+      { icon: "FileText", title: "Hospital Discharge / Birth Notification Slip", text: "Required only for hospital births, primary evidence of birth." },
+      { icon: "Users", title: "2 Witness CNICs", text: "Required only for home births, witnesses must be non-relatives." },
       { icon: "FileText", title: "Affidavit (Sworn Statement)", text: "Mandatory for home births or late registration; signed by both parents." },
     ],
     steps: [
@@ -777,9 +777,9 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       { title: "Collection", text: "Track your application status via 1777 or SMS. Visit the NADRA center to collect the final B-Form or CNIC. Verify all details and spellings on the document immediately." },
     ],
     audience: [
-      "New Registration — First-time CBRC registration at Union Council.",
-      "Correction — Fixing errors in existing birth records.",
-      "Replacement — Reissuing lost or damaged certificates.",
+      "New Registration, First-time CBRC registration at Union Council.",
+      "Correction, Fixing errors in existing birth records.",
+      "Replacement, Reissuing lost or damaged certificates.",
     ],
     outcomes: [
       "Select the reason for your request and who the certificate is for",
@@ -789,7 +789,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "Validate the final certificate before submission.",
     ],
     faqs: [
-      ["How long does it take?", "3–15 working days."],
+      ["How long does it take?", "3-15 working days."],
       ["Is this official legal advice?", "This wizard provides general guidance. Requirements vary by province and Union Council. Always verify with local authorities."],
     ],
     media: [
@@ -811,7 +811,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       { icon: "Users", title: "Family Members CNIC", text: "CNIC copies of all adult family members to be listed." },
       { icon: "FileText", title: "Child Registration Certificate (CRC)", text: "Form-B for children under 18 years of age." },
       { icon: "ScrollText", title: "Nikah Nama / Marriage Certificate", text: "Required if applying for FRC By Marriage category." },
-      { icon: "FileText", title: "Death Certificate (if applicable)", text: "For deceased family members — issued by Union Council or Municipal Corporation." },
+      { icon: "FileText", title: "Death Certificate (if applicable)", text: "For deceased family members, issued by Union Council or Municipal Corporation." },
       { icon: "Camera", title: "Passport-size Photographs", text: "Recent photographs for online application via Pak Identity App." },
     ],
     steps: [
@@ -821,9 +821,9 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       { title: "Collect Printed FRC Certificate", text: "Receive your printed FRC certificate from the counter. Carefully verify names, CNIC numbers, and relationships before leaving the center. Report any errors immediately for correction." },
     ],
     audience: [
-      "New Certificate — First-time FRC registration with NADRA",
-      "Correction Needed — Fix errors in existing FRC document",
-      "Replacement — Lost or damaged FRC certificate",
+      "New Certificate, First-time FRC registration with NADRA",
+      "Correction Needed, Fix errors in existing FRC document",
+      "Replacement, Lost or damaged FRC certificate",
     ],
     outcomes: [
       "Answer a few questions about your FRC need",
@@ -831,7 +831,7 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "Validate your final certificate against immigration requirements",
     ],
     faqs: [
-      ["How long does it take?", "1–3 working days."],
+      ["How long does it take?", "1-3 working days."],
       ["Is this official legal advice?", "This wizard provides general guidance based on publicly available information and should not be considered legal advice. Requirements may vary and can change over time. Always verify current procedures with your local NADRA office and consult an immigration attorney for specific legal guidance."],
     ],
     media: [
@@ -863,10 +863,10 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       { title: "MOFA Attestation", text: "Get the certificate attested by Ministry of Foreign Affairs (Mandatory for Visas)." },
     ],
     audience: [
-      "Standard Registration — Both partners are Pakistani citizens (Single)",
-      "Foreign Partner — One partner is a foreign national (e.g. US/UK Citizen)",
-      "Second Marriage — One or both partners are Divorced or Widowed",
-      "Age-Specific Case — Bride is under the age of 18",
+      "Standard Registration, Both partners are Pakistani citizens (Single)",
+      "Foreign Partner, One partner is a foreign national (e.g. US/UK Citizen)",
+      "Second Marriage, One or both partners are Divorced or Widowed",
+      "Age-Specific Case, Bride is under the age of 18",
     ],
     outcomes: [
       "Select your specific marriage case (Standard, Foreign Partner, etc.)",
@@ -876,8 +876,8 @@ export const RESOURCE_DETAILS: Record<string, ResourceDetail> = {
       "Validate your final certificate details",
     ],
     faqs: [
-      ["How long does it take?", "10–20 days."],
-      ["What are the fees?", "Official UC fee: Rs 500–2,000 (standard). Urgent tracking: Rs 1,500–2,500. Lawyer/agent service: Rs 5,000–15,000. Consultant/legal firm: Rs 25,000–50,000. MOFA attestation and certified translations are charged separately."],
+      ["How long does it take?", "10-20 days."],
+      ["What are the fees?", "Official UC fee: Rs 500-2,000 (standard). Urgent tracking: Rs 1,500-2,500. Lawyer/agent service: Rs 5,000-15,000. Consultant/legal firm: Rs 25,000-50,000. MOFA attestation and certified translations are charged separately."],
       ["Is this official legal advice?", "Fees and procedures are subject to change by local Union Councils. Always confirm with your local UC Secretary."],
     ],
     media: [

@@ -45,7 +45,7 @@ export default function CompleteProfilePage() {
             <div className="text-left sm:text-right">
               <div className="text-sm text-slate-600">Step 2 of 3</div>
               <div className="w-full sm:w-32 h-2 bg-slate-200 rounded-full mt-2">
-                <div className="w-2/3 h-full bg-slate-900 rounded-full"></div>
+                <div className="w-2/3 h-full bg-[#0d7377] rounded-full"></div>
               </div>
             </div>
           </div>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { createBrowserClient } from "@supabase/ssr";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import { useRouter } from "next/navigation";
 import { E, msg } from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
@@ -24,7 +25,7 @@ export default function CompleteProfileForm() {
     name: { first: "", last: "", middle: "" },
     dateOfBirth: "",
     placeOfBirth: { city: "", country: "" },
-    sex: "Male",
+    sex: "",
     nationality: "",
     maritalStatus: "Single",
     phone: "",
@@ -51,6 +52,7 @@ export default function CompleteProfileForm() {
       dateOfBirth: "",
       phone: "",
       email: "",
+      sex: "",
       address: { street: "", city: "", state: "", zipCode: "", country: "" },
     },
     beneficiary: {
@@ -175,6 +177,11 @@ export default function CompleteProfileForm() {
           setFormData((prev) => ({
             ...prev,
             ...mappedData,
+            sex: "",
+            sponsor: {
+              ...(mappedData.sponsor || {}),
+              sex: "",
+            },
           }));
           setProfileLoaded(true);
         }
@@ -873,7 +880,8 @@ export default function CompleteProfileForm() {
                   label: "CR-1 - Conditional Resident (Spouse of US Citizen, married <2 years)",
                 },
                 { value: "K-1", label: "K-1 - Fiancé(e) Visa" },
-                { value: "IR-5", label: "IR-5 - Parent of US Citizen" },
+                // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+                ...(IR5_ENABLED ? [{ value: "IR-5", label: "IR-5 - Parent of US Citizen" }] : []),
                 {
                   value: "IR-2",
                   label: "IR-2 - Unmarried Child of US Citizen",
@@ -1342,7 +1350,7 @@ export default function CompleteProfileForm() {
       {/* Progress bar */}
       <div className="h-1 bg-slate-100">
         <div
-          className="h-full bg-slate-700 transition-all duration-300"
+          className="h-full bg-[#0d7377] transition-all duration-300"
           style={{ width: `${((currentStep + 1) / steps.length) * 100}%` }}
         />
       </div>

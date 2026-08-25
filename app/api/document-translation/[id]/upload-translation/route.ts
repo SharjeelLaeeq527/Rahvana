@@ -5,6 +5,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { E, msg } from "@/lib/errors";
 import { triggerTranslationNotification } from "@/lib/notifications";
+import { requireAdmin } from "@/lib/api/authGuards";
+import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
+import { validateUploadedFile } from "@/lib/security/file-content";
 function getStorageSupabase() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -16,6 +19,12 @@ function getStorageSupabase() {
 
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    // AUTHZ: admin only (this route uses the service role → bypasses RLS)
+    const { isAdmin, error: authError } = await requireAdmin();
+    if (!isAdmin) {
+      return NextResponse.json({ error: authError || "Admin access required" }, { status: 403 });
+    }
+
     const { id } = await params;
     const formData = await request.formData();
     const file = formData.get("file") as File;
@@ -23,20 +32,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     if (!file) {
       return NextResponse.json({ error: msg(E.UPLOAD_NO_FILE) }, { status: 400 });
-    }
-
-    // Validate file type (PDF only)
-    if (!file.type.includes("pdf")) {
-      return NextResponse.json({ error: msg(E.UPLOAD_INVALID_PDF) }, { status: 400 });
-    }
-
-    // Validate file size (max 50MB)
-    const maxSize = 50 * 1024 * 1024;
-    if (file.size > maxSize) {
-      return NextResponse.json(
-        { error: msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: 50 }) },
-        { status: 400 }
-      );
     }
 
     const supabase = getStorageSupabase();
@@ -49,7 +44,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       .single();
 
     if (checkError || !existing) {
-      return NextResponse.json({ error: "Document not found" }, { status: 404 });
       return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
@@ -74,17 +68,21 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const sanitizedFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
     const storagePath = `translation-translated/${id}/${timestamp}_${sanitizedFileName}`;
 
-    const buffer = Buffer.from(await file.arrayBuffer());
+    const checked = await validateUploadedFile(file, UPLOAD_PROFILES.translation);
+    if (!checked.ok) {
+      return NextResponse.json({ error: checked.error }, { status: checked.status });
+    }
+    const buffer = checked.buffer;
+
     const { error: uploadError } = await supabase.storage
       .from("document-vault")
       .upload(storagePath, buffer, {
-        contentType: file.type,
+        contentType: checked.detectedMime,
         upsert: false,
       });
 
     if (uploadError) {
       console.error("Upload error:", uploadError);
-      return NextResponse.json({ error: "Failed to upload translated file" }, { status: 500 });
       return NextResponse.json({ error: msg(E.UPLOAD_PROCESSING_FAILED) }, { status: 500 });
     }
 
@@ -98,7 +96,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         translated_file_path: storagePath,
         translated_filename: file.name,
         translated_file_size: file.size,
-        translated_mime_type: file.type,
+        translated_mime_type: checked.detectedMime,
         translated_uploaded_at: new Date().toISOString(),
         admin_notes: adminNotes,
         status: "TRANSLATED",
@@ -127,6 +125,5 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   } catch (error) {
     console.error("Upload translation error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

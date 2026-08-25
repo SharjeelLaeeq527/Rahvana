@@ -66,7 +66,7 @@ export const MILESTONE_CONFIGS: Record<MilestoneId, MilestoneConfig> = {
       waiting: "Your petition has been submitted and is awaiting USCIS receipt.",
       upcoming: "File your I-130 petition to begin the process.",
       delayed:
-        "Your petition was filed some time ago — a receipt notice (NOA1) typically arrives within 2–4 weeks.",
+        "Your petition was filed some time ago, a receipt notice (NOA1) typically arrives within 2-4 weeks.",
     },
     actionGuidance:
       "Keep your receipt notice safe. It will contain your case number.",
@@ -85,10 +85,10 @@ export const MILESTONE_CONFIGS: Record<MilestoneId, MilestoneConfig> = {
       upcoming:
         "Once filed, you will receive a receipt notice (NOA1) within a few weeks.",
       delayed:
-        "NOA1 can take up to 4–6 weeks after filing. If it's been longer, consider checking USCIS case status online.",
+        "NOA1 can take up to 4-6 weeks after filing. If it's been longer, consider checking USCIS case status online.",
     },
     actionGuidance:
-      "Your NOA1 contains your receipt number — use it to track your case on the USCIS website.",
+      "Your NOA1 contains your receipt number, use it to track your case on the USCIS website.",
   },
 
   ACTIVE_REVIEW: {
@@ -102,18 +102,18 @@ export const MILESTONE_CONFIGS: Record<MilestoneId, MilestoneConfig> = {
       waiting:
         "Your petition is in active review at USCIS. This is the longest phase.",
       upcoming:
-        "After NOA1, your case enters USCIS review — the primary processing stage.",
+        "After NOA1, your case enters USCIS review, the primary processing stage.",
       delayed:
         "Extended review periods are common. USCIS processing times fluctuate based on workload and staffing.",
     },
     actionGuidance:
-      "Avoid unnecessary inquiries during this phase — it can slow things down. Check USCIS online tools for status updates.",
+      "Avoid unnecessary inquiries during this phase, it can slow things down. Check USCIS online tools for status updates.",
   },
 
   APPROVED: {
     id: "APPROVED",
     label: "USCIS Approved",
-    description: "Petition approved — case transfers to NVC",
+    description: "Petition approved, case transfers to NVC",
     phase: "uscis",
     typicalDaysToNext: 45,
     messages: {
@@ -125,7 +125,7 @@ export const MILESTONE_CONFIGS: Record<MilestoneId, MilestoneConfig> = {
         "Approval is overdue based on your filing date. Consider contacting USCIS if it has been significantly beyond the typical range.",
     },
     actionGuidance:
-      "After approval, allow 4–8 weeks for your case to appear in the NVC system.",
+      "After approval, allow 4-8 weeks for your case to appear in the NVC system.",
   },
 
   NVC_RECEIVED: {
@@ -140,7 +140,7 @@ export const MILESTONE_CONFIGS: Record<MilestoneId, MilestoneConfig> = {
       waiting: "Waiting for NVC to create your case after USCIS approval.",
       upcoming: "Your case will appear in the NVC system a few weeks after approval.",
       delayed:
-        "NVC creation can take 4–8 weeks after USCIS approval. If it has been longer, use the NVC inquiry portal.",
+        "NVC creation can take 4-8 weeks after USCIS approval. If it has been longer, use the NVC inquiry portal.",
     },
     actionGuidance:
       "Log in to the Consular Electronic Application Center (CEAC) to access your NVC case.",
@@ -181,7 +181,7 @@ export const MILESTONE_CONFIGS: Record<MilestoneId, MilestoneConfig> = {
         "Completing your DS-260 earlier preserves your position in the scheduling queue.",
     },
     actionGuidance:
-      "Complete the DS-260 carefully — errors can cause delays at the interview stage.",
+      "Complete the DS-260 carefully, errors can cause delays at the interview stage.",
   },
 
   DOCS_SUBMITTED: {
@@ -216,9 +216,9 @@ export const MILESTONE_CONFIGS: Record<MilestoneId, MilestoneConfig> = {
       waiting:
         "NVC is reviewing your documents for documentary qualification (DQ).",
       upcoming:
-        "Once all documents are accepted, your case will be marked as DQ — ready for embassy scheduling.",
+        "Once all documents are accepted, your case will be marked as DQ, ready for embassy scheduling.",
       delayed:
-        "DQ review typically takes 2–3 months after document submission. If it has been longer, contact NVC.",
+        "DQ review typically takes 2-3 months after document submission. If it has been longer, contact NVC.",
     },
     actionGuidance:
       "After DQ, wait for Islamabad embassy to schedule your interview. This queue is the primary variable.",
@@ -227,7 +227,7 @@ export const MILESTONE_CONFIGS: Record<MilestoneId, MilestoneConfig> = {
   INTERVIEW_WAIT: {
     id: "INTERVIEW_WAIT",
     label: "Waiting for Interview",
-    description: "DQ complete — waiting for Islamabad to schedule",
+    description: "DQ complete, waiting for Islamabad to schedule",
     phase: "embassy",
     typicalDaysToNext: null, // Islamabad queue is unpredictable
     messages: {
@@ -278,7 +278,7 @@ export const MILESTONE_CONFIGS: Record<MilestoneId, MilestoneConfig> = {
         "Visa issuance after a successful interview is usually quick. If delayed, the consulate may require additional documents.",
     },
     actionGuidance:
-      "Your visa packet is sealed — do not open it. Present it to CBP upon entry to the United States.",
+      "Your visa packet is sealed, do not open it. Present it to CBP upon entry to the United States.",
   },
 };
 

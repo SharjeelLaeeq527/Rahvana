@@ -8,6 +8,7 @@ import WizardInfoPanel, { InfoPanelData } from "../../../components/guides/Wizar
 import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { Loader } from "@/components/ui/spinner";
+import { PageGate } from "@/app/components/entitlements/PageGate";
 
 import ProvinceSelectionStep from "./components/ProvinceSelectionStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
@@ -349,7 +350,12 @@ export default function PoliceVerificationGuide() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 pt-26">
+    <PageGate
+      feature="guide_police"
+      title="Police Character Certificate Guide Locked"
+      description="Upgrade your plan to unlock step-by-step guidance on obtaining your Police Character Certificate."
+    >
+      <div className="min-h-screen flex flex-col bg-gray-50 pt-26">
       <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
 
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
@@ -399,7 +405,10 @@ export default function PoliceVerificationGuide() {
                     onClick={goBack}
                     className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
                   >
-                    <ArrowLeft className="w-4 h-4" /> Back
+                    <ArrowLeft className="w-4 h-4" /> 
+                    <span className="hidden md:inline-block">
+                      Back
+                    </span>
                   </motion.button>
                 ) : (
                   <div />
@@ -421,7 +430,10 @@ export default function PoliceVerificationGuide() {
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     }`}
                   >
-                    Continue <ArrowRight className="w-4 h-4" />
+                    <span className="hidden md:inline-block">
+                      Continue
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
                   </motion.button>
                 )}
               </div>
@@ -562,6 +574,7 @@ export default function PoliceVerificationGuide() {
         onClose={() => setIsPKMModalOpen(false)}
         province={state.province || "Punjab"}
       />
-    </div>
+      </div>
+    </PageGate>
   );
 }

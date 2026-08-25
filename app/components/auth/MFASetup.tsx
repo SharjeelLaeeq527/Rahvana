@@ -11,6 +11,8 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { createBrowserClient } from "@supabase/ssr/dist/main/createBrowserClient";
 import { useToast } from "../shared/ToastProvider";
 import { Loader } from "@/components/ui/spinner";
+import { MFACodeModal } from "../shared/MFACodeModal";
+import { Copy, Check } from "lucide-react";
 
 export function MFASetup() {
   const supabase = createBrowserClient(
@@ -32,6 +34,7 @@ export function MFASetup() {
   const [disableOTP, setDisableOTP] = useState<string>("");
   const [profile, setProfile] = useState<{ mfa_enabled: boolean } | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);
+  const [copied, setCopied] = useState(false);
 
   const { user, enableMFA, verifyMFASetup, disableMFASetup, listMFACheckFactors } = useAuth();
 
@@ -68,7 +71,6 @@ export function MFASetup() {
 
   const handleEnableMFA = async () => {
     setLoading(true);
-    setError("");
 
     const result = await enableMFA();
 
@@ -78,7 +80,7 @@ export function MFASetup() {
       setFactorId(result.factorId);
       setStep("qr");
     } else {
-      setError(result.error || msg(E.AUTH_MFA_ENABLE_FAILED));
+      showToast(result.error || msg(E.AUTH_MFA_ENABLE_FAILED), "error");
     }
 
     setLoading(false);
@@ -86,12 +88,11 @@ export function MFASetup() {
 
   const handleVerifyCode = async () => {
     if (!code.trim() || !factorId) {
-      setError(`${msg(E.AUTH_CLIENT_ENTER_VERIFICATION_CODE)}`);
+      showToast(`${msg(E.AUTH_CLIENT_ENTER_VERIFICATION_CODE)}`, "error");
       return;
     }
 
     setLoading(true);
-    setError("");
 
     try {
       const result = await verifyMFASetup(factorId, code);
@@ -104,10 +105,10 @@ export function MFASetup() {
 
         return;
       } else {
-        setError(result.error || `${msg(E.AUTH_MFA_CODE_INVALID)}`);
+        showToast(result.error || `${msg(E.AUTH_MFA_CODE_INVALID)}`, "error");
       }
     } catch {
-      setError(`${msg(E.AUTH_MFA_VERIFY_FAILED)}`);
+      showToast(`${msg(E.AUTH_MFA_VERIFY_FAILED)}`, "error");
     }
 
     setLoading(false);
@@ -115,7 +116,7 @@ export function MFASetup() {
 
   const handleDisableMFA = async () => {
     if (!disableOTP.trim()) {
-      setError(`${msg(E.AUTH_CLIENT_ENTER_VERIFICATION_CODE)}`);
+      showToast(`${msg(E.AUTH_CLIENT_ENTER_VERIFICATION_CODE)}`, "error");
       return;
     }
 
@@ -129,12 +130,11 @@ export function MFASetup() {
     }
 
     if (!currentFactorId) {
-      setError(`${msg(E.AUTH_MFA_FACTOR_NOT_FOUND)}`);
+      showToast(`${msg(E.AUTH_MFA_FACTOR_NOT_FOUND)}`, "error");
       return;
     }
 
     setLoading(true);
-    setError("");
 
     try {
       // Call the disable API
@@ -144,7 +144,6 @@ export function MFASetup() {
         // Close modal and reset state
         setIsDisableModalOpen(false);
         setDisableOTP("");
-        setError("");
         showToast("Two-factor authentication has been disabled.", "success");
 
         await supabase.auth.signOut();
@@ -153,265 +152,282 @@ export function MFASetup() {
 
         return;
       } else {
-        setError(result.error || `${msg(E.AUTH_MFA_DISABLE_FAILED)}`);
+        showToast(result.error || `${msg(E.AUTH_MFA_DISABLE_FAILED)}`, "error");
       }
     } catch {
-      setError(`${msg(E.AUTH_MFA_DISABLE_FAILED)}`);
+      showToast(`${msg(E.AUTH_MFA_DISABLE_FAILED)}`, "error");
     }
 
     setLoading(false);
   };
 
+  const handleCopySecret = () => {
+    navigator.clipboard.writeText(secret);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   if (profileLoading) {
     return (
-      <div className="flex justify-center items-center">
-        <Loader size="md" />
+      <div className="flex min-h-[240px] items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader size="md" />
+          <span className="text-xs font-medium tracking-[0.18em] text-[#8284bf] uppercase">
+            Loading security settings
+          </span>
+        </div>
       </div>
     );
   }
 
   if (step === "initial") {
+    const enabled = !!profile?.mfa_enabled;
+
     return (
-      <Card className="p-4 sm:p-6 max-w-md w-full mx-auto">
-        {profile && !profile.mfa_enabled && (
-          <>
-            <h2 className="text-xl font-bold mb-4">Setup Two-Factor Authentication</h2>
-            <p className="text-muted-foreground mb-6">
-              Add an extra layer of security to your account by enabling two-factor authentication.
-            </p>
-          </>
-        )}
+      <div className="mx-auto mt-8 w-full max-w-xl px-4 py-10 sm:py-16">
+        <Card className="relative overflow-hidden rounded-3xl border border-[#0d7377]/15 bg-white p-0 shadow-[0_24px_60px_-30px_rgba(13,115,119,0.45)]">
+          {/* Accent header */}
+          <div className="relative overflow-hidden bg-[#0d7377] px-6 py-8 sm:px-9 sm:py-10">
+            <div className="pointer-events-none absolute -top-16 -right-10 h-48 w-48 rounded-full bg-[#32e0c4]/25 blur-2xl" />
+            <div className="pointer-events-none absolute -bottom-20 left-10 h-40 w-40 rounded-full bg-[#8284bf]/30 blur-2xl" />
 
-        {profile && profile.mfa_enabled && (
-          <>
-            <h2 className="text-xl font-bold mb-4">Manage Two-Factor Authentication</h2>
-            <p className="text-muted-foreground mb-6">
-              Control and update your existing two-factor authentication settings.
-            </p>
-          </>
-        )}
-
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
-        {profile && !profile.mfa_enabled && (
-          <Button onClick={handleEnableMFA} disabled={loading} className="w-full">
-            {loading ? "Setting up..." : "Enable 2FA"}
-          </Button>
-        )}
-
-        {profile && profile.mfa_enabled && (
-          <Button onClick={() => setIsDisableModalOpen(true)} className="w-full">
-            Disable 2FA
-          </Button>
-        )}
-
-        {/* Disable MFA Modal */}
-        {isDisableModalOpen && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-card rounded-2xl shadow-xl border border-border w-full max-w-md overflow-hidden">
-              {/* Header */}
-              <div className="px-4 sm:px-6 pt-5 sm:pt-6 pb-4 border-b border-border">
-                <div className="flex items-start sm:items-center gap-3 mb-2">
-                  <div className="w-10 h-10 shrink-0 rounded-full bg-destructive/10 flex items-center justify-center">
-                    <svg
-                      className="w-5 h-5 text-destructive"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                      />
-                    </svg>
-                  </div>
-                  <h3 className="text-lg font-semibold text-foreground">
-                    Disable Two-Factor Authentication
-                  </h3>
-                </div>
-                <p className="text-sm text-muted-foreground">
-                  Enter your current authentication code to disable 2FA
-                </p>
+            <div className="relative flex items-center gap-4">
+              <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-[#32e0c4]/20 ring-1 ring-[#32e0c4]/40">
+                <svg
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#32e0c4"
+                  strokeWidth={1.8}
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="h-6 w-6"
+                  aria-hidden="true"
+                >
+                  <path d="M12 3l7 3.5v5c0 4.2-2.9 8-7 9.5-4.1-1.5-7-5.3-7-9.5v-5L12 3z" />
+                  <path d="M9.5 12.2l1.8 1.8 3.4-3.6" />
+                </svg>
               </div>
 
-              {/* Body */}
-              <div className="px-4 sm:px-6 py-5 sm:py-6">
-                <div className="space-y-5">
-                  <div className="space-y-2">
-                    <label className="block text-sm font-medium text-foreground">
-                      Authentication Code
-                    </label>
-                    <Input
-                      type="text"
-                      value={disableOTP}
-                      onChange={(e) => setDisableOTP(e.target.value)}
-                      placeholder="Enter 6-digit code"
-                      maxLength={6}
-                      disabled={loading}
-                      className="w-full"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      Enter the code from your authenticator app
-                    </p>
-                  </div>
-
-                  {error && (
-                    <div className="flex items-start gap-3 p-4 bg-destructive/5 border border-destructive/20 rounded-xl">
-                      <svg
-                        className="w-5 h-5 text-destructive shrink-0 mt-0.5"
-                        fill="none"
-                        stroke="currentColor"
-                        viewBox="0 0 24 24"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                        />
-                      </svg>
-                      <p className="text-sm text-destructive">{error}</p>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Footer */}
-              <div className="px-4 sm:px-6 py-4 bg-muted/20 border-t border-border flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setIsDisableModalOpen(false);
-                    setDisableOTP("");
-                    setError("");
-                  }}
-                  disabled={loading}
-                  className="h-11 rounded-xl px-6 w-full sm:w-auto"
+              <div className="min-w-0">
+                <span
+                  className={`inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[10px] font-semibold tracking-[0.16em] uppercase ${
+                    enabled
+                      ? "bg-[#32e0c4]/20 text-[#32e0c4] ring-1 ring-[#32e0c4]/40"
+                      : "bg-white/10 text-white/80 ring-1 ring-white/20"
+                  }`}
                 >
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleDisableMFA}
-                  disabled={loading || disableOTP.trim().length !== 6}
-                  className="h-11 rounded-xl px-10 w-full sm:w-auto bg-destructive hover:bg-destructive/90 text-destructive-foreground"
-                >
-                  {loading ? "Disabling..." : "Disable 2FA"}
-                </Button>
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${enabled ? "bg-[#32e0c4]" : "bg-[#c0596a]"}`}
+                  />
+                  {enabled ? "2FA Active" : "2FA Inactive"}
+                </span>
+                <h2 className="mt-2 truncate text-xl font-semibold tracking-tight text-white sm:text-2xl">
+                  {enabled ? "Manage Two-Factor Auth" : "Setup Two-Factor Auth"}
+                </h2>
               </div>
             </div>
           </div>
-        )}
-      </Card>
+
+          <div className="px-6 py-4 sm:px-9">
+            <p className="text-sm leading-relaxed text-black/70">
+              {enabled
+                ? "Control and update your existing two-factor authentication settings."
+                : "Add an extra layer of security to your account with a time-based one-time code from your authenticator app."}
+            </p>
+
+            <div className="mt-6 grid gap-3 sm:grid-cols-3">
+              {[
+                { t: "Time-based codes", d: "Rotating 6-digit TOTP" },
+                { t: "Device bound", d: "Codes live on your phone" },
+                { t: "Phishing resistant", d: "Passwords alone won't do" },
+              ].map((f) => (
+                <div
+                  key={f.t}
+                  className="rounded-2xl border border-[#0d7377]/12 bg-[#0d7377]/[0.04] p-3.5"
+                >
+                  <p className="text-[13px] font-semibold text-black">{f.t}</p>
+                  <p className="mt-1 text-[11px] leading-snug text-black/70">{f.d}</p>
+                </div>
+              ))}
+            </div>
+
+            {profile && !enabled && (
+              <Button
+                onClick={handleEnableMFA}
+                disabled={loading}
+                className="mt-7 h-12 w-full rounded-xl bg-[#0d7377] text-[15px] font-semibold text-white shadow-[0_12px_28px_-14px_rgba(13,115,119,0.9)] transition-all hover:bg-[#0a5f62] hover:shadow-[0_16px_32px_-14px_rgba(13,115,119,0.9)] disabled:opacity-60"
+              >
+                {loading ? "Setting up..." : "Enable 2FA"}
+              </Button>
+            )}
+
+            {profile && enabled && (
+              <Button
+                onClick={() => setIsDisableModalOpen(true)}
+                className="mt-7 h-12 w-full rounded-xl border border-[#c0596a]/30 bg-[#c0596a]/10 text-[15px] font-semibold text-[#c0596a] shadow-none transition-colors hover:bg-[#c0596a] hover:text-white"
+              >
+                Disable 2FA
+              </Button>
+            )}
+
+            <p className="mt-4 text-center text-[11px] text-[#8284bf]">
+              Works with Google Authenticator, 1Password, Authy and any TOTP app.
+            </p>
+          </div>
+
+          {/* Disable MFA Modal */}
+          <MFACodeModal
+            open={isDisableModalOpen}
+            onOpenChange={setIsDisableModalOpen}
+            value={disableOTP}
+            onValueChange={setDisableOTP}
+            onSubmit={handleDisableMFA}
+            loading={loading}
+            error={error}
+            title="Disable Two-Factor Authentication"
+            description="Enter your current authentication code to disable 2FA."
+            confirmText="Disable 2FA"
+            loadingText="Disabling..."
+            variant="danger"
+          />
+        </Card>
+      </div>
     );
   }
 
   if (step === "qr") {
     return (
-      <Card className="p-4 sm:p-6 mt-10 sm:mt-20 mb-10 sm:mb-16 max-w-md w-full mx-auto">
-        <h2 className="text-xl font-bold text-center">Scan QR Code</h2>
-        <p className="text-muted-foreground font-medium">
-          Scan this QR code with Google Authenticator:
-        </p>
+      <div className="mx-auto w-full max-w-6xl px-4 py-8 sm:py-14">
+        <Card className="overflow-hidden rounded-3xl border border-[#0d7377]/15 bg-white p-0 shadow-[0_30px_80px_-40px_rgba(13,115,119,0.5)]">
+          <div className="grid lg:grid-cols-[1.35fr_1fr]">
+            {/* LEFT — light panel with all the info */}
+            <div className="bg-white px-6 py-8 sm:px-10 sm:py-10">
+              <span className="inline-flex items-center gap-2 rounded-full bg-[#0d7377]/8 px-3 py-1 text-[10px] font-semibold tracking-[0.18em] text-[#0d7377] uppercase ring-1 ring-[#0d7377]/15">
+                Step 2 of 2
+              </span>
 
-        <div className="flex justify-center my-6">
-          <img
-            src={qrCode}
-            alt="Scan this QR code with your authenticator app"
-            width={200}
-            height={200}
-            className="border-4 border-muted/20 rounded-lg p-4 max-w-xs bg-white shadow-sm"
-          />
-        </div>
+              <h2 className="mt-4 text-2xl font-semibold tracking-tight text-[#0d7377] sm:text-3xl">
+                Scan the QR code
+              </h2>
+              <p className="mt-2 max-w-lg text-sm leading-relaxed text-black/70">
+                Open Google Authenticator (or any TOTP app), scan the code on the right, then enter
+                the 6-digit code it generates to finish enabling 2FA.
+              </p>
 
-        <div className="mb-6">
-          <p className="text-sm text-muted-foreground font-medium mb-2">
-            If you can&apos;t scan the QR code, you can manually enter the secret key below:
-          </p>
+              {/* manual secret */}
+              <div className="mt-8">
+                <p className="text-[11px] font-semibold tracking-[0.16em] text-[#8284bf] uppercase">
+                  Can&apos;t scan? Enter this key
+                </p>
 
-          <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-2 sm:gap-3">
-            <div className="flex-1">
-              <div className="font-mono text-center sm:text-left text-xs sm:text-sm bg-muted p-3 rounded border border-border break-all">
-                {secret.match(/.{1,4}/g)?.join(" ")}
+                <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-stretch sm:gap-3">
+                  <div className="min-w-0 flex-1 rounded-xl border border-[#0d7377]/15 bg-[#0d7377]/[0.04] px-4 py-3">
+                    <p className="font-mono text-[13px] leading-relaxed tracking-[0.14em] break-all text-black/70 sm:text-sm">
+                      {secret.match(/.{1,4}/g)?.join(" ")}
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleCopySecret}
+                    className={`shrink-0 cursor-pointer rounded-xl p-3 transition-all ${
+                      copied
+                        ? "bg-[#32e0c4] text-[#0b3f41]"
+                        : "bg-[#0d7377] text-white hover:bg-[#0a5f62]"
+                    }`}
+                    aria-label={copied ? "Copied" : "Copy secret"}
+                    title={copied ? "Copied!" : "Copy"}
+                  >
+                    {copied ? <Check size={18} /> : <Copy size={18} />}
+                  </button>
+                </div>
+              </div>
+
+              {/* app downloads */}
+              <div className="mt-7">
+                <p className="text-sm font-semibold text-[#8284bf]">
+                  Don&apos;t have Google Authenticator?
+                </p>
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                  <a
+                    href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 rounded-xl border border-[#0d7377]/15 bg-white px-4 py-3 text-center text-sm font-semibold text-[#0d7377] shadow-[0_6px_18px_-12px_rgba(13,115,119,0.6)] transition-colors hover:border-[#0d7377]/35 hover:bg-[#0d7377]/[0.05]"
+                  >
+                    Download for Android
+                  </a>
+                  <a
+                    href="https://apps.apple.com/us/app/google-authenticator/id388497605"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 rounded-xl border border-[#8284bf]/25 bg-[#8284bf]/8 px-4 py-3 text-center text-sm font-semibold text-[#5f6199] transition-colors hover:bg-[#8284bf] hover:text-white"
+                  >
+                    Download for iOS
+                  </a>
+                </div>
+              </div>
+
+              <div className="mt-6 flex items-start gap-3 rounded-xl border border-[#8284bf]/25 bg-[#8284bf]/8 px-4 py-3">
+                <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-[#8284bf] text-[11px] font-bold text-white">
+                  i
+                </span>
+                <p className="text-[13px] leading-relaxed text-[#5f6199]">
+                  Any TOTP-compatible authenticator app will work.
+                </p>
+              </div>
+
+              {/* verify */}
+              <div className="mt-8 rounded-2xl border border-[#0d7377]/12 bg-[#0d7377]/[0.03] p-5">
+                <label className="text-[11px] font-semibold tracking-[0.16em] text-black uppercase">
+                  Verification code
+                </label>
+                <div className="mt-3 flex flex-col gap-3 sm:flex-row">
+                  <Input
+                    placeholder="000000"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value)}
+                    maxLength={6}
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    className="h-12 flex-1 rounded-xl border-[#0d7377]/20 bg-white text-center font-mono text-lg tracking-[0.45em] text-[#0d7377] placeholder:text-[#0d7377]/25 focus-visible:border-[#32e0c4] focus-visible:ring-2 focus-visible:ring-[#32e0c4]/40 sm:text-left sm:tracking-[0.35em]"
+                  />
+                  <Button
+                    onClick={handleVerifyCode}
+                    disabled={loading || code.length !== 6 || !factorId}
+                    className="h-12 rounded-xl bg-[#0d7377] px-7 text-[15px] font-semibold text-white shadow-[0_12px_28px_-14px_rgba(13,115,119,0.9)] transition-all hover:bg-[#0a5f62] disabled:opacity-50 disabled:shadow-none"
+                  >
+                    {loading ? "Verifying..." : "Verify Code"}
+                  </Button>
+                </div>
               </div>
             </div>
-            <button
-              onClick={(e) => {
-                navigator.clipboard.writeText(secret);
-                const button = e.currentTarget as HTMLButtonElement;
-                const originalText = button.textContent;
-                button.textContent = "Copied!";
-                setTimeout(() => {
-                  button.textContent = originalText;
-                }, 2000);
-              }}
-              className="p-3 bg-muted w-full sm:w-auto cursor-pointer hover:bg-muted/80 rounded text-sm font-medium transition-colors"
-            >
-              Copy
-            </button>
-          </div>
 
-          <div className="mt-4">
-            <p className="text-sm font-medium text-foreground mb-2">
-              Don&apos;t have Google Authenticator?
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
-              <a
-                href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 w-full text-center bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors text-sm font-medium shadow-sm"
-              >
-                Download for Android
-              </a>
-              <a
-                href="https://apps.apple.com/us/app/google-authenticator/id388497605"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="px-4 py-2 w-full text-center bg-foreground text-background rounded-lg hover:bg-foreground/90 transition-colors text-sm font-medium shadow-sm"
-              >
-                Download for iOS
-              </a>
+            {/* RIGHT — dark contrasted panel with QR only */}
+            <div className="relative flex items-center justify-center overflow-hidden bg-[#0d7377] px-6 py-10 sm:px-10">
+              <div className="pointer-events-none absolute -top-24 -right-16 h-64 w-64 rounded-full bg-[#32e0c4]/25 blur-3xl" />
+              <div className="pointer-events-none absolute -bottom-24 -left-16 h-64 w-64 rounded-full bg-[#8284bf]/30 blur-3xl" />
+
+              <div className="relative flex w-full max-w-xs flex-col items-center">
+                <div className="rounded-3xl bg-white p-5 shadow-[0_24px_50px_-20px_rgba(0,0,0,0.5)] ring-1 ring-[#32e0c4]/30">
+                  <img
+                    src={qrCode}
+                    alt="Scan this QR code with your authenticator app"
+                    width={220}
+                    height={220}
+                    className="h-[220px] w-[220px] rounded-xl"
+                  />
+                </div>
+                <p className="mt-6 text-center text-[11px] font-semibold tracking-[0.18em] text-[#32e0c4] uppercase">
+                  Scan with your app
+                </p>
+                <p className="mt-2 text-center text-[13px] leading-relaxed text-white/70">
+                  This code is unique to your account. Never share it with anyone.
+                </p>
+              </div>
             </div>
           </div>
-
-          <div className="mt-4 p-3 bg-blue-50/10 rounded-lg border border-blue-200/20">
-            <p className="text-sm text-blue-600">
-              <span className="font-medium">Note:</span> Any TOTP-compatible authenticator app will
-              work.
-            </p>
-          </div>
-        </div>
-
-        <div className="space-y-4">
-          <Input
-            placeholder="Enter 6-digit code"
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            maxLength={6}
-            className="w-full"
-          />
-
-          {error && (
-            <Alert variant="destructive">
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <Button
-            onClick={handleVerifyCode}
-            disabled={loading || code.length !== 6 || !factorId}
-            className="w-full"
-          >
-            {loading ? "Verifying..." : "Verify Code"}
-          </Button>
-        </div>
-      </Card>
+        </Card>
+      </div>
     );
   }
 

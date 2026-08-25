@@ -1202,6 +1202,225 @@ const scenesInterviewPrep: Scene[] = [
   },
 ];
 
+const scenesStepParent: Scene[] = [
+  {
+    id: "welcome",
+    title: "Welcome to Step-Parent Guide",
+    description: "Learn how to qualify and compile documents for your step-parent petition case under U.S. immigration laws.",
+    illustration: "welcome",
+  },
+  {
+    id: "what-is",
+    title: "What is Step-Parent Qualification?",
+    description: "USCIS generally recognizes a step-relationship if the marriage occurred before the child turned 18 and is legally valid.",
+    illustration: "document",
+  },
+  {
+    id: "pitfalls",
+    title: "Avoid Denial Pitfalls",
+    titleLines: ["Avoid", "Denial", "Pitfalls"],
+    description: "Prevent common errors like missing prior marriage termination decrees, self-translation, or timeline issues.",
+    illustration: "warning",
+  },
+  {
+    id: "workflow",
+    title: "Guided Step-Parent Workflow",
+    titleLines: ["Guided", "Step-Parent", "Workflow"],
+    description: "Check eligibility timing, checklist required certificates, review translations, and complete final review.",
+    illustration: "checklist",
+  },
+  {
+    id: "output",
+    title: "USCIS Checklist Ready",
+    titleLines: ["USCIS", "Checklist", "Ready"],
+    description: "Get a clear list of actions, documents, and rules for your petition packet.",
+    illustration: "output",
+  },
+  {
+    id: "wizard",
+    title: "How This Works",
+    extraContent: (
+      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
+        {[
+          "Answer eligibility questions to verify step-parent status.",
+          "Checklist birth, marriage, and termination certificates.",
+          "Verify third-party certified English translations.",
+          "Perform final review and name matching checks.",
+        ].map((text, i) => (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+            key={i}
+            className="flex items-start gap-4 rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+          >
+            <div
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-bold text-white shadow-md"
+              style={{
+                background: `linear-gradient(135deg, ${colors.deepTeal}, ${colors.softAqua})`,
+              }}
+            >
+              {i + 1}
+            </div>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
+              {text}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    ),
+    illustration: "wizard",
+  },
+  {
+    id: "needs",
+    title: "What You'll Need",
+    extraContent: (
+      <div className="mx-auto mt-6 max-w-lg space-y-6 text-left">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {[
+            "Child's long-form birth certificate",
+            "Parents' marriage certificate",
+            "Proof of previous marriage endings",
+            "Certified English translations",
+          ].map((item, i) => (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              key={i}
+              className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
+            >
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
+                {item}
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    ),
+  },
+];
+
+const scenesAdoption: Scene[] = [
+  {
+    id: "welcome",
+    title: "Welcome to Adoptive Parent Guide",
+    description: "USCIS requires additional documents to confirm that the adoptive parent-child relationship meets U.S. immigration law.",
+    illustration: "welcome",
+  },
+  {
+    id: "what-is",
+    title: "Pakistan Guardianship Nuance",
+    description: "In Pakistan, guardianship orders do not automatically qualify as an adoption. USCIS applies U.S. law to determine eligibility.",
+    illustration: "document",
+  },
+  {
+    id: "pitfalls",
+    title: "Avoid Timeline Failures",
+    titleLines: ["Avoid", "Timeline", "Failures"],
+    description: "The adoption must generally be completed before the child turns 16, and the parent must prove 2 years of legal custody and co-residence.",
+    illustration: "warning",
+  },
+  {
+    id: "workflow",
+    title: "Guided Adoption Workflow",
+    titleLines: ["Guided", "Adoption", "Workflow"],
+    description: "Complete eligibility checks, compile guardianship decrees, verify residence documents, and check translations.",
+    illustration: "checklist",
+  },
+  {
+    id: "output",
+    title: "Checklist File Ready",
+    titleLines: ["Checklist", "File", "Ready"],
+    description: "Get a practical list of required documents and actions for your petition packet.",
+    illustration: "output",
+  },
+  {
+    id: "wizard",
+    title: "How This Works",
+    extraContent: (
+      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
+        {[
+          "Verify legal relationship timing (under 16).",
+          "Check the 2-year custody and co-residence periods.",
+          "Collect court guardianship orders and secondary records.",
+          "Final check of names, scan margins, and translations.",
+        ].map((text, i) => (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+            key={i}
+            className="flex items-start gap-4 rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+          >
+            <div
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-bold text-white shadow-md"
+              style={{
+                background: `linear-gradient(135deg, ${colors.deepTeal}, ${colors.softAqua})`,
+              }}
+            >
+              {i + 1}
+            </div>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
+              {text}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    ),
+    illustration: "wizard",
+  },
+  {
+    id: "needs",
+    title: "What You'll Need",
+    extraContent: (
+      <div className="mx-auto mt-6 max-w-lg space-y-6 text-left">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {[
+            "Court-issued adoption/guardianship order",
+            "Legal custody records",
+            "Evidence of 2-year co-residence",
+            "Child's original birth certificate",
+          ].map((item, i) => (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              key={i}
+              className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
+            >
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
+                {item}
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    ),
+    illustration: "preparation",
+  },
+];
+
 interface NarrativeModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -1217,7 +1436,9 @@ interface NarrativeModalProps {
     | "marriage-registration"
     | "birth-certificate"
     | "polio-vaccination"
-    | "interview-prep";
+    | "interview-prep"
+    | "step-parent"
+    | "adoption";
 }
 
 const SCENE_DURATION = 9000;
@@ -1240,6 +1461,8 @@ export function NarrativeModal({
     "birth-certificate": scenesBirthCertificate,
     "polio-vaccination": scenesPolioVaccination,
     "interview-prep": scenesInterviewPrep,
+    "step-parent": scenesStepParent,
+    adoption: scenesAdoption,
   } as const;
 
   const scenes = scenesByVariant[variant];
@@ -1272,6 +1495,8 @@ export function NarrativeModal({
     "birth-certificate": "Birth",
     "polio-vaccination": "Polio",
     "interview-prep": "Interview",
+    "step-parent": "Step-Parent",
+    adoption: "Adoption",
   };
   const docBadgeText = docBadgeTextByVariant[variant];
   const isGuideVariant = variant !== "221g";
@@ -1476,7 +1701,7 @@ export function NarrativeModal({
             className={[
               "relative flex w-full max-w-5xl max-h-[calc(100svh-0.75rem)] min-h-0 flex-col overflow-hidden border border-[#cfe3e3] bg-[linear-gradient(180deg,#ffffff_0%,#fcffff_100%)] shadow-[0_32px_80px_-34px_rgba(13,115,119,0.35)] ring-1 ring-white/90 antialiased sm:max-h-[calc(100svh-1.5rem)] sm:rounded-[2.5rem] sm:ring-2 md:max-h-[calc(100svh-4rem)]",
               isCompactView
-                ? "!w-[98vw] !h-[98vh] !max-w-full !max-h-[98vh] rounded-[1.2rem] overflow-y-auto welcome-thick-scrollbar"
+                ? "!w-[98vw] !h-[98svh] !max-w-full !max-h-[98svh] rounded-[1.2rem] overflow-y-auto welcome-thick-scrollbar"
                 : "rounded-[1.65rem]",
             ].join(" ")}
             style={
@@ -1484,9 +1709,12 @@ export function NarrativeModal({
                 ? {
                     scrollbarWidth: "none",
                     width: "98vw",
-                    height: "98vh",
+                    // Use svh (small viewport height) so the card always fits the
+                    // VISIBLE area on mobile. With vh, mobile browser chrome made
+                    // the card taller than the screen and cropped the footer.
+                    height: "98svh",
                     maxWidth: "100vw",
-                    maxHeight: "98vh",
+                    maxHeight: "98svh",
                   }
                 : undefined
             }
@@ -1664,7 +1892,7 @@ export function NarrativeModal({
               </AnimatePresence>
             </div>
 
-            <div className="relative z-20 border-t border-[#d5e7e7] bg-white/97 px-2.5 py-2.5 shadow-[0_-8px_24px_-18px_rgba(13,115,119,0.32)] sm:px-6 sm:py-4">
+            <div className="relative z-20 shrink-0 border-t border-[#d5e7e7] bg-white/97 px-2.5 py-2.5 shadow-[0_-8px_24px_-18px_rgba(13,115,119,0.32)] sm:px-6 sm:py-4">
               <img
                 src="/assets/images/mascot.png"
                 alt="Rahvana bird mascot"

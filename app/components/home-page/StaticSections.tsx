@@ -53,7 +53,7 @@ export function HomeSection({
           <div className="bg-white border border-slate-200 rounded-xl p-6 shadow-sm transition-all hover:shadow-md hover:-translate-y-0.5">
             <h3 className="text-xl font-bold mb-3">2️⃣ Follow Step-by-Step</h3>
             <p className="text-slate-500 mb-4">
-              Each journey is broken into clear stages and steps. No legal jargon—just plain
+              Each journey is broken into clear stages and steps. No legal jargon-just plain
               guidance on what to do, when, and how.
             </p>
           </div>
@@ -247,7 +247,7 @@ export function ToolsSection() {
     },
     {
       title: "PDF Tool Kit",
-      desc: "Merge • compress • convert • edit — all in one toolkit.",
+      desc: "Merge • compress • convert • edit, all in one toolkit.",
       tags: [
         { label: "Free", color: "bg-[#d1fae5] text-[#065f46]" },
         { label: "Stage II", color: "bg-[#dbeafe] text-[#1e40af]" },

@@ -3,16 +3,10 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import { Input } from "@/components/ui/input";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import IOMInfoStep from "./components/IOMInfoStep";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
@@ -21,6 +15,10 @@ import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper
 import { usePlan } from "@/app/context/PlanContext";
 import { Crown, CreditCard, ShoppingBag, Sparkles } from "lucide-react";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
+import { PhoneInput } from "@/components/ui/phone-input";
+import type { Value as E164Number } from "react-phone-number-input";
+import { validatePhoneNumber, formatPhoneNumber } from "@/lib/validation/phone";
 
 type Location = "karachi" | "lahore" | "islamabad";
 type IslamabadProvider = "amc" | "iom";
@@ -215,6 +213,7 @@ interface BasicInfoStepProps {
   isWilcare: boolean;
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSelectChange: (name: keyof FormData) => (value: string) => void;
+  onPhoneChange: (value: E164Number) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -226,6 +225,7 @@ const BasicInfoStep = ({
   isWilcare,
   onChange,
   onSelectChange,
+  onPhoneChange,
   onNext,
   onBack,
 }: BasicInfoStepProps) => {
@@ -265,86 +265,47 @@ const BasicInfoStep = ({
                 <Label htmlFor="visaCategory">
                   {t("bookAppointment.basicInfoStep.visaCategory")}
                 </Label>
-                <Select
+                <CustomDropdown
                   value={formData.visaCategory}
-                  onValueChange={onSelectChange("visaCategory")}
-                >
-                  <SelectTrigger id="visaCategory">
-                    <SelectValue
-                      placeholder={t("bookAppointment.basicInfoStep.selectVisaCategory")}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Immigrant Visa">
-                      {t("bookAppointment.basicInfoStep.visaCategories.immigrant")}
-                    </SelectItem>
-                    {/* <SelectItem value="Non-immigrant Visa">
-                      {t(
-                        "bookAppointment.basicInfoStep.visaCategories.nonImmigrant",
-                      )}
-                    </SelectItem>
-                    <SelectItem value="K-1 Fiance Visa">
-                      {t("bookAppointment.basicInfoStep.visaCategories.k1Fiance")}
-                    </SelectItem>
-                    <SelectItem value="Student Visa">
-                      {t("bookAppointment.basicInfoStep.visaCategories.student")}
-                    </SelectItem>
-                    <SelectItem value="Work Visa">
-                      {t("bookAppointment.basicInfoStep.visaCategories.work")}
-                    </SelectItem>
-                    <SelectItem value="Tourist Visa">
-                      {t("bookAppointment.basicInfoStep.visaCategories.tourist")}
-                    </SelectItem>
-                    <SelectItem value="Other">
-                      {t("bookAppointment.basicInfoStep.visaCategories.other")}
-                    </SelectItem> */}
-                  </SelectContent>
-                </Select>
+                  onChange={onSelectChange("visaCategory")}
+                  options={[
+                    {
+                      value: "Immigrant Visa",
+                      label: t("bookAppointment.basicInfoStep.visaCategories.immigrant"),
+                    },
+                  ]}
+                  placeholder={t("bookAppointment.basicInfoStep.selectVisaCategory")}
+                  className="w-full [&_button]:w-full [&_button]:min-w-0"
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="hadMedicalBefore">
                   {t("bookAppointment.basicInfoStep.hadMedicalBefore")}
                 </Label>
-                <Select
+                <CustomDropdown
                   value={formData.hadMedicalBefore}
-                  onValueChange={onSelectChange("hadMedicalBefore")}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("bookAppointment.basicInfoStep.selectYesNo")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Yes">{t("bookAppointment.basicInfoStep.yes")}</SelectItem>
-                    <SelectItem value="No">{t("bookAppointment.basicInfoStep.no")}</SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={onSelectChange("hadMedicalBefore")}
+                  options={[
+                    { value: "Yes", label: t("bookAppointment.basicInfoStep.yes") },
+                    { value: "No", label: t("bookAppointment.basicInfoStep.no") },
+                  ]}
+                  placeholder={t("bookAppointment.basicInfoStep.selectYesNo")}
+                  className="w-full [&_button]:w-full [&_button]:min-w-0"
+                />
               </div>
             </>
           )}
 
           <div className="space-y-2">
             <Label htmlFor="primaryContact">{t("bookAppointment.basicInfoStep.mobileNo")}</Label>
-            <div className="flex gap-2">
-              <div className="flex items-center justify-center w-24 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-medium">
-                🇵🇰 92
-              </div>
-              <Input
-                id="primaryContact"
-                name="primaryContact"
-                value={formData.primaryContact}
-                // onChange={onChange}
-                onChange={(e) => {
-                  const cleaned = e.target.value.replace(/\D/g, "").slice(0, 10);
-                  e.target.value = cleaned;
-                  onChange(e);
-                }}
-                placeholder="3001234567"
-                type="tel"
-                className="flex-1"
-                maxLength={10}
-                inputMode="numeric"
-              />
-            </div>
+            <PhoneInput
+              id="primaryContact"
+              value={formData.primaryContact || ""}
+              onChange={onPhoneChange}
+              defaultCountry="PK"
+              placeholder="3001234567"
+            />
           </div>
 
           <div className="space-y-2">
@@ -387,21 +348,16 @@ const BasicInfoStep = ({
                 <Label htmlFor="numberOfApplicants">
                   {t("bookAppointment.basicInfoStep.numberOfApplicants")}
                 </Label>
-                <Select
+                <CustomDropdown
                   value={formData.numberOfApplicants}
-                  onValueChange={onSelectChange("numberOfApplicants")}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={t("bookAppointment.basicInfoStep.selectNumber")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => (
-                      <SelectItem key={num} value={num.toString()}>
-                        {num}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                  onChange={onSelectChange("numberOfApplicants")}
+                  options={[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((num) => ({
+                    value: num.toString(),
+                    label: num.toString(),
+                  }))}
+                  placeholder={t("bookAppointment.basicInfoStep.selectNumber")}
+                  className="w-full [&_button]:w-full [&_button]:min-w-0"
+                />
               </div>
             </>
           )}
@@ -412,83 +368,82 @@ const BasicInfoStep = ({
                 <Label htmlFor="appointmentType">
                   {t("bookAppointment.basicInfoStep.appointmentType")}
                 </Label>
-                <Select
+                <CustomDropdown
                   value={formData.appointmentType}
-                  onValueChange={onSelectChange("appointmentType")}
-                >
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={t("bookAppointment.basicInfoStep.selectAppointmentType")}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="Individual">
-                      {t("bookAppointment.basicInfoStep.appointmentTypes.individual")}
-                    </SelectItem>
-                    <SelectItem value="Family">
-                      {t("bookAppointment.basicInfoStep.appointmentTypes.family")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={onSelectChange("appointmentType")}
+                  options={[
+                    {
+                      value: "Individual",
+                      label: t("bookAppointment.basicInfoStep.appointmentTypes.individual"),
+                    },
+                    {
+                      value: "Family",
+                      label: t("bookAppointment.basicInfoStep.appointmentTypes.family"),
+                    },
+                  ]}
+                  placeholder={t("bookAppointment.basicInfoStep.selectAppointmentType")}
+                  className="w-full [&_button]:w-full [&_button]:min-w-0"
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="visaType">{t("bookAppointment.basicInfoStep.visaType")}</Label>
-                <Select value={formData.visaType} onValueChange={onSelectChange("visaType")}>
-                  <SelectTrigger id="visaType">
-                    <SelectValue placeholder={t("bookAppointment.basicInfoStep.selectVisaType")} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="IR-1">
-                      {t("bookAppointment.basicInfoStep.visaTypes.ir1")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <CustomDropdown
+                  value={formData.visaType}
+                  onChange={onSelectChange("visaType")}
+                  options={[
+                    { value: "IR-1", label: t("bookAppointment.basicInfoStep.visaTypes.ir1") },
+                    // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+                    ...(IR5_ENABLED ? [{ value: "IR-5", label: "IR-5 Parent Visa" }] : []),
+                  ]}
+                  placeholder={t("bookAppointment.basicInfoStep.selectVisaType")}
+                  className="w-full [&_button]:w-full [&_button]:min-w-0"
+                  collapseWhenSingle
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="originalPassport">
                   {t("bookAppointment.basicInfoStep.originalPassport")}
                 </Label>
-                <Select
+                <CustomDropdown
                   value={formData.originalPassport}
-                  onValueChange={onSelectChange("originalPassport")}
-                >
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={t("bookAppointment.basicInfoStep.originalPassportOptions.yes")}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="YES">
-                      {t("bookAppointment.basicInfoStep.originalPassportOptions.yes")}
-                    </SelectItem>
-                    <SelectItem value="NO">
-                      {t("bookAppointment.basicInfoStep.originalPassportOptions.no")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                  onChange={onSelectChange("originalPassport")}
+                  options={[
+                    {
+                      value: "YES",
+                      label: t("bookAppointment.basicInfoStep.originalPassportOptions.yes"),
+                    },
+                    {
+                      value: "NO",
+                      label: t("bookAppointment.basicInfoStep.originalPassportOptions.no"),
+                    },
+                  ]}
+                  placeholder={t("bookAppointment.basicInfoStep.originalPassportOptions.yes")}
+                  className="w-full [&_button]:w-full [&_button]:min-w-0"
+                />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="medicalType">
                   {t("bookAppointment.basicInfoStep.medicalType")}
                 </Label>
-                <Select value={formData.medicalType} onValueChange={onSelectChange("medicalType")}>
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={t("bookAppointment.basicInfoStep.selectMedicalType")}
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="First Medical">
-                      {t("bookAppointment.basicInfoStep.medicalTypes.first")}
-                    </SelectItem>
-                    <SelectItem value="Re-Medical">
-                      {t("bookAppointment.basicInfoStep.medicalTypes.reMedical")}
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
+                <CustomDropdown
+                  value={formData.medicalType}
+                  onChange={onSelectChange("medicalType")}
+                  options={[
+                    {
+                      value: "First Medical",
+                      label: t("bookAppointment.basicInfoStep.medicalTypes.first"),
+                    },
+                    {
+                      value: "Re-Medical",
+                      label: t("bookAppointment.basicInfoStep.medicalTypes.reMedical"),
+                    },
+                  ]}
+                  placeholder={t("bookAppointment.basicInfoStep.selectMedicalType")}
+                  className="w-full [&_button]:w-full [&_button]:min-w-0"
+                />
               </div>
             </>
           )}
@@ -504,7 +459,7 @@ const BasicInfoStep = ({
           <Button
             onClick={onBack}
             variant="outline"
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-teal-600 hover:bg-teal-700 text-white hover:text-white"
           >
             {t("bookAppointment.basicInfoStep.prevBtn")}
           </Button>
@@ -528,10 +483,7 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
   return (
     <div className="border border-gray-200 rounded-lg p-4 sm:p-6 mb-6 bg-gray-50">
       <h3 className="text-lg font-semibold text-slate-900 mb-4">
-        {t("bookAppointment.personalInfoStep.applicantNumber").replace(
-          "{index}",
-          (index + 1).toString()
-        )}
+        Applicant {index + 1}
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -563,21 +515,17 @@ const ApplicantInfo = ({ applicant, index, onChange }: ApplicantInfoProps) => {
           <Label htmlFor={`applicant-${index}-gender`}>
             {t("bookAppointment.personalInfoStep.gender")}
           </Label>
-          <Select
+          <CustomDropdown
             value={applicant.gender}
-            onValueChange={(value) => onChange(index, "gender", value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder={t("bookAppointment.personalInfoStep.selectGender")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="M">{t("bookAppointment.personalInfoStep.genders.m")}</SelectItem>
-              <SelectItem value="F">{t("bookAppointment.personalInfoStep.genders.f")}</SelectItem>
-              <SelectItem value="Other">
-                {t("bookAppointment.personalInfoStep.genders.other")}
-              </SelectItem>
-            </SelectContent>
-          </Select>
+            onChange={(value) => onChange(index, "gender", value)}
+            options={[
+              { value: "M", label: t("bookAppointment.personalInfoStep.genders.m") },
+              { value: "F", label: t("bookAppointment.personalInfoStep.genders.f") },
+              { value: "Other", label: t("bookAppointment.personalInfoStep.genders.other") },
+            ]}
+            placeholder={t("bookAppointment.personalInfoStep.selectGender")}
+            className="w-full [&_button]:w-full [&_button]:min-w-0"
+          />
         </div>
 
         <div className="space-y-2">
@@ -659,22 +607,17 @@ const PersonalInfoStep = ({
 
             <div className="space-y-2">
               <Label htmlFor="gender">{t("bookAppointment.personalInfoStep.gender")}</Label>
-              <Select value={formData.gender} onValueChange={onSelectChange("gender")}>
-                <SelectTrigger>
-                  <SelectValue placeholder={t("bookAppointment.personalInfoStep.selectGender")} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="M">
-                    {t("bookAppointment.personalInfoStep.genders.m")}
-                  </SelectItem>
-                  <SelectItem value="F">
-                    {t("bookAppointment.personalInfoStep.genders.f")}
-                  </SelectItem>
-                  <SelectItem value="Other">
-                    {t("bookAppointment.personalInfoStep.genders.other")}
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <CustomDropdown
+                value={formData.gender}
+                onChange={onSelectChange("gender")}
+                options={[
+                  { value: "M", label: t("bookAppointment.personalInfoStep.genders.m") },
+                  { value: "F", label: t("bookAppointment.personalInfoStep.genders.f") },
+                  { value: "Other", label: t("bookAppointment.personalInfoStep.genders.other") },
+                ]}
+                placeholder={t("bookAppointment.personalInfoStep.selectGender")}
+                className="w-full [&_button]:w-full [&_button]:min-w-0"
+              />
             </div>
 
             <div className="space-y-2">
@@ -749,10 +692,7 @@ const ApplicantPassportInfo = ({
   return (
     <div className="border border-gray-200 rounded-lg p-4 sm:p-6 mb-6 bg-gray-50">
       <h3 className="text-lg font-semibold text-slate-900 mb-4">
-        {t("bookAppointment.passportDetailsStep.applicantNumber").replace(
-          "{index}",
-          (index + 1).toString()
-        )}
+        Applicant {index + 1}
       </h3>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -1227,21 +1167,22 @@ const ScheduleStep = ({
 
           <div className="space-y-2">
             <Label htmlFor="preferredTime">{t("bookAppointment.scheduleStep.time")}</Label>
-            <Select value={formData.preferredTime} onValueChange={onSelectChange("preferredTime")}>
-              <SelectTrigger>
-                <SelectValue placeholder={t("bookAppointment.scheduleStep.selectTimeSlot")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="08:00-08:30">08:00 AM - 08:30 AM</SelectItem>
-                <SelectItem value="08:30-09:00">08:30 AM - 09:00 AM</SelectItem>
-                <SelectItem value="09:00-09:30">09:00 AM - 09:30 AM</SelectItem>
-                <SelectItem value="09:30-10:00">09:30 AM - 10:00 AM</SelectItem>
-                <SelectItem value="10:00-10:30">10:00 AM - 10:30 AM</SelectItem>
-                <SelectItem value="10:30-11:00">10:30 AM - 11:00 AM</SelectItem>
-                <SelectItem value="11:00-11:30">11:00 AM - 11:30 AM</SelectItem>
-                <SelectItem value="11:30-12:00">11:30 AM - 12:00 PM</SelectItem>
-              </SelectContent>
-            </Select>
+            <CustomDropdown
+              value={formData.preferredTime}
+              onChange={onSelectChange("preferredTime")}
+              options={[
+                { value: "08:00-08:30", label: "08:00 AM - 08:30 AM" },
+                { value: "08:30-09:00", label: "08:30 AM - 09:00 AM" },
+                { value: "09:00-09:30", label: "09:00 AM - 09:30 AM" },
+                { value: "09:30-10:00", label: "09:30 AM - 10:00 AM" },
+                { value: "10:00-10:30", label: "10:00 AM - 10:30 AM" },
+                { value: "10:30-11:00", label: "10:30 AM - 11:00 AM" },
+                { value: "11:00-11:30", label: "11:00 AM - 11:30 AM" },
+                { value: "11:30-12:00", label: "11:30 AM - 12:00 PM" },
+              ]}
+              placeholder={t("bookAppointment.scheduleStep.selectTimeSlot")}
+              className="w-full [&_button]:w-full [&_button]:min-w-0"
+            />
           </div>
         </div>
 
@@ -1394,7 +1335,7 @@ const ReviewStep = ({
                 <p className="text-sm text-slate-600">
                   {t("bookAppointment.reviewStep.contactNumber")}
                 </p>
-                <p className="font-medium">+92 {formData.contactNumber}</p>
+                <p className="font-medium">{formatPhoneNumber(formData.contactNumber)}</p>
               </div>
               <div>
                 <p className="text-sm text-slate-600">{t("bookAppointment.reviewStep.email")}</p>
@@ -1518,7 +1459,7 @@ const ReviewStep = ({
               <p className="text-sm text-slate-600">
                 {t("bookAppointment.reviewStep.primaryContact")}
               </p>
-              <p className="font-medium">+92 {formData.primaryContact}</p>
+              <p className="font-medium">{formatPhoneNumber(formData.primaryContact)}</p>
             </div>
             <div>
               <p className="text-sm text-slate-600">{t("bookAppointment.reviewStep.email")}</p>
@@ -1567,7 +1508,7 @@ const ReviewStep = ({
                   <p className="text-sm text-slate-600">
                     {t("bookAppointment.reviewStep.contactNumber")}
                   </p>
-                  <p className="font-medium">+92 {formData.contactNumber}</p>
+                  <p className="font-medium">{formatPhoneNumber(formData.contactNumber)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-600">
@@ -1651,10 +1592,7 @@ const ReviewStep = ({
                     className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
                   >
                     <h5 className="font-semibold text-slate-900 mb-2">
-                      {t("bookAppointment.reviewStep.applicantIndex").replace(
-                        "{index}",
-                        (index + 1).toString()
-                      )}
+                      Applicant {index + 1}
                     </h5>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -1774,10 +1712,7 @@ const ReviewStep = ({
                     className="border border-gray-200 rounded-lg p-4 mb-4 bg-gray-50"
                   >
                     <h5 className="font-semibold text-slate-900 mb-2">
-                      {t("bookAppointment.reviewStep.applicantIndex").replace(
-                        "{index}",
-                        (index + 1).toString()
-                      )}
+                      Applicant {index + 1}
                     </h5>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
@@ -1958,6 +1893,20 @@ interface CheckoutStepProps {
   error: string | null;
   loading: boolean;
   tier: string;
+  isAMC: boolean;
+  isIOM: boolean;
+  onBack: () => void;
+  onSubmit: (e: React.FormEvent) => void;
+  formatDate: (dateString: string) => string;
+}
+
+interface CheckoutStepProps {
+  formData: FormData;
+  error: string | null;
+  loading: boolean;
+  tier: string;
+  isAMC: boolean;
+  isIOM: boolean;
   onBack: () => void;
   onSubmit: (e: React.FormEvent) => void;
   formatDate: (dateString: string) => string;
@@ -1968,6 +1917,8 @@ const CheckoutStep = ({
   error,
   loading,
   tier,
+  isAMC,
+  isIOM,
   onBack,
   onSubmit,
   formatDate,
@@ -1990,9 +1941,11 @@ const CheckoutStep = ({
               Booking Summary
             </h4>
             <div className="mt-3 space-y-2">
-              <p className="text-sm font-semibold text-slate-800">
-                {formData.surname}, {formData.givenName}
-              </p>
+              {isAMC && (
+                <p className="text-sm font-semibold text-slate-800">
+                  {formData.surname}, {formData.givenName}
+                </p>
+              )}
               <p className="text-xs text-slate-500">
                 Center:{" "}
                 <span className="capitalize font-medium text-slate-700">{formData.location}</span>
@@ -2268,12 +2221,14 @@ export default function WilcareAppointmentForm() {
       // If the number of applicants changes, update the applicants array
       if (name === "numberOfApplicants") {
         const numApplicants = parseInt(value) || 0;
+        // Number of additional applicants (excluding primary)
+        const numAdditional = numApplicants - 1;
         const currentApplicants = prev.applicants || [];
 
         // If increasing number of applicants, add new empty applicant objects
-        if (numApplicants > currentApplicants.length) {
+        if (numAdditional > currentApplicants.length) {
           const newApplicants = [...currentApplicants];
-          for (let i = currentApplicants.length; i < numApplicants; i++) {
+          for (let i = currentApplicants.length; i < numAdditional; i++) {
             newApplicants.push({
               id: `applicant-${i + 1}`,
               surname: "",
@@ -2290,8 +2245,12 @@ export default function WilcareAppointmentForm() {
           updatedData.applicants = newApplicants;
         }
         // If decreasing number of applicants, remove the extra ones
-        else if (numApplicants < currentApplicants.length) {
-          updatedData.applicants = currentApplicants.slice(0, numApplicants);
+        else if (numAdditional < currentApplicants.length) {
+          updatedData.applicants = currentApplicants.slice(0, numAdditional);
+        }
+        // If numAdditional is 0 (only primary applicant), clear the array
+        else if (numAdditional === 0) {
+          updatedData.applicants = [];
         }
       }
 
@@ -2595,7 +2554,6 @@ export default function WilcareAppointmentForm() {
             },
             body: JSON.stringify({
               appointmentId: appointmentId,
-              userId: user.id,
             }),
           });
 
@@ -2715,6 +2673,7 @@ export default function WilcareAppointmentForm() {
             isWilcare={isWilcare}
             onChange={handleInputChange}
             onSelectChange={handleSelectChange}
+            onPhoneChange={(value) => setFormData((prev) => ({ ...prev, primaryContact: value || "" }))}
             onNext={handleNextStep}
             onBack={handleGoBack}
           />
@@ -2785,6 +2744,8 @@ export default function WilcareAppointmentForm() {
             error={error}
             loading={loading}
             tier={tier}
+            isAMC={isAMC}
+            isIOM={isIOM}
             onBack={handleGoBack}
             onSubmit={(e) => {
               e.preventDefault();
@@ -2804,6 +2765,7 @@ export default function WilcareAppointmentForm() {
             onSelectChange={(name) => (value) => {
               setFormData((prev) => ({ ...prev, [name]: value }));
             }}
+            onPhoneChange={(value) => setFormData((prev) => ({ ...prev, contactNumber: value || "" }))}
             onNext={handleNextStep}
             onBack={handleGoBack}
           />

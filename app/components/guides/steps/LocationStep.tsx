@@ -2,13 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Info } from "lucide-react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface Province {
   name: string;
@@ -83,25 +77,17 @@ const LocationStep = ({
             Province / Territory <span className="text-[hsl(0_84%_60%)]">*</span>
           </label>
 
-          <Select
+          <CustomDropdown
             value={province || ""}
-            onValueChange={(val) => {
+            onChange={(val) => {
               onProvinceChange(val);
               onDistrictChange("");
               onCityChange("");
             }}
-          >
-            <SelectTrigger className="w-full px-4 py-3 text-[0.9rem] rounded-[10px] border border-[hsl(214_32%_91%)] bg-white text-[hsl(220_20%_10%)] cursor-pointer focus:outline-none">
-              <SelectValue placeholder="Select Province" />
-            </SelectTrigger>
-            <SelectContent>
-              {provinces.map((p) => (
-                <SelectItem key={p.name} value={p.name}>
-                  {p.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            options={provinces.map((p) => ({ value: p.name, label: p.name }))}
+            placeholder="Select Province"
+            className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:px-4 [&_button]:py-3"
+          />
         </div>
 
         {/* City */}
@@ -128,27 +114,16 @@ const LocationStep = ({
             District <span className="text-[hsl(0_84%_60%)]">*</span>
           </label>
 
-          <Select
+          <CustomDropdown
             value={district || ""}
-            onValueChange={(val) => onDistrictChange(val)}
+            onChange={(val) => onDistrictChange(val)}
             disabled={!city}
-          >
-            <SelectTrigger
-              className={`w-full px-4 py-3 text-[0.9rem] rounded-[10px] border border-[hsl(214_32%_91%)] bg-white text-[hsl(220_20%_10%)] cursor-pointer focus:outline-none ${
-                !city ? "opacity-60 cursor-not-allowed" : ""
-              }`}
-            >
-              <SelectValue placeholder={city ? "Select District" : "Enter City First"} />
-            </SelectTrigger>
-
-            <SelectContent>
-              {districts.map((d) => (
-                <SelectItem key={d} value={d}>
-                  {d}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            options={districts.map((d) => ({ value: d, label: d }))}
+            placeholder={city ? "Select District" : "Enter City First"}
+            className={`w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:px-4 [&_button]:py-3 ${
+              !city ? "[&_button]:opacity-60 [&_button]:cursor-not-allowed" : ""
+            }`}
+          />
         </div>
 
         {/* Info Card */}

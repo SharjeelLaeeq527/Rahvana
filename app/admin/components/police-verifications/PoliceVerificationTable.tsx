@@ -13,13 +13,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Users,
   Phone,
   Calendar,
@@ -33,6 +26,7 @@ import {
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import Pagination from "@/components/ui/pagination";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import {
   Dialog,
   DialogContent,
@@ -359,34 +353,30 @@ export default function PoliceVerificationTable() {
             />
           </div>
           <div className="flex items-center space-x-3">
-            <Select
+            <CustomDropdown
               value={selectedStatus}
-              onValueChange={(value: VerificationStatus | "all") => setSelectedStatus(value)}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(value) => setSelectedStatus(value as VerificationStatus | "all")}
+              options={[
+                { value: "all", label: "All Statuses" },
+                { value: "pending", label: "Pending" },
+                { value: "in_progress", label: "In Progress" },
+                { value: "completed", label: "Completed" },
+                { value: "cancelled", label: "Cancelled" },
+              ]}
+              placeholder="Filter by status"
+              className="w-40 [&_button]:w-full [&_button]:min-w-0"
+            />
 
-            <Select
+            <CustomDropdown
               value={sortOrder}
-              onValueChange={(value: "asc" | "desc") => setSortOrder(value)}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Sort by date" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="desc">Latest First</SelectItem>
-                <SelectItem value="asc">Oldest First</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(value) => setSortOrder(value as "asc" | "desc")}
+              options={[
+                { value: "desc", label: "Latest First" },
+                { value: "asc", label: "Oldest First" },
+              ]}
+              placeholder="Sort by date"
+              className="w-40 [&_button]:w-full [&_button]:min-w-0"
+            />
 
             <Button onClick={fetchPoliceVerifications} variant="outline" size="sm">
               Refresh
@@ -444,22 +434,19 @@ export default function PoliceVerificationTable() {
                               {/* <Eye className="w-3 h-3" /> */}
                               View
                             </Button>
-                            <Select
+                            <CustomDropdown
                               value={pv.status}
-                              onValueChange={(value: VerificationStatus) =>
-                                initiateStatusUpdate(pv.id, value)
+                              onChange={(value) =>
+                                initiateStatusUpdate(pv.id, value as VerificationStatus)
                               }
-                            >
-                              <SelectTrigger className="w-32 h-8 text-xs">
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                <SelectItem value="pending">Pending</SelectItem>
-                                <SelectItem value="in_progress">In Progress</SelectItem>
-                                <SelectItem value="completed">Completed</SelectItem>
-                                <SelectItem value="cancelled">Cancelled</SelectItem>
-                              </SelectContent>
-                            </Select>
+                              options={[
+                                { value: "pending", label: "Pending" },
+                                { value: "in_progress", label: "In Progress" },
+                                { value: "completed", label: "Completed" },
+                                { value: "cancelled", label: "Cancelled" },
+                              ]}
+                              className="w-32 [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:text-xs"
+                            />
                           </div>
                         </TableCell>
                       </TableRow>
@@ -510,9 +497,9 @@ export default function PoliceVerificationTable() {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Cancellation Reason <span className="text-red-500">*</span>
                   </label>
-                  <Select
+                  <CustomDropdown
                     value={cancellationReason}
-                    onValueChange={(val) => {
+                    onChange={(val) => {
                       setCancellationReason(val);
                       if (val !== "other") {
                         setAdminNotes(val);
@@ -520,18 +507,10 @@ export default function PoliceVerificationTable() {
                         setAdminNotes("");
                       }
                     }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select cancellation reason" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CANCELLATION_TEMPLATES.map((tpl) => (
-                        <SelectItem key={tpl.value} value={tpl.value}>
-                          {tpl.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    options={CANCELLATION_TEMPLATES}
+                    placeholder="Select cancellation reason"
+                    className="w-full [&_button]:w-full [&_button]:min-w-0"
+                  />
                 </div>
                 {cancellationReason === "other" && (
                   <div>
@@ -857,7 +836,7 @@ export default function PoliceVerificationTable() {
                   <div className="p-2 bg-primary/10 rounded-lg">
                     <Upload className="text-primary w-5 h-5" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900">Step 3: Documents Required</h3>
+                  <h3 className="text-lg font-bold text-gray-900">Step 3: Required Documents</h3>
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
@@ -906,22 +885,19 @@ export default function PoliceVerificationTable() {
               <div className="flex flex-col md:flex-row justify-between items-center gap-4 pt-8 border-t">
                 <div className="flex items-center gap-4 bg-gray-50 p-4 rounded-2xl border border-gray-100">
                   <span className="text-sm font-bold text-gray-700">Current Status:</span>
-                  <Select
+                  <CustomDropdown
                     value={selectedRequest.status}
-                    onValueChange={(value: VerificationStatus) =>
-                      initiateStatusUpdate(selectedRequest.id, value)
+                    onChange={(value) =>
+                      initiateStatusUpdate(selectedRequest.id, value as VerificationStatus)
                     }
-                  >
-                    <SelectTrigger className="w-48 bg-white border-gray-200">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="in_progress">In Progress</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
-                    </SelectContent>
-                  </Select>
+                    options={[
+                      { value: "pending", label: "Pending" },
+                      { value: "in_progress", label: "In Progress" },
+                      { value: "completed", label: "Completed" },
+                      { value: "cancelled", label: "Cancelled" },
+                    ]}
+                    className="w-48 [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-white"
+                  />
                 </div>
                 <div className="text-[10px] text-gray-400 font-mono text-right space-y-1">
                   <p>SUBMITTED: {new Date(selectedRequest.created_at).toLocaleString()}</p>

@@ -1200,7 +1200,7 @@ export const sectionIntroMessages = {
   "Attorney or Accredited Representative": {
     greeting: "Let's start with your representative",
     message:
-      "If you have an attorney or an accredited representative helping you with this form, we'll collect their information first. If not, don't worry—you can skip this part.",
+      "If you have an attorney or an accredited representative helping you with this form, we'll collect their information first. If not, don't worry-you can skip this part.",
   },
   "Part 1. Information About You (Spouse Beneficiary)": {
     greeting: "Now, let's talk about you",
@@ -1228,7 +1228,7 @@ export const sectionIntroMessages = {
       "If you've worked outside the United States, please provide those details here. This completes your professional history record.",
   },
   "Part 4. Spouse Information": {
-    greeting: "Almost done—some final details",
+    greeting: "Almost done-some final details",
     message:
       "This section includes your contact information and declarations. Please review everything carefully before moving forward.",
   },
@@ -1243,7 +1243,7 @@ export const sectionIntroMessages = {
       "If someone else helped you prepare this form, we'll need their details in this section.",
   },
   "Part 7. Additional Information": {
-    greeting: "Final section—anything else?",
+    greeting: "Final section-anything else?",
     message:
       "This is the last section. You can use this space for any extra information that didn't fit in the previous parts. You're almost there!",
   },

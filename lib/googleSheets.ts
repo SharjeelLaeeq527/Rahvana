@@ -41,7 +41,7 @@ export async function appendFeedbackToSheet(row: {
   priority?: string;
 }) {
   if (!SPREADSHEET_ID) {
-    console.warn("GOOGLE_SHEET_ID not set – skipping Google Sheets sync.");
+    console.warn("GOOGLE_SHEET_ID not set, skipping Google Sheets sync.");
     return;
   }
 

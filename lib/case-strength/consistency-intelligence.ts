@@ -212,7 +212,7 @@ function checkConsulateConsistency(state: WizardState): ConsistencyFinding[] {
       severity: "warning",
       category: "IDENTITY",
       title: "Consulate/Embassy inconsistency detected",
-      description: `Different interview locations found across records — ${details}. This may indicate a data entry error or an unprocessed transfer request.`,
+      description: `Different interview locations found across records, ${details}. This may indicate a data entry error or an unprocessed transfer request.`,
       resolution:
         "Verify your assigned interview location on CEAC. If you've requested a post transfer, confirm NVC has processed it before document submission.",
       sources: ["9 FAM 504.4-2"],
@@ -294,9 +294,9 @@ function checkMedicalTimeline(state: WizardState): ConsistencyFinding[] {
         severity: "critical",
         category: "MEDICAL",
         title: "Medical exam scheduled after interview",
-        description: `The medical exam (${medDate}) is scheduled after the interview (${interviewDate}). The medical must be completed before your interview — the panel physician needs time to transmit sealed results to the embassy.`,
+        description: `The medical exam (${medDate}) is scheduled after the interview (${interviewDate}). The medical must be completed before your interview, the panel physician needs time to transmit sealed results to the embassy.`,
         resolution:
-          "Reschedule the medical exam to at least 2–3 weeks before the interview. Contact the panel physician immediately to request an earlier appointment.",
+          "Reschedule the medical exam to at least 2-3 weeks before the interview. Contact the panel physician immediately to request an earlier appointment.",
         sources: ["9 FAM 302.8"],
         actionableStepKey: "step_3_1",
       });
@@ -329,7 +329,7 @@ function checkMedicalTimeline(state: WizardState): ConsistencyFinding[] {
         id: "medical_not_scheduled_urgent",
         severity: "warning",
         category: "MEDICAL",
-        title: "Medical exam not scheduled — interview approaching",
+        title: "Medical exam not scheduled, interview approaching",
         description: `Your interview is in ${daysToInterview} days but the medical exam hasn't been scheduled yet. Panel physician slots fill up fast.`,
         resolution:
           "Book the medical exam immediately. Bring your polio certificate, passport, and appointment letter to the exam.",
@@ -364,8 +364,8 @@ function checkPoliceCertificateTimeline(
         id: "pcc_missing_urgent",
         severity: "warning",
         category: "IMMIGRATION",
-        title: "Fresh police certificate needed — interview approaching",
-        description: `Your interview is in ${daysToInterview} days but a fresh police certificate hasn't been applied for yet. The interview requires a new PCC — not the one submitted to NVC.`,
+        title: "Fresh police certificate needed, interview approaching",
+        description: `Your interview is in ${daysToInterview} days but a fresh police certificate hasn't been applied for yet. The interview requires a new PCC, not the one submitted to NVC.`,
         resolution:
           "Apply for a fresh police character certificate immediately. Processing can take several weeks.",
         actionableStepKey: "step_3_3",
@@ -458,10 +458,10 @@ function check221gFollowUp(state: WizardState): ConsistencyFinding[] {
       id: "221g_no_action",
       severity: "critical",
       category: "POST_INTERVIEW",
-      title: "221(g) issued — follow-up documents not submitted",
+      title: "221(g) issued, follow-up documents not submitted",
       description: `Your interview resulted in a 221(g) refusal, but the requested documents haven't been submitted yet${g221Date ? ` (issued ${g221Date})` : ""}. Delays in responding can result in case closure.`,
       resolution:
-        "Submit exactly what the 221(g) requested — nothing more, nothing less — using the method and deadline stated in the notice. Keep a complete copy of everything.",
+        "Submit exactly what the 221(g) requested, nothing more, nothing less, using the method and deadline stated in the notice. Keep a complete copy of everything.",
       actionableStepKey: "step_3_11",
     });
   }
@@ -702,7 +702,7 @@ export function runSpousePhase2Checks(
         ? "Prior marriage termination document is on file."
         : "You indicated a prior marriage but haven't confirmed the divorce/death certificate is available. NVC and the consular officer require proof that every prior marriage legally ended.",
       resolution: isTerminationResolved
-        ? "Document uploaded — prior marriage termination proof is on file."
+        ? "Document uploaded, prior marriage termination proof is on file."
         : "Obtain the final divorce decree, annulment, or death certificate. Upload it to your document vault and ensure it's listed on the DS-260.",
       sources: ["8 CFR 204.2(a)(2)", "9 FAM 504.4-4"],
       actionableStepKey: "step_2_4",
@@ -726,7 +726,7 @@ export function runSpousePhase2Checks(
         ? "Prior marriage is declared in eligibility questionnaire."
         : "You indicated a prior marriage in the consistency questionnaire, but it was not declared during the initial eligibility assessment. This inconsistency could surface at interview.",
       resolution: eligDeclaredPrior
-        ? "Eligibility questionnaire updated — prior marriage is declared."
+        ? "Eligibility questionnaire updated, prior marriage is declared."
         : "Ensure the prior marriage is declared on both the I-130 and DS-260. All forms must agree on marriage history.",
       actionableStepKey: "step_1_1",
       resolved: eligDeclaredPrior,
@@ -757,7 +757,7 @@ export function runCommonPhase2Checks(
         category: "IMMIGRATION",
         title: "Prior visa refusal declared but no explanation prepared",
         description:
-          "You indicated a prior U.S. visa refusal but haven't prepared an explanation. The consular officer will ask about it — an inconsistent or vague answer can hurt your case.",
+          "You indicated a prior U.S. visa refusal but haven't prepared an explanation. The consular officer will ask about it, an inconsistent or vague answer can hurt your case.",
         resolution:
           "Prepare a clear, factual explanation for the refusal. Bring any relevant documentation (refusal letter, subsequent approval). Ensure your DS-260 disclosure matches your explanation.",
         actionableStepKey: "step_3_7",
@@ -782,7 +782,7 @@ export function runCommonPhase2Checks(
           ? "Prior visa refusal is declared in eligibility questionnaire."
           : "You indicated a prior visa refusal in the consistency questionnaire, but it wasn't flagged during the eligibility assessment. Ensure it's disclosed on the DS-260.",
         resolution: visaRefusalInEligibility
-          ? "Eligibility questionnaire updated — prior visa refusal is declared."
+          ? "Eligibility questionnaire updated, prior visa refusal is declared."
           : "Confirm the prior visa refusal is declared on your DS-260. Omitting it risks a misrepresentation finding under INA 212(a)(6)(C).",
         actionableStepKey: "step_1_1",
         resolved: visaRefusalInEligibility,
@@ -796,7 +796,7 @@ export function runCommonPhase2Checks(
       id: "phase2_employment_changes",
       severity: "informational",
       category: "FORM_CONSISTENCY",
-      title: "Employment changes noted — ensure consistency across forms",
+      title: "Employment changes noted, ensure consistency across forms",
       description:
         "You indicated significant employment changes. The I-864 employment section and DS-260 employment history must align. Gaps or discrepancies may prompt officer questions.",
       resolution:
@@ -811,7 +811,7 @@ export function runCommonPhase2Checks(
       id: "phase2_multiple_addresses",
       severity: "informational",
       category: "FORM_CONSISTENCY",
-      title: "Multiple addresses noted — verify address history consistency",
+      title: "Multiple addresses noted, verify address history consistency",
       description:
         "You indicated multiple residences in the last 5 years. The DS-260 address history, I-130A addresses, and any police certificates must be consistent.",
       resolution:
@@ -826,7 +826,7 @@ export function runCommonPhase2Checks(
       id: "phase2_immigration_issues_disclosed",
       severity: "warning",
       category: "IMMIGRATION",
-      title: "Immigration issues disclosed — verify waiver requirements",
+      title: "Immigration issues disclosed, verify waiver requirements",
       description:
         "You indicated prior immigration violations, overstays, or removals. These typically require waivers (I-601A or I-212) and must be disclosed on every form.",
       resolution:
@@ -850,9 +850,9 @@ export function runCommonPhase2Checks(
       title: "Immigration issue not declared in eligibility questionnaire",
       description: immigrationInEligibility
         ? "Immigration issue is declared in eligibility questionnaire."
-        : "You indicated prior immigration issues in the consistency questionnaire, but they weren't flagged during eligibility. These MUST be disclosed on the DS-260 — omissions can result in permanent inadmissibility.",
+        : "You indicated prior immigration issues in the consistency questionnaire, but they weren't flagged during eligibility. These MUST be disclosed on the DS-260, omissions can result in permanent inadmissibility.",
       resolution: immigrationInEligibility
-        ? "Eligibility questionnaire updated — immigration issue is declared."
+        ? "Eligibility questionnaire updated, immigration issue is declared."
         : "Ensure the immigration issue is fully disclosed on the DS-260 and I-130. Consider consulting an immigration attorney before the interview.",
       actionableStepKey: "step_1_1",
       resolved: immigrationInEligibility,

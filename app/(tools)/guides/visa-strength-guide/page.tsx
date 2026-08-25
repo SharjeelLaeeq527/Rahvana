@@ -49,7 +49,7 @@ const GUIDES: Guide[] = [
   // --- Pakistan Docs ---
   {
     id: "pcc-sindh",
-    title: "PCC Playbook — Sindh",
+    title: "PCC Playbook, Sindh",
     description:
       "Sindh police certificate guide: requirements, steps, timelines, and common mistakes.",
     category: "Pakistan Docs",
@@ -58,7 +58,7 @@ const GUIDES: Guide[] = [
   },
   {
     id: "pcc-punjab",
-    title: "PCC Playbook — Punjab",
+    title: "PCC Playbook, Punjab",
     description: "Punjab police certificate guide (service coming soon).",
     category: "Pakistan Docs",
     href: "/police-verification?province=Punjab",
@@ -66,7 +66,7 @@ const GUIDES: Guide[] = [
   },
   {
     id: "pcc-kpk",
-    title: "PCC Playbook — KPK",
+    title: "PCC Playbook, KPK",
     description: "KPK police certificate guide (service coming soon).",
     category: "Pakistan Docs",
     href: "/police-verification?province=KPK",
@@ -74,7 +74,7 @@ const GUIDES: Guide[] = [
   },
   {
     id: "pcc-balochistan",
-    title: "PCC Playbook — Balochistan",
+    title: "PCC Playbook, Balochistan",
     description: "Balochistan police certificate guide (service coming soon).",
     category: "Pakistan Docs",
     href: "/police-verification?province=Balochistan",

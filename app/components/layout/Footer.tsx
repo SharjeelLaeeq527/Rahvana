@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Instagram, Facebook, Linkedin, ArrowRight, Youtube } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -40,16 +41,16 @@ export default function Footer() {
   }
 
   return (
-    <footer className="bg-slate-900 overflow-hidden py-24 pb-12 text-slate-200">
-      <div className="w-full site-main-px">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-12 mb-16">
+    <footer className="overflow-hidden bg-slate-900 py-16 pb-12 text-slate-200 sm:py-24">
+      <div className="site-main-px w-full">
+        <div className="mb-12 grid grid-cols-2 gap-x-6 gap-y-10 sm:mb-16 sm:grid-cols-2 sm:gap-12 lg:grid-cols-5">
           {/* Brand Column */}
-          <div className="max-w-70">
+          <div className="col-span-2 max-w-md sm:col-span-1 sm:max-w-none lg:col-span-1">
             <div className="mb-6">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 viewBox="152 220 710 215"
-                className="h-12 w-auto text-white fill-current"
+                className="h-12 w-auto fill-current text-white"
               >
                 <path d="M194.478302,411.482117C188.648972,398.666321 181.184067,387.211884 174.078979,375.556946C161.946335,355.654999 154.218430,334.429535 152.466766,310.927032C150.965759,290.787415 151.490814,271.069061 158.657028,251.953415C161.906097,243.286591 167.372574,236.333282 175.068100,231.098938C187.972153,222.321823 212.377777,222.515015 222.031631,242.165817C226.003326,250.250381 232.154404,254.994858 241.386230,255.103607C240.874603,257.700470 239.210571,257.303253 238.057617,257.539734C214.604111,262.350281 200.098267,276.975067 192.363480,299.065857C184.921768,320.319672 187.555267,352.132874 198.628662,372.172211C195.346085,360.736084 194.548477,349.072571 194.585556,337.231354C194.686203,305.091156 209.071442,282.030487 237.587112,267.388245C252.463837,259.749298 268.363953,254.738281 283.791870,248.515182C300.024750,241.967392 315.867065,234.607849 330.889893,225.571030C331.848022,224.994675 332.727417,224.133804 334.330139,224.642090C334.086884,229.016586 332.356110,232.995224 331.110291,237.029678C325.877838,253.974487 319.356995,270.258270 307.731262,284.109070C295.584656,298.580475 279.797791,306.307983 261.751282,310.259583C255.743668,311.575104 249.729248,312.898682 243.795959,314.506500C229.390137,318.410126 220.388382,329.212219 218.286926,343.947327C216.575470,355.947906 217.905655,367.798737 218.737152,379.737518C219.623474,392.463135 221.756760,405.206818 219.303925,418.003387C217.963852,424.994537 214.710114,430.344635 207.688766,433.006439C204.303909,434.289673 202.544754,433.679260 201.368622,430.074707C199.358749,423.914886 196.908096,417.898895 194.478302,411.482117z"></path>
                 <path d="M347.022308,320.000671C347.016052,314.839264 347.105347,310.174835 346.965759,305.517273C346.865234,302.162506 348.128204,300.629364 351.628418,300.734467C356.786560,300.889313 361.960175,300.922363 367.113922,300.699646C370.973633,300.532806 372.427643,301.928192 372.368347,305.879303C372.186157,318.023376 372.301971,330.171936 372.301971,342.083649C373.283447,342.867767 373.819183,342.426117 374.318726,342.006836C383.782745,334.063324 394.575775,332.615875 406.196838,335.633057C415.899536,338.152130 422.744904,346.587646 423.310516,356.622040C424.267090,373.593201 423.737030,390.584991 423.953217,407.566589C423.995270,410.868988 423.022247,412.495087 419.405853,412.347473C414.084778,412.130249 408.740967,412.096069 403.421997,412.329346C399.633331,412.495514 398.561127,410.970825 398.606415,407.354187C398.766998,394.531891 398.675171,381.706299 398.663269,368.881958C398.653717,358.575378 395.399567,354.366302 387.286011,354.116821C377.843262,353.826508 372.628845,358.719452 372.391693,368.828339C372.122253,380.313904 372.349670,391.810638 372.318054,403.302399C372.289795,413.578827 373.113983,412.175079 363.109467,412.274994C359.445770,412.311584 355.772827,412.113037 352.119568,412.309662C348.129639,412.524414 346.894379,410.660309 346.908722,406.924530C346.998840,383.444702 346.970551,359.964386 346.985443,336.484253C346.988831,331.156372 347.007996,325.828522 347.022308,320.000671z"></path>
@@ -60,7 +61,7 @@ export default function Footer() {
                 <path d="M462.865234,349.315674C466.810211,360.099579 470.616516,370.517090 474.916962,382.287018C479.384949,370.264709 483.446716,359.611023 487.304840,348.884125C492.050720,335.688873 491.977295,335.663025 505.813934,335.672577C509.450104,335.675079 513.086243,335.672974 516.388855,335.672974C517.832825,337.670685 516.935730,339.029816 516.375854,340.352936C506.968994,362.584229 497.464996,384.774902 488.184998,407.058929C486.539337,411.010712 484.388458,412.776581 479.977966,412.379303C475.350067,411.962463 470.655884,412.190247 465.993652,412.284424C463.688049,412.331024 462.271484,411.462463 461.363007,409.333313C451.367401,385.906311 441.325592,362.499023 431.328247,339.072754C431.024841,338.361816 431.069000,337.502533 430.862396,336.117645C439.559174,335.296478 447.964783,335.637482 456.359894,335.899841C458.206085,335.957550 458.559937,337.773163 459.088776,339.116821C460.368408,342.367920 461.522064,345.668579 462.865234,349.315674z"></path>
               </svg>
             </div>
-            <p className="text-sm text-slate-400 leading-relaxed">
+            <p className="text-sm leading-relaxed text-slate-400">
               {t("footer.description") ||
                 "Simplifying immigration journeys with guidance, tools, and expert support. Your path to reuniting with loved ones starts here."}
             </p>
@@ -68,65 +69,40 @@ export default function Footer() {
 
           {/* Journeys Column */}
           <div>
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-6">
+            <h4 className="mb-6 hidden text-xs font-bold tracking-normal text-white uppercase sm:block sm:text-sm sm:tracking-wider">
               {t("footer.journeys") || "Journeys"}
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
-              {/* <Link
-                href="/visa-category/ir-category?category=Family"
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                {t("homePage.categoryLabels.Family & Protection") ||
-                  "Family & Protection"}
-              </Link>
-              <Link
-                href="/visa-category/ir-category?category=Work"
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                {t("homePage.categoryLabels.Work & Business") ||
-                  "Work & Business"}
-              </Link>
-              <Link
-                href="/visa-category/ir-category?category=Work"
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                {t("homePage.categoryLabels.Work Green Cards") ||
-                  "Work Green Cards"}
-              </Link>
-              <Link
-                href="/visa-category/ir-category?category=Study"
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                {t("homePage.categoryLabels.Students & Visitors") ||
-                  "Students & Visitors"}
-              </Link>
-              <Link
-                href="/visa-category/ir-category"
-                className="text-white font-medium underline hover:text-slate-200 transition-colors"
-              >
-                {t("footer.exploreAllJourneys") || "Explore all Journeys"}
-                <ArrowRight size={14} className="inline-block ml-1" />
-              </Link> */}
               <Link
                 href={ir1journeyHref}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="hidden text-slate-400 transition-colors hover:text-white sm:block"
               >
                 IR-1 Journey
               </Link>
-              {showToggle && (
+              {/* IR-5 is hidden on production (see lib/feature-flags) until it launches. */}
+              {IR5_ENABLED && (
                 <Link
                   href={ir5journeyHref}
-                  className="text-slate-400 hover:text-white transition-colors"
+                  className="hidden text-slate-400 transition-colors hover:text-white sm:block"
                 >
                   IR-5 Journey
                 </Link>
               )}
+              {/* {showToggle && (
+                <Link
+                  href="/visa-category"
+                  className="font-medium text-white underline transition-colors hover:text-slate-200"
+                >
+                  Explore<span className="hidden sm:inline"> all</span> Journeys
+                  <ArrowRight size={14} className="ml-1 inline-block" />
+                </Link>
+              )} */}
             </nav>
           </div>
 
           {/* Tools Column */}
           <div>
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-6">
+            <h4 className="mb-6 hidden text-xs font-bold tracking-normal text-white uppercase sm:block sm:text-sm sm:tracking-wider">
               {t("footer.tools") || "Tools"}
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
@@ -137,51 +113,51 @@ export default function Footer() {
               >
                 {t("toolsPage.toolsItems.case-strength-analyzer.title")}
               </Link> */}
-              <Link
+              {/* <Link
                 href="/visa-eligibility"
                 className="text-slate-400 hover:text-white transition-colors"
               >
                 {t("toolsPage.toolsItems.visa-path.title")}
-              </Link>
+              </Link> */}
               <Link
                 href="/affidavit-support-calculator"
-                className="text-slate-400 hover:text-white transition-colors"
+                className="hidden text-slate-400 transition-colors hover:text-white sm:block"
               >
                 {t("toolsPage.toolsItems.sponsorship-calculator.title")}
               </Link>
               <Link
                 href="/pdf-processing"
-                className="text-slate-400 hover:text-white transition-colors"
+                className="hidden text-slate-400 transition-colors hover:text-white sm:block"
               >
                 {t("toolsPage.toolsItems.pdf-toolkit.title")}
               </Link>
               <Link
                 href="/tools"
-                className="text-white font-medium underline hover:text-slate-200 transition-colors"
+                className="font-medium text-white underline transition-colors hover:text-slate-200"
               >
-                {t("footer.exploreAllTools") || "Explore all Tools"}
-                <ArrowRight size={14} className="inline-block ml-1" />
+                Explore<span className="hidden sm:inline"> all</span> Tools
+                <ArrowRight size={14} className="ml-1 inline-block" />
               </Link>
             </nav>
           </div>
 
           {/* Company Column */}
           <div>
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-6">
+            <h4 className="mb-6 text-xs font-bold tracking-normal text-white uppercase sm:text-sm sm:tracking-wider">
               {t("footer.company") || "Company"}
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
               <Link
                 href="/#about"
                 onClick={(e) => handleNav("about", e)}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-slate-400 transition-colors hover:text-white"
               >
                 {t("navigation.about") || "About Us"}
               </Link>
               <Link
                 href="/#contact"
                 onClick={(e) => handleNav("contact", e)}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="text-slate-400 transition-colors hover:text-white"
               >
                 {t("navigation.contact") || "Contact"}
               </Link>
@@ -190,85 +166,95 @@ export default function Footer() {
 
           {/* Social Column */}
           <div>
-            <h4 className="text-sm font-bold text-white uppercase tracking-wider mb-6">
+            <h4 className="mb-6 text-xs font-bold tracking-normal text-white uppercase sm:text-sm sm:tracking-wider">
               {t("footer.connectWithUs") || "Connect With Us"}
             </h4>
-            <nav className="flex flex-col gap-4 text-sm">
+            <nav className="grid max-w-[150px] grid-cols-3 gap-x-2 gap-y-3.5 text-sm sm:flex sm:max-w-none sm:flex-col sm:gap-4">
               <Link
                 href="https://www.instagram.com/rahvana.co?igsh=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
+                aria-label="Instagram"
+                title="Instagram"
+                className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
               >
-                <Instagram size={18} className="group-hover:scale-110 transition-transform" />
-                {t("footer.instagram") || "Instagram"}
+                <Instagram size={18} className="transition-transform group-hover:scale-110" />
+                <span className="hidden sm:inline">{t("footer.instagram") || "Instagram"}</span>
               </Link>
               <Link
                 href="https://www.facebook.com/profile.php?id=61587967827317&mibextid=wwXIfr"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
+                aria-label="Facebook"
+                title="Facebook"
+                className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
               >
-                <Facebook size={18} className="group-hover:scale-110 transition-transform" />
-                {t("footer.facebook") || "Facebook"}
+                <Facebook size={18} className="transition-transform group-hover:scale-110" />
+                <span className="hidden sm:inline">{t("footer.facebook") || "Facebook"}</span>
               </Link>
               <Link
                 href="https://x.com/rahvanaco?s=21&t=a8CQwdRgHqBFZmUfsX8Gpg"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
+                aria-label="X"
+                title="X"
+                className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
               >
                 <svg
                   viewBox="0 0 24 24"
                   aria-hidden="true"
-                  className="h-4.5 w-4.5 fill-current group-hover:scale-110 transition-transform"
+                  className="h-4.5 w-4.5 fill-current transition-transform group-hover:scale-110"
                 >
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
                 </svg>
-                {t("footer.x") || "X"}
+                <span className="hidden sm:inline">{t("footer.x") || "X"}</span>
               </Link>
               <Link
                 href="https://youtube.com/@rahvana_co?si=Mb5-OwJmc5ThTxJs"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
+                aria-label="Youtube"
+                title="Youtube"
+                className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
               >
-                <Youtube size={18} className="group-hover:scale-110 transition-transform" />
-                {t("footer.youtube") || "Youtube"}
+                <Youtube size={22} className="transition-transform group-hover:scale-110" />
+                <span className="hidden sm:inline">{t("footer.youtube") || "Youtube"}</span>
               </Link>
               <Link
                 href="https://www.linkedin.com/company/rahvana/posts/?feedView=all"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 text-slate-400 hover:text-white transition-colors group"
+                aria-label="LinkedIn"
+                title="LinkedIn"
+                className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
               >
-                <Linkedin size={18} className="group-hover:scale-110 transition-transform" />
-                LinkedIn
+                <Linkedin size={18} className="transition-transform group-hover:scale-110" />
+                <span className="hidden sm:inline">LinkedIn</span>
               </Link>
             </nav>
           </div>
         </div>
 
         {/* Bottom Bar */}
-        <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-500">
-          <div className="flex flex-col sm:flex-row gap-1 sm:gap-2 items-center text-center sm:text-left">
+        <div className="flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-8 text-sm text-slate-500 md:flex-row">
+          <div className="flex flex-col items-center gap-1 text-center sm:flex-row sm:gap-2 sm:text-left">
             <p>{t("footer.rightsReserved") || "© 2026 Rahvana. All rights reserved."}</p>
-            <span className="hidden sm:inline text-slate-700">·</span>
-            <p className="text-slate-600 text-xs">
+            <span className="hidden text-slate-700 sm:inline">·</span>
+            <p className="text-xs text-slate-600">
               Rahvana is not a law firm and does not provide legal advice.
             </p>
           </div>
           <div className="flex flex-wrap justify-center gap-6">
-            <Link href="/privacy-policy" className="hover:text-white transition-colors">
+            <Link href="/privacy-policy" className="transition-colors hover:text-white">
               {t("footer.privacyPolicy") || "Privacy Policy"}
             </Link>
-            <Link href="/terms" className="hover:text-white transition-colors">
+            <Link href="/terms" className="transition-colors hover:text-white">
               {t("footer.termsOfService") || "Terms of Service"}
             </Link>
-            <Link href="/cookie-policy" className="hover:text-white transition-colors">
+            <Link href="/cookie-policy" className="transition-colors hover:text-white">
               {t("footer.cookiePolicy") || "Cookie Policy"}
             </Link>
-            <Link href="/acceptable-use" className="hover:text-white transition-colors">
+            <Link href="/acceptable-use" className="transition-colors hover:text-white">
               Acceptable Use
             </Link>
           </div>

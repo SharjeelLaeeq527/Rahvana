@@ -6,6 +6,22 @@ import { useToast } from "@/app/components/shared/ToastProvider";
 import { motion } from "framer-motion";
 import { X, Eye, Download } from "lucide-react";
 import { E, msg } from "@/lib/errors";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
+
+const relationOptions = [
+  { value: "S/O", label: "S/O" },
+  { value: "D/O", label: "D/O" },
+  { value: "W/O", label: "W/O" },
+];
+
+const relationshipOptions = [
+  { value: "Father", label: "Father" },
+  { value: "Mother", label: "Mother" },
+  { value: "Brother", label: "Brother" },
+  { value: "Son", label: "Son" },
+  { value: "Cousin", label: "Cousin" },
+  { value: "Relative", label: "Relative" },
+];
 
 interface AuthorityFormData {
   fullName: string;
@@ -164,16 +180,15 @@ export function AuthorityLetterModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-600">Relation Type</label>
-                  <select
-                    name="relationType"
+                  <CustomDropdown
                     value={formData.relationType}
-                    onChange={handleChange}
-                    className="w-full p-3 rounded-xl border border-gray-200 focus:border-primary outline-none"
-                  >
-                    <option value="S/O">S/O</option>
-                    <option value="D/O">D/O</option>
-                    <option value="W/O">W/O</option>
-                  </select>
+                    onChange={(value) =>
+                      setFormData((prev) => ({ ...prev, relationType: value }))
+                    }
+                    options={relationOptions}
+                    placeholder="Select relation"
+                    className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-xl [&_button]:bg-white [&_button]:p-3"
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-600">
@@ -267,16 +282,15 @@ export function AuthorityLetterModal({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-600">Relation Type</label>
-                  <select
-                    name="authRelationType"
+                  <CustomDropdown
                     value={formData.authRelationType}
-                    onChange={handleChange}
-                    className="w-full p-3 rounded-xl border border-gray-200 focus:border-primary outline-none"
-                  >
-                    <option value="S/O">S/O</option>
-                    <option value="D/O">D/O</option>
-                    <option value="W/O">W/O</option>
-                  </select>
+                    onChange={(value) =>
+                      setFormData((prev) => ({ ...prev, authRelationType: value }))
+                    }
+                    options={relationOptions}
+                    placeholder="Select relation"
+                    className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-xl [&_button]:bg-white [&_button]:p-3"
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-600">
@@ -296,19 +310,15 @@ export function AuthorityLetterModal({
                   <label className="text-sm font-semibold text-gray-600">
                     Relationship to Applicant
                   </label>
-                  <select
-                    name="authRelationship"
+                  <CustomDropdown
                     value={formData.authRelationship}
-                    onChange={handleChange}
-                    className="w-full p-3 rounded-xl border border-gray-200 focus:border-primary outline-none"
-                  >
-                    <option value="Father">Father</option>
-                    <option value="Mother">Mother</option>
-                    <option value="Brother">Brother</option>
-                    <option value="Son">Son</option>
-                    <option value="Cousin">Cousin</option>
-                    <option value="Relative">Relative</option>
-                  </select>
+                    onChange={(value) =>
+                      setFormData((prev) => ({ ...prev, authRelationship: value }))
+                    }
+                    options={relationshipOptions}
+                    placeholder="Select relationship"
+                    className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-xl [&_button]:bg-white [&_button]:p-3"
+                  />
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-semibold text-gray-600">

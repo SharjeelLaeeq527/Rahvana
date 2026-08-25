@@ -146,7 +146,7 @@ function buildFollowUpSteps(a: VisaExplorationAnswers): Step[] {
         {
           label: "Graduate Visa",
           value: "GRADUATE",
-          sub: "If you finished a UK degree — no job needed",
+          sub: "If you finished a UK degree, no job needed",
         },
         {
           label: "Creative & Sporting",
@@ -157,7 +157,7 @@ function buildFollowUpSteps(a: VisaExplorationAnswers): Step[] {
         {
           label: "Seasonal Worker",
           value: "SEASONAL",
-          sub: "Agriculture or poultry — up to 6 months",
+          sub: "Agriculture or poultry, up to 6 months",
         },
       ],
       canProceed: !!a.workType,
@@ -226,7 +226,7 @@ export const UK_DATA: CountryData = {
   code: "UK",
   flag: "🇬🇧",
   officialSources: [
-    { label: "GOV.UK — Visas & Immigration", url: "https://www.gov.uk/browse/visas-immigration" },
+    { label: "GOV.UK, Visas & Immigration", url: "https://www.gov.uk/browse/visas-immigration" },
   ],
   purposes: [
     {
@@ -268,10 +268,10 @@ export const UK_DATA: CountryData = {
     const notes = [];
     if (a.origin?.toLowerCase() === "pakistan") {
       notes.push(
-        "⚠️ Mandatory: Tuberculosis (TB) test certificate from a UKVI-approved clinic (IOM Pakistan) is required for stays longer than 6 months."
+        "Mandatory: Tuberculosis (TB) test certificate from a UKVI-approved clinic (IOM Pakistan) is required for stays longer than 6 months."
       );
       notes.push(
-        "⚠️ Official 2026 Policy: UK visit visas for Pakistanis are now fully digital (e-visas). No physical sticker will be placed in your passport."
+        "Official 2026 Policy: UK visit visas for Pakistanis are now fully digital (e-visas). No physical sticker will be placed in your passport."
       );
     }
     return notes;
@@ -279,7 +279,7 @@ export const UK_DATA: CountryData = {
   visas: {
     "UK-FAMILY-SPOUSE": {
       code: "Family (Spouse)",
-      label: "Family Visa — Spouse / Partner",
+      label: "Family Visa, Spouse / Partner",
       badge: "Settlement",
       color: T.primary,
       description:
@@ -287,16 +287,16 @@ export const UK_DATA: CountryData = {
       criteria: [
         "Partner is a British citizen or has Indefinite Leave to Remain (ILR).",
         "Proof of genuine, subsisting relationship.",
-        "Sponsor must meet the minimum income requirement of £29,000 per year (gross). [Verified March 2026 — MAC review June 2025 left threshold unchanged]",
+        "Sponsor must meet the minimum income requirement of £29,000 per year (gross). [Verified March 2026, MAC review June 2025 left threshold unchanged]",
         "English language requirement (A1 level minimum).",
         "Adequate accommodation in the UK.",
       ],
       processing: "8 to 24 weeks.",
-      forms: ["Apply Online — GOV.UK"],
+      forms: ["Apply Online, GOV.UK"],
     },
     "UK-FAMILY-FIANCE": {
       code: "Family (Fiancé)",
-      label: "Fiancé(e) Visa — UK",
+      label: "Fiancé(e) Visa, UK",
       badge: "Settlement",
       color: T.primary,
       description:
@@ -309,7 +309,7 @@ export const UK_DATA: CountryData = {
         "Must apply for spouse visa after marriage to remain in the UK.",
       ],
       processing: "8 to 24 weeks.",
-      forms: ["Apply Online — GOV.UK"],
+      forms: ["Apply Online, GOV.UK"],
     },
     "UK-SKILLED-WORKER": {
       code: "Skilled Worker",
@@ -322,7 +322,7 @@ export const UK_DATA: CountryData = {
         "Job offer from a UK Home Office licensed sponsor with a Certificate of Sponsorship (CoS).",
         "Minimum salary of £41,700/year or the going rate for the occupation, whichever is higher. [Updated July 2025]",
         "Lower thresholds available: new entrants/ISL roles (£33,400), relevant PhD (£37,500), STEM PhD (£33,400).",
-        "Role must be at RQF Level 6 (degree-level) from 22 July 2025 — lower-skilled roles are no longer eligible.",
+        "Role must be at RQF Level 6 (degree-level) from 22 July 2025, lower-skilled roles are no longer eligible.",
         "English proficiency at B1 level.",
       ],
       processing: "3 weeks (outside UK).",
@@ -392,7 +392,7 @@ export const UK_DATA: CountryData = {
     },
     "UK-TEMP-CREATIVE": {
       code: "Creative Worker",
-      label: "Temporary Worker — Creative",
+      label: "Temporary Worker, Creative",
       badge: "Non-Settlement",
       color: "#F59E0B",
       description:
@@ -407,7 +407,7 @@ export const UK_DATA: CountryData = {
     },
     "UK-TEMP-CHARITY": {
       code: "Charity Worker",
-      label: "Temporary Worker — Charity",
+      label: "Temporary Worker, Charity",
       badge: "Non-Settlement",
       color: "#F59E0B",
       description: "For people who want to do unpaid voluntary work for a charity in the UK.",
@@ -434,7 +434,7 @@ export const UK_DATA: CountryData = {
     },
     "UK-TEMP-RELIGIOUS": {
       code: "Religious Worker",
-      label: "Temporary Worker — Religious",
+      label: "Temporary Worker, Religious",
       badge: "Non-Settlement",
       color: "#F59E0B",
       description: "For short-term religious work or joining a religious order.",
@@ -543,11 +543,11 @@ export const UK_DATA: CountryData = {
         "Completed an eligible degree (Bachelor's, Master's, or PhD) at a UK higher education provider.",
         "Held a valid Student visa during studies and must apply from inside the UK.",
         "Stay permitted: at least 18 months for Bachelor's/Master's; 3 years for PhD graduates.",
-        "No job offer or minimum salary required — any type of work is allowed.",
+        "No job offer or minimum salary required, any type of work is allowed.",
         "Note: UK Immigration White Paper (May 2025) proposed abolishing this route in future. Check gov.uk for latest status before applying.",
       ],
       processing: "8 weeks (inside UK).",
-      forms: ["Online Application — GOV.UK"],
+      forms: ["Online Application, GOV.UK"],
     },
     "UK-SEASONAL": {
       code: "Seasonal Worker",
@@ -555,7 +555,7 @@ export const UK_DATA: CountryData = {
       badge: "Temporary Work",
       color: "#F59E0B",
       description:
-        "Allows workers in agriculture and horticulture to come to the UK for up to 6 months. No prior job offer letter needed — apply through an approved operator.",
+        "Allows workers in agriculture and horticulture to come to the UK for up to 6 months. No prior job offer letter needed, apply through an approved operator.",
       criteria: [
         "Must apply through a UK government-approved seasonal work operator (e.g. Concordia, Fruitful Jobs, Pro-Force).",
         "Work limited to agriculture, horticulture, or poultry dressing.",
@@ -564,7 +564,7 @@ export const UK_DATA: CountryData = {
         "Available to Pakistani nationals.",
       ],
       processing: "3 weeks.",
-      forms: ["Apply through approved operator", "Online Application — GOV.UK"],
+      forms: ["Apply through approved operator", "Online Application, GOV.UK"],
     },
     "UK-GLOBAL-TALENT": {
       code: "Global Talent",
@@ -576,15 +576,15 @@ export const UK_DATA: CountryData = {
       criteria: [
         "Must be endorsed by an approved UK endorsing body (Tech Nation/UKRI for tech, British Academy for humanities, Royal Academy of Engineering, etc.).",
         "Either a recognised leader ('Exceptional Talent') or a promising emerging leader ('Exceptional Promise').",
-        "No job offer required — can work for multiple employers or be self-employed.",
+        "No job offer required, can work for multiple employers or be self-employed.",
         "Fast route to settlement: 3 years for Exceptional Talent, 5 years for Exceptional Promise.",
       ],
       processing: "8 weeks.",
-      forms: ["Endorsement application (via endorsing body)", "Online Visa Application — GOV.UK"],
+      forms: ["Endorsement application (via endorsing body)", "Online Visa Application, GOV.UK"],
     },
     "UK-STUDENT": {
       code: "Student Visa",
-      label: "Student Visa — UK",
+      label: "Student Visa, UK",
       badge: "Study",
       color: "#6366F1",
       description:
@@ -593,10 +593,10 @@ export const UK_DATA: CountryData = {
         "Unconditional offer (CAS) from a licensed UK student sponsor.",
         "Proof of financial support (tuition fees + living costs).",
         "English language proficiency (as required by your institution).",
-        "TB (tuberculosis) test certificate — mandatory for Pakistani applicants.",
+        "TB (tuberculosis) test certificate, mandatory for Pakistani applicants.",
       ],
       processing: "3 weeks (outside UK).",
-      forms: ["Apply Online — GOV.UK", "CAS from institution"],
+      forms: ["Apply Online, GOV.UK", "CAS from institution"],
     },
     "UK-CHILD-STUDENT": {
       code: "Child Student",
@@ -629,7 +629,7 @@ export const UK_DATA: CountryData = {
     },
     "UK-FAMILY-PARENT": {
       code: "Family (Parent)",
-      label: "Family Visa — Parent",
+      label: "Family Visa, Parent",
       badge: "Settlement",
       color: T.primary,
       description: "For parents of children who are British citizens or settled in the UK.",
@@ -643,7 +643,7 @@ export const UK_DATA: CountryData = {
     },
     "UK-FAMILY-CHILD": {
       code: "Family (Child)",
-      label: "Family Visa — Child",
+      label: "Family Visa, Child",
       badge: "Settlement",
       color: T.primary,
       description: "For children of British citizens or settled persons in the UK.",
@@ -666,7 +666,7 @@ export const UK_DATA: CountryData = {
     },
     "UK-ILR-WORK": {
       code: "ILR (Work)",
-      label: "Settlement — Skilled Worker",
+      label: "Settlement, Skilled Worker",
       badge: "Permanent",
       color: T.success,
       description: "Indefinite Leave to Remain for people who have worked in the UK for 5 years.",
@@ -681,7 +681,7 @@ export const UK_DATA: CountryData = {
     },
     "UK-ILR-FAMILY": {
       code: "ILR (Family)",
-      label: "Settlement — Family Route",
+      label: "Settlement, Family Route",
       badge: "Permanent",
       color: T.primary,
       description: "Indefinite Leave to Remain for partners or parents of people in the UK.",
@@ -695,7 +695,7 @@ export const UK_DATA: CountryData = {
     },
     "UK-ILR-LONG": {
       code: "ILR (Long Residence)",
-      label: "Settlement — 10 Year Route",
+      label: "Settlement, 10 Year Route",
       badge: "Permanent",
       color: "#475569",
       description: "For people who have lived legally in the UK for at least 10 continuous years.",
@@ -709,7 +709,7 @@ export const UK_DATA: CountryData = {
     },
     "UK-ILR-PROTECTION": {
       code: "Settlement (Protection)",
-      label: "Settlement — Refugee / Humanitarian",
+      label: "Settlement, Refugee / Humanitarian",
       badge: "Permanent",
       color: "#DC2626",
       description:
@@ -759,7 +759,7 @@ export const UK_DATA: CountryData = {
         "English B2 level mandatory.",
       ],
       processing: "3 weeks.",
-      forms: ["Endorsement Application", "Online Visa Application — GOV.UK"],
+      forms: ["Endorsement Application", "Online Visa Application, GOV.UK"],
     },
     "UK-HPI": {
       code: "HPI Visa",
@@ -775,7 +775,7 @@ export const UK_DATA: CountryData = {
         "Maintenance funds of £1,270 for at least 28 days.",
       ],
       processing: "3 weeks.",
-      forms: ["Ecctis verification (qualification check)", "Online Visa Application — GOV.UK"],
+      forms: ["Ecctis verification (qualification check)", "Online Visa Application, GOV.UK"],
     },
   },
   gateQuestions: {
@@ -783,7 +783,7 @@ export const UK_DATA: CountryData = {
       {
         id: "income",
         question: "Does your sponsor's gross annual income meet the £29,000 minimum requirement?",
-        source: "UK Gov — Family visa financial requirement (verified March 2026)",
+        source: "UK Gov, Family visa financial requirement (verified March 2026)",
         sourceUrl: "https://www.gov.uk/uk-family-visa/proof-income-partner",
         passWith: ["YES"],
         failMsg:
@@ -796,7 +796,7 @@ export const UK_DATA: CountryData = {
       {
         id: "english",
         question: "Can you prove your English language knowledge (at least A1 level)?",
-        source: "UK Gov — English language requirement for family visa",
+        source: "UK Gov, English language requirement for family visa",
         sourceUrl: "https://www.gov.uk/uk-family-visa/knowledge-of-english",
         passWith: ["YES"],
         failMsg: "An approved English language test, or a degree taught in English, is required.",
@@ -810,7 +810,7 @@ export const UK_DATA: CountryData = {
       {
         id: "income",
         question: "Does your sponsor's gross annual income meet the £29,000 minimum requirement?",
-        source: "UK Gov — Family visa financial requirement",
+        source: "UK Gov, Family visa financial requirement",
         sourceUrl: "https://www.gov.uk/uk-family-visa/proof-income-partner",
         passWith: ["YES"],
         failMsg: "The UK-based sponsor must earn at least £29,000 gross per year.",
@@ -824,7 +824,7 @@ export const UK_DATA: CountryData = {
       {
         id: "cos",
         question: "Do you have a Certificate of Sponsorship (CoS) from a licensed UK employer?",
-        source: "UK Gov — Skilled Worker visa requirements",
+        source: "UK Gov, Skilled Worker visa requirements",
         sourceUrl: "https://www.gov.uk/skilled-worker-visa",
         passWith: ["YES"],
         failMsg:
@@ -837,19 +837,19 @@ export const UK_DATA: CountryData = {
       {
         id: "salary",
         question: "Does your salary meet the Skilled Worker threshold (22 July 2025 rules)?",
-        source: "UK Gov — Skilled Worker salary thresholds (July 2025)",
+        source: "UK Gov, Skilled Worker salary thresholds (July 2025)",
         sourceUrl: "https://www.gov.uk/skilled-worker-visa/your-job",
         passWith: ["YES", "NEW_ENTRANT", "TRANSITIONAL"],
         failMsg:
-          "New applicants need £41,700 (or going rate). New entrants/ISL/PhD roles: £33,400–£37,500. Extending existing pre-July-2025 RQF 3–5 visa: £31,300.",
+          "New applicants need £41,700 (or going rate). New entrants/ISL/PhD roles: £33,400, £37,500. Extending existing pre-July-2025 RQF 3-5 visa: £31,300.",
         options: [
-          { label: "Yes — general application, salary ≥ £41,700 (or going rate)", value: "YES" },
+          { label: "Yes, general application, salary ≥ £41,700 (or going rate)", value: "YES" },
           {
-            label: "Yes — new entrant / PhD / ISL role, salary ≥ £33,400–£37,500",
+            label: "Yes, new entrant / PhD / ISL role, salary ≥ £33,400, £37,500",
             value: "NEW_ENTRANT",
           },
           {
-            label: "Yes — extending a pre-July-2025 visa at lower rate (£31,300)",
+            label: "Yes, extending a pre-July-2025 visa at lower rate (£31,300)",
             value: "TRANSITIONAL",
           },
           { label: "No", value: "NO" },
@@ -861,7 +861,7 @@ export const UK_DATA: CountryData = {
         id: "cos",
         question:
           "Do you have a Certificate of Sponsorship (CoS) from a licensed NHS or CQC-registered care provider?",
-        source: "UK Gov — Health and Care Worker visa",
+        source: "UK Gov, Health and Care Worker visa",
         sourceUrl: "https://www.gov.uk/health-care-worker-visa",
         passWith: ["YES"],
         failMsg:
@@ -875,7 +875,7 @@ export const UK_DATA: CountryData = {
         id: "registration",
         question:
           "Are you registered (or eligible to register) with the relevant UK regulatory body (NMC, GMC, HCPC, etc.)?",
-        source: "NHS Employers — Health and Care Worker Visa",
+        source: "NHS Employers, Health and Care Worker Visa",
         sourceUrl: "https://www.nhsemployers.org/articles/skilled-worker-health-and-care-visa",
         passWith: ["YES"],
         failMsg:
@@ -891,7 +891,7 @@ export const UK_DATA: CountryData = {
         id: "operator",
         question:
           "Have you registered with or been accepted by a UK government-approved seasonal work operator?",
-        source: "UK Gov — Seasonal Worker visa",
+        source: "UK Gov, Seasonal Worker visa",
         sourceUrl: "https://www.gov.uk/seasonal-worker-visa",
         passWith: ["YES"],
         failMsg:
@@ -907,13 +907,13 @@ export const UK_DATA: CountryData = {
         id: "endorsement",
         question:
           "Have you received (or are applying for) an endorsement from an approved UK endorsing body (Tech Nation/UKRI, British Academy, Royal Academy of Engineering, etc.)?",
-        source: "UK Gov — Global Talent visa endorsement",
+        source: "UK Gov, Global Talent visa endorsement",
         sourceUrl: "https://www.gov.uk/global-talent",
         passWith: ["YES", "APPLYING"],
         failMsg:
           "An endorsement from an approved UK endorsing body is the mandatory first step. Without it, you cannot apply for the visa.",
         options: [
-          { label: "Yes — already endorsed", value: "YES" },
+          { label: "Yes, already endorsed", value: "YES" },
           { label: "Currently applying for endorsement", value: "APPLYING" },
           { label: "No", value: "NO" },
         ],
@@ -924,7 +924,7 @@ export const UK_DATA: CountryData = {
         id: "endorsement_biz",
         question:
           "Do you have an endorsement letter from an approved UK body for your business idea?",
-        source: "UK Gov — Innovator Founder visa endorsement",
+        source: "UK Gov, Innovator Founder visa endorsement",
         sourceUrl: "https://www.gov.uk/innovator-founder-visa",
         passWith: ["YES"],
         failMsg:
@@ -940,7 +940,7 @@ export const UK_DATA: CountryData = {
         id: "university_rank",
         question:
           "Is your university on the 'Global Universities List' for the year you graduated (top 50 globally)?",
-        source: "UK Gov — High Potential Individual university list",
+        source: "UK Gov, High Potential Individual university list",
         sourceUrl: "https://www.gov.uk/high-potential-individual-visa/eligibility",
         passWith: ["YES"],
         failMsg:
@@ -956,7 +956,7 @@ export const UK_DATA: CountryData = {
         id: "cos",
         question:
           "Do you have a Certificate of Sponsorship from a licensed UK religious organization?",
-        source: "GOV.UK — Minister of Religion visa",
+        source: "GOV.UK, Minister of Religion visa",
         sourceUrl: "https://www.gov.uk/minister-of-religion-visa",
         passWith: ["YES"],
         failMsg: "A CoS is mandatory.",
@@ -970,7 +970,7 @@ export const UK_DATA: CountryData = {
       {
         id: "current_emp",
         question: "Are you currently working for the international employer outside the UK?",
-        source: "GOV.UK — Global Business Mobility",
+        source: "GOV.UK, Global Business Mobility",
         sourceUrl: "https://www.gov.uk/intra-company-transfer-visa",
         passWith: ["YES"],
         failMsg: "ICT is for existing employees only.",
@@ -984,7 +984,7 @@ export const UK_DATA: CountryData = {
       {
         id: "cos",
         question: "Do you have a CoS from a licensed Scale-up business?",
-        source: "GOV.UK — Scale-up Worker",
+        source: "GOV.UK, Scale-up Worker",
         sourceUrl: "https://www.gov.uk/scale-up-worker-visa",
         passWith: ["YES"],
         failMsg: "Sponsorship from a Scale-up business is required.",
@@ -998,7 +998,7 @@ export const UK_DATA: CountryData = {
       {
         id: "intent",
         question: "Do you intend to marry or enter a civil partnership during your visit?",
-        source: "GOV.UK — Marriage Visitor visa",
+        source: "GOV.UK, Marriage Visitor visa",
         sourceUrl: "https://www.gov.uk/marriage-visitor-visa",
         passWith: ["YES"],
         failMsg: "This visa is specifically for wedding/partnership arrangements.",
@@ -1012,7 +1012,7 @@ export const UK_DATA: CountryData = {
       {
         id: "transit",
         question: "Are you changing flights at a UK airport and staying 'airside'?",
-        source: "GOV.UK — Transit Visas",
+        source: "GOV.UK, Transit Visas",
         sourceUrl: "https://www.gov.uk/transit-visa",
         passWith: ["YES"],
         failMsg: "DATV is for airside transit only.",
@@ -1027,7 +1027,7 @@ export const UK_DATA: CountryData = {
         id: "resid",
         question:
           "Have you lived in the UK legally for at least 5 continuous years on a work visa?",
-        source: "GOV.UK — Indefinite Leave to Remain",
+        source: "GOV.UK, Indefinite Leave to Remain",
         sourceUrl: "https://www.gov.uk/settle-in-the-uk",
         passWith: ["YES"],
         failMsg: "5 years continuous residence is required for most work routes.",
@@ -1041,7 +1041,7 @@ export const UK_DATA: CountryData = {
       {
         id: "ten_yrs",
         question: "Have you lived legally in the UK for at least 10 continuous years?",
-        source: "GOV.UK — Long Residence Settlement",
+        source: "GOV.UK, Long Residence Settlement",
         sourceUrl: "https://www.gov.uk/long-residence",
         passWith: ["YES"],
         failMsg: "10 years legal residence is mandatory.",
@@ -1055,7 +1055,7 @@ export const UK_DATA: CountryData = {
       {
         id: "grandparent",
         question: "Was one of your grandparents born in the UK, Channel Islands, or Isle of Man?",
-        source: "GOV.UK — UK Ancestry visa",
+        source: "GOV.UK, UK Ancestry visa",
         sourceUrl: "https://www.gov.uk/ancestry-visa",
         passWith: ["YES"],
         failMsg: "Ancestry visa requires a UK-born grandparent.",

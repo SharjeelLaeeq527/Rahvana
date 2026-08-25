@@ -884,6 +884,30 @@ export async function triggerTranslationConfirmedNotification(
 }
 
 /**
+ * Triggered when a user requests changes for a completed translation.
+ */
+export async function triggerTranslationChangesRequestedNotification(
+  journeyId: string | null | undefined,
+  userName: string,
+  docLabel: string,
+  reason: string
+) {
+  try {
+    return await notifyAdmins(
+      "admin_new_translation",
+      journeyId || undefined,
+      `${userName} has requested changes for: ${docLabel} certificate. Reason: ${reason}`,
+      undefined,
+      "Translation Changes Requested"
+    );
+  } catch (error) {
+    console.error("Error triggering translation changes requested notification:", error);
+    return { error: "Failed to notify admins of translation changes requested" };
+  }
+}
+
+
+/**
  * Triggered when a user requests a Police Clearance Certificate verification.
  */
 export async function triggerPCCNotification(

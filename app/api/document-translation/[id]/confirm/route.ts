@@ -24,7 +24,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Check if document exists and is in TRANSLATED state
     const { data: existing, error: checkError } = await supabase
       .from("translation_documents")
-      .select("status, translated_file_path, document_label, journey_id")
+      .select("status, translated_file_path, document_type, user_name")
       .eq("id", id)
       .eq("user_id", user.id)
       .single();
@@ -57,6 +57,17 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       console.error("Update error:", updateError);
       return NextResponse.json({ error: "Failed to confirm translation" }, { status: 500 });
     }
+
+    // Trigger admin notification asynchronously
+    const docLabel = existing.document_type || "Document";
+    const userName = existing.user_name || "User";
+    triggerTranslationConfirmedNotification(
+      undefined,
+      userName,
+      docLabel
+    ).catch((err) => {
+      console.error("Error triggering translation confirmed notification:", err);
+    });
 
     return NextResponse.json({
       success: true,

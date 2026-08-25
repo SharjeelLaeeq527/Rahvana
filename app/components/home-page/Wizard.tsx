@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { WizardState } from "../../(main)/dashboard/hooks/useWizard";
 import { roadmapData } from "../../../data/roadmap";
 import { useWizard } from "../../(main)/dashboard/hooks/useWizard";
-import { ProgressTree } from "@/app/(tools)/(visa)/visa-category/ir-category/[visa-journey]/components/ProgressTree";
-import { StepDetail } from "@/app/(tools)/(visa)/visa-category/ir-category/[visa-journey]/components/StepDetail";
-import { DocumentVault } from "@/app/(tools)/(visa)/visa-category/ir-category/[visa-journey]/components/DocumentVault";
+import { ProgressTree } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/ProgressTree";
+import { StepDetail } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/StepDetail";
+import { DocumentVault } from "@/app/(tools)/(visa)/visa-category/[visa-journey]/components/DocumentVault";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 type WizardActions = ReturnType<typeof useWizard>["actions"];

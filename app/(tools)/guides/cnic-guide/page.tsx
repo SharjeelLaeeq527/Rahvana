@@ -15,6 +15,7 @@ import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/cnic-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
+import { PageGate } from "@/app/components/entitlements/PageGate";
 
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
@@ -360,7 +361,12 @@ const CnicGuide = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 pt-26">
+    <PageGate
+      feature="guide_cnic"
+      title="CNIC Guide Locked"
+      description="Upgrade your plan to unlock step-by-step guidance on obtaining and updating your CNIC/NICOP."
+    >
+      <div className="min-h-screen flex flex-col bg-gray-50 pt-26">
       <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
 
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
@@ -411,7 +417,10 @@ const CnicGuide = () => {
                     onClick={goBack}
                     className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
                   >
-                    <ArrowLeft className="w-4 h-4" /> Back
+                    <ArrowLeft className="w-4 h-4" /> 
+                    <span className="hidden md:inline-block">
+                      Back
+                    </span>
                   </motion.button>
                 ) : (
                   <div />
@@ -440,7 +449,10 @@ const CnicGuide = () => {
                     }
                   `}
                     >
-                      Continue <ArrowRight className="w-4 h-4" />
+                      <span className="hidden md:inline-block">
+                        Continue
+                      </span>
+                      <ArrowRight className="w-4 h-4" />
                     </motion.button>
                   )}
               </div>
@@ -478,7 +490,8 @@ const CnicGuide = () => {
         currentStepName={STEP_LABELS[currentStepId] || ""}
         onSubmit={handleSubmitFeedback}
       />
-    </div>
+      </div>
+    </PageGate>
   );
 };
 

@@ -60,7 +60,7 @@ const CaseTypeStep = ({
           </svg>
         </div>
         <h3 className="font-bold text-lg md:text-xl mb-2 text-foreground">Spouse Visa</h3>
-        <p className="text-base text-muted-foreground">IR-1 / CR-1 – Spouse of U.S. Citizen</p>
+        <p className="text-base text-muted-foreground">IR-1 / CR-1, Spouse of U.S. Citizen</p>
       </button>
     </div>
 

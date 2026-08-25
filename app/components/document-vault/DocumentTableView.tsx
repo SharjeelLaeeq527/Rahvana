@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { DocumentDefinition, UploadedDocument } from "@/lib/document-vault/types";
 
 // import {
@@ -66,6 +66,7 @@ interface DocumentTableViewProps {
   onExport: (docId: string, hasCompressed: boolean) => void;
   onPreview: (doc: UploadedDocument) => void;
   onRename?: (category: string, docId: string, newName: string) => void;
+  onDeleteSlot?: (category: string, docId: string) => void;
 }
 
 export function DocumentTableView({
@@ -78,14 +79,24 @@ export function DocumentTableView({
   onExport,
   onPreview,
   onRename,
+  onDeleteSlot,
 }: DocumentTableViewProps) {
   const { t } = useLanguage();
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState("");
   const [expandedRows, setExpandedRows] = useState<Record<string, boolean>>({});
+  // Mobile-only: reveals the columns hidden on small screens (Required For, File Info, Validity)
+  const [expandedDetails, setExpandedDetails] = useState<Record<string, boolean>>({});
 
   const toggleRow = (id: string) => {
     setExpandedRows((prev) => ({
+      ...prev,
+      [id]: !prev[id],
+    }));
+  };
+
+  const toggleDetails = (id: string) => {
+    setExpandedDetails((prev) => ({
       ...prev,
       [id]: !prev[id],
     }));
@@ -128,15 +139,19 @@ export function DocumentTableView({
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
-              <TableHead className="w-[300px]">
+              <TableHead className="min-w-[160px]">
                 {t("documentVaultPage.components.tableView.columns.documentName")}
               </TableHead>
-              <TableHead>
+              <TableHead className="hidden lg:table-cell">
                 {t("documentVaultPage.components.tableView.columns.requiredFor")}
               </TableHead>
               <TableHead>{t("documentVaultPage.components.tableView.columns.status")}</TableHead>
-              <TableHead>{t("documentVaultPage.components.tableView.columns.fileInfo")}</TableHead>
-              <TableHead>{t("documentVaultPage.components.tableView.columns.validity")}</TableHead>
+              <TableHead className="hidden lg:table-cell">
+                {t("documentVaultPage.components.tableView.columns.fileInfo")}
+              </TableHead>
+              <TableHead className="hidden lg:table-cell">
+                {t("documentVaultPage.components.tableView.columns.validity")}
+              </TableHead>
               <TableHead className="text-right">
                 {t("documentVaultPage.components.tableView.columns.actions")}
               </TableHead>
@@ -183,7 +198,9 @@ export function DocumentTableView({
 
               const latestDoc = docVariants[0];
               const hasVariants = docVariants.length > 1;
-              const isExpanded = expandedRows[doc.id];
+              const showVersionHistoryTray = hasVariants && !(doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-"));
+              const isExpanded = expandedRows[doc.id] && showVersionHistoryTray;
+              const isDetailsOpen = !!expandedDetails[doc.id];
 
               const docName =
                 t(`documentVaultPage.documents.${doc.id}.name`) !==
@@ -198,8 +215,8 @@ export function DocumentTableView({
                   : doc.description;
 
               return (
-                <>
-                  <TableRow key={doc.id} className="group transition-colors hover:bg-muted/30">
+                <React.Fragment key={doc.id}>
+                  <TableRow className="group transition-colors hover:bg-muted/30">
                     <TableCell>
                       <div className="flex items-center gap-3 py-1">
                         <div
@@ -246,25 +263,67 @@ export function DocumentTableView({
                                 </Button>
                               </div>
                             ) : (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <span className="line-clamp-2 text-left max-w-[220px]">
-                                    {docName}
-                                  </span>
-                                </TooltipTrigger>
-                                <TooltipContent side="top" className="max-w-[300px] z-100">
-                                  <p className="text-sm font-medium">{docName}</p>
-                                </TooltipContent>
-                              </Tooltip>
+                              <div className="flex items-center gap-1">
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="line-clamp-2 text-left max-w-[220px]">
+                                      {docName}
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="top" className="max-w-[300px] z-100">
+                                    <p className="text-sm font-medium">{docName}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                                 {doc.id.startsWith("dynamic-") && (
+                                  <div className="inline-flex items-center gap-0.5">
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setEditingId(doc.id);
+                                        setEditValue(doc.name);
+                                      }}
+                                      title="Rename"
+                                    >
+                                      <Edit2 className="w-3 h-3 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200" />
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
+                                      className="h-5 w-5 p-0 opacity-0 group-hover:opacity-100 transition-opacity text-destructive hover:text-destructive hover:bg-destructive/10"
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        onDeleteSlot?.(doc.category, doc.id);
+                                      }}
+                                      title="Delete Slot"
+                                    >
+                                      <Trash2 className="w-3 h-3" />
+                                    </Button>
+                                  </div>
+                                )}
+                              </div>
                             )}
                             {doc.required && <span className="text-destructive font-bold">*</span>}
-                            {hasVariants && (
-                              <Badge
-                                variant="outline"
-                                className="ml-2 text-[10px] bg-primary/5 text-primary border-primary/20 whitespace-nowrap"
-                              >
-                                {docVariants.length} Variants
-                              </Badge>
+                            {doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-") ? (
+                              docVariants.length > 0 && (
+                                <Badge
+                                  variant="outline"
+                                  className="ml-2 text-[10px] bg-primary/5 text-primary border-primary/20 whitespace-nowrap"
+                                >
+                                  {docVariants.length} {docVariants.length === 1 ? "File" : "Files"}
+                                </Badge>
+                              )
+                            ) : (
+                              hasVariants && (
+                                <Badge
+                                  variant="outline"
+                                  className="ml-2 text-[10px] bg-primary/5 text-primary border-primary/20 whitespace-nowrap"
+                                >
+                                  {docVariants.length} Variants
+                                </Badge>
+                              )
                             )}
                           </div>
                           <Tooltip>
@@ -280,7 +339,7 @@ export function DocumentTableView({
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden lg:table-cell">
                       <div className="flex flex-wrap gap-1">
                         {doc.roles.map((role) => (
                           <Badge
@@ -294,7 +353,7 @@ export function DocumentTableView({
                       </div>
                     </TableCell>
                     <TableCell>{getStatusBadge(doc, latestDoc)}</TableCell>
-                    <TableCell>
+                    <TableCell className="hidden lg:table-cell">
                       {latestDoc ? (
                         <div className="space-y-1">
                           <div className="text-xs font-medium truncate max-w-[150px]">
@@ -302,14 +361,21 @@ export function DocumentTableView({
                           </div>
                           <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
                             <span>{formatFileSize(latestDoc.fileSize, t)}</span>
-                            <span>•</span>
-                            <span className="font-bold text-primary">
-                              v{latestDoc.displayVersion} (Latest)
-                            </span>
+                            {!(doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-")) && (
+                              <>
+                                <span>•</span>
+                                <span className="font-bold text-primary">
+                                  v{latestDoc.displayVersion} (Latest)
+                                </span>
+                              </>
+                            )}
                             {latestDoc.hasCompressedVersion && (
-                              <Badge className="h-4 px-1 text-[9px] bg-blue-100 text-blue-700 border-none hover:bg-blue-100">
-                                {t("documentVaultPage.components.tableView.zip")}
-                              </Badge>
+                              <>
+                                <span>•</span>
+                                <Badge className="h-4 px-1 text-[9px] bg-blue-100 text-blue-700 border-none hover:bg-blue-100">
+                                  {t("documentVaultPage.components.tableView.zip")}
+                                </Badge>
+                              </>
                             )}
                           </div>
                         </div>
@@ -319,7 +385,7 @@ export function DocumentTableView({
                         </span>
                       )}
                     </TableCell>
-                    <TableCell>
+                    <TableCell className="hidden lg:table-cell">
                       {latestDoc?.expirationDate ? (
                         <div
                           className={`text-xs flex items-center gap-1.5 ${
@@ -334,11 +400,25 @@ export function DocumentTableView({
                           {formatExpirationDate(latestDoc.expirationDate, t)}
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground">—</span>
+                        <span className="text-xs text-muted-foreground">, </span>
                       )}
                     </TableCell>
                     <TableCell className="text-right">
-                      <div className="flex justify-end gap-1">
+                      <div className="flex justify-end items-center gap-1">
+                        {/* Mobile-only: reveal the hidden detail columns */}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0 lg:hidden text-muted-foreground data-[open=true]:text-primary data-[open=true]:bg-primary/10"
+                          data-open={isDetailsOpen}
+                          aria-expanded={isDetailsOpen}
+                          aria-label={t("documentVaultPage.components.tableView.columns.fileInfo")}
+                          onClick={() => toggleDetails(doc.id)}
+                        >
+                          <ChevronDown
+                            className={`w-4 h-4 transition-transform duration-200 ${isDetailsOpen ? "rotate-180" : ""}`}
+                          />
+                        </Button>
                         {!latestDoc ? (
                           <>
                             <Button
@@ -358,9 +438,31 @@ export function DocumentTableView({
                             >
                               <Info className="w-4 h-4" />
                             </Button>
+                            {doc.id.startsWith("dynamic-") && (
+                              <Button
+                                onClick={() => onDeleteSlot?.(doc.category, doc.id)}
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                                title="Delete Slot"
+                              >
+                                <Trash2 className="w-4 h-4" />
+                              </Button>
+                            )}
                           </>
                         ) : (
                           <div className="flex items-center gap-1">
+                            {doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-") && (
+                              <Button
+                                onClick={() => onUpload(doc.id)}
+                                size="sm"
+                                variant="ghost"
+                                className="h-8 w-8 p-0 text-primary hover:text-primary hover:bg-primary/10"
+                                title="Upload / Manage Files"
+                              >
+                                <Upload className="w-4 h-4" />
+                              </Button>
+                            )}
                             <Button
                               onClick={() => onPreview(latestDoc)}
                               size="sm"
@@ -390,30 +492,59 @@ export function DocumentTableView({
                                   <Download className="w-4 h-4 mr-2" />{" "}
                                   {t("documentVaultPage.components.tableView.download")}
                                 </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => onUpload(doc.id)}>
-                                  <Plus className="w-4 h-4 mr-2 text-primary" /> Add New Version
-                                </DropdownMenuItem>
+                                 {doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-") ? (
+                                   <DropdownMenuItem onClick={() => onUpload(doc.id)}>
+                                     <Plus className="w-4 h-4 mr-2 text-primary" /> Upload / Manage Files
+                                   </DropdownMenuItem>
+                                 ) : (
+                                   <DropdownMenuItem onClick={() => onUpload(doc.id)}>
+                                     <Plus className="w-4 h-4 mr-2 text-primary" /> Add New Version
+                                   </DropdownMenuItem>
+                                 )}
                                 {onExport && (
-                                  <DropdownMenuItem
-                                    onClick={() =>
-                                      onExport(
-                                        latestDoc.id,
-                                        latestDoc.hasCompressedVersion || false
-                                      )
-                                    }
-                                  >
-                                    <Package className="w-4 h-4 mr-2" />{" "}
-                                    {t("documentVaultPage.components.tableView.export")}{" "}
-                                    {latestDoc.hasCompressedVersion
-                                      ? t("documentVaultPage.components.tableView.zip")
-                                      : ""}
-                                  </DropdownMenuItem>
-                                )}
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => onUpload(doc.id, latestDoc.id)}>
-                                  <Upload className="w-4 h-4 mr-2" />{" "}
-                                  {t("documentVaultPage.components.tableView.replace")}
-                                </DropdownMenuItem>
+                                   <DropdownMenuItem
+                                     onClick={() =>
+                                       onExport(
+                                         latestDoc.id,
+                                         latestDoc.hasCompressedVersion || false
+                                       )
+                                     }
+                                   >
+                                     <Package className="w-4 h-4 mr-2" />{" "}
+                                     {t("documentVaultPage.components.tableView.export")}{" "}
+                                     {latestDoc.hasCompressedVersion
+                                       ? t("documentVaultPage.components.tableView.zip")
+                                       : ""}
+                                   </DropdownMenuItem>
+                                 )}
+                                  {doc.id.startsWith("dynamic-") && (
+                                    <>
+                                      <DropdownMenuItem
+                                        onClick={() => {
+                                          setEditingId(doc.id);
+                                          setEditValue(doc.name);
+                                        }}
+                                      >
+                                        <Edit2 className="w-4 h-4 mr-2" />{" "}
+                                        {t("documentVaultPage.components.tableView.rename") || "Rename"}
+                                      </DropdownMenuItem>
+                                      <DropdownMenuItem
+                                        onClick={() => onDeleteSlot?.(doc.category, doc.id)}
+                                        className="text-destructive focus:text-destructive focus:bg-destructive/10"
+                                      >
+                                        <Trash2 className="w-4 h-4 mr-2" /> Delete Slot
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                 {!(doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-")) && (
+                                   <>
+                                     <DropdownMenuSeparator />
+                                     <DropdownMenuItem onClick={() => onUpload(doc.id, latestDoc.id)}>
+                                       <Upload className="w-4 h-4 mr-2" />{" "}
+                                       {t("documentVaultPage.components.tableView.replace")}
+                                     </DropdownMenuItem>
+                                   </>
+                                 )}
                                 <DropdownMenuItem onClick={() => onOpenWizard(doc.id)}>
                                   <ExternalLink className="w-4 h-4 mr-2" />{" "}
                                   {t("documentVaultPage.components.tableView.instructions")}
@@ -429,7 +560,7 @@ export function DocumentTableView({
                               </DropdownMenuContent>
                             </DropdownMenu>
 
-                            {hasVariants && (
+                            {showVersionHistoryTray && (
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -449,8 +580,99 @@ export function DocumentTableView({
                     </TableCell>
                   </TableRow>
 
+                  {/* Mobile-only details drawer: brings back Required For / File Info / Validity */}
+                  {isDetailsOpen && (
+                    <TableRow className="lg:hidden border-l-4 border-l-primary/30 bg-muted/10 hover:bg-muted/10">
+                      <TableCell colSpan={6} className="p-0">
+                        <div className="grid grid-cols-1 gap-3 px-4 py-3 animate-in slide-in-from-top-1 duration-200 sm:grid-cols-3">
+                          {/* Required For */}
+                          <div className="flex flex-col gap-1.5">
+                            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                              <Package className="w-3 h-3" />
+                              {t("documentVaultPage.components.tableView.columns.requiredFor")}
+                            </span>
+                            <div className="flex flex-wrap gap-1">
+                              {doc.roles.length ? (
+                                doc.roles.map((role) => (
+                                  <Badge
+                                    key={role}
+                                    variant="outline"
+                                    className="text-[10px] uppercase tracking-wider py-0 px-1.5 font-bold border-muted-foreground/20 text-muted-foreground"
+                                  >
+                                    {t(`documentVaultPage.roles.${role}`)}
+                                  </Badge>
+                                ))
+                              ) : (
+                                <span className="text-xs text-muted-foreground">-</span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* File Info */}
+                          <div className="flex flex-col gap-1.5">
+                            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                              <FileArchive className="w-3 h-3" />
+                              {t("documentVaultPage.components.tableView.columns.fileInfo")}
+                            </span>
+                            {latestDoc ? (
+                              <div className="space-y-0.5">
+                                <div className="text-xs font-medium break-all">
+                                  {getShortDisplayName(latestDoc.standardizedFilename, doc.name)}
+                                </div>
+                                <div className="flex flex-wrap items-center gap-2 text-[10px] text-muted-foreground">
+                                  <span>{formatFileSize(latestDoc.fileSize, t)}</span>
+                                  {!(doc.multipleFilesAllowed && !doc.id.startsWith("dynamic-")) && (
+                                    <>
+                                      <span>•</span>
+                                      <span className="font-bold text-primary">
+                                        v{latestDoc.displayVersion} (Latest)
+                                      </span>
+                                    </>
+                                  )}
+                                  {latestDoc.hasCompressedVersion && (
+                                    <Badge className="h-4 px-1 text-[9px] bg-blue-100 text-blue-700 border-none hover:bg-blue-100">
+                                      {t("documentVaultPage.components.tableView.zip")}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            ) : (
+                              <span className="text-xs italic text-muted-foreground">
+                                {t("documentVaultPage.components.tableView.noFileUploaded")}
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Validity */}
+                          <div className="flex flex-col gap-1.5">
+                            <span className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                              <Clock className="w-3 h-3" />
+                              {t("documentVaultPage.components.tableView.columns.validity")}
+                            </span>
+                            {latestDoc?.expirationDate ? (
+                              <div
+                                className={`flex items-center gap-1.5 text-xs ${
+                                  getExpirationStatusColor(latestDoc) === "red"
+                                    ? "text-destructive font-medium"
+                                    : getExpirationStatusColor(latestDoc) === "yellow"
+                                      ? "text-amber-600"
+                                      : "text-emerald-600"
+                                }`}
+                              >
+                                <Clock className="w-3 h-3" />
+                                {formatExpirationDate(latestDoc.expirationDate, t)}
+                              </div>
+                            ) : (
+                              <span className="text-xs text-muted-foreground">-</span>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  )}
+
                   {/* Expanded Variants Row */}
-                  {isExpanded && hasVariants && (
+                  {isExpanded && showVersionHistoryTray && (
                     <TableRow className="bg-muted/10 border-l-4 border-l-primary/30">
                       <TableCell colSpan={6} className="p-0">
                         <div className="py-3 px-6 animate-in slide-in-from-top-2 duration-200">
@@ -541,7 +763,7 @@ export function DocumentTableView({
                       </TableCell>
                     </TableRow>
                   )}
-                </>
+                </React.Fragment>
               );
             })}
           </TableBody>

@@ -386,10 +386,10 @@ export function generateEstimate(input: EstimateInput): EstimateOutput | null {
 
   const sourceNote =
     `USCIS estimate: Tier 1 (official processing times) + Tier 2 (attorney analysis: Kulen Law, Modern Law Group). ` +
-    `Pakistan community data (Tier 3, n=${COMMUNITY_DATASET_STATS.n} — used for USCIS validation only; insufficient for primary forecasting). ` +
+    `Pakistan community data (Tier 3, n=${COMMUNITY_DATASET_STATS.n} used for USCIS validation only; insufficient for primary forecasting). ` +
     `Embassy queue: Tier 1 (DoS IV Tool ${consulate.ivToolPulledDate}). ` +
     (!queueVelocityKnown
-      ? `Queue velocity: unknown (<3 IV Tool snapshots on record — add monthly captures to enable velocity tracking).`
+      ? `Queue velocity: unknown (<3 IV Tool snapshots on record, add monthly captures to enable velocity tracking).`
       : `Queue velocity: derivable from ivToolHistory.`);
 
   return {
@@ -527,9 +527,9 @@ export function calculateDelayImpact(input: DelayImpactInput): DelayImpactCompar
 
   const summaryMessage = visaIssuanceIndefinite
     ? `A ${delayMonths}-month delay may shift your Islamabad interview from ${nowIQ.label} to ${laterIQ.label}. ` +
-      `Note: immigrant visa issuances for Pakistan are currently paused — interview timing matters less than the policy lift date.`
+      `Note: immigrant visa issuances for Pakistan are currently paused, interview timing matters less than the policy lift date.`
     : crossesYearBoundary
-      ? `Waiting ${delayMonths} months could push your Islamabad interview from ${nowIQ.label} into ${laterIQ.year} — a significant shift.`
+      ? `Waiting ${delayMonths} months could push your Islamabad interview from ${nowIQ.label} into ${laterIQ.year} a significant shift.`
       : `A ${delayMonths}-month delay may move your estimated interview from ${nowIQ.label} to ${laterIQ.label}.`;
 
   return {
@@ -556,14 +556,14 @@ export type DelayableMilestone = "FILED" | "FEES_PAID" | "DS260_SUBMITTED" | "DO
 
 const MILESTONE_DELAY_MESSAGES: Record<DelayableMilestone, (months: number) => string> = {
   FILED: (m) =>
-    `Filing ${m} month${m !== 1 ? "s" : ""} later shifts your entire timeline — including your Islamabad queue position — by roughly the same amount.`,
+    `Filing ${m} month${m !== 1 ? "s" : ""} later shifts your entire timeline, including your Islamabad queue position, by roughly the same amount.`,
   FEES_PAID: (m) =>
     `Delaying NVC fee payment by ${m} month${m !== 1 ? "s" : ""} directly delays when your case enters the Islamabad scheduling queue.`,
   DS260_SUBMITTED: (m) =>
     `Submitting your DS-260 ${m} month${m !== 1 ? "s" : ""} later may delay documentary qualification and push your Islamabad interview window back accordingly.`,
   DOCS_SUBMITTED: (m) =>
-    `Delaying civil documents by ${m} month${m !== 1 ? "s" : ""} can stall DQ — the gate to Islamabad scheduling. ` +
-    `When documents are clean, DQ follows within days; each rejected round adds 2–4 weeks. ` +
+    `Delaying civil documents by ${m} month${m !== 1 ? "s" : ""} can stall DQ, the gate to Islamabad scheduling. ` +
+    `When documents are clean, DQ follows within days; each rejected round adds 2-4 weeks. ` +
     `Document rejection is the most common NVC delay for Pakistan cases.`,
 };
 

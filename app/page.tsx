@@ -43,6 +43,7 @@ import AnimationCard from "./(main)/home-page/AnimationCard";
 import Intro from "./(main)/home-page/intro";
 import SectionBird from "./(main)/home-page/SectionBird";
 import ConsultationSection from "./components/home-page/ConsultationSection";
+import { Star, User, ShieldCheck } from "lucide-react";
 
 import { ir1journeyHref } from "@/lib/constants/routes";
 
@@ -73,7 +74,7 @@ const LiveBackground = () => {
   return (
     <div className="pointer-events-none absolute inset-0 z-0 size-full overflow-hidden">
       <BannerMotion.div
-        className="absolute h-[260px] w-[260px] rounded-full mix-blend-screen opacity-20 sm:h-[500px] sm:w-[500px]"
+        className="absolute h-[260px] w-[260px] rounded-full opacity-20 mix-blend-screen sm:h-[500px] sm:w-[500px]"
         style={{
           backgroundColor: "#afdbdb",
           filter: "blur(80px)",
@@ -84,7 +85,7 @@ const LiveBackground = () => {
         transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
       />
       <BannerMotion.div
-        className="absolute h-[220px] w-[220px] rounded-full mix-blend-screen opacity-20 sm:h-[400px] sm:w-[400px]"
+        className="absolute h-[220px] w-[220px] rounded-full opacity-20 mix-blend-screen sm:h-[400px] sm:w-[400px]"
         style={{
           backgroundColor: "#db8090",
           filter: "blur(80px)",
@@ -100,7 +101,7 @@ const LiveBackground = () => {
         }}
       />
       <BannerMotion.div
-        className="absolute h-[160px] w-[160px] rounded-full mix-blend-screen opacity-10 sm:h-[300px] sm:w-[300px]"
+        className="absolute h-[160px] w-[160px] rounded-full opacity-10 mix-blend-screen sm:h-[300px] sm:w-[300px]"
         style={{
           backgroundColor: "#cdadcc",
           filter: "blur(60px)",
@@ -125,7 +126,7 @@ const LiveBackground = () => {
       />
 
       <BannerMotion.div
-        className="absolute right-[-18%] top-1/2 z-0 flex -translate-y-1/2 items-center justify-center rounded-full sm:right-[-10%] sm:z-10 md:right-[5%]"
+        className="absolute top-1/2 right-[-18%] z-0 flex -translate-y-1/2 items-center justify-center rounded-full sm:right-[-10%] sm:z-10 md:right-[5%]"
         style={{
           width: "220px",
           height: "220px",
@@ -148,7 +149,7 @@ const LiveBackground = () => {
           transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
           style={{ width: "300px", height: "300px" }}
         >
-          <div className="absolute left-1/2 top-0 -translate-x-1/2 -translate-y-1/2 rotate-90">
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 rotate-90">
             <Icons.Plane
               className="h-4 w-4 sm:h-7 sm:w-7"
               color="#db8090"
@@ -171,7 +172,7 @@ const LiveBackground = () => {
       </BannerMotion.div>
 
       <BannerMotion.div
-        className="absolute left-[58%] top-[16%] z-0 rounded-xl p-2.5 shadow-2xl backdrop-blur-md sm:left-[55%] sm:top-[20%] sm:p-3.5 sm:z-20"
+        className="absolute top-[16%] left-[58%] z-0 rounded-xl p-2.5 shadow-2xl backdrop-blur-md sm:top-[20%] sm:left-[55%] sm:z-20 sm:p-3.5"
         style={{
           backgroundColor: "rgba(205, 173, 204, 0.15)",
           border: "1px solid rgba(205, 173, 204, 0.2)",
@@ -183,7 +184,7 @@ const LiveBackground = () => {
       </BannerMotion.div>
 
       <BannerMotion.div
-        className="absolute bottom-[16%] left-[10%] z-0 rounded-xl p-2.5 shadow-2xl backdrop-blur-md sm:bottom-[20%] sm:left-[40%] sm:p-3.5 sm:z-20"
+        className="absolute bottom-[16%] left-[10%] z-0 rounded-xl p-2.5 shadow-2xl backdrop-blur-md sm:bottom-[20%] sm:left-[40%] sm:z-20 sm:p-3.5"
         style={{
           backgroundColor: "rgba(219, 128, 144, 0.15)",
           border: "1px solid rgba(219, 128, 144, 0.2)",
@@ -200,7 +201,7 @@ const LiveBackground = () => {
       </BannerMotion.div>
 
       <BannerMotion.div
-        className="absolute right-[28%] top-[72%] z-0 rounded-full p-2 backdrop-blur-md sm:right-[35%] sm:top-[70%] sm:p-2.5 sm:z-10"
+        className="absolute top-[72%] right-[28%] z-0 rounded-full p-2 backdrop-blur-md sm:top-[70%] sm:right-[35%] sm:z-10 sm:p-2.5"
         style={{
           backgroundColor: "rgba(175, 219, 219, 0.15)",
           border: "1px solid rgba(175, 219, 219, 0.2)",
@@ -457,7 +458,7 @@ function RoadmapProvider({ children }: { children: React.ReactNode }) {
     <RoadmapContext.Provider value={{ register }}>
       <div ref={containerRef} className="relative">
         <svg
-          className="absolute inset-0 w-full pointer-events-none z-[2] hidden md:block"
+          className="pointer-events-none absolute inset-0 z-[2] hidden w-full md:block"
           style={{ height: svgHeight }}
           width="100%"
           preserveAspectRatio="none"
@@ -592,13 +593,13 @@ function Annotation({
       } pointer-events-none`}
     >
       <p
-        className={`${caveat.className} text-slate-500 text-lg md:text-xl leading-tight font-medium`}
+        className={`${caveat.className} text-lg leading-tight font-medium text-slate-500 md:text-xl`}
       >
         {text}
       </p>
       {direction === "left" ? (
         <svg
-          className={`w-10 h-10 text-slate-400/80 -mt-1 ml-6 ${arrowRotation || "rotate-[-25deg]"}`}
+          className={`-mt-1 ml-6 h-10 w-10 text-slate-400/80 ${arrowRotation || "rotate-[-25deg]"}`}
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
@@ -612,7 +613,7 @@ function Annotation({
         </svg>
       ) : (
         <svg
-          className={`w-10 h-10 text-slate-400/80 -mt-1 mr-6 ${arrowRotation || "rotate-[75deg]"}`}
+          className={`-mt-1 mr-6 h-10 w-10 text-slate-400/80 ${arrowRotation || "rotate-[75deg]"}`}
           fill="none"
           stroke="currentColor"
           strokeWidth="1.5"
@@ -672,21 +673,21 @@ function NodeCircle({
       : {};
 
   return (
-    <div className="flex flex-col items-center justify-center relative py-12 z-10">
+    <div className="relative z-10 flex flex-col items-center justify-center py-12">
       <Wrapper
         {...wrapperProps}
-        className={`relative group flex items-center justify-center ${
+        className={`group relative flex items-center justify-center ${
           isInteractive
-            ? "focus:outline-none focus-visible:ring-4 focus-visible:ring-offset-2 focus-visible:ring-current rounded-full"
+            ? "rounded-full focus:outline-none focus-visible:ring-4 focus-visible:ring-current focus-visible:ring-offset-2"
             : ""
         }`}
       >
         <div
-          className={`w-25 h-25 rounded-full ${circleBg} text-white flex items-center justify-center shadow-lg transition-all duration-300 group-hover:scale-110 ${
+          className={`h-25 w-25 rounded-full ${circleBg} flex items-center justify-center text-white shadow-lg transition-all duration-300 group-hover:scale-110 ${
             isInteractive
-              ? "group-hover:-translate-y-1 group-hover:shadow-[0_10px_40px_-8px_rgba(14,107,82,0.5)] group-active:scale-100 group-active:translate-y-0"
+              ? "group-hover:-translate-y-1 group-hover:shadow-[0_10px_40px_-8px_rgba(14,107,82,0.5)] group-active:translate-y-0 group-active:scale-100"
               : ""
-          } cursor-pointer relative z-10 border border-white/20`}
+          } relative z-10 cursor-pointer border border-white/20`}
         >
           {isInteractive && (
             <>
@@ -701,12 +702,12 @@ function NodeCircle({
             </>
           )}
 
-          <Icon className="w-10 h-10" />
+          <Icon className="h-10 w-10" />
         </div>
       </Wrapper>
       {label && (
-        <div className="mt-3 text-center relative z-20">
-          <h4 className="font-bold text-lg px-4 py-1.5 rounded-full inline-block relative z-20 text-slate-800 bg-white/95 backdrop-blur-md shadow-sm border border-slate-200/50">
+        <div className="relative z-20 mt-3 text-center">
+          <h4 className="relative z-20 inline-block rounded-full border border-slate-200/50 bg-white/95 px-4 py-1.5 text-lg font-bold text-slate-800 shadow-sm backdrop-blur-md">
             {label}
           </h4>
         </div>
@@ -730,9 +731,9 @@ function VoiceLine({
 }) {
   return (
     <h3
-      className={`${caveat.className} text-2xl md:text-3xl font-normal leading-snug mb-1.5 max-w-sm ${colorClassName}`}
+      className={`${caveat.className} mb-1.5 max-w-sm text-2xl leading-snug font-normal md:text-3xl ${colorClassName}`}
     >
-      <span className="opacity-30 mr-1">...</span>
+      <span className="mr-1 opacity-30">...</span>
       {children}
     </h3>
   );
@@ -743,7 +744,7 @@ function VoiceLine({
 // styling language from the paragraph copy used in Rahvana's sections.
 function VoiceSubtext({ children }: { children: React.ReactNode }) {
   return (
-    <p className={`${caveat.className} text-lg md:text-xl leading-relaxed max-w-sm text-slate-500`}>
+    <p className={`${caveat.className} max-w-sm text-lg leading-relaxed text-slate-500 md:text-xl`}>
       {children}
     </p>
   );
@@ -796,7 +797,7 @@ export default function HomePage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+        <div className="bg-background flex min-h-screen flex-col items-center justify-center">
           <Loader size="lg" text="Loading" />
         </div>
       }
@@ -928,31 +929,31 @@ function HomePageContent() {
     }
   };
   return (
-    <div className="min-h-screen bg-background font-sans text-foreground overflow-x-clip">
+    <div className="bg-background text-foreground min-h-screen overflow-x-clip font-sans">
       <main className="min-h-[calc(100vh-200px)]">
         {activeSection === "home" && (
           <div className="flex flex-col">
             {/* Use the new styled hero, but keep the same CTA and header logic */}
 
-            <div className={`w-full min-h-screen bg-slate-50/50 ${caveat.variable}`}>
+            <div className={`min-h-screen w-full bg-slate-50/50 ${caveat.variable}`}>
               <Intro />
 
               <RoadmapProvider>
-                <div className="w-full bg-white relative">
-                  <div className="max-w-5xl mx-auto px-6 relative">
+                <div className="relative w-full bg-white">
+                  <div className="relative mx-auto max-w-5xl px-6">
                     <SectionBird
                       n={1}
                       side="right"
                       pos="top-[82%] -translate-y-1/2"
                       size="w-40 lg:w-52 xl:w-64"
                     />
-                    <div className="py-16 md:py-24 flex items-center justify-center text-center relative">
+                    <div className="relative flex items-center justify-center py-16 text-center md:py-24">
                       <ScrollReveal>
-                        <div className="max-w-xl mx-auto">
-                          <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mt-2 mb-4 leading-tight tracking-tight">
+                        <div className="mx-auto max-w-xl">
+                          <h2 className="mt-2 mb-4 text-3xl leading-tight font-bold tracking-tight text-slate-900 md:text-5xl">
                             Where do I even start?
                           </h2>
-                          <p className="text-lg md:text-xl text-slate-500 max-w-md mx-auto leading-relaxed">
+                          <p className="mx-auto max-w-md text-lg leading-relaxed text-slate-500 md:text-xl">
                             If only someone could show me the right order.
                           </p>
                         </div>
@@ -963,26 +964,26 @@ function HomePageContent() {
 
                 {/* SECTION 2 — leaf start node (anchor "01") — Rahvana */}
                 <div
-                  className="w-full relative"
+                  className="relative w-full"
                   style={{
                     background:
                       "linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)",
                   }}
                 >
-                  <div className="max-w-5xl mx-auto px-6 relative">
+                  <div className="relative mx-auto max-w-5xl px-6">
                     <SectionBird n={2} side="left" pos="top-[48%]" size="w-22 lg:w-32 xl:w-40" />
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
-                      <div className="md:col-span-5 min-w-0">
+                    <div className="relative z-10 grid min-h-[300px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight tracking-tight">
+                          <h3 className="md:text-3.5xl text-primary mt-1 mb-3 text-2xl leading-tight font-bold tracking-tight">
                             Let&apos;s take it one step at a time.
                           </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                          <p className="text-base leading-relaxed text-slate-500 md:text-lg">
                             Rahvana will guide you through your journey.
                           </p>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 relative h-48 flex items-center justify-center min-w-0">
+                      <div className="relative flex h-48 min-w-0 items-center justify-center md:col-span-7">
                         <Annotation
                           text="A clear path. No more guessing."
                           direction="right"
@@ -991,10 +992,10 @@ function HomePageContent() {
                         <RoadmapAnchor
                           id="01"
                           color="teal"
-                          className="hidden md:block absolute top-[30%] md:left-[29%] right-[35%] md:right-auto transform md:-translate-x-1/2 z-10"
+                          className="absolute top-[30%] right-[35%] z-10 hidden transform md:right-auto md:left-[29%] md:block md:-translate-x-1/2"
                         >
-                          <div className="relative w-8 h-8 rounded-full bg-[#7fb8b4] border border-[#5f9d98] flex items-center justify-center">
-                            <div className="absolute top-1.5 left-1.5 w-1.5 h-1.5 rounded-full bg-white/60" />
+                          <div className="relative flex h-8 w-8 items-center justify-center rounded-full border border-[#5f9d98] bg-[#7fb8b4]">
+                            <div className="absolute top-1.5 left-1.5 h-1.5 w-1.5 rounded-full bg-white/60" />
                           </div>
                         </RoadmapAnchor>
                       </div>
@@ -1003,21 +1004,21 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 3 — Petition node (anchor "02") — Rahvana — centered */}
-                <div className="w-full bg-white relative">
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
+                <div className="relative w-full bg-white">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[300px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
                       <SectionBird n={3} side="right" pos="top-[54%]" />
-                      <div className="md:col-span-5 min-w-0">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight tracking-tight">
+                          <h3 className="md:text-3.5xl text-primary mt-1 mb-3 text-2xl leading-tight font-bold tracking-tight">
                             Everything starts with the petition.
                           </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                          <p className="text-base leading-relaxed text-slate-500 md:text-lg">
                             This is where your journey begins.
                           </p>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 flex justify-center min-w-0">
+                      <div className="flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal>
                           <RoadmapAnchor id="02" color="teal" className="inline-block">
                             <NodeCircle icon={Icons.FileText} label="Petition" color="teal" />
@@ -1030,16 +1031,16 @@ function HomePageContent() {
 
                 {/* SECTION 4 — card placeholder (anchor "03") — User voice — shifted left */}
                 <div
-                  className="w-full relative"
+                  className="relative w-full"
                   style={{
                     background:
                       "linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)",
                   }}
                 >
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[350px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
                       <SectionBird n={4} side="left" pos="top-[72%]" />
-                      <div className="md:col-span-5 min-w-0">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
                           <VoiceReveal>
                             <VoiceLine colorClassName="text-primary/70">
@@ -1051,15 +1052,15 @@ function HomePageContent() {
                           </VoiceReveal>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 flex justify-center min-w-0">
+                      <div className="flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal
                           delayClass="reveal-delay-1"
-                          className="w-full flex justify-center min-w-0"
+                          className="flex w-full min-w-0 justify-center"
                         >
                           <RoadmapAnchor
                             id="03"
                             color="teal"
-                            className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                            className={`flex w-full min-w-0 justify-center md:inline-block md:w-auto ${CARD_OFFSET_CLASS}`}
                           >
                             <AnimationCard
                               file="wait... section animation final.html"
@@ -1075,29 +1076,29 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 5 — card placeholder (anchor "04") — Rahvana — shifted left */}
-                <div className="w-full bg-white relative">
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
+                <div className="relative w-full bg-white">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[350px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
                       <SectionBird n={5} side="left" pos="top-[68%]" />
-                      <div className="md:col-span-5 min-w-0">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight tracking-tight">
+                          <h3 className="md:text-3.5xl text-primary mt-1 mb-3 text-2xl leading-tight font-bold tracking-tight">
                             Rahvana breaks it down for you.
                           </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                          <p className="text-base leading-relaxed text-slate-500 md:text-lg">
                             One section at a time. Clear. Simple. Guided.
                           </p>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 flex justify-center min-w-0">
+                      <div className="flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal
                           delayClass="reveal-delay-2"
-                          className="w-full flex justify-center min-w-0"
+                          className="flex w-full min-w-0 justify-center"
                         >
                           <RoadmapAnchor
                             id="04"
                             color="teal"
-                            className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                            className={`flex w-full min-w-0 justify-center md:inline-block md:w-auto ${CARD_OFFSET_CLASS}`}
                           >
                             <AnimationCard
                               file="visa form solution final.html"
@@ -1114,7 +1115,7 @@ function HomePageContent() {
 
                 {/* SECTION 6 — Check node (anchor "05") — User voice — centered */}
                 <div
-                  className="w-full relative"
+                  className="relative w-full"
                   style={{
                     background:
                       "linear-gradient(to bottom, #ffffff 0%, #f4fafa 4%, #f4fafa 96%, #ffffff 100%)",
@@ -1127,9 +1128,9 @@ function HomePageContent() {
                     pos="top-[54%]"
                     size="w-34 lg:w-486 xl:w-54"
                   />
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
-                      <div className="md:col-span-5 min-w-0">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[300px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
                           <VoiceReveal>
                             <VoiceLine colorClassName="text-primary/70">
@@ -1141,7 +1142,7 @@ function HomePageContent() {
                           </VoiceReveal>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 relative flex justify-center min-w-0">
+                      <div className="relative flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal>
                           <div className="relative inline-block">
                             <RoadmapAnchor id="05" color="amber" className="inline-block">
@@ -1150,7 +1151,7 @@ function HomePageContent() {
                             <Annotation
                               text="Progress feels good."
                               direction="left"
-                              className="right-[105%] md:right-[125%] top-[-10px] md:top-2"
+                              className="top-[-10px] right-[105%] md:top-2 md:right-[125%]"
                             />
                           </div>
                         </ScrollReveal>
@@ -1160,21 +1161,21 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 7 — Documents node (anchor "06") — Rahvana — centered */}
-                <div className="w-full bg-white relative">
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
+                <div className="relative w-full bg-white">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[300px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
                       <SectionBird n={7} side="right" pos="top-[63%]" size="w-44 lg:w-56 xl:w-64" />
-                      <div className="md:col-span-5 min-w-0">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight tracking-tight">
+                          <h3 className="md:text-3.5xl mt-1 mb-3 text-2xl leading-tight font-bold tracking-tight text-[#8a6200]">
                             What&apos;s next?
                           </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                          <p className="text-base leading-relaxed text-slate-500 md:text-lg">
                             The next important step is your documents.
                           </p>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 flex justify-center min-w-0">
+                      <div className="flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal>
                           <RoadmapAnchor id="06" color="amber" className="inline-block">
                             <NodeCircle icon={Icons.FolderOpen} label="Documents" color="amber" />
@@ -1187,16 +1188,16 @@ function HomePageContent() {
 
                 {/* SECTION 8 — card placeholder (anchor "07") — User voice — shifted left */}
                 <div
-                  className="w-full relative"
+                  className="relative w-full"
                   style={{
                     background:
                       "linear-gradient(to bottom, #ffffff 0%, #fffcf6 4%, #fffcf6 96%, #ffffff 100%)",
                   }}
                 >
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[350px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
                       <SectionBird n={8} side="left" pos="top-[74%]" />
-                      <div className="md:col-span-5 min-w-0">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
                           <VoiceReveal>
                             <VoiceLine colorClassName="text-[#8a6200]/70">
@@ -1206,15 +1207,15 @@ function HomePageContent() {
                           </VoiceReveal>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 flex justify-center min-w-0">
+                      <div className="flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal
                           delayClass="reveal-delay-1"
-                          className="w-full flex justify-center min-w-0"
+                          className="flex w-full min-w-0 justify-center"
                         >
                           <RoadmapAnchor
                             id="07"
                             color="amber"
-                            className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                            className={`flex w-full min-w-0 justify-center md:inline-block md:w-auto ${CARD_OFFSET_CLASS}`}
                           >
                             <AnimationCard
                               file="document_gathering_problem option 1 final.html"
@@ -1231,30 +1232,30 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 9 — card placeholder (anchor "08") — Rahvana — shifted left */}
-                <div className="w-full bg-white relative">
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
+                <div className="relative w-full bg-white">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[350px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
                       <SectionBird n={9} side="left" pos="top-[68%]" />
-                      <div className="md:col-span-5 min-w-0">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight tracking-tight">
+                          <h3 className="md:text-3.5xl mt-1 mb-3 text-2xl leading-tight font-bold tracking-tight text-[#8a6200]">
                             Rahvana tells you exactly what documents you need.
                           </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                          <p className="text-base leading-relaxed text-slate-500 md:text-lg">
                             Track required documents, upload your files, and keep everything
                             organized in one place.
                           </p>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 flex justify-center min-w-0">
+                      <div className="flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal
                           delayClass="reveal-delay-2"
-                          className="w-full flex justify-center min-w-0"
+                          className="flex w-full min-w-0 justify-center"
                         >
                           <RoadmapAnchor
                             id="08"
                             color="amber"
-                            className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                            className={`flex w-full min-w-0 justify-center md:inline-block md:w-auto ${CARD_OFFSET_CLASS}`}
                           >
                             <AnimationCard
                               file="rahvana-document-vault-v3 final.html"
@@ -1271,16 +1272,16 @@ function HomePageContent() {
 
                 {/* SECTION 10 — FolderCheck node (anchor "09") — User voice — centered */}
                 <div
-                  className="w-full relative"
+                  className="relative w-full"
                   style={{
                     background:
                       "linear-gradient(to bottom, #ffffff 0%, #fffcf6 4%, #fffcf6 90%, #ffffff 100%)",
                   }}
                 >
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[300px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
                       <SectionBird n={10} side="right" pos="top-[50%]" />
-                      <div className="md:col-span-5 min-w-0">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
                           <VoiceReveal>
                             <VoiceLine colorClassName="text-[#8a6200]/70">
@@ -1290,7 +1291,7 @@ function HomePageContent() {
                           </VoiceReveal>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 relative flex justify-center min-w-0">
+                      <div className="relative flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal>
                           <div className="relative inline-block">
                             <RoadmapAnchor id="09" color="purple" className="inline-block">
@@ -1299,7 +1300,7 @@ function HomePageContent() {
                             <Annotation
                               text="This feels relieving."
                               direction="right"
-                              className="left-[105%] md:left-[125%] top-[-5px] md:top-4"
+                              className="top-[-5px] left-[105%] md:top-4 md:left-[125%]"
                             />
                           </div>
                         </ScrollReveal>
@@ -1309,21 +1310,21 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 11 — Finance node (anchor "10") — Rahvana — centered */}
-                <div className="w-full bg-white relative">
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
+                <div className="relative w-full bg-white">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[300px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
                       <SectionBird n={11} side="right" pos="top-[54%]" />
-                      <div className="md:col-span-5 min-w-0">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight tracking-tight">
+                          <h3 className="md:text-3.5xl mt-1 mb-3 text-2xl leading-tight font-bold tracking-tight text-[#4a2d8a]">
                             Next up, the financial part.
                           </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                          <p className="text-base leading-relaxed text-slate-500 md:text-lg">
                             Let&apos;s make sense of it.
                           </p>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 flex justify-center min-w-0">
+                      <div className="flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal>
                           <RoadmapAnchor id="10" color="purple" className="inline-block">
                             <NodeCircle icon={Icons.Calculator} label="Finance" color="purple" />
@@ -1336,16 +1337,16 @@ function HomePageContent() {
 
                 {/* SECTION 12 — card placeholder (anchor "11") — User voice — shifted left */}
                 <div
-                  className="w-full relative"
+                  className="relative w-full"
                   style={{
                     background:
                       "linear-gradient(to bottom, #ffffff 0%, #f5f1f9 4%, #f5f1f9 90%, #ffffff 100%)",
                   }}
                 >
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[350px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
                       <SectionBird n={12} side="left" pos="top-[64%]" />
-                      <div className="md:col-span-5 min-w-0">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
                           <VoiceReveal>
                             <VoiceLine colorClassName="text-[#4a2d8a]/70">
@@ -1357,15 +1358,15 @@ function HomePageContent() {
                           </VoiceReveal>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 flex justify-center min-w-0">
+                      <div className="flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal
                           delayClass="reveal-delay-1"
-                          className="w-full flex justify-center min-w-0"
+                          className="flex w-full min-w-0 justify-center"
                         >
                           <RoadmapAnchor
                             id="11"
                             color="purple"
-                            className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                            className={`flex w-full min-w-0 justify-center md:inline-block md:w-auto ${CARD_OFFSET_CLASS}`}
                           >
                             <AnimationCard
                               file="rahvana_sponsorship_anxiety_v4 final.html"
@@ -1382,29 +1383,29 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 13 — card placeholder (anchor "12") — Rahvana — shifted left */}
-                <div className="w-full bg-white relative">
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
+                <div className="relative w-full bg-white">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[350px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
                       <SectionBird n={13} side="left" pos="top-[68%]" />
-                      <div className="md:col-span-5 min-w-0">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight tracking-tight">
+                          <h3 className="md:text-3.5xl mt-1 mb-3 text-2xl leading-tight font-bold tracking-tight text-[#4a2d8a]">
                             Rahvana gives you a clear answer.
                           </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                          <p className="text-base leading-relaxed text-slate-500 md:text-lg">
                             We&apos;ll calculate it for your situation so you know where you stand.
                           </p>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 flex justify-center min-w-0">
+                      <div className="flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal
                           delayClass="reveal-delay-2"
-                          className="w-full flex justify-center min-w-0"
+                          className="flex w-full min-w-0 justify-center"
                         >
                           <RoadmapAnchor
                             id="12"
                             color="purple"
-                            className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                            className={`flex w-full min-w-0 justify-center md:inline-block md:w-auto ${CARD_OFFSET_CLASS}`}
                           >
                             <AnimationCard
                               file="sponsorship calculator solution final.html"
@@ -1421,26 +1422,26 @@ function HomePageContent() {
 
                 {/* SECTION 14 — Interview node (anchor "13") — Rahvana — centered */}
                 <div
-                  className="w-full relative"
+                  className="relative w-full"
                   style={{
                     background:
                       "linear-gradient(to bottom, #ffffff 0%, #fef6f7 4%, #fef6f7 90%, #ffffff 100%)",
                   }}
                 >
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[300px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
                       <SectionBird n={14} side="right" pos="top-[60%]" />
-                      <div className="md:col-span-5 min-w-0">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight tracking-tight">
+                          <h3 className="md:text-3.5xl mt-1 mb-3 text-2xl leading-tight font-bold tracking-tight text-[#c0596a]">
                             Almost there.
                           </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                          <p className="text-base leading-relaxed text-slate-500 md:text-lg">
                             Now let&apos;s get you ready for the interview.
                           </p>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 flex justify-center min-w-0">
+                      <div className="flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal>
                           <RoadmapAnchor id="13" color="rose" className="inline-block">
                             <NodeCircle icon={Icons.Users} label="Interview" color="rose" />
@@ -1452,11 +1453,11 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 15 — card placeholder (anchor "14") — User voice — shifted left */}
-                <div className="w-full bg-white relative">
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
+                <div className="relative w-full bg-white">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[350px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
                       <SectionBird n={15} side="left" pos="top-[80%]" />
-                      <div className="md:col-span-5 min-w-0">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
                           <VoiceReveal>
                             <VoiceLine colorClassName="text-[#c0596a]/70">
@@ -1469,19 +1470,19 @@ function HomePageContent() {
                           </VoiceReveal>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 flex justify-center min-w-0">
+                      <div className="flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal
                           delayClass="reveal-delay-1"
-                          className="w-full flex justify-center min-w-0"
+                          className="flex w-full min-w-0 justify-center"
                         >
                           <RoadmapAnchor
                             id="14"
                             color="rose"
-                            className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                            className={`flex w-full min-w-0 justify-center md:inline-block md:w-auto ${CARD_OFFSET_CLASS}`}
                           >
                             <AnimationCard
                               file="rahvana_question_stack_standalone_final.html"
-                              title="Interview anxiety — what if I forget?"
+                              title="Interview anxiety, what if I forget?"
                               w={450}
                               h={640}
                               maxH={640}
@@ -1495,34 +1496,34 @@ function HomePageContent() {
 
                 {/* SECTION 16 — card placeholder (anchor "15") — Rahvana — shifted left */}
                 <div
-                  className="w-full relative"
+                  className="relative w-full"
                   style={{
                     background:
                       "linear-gradient(to bottom, #ffffff 0%, #fef6f7 4%, #fef6f7 90%, #ffffff 100%)",
                   }}
                 >
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[350px]">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[350px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
                       <SectionBird n={16} side="left" pos="top-[66%]" />
-                      <div className="md:col-span-5 min-w-0">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight tracking-tight">
+                          <h3 className="md:text-3.5xl mt-1 mb-3 text-2xl leading-tight font-bold tracking-tight text-[#c0596a]">
                             Rahvana helps you prepare with confidence.
                           </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                          <p className="text-base leading-relaxed text-slate-500 md:text-lg">
                             Practice, get feedback, and walk in ready.
                           </p>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 flex justify-center min-w-0">
+                      <div className="flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal
                           delayClass="reveal-delay-2"
-                          className="w-full flex justify-center min-w-0"
+                          className="flex w-full min-w-0 justify-center"
                         >
                           <RoadmapAnchor
                             id="15"
                             color="rose"
-                            className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                            className={`flex w-full min-w-0 justify-center md:inline-block md:w-auto ${CARD_OFFSET_CLASS}`}
                           >
                             <AnimationCard
                               file="rahvana_visa_prep_animation.html"
@@ -1538,27 +1539,27 @@ function HomePageContent() {
                 </div>
 
                 {/* SECTION 17 — Visa Approval node (anchor "16") — Rahvana — centered */}
-                <div className="w-full bg-white relative">
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
+                <div className="relative w-full bg-white">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[300px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
                       <SectionBird
                         n={17}
                         side="right"
                         pos="top-[55%]"
                         size="w-44 lg:w-60 xl:w-72"
                       />
-                      <div className="md:col-span-5 min-w-0">
+                      <div className="min-w-0 md:col-span-5">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight tracking-tight">
+                          <h3 className="md:text-3.5xl text-primary mt-1 mb-3 text-2xl leading-tight font-bold tracking-tight">
                             Visa Approved
                           </h3>
-                          <p className="text-slate-500 text-base md:text-lg leading-relaxed font-medium">
+                          <p className="text-base leading-relaxed font-medium text-slate-500 md:text-lg">
                             The final milestone in your journey. Your passport is stamped, and you
                             are officially ready to begin your new life together.
                           </p>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-7 flex justify-center min-w-0">
+                      <div className="flex min-w-0 justify-center md:col-span-7">
                         <ScrollReveal>
                           <RoadmapAnchor id="16" color="green" className="inline-block">
                             <NodeCircle
@@ -1575,33 +1576,34 @@ function HomePageContent() {
 
                 {/* SECTION 18 — final Welcome node (anchor "17") — neutral — centered */}
                 <div
-                  className="w-full relative"
+                  className="relative w-full"
                   style={{
                     background: "linear-gradient(to bottom, #ffffff 0%, #f7fcf9 6%, #f7fcf9 100%)",
                   }}
                 >
-                  <div className="max-w-5xl mx-auto px-6 relative">
-                    <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative z-10 min-h-[300px]">
-                      <div className="md:col-span-6 md:pr-6 min-w-0">
+                  <div className="relative mx-auto max-w-5xl px-6">
+                    <div className="relative z-10 grid min-h-[300px] grid-cols-1 items-center gap-8 py-16 md:grid-cols-12">
+                      <div className="min-w-0 md:col-span-6 md:pr-6">
                         <ScrollReveal>
-                          <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-4 leading-tight">
+                          <h3 className="md:text-3.5xl text-primary mt-1 mb-4 text-2xl leading-tight font-bold">
                             Navigate your spouse visa journey with clarity and confidence
                           </h3>
-                          <p className="text-slate-600 text-base md:text-lg leading-relaxed font-medium">
+                          <p className="text-base leading-relaxed font-medium text-slate-600 md:text-lg">
                             Whether you&apos;re completing your application, gathering documents,
                             preparing for an interview, or moving to the next step, Rahvana helps
                             you understand where you are, what to do and what comes next.
                           </p>
                         </ScrollReveal>
                       </div>
-                      <div className="md:col-span-6 relative flex justify-center min-w-0">
+                      <div className="relative flex min-w-0 justify-center md:col-span-6">
                         <ScrollReveal>
                           <RoadmapAnchor id="17" color="green" className="inline-block">
                             <NodeCircle
                               icon={Icons.ArrowRight}
                               label="Start Your Journey"
                               color="green"
-                              href={ir1journeyHref}
+                              href={"/visa-category/ir1-journey"}
+                              // href={"/visa-category"}
                             />
                           </RoadmapAnchor>
                           {/* <Annotation text="Reunited at last!" direction="left" /> */}
@@ -1620,75 +1622,142 @@ function HomePageContent() {
               <ConsultationSection onConsultationClick={handleConsultationClick} />
 
               {/* TESTIMONIALS (moved from About page) */}
-              <section className="py-24 px-8 md:px-20 text-center">
-                <div className="flex justify-center mb-5">
-                  <span className="inline-flex items-center gap-2 px-4 py-1.5 border-[1.5px] border-[#b5451b] rounded-full text-[11px] font-semibold tracking-widest text-[#b5451b] uppercase">
+              <section className="px-8 py-4 text-center md:px-20">
+                <div className="mb-5 flex justify-center">
+                  <span className="inline-flex items-center gap-2 rounded-full border-[1.5px] border-[#b5451b] px-4 py-1.5 text-[11px] font-semibold tracking-widest text-[#b5451b] uppercase">
                     Voices From The Journey
                   </span>
                 </div>
-                <h2 className="font-serif font-bold text-3xl md:text-5xl text-[#121e2e] mb-14 max-w-4xl mx-auto leading-tight">
+
+                <h2 className="mx-auto mb-14 max-w-4xl font-serif text-3xl leading-tight font-bold text-[#121e2e] md:text-5xl">
                   Words from people{" "}
-                  <em className="italic text-[#0d7a75] font-normal">who&apos;ve been there.</em>
+                  <em className="font-normal text-[#0d7a75] italic">who&apos;ve been there.</em>
                 </h2>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                <div className="mx-auto grid max-w-6xl grid-cols-1 gap-6 md:grid-cols-3">
                   {[
                     {
                       bg: "bg-[#fde8ec]",
-                      iconBg: "bg-[#fbc8d2]",
                       author: "Ayesha W.",
                       role: "IR-1 applicant · Islamabad",
-                      text: "For the first time, I felt like someone had actually thought about what this process feels like to go through — not just the steps, but the weight of it.",
+                      rating: 5,
+                      image: "/assets/images/ayesha.jpg",
+                      text: "The uncertainty of the IR-1 process felt like a weight. Rahvana's clear roadmap gave me the clarity I needed to finally breathe again. My visa was approved last month.",
                     },
                     {
                       bg: "bg-[#e3edf9]",
-                      iconBg: "bg-[#c4d9f5]",
                       author: "Karim U.",
                       role: "US Citizen sponsor · Chicago",
-                      text: "Three years of waiting. Rahvana helped me understand where I was in the process without the constant anxiety of not knowing what comes next.",
+                      rating: 5,
+                      image: "/assets/images/karim.jpg",
+                      text: "After three years of waiting, we were lost in the system. Rahvana helped us understand exactly where we stood. Now, my family is finally together in Chicago.",
+                    },
+                    {
+                      bg: "bg-[#f0f7f4]",
+                      author: "Wasay C.",
+                      role: "US Citizen sponsor · Bogota",
+                      rating: 4.5,
+                      image: "/assets/images/Wasay.png",
+                      text: "The document requirements were overwhelming. Rahvana's vault made organizing our case effortless. We just received our interview date!",
                     },
                   ].map((item, i) => (
                     <div
                       key={i}
-                      className={`${item.bg} rounded-[20px] p-9 text-left flex flex-col gap-6 shadow-sm`}
+                      className={`${item.bg} flex flex-col gap-5 rounded-[20px] p-8 text-left shadow-sm`}
                     >
-                      <div
-                        className={`${item.iconBg} w-9 h-9 rounded-lg flex items-center justify-center text-[#0d7a75]`}
-                      >
-                        <Icons.Quote size={20} fill="currentColor" />
+                      <div className="flex gap-1 text-[#0d7a75]">
+                        {[...Array(5)].map((_, j) => {
+                          const isHalfStar = item.rating === 4.5 && j === 4;
+
+                          return (
+                            <div key={j} className="relative h-4 w-4">
+                              {/* Empty star */}
+                              <Star
+                                size={16}
+                                className="absolute inset-0"
+                                fill="none"
+                                strokeWidth={2}
+                              />
+
+                              {/* Full / half fill */}
+                              <div
+                                className={`absolute inset-0 overflow-hidden ${
+                                  isHalfStar ? "w-1/2" : "w-full"
+                                }`}
+                              >
+                                <Star size={16} fill="currentColor" strokeWidth={2} />
+                              </div>
+                            </div>
+                          );
+                        })}
                       </div>
-                      <blockquote className="text-sm italic text-gray-600 leading-relaxed grow">
-                        &quot;{item.text}&quot;
+
+                      <blockquote className="grow text-[15px] leading-relaxed text-[#4a5567] italic">
+                        {item.text}
                       </blockquote>
-                      <div className="text-sm">
-                        <strong className="block text-[#121e2e] font-semibold">
-                          {item.author}
-                        </strong>
-                        <span className="text-xs text-gray-500">{item.role}</span>
+
+                      <div className="flex items-center gap-3 text-sm">
+                        <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-full bg-white/70">
+                          <Image
+                            src={item.image}
+                            alt={item.author}
+                            fill
+                            sizes="56px"
+                            className="object-cover"
+                          />
+                        </div>
+
+                        <div>
+                          <strong className="block font-semibold text-[#121e2e]">
+                            {item.author}
+                          </strong>
+                          <span className="text-xs text-[#64748b]">{item.role}</span>
+                        </div>
                       </div>
                     </div>
                   ))}
                 </div>
+
+                <div className="mx-auto mt-10 max-w-2xl text-center">
+                  <h3 className="mb-6 text-2xl font-bold text-[#121e2e] md:text-3xl">
+                    Ready to start your own journey?
+                  </h3>
+
+                  <Link
+                    // href="/visa-category"
+                    href="/visa-category/ir1-journey"
+                    className="inline-flex items-center justify-center rounded-full bg-[#0d7a75] px-8 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[#0a5f5b]"
+                  >
+                    Start Your Journey
+                  </Link>
+                </div>
+
+                <div className="mx-auto mt-8 max-w-3xl border-t border-[#e2e8f0]" />
+
+                <div className="mx-auto mt-8 flex max-w-3xl items-center justify-center gap-2 text-[11px] text-[#64748b] md:text-sm">
+                  <ShieldCheck size={16} className="text-[#0d7a75]" />
+                  <span>Helping families navigate U.S. immigration with confidence.</span>
+                </div>
               </section>
 
               <section className="py-8 md:py-12" id="faq">
-                <div className="w-full mx-auto px-6 sm:px-8 md:px-12 2xl:px-30">
-                  <div className="text-center w-full md:w-3/4 mx-auto mb-5">
+                <div className="mx-auto w-full px-6 sm:px-8 md:px-12 2xl:px-30">
+                  <div className="mx-auto mb-5 w-full text-center md:w-3/4">
                     <motion.span
                       initial={{ opacity: 0, y: 10 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       viewport={{ once: true }}
-                      className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-rahvana-primary-pale text-rahvana-primary text-sm font-semibold mb-4"
+                      className="bg-rahvana-primary-pale text-rahvana-primary mb-4 inline-flex items-center gap-2 rounded-full px-4 py-1.5 text-sm font-semibold"
                     >
-                      <Icons.HelpCircle className="w-4 h-4" />
+                      <Icons.HelpCircle className="h-4 w-4" />
                       {t("homePage.faqBadge")}
                     </motion.span>
-                    <h2 className="text-3xl md:text-5xl font-bold text-foreground mb-4">
+                    <h2 className="text-foreground mb-4 text-3xl font-bold md:text-5xl">
                       {t("homePage.faqTitle") || "Frequently Asked Questions"}
                     </h2>
                   </div>
 
-                  <div className="w-full md:w-[90%] lg:w-[88%] mx-auto space-y-4">
+                  <div className="mx-auto w-full space-y-4 md:w-[90%] lg:w-[88%]">
                     {FAQS.map((faq, i) => (
                       <motion.div
                         key={i}
@@ -1704,19 +1773,19 @@ function HomePageContent() {
                       >
                         <HydrationSafeButton
                           onClick={() => setOpenFAQ(openFAQ === i ? null : i)}
-                          className="w-full px-4 sm:px-5 md:px-5 py-4 md:py-5 text-left flex items-center justify-between"
+                          className="flex w-full items-center justify-between px-4 py-4 text-left sm:px-5 md:px-5 md:py-5"
                         >
-                          <span className="text-lg font-bold text-foreground pr-3 md:pr-5">
+                          <span className="text-foreground pr-3 text-md md:text-lg font-bold md:pr-5">
                             {t(`homePage.faqs.q${i + 1}.q`) || faq.q}
                           </span>
                           <div
-                            className={`w-6 h-6 md:h-8 md:w-8 shrink-0 rounded-full border flex items-center justify-center transition-all ${
+                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border transition-all md:h-8 md:w-8 ${
                               openFAQ === i
-                                ? "bg-rahvana-primary border-rahvana-primary text-white rotate-45"
+                                ? "bg-rahvana-primary border-rahvana-primary rotate-45 text-white"
                                 : "border-border text-muted-foreground group-hover:border-rahvana-primary group-hover:text-rahvana-primary"
                             }`}
                           >
-                            <Icons.Plus className="w-4 h-4" />
+                            <Icons.Plus className="h-4 w-4" />
                           </div>
                         </HydrationSafeButton>
                         <AnimatePresence>
@@ -1727,7 +1796,7 @@ function HomePageContent() {
                               exit={{ height: 0, opacity: 0 }}
                               className="overflow-hidden"
                             >
-                              <div className="px-4 sm:px-5 md:px-5 pb-5 text-muted-foreground leading-relaxed border-t border-rahvana-primary/10 pt-3">
+                              <div className="text-muted-foreground border-rahvana-primary/10 border-t px-4 pt-3 pb-5 leading-relaxed sm:px-5 md:px-5">
                                 {t(`homePage.faqs.q${i + 1}.a`) || faq.a}
                               </div>
                             </motion.div>

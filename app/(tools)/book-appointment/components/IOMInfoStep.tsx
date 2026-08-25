@@ -1,14 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
+import { PhoneInput } from "@/components/ui/phone-input";
+import type { Value as E164Number } from "react-phone-number-input";
 
 interface IOMInfoStepProps {
   formData: {
@@ -35,6 +31,7 @@ interface IOMInfoStepProps {
       destinationCountry?: string;
     }
   ) => (value: string) => void;
+  onPhoneChange?: (value: E164Number) => void;
   onNext: () => void;
   onBack: () => void;
 }
@@ -44,6 +41,7 @@ const IOMInfoStep = ({
   error,
   onChange,
   onSelectChange,
+  onPhoneChange,
   onNext,
   onBack,
 }: IOMInfoStepProps) => {
@@ -103,60 +101,33 @@ const IOMInfoStep = ({
 
           <div className="space-y-2">
             <Label htmlFor="visaType">{t("bookAppointment.iomInfoStep.visaType")}</Label>
-            <Select value={formData.visaType || ""} onValueChange={onSelectChange("visaType")}>
-              <SelectTrigger id="visaType">
-                <SelectValue placeholder={t("bookAppointment.iomInfoStep.selectVisaType")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="Immigrant Visa">
-                  {t("bookAppointment.iomInfoStep.visaTypes.immigrant")}
-                </SelectItem>
-                {/* <SelectItem value="Non-immigrant Visa">
-                  {t("bookAppointment.iomInfoStep.visaTypes.nonImmigrant")}
-                </SelectItem>
-                <SelectItem value="K-1 Fiance Visa">
-                  {t("bookAppointment.iomInfoStep.visaTypes.k1Fiance")}
-                </SelectItem>
-                <SelectItem value="Student Visa">
-                  {t("bookAppointment.iomInfoStep.visaTypes.student")}
-                </SelectItem>
-                <SelectItem value="Work Visa">
-                  {t("bookAppointment.iomInfoStep.visaTypes.work")}
-                </SelectItem>
-                <SelectItem value="Tourist Visa">
-                  {t("bookAppointment.iomInfoStep.visaTypes.tourist")}
-                </SelectItem>
-                <SelectItem value="Other">
-                  {t("bookAppointment.iomInfoStep.visaTypes.other")}
-                </SelectItem> */}
-              </SelectContent>
-            </Select>
+            <CustomDropdown
+              value={formData.visaType || ""}
+              onChange={onSelectChange("visaType")}
+              options={[
+                {
+                  value: "Immigrant Visa",
+                  label: t("bookAppointment.iomInfoStep.visaTypes.immigrant"),
+                },
+              ]}
+              placeholder={t("bookAppointment.iomInfoStep.selectVisaType")}
+              className="w-full [&_button]:w-full [&_button]:min-w-0"
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="contactNumber">{t("bookAppointment.iomInfoStep.contactNumber")}</Label>
-            <div className="flex gap-2">
-              <div className="flex items-center justify-center w-24 px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm font-medium">
-                🇵🇰 92
-              </div>
-              <Input
-                id="contactNumber"
-                name="contactNumber"
-                value={formData.contactNumber || ""}
-                onChange={(e) => {
-                  const cleaned = e.target.value.replace(/\D/g, "").slice(0, 10);
-                  e.target.value = cleaned;
-                  onChange(e);
-                }}
-                placeholder={t(
-                  "bookAppointment.iomInfoStep.contactNumberPlaceholder",
-                )}
-                type="tel"
-                maxLength={10}
-                inputMode="numeric"
-                className="flex-1"
-              />
-            </div>
+            <PhoneInput
+              id="contactNumber"
+              value={formData.contactNumber || ""}
+              onChange={(value) => {
+                if (onPhoneChange) {
+                  onPhoneChange(value);
+                }
+              }}
+              defaultCountry="PK"
+              placeholder={t("bookAppointment.iomInfoStep.contactNumberPlaceholder")}
+            />
           </div>
 
           <div className="space-y-2">
@@ -175,55 +146,28 @@ const IOMInfoStep = ({
             <Label htmlFor="preferredLocation">
               {t("bookAppointment.iomInfoStep.preferredLocation")}
             </Label>
-            <Select
+            <CustomDropdown
               value={formData.preferredLocation || ""}
-              onValueChange={onSelectChange("preferredLocation")}
-            >
-              <SelectTrigger id="preferredLocation">
-                <SelectValue placeholder={t("bookAppointment.iomInfoStep.selectLocation")} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="islamabad">
-                  {t("bookAppointment.iomInfoStep.islamabad")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={onSelectChange("preferredLocation")}
+              options={[
+                { value: "islamabad", label: t("bookAppointment.iomInfoStep.islamabad") },
+              ]}
+              placeholder={t("bookAppointment.iomInfoStep.selectLocation")}
+              className="w-full [&_button]:w-full [&_button]:min-w-0"
+            />
           </div>
 
           <div className="space-y-2">
             <Label htmlFor="destinationCountry">
               {t("bookAppointment.iomInfoStep.destinationCountry")}
             </Label>
-            <Select
-              value={formData.destinationCountry || ""}
-              onValueChange={onSelectChange("destinationCountry")}
-            >
-              <SelectTrigger id="destinationCountry">
-                <SelectValue
-                  placeholder={t("bookAppointment.iomInfoStep.selectDestinationCountry")}
-                />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="United States">
-                  {t("bookAppointment.iomInfoStep.countries.us")}
-                </SelectItem>
-                <SelectItem value="Canada">
-                  {t("bookAppointment.iomInfoStep.countries.canada")}
-                </SelectItem>
-                <SelectItem value="Australia">
-                  {t("bookAppointment.iomInfoStep.countries.australia")}
-                </SelectItem>
-                <SelectItem value="United Kingdom">
-                  {t("bookAppointment.iomInfoStep.countries.uk")}
-                </SelectItem>
-                <SelectItem value="New Zealand">
-                  {t("bookAppointment.iomInfoStep.countries.newZealand")}
-                </SelectItem>
-                <SelectItem value="Other">
-                  {t("bookAppointment.iomInfoStep.countries.other")}
-                </SelectItem>
-              </SelectContent>
-            </Select>
+            <Input
+              id="destinationCountry"
+              name="destinationCountry"
+              value="United States"
+              disabled
+              className="bg-gray-100 cursor-not-allowed text-gray-700 font-medium"
+            />
           </div>
         </div>
 

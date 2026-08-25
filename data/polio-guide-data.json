@@ -6,7 +6,7 @@
     "whats_this": {
       "heading": "Welcome to the Polio Vaccination Guide Wizard",
       "sub": "Get your official Polio Vaccination Certificate for travel",
-      "description": "A Polio Vaccination Certificate is an official document that proves you have received the polio vaccine. It’s especially needed if you’re travelling abroad from Pakistan — many countries require it to reduce the international spread of the virus.",
+      "description": "A Polio Vaccination Certificate is an official document that proves you have received the polio vaccine. It's especially needed if you're travelling abroad from Pakistan, many countries require it to reduce the international spread of the virus.",
       "quick_instructions": [
         "Select who needs the certificate",
         "Receive a custom roadmap and document checklist",
@@ -280,7 +280,7 @@
             "id": 1,
             "title": "Download Online",
             "duration": "Instant",
-            "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter your CNIC & Passport Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center"
+            "description": "Visit the official NIMS website and select 'Other Vaccination, Polio / Yellow Fever'. Enter your CNIC & Passport Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center"
           }
         ],
         "onsitePhases": [
@@ -332,7 +332,7 @@
             "id": 1,
             "title": "Download Online",
             "duration": "Instant",
-            "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter the B-Form / CRC Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center"
+            "description": "Visit the official NIMS website and select 'Other Vaccination, Polio / Yellow Fever'. Enter the B-Form / CRC Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center"
           }
         ],
         "onsitePhases": [
@@ -390,7 +390,7 @@
             "id": 1,
             "title": "Download Online",
             "duration": "Instant",
-            "description": "Visit the official NIMS website and select 'Other Vaccination – Polio / Yellow Fever'. Enter your Passport Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center"
+            "description": "Visit the official NIMS website and select 'Other Vaccination, Polio / Yellow Fever'. Enter your Passport Number and Issue Date. Verify your information, pay the one-time processing fee online (≈ Rs. 100). Hit Download and save the PDF securely on your phone for easy access. Online download available in selected districts; otherwise, collect physically at EPI/NIMS center"
           }
         ],
         "onsitePhases": [
@@ -482,7 +482,7 @@
       },
       "location": {
         "tips": ["Your nearest vaccination center is based on your current residential address."],
-        "pitfalls": ["Don't assume any center can process your request — check availability."],
+        "pitfalls": ["Don't assume any center can process your request, check availability."],
         "links": []
       },
       "roadmap": {

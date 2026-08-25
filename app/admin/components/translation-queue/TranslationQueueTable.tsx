@@ -16,13 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import Pagination from "@/components/ui/pagination";
 import {
   Dialog,
@@ -34,6 +27,7 @@ import {
 import TranslationUploadModal from "@/app/components/document-translation/TranslationUploadModal";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 // Translation Queue Types
 type TranslationStatus =
@@ -205,7 +199,7 @@ export default function TranslationQueueTable() {
 
   return (
     <>
-      <Card className="max-w-6xl mx-auto">
+      <Card className="max-w-6xl mx-auto mt-4">
         <CardHeader className="flex flex-row items-center justify-between">
           {/* Search Field - Left side */}
           <div className="relative border border-gray-300 rounded-lg p-2">
@@ -220,54 +214,46 @@ export default function TranslationQueueTable() {
 
           {/* Dropdowns - Right side */}
           <div className="flex space-x-3">
-            <Select
+            <CustomDropdown
               value={selectedDocumentType}
-              onValueChange={(value: string | "all") => setSelectedDocumentType(value)}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Filter by Document Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="marriage">Marriage</SelectItem>
-                <SelectItem value="birth">Birth</SelectItem>
-                <SelectItem value="death">Death</SelectItem>
-                <SelectItem value="divorce">Divorce</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
+              onChange={(value) => setSelectedDocumentType(value)}
+              options={[
+                { value: "all", label: "All Types" },
+                { value: "marriage", label: "Marriage" },
+                { value: "birth", label: "Birth" },
+                { value: "death", label: "Death" },
+                { value: "divorce", label: "Divorce" },
+              ]}
+              placeholder="Filter by Document Type"
+              className="w-40 [&_button]:w-full [&_button]:min-w-0"
+            />
+            <CustomDropdown
               value={selectedTranslationStatus}
-              onValueChange={(value: TranslationStatus | "all") =>
-                setSelectedTranslationStatus(value)
-              }
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="PENDING">Pending</SelectItem>
-                <SelectItem value="IN_REVIEW">In Review</SelectItem>
-                <SelectItem value="TRANSLATED">Translated</SelectItem>
-                <SelectItem value="USER_CONFIRMED">User Confirmed</SelectItem>
-                <SelectItem value="CHANGES_REQUESTED">Changes Requested</SelectItem>
-                <SelectItem value="VERIFIED">Verified</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(value) => setSelectedTranslationStatus(value as TranslationStatus | "all")}
+              options={[
+                { value: "all", label: "All Statuses" },
+                { value: "PENDING", label: "Pending" },
+                { value: "IN_REVIEW", label: "In Review" },
+                { value: "TRANSLATED", label: "Translated" },
+                { value: "USER_CONFIRMED", label: "User Confirmed" },
+                { value: "CHANGES_REQUESTED", label: "Changes Requested" },
+                { value: "VERIFIED", label: "Verified" },
+              ]}
+              placeholder="Filter by status"
+              className="w-40 [&_button]:w-full [&_button]:min-w-0"
+            />
 
             {/* Date Sorting */}
-            <Select
+            <CustomDropdown
               value={sortOrder}
-              onValueChange={(value: "asc" | "desc") => setSortOrder(value)}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Sort by date" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="desc">Latest First</SelectItem>
-                <SelectItem value="asc">Oldest First</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(value) => setSortOrder(value as "asc" | "desc")}
+              options={[
+                { value: "desc", label: "Latest First" },
+                { value: "asc", label: "Oldest First" },
+              ]}
+              placeholder="Sort by date"
+              className="w-40 [&_button]:w-full [&_button]:min-w-0"
+            />
           </div>
         </CardHeader>
         <CardContent>

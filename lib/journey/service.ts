@@ -22,6 +22,10 @@ import {
   CaseDataBatchOperation,
 } from "./types";
 import * as db from "./data-access";
+import {
+  getCategoryForJourney,
+  isJourneyTypeSupported,
+} from "@/lib/interview-prep/journey-category-map";
 import { ConfigLoader } from "./config-loader";
 import { detectDataType } from "./data-access";
 import { CaseStrengthEngine } from "./CaseStrengthEngine";
@@ -1052,13 +1056,20 @@ export class JourneyService {
       // Auto-create interview session for IR-1 journeys
       // This creates a "ready" session without triggering questionnaire flow
       let interviewSessionCreated = false;
-      if (journey.journey_type === "IR1" || journey.journey_type === "IR-1") {
+
+      if (isJourneyTypeSupported(journey.journey_type)) {
         try {
-          // Dynamically import to avoid circular dependencies
           const { createJourneyInterviewSession } = await import("@/lib/interview-prep/service");
-          await createJourneyInterviewSession(journey.id, "ir-1-spouse");
+
+          const categorySlug = getCategoryForJourney(journey.journey_type);
+
+          await createJourneyInterviewSession(journey.id, categorySlug);
+
           interviewSessionCreated = true;
-          console.log(`[JourneyService] Auto-created interview session for journey ${journey.id}`);
+
+          console.log(
+            `[JourneyService] Auto-created interview session for ${journey.journey_type} journey ${journey.id}`
+          );
         } catch (interviewError) {
           console.error(
             "[JourneyService] Failed to create interview session:",
@@ -1169,6 +1180,9 @@ export class JourneyService {
 
       return journeysWithProgress;
     } catch (error) {
+      if (error instanceof Error && error.message === "Unauthorized") {
+        throw error;
+      }
       console.error("Error getting all journeys with progress:", error);
       throw error;
     }

@@ -476,12 +476,12 @@ export const sectionIntroMessages = {
   "Part 1: About You": {
     greeting: "Let's start with your details.",
     message:
-      "You're the petitioner — the U.S. citizen filing this petition. We'll collect your name, address, and background information first.",
+      "You're the petitioner, the U.S. citizen filing this petition. We'll collect your name, address, and background information first.",
   },
   "Part 1: Your Name": {
     greeting: "What's your name?",
     message:
-      "Use your name exactly as it appears on your U.S. passport or government ID — including spelling and any middle names.",
+      "Use your name exactly as it appears on your U.S. passport or government ID, including spelling and any middle names.",
   },
   "Part 1: Mailing Address": {
     greeting: "Where does your mail go?",
@@ -501,12 +501,12 @@ export const sectionIntroMessages = {
   "Part 1: Other Information": {
     greeting: "A few more personal details.",
     message:
-      "We need some basic biographical information — your birthdate, citizenship details, and so on.",
+      "We need some basic biographical information, your birthdate, citizenship details, and so on.",
   },
   "Part 1: Parents": {
     greeting: "Your parents' information.",
     message:
-      "USCIS asks for basic details about both of your parents. Use whatever information you have — if a parent is deceased, fill in what you know.",
+      "USCIS asks for basic details about both of your parents. Use whatever information you have, if a parent is deceased, fill in what you know.",
   },
   "Part 1: Prior Marriages": {
     greeting: "Have you been married before?",
@@ -526,7 +526,7 @@ export const sectionIntroMessages = {
   "Part 2: About Your Fiancé(e)": {
     greeting: "Now let's talk about your fiancé(e).",
     message:
-      "Your fiancé(e) is called the 'beneficiary' — the person you're petitioning for. We'll need their personal details, background, and address.",
+      "Your fiancé(e) is called the 'beneficiary', the person you're petitioning for. We'll need their personal details, background, and address.",
   },
   "Part 2: Beneficiary Name": {
     greeting: "What is your fiancé(e)'s name?",
@@ -543,7 +543,7 @@ export const sectionIntroMessages = {
   },
   "Part 2: Beneficiary Parents": {
     greeting: "Your fiancé(e)'s parents.",
-    message: "Basic details about your fiancé(e)'s parents — use whatever you know.",
+    message: "Basic details about your fiancé(e)'s parents, use whatever you know.",
   },
   "Part 2: Beneficiary Background": {
     greeting: "A few more details about your fiancé(e).",
@@ -563,7 +563,7 @@ export const sectionIntroMessages = {
   "Part 3: Other Information": {
     greeting: "Some important background questions.",
     message:
-      "These questions must be answered honestly — even if your records were sealed or cleared. A 'Yes' answer doesn't automatically disqualify you.",
+      "These questions must be answered honestly, even if your records were sealed or cleared. A 'Yes' answer doesn't automatically disqualify you.",
   },
   "Part 4: Biographic Information": {
     greeting: "Physical description.",
@@ -615,12 +615,12 @@ export const formFields: RichField[] = [
     options: [
       {
         value: "fiance",
-        label: "My fiancé(e) — we plan to marry in the U.S.",
+        label: "My fiancé(e), we plan to marry in the U.S.",
         sublabel: "They will apply for a K-1 visa.",
       },
       {
         value: "spouse",
-        label: "My spouse — we are already married and they are abroad.",
+        label: "My spouse, we are already married and they are abroad.",
         sublabel: "They will apply for a K-3 visa.",
       },
     ],
@@ -634,30 +634,30 @@ export const formFields: RichField[] = [
     key: "pt1_l1_AlienNumber",
     pdfKey: "pt1_l1_aliennumber",
     label: "Do you have an Alien Registration Number (A-Number)?",
-    help: 'An A-Number is a 7–9 digit number assigned to non-citizens by the U.S. government. It starts with "A" and appears on green cards, work permits, or immigration notices. Most U.S. citizens don\'t have one.',
+    help: 'An A-Number is a 7-9 digit number assigned to non-citizens by the U.S. government. It starts with "A" and appears on green cards, work permits, or immigration notices. Most U.S. citizens don\'t have one.',
     type: "radio",
     section: "Part 1: About You",
     options: [
       {
         value: "Yes",
-        label: "Yes — I have an A-Number",
+        label: "Yes, I have an A-Number",
         sublabel: "It's on my green card or immigration documents.",
       },
-      { value: "No", label: "No — I don't have one", sublabel: "Most petitioners select this." },
+      { value: "No", label: "No, I don't have one", sublabel: "Most petitioners select this." },
     ],
     subQuestions: [
       {
         key: "pt1_l1_AlienNumber_value",
         pdfKey: "pt1_l1_aliennumber",
         label: "What is your A-Number?",
-        help: 'Type the digits only — leave out the letter "A". So A123456789 → type 123456789.',
+        help: 'Type the digits only, leave out the letter "A". So A123456789 → type 123456789.',
         find: 'Front of your green card or work permit, labeled "A-Number" or "USCIS#."',
-        example: "Card says A123456789 — type: 123456789",
+        example: "Card says A123456789, type: 123456789",
         type: "text",
         section: "Part 1: About You",
-        placeholder: "7–9 digits (no letter A)",
+        placeholder: "7-9 digits (no letter A)",
         condition: (data) => data.pt1_hasANum === "Yes",
-        validate: (v) => (/^\d{7,9}$/.test(v) ? null : "7–9 digits only — no letter A"),
+        validate: (v) => (/^\d{7,9}$/.test(v) ? null : "7-9 digits only, no letter A"),
       },
     ],
   },
@@ -674,14 +674,14 @@ export const formFields: RichField[] = [
     key: "pt1_l2_AcctIdentifier",
     pdfKey: "pt1_l2_acctidentifier",
     label: "Do you have a USCIS Online Account Number?",
-    help: "This is only assigned if you've personally created an account on my.uscis.gov. It's a website login number — not the same as an A-Number, and not on any physical card. If you've never signed up, you don't have one.",
+    help: "This is only assigned if you've personally created an account on my.uscis.gov. It's a website login number, not the same as an A-Number, and not on any physical card. If you've never signed up, you don't have one.",
     type: "radio",
     section: "Part 1: About You",
     options: [
-      { value: "Yes", label: "Yes — I have an account on my.uscis.gov" },
+      { value: "Yes", label: "Yes, I have an account on my.uscis.gov" },
       {
         value: "No",
-        label: "No — I've never set one up",
+        label: "No, I've never set one up",
         sublabel: "That's fine. Most petitioners haven't.",
       },
     ],
@@ -693,9 +693,9 @@ export const formFields: RichField[] = [
         find: 'Log into my.uscis.gov → click your name top-right → look for "USCIS Online Account Number."',
         type: "text",
         section: "Part 1: About You",
-        placeholder: "8–12 digits",
+        placeholder: "8-12 digits",
         condition: (data) => data.pt1_hasUscis === "Yes",
-        validate: (v) => (/^\d{8,12}$/.test(v) ? null : "Should be 8–12 digits"),
+        validate: (v) => (/^\d{8,12}$/.test(v) ? null : "Should be 8-12 digits"),
       },
     ],
   },
@@ -715,14 +715,14 @@ export const formFields: RichField[] = [
         key: "pt1_l3_SSN_value",
         pdfKey: "pt1_l3_ssn",
         label: "What is your Social Security Number?",
-        help: "Type only the 9 digits — no dashes.",
+        help: "Type only the 9 digits, no dashes.",
         find: "Your Social Security card, or the top-left corner of any W-2 form.",
-        example: "Card shows 123-45-6789 — type: 123456789",
+        example: "Card shows 123-45-6789, type: 123456789",
         type: "text",
         section: "Part 1: About You",
         placeholder: "9 digits, no dashes",
         condition: (data) => data.pt1_hasSSN === "Yes",
-        validate: (v) => (/^\d{9}$/.test(v) ? null : "Exactly 9 digits — no dashes or spaces"),
+        validate: (v) => (/^\d{9}$/.test(v) ? null : "Exactly 9 digits, no dashes or spaces"),
       },
     ],
   },
@@ -752,7 +752,7 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 1: About You",
     options: [
-      { value: "Yes", label: "Yes — I have filed Form I-130" },
+      { value: "Yes", label: "Yes, I have filed Form I-130" },
       { value: "No", label: "No" },
     ],
   },
@@ -773,7 +773,7 @@ export const formFields: RichField[] = [
     key: "pt1_l6a_FamilyName",
     pdfKey: "pt1_l6a_familyname",
     label: "What is your last name?",
-    help: "Your family name — exactly as it appears on your passport or U.S. ID.",
+    help: "Your family name, exactly as it appears on your passport or U.S. ID.",
     type: "text",
     section: "Part 1: Your Name",
     placeholder: "Last name",
@@ -782,7 +782,7 @@ export const formFields: RichField[] = [
     key: "pt1_l6b_GivenName",
     pdfKey: "pt1_l6b_givenname",
     label: "And your first name?",
-    help: "Use the name on your U.S. passport — not a nickname.",
+    help: "Use the name on your U.S. passport, not a nickname.",
     type: "text",
     section: "Part 1: Your Name",
     placeholder: "First name",
@@ -803,7 +803,7 @@ export const formFields: RichField[] = [
     key: "pt1_l6a_FamilyName_1",
     pdfKey: "pt1_l6a_familyname_1",
     label: "Other last name you have used (aliases, maiden name, nicknames)",
-    help: "List any other names you've gone by — married names, maiden names, aliases.",
+    help: "List any other names you've gone by, married names, maiden names, aliases.",
     type: "text",
     section: "Part 1: Your Name",
     placeholder: "Other last name",
@@ -869,7 +869,7 @@ export const formFields: RichField[] = [
     key: "pt1_l8_InCareofName",
     pdfKey: "pt1_l8_incareofname",
     label: "Does your mail arrive in someone else's name? (In Care Of)",
-    help: "Use this if mail comes addressed to 'c/o [someone else's name]' — for example, 'c/o John Smith.' Leave blank if mail comes in your own name.",
+    help: "Use this if mail comes addressed to 'c/o [someone else's name]', for example, 'c/o John Smith.' Leave blank if mail comes in your own name.",
     type: "text",
     section: "Part 1: Mailing Address",
     placeholder: "e.g. John Smith",
@@ -974,12 +974,12 @@ export const formFields: RichField[] = [
     key: "pt1_l8j_Checkboxes",
     pdfKey: "pt1_l8j_checkboxes",
     label: "Is your mailing address the same as your physical (home) address?",
-    hint: "If you live somewhere different from where you receive mail, choose No — we'll ask for your physical address next.",
+    hint: "If you live somewhere different from where you receive mail, choose No, we'll ask for your physical address next.",
     type: "radio",
     section: "Part 1: Mailing Address",
     options: [
-      { value: "Yes", label: "Yes — same address" },
-      { value: "No", label: "No — my home is a different address" },
+      { value: "Yes", label: "Yes, same address" },
+      { value: "No", label: "No, my home is a different address" },
     ],
   },
   {
@@ -999,7 +999,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l9_StreetNumberName",
     pdfKey: "pt1_l9_streetnumbername",
-    label: "Physical Address 1 — street address?",
+    label: "Physical Address 1, street address?",
     hint: "List your current home address first if it's different from your mailing address. Then continue with addresses from the past 5 years.",
     type: "text",
     section: "Part 1: Physical Address History",
@@ -1113,7 +1113,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l11_StreetNumberName",
     pdfKey: "pt1_l11_streetnumbername",
-    label: "Physical Address 2 — street address?",
+    label: "Physical Address 2, street address?",
     hint: "Continue listing addresses going backwards in time.",
     type: "text",
     section: "Part 1: Physical Address History",
@@ -1249,7 +1249,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l14_StreetNumberName",
     pdfKey: "pt1_l14_streetnumbername",
-    label: "Employer 1 — street address?",
+    label: "Employer 1, street address?",
     type: "text",
     section: "Part 1: Employment History",
     placeholder: "Street number and name",
@@ -1289,7 +1289,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l14_CityOrTown",
     pdfKey: "pt1_l14_cityortown",
-    label: "Employer 1 — city or town?",
+    label: "Employer 1, city or town?",
     type: "text",
     section: "Part 1: Employment History",
     placeholder: "City or town",
@@ -1297,7 +1297,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l14_State",
     pdfKey: "pt1_l14_state",
-    label: "Employer 1 — state?",
+    label: "Employer 1, state?",
     type: "dropdown",
     isState: true,
     section: "Part 1: Employment History",
@@ -1306,7 +1306,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l14_ZipCode",
     pdfKey: "pt1_l14_zipcode",
-    label: "Employer 1 — ZIP code?",
+    label: "Employer 1, ZIP code?",
     type: "text",
     section: "Part 1: Employment History",
     placeholder: "5 digits",
@@ -1315,7 +1315,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l14_Province",
     pdfKey: "pt1_l14_province",
-    label: "Employer 1 — province (if outside U.S.)?",
+    label: "Employer 1, province (if outside U.S.)?",
     type: "text",
     section: "Part 1: Employment History",
     placeholder: "Province",
@@ -1324,7 +1324,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l14_PostalCode",
     pdfKey: "pt1_l14_postalcode",
-    label: "Employer 1 — postal code (if outside U.S.)?",
+    label: "Employer 1, postal code (if outside U.S.)?",
     type: "text",
     section: "Part 1: Employment History",
     placeholder: "Postal code",
@@ -1333,7 +1333,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l14_Country",
     pdfKey: "pt1_l14_country",
-    label: "Employer 1 — country?",
+    label: "Employer 1, country?",
     type: "country",
     section: "Part 1: Employment History",
     placeholder: "Select a country",
@@ -1342,7 +1342,7 @@ export const formFields: RichField[] = [
     key: "pt1_l15_Occupation",
     pdfKey: "pt1_l15_occupation",
     label: "Your occupation at Employer 1?",
-    help: "Your job title — as it would appear on a pay stub or offer letter.",
+    help: "Your job title, as it would appear on a pay stub or offer letter.",
     example: "Software Engineer / Nurse / Teacher / Driver",
     type: "text",
     section: "Part 1: Employment History",
@@ -1351,7 +1351,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l16a_DateFrom",
     pdfKey: "pt1_l16a_datefrom",
-    label: "Employer 1 — when did you start? (Employment Start Date)",
+    label: "Employer 1, when did you start? (Employment Start Date)",
     type: "date",
     section: "Part 1: Employment History",
     placeholder: "MM/DD/YYYY",
@@ -1359,7 +1359,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l16b_ToFrom",
     pdfKey: "pt1_l16b_tofrom",
-    label: "Employer 1 — when did you leave? (Employment End Date)",
+    label: "Employer 1, when did you leave? (Employment End Date)",
     help: "If you still work there, leave this blank or enter today's date.",
     type: "text",
     section: "Part 1: Employment History",
@@ -1380,7 +1380,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l18_StreetNumberName",
     pdfKey: "pt1_l18_streetnumbername",
-    label: "Employer 2 — street address?",
+    label: "Employer 2, street address?",
     type: "text",
     section: "Part 1: Employment History",
     placeholder: "Street number and name",
@@ -1420,7 +1420,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l18_CityOrTown",
     pdfKey: "pt1_l18_cityortown",
-    label: "Employer 2 — city or town?",
+    label: "Employer 2, city or town?",
     type: "text",
     section: "Part 1: Employment History",
     placeholder: "City or town",
@@ -1428,7 +1428,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l18_State",
     pdfKey: "pt1_l18_state",
-    label: "Employer 2 — state?",
+    label: "Employer 2, state?",
     type: "dropdown",
     isState: true,
     section: "Part 1: Employment History",
@@ -1437,7 +1437,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l18_ZipCode",
     pdfKey: "pt1_l18_zipcode",
-    label: "Employer 2 — ZIP code?",
+    label: "Employer 2, ZIP code?",
     type: "text",
     section: "Part 1: Employment History",
     placeholder: "5 digits",
@@ -1446,7 +1446,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l18_Province",
     pdfKey: "pt1_l18_province",
-    label: "Employer 2 — province (if outside U.S.)?",
+    label: "Employer 2, province (if outside U.S.)?",
     type: "text",
     section: "Part 1: Employment History",
     placeholder: "Province",
@@ -1455,7 +1455,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l18_PostalCode",
     pdfKey: "pt1_l18_postalcode",
-    label: "Employer 2 — postal code (if outside U.S.)?",
+    label: "Employer 2, postal code (if outside U.S.)?",
     type: "text",
     section: "Part 1: Employment History",
     placeholder: "Postal code",
@@ -1464,7 +1464,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l18_Country",
     pdfKey: "pt1_l18_country",
-    label: "Employer 2 — country?",
+    label: "Employer 2, country?",
     type: "country",
     section: "Part 1: Employment History",
     placeholder: "Select a country",
@@ -1480,7 +1480,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l20a_DateFrom",
     pdfKey: "pt1_l20a_datefrom",
-    label: "Employer 2 — employment start date?",
+    label: "Employer 2, employment start date?",
     type: "date",
     section: "Part 1: Employment History",
     placeholder: "MM/DD/YYYY",
@@ -1488,7 +1488,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l20b_ToFrom",
     pdfKey: "pt1_l20b_tofrom",
-    label: "Employer 2 — employment end date?",
+    label: "Employer 2, employment end date?",
     type: "text",
     section: "Part 1: Employment History",
     placeholder: "MM/DD/YYYY",
@@ -1517,7 +1517,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l21_Checkbox",
     pdfKey: "pt1_l21_checkbox",
-    label: "Sex — Male?",
+    label: "Sex, Male?",
     help: "Select the sex as it appears on your official government-issued ID or passport.",
     type: "radio",
     section: "Part 1: Other Information",
@@ -1552,7 +1552,7 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 1: Other Information",
     options: [
-      { value: "Single", label: "Single — never married" },
+      { value: "Single", label: "Single, never married" },
       { value: "Married", label: "Married" },
       { value: "Divorced", label: "Divorced" },
       { value: "Widowed", label: "Widowed" },
@@ -1616,7 +1616,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l27a_FamilyName",
     pdfKey: "pt1_l27a_familyname",
-    label: "Parent 1 — last name?",
+    label: "Parent 1, last name?",
     hint: "Use whatever name you have. If a parent has passed away, fill in what you know.",
     type: "text",
     section: "Part 1: Parents",
@@ -1625,7 +1625,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l27b_GivenName",
     pdfKey: "pt1_l27b_givenname",
-    label: "Parent 1 — first name?",
+    label: "Parent 1, first name?",
     type: "text",
     section: "Part 1: Parents",
     placeholder: "First name",
@@ -1633,7 +1633,7 @@ export const formFields: RichField[] = [
       {
         key: "pt1_l27c_MiddleName",
         pdfKey: "pt1_l27c_middlename",
-        label: "Parent 1 — middle name?",
+        label: "Parent 1, middle name?",
         type: "text",
         section: "Part 1: Parents",
         placeholder: "Middle name",
@@ -1644,7 +1644,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l28_DateofBirth",
     pdfKey: "pt1_l28_dateofbirth",
-    label: "Parent 1 — date of birth?",
+    label: "Parent 1, date of birth?",
     type: "date",
     section: "Part 1: Parents",
     placeholder: "MM/DD/YYYY",
@@ -1653,7 +1653,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l29_Checkbox",
     pdfKey: "pt1_l29_checkbox",
-    label: "Parent 1 — sex?",
+    label: "Parent 1, sex?",
     type: "radio",
     section: "Part 1: Parents",
     options: [
@@ -1673,7 +1673,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l30_CountryOfCitzOrNationality",
     pdfKey: "pt1_l30_countryofcitzornationality",
-    label: "Parent 1 — country of birth?",
+    label: "Parent 1, country of birth?",
     type: "country",
     section: "Part 1: Parents",
     placeholder: "Country of birth",
@@ -1681,7 +1681,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l31_CityTownOfBirth",
     pdfKey: "pt1_l31_citytownofbirth",
-    label: "Parent 1 — city or town where they currently live?",
+    label: "Parent 1, city or town where they currently live?",
     type: "text",
     section: "Part 1: Parents",
     placeholder: "City or town of residence",
@@ -1690,7 +1690,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l31_CountryOfCitzOrNationality",
     pdfKey: "pt1_l31_countryofcitzornationality",
-    label: "Parent 1 — country where they currently live?",
+    label: "Parent 1, country where they currently live?",
     type: "country",
     section: "Part 1: Parents",
     placeholder: "Country of residence",
@@ -1701,7 +1701,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l32a_FamilyName",
     pdfKey: "pt1_l32a_familyname",
-    label: "Parent 2 — last name?",
+    label: "Parent 2, last name?",
     type: "text",
     section: "Part 1: Parents",
     placeholder: "Last name",
@@ -1710,7 +1710,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l32b_GivenName",
     pdfKey: "pt1_l32b_givenname",
-    label: "Parent 2 — first name?",
+    label: "Parent 2, first name?",
     type: "text",
     section: "Part 1: Parents",
     placeholder: "First name",
@@ -1718,7 +1718,7 @@ export const formFields: RichField[] = [
       {
         key: "pt1_l32c_MiddleName",
         pdfKey: "pt1_l32c_middlename",
-        label: "Parent 2 — middle name?",
+        label: "Parent 2, middle name?",
         type: "text",
         section: "Part 1: Parents",
         placeholder: "Middle name",
@@ -1729,7 +1729,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l33_DateofBirth",
     pdfKey: "pt1_l33_dateofbirth",
-    label: "Parent 2 — date of birth?",
+    label: "Parent 2, date of birth?",
     type: "date",
     section: "Part 1: Parents",
     placeholder: "MM/DD/YYYY",
@@ -1738,7 +1738,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l34_Checkbox",
     pdfKey: "pt1_l34_checkbox",
-    label: "Parent 2 — sex?",
+    label: "Parent 2, sex?",
     type: "radio",
     section: "Part 1: Parents",
     options: [
@@ -1758,7 +1758,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l35_CountryOfCitzOrNationality",
     pdfKey: "pt1_l35_countryofcitzornationality",
-    label: "Parent 2 — country of birth?",
+    label: "Parent 2, country of birth?",
     type: "country",
     section: "Part 1: Parents",
     placeholder: "Country of birth",
@@ -1766,7 +1766,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l36a_CityTownOfBirth",
     pdfKey: "pt1_l36a_citytownofbirth",
-    label: "Parent 2 — city or town where they currently live?",
+    label: "Parent 2, city or town where they currently live?",
     type: "text",
     section: "Part 1: Parents",
     placeholder: "City or town of residence",
@@ -1775,7 +1775,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l36b_CountryOfCitzOrNationality",
     pdfKey: "pt1_l36b_countryofcitzornationality",
-    label: "Parent 2 — country where they currently live?",
+    label: "Parent 2, country where they currently live?",
     type: "country",
     section: "Part 1: Parents",
     placeholder: "Country of residence",
@@ -1795,7 +1795,7 @@ export const formFields: RichField[] = [
     section: "Part 1: Prior Marriages",
     options: [
       { value: "Yes", label: "Yes" },
-      { value: "No", label: "No — this is my first marriage" },
+      { value: "No", label: "No, this is my first marriage" },
     ],
     subQuestions: [
       {
@@ -1810,7 +1810,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l38a_FamilyName",
     pdfKey: "pt1_l38a_familyname",
-    label: "Previous spouse — last name?",
+    label: "Previous spouse, last name?",
     type: "text",
     section: "Part 1: Prior Marriages",
     placeholder: "Last name",
@@ -1819,7 +1819,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l38b_GivenName",
     pdfKey: "pt1_l38b_givenname",
-    label: "Previous spouse — first name?",
+    label: "Previous spouse, first name?",
     type: "text",
     section: "Part 1: Prior Marriages",
     placeholder: "First name",
@@ -1828,7 +1828,7 @@ export const formFields: RichField[] = [
       {
         key: "pt1_l38c_MiddleName",
         pdfKey: "pt1_l38c_middlename",
-        label: "Previous spouse — middle name?",
+        label: "Previous spouse, middle name?",
         type: "text",
         section: "Part 1: Prior Marriages",
         placeholder: "Middle name",
@@ -1891,7 +1891,7 @@ export const formFields: RichField[] = [
       { value: "birth", label: "I was born in the United States" },
       {
         value: "naturalization",
-        label: "I was naturalized — I went through the citizenship process",
+        label: "I was naturalized, I went through the citizenship process",
       },
       { value: "parents", label: "I became a citizen through my U.S. citizen parent(s)" },
     ],
@@ -1909,13 +1909,13 @@ export const formFields: RichField[] = [
     key: "pt1_l21a_CertificateNumber",
     pdfKey: "pt1_l21a_certificatenumber",
     label: "Do you have a Certificate of Naturalization or Certificate of Citizenship?",
-    help: "This is a physical document issued by USCIS. It looks like an official certificate and has a certificate number on it. Not everyone has one — it's mainly for people who naturalized or derived citizenship through parents.",
+    help: "This is a physical document issued by USCIS. It looks like an official certificate and has a certificate number on it. Not everyone has one, it's mainly for people who naturalized or derived citizenship through parents.",
     type: "radio",
     section: "Part 1: Citizenship",
     condition: (data) => data.pt1_citizenHow !== "birth",
     options: [
-      { value: "Yes", label: "Yes — I have one", sublabel: "You'll enter the details next." },
-      { value: "No", label: "No — I don't have one" },
+      { value: "Yes", label: "Yes, I have one", sublabel: "You'll enter the details next." },
+      { value: "No", label: "No, I don't have one" },
     ],
     subQuestions: [
       {
@@ -1959,12 +1959,12 @@ export const formFields: RichField[] = [
     key: "pt1_l48_Checkboxes",
     pdfKey: "pt1_l48_checkboxes",
     label: "Have you ever filed an I-129F petition for a different person before?",
-    hint: "USCIS tracks this. If you've filed before, you may need to meet additional requirements. Answer honestly — a prior petition doesn't automatically disqualify you.",
+    hint: "USCIS tracks this. If you've filed before, you may need to meet additional requirements. Answer honestly, a prior petition doesn't automatically disqualify you.",
     type: "radio",
     section: "Part 1: Previous Petitions",
     options: [
-      { value: "Yes", label: "Yes — I have filed I-129F for someone else before" },
-      { value: "No", label: "No — this is my first time" },
+      { value: "Yes", label: "Yes, I have filed I-129F for someone else before" },
+      { value: "No", label: "No, this is my first time" },
     ],
     subQuestions: [
       {
@@ -1983,14 +1983,14 @@ export const formFields: RichField[] = [
     help: "The A-Number of the person you previously petitioned for. Leave blank if they didn't have one.",
     type: "text",
     section: "Part 1: Previous Petitions",
-    placeholder: "7–9 digits",
+    placeholder: "7-9 digits",
     condition: (data) => data.pt1_l48_Checkboxes === "Yes",
     skip: "They had no A-Number",
   },
   {
     key: "pt1_l45a_FamilyName",
     pdfKey: "pt1_l45a_familyname",
-    label: "Previous beneficiary — last name?",
+    label: "Previous beneficiary, last name?",
     type: "text",
     section: "Part 1: Previous Petitions",
     placeholder: "Last name",
@@ -1999,7 +1999,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l45b_GivenName",
     pdfKey: "pt1_l45b_givenname",
-    label: "Previous beneficiary — first name?",
+    label: "Previous beneficiary, first name?",
     type: "text",
     section: "Part 1: Previous Petitions",
     placeholder: "First name",
@@ -2008,7 +2008,7 @@ export const formFields: RichField[] = [
       {
         key: "pt1_l45c_MiddleName",
         pdfKey: "pt1_l45c_middlename",
-        label: "Previous beneficiary — middle name?",
+        label: "Previous beneficiary, middle name?",
         type: "text",
         section: "Part 1: Previous Petitions",
         placeholder: "Middle name",
@@ -2076,7 +2076,7 @@ export const formFields: RichField[] = [
   {
     key: "pt1_l50a_State",
     pdfKey: "pt1_l50a_state",
-    label: "U.S. states where you have lived since turning 18 — State 1?",
+    label: "U.S. states where you have lived since turning 18, State 1?",
     hint: "List all U.S. states and foreign countries where you've lived since your 18th birthday.",
     type: "text",
     section: "Part 1: Other Information",
@@ -2156,10 +2156,10 @@ export const formFields: RichField[] = [
     options: [
       {
         value: "Yes",
-        label: "Yes — they have an A-Number",
+        label: "Yes, they have an A-Number",
         sublabel: "From a previous green card, work permit, or immigration case.",
       },
-      { value: "No", label: "No — they don't have one", sublabel: "This is normal." },
+      { value: "No", label: "No, they don't have one", sublabel: "This is normal." },
     ],
     subQuestions: [
       {
@@ -2170,9 +2170,9 @@ export const formFields: RichField[] = [
         example: "A123456789 → type: 123456789",
         type: "text",
         section: "Part 2: Beneficiary Name",
-        placeholder: "7–9 digits (no letter A)",
+        placeholder: "7-9 digits (no letter A)",
         condition: (data) => data.pt2_hasANum === "Yes",
-        validate: (v) => (/^\d{7,9}$/.test(v) ? null : "7–9 digits — no letter A"),
+        validate: (v) => (/^\d{7,9}$/.test(v) ? null : "7-9 digits, no letter A"),
       },
     ],
   },
@@ -2184,8 +2184,8 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 2: Beneficiary Name",
     options: [
-      { value: "Yes", label: "Yes — they have an SSN" },
-      { value: "No", label: "No — they don't have one" },
+      { value: "Yes", label: "Yes, they have an SSN" },
+      { value: "No", label: "No, they don't have one" },
     ],
     subQuestions: [
       {
@@ -2236,7 +2236,7 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 2: Beneficiary Name",
     options: [
-      { value: "Single", label: "Single — never married" },
+      { value: "Single", label: "Single, never married" },
       { value: "Married", label: "Married" },
       { value: "Divorced", label: "Divorced" },
       { value: "Widowed", label: "Widowed" },
@@ -2285,7 +2285,7 @@ export const formFields: RichField[] = [
     key: "pt2_l9_CountryofCitzOrNationality",
     pdfKey: "pt2_l9_countryofcitzornationality",
     label: "What is your fiancé(e)'s current citizenship or nationality?",
-    help: "The country whose passport they hold — not necessarily where they live.",
+    help: "The country whose passport they hold, not necessarily where they live.",
     type: "country",
     section: "Part 2: Beneficiary Name",
     placeholder: "Country of citizenship",
@@ -2338,7 +2338,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l11_StreetNumberName",
     pdfKey: "pt2_l11_streetnumbername",
-    label: "Your fiancé(e)'s mailing address — street?",
+    label: "Your fiancé(e)'s mailing address, street?",
     type: "text",
     section: "Part 2: Beneficiary Address",
     placeholder: "Street number and name",
@@ -2434,7 +2434,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l12_StreetNumberName",
     pdfKey: "pt2_l12_streetnumbername",
-    label: "Beneficiary's Physical Address 1 — street?",
+    label: "Beneficiary's Physical Address 1, street?",
     hint: "Their current home address if different from mailing address. Then continue with past 5 years.",
     type: "text",
     section: "Part 2: Beneficiary Address",
@@ -2549,7 +2549,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l14_StreetNumberName",
     pdfKey: "pt2_l14_streetnumbername",
-    label: "Beneficiary's Physical Address 2 — street?",
+    label: "Beneficiary's Physical Address 2, street?",
     type: "text",
     section: "Part 2: Beneficiary Address",
     placeholder: "Street number and name",
@@ -2675,7 +2675,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l17_StreetNumberName",
     pdfKey: "pt2_l17_streetnumbername",
-    label: "Beneficiary's Employer 1 — street address?",
+    label: "Beneficiary's Employer 1, street address?",
     type: "text",
     section: "Part 2: Beneficiary Employment",
     placeholder: "Street number and name",
@@ -2715,7 +2715,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l17_CityOrTown",
     pdfKey: "pt2_l17_cityortown",
-    label: "Beneficiary's Employer 1 — city or town?",
+    label: "Beneficiary's Employer 1, city or town?",
     type: "text",
     section: "Part 2: Beneficiary Employment",
     placeholder: "City or town",
@@ -2723,7 +2723,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l17_State",
     pdfKey: "pt2_l17_state",
-    label: "Beneficiary's Employer 1 — state?",
+    label: "Beneficiary's Employer 1, state?",
     type: "dropdown",
     isState: true,
     section: "Part 2: Beneficiary Employment",
@@ -2733,7 +2733,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l17_ZipCode",
     pdfKey: "pt2_l17_zipcode",
-    label: "Beneficiary's Employer 1 — ZIP code?",
+    label: "Beneficiary's Employer 1, ZIP code?",
     type: "text",
     section: "Part 2: Beneficiary Employment",
     placeholder: "5 digits",
@@ -2743,7 +2743,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l17_Province",
     pdfKey: "pt2_l17_province",
-    label: "Beneficiary's Employer 1 — province?",
+    label: "Beneficiary's Employer 1, province?",
     type: "text",
     section: "Part 2: Beneficiary Employment",
     placeholder: "Province",
@@ -2752,7 +2752,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l17_PostalCode",
     pdfKey: "pt2_l17_postalcode",
-    label: "Beneficiary's Employer 1 — postal code?",
+    label: "Beneficiary's Employer 1, postal code?",
     type: "text",
     section: "Part 2: Beneficiary Employment",
     placeholder: "Postal code",
@@ -2761,7 +2761,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l17_Country",
     pdfKey: "pt2_l17_country",
-    label: "Beneficiary's Employer 1 — country?",
+    label: "Beneficiary's Employer 1, country?",
     type: "country",
     section: "Part 2: Beneficiary Employment",
     placeholder: "Select a country",
@@ -2778,7 +2778,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l19a_DateFrom",
     pdfKey: "pt2_l19a_datefrom",
-    label: "Beneficiary's Employer 1 — employment start date?",
+    label: "Beneficiary's Employer 1, employment start date?",
     type: "date",
     section: "Part 2: Beneficiary Employment",
     placeholder: "MM/DD/YYYY",
@@ -2786,7 +2786,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l19b_ToFrom",
     pdfKey: "pt2_l19b_tofrom",
-    label: "Beneficiary's Employer 1 — employment end date?",
+    label: "Beneficiary's Employer 1, employment end date?",
     type: "text",
     section: "Part 2: Beneficiary Employment",
     placeholder: "MM/DD/YYYY or Present",
@@ -2806,7 +2806,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l21_StreetNumberName",
     pdfKey: "pt2_l21_streetnumbername",
-    label: "Beneficiary's Employer 2 — street address?",
+    label: "Beneficiary's Employer 2, street address?",
     type: "text",
     section: "Part 2: Beneficiary Employment",
     placeholder: "Street number and name",
@@ -2846,7 +2846,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l21_CityOrTown",
     pdfKey: "pt2_l21_cityortown",
-    label: "Beneficiary's Employer 2 — city or town?",
+    label: "Beneficiary's Employer 2, city or town?",
     type: "text",
     section: "Part 2: Beneficiary Employment",
     placeholder: "City or town",
@@ -2854,7 +2854,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l21_State",
     pdfKey: "pt2_l21_state",
-    label: "Beneficiary's Employer 2 — state?",
+    label: "Beneficiary's Employer 2, state?",
     type: "dropdown",
     isState: true,
     section: "Part 2: Beneficiary Employment",
@@ -2864,7 +2864,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l21_ZipCode",
     pdfKey: "pt2_l21_zipcode",
-    label: "Beneficiary's Employer 2 — ZIP code?",
+    label: "Beneficiary's Employer 2, ZIP code?",
     type: "text",
     section: "Part 2: Beneficiary Employment",
     placeholder: "5 digits",
@@ -2874,7 +2874,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l21_Province",
     pdfKey: "pt2_l21_province",
-    label: "Beneficiary's Employer 2 — province?",
+    label: "Beneficiary's Employer 2, province?",
     type: "text",
     section: "Part 2: Beneficiary Employment",
     placeholder: "Province",
@@ -2883,7 +2883,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l21_PostalCode",
     pdfKey: "pt2_l21_postalcode",
-    label: "Beneficiary's Employer 2 — postal code?",
+    label: "Beneficiary's Employer 2, postal code?",
     type: "text",
     section: "Part 2: Beneficiary Employment",
     placeholder: "Postal code",
@@ -2892,7 +2892,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l21_Country",
     pdfKey: "pt2_l21_country",
-    label: "Beneficiary's Employer 2 — country?",
+    label: "Beneficiary's Employer 2, country?",
     type: "country",
     section: "Part 2: Beneficiary Employment",
     placeholder: "Select a country",
@@ -2908,7 +2908,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l23a_DateFrom",
     pdfKey: "pt2_l23a_datefrom",
-    label: "Beneficiary's Employer 2 — employment start date?",
+    label: "Beneficiary's Employer 2, employment start date?",
     type: "date",
     section: "Part 2: Beneficiary Employment",
     placeholder: "MM/DD/YYYY",
@@ -2916,7 +2916,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l23b_ToFrom",
     pdfKey: "pt2_l23b_tofrom",
-    label: "Beneficiary's Employer 2 — employment end date?",
+    label: "Beneficiary's Employer 2, employment end date?",
     type: "text",
     section: "Part 2: Beneficiary Employment",
     placeholder: "MM/DD/YYYY",
@@ -2930,7 +2930,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l24a_FamilyName",
     pdfKey: "pt2_l24a_familyname",
-    label: "Your fiancé(e)'s Parent 1 — last name?",
+    label: "Your fiancé(e)'s Parent 1, last name?",
     type: "text",
     section: "Part 2: Beneficiary Parents",
     placeholder: "Last name",
@@ -2939,7 +2939,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l24b_GivenName",
     pdfKey: "pt2_l24b_givenname",
-    label: "Parent 1 — first name?",
+    label: "Parent 1, first name?",
     type: "text",
     section: "Part 2: Beneficiary Parents",
     placeholder: "First name",
@@ -2947,7 +2947,7 @@ export const formFields: RichField[] = [
       {
         key: "pt2_l24c_MiddleName",
         pdfKey: "pt2_l24c_middlename",
-        label: "Parent 1 — middle name?",
+        label: "Parent 1, middle name?",
         type: "text",
         section: "Part 2: Beneficiary Parents",
         placeholder: "Middle name",
@@ -2958,7 +2958,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l26_Checkbox",
     pdfKey: "pt2_l26_checkbox",
-    label: "Parent 1 — sex?",
+    label: "Parent 1, sex?",
     type: "radio",
     section: "Part 2: Beneficiary Parents",
     options: [
@@ -2978,7 +2978,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l27_CountryOfCitzOrNationality",
     pdfKey: "pt2_l27_countryofcitzornationality",
-    label: "Parent 1 — country of birth?",
+    label: "Parent 1, country of birth?",
     type: "country",
     section: "Part 2: Beneficiary Parents",
     placeholder: "Country of birth",
@@ -2987,7 +2987,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l28a_CityTownOfBirth",
     pdfKey: "pt2_l28a_citytownofbirth",
-    label: "Parent 1 — city where they currently live?",
+    label: "Parent 1, city where they currently live?",
     type: "text",
     section: "Part 2: Beneficiary Parents",
     placeholder: "City or town",
@@ -2996,7 +2996,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l28b_CountryOfCitzOrNationality",
     pdfKey: "pt2_l28b_countryofcitzornationality",
-    label: "Parent 1 — country where they currently live?",
+    label: "Parent 1, country where they currently live?",
     type: "country",
     section: "Part 2: Beneficiary Parents",
     placeholder: "Country",
@@ -3006,7 +3006,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l28c_CityOrTown",
     pdfKey: "pt2_l28c_cityortown",
-    label: "Parent 1 residence — city or town? (additional)",
+    label: "Parent 1 residence, city or town? (additional)",
     type: "text",
     section: "Part 2: Beneficiary Parents",
     placeholder: "City or town",
@@ -3015,7 +3015,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l28d_Province",
     pdfKey: "pt2_l28d_province",
-    label: "Parent 1 residence — province?",
+    label: "Parent 1 residence, province?",
     type: "text",
     section: "Part 2: Beneficiary Parents",
     placeholder: "Province",
@@ -3024,7 +3024,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l28e_PostalCode",
     pdfKey: "pt2_l28e_postalcode",
-    label: "Parent 1 residence — postal code?",
+    label: "Parent 1 residence, postal code?",
     type: "text",
     section: "Part 2: Beneficiary Parents",
     placeholder: "Postal code",
@@ -3033,7 +3033,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l28f_Country",
     pdfKey: "pt2_l28f_country",
-    label: "Parent 1 residence — country?",
+    label: "Parent 1 residence, country?",
     type: "country",
     section: "Part 2: Beneficiary Parents",
     placeholder: "Country",
@@ -3044,7 +3044,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l29a_FamilyName",
     pdfKey: "pt2_l29a_familyname",
-    label: "Your fiancé(e)'s Parent 2 — last name?",
+    label: "Your fiancé(e)'s Parent 2, last name?",
     type: "text",
     section: "Part 2: Beneficiary Parents",
     placeholder: "Last name",
@@ -3053,7 +3053,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l29b_GivenName",
     pdfKey: "pt2_l29b_givenname",
-    label: "Parent 2 — first name?",
+    label: "Parent 2, first name?",
     type: "text",
     section: "Part 2: Beneficiary Parents",
     placeholder: "First name",
@@ -3061,7 +3061,7 @@ export const formFields: RichField[] = [
       {
         key: "pt2_l29c_MiddleName",
         pdfKey: "pt2_l29c_middlename",
-        label: "Parent 2 — middle name?",
+        label: "Parent 2, middle name?",
         type: "text",
         section: "Part 2: Beneficiary Parents",
         placeholder: "Middle name",
@@ -3072,7 +3072,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l30_DateofBirth",
     pdfKey: "pt2_l30_dateofbirth",
-    label: "Parent 2 — date of birth?",
+    label: "Parent 2, date of birth?",
     type: "date",
     section: "Part 2: Beneficiary Parents",
     placeholder: "MM/DD/YYYY",
@@ -3081,7 +3081,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l31_Checkbox",
     pdfKey: "pt2_l31_checkbox",
-    label: "Parent 2 — sex?",
+    label: "Parent 2, sex?",
     type: "radio",
     section: "Part 2: Beneficiary Parents",
     options: [
@@ -3101,7 +3101,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l32_CountryOfCitzOrNationality",
     pdfKey: "pt2_l32_countryofcitzornationality",
-    label: "Parent 2 — country of birth?",
+    label: "Parent 2, country of birth?",
     type: "country",
     section: "Part 2: Beneficiary Parents",
     placeholder: "Country of birth",
@@ -3110,7 +3110,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l33a_CityTownOfBirth",
     pdfKey: "pt2_l33a_citytownofbirth",
-    label: "Parent 2 — city where they currently live?",
+    label: "Parent 2, city where they currently live?",
     type: "text",
     section: "Part 2: Beneficiary Parents",
     placeholder: "City or town",
@@ -3119,7 +3119,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l33b_CountryOfCitzOrNationality",
     pdfKey: "pt2_l33b_countryofcitzornationality",
-    label: "Parent 2 — country where they currently live?",
+    label: "Parent 2, country where they currently live?",
     type: "country",
     section: "Part 2: Beneficiary Parents",
     placeholder: "Country",
@@ -3153,7 +3153,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l35a_FamilyName",
     pdfKey: "pt2_l35a_familyname",
-    label: "Beneficiary's previous spouse — last name?",
+    label: "Beneficiary's previous spouse, last name?",
     type: "text",
     section: "Part 2: Beneficiary Background",
     placeholder: "Last name",
@@ -3162,7 +3162,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l35b_GivenName",
     pdfKey: "pt2_l35b_givenname",
-    label: "Beneficiary's previous spouse — first name?",
+    label: "Beneficiary's previous spouse, first name?",
     type: "text",
     section: "Part 2: Beneficiary Background",
     placeholder: "First name",
@@ -3171,7 +3171,7 @@ export const formFields: RichField[] = [
       {
         key: "pt2_l35c_MiddleName",
         pdfKey: "pt2_l35c_middlename",
-        label: "Previous spouse — middle name?",
+        label: "Previous spouse, middle name?",
         type: "text",
         section: "Part 2: Beneficiary Background",
         placeholder: "Middle name",
@@ -3196,7 +3196,7 @@ export const formFields: RichField[] = [
     section: "Part 2: Beneficiary Background",
     options: [
       { value: "Yes", label: "Yes", sublabel: "You'll provide details about their last entry." },
-      { value: "No", label: "No — they have never been to the U.S." },
+      { value: "No", label: "No, they have never been to the U.S." },
     ],
     subQuestions: [
       {
@@ -3257,7 +3257,7 @@ export const formFields: RichField[] = [
     key: "pt2_l38e_Passport",
     pdfKey: "pt2_l38e_passport",
     label: "Their passport number?",
-    find: "The photo page of their passport — usually a 9-character code near the top right.",
+    find: "The photo page of their passport, usually a 9-character code near the top right.",
     type: "text",
     section: "Part 2: Beneficiary Background",
     placeholder: "Passport number",
@@ -3267,7 +3267,7 @@ export const formFields: RichField[] = [
     key: "pt2_l38f_TravelDoc",
     pdfKey: "pt2_l38f_traveldoc",
     label: "Travel document number? (if different from passport)",
-    help: "Some people travel on documents other than a passport — like a refugee travel document or a Reentry Permit. If they used a regular passport, leave this blank.",
+    help: "Some people travel on documents other than a passport, like a refugee travel document or a Reentry Permit. If they used a regular passport, leave this blank.",
     type: "text",
     section: "Part 2: Beneficiary Background",
     placeholder: "Travel document number",
@@ -3287,7 +3287,7 @@ export const formFields: RichField[] = [
     key: "pt2_l38h_ExpDate",
     pdfKey: "pt2_l38h_expdate",
     label: "Passport or travel document expiration date?",
-    find: "Front of the passport — labeled 'Date of Expiry' or 'Expiration Date.'",
+    find: "Front of the passport, labeled 'Date of Expiry' or 'Expiration Date.'",
     type: "date",
     section: "Part 2: Beneficiary Background",
     placeholder: "MM/DD/YYYY",
@@ -3299,7 +3299,7 @@ export const formFields: RichField[] = [
     key: "pt2_l39_Checkboxes",
     pdfKey: "pt2_l39_checkboxes",
     label: "Does your fiancé(e) have any children?",
-    hint: "This includes biological children, adopted children, and stepchildren — regardless of age.",
+    hint: "This includes biological children, adopted children, and stepchildren, regardless of age.",
     type: "radio",
     section: "Part 2: Beneficiary Background",
     options: [
@@ -3374,7 +3374,7 @@ export const formFields: RichField[] = [
       { value: "Yes", label: "Yes" },
       {
         value: "No",
-        label: "No — they live somewhere else",
+        label: "No, they live somewhere else",
         sublabel: "You'll provide the child's address next.",
       },
     ],
@@ -3392,7 +3392,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l44_StreetNumberName",
     pdfKey: "pt2_l44_streetnumbername",
-    label: "Child's address — street?",
+    label: "Child's address, street?",
     hint: "Only if the child doesn't live with your fiancé(e).",
     type: "text",
     section: "Part 2: Beneficiary Background",
@@ -3434,7 +3434,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l44_CityOrTown",
     pdfKey: "pt2_l44_cityortown",
-    label: "Child's address — city or town?",
+    label: "Child's address, city or town?",
     type: "text",
     section: "Part 2: Beneficiary Background",
     placeholder: "City or town",
@@ -3443,7 +3443,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l44_State",
     pdfKey: "pt2_l44_state",
-    label: "Child's address — state?",
+    label: "Child's address, state?",
     type: "dropdown",
     isState: true,
     section: "Part 2: Beneficiary Background",
@@ -3454,7 +3454,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l44_ZipCode",
     pdfKey: "pt2_l44_zipcode",
-    label: "Child's address — ZIP code?",
+    label: "Child's address, ZIP code?",
     type: "text",
     section: "Part 2: Beneficiary Background",
     placeholder: "5 digits",
@@ -3465,7 +3465,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l44_Province",
     pdfKey: "pt2_l44_province",
-    label: "Child's address — province?",
+    label: "Child's address, province?",
     type: "text",
     section: "Part 2: Beneficiary Background",
     placeholder: "Province",
@@ -3475,7 +3475,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l44_PostalCode",
     pdfKey: "pt2_l44_postalcode",
-    label: "Child's address — postal code?",
+    label: "Child's address, postal code?",
     type: "text",
     section: "Part 2: Beneficiary Background",
     placeholder: "Postal code",
@@ -3485,7 +3485,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l44_Country",
     pdfKey: "pt2_l44_country",
-    label: "Child's address — country?",
+    label: "Child's address, country?",
     type: "country",
     section: "Part 2: Beneficiary Background",
     placeholder: "Select a country",
@@ -3574,7 +3574,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l47_StreetNumberName",
     pdfKey: "pt2_l47_streetnumbername",
-    label: "Your fiancé(e)'s current address abroad — street?",
+    label: "Your fiancé(e)'s current address abroad, street?",
     hint: "Where they live right now outside the U.S. This is where the U.S. consulate will contact them.",
     type: "text",
     section: "Part 2: Beneficiary Background",
@@ -3606,7 +3606,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l47_CityOrTown",
     pdfKey: "pt2_l47_cityortown",
-    label: "Abroad address — city or town?",
+    label: "Abroad address, city or town?",
     type: "text",
     section: "Part 2: Beneficiary Background",
     placeholder: "City or town",
@@ -3614,7 +3614,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l47_Province",
     pdfKey: "pt2_l47_province",
-    label: "Abroad address — province or region?",
+    label: "Abroad address, province or region?",
     type: "text",
     section: "Part 2: Beneficiary Background",
     placeholder: "Province or region",
@@ -3623,7 +3623,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l47_PostalCode",
     pdfKey: "pt2_l47_postalcode",
-    label: "Abroad address — postal code?",
+    label: "Abroad address, postal code?",
     type: "text",
     section: "Part 2: Beneficiary Background",
     placeholder: "Postal code",
@@ -3632,7 +3632,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l47_Country",
     pdfKey: "pt2_l47_country",
-    label: "Abroad address — country?",
+    label: "Abroad address, country?",
     type: "country",
     section: "Part 2: Beneficiary Background",
     placeholder: "Select a country",
@@ -3733,8 +3733,8 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 2: Relationship",
     options: [
-      { value: "Yes", label: "Yes — we are related" },
-      { value: "No", label: "No — we are not related" },
+      { value: "Yes", label: "Yes, we are related" },
+      { value: "No", label: "No, we are not related" },
     ],
     subQuestions: [
       {
@@ -3774,15 +3774,15 @@ export const formFields: RichField[] = [
     options: [
       {
         value: "Yes",
-        label: "Yes — we have met in person",
+        label: "Yes, we have met in person",
         sublabel: "You'll describe the meeting next.",
       },
       {
         value: "No",
-        label: "No — we have not met in person",
+        label: "No, we have not met in person",
         sublabel: "You'll need to explain why and request an exemption.",
       },
-      { value: "Spouse", label: "N/A — the beneficiary is my spouse" },
+      { value: "Spouse", label: "N/A, the beneficiary is my spouse" },
     ],
     subQuestions: [
       {
@@ -3795,7 +3795,7 @@ export const formFields: RichField[] = [
       {
         key: "pt2_l53_Checkboxes_2",
         pdfKey: "pt2_l53_checkboxes_2",
-        label: "N/A — spouse",
+        label: "N/A, spouse",
         type: "checkbox",
         section: "Part 2: Relationship",
       },
@@ -3816,16 +3816,16 @@ export const formFields: RichField[] = [
     key: "pt2_l55_Checkboxes",
     pdfKey: "pt2_l55_checkboxes",
     label: "Did you meet your fiancé(e) through an International Marriage Broker (IMB)?",
-    help: "An IMB is a business that helps people from different countries meet for romantic purposes — for example, an international dating service or marriage agency. This does not include social networking sites or apps.",
+    help: "An IMB is a business that helps people from different countries meet for romantic purposes, for example, an international dating service or marriage agency. This does not include social networking sites or apps.",
     type: "radio",
     section: "Part 2: Relationship",
     options: [
       {
         value: "Yes",
-        label: "Yes — through a marriage broker or agency",
+        label: "Yes, through a marriage broker or agency",
         sublabel: "You'll provide the agency's details next.",
       },
-      { value: "No", label: "No — we met on our own" },
+      { value: "No", label: "No, we met on our own" },
     ],
     subQuestions: [
       {
@@ -3850,7 +3850,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l57a_IMBFamilyName",
     pdfKey: "pt2_l57a_imbfamilyname",
-    label: "IMB contact — last name?",
+    label: "IMB contact, last name?",
     type: "text",
     section: "Part 2: Relationship",
     placeholder: "Last name",
@@ -3860,7 +3860,7 @@ export const formFields: RichField[] = [
       {
         key: "pt2_l57b_IMB_GivenName",
         pdfKey: "pt2_l57b_imb_givenname",
-        label: "IMB contact — first name?",
+        label: "IMB contact, first name?",
         type: "text",
         section: "Part 2: Relationship",
         placeholder: "First name",
@@ -3893,7 +3893,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l60a_StreetNumberName",
     pdfKey: "pt2_l60a_streetnumbername",
-    label: "IMB address — street?",
+    label: "IMB address, street?",
     type: "text",
     section: "Part 2: Relationship",
     placeholder: "Street number and name",
@@ -3926,7 +3926,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l60_CityOrTown",
     pdfKey: "pt2_l60_cityortown",
-    label: "IMB address — city or town?",
+    label: "IMB address, city or town?",
     type: "text",
     section: "Part 2: Relationship",
     placeholder: "City or town",
@@ -3935,7 +3935,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l60_Province",
     pdfKey: "pt2_l60_province",
-    label: "IMB address — province?",
+    label: "IMB address, province?",
     type: "text",
     section: "Part 2: Relationship",
     placeholder: "Province",
@@ -3945,7 +3945,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l60_PostalCode",
     pdfKey: "pt2_l60_postalcode",
-    label: "IMB address — postal code?",
+    label: "IMB address, postal code?",
     type: "text",
     section: "Part 2: Relationship",
     placeholder: "Postal code",
@@ -3955,7 +3955,7 @@ export const formFields: RichField[] = [
   {
     key: "pt2_l60_Country",
     pdfKey: "pt2_l60_country",
-    label: "IMB address — country?",
+    label: "IMB address, country?",
     type: "country",
     section: "Part 2: Relationship",
     placeholder: "Select a country",
@@ -4003,7 +4003,7 @@ export const formFields: RichField[] = [
     key: "pt3_l1_Checkboxes",
     pdfKey: "pt3_l1_checkboxes",
     label: "Have you ever been subject to a restraining order or protective order?",
-    hint: "This includes any temporary or permanent protection order — civil or criminal — issued against you. Answer honestly. A 'Yes' may require explanation but doesn't automatically disqualify you.",
+    hint: "This includes any temporary or permanent protection order, civil or criminal, issued against you. Answer honestly. A 'Yes' may require explanation but doesn't automatically disqualify you.",
     type: "radio",
     section: "Part 3: Other Information",
     options: [
@@ -4047,7 +4047,7 @@ export const formFields: RichField[] = [
     pdfKey: "pt3_l2b_checkboxes",
     label:
       "Have you ever been arrested or convicted of homicide, murder, manslaughter, rape, sexual exploitation, incest, torture, trafficking, kidnapping, or related crimes?",
-    hint: "Same rule applies — even sealed or cleared records must be disclosed.",
+    hint: "Same rule applies, even sealed or cleared records must be disclosed.",
     type: "radio",
     section: "Part 3: Other Information",
     options: [
@@ -4146,7 +4146,7 @@ export const formFields: RichField[] = [
   {
     key: "pt3_l4B_Describe",
     pdfKey: "pt3_l4b_describe",
-    label: "Describe each arrest, charge, or conviction — dates, charges, and outcomes?",
+    label: "Describe each arrest, charge, or conviction, dates, charges, and outcomes?",
     hint: "Be factual and complete. If you believe you were the victim in a protection order situation, explain and attach any supporting evidence.",
     example: "2015, DUI, fined $700, no jail time / 2018, petty theft, charges dismissed",
     type: "text",
@@ -4213,7 +4213,7 @@ export const formFields: RichField[] = [
   {
     key: "pt3_l0_PageNumber",
     pdfKey: "pt3_l0_pagenumber",
-    label: "Additional Information — page number?",
+    label: "Additional Information, page number?",
     type: "text",
     section: "Part 3: Other Information",
     placeholder: "Page number",
@@ -4253,7 +4253,7 @@ export const formFields: RichField[] = [
   {
     key: "pt4_l1_Checkbox",
     pdfKey: "pt4_l1_checkbox",
-    label: "Ethnicity — are you Hispanic or Latino?",
+    label: "Ethnicity, are you Hispanic or Latino?",
     hint: "This is a standard U.S. government question. 'Hispanic or Latino' refers to a person of Cuban, Mexican, Puerto Rican, South or Central American, or other Spanish culture or origin.",
     type: "radio",
     section: "Part 4: Biographic Information",
@@ -4274,8 +4274,8 @@ export const formFields: RichField[] = [
   {
     key: "pt4_l2_Checkbox",
     pdfKey: "pt4_l2_checkbox",
-    label: "Race — select all that apply?",
-    hint: "Select as many as apply to you. This is a standard government categorization — it doesn't affect your application.",
+    label: "Race, select all that apply?",
+    hint: "Select as many as apply to you. This is a standard government categorization, it doesn't affect your application.",
     type: "radio",
     section: "Part 4: Biographic Information",
     options: [
@@ -4319,7 +4319,7 @@ export const formFields: RichField[] = [
   {
     key: "pt4_l3_HeightFeet",
     pdfKey: "pt4_l3_heightfeet",
-    label: "Your height — feet?",
+    label: "Your height, feet?",
     find: "Your driver's license lists your height.",
     type: "text",
     section: "Part 4: Biographic Information",
@@ -4329,11 +4329,11 @@ export const formFields: RichField[] = [
       {
         key: "pt4_l3_HeightInches",
         pdfKey: "pt4_l3_heightinches",
-        label: "Height — inches?",
+        label: "Height, inches?",
         type: "text",
         section: "Part 4: Biographic Information",
         placeholder: "e.g. 8",
-        validate: (v) => (/^\d{1,2}$/.test(v) && Number(v) < 12 ? null : "Enter inches 0–11"),
+        validate: (v) => (/^\d{1,2}$/.test(v) && Number(v) < 12 ? null : "Enter inches 0-11"),
       },
     ],
   },
@@ -4522,7 +4522,7 @@ export const formFields: RichField[] = [
   {
     key: "pt4_l0_PageNumber",
     pdfKey: "pt4_l0_pagenumber",
-    label: "Additional Information (Part 4) — page number?",
+    label: "Additional Information (Part 4), page number?",
     type: "text",
     section: "Part 4: Biographic Information",
     placeholder: "Page number",
@@ -4601,7 +4601,7 @@ export const formFields: RichField[] = [
   {
     key: "pt5_l0_PageNumber",
     pdfKey: "pt5_l0_pagenumber",
-    label: "Additional Information (Part 5) — page number?",
+    label: "Additional Information (Part 5), page number?",
     type: "text",
     section: "Part 5: Your Signature",
     placeholder: "Page number",
@@ -4646,8 +4646,8 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 6: Interpreter",
     options: [
-      { value: "Yes", label: "Yes — I needed an interpreter" },
-      { value: "No", label: "No — I understood it in English myself" },
+      { value: "Yes", label: "Yes, I needed an interpreter" },
+      { value: "No", label: "No, I understood it in English myself" },
     ],
   },
   {
@@ -4727,7 +4727,7 @@ export const formFields: RichField[] = [
   {
     key: "pt6_l6_Signature",
     pdfKey: "pt6_l6_signature",
-    label: "Interpreter — type your full name as your signature.",
+    label: "Interpreter, type your full name as your signature.",
     help: "By signing, the interpreter certifies they are fluent in both English and the other language, and that they accurately interpreted every question and answer.",
     type: "text",
     section: "Part 6: Interpreter",
@@ -4758,7 +4758,7 @@ export const formFields: RichField[] = [
   {
     key: "pt6_l0_PageNumber",
     pdfKey: "pt6_l0_pagenumber",
-    label: "Additional Information (Part 6) — page number?",
+    label: "Additional Information (Part 6), page number?",
     type: "text",
     section: "Part 6: Interpreter",
     placeholder: "Page number",
@@ -4803,8 +4803,8 @@ export const formFields: RichField[] = [
     type: "radio",
     section: "Part 7: Preparer",
     options: [
-      { value: "Yes", label: "Yes — someone prepared it for me" },
-      { value: "No", label: "No — I filled it out myself" },
+      { value: "Yes", label: "Yes, someone prepared it for me" },
+      { value: "No", label: "No, I filled it out myself" },
     ],
   },
   {
@@ -4870,7 +4870,7 @@ export const formFields: RichField[] = [
   {
     key: "pt7_l6_SignatureofPreparer",
     pdfKey: "pt7_l6_signatureofpreparer",
-    label: "Preparer — type your full name as your signature.",
+    label: "Preparer, type your full name as your signature.",
     help: "By signing, the preparer certifies that they prepared this petition at the petitioner's request, and that the petitioner reviewed and confirmed everything is accurate.",
     type: "text",
     section: "Part 7: Preparer",
@@ -4891,7 +4891,7 @@ export const formFields: RichField[] = [
   {
     key: "pt7_l0_PageNumber",
     pdfKey: "pt7_l0_pagenumber",
-    label: "Additional Information (Part 7) — page number?",
+    label: "Additional Information (Part 7), page number?",
     type: "text",
     section: "Part 7: Preparer",
     placeholder: "Page number",

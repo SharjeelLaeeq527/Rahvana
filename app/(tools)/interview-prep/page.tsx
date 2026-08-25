@@ -4,37 +4,52 @@ import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-
 import { useRouter } from "next/navigation";
 import { ResultPage } from "./result/ResultPage";
 import { Loader } from "@/components/ui/spinner";
-
 import { InterviewPrepOutput } from "../../../lib/interview-prep/types";
-
 import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
 import { ReviewStep } from "@/app/components/interview-prep/review-step";
-import { CategorySelectionStep } from "@/app/components/interview-prep/category-selection-step";
+import {
+  CategorySelectionStep,
+  type CategoryWithPurchaseStatus,
+} from "@/app/components/interview-prep/category-selection-step";
 import { DynamicQuestionStep } from "@/app/components/interview-prep/dynamic-question-step";
-import CountrySelectionModal from "../../components/interview-prep/CountrySelectionModal";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
 import type { InterviewFormData } from "@/app/components/interview-prep/types";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
-import { NarrativeModal } from "../(visa)/221g-action-planner/components/NarrativeModal";
-import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
-import type {
-  InterviewCategoryConfig,
-  DynamicQuestionnaire,
-} from "@/data/interview-categories/schema";
+import type { DynamicQuestionnaire } from "@/data/interview-categories/schema";
 import { E, msg } from "@/lib/errors";
 
+type PurchaseRequiredAddon = {
+  id: string;
+  name: string;
+  price: number;
+};
+
+type PurchaseExhaustedData = {
+  addon_id: string;
+  message: string;
+};
+
+type PurchaseErrorResponse = {
+  success: false;
+  error: "PURCHASE_REQUIRED" | "PURCHASE_EXHAUSTED";
+  message?: string;
+  addon?: PurchaseRequiredAddon;
+  repurchase?: PurchaseExhaustedData;
+};
+
 export default function InterviewPreparation() {
-  const [selectedCategory, setSelectedCategory] = useState<InterviewCategoryConfig | null>(null);
+  const [entryMode, setEntryMode] = useState<"pending" | "tool" | "redirect">("pending");
+  const [selectedCategory, setSelectedCategory] = useState<CategoryWithPurchaseStatus | null>(null);
+
+  const [availableCategories, setAvailableCategories] = useState<CategoryWithPurchaseStatus[]>([]);
   const [questionnaire, setQuestionnaire] = useState<DynamicQuestionnaire | null>(null);
-  const [availableCategories, setAvailableCategories] = useState<InterviewCategoryConfig[]>([]);
-  const [showCountryModal, setShowCountryModal] = useState<boolean>(true);
   const [noDataMessage, setNoDataMessage] = useState<string | null>(null);
 
   const [step, setStep] = useState<number>(0);
@@ -62,6 +77,13 @@ export default function InterviewPreparation() {
   const [journeyId, setJourneyId] = useState<string | null>(null);
   const [isJourneySession, setIsJourneySession] = useState(false);
 
+  const [categoriesLoading, setCategoriesLoading] = useState(true);
+  const [selectedCountry, setSelectedCountry] = useState<string | null>("United States");
+
+  const [repurchaseAddonId, setRepurchaseAddonId] = useState<string | null>(null);
+
+  const purchaseReturnHandledRef = useRef(false);
+
   type RestorableSession = {
     id: string;
     category_slug: string;
@@ -81,6 +103,23 @@ export default function InterviewPreparation() {
 
   const { user } = useAuth();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
+  const { showToast } = useToast();
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const params = new URLSearchParams(window.location.search);
+    const hasJourneyOrSession = params.has("journey_id") || params.has("sessionId");
+    const isNewSessionFlow = params.get("newSession") === "1";
+
+    if (!hasJourneyOrSession && !isNewSessionFlow) {
+      setEntryMode("redirect");
+      router.replace("/interview-prep/my-sessions");
+      return;
+    }
+
+    setEntryMode("tool");
+  }, [router]);
 
   const saveProgressToProfile = (currentFormData = formData) => {
     if (!user) return;
@@ -147,46 +186,87 @@ export default function InterviewPreparation() {
   }, [profile, isProfileLoading, profileLoaded, formData]);
 
   // Load available categories based on selected country
-  const loadCategories = async (country: string) => {
+  const loadCategories = async (country: string): Promise<CategoryWithPurchaseStatus[]> => {
     try {
+      setCategoriesLoading(true);
       setLoadingMessage("Loading visa categories...");
       setLoading(true);
-      const response = await fetch(
-        `/api/interview-prep/categories?country=${encodeURIComponent(country)}`
-      );
-      const data = await response.json();
 
-      if (data.success) {
-        if (data.categories && data.categories.length > 0) {
-          setAvailableCategories(data.categories);
-          setNoDataMessage(null);
-          setShowCountryModal(false);
-        } else {
-          setAvailableCategories([]);
-          setNoDataMessage("No Visa Categories available for your selected country right now.");
+      const params = new URLSearchParams(window.location.search);
+      const shouldFilterExistingSessions = params.get("newSession") === "1";
+
+      const [categoriesResponse, sessionsResponse] = await Promise.all([
+        fetch(`/api/interview-prep/categories?country=${encodeURIComponent(country)}`),
+        shouldFilterExistingSessions ? fetch("/api/interview-prep/user-sessions") : null,
+      ]);
+
+      const data = await categoriesResponse.json();
+
+      if (
+        categoriesResponse.ok &&
+        data.success &&
+        Array.isArray(data.categories) &&
+        data.categories.length > 0
+      ) {
+        const loadedCategories = data.categories as CategoryWithPurchaseStatus[];
+        let filteredCategories = loadedCategories;
+
+        if (shouldFilterExistingSessions && sessionsResponse?.ok) {
+          const sessionsData = await sessionsResponse.json();
+          const usedCategorySlugs = new Set<string>(
+            Array.isArray(sessionsData.sessions)
+              ? sessionsData.sessions
+                  .map((session: { category_slug?: string }) => session.category_slug)
+                  .filter((slug: string | undefined): slug is string => Boolean(slug))
+              : []
+          );
+
+          filteredCategories = loadedCategories.filter(
+            (category) => !usedCategorySlugs.has(category.categorySlug)
+          );
         }
-      } else {
-        setAvailableCategories([]);
-        setNoDataMessage("No Visa Categories available for your selected country right now.");
+
+        setAvailableCategories(filteredCategories);
+        setNoDataMessage(
+          filteredCategories.length === 0
+            ? "You already have sessions for every available category in this country."
+            : null
+        );
+
+        return filteredCategories;
       }
+
+      setAvailableCategories([]);
+      setNoDataMessage(
+        shouldFilterExistingSessions
+          ? "You already have sessions for every available category in this country."
+          : "No Visa Categories available for your selected country right now."
+      );
+
+      return [];
     } catch (err) {
       console.error("Error loading categories:", err);
+
       setError(msg(E.TOOL_INTERVIEW_CATEGORIES_FAILED));
       setNoDataMessage(null);
+
+      return [];
     } finally {
+      setCategoriesLoading(false);
       setLoading(false);
       setLoadingMessage("");
     }
   };
 
-  // Handle country selection from modal
-  const handleCountrySelected = (country: string) => {
-    loadCategories(country);
-  };
+  // Fetch categories
+  useEffect(() => {
+    if (!selectedCountry) return;
+    void loadCategories(selectedCountry);
+  }, []);
 
   const restoreSessionData = async (
     session: RestorableSession,
-    getCategoryFn: (slug: string) => InterviewCategoryConfig | undefined
+    getCategoryFn: (slug: string) => CategoryWithPurchaseStatus | undefined
   ) => {
     try {
       setSessionId(session.id);
@@ -245,13 +325,36 @@ export default function InterviewPreparation() {
 
     const restoreIncompleteSession = async () => {
       try {
+        const urlParams = new URLSearchParams(window.location.search);
+        const journeyId = urlParams.get("journey_id");
+        const sessionIdParam = urlParams.get("sessionId");
+        const isNewSessionFlow = urlParams.get("newSession") === "1";
+
+        if (!isNewSessionFlow && !journeyId && !sessionIdParam) {
+          setSessionRestorationAttempted(true);
+          return;
+        }
+
+        if (isNewSessionFlow && !journeyId && !sessionIdParam) {
+          setSessionSource("tool");
+          setIsJourneySession(false);
+          setSessionRestorationAttempted(true);
+          setLoading(false);
+          setLoadingMessage("");
+          return;
+        }
+
         // Set loading immediately to prevent modals from flashing
         setLoading(true);
         setLoadingMessage("Checking for existing sessions...");
 
+        console.log("Journey ID from URL:", journeyId);
+
         // FIRST: Check for active journey session (IR-1)
         // Journey sessions take priority over tool-based sessions
-        const journeyResponse = await fetch(`/api/interview-prep/active-journey-session`);
+        const journeyResponse = await fetch(
+          `/api/interview-prep/active-journey-session?journey_id=${journeyId}`
+        );
         const journeyData = await journeyResponse.json();
 
         if (journeyData.success && journeyData.hasActiveJourney && journeyData.session) {
@@ -293,7 +396,6 @@ export default function InterviewPreparation() {
                   sections: catData.questionnaire?.sections || [],
                 });
                 setAvailableCategories(categoriesData.categories);
-                setShowCountryModal(false);
 
                 // Restore form data if available
                 if (journeyData.session.answers && Array.isArray(journeyData.session.answers)) {
@@ -340,9 +442,7 @@ export default function InterviewPreparation() {
         setIsJourneySession(false);
 
         // Check for sessionId query parameter first (for completed session revisit)
-        const urlParams = new URLSearchParams(window.location.search);
-        const sessionIdParam = urlParams.get("sessionId");
-
+        // const urlParams = new URLSearchParams(window.location.search);
         if (sessionIdParam) {
           setLoading(true);
           setLoadingMessage("Loading your completed interview...");
@@ -471,6 +571,65 @@ export default function InterviewPreparation() {
     }
   }, [sessionRestorationAttempted, initialCheckDone]);
 
+  useEffect(() => {
+    if (!initialCheckDone) {
+      return;
+    }
+
+    if (sessionId) {
+      return;
+    }
+
+    if (purchaseReturnHandledRef.current) {
+      return;
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const purchaseSuccess = params.get("purchase_success") === "true";
+
+    if (!purchaseSuccess) {
+      return;
+    }
+
+    purchaseReturnHandledRef.current = true;
+
+    const restorePurchasedCategory = async () => {
+      const pendingCategory = localStorage.getItem("interview_prep_pending_category");
+
+      const pendingCountry =
+        localStorage.getItem("interview_prep_pending_country") ||
+        localStorage.getItem("interview_prep_selected_country") ||
+        selectedCountry ||
+        "all";
+
+      if (!pendingCategory) {
+        router.replace("/interview-prep");
+        return;
+      }
+
+      const refreshedCategories = await loadCategories(pendingCountry);
+
+      const purchasedCategory = refreshedCategories.find(
+        (category) => category.categorySlug === pendingCategory
+      );
+
+      if (purchasedCategory) {
+        setSelectedCategory(purchasedCategory);
+        setError(null);
+        setRepurchaseAddonId(null);
+        setStep(0);
+      }
+
+      localStorage.removeItem("interview_prep_pending_category");
+
+      localStorage.removeItem("interview_prep_pending_country");
+
+      router.replace("/interview-prep");
+    };
+
+    void restorePurchasedCategory();
+  }, [initialCheckDone, sessionId, router, selectedCountry]);
+
   const handleCloseIntro = () => {
     if (dontShowAgain && typeof window !== "undefined") {
       localStorage.setItem("dont_show_interview_narrative", "true");
@@ -528,9 +687,55 @@ export default function InterviewPreparation() {
   };
 
   // Handle category selection
-  const handleCategorySelect = (category: InterviewCategoryConfig) => {
+  const handleCategorySelect = (category: CategoryWithPurchaseStatus) => {
     setSelectedCategory(category);
     setError(null);
+    setRepurchaseAddonId(null);
+  };
+
+  const redirectToInterviewPrepPurchase = (categoryAddonId: string) => {
+    if (!selectedCategory) {
+      return;
+    }
+
+    const categorySlug = selectedCategory.categorySlug;
+
+    localStorage.setItem("interview_prep_pending_category", categorySlug);
+
+    if (selectedCountry) {
+      localStorage.setItem("interview_prep_pending_country", selectedCountry);
+    }
+
+    const params = new URLSearchParams({
+      mode: "tools",
+
+      // Keep the category-specific entitlement ID.
+      addons: categoryAddonId,
+
+      step: "review",
+      interview_category: categorySlug,
+    });
+
+    router.push(`/pricing?${params.toString()}`);
+  };
+
+  const handlePurchaseRequired = (addon: PurchaseRequiredAddon) => {
+    setError(null);
+    setRepurchaseAddonId(null);
+
+    redirectToInterviewPrepPurchase(addon.id);
+  };
+
+  const handlePurchaseExhausted = (repurchase: PurchaseExhaustedData) => {
+    setRepurchaseAddonId(repurchase.addon_id);
+    setError(null);
+
+    showToast(
+      "You have already used your purchased interview prep session for this category. Purchase another session to continue.",
+      "info"
+    );
+
+    redirectToInterviewPrepPurchase(repurchase.addon_id);
   };
 
   // Handle progressing from category selection to questions
@@ -541,6 +746,15 @@ export default function InterviewPreparation() {
     }
 
     try {
+      if (selectedCategory.purchaseExhausted && selectedCategory.addonId) {
+        showToast(
+          "You have already used your purchased interview prep session for this category. Purchase another session to continue.",
+          "info"
+        );
+        redirectToInterviewPrepPurchase(selectedCategory.addonId);
+        return;
+      }
+
       setLoading(true);
 
       const categorySlug = selectedCategory.categorySlug;
@@ -559,6 +773,25 @@ export default function InterviewPreparation() {
       });
 
       const sessionResult = await sessionResponse.json();
+
+      // Handle purchase required (402 status)
+      if (sessionResponse.status === 402) {
+        const purchaseError = sessionResult as PurchaseErrorResponse;
+
+        if (purchaseError.error === "PURCHASE_REQUIRED" && purchaseError.addon) {
+          handlePurchaseRequired(purchaseError.addon);
+          return;
+        }
+
+        if (purchaseError.error === "PURCHASE_EXHAUSTED" && purchaseError.repurchase) {
+          handlePurchaseExhausted(purchaseError.repurchase);
+          return;
+        }
+
+        setError(purchaseError.message || msg(E.TOOL_INTERVIEW_SESSION_FAILED));
+
+        return;
+      }
 
       if (!sessionResponse.ok || !sessionResult.success) {
         setError(msg(E.TOOL_INTERVIEW_SESSION_FAILED));
@@ -779,6 +1012,15 @@ export default function InterviewPreparation() {
       );
     }
 
+    if (categoriesLoading) {
+      return (
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <Loader size="md" />
+          <p className="text-slate-600">{loadingMessage || "Loading visa categories..."}</p>
+        </div>
+      );
+    }
+
     // Step 0: Category Selection
     if (step === 0) {
       return (
@@ -788,9 +1030,13 @@ export default function InterviewPreparation() {
           onSelectCategory={handleCategorySelect}
           onNext={handleCategorySelectionNext}
           onBack={() => {
-            // Back button on category selection (first step)
-            router.push("/");
+            setSelectedCategory(null);
+            setError(null);
+            setAvailableCategories([]);
           }}
+          onPurchaseAgain={
+            repurchaseAddonId ? () => redirectToInterviewPrepPurchase(repurchaseAddonId) : undefined
+          }
           error={error}
         />
       );
@@ -823,6 +1069,7 @@ export default function InterviewPreparation() {
           onSubmit={handleSubmit}
           onBack={prevStep}
           categorySlug={questionnaire.categorySlug}
+          sections={questionnaire.sections}
         />
       );
     }
@@ -1072,93 +1319,73 @@ export default function InterviewPreparation() {
 
   return (
     <>
-      {initialCheckDone && !sessionId && (
-        <NarrativeModal
-          isOpen={showWhatsThis}
-          onClose={handleCloseIntro}
-          onComplete={handleCloseIntro}
-          dontShowAgain={dontShowAgain}
-          onDontShowAgainChange={setDontShowAgain}
-          variant="interview-prep"
-        />
-      )}
-
-      {initialCheckDone && !sessionId && (
-        <CountrySelectionModal
-          isOpen={showCountryModal}
-          onCountrySelected={handleCountrySelected}
-          isLoading={loading && showCountryModal}
-          noDataMessage={noDataMessage || undefined}
-        />
-      )}
-
-      <div className="site-main-px site-main-py mt-12">
-        <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">Interview Preparation Tool</h1>
-          <p className="text-slate-600">
-            {selectedCategory
-              ? selectedCategory.description
-              : "Prepare for your visa interview with personalized questions"}
-          </p>
-          <div className="flex justify-center mt-4">
-            <QuickAccessButton
-              item={{
-                id: "interview-prep",
-                title: "Interview Prep",
-                href: "/interview-prep",
-                icon_name: "MessageSquare",
-              }}
-            />
-          </div>
+      {entryMode !== "tool" ? (
+        <div className="site-main-px site-main-py mt-12 flex min-h-[60vh] items-center justify-center">
+          <Loader size="md" text="Loading interview prep..." />
         </div>
-
-        {renderProgressSections()}
-
-        <Card className="p-6 shadow-lg">
-          {!initialCheckDone ? (
-            <div className="flex flex-col items-center justify-center py-12 space-y-4">
-              <Loader size="md" />
-              <p className="text-slate-600">{loadingMessage || "Loading..."}</p>
+      ) : (
+        <>
+          <div className="site-main-px site-main-py mt-12">
+            <div className="text-center mb-8">
+              <h1 className="text-3xl font-bold text-slate-900 mb-2">Interview Preparation Tool</h1>
+              <p className="text-slate-600">
+                {selectedCategory
+                  ? selectedCategory.description
+                  : "Prepare for your visa interview with personalized questions"}
+              </p>
             </div>
-          ) : (
-            renderStep()
-          )}
-        </Card>
-      </div>
 
-      {/* Session Restoration Confirmation Modal */}
-      <ConfirmationModal
-        open={restoreSessionModalOpen}
-        onOpenChange={(open) => {
-          setRestoreSessionModalOpen(open);
-          if (!open) setPendingRestoreSession(null);
-        }}
-        title="Resume Interview Session"
-        description={`We found an incomplete interview session from ${pendingRestoreSession?.updated_at ? new Date(pendingRestoreSession.updated_at).toLocaleDateString() : ""}. Would you like to continue where you left off?`}
-        confirmText="Resume Session"
-        confirmVariant="primary"
-        onConfirm={async () => {
-          if (pendingRestoreSession) {
-            try {
-              setLoading(true);
-              setLoadingMessage("Restoring your interview session...");
-              localStorage.setItem("interviewPrepSessionId", pendingRestoreSession.id);
+            {renderProgressSections()}
 
-              await restoreSessionData(pendingRestoreSession, (categorySlug: string) => {
-                const category = availableCategories.find((c) => c.categorySlug === categorySlug);
-                return category;
-              });
+            <Card className="p-6 shadow-lg">
+              {!initialCheckDone ? (
+                <div className="flex flex-col items-center justify-center py-12 space-y-4">
+                  <Loader size="md" />
+                  <p className="text-slate-600">{loadingMessage || "Loading..."}</p>
+                </div>
+              ) : (
+                renderStep()
+              )}
+            </Card>
+          </div>
 
-              setRestoreSessionModalOpen(false);
-            } catch (error) {
-              console.error("Error restoring session:", error);
-              setRestoreSessionModalOpen(false);
-            } finally {
-              setLoading(false);
-            }
-          }
-        }}
-      />
+          {/* Session Restoration Confirmation Modal */}
+          <ConfirmationModal
+            open={restoreSessionModalOpen}
+            onOpenChange={(open) => {
+              setRestoreSessionModalOpen(open);
+              if (!open) setPendingRestoreSession(null);
+            }}
+            title="Resume Interview Session"
+            description={`We found an incomplete interview session from ${pendingRestoreSession?.updated_at ? new Date(pendingRestoreSession.updated_at).toLocaleDateString() : ""}. Would you like to continue where you left off?`}
+            confirmText="Resume Session"
+            confirmVariant="primary"
+            onConfirm={async () => {
+              if (pendingRestoreSession) {
+                try {
+                  setLoading(true);
+                  setLoadingMessage("Restoring your interview session...");
+                  localStorage.setItem("interviewPrepSessionId", pendingRestoreSession.id);
+
+                  await restoreSessionData(pendingRestoreSession, (categorySlug: string) => {
+                    const category = availableCategories.find(
+                      (c) => c.categorySlug === categorySlug
+                    );
+                    return category;
+                  });
+
+                  setRestoreSessionModalOpen(false);
+                } catch (error) {
+                  console.error("Error restoring session:", error);
+                  setRestoreSessionModalOpen(false);
+                } finally {
+                  setLoading(false);
+                }
+              }
+            }}
+          />
+        </>
+      )}
     </>
   );
 }

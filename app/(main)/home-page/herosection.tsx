@@ -249,7 +249,7 @@ function PoseEffect({ pose }) {
             whiteSpace: "nowrap",
           }}
         >
-          Hmm…
+          Hmm...
         </motion.div>
       </div>
     );
@@ -802,7 +802,8 @@ const NARR_BEATS = [
   {
     eyebrow: "You just wanted a simple answer.",
     lines: [{ text: "WHERE TO START?" }],
-    sub: "Spouse Visa  ·  IR-1",
+    sub: "Spouse Visa · IR-1 ",
+    // sub: "Family Visas  ·  IR-1  . IR-5",
   },
   {
     eyebrow: "But one thing leads to ten others.",
@@ -1196,7 +1197,8 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
 
       setSubmit(false);
       setCharPose("standing");
-      const q1 = "how do I bring my spouse to the US";
+      const q1 = "how do I bring my spouse to the U.S?";
+      // const q1 = "how do I bring my family to the US";
       for (let i = 0; i < q1.length; i++) {
         if (!isAlive || !aliveRef.current) return;
         if (i === 3) setCharPose("thinking");
@@ -1208,7 +1210,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
       setSubmit(true);
       setCharPose("walking");
       cam({ zoom: 1.05, x: 10, y: -30, rotate: -1.5 }, 1.2); // was 0.9
-      setTabs((p) => [...p, { id: "spouse", label: "Spouse Visa" }]);
+      setTabs((p) => [...p, { id: "spouse", label: "Family Visa" }]);
       setActive("spouse");
       wave(1);
       await sleep(1200); // was 800
@@ -1713,7 +1715,7 @@ export default function HeroAnimation({ skipToEnd = false, onComplete } = {}) {
                           >
                             {query.length === 0 && !submitted ? (
                               <span style={{ color: "#9ca3af" }}>
-                                Ask anything about immigration…
+                                Ask anything about immigration...
                               </span>
                             ) : (
                               query
@@ -2290,7 +2292,8 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip, isVisible = true 
           <motion.button
             type="button"
             onClick={() => {
-              window.location.href = "/visa-category/ir-category/ir1-journey";
+              window.location.href = "/visa-category/ir1-journey";
+              // window.location.href = hasJourney ? "/my-journeys" : "/visa-category";
             }}
             initial={{ opacity: 0, y: 8 }}
             animate={{ opacity: 1, y: 0 }}
@@ -2321,7 +2324,6 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip, isVisible = true 
             }}
           >
             {hasJourney ? "Resume your journey" : "Start your journey"}
-            {/* <Icons.ArrowRight size={16} /> */}
           </motion.button>
         </div>
 
@@ -2340,8 +2342,8 @@ function HeroFrame({ typeText, isMobile, isTablet, vw, onSkip, isVisible = true 
               ? {
                   marginTop: 36,
                   marginBottom: 36,
-                  top: "13%",
-                  left: "33%",
+                  top: "17%",
+                  left: "31%",
                   width: "75%",
                 }
               : {

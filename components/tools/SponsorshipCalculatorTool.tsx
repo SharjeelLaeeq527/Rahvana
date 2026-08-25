@@ -21,6 +21,7 @@ import {
   ChevronDown,
   ChevronUp,
 } from "lucide-react";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 // --- CONSTANTS ---
@@ -85,7 +86,12 @@ export const getSponsorshipResult = (d: any) => {
       isSelfPetition: true,
       householdSize: 1,
       requiredIncome: 0,
-      totalIncome: 0,
+      totalIncome: d.currentAnnualIncome || 0,
+      primaryIncome: d.currentAnnualIncome || 0,
+      hmIncome: 0,
+      jsIncome: 0,
+      assetIncome: 0,
+      shortfall: 0,
       forms: [
         {
           id: "i864w",
@@ -123,7 +129,7 @@ export const getSponsorshipResult = (d: any) => {
   const usableAssets = (d.assetValue || 0) / assetMultiplier;
 
   const totalIncome = primaryIncome + hmIncome + jsIncome + usableAssets;
-  const isEligible = totalIncome >= requiredIncome || d.sponsorDeceased; // Substitute sponsor logic simplified
+  const isEligible = totalIncome >= requiredIncome;
 
   const forms: any[] = [];
   if (d.sponsorDeceased) {
@@ -204,6 +210,17 @@ export default function SponsorshipCalculatorTool({
 }: SponsorshipCalculatorToolProps) {
   const [stepIdx, setStepIdx] = useState(0);
   const [expandedOptions, setExpandedOptions] = useState<Record<string, boolean>>({});
+
+  React.useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [isOpen]);
   const [data, setData] = useState({
     sponsorStatus: initialData?.sponsorStatus || "",
     isMilitary: initialData?.isMilitary ?? null,
@@ -358,7 +375,7 @@ export default function SponsorshipCalculatorTool({
                     Sponsorship Calculator · Step 1 of 11
                   </div>
                   <h2 className="text-[clamp(22px,3.5vw,28px)] font-black text-[#0c1b33] mb-2 leading-[1.3]">
-                    Welcome to the Integrated Sponsorship Calculator
+                    Welcome to the Sponsorship Calculator
                   </h2>
                   <p className="text-[14px] text-[#3a4f63] leading-[1.7] mb-6">
                     This tool determines your sponsorship strategy based on USCIS requirements. We
@@ -950,7 +967,7 @@ export default function SponsorshipCalculatorTool({
 
                       {/* UPDATED DESCRIPTION */}
                       <p className="text-[11px] text-slate-500 mt-2">
-                        Adjusted Gross Income (AGI) — Line 11 of your most recent IRS Form 1040.
+                        Adjusted Gross Income (AGI), Line 11 of your most recent IRS Form 1040.
                       </p>
                     </div>
                   </div>
@@ -995,7 +1012,7 @@ export default function SponsorshipCalculatorTool({
                         </span>
                       </div>
                       <div className="text-3xl font-black text-slate-900 mb-1">
-                        ${result.primaryIncome.toLocaleString()} / ${result.requiredIncome.toLocaleString()}
+                        ${(result.primaryIncome ?? 0).toLocaleString()} / ${(result.requiredIncome ?? 0).toLocaleString()}
                       </div>
                       <p className="text-[13px] text-slate-600 font-medium">
                         {result.isEligible
@@ -1080,18 +1097,20 @@ export default function SponsorshipCalculatorTool({
                             data.householdMembers.map((m: any) => (
                               <div key={m.id} className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                                 <div className="flex gap-2 mb-3">
-                                  <select 
+                                  <CustomDropdown
                                     value={m.relationship}
-                                    onChange={(e) => updateHouseholdMember(m.id, {relationship: e.target.value})}
-                                    className="flex-1 p-2 text-sm border-2 border-slate-100 rounded-lg bg-slate-50 focus:border-purple-200 outline-none"
-                                  >
-                                    <option value="">Relationship...</option>
-                                    <option value="Spouse">Spouse</option>
-                                    <option value="Child">Child</option>
-                                    <option value="Parent">Parent</option>
-                                    <option value="Sibling">Sibling</option>
-                                    <option value="Other Living in Household">Other Relative</option>
-                                  </select>
+                                    onChange={(value) => updateHouseholdMember(m.id, { relationship: value })}
+                                    options={[
+                                      { value: "", label: "Relationship..." },
+                                      { value: "Spouse", label: "Spouse" },
+                                      { value: "Child", label: "Child" },
+                                      { value: "Parent", label: "Parent" },
+                                      { value: "Sibling", label: "Sibling" },
+                                      { value: "Other Living in Household", label: "Other Relative" },
+                                    ]}
+                                    placeholder="Relationship..."
+                                    className="flex-1 [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-slate-50"
+                                  />
                                   <button onClick={() => removeHouseholdMember(m.id)} className="p-2 text-red-300 hover:bg-red-50 rounded-lg"><Trash2 size={16} /></button>
                                 </div>
                                 <input 
@@ -1274,8 +1293,8 @@ export default function SponsorshipCalculatorTool({
                           {result.isEligible ? "ELIGIBLE \u2713" : "NOT ELIGIBLE \u2717"}
                         </div>
                         <p className="text-[14px] text-slate-600 leading-relaxed font-medium">
-                          Total Household Income: <strong className="text-[#0c1b33] text-lg">${result.totalIncome.toLocaleString()}</strong><br/>
-                          Required (Household of {result.householdSize}): <strong className="text-[#0c1b33] text-lg">${result.requiredIncome.toLocaleString()}</strong>
+                          Total Household Income: <strong className="text-[#0c1b33] text-lg">${(result.totalIncome ?? 0).toLocaleString()}</strong><br/>
+                          Required (Household of {result.householdSize}): <strong className="text-[#0c1b33] text-lg">${(result.requiredIncome ?? 0).toLocaleString()}</strong>
                         </p>
                       </div>
 

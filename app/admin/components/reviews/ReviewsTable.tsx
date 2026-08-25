@@ -3,17 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Star, Check, X, Trash2, RefreshCw, BadgeCheck, MessageSquareText } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import type { AdminToolReview, ToolReviewStatus } from "@/types/reviews";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 type Filter = "pending" | "approved" | "rejected" | "all";
 
@@ -92,17 +86,17 @@ export default function ReviewsTable() {
       {/* Controls */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Select value={filter} onValueChange={(v) => setFilter(v as Filter)}>
-            <SelectTrigger className="w-[160px]">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="pending">Pending</SelectItem>
-              <SelectItem value="approved">Approved</SelectItem>
-              <SelectItem value="rejected">Rejected</SelectItem>
-              <SelectItem value="all">All</SelectItem>
-            </SelectContent>
-          </Select>
+          <CustomDropdown
+            value={filter}
+            onChange={(value) => setFilter(value as Filter)}
+            options={[
+              { value: "pending", label: "Pending" },
+              { value: "approved", label: "Approved" },
+              { value: "rejected", label: "Rejected" },
+              { value: "all", label: "All" },
+            ]}
+            className="w-[160px] [&_button]:w-full [&_button]:min-w-0"
+          />
           {filter === "pending" && pendingCount > 0 && (
             <Badge className="bg-amber-100 text-amber-800">{pendingCount} awaiting</Badge>
           )}
@@ -140,7 +134,7 @@ export default function ReviewsTable() {
                       )}
                     </div>
                     <div className="text-xs text-muted-foreground">
-                      {r.email || "—"}
+                      {r.email || ""}
                       {r.location ? ` · ${r.location}` : ""}
                     </div>
                   </div>

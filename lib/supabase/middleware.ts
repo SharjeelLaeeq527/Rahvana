@@ -27,6 +27,72 @@ const supabaseAdmin = createClient(
 
 export async function updateSession(request: NextRequest) {
   const response = NextResponse.next();
+  const pathname = request.nextUrl.pathname;
+
+  // =============================
+  // Route Definitions
+  // =============================
+  const protectedRoutes = [
+    "/user-dashboard",
+    "/complete-profile",
+    "/profile",
+    "/settings",
+    "/portal-wallet",
+    "/221g-action-planner",
+    "/visa-case-strength-checker",
+    "/visa-case-strength-checker/my-cases",
+    "/document-vault",
+    "/passport",
+    "/visa-forms",
+    "/signature-image-processing",
+    "/affidavit-support-calculator",
+    "/visa-checker",
+    "/visa-eligibility",
+    "/visa-category/ir1-journey",
+    "/visa-category/ir5-journey",
+    "/interview-prep",
+    "/interview-prep/my-sessions",
+    "/document-translation",
+    "/document-translation/my-requests",
+    "/document-translation/request/[id]",
+    "/user-dashboard-v2",
+    "/courier-registration",
+    "/view-security-questions",
+    "/pdf-processing",
+    "/police-verification",
+    "/police-verification/apply",
+    "/case-status",
+    "/book-appointment",
+    "/interview-prep/result",
+    "/visa-forms/[formCode]/wizard",
+    "/visa-checker/result",
+  ];
+
+  const adminRoutes = ["/admin"];
+  const authRoutes = ["/login", "/signup"];
+  const adminAuthRoutes = ["/admin-login"];
+
+  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
+
+  const isAdminRoute =
+    adminRoutes.some((route) => pathname.startsWith(route)) && !adminAuthRoutes.includes(pathname);
+
+  const isAuthRoute = authRoutes.includes(pathname);
+  const isAdminAuthRoute = adminAuthRoutes.includes(pathname);
+
+  // =============================
+  // Admin Route Protection
+  // =============================
+  const isApiAdminRoute = pathname.startsWith("/api/admin");
+
+  const needsAuthCheck =
+    isProtectedRoute || isAdminRoute || isApiAdminRoute || isAuthRoute || isAdminAuthRoute;
+
+  // Optimize: Skip auth checks and API calls on completely public routes.
+  // This avoids costly network requests to Supabase Auth on every static asset/page and prevents 504 Middleware Timeouts.
+  if (!needsAuthCheck) {
+    return response;
+  }
 
   // =============================
   // Supabase Server Client
@@ -52,50 +118,6 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
-  const pathname = request.nextUrl.pathname;
-
-  // =============================
-  // Route Definitions
-  // =============================
-  const protectedRoutes = [
-    "/user-dashboard",
-    // "/dashboard",
-    "/complete-profile",
-    "/profile",
-    "/settings",
-    "/portal-wallet",
-    "/221g-action-planner",
-    "/visa-case-strength-checker",
-    "/visa-case-strength-checker/my-cases",
-    "/document-vault",
-    "/passport",
-    "/visa-forms",
-    "/signature-image-processing",
-    "/affidavit-support-calculator",
-    "/visa-checker",
-    "/visa-eligibility",
-    "/visa-category/ir-category/ir1-journey",
-    "/interview-prep",
-    "/interview-prep/my-sessions",
-  ];
-
-  const adminRoutes = ["/admin"];
-  const authRoutes = ["/login", "/signup"];
-  const adminAuthRoutes = ["/admin-login"];
-
-  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route));
-
-  const isAdminRoute =
-    adminRoutes.some((route) => pathname.startsWith(route)) && !adminAuthRoutes.includes(pathname);
-
-  const isAuthRoute = authRoutes.includes(pathname);
-  const isAdminAuthRoute = adminAuthRoutes.includes(pathname);
-
-  // =============================
-  // Admin Route Protection
-  // =============================
-  const isApiAdminRoute = pathname.startsWith("/api/admin");
 
   if (isAdminRoute || isApiAdminRoute) {
     if (!user) {

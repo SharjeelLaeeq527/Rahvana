@@ -7,7 +7,7 @@ import type { QuestionnaireConfig } from "./types";
 
 export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
   id: "ir1-doc-questionnaire",
-  title: "Personalize Your Document Checklist",
+  title: "IR-1 / CR-1",
   subtitle:
     "Answer a few quick questions so we can build a document list tailored to your specific situation. This only takes a minute.",
 
@@ -25,11 +25,11 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         "If the petitioner was married before, proof of how that marriage ended is legally required by USCIS.",
       options: [
         {
-          label: "Yes — the petitioner was previously married",
+          label: "Yes, the petitioner was previously married",
           value: "yes",
         },
         {
-          label: "No — this is the petitioner's first marriage",
+          label: "No, this is the petitioner's first marriage",
           value: "no",
         },
       ],
@@ -40,15 +40,15 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       id: "petitioner_marriage_end",
       question: "How did the petitioner's previous marriage end?",
       helper:
-        "This determines which termination document to include — a divorce decree or a death certificate.",
+        "This determines which termination document to include, a divorce decree or a death certificate.",
       visibleWhen: [{ questionId: "prior_marriage_petitioner", requiredValue: "yes" }],
       options: [
         {
-          label: "Divorce — a final divorce decree was issued",
+          label: "Divorce, a final divorce decree was issued",
           value: "divorce",
         },
         {
-          label: "Death — the former spouse passed away",
+          label: "Death, the former spouse passed away",
           value: "death",
         },
       ],
@@ -64,11 +64,11 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         "If the beneficiary had a prior marriage, proof of termination is required for visa processing.",
       options: [
         {
-          label: "Yes — the beneficiary was previously married",
+          label: "Yes, the beneficiary was previously married",
           value: "yes",
         },
         {
-          label: "No — this is the beneficiary's first marriage",
+          label: "No, this is the beneficiary's first marriage",
           value: "no",
         },
       ],
@@ -79,15 +79,15 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       id: "beneficiary_marriage_end",
       question: "How did the beneficiary's previous marriage end?",
       helper:
-        "We'll add the correct termination document based on your answer — divorce decree or death certificate.",
+        "We'll add the correct termination document based on your answer, divorce decree or death certificate.",
       visibleWhen: [{ questionId: "prior_marriage_beneficiary", requiredValue: "yes" }],
       options: [
         {
-          label: "Divorce — a final divorce decree was issued",
+          label: "Divorce, a final divorce decree was issued",
           value: "divorce",
         },
         {
-          label: "Death — the former spouse passed away",
+          label: "Death, the former spouse passed away",
           value: "death",
         },
       ],
@@ -101,11 +101,11 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         "Children's documents may be needed for the petition, even if they are not immigrating with the beneficiary right now.",
       options: [
         {
-          label: "Yes — the beneficiary has children under 21",
+          label: "Yes, the beneficiary has children under 21",
           value: "yes",
         },
         {
-          label: "No — no children, or all children are 21 or older",
+          label: "No, no children, or all children are 21 or older",
           value: "no",
         },
       ],
@@ -116,14 +116,14 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       id: "name_change",
       question: "Has either spouse ever legally changed their name (for any reason)?",
       helper:
-        "If any legal name has changed — through marriage, court order, or other means — official documentation is required.",
+        "If any legal name has changed, through marriage, court order, or other means, official documentation is required.",
       options: [
         {
-          label: "Yes — at least one spouse has had a legal name change",
+          label: "Yes, at least one spouse has had a legal name change",
           value: "yes",
         },
         {
-          label: "No — neither spouse has changed their legal name",
+          label: "No, neither spouse has changed their legal name",
           value: "no",
         },
       ],
@@ -162,11 +162,11 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
         "If yes, military service records with a certified English translation are required for the visa application.",
       options: [
         {
-          label: "Yes — the beneficiary has military service history",
+          label: "Yes, the beneficiary has military service history",
           value: "yes",
         },
         {
-          label: "No — no military service",
+          label: "No, no military service",
           value: "no",
         },
       ],
@@ -177,16 +177,16 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
     {
       id: "criminal_history",
       question:
-        "Has the beneficiary ever been arrested, charged, or convicted of any crime — anywhere in the world?",
+        "Has the beneficiary ever been arrested, charged, or convicted of any crime, anywhere in the world?",
       helper:
         "Even minor or old matters can affect eligibility. Court/disposition records will be needed if applicable.",
       options: [
         {
-          label: "Yes — there is at least one arrest, charge, or conviction",
+          label: "Yes, there is at least one arrest, charge, or conviction",
           value: "yes",
         },
         {
-          label: "No — no criminal history at all",
+          label: "No, no criminal history at all",
           value: "no",
         },
       ],
@@ -220,7 +220,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
     {
       id: "doc_nikah_nama",
       name: "Nikah Nama (Original)",
-      subtitle: "Islamic marriage contract — the foundational marriage document",
+      subtitle: "Islamic marriage contract, the foundational marriage document",
       tag: "beneficiary",
       guideUrl: "/guides/nikah-nama-guide",
       icon: "FileText",
@@ -251,7 +251,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
       id: "doc_translations",
       name: "Translations",
       subtitle: "Certified English translations of non-English documents",
-      tag: "third party",
+      tag: "both",
       guideUrl: "/guides",
       icon: "Globe",
       group: "Required if Applicable",
@@ -260,7 +260,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
     {
       id: "doc_birth_cert",
       name: "Birth Certificate",
-      subtitle: "Beneficiary's Pakistan birth record — needed at consular stage",
+      subtitle: "Beneficiary's Pakistan birth record, needed at consular stage",
       tag: "beneficiary",
       guideUrl: "/guides/birth-certificate-guide",
       icon: "ClipboardList",
@@ -270,7 +270,7 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
     {
       id: "doc_police_cert",
       name: "Police Character Certificate",
-      subtitle: "Pakistan PCC — required at consular stage",
+      subtitle: "Pakistan PCC, required at consular stage",
       tag: "beneficiary",
       guideUrl: "/guides/police-verification-guide",
       icon: "Lock",
@@ -554,6 +554,35 @@ export const IR1_QUESTIONNAIRE_CONFIG: QuestionnaireConfig = {
           required: true,
         },
       ],
+    },
+  ],
+
+  // ──────────────────────────────────────────────────────────────────
+  // ELIGIBILITY DERIVATION MAP
+  // Translates Step 1 eligibility-suite answers into pre-filled answers
+  // for this questionnaire so duplicate questions are never shown.
+  // ──────────────────────────────────────────────────────────────────
+  eligibilityDerivationMap: [
+    {
+      // q3 → q3s1: prior marriage history
+      // Values: "none" | "petitioner" | "beneficiary" | "both" | "unsure"
+      eligibilityQuestId: "q3",
+      eligibilityScreenId: "q3s1",
+      derive: (v) => ({
+        prior_marriage_petitioner:
+          v === "petitioner" || v === "both" ? "yes" : "no",
+        prior_marriage_beneficiary:
+          v === "beneficiary" || v === "both" ? "yes" : "no",
+      }),
+    },
+    {
+      // q5 → q5s2: criminal history
+      // Values: "no" | "yes" | "unsure"
+      eligibilityQuestId: "q5",
+      eligibilityScreenId: "q5s2",
+      derive: (v) => ({
+        criminal_history: v === "yes" ? "yes" : "no",
+      }),
     },
   ],
 };

@@ -72,7 +72,7 @@ export function decryptFile(encryptedBuffer: Buffer, userId: string): Buffer {
   // Validate header
   const magic = encryptedBuffer.subarray(0, 4);
   if (!magic.equals(MAGIC)) {
-    throw new Error("[file-encryption] Invalid file header — not an encrypted Document Vault file");
+    throw new Error("[file-encryption] Invalid file header, not an encrypted Document Vault file");
   }
 
   const version = encryptedBuffer[4];
@@ -92,7 +92,7 @@ export function decryptFile(encryptedBuffer: Buffer, userId: string): Buffer {
   try {
     return Buffer.concat([decipher.update(ciphertext), decipher.final()]);
   } catch {
-    throw new Error("[file-encryption] Decryption failed — file may be tampered or key mismatch");
+    throw new Error("[file-encryption] Decryption failed, file may be tampered or key mismatch");
   }
 }
 

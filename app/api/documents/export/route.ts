@@ -10,6 +10,7 @@ import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { getCategoryFolderName } from "@/lib/document-vault/file-utils";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import JSZip from "jszip";
+import crypto from "crypto";
 
 export async function GET(request: NextRequest) {
   try {
@@ -70,7 +71,7 @@ export async function GET(request: NextRequest) {
       }
 
       // Read and add original file
-      const readResult = await fileManager.readFile(doc.storagePath);
+      const readResult = await fileManager.readFile(doc.storagePath, user.id);
       if (!readResult.success || !readResult.buffer) {
         console.warn(`Failed to read file: ${doc.storagePath}`);
         continue;
@@ -81,7 +82,7 @@ export async function GET(request: NextRequest) {
 
       // Add compressed file if exists
       if (doc.hasCompressedVersion && doc.compressedStoragePath && doc.compressedFilename) {
-        const compressedResult = await fileManager.readFile(doc.compressedStoragePath);
+        const compressedResult = await fileManager.readFile(doc.compressedStoragePath, user.id);
         if (compressedResult.success && compressedResult.buffer) {
           zip.file(docFolder + doc.compressedFilename, compressedResult.buffer);
         } else {

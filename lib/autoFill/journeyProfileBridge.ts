@@ -137,9 +137,46 @@ function setNestedValue(
  * @param existingProfile - Current profile to merge into
  * @returns Partial MasterProfile with extracted values
  */
+// These fields are specific to a single visa case/beneficiary, so they must never be auto-filled
+// or shared across different journeys of the same user profile.
+export const BENEFICIARY_SPECIFIC_KEYS = new Set([
+  "nvcCaseNum",
+  "nvcInvoice",
+  "passportNumber",
+  "surname",
+  "beneficiaryName",
+  "med_date",
+  "med_time",
+  "med_clinic",
+  "interviewDate",
+  "interview_date",
+  "consulateLocation",
+  "embassyCity",
+  "dqDate",
+  "dqPost",
+  "post",
+  "interviewOutcome",
+  "outcome221gSubtype",
+  "pcc_date",
+  "receiptNumber",
+  "receiptNum",
+  "approvalDate",
+  "priorityDate"
+]);
+
+/**
+ * Sync case_data entries to MasterProfile.
+ * Call this when journey case data is updated (e.g., filing_method changes).
+ *
+ * @param caseData - Record of case_data key-value pairs
+ * @param existingProfile - Current profile to merge into
+ * @param journeyId - Optional ID of the specific journey to isolate beneficiary data
+ * @returns Partial MasterProfile with extracted values
+ */
 export function syncCaseDataToProfile(
   caseData: Record<string, unknown>,
-  existingProfile: Partial<MasterProfile> = {}
+  existingProfile: Partial<MasterProfile> = {},
+  journeyId?: string
 ): Partial<MasterProfile> {
   const delta: Record<string, unknown> = {};
 
@@ -162,7 +199,11 @@ export function syncCaseDataToProfile(
       for (const [subKey, profilePath] of Object.entries(subMap)) {
         const subValue = (caseValue as Record<string, unknown>)[subKey];
         if (subValue !== undefined && subValue !== null && subValue !== "") {
-          setNestedValue(delta, profilePath, subValue);
+          if (journeyId && BENEFICIARY_SPECIFIC_KEYS.has(subKey)) {
+            setNestedValue(delta, `journeys.${journeyId}.${profilePath}`, subValue);
+          } else {
+            setNestedValue(delta, profilePath, subValue);
+          }
         }
       }
       continue;
@@ -170,7 +211,11 @@ export function syncCaseDataToProfile(
 
     const profilePath = CASE_DATA_TO_PROFILE[caseKey];
     if (profilePath) {
-      setNestedValue(delta, profilePath, caseValue);
+      if (journeyId && BENEFICIARY_SPECIFIC_KEYS.has(caseKey)) {
+        setNestedValue(delta, `journeys.${journeyId}.${profilePath}`, caseValue);
+      } else {
+        setNestedValue(delta, profilePath, caseValue);
+      }
     }
   }
 
@@ -282,16 +327,23 @@ function getNestedValue(obj: Record<string, any>, path: string): any {
  *
  * @param profile - The user's MasterProfile
  * @param existingCaseData - Current journey case_data
+ * @param journeyId - Optional ID of the specific journey to isolate beneficiary data
  * @returns Partial case_data delta
  */
 export function syncProfileToCaseData(
   profile: Partial<MasterProfile>,
-  existingCaseData: Record<string, unknown> = {}
+  existingCaseData: Record<string, unknown> = {},
+  journeyId?: string
 ): Record<string, unknown> {
   const delta: Record<string, unknown> = {};
 
   for (const [caseKey, profilePath] of Object.entries(CASE_DATA_TO_PROFILE)) {
-    const profileValue = getNestedValue(profile as Record<string, any>, profilePath);
+    let resolvedPath = profilePath;
+    if (journeyId && BENEFICIARY_SPECIFIC_KEYS.has(caseKey)) {
+      resolvedPath = `journeys.${journeyId}.${profilePath}`;
+    }
+
+    const profileValue = getNestedValue(profile as Record<string, any>, resolvedPath);
     if (profileValue === undefined || profileValue === null || profileValue === "") continue;
 
     // Convert booleans back to expected strings or keep as is
@@ -309,7 +361,9 @@ export function syncProfileToCaseData(
   }
 
   // Handle special interviewSaved flag
-  if (profile.interviewDate && existingCaseData.interviewSaved !== true) {
+  const resolvedInterviewPath = journeyId ? `journeys.${journeyId}.interviewDate` : "interviewDate";
+  const hasInterviewDate = getNestedValue(profile as Record<string, any>, resolvedInterviewPath);
+  if (hasInterviewDate && existingCaseData.interviewSaved !== true) {
     delta.interviewSaved = true;
   }
 

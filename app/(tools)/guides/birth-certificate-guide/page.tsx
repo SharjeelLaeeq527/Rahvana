@@ -12,6 +12,7 @@ import { NarrativeModal } from "../../(visa)/221g-action-planner/components/Narr
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
+import { PageGate } from "@/app/components/entitlements/PageGate";
 
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
@@ -294,10 +295,15 @@ const BirthCertificateGuidePage = () => {
   }
 
   return (
-    <div
-      className={`min-h-screen flex flex-col bg-[#f5f7fa] pt-26 ${isUrdu ? "font-urdu-body" : ""}`}
-      dir={isUrdu ? "rtl" : "ltr"}
+    <PageGate
+      feature="guide_birth_cert"
+      title="Birth Certificate Guide Locked"
+      description="Upgrade your plan to unlock step-by-step guidance on obtaining your birth certificate."
     >
+      <div
+        className={`min-h-screen flex flex-col bg-[#f5f7fa] pt-26 ${isUrdu ? "font-urdu-body" : ""}`}
+        dir={isUrdu ? "rtl" : "ltr"}
+      >
       <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={wizardData.title} />
 
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
@@ -344,7 +350,7 @@ const BirthCertificateGuidePage = () => {
                 </AnimatePresence>
               </div>
 
-              <div className="flex flex-col justify-between items-center gap-4 mt-5 pb-6 w-full sm:flex-row">
+              <div className="flex justify-between items-center gap-4 mt-5 pb-6 w-full sm:flex-row">
                 {currentStep > 0 ? (
                   <motion.button
                     whileHover={{ scale: 1.03 }}
@@ -353,7 +359,9 @@ const BirthCertificateGuidePage = () => {
                     className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer ${isUrdu ? "font-urdu-body" : ""}`}
                   >
                     <ArrowLeft className={`w-4 h-4 ${isUrdu ? "rotate-180" : ""}`} />{" "}
-                    {t("wizard.common.back")}
+                    <span className="hidden md:inline-block">
+                      {t("wizard.common.back")}
+                    </span>
                   </motion.button>
                 ) : (
                   <div className="hidden sm:block w-20" />
@@ -388,7 +396,9 @@ const BirthCertificateGuidePage = () => {
                     ${isUrdu ? "font-urdu-body" : ""}
                   `}
                     >
-                      {t("wizard.common.continue")}{" "}
+                      <span className="hidden md:inline-block">
+                        {t("wizard.common.continue")}
+                      </span>
                       <ArrowRight className={`w-4 h-4 ${isUrdu ? "rotate-180" : ""}`} />
                     </motion.button>
                   )}
@@ -431,7 +441,8 @@ const BirthCertificateGuidePage = () => {
         currentStepName={t(`wizard.common.${currentStepId}`)}
         onSubmit={handleSubmitFeedback}
       />
-    </div>
+      </div>
+    </PageGate>
   );
 };
 

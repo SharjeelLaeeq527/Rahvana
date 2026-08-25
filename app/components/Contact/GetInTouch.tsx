@@ -70,7 +70,7 @@ export default function GetInTouch() {
 
       <div className="relative z-10 w-full mx-auto px-6 sm:px-8 md:px-12 2xl:px-30">
         {/* Section Header */}
-        <div className="text-center mb-12">
+        <div className="text-center mb-6">
           <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full mb-5">
             <MessageSquare size={16} />
             {t("homePage.contactSection.badge") || "Let's Connect"}
@@ -129,6 +129,7 @@ export default function GetInTouch() {
               id="contactForm"
               onSubmit={handleSubmit}
               ref={formRef}
+              noValidate
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
@@ -234,7 +235,7 @@ function SocialCard({
     <a
       href={href}
       target={target}
-      className="flex items-center justify-center w-20 h-20 bg-muted/30 border border-border rounded-2xl text-primary no-underline transition-all hover:bg-primary hover:text-primary-foreground hover:border-primary hover:-translate-y-1 hover:shadow-lg group"
+      className="flex items-center justify-center w-16 h-14 md:w-20 md:h-20 bg-muted/30 border border-border rounded-2xl text-primary no-underline transition-all hover:bg-primary hover:text-primary-foreground hover:border-primary hover:-translate-y-1 hover:shadow-lg group"
       aria-label={ariaLabel}
     >
       <div className="transition-transform duration-300 group-hover:scale-110">{icon}</div>

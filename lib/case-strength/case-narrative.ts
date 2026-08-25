@@ -11,6 +11,7 @@ import type {
   EvidenceCategory,
 } from "../journey/evidence-gap/types";
 import type { ConsistencyFinding, FindingSeverity } from "./consistency-intelligence";
+import type { RiskFlag, RiskSeverity } from "./types";
 
 // ─── Output Types ──────────────────────────────────────────────────────────────
 
@@ -45,6 +46,14 @@ export interface NarrativeInput {
   evidenceAnalysis: EvidenceGapAnalysis | null;
   /** Consistency Intelligence findings */
   consistencyFindings: ConsistencyFinding[];
+  /**
+   * When set, the executive summary uses THIS score (the weighted Case Health
+   * score) and the calmer band-based phrasing (Weak/Moderate/Strong), instead of
+   * the legacy evidence×0.6 + consistency×0.4 blend. Pass it for categories on
+   * the weighted model (IR-5) so the drawer's summary matches the gauge and never
+   * over-alarms a just-started user. Omit → legacy phrasing (IR-1), unchanged.
+   */
+  overallScoreOverride?: number;
 }
 
 // ─── Category Display Names ────────────────────────────────────────────────────
@@ -101,14 +110,16 @@ export function generateCaseNarrative(input: NarrativeInput): CaseNarrative {
     else consistencyPenalty += 3;
   }
   const consistencyScore = Math.max(0, 100 - consistencyPenalty);
-  const overallCombinedScore = Math.round(evidenceScore * 0.6 + consistencyScore * 0.4);
+  const overallCombinedScore = Math.round(evidenceScore * 0.5 + consistencyScore * 0.5);
 
-  // Build each section
+  // Build each section. When a weighted score is supplied, drive the summary tone
+  // from it (band-based, calmer); otherwise fall back to the legacy blend.
   const executiveSummary = buildExecutiveSummary(
     evidenceAnalysis,
     unresolvedFindings,
     resolvedFindings.length,
-    overallCombinedScore
+    input.overallScoreOverride ?? overallCombinedScore,
+    input.overallScoreOverride !== undefined
   );
 
   const strengths = buildStrengths(evidenceAnalysis, resolvedFindings);
@@ -133,23 +144,39 @@ function buildExecutiveSummary(
   evidenceAnalysis: EvidenceGapAnalysis | null,
   unresolvedFindings: ConsistencyFinding[],
   resolvedCount: number,
-  overallScore: number
+  overallScore: number,
+  bandBased = false
 ): string {
   const parts: string[] = [];
 
-  // Overall assessment using combined score
-  if (overallScore >= 80) {
-    parts.push(
-      "Your case is in strong shape overall — evidence coverage and consistency checks are solid"
-    );
-  } else if (overallScore >= 60) {
-    parts.push("Your case shows moderate strength with room for improvement in key areas");
-  } else if (overallScore >= 40) {
-    parts.push("Your case has notable gaps in documentation or consistency that need attention");
+  if (bandBased) {
+    // Weighted model (§6): calmer, band-based phrasing. A low score early in the
+    // journey reads as "still building", not as something being wrong.
+    const band = getScoreBand(overallScore);
+    if (band === "strong") {
+      parts.push("Your case is in strong shape, evidence and consistency are looking solid");
+    } else if (band === "moderate") {
+      parts.push("Your case is on track, with a few areas you can still strengthen");
+    } else {
+      parts.push(
+        "You're still building your case, the key documents and details below are the ones to add next"
+      );
+    }
   } else {
-    parts.push(
-      "Your case requires significant improvements in both evidence coverage and data consistency"
-    );
+    // Legacy blend (IR-1), unchanged.
+    if (overallScore >= 80) {
+      parts.push(
+        "Your case is in strong shape overall, evidence coverage and consistency checks are solid"
+      );
+    } else if (overallScore >= 60) {
+      parts.push("Your case shows moderate strength with room for improvement in key areas");
+    } else if (overallScore >= 40) {
+      parts.push("Your case has notable gaps in documentation or consistency that need attention");
+    } else {
+      parts.push(
+        "Your case requires significant improvements in both evidence coverage and data consistency"
+      );
+    }
   }
 
   // Evidence-specific details
@@ -191,8 +218,10 @@ function buildExecutiveSummary(
     // Required documents status
     const reqDocs = evidenceAnalysis.requiredDocuments;
     if (reqDocs.missing.length > 0) {
+      // "to gather" reads as a normal to-do; "still missing" reads as a failure.
+      const verb = bandBased ? "still to gather" : "still missing";
       parts.push(
-        `${reqDocs.missing.length} required document${reqDocs.missing.length > 1 ? "s are" : " is"} still missing`
+        `${reqDocs.missing.length} required document${reqDocs.missing.length > 1 ? "s" : ""} ${verb}`
       );
     }
   }
@@ -376,7 +405,7 @@ function buildAreasRequiringAttention(
       const assessment = evidenceAnalysis.categories[cat];
       areas.push({
         text: `Limited ${CATEGORY_LABELS[cat]}`,
-        detail: `Only ${assessment.items.length} item${assessment.items.length !== 1 ? "s" : ""} documented — more evidence recommended`,
+        detail: `Only ${assessment.items.length} item${assessment.items.length !== 1 ? "s" : ""} documented, more evidence recommended`,
         source: "evidence",
         priority: 3,
       });
@@ -566,4 +595,172 @@ export function computeOverallCaseScore(input: NarrativeInput): number {
   const evidenceScore = input.evidenceAnalysis?.overallScore ?? 50;
   const consistencyScore = computeConsistencyScore(input.consistencyFindings);
   return Math.round(evidenceScore * 0.5 + consistencyScore * 0.5);
+}
+
+// ─── Weighted Case Score (4-ingredient model) ────────────────────────────────
+//
+// A quality/completeness meter — NOT deadline-related. It is a weighted average
+// of four ingredients that already exist elsewhere in the system:
+//   • Evidence Strength — user-provided, quality-graded documents (NOT autofill)
+//   • Consistency       — do names/dates/addresses agree across documents
+//   • Completeness      — % of required checklist items filled
+//   • Risk flags        — negative weight; detected red flags pull the score down
+//
+// See CASE_STRENGTH_ALERT_ESCALATION_PLAN.md §6. Scoped to categories whose
+// CaseStrengthProfile sets `caseScore` (IR-5 today); IR-1 keeps
+// `computeOverallCaseScore` above, byte-for-byte unchanged.
+
+/**
+ * Ingredient weights. Single source of truth — tune here, nowhere else.
+ * Confirmed starting point (2026-07-20); revisit against real outcomes later.
+ * Weights sum to 1.0; risk is applied as an inverted "risk health" component
+ * (100 = no flags) so a flawless, risk-free case can still reach 100.
+ */
+export const CASE_SCORE_WEIGHTS = {
+  evidence: 0.4,
+  consistency: 0.3,
+  completeness: 0.2,
+  risk: 0.1,
+} as const;
+
+/**
+ * How many penalty points each risk flag contributes (0–100 scale, capped at
+ * 100). A single critical flag maxes the risk penalty; the risk component can
+ * therefore subtract at most `CASE_SCORE_WEIGHTS.risk * 100` (= 10) points.
+ */
+export const RISK_SEVERITY_PENALTY: Record<RiskSeverity, number> = {
+  critical: 100,
+  warning: 40,
+  advisory: 15,
+};
+
+/** Score bands (§6B). Weak < 40, Moderate 40–70, Strong ≥ 70. */
+export const SCORE_BANDS = { weakMax: 40, strongMin: 70 } as const;
+export type ScoreBand = "weak" | "moderate" | "strong";
+
+export function getScoreBand(score: number): ScoreBand {
+  if (score < SCORE_BANDS.weakMax) return "weak";
+  if (score < SCORE_BANDS.strongMin) return "moderate";
+  return "strong";
+}
+
+const BAND_ORDER: Record<ScoreBand, number> = { weak: 0, moderate: 1, strong: 2 };
+
+export const SCORE_BAND_LABEL: Record<ScoreBand, string> = {
+  weak: "Weak",
+  moderate: "Moderate",
+  strong: "Strong",
+};
+
+export interface BandTransition {
+  /** The current band. */
+  band: ScoreBand;
+  /** Movement vs the previous band: down, up, or none. */
+  direction: "drop" | "rise" | "same";
+}
+
+/**
+ * Classify how the score band moved (§6C). An ALERT should fire only on a
+ * `"drop"` — never on a `"rise"` (improvements are silent) and never on `"same"`
+ * (small fluctuations inside a band). A null previous band (fresh session) is
+ * `"same"` so a just-started user is never alerted.
+ */
+export function classifyBandTransition(
+  previous: ScoreBand | null,
+  currentScore: number
+): BandTransition {
+  const band = getScoreBand(currentScore);
+  if (previous === null) return { band, direction: "same" };
+  const delta = BAND_ORDER[band] - BAND_ORDER[previous];
+  return { band, direction: delta < 0 ? "drop" : delta > 0 ? "rise" : "same" };
+}
+
+/**
+ * Band-based health status for the weighted model (§6B/§6C/§6F).
+ *
+ * Unlike `getCaseHealthStatus` (legacy), a merely-low score does NOT raise the
+ * red "Needs Immediate Attention" alarm. That alarm is reserved for a genuine
+ * critical issue (a critical risk flag or critical inconsistency). A low score
+ * with no critical issue reads as a calm "building your case" state, so a user
+ * who just started Chapter 1 is never told something is wrong.
+ */
+export function getWeightedCaseHealthStatus(
+  score: number,
+  opts: { hasCriticalIssue: boolean }
+): {
+  status: "excellent" | "good" | "needs-attention" | "critical";
+  label: string;
+  color: string;
+} {
+  if (opts.hasCriticalIssue) {
+    return { status: "critical", label: "Needs Immediate Attention", color: "#ef4444" };
+  }
+  const band = getScoreBand(score);
+  if (band === "strong") {
+    return { status: "excellent", label: "Strong", color: "#10b981" };
+  }
+  if (band === "moderate") {
+    return { status: "good", label: "Moderate", color: "#3b82f6" };
+  }
+  // Weak, but nothing critical → calm "in progress", never a red alarm (§6F).
+  return { status: "needs-attention", label: "Building Your Case", color: "#f59e0b" };
+}
+
+export interface WeightedCaseScoreInput {
+  /** Evidence Strength (0–100) — user-provided, quality-graded documents only. */
+  evidenceStrength: number;
+  /** Consistency score (0–100), e.g. from `computeConsistencyScore`. */
+  consistencyScore: number;
+  /** Completeness (0–100) — % of required checklist items filled. */
+  completeness: number;
+  /** Detected risk flags — pull the score down (negative weight). */
+  riskFlags: RiskFlag[];
+}
+
+export interface WeightedCaseScoreResult {
+  /** Final 0–100 score. */
+  score: number;
+  /** The four inputs after clamping — for the always-visible "why" breakdown. */
+  breakdown: {
+    evidenceStrength: number;
+    consistencyScore: number;
+    completeness: number;
+    /** 0–100, higher = more risk (this is the penalty, not the health). */
+    riskPenalty: number;
+  };
+}
+
+const clampScore = (n: number): number => Math.max(0, Math.min(100, n));
+
+/** Total risk penalty (0–100) from a set of flags, capped at 100. */
+export function computeRiskPenalty(riskFlags: RiskFlag[]): number {
+  let penalty = 0;
+  for (const f of riskFlags) penalty += RISK_SEVERITY_PENALTY[f.severity] ?? 0;
+  return Math.min(100, penalty);
+}
+
+/**
+ * Compute the 4-ingredient weighted Case Strength score (0–100).
+ * Risk is applied as an inverted health component so more/severe flags lower
+ * the score, while a risk-free case still earns the full risk weight.
+ */
+export function computeWeightedCaseScore(
+  input: WeightedCaseScoreInput
+): WeightedCaseScoreResult {
+  const evidenceStrength = clampScore(input.evidenceStrength);
+  const consistencyScore = clampScore(input.consistencyScore);
+  const completeness = clampScore(input.completeness);
+  const riskPenalty = computeRiskPenalty(input.riskFlags);
+  const riskHealth = 100 - riskPenalty;
+
+  const raw =
+    evidenceStrength * CASE_SCORE_WEIGHTS.evidence +
+    consistencyScore * CASE_SCORE_WEIGHTS.consistency +
+    completeness * CASE_SCORE_WEIGHTS.completeness +
+    riskHealth * CASE_SCORE_WEIGHTS.risk;
+
+  return {
+    score: clampScore(Math.round(raw)),
+    breakdown: { evidenceStrength, consistencyScore, completeness, riskPenalty },
+  };
 }

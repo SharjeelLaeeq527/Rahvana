@@ -6,13 +6,6 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -20,6 +13,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import {
   Table,
   TableBody,
@@ -112,7 +106,18 @@ const ConsultationRequestsTable = () => {
       const response = await fetch("/api/consultation/slots?status=available");
       if (response.ok) {
         const data = await response.json();
-        setAvailableSlots(data);
+        const now = new Date();
+        const futureSlots = data.filter((slot: TimeSlot) => {
+          if (!slot.date || !slot.start_time) return false;
+          const datePart = typeof slot.date === "string"
+            ? slot.date.split("T")[0]
+            : (slot.date instanceof Date
+                ? slot.date.toISOString().split("T")[0]
+                : String(slot.date));
+          const slotDateTime = new Date(`${datePart}T${slot.start_time}-05:00`);
+          return !isNaN(slotDateTime.getTime()) && slotDateTime > now;
+        });
+        setAvailableSlots(futureSlots);
       }
     } catch (error) {
       console.error("Error fetching available slots:", error);
@@ -405,19 +410,20 @@ const ConsultationRequestsTable = () => {
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
               </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-37.5">
-                  <SelectValue placeholder="All Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Status</SelectItem>
-                  <SelectItem value="pending_approval">Pending</SelectItem>
-                  <SelectItem value="confirmed">Confirmed</SelectItem>
-                  <SelectItem value="needs_more_info">Needs Info</SelectItem>
-                  <SelectItem value="alternatives_proposed">Alternatives</SelectItem>
-                  <SelectItem value="canceled">Canceled</SelectItem>
-                </SelectContent>
-              </Select>
+              <CustomDropdown
+                value={statusFilter}
+                onChange={setStatusFilter}
+                options={[
+                  { value: "all", label: "All Status" },
+                  { value: "pending_approval", label: "Pending" },
+                  { value: "confirmed", label: "Confirmed" },
+                  { value: "needs_more_info", label: "Needs Info" },
+                  { value: "alternatives_proposed", label: "Alternatives" },
+                  { value: "canceled", label: "Canceled" },
+                ]}
+                placeholder="All Status"
+                className="w-37.5 [&_button]:w-full [&_button]:min-w-0"
+              />
               <Button variant="outline" size="icon" onClick={fetchRequests} disabled={loading}>
                 {loading ? <Loader size="sm" /> : <RefreshCw className="h-4 w-4" />}
               </Button>
@@ -764,28 +770,20 @@ const ConsultationRequestsTable = () => {
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Cancellation Reason <span className="text-red-500">*</span>
                   </label>
-                  <Select
+                  <CustomDropdown
                     value={cancellationReason}
-                    onValueChange={(val) => {
+                    onChange={(val) => {
                       setCancellationReason(val);
                       if (val !== "other") {
-                        setAdminNote(val);
+                        setAdminNotes(val);
                       } else {
-                        setAdminNote("");
+                        setAdminNotes("");
                       }
                     }}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Select cancellation reason" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CANCELLATION_TEMPLATES.map((tpl) => (
-                        <SelectItem key={tpl.value} value={tpl.value}>
-                          {tpl.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    options={CANCELLATION_TEMPLATES}
+                    placeholder="Select cancellation reason"
+                    className="w-full [&_button]:w-full [&_button]:min-w-0"
+                  />
                 </div>
                 {cancellationReason === "other" && (
                   <div>

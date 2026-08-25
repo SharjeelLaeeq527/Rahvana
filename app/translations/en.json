@@ -639,10 +639,10 @@
         "deleteFailed": "Failed to delete document",
         "exportCompleted": "Export completed",
         "exportAllFailed": "Failed to export documents",
-        "deleteAllConfirmWarning": "⚠️ Are you sure you want to delete ALL documents? This action cannot be undone!",
-        "deleteAllFinalConfirm": "⚠️ Final confirmation: Delete ALL uploaded documents?",
+        "deleteAllConfirmWarning": "Are you sure you want to delete ALL documents? This action cannot be undone!",
+        "deleteAllFinalConfirm": "Final confirmation: Delete ALL uploaded documents?",
         "deletingAll": "Deleting all documents...",
-        "deletedAllSuccess": "✅ Deleted {{count}} documents successfully!",
+        "deletedAllSuccess": "Deleted {{count}} documents successfully!",
         "deleteAllFailed": "Failed to delete all documents"
       }
     },
@@ -819,7 +819,8 @@
         "exportZip": "Export ZIP",
         "replace": "Replace",
         "instructions": "Instructions",
-        "delete": "Delete"
+        "delete": "Delete",
+        "rename": "Rename"
       },
       "previewModal": {
         "close": "Close",
@@ -853,7 +854,7 @@
         "standardizedFilename": "Standardized Filename:",
         "sizePrefix": "Size: ",
         "typePrefix": "Type: ",
-        "warning": "⚠️ Warning: Set Case Information in left panel for proper USCIS naming!",
+        "warning": "Warning: Set Case Information in left panel for proper USCIS naming!",
         "cancel": "Cancel",
         "uploadBtnLoading": "Uploading...",
         "uploadBtn": "Upload Document",
@@ -864,7 +865,7 @@
         "close": "Close",
         "howToObtain": "How to Obtain: ",
         "documentUploaded": "Document Uploaded ✓",
-        "stepProgress": "Step {{current}} of {{total}}",
+        "stepProgress": "Step {current} of {total}",
         "resetConfirm": "Reset progress for this document?",
         "resetProgress": "Reset Progress",
         "progressOverview": "Progress Overview",
@@ -939,8 +940,8 @@
         "saving": "Saving...",
         "fillRequiredAbove": "Fill Required Fields Above",
         "saveCaseInfo": "Save Case Information",
-        "namingPreview": "📋 Naming Preview:",
-        "requiredWarning": "⚠️ Required for USCIS naming!",
+        "namingPreview": "Naming Preview:",
+        "requiredWarning": "Required for USCIS naming!",
         "requiredWarningDesc": "Fill all fields above to enable proper file naming."
       },
       "notificationCenter": {
@@ -1058,7 +1059,8 @@
     "roles": {
       "BENEFICIARY": "Beneficiary",
       "PETITIONER": "Petitioner",
-      "JOINT_SPONSOR": "Joint Sponsor"
+      "JOINT_SPONSOR": "Joint Sponsor",
+      "HOUSEHOLD_MEMBER": "Household Member"
     },
     "stages": {
       "USCIS": "USCIS",
@@ -2449,7 +2451,7 @@
         },
         "pdfToolkit": {
           "title": "PDF Tool Kit",
-          "description": "Merge • compress • convert • edit — all in one toolkit."
+          "description": "Merge • compress • convert • edit, all in one toolkit."
         },
         "snapSign": {
           "title": "Snap & Sign",
@@ -2534,19 +2536,19 @@
           "description": "Human review of your documents + a tailored improvement plan."
         },
         "pccSindh": {
-          "title": "PCC Filing Service — Sindh",
+          "title": "PCC Filing Service, Sindh",
           "description": "Done-for-you police certificate filing for Sindh."
         },
         "pccPunjab": {
-          "title": "PCC Filing Service — Punjab (Coming Soon)",
+          "title": "PCC Filing Service, Punjab (Coming Soon)",
           "description": "Join the waitlist for done-for-you PCC filing in Punjab."
         },
         "pccKpk": {
-          "title": "PCC Filing Service — KPK (Coming Soon)",
+          "title": "PCC Filing Service, KPK (Coming Soon)",
           "description": "Join the waitlist for done-for-you PCC filing in KPK."
         },
         "pccBalochistan": {
-          "title": "PCC Filing Service — Balochistan (Coming Soon)",
+          "title": "PCC Filing Service, Balochistan (Coming Soon)",
           "description": "Join the waitlist for done-for-you PCC filing in Balochistan."
         },
         "bookMedical": {
@@ -2749,19 +2751,19 @@
         "desc": "Human review of your documents + a tailored improvement plan."
       },
       {
-        "title": "PCC Filing Service — Sindh",
+        "title": "PCC Filing Service, Sindh",
         "desc": "Done-for-you police certificate filing for Sindh."
       },
       {
-        "title": "PCC Filing Service — Punjab (Coming Soon)",
+        "title": "PCC Filing Service, Punjab (Coming Soon)",
         "desc": "Join the waitlist for done-for-you PCC filing in Punjab."
       },
       {
-        "title": "PCC Filing Service — KPK (Coming Soon)",
+        "title": "PCC Filing Service, KPK (Coming Soon)",
         "desc": "Join the waitlist for done-for-you PCC filing in KPK."
       },
       {
-        "title": "PCC Filing Service — Balochistan (Coming Soon)",
+        "title": "PCC Filing Service, Balochistan (Coming Soon)",
         "desc": "Join the waitlist for done-for-you PCC filing in Balochistan."
       },
       {
@@ -3010,7 +3012,7 @@
       },
       "pdf-toolkit": {
         "title": "PDF Tool Kit",
-        "desc": "Merge • compress • convert • edit — all in one toolkit."
+        "desc": "Merge • compress • convert • edit, all in one toolkit."
       },
       "snap-sign": {
         "title": "Snap & Sign",
@@ -3038,7 +3040,7 @@
     "startFresh": "Start Fresh",
     "overallProgress": "Overall Journey Progress",
     "stepsCompleted": "{count} steps completed",
-    "currentlyAt": "Currently at: Stage {stage} — {name}",
+    "currentlyAt": "Currently at: Stage {stage}, {name}",
     "autoSaved": "Progress auto-saved locally",
     "stageShort": "Stage {stage}",
     "actionsRequired": "Actions Required",
@@ -3099,7 +3101,7 @@
     "existingJourney": "You have an existing IR-1 journey in progress.",
     "journeyProgress": "Journey Progress",
     "stepsCompleted": "{count} steps completed",
-    "currentlyAt": "Currently at: Stage {stage} — {name}",
+    "currentlyAt": "Currently at: Stage {stage}, {name}",
     "resumeJourney": "Resume My Journey",
     "startFresh": "Start Fresh",
     "startFreshTitle": "Start Fresh?",
@@ -3204,7 +3206,7 @@
       "4": "No editing, filters, or AI alterations",
       "5": "Face the camera straight, no head tilt",
       "6": "Remove eyeglasses",
-      "7": "Plain white or off-white background – no shadows, textures, or lines"
+      "7": "Plain white or off-white background, no shadows, textures, or lines"
     },
     "uploadLabel": "Upload Your Photo",
     "dropzone": "Click to upload or drag & drop",
@@ -3253,7 +3255,7 @@
       "employment": "Employment-Based Preference"
     },
     "cityLabel": "U.S. Embassy or Consulate City",
-    "cityExamples": "Examples: Islamabad, Mumbai, Dubai, Ankara, New Delhi",
+    "cityExamples": "Examples: Islamabad",
     "cityPlaceholder": "Start typing city name...",
     "cityError": "Please enter a city name.",
     "search": "Search",
@@ -3280,7 +3282,7 @@
   },
   "visaChecker": {
     "pageTitle": "Visa Progress Checker",
-    "pageSubtitle": "Enter your USCIS Case Number – We will auto-fetch your Priority Date!",
+    "pageSubtitle": "Enter your USCIS Case Number, We will auto-fetch your Priority Date!",
     "form": {
       "categoryLabel": "Visa Category",
       "categories": {
@@ -4230,7 +4232,7 @@
           {
             "id": "nikah_nama",
             "label": "Nikah Nama Copy",
-            "description": "Proof of parents' marriage — relationship verification",
+            "description": "Proof of parents' marriage, relationship verification",
             "required": true
           },
           {
@@ -4242,13 +4244,13 @@
           {
             "id": "hospital_slip",
             "label": "Hospital Discharge / Birth Notification Slip",
-            "description": "Required only for hospital births — primary evidence of birth",
+            "description": "Required only for hospital births, primary evidence of birth",
             "required": false
           },
           {
             "id": "witness_cnic",
             "label": "2 Witness CNICs",
-            "description": "Required only for home births — witnesses must be non-relatives",
+            "description": "Required only for home births, witnesses must be non-relatives",
             "required": false
           },
           {
@@ -4260,7 +4262,7 @@
           {
             "id": "grandparent_cnic",
             "label": "Grandparent's CNIC (Conditional)",
-            "description": "Required only if parent's CNIC is unavailable, or for identity verification in specific districts — not a standard requirement",
+            "description": "Required only if parent's CNIC is unavailable, or for identity verification in specific districts, not a standard requirement",
             "required": false
           }
         ]
@@ -4334,17 +4336,17 @@
         },
         "roadmap": {
           "tips": [
-            "Union Council (UC) registration is mandatory FIRST — NADRA B-Form cannot be issued without a valid UC CBRC.",
+            "Union Council (UC) registration is mandatory FIRST, NADRA B-Form cannot be issued without a valid UC CBRC.",
             "Required documents: Hospital birth slip, parents' CNIC/NICOP copies, Nikah Nama, proof of residence, and affidavit for home births.",
-            "Punjab: Digital registration via Pak-ID app available in selected districts. Sindh: Uses CRMS (Civil Registration Management System). KPK: Integrated with LG&RDD. Balochistan, GB, AJK, ICT: Manual UC registration required — no digital option.",
-            "Executive NADRA processing (Rs. 500) delivers B-Form in 3–5 days instead of 10–15.",
-            "Verify all name spellings and dates on the spot at the UC before leaving — corrections later require a separate process."
+            "Punjab: Digital registration via Pak-ID app available in selected districts. Sindh: Uses CRMS (Civil Registration Management System). KPK: Integrated with LG&RDD. Balochistan, GB, AJK, ICT: Manual UC registration required, no digital option.",
+            "Executive NADRA processing (Rs. 500) delivers B-Form in 3-5 days instead of 10-15.",
+            "Verify all name spellings and dates on the spot at the UC before leaving, corrections later require a separate process."
           ],
           "pitfalls": [
-            "Digital app submission (Pak-ID) is only available in selected Punjab districts — a Union Council visit may still be required for in-person verification even after digital submission.",
-            "Grandparent's CNIC is NOT a standard requirement — it is only needed if the parent's CNIC is unavailable or for verification in specific districts. Do not gather it unless specifically requested.",
-            "Leaving the UC counter without verifying the digital entry — errors are much harder to correct after the fact.",
-            "Going to NADRA directly without first obtaining the UC Computerized Birth Certificate (CBRC) — NADRA will reject the application."
+            "Digital app submission (Pak-ID) is only available in selected Punjab districts, a Union Council visit may still be required for in-person verification even after digital submission.",
+            "Grandparent's CNIC is NOT a standard requirement, it is only needed if the parent's CNIC is unavailable or for verification in specific districts. Do not gather it unless specifically requested.",
+            "Leaving the UC counter without verifying the digital entry, errors are much harder to correct after the fact.",
+            "Going to NADRA directly without first obtaining the UC Computerized Birth Certificate (CBRC), NADRA will reject the application."
           ],
           "links": {
             "pakId": "Pak-ID App (Punjab Digital Registration)"

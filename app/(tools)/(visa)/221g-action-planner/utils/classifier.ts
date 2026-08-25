@@ -84,7 +84,7 @@ export function classifySituation(
     results.push({
       scenarioCode: "DOCS_SUBMITTED_WAITING_UPDATE",
       confidence: "high",
-      description: "Documents Submitted – Waiting for Update",
+      description: "Documents Submitted, Waiting for Update",
       nextSteps: [
         "Wait for CEAC status update",
         "Monitor status regularly but avoid excessive checking",
@@ -103,7 +103,7 @@ export function classifySituation(
       results.push({
         scenarioCode: "AP_ONLY_NO_DOCS",
         confidence: "high",
-        description: "Administrative Processing Only – No Additional Documents Requested",
+        description: "Administrative Processing Only, No Additional Documents Requested",
         nextSteps: [
           "Wait for processing to complete",
           "Monitor CEAC status regularly",
@@ -154,7 +154,7 @@ export function classifySituation(
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_FINANCIAL",
       confidence: "high",
-      description: "221(g) – Financial Documents Requested",
+      description: "221(g), Financial Documents Requested",
       nextSteps: [
         `Gather requested financial documents: ${docString || "I-864"}`,
         `Submit complete packet ${methodText}`,
@@ -178,7 +178,7 @@ export function classifySituation(
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_CIVIL",
       confidence: "high",
-      description: "221(g) – Civil Documents Requested",
+      description: "221(g), Civil Documents Requested",
       nextSteps: [
         `Gather requested civil documents: ${docString}`,
         "Submit complete packet via courier as instructed",
@@ -200,7 +200,7 @@ export function classifySituation(
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_LEGAL",
       confidence: "high",
-      description: "221(g) – Legal/Court Documents Requested",
+      description: "221(g), Legal/Court Documents Requested",
       nextSteps: [
         `Secure requested legal documents: ${docString}`,
         "Review reciprocity schedules to ensure correct issuing authority",
@@ -214,7 +214,7 @@ export function classifySituation(
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_MEDICAL",
       confidence: "high",
-      description: "221(g) – Medical Examination Required",
+      description: "221(g), Medical Examination Required",
       nextSteps: [
         "Contact the designated panel physician to complete the medical examination",
         "Follow their instructions for any corrections or re-examinations",
@@ -229,7 +229,7 @@ export function classifySituation(
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_TRANSLATION",
       confidence: "high",
-      description: "221(g) – Document Translations Required",
+      description: "221(g), Document Translations Required",
       nextSteps: [
         "Obtain certified English translations for the requested documents",
         "Ensure translations are by qualified translators",
@@ -244,7 +244,7 @@ export function classifySituation(
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_OTHER",
       confidence: "high",
-      description: "221(g) – DNA Test Recommended",
+      description: "221(g), DNA Test Recommended",
       nextSteps: [
         "Contact the embassy for a list of approved DNA testing facilities",
         "Schedule and complete the DNA test as instructed",
@@ -259,7 +259,7 @@ export function classifySituation(
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_OTHER",
       confidence: "high",
-      description: "221(g) – Passport Required",
+      description: "221(g), Passport Required",
       nextSteps: [
         "Submit your passport via courier to the address on your 221(g) letter",
         "Keep the tracking number for your submission",
@@ -274,7 +274,7 @@ export function classifySituation(
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_OTHER",
       confidence: "medium",
-      description: "221(g) – Documents Requested",
+      description: "221(g), Documents Requested",
       nextSteps: [
         "Carefully review your 221(g) letter for exact requirements",
         "Gather all requested documents",

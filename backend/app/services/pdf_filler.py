@@ -20,6 +20,7 @@ from app.core.form_configs import i912_config
 from app.core.form_configs import i864a_config
 from app.core.form_configs import i864ez_config
 from app.core.form_configs import i693_config
+from app.core.form_configs import i485_config
 # from app.core.form_configs import ds260_config
 
 # Master mapping: formId → FIELD_MAPPING
@@ -32,6 +33,7 @@ FORM_CONFIGS = {
     "i864a": i864a_config.FIELD_MAPPING,
     "i864ez": i864ez_config.FIELD_MAPPING,
     "i693": i693_config.FIELD_MAPPING,
+    "i485": i485_config.FIELD_MAPPING,
     # "ds260": ds260_config.FIELD_MAPPING,
     # "i485": i485_config.FIELD_MAPPING,
     # "i765": i765_config.FIELD_MAPPING,
@@ -83,6 +85,37 @@ class PDFFillerService:
         petitioner_given = str(form_data.get("given_name", "")).strip()
         petitioner_middle = str(form_data.get("middle_name", "")).strip()
         petitioner_alien = str(form_data.get("a_number", "")).strip()
+
+        # Auto-propagate primary Alien Number to all header Alien Number fields i485
+        primary_alien = form_data.get("p1_alien_number") or form_data.get("p1_item4_alien_number")
+        if primary_alien is not None:
+            primary_alien_str = str(primary_alien).strip()
+            if primary_alien_str:
+                for key in self.field_mapping.keys():
+                    if key.endswith("_header_alien_number") or key in ("p1_alien_number", "p1_item4_alien_number"):
+                        form_data[key] = primary_alien_str
+
+        # Auto-propagate primary Names to header/last-page repeating name fields
+        if self.form_id == "i485":
+            family = form_data.get("p1_legal_family_name")
+            given = form_data.get("p1_legal_given_name")
+            middle = form_data.get("p1_legal_middle_name")
+            if family:
+                form_data["p14_applicant_last_name"] = family
+            if given:
+                form_data["p14_applicant_first_name"] = given
+            if middle:
+                form_data["p14_applicant_middle_name"] = middle
+        elif self.form_id == "i130a":
+            family = form_data.get("p1_family_name")
+            given = form_data.get("p1_given_name")
+            middle = form_data.get("p1_middle_name")
+            if family:
+                form_data["p7_header_family_name"] = family
+            if given:
+                form_data["p7_header_given_name"] = given
+            if middle:
+                form_data["p7_header_middle_name"] = middle
 
         doc = fitz.open(self.pdf_path)
         filled_count = 0
@@ -172,6 +205,30 @@ class PDFFillerService:
                         widget.update()
                     elif "Pt2Line1_AlienNumber" in w_name:
                         widget.field_value = petitioner_alien
+                        widget.update()
+
+        # Autofill applicant name and A-number on the last page + duplicated pages for I-485
+        if self.form_id == "i485":
+            applicant_family = str(form_data.get("p1_legal_family_name") or "").strip()
+            applicant_given = str(form_data.get("p1_legal_given_name") or "").strip()
+            applicant_middle = str(form_data.get("p1_legal_middle_name") or "").strip()
+            applicant_alien = str(form_data.get("p1_alien_number") or form_data.get("p1_item4_alien_number") or "").strip()
+            
+            for page_idx in range(23, len(doc)):
+                page = doc[page_idx]
+                for widget in page.widgets():
+                    w_name = widget.field_name or ""
+                    if "Pt1Line1_FamilyName" in w_name:
+                        widget.field_value = applicant_family
+                        widget.update()
+                    elif "Pt1Line1_GivenName" in w_name:
+                        widget.field_value = applicant_given
+                        widget.update()
+                    elif "Pt1Line1_MiddleName" in w_name:
+                        widget.field_value = applicant_middle
+                        widget.update()
+                    elif "AlienNumber" in w_name:
+                        widget.field_value = applicant_alien
                         widget.update()
 
         output = io.BytesIO()

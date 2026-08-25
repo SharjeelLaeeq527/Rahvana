@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Loader } from "@/components/ui/spinner";
 
 export interface Column<T> {
   key: string;
@@ -24,6 +25,7 @@ interface DataTableProps<T> {
   rowKey: (item: T, index: number) => string | number;
   emptyState?: React.ReactNode;
   loading?: boolean;
+  refreshing?: boolean;
   onRowClick?: (item: T, index: number) => void;
   rowClassName?: string;
 }
@@ -34,23 +36,31 @@ export function DataTable<T>({
   rowKey,
   emptyState,
   loading,
+  refreshing = false,
   onRowClick,
   rowClassName = "hover:bg-slate-50 border-b border-slate-100",
 }: DataTableProps<T>) {
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
+      <div className="flex h-64 items-center justify-center">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-teal-600"></div>
       </div>
     );
   }
 
   if (!data || data.length === 0) {
-    return emptyState || <div className="text-center py-12">No data found</div>;
+    return emptyState || <div className="py-12 text-center">No data found</div>;
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-lg border border-slate-200 overflow-visible">
+    <div className="relative overflow-visible rounded-xl border border-slate-200 bg-white shadow-lg">
+      {refreshing && (
+        <div className="pointer-events-none absolute top-3 right-4 z-20 flex items-center gap-2 rounded-full border border-teal-100 bg-white px-3 py-1.5 text-xs font-medium text-teal-700 shadow-sm">
+          <Loader size="sm" />
+          <span className="hidden lg:inline">Updating...</span>
+        </div>
+      )}
+
       <div className="overflow-x-auto">
         <div className="min-w-full overflow-visible">
           <Table>
@@ -59,7 +69,7 @@ export function DataTable<T>({
                 {columns.map((column) => (
                   <TableHead
                     key={column.key}
-                    className={`text-lg font-bold text-slate-800 py-4 ${column.className || ""}`}
+                    className={`py-4 text-lg font-bold text-slate-800 ${column.className || ""}`}
                     style={column.width ? { width: column.width } : {}}
                   >
                     {column.label}

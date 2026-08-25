@@ -69,7 +69,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
       id: "nadra_family_reg",
       vaultId: "misc-document",
       label: cl.nadra_family_reg_name
-        ? `NADRA Family Registration Certificate — ${cl.nadra_family_reg_name}`
+        ? `NADRA Family Registration Certificate, ${cl.nadra_family_reg_name}`
         : "NADRA Family Registration Certificate",
       sub: "Computerised Family Registration Certificate (FRC)",
     });
@@ -78,7 +78,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
     items.push({
       id: "birth_cert_ben",
       vaultId: "birth-cert-beneficiary",
-      label: "NADRA Birth Certificate — Beneficiary",
+      label: "NADRA Birth Certificate, Beneficiary",
       sub: "Computerised birth certificate from NADRA",
     });
 
@@ -86,7 +86,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
     items.push({
       id: "birth_cert_pet",
       vaultId: "misc-document",
-      label: "NADRA Birth Certificate — Petitioner",
+      label: "NADRA Birth Certificate, Petitioner",
       sub: "Computerised birth certificate from NADRA",
     });
 
@@ -110,7 +110,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
     items.push({
       id: "divorce_cert_ben",
       vaultId: "divorce-decree-beneficiary",
-      label: "NADRA Divorce Certificate — Beneficiary",
+      label: "NADRA Divorce Certificate, Beneficiary",
       sub: "Computerised divorce certificate / Talaqnama from NADRA",
     });
 
@@ -118,7 +118,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
     items.push({
       id: "divorce_cert_pet",
       vaultId: "misc-document",
-      label: "NADRA Divorce Certificate — Petitioner",
+      label: "NADRA Divorce Certificate, Petitioner",
       sub: "Computerised divorce certificate from NADRA",
     });
 
@@ -135,7 +135,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
       id: "death_cert",
       vaultId: "death-cert-prior-spouse",
       label: cl.death_certificate_name
-        ? `Death Certificate — ${cl.death_certificate_name}`
+        ? `Death Certificate, ${cl.death_certificate_name}`
         : "Death Certificate",
       sub: "Death certificate of deceased spouse",
     });
@@ -145,7 +145,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
       id: "police_cert",
       vaultId: "police-certificate-pakistan",
       label: cl.police_certificate_country
-        ? `Police Clearance Certificate — ${cl.police_certificate_country}`
+        ? `Police Clearance Certificate, ${cl.police_certificate_country}`
         : "Police Clearance Certificate",
       sub: "Character certificate from police / relevant authorities",
     });
@@ -155,7 +155,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
       id: "translation",
       vaultId: "certified-translations",
       label: cl.english_translation_document
-        ? `Certified English Translation — ${cl.english_translation_document}`
+        ? `Certified English Translation, ${cl.english_translation_document}`
         : "Certified English Translations",
       sub: "Full certified translation by a qualified translator",
     });
@@ -164,7 +164,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
     items.push({
       id: "i864",
       vaultId: "i-864-affidavit",
-      label: "Form I-864 — Affidavit of Support",
+      label: "Form I-864, Affidavit of Support",
       sub: "Completed and signed by petitioner or joint sponsor",
     });
 
@@ -172,7 +172,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
     items.push({
       id: "i864a",
       vaultId: "i-864a-contract",
-      label: "Form I-864A — Household Member Contract",
+      label: "Form I-864A, Household Member Contract",
       sub: "Required if household member is contributing income",
     });
 
@@ -212,7 +212,7 @@ function buildDocItems(cl: FormSelections): DocItem[] {
     items.push({
       id: "dna",
       vaultId: "misc-document",
-      label: cl.dna_test_name ? `DNA Test Results — ${cl.dna_test_name}` : "DNA Test Results",
+      label: cl.dna_test_name ? `DNA Test Results, ${cl.dna_test_name}` : "DNA Test Results",
       sub: "Results from an approved DNA testing facility",
     });
 
@@ -272,7 +272,7 @@ export default function ActionPlanResults({
   if (!data) {
     return (
       <div className="w-full py-12 text-center">
-        <p className="text-[#6b8097]">Generating results…</p>
+        <p className="text-[#6b8097]">Generating results...</p>
       </div>
     );
   }
@@ -326,19 +326,35 @@ export default function ActionPlanResults({
     if (setDocActionModal) {
       setDocActionModal({
         isOpen: true,
-        doc: { id: item.id, title: item.label, sub: item.sub, icon: "FileText" },
+        doc: {
+          id: item.id,
+          title: item.label,
+          sub: item.sub,
+          icon: "FileText",
+        },
         title: item.label,
         subtitle: item.sub,
-        onReadGuide: undefined,
         onUpload: () => {
-          if (setActiveUploadId) setActiveUploadId(item.id);
-          if (setActiveUploadType) setActiveUploadType("doc");
-          if (openUploadModal) openUploadModal(item.vaultId!);
+          if (setActiveUploadId) {
+            setActiveUploadId(item.id);
+          }
+    
+          if (setActiveUploadType) {
+            setActiveUploadType("doc");
+          }
+    
+          if (openUploadModal) {
+            openUploadModal(item.vaultId!);
+          }
+    
           markUploaded();
         },
       });
     } else {
-      if (openUploadModal) openUploadModal(item.vaultId!);
+      if (openUploadModal) {
+        openUploadModal(item.vaultId!);
+      }
+    
       markUploaded();
     }
   };
@@ -539,7 +555,7 @@ export default function ActionPlanResults({
               <div className="text-[15px] font-bold text-[#0c1b33]">Packet Assembly</div>
               <div className="text-[12px] text-[#6b8097] mt-0.5">
                 {isReloadingDocs ? (
-                  "Checking vault…"
+                  "Checking vault..."
                 ) : (
                   <>
                     {uploadedCount} of {uploadableItems.length} saved to vault
@@ -573,7 +589,7 @@ export default function ActionPlanResults({
                 ) : (
                   <Download size={11} strokeWidth={2.5} />
                 )}
-                {isDownloading ? "…" : "Download All"}
+                {isDownloading ? "..." : "Download All"}
               </button>
             </div>
           </div>
@@ -654,22 +670,13 @@ export default function ActionPlanResults({
                   ) : isUploaded ? (
                     <div className="shrink-0 flex items-center gap-1.5">
                       <span className="text-[10px] font-bold text-[#15744f] uppercase tracking-wider">
-                        Saved ✓
+                        Saved 
                       </span>
-                      <ChevronRight
-                        size={13}
-                        className="text-[#15744f] opacity-50"
-                        strokeWidth={2.5}
-                      />
+                      <Check size={12} className="text-primary opacity-60" strokeWidth={2} />
                     </div>
                   ) : canUpload ? (
                     <div className="shrink-0 flex items-center gap-1">
                       <Upload size={12} className="text-primary opacity-60" strokeWidth={2} />
-                      <ChevronRight
-                        size={13}
-                        className="text-[#6b8097] opacity-40"
-                        strokeWidth={2.5}
-                      />
                     </div>
                   ) : (
                     <span className="shrink-0 text-[10px] font-semibold text-[#6b8097] bg-[#f4f7fb] px-2 py-0.5 rounded-full border border-[#d0e4f7]">
@@ -688,7 +695,7 @@ export default function ActionPlanResults({
             </div>
             <div className="space-y-2">
               {[
-                "- Submit exactly what was requested — nothing more, nothing less",
+                "- Submit exactly what was requested, nothing more, nothing less",
                 "- Keep a complete copy of everything you send",
                 "- Use the method stated in the notice (courier, email, or drop box)",
               ].map((t, i) => (

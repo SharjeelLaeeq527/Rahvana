@@ -102,7 +102,7 @@ export const CANADA_DATA: CountryData = {
     {
       label: "Settle Permanently (Skilled Work)",
       value: "WORK_PERMANENT",
-      sub: "Express Entry — Healthcare, STEM, Trade, or Transport priorities",
+      sub: "Express Entry, Healthcare, STEM, Trade, or Transport priorities",
     },
     {
       label: "Join Family (Sponsorship)",
@@ -112,7 +112,7 @@ export const CANADA_DATA: CountryData = {
     {
       label: "Academic Study",
       value: "STUDY",
-      sub: "Regular study stream — SDS program has been discontinued",
+      sub: "Regular study stream, SDS program has been discontinued",
     },
     {
       label: "Work Temporarily",
@@ -133,7 +133,7 @@ export const CANADA_DATA: CountryData = {
   visas: {
     "CA-EXPRESS-ENTRY": {
       code: "Express Entry",
-      label: "Express Entry — Permanent Residency",
+      label: "Express Entry, Permanent Residency",
       badge: "Permanent Resident",
       color: T.success,
       description:
@@ -150,7 +150,7 @@ export const CANADA_DATA: CountryData = {
     },
     "CA-STUDY-PERMIT": {
       code: "Study Permit",
-      label: "Study Permit — Canada",
+      label: "Study Permit, Canada",
       badge: "Study",
       color: "#6366F1",
       description:
@@ -217,7 +217,7 @@ export const CANADA_DATA: CountryData = {
         id: "language_test",
         question:
           "Do you have valid language test results (IELTS/CELPIP) with at least CLB 7 in all skills?",
-        source: "IRCC — Express Entry language requirements",
+        source: "IRCC, Express Entry language requirements",
         sourceUrl:
           "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/documents/language-requirements.html",
         passWith: ["YES"],
@@ -232,14 +232,14 @@ export const CANADA_DATA: CountryData = {
         id: "priority_sector",
         question:
           "Is your work experience in any of these priority sectors: Healthcare, STEM, Trades, Transport, or Agriculture?",
-        source: "IRCC — Category-Based Selection 2026",
+        source: "IRCC, Category-Based Selection 2026",
         sourceUrl:
           "https://www.canada.ca/en/immigration-refugees-citizenship/services/immigrate-canada/express-entry/submit-profile/rounds-invitations/category-based-selection.html",
         passWith: ["YES", "NO"],
         failMsg: "", // No fatal failure here, just impacts score
         options: [
-          { label: "Yes — I work in a priority sector", value: "YES" },
-          { label: "No — but I have other skilled experience", value: "NO" },
+          { label: "Yes, I work in a priority sector", value: "YES" },
+          { label: "No, but I have other skilled experience", value: "NO" },
         ],
       },
     ],
@@ -248,7 +248,7 @@ export const CANADA_DATA: CountryData = {
         id: "funds_2026",
         question:
           "Do you have proof of at least $22,895 CAD for living expenses (separate from tuition fees)?",
-        source: "IRCC — Study Permit Financial Requirements 2026",
+        source: "IRCC, Study Permit Financial Requirements 2026",
         sourceUrl:
           "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/eligibility.html#funds",
         passWith: ["YES"],
@@ -263,7 +263,7 @@ export const CANADA_DATA: CountryData = {
         id: "pal_check",
         question:
           "Do you have a Provincial Attestation Letter (PAL) from the province where you will study?",
-        source: "IRCC — Provincial Attestation Letter requirement",
+        source: "IRCC, Provincial Attestation Letter requirement",
         sourceUrl:
           "https://www.canada.ca/en/immigration-refugees-citizenship/services/study-canada/study-permit/get-documents.html#attestation",
         passWith: ["YES", "EXEMPT"],
@@ -281,7 +281,7 @@ export const CANADA_DATA: CountryData = {
         id: "lmia_status",
         question:
           "Do you have a valid Job Offer supported by a positive LMIA or a valid LMIA-exempt code?",
-        source: "IRCC — Work Permit Job Offer requirements",
+        source: "IRCC, Work Permit Job Offer requirements",
         sourceUrl:
           "https://www.canada.ca/en/immigration-refugees-citizenship/services/work-canada/permit/temporary/need-permit.html",
         passWith: ["YES", "OPEN"],

@@ -248,6 +248,87 @@ export function getPasswordResetEmailHtml(resetLink: string): string {
   `;
 }
 
+export function getPasswordChangedHtml(): string {
+  return `
+  <!DOCTYPE html>
+  <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Password Changed</title>
+  </head>
+  <body style="margin:0; padding:0; background-color:#e8f6f6; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
+      <tr>
+        <td align="center">
+
+          <!-- Main Card -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; background:#ffffff; border-radius:18px; box-shadow:0 8px 24px rgba(13,115,119,0.08); overflow:hidden;">
+
+            <!-- Top Accent Bar -->
+            <tr>
+              <td style="height:4px; background:linear-gradient(90deg,#0d7377,#14a0a6,#32e0c4);"></td>
+            </tr>
+
+            <tr>
+              <td style="padding:48px 40px;">
+
+                <!-- Logo -->
+                <div style="text-align:center; margin-bottom:32px;">
+                  <div style="display:inline-block; padding:18px;">
+                    ${LOGO_IMAGE}
+                  </div>
+                </div>
+
+                <!-- Heading -->
+                <h1 style="margin:0 0 20px; font-size:26px; font-weight:700; color:#0d7377; text-align:center;">
+                  Password Changed Successfully
+                </h1>
+
+                <!-- Body -->
+                <p style="margin:0 0 20px; font-size:16px; line-height:1.7; color:#475569; text-align:center;">
+                  This is a confirmation that the password for your Rahvana account has been changed successfully.
+                </p>
+
+                <div style="background:#e8f6f6; border-radius:12px; padding:18px; margin:30px 0;">
+                  <p style="margin:0; font-size:15px; line-height:1.6; color:#0a5a5d;">
+                    <strong>Didn't make this change?</strong><br /><br />
+                    If you did not change your password, your account may have been compromised.
+                    Please reset your password immediately and contact our support team if you need assistance.
+                  </p>
+                </div>
+
+                <!-- Divider -->
+                <div style="height:1px; background:#e2e8f0; margin:32px 0;"></div>
+
+                <!-- Footer -->
+                <p style="margin:0; font-size:14px; line-height:1.7; color:#64748b; text-align:center;">
+                  If you changed your password, no further action is required.
+                </p>
+
+                <p style="margin:28px 0 0; font-size:14px; color:#94a3b8; text-align:center;">
+                  Thank you for helping keep your Rahvana account secure.
+                </p>
+
+              </td>
+            </tr>
+          </table>
+
+          <!-- Bottom Footer -->
+          <p style="margin-top:28px; font-size:12px; color:#94a3b8;">
+            © ${new Date().getFullYear()} Rahvana. All rights reserved.
+          </p>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+  </html>
+  `;
+}
+
 export function getMFAEnabledEmailHtml(): string {
   return `
   <!DOCTYPE html>
@@ -517,7 +598,7 @@ export function getFeatureAnnouncementEmailHtml(
 
                   <!-- Footer Text -->
                   <p style="margin:0; font-size:14px; color:#94a3b8; text-align:center;">
-                    Thank you for being part of Rahvana. We’re constantly improving to make your experience better.
+                    Thank you for being part of Rahvana. We're constantly improving to make your experience better.
                   </p>
 
                 </td>

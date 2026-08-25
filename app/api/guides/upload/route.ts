@@ -2,7 +2,10 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server"; // For auth verification
-import { E, msg } from '@/lib/errors';
+import { E, msg } from "@/lib/errors";
+import { assertRequestBodySize } from "@/lib/security/request-body";
+import { validateUploadedFile } from "@/lib/security/file-content";
+import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
 
 export async function POST(request: Request) {
   try {
@@ -17,6 +20,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
+    const tooLarge = assertRequestBodySize(request);
+    if (tooLarge) return tooLarge;
+
     const formData = await request.formData();
 
     const file = formData.get("file") as File;
@@ -24,7 +30,15 @@ export async function POST(request: Request) {
     const stepKey = formData.get("stepKey") as string;
 
     if (!file || !slug || !stepKey) {
-      return NextResponse.json({ error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: '[file, slug, stepKey]' }) }, { status: 400 });
+      return NextResponse.json(
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[file, slug, stepKey]" }) },
+        { status: 400 }
+      );
+    }
+
+    const checked = await validateUploadedFile(file, UPLOAD_PROFILES.guide);
+    if (!checked.ok) {
+      return NextResponse.json({ error: checked.error }, { status: checked.status });
     }
 
     // 2️⃣ Get guide ID
@@ -56,7 +70,10 @@ export async function POST(request: Request) {
     // 5️⃣ Upload file to Supabase Storage
     const { error: uploadError } = await supabaseAdmin.storage
       .from("document-vault")
-      .upload(filePath, file, { upsert: true });
+      .upload(filePath, checked.buffer, {
+        upsert: true,
+        contentType: checked.detectedMime,
+      });
 
     if (uploadError) {
       console.error("Storage upload error:", uploadError);

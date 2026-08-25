@@ -200,3 +200,11 @@ nul
 *.pth
 *.ckpt
 *.onnx
+
+# Uploaded user documents (contain PII - must never be committed)
+/uploads/
+
+# Scratch/debug files - ignore everything except the real register scripts
+/scratch/*
+!/scratch/register_adoption_guide.mjs
+!/scratch/register_step_parent_guide.mjs

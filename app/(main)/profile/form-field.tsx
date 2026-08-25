@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { cn } from "@/lib/utils";
 import {
   User,
@@ -110,7 +111,7 @@ export function FormField({
 
 interface FormSelectProps {
   label: string;
-  value: string;
+  value?: string;
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
   required?: boolean;
@@ -139,24 +140,17 @@ export function FormSelect({
         {label}
         {required && <span className="text-red-500 ml-0.5">*</span>}
       </Label>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
+      <CustomDropdown
+        value={value ?? ""}
+        onChange={onChange}
+        options={[
+          ...(placeholder ? [{ value: "", label: placeholder }] : []),
+          ...options,
+        ]}
+        placeholder={placeholder}
         disabled={disabled || readOnly}
-        className={cn(
-          "flex h-10 w-full rounded-md border border-slate-200 bg-white px-3 py-2 text-sm",
-          "hover:border-slate-300",
-          "focus:border-slate-400 focus:outline-none focus:ring-1 focus:ring-slate-200",
-          "disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
-        )}
-      >
-        {placeholder && <option value="">{placeholder}</option>}
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
+        className="w-full [&_button]:w-full [&_button]:min-w-0"
+      />
       {helpText && <p className="text-xs text-slate-400">{helpText}</p>}
     </div>
   );

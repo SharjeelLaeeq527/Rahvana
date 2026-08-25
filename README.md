@@ -1,4 +1,4 @@
-# 🌍 Rahvana Immigration Assistant
+# 🌍 Rahvana - AI-Powered Immigration Assistant
 
 > **A comprehensive, AI-powered immigration assistance platform** that simplifies visa processes, automates form filling, provides intelligent guidance, and empowers users to reunite with their loved ones.
 

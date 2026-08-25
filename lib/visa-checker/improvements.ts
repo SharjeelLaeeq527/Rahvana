@@ -29,7 +29,7 @@ export const IMPROVEMENT_MESSAGES = {
   NO_MARRIAGE_CERTIFICATE:
     "Obtain an official marriage certificate from the issuing authority and ensure it matches embassy requirements.",
   NO_MARRIAGE_TRANSLATION:
-    "Provide a certified English translation along with the original marriage certificate, including a translator’s certification.",
+    "Provide a certified English translation along with the original marriage certificate, including a translator's certification.",
   NO_BIRTH_CERTIFICATES:
     "Secure official birth certificates or acceptable secondary evidence such as hospital records or affidavits, as permitted by the U.S. embassy.",
   NO_VALID_PASSPORTS:
@@ -41,7 +41,7 @@ export const IMPROVEMENT_MESSAGES = {
   NO_PASSPORT_COPY:
     "Upload clear, legible copies of all passport biographic pages for both sponsor and beneficiary.",
   NO_VALID_POLICE_CLEARANCE_CERTIFICATE:
-    "Obtain police clearance certificates from all required jurisdictions covering the applicant’s full residence history.",
+    "Obtain police clearance certificates from all required jurisdictions covering the applicant's full residence history.",
   DS260_NOT_SUBMITTED:
     "Complete and submit the DS-260 immigrant visa application and retain the confirmation page for interview purposes.",
   NO_INTERVIEW_LETTER:

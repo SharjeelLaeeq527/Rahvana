@@ -1,25 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { AlertCircle } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { ChevronLeft, ChevronRight, Contrast, Sun, Scan } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import dynamic from "next/dynamic";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import FileUpload from "@/app/components/shared/FileUpload";
+import { useToast } from "@/app/components/shared/ToastProvider";
 
-// Dynamically import components that use browser APIs - disable SSR
-const SignatureUploader = dynamic(
-  () => import("@/app/components/pdf-editor/signature/SignatureUploader"),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="flex justify-center p-8">
-        <Loader size="md" />
-      </div>
-    ),
-  }
-);
 const SignaturePreview = dynamic(
   () => import("@/app/components/pdf-editor/signature/SignaturePreview"),
   {
@@ -41,8 +31,12 @@ export default function SignatureRemoverPage() {
   const [originalImage, setOriginalImage] = useState<string | null>(null);
   const [processedImage, setProcessedImage] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const [, setIsModuleLoaded] = useState(false);
+
+  const { showToast } = useToast();
+
+  // Pro tips carousel
+  const tipsTrackRef = useRef<HTMLDivElement>(null);
 
   // Load the image processor module on client-side only
   useEffect(() => {
@@ -52,19 +46,25 @@ export default function SignatureRemoverPage() {
     });
   }, []);
 
+  const scrollTips = (direction: "prev" | "next") => {
+    const track = tipsTrackRef.current;
+    if (!track) return;
+    const amount = track.clientWidth * 0.8;
+    track.scrollBy({ left: direction === "next" ? amount : -amount, behavior: "smooth" });
+  };
+
   const handleFileSelect = async (file: File) => {
     if (!imageProcessorModule) {
-      setError(t("signatureProcessing.errors.loading"));
+      showToast(t("signatureProcessing.errors.loading"), "error");
       return;
     }
 
-    setError(null);
     setOriginalImage(null);
     setProcessedImage(null);
 
     const validation = imageProcessorModule.validateImageFile(file);
     if (!validation.valid) {
-      setError(validation.error || t("pdfProcessing.errors.invalidFile"));
+      showToast(validation.error || t("pdfProcessing.errors.invalidFile"), "error");
       return;
     }
 
@@ -93,7 +93,7 @@ export default function SignatureRemoverPage() {
       }, 500);
     } catch (err) {
       console.error("Processing error:", err);
-      setError(t("signatureProcessing.errors.failed"));
+      showToast(t("signatureProcessing.errors.failed"), "error");
       setIsProcessing(false);
     }
   };
@@ -108,20 +108,44 @@ export default function SignatureRemoverPage() {
   const handleReset = () => {
     setOriginalImage(null);
     setProcessedImage(null);
-    setError(null);
   };
 
+  const proTips = [
+    {
+      icon: Contrast,
+      title: t("signatureProcessing.whitePaper.title"),
+      description: t("signatureProcessing.whitePaper.description"),
+    },
+    {
+      icon: Sun,
+      title: t("signatureProcessing.goodLighting.title"),
+      description: t("signatureProcessing.goodLighting.description"),
+    },
+    {
+      icon: Scan,
+      title: t("signatureProcessing.darkInk.title"),
+      description: t("signatureProcessing.darkInk.description"),
+    },
+  ];
+
   return (
-    <div className="bg-white">
+    <div
+      className="min-h-screen"
+      style={{
+        background:
+          "radial-gradient(1200px 600px at 50% -10%, #dff1f7 0%, #eef7fb 40%, #f7fbfd 70%, #ffffff 100%)",
+      }}
+    >
       <div className="site-main-px site-main-py mt-[55px]">
-        <header className="text-center mb-12">
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 mb-3">
+        {/* Hero */}
+        <header className="mb-10 text-center sm:mb-14">
+          <h1 className="mb-4 text-3xl leading-[1.1] font-extrabold tracking-tight text-[#00595C] sm:text-5xl md:text-6xl">
             {t("signatureProcessing.title")}
           </h1>
-          <p className="text-slate-600 text-sm sm:text-base md:text-lg max-w-3xl mx-auto">
+          <p className="mx-auto max-w-2xl text-sm leading-relaxed text-[#4a6b70] sm:text-base md:text-lg">
             {t("signatureProcessing.subtitle")}
           </p>
-          <div className="flex justify-center mt-4">
+          <div className="mt-6 flex justify-center">
             <QuickAccessButton
               item={{
                 id: "snap-sign",
@@ -133,49 +157,24 @@ export default function SignatureRemoverPage() {
           </div>
         </header>
 
-        <div className="bg-slate-50 rounded-lg border border-slate-200 p-6 sm:p-8 mb-8">
-          <h2 className="text-lg sm:text-xl font-semibold text-slate-900 mb-6">
-            {t("signatureProcessing.bestPractices")}
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {[
-              {
-                title: t("signatureProcessing.whitePaper.title"),
-                description: t("signatureProcessing.whitePaper.description"),
-              },
-              {
-                title: t("signatureProcessing.goodLighting.title"),
-                description: t("signatureProcessing.goodLighting.description"),
-              },
-              {
-                title: t("signatureProcessing.darkInk.title"),
-                description: t("signatureProcessing.darkInk.description"),
-              },
-            ].map((item, idx) => (
-              <div key={idx} className="border-l-2 border-slate-300 pl-4">
-                <h3 className="font-medium text-slate-900 mb-1 text-sm">{item.title}</h3>
-                <p className="text-slate-600 text-xs sm:text-sm">{item.description}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Error Message */}
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6 max-w-2xl mx-auto">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
-              <div>
-                <p className="text-red-800 font-medium text-sm">{error}</p>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Main Content */}
-        <div className="max-w-3xl mx-auto">
+        <div className="mx-auto max-w-3xl">
           {!originalImage && !isProcessing && (
-            <SignatureUploader onFileSelect={handleFileSelect} disabled={isProcessing} />
+            <FileUpload
+              fieldName="signature"
+              accept="image/*"
+              variant="premium"
+              showPreview
+              title={t("signatureProcessing.uploader.uploadTitle")}
+              description={t("signatureProcessing.uploader.browse")}
+              buttonText={t("signatureProcessing.uploader.chooseFile")}
+              helperText={t("signatureProcessing.uploader.supported")}
+              onFileUpload={(_, file) => {
+                if (file instanceof File) {
+                  handleFileSelect(file);
+                }
+              }}
+            />
           )}
 
           {processedImage && originalImage && !isProcessing && (
@@ -189,6 +188,57 @@ export default function SignatureRemoverPage() {
             </ResultGate>
           )}
         </div>
+
+        {/* Pro Tips carousel */}
+        {!originalImage && !isProcessing && (
+          <section className="mx-auto mt-14 max-w-6xl sm:mt-20">
+            <div className="mb-5 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+              <h2 className="min-w-0 truncate text-base font-semibold text-[#123f42] sm:text-lg">
+                {t("signatureProcessing.bestPractices")}
+              </h2>
+              <div className="flex shrink-0 items-center gap-2 lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => scrollTips("prev")}
+                  aria-label="Previous tip"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-[#d9e9ee] bg-white text-[#0d7377] shadow-sm transition-colors hover:bg-[#f0f9fa]"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => scrollTips("next")}
+                  aria-label="Next tip"
+                  className="flex h-9 w-9 items-center justify-center rounded-full border border-[#d9e9ee] bg-white text-[#0d7377] shadow-sm transition-colors hover:bg-[#f0f9fa]"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </button>
+              </div>
+            </div>
+
+            <div
+              ref={tipsTrackRef}
+              className="-mx-1 flex snap-x snap-mandatory [scrollbar-width:none] gap-4 overflow-x-auto px-1 pb-2 [&::-webkit-scrollbar]:hidden"
+            >
+              {proTips.map((item, idx) => (
+                <div
+                  key={idx}
+                  className={`w-[80%] shrink-0 snap-start rounded-2xl border border-[#e4eff2] bg-white p-5 shadow-[0_2px_14px_rgba(13,115,119,0.06)] transition-shadow hover:shadow-[0_8px_24px_rgba(13,115,119,0.10)] sm:w-[45%] sm:p-6 lg:w-[32%]`}
+                >
+                  <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-[#eaf4f9]">
+                    <item.icon className="h-5 w-5 text-[#0d7377]" />
+                  </div>
+                  <h3 className="mb-1.5 text-sm font-semibold text-[#123f42] sm:text-base">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs leading-relaxed text-[#5c7b80] sm:text-sm">
+                    {item.description}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
       </div>
     </div>
   );

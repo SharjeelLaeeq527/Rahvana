@@ -17,6 +17,7 @@ import { Card } from "@/components/ui/card";
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { Loader } from "@/components/ui/spinner";
+import { validateEmail } from "@/lib/validation/email";
 
 function LoginContent() {
   const [email, setEmail] = useState("");
@@ -25,6 +26,9 @@ function LoginContent() {
   const [success, setSuccess] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  // Seconds remaining on a rate-limit lock (0 = not locked). Drives the
+  // Sign In button countdown after a 429 "too many attempts" response.
+  const [lockSeconds, setLockSeconds] = useState(0);
   const { user, signIn, signInWithGoogle, isLoading, mfaPending, verifyMFALogin } = useAuth();
   const { t } = useLanguage();
   const router = useRouter();
@@ -49,6 +53,57 @@ function LoginContent() {
       setChallengeId(challengeIdStored);
     }
   }, [isMfaActive]);
+
+  // Key under which we persist the rate-limit lock expiry (epoch ms). Persisting
+  // it means a page refresh or new tab cannot re-enable the button before the
+  // server-side cooldown actually ends - the UI stays honest with the server.
+  const LOCK_KEY = "rahvana_login_lock_until";
+
+  // Begin (or extend) a lockout of `seconds` and remember when it ends.
+  const startLock = (seconds: number) => {
+    setLockSeconds(seconds);
+    try {
+      localStorage.setItem(LOCK_KEY, String(Date.now() + seconds * 1000));
+    } catch {
+      // localStorage may be unavailable (private mode) - the in-memory lock
+      // still holds for this page view, so degrade gracefully.
+    }
+  };
+
+  // On mount, restore any lock that is still in the future so a refresh keeps
+  // the button disabled for the remaining time.
+  useEffect(() => {
+    try {
+      const until = parseInt(localStorage.getItem(LOCK_KEY) || "", 10);
+      if (Number.isFinite(until)) {
+        const remaining = Math.ceil((until - Date.now()) / 1000);
+        if (remaining > 0) setLockSeconds(remaining);
+        else localStorage.removeItem(LOCK_KEY);
+      }
+    } catch {
+      // Ignore - no persisted lock available.
+    }
+  }, []);
+
+  // Tick the rate-limit lock down once per second until it reaches zero, then
+  // clear the persisted expiry so the button re-enables cleanly.
+  useEffect(() => {
+    if (lockSeconds <= 0) return;
+    const id = setInterval(() => {
+      setLockSeconds((s) => {
+        if (s <= 1) {
+          try {
+            localStorage.removeItem(LOCK_KEY);
+          } catch {
+            /* ignore */
+          }
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(id);
+  }, [lockSeconds]);
 
   // Check for messages from URL params
   useEffect(() => {
@@ -124,8 +179,19 @@ function LoginContent() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Locked out by a previous 429 - ignore submits until the timer expires.
+    if (lockSeconds > 0) return;
     setError("");
     setIsSubmitting(true);
+
+    // Validate email
+    const emailError = validateEmail(email);
+
+    if (emailError) {
+      setError(emailError);
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
       const {
@@ -133,11 +199,21 @@ function LoginContent() {
         mfaRequired: isMfaRequired,
         factorId: fId,
         challengeId: cId,
+        retryAfterSeconds,
       } = await signIn(email, password);
       if (signInError) {
         const code = String((signInError as { code?: string }).code || "");
 
-        if (code === "AUTH_EMAIL_NOT_CONFIRMED") {
+        // Rate limited: lock the button for the cooldown window. Trigger on the
+        // explicit code OR the presence of a retry window, so a code/label change
+        // on the server can never silently leave the button clickable. Persist
+        // the lock so a page refresh cannot re-enable it before the window ends.
+        if (code === "AUTH_RATE_LIMITED" || (retryAfterSeconds && retryAfterSeconds > 0)) {
+          const seconds =
+            retryAfterSeconds && retryAfterSeconds > 0 ? retryAfterSeconds : 15 * 60;
+          startLock(seconds);
+          setError(signInError.message || msg(E.AUTH_RATE_LIMITED, { minutes: 15 }));
+        } else if (code === "AUTH_EMAIL_NOT_CONFIRMED") {
           setError(msg(E.AUTH_EMAIL_NOT_CONFIRMED));
         } else if (code === "AUTH_LOGIN_SERVER_ERROR") {
           setError(msg(E.AUTH_LOGIN_SERVER_ERROR));
@@ -225,22 +301,22 @@ function LoginContent() {
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="bg-background flex min-h-screen items-center justify-center">
         <Loader size="md" text="Loading..." />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/20 px-4 py-12">
+    <div className="bg-muted/20 flex min-h-screen items-center justify-center px-4 py-12">
       <div className="w-full max-w-md space-y-8">
         {/* Logo & Header */}
         <div className="text-center">
-          <div className="flex justify-center mb-8">
+          <div className="mb-8 flex justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="152 220 710 215"
-              className="h-12 w-auto text-primary fill-current"
+              className="text-primary h-12 w-auto fill-current"
             >
               <path d="M194.478302,411.482117C188.648972,398.666321 181.184067,387.211884 174.078979,375.556946C161.946335,355.654999 154.218430,334.429535 152.466766,310.927032C150.965759,290.787415 151.490814,271.069061 158.657028,251.953415C161.906097,243.286591 167.372574,236.333282 175.068100,231.098938C187.972153,222.321823 212.377777,222.515015 222.031631,242.165817C226.003326,250.250381 232.154404,254.994858 241.386230,255.103607C240.874603,257.700470 239.210571,257.303253 238.057617,257.539734C214.604111,262.350281 200.098267,276.975067 192.363480,299.065857C184.921768,320.319672 187.555267,352.132874 198.628662,372.172211C195.346085,360.736084 194.548477,349.072571 194.585556,337.231354C194.686203,305.091156 209.071442,282.030487 237.587112,267.388245C252.463837,259.749298 268.363953,254.738281 283.791870,248.515182C300.024750,241.967392 315.867065,234.607849 330.889893,225.571030C331.848022,224.994675 332.727417,224.133804 334.330139,224.642090C334.086884,229.016586 332.356110,232.995224 331.110291,237.029678C325.877838,253.974487 319.356995,270.258270 307.731262,284.109070C295.584656,298.580475 279.797791,306.307983 261.751282,310.259583C255.743668,311.575104 249.729248,312.898682 243.795959,314.506500C229.390137,318.410126 220.388382,329.212219 218.286926,343.947327C216.575470,355.947906 217.905655,367.798737 218.737152,379.737518C219.623474,392.463135 221.756760,405.206818 219.303925,418.003387C217.963852,424.994537 214.710114,430.344635 207.688766,433.006439C204.303909,434.289673 202.544754,433.679260 201.368622,430.074707C199.358749,423.914886 196.908096,417.898895 194.478302,411.482117z"></path>
               <path d="M347.022308,320.000671C347.016052,314.839264 347.105347,310.174835 346.965759,305.517273C346.865234,302.162506 348.128204,300.629364 351.628418,300.734467C356.786560,300.889313 361.960175,300.922363 367.113922,300.699646C370.973633,300.532806 372.427643,301.928192 372.368347,305.879303C372.186157,318.023376 372.301971,330.171936 372.301971,342.083649C373.283447,342.867767 373.819183,342.426117 374.318726,342.006836C383.782745,334.063324 394.575775,332.615875 406.196838,335.633057C415.899536,338.152130 422.744904,346.587646 423.310516,356.622040C424.267090,373.593201 423.737030,390.584991 423.953217,407.566589C423.995270,410.868988 423.022247,412.495087 419.405853,412.347473C414.084778,412.130249 408.740967,412.096069 403.421997,412.329346C399.633331,412.495514 398.561127,410.970825 398.606415,407.354187C398.766998,394.531891 398.675171,381.706299 398.663269,368.881958C398.653717,358.575378 395.399567,354.366302 387.286011,354.116821C377.843262,353.826508 372.628845,358.719452 372.391693,368.828339C372.122253,380.313904 372.349670,391.810638 372.318054,403.302399C372.289795,413.578827 373.113983,412.175079 363.109467,412.274994C359.445770,412.311584 355.772827,412.113037 352.119568,412.309662C348.129639,412.524414 346.894379,410.660309 346.908722,406.924530C346.998840,383.444702 346.970551,359.964386 346.985443,336.484253C346.988831,331.156372 347.007996,325.828522 347.022308,320.000671z"></path>
@@ -251,7 +327,7 @@ function LoginContent() {
               <path d="M462.865234,349.315674C466.810211,360.099579 470.616516,370.517090 474.916962,382.287018C479.384949,370.264709 483.446716,359.611023 487.304840,348.884125C492.050720,335.688873 491.977295,335.663025 505.813934,335.672577C509.450104,335.675079 513.086243,335.672974 516.388855,335.672974C517.832825,337.670685 516.935730,339.029816 516.375854,340.352936C506.968994,362.584229 497.464996,384.774902 488.184998,407.058929C486.539337,411.010712 484.388458,412.776581 479.977966,412.379303C475.350067,411.962463 470.655884,412.190247 465.993652,412.284424C463.688049,412.331024 462.271484,411.462463 461.363007,409.333313C451.367401,385.906311 441.325592,362.499023 431.328247,339.072754C431.024841,338.361816 431.069000,337.502533 430.862396,336.117645C439.559174,335.296478 447.964783,335.637482 456.359894,335.899841C458.206085,335.957550 458.559937,337.773163 459.088776,339.116821C460.368408,342.367920 461.522064,345.668579 462.865234,349.315674z"></path>
             </svg>
           </div>
-          <h1 className="text-3xl font-bold text-foreground">Welcome Back</h1>
+          <h1 className="text-foreground text-3xl font-bold">Welcome Back</h1>
           <p className="text-muted-foreground mt-2">Sign in to continue to Rahvana</p>
         </div>
 
@@ -259,9 +335,9 @@ function LoginContent() {
         <Button
           onClick={handleGoogleSignIn}
           disabled={isSubmitting}
-          className="w-full bg-card hover:bg-muted text-foreground font-medium py-6 rounded-xl border border-border flex items-center justify-center gap-3 shadow-sm transition-all hover:shadow-md"
+          className="bg-card hover:bg-muted text-foreground border-border flex w-full items-center justify-center gap-3 rounded-xl border py-6 font-medium shadow-sm transition-all hover:shadow-md"
         >
-          <svg className="w-5 h-5" viewBox="0 0 24 24">
+          <svg className="h-5 w-5" viewBox="0 0 24 24">
             <path
               fill="#4285F4"
               d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
@@ -285,19 +361,19 @@ function LoginContent() {
         {/* Divider */}
         <div className="relative">
           <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-border"></div>
+            <div className="border-border w-full border-t"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-4 bg-muted/20 text-muted-foreground">or sign in with email</span>
+            <span className="bg-muted/20 text-muted-foreground px-4">or sign in with email</span>
           </div>
         </div>
 
         {/* Email Sign In Form */}
-        <Card className="p-6 bg-card shadow-lg border-border rounded-2xl">
+        <Card className="bg-card border-border rounded-2xl p-6 shadow-lg">
           {mfaRequired ? (
-            <form onSubmit={handleMfaSubmit} className="space-y-5">
+            <form onSubmit={handleMfaSubmit} noValidate className="space-y-5">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">
+                <label className="text-foreground block text-sm font-medium">
                   Authentication Code
                 </label>
                 <Input
@@ -309,16 +385,16 @@ function LoginContent() {
                   required
                   disabled={isSubmitting}
                 />
-                <p className="text-sm text-muted-foreground">
+                <p className="text-muted-foreground text-sm">
                   Enter the code from your authenticator app
                 </p>
               </div>
 
               {/* Error Message */}
               {error && (
-                <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+                <div className="flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
                   <svg
-                    className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
+                    className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -338,15 +414,15 @@ function LoginContent() {
               <Button
                 type="submit"
                 disabled={isSubmitting || mfaCode.length !== 6}
-                className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50"
+                className="bg-primary hover:bg-primary/90 h-12 w-full rounded-xl font-medium text-white transition-all disabled:opacity-50"
               >
                 {isSubmitting ? "Verifying..." : "Verify Code"}
               </Button>
             </form>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} noValidate className="space-y-5">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">Email Address</label>
+                <label className="text-foreground block text-sm font-medium">Email Address</label>
                 <Input
                   type="email"
                   value={email}
@@ -360,10 +436,10 @@ function LoginContent() {
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
-                  <label className="block text-sm font-medium text-foreground">Password</label>
+                  <label className="text-foreground block text-sm font-medium">Password</label>
                   <Link
                     href="/forgot-password"
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-muted-foreground hover:text-foreground text-sm transition-colors"
                   >
                     Forgot password?
                   </Link>
@@ -381,11 +457,11 @@ function LoginContent() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                    className="text-muted-foreground hover:text-foreground absolute top-1/2 right-4 -translate-y-1/2"
                   >
                     {showPassword ? (
                       <svg
-                        className="w-5 h-5"
+                        className="h-5 w-5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -405,7 +481,7 @@ function LoginContent() {
                       </svg>
                     ) : (
                       <svg
-                        className="w-5 h-5"
+                        className="h-5 w-5"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -424,9 +500,9 @@ function LoginContent() {
 
               {/* Success Message */}
               {success && (
-                <div className="p-4 bg-emerald-50 border border-emerald-100 rounded-xl flex items-start gap-3">
+                <div className="flex items-start gap-3 rounded-xl border border-emerald-100 bg-emerald-50 p-4">
                   <svg
-                    className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5"
+                    className="mt-0.5 h-5 w-5 shrink-0 text-emerald-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -444,9 +520,9 @@ function LoginContent() {
 
               {/* Error Message */}
               {error && (
-                <div className="p-4 bg-red-50 border border-red-100 rounded-xl flex items-start gap-3">
+                <div className="flex items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
                   <svg
-                    className="w-5 h-5 text-red-500 shrink-0 mt-0.5"
+                    className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -465,19 +541,23 @@ function LoginContent() {
               {/* Submit Button */}
               <Button
                 type="submit"
-                disabled={isSubmitting}
-                className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground font-medium rounded-xl transition-all disabled:opacity-50"
+                disabled={isSubmitting || lockSeconds > 0}
+                className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full rounded-xl font-medium transition-all disabled:opacity-50"
               >
-                {isSubmitting ? "Signing in..." : "Sign In"}
+                {lockSeconds > 0
+                  ? `Try again in ${Math.floor(lockSeconds / 60)}:${String(lockSeconds % 60).padStart(2, "0")}`
+                  : isSubmitting
+                    ? "Signing in..."
+                    : "Sign In"}
               </Button>
             </form>
           )}
         </Card>
 
         {/* Sign Up Link */}
-        <p className="text-center text-sm text-muted-foreground">
+        <p className="text-muted-foreground text-center text-sm">
           Don&apos;t have an account?{" "}
-          <Link href="/signup" className="font-semibold text-primary hover:underline">
+          <Link href="/signup" className="text-primary font-semibold hover:underline">
             Create account
           </Link>
         </p>
@@ -500,7 +580,7 @@ export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="bg-background flex min-h-screen items-center justify-center">
           <Loader size="md" text="Loading..." />
         </div>
       }

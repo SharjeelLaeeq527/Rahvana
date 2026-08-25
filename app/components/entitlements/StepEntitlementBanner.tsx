@@ -47,12 +47,12 @@ const FEATURE_LABELS: Record<
     icon: "shield",
   },
   polio_certificate: {
-    title: "Polio Certificate Guide — Executive Only",
+    title: "Polio Certificate Guide, Executive Only",
     what: "The step-by-step Polio Certificate guide and Rahvana-assisted submission are only available on the Executive plan.",
     icon: "crown",
   },
   action_221g: {
-    title: "221(g) Action Planner — Executive Only",
+    title: "221(g) Action Planner, Executive Only",
     what: "The 221(g) Action Planner, follow-up step guidance, and post-interview tracking are exclusively available on the Executive plan.",
     icon: "crown",
   },

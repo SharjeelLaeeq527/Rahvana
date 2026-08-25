@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import SearchableIndexedDropdown from "@/app/(tools)/(visa)/visa-category/ir-category/components/SearchableIndexedDropdown";
+import SearchableIndexedDropdown from "@/app/(tools)/(visa)/visa-category/components/SearchableIndexedDropdown";
 import { COUNTRIES } from "@/data/countries";
 import { Globe, AlertCircle, Info } from "lucide-react";
 import { ExpandableTooltip } from "../shared/ExpandableTooltip";

@@ -44,9 +44,10 @@ interface DocumentVaultStore {
   wizardOpen: boolean;
   uploadModalOpen: boolean;
   notificationCenterOpen: boolean;
+  currentJourneyId: string | null;
 
   // Actions
-  initialize: (userId: string, t?: TranslateFn) => Promise<void>;
+  initialize: (userId: string, t?: TranslateFn, journeyId?: string) => Promise<void>;
   setConfig: (config: DocumentVaultConfig) => Promise<void>;
   updateScenarioFlags: (flags: Partial<ScenarioFlags>) => void;
   setVisaCategory: (category: VisaCategory) => void;
@@ -56,10 +57,11 @@ interface DocumentVaultStore {
   updateDocument: (documentId: string, updates: Partial<UploadedDocument>) => void;
   deleteDocument: (documentId: string) => void;
   refreshDocumentStatuses: () => void;
-  reloadDocuments: () => Promise<void>;
+  reloadDocuments: (journeyId?: string) => Promise<void>;
   addDynamicSlot: (category: string) => void;
   addNamedDynamicSlot: (category: string, name: string) => Promise<string>;
   renameDynamicSlot: (categoryId: string, slotId: string, newName: string) => void;
+  deleteDynamicSlot: (category: string, slotId: string) => Promise<void>;
 
   // UI actions
   setSelectedDocument: (documentDefId: string | null) => void;
@@ -126,13 +128,14 @@ const initialState = {
   wizardOpen: false,
   uploadModalOpen: false,
   notificationCenterOpen: false,
+  currentJourneyId: null,
 };
 
 export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => ({
   ...initialState,
 
-  initialize: async (userId: string, t?: TranslateFn) => {
-    set({ isLoading: true });
+  initialize: async (userId: string, t?: TranslateFn, journeyId?: string) => {
+    set({ isLoading: true, currentJourneyId: journeyId || null });
 
     try {
       // Load completed steps from localStorage
@@ -171,13 +174,13 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
         }
       }
 
-      // Fetch config from API
-      const configResponse = await fetch("/api/documents/config");
+      // Fetch config from API (filtered by journey if provided)
+      const configResponse = await fetch(journeyId ? `/api/documents/config?journeyId=${journeyId}` : "/api/documents/config");
       const configData = await configResponse.json();
       const config = configData.config;
 
-      // Fetch documents from API
-      const docsResponse = await fetch("/api/documents/list");
+      // Fetch documents from API (filtered by journey if provided)
+      const docsResponse = await fetch(journeyId ? `/api/documents/list?journeyId=${journeyId}` : "/api/documents/list");
       const docsData = await docsResponse.json();
       const documents = docsData.documents || [];
 
@@ -246,12 +249,18 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
     }
 
     const { uploadedDocuments } = get();
+    const journeyId = config.journeyId !== undefined ? config.journeyId : get().currentJourneyId;
+    const configWithJourney = {
+      ...config,
+      journeyId,
+    };
+
     const uploadedDocIds = uploadedDocuments.map((d) => d.documentDefId);
-    const requiredDocs = generateRequiredDocuments(config, true, uploadedDocuments); // Include optional documents
+    const requiredDocs = generateRequiredDocuments(configWithJourney, true, uploadedDocuments); // Include optional documents
 
     // Set config in store IMMEDIATELY — don't wait for DB
     set({
-      config,
+      config: configWithJourney,
       requiredDocuments: requiredDocs,
     });
 
@@ -260,7 +269,7 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
       await fetch("/api/documents/config", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(config),
+        body: JSON.stringify(configWithJourney),
       });
     } catch (error) {
       console.error("Failed to persist config to DB (config still active for session):", error);
@@ -360,14 +369,23 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
     set({ uploadedDocuments: updatedDocs });
   },
 
-  reloadDocuments: async () => {
-    const { hasLoadedDocsInitial } = get();
-    if (!hasLoadedDocsInitial) {
-      set({ isReloadingDocs: true });
+  reloadDocuments: async (journeyId?: string) => {
+    const { hasLoadedDocsInitial, currentJourneyId } = get();
+    const targetJourneyId = journeyId || currentJourneyId || undefined;
+    const isNewJourney = journeyId && journeyId !== currentJourneyId;
+    if (!hasLoadedDocsInitial || isNewJourney) {
+      set({ isReloadingDocs: true, currentJourneyId: targetJourneyId || null });
     }
     try {
-      // Fetch documents from API
-      const response = await fetch("/api/documents/list");
+      // 1. Fetch config from API for this journey
+      const configUrl = targetJourneyId ? `/api/documents/config?journeyId=${targetJourneyId}` : "/api/documents/config";
+      const configResponse = await fetch(configUrl);
+      const configData = await configResponse.json();
+      const config = configData.config;
+
+      // 2. Fetch documents from API (filtered by journey if provided)
+      const url = targetJourneyId ? `/api/documents/list?journeyId=${targetJourneyId}` : "/api/documents/list";
+      const response = await fetch(url);
       const data = await response.json();
       const documents = (data.documents || []).map((doc: Record<string, unknown>) => ({
         ...doc,
@@ -378,11 +396,11 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
       const defsMap = new Map(ALL_DOCUMENTS.map((d) => [d.id, d]));
       const updatedDocs = updateDocumentStatuses(documents, defsMap);
 
-      // Also regenerate requiredDocuments if config is available
-      const { config } = get();
+      // 3. Regenerate requiredDocuments if config is available
       if (config) {
         const requiredDocs = generateRequiredDocuments(config, true, updatedDocs);
         set({
+          config,
           uploadedDocuments: updatedDocs,
           requiredDocuments: requiredDocs,
           isReloadingDocs: false,
@@ -390,7 +408,9 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
         });
       } else {
         set({
+          config: null,
           uploadedDocuments: updatedDocs,
+          requiredDocuments: [],
           isReloadingDocs: false,
           hasLoadedDocsInitial: true,
         });
@@ -414,16 +434,21 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
     const baseName = displayName.replace(/ (Documents|Evidence)$/, "");
 
     if (updatedSlots.length === 0) {
-      // If empty, materialize the first virtual slot (ID matching the engine's default)
-      // AND add the second one so the user sees a new card immediately.
+      // Materialize the first slot (ID matching the engine's default)
       updatedSlots.push({
         id: `dynamic-${category}-1`,
         name: `${baseName} Document (1)`,
       });
-      updatedSlots.push({
-        id: `dynamic-${category}-${Date.now()}-2`,
-        name: `${baseName} Document (2)`,
-      });
+
+      // Only add the second one if the category normally shows a default virtual slot.
+      // For CIVIL, MISC, TRANSLATIONS, and OTHER, no default virtual slot is shown,
+      // so adding just the first slot is enough to show a single card.
+      if (!["CIVIL", "MISC", "TRANSLATIONS", "OTHER"].includes(category)) {
+        updatedSlots.push({
+          id: `dynamic-${category}-${Date.now()}-2`,
+          name: `${baseName} Document (2)`,
+        });
+      }
     } else {
       // Standard addition
       const newIndex = updatedSlots.length + 1;
@@ -498,6 +523,50 @@ export const useDocumentVaultStore = create<DocumentVaultStore>()((set, get) => 
     };
 
     get().setConfig(updatedConfig);
+  },
+
+  deleteDynamicSlot: async (category: string, slotId: string) => {
+    const { config, uploadedDocuments } = get();
+    if (!config) return;
+
+    // 1. Delete all uploaded files associated with this slot ID from the server
+    const docsToDelete = uploadedDocuments.filter((d) => d.documentDefId === slotId);
+    for (const doc of docsToDelete) {
+      try {
+        await fetch(`/api/documents/${doc.id}`, {
+          method: "DELETE",
+        });
+      } catch (error) {
+        console.error(`Failed to delete dynamic file ${doc.id}:`, error);
+      }
+    }
+
+    // 2. Remove the slot from dynamicDocuments config
+    const dynamicDocs = config.dynamicDocuments || {};
+    const slots = dynamicDocs[category] || [];
+    const updatedSlots = slots.filter((slot) => slot.id !== slotId);
+
+    const updatedDynamicDocs = {
+      ...dynamicDocs,
+      [category]: updatedSlots,
+    };
+
+    const updatedConfig = {
+      ...config,
+      dynamicDocuments: updatedDynamicDocs,
+    };
+
+    // 3. Update the config and set the store state
+    await get().setConfig(updatedConfig);
+
+    // 4. Update the uploaded documents state locally
+    set({
+      uploadedDocuments: get().uploadedDocuments.filter((d) => d.documentDefId !== slotId),
+    });
+
+    // 5. Refresh statuses and notifications
+    get().refreshDocumentStatuses();
+    get().refreshNotifications();
   },
 
   setSelectedDocument: (documentDefId: string | null) => {

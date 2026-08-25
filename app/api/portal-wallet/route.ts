@@ -6,7 +6,7 @@ import { auditLog } from "@/lib/security/audit-log";
 
 const normalizeSecurityAnswer = (answer: string) => answer.trim().replace(/\s+/g, " ").toLowerCase();
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
 
@@ -70,6 +70,8 @@ export async function GET() {
                 question: q.question,
                 answer: "••••••",
               })) || [],
+
+          updated_at: cred.updated_at,
       })) || [];
 
     auditLog({
@@ -159,7 +161,6 @@ export async function POST(req: Request) {
     if (error) {
       console.error("Error saving credentials:", error);
       return NextResponse.json({ error: "Failed to save credentials" }, { status: 500 });
-      return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
     }
 
     if (portalType !== "NVC" && securityQuestions?.length) {
@@ -211,6 +212,5 @@ export async function POST(req: Request) {
   } catch (error) {
     console.error("Unexpected error in POST portal-wallet:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
-    return NextResponse.json({ error: msg(E.PORTAL_WALLET_FETCH_FAILED) }, { status: 500 });
   }
 }

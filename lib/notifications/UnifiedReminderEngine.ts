@@ -254,10 +254,12 @@ export class UnifiedReminderEngine {
       for (const row of caseDataResult.value.data) {
         if (!row.data_key) continue;
         try {
-          metadata[row.data_key] =
-            typeof row.data_value === "string" && row.data_value.startsWith('"')
-              ? JSON.parse(row.data_value)
-              : row.data_value;
+          const raw = typeof row.data_value === "string" ? row.data_value.trim() : "";
+          if (raw.startsWith('"') && raw.endsWith('"') && raw.length >= 2) {
+            metadata[row.data_key] = JSON.parse(raw);
+          } else {
+            metadata[row.data_key] = row.data_value;
+          }
         } catch {
           metadata[row.data_key] = row.data_value;
         }
@@ -382,6 +384,19 @@ export class UnifiedReminderEngine {
 
     const alreadyScheduled = new Set((existing ?? []).map((r) => r.reminder_id));
 
+    const { data: journey } = await this.supabase
+      .from("journeys")
+      .select("journey_type")
+      .eq("id", journeyId)
+      .single();
+    const rawType = journey?.journey_type;
+    const journeyPrefix = rawType
+      ? `${rawType
+          .trim()
+          .toUpperCase()
+          .replace(/^(IR|CR)(\d)$/, "$1-$2")} • `
+      : "";
+
     const rows = defs
       .filter((def) => !alreadyScheduled.has(def.id))
       .map((def) => {
@@ -395,7 +410,7 @@ export class UnifiedReminderEngine {
         reminder_id: def.id,
         trigger_group: def.group,
         reminder_type: def.kind,
-        title: def.title,
+        title: `${journeyPrefix}${def.title}`,
         message: def.body,
         channel: def.channels.includes("push_and_email") ? "push_and_email" : "push",
         fire_at: fireAt.toISOString(),
@@ -437,12 +452,25 @@ export class UnifiedReminderEngine {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
     if (fireAt < oneDayAgo) return;
 
+    const { data: journey } = await this.supabase
+      .from("journeys")
+      .select("journey_type")
+      .eq("id", journeyId)
+      .single();
+    const rawType = journey?.journey_type;
+    const journeyPrefix = rawType
+      ? `${rawType
+          .trim()
+          .toUpperCase()
+          .replace(/^(IR|CR)(\d)$/, "$1-$2")} • `
+      : "";
+
     await this.supabase.from("ceac_scheduled_notifications").insert({
       journey_id: journeyId,
       reminder_id: def.id,
       trigger_group: def.group,
       reminder_type: def.kind,
-      title: def.title,
+      title: `${journeyPrefix}${def.title}`,
       message: def.body,
       channel: def.channels.includes("push_and_email") ? "push_and_email" : "push",
       fire_at: fireAt.toISOString(),

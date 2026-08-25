@@ -31,6 +31,9 @@ import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { useFeatureAccess } from "@/lib/usage/useFeatureAccess";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { PhoneInput } from "@/components/ui/phone-input";
+import type { Value as E164Number } from "react-phone-number-input";
+import { validatePhoneNumber, formatPhoneNumber } from "@/lib/validation/phone";
 
 interface Booking {
   id: string;
@@ -63,9 +66,7 @@ interface FormData {
   preferred_language: string;
   full_name: string;
   email: string;
-  country_code: string;
-  phone_number: string;
-  whatsapp_phone: string;
+  whatsapp_phone: string; // E.164 format from PhoneInput
   case_summary: string;
   selected_slot: Date | null;
   alternate_slots: Date[];
@@ -74,71 +75,6 @@ interface FormData {
 
 const ConsultationBookingPageContent = () => {
   const router = useRouter();
-
-  // Function to get phone number placeholder based on country code
-  const getPhonePlaceholder = (countryCode: string): string => {
-    switch (countryCode) {
-      case "+92": // Pakistan
-        return "300 1234567";
-      case "+1": // USA/Canada
-        return "123 456 7890";
-      case "+44": // UK
-        return "7123 456789";
-      case "+91": // India
-        return "98765 43210";
-      case "+971": // UAE
-        return "50 123 4567";
-      case "+966": // Saudi Arabia
-        return "50 123 4567";
-      case "+61": // Australia
-        return "412 345 678";
-      case "+49": // Germany
-        return "151 23456789";
-      case "+33": // France
-        return "6 12 34 56 78";
-      case "+81": // Japan
-        return "90-1234-5678";
-      case "+86": // China
-        return "138 0013 8000";
-      default:
-        return "123 456 7890"; // Default placeholder
-    }
-  };
-
-  // Function to validate phone number format based on country code
-  const validatePhoneNumber = (phone: string, countryCode: string): boolean => {
-    // Remove all non-digit characters for validation
-    const digitsOnly = phone.replace(/\D/g, "");
-
-    // Basic length validation based on country code
-    switch (countryCode) {
-      case "+92": // Pakistan: typically 10-11 digits after country code
-        return digitsOnly.length >= 10 && digitsOnly.length <= 11;
-      case "+1": // USA/Canada: 10 digits
-        return digitsOnly.length === 10;
-      case "+44": // UK: 10-11 digits
-        return digitsOnly.length >= 10 && digitsOnly.length <= 11;
-      case "+91": // India: 10 digits
-        return digitsOnly.length === 10;
-      case "+971": // UAE: 9 digits
-        return digitsOnly.length === 9;
-      case "+966": // Saudi Arabia: 9 digits
-        return digitsOnly.length === 9;
-      case "+61": // Australia: 9 digits
-        return digitsOnly.length === 9;
-      case "+49": // Germany: 10-11 digits
-        return digitsOnly.length >= 10 && digitsOnly.length <= 11;
-      case "+33": // France: 9 digits
-        return digitsOnly.length === 9;
-      case "+81": // Japan: 10 digits
-        return digitsOnly.length >= 10;
-      case "+86": // China: 11 digits
-        return digitsOnly.length === 11;
-      default:
-        // Default: minimum 7 digits, maximum 15 digits
-        return digitsOnly.length >= 7 && digitsOnly.length <= 15;
-    }
-  };
 
   // Function to validate email format
   const validateEmail = (email: string): boolean => {
@@ -206,9 +142,7 @@ const ConsultationBookingPageContent = () => {
     preferred_language: "English",
     full_name: "",
     email: "",
-    country_code: "+92",
-    phone_number: "",
-    whatsapp_phone: "",
+    whatsapp_phone: "", // E.164 format phone number
     case_summary: "",
     selected_slot: null as Date | null,
     alternate_slots: [] as Date[],
@@ -629,20 +563,10 @@ const ConsultationBookingPageContent = () => {
     field: keyof FormData,
     value: string | boolean | Date | Date[] | null
   ) => {
-    // Validate phone number field to prevent alphabetic characters
-    if (field === "phone_number" && typeof value === "string") {
-      // Allow only digits, spaces, hyphens, parentheses, plus signs, and periods
-      const cleanedValue = value.replace(/[^\d\s\-\(\)\+.]/g, "");
-      setFormData((prev) => ({
-        ...prev,
-        [field]: cleanedValue,
-      }));
-    } else {
-      setFormData((prev) => ({
-        ...prev,
-        [field]: value,
-      }));
-    }
+    setFormData((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
   };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -723,11 +647,8 @@ const ConsultationBookingPageContent = () => {
       return;
     }
 
-    if (!validatePhoneNumber(formData.phone_number, formData.country_code)) {
-      showToast(
-        `Please enter a valid phone number for the selected country (${formData.country_code}).`,
-        "error"
-      );
+    if (!validatePhoneNumber(formData.whatsapp_phone)) {
+      showToast("Please enter a valid phone number.", "error");
       setLoading(false);
       return;
     }
@@ -794,13 +715,8 @@ const ConsultationBookingPageContent = () => {
         }
       }
 
-      // 2. Clean up and combine phone fields
-      const cleanPhoneNumber = formData.phone_number.replace(/[^\d+]/g, "");
-      const finalPhoneStr =
-        `${formData.country_code}${cleanPhoneNumber.startsWith("+") ? cleanPhoneNumber.substring(1) : cleanPhoneNumber}`.replace(
-          /\s+/g,
-          ""
-        );
+      // Phone number is already in E.164 format from PhoneInput
+      const finalPhoneStr = formData.whatsapp_phone;
 
       if (shouldConsumeCredit) {
         const payload = {
@@ -873,7 +789,6 @@ const ConsultationBookingPageContent = () => {
             },
             body: JSON.stringify({
               consultationDetails,
-              userId: user.id,
             }),
           });
 
@@ -929,7 +844,7 @@ const ConsultationBookingPageContent = () => {
       if (!formData.email || !validateEmail(formData.email)) {
         newErrors.email = "Please enter a valid email address";
       }
-      if (!validatePhoneNumber(formData.phone_number, formData.country_code)) {
+      if (!validatePhoneNumber(formData.whatsapp_phone)) {
         newErrors.phone_number = "Please enter a valid phone number";
       }
       if (!formData.preferred_language) {
@@ -968,8 +883,6 @@ const ConsultationBookingPageContent = () => {
       preferred_language: "English",
       full_name: "",
       email: "",
-      country_code: "+92",
-      phone_number: "",
       whatsapp_phone: "",
       case_summary: "",
       selected_slot: null,
@@ -1023,11 +936,11 @@ const ConsultationBookingPageContent = () => {
     };
 
     if (start.getFullYear() !== end.getFullYear()) {
-      return `${start.toLocaleDateString(undefined, { ...optionsStart, year: "numeric" })} – ${end.toLocaleDateString(undefined, optionsEnd)}`;
+      return `${start.toLocaleDateString(undefined, { ...optionsStart, year: "numeric" })} ${end.toLocaleDateString(undefined, optionsEnd)}`;
     } else if (start.getMonth() !== end.getMonth()) {
-      return `${start.toLocaleDateString(undefined, optionsStart)} – ${end.toLocaleDateString(undefined, optionsEnd)}`;
+      return `${start.toLocaleDateString(undefined, optionsStart)} ${end.toLocaleDateString(undefined, optionsEnd)}`;
     } else {
-      return `${start.toLocaleDateString(undefined, { month: "long" })} ${start.getDate()} – ${end.getDate()}, ${start.getFullYear()}`;
+      return `${start.toLocaleDateString(undefined, { month: "long" })} ${start.getDate()} ${end.getDate()}, ${start.getFullYear()}`;
     }
   };
 
@@ -1154,49 +1067,6 @@ const ConsultationBookingPageContent = () => {
                   <p className="mt-1 text-sm text-red-600">{errors.issue_category}</p>
                 )}
               </div>
-              {/* <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Visa Category *
-                </label>
-                <select
-                  value={formData.visa_category}
-                  onChange={(e) => {
-                    handleInputChange("visa_category", e.target.value);
-                    // Clear error when user selects a value
-                    if (errors.visa_category && e.target.value) {
-                      setErrors((prev) => {
-                        const newErrors = { ...prev };
-                        delete newErrors.visa_category;
-                        return newErrors;
-                      });
-                    }
-                  }}
-                  className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
-                    errors.visa_category ? "border-red-500" : "border-gray-300"
-                  }`}
-                  required
-                >
-                  <option value="">Select a visa category...</option>
-                  {[...new Set(visaCategories.map((c) => c.group))].map(
-                    (group) => (
-                      <optgroup key={group} label={group!}>
-                        {visaCategories
-                          .filter((c) => c.group === group)
-                          .map((c) => (
-                            <option key={c.value} value={c.value}>
-                              {c.label}
-                            </option>
-                          ))}
-                      </optgroup>
-                    ),
-                  )}
-                </select>
-                {errors.visa_category && (
-                  <p className="mt-1 text-sm text-red-600">
-                    {errors.visa_category}
-                  </p>
-                )}
-              </div> */}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div>
@@ -1335,50 +1205,23 @@ const ConsultationBookingPageContent = () => {
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   WhatsApp Phone *
                 </label>
-                <div className="flex gap-2">
-                  <CustomDropdown
-                    value={formData.country_code}
-                    onChange={(value) => {
-                      handleInputChange("country_code", value);
-                      // Clear error when user changes country code
-                      if (errors.phone_number) {
-                        setErrors((prev) => {
-                          const newErrors = { ...prev };
-                          delete newErrors.phone_number;
-                          return newErrors;
-                        });
-                      }
-                    }}
-                    options={countryCodeOptions}
-                    placeholder="Code"
-                    className={errors.phone_number ? "border-red-500" : ""}
-                  />
-                  <div className="relative flex-1">
-                    <Phone className="absolute left-3 top-3.5 h-5 w-5 text-gray-400" />
-                    <input
-                      type="tel"
-                      value={formData.phone_number}
-                      onChange={(e) => {
-                        // Allow only digits, spaces, hyphens, parentheses, plus signs, and periods
-                        const cleanedValue = e.target.value.replace(/[^\d\s\-\(\)\+.]/g, "");
-                        handleInputChange("phone_number", cleanedValue);
-                        // Clear error when user types
-                        if (errors.phone_number) {
-                          setErrors((prev) => {
-                            const newErrors = { ...prev };
-                            delete newErrors.phone_number;
-                            return newErrors;
-                          });
-                        }
-                      }}
-                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-teal-500 transition ${
-                        errors.phone_number ? "border-red-500" : "border-gray-300"
-                      }`}
-                      placeholder={getPhonePlaceholder(formData.country_code)}
-                      required
-                    />
-                  </div>
-                </div>
+                <PhoneInput
+                  value={formData.whatsapp_phone || ""}
+                  onChange={(value) => {
+                    handleInputChange("whatsapp_phone", value || "");
+                    // Clear error when user types
+                    if (errors.phone_number) {
+                      setErrors((prev) => {
+                        const newErrors = { ...prev };
+                        delete newErrors.phone_number;
+                        return newErrors;
+                      });
+                    }
+                  }}
+                  defaultCountry="PK"
+                  placeholder="300 1234567"
+                  className={errors.phone_number ? "border-red-500" : ""}
+                />
                 {errors.phone_number && (
                   <p className="mt-1 text-sm text-red-600">{errors.phone_number}</p>
                 )}
@@ -2917,11 +2760,12 @@ const ConsultationBookingPageContent = () => {
       <div className="max-w-7xl mx-auto px-4 relative z-20">
         {activeView === "booking" && (
           <div className="bg-white rounded-3xl shadow-2xl border border-teal-100 overflow-hidden slide-up">
-            {/* Improved Progress Tracker */}
-            <div className="bg-gray-50/50 border-b border-gray-100 p-8">
-              <div className="flex justify-between items-center max-w-2xl mx-auto relative">
-                {/* Connecting Lines */}
-                <div className="absolute top-5 left-0 w-full h-0.5 bg-gray-200 -z-10">
+            {/* Improved Progress Tracker — metro-line stepper */}
+            <div className="bg-gray-50/50 border-b border-gray-100 px-3 py-6 sm:p-8">
+              <div className="flex items-start justify-between max-w-2xl mx-auto relative">
+                {/* Connecting rail — inset so it runs exactly dot-to-dot
+                    (first/last station centers sit at 12.5% / 87.5% of the row) */}
+                <div className="absolute top-4 sm:top-5 left-[12.5%] right-[12.5%] h-0.5 bg-gray-200 -z-10">
                   <div
                     className="h-full bg-teal-600 transition-all duration-500"
                     style={{ width: `${((currentStep - 1) / 3) * 100}%` }}
@@ -2934,24 +2778,27 @@ const ConsultationBookingPageContent = () => {
                   { step: 3, label: "Select Time", icon: Clock },
                   { step: 4, label: "Checkout", icon: CreditCard },
                 ].map((item) => (
-                  <div key={item.step} className="flex flex-col items-center gap-2">
+                  <div
+                    key={item.step}
+                    className="flex flex-1 flex-col items-center gap-1.5 px-0.5 sm:gap-2"
+                  >
                     <div
                       className={cn(
-                        "w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 border-2",
+                        "flex h-8 w-8 items-center justify-center rounded-full border-2 transition-all duration-300 sm:h-10 sm:w-10",
                         currentStep >= item.step
                           ? "bg-teal-600 border-teal-600 text-white shadow-lg shadow-teal-200"
                           : "bg-white border-gray-200 text-gray-400"
                       )}
                     >
                       {currentStep > item.step ? (
-                        <CheckCircle className="h-5 w-5" />
+                        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                       ) : (
-                        <item.icon className="h-5 w-5" />
+                        <item.icon className="h-4 w-4 sm:h-5 sm:w-5" />
                       )}
                     </div>
                     <span
                       className={cn(
-                        "text-xs font-bold tracking-tight uppercase",
+                        "text-center text-[10px] font-bold uppercase leading-tight tracking-tight sm:text-xs",
                         currentStep >= item.step ? "text-teal-900" : "text-gray-400"
                       )}
                     >

@@ -258,7 +258,7 @@ export default function PassportOcrTool({ embedded = false, onSaved }: PassportO
           </p>
         </div>
 
-        {ocrLoading && <Loader size="md" text="Reading passport…" />}
+        {ocrLoading && <Loader size="md" text="Reading passport..." />}
 
         {error && (
           <Alert variant="destructive">
@@ -332,7 +332,7 @@ export default function PassportOcrTool({ embedded = false, onSaved }: PassportO
 
             <div className="flex justify-end">
               <Button onClick={handleSave} disabled={saving}>
-                {saving ? "Saving…" : "Confirm & Save to Profile"}
+                {saving ? "Saving..." : "Confirm & Save to Profile"}
               </Button>
             </div>
           </div>

@@ -30,6 +30,10 @@ const __dirname = path.dirname(__filename);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Hide the framework/version banner (X-Powered-By) so we don't advertise our
+  // stack to attackers during reconnaissance.
+  poweredByHeader: false,
+
   images: {
     remotePatterns: [
       {
@@ -87,16 +91,61 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' js.stripe.com",
-              "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
-              "font-src 'self' fonts.gstatic.com data:",
-              "img-src 'self' data: blob: *.supabase.co images.unsplash.com",
-              "connect-src 'self' *.supabase.co *.stripe.com *.google-analytics.com rahvana-1.onrender.com wss://*.supabase.co http://localhost:8000 http://127.0.0.1:8000 ws://localhost:8000 ws://127.0.0.1:8000",
-              "frame-src 'self' js.stripe.com *.uscis.gov *.state.gov *.cbp.dhs.gov *.ssa.gov",
+          
+              // Scripts
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.stripe.com",
+          
+              // Workers (required by canvas-confetti)
+              "worker-src 'self' blob:",
+              "child-src 'self' blob:",
+          
+              // Styles
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          
+              // Fonts
+              "font-src 'self' https://fonts.gstatic.com data:",
+          
+              // Images
+              "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com",
+          
+              // API/WebSocket connections
+              "connect-src 'self' https://*.supabase.co https://*.stripe.com https://*.google-analytics.com https://rahvana-1.onrender.com wss://*.supabase.co http://localhost:8000 http://127.0.0.1:8000 ws://localhost:8000 ws://127.0.0.1:8000 https://api.geoapify.com",
+          
+              // Frames
+              "frame-src 'self' https://js.stripe.com https://*.uscis.gov https://*.state.gov https://*.cbp.dhs.gov https://*.ssa.gov",
+          
               "object-src 'none'",
               "base-uri 'self'",
               "form-action 'self'",
               "frame-ancestors 'none'",
+            ].join("; "),
+          },
+        ],
+      },
+      {
+        // Allow framing only for the document preview route from the same origin
+        source: "/api/documents/:id/preview",
+        headers: [
+          {
+            key: "X-Frame-Options",
+            value: "SAMEORIGIN",
+          },
+          {
+            key: "Content-Security-Policy",
+            value: [
+              "default-src 'self'",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://js.stripe.com",
+              "worker-src 'self' blob:",
+              "child-src 'self' blob:",
+              "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+              "font-src 'self' https://fonts.gstatic.com data:",
+              "img-src 'self' data: blob: https://*.supabase.co https://images.unsplash.com",
+              "connect-src 'self' https://*.supabase.co https://*.stripe.com https://*.google-analytics.com https://rahvana-1.onrender.com wss://*.supabase.co https://api.geoapify.com",
+              "frame-src 'self' https://js.stripe.com",
+              "object-src 'none'",
+              "base-uri 'self'",
+              "form-action 'self'",
+              "frame-ancestors 'self'",
             ].join("; "),
           },
         ],
@@ -118,10 +167,9 @@ const nextConfig = {
   // Turbopack (used by `next build --turbopack`) doesn't accept `false` as an
   // alias, so point `canvas` at a harmless mock module instead.
   turbopack: {
-    resolve: {
-      alias: {
-        canvas: path.join(__dirname, 'lib/mock-canvas.js'),
-      },
+    root: __dirname,
+    resolveAlias: {
+      canvas: path.join(__dirname, 'lib/mock-canvas.js'),
     },
   },
 

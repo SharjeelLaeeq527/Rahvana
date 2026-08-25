@@ -3,6 +3,7 @@ import { stripe } from "@/lib/stripe/config";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { consultationService } from "@/lib/services/consultationService";
+import { buildAddonPurchaseUpdate } from "@/lib/payments/addon-purchase-ledger";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -136,6 +137,7 @@ export async function GET(request: NextRequest) {
     // ── 3b. STANDALONE ADD-ON (one-time) ─────────────────────────────────────
     else if (productType === "standalone_addon") {
       let selectedAddons: string[] = [];
+    
       if (addonsJson) {
         try {
           selectedAddons = JSON.parse(addonsJson);
@@ -143,22 +145,33 @@ export async function GET(request: NextRequest) {
           selectedAddons = addonsJson.split(",");
         }
       }
-      const existingAddons = (profile?.profile_details?.purchased_addons as string[]) || [];
-      const mergedAddons = [...new Set([...existingAddons, ...selectedAddons])];
-
-      await supabase
-        .from("user_profiles")
-        .update({
-          stripe_customer_id:
-            (session.customer as string) || profile?.stripe_customer_id || undefined,
-          profile_details: {
-            ...(profile?.profile_details || {}),
-            purchased_addons: mergedAddons,
-            activated_by: "verify-session",
-          },
-        })
-        .eq("id", userId);
-
+    
+      const {
+        alreadyProcessed,
+        profileDetails,
+      } = buildAddonPurchaseUpdate(
+        profile?.profile_details,
+        sessionId,
+        selectedAddons
+      );
+    
+      if (!alreadyProcessed) {
+        await supabase
+          .from("user_profiles")
+          .update({
+            stripe_customer_id:
+              (session.customer as string) ||
+              profile?.stripe_customer_id ||
+              undefined,
+    
+            profile_details: {
+              ...profileDetails,
+              activated_by: "verify-session",
+            },
+          })
+          .eq("id", userId);
+      }
+    
       activated = true;
       appliedTier = currentTier;
     }
@@ -299,7 +312,7 @@ export async function GET(request: NextRequest) {
                   Go to Dashboard
                 </a>
                 <p style="color: #6e736f; font-size: 13px; margin-top: 24px;">
-                  Questions? Reply to this email — we're here to help.
+                  Questions? Reply to this email, we're here to help.
                 </p>
               </div>
             `,

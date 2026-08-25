@@ -57,6 +57,7 @@ interface AuthContextType {
     mfaRequired?: boolean;
     factorId?: string;
     challengeId?: string;
+    retryAfterSeconds?: number;
   }>;
   signUp: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
@@ -478,106 +479,60 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const signIn = async (email: string, password: string) => {
+    // Login now goes through our own server route (/api/auth/login) so every
+    // attempt passes through server-side rate limiting + audit logging before
+    // Supabase is called. A direct client-side signInWithPassword would talk to
+    // Supabase directly and could never be rate-limited at our edge.
     try {
-      // First, attempt to sign in with email and password
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
 
-      // Check if there's an error
-      if (error) {
-        // Check if it's specifically an MFA required error
-        if (error.code === "mfa_required") {
-          // Extract factor information from the error (if available)
-          const { factorId, challengeId } = extractMFAErrorDetails(error);
+      const data = await response.json().catch(() => ({}));
 
-          if (!factorId || !challengeId) {
-            const { totp: fetchedTotp, error: factorsError } = await listMFACheckFactors();
-
-            if (factorsError) {
-              return {
-                error: {
-                  message: msg(E.AUTH_MFA_ENABLE_FAILED),
-                  code: "mfa_error",
-                } as unknown as AuthError,
-              };
-            }
-
-            if (!fetchedTotp || fetchedTotp.length === 0) {
-              return {
-                error: {
-                  message: msg(E.AUTH_MFA_FACTOR_NOT_FOUND),
-                  code: "mfa_no_factors",
-                } as unknown as AuthError,
-              };
-            }
-
-            // Create challenge for the first factor
-            const { data: challengeData, error: challengeError } =
-              await supabase.auth.mfa.challenge({
-                factorId: fetchedTotp[0].id,
-              });
-
-            if (challengeError) {
-              return { error: challengeError };
-            }
-
-            return {
-              error: null,
-              mfaRequired: true,
-              factorId: fetchedTotp[0].id,
-              challengeId: challengeData.id,
-            };
-          }
-
-          // Return the MFA challenge information
-          return {
-            error: null,
-            mfaRequired: true,
-            factorId,
-            challengeId,
-          };
-        }
-
-        // For other errors, return as-is
-        return { error };
-      }
-
-      // Check if user has MFA factors but is only at AAL1
-      if (data?.session) {
-        // Use factors from the session if available, otherwise fetch them
-        const userWithFactors = data.session.user as User & {
-          factors?: Array<{ id: string; factor_type: string; status: string }>;
+      // Too many attempts -> surface the friendly 429 message plus the
+      // Retry-After window (seconds) so the login page can run a countdown.
+      if (response.status === 429) {
+        const retryHeader = response.headers.get("Retry-After");
+        const retryAfterSeconds = retryHeader ? parseInt(retryHeader, 10) : NaN;
+        return {
+          error: {
+            message: data.message || msg(E.AUTH_RATE_LIMITED, { minutes: 15 }),
+            code: "AUTH_RATE_LIMITED",
+          } as unknown as AuthError,
+          retryAfterSeconds: Number.isFinite(retryAfterSeconds)
+            ? retryAfterSeconds
+            : undefined,
         };
-        const factors = userWithFactors?.factors || [];
-        const totpFactors = factors.filter(
-          (f) => f.factor_type === "totp" && f.status === "verified"
-        );
-
-        if (totpFactors.length > 0) {
-          const factorId = totpFactors[0].id;
-
-          // Only challenge if we have a valid factor
-          if (factorId) {
-            const { data: challengeData, error: challengeError } =
-              await supabase.auth.mfa.challenge({
-                factorId: factorId,
-              });
-
-            if (!challengeError && challengeData) {
-              return {
-                error: null,
-                mfaRequired: true,
-                factorId: factorId,
-                challengeId: challengeData.id,
-              };
-            }
-          }
-        }
       }
 
-      // Normal login success
+      if (!response.ok) {
+        return {
+          error: {
+            message: data.error || msg(E.AUTH_LOGIN_FAILED),
+            code: data.code || "AUTH_LOGIN_FAILED",
+          } as unknown as AuthError,
+        };
+      }
+
+      // MFA challenge required -> hand the ids back to the login page, which
+      // drives the existing /api/auth/mfa/verify-login flow (unchanged).
+      if (data.mfaRequired && data.factorId && data.challengeId) {
+        return {
+          error: null,
+          mfaRequired: true,
+          factorId: data.factorId,
+          challengeId: data.challengeId,
+        };
+      }
+
+      // Success: the server set the auth cookies on the response. Ask the
+      // browser client to read them so its in-memory session is in sync
+      // before the login page redirects.
+      await supabase.auth.getSession();
+
       return { error: null };
     } catch (err) {
       console.error("Sign in error:", err);

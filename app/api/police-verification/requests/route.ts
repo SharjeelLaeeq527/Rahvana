@@ -1,6 +1,7 @@
 // import { NextRequest } from 'next/server';
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { safeError } from "@/lib/api/safeError";
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +47,7 @@ export async function GET() {
 
     if (error) {
       console.error("Database Error:", error);
-      return Response.json({ error: error.message }, { status: 500 });
+      return safeError(error);
     }
 
     return Response.json({ data });

@@ -1,23 +1,16 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  ArrowRight,
   CircleHelp,
   CopyIcon,
   FileText,
-  Mail,
   ListChecks,
   Info,
   MapPin,
@@ -35,6 +28,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { save221gCase } from "@/lib/supabase/twentyTwoOneG";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { ResultGate } from "@/app/components/entitlements/ResultGate";
+import { escapeHtml } from "@/lib/security/sanitize";
 
 interface CombinedIntakeFormProps {
   onSubmit: (data: FormData, selectedItems: FormSelections) => void;
@@ -310,14 +304,16 @@ const VISA_TYPES = [
 
 const VISA_CATEGORIES = [
   { value: "IR-1", label: "IR-1 (Immediate Relative Spouse)" },
-  // { value: "IR-2", label: "IR-2 (Immediate Relative â€“ Child)" },
-  // { value: "IR-5", label: "IR-5 (Immediate Relative â€“ Parent)" },
-  // { value: "CR-1", label: "CR-1 (Conditional Resident â€“ Spouse)" },
+  // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+  ...(IR5_ENABLED ? [{ value: "IR-5", label: "IR-5 (Immediate Relative Parent)" }] : []),
+  // { value: "IR-2", label: "IR-2 (Immediate Relative - Child)" },
+  // { value: "IR-5", label: "IR-5 (Immediate Relative - Parent)" },
+  // { value: "CR-1", label: "CR-1 (Conditional Resident - Spouse)" },
   // { value: "F-1", label: "F-1 (Family 1st Preference)" },
   // { value: "F-2A", label: "F-2A (Family 2nd Preference)" },
   // { value: "F-3", label: "F-3 (Family 3rd Preference)" },
   // { value: "F-4", label: "F-4 (Family 4th Preference)" },
-  // { value: "K-1", label: "K-1 (FiancÃ©(e))" },
+  // { value: "K-1", label: "K-1 (Fiancé(e))" },
   // { value: "K-3", label: "K-3 (Spouse of U.S. Citizen)" },
   // { value: "B-1/B-2", label: "B-1/B-2 (Tourist/Business)" },
   // { value: "F-1-student", label: "F-1 (Student)" },
@@ -538,7 +534,7 @@ export default function CombinedIntakeForm({
   };
 
   const formatDate = (d: string) => {
-    if (!d) return "â€”";
+    if (!d) return "-";
     return new Date(d).toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -546,9 +542,9 @@ export default function CombinedIntakeForm({
     });
   };
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
   // GENERATORS (Translated from app.js)
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
 
   const getMethod = (key: string) => {
     const cl = selected221gItems;
@@ -619,7 +615,7 @@ export default function CombinedIntakeForm({
     const isAdminProcessingStatus = cb.ceacStatus?.toLowerCase().includes("administrative");
 
     if (isAdminOnly || isAdminProcessingStatus) {
-      plan += `Your case is currently under Administrative Processing following the visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost}. Under INA Section 221(g), additional review is being conducted before a final decision can be made. No additional documents have been specifically requested at this time â€” you are advised to monitor your CEAC status and wait for further instructions from the embassy.\n\n`;
+      plan += `Your case is currently under Administrative Processing following the visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost}. Under INA Section 221(g), additional review is being conducted before a final decision can be made. No additional documents have been specifically requested at this time, you are advised to monitor your CEAC status and wait for further instructions from the embassy.\n\n`;
     } else {
       plan += `Your visa interview on ${formatDate(cb.interviewDate)} at ${cb.consularPost} resulted in a temporary hold under INA Section 221(g). The consular officer requires the documents listed below before a final decision can be made. This is NOT a permanent denial.\n\n`;
 
@@ -641,10 +637,10 @@ export default function CombinedIntakeForm({
       if (cl.passport) plan += `- Your passport for visa placement\n`;
       if (cl.medical_examination) plan += `- Completed medical examination\n`;
       if (cl.nadra_family_reg || cl.nadra_birth_cert || cl.nadra_marriage_cert || cl.nikah_nama) {
-        plan += `- Civil/NADRA registration documents – ${cl.nadra_family_reg_name || cl.nadra_family_reg ? `Family Registration Certificate` : ""} ${cl.nadra_birth_cert ? `, Birth Certificate` : ""} ${cl.nadra_marriage_cert ? `, Marriage Certificate` : ""} ${cl.nikah_nama ? `, Nikkah Nama` : ""}\n`;
+        plan += `- Civil/NADRA registration documents, ${cl.nadra_family_reg_name || cl.nadra_family_reg ? `Family Registration Certificate` : ""} ${cl.nadra_birth_cert ? `, Birth Certificate` : ""} ${cl.nadra_marriage_cert ? `, Marriage Certificate` : ""} ${cl.nikah_nama ? `, Nikkah Nama` : ""}\n`;
       }
       if (cl.police_certificate)
-        plan += `- Police certificate – ${cl.police_certificate_country || "[INFORMATION MISSING - please go back and specify country]"}\n`;
+        plan += `- Police certificate, ${cl.police_certificate_country || "[INFORMATION MISSING - please go back and specify country]"}\n`;
       // if (cl.english_translation) plan += `- Certified English translations\n`;
       if (cl.dna_test) plan += `- DNA test\n`;
       if (cl.admin_processing) plan += `- Administrative processing (no action needed from you)\n`;
@@ -1018,7 +1014,7 @@ export default function CombinedIntakeForm({
     const civilDocs: string[] = [];
     if (cl.nadra_family_reg)
       civilDocs.push(
-        `NADRA Family Registration Certificate${cl.nadra_family_reg_name ? ` – ${cl.nadra_family_reg_name}` : " [INFORMATION MISSING - please go back and specify person]"}`
+        `NADRA Family Registration Certificate${cl.nadra_family_reg_name ? ` - ${cl.nadra_family_reg_name}` : " [INFORMATION MISSING - please go back and specify person]"}`
       );
     if (cl.nadra_marriage_cert) civilDocs.push("NADRA Marriage Certificate");
     if (cl.nikah_nama) {
@@ -1063,7 +1059,7 @@ export default function CombinedIntakeForm({
     }
 
     checklist += `\n\n## BEFORE YOU SUBMIT - FINAL CHECKS\n\n`;
-    // checklist += `â˜ Cover letter is signed and dated\n`;
+    // checklist += `☐ Cover letter is signed and dated\n`;
     checklist += `- All documents are in the correct order\n`;
     checklist += `- Originals are included where required (not photocopies)\n`;
     checklist += `- All signatures are in blue ink where required\n`;
@@ -1098,8 +1094,8 @@ export default function CombinedIntakeForm({
   //   letter += `${cb.consularPost}\n`;
   //   letter += `${visaUnitType} Visa Unit\n\n`;
   //   letter += `**Subject: Response to INA 221(g) Refusal`;
-  //   if (cb.caseNumber) letter += ` â€“ Case Number: ${cb.caseNumber}`;
-  //   if (cb.beneficiaryName) letter += ` â€“ ${cb.beneficiaryName}`;
+  //   if (cb.caseNumber) letter += ` – Case Number: ${cb.caseNumber}`;
+  //   if (cb.beneficiaryName) letter += ` – ${cb.beneficiaryName}`;
   //   letter += `**\n\n`;
 
   //   letter += `Dear Consular Officer,\n\n`;
@@ -1227,17 +1223,17 @@ export default function CombinedIntakeForm({
   //   return letter;
   // };
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
   // Progress Indicator
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
   
   const ProgressIndicator = () => (
-    <div className="flex items-center justify-between mb-8 px-2 max-w-2xl mx-auto">
+    <div className="flex items-center justify-between mb-8 px-1 sm:px-2 max-w-2xl mx-auto">
       {STEPS.map((step, idx) => (
         <div key={step.id} className="flex items-center flex-1 last:flex-none">
           <div className="flex flex-col items-center">
             <div
-              className={`w-10 h-10 rounded-full flex items-center justify-center font-semibold text-sm transition-all duration-300
+              className={`flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold transition-all duration-300 sm:h-10 sm:w-10 sm:text-sm
                 ${
                   currentStep === step.id
                     ? "bg-primary text-white scale-110 shadow-md ring-4 ring-primary/20"
@@ -1247,7 +1243,12 @@ export default function CombinedIntakeForm({
                 }`}
             >
               {currentStep > step.id ? (
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg
+                  className="h-4 w-4 sm:h-5 sm:w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
                   <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
@@ -1260,7 +1261,7 @@ export default function CombinedIntakeForm({
               )}
             </div>
             <span
-              className={`mt-1.5 text-[10px] md:text-xs text-center max-w-[80px] leading-tight font-medium ${
+              className={`mt-1.5 max-w-[64px] text-center text-[10px] font-medium leading-tight sm:max-w-[80px] md:text-xs ${
                 currentStep === step.id ? "text-primary font-bold" : "text-muted-foreground"
               }`}
             >
@@ -1269,7 +1270,7 @@ export default function CombinedIntakeForm({
           </div>
           {idx < STEPS.length - 1 && (
             <div
-              className={`flex-1 h-0.5 mx-2 mb-5 rounded transition-colors duration-300 ${
+              className={`h-0.5 flex-1 mx-1 mb-5 rounded transition-colors duration-300 sm:mx-2 ${
                 currentStep > step.id ? "bg-teal-600/50" : "bg-border"
               }`}
             />
@@ -1292,9 +1293,9 @@ export default function CombinedIntakeForm({
     setShowEmbassySuggestions(false);
   };
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Step 3 â€“ Review & Generate
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
+  // Step 3 – Review & Generate
+  // ──────────────────────────────────────────────
   const StepReviewGenerate = () => {
     const selectedCount = Object.entries(selected221gItems).filter(
       ([key, value]) =>
@@ -1553,9 +1554,9 @@ export default function CombinedIntakeForm({
     );
   };
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-  // Step 4 â€“ Export Packet
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
+  // Step 4 – Export Packet
+  // ──────────────────────────────────────────────
   const StepExportPacket = () => {
     if (!outputs) return null;
 
@@ -1565,26 +1566,27 @@ export default function CombinedIntakeForm({
     };
 
     const generateHtmlContent = (text: string, title: string) => {
+      const esc = escapeHtml;
       let htmlBody = "";
       let isTableOpen = false;
 
       text.split("\n").forEach((line) => {
         if (line.startsWith("# ")) {
-          htmlBody += `<h1 style="font-size:24pt; font-weight:bold; margin-top:20pt; margin-bottom:12pt; border-bottom:1px solid #ddd; padding-bottom:5pt;">${line.substring(2)}</h1>`;
+          htmlBody += `<h1 style="font-size:24pt; font-weight:bold; margin-top:20pt; margin-bottom:12pt; border-bottom:1px solid #ddd; padding-bottom:5pt;">${esc(line.substring(2))}</h1>`;
           return;
         }
         if (line.startsWith("## ")) {
           htmlBody += `<div class="page-break-sentinel"></div>`;
-          htmlBody += `<h2 style="font-size:18pt; font-weight:bold; margin-top:16pt; margin-bottom:10pt; color:#0d7377;">${line.substring(3)}</h2>`;
+          htmlBody += `<h2 style="font-size:18pt; font-weight:bold; margin-top:16pt; margin-bottom:10pt; color:#0d7377;">${esc(line.substring(3))}</h2>`;
           return;
         }
         if (line.startsWith("### ")) {
-          htmlBody += `<h3 style="font-size:14pt; font-weight:bold; margin-top:12pt; margin-bottom:8pt;">${line.substring(4)}</h3>`;
+          htmlBody += `<h3 style="font-size:14pt; font-weight:bold; margin-top:12pt; margin-bottom:8pt;">${esc(line.substring(4))}</h3>`;
           return;
         }
 
         if (line.match(/^\*\*(.*?)\*\*$/)) {
-          htmlBody += `<p style="font-weight:bold; margin-top:8pt; margin-bottom:8pt; color:#111;">${line.replace(/\*\*/g, "")}</p>`;
+          htmlBody += `<p style="font-weight:bold; margin-top:8pt; margin-bottom:8pt; color:#111;">${esc(line.replace(/\*\*/g, ""))}</p>`;
           return;
         }
 
@@ -1632,18 +1634,24 @@ export default function CombinedIntakeForm({
             isTableOpen = true;
             htmlBody += `<table style="width:100%; text-align:left; border-collapse:collapse; margin:15pt 0; border: 1px solid #ddd;">`;
             htmlBody += `<thead style="background:#f9fafb; color:#374151;"><tr>`;
-            cells.forEach(
-              (c) =>
-                (htmlBody += `<th style="padding:8pt; border:1px solid #ddd; font-weight:bold;">${c.trim().replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</th>`)
-            );
+            cells.forEach((c) => {
+              const cell = esc(c.trim()).replace(
+                /\*\*(.*?)\*\*/g,
+                (_, m) => `<strong>${esc(m)}</strong>`
+              );
+              htmlBody += `<th style="padding:8pt; border:1px solid #ddd; font-weight:bold;">${cell}</th>`;
+            });
             htmlBody += `</tr></thead><tbody>`;
             return;
           } else {
             htmlBody += `<tr>`;
-            cells.forEach(
-              (c) =>
-                (htmlBody += `<td style="padding:8pt; border:1px solid #ddd; color:#4b5563;">${c.trim().replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")}</td>`)
-            );
+            cells.forEach((c) => {
+              const cell = esc(c.trim()).replace(
+                /\*\*(.*?)\*\*/g,
+                (_, m) => `<strong>${esc(m)}</strong>`
+              );
+              htmlBody += `<td style="padding:8pt; border:1px solid #ddd; color:#4b5563;">${cell}</td>`;
+            });
             htmlBody += `</tr>`;
             return;
           }
@@ -1658,18 +1666,18 @@ export default function CombinedIntakeForm({
         if (line.startsWith("☐ ")) {
           htmlBody += `<p style="margin-bottom:8pt; margin-top:4pt;">
                     <span style="font-size:16pt; margin-right:8pt; font-family:serif;">&#9744;</span>
-                    ${line.substring(2)}
+                    ${esc(line.substring(2))}
                 </p>`;
           return;
         }
 
         if (line.startsWith("* ") || line.startsWith("- ")) {
           const txt = line.substring(2).trim();
-          htmlBody += `<li style="margin-left:20pt; margin-bottom:6pt;">${txt}</li>`;
+          htmlBody += `<li style="margin-left:20pt; margin-bottom:6pt;">${esc(txt)}</li>`;
           return;
         }
         if (line.match(/^\d+\.\s/)) {
-          htmlBody += `<li style="margin-left:20pt; margin-bottom:6pt;">${line.replace(/^\d+\.\s/, "")}</li>`;
+          htmlBody += `<li style="margin-left:20pt; margin-bottom:6pt;">${esc(line.replace(/^\d+\.\s/, ""))}</li>`;
           return;
         }
 
@@ -1682,9 +1690,9 @@ export default function CombinedIntakeForm({
         let pContent = "";
         parts.forEach((p) => {
           if (p.startsWith("**") && p.endsWith("**")) {
-            pContent += `<strong>${p.replace(/\*\*/g, "")}</strong>`;
+            pContent += `<strong>${esc(p.replace(/\*\*/g, ""))}</strong>`;
           } else {
-            pContent += p;
+            pContent += esc(p);
           }
         });
         htmlBody += `<p style="margin-bottom:8pt;">${pContent}</p>`;
@@ -1696,7 +1704,7 @@ export default function CombinedIntakeForm({
             <html>
                 <head>
                     <meta charset="utf-8">
-                    <title>${title}</title>
+                    <title>${esc(title)}</title>
                     <base href="${typeof window !== "undefined" ? window.location.origin : ""}/">
                     <style>
                         @page {
@@ -1949,7 +1957,8 @@ export default function CombinedIntakeForm({
                     block.className = "print-page-block";
                     var footer = document.createElement("div");
                     footer.className = "print-page-footer";
-                    footer.innerHTML = '<div class="footer-logo-wrap"><img class="footer-logo" src="/assets/images/RahvanaLogo.png" alt="Rahvana"></div><span class="footer-page">' + p + '</span>';
+                    footer.innerHTML = '<div class="footer-logo-wrap"><img class="footer-logo" src="/assets/images/RahvanaLogo.png" alt="Rahvana"></div><span class="footer-page"></span>';
+footer.querySelector(".footer-page").textContent = String(p);
                     block.appendChild(footer);
                     overlayRoot.appendChild(block);
                   }
@@ -2172,7 +2181,7 @@ export default function CombinedIntakeForm({
           continue;
         }
 
-        // â”€â”€ Bullet list (starts with * or -)
+        // ── Bullet list (starts with * or -)
         if (line.startsWith("* ") || line.startsWith("- ")) {
           const txt = line.substring(2).trim();
           nodes.push(
@@ -2184,7 +2193,7 @@ export default function CombinedIntakeForm({
           continue;
         }
 
-        // â”€â”€ Numbered list
+        // ── Numbered list
         if (line.match(/^\d+\.\s/)) {
           const txt = line.replace(/^\d+\.\s/, "");
           nodes.push(
@@ -2200,7 +2209,7 @@ export default function CombinedIntakeForm({
           continue;
         }
 
-        // â”€â”€ Full-line bold (**text**)
+        // ── Full-line bold (**text**)
         if (line.match(/^\*\*(.*?)\*\*$/)) {
           nodes.push(
             <p key={i} className="font-bold text-slate-900 text-sm mt-3 mb-1">
@@ -2211,14 +2220,14 @@ export default function CombinedIntakeForm({
           continue;
         }
 
-        // â”€â”€ Empty line â†’ spacer
+        // ── Empty line → spacer
         if (line.trim() === "") {
           nodes.push(<div key={i} className="h-3" />);
           i++;
           continue;
         }
 
-        // â”€â”€ Default paragraph (with inline bold handling)
+        // ── Default paragraph (with inline bold handling)
         nodes.push(
           <p key={i} className="text-sm text-slate-700 mb-1.5 leading-relaxed">
             {renderInlineBold(line)}
@@ -2427,9 +2436,9 @@ export default function CombinedIntakeForm({
     );
   };
 
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
   // Main render
-  // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  // ──────────────────────────────────────────────
   return (
     <div className="w-full space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -2448,7 +2457,7 @@ export default function CombinedIntakeForm({
       </div>
       <div className="bg-card rounded-2xl border border-border shadow-2xl overflow-hidden">
         <div className="p-6 md:p-10">
-          {/* â”€â”€ Step 1: Case Basics (inlined to prevent re-mount focus loss) â”€â”€ */}
+          {/* ── Step 1: Case Basics (inlined to prevent re-mount focus loss) ── */}
           {currentStep === 1 && (
             <div className="space-y-6">
               <div className="border-b pb-4">
@@ -2461,40 +2470,25 @@ export default function CombinedIntakeForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="visaType">Visa Type *</Label>
-                  <Select
+                  <CustomDropdown
                     value={formData.visaType}
-                    onValueChange={(v) => handleField("visaType", v)}
-                  >
-                    <SelectTrigger id="visaType">
-                      <SelectValue placeholder="Select..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {VISA_TYPES.map((t) => (
-                        <SelectItem key={t.value} value={t.value}>
-                          {t.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(v) => handleField("visaType", v)}
+                    options={VISA_TYPES}
+                    placeholder="Select..."
+                    className="w-full [&_button]:w-full [&_button]:min-w-0"
+                  />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="visaCategory">Visa Category *</Label>
-                  <Select
+                  <CustomDropdown
                     value={formData.visaCategory}
-                    onValueChange={(v) => handleField("visaCategory", v)}
-                  >
-                    <SelectTrigger id="visaCategory">
-                      <SelectValue placeholder="Select..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {VISA_CATEGORIES.map((c) => (
-                        <SelectItem key={c.value} value={c.value}>
-                          {c.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(v) => handleField("visaCategory", v)}
+                    options={VISA_CATEGORIES}
+                    placeholder="Select..."
+                    className="w-full [&_button]:w-full [&_button]:min-w-0"
+                    collapseWhenSingle
+                  />
                 </div>
               </div>
 
@@ -2522,21 +2516,13 @@ export default function CombinedIntakeForm({
 
                 <div className="space-y-2">
                   <Label htmlFor="ceacStatus">Current CEAC Status</Label>
-                  <Select
+                  <CustomDropdown
                     value={formData.ceacStatus}
-                    onValueChange={(v) => handleField("ceacStatus", v)}
-                  >
-                    <SelectTrigger id="ceacStatus">
-                      <SelectValue placeholder="Select..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {CEAC_STATUSES.map((s) => (
-                        <SelectItem key={s.value} value={s.value}>
-                          {s.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    onChange={(v) => handleField("ceacStatus", v)}
+                    options={CEAC_STATUSES}
+                    placeholder="Select..."
+                    className="w-full [&_button]:w-full [&_button]:min-w-0"
+                  />
                 </div>
               </div>
 
@@ -2726,7 +2712,7 @@ export default function CombinedIntakeForm({
               </div>
             </div>
           )}
-          {/* â”€â”€ Step 2: Replicate Checklist â”€â”€ */}
+          {/* ── Step 2: Replicate Checklist ── */}
           {currentStep === 2 && (
             <div className="space-y-6">
               <Actual221GFormChecker
@@ -2751,7 +2737,7 @@ export default function CombinedIntakeForm({
               </div>
               <div style={{ display: "none" }}>
                 <Button variant="outline" onClick={goBack}>
-                  â† Back
+                  ← Back
                 </Button>
               </div>
             </div>
@@ -2790,7 +2776,7 @@ export default function CombinedIntakeForm({
         open={showResetModal}
         onOpenChange={setShowResetModal}
         title="Start Over?"
-        description="This will permanently erase all your current progress â€” your case details, selected checklist items, and any generated documents. This action cannot be undone."
+        description="This will permanently erase all your current progress, your case details, selected checklist items, and any generated documents. This action cannot be undone."
         confirmText="Yes, Start Over"
         cancelText="Cancel"
         confirmVariant="danger"

@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createServerClient } from "@supabase/ssr";
+import { safeError } from "@/lib/api/safeError";
 
 export const dynamic = "force-dynamic";
 
@@ -43,7 +44,7 @@ export async function GET(req: NextRequest) {
 
     if (error && error.code !== "PGRST116") {
       console.error("Error fetching security questions:", error);
-      return Response.json({ error: error.message }, { status: 500 });
+      return safeError(error);
     }
 
     return Response.json({ data: data || null });
@@ -112,7 +113,7 @@ export async function POST(req: NextRequest) {
 
     if (error) {
       console.error("Error saving security questions:", error);
-      return Response.json({ error: error.message }, { status: 500 });
+      return safeError(error);
     }
 
     return Response.json({ data });

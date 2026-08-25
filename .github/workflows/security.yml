@@ -1,0 +1,31 @@
+name: Security regression
+
+on:
+  pull_request:
+  push:
+    branches: [main, staging]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+
+      - name: Install
+        run: npm ci
+
+      - name: Security unit tests
+        run: npm run test:security
+
+      - name: Pinned security dependencies
+        run: npm run security:deps
+
+      - name: npm audit (high+)
+        run: npm run security:audit
+        continue-on-error: true

@@ -41,7 +41,7 @@ export function detectRiskFlags(
     if (months !== null && months < 6) {
       flags.push({
         id: "short_marriage_duration",
-        title: "New marriage — add extra proof",
+        title: "New marriage, add extra proof",
         severity: "warning",
         advisory: `Your marriage is recent. Add joint accounts, joint tax filings, or shared lease/property in ${stepRefs.documents} to show the relationship is genuine.`,
         source_basis: "USCIS Policy Manual",
@@ -53,7 +53,7 @@ export function detectRiskFlags(
   if (input.never_met_in_person === true) {
     flags.push({
       id: "never_met_in_person",
-      title: "Never met in person — add chat history",
+      title: "Never met in person, add chat history",
       severity: "warning",
       advisory: `Add call logs, message history, video call records, and a relationship timeline to ${stepRefs.documents} (Relationship Evidence).`,
       source_basis: "AILA practice advisories",

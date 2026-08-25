@@ -13,21 +13,26 @@ export class DocumentDatabaseStorage {
   constructor(private supabase: SupabaseClient) {}
 
   /**
-   * Gets all documents for a user
+   * Gets all documents for a user, optionally filtered by journey ID
    */
-  async getAllDocuments(userId: string): Promise<UploadedDocument[]> {
-    const { data, error } = await this.supabase
+  async getAllDocuments(userId: string, journeyId?: string): Promise<UploadedDocument[]> {
+    let query = this.supabase
       .from("documents")
       .select("*")
-      .eq("user_id", userId)
-      .order("uploaded_at", { ascending: false });
+      .eq("user_id", userId);
+
+    if (journeyId) {
+      query = query.eq("journey_id", journeyId);
+    }
+
+    const { data, error } = await query.order("uploaded_at", { ascending: false });
 
     if (error) {
       console.error("Error fetching documents:", error);
       throw error;
     }
 
-    return (data || []).map(this.mapDatabaseToDocument);
+    return (data || []).map((row) => this.mapDatabaseToDocument(row));
   }
 
   /**
@@ -118,20 +123,32 @@ export class DocumentDatabaseStorage {
   /**
    * Gets documents by definition ID
    */
-  async getDocumentsByDefId(documentDefId: string, userId: string): Promise<UploadedDocument[]> {
-    const { data, error } = await this.supabase
+  /**
+   * Gets documents by definition ID, optionally filtered by journey ID
+   */
+  async getDocumentsByDefId(
+    documentDefId: string,
+    userId: string,
+    journeyId?: string
+  ): Promise<UploadedDocument[]> {
+    let query = this.supabase
       .from("documents")
       .select("*")
       .eq("user_id", userId)
-      .eq("document_def_id", documentDefId)
-      .order("version", { ascending: true });
+      .eq("document_def_id", documentDefId);
+
+    if (journeyId) {
+      query = query.eq("journey_id", journeyId);
+    }
+
+    const { data, error } = await query.order("version", { ascending: true });
 
     if (error) {
       console.error("Error fetching documents by def ID:", error);
       throw error;
     }
 
-    return (data || []).map(this.mapDatabaseToDocument);
+    return (data || []).map((row) => this.mapDatabaseToDocument(row));
   }
 
   /**
@@ -212,13 +229,14 @@ export class DocumentDatabaseStorage {
       beneficiary_name: config.beneficiaryName,
       joint_sponsor_name: config.jointSponsorName,
       dynamic_documents: config.dynamicDocuments || {},
+      journey_id: config.journeyId || null,
       updated_at: new Date().toISOString(),
     };
 
     const { data, error } = await this.supabase
       .from("document_vault_config")
       .upsert(dbConfig, {
-        onConflict: "user_id", // Specify the unique constraint column
+        onConflict: "user_id,journey_id", // Specify the unique constraint columns
       })
       .select()
       .single();
@@ -234,12 +252,19 @@ export class DocumentDatabaseStorage {
   /**
    * Gets vault configuration
    */
-  async getVaultConfig(userId: string): Promise<DocumentVaultConfig | null> {
-    const { data, error } = await this.supabase
+  async getVaultConfig(userId: string, journeyId?: string): Promise<DocumentVaultConfig | null> {
+    let query = this.supabase
       .from("document_vault_config")
       .select("*")
-      .eq("user_id", userId)
-      .single();
+      .eq("user_id", userId);
+
+    if (journeyId) {
+      query = query.eq("journey_id", journeyId);
+    } else {
+      query = query.is("journey_id", null);
+    }
+
+    const { data, error } = await query.single();
 
     if (error) {
       if (error.code === "PGRST116") {
@@ -344,6 +369,7 @@ export class DocumentDatabaseStorage {
       isRead: data.is_read as boolean,
       status: data.status as UploadedDocument["status"],
       notes: data.notes as string | undefined,
+      journeyId: data.journey_id as string | null | undefined,
     };
   }
 
@@ -370,6 +396,7 @@ export class DocumentDatabaseStorage {
       is_read: document.isRead,
       status: document.status,
       notes: document.notes,
+      journey_id: document.journeyId,
     };
 
     // Add compressed file info if available (columns may not exist in DB yet)
@@ -392,6 +419,7 @@ export class DocumentDatabaseStorage {
       visaCategory: data.visa_category as VisaCategory,
       scenarioFlags: (data.scenario_flags as Record<string, unknown>) || {},
       caseId: data.case_id as string | undefined,
+      journeyId: data.journey_id as string | null | undefined,
       petitionerName: data.petitioner_name as string | undefined,
       beneficiaryName: data.beneficiary_name as string | undefined,
       jointSponsorName: data.joint_sponsor_name as string | undefined,

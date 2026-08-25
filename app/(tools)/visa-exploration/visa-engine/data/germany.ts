@@ -51,7 +51,7 @@ function buildFollowUpSteps(a: VisaExplorationAnswers): Step[] {
         {
           label: "Checking for jobs (Opportunity Card)",
           value: "OPPORTUNITY",
-          sub: "Point-based job search visa — launched June 2024",
+          sub: "Point-based job search visa, launched June 2024",
         },
         { label: "High-level job offer (EU Blue Card)", value: "BLUE_CARD" },
         { label: "Skilled professional with degree/training", value: "SKILLED" },
@@ -101,7 +101,7 @@ export const GERMANY_DATA: CountryData = {
     {
       label: "Vocational Training (Ausbildung)",
       value: "AUSBILDUNG",
-      sub: "Parallel work and study program — very popular for non-EU citizens",
+      sub: "Parallel work and study program, very popular for non-EU citizens",
     },
     {
       label: "Academic Study",
@@ -126,7 +126,7 @@ export const GERMANY_DATA: CountryData = {
     const notes = [];
     if (a.origin?.toLowerCase() === "pakistan") {
       notes.push(
-        "⚠️ Official 2026 Policy: The German Embassy in Islamabad usually conducts a mandatory verification of all Pakistani documents (birth, marriage certificates, degrees). This can add ~€350–€400 in fees and 3–4 months to processing."
+        "Official 2026 Policy: The German Embassy in Islamabad usually conducts a mandatory verification of all Pakistani documents (birth, marriage certificates, degrees). This can add ~€350, €400 in fees and 3-4 months to processing."
       );
     }
     return notes;
@@ -137,7 +137,7 @@ export const GERMANY_DATA: CountryData = {
   visas: {
     "DE-CHANCENKARTE": {
       code: "Opportunity Card",
-      label: "Chancenkarte — Opportunity Card",
+      label: "Chancenkarte, Opportunity Card",
       badge: "Points System",
       color: T.success,
       description:
@@ -155,7 +155,7 @@ export const GERMANY_DATA: CountryData = {
     },
     "DE-BLUE-CARD": {
       code: "EU Blue Card",
-      label: "EU Blue Card — Germany",
+      label: "EU Blue Card, Germany",
       badge: "High-Skilled Work",
       color: T.success,
       description:
@@ -165,7 +165,7 @@ export const GERMANY_DATA: CountryData = {
         "Concrete job offer in Germany.",
         // ✅ Updated: was €41,041 / €45,300 — thresholds raised for 2026
         // Source: https://www.make-it-in-germany.com/en/visa-residence/types/eu-blue-card
-        "Minimum salary (€45,934 for shortage occupations — MINT, IT, Medicine; €50,700 for all other roles).",
+        "Minimum salary (€45,934 for shortage occupations, MINT, IT, Medicine; €50,700 for all other roles).",
         "Employment contract for at least 6 months.",
       ],
       processing: "4 to 8 weeks.",
@@ -196,7 +196,7 @@ export const GERMANY_DATA: CountryData = {
         "Sponsor must have a valid residence permit.",
         "Sufficient living space in Germany.",
         "Secure livelihood (income).",
-        "Basic German (A1) for spouses — exemptions apply (e.g. spouse of EU Blue Card holder, or applicant holds a university degree).",
+        "Basic German (A1) for spouses, exemptions apply (e.g. spouse of EU Blue Card holder, or applicant holds a university degree).",
       ],
       processing: "3 to 6 months.",
       forms: ["National Visa Application"],
@@ -219,7 +219,7 @@ export const GERMANY_DATA: CountryData = {
     },
     "DE-STUDY": {
       code: "Student",
-      label: "Student Visa — Germany",
+      label: "Student Visa, Germany",
       badge: "Study",
       color: "#6366F1",
       description: "For people with admission to a German higher education institution.",
@@ -227,7 +227,7 @@ export const GERMANY_DATA: CountryData = {
         "Certificate of university admission.",
         // ✅ Updated: was ~€11,208 — raised to €11,904/year from Winter Semester 2024 (€992/month × 12)
         // Source: https://www.make-it-in-germany.com/en/visa-residence/types/student-visa
-        "Proof of financial resources (Blocked Account — €11,904 per year as of Winter 2024).",
+        "Proof of financial resources (Blocked Account, €11,904 per year as of Winter 2024).",
         "Health insurance.",
         "Basic German or English proficiency based on course requirements.",
       ],
@@ -287,7 +287,7 @@ export const GERMANY_DATA: CountryData = {
       {
         id: "points",
         question: "Do you score 6 or more points in the Opportunity Card point system?",
-        source: "Make it in Germany — Chancenkarte points calculator",
+        source: "Make it in Germany, Chancenkarte points calculator",
         sourceUrl:
           "https://www.make-it-in-germany.com/en/visa-residence/types/job-search-opportunity-card",
         passWith: ["YES"],
@@ -300,7 +300,7 @@ export const GERMANY_DATA: CountryData = {
       {
         id: "language",
         question: "Do you have A1 German or B2 English proficiency?",
-        source: "Language requirement — Chancenkarte (Make it in Germany)",
+        source: "Language requirement, Chancenkarte (Make it in Germany)",
         sourceUrl:
           "https://www.make-it-in-germany.com/en/visa-residence/types/job-search-opportunity-card",
         passWith: ["YES"],
@@ -318,15 +318,15 @@ export const GERMANY_DATA: CountryData = {
         // Source: https://www.make-it-in-germany.com/en/visa-residence/types/eu-blue-card
         question:
           "Does your job offer meet the minimum salary requirement for the EU Blue Card (2026 thresholds)?",
-        source: "EU Blue Card Salary Thresholds 2026 — Make it in Germany",
+        source: "EU Blue Card Salary Thresholds 2026, Make it in Germany",
         sourceUrl: "https://www.make-it-in-germany.com/en/visa-residence/types/eu-blue-card",
         passWith: ["YES", "SHORTAGE"],
         failMsg:
           "Your job offer must meet the threshold: €50,700 general, or €45,934 for shortage occupations (MINT, IT, Medicine).",
         options: [
-          { label: "Yes — general role, salary ≥ €50,700", value: "YES" },
+          { label: "Yes, general role, salary ≥ €50,700", value: "YES" },
           {
-            label: "Yes — shortage occupation (MINT / IT / Doctor), salary ≥ €45,934",
+            label: "Yes, shortage occupation (MINT / IT / Doctor), salary ≥ €45,934",
             value: "SHORTAGE",
           },
           { label: "No", value: "NO" },
@@ -337,7 +337,7 @@ export const GERMANY_DATA: CountryData = {
       {
         id: "a1_german",
         question: "Do you have basic German language skills (Level A1)?",
-        source: "Family Reunification — Spouses joining non-EU citizens (Make it in Germany)",
+        source: "Family Reunification, Spouses joining non-EU citizens (Make it in Germany)",
         sourceUrl:
           "https://www.make-it-in-germany.com/en/visa-residence/family-reunification/spouses-joining-citizens-non-eu",
         passWith: ["YES", "EXEMPT"],
@@ -354,7 +354,7 @@ export const GERMANY_DATA: CountryData = {
       {
         id: "contract",
         question: "Do you have a signed vocational training contract with a German company?",
-        source: "Make it in Germany — Vocational Training Visa requirements",
+        source: "Make it in Germany, Vocational Training Visa requirements",
         sourceUrl: "https://www.make-it-in-germany.com/en/visa-residence/types/training",
         passWith: ["YES"],
         failMsg: "Ausbildung visa requires a concrete signed training contract first.",
@@ -366,7 +366,7 @@ export const GERMANY_DATA: CountryData = {
       {
         id: "b1_german",
         question: "Is your German language level at least B1?",
-        source: "Language requirement for Ausbildung — Make it in Germany",
+        source: "Language requirement for Ausbildung, Make it in Germany",
         sourceUrl: "https://www.make-it-in-germany.com/en/visa-residence/types/training",
         passWith: ["YES"],
         failMsg: "Most vocational schools require B1 German to follow the training curriculum.",
@@ -381,7 +381,7 @@ export const GERMANY_DATA: CountryData = {
         id: "qualification_de",
         question:
           "Do you have a university degree or professional qualification recognized in Germany for your field?",
-        source: "Self-Employment Visa — Recognition of Qualifications (Make it in Germany)",
+        source: "Self-Employment Visa, Recognition of Qualifications (Make it in Germany)",
         sourceUrl: "https://www.make-it-in-germany.com/en/visa-residence/types/self-employment",
         passWith: ["YES"],
         failMsg:
@@ -395,7 +395,7 @@ export const GERMANY_DATA: CountryData = {
         id: "economic_interest",
         question:
           "Does your proposed business serve an economic interest or regional need in Germany?",
-        source: "Legal requirement — § 21 Residence Act",
+        source: "Legal requirement, § 21 Residence Act",
         sourceUrl: "https://www.make-it-in-germany.com/en/visa-residence/types/self-employment",
         passWith: ["YES"],
         failMsg:
@@ -403,7 +403,7 @@ export const GERMANY_DATA: CountryData = {
         options: [
           { label: "Yes", value: "YES" },
           {
-            label: "I am a freelancer (Art/Engineering/PhD) — Regional need requirement is relaxed",
+            label: "I am a freelancer (Art/Engineering/PhD), Regional need requirement is relaxed",
             value: "YES",
           },
           { label: "No", value: "NO" },

@@ -74,7 +74,7 @@ const INTERVIEW_MODE_FEATURES: Record<
 const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
   free: [],
   basic: [
-    "Full roadmap — all steps & chapters visible",
+    "Full roadmap, all steps & chapters visible",
     "Checklist engine for your case",
     "Portal wallet (save credentials securely)",
     // "Visa bulletin monitor",
@@ -84,7 +84,7 @@ const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
   premium: [
     "Everything in Basic",
     "Step-by-step guides in every step",
-    "Document vault — upload & auto-extract",
+    "Document vault, upload & auto-extract",
     "Tracker & reminders (DQ, interview, case status)",
     "Smart Form Filler (I-130 / I-130A)",
     "Case Strength Analyzer",
@@ -97,10 +97,10 @@ const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
     "Everything in Premium",
     "221(g) Action Planner",
     "Mock interview sessions",
-    "Expert case review — 2 sessions included",
-    "Expert consultation calls — 2 sessions included",
+    "Expert case review, 2 sessions included",
+    "Expert consultation calls, 2 sessions included",
     "PCC filing assistance (Sindh only)",
-    "Document translation — 2 documents included",
+    "Document translation, 2 documents included",
   ],
 };
 
@@ -272,7 +272,6 @@ export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: Upg
       const isUpgrade = action === "upgrade" && currentTier !== "free";
 
       const payload = {
-        userId: user.id,
         isUpgrade,
         currentTier: currentTier !== "free" ? currentTier : undefined,
         productTier: action === "upgrade" ? target : undefined,

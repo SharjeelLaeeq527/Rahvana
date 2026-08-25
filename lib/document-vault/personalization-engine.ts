@@ -140,8 +140,28 @@ export function generateRequiredDocuments(
     return ["BENEFICIARY"];
   };
 
+  const sponsorBaseIds = [
+    "joint-i864",
+    "joint-tax-returns",
+    "joint-w2",
+    "joint-employment-letter",
+    "joint-pay-stubs",
+    "joint-assets",
+    "joint-citizenship-proof",
+    "i-864a-contract",
+    "household-member-income",
+    "household-member-residence",
+    "hh-marriage",
+    "hh-id",
+    "hh-birth",
+    "hh-family-link"
+  ];
+
   // Filter documents based on requirements
   let requiredDocs = ALL_DOCUMENTS.filter((doc) => {
+    if (sponsorBaseIds.includes(doc.id)) {
+      return false; // Skip base templates; will expand dynamically below
+    }
     // Some categories are dynamic BUT should still keep their static definitions
     // (e.g., CIVIL has Nikah Nama, MISC has generic docs, etc.)
     const keepStatic = ["CIVIL", "MISC", "TRANSLATIONS", "CITIZENSHIP_PROOF"];
@@ -150,6 +170,87 @@ export function generateRequiredDocuments(
     }
     return isDocumentRequired(doc, visaCategory, scenarioFlags);
   });
+
+  // Helper to expand a base document with suffix and new display name
+  const expandSponsorDoc = (baseDocId: string, suffix: string, name: string): DocumentDefinition | null => {
+    const baseDoc = ALL_DOCUMENTS.find((d) => d.id === baseDocId);
+    if (!baseDoc) return null;
+    return {
+      ...baseDoc,
+      id: `${baseDoc.id}${suffix}`,
+      name,
+    };
+  };
+
+  // Dynamically generate Joint Sponsor documents if used
+  if (scenarioFlags.joint_sponsor_used) {
+    const jsCount = Math.max(1, Number(scenarioFlags.jsCount || 1));
+    for (let i = 1; i <= jsCount; i++) {
+      const label = `Joint Sponsor ${i}`;
+      const suffix = `-joint-sponsor-${i}`;
+
+      const jsDocs = [
+        expandSponsorDoc("joint-i864", suffix, `Form I-864, ${label}`),
+        expandSponsorDoc("joint-tax-returns", suffix, `Most Recent IRS Tax Transcript, ${label}`),
+        expandSponsorDoc("joint-w2", suffix, `W-2, 1099, and Relevant Tax Schedules, ${label}`),
+        expandSponsorDoc("joint-employment-letter", suffix, `Employment Verification Letter, ${label}`),
+        expandSponsorDoc("joint-pay-stubs", suffix, `Current Pay Records, ${label}`),
+        expandSponsorDoc("joint-assets", suffix, `Asset Evidence, ${label}`),
+        expandSponsorDoc("joint-citizenship-proof", suffix, `Proof of U.S. Status, ${label}`),
+        expandSponsorDoc("organized-income-packet", suffix, `Organized Income Packet, ${label}`),
+      ];
+
+      jsDocs.forEach((doc) => {
+        if (doc) requiredDocs.push(doc);
+      });
+    }
+  }
+
+  // Dynamically generate Household Member documents if used
+  if (scenarioFlags.household_member_used) {
+    const hhCount = Math.max(1, Number(scenarioFlags.hhCount || 1));
+    const rels = (scenarioFlags.hhRelationships as Record<string, string>) || {};
+
+    for (let i = 1; i <= hhCount; i++) {
+      const label = `Household Member ${i}`;
+      const suffix = `-household-member-${i}`;
+      const relationship = rels[i] || rels[String(i)] || "other-hh";
+
+      const hmDocs = [
+        expandSponsorDoc("i-864a-contract", suffix, `Form I-864A (Household Member Contract), ${label}`),
+        expandSponsorDoc("household-member-income", suffix, `Proof of Household Member Income, ${label}`),
+        expandSponsorDoc("household-member-residence", suffix, `Proof of Shared Residence, ${label}`),
+      ];
+
+      if (relationship === "spouse") {
+        hmDocs.push(expandSponsorDoc("hh-marriage", suffix, `Marriage Certificate, ${label}`));
+        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document, ${label}`));
+      } else if (relationship === "child") {
+        hmDocs.push(expandSponsorDoc("hh-birth", suffix, `Birth Certificate, ${label}`));
+        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document, ${label}`));
+      } else if (relationship === "parent") {
+        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document, ${label}`));
+        const petBirth = ALL_DOCUMENTS.find((d) => d.id === "birth-cert-petitioner");
+        if (petBirth && !requiredDocs.some((d) => d.id === petBirth.id)) {
+          requiredDocs.push(petBirth);
+        }
+      } else if (relationship === "sibling") {
+        hmDocs.push(expandSponsorDoc("hh-birth", suffix, `Birth Certificate, ${label}`));
+        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document, ${label}`));
+        const petBirth = ALL_DOCUMENTS.find((d) => d.id === "birth-cert-petitioner");
+        if (petBirth && !requiredDocs.some((d) => d.id === petBirth.id)) {
+          requiredDocs.push(petBirth);
+        }
+      } else {
+        hmDocs.push(expandSponsorDoc("hh-family-link", suffix, `Supporting Family-Link Evidence, ${label}`));
+        hmDocs.push(expandSponsorDoc("hh-id", suffix, `Identity Document, ${label}`));
+      }
+
+      hmDocs.forEach((doc) => {
+        if (doc) requiredDocs.push(doc);
+      });
+    }
+  }
 
   // Add dynamic documents from config
   DYNAMIC_CATEGORIES.forEach((category) => {
@@ -265,8 +366,8 @@ export function generateRequiredDocuments(
 
   if (includeOptional) {
     const optionalDocs = ALL_DOCUMENTS.filter((doc) => {
-      // Skip if already in requiredDocs
-      if (requiredDocs.includes(doc)) return false;
+      // Skip if already in requiredDocs or if it's a base template
+      if (requiredDocs.includes(doc) || sponsorBaseIds.includes(doc.id)) return false;
 
       // Check applicableVisas first
       if (doc.applicableVisas && doc.applicableVisas.length > 0) {
@@ -310,7 +411,7 @@ export function generateRequiredDocuments(
   // Ensure documents that have been uploaded are ALWAYS present, even if their scenario flag wasn't set!
   if (uploadedDocIds.length > 0) {
     const forcedUploadDocs = ALL_DOCUMENTS.filter(
-      (doc) => uploadedDocIds.includes(doc.id) && !finalDocs.includes(doc)
+      (doc) => uploadedDocIds.includes(doc.id) && !finalDocs.includes(doc) && !sponsorBaseIds.includes(doc.id)
     );
     finalDocs = [...finalDocs, ...forcedUploadDocs];
   }
@@ -353,14 +454,90 @@ export function generateRequiredDocuments(
     const isGeneric = d.name.includes(" Document (") || d.name.includes(" Evidence (");
     if (!isGeneric) return true;
 
+    // Never filter out a dynamic slot that has been explicitly stored in the user's config
+    const isStoredDynamicSlot = config.dynamicDocuments?.[d.category]?.some(
+      (slot) => slot.id === d.id
+    );
+    if (isStoredDynamicSlot) return true;
+
     // Check if there's any named version of this category's docs uploaded
     const baseName = d.name.split(" Document (")[0].split(" Evidence (")[0].toLowerCase().trim();
 
     const hasNamedMatch = Array.from(namedRequirementCategories).some(
       (nc) => nc.startsWith(d.category) && nc.includes(baseName)
     );
-
     return !hasNamedMatch;
+  });
+
+  // Apply visa-specific overrides to document names for consistency with journey steps
+  finalDocs = finalDocs.map((doc) => {
+    let customName = doc.name;
+
+    if (visaCategory === "IR-5") {
+      const ir5Map: Record<string, string> = {
+        "passport-beneficiary": "Parent Beneficiary Passport Biographic Page",
+        "birth-cert-beneficiary": "Parent Beneficiary Birth Certificate",
+        "birth-cert-petitioner": "Petitioner's Birth Certificate",
+        "police-certificate-pakistan": "Police Certificate",
+        "parent-mrc": "Parent Beneficiary Marriage Certificate",
+        "parent-mrc-translation": "Translated Parent Beneficiary Marriage Certificate",
+        "divorce-decree-beneficiary": "Prior Marriage Termination Documents",
+        "death-cert-prior-spouse": "Death Certificate of Former Spouse",
+        "father-child-bona-fide": "Father-Child Relationship Evidence",
+        "stepparent-marriage-cert": "Stepparent Relationship Records",
+        "adoption-decree": "Adoption, Legal Custody, and Joint Residence Records",
+        "name-change-proof": "Name Change or Identity Discrepancy Documents",
+        "court-records": "Court and Prison Records",
+        "military-records": "Military or Service Records",
+        "certified-translations": "Certified English Translations",
+        "missing-document-evidence": "Missing Document / Record Unavailability Evidence",
+        "relationship-evidence-backup": "IR-5 Relationship Evidence Backup Set",
+        "organized-translation-set": "Organized Translation Set",
+        "upload-ready-copies": "Upload-Ready File Copies",
+        "interview-originals": "Interview Originals and Certified Copies Set",
+        
+        // Petitioner financial templates
+        "i-864-affidavit": "Form I-864 Affidavit of Support - Petitioner",
+        "tax-returns-petitioner": "Most Recent IRS Tax Transcript or Complete Federal Tax Return - Petitioner",
+        "w2-forms": "W-2, 1099, and Relevant Tax Schedules (if applicable)",
+        "pay-stubs": "Current Pay Stubs and Employment Verification Letter (if current income must be documented)",
+        "domicile-proof-petitioner": "Proof of U.S. Domicile - Petitioner",
+        "citizenship-proof-petitioner": "U.S. Passport, Birth Certificate, Naturalization Certificate, or Citizenship Certificate (Petitioner)",
+      };
+      if (ir5Map[doc.id]) {
+        customName = ir5Map[doc.id];
+      }
+    } else if (visaCategory === "IR-1" || visaCategory === "CR-1") {
+      const ir1Map: Record<string, string> = {
+        "passport-beneficiary": "Beneficiary Passport",
+        "birth-cert-beneficiary": "Birth Certificate",
+        // "birth-cert-petitioner": "Birth Certificate of Petitioner",
+        "police-certificate-pakistan": "Police Character Certificate",
+        "nadra-mrc": "NADRA Marriage Certificate",
+        "nikah-nama": "Nikah Nama (Original)",
+        "divorce-decree-beneficiary": "Prior Marriage Termination Proof",
+        "death-cert-prior-spouse": "Death Certificate of Former Spouse",
+        "certified-translations": "Translations",
+        "passport-photos": "Passport Photos",
+        "i-864-affidavit": "Form I-864 Affidavit of Support - Petitioner",
+        "tax-returns-petitioner": "Federal Tax Returns (Past 3 Years)",
+        "w2-forms": "W-2 Forms",
+        "pay-stubs": "Employment Letter & Pay Stubs",
+        "domicile-proof-petitioner": "Proof of U.S. Domicile",
+        "citizenship-proof-petitioner": "Proof of U.S. Citizenship",
+      };
+      if (ir1Map[doc.id]) {
+        customName = ir1Map[doc.id];
+      }
+    }
+
+    if (customName === doc.name) {
+      return doc;
+    }
+    return {
+      ...doc,
+      name: customName,
+    };
   });
 
   // FINAL DEDUPLICATION: Ensure no two rows share the same name in the same category

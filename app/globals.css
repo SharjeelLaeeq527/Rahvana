@@ -170,7 +170,7 @@
 }
 
 .step-modal-spacing {
-  margin-top: 48px;
+  margin-top: 0px;
 }
 /* Chapter 1 Step Background Utility */
 @import "tailwindcss";
@@ -676,10 +676,20 @@
   animation: bird-glow-pulse 6s ease-in-out infinite;
 }
 
+@keyframes scale-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+}
+
 @keyframes bird-glow-pulse {
   0%,
   100% {
-    opacity: 0.65;
+    opacity: 0.85;
     transform: scale(0.96);
   }
   50% {
@@ -693,16 +703,7 @@
   width: 10px;
   height: 10px;
   background: #14b8a6;
-  clip-path: polygon(
-    50% 0%,
-    62% 38%,
-    100% 50%,
-    62% 62%,
-    50% 100%,
-    38% 62%,
-    0% 50%,
-    38% 38%
-  );
+  clip-path: polygon(50% 0%, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0% 50%, 38% 38%);
   opacity: 0;
   animation: bird-sparkle-twinkle 4.5s ease-in-out infinite;
 }
@@ -742,6 +743,33 @@
     linear-gradient(var(--guide-grid-color) 1px, transparent 1px),
     linear-gradient(90deg, var(--guide-grid-color) 1px, transparent 1px);
   background-size: 48px 48px;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(
+      rgba(13, 115, 119, 0.045) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(13, 115, 119, 0.045) 1px,
+      transparent 1px
+    );
+
+  background-size: 48px 48px;
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.85),
+    rgba(0, 0, 0, 0.35) 65%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.85),
+    rgba(0, 0, 0, 0.35) 65%,
+    transparent 100%
+  );
 }
 
 .interview-dots-bg {

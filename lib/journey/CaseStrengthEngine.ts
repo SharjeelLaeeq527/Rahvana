@@ -56,32 +56,88 @@ export class CaseStrengthEngine {
       // ─────────────────────────────────────────────────────────────
       // SIGNAL 2: Financial Sufficiency (Income Check)
       // ─────────────────────────────────────────────────────────────
-      const income = Number(caseProfile.all_data?.sponsor_annual_income?.data_value) || 0;
-      const householdSize = Number(caseProfile.all_data?.household_size?.data_value) || 2;
+      // Preferred source: the Sponsorship Calculator's own determination. The
+      // journey-engine flow (IR-5 parent, and any calculator-driven case) saves that
+      // result to case_data under "sponsorshipResult" and NEVER populates the
+      // legacy sponsor_annual_income / household_size keys. Without this branch,
+      // every IR-5 case would be wrongly flagged LOW_INCOME (-15). We trust the
+      // calculator's isEligible verdict; requiredIncome is already the 125%
+      // poverty threshold, so a 25% cushion over it counts as "comfortably".
+      const sponsorship = caseProfile.all_data?.sponsorshipResult?.data_value as
+        | {
+            isEligible?: boolean;
+            isSelfPetition?: boolean;
+            totalIncome?: number;
+            requiredIncome?: number;
+            hmIncome?: number;
+            jsIncome?: number;
+          }
+        | undefined;
 
-      // Basic 2025 guideline approx: $25k for 2, +$6k per extra person
-      const guideline = 25500 + Math.max(0, householdSize - 2) * 6500;
+      if (sponsorship && typeof sponsorship === "object") {
+        const requiredIncome = Number(sponsorship.requiredIncome) || 0;
+        const totalIncome = Number(sponsorship.totalIncome) || 0;
+        const usesBackupSponsor =
+          (Number(sponsorship.hmIncome) || 0) > 0 || (Number(sponsorship.jsIncome) || 0) > 0;
 
-      if (income >= guideline * 1.25) {
-        baseScore += 10;
-        positive_signals.push("Sponsor income comfortably exceeds 125% Poverty Guidelines.");
-      } else if (income >= guideline) {
-        baseScore += 5;
-        positive_signals.push("Sponsor income meets federal requirements.");
-      } else if (
-        caseProfile.all_data?.joint_sponsor_available?.data_value === "yes" ||
-        caseProfile.all_data?.joint_sponsor_available?.data_value === true
-      ) {
-        baseScore += 5;
-        positive_signals.push("Joint sponsor has been identified to mitigate income shortfall.");
+        if (sponsorship.isSelfPetition || requiredIncome === 0) {
+          // Self-petition / I-864W exemption: no income threshold applies.
+          if (sponsorship.isEligible) {
+            baseScore += 5;
+            positive_signals.push("Affidavit of Support exemption applies (self-petition).");
+          }
+        } else if (sponsorship.isEligible) {
+          if (usesBackupSponsor) {
+            baseScore += 5;
+            positive_signals.push(
+              "Joint sponsor or household member identified to meet the income requirement."
+            );
+          } else if (totalIncome >= requiredIncome * 1.25) {
+            baseScore += 10;
+            positive_signals.push("Sponsor income comfortably exceeds 125% Poverty Guidelines.");
+          } else {
+            baseScore += 5;
+            positive_signals.push("Sponsor income meets federal requirements.");
+          }
+        } else {
+          risk_flags.push({
+            code: "LOW_INCOME",
+            severity: "HIGH",
+            message:
+              "Sponsor income appears below 125% of the poverty guideline for the household size.",
+          });
+          baseScore -= 15;
+        }
       } else {
-        risk_flags.push({
-          code: "LOW_INCOME",
-          severity: "HIGH",
-          message:
-            "Sponsor income appears below 125% of the poverty guideline for your household size.",
-        });
-        baseScore -= 15;
+        // Legacy path (IR-1 and any case without the calculator result). Reads
+        // the flat income keys; unchanged behavior.
+        const income = Number(caseProfile.all_data?.sponsor_annual_income?.data_value) || 0;
+        const householdSize = Number(caseProfile.all_data?.household_size?.data_value) || 2;
+
+        // Basic 2025 guideline approx: $25k for 2, +$6k per extra person
+        const guideline = 25500 + Math.max(0, householdSize - 2) * 6500;
+
+        if (income >= guideline * 1.25) {
+          baseScore += 10;
+          positive_signals.push("Sponsor income comfortably exceeds 125% Poverty Guidelines.");
+        } else if (income >= guideline) {
+          baseScore += 5;
+          positive_signals.push("Sponsor income meets federal requirements.");
+        } else if (
+          caseProfile.all_data?.joint_sponsor_available?.data_value === "yes" ||
+          caseProfile.all_data?.joint_sponsor_available?.data_value === true
+        ) {
+          baseScore += 5;
+          positive_signals.push("Joint sponsor has been identified to mitigate income shortfall.");
+        } else {
+          risk_flags.push({
+            code: "LOW_INCOME",
+            severity: "HIGH",
+            message:
+              "Sponsor income appears below 125% of the poverty guideline for your household size.",
+          });
+          baseScore -= 15;
+        }
       }
 
       // ─────────────────────────────────────────────────────────────

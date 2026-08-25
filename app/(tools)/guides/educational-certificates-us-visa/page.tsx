@@ -136,7 +136,7 @@ const STEPS: Step[] = [
           {
             id: "ibcc-3",
             text: "Equivalence Certificate (if needed)",
-            subtext: "For O/A Levels or foreign qualifications – apply at IBCC",
+            subtext: "For O/A Levels or foreign qualifications, apply at IBCC",
           },
         ],
       },

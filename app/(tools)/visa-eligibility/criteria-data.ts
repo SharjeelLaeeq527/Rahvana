@@ -7,7 +7,7 @@ export type VisaCriteria = {
 export const visaCriteria: Record<string, VisaCriteria> = {
   // IMMEDIATE RELATIVES
   "IR-1": {
-    title: "Immediate Relative – Spouse of US Citizen",
+    title: "Immediate Relative, Spouse of US Citizen",
     description: "For spouses of US citizens married for 2 years or more.",
     criteria: [
       "Must be legally married to a U.S. citizen.",
@@ -17,7 +17,7 @@ export const visaCriteria: Record<string, VisaCriteria> = {
     ],
   },
   "CR-1": {
-    title: "Conditional Resident – Spouse of US Citizen",
+    title: "Conditional Resident, Spouse of US Citizen",
     description: "For spouses of US citizens married for less than 2 years.",
     criteria: [
       "Must be legally married to a U.S. citizen.",
@@ -27,7 +27,7 @@ export const visaCriteria: Record<string, VisaCriteria> = {
     ],
   },
   "IR-5": {
-    title: "Immediate Relative – Parent of US Citizen",
+    title: "Immediate Relative, Parent of US Citizen",
     description: "For parents of US citizens who are 21 years or older.",
     criteria: [
       "Petitioner must be a U.S. citizen and at least 21 years old.",

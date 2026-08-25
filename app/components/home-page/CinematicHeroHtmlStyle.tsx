@@ -273,7 +273,7 @@ export function CinematicHeroHtmlStyle() {
               life go <em>next?</em>
             </h2>
             <p className="p2-sub">
-              Rahvana turns the visa process into a clear, confident journey — with tools and
+              Rahvana turns the visa process into a clear, confident journey, with tools and
               support designed around you.
             </p>
             <div className="btn-row">

@@ -169,7 +169,7 @@ export function parseCnicText(rawText: string): CnicParseResult {
 
   if (!fields.cnic && !fields.dateOfBirth) {
     warnings.push(
-      "We couldn't confidently read this CNIC — please fill in the fields. Tip: a clearer scan of the English side reads best."
+      "We couldn't confidently read this CNIC, please fill in the fields. Tip: a clearer scan of the English side reads best."
     );
   } else if (source === "labels" && (!fields["name.first"] || !fields.dateOfBirth)) {
     source = "partial";

@@ -3,15 +3,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { FormSelections } from "../types/221g";
 import StaticCountryAutocomplete from "@/app/components/shared/StaticCountryAutocomplete";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface Actual221GFormCheckerProps {
   selectedItems: FormSelections;
@@ -64,7 +58,7 @@ export default function Actual221GFormChecker({
           What Did Your 221(g) Letter Request?
         </CardTitle>
         <CardDescription>
-          Select every item your letter asked for — we'll build your action plan from this
+          Select every item your letter asked for, we'll build your action plan from this
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -227,7 +221,7 @@ export default function Actual221GFormChecker({
               </Label>
               {!!selectedItems.nikah_nama && (
                 <div className="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-md p-2 mt-2 font-medium">
-                  ⚠️ Note: You must also submit a Computerized Marriage Registration Certificate
+                  Note: You must also submit a Computerized Marriage Registration Certificate
                   (MRC) and the beneficiary&apos;s CNIC showing husband&apos;s name.
                 </div>
               )}
@@ -442,30 +436,29 @@ export default function Actual221GFormChecker({
                         <Label className="text-sm font-semibold text-foreground flex items-center group">
                           Sponsor Structure *
                         </Label>
-                        <Select
+                        <CustomDropdown
                           value={selectedItems.i864_sponsor_structure || ""}
-                          onValueChange={(value) =>
+                          onChange={(value) =>
                             handleInputChange("i864_sponsor_structure", value)
                           }
-                        >
-                          <SelectTrigger className="h-10 bg-white border-emerald-200 focus:ring-emerald-500 focus:border-emerald-500 shadow-none hover:bg-emerald-50/50 transition-colors text-emerald-900 font-medium">
-                            <SelectValue placeholder="How are you sponsoring?" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="petitioner-only" className="font-medium">
-                              Petitioner only
-                            </SelectItem>
-                            <SelectItem value="petitioner-hm" className="font-medium">
-                              Petitioner + Household Member (I-864A)
-                            </SelectItem>
-                            <SelectItem value="joint-sponsor" className="font-medium">
-                              Joint Sponsor (separate I-864)
-                            </SelectItem>
-                            <SelectItem value="joint-sponsor-hm" className="font-medium">
-                              Joint Sponsor + Household Member (I-864A)
-                            </SelectItem>
-                          </SelectContent>
-                        </Select>
+                          options={[
+                            { value: "petitioner-only", label: "Petitioner only" },
+                            {
+                              value: "petitioner-hm",
+                              label: "Petitioner + Household Member (I-864A)",
+                            },
+                            {
+                              value: "joint-sponsor",
+                              label: "Joint Sponsor (separate I-864)",
+                            },
+                            {
+                              value: "joint-sponsor-hm",
+                              label: "Joint Sponsor + Household Member (I-864A)",
+                            },
+                          ]}
+                          placeholder="How are you sponsoring?"
+                          className="w-full [&_button]:h-10 [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-white [&_button]:text-emerald-900"
+                        />
                       </div>
 
                       {/* Step 2: Sponsor Names */}

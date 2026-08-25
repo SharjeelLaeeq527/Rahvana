@@ -188,7 +188,7 @@ const UserDashboard = () => {
   //     title: "Explore Visa Categories",
   //     subtitle: "Understand different visa paths and eligibility",
   //     icon: <Briefcase size={18} />,
-  //     href: "/visa-category/ir-category",
+  //     href: "/visa-category",
   //   },
   //   {
   //     title: "Explore all Tools",

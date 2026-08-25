@@ -152,7 +152,7 @@ export function generateSessionInsights(
         } else if (metrics.focusWarningsCount === 1) {
           snapshot += "You stayed focused for most of the session, with one brief attention lapse.";
         } else {
-          snapshot += `You had ${metrics.focusWarningsCount} focus warnings—concentration dipped at times.`;
+          snapshot += `You had ${metrics.focusWarningsCount} focus warnings-concentration dipped at times.`;
         }
       }
       break;
@@ -227,7 +227,7 @@ export function generateSessionInsights(
     case "completed":
       if (metrics.skippedQuestions > 0) {
         improvements.push(
-          `${metrics.skippedQuestions} question(s) were skipped—aim to answer all questions, even if briefly`
+          `${metrics.skippedQuestions} question(s) were skipped-aim to answer all questions, even if briefly`
         );
       }
 
@@ -239,26 +239,26 @@ export function generateSessionInsights(
 
       if (answeredQuestions > 0 && avgTranscriptLength > 80) {
         improvements.push(
-          `Many responses were verbose (avg ${Math.round(avgTranscriptLength)} words)—tighten to key point + example`
+          `Many responses were verbose (avg ${Math.round(avgTranscriptLength)} words), tighten to key point + example`
         );
       }
 
       if (metrics.responseVariance > 12) {
         improvements.push(
-          "Response pacing varied significantly—aim for more consistent answer lengths"
+          "Response pacing varied significantly-aim for more consistent answer lengths"
         );
       }
 
       if (metrics.focusWarningsCount > 1) {
         improvements.push(
-          "You had multiple focus warnings—minimize distractions in your next attempt"
+          "You had multiple focus warnings-minimize distractions in your next attempt"
         );
       }
       break;
 
     case "aborted_focus":
       improvements.push(
-        "Focus violations ended this session—you must eliminate distractions to proceed"
+        "Focus violations ended this session-you must eliminate distractions to proceed"
       );
       improvements.push("Find a quiet, isolated space for your next attempt");
       improvements.push("Ensure fullscreen remains active and avoid tab switching");
@@ -266,14 +266,14 @@ export function generateSessionInsights(
 
     case "aborted_manual":
       improvements.push(
-        "Manual exit prevented completion—commit to the full session in your next attempt"
+        "Manual exit prevented completion-commit to the full session in your next attempt"
       );
       improvements.push("Build interview stamina by pushing through the full session");
       break;
 
     case "aborted_time":
-      improvements.push("Time ran out—you need to answer more quickly to cover all questions");
-      improvements.push("Practice keeping responses to 1–2 minutes per question");
+      improvements.push("Time ran out-you need to answer more quickly to cover all questions");
+      improvements.push("Practice keeping responses to 1-2 minutes per question");
       break;
   }
 
@@ -286,14 +286,14 @@ export function generateSessionInsights(
   switch (session.sessionEndReason) {
     case "completed":
       if (metrics.focusWarningsCount > 0) {
-        nextFocus.push("Eliminate distractions—maintain perfect focus next time");
+        nextFocus.push("Eliminate distractions-maintain perfect focus next time");
       }
       if (metrics.skippedQuestions > 0) {
         nextFocus.push("Prepare answers for skipped categories before your next session");
       }
       if (metrics.responseVariance > 10) {
         nextFocus.push(
-          "Match your answer length to the question—keep simple answers concise and provide additional detail only when needed"
+          "Match your answer length to the question-keep simple answers concise and provide additional detail only when needed"
         );
       }
       nextFocus.push("Take another mock interview to reinforce progress");

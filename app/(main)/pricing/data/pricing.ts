@@ -1,6 +1,8 @@
 // ─── Pricing data — single source of truth for the /pricing page ─────────────
 // Keep in sync with lib/entitlements/config.ts (TIER_PRICES, ENTITLEMENTS, ADDON).
 
+import { IR5_ENABLED } from "@/lib/feature-flags";
+
 export type PlanData = {
   id: string;
   name: string;
@@ -195,7 +197,10 @@ export const CR2Plans: PlanData[] = [
 export const VISA_CATEGORIES: VisaCategoryData[] = [
   { id: "IR-1 / CR-1", label: "IR-1 / CR-1 · Spouse Visa", plans: defaultPlans },
   { id: "IR-2 / CR-2", label: "IR-2 / CR-2 · Child of U.S. Citizen", plans: CR2Plans },
-  { id: "IR-5", label: "IR-5 · Parent of U.S. Citizen", plans: defaultPlans },
+  // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+  ...(IR5_ENABLED
+    ? [{ id: "IR-5", label: "IR-5 · Parent of U.S. Citizen", plans: defaultPlans }]
+    : []),
   { id: "F-2A", label: "F-2A · Spouse / Child of Permanent Resident", plans: defaultPlans },
   { id: "K-1 / K-2", label: "K-1 / K-2 · Fiancé Visa", plans: defaultPlans },
   { id: "F-1", label: "F-1 · Student Visa", plans: defaultPlans },
@@ -236,9 +241,9 @@ export const COMPARISON_GROUPS = [
     rows: [
       ["Full visa roadmap: all chapters & steps", "Included", "Included", "Included"],
       ["Checklist engine for your case", "Included", "Included", "Included"],
-      ["Step-by-step guides in every step", "—", "Included", "Included"],
-      ["Document vault: upload & auto-extract", "—", "Included", "Included"],
-      ["Tracker & reminders", "—", "Included", "Included"],
+      ["Step-by-step guides in every step", "", "Included", "Included"],
+      ["Document vault: upload & auto-extract", "", "Included", "Included"],
+      ["Tracker & reminders", "", "Included", "Included"],
     ],
   },
   {
@@ -255,34 +260,34 @@ export const COMPARISON_GROUPS = [
   {
     label: "Tools: Premium Upgrades (Add-on for Basic)",
     rows: [
-      ["Rapid Fire Interview Prep", "—", "Included", "Included"],
-      ["Smart Form Filler (I-130 / I-130A)", "—", "Included", "Included"],
-      ["Sponsorship Calculator", "—", "Included", "Included"],
-      ["Photo Booth", "—", "2 included", "Unlimited"],
-      ["Medical Appointment Booking", "Add On · $5", "Included", "Included"],
-      ["Civil Document Guides", "—", "Included", "Included"],
+      ["Rapid Fire Interview Prep", "", "Included", "Included"],
+      ["Smart Form Filler (I-130 / I-130A)", "", "Included", "Included"],
+      ["Sponsorship Calculator", "", "Included", "Included"],
+      ["Photo Booth", "", "2 included", "Unlimited"],
+      ["Medical Appointment Booking", "", "Included", "Included"],
+      ["Civil Document Guides", "", "Included", "Included"],
     ],
   },
   {
     label: "Tools: Executive Only (Add-on for Basic & Premium)",
     rows: [
-      ["Case Strength Analyzer", "—", "—", "Included"],
-      ["221(g) Action Planner", "—", "—", "Included"],
-      ["Mock Interview", "—", "—", "Included"],
+      ["Case Strength Analyzer", "", "", "Included"],
+      ["221(g) Action Planner", "", "", "Included"],
+      ["Mock Interview", "", "", "Included"],
     ],
   },
   {
     label: "Reviews & Support",
     rows: [
-      ["Expert Case Review", "—", "—", "2 included"],
-      ["Expert Consultation", "—", "—", "2 included"],
+      ["Expert Case Review", "", "", "2 included"],
+      ["Expert Consultation", "", "", "2 included"],
     ],
   },
   {
     label: "Services",
     rows: [
-      ["PCC Filing (Sindh Only)", "Add On · $25", "Add On · $25", "Included"],
-      ["Document Translation", "—", "—", "2 included"],
+      ["PCC Filing (Sindh Only)", "", "", "Included"],
+      ["Document Translation", "", "", "2 included"],
       // ["Dedicated Case Manager",                    "—",             "—",             "—"],
     ],
   },
@@ -354,7 +359,7 @@ export const ADDONS = [
     title: "PDF Tool Kit",
     price: 69,
     unit: "one-time",
-    copy: "Merge, edit, compress and convert your PDFs in one place — get every document into the exact format the embassy expects.",
+    copy: "Merge, edit, compress and convert your PDFs in one place, get every document into the exact format the embassy expects.",
     note: "Included free with Basic, Premium & Executive",
   },
   {

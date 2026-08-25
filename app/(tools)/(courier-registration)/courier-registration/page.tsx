@@ -7,13 +7,6 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -36,6 +29,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import jsPDF from "jspdf";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { Loader } from "@/components/ui/spinner";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 // const SECURITY_QUESTIONS_1 = [
 //   "What is your mother's maiden name?",
@@ -60,6 +54,9 @@ import { Loader } from "@/components/ui/spinner";
 //   "In what city or town was your first job?",
 //   "What is the name of a college you applied to but didn't attend?",
 // ];
+
+const toDropdownOptions = (questions: string[]) =>
+  questions.map((question) => ({ value: question, label: question }));
 
 export default function CourierRegistrationPage() {
   const { t, tRaw } = useLanguage();
@@ -902,23 +899,15 @@ export default function CourierRegistrationPage() {
                                 </Badge>
                                 {t("pages.courierRegistration.securityVault.questionOne")}
                               </Label>
-                              <Select
+                              <CustomDropdown
                                 value={questions.q1}
-                                onValueChange={(val) => setQuestions({ ...questions, q1: val })}
-                              >
-                                <SelectTrigger className="h-14 rounded-2xl border-gray-100 bg-gray-50/50 focus:bg-white transition-all font-medium">
-                                  <SelectValue placeholder="Select Question" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
-                                  {(
-                                    tRaw("pages.courierRegistration.questions.set1") as string[]
-                                  ).map((q: string) => (
-                                    <SelectItem key={q} value={q} className="rounded-xl my-1">
-                                      {q}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                                onChange={(val) => setQuestions({ ...questions, q1: val })}
+                                options={toDropdownOptions(
+                                  tRaw("pages.courierRegistration.questions.set1") as string[]
+                                )}
+                                placeholder="Select Question"
+                                className="w-full [&_button]:h-14 [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-2xl [&_button]:bg-gray-50/50 [&_button]:font-medium"
+                              />
                               <Input
                                 type={showAnswers ? "text" : "password"}
                                 placeholder={t(
@@ -943,23 +932,15 @@ export default function CourierRegistrationPage() {
                                 </Badge>
                                 {t("pages.courierRegistration.securityVault.questionTwo")}
                               </Label>
-                              <Select
+                              <CustomDropdown
                                 value={questions.q2}
-                                onValueChange={(val) => setQuestions({ ...questions, q2: val })}
-                              >
-                                <SelectTrigger className="h-14 rounded-2xl border-gray-100 bg-gray-50/50 focus:bg-white transition-all font-medium">
-                                  <SelectValue placeholder="Select Question" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
-                                  {(
-                                    tRaw("pages.courierRegistration.questions.set2") as string[]
-                                  ).map((q: string) => (
-                                    <SelectItem key={q} value={q} className="rounded-xl my-1">
-                                      {q}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                                onChange={(val) => setQuestions({ ...questions, q2: val })}
+                                options={toDropdownOptions(
+                                  tRaw("pages.courierRegistration.questions.set2") as string[]
+                                )}
+                                placeholder="Select Question"
+                                className="w-full [&_button]:h-14 [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-2xl [&_button]:bg-gray-50/50 [&_button]:font-medium"
+                              />
                               <Input
                                 type={showAnswers ? "text" : "password"}
                                 placeholder={t(
@@ -984,23 +965,15 @@ export default function CourierRegistrationPage() {
                                 </Badge>
                                 {t("pages.courierRegistration.securityVault.questionThree")}
                               </Label>
-                              <Select
+                              <CustomDropdown
                                 value={questions.q3}
-                                onValueChange={(val) => setQuestions({ ...questions, q3: val })}
-                              >
-                                <SelectTrigger className="h-14 rounded-2xl border-gray-100 bg-gray-50/50 focus:bg-white transition-all font-medium">
-                                  <SelectValue placeholder="Select Question" />
-                                </SelectTrigger>
-                                <SelectContent className="rounded-2xl border-gray-100 shadow-xl">
-                                  {(
-                                    tRaw("pages.courierRegistration.questions.set3") as string[]
-                                  ).map((q: string) => (
-                                    <SelectItem key={q} value={q} className="rounded-xl my-1">
-                                      {q}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                                onChange={(val) => setQuestions({ ...questions, q3: val })}
+                                options={toDropdownOptions(
+                                  tRaw("pages.courierRegistration.questions.set3") as string[]
+                                )}
+                                placeholder="Select Question"
+                                className="w-full [&_button]:h-14 [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-2xl [&_button]:bg-gray-50/50 [&_button]:font-medium"
+                              />
                               <Input
                                 type={showAnswers ? "text" : "password"}
                                 placeholder={t(

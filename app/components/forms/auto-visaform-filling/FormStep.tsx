@@ -377,7 +377,7 @@ export function FormStep({
           }}
           options={options}
           placeholder={field.placeholder || `Select an option`}
-          className="border-[#d0e8e9] focus:border-[#0d7377]"
+          className="w-full [&_button]:border-[#d0e8e9] [&_button]:focus:border-[#0d7377]"
         />
       );
     }

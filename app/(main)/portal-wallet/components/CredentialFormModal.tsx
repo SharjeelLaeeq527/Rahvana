@@ -2,16 +2,10 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { X, Eye, EyeOff } from "lucide-react";
 import securityQuestionsData from "../../../../data/portal-wallet-security-questions-questionnaire.json";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 type PortalType = "USCIS" | "NVC" | "COURIER";
 
@@ -83,11 +77,13 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
     (securityQuestionsData as Record<string, string[]>)[questionsKey] || [];
 
   useEffect(() => {
+    let isMounted = true;
+
     if (isOpen) {
       document.body.style.overflow = "hidden";
       if (mode === "edit" && initialData) {
         setUsername(initialData.username || "");
-        setPassword("");
+        setPassword(initialData.password || "");
         setNvcCaseNumber(initialData.nvcCaseNumber || "");
         setNvcInvoiceId(initialData.nvcInvoiceId || "");
         const sq = initialData.securityQuestions || [];
@@ -99,6 +95,36 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
               answer: sq[i]?.answer || "",
             }))
         );
+
+        // Fetch decrypted values for editing
+        const fetchDecryptedForEdit = async () => {
+          try {
+            const res = await fetch("/api/portal-wallet/reveal", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ portalType, type: "full_edit" }),
+            });
+            const data = await res.json();
+            if (isMounted && data) {
+              if (data.password) setPassword(data.password);
+              if (data.securityQuestions && data.securityQuestions.length > 0) {
+                const sq = data.securityQuestions;
+                setSecurityQuestions(
+                  Array(questionLimit)
+                    .fill(null)
+                    .map((_, i) => ({
+                      question: sq[i]?.question || "",
+                      answer: sq[i]?.answer || "",
+                    }))
+                );
+              }
+            }
+          } catch (err) {
+            console.error("Failed to fetch decrypted values for edit:", err);
+          }
+        };
+
+        fetchDecryptedForEdit();
       } else {
         setUsername("");
         setPassword("");
@@ -113,9 +139,10 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
     }
 
     return () => {
+      isMounted = false;
       document.body.style.overflow = "unset";
     };
-  }, [isOpen, mode, initialData, questionLimit]);
+  }, [isOpen, mode, initialData, portalType, questionLimit]);
 
   const handleQuestionChange = (index: number, question: string) => {
     setSecurityQuestions((prev) => prev.map((sq, i) => (i === index ? { ...sq, question } : sq)));
@@ -345,22 +372,16 @@ const CredentialFormModal: React.FC<CredentialFormModalProps> = ({
                           Question {index + 1} <span className="text-red-500">*</span>
                         </label>
 
-                        <Select
+                        <CustomDropdown
                           value={sq.question}
-                          onValueChange={(val) => handleQuestionChange(index, val)}
-                        >
-                          <SelectTrigger className="w-full h-9 px-3 rounded-lg border border-[#e0f0f0] bg-white text-[12px] text-[#0a1128] focus:outline-none focus:border-[#0d7377] focus:ring-2 focus:ring-[#0d7377]/10 transition-all cursor-pointer">
-                            <SelectValue placeholder="Select a security question" />
-                          </SelectTrigger>
-
-                          <SelectContent className="max-h-96 overflow-y-auto">
-                            {getFilteredQuestions(index).map((q) => (
-                              <SelectItem key={q} value={q}>
-                                {q}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                          onChange={(val) => handleQuestionChange(index, val)}
+                          options={getFilteredQuestions(index).map((question) => ({
+                            value: question,
+                            label: question,
+                          }))}
+                          placeholder="Select a security question"
+                          className="w-full [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-white [&_button]:text-[12px]"
+                        />
 
                         <input
                           type="text"

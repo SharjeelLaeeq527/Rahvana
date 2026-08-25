@@ -1,16 +1,28 @@
 // Category Selection Step - Displays available visa categories for user selection.
 "use client";
-
 import { Button } from "@/components/ui/button";
-import { Heart } from "lucide-react";
+import { Heart, UsersRound, UserRound, type LucideIcon, FileText } from "lucide-react";
 import type { InterviewCategoryConfig } from "@/data/interview-categories/schema";
 
+export interface CategoryWithPurchaseStatus extends InterviewCategoryConfig {
+  isPurchased: boolean;
+  requiresPurchase: boolean;
+  purchaseExhausted?: boolean;
+  purchaseCount?: number;
+  usedSessionCount?: number;
+  activeSessionCount?: number;
+  remainingPurchases?: number;
+  addonId?: string;
+  price?: number;
+}
+
 interface CategorySelectionStepProps {
-  categories: InterviewCategoryConfig[];
-  selectedCategory: InterviewCategoryConfig | null;
-  onSelectCategory: (category: InterviewCategoryConfig) => void;
+  categories: CategoryWithPurchaseStatus[];
+  selectedCategory: CategoryWithPurchaseStatus | null;
+  onSelectCategory: (category: CategoryWithPurchaseStatus) => void;
   onNext: () => void;
   onBack: () => void;
+  onPurchaseAgain?: () => void;
   error?: string | null;
 }
 
@@ -35,6 +47,7 @@ const getThemeColor = (themeColor: string) => {
       borderSelected: "rgba(13, 115, 119, 0.4)",
       glowColor: "rgba(175, 219, 219, 0.2)",
     },
+
     blue: {
       gradient: "linear-gradient(145deg, #ffffff 0%, #f8fbff 40%, #eef5ff 70%, #e8f0ff 100%)",
       iconBg: "#afdbdb",
@@ -43,6 +56,7 @@ const getThemeColor = (themeColor: string) => {
       borderSelected: "rgba(13, 115, 119, 0.4)",
       glowColor: "rgba(175, 219, 219, 0.2)",
     },
+
     purple: {
       gradient: "linear-gradient(145deg, #ffffff 0%, #fdfbff 40%, #f8f0ff 70%, #f3e8ff 100%)",
       iconBg: "#cdadcc",
@@ -51,6 +65,7 @@ const getThemeColor = (themeColor: string) => {
       borderSelected: "rgba(107, 91, 123, 0.4)",
       glowColor: "rgba(205, 173, 204, 0.2)",
     },
+
     green: {
       gradient: "linear-gradient(145deg, #ffffff 0%, #f8fdfb 40%, #edf7f2 70%, #e8f0ed 100%)",
       iconBg: "#89a4a0",
@@ -59,6 +74,7 @@ const getThemeColor = (themeColor: string) => {
       borderSelected: "rgba(137, 164, 160, 0.4)",
       glowColor: "rgba(137, 164, 160, 0.2)",
     },
+
     orange: {
       gradient: "linear-gradient(145deg, #ffffff 0%, #fdfaf7 40%, #f9f0e7 70%, #f3ede7 100%)",
       iconBg: "#f3ede7",
@@ -67,6 +83,7 @@ const getThemeColor = (themeColor: string) => {
       borderSelected: "rgba(156, 111, 56, 0.4)",
       glowColor: "rgba(243, 237, 231, 0.3)",
     },
+
     rose: {
       gradient: "linear-gradient(145deg, #ffffff 0%, #fffafa 40%, #fef0f2 70%, #fce8ec 100%)",
       iconBg: "#fce8ec",
@@ -76,17 +93,26 @@ const getThemeColor = (themeColor: string) => {
       glowColor: "rgba(219, 128, 144, 0.15)",
     },
   };
-
   return colorMap[themeColor] || colorMap.teal;
 };
 
-const getIcon = (iconName: string) => {
-  return <Heart className="h-7 w-7" />;
+const CATEGORY_ICON_MAP: Record<string, LucideIcon> = {
+  heart: Heart,
+  "users-round": UsersRound,
 };
 
-// Watermark icon for decorative element
+const getCategoryIcon = (iconName: string): LucideIcon => {
+  return CATEGORY_ICON_MAP[iconName] ?? UserRound;
+};
+
+const getIcon = (iconName: string) => {
+  const Icon = getCategoryIcon(iconName);
+  return <Icon className="h-7 w-7" strokeWidth={1.9} />;
+};
+
 const getWatermarkIcon = (iconName: string) => {
-  return <Heart className="w-24 h-24" strokeWidth={1} />;
+  const Icon = getCategoryIcon(iconName);
+  return <Icon className="h-24 w-24" strokeWidth={1} />;
 };
 
 export function CategorySelectionStep({
@@ -95,12 +121,49 @@ export function CategorySelectionStep({
   onSelectCategory,
   onNext,
   onBack,
+  onPurchaseAgain,
   error,
 }: CategorySelectionStepProps) {
-  if (categories.length === 0) {
+  const environment = process.env.NEXT_PUBLIC_ENVIRONMENT === "development";
+
+  const visibleCategories = environment
+  ? categories
+  : categories.filter(
+      (category) => category.categorySlug !== "ir-5-parent"
+    );
+
+  if (visibleCategories.length === 0) {
     return (
-      <div className="text-center py-12">
-        <p className="text-slate-600">No categories available at this time.</p>
+      <div className="rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center shadow-sm sm:px-10">
+        <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+          <FileText className="h-8 w-8" />
+        </div>
+        <h3 className="mt-5 text-2xl font-semibold tracking-tight text-slate-950">
+          No categories available
+        </h3>
+        <p className="mx-auto mt-3 max-w-xl text-base leading-7 text-slate-500">
+          You already have sessions for the available categories here. Open My Sessions to resume
+          one, or choose a different country to see new options.
+        </p>
+        <div className="mt-8 flex flex-wrap justify-center gap-3">
+          {/* <Button
+            type="button"
+            onClick={onBack}
+            variant="outline"
+            className="rounded-full border-slate-200 px-5 text-slate-700 hover:bg-slate-50"
+          >
+            Back
+          </Button> */}
+          <Button
+            type="button"
+            onClick={() => {
+              window.location.href = "/interview-prep/my-sessions";
+            }}
+            className="rounded-full bg-primary px-5 text-white shadow-sm shadow-primary/20 hover:bg-primary/90"
+          >
+            Open My Sessions
+          </Button>
+        </div>
       </div>
     );
   }
@@ -129,22 +192,35 @@ export function CategorySelectionStep({
                 clipRule="evenodd"
               />
             </svg>
-            <span>{error}</span>
+            <div className="flex-1">
+              <span>{error}</span>
+
+              {onPurchaseAgain && (
+                <div className="mt-3">
+                  <Button
+                    type="button"
+                    onClick={onPurchaseAgain}
+                    className="bg-[#0d7377] hover:bg-[#0a5a5d] text-white"
+                  >
+                    Purchase Another Session
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
 
       {/* Category Cards */}
-      <div className="max-w-[650px] mx-auto space-y-4">
-        {categories.map((category) => {
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {visibleCategories.map((category) => {
           const theme = getThemeColor(category.ui.themeColor);
           const isSelected = selectedCategory?.categorySlug === category.categorySlug;
-
           return (
             <button
               key={category.categorySlug}
               type="button"
-              className="w-full rounded-2xl px-10 py-14 text-left transition-all cursor-pointer relative overflow-hidden"
+              className="w-full rounded-2xl px-6 py-10 text-left transition-all cursor-pointer relative overflow-hidden"
               style={{
                 background: theme.gradient,
                 border: `2px solid ${isSelected ? theme.borderSelected : theme.border}`,
@@ -168,7 +244,7 @@ export function CategorySelectionStep({
                 {getWatermarkIcon(category.ui.icon)}
               </div>
 
-              <div className="relative z-10 flex items-center gap-5">
+              <div className="relative z-10 flex items-start gap-5">
                 {/* Icon badge */}
                 <div
                   className="flex items-center justify-center w-14 h-14 rounded-xl shrink-0"
@@ -183,6 +259,43 @@ export function CategorySelectionStep({
                 {/* Text content */}
                 <div className="flex-1 min-w-0">
                   <h3 className="font-bold text-xl text-slate-900 mb-1">{category.displayName}</h3>
+
+                  {/* Purchase Status Badge */}
+                  {category.isPurchased ? (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Purchased
+                    </span>
+                  ) : category.purchaseExhausted ? (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Buy again
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                      <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <path
+                          fillRule="evenodd"
+                          d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                      Price locked: ${category.price ?? 200}
+                    </span>
+                  )}
+
                   <p className="text-sm text-slate-600 leading-relaxed">{category.description}</p>
                 </div>
 

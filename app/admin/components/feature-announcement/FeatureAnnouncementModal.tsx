@@ -103,7 +103,7 @@ export function FeatureAnnouncementModal({ open, onOpenChange }: FeatureAnnounce
                 <label className="text-sm font-medium text-slate-700">Feature URL</label>
                 <input
                   type="url"
-                  placeholder="https://www.rahvana.com/new-feature"
+                  placeholder="/new-feature"
                   value={featureUrl}
                   onChange={(e) => setFeatureUrl(e.target.value)}
                   className="w-full rounded-lg border border-slate-200 bg-white px-4 py-3 focus:outline-none focus:ring-2 focus:ring-primary/40 transition"

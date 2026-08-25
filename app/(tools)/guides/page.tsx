@@ -142,6 +142,24 @@ const GUIDES: Guide[] = [
     icon: Syringe,
     entitlementFeature: "polio_certificate",
   },
+  // {
+  //   id: "step-parent",
+  //   title: "Step-Parent",
+  //   subtitle: "USCIS Eligibility & Document Compilation",
+  //   description: "USCIS roadmap for sponsoring step-parents, marriage rules, and document requirements.",
+  //   category: "Pakistan Document",
+  //   href: "/guides/step-parent-guide",
+  //   icon: BookOpen,
+  // },
+  // {
+  //   id: "adoptive-parent",
+  //   title: "Adoptive Parent & Guardianship",
+  //   subtitle: "USCIS Eligibility & Document Requirements",
+  //   description: "USCIS adoption criteria, 2-year custody rule, and legal guardianship vs. U.S. adoption.",
+  //   category: "Pakistan Document",
+  //   href: "/guides/adoptive-parent-guide",
+  //   icon: BookOpen,
+  // },
 ];
 
 const CATEGORIES: ("All" | GuideCategory)[] = ["All", "Pakistan Document", "Medical & Exam"];
@@ -509,15 +527,6 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
         {/* Hero Section — hidden in the embedded "My Resources" view */}
         {!isEmbedded && (
           <section className="text-center mb-5 md:mb-10 pt-1 relative flex flex-col items-center">
-            <div className="w-full flex justify-end mb-6 md:absolute md:top-0 md:right-0 md:mb-0 md:w-auto md:block">
-              <Link
-                href="/guides/my-guides"
-                className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-bold text-slate-600 hover:text-teal-600 hover:border-teal-200 shadow-sm transition-all"
-              >
-                <LayoutGrid size={16} />
-                My Guides
-              </Link>
-            </div>
             <h1 className="text-3xl md:text-5xl font-bold mb-4 mt-2 md:mt-0 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
               Master the Paperwork.
             </h1>
@@ -612,6 +621,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
           <ResourceSectionHeader
             title="My Guides"
             subtitle="Guides you've unlocked or already started."
+            className="-mt-16"
           />
         )}
 
@@ -637,8 +647,7 @@ export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolea
           <>
             <ResourceSectionHeader
               title="Browse Guides"
-              subtitle="Explore more guides — preview them or unlock the full version."
-              className="mt-12"
+              subtitle="Explore more guides, preview them or unlock the full version."
             />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 pt-6">
               {browseGuides.map((guide, index) => renderGuideCard(guide, index))}
@@ -735,7 +744,7 @@ function GuideCard({
     <CardWrapper
       href={isNavigable ? guide.href : "#"}
       onClick={handleClick}
-      className={`group relative flex flex-col bg-card rounded-2xl p-8 pt-8 mt-6
+      className={`group relative flex flex-col bg-card rounded-2xl p-8 pt-8 mt-6 mx-2 md:mx-0
       transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
       ${
         // isPinned
@@ -764,16 +773,14 @@ function GuideCard({
         </div>
       )}
 
-      {/* Floating Icon Box */}
+{/* Floating icon box */}
       <div
-        className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-10
-        group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg
-        ${styles.iconBox}`}
+        className={`absolute -top-6 left-6 w-12 h-12 md:w-14 md:h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-40 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg ${styles.iconBox}`}
       >
         <div
           className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
         />
-        <Icon className="w-6 h-6 stroke-2" />
+        <Icon className="w-5 h-5 md:w-6 md:h-6 stroke-2" />
       </div>
 
       {/* (Removed tier badge — ribbon now indicates locked state) */}
@@ -810,6 +817,8 @@ function GuideCard({
                       frc: "Globe",
                       "marriage-certificate": "Heart",
                       vaccinations: "Syringe",
+                      "step-parent": "BookOpen",
+                      "adoptive-parent": "BookOpen",
                     };
                     return mapping[guide.id] || "BookOpen";
                   })(),
