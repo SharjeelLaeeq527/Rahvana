@@ -12,6 +12,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { encrypt } from "@/lib/encryption";
+import { validateProfile } from "@/lib/profile/schema";
+import type { MasterProfile } from "@/types/profile";
 
 // Sensitive top-level string fields inside the MasterProfile object
 const SENSITIVE_TOP_LEVEL = [
@@ -100,10 +102,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid profile data" }, { status: 400 });
     }
 
-    // ── 3. Encrypt sensitive fields ───────────────────────────────────────────
+    // ── 3. Validate (same Zod rules the client uses) ──────────────────────────
+    // The client already blocks bad saves, but the server must not trust the
+    // client — enforce the identical rules here before anything is written.
+    const fieldErrors = validateProfile(profileDetails as MasterProfile);
+    if (Object.keys(fieldErrors).length > 0) {
+      return NextResponse.json(
+        { error: "Validation failed", fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    // ── 4. Encrypt sensitive fields ───────────────────────────────────────────
     const encryptedDetails = encryptProfileDetails(profileDetails);
 
-    // ── 4. Upsert into user_profiles ──────────────────────────────────────────
+    // ── 5. Upsert into user_profiles ──────────────────────────────────────────
     const { error: upsertError } = await supabase.from("user_profiles").upsert(
       {
         id: user.id,
