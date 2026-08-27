@@ -3,7 +3,7 @@ import Image from "next/image";
 import { ARTICLES } from "@/data/articles";
 import ToolCTA from "@/components/blog/ToolCTA";
 import BlogSearchSection from "@/components/blog/BlogSearchSection";
-import { Sparkles, CheckCircle2, UserCheck, Clock, ShieldCheck } from "lucide-react";
+import { BookOpen, CheckCircle2, UserCheck, Clock, ShieldCheck } from "lucide-react";
 
 export const metadata = {
   title: "Rahvana Immigration Blog & Guides | U.S. Visa Research & Consular Insights",
@@ -27,7 +27,7 @@ export default function BlogIndexPage() {
             {/* Left Column: Text Content */}
             <div className="lg:col-span-7">
               <div className="inline-flex items-center gap-2 rounded-full border border-teal-500/30 bg-teal-500/10 px-4 py-1.5 text-xs font-bold tracking-wider text-teal-600 dark:text-teal-400 uppercase">
-                <Sparkles className="h-3.5 w-3.5" />
+                <BookOpen className="h-3.5 w-3.5" />
                 <span>RAHVANA KNOWLEDGE CENTER</span>
               </div>
               <h1 className="text-foreground mt-4 text-3xl font-extrabold tracking-tight sm:text-4xl lg:text-5xl leading-[1.15]">

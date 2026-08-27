@@ -20,7 +20,8 @@ import {
   Share2,
   Bookmark,
   ChevronRight,
-  Sparkles,
+  BookOpen,
+  List,
   HelpCircle,
 } from "lucide-react";
 
@@ -152,7 +153,7 @@ export default async function ArticleDetailPage({
             <aside className="lg:col-span-4 order-2 lg:order-1">
               <div className="sticky top-28 rounded-2xl border border-border bg-card/60 p-6 backdrop-blur-md shadow-sm">
                 <div className="flex items-center gap-2 mb-4 text-sm font-bold text-foreground">
-                  <Sparkles className="h-4 w-4 text-teal-400" />
+                  <List className="h-4 w-4 text-teal-500 dark:text-teal-400" />
                   <span>Table of Contents</span>
                 </div>
                 <nav className="space-y-2 text-xs">
@@ -187,7 +188,7 @@ export default async function ArticleDetailPage({
               {/* ⚡ BLUF (Bottom Line Up Front) Answer Box - Vital for AEO/GEO AI engine extraction */}
               <section className="rounded-3xl border border-teal-500/30 bg-slate-900/95 p-6 shadow-lg sm:p-8 text-slate-100">
                 <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-teal-400">
-                  <Sparkles className="h-4 w-4" />
+                  <BookOpen className="h-4 w-4" />
                   <span>Bottom Line Up Front (BLUF Summary)</span>
                 </div>
                 <p className="text-base font-medium leading-relaxed text-slate-200">

@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, CheckCircle2, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, CheckCircle2, ShieldCheck, Wrench } from "lucide-react";
 
 export interface ToolCTAProps {
   badge?: string;
@@ -23,7 +23,7 @@ export default function ToolCTA({
     return (
       <div className="my-8 rounded-2xl border border-teal-500/30 bg-slate-900/95 p-6 text-slate-100 shadow-lg sm:p-8">
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-teal-400">
-          <Sparkles className="h-4 w-4" />
+          <Wrench className="h-4 w-4" />
           <span>{badge}</span>
         </div>
         <h3 className="mt-3 text-xl font-bold text-white sm:text-2xl">
@@ -52,7 +52,7 @@ export default function ToolCTA({
     <div className="my-10 overflow-hidden rounded-3xl border border-border bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 p-8 text-white shadow-xl sm:p-10">
       <div className="max-w-3xl">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/20 px-3.5 py-1 text-xs font-semibold tracking-wide text-teal-300 backdrop-blur-md">
-          <Sparkles className="h-3.5 w-3.5" />
+          <Wrench className="h-3.5 w-3.5" />
           {badge}
         </span>
         <h3 className="mt-4 text-2xl font-bold tracking-tight text-white sm:text-3xl">
