@@ -1,9 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { Upload, Download, FileCheck, AlertCircle } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import {
+  Upload,
+  Download,
+  FileCheck,
+  AlertCircle,
+  FileText,
+  Zap,
+  TrendingDown,
+} from "lucide-react";
 import { useLanguage } from "@/app/context/LanguageContext";
-import { Loader } from "@/components/ui/spinner";
+import FileUpload from "@/app/components/shared/FileUpload";
 
 interface CompressionResult {
   originalSize: number;
@@ -18,32 +26,29 @@ export default function Compress() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState<CompressionResult | null>(null);
   const [error, setError] = useState("");
-  
-const API_BASE =
-  process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+
+  const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0];
+  const handleFileUpload = (fieldName: string, uploadedFile: File | File[] | null) => {
+    if (!uploadedFile || Array.isArray(uploadedFile)) return;
 
-      if (!selectedFile.name.toLowerCase().endsWith(".pdf")) {
-        setError(t("pdfProcessing.errors.invalidFile"));
-        return;
-      }
-
-      if (selectedFile.size > 100 * 1024 * 1024) {
-        setError(t("pdfProcessing.errors.tooLarge"));
-        return;
-      }
-
-      setFile(selectedFile);
-      setError("");
-      setResult(null);
+    if (!uploadedFile.name.toLowerCase().endsWith(".pdf")) {
+      setError(t("pdfProcessing.errors.invalidFile"));
+      return;
     }
+
+    if (uploadedFile.size > 100 * 1024 * 1024) {
+      setError(t("pdfProcessing.errors.tooLarge"));
+      return;
+    }
+
+    setFile(uploadedFile);
+    setError("");
+    setResult(null);
   };
 
   const handleCompress = async () => {
@@ -74,21 +79,16 @@ const API_BASE =
       const compressedSizeHeader = response.headers.get("x-compressed-size");
       const reductionHeader = response.headers.get("x-reduction");
 
-      const originalSize = originalSizeHeader
-        ? parseInt(originalSizeHeader, 10)
-        : file.size;
+      const originalSize = originalSizeHeader ? parseInt(originalSizeHeader, 10) : file.size;
       const compressedSizeFromHeader = compressedSizeHeader
         ? parseInt(compressedSizeHeader, 10)
         : 0;
-      const reductionFromHeader = reductionHeader
-        ? parseFloat(reductionHeader)
-        : 0;
+      const reductionFromHeader = reductionHeader ? parseFloat(reductionHeader) : 0;
 
       const blob = await response.blob();
       const finalCompressedSize = compressedSizeFromHeader || blob.size;
       const finalReduction =
-        reductionFromHeader ||
-        ((originalSize - finalCompressedSize) / originalSize) * 100;
+        reductionFromHeader || ((originalSize - finalCompressedSize) / originalSize) * 100;
 
       // Trigger download
       const url = window.URL.createObjectURL(blob);
@@ -106,8 +106,7 @@ const API_BASE =
         reduction: finalReduction.toFixed(2),
       });
     } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : t("pdfProcessing.errors.failed");
+      const message = err instanceof Error ? err.message : t("pdfProcessing.errors.failed");
       console.error("Compression error:", err);
       setError(message);
     } finally {
@@ -129,67 +128,35 @@ const API_BASE =
 
   return (
     <div className="w-full">
-      <div className="bg-primary/90 p-6 md:p-10 text-white rounded-t-2xl">
-        <h1 className="text-3xl md:text-5xl font-bold text-center mb-2 md:mb-3">
+      <div className="from-rahvana-primary to-rahvana-primary-dark rounded-t-2xl bg-gradient-to-r p-6 text-white md:p-10">
+        <h1 className="mb-2 text-center text-3xl font-bold md:mb-3 md:text-5xl">
           {t("pdfProcessing.compress.title")}
         </h1>
       </div>
 
       <div className="p-6 md:p-12">
         {/* File Upload */}
+        {/* File Upload */}
         <div className="mb-6 md:mb-8">
-          <label className="block text-sm font-semibold text-gray-700 mb-3">
-            {t("pdfProcessing.compress.selectLabel")}
-          </label>
-          <input
-            type="file"
+          <FileUpload
+            label={t("pdfProcessing.compress.selectLabel")}
+            fieldName="compress-file"
+            onFileUpload={handleFileUpload}
             accept=".pdf"
-            onChange={handleFileChange}
-            className="hidden"
-            id="file-upload"
-            disabled={loading}
+            multiple={false}
+            variant="default"
+            title={t("pdfProcessing.compress.dropzone")}
+            buttonText="Browse files"
+            helperText="PDF files only • Max 100 MB"
+            showPreview={false}
           />
-          <label
-            htmlFor="file-upload"
-            className={`block border-2 border-dashed rounded-xl p-8 text-center transition-all ${
-              loading
-                ? "border-gray-300 bg-gray-50 cursor-not-allowed"
-                : "border-primary/90 hover:border-primary hover:bg-primary/10 cursor-pointer"
-            }`}
-          >
-            <Upload
-              className={`mx-auto h-16 w-16 mb-3 ${file ? "text-primary/90" : "text-gray-400"}`}
-            />
-            {file ? (
-              <div>
-                <p className="text-primary/90 font-semibold text-lg mb-1 truncate max-w-xs mx-auto">
-                  {file.name}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {formatBytes(file.size)}
-                </p>
-                <p className="text-xs text-gray-400 mt-2">
-                  {t("pdfProcessing.compress.changeFile")}
-                </p>
-              </div>
-            ) : (
-              <div>
-                <p className="text-gray-700 font-medium mb-1">
-                  {t("pdfProcessing.compress.dropzone")}
-                </p>
-                <p className="text-sm text-gray-500">
-                  {t("pdfProcessing.compress.pdffilesOnly")}
-                </p>
-              </div>
-            )}
-          </label>
         </div>
 
         {/* Compress Button */}
         <button
           onClick={handleCompress}
           disabled={!file || loading}
-          className="w-full lg:w-1/2 mx-auto bg-primary/90 text-white py-4 rounded-xl font-semibold text-lg hover:bg-primary disabled:bg-gray-400 disabled:cursor-not-allowed transition-all flex items-center justify-center shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          className="bg-rahvana-primary hover:bg-rahvana-primary-dark mx-auto flex w-full transform items-center justify-center rounded-xl py-4 text-lg font-semibold text-white shadow-lg transition-all hover:-translate-y-0.5 hover:shadow-xl disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-500 disabled:shadow-none lg:w-1/2"
         >
           {loading ? (
             <>{t("pdfProcessing.compress.compressing")}</>
@@ -203,12 +170,12 @@ const API_BASE =
 
         {/* Error Message */}
         {error && (
-          <div className="mt-6 p-5 bg-red-50 border-l-4 border-red-500 rounded-lg">
+          <div className="mt-6 rounded-lg border-l-4 border-red-500 bg-red-50 p-5">
             <div className="flex items-start">
-              <AlertCircle className="h-6 w-6 text-red-500 mr-3 mt-0.5 shrink-0" />
+              <AlertCircle className="mt-0.5 mr-3 h-6 w-6 shrink-0 text-red-500" />
               <div>
-                <h3 className="text-red-800 font-semibold mb-1">Error</h3>
-                <p className="text-red-700 text-sm">{error}</p>
+                <h3 className="mb-1 font-semibold text-red-800">Error</h3>
+                <p className="text-sm text-red-700">{error}</p>
               </div>
             </div>
           </div>
@@ -216,43 +183,57 @@ const API_BASE =
 
         {/* Success Result */}
         {result && (
-          <div className="mt-6 p-6 bg-linear-to-r from-green-50 to-emerald-50 border-l-4 border-green-500 rounded-lg shadow-sm">
-            <div className="flex items-center text-green-700 mb-4">
-              <FileCheck className="h-6 w-6 mr-3" />
-              <span className="font-bold text-lg">
-                {t("pdfProcessing.compress.success")}
-              </span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="text-gray-500 text-xs font-medium mb-1">
-                  {t("pdfProcessing.compress.originalSize")}
-                </p>
-                <p className="text-gray-800 font-bold text-xl">
-                  {formatBytes(result.originalSize)}
-                </p>
+          <div className="mt-8 overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-lg">
+            {/* Header */}
+            <div className="flex items-center gap-3 bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4">
+              <div className="rounded-full bg-white/20 p-2">
+                <FileCheck className="h-6 w-6 text-white" />
               </div>
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <p className="text-gray-500 text-xs font-medium mb-1">
-                  {t("pdfProcessing.compress.compressedSize")}
-                </p>
-                <p className="text-gray-800 font-bold text-xl">
-                  {formatBytes(result.compressedSize)}
-                </p>
+              <div>
+                <h3 className="text-lg font-bold text-white">
+                  {t("pdfProcessing.compress.success")}
+                </h3>
+                <p className="text-sm text-white/80">Your PDF has been compressed successfully</p>
               </div>
             </div>
-            <div className="bg-white p-4 rounded-lg shadow-sm">
-              <p className="text-gray-500 text-xs font-medium mb-1">
-                {t("pdfProcessing.compress.spaceSaved")}
-              </p>
-              <div className="flex items-baseline">
-                <p className="text-green-600 font-bold text-3xl">
-                  {result.reduction}%
-                </p>
-                <p className="text-gray-500 text-sm ml-2">
-                  ({formatBytes(result.originalSize - result.compressedSize)}{" "}
-                  {t("pdfProcessing.compress.saved")})
-                </p>
+            {/* Stats Grid */}
+            <div className="p-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-center">
+                  <div className="mb-2 flex items-center justify-center">
+                    <FileText className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <p className="mb-1 text-xs font-medium text-gray-500">
+                    {t("pdfProcessing.compress.originalSize")}
+                  </p>
+                  <p className="text-lg font-bold text-gray-800">
+                    {formatBytes(result.originalSize)}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 text-center">
+                  <div className="mb-2 flex items-center justify-center">
+                    <Zap className="h-4 w-4 text-emerald-500" />
+                  </div>
+                  <p className="mb-1 text-xs font-medium text-gray-500">
+                    {t("pdfProcessing.compress.compressedSize")}
+                  </p>
+                  <p className="text-lg font-bold text-emerald-600">
+                    {formatBytes(result.compressedSize)}
+                  </p>
+                </div>
+                <div className="rounded-xl border border-emerald-100 bg-emerald-50 p-4 text-center">
+                  <div className="mb-2 flex items-center justify-center">
+                    <TrendingDown className="h-4 w-4 text-emerald-600" />
+                  </div>
+                  <p className="mb-1 text-xs font-medium text-emerald-600">
+                    {t("pdfProcessing.compress.spaceSaved")}
+                  </p>
+                  <p className="text-2xl font-bold text-emerald-700">{result.reduction}%</p>
+                  <p className="mt-1 text-xs text-emerald-500">
+                    {formatBytes(result.originalSize - result.compressedSize)}{" "}
+                    {t("pdfProcessing.compress.saved")}
+                  </p>
+                </div>
               </div>
             </div>
           </div>

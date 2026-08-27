@@ -1,6 +1,7 @@
 import {
   ArrowRight,
   Check,
+  CheckCircle2,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -47,8 +48,17 @@ import {
 import Image from "next/image";
 import { FormStep } from "@/app/components/forms/auto-visaform-filling/FormStep";
 // import { ProgressBar } from "@/app/components/forms/auto-visaform-filling/ProgressBar";
-import { useEffect, useMemo, useState, useRef, useCallback } from "react";
+import {
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+  useCallback,
+  cloneElement,
+  isValidElement,
+} from "react";
 import Link from "next/link";
+import { PlatformChoiceModal } from "@/app/components/shared/PlatformChoiceModal";
 import {
   chapters,
   caseFields,
@@ -58,9 +68,32 @@ import {
 } from "@/data/home-page-data";
 import ir1Data from "@/data/visa-category/ir-1.json";
 import { StepQuestDemo } from "./StepQuestDemo";
+import { NAV_DATA } from "@/app/components/layout/navigationData";
 
-export const journeyHref = "/visa-category/ir-category/ir1-journey";
-export const toolsHref = "/tools";
+import { ir1journeyHref, toolsHref } from "@/lib/constants/routes";
+
+function getToolAccentClass(icon: React.ReactNode) {
+  if (!isValidElement(icon)) return "bg-slate-700";
+
+  const className =
+    typeof icon.props === "object" && icon.props && "className" in icon.props
+      ? String(icon.props.className ?? "")
+      : "";
+
+  const toneMatch = className.match(/text-(violet|emerald|amber|rose|cyan)-(\d{2,3})/);
+
+  if (!toneMatch) return "bg-slate-700";
+
+  const toneMap = {
+    violet: "bg-violet-600",
+    emerald: "bg-emerald-600",
+    amber: "bg-amber-600",
+    rose: "bg-rose-600",
+    cyan: "bg-cyan-600",
+  } as const;
+
+  return toneMap[toneMatch[1] as keyof typeof toneMap] ?? "bg-slate-700";
+}
 
 export function ProductFrame({
   children,
@@ -103,13 +136,7 @@ export function ProductFrame({
   );
 }
 
-export function StepStatusIcon({
-  status,
-  index,
-}: {
-  status: string;
-  index: number;
-}) {
+export function StepStatusIcon({ status, index }: { status: string; index: number }) {
   if (status === "done") {
     return (
       <div className="flex size-7 items-center justify-center rounded-full border-2 border-white/45 bg-white/20 text-[11px] font-bold text-white">
@@ -182,9 +209,7 @@ export function StepRow({
               : { x: 0 }
       }
       transition={
-        isClicking
-          ? { duration: 0.15 }
-          : { duration: 4, repeat: Infinity, ease: "easeInOut" }
+        isClicking ? { duration: 0.15 } : { duration: 4, repeat: Infinity, ease: "easeInOut" }
       }
     >
       {isCurrent && !isDone && !isLocked && (
@@ -195,16 +220,10 @@ export function StepRow({
       )}
       <StepStatusIcon status={status} index={index} />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[14px] font-bold leading-[1.3]">
-          {name}
-        </div>
+        <div className="truncate text-[14px] font-bold leading-[1.3]">{name}</div>
         <div
           className={`mt-0.5 truncate text-[11.5px] font-semibold ${
-            isDone
-              ? "text-white/90"
-              : isLocked
-                ? "opacity-60"
-                : "text-[#2C3A3E]"
+            isDone ? "text-white/90" : isLocked ? "opacity-60" : "text-[#2C3A3E]"
           }`}
         >
           {isLocked ? "Upgrade to unlock" : description}
@@ -215,11 +234,7 @@ export function StepRow({
           Upgrade
         </span>
       ) : (
-        <ChevronRight
-          className="shrink-0 text-[#b3a6b3] opacity-35"
-          size={14}
-          strokeWidth={3}
-        />
+        <ChevronRight className="shrink-0 text-[#b3a6b3] opacity-35" size={14} strokeWidth={3} />
       )}
     </motion.div>
   );
@@ -276,7 +291,7 @@ export function RealDashboardScene({
     const run = () => {
       timers.forEach(window.clearTimeout);
       timers = schedule.map(([delay, nextPhase]) =>
-        window.setTimeout(() => setPhase(nextPhase), delay),
+        window.setTimeout(() => setPhase(nextPhase), delay)
       );
     };
 
@@ -322,8 +337,7 @@ export function RealDashboardScene({
   };
 
   const currentCursor = cursorStates[phase] ?? cursorStates[0];
-  const isClicking =
-    phase === 2 || phase === 5 || phase === 8 || phase === 13 || phase === 17;
+  const isClicking = phase === 2 || phase === 5 || phase === 8 || phase === 13 || phase === 17;
   const view =
     phase >= 21
       ? "dashboard-complete"
@@ -339,11 +353,7 @@ export function RealDashboardScene({
 
   return (
     <motion.div
-      animate={
-        reduceMotion
-          ? undefined
-          : { y: [0, 0, -4, -4, 0], scale: [1, 1, 1.004, 1.004, 1] }
-      }
+      animate={reduceMotion ? undefined : { y: [0, 0, -4, -4, 0], scale: [1, 1, 1.004, 1.004, 1] }}
       transition={{ duration: 44, repeat: Infinity, ease: "easeInOut" }}
     >
       <ProductFrame
@@ -356,8 +366,7 @@ export function RealDashboardScene({
                 WebkitBackdropFilter: "blur(24px)",
                 border: "1px solid rgba(255,255,255,0.55)",
                 borderRadius: 28,
-                boxShadow:
-                  "0 30px 90px rgba(15,23,42,0.30), inset 0 1px 0 rgba(255,255,255,0.38)",
+                boxShadow: "0 30px 90px rgba(15,23,42,0.30), inset 0 1px 0 rgba(255,255,255,0.38)",
               }
             : undefined
         }
@@ -449,10 +458,7 @@ export function RealDashboardScene({
                   exit={{ opacity: 0, scale: 1.01 }}
                   transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <HeroAutoformPanel
-                    playPhase={phase}
-                    isClicking={isClicking}
-                  />
+                  <HeroAutoformPanel playPhase={phase} isClicking={isClicking} />
                 </motion.div>
               )}
               {view === "pdf" && (
@@ -555,9 +561,7 @@ export function HeroDashboardPanel({
             <div className="mb-2 text-[10.5px] font-black uppercase tracking-[0.12em] text-white/60">
               Next roadmap step
             </div>
-            <h3 className="text-[27px] font-black leading-tight tracking-tight">
-              {nextStepTitle}
-            </h3>
+            <h3 className="text-[27px] font-black leading-tight tracking-tight">{nextStepTitle}</h3>
             <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-white/75">
               {nextStepBody}
             </p>
@@ -578,9 +582,7 @@ export function HeroDashboardPanel({
                   : "border-[#d0e4f7]"
               }`}
               animate={
-                index === 0 && chapterTargeted
-                  ? { y: -4, scale: 1.018 }
-                  : { y: 0, scale: 1 }
+                index === 0 && chapterTargeted ? { y: -4, scale: 1.018 } : { y: 0, scale: 1 }
               }
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             >
@@ -624,16 +626,11 @@ export function HeroDashboardPanel({
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2">
             {caseFields.map(([label, value]) => (
-              <div
-                key={label}
-                className="rounded-xl border border-[#d0e4f7] bg-[#f4f7fb] p-3"
-              >
+              <div key={label} className="rounded-xl border border-[#d0e4f7] bg-[#f4f7fb] p-3">
                 <div className="text-[10.5px] font-black uppercase tracking-[0.1em] text-[#6b8097]">
                   {label}
                 </div>
-                <div className="mt-1 text-[12.5px] font-bold text-[#162126]">
-                  {value}
-                </div>
+                <div className="mt-1 text-[12.5px] font-bold text-[#162126]">{value}</div>
               </div>
             ))}
           </div>
@@ -669,9 +666,7 @@ export function HeroDashboardPanel({
                   >
                     {isDone ? <Check size={11} strokeWidth={3} /> : index + 1}
                   </div>
-                  <span className="text-[12.5px] font-bold text-[#2C3A3E]">
-                    {label}
-                  </span>
+                  <span className="text-[12.5px] font-bold text-[#2C3A3E]">{label}</span>
                 </div>
               );
             })}
@@ -731,8 +726,8 @@ export function HeroChapterOnePanel({
           USCIS Petition Filing
         </h1>
         <p className="mb-4 text-[14.5px] leading-[1.7] text-[#2C3A3E]">
-          File Form I-130 with USCIS to begin the IR-1 spouse visa process for
-          your Pakistani spouse.
+          File Form I-130 with USCIS to begin the IR-1 spouse visa process for your Pakistani
+          spouse.
         </p>
         <div className="flex items-center gap-2.5">
           <div className="h-[7px] flex-1 overflow-hidden rounded-[13px] bg-[#F0F1FB]">
@@ -747,30 +742,18 @@ export function HeroChapterOnePanel({
 
       <motion.div className="flex flex-col gap-1.5 px-2 pb-20" initial={false}>
         {chapters[0].steps.slice(0, 5).map((chapterStep, index) => {
-          const status =
-            index < 3 ? "done" : index === 3 ? "current" : "locked";
+          const status = index < 3 ? "done" : index === 3 ? "current" : "locked";
           return (
             <motion.div
               key={chapterStep[0]}
               ref={(el) => {
                 stepRefs.current[index] = el;
               }}
-              animate={
-                index === 3 && stepTargeted
-                  ? { scale: 1.015, x: 3 }
-                  : { scale: 1, x: 0 }
-              }
+              animate={index === 3 && stepTargeted ? { scale: 1.015, x: 3 } : { scale: 1, x: 0 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
               <StepRow
-                step={
-                  [
-                    chapterStep[0],
-                    chapterStep[1],
-                    chapterStep[2],
-                    status,
-                  ] as const
-                }
+                step={[chapterStep[0], chapterStep[1], chapterStep[2], status] as const}
                 chapter={chapters[0]}
                 index={index}
                 active={index === 3}
@@ -821,7 +804,7 @@ export function HeroI130StepPanel({
         "Pakistan-context defaults where relevant",
       ],
       button_label: "Launch I-130 Autoform Filler",
-      note: "Opens in a new browser tab — you can return to the roadmap anytime",
+      note: "Opens in a new browser tab, you can return to the roadmap anytime",
     },
   };
 
@@ -840,9 +823,7 @@ export function HeroI130StepPanel({
             Fill Form I-130
           </h1>
           <p className="mb-[28px] max-w-[620px] text-[15px] leading-[1.65] text-[#3a4f63]">
-            Use Rahvana&apos;s guided Autoform Filler to complete the I-130
-            x for Alien Relative — with structured step-by-step support,
-            clear prompts, and a built-in review flow.
+            Use Rahvana&apos;s guided Autoform Filler to complete the I-130 x for Alien Relative, with structured step-by-step support, clear prompts, and a built-in review flow.
           </p>
 
           <div className="mb-[22px] flex flex-wrap gap-[8px]">
@@ -864,11 +845,7 @@ export function HeroI130StepPanel({
             <div className="p-[36px_36px_32px]">
               <div className="mb-[26px] flex items-start gap-[16px]">
                 <div className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-[12px] border border-[#c0596a] bg-[#c0596a]">
-                  <FileText
-                    size={22}
-                    className="text-white"
-                    strokeWidth={1.6}
-                  />
+                  <FileText size={22} className="text-white" strokeWidth={1.6} />
                 </div>
                 <div className="flex-1">
                   <div className="mb-[5px] text-[10px] font-bold uppercase tracking-widest text-[#c0596a]">
@@ -887,9 +864,7 @@ export function HeroI130StepPanel({
                     className="flex items-start gap-[10px] rounded-[10px] border border-[#c0596a]/30 bg-[#3a232a] p-[12px_14px]"
                   >
                     <div className="mt-[6px] h-[5px] w-[5px] shrink-0 rounded-full bg-[#c0596a]" />
-                    <div className="text-[13px] leading-[1.4] text-[#fbeaec]">
-                      {feat}
-                    </div>
+                    <div className="text-[13px] leading-[1.4] text-[#fbeaec]">{feat}</div>
                   </div>
                 ))}
               </div>
@@ -944,12 +919,10 @@ export function HeroAutoformPanel({
   const fields = useMemo(
     () =>
       config?.formFields
-        .filter(
-          (field) => field.section === "Information About You (Petitioner)",
-        )
+        .filter((field) => field.section === "Information About You (Petitioner)")
         .filter((field) => field.key === "full_name_group")
         .slice(0, 1) ?? [],
-    [config],
+    [config]
   );
 
   useEffect(() => {
@@ -970,28 +943,16 @@ export function HeroAutoformPanel({
       setFillStage(2);
     } else if (playPhase === 15) {
       const timers = [
-        window.setTimeout(
-          () => setFormData((prev) => ({ ...prev, given_name: "A" })),
-          200,
-        ),
-        window.setTimeout(
-          () => setFormData((prev) => ({ ...prev, given_name: "Amina" })),
-          600,
-        ),
+        window.setTimeout(() => setFormData((prev) => ({ ...prev, given_name: "A" })), 200),
+        window.setTimeout(() => setFormData((prev) => ({ ...prev, given_name: "Amina" })), 600),
       ];
       return () => timers.forEach(window.clearTimeout);
     } else if (playPhase === 17) {
       setFillStage(3);
     } else if (playPhase === 19) {
       const timers = [
-        window.setTimeout(
-          () => setFormData((prev) => ({ ...prev, middle_name: "N" })),
-          200,
-        ),
-        window.setTimeout(
-          () => setFormData((prev) => ({ ...prev, middle_name: "Noor" })),
-          600,
-        ),
+        window.setTimeout(() => setFormData((prev) => ({ ...prev, middle_name: "N" })), 200),
+        window.setTimeout(() => setFormData((prev) => ({ ...prev, middle_name: "Noor" })), 600),
       ];
       return () => timers.forEach(window.clearTimeout);
     } else if (playPhase >= 20) {
@@ -1019,9 +980,7 @@ export function HeroAutoformPanel({
               <BookOpen className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1 min-w-0">
-              <h1 className="text-base md:text-lg font-bold text-gray-900 truncate">
-                Form I-130
-              </h1>
+              <h1 className="text-base md:text-lg font-bold text-gray-900 truncate">Form I-130</h1>
               <p className="text-xs md:text-sm text-gray-500 truncate">
                 Petition for Alien Relative
               </p>
@@ -1147,41 +1106,52 @@ export function HeroPdfPreviewPanel() {
 
 export const twoWaysPaths = [
   {
-    title: "Guided Roadmap",
-    eyebrow: "01 - Guided roadmap",
-    shortTitle: "Follow the guided IR-1 roadmap.",
-    teaser: "A complete IR-1 path with chapters, steps, and progress.",
-    description:
-      "Follow the full IR-1 journey through structured chapters, guided steps, and clear progress from petition filing to interview readiness.",
+    title: "Guided Visa Journey",
+    eyebrow: "01 - GUIDED ROADMAP",
+    shortTitle: "Follow the guided step-by-step IR-1 roadmap",
+    teaser: "Ideal for first-time applicants wanting a structured, guided roadmap.",
+    bestFor: "Beginners who want an end-to-end plan to navigate the visa process without stress.",
+    bestForColor: "text-teal-700 bg-teal-50 border-teal-100/60",
+    themeColor: "#0d7377",
+    hoverBg: "#f4fbfa",
+    bulletColor: "text-teal-600",
+    bullets: [
+      "Move step-by-step through the IR-1 process with clear, trackable chapters.",
+      "Stay ahead with built-in requirements, checklists, and deadline alerts.",
+    ],
+    cta: "Start the Roadmap",
+    href: ir1journeyHref,
     supportEyebrow: "GUIDED ROADMAP",
     supportLead: "A structured path from start to finish.",
     supportText:
       "Move step by step through the IR-1 process with clear milestones, built-in guidance, and the right next action always surfaced. It is designed to reduce uncertainty and keep your case moving with confidence.",
-    bestFor: "Best for people who want end-to-end guidance.",
-    cta: "Explore the Roadmap",
-    href: journeyHref,
   },
   {
     title: "Tools & Resources",
-    eyebrow: "02 - Tools & resources",
-    shortTitle: "Jump into the help you need today.",
-    teaser: "Focused help when one specific task needs attention.",
-    description:
-      "Use focused tools, guides, calculators, and services when you already know where you are stuck and only need help with one task.",
+    eyebrow: "02 - DIRECT ACCESS",
+    shortTitle: "Jump directly into focused tools and resources",
+    teaser: "For experienced users wanting immediate help with a specific task.",
+    bestFor: "Applicants who already know the IR-1 process well and need targeted help.",
+    bestForColor: "text-indigo-700 bg-indigo-50/40 border-indigo-100/60",
+    themeColor: "#1e293b",
+    hoverBg: "#f8fafc",
+    bulletColor: "text-indigo-600",
+    bullets: [
+      "Launch directly I-130 Autoform, sponsorship fee calculator, and other tools.",
+      "Use tools independently at your own pace alongside your manual progress.",
+    ],
+    cta: "Browse Resources",
+    href: toolsHref,
     supportEyebrow: "TOOLS & RESOURCES",
     supportLead: "Get focused help exactly where you need it.",
     supportText:
       "Jump directly into calculators, checklists, and support tools when you have a specific task to complete. Use them independently or alongside the roadmap whenever you need targeted help.",
-    bestFor:
-      "Best for people who want targeted help without using the full roadmap.",
-    cta: "Browse Tools",
-    href: toolsHref,
   },
 ] as const;
 
 type TwoWaysIndex = 0 | 1;
 
-/** Scales the 680×560 visual to exactly fill its container width. */
+/** Scales the visual canvas (560px or 460px) to exactly fill its container width. */
 function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(1);
@@ -1196,11 +1166,14 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
     return () => ro.disconnect();
   }, []);
 
+  // Set visual heights to their exact native values to prevent any cutting at the bottom:
+  const visualHeight = index === 0 ? 550 : 460;
+
   return (
     <div
       ref={wrapRef}
-      className="w-full"
-      style={{ height: Math.round(560 * scale) }}
+      className="w-full overflow-hidden"
+      style={{ height: Math.round(visualHeight * scale) }}
     >
       <div
         style={{
@@ -1217,358 +1190,348 @@ function ResponsiveVisual({ index }: { index: TwoWaysIndex }) {
 }
 
 export function TwoWaysSection() {
-  const sectionRef = useRef<HTMLElement>(null);
-  const [activeIndex, setActiveIndex] = useState<TwoWaysIndex>(0);
-  const reduceMotion = useReducedMotion();
+  const [hoveredSide, setHoveredSide] = useState<"left" | "right" | null>(null);
+  const [roadmapImageIdx, setRoadmapImageIdx] = useState(0);
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
+  const [signpostStyle, setSignpostStyle] = useState<"A" | "B">("A");
 
-  const selectPath = (idx: TwoWaysIndex) => {
-    setActiveIndex(idx);
+  const handleSetHoveredSide = (side: "left" | "right" | null) => {
+    if (typeof window !== "undefined" && window.innerWidth >= 1024) {
+      setHoveredSide(side);
+    }
   };
+
+  const roadmapImages = [
+    "/assets/images/guided_roadmap_image.png",
+    // "/assets/images/guided_roadmap_image_with_bg.png"
+  ];
 
   return (
     <>
-      {/* ── Desktop (lg+): scroll-driven sticky ─────────────────────────── */}
-      <section
-        id="path"
-        aria-label="Two ways to use Rahvana"
-        className="relative hidden lg:block"
-      >
-        <div
-          style={{
-            minHeight: "100vh",
-            display: "flex",
-            alignItems: "center",
-            background: "transparent",
-            paddingBlock: "clamp(40px,6vh,80px)",
-            boxSizing: "border-box",
-          }}
-        >
-          {/* Decorative radial highlights removed for seamless background */}
-
-        {/* Main grid */}
-          <div
-            className="relative mx-auto w-full px-12 xl:px-16"
-            style={{
-              maxWidth: 1300,
-              display: "grid",
-              gridTemplateColumns: "minmax(0,380px) minmax(0,1fr)",
-              gap: "clamp(100px,10vw,160px)",
-              alignItems: "start",
-            }}
-          >
-            {/* Left: text + selectors + CTAs */}
-            <div>
-              <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
-                TWO WAYS TO MOVE FORWARD
+      <section id="path" className="block">
+        <div className="w-full px-6 py-8 md:py-12">
+          {/* Main Content Card Wrapper */}
+          <div className="relative z-10 w-full mx-auto flex flex-col items-center justify-start max-w-[1360px]">
+            {/* Header Block */}
+            <div className="text-center max-w-2xl mb-6">
+              <p className="text-[10px] font-black uppercase tracking-[0.14em] text-[#0d7377] mb-1">
+                Two Ways to Move Forward
               </p>
-
-              <h2
-                className="mt-4 mb-0 font-extrabold text-[#162126]"
-                style={{
-                  fontSize: "clamp(30px,4.2vw,60px)",
-                  lineHeight: 1.0,
-                  maxWidth: 440,
-                }}
-              >
-                Choose how you want to use Rahvana
+              <h2 className="text-xl sm:text-3xl font-extrabold text-[#162126] tracking-tight leading-tight mb-2">
+                How should I use Rahvana?
               </h2>
-
-              <p
-                className="mt-4 mb-0 text-[#4a5c62]"
-                style={{
-                  fontSize: "clamp(14px,1.15vw,17px)",
-                  lineHeight: 1.68,
-                  maxWidth: 420,
-                }}
-              >
-                Follow the guided IR-1 roadmap, use focused tools and resources
-                independently, and choose the support style that fits what you
-                need right now.
+              <p className="text-xs sm:text-sm text-slate-500 leading-relaxed max-w-xl mx-auto font-medium">
+                Select the support style that matches your visa experience. Follow our step-by-step
+                roadmap or access advanced tools directly.
               </p>
+            </div>
 
-              {/* Active-panel label */}
-              <div style={{ minHeight: 64, marginTop: 16, overflow: "hidden" }}>
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={activeIndex}
-                    initial={reduceMotion ? false : { opacity: 0, y: 8 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
+            {/* Arrow Split Layout */}
+            <div className="w-full bg-white/70 backdrop-blur-md border border-slate-200/60 rounded-3xl p-6 sm:px-55 sm:py-6 lg:px-5 shadow-xl shadow-slate-100/40 flex flex-col items-center justify-center relative">
+              <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto_1fr] gap-6 lg:gap-8 items-center lg:items-stretch w-full max-w-7xl">
+                {/* Left Side Option: Follow Roadmap */}
+                <motion.div
+                  className={`flex flex-col items-center text-center lg:items-end lg:text-right transition-all duration-300 p-2 sm:p-4 rounded-2xl border ${
+                    hoveredSide === "left"
+                      ? "border-[#0d7377] bg-gradient-to-br from-[#0d7377] to-[#14a0a6] shadow-lg shadow-teal-500/20 text-white"
+                      : "border-teal-500/30 bg-teal-50/20 shadow-md shadow-teal-500/5"
+                  }`}
+                  onMouseEnter={() => handleSetHoveredSide("left")}
+                  onMouseLeave={() => handleSetHoveredSide(null)}
+                  animate={
+                    hoveredSide === "left"
+                      ? { opacity: 1, scale: 1.01 }
+                      : hoveredSide === "right"
+                        ? { opacity: 0.5, scale: 0.98 }
+                        : { opacity: 1, scale: 1 }
+                  }
+                >
+                  <span
+                    className={`text-[9px] font-extrabold uppercase tracking-widest mb-1.5 px-2 py-0.5 rounded-full border transition-all duration-300 ${
+                      hoveredSide === "left"
+                        ? "text-white bg-white/20 border-white/25"
+                        : "text-[#0d7377] bg-teal-50 border-teal-100"
+                    }`}
                   >
-                    <p className="m-0 text-[11px] font-black uppercase tracking-[0.11em] text-[#0d7377]">
-                      {twoWaysPaths[activeIndex].eyebrow}
-                    </p>
-                    <h3
-                      className="mb-0 mt-1 font-extrabold text-[#162126]"
-                      style={{
-                        fontSize: "clamp(15px,1.3vw,19px)",
-                        lineHeight: 1.2,
-                        maxWidth: 380,
-                      }}
-                    >
-                      {twoWaysPaths[activeIndex].shortTitle}
-                    </h3>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+                    Beginners
+                  </span>
+                  <h3
+                    className={`text-lg sm:text-xl font-black leading-snug mb-2 transition-all duration-300 ${
+                      hoveredSide === "left" ? "text-white" : "text-slate-900"
+                    }`}
+                  >
+                    Follow IR-1 Roadmap
+                  </h3>
+                  <p
+                    className={`text-xs leading-relaxed mb-4 max-w-[280px] transition-all duration-300 ${
+                      hoveredSide === "left" ? "text-teal-50/90" : "text-slate-500"
+                    }`}
+                  >
+                    Ideal for beginners seeking structured, step-by-step guidance and progress
+                    tracking.
+                  </p>
+                  <Link
+                    href={ir1journeyHref}
+                    className={`inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all duration-200 no-underline mb-5 ${
+                      hoveredSide === "left"
+                        ? "bg-white text-[#0d7377] hover:bg-teal-50 shadow-lg shadow-black/10"
+                        : "bg-teal-600 hover:bg-teal-700 text-white shadow-md shadow-teal-600/10 hover:shadow-lg hover:shadow-teal-600/20"
+                    }`}
+                  >
+                    Start Roadmap
+                    <ArrowRight size={14} />
+                  </Link>
 
-              {/* Selector buttons */}
-              <div className="mt-5 flex flex-col gap-1.5">
-                {twoWaysPaths.map((path, i) => {
-                  const isActive = activeIndex === i;
-                  return (
-                    <button
-                      key={path.title}
-                      type="button"
-                      onClick={() => selectPath(i as TwoWaysIndex)}
-                      aria-current={isActive ? "true" : undefined}
-                      className="flex w-full items-center gap-3 rounded-[14px] px-3.5 py-3 text-left transition-[background,border-color,box-shadow]"
-                      style={{
-                        border: isActive
-                          ? "1.5px solid #0d7377"
-                          : "1px solid #e2ebe8",
-                        background: isActive ? "#f4fbfa" : "transparent",
-                        boxShadow: isActive
-                          ? "0 5px 18px rgba(13,115,119,0.10)"
-                          : "none",
-                        WebkitTapHighlightColor: "transparent",
-                        cursor: "pointer",
-                      }}
+                  {/* Image Preview Block with Cycle controls */}
+                  <div className="w-full max-w-[480px] flex flex-col items-center lg:items-end">
+                    <div className="relative w-full h-[220px] sm:h-[280px] lg:h-[340px] flex items-center justify-center">
+                      <Image
+                        // src={hoveredSide === "left" ? roadmapImages[1] : roadmapImages[0]}
+                        src={roadmapImages[roadmapImageIdx]}
+                        alt="Guided Roadmap Preview"
+                        fill
+                        unoptimized
+                        className="object-contain transition-all duration-300"
+                      />
+                    </div>
+                  </div>
+                </motion.div>
+
+                {/* Center Split SVG Graphic */}
+                {/* Center Split Signpost Graphic */}
+                <div className="relative flex justify-center items-center w-full max-w-[320px] lg:max-w-none mx-auto py-2 h-[180px] lg:self-center">
+                  {/* Vertical Pole */}
+                  {/* <div className="absolute top-0 bottom-0 w-2.5 bg-gradient-to-r from-slate-300 via-slate-100 to-slate-300 border-x border-slate-400/20 rounded-full left-1/2 -translate-x-1/2 z-0" /> */}
+
+                  {/* Signpost Stack */}
+                  <div className="relative flex flex-col justify-between items-center w-[250px] h-full z-10 py-1">
+                    {/* Top Arrow: Points Left (Roadmap) */}
+                    <motion.div
+                      className="relative w-[230px] h-[52px] cursor-pointer drop-shadow-md select-none"
+                      onClick={() => (window.location.href = ir1journeyHref)}
+                      onMouseEnter={() => handleSetHoveredSide("left")}
+                      onMouseLeave={() => handleSetHoveredSide(null)}
+                      animate={
+                        hoveredSide === "left"
+                          ? { x: -8, scale: 1.02 }
+                          : hoveredSide === "right"
+                            ? { x: 4, scale: 0.98, opacity: 0.6 }
+                            : { x: 0, scale: 1, opacity: 1 }
+                      }
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     >
-                      <span
-                        className="flex shrink-0 items-center justify-center rounded-full text-[10px] font-black"
-                        style={{
-                          width: 24,
-                          height: 24,
-                          background: isActive ? "#0d7377" : "transparent",
-                          color: isActive ? "white" : "#9aaeac",
-                          border: isActive ? "none" : "1.5px solid #c8d5d3",
-                          transition:
-                            "background 0.22s, color 0.22s, border-color 0.22s",
-                        }}
+                      <svg
+                        className="absolute inset-0 w-full h-full"
+                        viewBox="0 0 240 48"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
                       >
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div
-                          className="text-[15px] font-black leading-tight"
-                          style={{
-                            color: isActive ? "#0d7377" : "#162126",
-                            transition: "color 0.22s",
-                          }}
+                        <defs>
+                          <linearGradient id="tealArrowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#0d7377" />
+                            <stop offset="100%" stopColor="#14a0a6" />
+                          </linearGradient>
+                        </defs>
+                        <path
+                          d="M 40,4 L 228,4 A 4,4 0 0 1 232,8 L 232,40 A 4,4 0 0 1 228,44 L 40,44 L 16,24 Z"
+                          fill={hoveredSide === "left" ? "url(#tealArrowGrad)" : "#f0faf9"}
+                          stroke={hoveredSide === "left" ? "#0d7377" : "#b2dedb"}
+                          strokeWidth="2"
+                          className="transition-all duration-300"
+                        />
+                      </svg>
+
+                      <div className="absolute inset-0 flex items-center justify-center pl-7 pr-3 gap-2">
+                        <Compass
+                          size={16}
+                          className={`transition-colors duration-300 ${
+                            hoveredSide === "left"
+                              ? "text-white animate-spin-slow"
+                              : "text-[#0d7377]"
+                          }`}
+                        />
+                        <span
+                          className={`text-[12px] font-black tracking-widest transition-colors duration-300 ${
+                            hoveredSide === "left" ? "text-white" : "text-[#0d7377]"
+                          }`}
                         >
-                          {path.title}
-                        </div>
-                        <div
-                          className="mt-0.5 text-[12px] leading-snug"
-                          style={{
-                            color: isActive ? "#4a5c62" : "#9aaeac",
-                            transition: "color 0.22s",
-                          }}
-                        >
-                          {path.teaser}
-                        </div>
+                          ROADMAP
+                        </span>
                       </div>
-                    </button>
-                  );
-                })}
-              </div>
+                    </motion.div>
 
-              {/* CTAs */}
-              <div className="mt-5 flex flex-wrap gap-2.5">
-                <Link
-                  href={journeyHref}
-                  className="inline-flex h-10 items-center gap-1.5 rounded-[13px] bg-[#0d7377] px-4 text-[13.5px] font-bold text-white no-underline"
-                  style={{ boxShadow: "0 10px 24px rgba(13,115,119,0.22)" }}
-                >
-                  Start the Roadmap
-                  <ArrowRight className="size-3.5" />
-                </Link>
-                <Link
-                  href={toolsHref}
-                  className="inline-flex h-10 items-center rounded-[13px] border border-[#c8d5d3] bg-white px-4 text-[13.5px] font-bold text-[#162126] no-underline"
-                >
-                  Browse Resources
-                </Link>
-              </div>
-            </div>
-
-            {/* Right: animated visual */}
-            <div
-              className="min-w-0 flex flex-col gap-8"
-              style={activeIndex === 1 ? { paddingLeft: 48 } : undefined}
-            >
-              {reduceMotion ? (
-                <>
-                  <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
-                  <ResponsiveVisual index={activeIndex} />
-                </>
-              ) : (
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={activeIndex}
-                    className="flex min-w-0 flex-col gap-8"
-                    initial={{ opacity: 0, y: 18, scale: 0.988 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -12, scale: 0.992 }}
-                    transition={{ duration: 0.38, ease: [0.22, 1, 0.36, 1] }}
-                  >
-                    <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
-                    <ResponsiveVisual index={activeIndex} />
-                  </motion.div>
-                </AnimatePresence>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ── Mobile / tablet (below lg) ───────────────────────────────────── */}
-      <section
-        aria-label="Two ways to use Rahvana"
-        className="block lg:hidden"
-        style={{
-          background: "transparent",
-        }}
-      >
-        <div
-          className="relative mx-auto px-5 sm:px-8 md:px-10 py-12 sm:py-16 md:py-20"
-          style={{ maxWidth: 1360 }}
-        >
-          {/* sm/xs: stacked  |  md (768-1023px): 2-column */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-20 items-start">
-
-            {/* Left: heading + selectors + CTAs */}
-            <div>
-              <p className="m-0 text-[11px] font-bold uppercase tracking-[0.14em] text-[#0d7377]">
-                TWO WAYS TO MOVE FORWARD
-              </p>
-              <h2
-                className="mt-4 mb-0 font-extrabold text-[#162126]"
-                style={{ fontSize: "clamp(26px,5.5vw,42px)", lineHeight: 1.08 }}
-              >
-                Choose how you want to use Rahvana.
-              </h2>
-              <p
-                className="mt-3 mb-0 text-[#4a5c62]"
-                style={{ fontSize: "clamp(14px,2vw,16px)", lineHeight: 1.65 }}
-              >
-                Use the full IR-1 roadmap, or jump into focused tools and
-                resources when you need targeted help.
-              </p>
-
-              {/* Active panel label */}
-              <div className="mt-5 overflow-hidden" style={{ minHeight: 60 }}>
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={activeIndex}
-                    initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={reduceMotion ? undefined : { opacity: 0, y: -5 }}
-                    transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-                  >
-                    <p className="m-0 text-[11px] font-black uppercase tracking-[0.11em] text-[#0d7377]">
-                      {twoWaysPaths[activeIndex].eyebrow}
-                    </p>
-                    <h3
-                      className="mb-0 mt-1 font-extrabold text-[#162126]"
-                      style={{ fontSize: "clamp(15px,2.5vw,19px)", lineHeight: 1.2 }}
+                    {/* Bottom Arrow: Points Right (Tools) */}
+                    <motion.div
+                      className="relative w-[230px] h-[52px] cursor-pointer drop-shadow-md select-none"
+                      onClick={() => (window.location.href = toolsHref)}
+                      onMouseEnter={() => handleSetHoveredSide("right")}
+                      onMouseLeave={() => handleSetHoveredSide(null)}
+                      animate={
+                        hoveredSide === "right"
+                          ? { x: 8, scale: 1.02 }
+                          : hoveredSide === "left"
+                            ? { x: -4, scale: 0.98, opacity: 0.6 }
+                            : { x: 0, scale: 1, opacity: 1 }
+                      }
+                      transition={{ type: "spring", stiffness: 300, damping: 20 }}
                     >
-                      {twoWaysPaths[activeIndex].shortTitle}
-                    </h3>
-                  </motion.div>
-                </AnimatePresence>
-              </div>
+                      <svg
+                        className="absolute inset-0 w-full h-full"
+                        viewBox="0 0 240 48"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <defs>
+                          <linearGradient id="orangeArrowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="#b5451b" />
+                            <stop offset="100%" stopColor="#d96b43" />
+                          </linearGradient>
+                        </defs>
+                        <path
+                          d="M 200,4 L 12,4 A 4,4 0 0 0 8,8 L 8,40 A 4,4 0 0 0 12,44 L 200,44 L 224,24 Z"
+                          fill={hoveredSide === "right" ? "url(#orangeArrowGrad)" : "#fdf6f3"}
+                          stroke={hoveredSide === "right" ? "#b5451b" : "#f5d5c9"}
+                          strokeWidth="2"
+                          className="transition-all duration-300"
+                        />
+                      </svg>
 
-              {/* Selector buttons */}
-              <div className="mt-4 space-y-2.5">
-                {twoWaysPaths.map((path, i) => (
-                  <button
-                    key={path.title}
-                    type="button"
-                    onClick={() => setActiveIndex(i as TwoWaysIndex)}
-                    aria-current={activeIndex === i ? "true" : undefined}
-                    className={`flex w-full items-center gap-3 rounded-[14px] border px-3.5 py-3 text-left transition-all ${
-                      activeIndex === i
-                        ? "border-[#0d7377] bg-[#edf8f6] shadow-[0_8px_20px_rgba(13,115,119,0.12)]"
-                        : "border-[#d7e6e2] bg-white/80"
+                      <div className="absolute inset-0 flex items-center justify-center pl-3 pr-7 gap-2">
+                        <span
+                          className={`text-[12px] font-black tracking-widest transition-colors duration-300 ${
+                            hoveredSide === "right" ? "text-white" : "text-[#b5451b]"
+                          }`}
+                        >
+                          TOOLS
+                        </span>
+                        <PenTool
+                          size={16}
+                          className={`transition-colors duration-300 ${
+                            hoveredSide === "right" ? "text-white" : "text-[#b5451b]"
+                          }`}
+                        />
+                      </div>
+                    </motion.div>
+                  </div>
+
+                  {/* Symmetrical OR Center Badge */}
+                  <div
+                    className={`absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20 flex items-center justify-center w-10 h-10 rounded-full bg-white border-2 shadow-md transition-all duration-300 pointer-events-none select-none ${
+                      hoveredSide === "left"
+                        ? "border-[#0d7377] scale-110 shadow-teal-500/10"
+                        : hoveredSide === "right"
+                          ? "border-[#b5451b] scale-110 shadow-orange-500/10"
+                          : "border-slate-200"
                     }`}
                   >
                     <span
-                      className={`flex size-6 shrink-0 items-center justify-center rounded-full text-[10px] font-black ${
-                        activeIndex === i
-                          ? "bg-[#0d7377] text-white"
-                          : "border border-[#c8d5d3] text-[#7f9290]"
+                      className={`text-[11px] font-extrabold tracking-wider transition-colors duration-300 ${
+                        hoveredSide === "left"
+                          ? "text-[#0d7377]"
+                          : hoveredSide === "right"
+                            ? "text-[#b5451b]"
+                            : "text-slate-400"
                       }`}
                     >
-                      {String(i + 1).padStart(2, "0")}
+                      OR
                     </span>
-                    <div className="min-w-0 flex-1">
-                      <div
-                        className="text-[14px] font-black leading-tight"
-                        style={{ color: activeIndex === i ? "#0d7377" : "#162126" }}
-                      >
-                        {path.title}
-                      </div>
-                      <div className="mt-0.5 text-[12px] leading-snug text-[#9aaeac]">
-                        {path.teaser}
-                      </div>
-                    </div>
-                  </button>
-                ))}
-              </div>
+                  </div>
+                </div>
 
-              {/* CTAs */}
-              <div className="mt-5 flex flex-wrap gap-2.5">
-                <Link
-                  href={journeyHref}
-                  className="inline-flex min-h-10 items-center gap-1.5 rounded-[13px] bg-[#0d7377] px-4 text-[13px] font-bold text-white no-underline"
-                  style={{ boxShadow: "0 8px 20px rgba(13,115,119,0.22)" }}
-                >
-                  Start the Roadmap
-                  <ArrowRight className="size-3.5" />
-                </Link>
-                <Link
-                  href={toolsHref}
-                  className="inline-flex min-h-10 items-center rounded-[13px] border border-[#c8d5d3] bg-white px-4 text-[13px] font-bold text-[#162126] no-underline"
-                >
-                  Browse Resources
-                </Link>
-              </div>
-            </div>
-
-            {/* Right: text above + visual card below — both left-aligned at x=0 */}
-            <div className="flex flex-col gap-8">
-              <AnimatePresence mode="wait" initial={false}>
+                {/* Right Side Option: Use Tools */}
                 <motion.div
-                  key={activeIndex}
-                  initial={reduceMotion ? false : { opacity: 0, y: 6 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={reduceMotion ? undefined : { opacity: 0, y: -6 }}
-                  transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+                  className={`flex flex-col items-center text-center lg:items-start lg:text-left transition-all duration-300 p-2 sm:p-4 rounded-2xl border ${
+                    hoveredSide === "right"
+                      ? "border-[#b5451b] bg-gradient-to-br from-[#b5451b] to-[#d96b43] shadow-lg shadow-orange-500/20 text-white"
+                      : "border-orange-500/30 bg-orange-50/10 shadow-md shadow-orange-500/5"
+                  }`}
+                  onMouseEnter={() => handleSetHoveredSide("right")}
+                  onMouseLeave={() => handleSetHoveredSide(null)}
+                  animate={
+                    hoveredSide === "right"
+                      ? { opacity: 1, scale: 1.01 }
+                      : hoveredSide === "left"
+                        ? { opacity: 0.5, scale: 0.98 }
+                        : { opacity: 1, scale: 1 }
+                  }
                 >
-                  <TwoWaysSupportText path={twoWaysPaths[activeIndex]} />
-                </motion.div>
-              </AnimatePresence>
-              <div className="overflow-hidden rounded-[20px] sm:rounded-[24px] border border-[#d7e6e2] bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
-                <AnimatePresence mode="wait" initial={false}>
-                  <motion.div
-                    key={activeIndex}
-                    initial={reduceMotion ? false : { opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={reduceMotion ? undefined : { opacity: 0 }}
-                    transition={{ duration: 0.3 }}
+                  <span
+                    className={`text-[9px] font-extrabold uppercase tracking-widest mb-1.5 px-2 py-0.5 rounded-full border transition-all duration-300 ${
+                      hoveredSide === "right"
+                        ? "text-white bg-white/20 border-white/25"
+                        : "text-[#b5451b] bg-orange-50 border-orange-100"
+                    }`}
                   >
-                    <ResponsiveVisual index={activeIndex} />
-                  </motion.div>
-                </AnimatePresence>
+                    Experienced
+                  </span>
+                  <h3
+                    className={`text-lg sm:text-xl font-black leading-snug mb-2 transition-all duration-300 ${
+                      hoveredSide === "right" ? "text-white" : "text-slate-900"
+                    }`}
+                  >
+                    Use Independent Tools
+                  </h3>
+                  <p
+                    className={`text-xs leading-relaxed mb-4 max-w-[280px] transition-all duration-300 ${
+                      hoveredSide === "right" ? "text-orange-50/90" : "text-slate-500"
+                    }`}
+                  >
+                    Suitable for experienced users who prefer flexibility and focused
+                    self-direction.
+                  </p>
+                  <Link
+                    href={toolsHref}
+                    className={`inline-flex items-center justify-center gap-2 py-2 px-4 rounded-xl text-xs font-bold transition-all duration-200 no-underline mb-5 ${
+                      hoveredSide === "right"
+                        ? "bg-white text-[#b5451b] hover:bg-orange-50 shadow-lg shadow-black/10"
+                        : "bg-slate-800 hover:bg-slate-900 text-white shadow-md shadow-slate-800/10 hover:shadow-lg hover:shadow-slate-800/20"
+                    }`}
+                  >
+                    Browse Resources
+                    <ArrowRight size={14} />
+                  </Link>
+
+                  {/* Style Toggle Pills
+                <div className="flex items-center gap-1.5 mb-4 p-0.5 bg-slate-100 rounded-full border border-slate-200/60 shadow-inner">
+                  <button
+                    onClick={() => setSignpostStyle("A")}
+                    className={`px-3 py-1 text-[9.5px] font-black uppercase tracking-wider rounded-full transition-all cursor-pointer ${
+                      signpostStyle === "A"
+                        ? "bg-white text-slate-800 shadow-sm"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    Style A (Scroll)
+                  </button>
+                  <button
+                    onClick={() => setSignpostStyle("B")}
+                    className={`px-3 py-1 text-[9.5px] font-black uppercase tracking-wider rounded-full transition-all cursor-pointer ${
+                      signpostStyle === "B"
+                        ? "bg-slate-800 text-white shadow-sm"
+                        : "text-slate-500 hover:text-slate-800"
+                    }`}
+                  >
+                    Style B (3D Spin)
+                  </button>
+                </div> */}
+
+                  {/* Animated Vector Tools Signpost (Commented out) */}
+                  {/* <div className="w-full max-w-[380px] flex flex-col items-center lg:items-start">
+                    <SpinningToolsSignpost />
+                  </div> */}
+
+                  {/* New Tools Bucket Diagram UI */}
+                  <div className="w-full max-w-[510px] flex flex-col items-center lg:items-start">
+                    <ToolsBucketDiagram />
+                  </div>
+                </motion.div>
               </div>
             </div>
-
           </div>
         </div>
       </section>
+
+      <PlatformChoiceModal isOpen={showChoiceModal} onClose={() => setShowChoiceModal(false)} />
     </>
   );
 }
@@ -1576,11 +1539,7 @@ export function TwoWaysScene() {
   return <TwoWaysSection />;
 }
 
-export function TwoWaysSupportText({
-  path,
-}: {
-  path: (typeof twoWaysPaths)[number];
-}) {
+export function TwoWaysSupportText({ path }: { path: (typeof twoWaysPaths)[number] }) {
   return (
     <div className="w-full min-w-0">
       <p className="m-0 text-[11px] font-black uppercase tracking-[0.08em] text-[#0d7377]">
@@ -1610,9 +1569,7 @@ export function TwoWaysSupportText({
 // internal absolute-positioned children render correctly.
 export function TwoWaysVisual({ index }: { index: TwoWaysIndex }) {
   return (
-    <div
-      style={{ position: "relative", width: 680, height: 560 }}
-    >
+    <div style={{ position: "relative", width: 680, height: 560 }}>
       {index === 0 ? <GuidedRoadmapScene /> : <IndividualToolsScene />}
     </div>
   );
@@ -1626,6 +1583,7 @@ export function TwoWaysMobile({
   onSelect: (index: TwoWaysIndex) => void;
 }) {
   const reduceMotion = useReducedMotion();
+  const [showChoiceModal, setShowChoiceModal] = useState(false);
 
   return (
     <div className="mx-auto max-w-2xl">
@@ -1660,8 +1618,8 @@ export function TwoWaysMobile({
           margin: "0 0 32px 0",
         }}
       >
-        Use the full IR-1 roadmap, or jump into focused tools and resources when
-        you need targeted help.
+        Use the full IR-1 roadmap, or jump into focused tools and resources when you need targeted
+        help.
       </p>
 
       <div className="space-y-3">
@@ -1694,9 +1652,7 @@ export function TwoWaysMobile({
               >
                 {path.title}
               </h3>
-              <p className="mt-1 text-sm leading-6 text-[#4a5c62]">
-                {path.teaser}
-              </p>
+              <p className="mt-1 text-sm leading-6 text-[#4a5c62]">{path.teaser}</p>
             </div>
           </button>
         ))}
@@ -1722,13 +1678,9 @@ export function TwoWaysMobile({
               key={activeIndex}
               className="absolute left-1/2 top-1/2 origin-center"
               style={{ width: 680, height: 560 }}
-              initial={
-                reduceMotion ? false : { opacity: 0, y: 10, scale: 0.48 }
-              }
+              initial={reduceMotion ? false : { opacity: 0, y: 10, scale: 0.48 }}
               animate={{ opacity: 1, y: 0, scale: 0.5 }}
-              exit={
-                reduceMotion ? undefined : { opacity: 0, y: -8, scale: 0.49 }
-              }
+              exit={reduceMotion ? undefined : { opacity: 0, y: -8, scale: 0.49 }}
               transition={{ duration: 0.34, ease: [0.22, 1, 0.36, 1] }}
             >
               <div style={{ transform: "translate(-50%, -50%)" }}>
@@ -1741,19 +1693,22 @@ export function TwoWaysMobile({
 
       <div className="mt-6 flex flex-wrap gap-3">
         <Link
-          href={journeyHref}
+          href={ir1journeyHref}
           className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#0d7377] px-5 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/25"
         >
           Start the Roadmap
           <ArrowRight className="size-4" />
         </Link>
-        <Link
-          href={toolsHref}
-          className="inline-flex min-h-11 items-center rounded-xl border border-[#c8d5d3] bg-white px-5 text-sm font-bold text-[#162126] focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/20"
+        <button
+          type="button"
+          onClick={() => setShowChoiceModal(true)}
+          className="inline-flex min-h-11 items-center rounded-xl border border-[#c8d5d3] bg-white px-5 text-sm font-bold text-[#162126] cursor-pointer hover:bg-gray-50 transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/20"
         >
           Browse Resources
-        </Link>
+        </button>
       </div>
+
+      <PlatformChoiceModal isOpen={showChoiceModal} onClose={() => setShowChoiceModal(false)} />
     </div>
   );
 }
@@ -1779,9 +1734,7 @@ const GUIDED_TOUR = [
 ] as const;
 
 export function GuidedRoadmapScene() {
-  const [view, setView] = useState<"dashboard" | "chapter" | "step">(
-    "dashboard",
-  );
+  const [view, setView] = useState<"dashboard" | "chapter" | "step">("dashboard");
   const [activeChapterIdx, setActiveChapterIdx] = useState(0);
   const [activeStepIdx, setActiveStepIdx] = useState(-1);
   const [completedSteps, setCompletedSteps] = useState<Set<string>>(new Set());
@@ -1798,12 +1751,9 @@ export function GuidedRoadmapScene() {
   // Complete overlay triggers from handleSelectStep — no useEffect timer needed
 
   const activeChapter = chapters[activeChapterIdx];
-  const activeStep =
-    activeStepIdx !== -1 ? activeChapter.steps[activeStepIdx] : null;
+  const activeStep = activeStepIdx !== -1 ? activeChapter.steps[activeStepIdx] : null;
 
-  const nextStep =
-    chapters[0].steps.find((s) => !completedSteps.has(s[0])) ||
-    chapters[0].steps[0];
+  const nextStep = chapters[0].steps.find((s) => !completedSteps.has(s[0])) || chapters[0].steps[0];
 
   const handleSelectChapter = (idx: number) => {
     if (idx >= 1) return; // Only Chapter 1 is open in demo
@@ -1837,7 +1787,7 @@ export function GuidedRoadmapScene() {
 
   return (
     <div
-      className="relative flex flex-col overflow-hidden rounded-[32px] border border-[#dde8e6] bg-[#f9fafc] shadow-[0_24px_80px_rgba(15,23,42,0.12),0_8px_24px_rgba(15,23,42,0.06)]"
+      className="relative flex flex-col overflow-hidden rounded-[32px] border border-[#dde8e6] bg-[#f9fafc]"
       style={{
         width: 680,
         height: 560,
@@ -1918,18 +1868,17 @@ export function GuidedRoadmapScene() {
                       Notifications Center
                     </div>
                     <p className="text-[10px] text-[#6b8097] leading-relaxed mb-4">
-                      This is where your real-time case updates and automated
-                      tracking alerts will appear.
+                      This is where your real-time case updates and automated tracking alerts will
+                      appear.
                     </p>
                     <div className="space-y-2">
                       <div className="rounded-lg bg-[#f0f9f6] p-2.5 border border-[#d1e7e2]">
                         <div className="text-[10px] font-black text-[#0d7377] uppercase mb-1 flex items-center gap-1.5">
                           <div className="size-1.5 rounded-full bg-[#0d7377]" />
-                          Live Case Tracking
+                          Case Tracking Center
                         </div>
                         <div className="text-[11px] leading-snug text-[#4a5c62]">
-                          Automated alerts for USCIS/NVC status changes and
-                          priority date movements.
+                          Automated alerts for USCIS/NVC status changes and priority date movements.
                         </div>
                       </div>
                       <div className="rounded-lg bg-slate-50 p-2.5 border border-slate-100 opacity-60">
@@ -1937,8 +1886,7 @@ export function GuidedRoadmapScene() {
                           System Intelligence
                         </div>
                         <div className="text-[11px] leading-snug text-[#6b8097]">
-                          Personalized reminders for upcoming deadlines and
-                          document expirations.
+                          Personalized reminders for upcoming deadlines and document expirations.
                         </div>
                       </div>
                     </div>
@@ -2032,9 +1980,7 @@ export function GuidedRoadmapScene() {
                         >
                           Chapter {idx + 1}
                         </div>
-                        {isLocked && (
-                          <Lock size={14} className="text-slate-300" />
-                        )}
+                        {isLocked && <Lock size={14} className="text-slate-300" />}
                       </div>
 
                       <h4
@@ -2126,10 +2072,7 @@ export function GuidedRoadmapScene() {
                       >
                         <div className="space-y-3 border-t border-[#dde8e6] bg-[#f9fafc] p-5">
                           {milestones.map(([title, completed], idx) => (
-                            <div
-                              key={idx}
-                              className="flex items-center gap-2.5"
-                            >
+                            <div key={idx} className="flex items-center gap-2.5">
                               <div
                                 className={`flex size-4 items-center justify-center rounded-full border ${completed ? "bg-[#0d7377] border-[#0d7377] text-white" : "border-[#dde8e6] bg-white text-transparent"}`}
                               >
@@ -2243,9 +2186,7 @@ export function GuidedRoadmapScene() {
                             >
                               {step[1]}
                             </div>
-                            <div className="text-[11px] text-[#6b8097]">
-                              {step[2]}
-                            </div>
+                            <div className="text-[11px] text-[#6b8097]">{step[2]}</div>
                           </div>
                         </div>
                         {!isLocked && (
@@ -2300,13 +2241,10 @@ export function GuidedRoadmapScene() {
                   <div className="flex size-16 items-center justify-center rounded-2xl bg-[#f0f1fb] text-[#4e518c] mb-6 shadow-sm">
                     <FileText size={32} />
                   </div>
-                  <h2 className="text-2xl font-black text-[#162126] mb-2">
-                    {activeStep[1]}
-                  </h2>
+                  <h2 className="text-2xl font-black text-[#162126] mb-2">{activeStep[1]}</h2>
                   <p className="max-w-md text-[#6b8097] leading-relaxed mb-8">
-                    In the full app, this step includes interactive guides,
-                    Pakistan-specific checklists, and automated tools to help
-                    you finish faster.
+                    In the full app, this step includes interactive guides, Pakistan-specific
+                    checklists, and automated tools to help you finish faster.
                   </p>
 
                   <div className="flex flex-col w-full max-w-sm gap-3">
@@ -2335,17 +2273,13 @@ export function GuidedRoadmapScene() {
                       <div className="text-[10px] font-bold uppercase tracking-wider text-[#6b8097] mb-1">
                         Free Access
                       </div>
-                      <div className="text-sm font-bold text-[#162126]">
-                        Preview Only
-                      </div>
+                      <div className="text-sm font-bold text-[#162126]">Preview Only</div>
                     </div>
                     <div className="rounded-xl border border-[#d0e4f7] bg-[#f0f7ff] p-4">
                       <div className="text-[10px] font-bold uppercase tracking-wider text-[#0d7377] mb-1">
                         Pro Tool
                       </div>
-                      <div className="text-sm font-bold text-[#0d7377]">
-                        Auto-Fill Ready
-                      </div>
+                      <div className="text-sm font-bold text-[#0d7377]">Auto-Fill Ready</div>
                     </div>
                   </div>
                 </div>
@@ -2402,7 +2336,13 @@ export function GuidedRoadmapScene() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3, duration: 0.3 }}
-              style={{ margin: "0 0 8px", fontSize: 22, fontWeight: 900, color: "white", lineHeight: 1.2 }}
+              style={{
+                margin: "0 0 8px",
+                fontSize: 22,
+                fontWeight: 900,
+                color: "white",
+                lineHeight: 1.2,
+              }}
             >
               Demo Complete!
             </motion.h3>
@@ -2411,7 +2351,13 @@ export function GuidedRoadmapScene() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.38, duration: 0.3 }}
-              style={{ margin: "0 0 6px", fontSize: 13, color: "rgba(255,255,255,0.72)", lineHeight: 1.6, maxWidth: 320 }}
+              style={{
+                margin: "0 0 6px",
+                fontSize: 13,
+                color: "rgba(255,255,255,0.72)",
+                lineHeight: 1.6,
+                maxWidth: 320,
+              }}
             >
               You've seen how the guided IR-1 roadmap works.
             </motion.p>
@@ -2419,19 +2365,31 @@ export function GuidedRoadmapScene() {
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.44, duration: 0.3 }}
-              style={{ margin: "0 0 28px", fontSize: 13, color: "rgba(255,255,255,0.55)", lineHeight: 1.6, maxWidth: 300 }}
+              style={{
+                margin: "0 0 28px",
+                fontSize: 13,
+                color: "rgba(255,255,255,0.55)",
+                lineHeight: 1.6,
+                maxWidth: 300,
+              }}
             >
-              Start your full journey — all chapters, steps, and built-in tools are free to use.
+              Start your full journey, all chapters, steps, and built-in tools are free to use.
             </motion.p>
 
             <motion.div
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.52, duration: 0.3 }}
-              style={{ display: "flex", flexDirection: "column", gap: 10, width: "100%", maxWidth: 280 }}
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 10,
+                width: "100%",
+                maxWidth: 280,
+              }}
             >
               <a
-                href={journeyHref}
+                href={ir1journeyHref}
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -2513,18 +2471,29 @@ export function GuidedRoadmapScene() {
                       animate={{ x: [-4, 0, -4] }}
                       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d7377" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#0d7377"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <path d="M19 12H5M5 12L12 19M5 12L12 5" />
                       </svg>
                     </motion.div>
                   )}
-                  <span style={{
-                    fontSize: 12,
-                    fontWeight: 400,
-                    color: "#0d7377",
-                    letterSpacing: "0.01em",
-                    textShadow: "0 0 6px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,0.9)",
-                  }}>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 400,
+                      color: "#0d7377",
+                      letterSpacing: "0.01em",
+                      textShadow: "0 0 6px rgba(255,255,255,1), 0 0 10px rgba(255,255,255,0.9)",
+                    }}
+                  >
                     {step.text}
                   </span>
                   {step.side === "top" && (
@@ -2532,7 +2501,16 @@ export function GuidedRoadmapScene() {
                       animate={{ y: [-4, 0, -4] }}
                       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
                     >
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0d7377" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <svg
+                        width="16"
+                        height="16"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="#0d7377"
+                        strokeWidth="2.5"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
                         <path d="M12 5V19M12 19L5 12M12 19L19 12" />
                       </svg>
                     </motion.div>
@@ -2549,9 +2527,13 @@ export function GuidedRoadmapScene() {
               transition={{ delay: 0.15, duration: 0.22 }}
               style={{
                 position: "absolute",
-                top: GUIDED_TOUR[tourIdx].dot.top - 10 - (GUIDED_TOUR[tourIdx].view === "dashboard" ? dashScrollTop : 0),
+                top:
+                  GUIDED_TOUR[tourIdx].dot.top -
+                  10 -
+                  (GUIDED_TOUR[tourIdx].view === "dashboard" ? dashScrollTop : 0),
                 left: GUIDED_TOUR[tourIdx].dot.left - 10,
-                width: 20, height: 20,
+                width: 20,
+                height: 20,
                 borderRadius: "50%",
                 background: "rgba(13,115,119,0.15)",
                 border: "2px solid #0d7377",
@@ -2561,7 +2543,8 @@ export function GuidedRoadmapScene() {
                 animate={{ scale: [1, 2.5, 1], opacity: [0.5, 0, 0.5] }}
                 transition={{ duration: 1.6, repeat: Infinity, ease: "easeInOut" }}
                 style={{
-                  position: "absolute", inset: -4,
+                  position: "absolute",
+                  inset: -4,
                   borderRadius: "50%",
                   border: "1.5px solid rgba(13,115,119,0.4)",
                 }}
@@ -2593,9 +2576,7 @@ export function GuidedRoadmapScene() {
           <div className="text-[9px] font-bold uppercase tracking-wider text-[#6b8097]">
             Demo Mode
           </div>
-          <div className="mt-0.5 text-[15px] font-black text-[#0d7377]">
-            Free Preview
-          </div>
+          <div className="mt-0.5 text-[15px] font-black text-[#0d7377]">Free Preview</div>
         </div>
       </div>
     </div>
@@ -2624,16 +2605,16 @@ const featuredTools = [
     border: "#d1fae5",
     iconSrc: "/icons/221g-action-plan.svg",
   },
-  {
-    id: "path",
-    icon: Compass,
-    iconSize: 18,
-    label: "Visa Path Finder",
-    bg: "#fff7ed",
-    fg: "#ea580c",
-    border: "#ffedd5",
-    iconSrc: "/icons/visa-path-finder.svg",
-  },
+  // {
+  //   id: "path",
+  //   icon: Compass,
+  //   iconSize: 18,
+  //   label: "Visa Path Finder",
+  //   bg: "#fff7ed",
+  //   fg: "#ea580c",
+  //   border: "#ffedd5",
+  //   iconSrc: "/icons/visa-path-finder.svg",
+  // },
   {
     id: "interview",
     icon: MessageSquare,
@@ -2664,16 +2645,16 @@ const featuredTools = [
     border: "#fae8ff",
     iconSrc: "/icons/dq-case-tracker.svg",
   },
-  {
-    id: "bulletin",
-    icon: Calendar,
-    iconSize: 19,
-    label: "Visa Bulletin Monitor",
-    bg: "#f0fdfa",
-    fg: "#0d9488",
-    border: "#ccfbf1",
-    iconSrc: "/icons/visa-bulletin-monitor.svg",
-  },
+  // {
+  //   id: "bulletin",
+  //   icon: Calendar,
+  //   iconSize: 19,
+  //   label: "Visa Bulletin Monitor",
+  //   bg: "#f0fdfa",
+  //   fg: "#0d9488",
+  //   border: "#ccfbf1",
+  //   iconSrc: "/icons/visa-bulletin-monitor.svg",
+  // },
   {
     id: "photo",
     icon: Camera,
@@ -2721,8 +2702,7 @@ const toolContent: Record<string, any> = {
     eyebrow: "Case Review",
     title: "Case Strength Analyzer",
     headline: "Know if your case is ready before the officer does.",
-    subtext:
-      "Review your evidence, spot the gaps, and fix them before you submit — not after.",
+    subtext: "Review your evidence, spot the gaps, and fix them before you submit, not after.",
     benefits: [
       "Evidence gaps flagged instantly",
       "Domicile & financial check",
@@ -2733,32 +2713,30 @@ const toolContent: Record<string, any> = {
     eyebrow: "Post-Interview",
     title: "221(g) Action Planner",
     headline: "Got a 221(g)? Here's exactly what to do next.",
-    subtext:
-      "Step-by-step response guide — right documents, right format, right place.",
+    subtext: "Step-by-step response guide, right documents, right format, right place.",
     benefits: [
-      "Not a denial — act fast",
+      "Not a denial, act fast",
       "Document checklist included",
       "Embassy-specific guidance",
     ],
   },
-  path: {
-    eyebrow: "Getting Started",
-    title: "Visa Path Finder",
-    headline: "5 questions. One clear starting point.",
-    subtext:
-      "Confirm IR-1 is your path and get your first action — no legal knowledge needed.",
-    benefits: [
-      "Confirm IR-1 eligibility",
-      "Know who files what",
-      "Instant next step",
-    ],
-  },
+  // path: {
+  //   eyebrow: "Getting Started",
+  //   title: "Visa Path Finder",
+  //   headline: "5 questions. One clear starting point.",
+  //   subtext:
+  //     "Confirm IR-1 is your path and get your first action — no legal knowledge needed.",
+  //   benefits: [
+  //     "Confirm IR-1 eligibility",
+  //     "Know who files what",
+  //     "Instant next step",
+  //   ],
+  // },
   interview: {
     eyebrow: "Preparation",
     title: "Interview Prep",
     headline: "Walk into ISL prepared, not guessing.",
-    subtext:
-      "Real Islamabad embassy questions, real model answers, built for IR-1 spouses.",
+    subtext: "Real Islamabad embassy questions, real model answers, built for IR-1 spouses.",
     benefits: [
       "50+ real ISL questions",
       "Relationship & domicile focus",
@@ -2769,13 +2747,8 @@ const toolContent: Record<string, any> = {
     eyebrow: "Financial Check",
     title: "Sponsorship Calculator",
     headline: "Does your income qualify? Find out in 60 seconds.",
-    subtext:
-      "Check I-864 threshold, pick the right form, and see if a joint sponsor is needed.",
-    benefits: [
-      "2025 guidelines updated",
-      "I-864 vs I-864EZ",
-      "Joint sponsor check",
-    ],
+    subtext: "Check I-864 threshold, pick the right form, and see if a joint sponsor is needed.",
+    benefits: ["2025 guidelines updated", "I-864 vs I-864EZ", "Joint sponsor check"],
   },
   dq: {
     eyebrow: "Scheduling",
@@ -2783,71 +2756,47 @@ const toolContent: Record<string, any> = {
     headline: "See where the ISL scheduling queue stands today.",
     subtext:
       "Check which DQ months are being called and estimate when your interview window opens.",
-    benefits: [
-      "Live scheduling month",
-      "ISL embassy data",
-      "Estimate your wait",
-    ],
+    benefits: ["Live scheduling month", "ISL embassy data", "Estimate your wait"],
   },
-  bulletin: {
-    eyebrow: "Priority Date",
-    title: "Visa Bulletin Monitor",
-    headline: "IR-1 is always current. But yours might not be.",
-    subtext:
-      "Track your priority date against the latest monthly Visa Bulletin cutoffs.",
-    benefits: [
-      "Monthly bulletin updates",
-      "Priority date tracker",
-      "Current or waiting?",
-    ],
-  },
+  // bulletin: {
+  //   eyebrow: "Priority Date",
+  //   title: "Visa Bulletin Monitor",
+  //   headline: "IR-1 is always current. But yours might not be.",
+  //   subtext:
+  //     "Track your priority date against the latest monthly Visa Bulletin cutoffs.",
+  //   benefits: [
+  //     "Monthly bulletin updates",
+  //     "Priority date tracker",
+  //     "Current or waiting?",
+  //   ],
+  // },
   photo: {
     eyebrow: "Photo Requirement",
     title: "Photo Booth",
     headline: "Compliant visa photo. Without the studio visit.",
-    subtext:
-      "Upload any photo — get a 2×2 inch, white background, embassy-ready result.",
-    benefits: [
-      "Auto-crop & format",
-      "Meets USCIS standards",
-      "Download in seconds",
-    ],
+    subtext: "Upload any photo, get a 2×2 inch, white background, embassy-ready result.",
+    benefits: ["Auto-crop & format", "Meets USCIS standards", "Download in seconds"],
   },
   pdf: {
     eyebrow: "Document Tools",
     title: "PDF Tool Kit",
     headline: "NVC rejects big files. We fix that.",
-    subtext:
-      "Merge, compress, and convert your documents to meet CEAC's strict 2MB upload limit.",
-    benefits: [
-      "Under 2MB guaranteed",
-      "Merge multiple files",
-      "PDF & JPG ready",
-    ],
+    subtext: "Merge, compress, and convert your documents to meet CEAC's strict 2MB upload limit.",
+    benefits: ["Under 2MB guaranteed", "Merge multiple files", "PDF & JPG ready"],
   },
   snap: {
     eyebrow: "Signatures",
     title: "Snap & Sign",
     headline: "Every document needs a signature. Make yours in seconds.",
-    subtext:
-      "Draw, type, or upload your signature — download as PNG and drop it anywhere.",
-    benefits: [
-      "Works on any form or doc",
-      "Transparent PNG download",
-      "Mobile & desktop ready",
-    ],
+    subtext: "Draw, type, or upload your signature, download as PNG and drop it anywhere.",
+    benefits: ["Works on any form or doc", "Transparent PNG download", "Mobile & desktop ready"],
   },
   filler: {
     eyebrow: "Form Completion",
     title: "Smart Form Filler",
     headline: "I-130 done in minutes. Not hours.",
-    subtext:
-      "Fill your details once and get a completed, submission-ready PDF — no blank fields.",
-    benefits: [
-      "I-130, DS-260, I-864",
-      "Pakistan-specific defaults",
-      "Review before you submit",
-    ],
+    subtext: "Fill your details once and get a completed, submission-ready PDF, no blank fields.",
+    benefits: ["I-130, DS-260, I-864", "Pakistan-specific defaults", "Review before you submit"],
   },
 };
 
@@ -2873,9 +2822,7 @@ function ToolCarousel({
   const COPIES = 20;
   const totalStep = useRef(10 * N); // start at copy 10, icon 0
   const prevIdx = useRef(activeIdx);
-  const [offset, setOffset] = useState(
-    () => 300 - (GAP + 10 * N * STRIDE + ITEM_W / 2),
-  );
+  const [offset, setOffset] = useState(() => 300 - (GAP + 10 * N * STRIDE + ITEM_W / 2));
   const [animated, setAnimated] = useState(true);
 
   useEffect(() => {
@@ -2913,9 +2860,7 @@ function ToolCarousel({
           paddingLeft: GAP,
           height: "100%",
           transform: `translateX(${offset}px)`,
-          transition: animated
-            ? "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)"
-            : "none",
+          transition: animated ? "transform 0.6s cubic-bezier(0.22, 1, 0.36, 1)" : "none",
           willChange: "transform",
         }}
       >
@@ -2950,8 +2895,7 @@ function ToolCarousel({
                   alignItems: "center",
                   justifyContent: "center",
                   transform: isActive ? "scale(1.13)" : "scale(1)",
-                  transition:
-                    "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                  transition: "transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)",
                   outline: isActive ? `3px solid ${tool.fg}` : "none",
                   outlineOffset: isActive ? "3px" : "0",
                   boxShadow: isActive ? `0 8px 24px ${tool.fg}55` : "none",
@@ -2996,9 +2940,7 @@ export function IndividualToolsScene() {
   const activeIdxRef = useRef(0);
 
   const goTo = useCallback((idx: number) => {
-    const next =
-      ((idx % featuredTools.length) + featuredTools.length) %
-      featuredTools.length;
+    const next = ((idx % featuredTools.length) + featuredTools.length) % featuredTools.length;
     activeIdxRef.current = next;
     setVisible(false);
     window.setTimeout(() => {
@@ -3025,10 +2967,13 @@ export function IndividualToolsScene() {
     };
   }, [hovered, startAutoPlay]);
 
-  const handleSelect = useCallback((idx: number) => {
-    goTo(idx);
-    if (!hovered) startAutoPlay();
-  }, [goTo, hovered, startAutoPlay]);
+  const handleSelect = useCallback(
+    (idx: number) => {
+      goTo(idx);
+      if (!hovered) startAutoPlay();
+    },
+    [goTo, hovered, startAutoPlay]
+  );
 
   const tool = featuredTools[activeIdx];
   const content = toolContent[tool.id];
@@ -3041,8 +2986,7 @@ export function IndividualToolsScene() {
         borderRadius: 32,
         background: "white",
         border: "1px solid #dde8e6",
-        boxShadow:
-          "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
+        boxShadow: "none",
         position: "relative",
         margin: 0,
         overflow: "hidden",
@@ -3074,9 +3018,7 @@ export function IndividualToolsScene() {
           >
             {content.eyebrow}
           </div>
-          <div style={{ fontSize: 13, fontWeight: 900, color: "white" }}>
-            {content.title}
-          </div>
+          <div style={{ fontSize: 13, fontWeight: 900, color: "white" }}>{content.title}</div>
         </div>
         <a
           href="#"
@@ -3241,10 +3183,7 @@ export function IndividualToolsScene() {
             }}
           >
             {content.benefits.map((b: string) => (
-              <div
-                key={b}
-                style={{ display: "flex", alignItems: "center", gap: 10 }}
-              >
+              <div key={b} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <div
                   style={{
                     width: 18,
@@ -3277,11 +3216,7 @@ export function IndividualToolsScene() {
       </div>
 
       {/* ── Carousel ── */}
-      <ToolCarousel
-        activeIdx={activeIdx}
-        onSelect={handleSelect}
-        onHoverChange={setHovered}
-      />
+      <ToolCarousel activeIdx={activeIdx} onSelect={handleSelect} onHoverChange={setHovered} />
     </div>
   );
 }
@@ -3327,14 +3262,7 @@ function InteractiveClockWidget() {
     springAngle.set(angle);
     minuteHandRotate.set(minuteHandAngle);
     hourHandRotate.set(hourHandAngle);
-  }, [
-    angle,
-    minuteHandAngle,
-    hourHandAngle,
-    springAngle,
-    minuteHandRotate,
-    hourHandRotate,
-  ]);
+  }, [angle, minuteHandAngle, hourHandAngle, springAngle, minuteHandRotate, hourHandRotate]);
 
   useEffect(() => {
     const t = window.setTimeout(() => setShowHint(false), 3600);
@@ -3525,11 +3453,7 @@ function InteractiveClockWidget() {
   );
 }
 
-export function ConsultationBanner({
-  onConsultationClick,
-}: {
-  onConsultationClick: () => void;
-}) {
+export function ConsultationBanner({ onConsultationClick }: { onConsultationClick: () => void }) {
   const reduceMotion = useReducedMotion();
   const helpWith = [
     "Talk through your exact case",
@@ -3547,8 +3471,7 @@ export function ConsultationBanner({
     {
       label: "WHAT WE DISCUSS",
       title: "Case clarity",
-      description:
-        "Practical guidance on exactly what will move your case forward.",
+      description: "Practical guidance on exactly what will move your case forward.",
       accent: "#0B666A",
       bg: "rgba(245,250,248,0.96)",
       pillBg: "rgba(11, 102, 106, 0.08)",
@@ -3645,12 +3568,12 @@ export function ConsultationBanner({
                 lineHeight: 1.68,
               }}
             >
-              If the roadmap feels like too much or a tool isn&apos;t enough,
-              book a consultation for tailored clarity on your immigration case.
+              If the roadmap feels like too much or a tool isn&apos;t enough, book a consultation
+              for tailored clarity on your immigration case.
             </motion.p>
           </div>
 
-         {/* Two-card illustrated grid */}
+          {/* Two-card illustrated grid */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -3751,7 +3674,7 @@ export function ConsultationBanner({
             ))}
           </motion.div>
         </div>
-        
+
         {/* RIGHT SIDE: Clock & CTA */}
         <motion.div
           initial={{ opacity: 0, x: 12 }}
@@ -3834,9 +3757,7 @@ export function ConsultationPreviewVisual() {
               <span className="flex size-[42px] items-center justify-center text-[#154f50]">
                 <Icon className="size-8" strokeWidth={1.8} />
               </span>
-              <span className="text-lg font-medium leading-tight text-[#111c29]">
-                {label}
-              </span>
+              <span className="text-lg font-medium leading-tight text-[#111c29]">{label}</span>
               <span className="flex size-6 items-center justify-center rounded-full bg-[#4f9a71] text-white">
                 <Check className="size-3.5" strokeWidth={3} />
               </span>
@@ -3848,10 +3769,7 @@ export function ConsultationPreviewVisual() {
       <div className="flex flex-col gap-4">
         <div className="rounded-[18px] border border-[rgba(40,50,60,0.08)] bg-[rgba(248,245,240,0.95)] p-5 shadow-[0_16px_30px_rgba(37,41,46,0.08)]">
           <div className="mb-4 flex items-center gap-2.5">
-            <Calendar
-              className="size-[22px] text-[#154f50]"
-              strokeWidth={1.8}
-            />
+            <Calendar className="size-[22px] text-[#154f50]" strokeWidth={1.8} />
             <h4 className="m-0 text-[17px] font-black uppercase tracking-[-0.01em] text-[#101b27]">
               Availability
             </h4>
@@ -3899,16 +3817,11 @@ export function ConsultationPreviewVisual() {
           </div>
           <div className="flex flex-col gap-4">
             {outcomes.map(({ label, icon: Icon }) => (
-              <div
-                key={label}
-                className="grid grid-cols-[30px_1fr] items-start gap-3"
-              >
+              <div key={label} className="grid grid-cols-[30px_1fr] items-start gap-3">
                 <span className="flex size-[30px] items-center justify-center text-[#154f50]">
                   <Icon className="size-7" strokeWidth={1.8} />
                 </span>
-                <span className="text-[15px] font-medium leading-snug text-[#111827]">
-                  {label}
-                </span>
+                <span className="text-[15px] font-medium leading-snug text-[#111827]">{label}</span>
               </div>
             ))}
           </div>
@@ -3942,7 +3855,7 @@ export function StepDocsDemo({ onComplete }: { onComplete: () => void }) {
     {
       id: "doc_nikah_nama",
       name: "Nikah Nama (Original)",
-      subtitle: "Islamic marriage contract — foundational doc",
+      subtitle: "Islamic marriage contract, foundational doc",
       icon: <FileText className="size-5" />,
     },
     {
@@ -3960,9 +3873,7 @@ export function StepDocsDemo({ onComplete }: { onComplete: () => void }) {
     }));
   };
 
-  const doneCount = Object.values(docStatus).filter(
-    (s) => s === "reviewed",
-  ).length;
+  const doneCount = Object.values(docStatus).filter((s) => s === "reviewed").length;
   const isAllDone = doneCount === docs.length;
 
   return (
@@ -3974,8 +3885,8 @@ export function StepDocsDemo({ onComplete }: { onComplete: () => void }) {
         </div>
       </div>
       <p className="text-[#6b8097] max-w-xl leading-relaxed mb-8">
-        Prepare the documents needed for your IR-1 spouse petition. In the full
-        app, you get Pakistan-specific guides for each.
+        Prepare the documents needed for your IR-1 spouse petition. In the full app, you get
+        Pakistan-specific guides for each.
       </p>
 
       <div className="grid gap-3">
@@ -3994,9 +3905,7 @@ export function StepDocsDemo({ onComplete }: { onComplete: () => void }) {
               <div className="flex items-center gap-4">
                 <div
                   className={`flex size-12 shrink-0 items-center justify-center rounded-xl transition-all ${
-                    isDone
-                      ? "bg-[#0d7377] text-white"
-                      : "bg-slate-50 text-slate-400"
+                    isDone ? "bg-[#0d7377] text-white" : "bg-slate-50 text-slate-400"
                   }`}
                 >
                   {doc.icon}
@@ -4056,11 +3965,7 @@ export function StepDocsDemo({ onComplete }: { onComplete: () => void }) {
     </div>
   );
 }
-export function JourneyConsultationBand({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function JourneyConsultationBand({ children }: { children: React.ReactNode }) {
   return (
     <div
       className="relative overflow-hidden"
@@ -4085,11 +3990,990 @@ export function JourneyConsultationBand({
           width: "60%",
           height: "80%",
           borderRadius: "50%",
-          background:
-            "radial-gradient(ellipse, rgba(13,115,119,0.04) 0%, transparent 65%)",
+          background: "radial-gradient(ellipse, rgba(13,115,119,0.04) 0%, transparent 65%)",
         }}
       />
       <div className="relative z-10">{children}</div>
+    </div>
+  );
+}
+
+// ── Interactive Animated Tools Signpost Vector Component ──
+const signpostTools = [
+  {
+    id: "photo-booth",
+    title: "Photo Booth",
+    description: "Make a compliant passport/visa photo in minutes.",
+    icon: Camera,
+    color: "#F43F5E", // Rose
+    href: "/passport",
+  },
+  {
+    id: "pdf-toolkit",
+    title: "PDF Tool Kit",
+    description: "Merge • compress • convert • edit, all in one toolkit.",
+    icon: Files,
+    color: "#EC4899", // Pink
+    href: "/pdf-processing",
+  },
+  {
+    id: "action-planner",
+    title: "221(g) Action Planner",
+    description: "Step-by-step next moves after 221(g) or Administrative Processing.",
+    icon: LifeBuoy,
+    color: "#6366F1", // Indigo
+    href: "/221g-action-planner",
+  },
+  {
+    id: "form-filler",
+    title: "Smart Form Filler",
+    description: "Auto-fills your official form and generates a ready-to-upload PDF.",
+    icon: Wand2,
+    color: "#06B6D4", // Cyan
+    href: "/visa-forms",
+  },
+  {
+    id: "case-strength",
+    title: "Case Strength Analyzer",
+    description: "Instant AI case strength score + gaps to fix before NVC/Interview.",
+    icon: Brain,
+    color: "#8B5CF6", // Violet
+    href: "/visa-case-strength-checker",
+  },
+  {
+    id: "interview-prep",
+    title: "Interview Prep",
+    description: "Prepare smarter and deliver confident answers when it matters most.",
+    icon: MessageSquare,
+    color: "#A78BFA", // Violet/Purple
+    href: "/interview-prep",
+  },
+  {
+    id: "sponsorship-calc",
+    title: "Sponsorship Calculator",
+    description: "Auto-check income/assets and tell you what you still need.",
+    icon: Calculator,
+    color: "#10B981", // Emerald
+    href: "/affidavit-support-calculator",
+  },
+  {
+    id: "status-check",
+    title: "DQ Status Check",
+    description: "Track interview scheduling movement and trends by category.",
+    icon: Clock,
+    color: "#F59E0B", // Amber
+    href: "/iv-tool",
+  },
+  {
+    id: "snap-sign",
+    title: "Snap & Sign",
+    description: "Create a clean digital signature for your forms.",
+    icon: PenTool,
+    color: "#EF4444", // Red
+    href: "/signature-image-processing",
+  },
+];
+
+export function AnimatedToolsSignpost() {
+  const [index, setIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (reduceMotion || isHovered) return;
+    const timer = setInterval(() => {
+      setIndex((prev) => prev + 1);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [reduceMotion, isHovered]);
+
+  // We show index - 1 (exiting), index, index + 1 (bottom card), and index + 2 (entering)
+  const visibleRange = [index - 1, index, index + 1, index + 2];
+
+  const cardVariants = {
+    animate: (k: number) => ({
+      rotate: [0, -1.2, 1.2, -0.6, 0.6, 0],
+      transition: {
+        duration: 5,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay: (k % 3) * 0.4,
+      },
+    }),
+    hover: {
+      scale: 1.025,
+      rotate: [-2.5, 2.5, -1, 1, 0],
+      transition: { duration: 0.5, ease: "easeInOut" },
+    },
+  };
+
+  const iconVariants = {
+    animate: (k: number) => ({
+      rotate: [0, 1.5, -1.5, 0.8, -0.8, 0],
+      transition: {
+        duration: 4.5,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay: (k % 3) * 0.3,
+      },
+    }),
+    hover: {
+      scale: 1.08,
+      rotate: [-3.5, 3.5, -1.5, 1.5, 0],
+      transition: { duration: 0.45, ease: "easeInOut" },
+    },
+  };
+
+  return (
+    <div
+      className="relative w-full max-w-[380px] h-[186px] overflow-hidden bg-transparent select-none"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+    >
+      {/* Decorative subtle background bloom */}
+      <div className="absolute inset-0 bg-radial from-slate-100/10 to-transparent pointer-events-none" />
+
+      {/* Center Pole (Centered precisely at 50%) */}
+      <div className="absolute left-[calc(50%-3px)] top-[2px] bottom-[2px] w-[6px] bg-gradient-to-b from-slate-300 via-slate-400 to-slate-300 border-x border-slate-500/20 z-10 shadow-[inset_0.5px_0_0.5px_rgba(255,255,255,0.45)]" />
+
+      {/* Cylindrical Top Cap Ellipse (Centered precisely at 50%) */}
+      <div className="absolute left-[calc(50%-6px)] top-0 w-[12px] h-[5px] rounded-full bg-white border-2 border-slate-500 z-20 shadow-[inset_0_0.5px_1px_rgba(0,0,0,0.15)]" />
+
+      {/* Cylindrical Bottom Cap Ellipse (Centered precisely at 50%) */}
+      <div className="absolute left-[calc(50%-6px)] bottom-0 w-[12px] h-[5px] rounded-full bg-slate-300 border-2 border-slate-500 z-20 shadow-[inset_0_-0.5px_1px_rgba(0,0,0,0.15)]" />
+
+      {visibleRange.map((k) => {
+        const toolIndex =
+          ((k % signpostTools.length) + signpostTools.length) % signpostTools.length;
+        const tool = signpostTools[toolIndex];
+        const slot = k - index;
+
+        let y = 0;
+        let opacity = 0;
+        let pointerEvents: "auto" | "none" = "none";
+
+        if (slot === -1) {
+          y = -68;
+          opacity = 0;
+          pointerEvents = "none";
+        } else if (slot === 0) {
+          y = 20; // 20px top margin
+          opacity = 1;
+          pointerEvents = "auto";
+        } else if (slot === 1) {
+          y = 102; // ends at 102 + 64 = 166px (20px bottom margin from 186px height)
+          opacity = 1;
+          pointerEvents = "auto";
+        } else if (slot === 2) {
+          y = 186;
+          opacity = 0;
+          pointerEvents = "none";
+        }
+
+        const isLeftIcon = k % 2 === 1;
+        const IconComponent = tool.icon;
+
+        return (
+          <motion.div
+            key={k}
+            initial={{ y: 186, opacity: 0 }}
+            animate={{
+              y,
+              opacity,
+            }}
+            transition={{
+              type: "spring",
+              stiffness: 120,
+              damping: 18,
+              mass: 0.75,
+            }}
+            className="absolute left-0 right-0 h-[64px] flex items-center justify-between z-20"
+            style={{ width: "100%", pointerEvents }}
+          >
+            {isLeftIcon ? (
+              <>
+                {/* Left Icon */}
+                <Link
+                  href={tool.href}
+                  className="no-underline z-20"
+                  style={{ left: "calc(18% - 18px)", top: "14px", position: "absolute" }}
+                >
+                  <motion.div
+                    variants={iconVariants}
+                    animate="animate"
+                    whileHover="hover"
+                    custom={k}
+                    className="w-[36px] h-[36px] flex items-center justify-center rounded-full bg-white border-2 z-20 cursor-pointer"
+                    style={{
+                      borderColor: tool.color,
+                      color: tool.color,
+                      boxShadow: `0 4px 12px ${tool.color}1c, inset 0 1px 2px rgba(255,255,255,0.9)`,
+                      transformOrigin: "top center",
+                      WebkitFontSmoothing: "subpixel-antialiased",
+                    }}
+                  >
+                    <IconComponent size={18} strokeWidth={2.2} />
+                  </motion.div>
+                </Link>
+
+                {/* Horizontal Connector Line */}
+                <div className="absolute left-[18%] w-[32%] h-[2px] bg-slate-200/80 z-0 top-[31px]" />
+
+                {/* Right Description Card */}
+                <Link
+                  href={tool.href}
+                  className="no-underline z-20"
+                  style={{ left: "52%", right: "3%", position: "absolute", height: "64px" }}
+                >
+                  <motion.div
+                    variants={cardVariants}
+                    animate="animate"
+                    whileHover="hover"
+                    custom={k}
+                    style={{
+                      transformOrigin: "top left",
+                      WebkitFontSmoothing: "subpixel-antialiased",
+                      backfaceVisibility: "hidden",
+                      transform: "translate3d(0, 0, 0)",
+                    }}
+                    className="w-full h-[64px] p-2.5 flex flex-col justify-center rounded-xl bg-white border border-slate-200/80 shadow-[0_3px_10px_rgba(0,0,0,0.03)] cursor-pointer text-left transition-all duration-300 hover:border-slate-300 hover:shadow-[0_4px_14px_rgba(0,0,0,0.05)]"
+                  >
+                    <span className="text-[10px] font-black text-slate-800 leading-snug tracking-tight truncate">
+                      {tool.title}
+                    </span>
+                    <span
+                      title={tool.description}
+                      className="text-[8.5px] font-semibold text-slate-500 leading-normal mt-0.5 line-clamp-2"
+                    >
+                      {tool.description}
+                    </span>
+                  </motion.div>
+                </Link>
+              </>
+            ) : (
+              <>
+                {/* Left Description Card */}
+                <Link
+                  href={tool.href}
+                  className="no-underline z-20"
+                  style={{ left: "3%", right: "52%", position: "absolute", height: "64px" }}
+                >
+                  <motion.div
+                    variants={cardVariants}
+                    animate="animate"
+                    whileHover="hover"
+                    custom={k}
+                    style={{
+                      transformOrigin: "top right",
+                      WebkitFontSmoothing: "subpixel-antialiased",
+                      backfaceVisibility: "hidden",
+                      transform: "translate3d(0, 0, 0)",
+                    }}
+                    className="w-full h-[64px] p-2.5 flex flex-col justify-center rounded-xl bg-white border border-slate-200/80 shadow-[0_3px_10px_rgba(0,0,0,0.03)] cursor-pointer text-left transition-all duration-300 hover:border-slate-300 hover:shadow-[0_4px_14px_rgba(0,0,0,0.05)]"
+                  >
+                    <span className="text-[10px] font-black text-slate-800 leading-snug tracking-tight truncate">
+                      {tool.title}
+                    </span>
+                    <span className="text-[8.5px] font-semibold text-slate-500 leading-normal mt-0.5 line-clamp-2">
+                      {tool.description}
+                    </span>
+                  </motion.div>
+                </Link>
+
+                {/* Horizontal Connector Line */}
+                <div className="absolute left-[50%] w-[32%] h-[2px] bg-slate-200/80 z-0 top-[31px]" />
+
+                {/* Right Icon */}
+                <Link
+                  href={tool.href}
+                  className="no-underline z-20"
+                  style={{ right: "calc(18% - 18px)", top: "14px", position: "absolute" }}
+                >
+                  <motion.div
+                    variants={iconVariants}
+                    animate="animate"
+                    whileHover="hover"
+                    custom={k}
+                    className="w-[36px] h-[36px] flex items-center justify-center rounded-full bg-white border-2 z-20 cursor-pointer"
+                    style={{
+                      borderColor: tool.color,
+                      color: tool.color,
+                      boxShadow: `0 4px 12px ${tool.color}1c, inset 0 1px 2px rgba(255,255,255,0.9)`,
+                      transformOrigin: "top center",
+                      WebkitFontSmoothing: "subpixel-antialiased",
+                    }}
+                  >
+                    <IconComponent size={18} strokeWidth={2.2} />
+                  </motion.div>
+                </Link>
+              </>
+            )}
+          </motion.div>
+        );
+      })}
+    </div>
+  );
+}
+
+// ── Helper SVG Arrow Components for Style B ──
+function RightArrowSvg({ color }: { color: string }) {
+  return (
+    <svg viewBox="0 0 125 44" className="w-full h-full drop-shadow-[0_2.5px_4px_rgba(0,0,0,0.06)]">
+      <path
+        d="M 5 2 H 105 L 121 22 L 105 42 H 5 A 3 3 0 0 1 2 39 V 5 A 3 3 0 0 1 5 2 Z"
+        fill="#ffffff"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function LeftArrowSvg({ color }: { color: string }) {
+  return (
+    <svg viewBox="0 0 125 44" className="w-full h-full drop-shadow-[0_2.5px_4px_rgba(0,0,0,0.06)]">
+      <path
+        d="M 120 2 H 20 L 4 22 L 20 42 H 120 A 3 3 0 0 0 123 39 V 5 A 3 3 0 0 0 120 2 Z"
+        fill="#ffffff"
+        stroke={color}
+        strokeWidth="2.5"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function OrbitToolCard({
+  tool,
+  indexMV,
+  cardIndex,
+  totalTools,
+}: {
+  tool: any;
+  indexMV: any;
+  cardIndex: number;
+  totalTools: number;
+}) {
+  const offset = useTransform(indexMV, (val) => {
+    const mod = (n: number, m: number) => ((n % m) + m) % m;
+    let diff = mod(cardIndex - (val as number), totalTools);
+    if (diff > totalTools / 2) {
+      diff -= totalTools;
+    }
+    return diff;
+  });
+
+  // Interpolate properties based on offset
+  const getCardProperties = (off: number) => {
+    const lerp = (start: number, end: number, amt: number) => (1 - amt) * start + amt * end;
+
+    let angle = 0;
+    let opacity = 0;
+    let scale = 0;
+
+    if (off >= 0 && off <= 1) {
+      // Between Right (0) and Bottom (1)
+      const t = off;
+      angle = lerp(0, 0.5 * Math.PI, t);
+      opacity = 1;
+      scale = 1;
+    } else if (off >= 1 && off <= 2) {
+      // Between Bottom (1) and Left (2)
+      const t = off - 1;
+      angle = lerp(0.5 * Math.PI, Math.PI, t);
+      opacity = 1;
+      scale = 1;
+    } else if (off >= 2 && off <= 3) {
+      // Between Left (2) and Entry (3)
+      const t = off - 2;
+      angle = lerp(Math.PI, 1.3 * Math.PI, t);
+      opacity = lerp(1, 0, t);
+      scale = lerp(1, 0.8, t);
+    } else if (off >= -1 && off <= 0) {
+      // Between Exit (-1) and Right (0)
+      const t = off + 1;
+      angle = lerp(-0.3 * Math.PI, 0, t);
+      opacity = lerp(0, 1, t);
+      scale = lerp(0.8, 1, t);
+    } else {
+      // Offscreen
+      opacity = 0;
+      scale = 0.8;
+      angle = off > 3 ? 1.3 * Math.PI : -0.3 * Math.PI;
+    }
+
+    const x = 220 + 185 * Math.cos(angle);
+    const y = 121.25 + 102.5 * Math.sin(angle) - 31.25 * Math.cos(2 * angle);
+
+    return { x, y, opacity, scale };
+  };
+
+  const x = useTransform(offset, (off) => getCardProperties(off).x);
+  const y = useTransform(offset, (off) => getCardProperties(off).y);
+  const opacity = useTransform(offset, (off) => getCardProperties(off).opacity);
+  const scale = useTransform(offset, (off) => getCardProperties(off).scale);
+  const zIndex = useTransform(offset, (off) => {
+    // Front half of orbit: between -0.2 and 2.2
+    if (off >= -0.2 && off <= 2.2) {
+      return 20;
+    }
+    return 5;
+  });
+  const pointerEvents = useTransform(opacity, (op) =>
+    op > 0.15 ? ("auto" as const) : ("none" as const)
+  );
+
+  const iconNode = isValidElement(tool.icon)
+    ? cloneElement(tool.icon as React.ReactElement<any>, {
+        className: "h-5 w-5 text-white",
+        style: { color: "#fff" },
+      })
+    : tool.icon;
+
+  return (
+    <motion.div
+      style={{
+        position: "absolute",
+        left: 0,
+        top: 0,
+        x,
+        y,
+        opacity,
+        scale,
+        zIndex,
+        pointerEvents,
+        translateX: "-50%",
+        translateY: "-50%",
+      }}
+      className="flex flex-col items-center select-none"
+    >
+      {/* Badge */}
+      <div className="relative w-14 h-14 flex items-center justify-center">
+        <div className="absolute inset-0 rounded-full bg-white border border-white/60 shadow-sm" />
+        <div
+          className={`z-10 flex size-10 items-center justify-center rounded-full ${tool.accentClass ?? "bg-slate-700"} shadow-md text-white`}
+        >
+          {iconNode}
+        </div>
+      </div>
+
+      {/* Card */}
+      <motion.div
+        whileHover={{ y: -3, scale: 1.03, boxShadow: "0 10px 20px rgba(0,0,0,0.06)" }}
+        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+        className="mt-3 w-[135px] bg-white border border-slate-100 rounded-xl p-2.5 flex flex-col items-center text-center shadow-[0_4px_10px_rgba(0,0,0,0.04)]"
+      >
+        <h4 className="text-[11px] font-black leading-tight text-slate-800">{tool.title}</h4>
+        <p
+          className="text-[9.5px] text-slate-500 mt-1 leading-snug overflow-hidden line-clamp-3"
+          title={tool.desc}
+        >
+          {tool.desc}
+        </p>
+        <Link
+          href={tool.href}
+          className="mt-2 inline-flex items-center gap-1 rounded-full border border-slate-200 px-2.5 py-1 text-[9px] font-black text-slate-700 no-underline hover:bg-slate-50"
+        >
+          Use Tool <ArrowRight size={8} strokeWidth={3} />
+        </Link>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+export function ToolsBucketDiagram() {
+  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
+  const [isHovered, setIsHovered] = useState(false);
+
+  const tools = useMemo(
+    () =>
+      (NAV_DATA.tools.tabs ?? [])
+        .flatMap((tab) =>
+          (tab?.items ?? [])
+            .filter((item) => !item.disabled)
+            .map((item) => ({
+              id: item.href ?? item.title,
+              title: item.title,
+              desc: item.description,
+              href: item.href ?? "/resources?tab=toolbox",
+              icon: item.icon,
+              accentClass: getToolAccentClass(item.icon),
+            }))
+        )
+        .filter(Boolean),
+    []
+  );
+
+  const [startIndex, setStartIndex] = useState(0);
+  const indexMV = useMotionValue(0);
+
+  // Stepped rotation timer - pauses when user hovers over the container
+  useEffect(() => {
+    if (!tools.length || isHovered) return;
+
+    const interval = setInterval(() => {
+      setStartIndex((prev) => prev + 1);
+    }, 4500); // 4.5 seconds rest on each tool card
+
+    return () => clearInterval(interval);
+  }, [tools.length, isHovered]);
+
+  // Spring animation to transition between steps smoothly
+  useEffect(() => {
+    const controls = animate(indexMV, startIndex, {
+      type: "spring",
+      stiffness: 85,
+      damping: 18,
+      mass: 0.8,
+    });
+    return () => controls.stop();
+  }, [startIndex, indexMV]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    const updateScale = () => {
+      const parentWidth = el.parentElement ? el.parentElement.clientWidth : el.clientWidth;
+      if (parentWidth > 0) {
+        // Target content layout width is 505px (left card left edge is 35 - 67.5 = -32.5px,
+        // right card right edge is 405 + 67.5 = 472.5px. Total width = 505px).
+        // Leaving 12px of margin total (6px on each side) to maximize size on mobile screens
+        setScale(Math.min(1, (parentWidth - 12) / 505));
+      }
+    };
+
+    updateScale();
+    const observer = new ResizeObserver(updateScale);
+    observer.observe(el);
+    if (el.parentElement) {
+      observer.observe(el.parentElement);
+    }
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div
+      ref={containerRef}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      className="relative w-full max-w-[510px] mx-auto select-none mt-6 overflow-hidden"
+      style={{
+        height: `${Math.round(450 * scale)}px`,
+      }}
+    >
+      <div
+        style={{
+          width: "440px",
+          height: "420px",
+          transformOrigin: "top center",
+          transform: `scale(${scale})`,
+          position: "absolute",
+          left: "50%",
+          marginLeft: "-220px",
+          top: "28px",
+        }}
+      >
+        {/* Background SVG for Dotted Connections */}
+        <svg
+          className="absolute left-0 top-0 w-[440px] h-[420px] pointer-events-none z-0"
+          viewBox="0 0 440 420"
+          fill="none"
+        >
+          {/* Dotted Ellipses under Tool Bases */}
+          <ellipse
+            cx="35"
+            cy="118"
+            rx="30"
+            ry="10"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+          />
+          <ellipse
+            cx="405"
+            cy="118"
+            rx="30"
+            ry="10"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+          />
+          <ellipse
+            cx="220"
+            cy="283"
+            rx="35"
+            ry="12"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+          />
+          <ellipse
+            cx="220"
+            cy="95"
+            rx="55"
+            ry="18"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+          />
+
+          {/* Dotted Arcs connecting Left/Right to Bottom (Smooth continuous lines, no arrows) */}
+          <path
+            d="M 50,110 C 50,200 100,290 155,290"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+            strokeLinecap="round"
+          />
+          <path
+            d="M 390,110 C 390,200 340,290 285,290"
+            stroke="#cbd5e1"
+            strokeWidth="1.5"
+            strokeDasharray="3 3"
+            strokeLinecap="round"
+          />
+
+          {/* Green Checkpoint Dots on Paths */}
+          {/* <circle cx="81.9" cy="233.8" r="3.5" fill="#22c55e" />
+          <circle cx="358.1" cy="233.8" r="3.5" fill="#22c55e" /> */}
+        </svg>
+
+        {/* 1. Center Bucket & Everything You Need Card */}
+        {/* Circular Backdrop Sphere for Bucket */}
+        <div className="absolute left-[220px] top-[40px] -translate-x-1/2 -translate-y-1/2 w-[130px] h-[130px] rounded-full bg-gradient-to-tr from-blue-50/50 via-indigo-50/30 to-white/10 border border-blue-100/40 z-0 shadow-inner pointer-events-none" />
+
+        <div
+          style={{ zIndex: 15 }}
+          className="absolute left-[220px] top-[60px] -translate-x-1/2 -translate-y-1/2 flex flex-col items-center"
+          onMouseEnter={() => setHoveredNode("center")}
+          onMouseLeave={() => setHoveredNode(null)}
+        >
+          <motion.div
+            animate={hoveredNode === "center" ? { scale: 1.05 } : { scale: 1 }}
+            transition={{ type: "spring", stiffness: 300, damping: 20 }}
+            className="relative w-[120px] h-[90px] flex items-center justify-center filter drop-shadow-lg z-10"
+          >
+            <Image
+              src="/assets/images/blue-tools-bucket.png"
+              alt="Blue Tools Bucket"
+              fill
+              unoptimized
+              className="object-contain"
+            />
+          </motion.div>
+
+          {/* Card: Everything you need */}
+          <motion.div
+            animate={
+              hoveredNode === "center"
+                ? { scale: 1.02, y: -2, boxShadow: "0 12px 24px rgba(0,0,0,0.08)" }
+                : { scale: 1, y: 0, boxShadow: "0 4px 10px rgba(0,0,0,0.04)" }
+            }
+            className="mt-1 w-[220px] bg-white border border-slate-100 rounded-[20px] p-3 flex items-center gap-3 text-left transition-all duration-300 z-20"
+          >
+            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-[#e8f1fe] text-[#1a73e8] border border-blue-100/30">
+              <FolderOpen size={16} strokeWidth={2.2} />
+            </div>
+            <div className="min-w-0">
+              <h4 className="text-[12px] font-black text-slate-850 leading-none">
+                Everything you need
+              </h4>
+              <p className="text-[9.5px] text-slate-500 font-semibold leading-normal mt-1">
+                All tools and resources in one place.
+              </p>
+            </div>
+          </motion.div>
+        </div>
+
+        {/* 2. Rotating Tool Cards */}
+        {tools.map((tool, idx) => (
+          <OrbitToolCard
+            key={tool.id}
+            tool={tool}
+            indexMV={indexMV}
+            cardIndex={idx}
+            totalTools={tools.length}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function SpinningToolsSignpost() {
+  const [activeSetIndex, setActiveSetIndex] = useState(0);
+  const [rotation, setRotation] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+  const reduceMotion = useReducedMotion();
+
+  useEffect(() => {
+    if (reduceMotion || isHovered) return;
+    const timer = setInterval(() => {
+      // Trigger a 360-degree rotation spin
+      setRotation((r) => r + 360);
+      // Midway through the spin (425ms), update the tool dataset
+      setTimeout(() => {
+        setActiveSetIndex((prev) => (prev + 1) % 3);
+      }, 425);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [reduceMotion, isHovered]);
+
+  // Extract the 3 tools for the active set
+  const startIndex = activeSetIndex * 3;
+  const activeTools = signpostTools.slice(startIndex, startIndex + 3);
+
+  const cardVariants = {
+    animate: (k: number) => ({
+      rotate: [0, -1.2, 1.2, -0.6, 0.6, 0],
+      transition: {
+        duration: 5,
+        repeat: Infinity,
+        ease: "easeInOut",
+        delay: (k % 3) * 0.4,
+      },
+    }),
+    hover: {
+      scale: 1.035,
+      rotate: [-2.5, 2.5, -1, 1, 0],
+      transition: { duration: 0.5, ease: "easeInOut" },
+    },
+  };
+
+  const circleVariants = {
+    hover: {
+      scale: 1.08,
+      rotate: [0, -5, 5, 0],
+      transition: { duration: 0.4, ease: "easeInOut" },
+    },
+  };
+
+  // Top, middle, and bottom slot positions (Symmetrical 18px top/bottom margins and gaps)
+  const slotYCoordinates = [18, 71, 124];
+  const slotColors = ["#f59e0b", "#0d5cb3", "#0f9648"];
+
+  return (
+    <div
+      className="relative w-full max-w-[380px] h-[186px] overflow-hidden bg-transparent select-none"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      style={{ perspective: 800 }}
+    >
+      <motion.div
+        animate={{ rotateY: rotation }}
+        transition={{
+          duration: 0.85,
+          ease: "easeInOut",
+        }}
+        style={{
+          transformStyle: "preserve-3d",
+          width: "100%",
+          height: "100%",
+          position: "relative",
+        }}
+      >
+        {/* Center Pole (Solid deep-blue cylinder pole) */}
+        <div
+          className="absolute left-[calc(50%-5px)] top-[3px] bottom-[6px] w-[10px] z-10 shadow-[inset_1px_0_1.5px_rgba(255,255,255,0.35),0_2px_4px_rgba(0,0,0,0.15)]"
+          style={{
+            background: "linear-gradient(90deg, #091a2f 0%, #16365f 50%, #091a2f 100%)",
+            borderLeft: "1px solid #071424",
+            borderRight: "1px solid #071424",
+          }}
+        />
+
+        {/* Cylindrical Top Cap Ellipse/Collar */}
+        <div
+          className="absolute left-[calc(50%-9px)] top-0 w-[18px] h-[10px] rounded-[3px] z-20 shadow-[0_1.5px_3px_rgba(0,0,0,0.3)]"
+          style={{
+            background: "linear-gradient(180deg, #224d80 0%, #0f2747 100%)",
+            border: "1.5px solid #071424",
+          }}
+        />
+
+        {/* Cylindrical Bottom Cap Ellipse/Collar */}
+        <div
+          className="absolute left-[calc(50%-9px)] bottom-[6px] w-[18px] h-[10px] rounded-[3px] z-20 shadow-[0_1.5px_3px_rgba(0,0,0,0.3)]"
+          style={{
+            background: "linear-gradient(180deg, #224d80 0%, #0f2747 100%)",
+            border: "1.5px solid #071424",
+          }}
+        />
+
+        {/* Small ground shadow for the pole */}
+        <div className="absolute left-[calc(50%-12px)] bottom-0 w-[24px] h-[6px] rounded-full bg-slate-950/20 blur-[1px] z-0" />
+
+        {activeTools.map((tool, idx) => {
+          const k = startIndex + idx;
+          const y = slotYCoordinates[idx];
+          const slotColor = slotColors[idx];
+
+          // Row 0 and Row 2 have Left Icon. Row 1 has Right Icon.
+          const isLeftIcon = idx % 2 === 0;
+          const IconComponent = tool.icon;
+
+          return (
+            <div
+              key={tool.id}
+              className="absolute left-0 right-0 h-[44px] z-20"
+              style={{
+                width: "100%",
+                top: `${y}px`,
+                transformStyle: "preserve-3d",
+                backfaceVisibility: "hidden",
+              }}
+            >
+              {isLeftIcon ? (
+                <>
+                  {/* Left Circle (on left side of pole) */}
+                  <Link href={tool.href} className="no-underline z-20">
+                    <motion.div
+                      variants={circleVariants}
+                      whileHover="hover"
+                      className="w-[42px] h-[42px] absolute z-20 rounded-full border-[2.5px] bg-white flex items-center justify-center shadow-[0_3px_6px_rgba(0,0,0,0.12)] cursor-pointer"
+                      style={{
+                        left: "calc(50% - 116px)",
+                        top: "1px",
+                        borderColor: slotColor,
+                      }}
+                    >
+                      <div
+                        className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-white"
+                        style={{ backgroundColor: slotColor }}
+                      >
+                        <IconComponent size={16} strokeWidth={2.5} />
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  {/* Left Bracket (Circle to Pole) */}
+                  <div
+                    className="absolute h-[6px] z-0 top-[19px] rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_1.5px_2px_rgba(0,0,0,0.1)]"
+                    style={{
+                      backgroundColor: slotColor,
+                      left: "calc(50% - 95px)",
+                      width: "95px",
+                    }}
+                  />
+
+                  {/* Right Bracket (Pole to Card) */}
+                  <div
+                    className="absolute h-[6px] z-0 top-[19px] rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_1.5px_2px_rgba(0,0,0,0.1)]"
+                    style={{
+                      backgroundColor: slotColor,
+                      left: "50%",
+                      width: "15px",
+                    }}
+                  />
+
+                  {/* Right Card (pointing right, on right side of pole) */}
+                  <Link href={tool.href} className="no-underline z-20">
+                    <motion.div
+                      variants={cardVariants}
+                      animate="animate"
+                      whileHover="hover"
+                      custom={k}
+                      style={{
+                        left: "calc(50% + 15px)",
+                        width: "125px",
+                        height: "44px",
+                        position: "absolute",
+                        transformOrigin: "left center",
+                        transformStyle: "preserve-3d",
+                        backfaceVisibility: "hidden",
+                        WebkitFontSmoothing: "subpixel-antialiased",
+                      }}
+                    >
+                      <RightArrowSvg color={slotColor} />
+                      <div
+                        className="absolute left-[20px] right-[20px] top-0 bottom-0 flex items-center justify-center font-extrabold text-[10px] text-[#0f294a] tracking-tight leading-tight text-center"
+                        style={{ WebkitFontSmoothing: "subpixel-antialiased" }}
+                      >
+                        {tool.title}
+                      </div>
+                    </motion.div>
+                  </Link>
+                </>
+              ) : (
+                <>
+                  {/* Left Card (pointing left, on left side of pole) */}
+                  <Link href={tool.href} className="no-underline z-20">
+                    <motion.div
+                      variants={cardVariants}
+                      animate="animate"
+                      whileHover="hover"
+                      custom={k}
+                      style={{
+                        right: "calc(50% + 15px)",
+                        width: "125px",
+                        height: "44px",
+                        position: "absolute",
+                        transformOrigin: "right center",
+                        transformStyle: "preserve-3d",
+                        backfaceVisibility: "hidden",
+                        WebkitFontSmoothing: "subpixel-antialiased",
+                      }}
+                    >
+                      <LeftArrowSvg color={slotColor} />
+                      <div
+                        className="absolute left-[20px] right-[20px] top-0 bottom-0 flex items-center justify-center font-extrabold text-[10px] text-[#0f294a] tracking-tight leading-tight text-center"
+                        style={{ WebkitFontSmoothing: "subpixel-antialiased" }}
+                      >
+                        {tool.title}
+                      </div>
+                    </motion.div>
+                  </Link>
+
+                  {/* Left Bracket (Card to Pole) */}
+                  <div
+                    className="absolute h-[6px] z-0 top-[19px] rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_1.5px_2px_rgba(0,0,0,0.1)]"
+                    style={{
+                      backgroundColor: slotColor,
+                      right: "50%",
+                      width: "15px",
+                    }}
+                  />
+
+                  {/* Right Bracket (Pole to Circle) */}
+                  <div
+                    className="absolute h-[6px] z-0 top-[19px] rounded-full shadow-[inset_0_1px_1px_rgba(255,255,255,0.2),0_1.5px_2px_rgba(0,0,0,0.1)]"
+                    style={{
+                      backgroundColor: slotColor,
+                      left: "50%",
+                      width: "95px",
+                    }}
+                  />
+
+                  {/* Right Circle (on right side of pole) */}
+                  <Link href={tool.href} className="no-underline z-20">
+                    <motion.div
+                      variants={circleVariants}
+                      whileHover="hover"
+                      className="w-[42px] h-[42px] absolute z-20 rounded-full border-[2.5px] bg-white flex items-center justify-center shadow-[0_3px_6px_rgba(0,0,0,0.12)] cursor-pointer"
+                      style={{
+                        right: "calc(50% - 116px)",
+                        top: "1px",
+                        borderColor: slotColor,
+                      }}
+                    >
+                      <div
+                        className="w-[32px] h-[32px] rounded-full flex items-center justify-center text-white"
+                        style={{ backgroundColor: slotColor }}
+                      >
+                        <IconComponent size={16} strokeWidth={2.5} />
+                      </div>
+                    </motion.div>
+                  </Link>
+                </>
+              )}
+            </div>
+          );
+        })}
+      </motion.div>
     </div>
   );
 }

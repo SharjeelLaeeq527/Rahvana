@@ -2,14 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { motion } from "framer-motion";
-import {
-  AlertTriangle,
-  Search,
-  Clock,
-  Phone,
-  MapIcon,
-  Star,
-} from "lucide-react";
+import { AlertTriangle, Search, Clock, Phone, MapIcon, Star } from "lucide-react";
 import Pagination from "@/components/ui/pagination";
 
 interface Office {
@@ -70,8 +63,7 @@ const OfficeFinderStep = ({
     return filteredOffices.slice(start, start + itemsPerPage);
   }, [filteredOffices, currentPage, itemsPerPage]);
 
-  const locationLabel =
-    [district, province].filter(Boolean).join(", ") || "Pakistan";
+  const locationLabel = [district, province].filter(Boolean).join(", ") || "Pakistan";
   const defaultWarning = `Verify that the office you plan to visit offers the required services. Office listings and contact information may change; always confirm details before visiting.`;
 
   return (
@@ -129,14 +121,11 @@ const OfficeFinderStep = ({
                   {office.name}
                 </h4>
               </div>
-              <p className="text-[0.85rem] text-[hsl(215_16%_50%)] mb-3">
-                {office.address}
-              </p>
+              <p className="text-[0.85rem] text-[hsl(215_16%_50%)] mb-3">{office.address}</p>
               <div className="flex flex-wrap gap-6 text-[0.82rem] text-[hsl(215_16%_47%)] mb-3">
                 <span className="flex items-center gap-1.5">
                   <Clock className="w-3.5 h-3.5" />
-                  {office.hours ||
-                    "9:00 AM - 3:00 PM (Mon - Thur), 9:00 AM - 12:00 PM (Fri)"}
+                  {office.hours || "9:00 AM - 3:00 PM (Mon - Thur), 9:00 AM - 12:00 PM (Fri)"}
                 </span>
                 {office.phone && (
                   <span className="flex items-center gap-1.5">

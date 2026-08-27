@@ -12,13 +12,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -46,6 +39,7 @@ import {
   ExternalLink,
   ChevronDown,
 } from "lucide-react";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 interface Journey {
   id: string;
@@ -133,7 +127,10 @@ export default function VisaCasesTable() {
   const handleLogCheckNow = async () => {
     if (!selectedJourney) return;
     const err = validateCheckDate(checkDate);
-    if (err) { setCheckDateError(err); return; }
+    if (err) {
+      setCheckDateError(err);
+      return;
+    }
     setCheckDateError("");
     setIsSaving(true);
     try {
@@ -190,7 +187,12 @@ export default function VisaCasesTable() {
 
   const handleClearTracking = async () => {
     if (!selectedJourney) return;
-    if (!confirm("Are you sure you want to clear ALL tracking data? This will revert the case to an un-tracked state.")) return;
+    if (
+      !confirm(
+        "Are you sure you want to clear ALL tracking data? This will revert the case to an un-tracked state."
+      )
+    )
+      return;
 
     setIsSaving(true);
     try {
@@ -216,7 +218,10 @@ export default function VisaCasesTable() {
   };
 
   const getStatusBadge = (status: string) => {
-    const statusMap: Record<string, { label: string; variant: "default" | "secondary" | "destructive" | "outline" }> = {
+    const statusMap: Record<
+      string,
+      { label: string; variant: "default" | "secondary" | "destructive" | "outline" }
+    > = {
       not_started: { label: "Not Started", variant: "outline" },
       in_progress: { label: "In Progress", variant: "default" },
       completed: { label: "Completed", variant: "secondary" },
@@ -298,9 +303,7 @@ export default function VisaCasesTable() {
                 <FileText className="h-5 w-5 text-teal-600" />
                 Visa Cases Management
               </CardTitle>
-              <CardDescription>
-                Monitor and manage user visa applications
-              </CardDescription>
+              <CardDescription>Monitor and manage user visa applications</CardDescription>
             </div>
             <Button
               variant="outline"
@@ -327,17 +330,17 @@ export default function VisaCasesTable() {
                 />
               </div>
             </div>
-            <Select value={journeyType} onValueChange={setJourneyType}>
-              <SelectTrigger className="w-[200px]">
-                <Filter className="mr-2 h-4 w-4" />
-                <SelectValue placeholder="Journey Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="IR1">IR-1 Spouse Visa</SelectItem>
-                <SelectItem value="IR5">IR-5 Parent Visa</SelectItem>
-                <SelectItem value="F1">F-1 Student Visa</SelectItem>
-              </SelectContent>
-            </Select>
+            <CustomDropdown
+              value={journeyType}
+              onChange={setJourneyType}
+              options={[
+                { value: "IR1", label: "IR-1 Spouse Visa" },
+                { value: "IR5", label: "IR-5 Parent Visa" },
+                { value: "F1", label: "F-1 Student Visa" },
+              ]}
+              placeholder="Journey Type"
+              className="w-[200px] [&_button]:w-full [&_button]:min-w-0"
+            />
           </div>
 
           {/* Stats */}
@@ -385,7 +388,11 @@ export default function VisaCasesTable() {
                   <AlertCircle className="h-4 w-4 text-orange-600" />
                   <div>
                     <p className="text-2xl font-bold text-orange-900">
-                      {journeys.filter((j) => !j.tracking_status || Object.keys(j.tracking_status).length === 0).length}
+                      {
+                        journeys.filter(
+                          (j) => !j.tracking_status || Object.keys(j.tracking_status).length === 0
+                        ).length
+                      }
                     </p>
                     <p className="text-xs text-orange-700">Needs Review</p>
                   </div>
@@ -440,9 +447,13 @@ export default function VisaCasesTable() {
                       <TableCell>
                         <div className="flex flex-col">
                           {journey.nvc_case_number ? (
-                            <span className="font-mono text-xs font-bold text-slate-700">{journey.nvc_case_number}</span>
+                            <span className="font-mono text-xs font-bold text-slate-700">
+                              {journey.nvc_case_number}
+                            </span>
                           ) : (
-                            <span className="text-xs text-muted-foreground italic">Not registered</span>
+                            <span className="text-xs text-muted-foreground italic">
+                              Not registered
+                            </span>
                           )}
                         </div>
                       </TableCell>
@@ -489,9 +500,7 @@ export default function VisaCasesTable() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Visa Case Details</DialogTitle>
-            <DialogDescription>
-              Review and update case tracking information
-            </DialogDescription>
+            <DialogDescription>Review and update case tracking information</DialogDescription>
           </DialogHeader>
 
           {selectedJourney && (
@@ -500,23 +509,48 @@ export default function VisaCasesTable() {
               {/* User Info */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-5 bg-slate-50 rounded-xl border border-slate-200">
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">User Email</Label>
+                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">
+                    User Email
+                  </Label>
                   <div className="flex items-center gap-2">
-                    <p className="font-medium text-sm text-[#0c1b33] break-all">{selectedJourney.user_email || "Unknown"}</p>
-                    <button onClick={() => navigator.clipboard.writeText(selectedJourney.user_email || "")} className="p-1 hover:bg-slate-200 rounded transition-colors" title="Copy Email">
+                    <p className="font-medium text-sm text-[#0c1b33] break-all">
+                      {selectedJourney.user_email || "Unknown"}
+                    </p>
+                    <button
+                      onClick={() =>
+                        navigator.clipboard.writeText(selectedJourney.user_email || "")
+                      }
+                      className="p-1 hover:bg-slate-200 rounded transition-colors"
+                      title="Copy Email"
+                    >
                       <Copy className="h-3 w-3 text-slate-400 cursor-pointer" />
                     </button>
                   </div>
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-1">
-                    <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">NVC Case Number</Label>
-                    <Badge variant="outline" className="text-[8px] h-3 px-1 border-teal-200 text-teal-600 bg-teal-50">Secure</Badge>
+                    <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">
+                      NVC Case Number
+                    </Label>
+                    <Badge
+                      variant="outline"
+                      className="text-[8px] h-3 px-1 border-teal-200 text-teal-600 bg-teal-50"
+                    >
+                      Secure
+                    </Badge>
                   </div>
                   <div className="flex items-center gap-2">
-                    <p className="font-mono font-bold text-sm text-slate-800 break-all">{selectedJourney.nvc_case_number || "Not provided"}</p>
+                    <p className="font-mono font-bold text-sm text-slate-800 break-all">
+                      {selectedJourney.nvc_case_number || "Not provided"}
+                    </p>
                     {selectedJourney.nvc_case_number && (
-                      <button onClick={() => navigator.clipboard.writeText(selectedJourney.nvc_case_number || "")} className="p-1 hover:bg-slate-200 rounded transition-colors" title="Copy Case Number">
+                      <button
+                        onClick={() =>
+                          navigator.clipboard.writeText(selectedJourney.nvc_case_number || "")
+                        }
+                        className="p-1 hover:bg-slate-200 rounded transition-colors"
+                        title="Copy Case Number"
+                      >
                         <Copy className="h-3 w-3 text-slate-400 cursor-pointer" />
                       </button>
                     )}
@@ -524,13 +558,28 @@ export default function VisaCasesTable() {
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-1">
-                    <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Passport Number</Label>
-                    <Badge variant="outline" className="text-[8px] h-3 px-1 border-teal-200 text-teal-600 bg-teal-50">Secure</Badge>
+                    <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">
+                      Passport Number
+                    </Label>
+                    <Badge
+                      variant="outline"
+                      className="text-[8px] h-3 px-1 border-teal-200 text-teal-600 bg-teal-50"
+                    >
+                      Secure
+                    </Badge>
                   </div>
                   <div className="flex items-center gap-2">
-                    <p className="font-mono font-bold text-sm text-slate-800 uppercase break-all">{selectedJourney.passport_number || "Not provided"}</p>
+                    <p className="font-mono font-bold text-sm text-slate-800 uppercase break-all">
+                      {selectedJourney.passport_number || "Not provided"}
+                    </p>
                     {selectedJourney.passport_number && (
-                      <button onClick={() => navigator.clipboard.writeText(selectedJourney.passport_number || "")} className="p-1 hover:bg-slate-200 rounded transition-colors" title="Copy Passport">
+                      <button
+                        onClick={() =>
+                          navigator.clipboard.writeText(selectedJourney.passport_number || "")
+                        }
+                        className="p-1 hover:bg-slate-200 rounded transition-colors"
+                        title="Copy Passport"
+                      >
                         <Copy className="h-3 w-3 text-slate-400 cursor-pointer" />
                       </button>
                     )}
@@ -538,28 +587,47 @@ export default function VisaCasesTable() {
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center gap-1">
-                    <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Surname (First 5)</Label>
-                    <Badge variant="outline" className="text-[8px] h-3 px-1 border-teal-200 text-teal-600 bg-teal-50">Secure</Badge>
+                    <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">
+                      Surname (First 5)
+                    </Label>
+                    <Badge
+                      variant="outline"
+                      className="text-[8px] h-3 px-1 border-teal-200 text-teal-600 bg-teal-50"
+                    >
+                      Secure
+                    </Badge>
                   </div>
                   <div className="flex items-center gap-2">
-                    <p className="font-mono font-bold text-sm text-slate-800 uppercase break-all">{selectedJourney.surname || "Not provided"}</p>
+                    <p className="font-mono font-bold text-sm text-slate-800 uppercase break-all">
+                      {selectedJourney.surname || "Not provided"}
+                    </p>
                     {selectedJourney.surname && (
-                      <button onClick={() => navigator.clipboard.writeText(selectedJourney.surname || "")} className="p-1 hover:bg-slate-200 rounded transition-colors" title="Copy Surname">
+                      <button
+                        onClick={() => navigator.clipboard.writeText(selectedJourney.surname || "")}
+                        className="p-1 hover:bg-slate-200 rounded transition-colors"
+                        title="Copy Surname"
+                      >
                         <Copy className="h-3 w-3 text-slate-400 cursor-pointer" />
                       </button>
                     )}
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Journey Type</Label>
+                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">
+                    Journey Type
+                  </Label>
                   <p className="font-semibold text-sm mt-1">{selectedJourney.journey_type}</p>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Status</Label>
+                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">
+                    Status
+                  </Label>
                   <div className="mt-1">{getStatusBadge(selectedJourney.status)}</div>
                 </div>
                 <div className="space-y-1">
-                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">Created Date</Label>
+                  <Label className="text-muted-foreground text-[10px] uppercase tracking-wider font-semibold">
+                    Created Date
+                  </Label>
                   <p className="text-sm mt-1 text-slate-600 font-medium">
                     {new Date(selectedJourney.created_at).toLocaleDateString("en-US", {
                       month: "long",
@@ -573,61 +641,80 @@ export default function VisaCasesTable() {
               {/* CEAC Quick Link */}
               <div className="bg-blue-50 border border-blue-200 rounded-md p-3 flex items-center justify-between">
                 <div className="text-sm text-blue-900">
-                  <span className="font-semibold">Check CEAC Portal:</span> Use the credentials above to check live tracking.
+                  <span className="font-semibold">Check CEAC Portal:</span> Use the credentials
+                  above to check live tracking.
                 </div>
-                <Button size="sm" variant="outline" className="bg-white" onClick={() => window.open("https://ceac.state.gov/CEACStatTracker/Status.aspx", "_blank")}>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="bg-white"
+                  onClick={() =>
+                    window.open("https://ceac.state.gov/CEACStatTracker/Status.aspx", "_blank")
+                  }
+                >
                   Open CEAC <ExternalLink className="ml-2 h-3 w-3" />
                 </Button>
               </div>
 
               {/* Tracking Steps (Collapsible) */}
               <div className="space-y-3">
-                <h3 className="font-semibold text-xs uppercase tracking-widest text-slate-500 mb-2">Operational Tracking (Editable)</h3>
+                <h3 className="font-semibold text-xs uppercase tracking-widest text-slate-500 mb-2">
+                  Operational Tracking (Editable)
+                </h3>
 
                 {/* Step 1.15: USCIS Case Status */}
                 <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
-                  <button 
-                    onClick={() => setOpenStep(openStep === 'uscis' ? null : 'uscis')}
+                  <button
+                    onClick={() => setOpenStep(openStep === "uscis" ? null : "uscis")}
                     className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.uscis_status ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-400'}`}>
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.uscis_status ? "bg-indigo-100 text-indigo-600" : "bg-slate-100 text-slate-400"}`}
+                      >
                         <FileText size={16} />
                       </div>
                       <div className="text-left">
                         <p className="text-sm font-bold text-[#0c1b33]">1.15: USCIS Case Status</p>
-                        <p className="text-[11px] text-slate-500">{trackingStatus.uscis_status ? `Status: ${trackingStatus.uscis_status.replace(/_/g, ' ')}` : 'No managed tracking updates yet'}</p>
+                        <p className="text-[11px] text-slate-500">
+                          {trackingStatus.uscis_status
+                            ? `Status: ${trackingStatus.uscis_status.replace(/_/g, " ")}`
+                            : "No managed tracking updates yet"}
+                        </p>
                       </div>
                     </div>
-                    <ChevronDown size={16} className={`text-slate-400 transition-transform ${openStep === 'uscis' ? 'rotate-180' : ''}`} />
+                    <ChevronDown
+                      size={16}
+                      className={`text-slate-400 transition-transform ${openStep === "uscis" ? "rotate-180" : ""}`}
+                    />
                   </button>
-                  
-                  {openStep === 'uscis' && (
+
+                  {openStep === "uscis" && (
                     <div className="p-4 border-t border-slate-100 bg-slate-50/30 animate-in slide-in-from-top-2 duration-200">
                       <div className="space-y-3">
-                        <Label className="text-xs uppercase tracking-wider font-bold">Update USCIS Status</Label>
-                        <Select
+                        <Label className="text-xs uppercase tracking-wider font-bold">
+                          Update USCIS Status
+                        </Label>
+                        <CustomDropdown
                           value={trackingStatus.uscis_status || ""}
-                          onValueChange={(val) =>
+                          onChange={(val) =>
                             setTrackingStatus((prev) => ({
                               ...prev,
                               uscis_status: val,
                               uscis_status_updated: new Date().toISOString(),
                             }))
                           }
-                        >
-                          <SelectTrigger className="bg-white">
-                            <SelectValue placeholder="Select current status" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="receipt_notice_sent">Receipt Notice Sent</SelectItem>
-                            <SelectItem value="case_received">Case Received</SelectItem>
-                            <SelectItem value="under_review">Actively Reviewing</SelectItem>
-                            <SelectItem value="rfe">Request for Evidence (RFE)</SelectItem>
-                            <SelectItem value="approved">Case Approved</SelectItem>
-                            <SelectItem value="denied">Case Denied</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          options={[
+                            { value: "receipt_notice_sent", label: "Receipt Notice Sent" },
+                            { value: "case_received", label: "Case Received" },
+                            { value: "under_review", label: "Actively Reviewing" },
+                            { value: "rfe", label: "Request for Evidence (RFE)" },
+                            { value: "approved", label: "Case Approved" },
+                            { value: "denied", label: "Case Denied" },
+                          ]}
+                          placeholder="Select current status"
+                          className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-white"
+                        />
                       </div>
                     </div>
                   )}
@@ -635,23 +722,32 @@ export default function VisaCasesTable() {
 
                 {/* Step 2.9: NVC Review */}
                 <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
-                  <button 
-                    onClick={() => setOpenStep(openStep === 'nvc' ? null : 'nvc')}
+                  <button
+                    onClick={() => setOpenStep(openStep === "nvc" ? null : "nvc")}
                     className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.nvc_review_complete ? 'bg-green-100 text-green-600' : 'bg-slate-100 text-slate-400'}`}>
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.nvc_review_complete ? "bg-green-100 text-green-600" : "bg-slate-100 text-slate-400"}`}
+                      >
                         <FileText size={16} />
                       </div>
                       <div className="text-left">
                         <p className="text-sm font-bold text-[#0c1b33]">2.9: NVC Review Status</p>
-                        <p className="text-[11px] text-slate-500">{trackingStatus.nvc_review_complete ? `Completed on ${trackingStatus.nvc_review_date}` : 'Awaiting review completion'}</p>
+                        <p className="text-[11px] text-slate-500">
+                          {trackingStatus.nvc_review_complete
+                            ? `Completed on ${trackingStatus.nvc_review_date}`
+                            : "Awaiting review completion"}
+                        </p>
                       </div>
                     </div>
-                    <ChevronDown size={16} className={`text-slate-400 transition-transform ${openStep === 'nvc' ? 'rotate-180' : ''}`} />
+                    <ChevronDown
+                      size={16}
+                      className={`text-slate-400 transition-transform ${openStep === "nvc" ? "rotate-180" : ""}`}
+                    />
                   </button>
-                  
-                  {openStep === 'nvc' && (
+
+                  {openStep === "nvc" && (
                     <div className="p-4 border-t border-slate-100 bg-slate-50/30 animate-in slide-in-from-top-2 duration-200">
                       <div className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200">
                         <span className="text-sm font-medium">Mark Review as Complete</span>
@@ -662,7 +758,9 @@ export default function VisaCasesTable() {
                             setTrackingStatus((prev) => ({
                               ...prev,
                               nvc_review_complete: !prev.nvc_review_complete,
-                              nvc_review_date: !prev.nvc_review_complete ? new Date().toISOString().split("T")[0] : null,
+                              nvc_review_date: !prev.nvc_review_complete
+                                ? new Date().toISOString().split("T")[0]
+                                : null,
                             }))
                           }
                         >
@@ -675,44 +773,55 @@ export default function VisaCasesTable() {
 
                 {/* Step 2.10: DQ Status */}
                 <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
-                  <button 
-                    onClick={() => setOpenStep(openStep === 'dq' ? null : 'dq')}
+                  <button
+                    onClick={() => setOpenStep(openStep === "dq" ? null : "dq")}
                     className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.dq_status === "qualified" ? 'bg-teal-100 text-teal-600' : 'bg-slate-100 text-slate-400'}`}>
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.dq_status === "qualified" ? "bg-teal-100 text-teal-600" : "bg-slate-100 text-slate-400"}`}
+                      >
                         <CheckCircle size={16} />
                       </div>
                       <div className="text-left">
                         <p className="text-sm font-bold text-[#0c1b33]">2.10: DQ (Doc Qualified)</p>
-                        <p className="text-[11px] text-slate-500">{trackingStatus.dq_status === "qualified" ? `Approved on ${trackingStatus.dq_date}` : 'Case pending DQ approval'}</p>
+                        <p className="text-[11px] text-slate-500">
+                          {trackingStatus.dq_status === "qualified"
+                            ? `Approved on ${trackingStatus.dq_date}`
+                            : "Case pending DQ approval"}
+                        </p>
                       </div>
                     </div>
-                    <ChevronDown size={16} className={`text-slate-400 transition-transform ${openStep === 'dq' ? 'rotate-180' : ''}`} />
+                    <ChevronDown
+                      size={16}
+                      className={`text-slate-400 transition-transform ${openStep === "dq" ? "rotate-180" : ""}`}
+                    />
                   </button>
-                  
-                  {openStep === 'dq' && (
+
+                  {openStep === "dq" && (
                     <div className="p-4 border-t border-slate-100 bg-slate-50/30 animate-in slide-in-from-top-2 duration-200">
                       <div className="space-y-3">
-                        <Label className="text-xs uppercase tracking-wider font-bold">Set Status</Label>
-                        <Select
+                        <Label className="text-xs uppercase tracking-wider font-bold">
+                          Set Status
+                        </Label>
+                        <CustomDropdown
                           value={trackingStatus.dq_status || "pending"}
-                          onValueChange={(val) =>
+                          onChange={(val) =>
                             setTrackingStatus((prev) => ({
                               ...prev,
                               dq_status: val,
-                              dq_date: val === "qualified" ? new Date().toISOString().split("T")[0] : prev.dq_date,
+                              dq_date:
+                                val === "qualified"
+                                  ? new Date().toISOString().split("T")[0]
+                                  : prev.dq_date,
                             }))
                           }
-                        >
-                          <SelectTrigger className="bg-white">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="pending">Pending</SelectItem>
-                            <SelectItem value="qualified">Qualified</SelectItem>
-                          </SelectContent>
-                        </Select>
+                          options={[
+                            { value: "pending", label: "Pending" },
+                            { value: "qualified", label: "Qualified" },
+                          ]}
+                          className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-white"
+                        />
                       </div>
                     </div>
                   )}
@@ -720,23 +829,32 @@ export default function VisaCasesTable() {
 
                 {/* Step 2.11: Interview Queue */}
                 <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
-                  <button 
-                    onClick={() => setOpenStep(openStep === 'queue' ? null : 'queue')}
+                  <button
+                    onClick={() => setOpenStep(openStep === "queue" ? null : "queue")}
                     className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.interview_queue ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-400'}`}>
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.interview_queue ? "bg-blue-100 text-blue-600" : "bg-slate-100 text-slate-400"}`}
+                      >
                         <Clock size={16} />
                       </div>
                       <div className="text-left">
                         <p className="text-sm font-bold text-[#0c1b33]">2.11: Interview Queue</p>
-                        <p className="text-[11px] text-slate-500">{trackingStatus.interview_queue ? 'Currently in queue at ISL' : 'Not yet in queue'}</p>
+                        <p className="text-[11px] text-slate-500">
+                          {trackingStatus.interview_queue
+                            ? "Currently in queue at ISL"
+                            : "Not yet in queue"}
+                        </p>
                       </div>
                     </div>
-                    <ChevronDown size={16} className={`text-slate-400 transition-transform ${openStep === 'queue' ? 'rotate-180' : ''}`} />
+                    <ChevronDown
+                      size={16}
+                      className={`text-slate-400 transition-transform ${openStep === "queue" ? "rotate-180" : ""}`}
+                    />
                   </button>
-                  
-                  {openStep === 'queue' && (
+
+                  {openStep === "queue" && (
                     <div className="p-4 border-t border-slate-100 bg-slate-50/30 animate-in slide-in-from-top-2 duration-200">
                       <div className="flex items-center justify-between bg-white p-3 rounded-lg border border-slate-200">
                         <span className="text-sm font-medium">Add to Interview Queue</span>
@@ -759,34 +877,50 @@ export default function VisaCasesTable() {
 
                 {/* Step 3.9: Administrative Processing */}
                 <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
-                  <button 
-                    onClick={() => setOpenStep(openStep === 'ap' ? null : 'ap')}
+                  <button
+                    onClick={() => setOpenStep(openStep === "ap" ? null : "ap")}
                     className="w-full flex items-center justify-between p-4 hover:bg-slate-50 transition-colors"
                   >
                     <div className="flex items-center gap-3">
-                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.ap_status ? 'bg-orange-100 text-orange-600' : 'bg-slate-100 text-slate-400'}`}>
+                      <div
+                        className={`w-8 h-8 rounded-lg flex items-center justify-center ${trackingStatus.ap_status ? "bg-orange-100 text-orange-600" : "bg-slate-100 text-slate-400"}`}
+                      >
                         <AlertCircle size={16} />
                       </div>
                       <div className="text-left">
-                        <p className="text-sm font-bold text-[#0c1b33]">3.9: Admin Processing (AP)</p>
-                        <p className="text-[11px] text-slate-500">{trackingStatus.ap_status ? `Status: ${trackingStatus.ap_status === 'pending' ? 'Pending' : 'Cleared'}` : 'Case normal (No AP)'}</p>
+                        <p className="text-sm font-bold text-[#0c1b33]">
+                          3.9: Admin Processing (AP)
+                        </p>
+                        <p className="text-[11px] text-slate-500">
+                          {trackingStatus.ap_status
+                            ? `Status: ${trackingStatus.ap_status === "pending" ? "Pending" : "Cleared"}`
+                            : "Case normal (No AP)"}
+                        </p>
                       </div>
                     </div>
-                    <ChevronDown size={16} className={`text-slate-400 transition-transform ${openStep === 'ap' ? 'rotate-180' : ''}`} />
+                    <ChevronDown
+                      size={16}
+                      className={`text-slate-400 transition-transform ${openStep === "ap" ? "rotate-180" : ""}`}
+                    />
                   </button>
-                  
-                  {openStep === 'ap' && (
+
+                  {openStep === "ap" && (
                     <div className="p-4 border-t border-slate-100 bg-slate-50/30 animate-in slide-in-from-top-2 duration-200">
                       <div className="flex gap-2">
                         <Button
                           className="flex-1"
                           size="sm"
-                          variant={trackingStatus.ap_status === "pending" ? "destructive" : "outline"}
+                          variant={
+                            trackingStatus.ap_status === "pending" ? "destructive" : "outline"
+                          }
                           onClick={() =>
                             setTrackingStatus((prev) => ({
                               ...prev,
                               ap_status: prev.ap_status === "pending" ? null : "pending",
-                              ap_date: prev.ap_status === "pending" ? null : new Date().toISOString().split("T")[0],
+                              ap_date:
+                                prev.ap_status === "pending"
+                                  ? null
+                                  : new Date().toISOString().split("T")[0],
                             }))
                           }
                         >
@@ -800,7 +934,10 @@ export default function VisaCasesTable() {
                             setTrackingStatus((prev) => ({
                               ...prev,
                               ap_status: prev.ap_status === "cleared" ? null : "cleared",
-                              ap_cleared_date: prev.ap_status === "cleared" ? null : new Date().toISOString().split("T")[0],
+                              ap_cleared_date:
+                                prev.ap_status === "cleared"
+                                  ? null
+                                  : new Date().toISOString().split("T")[0],
                             }))
                           }
                         >
@@ -830,27 +967,32 @@ export default function VisaCasesTable() {
                 <div className="p-4 space-y-3">
                   {/* Case Status Dropdown */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs uppercase tracking-wider font-bold">Case Status</Label>
-                    <select
+                    <Label className="text-xs uppercase tracking-wider font-bold">
+                      Case Status
+                    </Label>
+                    <CustomDropdown
                       value={caseStatus}
-                      onChange={(e) => setCaseStatus(e.target.value)}
-                      className="w-full h-9 rounded-md border border-slate-200 px-3 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400"
-                    >
-                      <option value="">— Select Status —</option>
-                      <option value="Pending">Pending</option>
-                      <option value="Ready">Ready</option>
-                      <option value="In Transit">In Transit</option>
-                      <option value="Administrative Processing">Administrative Processing (AP)</option>
-                      <option value="221(g)">221(g)</option>
-                      <option value="Refused">Refused</option>
-                      <option value="Issued">Issued</option>
-                      <option value="Approved">Approved</option>
-                      <option value="Not Available">Not Available</option>
-                    </select>
+                      onChange={setCaseStatus}
+                      options={[
+                        { value: "Pending", label: "Pending" },
+                        { value: "Ready", label: "Ready" },
+                        { value: "In Transit", label: "In Transit" },
+                        { value: "Administrative Processing", label: "Administrative Processing (AP)" },
+                        { value: "221(g)", label: "221(g)" },
+                        { value: "Refused", label: "Refused" },
+                        { value: "Issued", label: "Issued" },
+                        { value: "Approved", label: "Approved" },
+                        { value: "Not Available", label: "Not Available" },
+                      ]}
+                      placeholder="Select Status"
+                      className="w-full [&_button]:h-9 [&_button]:w-full [&_button]:min-w-0 [&_button]:bg-white"
+                    />
                   </div>
                   {/* Last Checked Date */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs uppercase tracking-wider font-bold">Last Checked Date</Label>
+                    <Label className="text-xs uppercase tracking-wider font-bold">
+                      Last Checked Date
+                    </Label>
                     <input
                       type="date"
                       value={checkDate}
@@ -866,15 +1008,19 @@ export default function VisaCasesTable() {
                         <AlertCircle size={11} /> {checkDateError}
                       </p>
                     )}
-                    <p className="text-[10px] text-slate-400">Auto-set to today. Max 30 days past. No future dates.</p>
+                    <p className="text-[10px] text-slate-400">
+                      Auto-set to today. Max 30 days past. No future dates.
+                    </p>
                   </div>
                   {/* Notes (optional) */}
                   <div className="space-y-1.5">
-                    <Label className="text-xs uppercase tracking-wider font-bold">Notes <span className="font-normal text-slate-400">(optional)</span></Label>
+                    <Label className="text-xs uppercase tracking-wider font-bold">
+                      Notes <span className="font-normal text-slate-400">(optional)</span>
+                    </Label>
                     <textarea
                       value={checkNotes}
                       onChange={(e) => setCheckNotes(e.target.value)}
-                      placeholder="e.g. Checked CEAC — status unchanged, case still in AP..."
+                      placeholder="e.g. Checked CEAC, status unchanged, case still in AP..."
                       rows={2}
                       className="w-full rounded-md border border-slate-200 px-3 py-2 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none"
                     />
@@ -904,10 +1050,10 @@ export default function VisaCasesTable() {
               </div>
 
               <DialogFooter className="flex justify-between w-full sm:justify-between items-center mt-6">
-                <Button 
-                  variant="destructive" 
-                  size="sm" 
-                  onClick={handleClearTracking} 
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  onClick={handleClearTracking}
                   disabled={isSaving}
                   className="mr-auto"
                 >
@@ -915,7 +1061,11 @@ export default function VisaCasesTable() {
                   Clear Tracking
                 </Button>
                 <div className="flex gap-2">
-                  <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
+                  <Button
+                    variant="outline"
+                    onClick={() => setIsDialogOpen(false)}
+                    disabled={isSaving}
+                  >
                     Cancel
                   </Button>
                   <Button onClick={handleSaveNotes} disabled={isSaving}>

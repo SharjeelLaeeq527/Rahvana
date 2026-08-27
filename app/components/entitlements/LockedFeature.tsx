@@ -3,6 +3,7 @@
 import React from "react";
 import { Lock, Sparkles } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
+import { Loader } from "@/components/ui/spinner";
 
 interface LockedFeatureProps {
   /** The feature key from ENTITLEMENTS config. */
@@ -30,6 +31,16 @@ export function LockedFeature({
 }: LockedFeatureProps) {
   const plan = usePlan();
 
+  // If plan is loading, show a small inline loader to avoid locked state flickering
+  if (plan.isLoading) {
+    if (mode === "hide") return null;
+    return (
+      <div className={`flex items-center justify-center p-4 min-h-[50px] ${className ?? ""}`}>
+        <Loader size="sm" />
+      </div>
+    );
+  }
+
   // Fully accessible — render normally
   if (plan.canUse(feature)) return <>{children}</>;
 
@@ -48,7 +59,9 @@ export function LockedFeature({
           <Lock size={14} className="text-[#7c5e8a]" strokeWidth={2.5} />
         </div>
         <div className="flex-1 min-w-0">
-          <p className="text-[12.5px] font-semibold text-[#4a3b5c] truncate">{hint || "Upgrade to unlock"}</p>
+          <p className="text-[12.5px] font-semibold text-[#4a3b5c] truncate">
+            {hint || "Upgrade to unlock"}
+          </p>
         </div>
         {cta && onUpgradeClick && (
           <button
@@ -65,9 +78,7 @@ export function LockedFeature({
   // overlay mode (default)
   return (
     <div className={`relative ${className ?? ""}`}>
-      <div className="pointer-events-none select-none opacity-30 blur-[1px]">
-        {children}
-      </div>
+      <div className="pointer-events-none select-none opacity-30 blur-[1px]">{children}</div>
       <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 rounded-xl">
         <div className="bg-white/90 backdrop-blur-sm border border-[#c9b8d8] rounded-2xl px-5 py-3 flex flex-col items-center gap-1.5 shadow-lg max-w-[220px] text-center">
           <div className="w-8 h-8 rounded-full bg-[#ede8f5] flex items-center justify-center">

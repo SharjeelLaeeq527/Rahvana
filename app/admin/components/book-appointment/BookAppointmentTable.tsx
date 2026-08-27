@@ -14,13 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import {
@@ -30,6 +23,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 type AppointmentStatus = "pending" | "in_progress" | "completed" | "cancelled";
 
@@ -82,23 +76,59 @@ interface Appointment {
   k_one_letter_url?: string;
   appointment_confirmation_letter_url?: string;
   applicants?: Applicant[];
+  admin_notes?: string;
 }
+
+const CANCELLATION_TEMPLATES = [
+  {
+    value: "Dear Applicant, your appointment booking request has been cancelled as a duplicate request was already found in our system. Please check your existing appointment status or contact support if you believe this is an error.",
+    label: "Duplicate Request",
+  },
+  {
+    value: "Dear Applicant, we were unable to verify the payment for your appointment. As a result, your booking request has been cancelled. Please initiate a new request and ensure the payment is processed correctly.",
+    label: "Payment Failed",
+  },
+  {
+    value: "Dear Applicant, the passport details or copy provided in your application do not match our validation criteria or are invalid. Your appointment request has been cancelled. Please re-apply with accurate passport details and a clear scanned copy.",
+    label: "Invalid Passport Details",
+  },
+  {
+    value: "Dear Applicant, your appointment request has been cancelled because the required documents (scanned passport, K-1 letter, or confirmation letter) are missing, incomplete, or illegible. Please submit a new request with clear and complete documentation.",
+    label: "Missing/Unclear Documents",
+  },
+  {
+    value: "Dear Applicant, as per your request, your appointment booking has been cancelled. If you wish to reschedule in the future, please submit a new request through our portal.",
+    label: "Client Requested Cancellation",
+  },
+  {
+    value: "Dear Applicant, your appointment request has been cancelled due to incorrect or invalid details submitted in the form. Please review your details and submit a new request with accurate information.",
+    label: "Incorrect/Invalid Information",
+  },
+  { value: "other", label: "Other (Custom note)" },
+];
 
 export default function BookAppointmentTable() {
   const { showToast } = useToast();
   const [appointments, setAppointments] = useState<Appointment[]>([]);
-  const [filteredAppointments, setFilteredAppointments] = useState<
-    Appointment[]
-  >([]);
-  const [selectedStatus, setSelectedStatus] = useState<
-    AppointmentStatus | "all"
-  >("all");
+  const [filteredAppointments, setFilteredAppointments] = useState<Appointment[]>([]);
+  const [selectedStatus, setSelectedStatus] = useState<AppointmentStatus | "all">("all");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
   const [viewModalOpen, setViewModalOpen] = useState(false);
   const [currentAppointment, setCurrentAppointment] = useState<Appointment | null>(null);
+
+  // Status update confirmation modal states
+  const [statusUpdateConfirmOpen, setStatusUpdateConfirmOpen] = useState(false);
+  const [pendingUpdate, setPendingUpdate] = useState<{
+    id: string;
+    status: AppointmentStatus;
+  } | null>(null);
+  const [adminNotes, setAdminNotes] = useState("");
+  const [preferredDate, setPreferredDate] = useState("");
+  const [preferredTime, setPreferredTime] = useState("");
+  const [cancellationReason, setCancellationReason] = useState("");
 
   const fetchAppointments = useCallback(async () => {
     try {
@@ -130,10 +160,8 @@ export default function BookAppointmentTable() {
     let filtered = [...appointments];
 
     // Apply status filter
-    if(selectedStatus !== "all") {
-      filtered = filtered.filter(
-        (req) => req.status === selectedStatus
-      );
+    if (selectedStatus !== "all") {
+      filtered = filtered.filter((req) => req.status === selectedStatus);
     }
 
     // Apply search filter (search in full_name and email)
@@ -150,7 +178,7 @@ export default function BookAppointmentTable() {
     filtered.sort((a, b) => {
       const dateA = new Date(a.created_at).getTime();
       const dateB = new Date(b.created_at).getTime();
-      return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
+      return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
     });
 
     setFilteredAppointments(filtered);
@@ -158,13 +186,22 @@ export default function BookAppointmentTable() {
 
   const updateAppointmentStatus = async (
     id: string,
-    newStatus: AppointmentStatus
+    newStatus: AppointmentStatus,
+    notes?: string,
+    prefDate?: string,
+    prefTime?: string
   ) => {
     try {
       const response = await fetch("/api/admin/appointments", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status: newStatus }),
+        body: JSON.stringify({
+          id,
+          status: newStatus,
+          adminNotes: notes,
+          preferredDate: prefDate,
+          preferredTime: prefTime,
+        }),
       });
 
       const result = await response.json();
@@ -179,6 +216,36 @@ export default function BookAppointmentTable() {
       const errorMessage = err instanceof Error ? err.message : "Unknown error";
       showToast(`Failed to update appointment status: ${errorMessage}`, "error");
     }
+  };
+
+  const initiateStatusUpdate = (id: string, newStatus: AppointmentStatus) => {
+    const appt = appointments.find((a) => a.id === id);
+    setPendingUpdate({ id, status: newStatus });
+    setAdminNotes(appt?.admin_notes || "");
+    setCancellationReason("");
+
+    let formattedDate = "";
+    if (appt?.preferred_date) {
+      try {
+        const d = new Date(appt.preferred_date);
+        if (!isNaN(d.getTime())) {
+          formattedDate = d.toISOString().split("T")[0];
+        } else {
+          formattedDate = appt.preferred_date.substring(0, 10);
+        }
+      } catch (e) {
+        formattedDate = appt.preferred_date.substring(0, 10);
+      }
+    }
+
+    let formattedTime = "";
+    if (appt?.preferred_time) {
+      formattedTime = appt.preferred_time.substring(0, 5);
+    }
+
+    setPreferredDate(formattedDate);
+    setPreferredTime(formattedTime);
+    setStatusUpdateConfirmOpen(true);
   };
 
   const getStatusBadgeVariant = (status: AppointmentStatus) => {
@@ -253,39 +320,31 @@ export default function BookAppointmentTable() {
 
           {/* Dropdowns - Right side */}
           <div className="flex space-x-3">
-            <Select
+            <CustomDropdown
               value={selectedStatus}
-              onValueChange={(value: AppointmentStatus | "all") =>
-                setSelectedStatus(value)
-              }
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="in_progress">In Progress</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(value) => setSelectedStatus(value as AppointmentStatus | "all")}
+              options={[
+                { value: "all", label: "All Statuses" },
+                { value: "pending", label: "Pending" },
+                { value: "in_progress", label: "In Progress" },
+                { value: "completed", label: "Completed" },
+                { value: "cancelled", label: "Cancelled" },
+              ]}
+              placeholder="Filter by status"
+              className="w-40 [&_button]:w-full [&_button]:min-w-0"
+            />
 
             {/* Date Sorting */}
-            <Select
+            <CustomDropdown
               value={sortOrder}
-              onValueChange={(value: 'asc' | 'desc') =>
-                setSortOrder(value)
-              }
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Sort by date" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="desc">Latest First</SelectItem>
-                <SelectItem value="asc">Oldest First</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(value) => setSortOrder(value as "asc" | "desc")}
+              options={[
+                { value: "desc", label: "Latest First" },
+                { value: "asc", label: "Oldest First" },
+              ]}
+              placeholder="Sort by date"
+              className="w-40 [&_button]:w-full [&_button]:min-w-0"
+            />
           </div>
         </CardHeader>
         <CardContent>
@@ -310,27 +369,25 @@ export default function BookAppointmentTable() {
                 <TableBody>
                   {filteredAppointments.map((appointment) => (
                     <TableRow key={appointment.id}>
-                      <TableCell className="font-medium">
-                        {appointment.full_name}
-                      </TableCell>
+                      <TableCell className="font-medium">{appointment.full_name}</TableCell>
                       <TableCell>{appointment.email}</TableCell>
                       <TableCell>
-                        {appointment.location ? appointment.location.charAt(0).toUpperCase() +
-                          appointment.location.slice(1) : 'N/A'}
+                        {appointment.location
+                          ? appointment.location.charAt(0).toUpperCase() +
+                            appointment.location.slice(1)
+                          : "N/A"}
                       </TableCell>
                       <TableCell>
-                        {appointment.provider ? appointment.provider.charAt(0).toUpperCase() +
-                          appointment.provider.slice(1) : 'N/A'}
+                        {appointment.provider
+                          ? appointment.provider.charAt(0).toUpperCase() +
+                            appointment.provider.slice(1)
+                          : "N/A"}
                       </TableCell>
-                      <TableCell>
-                        {formatDate(appointment.created_at)}
-                      </TableCell>
+                      <TableCell>{formatDate(appointment.created_at)}</TableCell>
                       <TableCell>
                         <div className="relative inline-block">
                           <Badge
-                            variant={getStatusBadgeVariant(
-                              appointment.status
-                            )}
+                            variant={getStatusBadgeVariant(appointment.status)}
                             className={`${getStatusColor(
                               appointment.status
                             )} transition-all duration-200`}
@@ -342,12 +399,15 @@ export default function BookAppointmentTable() {
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <Dialog open={viewModalOpen && currentAppointment?.id === appointment.id} onOpenChange={(open) => {
-                            if (!open) {
-                              setViewModalOpen(false);
-                              setCurrentAppointment(null);
-                            }
-                          }}>
+                          <Dialog
+                            open={viewModalOpen && currentAppointment?.id === appointment.id}
+                            onOpenChange={(open) => {
+                              if (!open) {
+                                setViewModalOpen(false);
+                                setCurrentAppointment(null);
+                              }
+                            }}
+                          >
                             <DialogTrigger asChild>
                               <Button
                                 className="cursor-pointer"
@@ -387,25 +447,19 @@ export default function BookAppointmentTable() {
                                     </h4>
                                     <div className="space-y-2 text-sm">
                                       <p>
-                                        <span className="text-gray-600">
-                                          Full Name:
-                                        </span>{" "}
+                                        <span className="text-gray-600">Full Name:</span>{" "}
                                         <span className="font-medium">
                                           {currentAppointment.full_name}
                                         </span>
                                       </p>
                                       <p>
-                                        <span className="text-gray-600">
-                                          Surname:
-                                        </span>{" "}
+                                        <span className="text-gray-600">Surname:</span>{" "}
                                         <span className="font-medium">
                                           {currentAppointment.surname || "N/A"}
                                         </span>
                                       </p>
                                       <p>
-                                        <span className="text-gray-600">
-                                          Given Name:
-                                        </span>{" "}
+                                        <span className="text-gray-600">Given Name:</span>{" "}
                                         <span className="font-medium">
                                           {currentAppointment.given_name || "N/A"}
                                         </span>
@@ -417,9 +471,7 @@ export default function BookAppointmentTable() {
                                         </span>
                                       </p>
                                       <p>
-                                        <span className="text-gray-600">
-                                          Date of Birth:
-                                        </span>{" "}
+                                        <span className="text-gray-600">Date of Birth:</span>{" "}
                                         <span className="font-medium">
                                           {formatDate(currentAppointment.date_of_birth)}
                                         </span>
@@ -489,25 +541,19 @@ export default function BookAppointmentTable() {
                                     </h4>
                                     <div className="space-y-2 text-sm">
                                       <p>
-                                        <span className="text-gray-600">
-                                          Location:
-                                        </span>{" "}
+                                        <span className="text-gray-600">Location:</span>{" "}
                                         <span className="font-medium capitalize">
-                                          {currentAppointment.location || 'N/A'}
+                                          {currentAppointment.location || "N/A"}
                                         </span>
                                       </p>
                                       <p>
-                                        <span className="text-gray-600">
-                                          Provider:
-                                        </span>{" "}
+                                        <span className="text-gray-600">Provider:</span>{" "}
                                         <span className="font-medium">
-                                          {currentAppointment.provider || 'N/A'}
+                                          {currentAppointment.provider || "N/A"}
                                         </span>
                                       </p>
                                       <p>
-                                        <span className="text-gray-600">
-                                          Website:
-                                        </span>{" "}
+                                        <span className="text-gray-600">Website:</span>{" "}
                                         <span className="font-medium">
                                           {currentAppointment.medical_website}
                                         </span>
@@ -522,9 +568,7 @@ export default function BookAppointmentTable() {
                                       )}
                                       {currentAppointment.visa_type && (
                                         <p>
-                                          <span className="text-gray-600">
-                                            Visa Type:
-                                          </span>{" "}
+                                          <span className="text-gray-600">Visa Type:</span>{" "}
                                           <span className="font-medium">
                                             {currentAppointment.visa_type}
                                           </span>
@@ -532,9 +576,7 @@ export default function BookAppointmentTable() {
                                       )}
                                       {currentAppointment.medical_type && (
                                         <p>
-                                          <span className="text-gray-600">
-                                            Medical Type:
-                                          </span>{" "}
+                                          <span className="text-gray-600">Medical Type:</span>{" "}
                                           <span className="font-medium">
                                             {currentAppointment.medical_type}
                                           </span>
@@ -542,9 +584,7 @@ export default function BookAppointmentTable() {
                                       )}
                                       {currentAppointment.original_passport && (
                                         <p>
-                                          <span className="text-gray-600">
-                                            Original Passport:
-                                          </span>{" "}
+                                          <span className="text-gray-600">Original Passport:</span>{" "}
                                           <span className="font-medium">
                                             {currentAppointment.original_passport}
                                           </span>
@@ -566,21 +606,15 @@ export default function BookAppointmentTable() {
                                         <div className="space-y-2 text-sm">
                                           {currentAppointment.interview_date && (
                                             <p>
-                                              <span className="text-gray-600">
-                                                Interview Date:
-                                              </span>{" "}
+                                              <span className="text-gray-600">Interview Date:</span>{" "}
                                               <span className="font-medium">
-                                                {formatDate(
-                                                  currentAppointment.interview_date
-                                                )}
+                                                {formatDate(currentAppointment.interview_date)}
                                               </span>
                                             </p>
                                           )}
                                           {currentAppointment.visa_category && (
                                             <p>
-                                              <span className="text-gray-600">
-                                                Visa Category:
-                                              </span>{" "}
+                                              <span className="text-gray-600">Visa Category:</span>{" "}
                                               <span className="font-medium">
                                                 {currentAppointment.visa_category}
                                               </span>
@@ -598,9 +632,7 @@ export default function BookAppointmentTable() {
                                           )}
                                           {currentAppointment.case_ref && (
                                             <p>
-                                              <span className="text-gray-600">
-                                                Case Ref:
-                                              </span>{" "}
+                                              <span className="text-gray-600">Case Ref:</span>{" "}
                                               <span className="font-medium">
                                                 {currentAppointment.case_ref}
                                               </span>
@@ -640,38 +672,26 @@ export default function BookAppointmentTable() {
                                     </h4>
                                     <div className="space-y-2 text-sm">
                                       <p>
-                                        <span className="text-gray-600">
-                                          Passport Number:
-                                        </span>{" "}
+                                        <span className="text-gray-600">Passport Number:</span>{" "}
                                         <span className="font-medium">
                                           {currentAppointment.passport_number || "N/A"}
                                         </span>
                                       </p>
                                       <p>
-                                        <span className="text-gray-600">
-                                          Issue Date:
-                                        </span>{" "}
+                                        <span className="text-gray-600">Issue Date:</span>{" "}
                                         <span className="font-medium">
-                                          {formatDate(
-                                            currentAppointment.passport_issue_date
-                                          )}
+                                          {formatDate(currentAppointment.passport_issue_date)}
                                         </span>
                                       </p>
                                       <p>
-                                        <span className="text-gray-600">
-                                          Expiry Date:
-                                        </span>{" "}
+                                        <span className="text-gray-600">Expiry Date:</span>{" "}
                                         <span className="font-medium">
-                                          {formatDate(
-                                            currentAppointment.passport_expiry_date
-                                          )}
+                                          {formatDate(currentAppointment.passport_expiry_date)}
                                         </span>
                                       </p>
                                       {currentAppointment.case_number && (
                                         <p>
-                                          <span className="text-gray-600">
-                                            Case Number:
-                                          </span>{" "}
+                                          <span className="text-gray-600">Case Number:</span>{" "}
                                           <span className="font-medium">
                                             {currentAppointment.case_number}
                                           </span>
@@ -702,90 +722,69 @@ export default function BookAppointmentTable() {
                                           {currentAppointment.applicants.length})
                                         </h4>
                                         <div className="space-y-4">
-                                          {currentAppointment.applicants.map(
-                                            (applicant, index) => (
-                                              <div
-                                                key={applicant.id}
-                                                className="border border-green-200 rounded-lg p-4 bg-white"
-                                              >
-                                                <h5 className="font-medium text-gray-900 mb-2">
-                                                  Applicant #{index + 1}
-                                                </h5>
-                                                <div className="grid grid-cols-2 gap-2 text-sm">
-                                                  <p>
-                                                    <span className="text-gray-600">
-                                                      Surname:
-                                                    </span>{" "}
-                                                    <span className="font-medium">
-                                                      {applicant.surname}
-                                                    </span>
-                                                  </p>
-                                                  <p>
-                                                    <span className="text-gray-600">
-                                                      Given Name:
-                                                    </span>{" "}
-                                                    <span className="font-medium">
-                                                      {applicant.givenName}
-                                                    </span>
-                                                  </p>
-                                                  <p>
-                                                    <span className="text-gray-600">
-                                                      Gender:
-                                                    </span>{" "}
-                                                    <span className="font-medium">
-                                                      {applicant.gender}
-                                                    </span>
-                                                  </p>
-                                                  <p>
-                                                    <span className="text-gray-600">
-                                                      DOB:
-                                                    </span>{" "}
-                                                    <span className="font-medium">
-                                                      {formatDate(
-                                                        applicant.dateOfBirth
-                                                      )}
-                                                    </span>
-                                                  </p>
-                                                  <p>
-                                                    <span className="text-gray-600">
-                                                      Passport:
-                                                    </span>{" "}
-                                                    <span className="font-medium">
-                                                      {applicant.passportNumber}
-                                                    </span>
-                                                  </p>
-                                                  <p>
-                                                    <span className="text-gray-600">
-                                                      Issue Date:
-                                                    </span>{" "}
-                                                    <span className="font-medium">
-                                                      {formatDate(
-                                                        applicant.passportIssueDate
-                                                      )}
-                                                    </span>
-                                                  </p>
-                                                  <p>
-                                                    <span className="text-gray-600">
-                                                      Expiry Date:
-                                                    </span>{" "}
-                                                    <span className="font-medium">
-                                                      {formatDate(
-                                                        applicant.passportExpiryDate
-                                                      )}
-                                                    </span>
-                                                  </p>
-                                                  <p>
-                                                    <span className="text-gray-600">
-                                                      Case Number:
-                                                    </span>{" "}
-                                                    <span className="font-medium">
-                                                      {applicant.caseNumber}
-                                                    </span>
-                                                  </p>
-                                                  {currentAppointment.location ===
-                                                    "islamabad" &&
-                                                    currentAppointment.provider ===
-                                                      "amc" && (
+                                          {currentAppointment.applicants.map((applicant, index) => (
+                                            <div
+                                              key={applicant.id}
+                                              className="border border-green-200 rounded-lg p-4 bg-white"
+                                            >
+                                              <h5 className="font-medium text-gray-900 mb-2">
+                                                Applicant #{index + 1}
+                                              </h5>
+                                              <div className="grid grid-cols-2 gap-2 text-sm">
+                                                <p>
+                                                  <span className="text-gray-600">Surname:</span>{" "}
+                                                  <span className="font-medium">
+                                                    {applicant.surname}
+                                                  </span>
+                                                </p>
+                                                <p>
+                                                  <span className="text-gray-600">Given Name:</span>{" "}
+                                                  <span className="font-medium">
+                                                    {applicant.givenName}
+                                                  </span>
+                                                </p>
+                                                <p>
+                                                  <span className="text-gray-600">Gender:</span>{" "}
+                                                  <span className="font-medium">
+                                                    {applicant.gender}
+                                                  </span>
+                                                </p>
+                                                <p>
+                                                  <span className="text-gray-600">DOB:</span>{" "}
+                                                  <span className="font-medium">
+                                                    {formatDate(applicant.dateOfBirth)}
+                                                  </span>
+                                                </p>
+                                                <p>
+                                                  <span className="text-gray-600">Passport:</span>{" "}
+                                                  <span className="font-medium">
+                                                    {applicant.passportNumber}
+                                                  </span>
+                                                </p>
+                                                <p>
+                                                  <span className="text-gray-600">Issue Date:</span>{" "}
+                                                  <span className="font-medium">
+                                                    {formatDate(applicant.passportIssueDate)}
+                                                  </span>
+                                                </p>
+                                                <p>
+                                                  <span className="text-gray-600">
+                                                    Expiry Date:
+                                                  </span>{" "}
+                                                  <span className="font-medium">
+                                                    {formatDate(applicant.passportExpiryDate)}
+                                                  </span>
+                                                </p>
+                                                <p>
+                                                  <span className="text-gray-600">
+                                                    Case Number:
+                                                  </span>{" "}
+                                                  <span className="font-medium">
+                                                    {applicant.caseNumber}
+                                                  </span>
+                                                </p>
+                                                {currentAppointment.location === "islamabad" &&
+                                                  currentAppointment.provider === "amc" && (
                                                     <p>
                                                       <span className="text-gray-600">
                                                         Case Ref:
@@ -795,10 +794,9 @@ export default function BookAppointmentTable() {
                                                       </span>
                                                     </p>
                                                   )}
-                                                </div>
                                               </div>
-                                            )
-                                          )}
+                                            </div>
+                                          ))}
                                         </div>
                                       </div>
                                     )}
@@ -897,8 +895,7 @@ export default function BookAppointmentTable() {
                                                   className="border-l-4 border-purple-200 pl-4 py-2 bg-white"
                                                 >
                                                   <h6 className="font-medium text-gray-800">
-                                                    Applicant #{index + 1}:{" "}
-                                                    {applicant.surname},{" "}
+                                                    Applicant #{index + 1}: {applicant.surname},{" "}
                                                     {applicant.givenName}
                                                   </h6>
                                                   <div className="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
@@ -930,33 +927,27 @@ export default function BookAppointmentTable() {
                             size="sm"
                             onClick={() => {
                               // Placeholder for download functionality
-                              console.log("Download functionality for appointment:", appointment.id);
+                              console.log(
+                                "Download functionality for appointment:",
+                                appointment.id
+                              );
                             }}
                           >
                             Download
                           </Button>
-                          <Select
+                          <CustomDropdown
                             value={appointment.status}
-                            onValueChange={(value: AppointmentStatus) =>
-                              updateAppointmentStatus(appointment.id, value)
+                            onChange={(value) =>
+                              initiateStatusUpdate(appointment.id, value as AppointmentStatus)
                             }
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="pending">Pending</SelectItem>
-                              <SelectItem value="in_progress">
-                                In Progress
-                              </SelectItem>
-                              <SelectItem value="completed">
-                                Completed
-                              </SelectItem>
-                              <SelectItem value="cancelled">
-                                Cancelled
-                              </SelectItem>
-                            </SelectContent>
-                          </Select>
+                            options={[
+                              { value: "pending", label: "Pending" },
+                              { value: "in_progress", label: "In Progress" },
+                              { value: "completed", label: "Completed" },
+                              { value: "cancelled", label: "Cancelled" },
+                            ]}
+                            className="w-32 [&_button]:w-full [&_button]:min-w-0"
+                          />
                         </div>
                       </TableCell>
                     </TableRow>
@@ -968,13 +959,158 @@ export default function BookAppointmentTable() {
         </CardContent>
       </Card>
 
+      {/* Status Update Confirmation Modal */}
+      <Dialog
+        open={statusUpdateConfirmOpen}
+        onOpenChange={(open) => {
+          setStatusUpdateConfirmOpen(open);
+          if (!open) {
+            setPendingUpdate(null);
+            setAdminNotes("");
+            setPreferredDate("");
+            setPreferredTime("");
+            setCancellationReason("");
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Update Status</DialogTitle>
+            <div className="text-sm text-muted-foreground mt-1">
+              Are you sure you want to update the status to{" "}
+              <span className="font-semibold uppercase text-primary">{pendingUpdate?.status}</span>?
+            </div>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            {pendingUpdate?.status === "completed" && (
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Appointment Date <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="date"
+                    value={preferredDate}
+                    onChange={(e) => setPreferredDate(e.target.value)}
+                    className="w-full"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Appointment Time <span className="text-red-500">*</span>
+                  </label>
+                  <Input
+                    type="time"
+                    value={preferredTime}
+                    onChange={(e) => setPreferredTime(e.target.value)}
+                    className="w-full"
+                    required
+                  />
+                </div>
+              </div>
+            )}
+            {pendingUpdate?.status === "cancelled" ? (
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Cancellation Reason <span className="text-red-500">*</span>
+                  </label>
+                  <CustomDropdown
+                    value={cancellationReason}
+                    onChange={(val) => {
+                      setCancellationReason(val);
+                      if (val !== "other") {
+                        setAdminNotes(val);
+                      } else {
+                        setAdminNotes("");
+                      }
+                    }}
+                    options={CANCELLATION_TEMPLATES}
+                    placeholder="Select cancellation reason"
+                    className="w-full [&_button]:w-full [&_button]:min-w-0"
+                  />
+                </div>
+                {cancellationReason === "other" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Admin Notes (Custom Cancellation Reason){" "}
+                      <span className="text-red-500">*</span>
+                    </label>
+                    <textarea
+                      value={adminNotes}
+                      onChange={(e) => setAdminNotes(e.target.value)}
+                      placeholder="Add custom reason for cancellation..."
+                      className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                      maxLength={500}
+                    />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Admin Notes (Optional)
+                </label>
+                <textarea
+                  value={adminNotes}
+                  onChange={(e) => setAdminNotes(e.target.value)}
+                  placeholder="Add any notes about this status update..."
+                  className="w-full border border-gray-300 rounded-lg p-3 min-h-[100px] focus:ring-2 focus:ring-primary focus:border-transparent text-sm"
+                  maxLength={500}
+                />
+              </div>
+            )}
+          </div>
+          <div className="flex justify-end gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setStatusUpdateConfirmOpen(false);
+                setPendingUpdate(null);
+                setAdminNotes("");
+                setPreferredDate("");
+                setPreferredTime("");
+                setCancellationReason("");
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              disabled={
+                (pendingUpdate?.status === "completed" && (!preferredDate || !preferredTime)) ||
+                (pendingUpdate?.status === "cancelled" &&
+                  (!cancellationReason || (cancellationReason === "other" && !adminNotes.trim())))
+              }
+              onClick={async () => {
+                if (pendingUpdate) {
+                  await updateAppointmentStatus(
+                    pendingUpdate.id,
+                    pendingUpdate.status,
+                    adminNotes,
+                    pendingUpdate.status === "completed" ? preferredDate : undefined,
+                    pendingUpdate.status === "completed" ? preferredTime : undefined
+                  );
+                }
+                setStatusUpdateConfirmOpen(false);
+                setPendingUpdate(null);
+                setAdminNotes("");
+                setPreferredDate("");
+                setPreferredTime("");
+                setCancellationReason("");
+              }}
+            >
+              Confirm
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 mt-8 max-w-6xl mx-auto">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
-              Total Appointments
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Total Appointments</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{appointments.length}</div>
@@ -983,9 +1119,7 @@ export default function BookAppointmentTable() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
-              Pending
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Pending</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">
@@ -996,32 +1130,22 @@ export default function BookAppointmentTable() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
-              In Progress
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">In Progress</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
-              {
-                appointments.filter((r) => r.status === "in_progress")
-                  .length
-              }
+              {appointments.filter((r) => r.status === "in_progress").length}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
-              Completed
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Completed</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {
-                appointments.filter((r) => r.status === "completed")
-                  .length
-              }
+              {appointments.filter((r) => r.status === "completed").length}
             </div>
           </CardContent>
         </Card>

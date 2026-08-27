@@ -1,0 +1,80 @@
+{
+  "title": "Adoptive Parent & Guardianship Guide",
+  "subtitle": "USCIS Eligibility & Document Requirements (Pakistan)",
+  "wizard": {
+    "title": "Adoptive Parent & Guardianship Guide",
+    "subtitle": "USCIS Eligibility & Document Requirements (Pakistan)",
+    "last_verified": "July 25, 2026",
+    "whats_this": {
+      "heading": "Welcome to Adoptive Parent Guide",
+      "sub": "USCIS Official Guidelines for Pakistan",
+      "description": "You're sponsoring or being sponsored by an adoptive parent. Adoption cases require additional documentation because USCIS must confirm that the adoptive parent-child relationship meets U.S. immigration law.",
+      "quick_instructions": [
+        "Review Pakistan guardianship nuances vs. U.S. adoption.",
+        "Verify the 2-year custody and residence rules.",
+        "Check required court and secondary evidence documents."
+      ],
+      "disclaimer": "Providing these documents does not automatically guarantee approval. USCIS will review your case to determine whether the adoptive parent-child relationship qualifies under U.S. immigration law."
+    },
+    "info_panel": {
+      "document_need": {
+        "tips": [
+          "In Pakistan, guardianship orders alone do not automatically count as adoptions. You must satisfy U.S. immigration law standards.",
+          "Ensure the adoption was finalized before the child turned 16."
+        ],
+        "pitfalls": [
+          "Failing to meet the strict 2-year legal custody and 2-year co-residence requirements before petition filing."
+        ],
+        "links": [
+          {
+            "label": "8 CFR § 204.2 Guidelines",
+            "url": "https://www.law.cornell.edu/cfr/text/8/204.2"
+          }
+        ]
+      },
+      "roadmap": {
+        "tips": [
+          "If a new birth certificate listing the adoptive parents is unavailable, submit the original birth certificate together with court documents.",
+          "Provide clear evidence showing that the child lived with the parent for at least 2 years."
+        ],
+        "pitfalls": [
+          "Submitting incomplete guardianship orders that do not grant full legal custody."
+        ],
+        "links": [
+          {
+            "label": "USCIS Policy Manual",
+            "url": "https://www.uscis.gov/policy-manual"
+          }
+        ]
+      },
+      "translation_standards": {
+        "tips": [
+          "Translations must be certified by a third-party translator. Self-translation is not permitted by USCIS."
+        ],
+        "pitfalls": [
+          "Self-translating documents or submitting translation statements without translator credentials."
+        ],
+        "links": [
+          {
+            "label": "USCIS Translation Requirements",
+            "url": "https://www.uscis.gov/tools/glossary/certificate-of-translation"
+          }
+        ]
+      },
+      "validation": {
+        "tips": [
+          "Double-check that names are spelled consistently across all court decrees, birth certificates, and forms."
+        ],
+        "pitfalls": [
+          "Submitting low-quality, blurry, or cut-off scans of legal court orders."
+        ],
+        "links": [
+          {
+            "label": "8 CFR § 204.2 Guidelines",
+            "url": "https://www.law.cornell.edu/cfr/text/8/204.2"
+          }
+        ]
+      }
+    }
+  }
+}

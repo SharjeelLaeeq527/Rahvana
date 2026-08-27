@@ -1,3 +1,15 @@
+import type {
+  ConditionExpression,
+  QuestionConditions,
+  SkipIfInput,
+} from "./condition-evaluator";
+
+// Session source type - determines how the session was created
+export type InterviewSessionSource = "journey" | "tool";
+
+// Session status type - tracks lifecycle
+export type InterviewSessionStatus = "ready" | "in_progress" | "completed";
+
 // Types for the Interview Preparation Tool
 export interface InterviewSession {
   id: string;
@@ -8,6 +20,10 @@ export interface InterviewSession {
   completed: boolean;
   created_at: string;
   updated_at: string;
+  // New fields for journey integration
+  source: InterviewSessionSource;
+  journey_id: string | null;
+  status: InterviewSessionStatus;
   answers?: unknown[];
   output?: unknown[];
 }
@@ -17,6 +33,10 @@ export interface InterviewSessionInput {
   user_id?: string;
   user_email: string;
   user_name: string;
+  // New fields for journey integration
+  source?: InterviewSessionSource;
+  journey_id?: string | null;
+  status?: InterviewSessionStatus;
 }
 
 export interface InterviewAnswer {
@@ -32,6 +52,71 @@ export interface InterviewResult {
   session_id: string;
   generated_questions: unknown[];
   created_at: string;
+}
+
+export interface InterviewPrepRoundSummary {
+  coveredCount: number;
+  partialCount: number;
+  missedCount: number;
+  skippedCount: number;
+  earnedPoints: number;
+  possiblePoints: number;
+  readinessScore: number;
+  weakQuestionIds: string[];
+}
+
+export interface InterviewPrepQuestionResponse {
+  question: GeneratedQuestion;
+  response: "covered" | "partial" | "missed" | "skipped";
+  index: number;
+}
+
+export type InterviewPrepProgressScreen = "training" | "results" | "completed";
+
+export interface InterviewPrepSessionProgress {
+  id: string;
+  session_id: string;
+  current_round: number;
+  current_question_index: number;
+  round_question_ids: string[];
+  completed_question_ids: string[];
+  retry_question_ids: string[];
+  mastered_question_ids: string[];
+  question_responses: InterviewPrepQuestionResponse[];
+  round_summary: InterviewPrepRoundSummary | null;
+  last_round_score: number;
+  total_rounds_completed: number;
+  score: number;
+  time_left: number;
+  show_answer: boolean;
+  is_flipped: boolean;
+  user_response: InterviewPrepQuestionResponse["response"];
+  skipped_questions: number;
+  screen: InterviewPrepProgressScreen;
+  completed: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InterviewPrepSessionProgressInput {
+  current_round: number;
+  current_question_index: number;
+  round_question_ids: string[];
+  completed_question_ids: string[];
+  retry_question_ids: string[];
+  mastered_question_ids: string[];
+  question_responses: InterviewPrepQuestionResponse[];
+  round_summary: InterviewPrepRoundSummary | null;
+  last_round_score: number;
+  total_rounds_completed: number;
+  score: number;
+  time_left: number;
+  show_answer: boolean;
+  is_flipped: boolean;
+  user_response: InterviewPrepQuestionResponse["response"];
+  skipped_questions: number;
+  screen: InterviewPrepProgressScreen;
+  completed: boolean;
 }
 
 // Interfaces for intake questionnaire and question bank
@@ -61,7 +146,10 @@ export interface QuestionBankEntry {
   sampleAnswer: string;
   guidance: string;
   tooltip: string;
+  tier?: "free" | "basic" | "premium" | "executive";
   mockInterviewOrder?: number;
+  conditions?: QuestionConditions | ConditionExpression;
+  skipIf?: SkipIfInput;
 }
 
 export interface QuestionBank {
@@ -76,11 +164,12 @@ export interface GeneratedQuestion {
   category: string;
   question: string;
   variations?: string[];
-  selectedQuestion?: string; 
+  selectedQuestion?: string;
   guidance: string;
   tooltip: string;
+  tier?: "free" | "basic" | "premium" | "executive";
   applicable: boolean;
-  priority: 'high' | 'medium' | 'low';
+  priority: "high" | "medium" | "low";
   mockInterviewOrder?: number;
   reason?: string;
 }
@@ -100,7 +189,7 @@ export interface AIImprovement {
   version: number;
   originalAnswer: string;
   improvedAnswer: string;
-  improvementType: 'clarity' | 'professional' | 'complete' | 'concise';
+  improvementType: "clarity" | "professional" | "complete" | "concise";
   generatedAt: string;
   acceptedAt?: string;
 }
@@ -113,7 +202,7 @@ export interface UserAnswer {
   word_count: number;
   ai_improvements: AIImprovement[];
   confidence_score?: number;
-  status: 'draft' | 'completed' | 'improved';
+  status: "draft" | "completed" | "improved";
   created_at: string;
   updated_at: string;
 }

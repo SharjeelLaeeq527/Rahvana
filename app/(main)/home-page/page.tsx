@@ -1,0 +1,1126 @@
+"use client";
+
+import React, { useEffect, useLayoutEffect, useRef, useState, useCallback } from "react";
+import { Caveat } from "next/font/google";
+import * as Icons from "lucide-react";
+import { ToolsDock } from "./ToolDock";
+import Intro from "./intro";
+import AnimationCard from "./AnimationCard";
+import SectionBird from "./SectionBird";
+
+// Load the "Caveat" handwriting-style Google font. It is used for the
+// little handwritten notes/annotations on the page. We expose it as a
+// CSS variable so any child element can use it.
+const caveat = Caveat({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-caveat",
+});
+
+// ----------------------------------------------------------------------------
+// Roadmap anchor registry
+// ----------------------------------------------------------------------------
+// Every node/card that the snake line should pass through registers its
+// DOM element here (keyed by an order index) via `useRoadmapAnchor`.
+// A single top-level <RoadmapProvider> reads all registered elements,
+// measures their real on-screen centers, and draws ONE smooth path
+// through them.
+//
+// NOTE ON THE "STRAIGHT LINE" ISSUE:
+// the curve math itself was never broken. A Catmull-Rom/cubic-bezier
+// curve through points that all share the same x-coordinate IS a
+// straight line -- there's no horizontal distance to bend through.
+// Once the circular nodes AND the card placeholders were both centered
+// in the previous pass, every anchor landed on the same vertical axis,
+// so the "smooth curve" correctly degenerated into a straight line.
+// To get the zigzag/snake back, the cards now sit shifted left of
+// center (consistently, not alternating) while the round nodes stay
+// dead-center -- this reintroduces the horizontal displacement the
+// curve needs to actually curve, matching the reference screenshot.
+// ----------------------------------------------------------------------------
+
+// The five color themes a roadmap section (and its line segment) can use.
+type AnchorColor = "teal" | "amber" | "purple" | "rose" | "green";
+
+// One registered anchor = a DOM element the line passes through + its color.
+type AnchorEntry = {
+  el: HTMLElement;
+  color: AnchorColor;
+};
+
+// Context that lets any anchor deep in the tree register itself with the
+// single provider that draws the connecting line.
+const RoadmapContext = React.createContext<{
+  register: (id: string, entry: AnchorEntry | null) => void;
+} | null>(null);
+
+// Hook used by each anchor. It grabs a ref to its own <div>, then tells the
+// provider "here I am" (register) when mounted, and "I'm gone" (unregister)
+// when unmounted. The provider uses these refs to measure screen positions.
+function useRoadmapAnchor(id: string, color: AnchorColor) {
+  const ctx = React.useContext(RoadmapContext);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!ctx || !ref.current) return;
+    // Register this element when it appears on screen...
+    ctx.register(id, { el: ref.current, color });
+    // ...and remove it again when the component is destroyed.
+    return () => ctx.register(id, null);
+  }, [ctx, id, color]);
+
+  return ref;
+}
+
+// The single provider that wraps the whole roadmap. It collects every
+// anchor's position and draws the curved dashed line that connects them,
+// then reveals that line progressively as the user scrolls down.
+function RoadmapProvider({ children }: { children: React.ReactNode }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  // All currently-registered anchors, keyed by their id ("01", "02", ...).
+  const anchorsRef = useRef<Map<string, AnchorEntry>>(new Map());
+  // The computed curve, split into one bezier segment per pair of anchors.
+  const [pathSegments, setPathSegments] = useState<
+    { d: string; color: AnchorColor; yStart: number; yEnd: number }[]
+  >([]);
+  const [svgHeight, setSvgHeight] = useState(0);
+  // Holds the pending animation-frame id so we can cancel/debounce recomputes.
+  const rafRef = useRef<number | null>(null);
+
+  const [scrollY, setScrollY] = useState(0);
+  // Distance from the top of the page to the top of the roadmap container.
+  const containerTopRef = useRef(0);
+  const windowHeightRef = useRef(0);
+  // Refs to each rendered <path>, used to measure their pixel length.
+  const pathRefs = useRef<(SVGPathElement | null)[]>([]);
+  const [pathLengths, setPathLengths] = useState<number[]>([]);
+
+  // Called by anchors (via context) to add or remove themselves. Any change
+  // to the anchor set triggers a recompute of the line.
+  const register = useCallback((id: string, entry: AnchorEntry | null) => {
+    if (entry) {
+      anchorsRef.current.set(id, entry);
+    } else {
+      anchorsRef.current.delete(id);
+    }
+    scheduleRecompute();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Debounce recomputes to once per animation frame so many anchors
+  // registering at once only cause a single measurement pass.
+  function scheduleRecompute() {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    rafRef.current = requestAnimationFrame(recompute);
+  }
+
+  // Measure every anchor and rebuild the curve.
+  function recompute() {
+    const container = containerRef.current;
+    if (!container) return;
+
+    // The connecting line is a desktop-only decoration. On mobile the
+    // sections just stack vertically, so we clear the line and bail out.
+    const isDesktop = window.matchMedia("(min-width: 768px)").matches;
+    if (!isDesktop) {
+      setPathSegments([]);
+      return;
+    }
+
+    // Remember where the container sits so scroll math below is relative to it.
+    const containerRect = container.getBoundingClientRect();
+    containerTopRef.current = containerRect.top + window.scrollY;
+    windowHeightRef.current = window.innerHeight;
+
+    // Sort anchors by their numeric id so the line goes 01 -> 02 -> 03 ...
+    const ids = Array.from(anchorsRef.current.keys()).sort((a, b) => parseFloat(a) - parseFloat(b));
+
+    // Convert each anchor into an (x, y) point at its center, expressed
+    // relative to the top-left of the container.
+    const points = ids.map((id) => {
+      const { el, color } = anchorsRef.current.get(id)!;
+      const r = el.getBoundingClientRect();
+      return {
+        x: r.left + r.width / 2 - containerRect.left,
+        y: r.top + r.height / 2 - containerRect.top,
+        color,
+      };
+    });
+
+    // Need at least two points to draw a line between them.
+    if (points.length < 2) {
+      setPathSegments([]);
+      return;
+    }
+
+    // Build one smooth curve segment between each consecutive pair of points
+    // using a Catmull-Rom -> cubic-bezier conversion. p0 and p3 are the
+    // neighbouring points that control how the curve leans in/out, giving a
+    // continuous snake-like line rather than sharp corners.
+    const segments: { d: string; color: AnchorColor; yStart: number; yEnd: number }[] = [];
+    for (let i = 0; i < points.length - 1; i++) {
+      const p0 = points[i === 0 ? i : i - 1];   // point before the segment (clamped at start)
+      const p1 = points[i];                       // segment start
+      const p2 = points[i + 1];                   // segment end
+      const p3 = points[i + 2 < points.length ? i + 2 : i + 1]; // point after (clamped at end)
+
+      // Two bezier control points derived from the neighbours' slopes.
+      const cp1x = p1.x + (p2.x - p0.x) / 6;
+      const cp1y = p1.y + (p2.y - p0.y) / 6;
+      const cp2x = p2.x - (p3.x - p1.x) / 6;
+      const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+      // SVG path: Move to p1, then Cubic-curve through the control points to p2.
+      const d = `M ${p1.x},${p1.y} C ${cp1x},${cp1y} ${cp2x},${cp2y} ${p2.x},${p2.y}`;
+      segments.push({ d, color: p1.color, yStart: p1.y, yEnd: p2.y });
+    }
+
+    setPathSegments(segments);
+    // Make the SVG as tall as the whole scrollable container.
+    setSvgHeight(container.scrollHeight);
+  }
+
+  // First measurement + keep the line in sync whenever the layout changes.
+  useLayoutEffect(() => {
+    if (typeof window !== "undefined") {
+      setScrollY(window.scrollY);
+      windowHeightRef.current = window.innerHeight;
+    }
+    recompute();
+
+    // Recompute if the container's size changes (e.g. images/animations load).
+    const ro = new ResizeObserver(() => scheduleRecompute());
+    if (containerRef.current) ro.observe(containerRef.current);
+
+    // Recompute on window resize too.
+    window.addEventListener("resize", scheduleRecompute);
+
+    // Extra recomputes after a delay to catch late-loading content (fonts,
+    // iframe animations) that can shift anchor positions after first paint.
+    const t1 = setTimeout(scheduleRecompute, 300);
+    const t2 = setTimeout(scheduleRecompute, 1000);
+
+    // Clean up all listeners/timers when the provider unmounts.
+    return () => {
+      ro.disconnect();
+      window.removeEventListener("resize", scheduleRecompute);
+      clearTimeout(t1);
+      clearTimeout(t2);
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Track the scroll position (throttled to one update per frame). This value
+  // drives how much of the line is revealed.
+  useEffect(() => {
+    let rafId: number;
+    function handleScroll() {
+      cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        setScrollY(window.scrollY);
+      });
+    }
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      cancelAnimationFrame(rafId);
+    };
+  }, []);
+
+  // After the paths are rendered, measure each one's total pixel length.
+  // We need this to animate the dashed "draw-on" reveal accurately.
+  useLayoutEffect(() => {
+    const lengths = pathSegments.map((_, i) => {
+      const path = pathRefs.current[i];
+      return path ? path.getTotalLength() : 0;
+    });
+    setPathLengths(lengths);
+  }, [pathSegments]);
+
+  // Hex value used to stroke each segment, chosen by the segment's color.
+  const strokeColors: Record<AnchorColor, string> = {
+    teal: "#0d7377",
+    amber: "#8a6200",
+    purple: "#4a2d8a",
+    rose: "#c0596a",
+    green: "#15744f",
+  };
+
+  return (
+    <RoadmapContext.Provider value={{ register }}>
+      {/* Positioned container: the SVG line sits absolutely on top of it,
+          and all the roadmap sections (children) flow inside it. */}
+      <div ref={containerRef} className="relative">
+        <svg
+          className="absolute inset-0 w-full pointer-events-none z-10 hidden md:block"
+          style={{ height: svgHeight }}
+          width="100%"
+          preserveAspectRatio="none"
+        >
+          {pathSegments.map((seg, i) => {
+            const length = pathLengths[i] || 0;
+            const yStart = seg.yStart;
+            const yEnd = seg.yEnd;
+
+            // Work out how far the user has scrolled into this segment.
+            // revealY = the y-position on the page we treat as "revealed up
+            // to here" (current scroll + most of the viewport height).
+            const revealY = scrollY + (windowHeightRef.current || 800) - 80;
+            // Convert that to a position relative to the container.
+            const currentY = revealY - containerTopRef.current;
+
+            // progress = 0 (segment fully hidden) .. 1 (fully drawn).
+            let progress = 0;
+            if (currentY >= yEnd) {
+              progress = 1;                                   // scrolled past it -> fully shown
+            } else if (currentY <= yStart) {
+              progress = 0;                                   // not reached yet -> hidden
+            } else if (yEnd > yStart) {
+              progress = (currentY - yStart) / (yEnd - yStart); // in between -> partial
+            }
+
+            // Use a dash the length of the whole path, then offset it by the
+            // un-revealed portion. As progress -> 1 the offset -> 0 and the
+            // line appears to "draw" itself from top to bottom.
+            const activeLength = length || 1000;
+            const dashOffset = activeLength * (1 - progress);
+
+            return (
+              <React.Fragment key={i}>
+                {/* A mask that reveals only the "drawn so far" part of the
+                    segment. The white stroke here defines what is visible;
+                    its dash offset shrinks as you scroll, uncovering more. */}
+                <mask id={`roadmap-mask-${i}`}>
+                  <path
+                    d={seg.d}
+                    fill="none"
+                    stroke="white"
+                    strokeWidth="6"
+                    strokeDasharray={activeLength}
+                    strokeDashoffset={dashOffset}
+                    style={{
+                      transition: "stroke-dashoffset 0.15s ease-out",
+                    }}
+                  />
+                </mask>
+                {/* The actual visible dashed line. It's clipped by the mask
+                    above, so it only shows up to the current scroll progress. */}
+                <path
+                  ref={(el) => {
+                    pathRefs.current[i] = el;
+                  }}
+                  d={seg.d}
+                  fill="none"
+                  stroke={strokeColors[seg.color]}
+                  strokeWidth="2"
+                  strokeDasharray="4,4"
+                  className="opacity-50"
+                  mask={`url(#roadmap-mask-${i})`}
+                />
+              </React.Fragment>
+            );
+          })}
+        </svg>
+        {children}
+      </div>
+    </RoadmapContext.Provider>
+  );
+}
+
+// Thin wrapper you put around anything the line should pass through. It just
+// attaches the anchor ref (so the provider can measure it) to a plain <div>.
+function RoadmapAnchor({
+  id,
+  color,
+  className = "",
+  children,
+}: {
+  id: string;      // ordering key, e.g. "01", "02" — controls line direction
+  color: AnchorColor;
+  className?: string;
+  children: React.ReactNode;
+}) {
+  const ref = useRoadmapAnchor(id, color);
+  return (
+    <div ref={ref} className={className}>
+      {children}
+    </div>
+  );
+}
+
+// Fade/slide-in-on-scroll wrapper. Its content starts hidden (via the
+// "reveal" CSS class) and gets the "visible" class the first time it scrolls
+// into view, triggering the CSS animation. `delayClass` lets you stagger
+// multiple reveals in the same section.
+function ScrollReveal({
+  children,
+  delayClass = "",
+  className = "",
+}: {
+  children: React.ReactNode;
+  delayClass?: string;
+  className?: string;
+}) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+
+    // Watch for the element entering the viewport. Once seen, mark it visible
+    // and stop caring (we only animate in once, never back out).
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisible(true);
+        }
+      },
+      // Trigger when 10% is showing, and 80px before the true bottom edge.
+      { threshold: 0.1, rootMargin: "0px 0px -80px 0px" }
+    );
+
+    observer.observe(el);
+    return () => observer.unobserve(el);
+  }, []);
+
+  return (
+    <div ref={ref} className={`reveal ${delayClass} ${visible ? "visible" : ""} ${className}`}>
+      {children}
+    </div>
+  );
+}
+
+// A small handwritten-style note with a curved arrow, floated next to a node
+// (e.g. "Progress feels good."). `direction` decides which side it sits on and
+// which way it tilts/arrows; `className` can override its default position.
+function Annotation({
+  text,
+  direction = "left",
+  className = "",
+  arrowRotation = "",
+}: {
+  text: string;
+  direction?: "left" | "right";
+  className?: string;
+  arrowRotation?: string;
+}) {
+  // Default placement depends on the side the annotation points from.
+  const defaultPos =
+    direction === "left"
+      ? "left-[10%] md:left-[15%] top-[10%]"
+      : "right-[10%] md:right-[15%] top-[15%]";
+
+  return (
+    <div
+      className={`absolute z-10 ${className || defaultPos} max-w-[160px] transform ${
+        direction === "left" ? "-rotate-6" : "rotate-6"
+      } pointer-events-none`}
+    >
+      <p
+        className={`${caveat.className} text-slate-500 text-lg md:text-xl leading-tight font-medium`}
+      >
+        {text}
+      </p>
+      {/* Curved arrow SVG. Same icon, just mirrored/rotated per direction. */}
+      {direction === "left" ? (
+        <svg
+          className={`w-10 h-10 text-slate-400/80 -mt-1 ml-6 ${arrowRotation || "rotate-[-25deg]"}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19.5 4.5l-15 15m0 0h11.25m-11.25 0V8.25"
+          />
+        </svg>
+      ) : (
+        <svg
+          className={`w-10 h-10 text-slate-400/80 -mt-1 mr-6 ${arrowRotation || "rotate-[75deg]"}`}
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            d="M19.5 4.5l-15 15m0 0h11.25m-11.25 0V8.25"
+          />
+        </svg>
+      )}
+    </div>
+  );
+}
+
+// A big colored circle with an icon inside and an optional pill label under
+// it — the milestone markers on the roadmap (Petition, Documents, etc.).
+function NodeCircle({
+  icon: Icon,
+  label,
+  color,
+}: {
+  icon: React.ComponentType<any>;
+  label?: string;
+  badgeNum?: string;
+  color: "teal" | "amber" | "purple" | "rose" | "green";
+}) {
+  // Background color for the circle, keyed by the milestone's theme color.
+  const colorClasses = {
+    teal: { bg: "bg-[#0d7377]" },
+    amber: { bg: "bg-[#8a6200]" },
+    purple: { bg: "bg-[#4a2d8a]" },
+    rose: { bg: "bg-[#c0596a]" },
+    green: { bg: "bg-[#15744f]" },
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center relative py-12 z-10">
+      <div className="relative group flex items-center justify-center">
+        <div
+          className={`w-25 h-25 rounded-full ${colorClasses[color].bg} text-white flex items-center justify-center shadow-lg transition-transform duration-300 group-hover:scale-110 cursor-pointer relative z-10`}
+        >
+          <Icon className="w-10 h-10" />
+        </div>
+      </div>
+      {label && (
+        <div className="mt-3 text-center relative z-20">
+          <h4 className="font-bold text-slate-800 text-lg px-4 py-1.5 rounded-full bg-white/95 backdrop-blur-md shadow-sm border border-slate-200/50 inline-block relative z-20">
+            {label}
+          </h4>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Card placeholder wrapper: shifts the card consistently left of its
+// flex-centered column, so its anchor center sits left of the node
+// anchors above/below it -- this is what gives the line a real
+// horizontal swing to curve through, instead of a vertical straight
+// line. Direction is fixed (not alternating) per your last request.
+const CARD_OFFSET_CLASS = "md:-ml-12";
+
+// The full home page: an intro, then a vertical scroll-through "journey"
+// roadmap (each numbered section below is one story beat, connected by the
+// animated line), and finally the tools dock at the bottom.
+//
+// Structure of every roadmap section is the same 12-column grid:
+//   - left column  = the story text (heading + subtext)
+//   - right column = either a NodeCircle milestone or an AnimationCard demo,
+//                     wrapped in a RoadmapAnchor so the line threads through it.
+// Anchor ids run "01" -> "17" in order and set the path direction.
+export default function RoadmapPage() {
+  return (
+    <div className={`w-full min-h-screen overflow-x-hidden bg-slate-50/50 pb-20 ${caveat.variable}`}>
+      {/* Hero / intro at the very top. */}
+      <Intro />
+
+      {/* Everything inside the provider is connected by the animated line. */}
+      <RoadmapProvider>
+        {/* Opening beat: the user's "I'm lost" question. No anchor here —
+            just a full-width centered prompt. SectionBird is the little
+            decorative bird illustration that floats in most sections. */}
+        <div className="w-full bg-white relative">
+          <SectionBird n={1} side="right" className="right-0" pos="top-[58%] -translate-y-1/2" size="w-40 lg:w-52 xl:w-64" />
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="py-16 md:py-24 flex items-center justify-center text-center relative">
+              <ScrollReveal>
+                <div className="max-w-xl mx-auto">
+                  <h2 className="text-3xl md:text-5xl font-bold text-slate-900 mt-2 mb-4 leading-tight tracking-tight">
+                    Where do I even start?
+                  </h2>
+                  <p className="text-lg md:text-xl text-slate-500 max-w-md mx-auto leading-relaxed">
+                    If only someone could show me the right order.
+                  </p>
+                </div>
+              </ScrollReveal>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 2 — leaf start node (anchor "01") */}
+        <div className="w-full bg-[#edf7f7]/60 relative">
+          <SectionBird n={2} side="left" className="left-0" pos="top-[50%]" size="w-28 lg:w-36 xl:w-44" />
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
+                    Let&apos;s take it one step at a time.
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    Rahvana will guide you through your journey.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 relative h-48 flex items-center justify-center min-w-0">
+                <Annotation
+                  text="A clear path. No more guessing."
+                  direction="right"
+                  arrowRotation="rotate-[-45deg]"
+                />
+                <RoadmapAnchor
+                  id="01"
+                  color="teal"
+                  className="hidden md:block absolute top-[30%] md:left-[29%] right-[35%] md:right-auto transform md:-translate-x-1/2 z-10"
+                >
+                  <div className="w-8 h-8 rounded-full bg-teal-50 border border-teal-200 flex items-center justify-center text-teal-600" />
+                </RoadmapAnchor>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 3 — Petition node (anchor "02") — centered */}
+        <div className="w-full bg-white relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+              <SectionBird n={3} side="right" pos="top-[54%]" />
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
+                    Everything starts with the petition.
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    This is where your journey begins.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 flex justify-center min-w-0">
+                <ScrollReveal>
+                  <RoadmapAnchor id="02" color="teal" className="inline-block">
+                    <NodeCircle icon={Icons.FileText} label="Petition" color="teal" />
+                  </RoadmapAnchor>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 4 — card placeholder (anchor "03") — shifted left */}
+        <div className="w-full bg-[#edf7f7]/60 relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+              <SectionBird n={4} side="left" pos="top-[72%]" />
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
+                    Wait... these forms look complicated.
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    Long. Confusing. Full of questions I don&apos;t understand.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 flex justify-center min-w-0">
+                <ScrollReveal
+                  delayClass="reveal-delay-1"
+                  className="w-full flex justify-center min-w-0"
+                >
+                  <RoadmapAnchor
+                    id="03"
+                    color="teal"
+                    className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  >
+                    <AnimationCard
+                      file="wait... section animation final.html"
+                      title="Immigration forms feel overwhelming"
+                      w={480}
+                      h={600}
+                    />
+                  </RoadmapAnchor>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 5 — card placeholder (anchor "04") — shifted left */}
+        <div className="w-full bg-white relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+              <SectionBird n={5} side="left" pos="top-[68%]" />
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
+                    Rahvana breaks it down for you.
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    One section at a time. Clear. Simple. Guided.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 flex justify-center min-w-0">
+                <ScrollReveal
+                  delayClass="reveal-delay-2"
+                  className="w-full flex justify-center min-w-0"
+                >
+                  <RoadmapAnchor
+                    id="04"
+                    color="teal"
+                    className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  >
+                    <AnimationCard
+                      file="visa form solution final.html"
+                      title="Rahvana breaks the form down section by section"
+                      w={660}
+                      h={430}
+                    />
+                  </RoadmapAnchor>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 6 — Check node (anchor "05") — centered */}
+        <div className="w-full bg-[#edf7f7]/60 relative">
+          <SectionBird n={6} side="left" className="left-0" pos="top-[48%]" size="w-28 lg:w-36 xl:w-44" />
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
+                    That wasn&apos;t so bad.
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    Petition submitted! One step down. Many more to go.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 relative flex justify-center min-w-0">
+                <ScrollReveal>
+                  <div className="relative inline-block">
+                    <RoadmapAnchor id="05" color="amber" className="inline-block">
+                      <NodeCircle icon={Icons.Check} color="teal" />
+                    </RoadmapAnchor>
+                    <Annotation
+                      text="Progress feels good."
+                      direction="left"
+                      className="right-[105%] md:right-[125%] top-[-10px] md:top-2"
+                    />
+                  </div>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 7 — Documents node (anchor "06") — centered */}
+        <div className="w-full bg-white relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+              <SectionBird n={7} side="right" pos="top-[28%]" />
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
+                    What&apos;s next?
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    The next important step is your documents.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 flex justify-center min-w-0">
+                <ScrollReveal>
+                  <RoadmapAnchor id="06" color="amber" className="inline-block">
+                    <NodeCircle icon={Icons.FolderOpen} label="Documents" color="amber" />
+                  </RoadmapAnchor>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 8 — card placeholder (anchor "07") — shifted left */}
+        <div className="w-full bg-[#fffaf0]/60 relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+              <SectionBird n={8} side="left" pos="top-[74%]" />
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
+                    So many documents... what if I miss something important?
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    I don&apos;t want to get delayed later.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 flex justify-center min-w-0">
+                <ScrollReveal
+                  delayClass="reveal-delay-1"
+                  className="w-full flex justify-center min-w-0"
+                >
+                  <RoadmapAnchor
+                    id="07"
+                    color="amber"
+                    className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  >
+                    <AnimationCard
+                      file="document_gathering_problem option 1 final.html"
+                      title="Gathering documents is confusing"
+                      w={380}
+                      h={440}
+                      bgClass="bg-slate-50 border border-slate-200/40 rounded-2xl shadow-sm"
+                    />
+                  </RoadmapAnchor>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 9 — card placeholder (anchor "08") — shifted left */}
+        <div className="w-full bg-white relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+              <SectionBird n={9} side="left" pos="top-[62%]" />
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
+                    Rahvana tells you exactly what documents you need.
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    Track required documents, upload your files, and keep everything organized
+                    in one place.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 flex justify-center min-w-0">
+                <ScrollReveal
+                  delayClass="reveal-delay-2"
+                  className="w-full flex justify-center min-w-0"
+                >
+                  <RoadmapAnchor
+                    id="08"
+                    color="amber"
+                    className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  >
+                    <AnimationCard
+                      file="rahvana-document-vault-v3 final.html"
+                      title="Rahvana's document vault keeps everything organized"
+                      w={480}
+                      h={640}
+                    />
+                  </RoadmapAnchor>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 10 — FolderCheck node (anchor "09") — centered */}
+        <div className="w-full bg-[#fffaf0]/60 relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+              <SectionBird n={10} side="left" className="left-0 lg:-left-8" pos="top-[50%]" />
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-[#8a6200] mt-1 mb-3 leading-tight">
+                    Finally, I know I have everything.
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    One less thing to worry about.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 relative flex justify-center min-w-0">
+                <ScrollReveal>
+                  <div className="relative inline-block">
+                    <RoadmapAnchor id="09" color="purple" className="inline-block">
+                      <NodeCircle icon={Icons.FolderCheck} color="amber" />
+                    </RoadmapAnchor>
+                    <Annotation
+                      text="This feels relieving."
+                      direction="right"
+                      className="left-[105%] md:left-[125%] top-[-5px] md:top-4"
+                    />
+                  </div>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 11 — Finance node (anchor "10") — centered */}
+        <div className="w-full bg-white relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+              <SectionBird n={11} side="right" pos="top-[28%]" />
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
+                    Next up, the financial part.
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    Let&apos;s make sense of it.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 flex justify-center min-w-0">
+                <ScrollReveal>
+                  <RoadmapAnchor id="10" color="purple" className="inline-block">
+                    <NodeCircle icon={Icons.Calculator} label="Finance" color="purple" />
+                  </RoadmapAnchor>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 12 — card placeholder (anchor "11") — shifted left */}
+        <div className="w-full bg-[#ede8f5]/60 relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+              <SectionBird n={12} side="left" pos="top-[64%]" />
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
+                    Do I qualify? What if I don&apos;t make enough?
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    The rules are confusing and everyone says something different.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 flex justify-center min-w-0">
+                <ScrollReveal
+                  delayClass="reveal-delay-1"
+                  className="w-full flex justify-center min-w-0"
+                >
+                  <RoadmapAnchor
+                    id="11"
+                    color="purple"
+                    className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  >
+                    <AnimationCard
+                      file="rahvana_sponsorship_anxiety_v4 final.html"
+                      title="Worrying about whether you financially qualify"
+                      w={460}
+                      h={360}
+                      bgClass="bg-slate-50 border border-slate-200/40 rounded-2xl shadow-sm"
+                    />
+                  </RoadmapAnchor>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 13 — card placeholder (anchor "12") — shifted left */}
+        <div className="w-full bg-white relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+              <SectionBird n={13} side="left" pos="top-[68%]" />
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-[#4a2d8a] mt-1 mb-3 leading-tight">
+                    Rahvana gives you a clear answer.
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    We&apos;ll calculate it for your situation so you know where you stand.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 flex justify-center min-w-0">
+                <ScrollReveal
+                  delayClass="reveal-delay-2"
+                  className="w-full flex justify-center min-w-0"
+                >
+                  <RoadmapAnchor
+                    id="12"
+                    color="purple"
+                    className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  >
+                    <AnimationCard
+                      file="sponsorship calculator solution final.html"
+                      title="Rahvana calculates whether you qualify"
+                      w={484}
+                      h={448}
+                    />
+                  </RoadmapAnchor>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 14 — Interview node (anchor "13") — centered */}
+        <div className="w-full bg-[#fdf0f2]/60 relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+              <SectionBird n={14} side="right" pos="top-[52%]" />
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
+                    Almost there.
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    Now let&apos;s get you ready for the interview.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 flex justify-center min-w-0">
+                <ScrollReveal>
+                  <RoadmapAnchor id="13" color="rose" className="inline-block">
+                    <NodeCircle icon={Icons.Users} label="Interview" color="rose" />
+                  </RoadmapAnchor>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 15 — card placeholder (anchor "14") — shifted left */}
+        <div className="w-full bg-white relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+              <SectionBird n={15} side="left" pos="top-[50%]" />
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
+                    The interview makes me nervous.
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    What if they ask something I don&apos;t know? What if I forget everything?
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 flex justify-center min-w-0">
+                <ScrollReveal
+                  delayClass="reveal-delay-1"
+                  className="w-full flex justify-center min-w-0"
+                >
+                  <RoadmapAnchor
+                    id="14"
+                    color="rose"
+                    className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  >
+                    <AnimationCard
+                      file="rahvana_question_stack_standalone_final.html"
+                      title="Interview anxiety, what if I forget?"
+                      w={450}
+                      h={640}
+                      maxH={640}
+                    />
+                  </RoadmapAnchor>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 16 — card placeholder (anchor "15") — shifted left */}
+        <div className="w-full bg-[#fdf0f2]/60 relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[350px]">
+              <SectionBird n={16} side="left" pos="top-[66%]" />
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-[#c0596a] mt-1 mb-3 leading-tight">
+                    Rahvana helps you prepare with confidence.
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed">
+                    Practice, get feedback, and walk in ready.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 flex justify-center min-w-0">
+                <ScrollReveal
+                  delayClass="reveal-delay-2"
+                  className="w-full flex justify-center min-w-0"
+                >
+                  <RoadmapAnchor
+                    id="15"
+                    color="rose"
+                    className={`w-full flex justify-center min-w-0 md:w-auto md:inline-block ${CARD_OFFSET_CLASS}`}
+                  >
+                    <AnimationCard
+                      file="rahvana_visa_prep_animation.html"
+                      title="Rahvana helps you prepare with confidence"
+                      w={560}
+                      h={480}
+                    />
+                  </RoadmapAnchor>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 17 — Visa Approval node (anchor "16") — centered */}
+        <div className="w-full bg-white relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+              <SectionBird
+                n={17}
+                side="right"
+                pos="top-[58%]"
+                size="w-44 lg:w-60 xl:w-72"
+              />
+              <div className="md:col-span-5 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-3 leading-tight">
+                    Visa Approved
+                  </h3>
+                  <p className="text-slate-500 text-base md:text-lg leading-relaxed font-medium">
+                    The final milestone in your journey. Your passport is stamped, and you are
+                    officially ready to begin your new life together.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-7 flex justify-center min-w-0">
+                <ScrollReveal>
+                  <RoadmapAnchor id="16" color="green" className="inline-block">
+                    <NodeCircle
+                      icon={Icons.CheckCircle}
+                      label="Visa Approval"
+                      color="green"
+                    />
+                  </RoadmapAnchor>
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* SECTION 18 — final Welcome node (anchor "17") — centered */}
+        <div className="w-full bg-[#f2faf5]/60 relative">
+          <div className="max-w-5xl mx-auto px-6 relative">
+            <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-center py-16 relative min-h-[300px]">
+              <div className="md:col-span-6 md:pr-6 min-w-0">
+                <ScrollReveal>
+                  <h3 className="text-2xl md:text-3.5xl font-bold text-primary mt-1 mb-4 leading-tight">
+                    Navigate your spouse visa journey with clarity and confidence
+                  </h3>
+                  <p className="text-slate-600 text-base md:text-lg leading-relaxed font-medium">
+                    Whether you&apos;re completing your application, gathering documents,
+                    preparing for an interview, or moving to the next step, Rahvana helps you
+                    understand where you are, what to do and what comes next.
+                  </p>
+                </ScrollReveal>
+              </div>
+              <div className="md:col-span-6 relative flex justify-center min-w-0">
+                <ScrollReveal>
+                  <RoadmapAnchor id="17" color="green" className="inline-block">
+                    <NodeCircle icon={Icons.ThumbsUp} color="green" />
+                  </RoadmapAnchor>
+                  {/* <Annotation text="Reunited at last!" direction="left" /> */}
+                </ScrollReveal>
+              </div>
+            </div>
+          </div>
+        </div>
+      </RoadmapProvider>
+
+      {/* SECTION — Toolkit / ToolDock */}
+      <ToolsDock />
+    </div>
+  );
+}

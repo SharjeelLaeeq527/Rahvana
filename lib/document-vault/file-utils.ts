@@ -37,9 +37,7 @@ export interface FileNamingOptions {
   originalExtension: string;
 }
 
-export function generateStandardizedFilename(
-  options: FileNamingOptions,
-): string {
+export function generateStandardizedFilename(options: FileNamingOptions): string {
   const {
     caseId = "CASE",
     role,
@@ -80,9 +78,7 @@ export function generateStandardizedFilename(
   // Ensure total length doesn't exceed 120 chars
   const maxNameLength = 120 - ext.length - 1; // -1 for the dot
   const truncatedFilename =
-    filename.length > maxNameLength
-      ? filename.substring(0, maxNameLength)
-      : filename;
+    filename.length > maxNameLength ? filename.substring(0, maxNameLength) : filename;
 
   return `${truncatedFilename}.${ext}`;
 }
@@ -90,10 +86,7 @@ export function generateStandardizedFilename(
 /**
  * Ensures filename uniqueness by appending _01, _02, etc.
  */
-export function ensureUniqueFilename(
-  filename: string,
-  existingFilenames: string[],
-): string {
+export function ensureUniqueFilename(filename: string, existingFilenames: string[]): string {
   if (!existingFilenames.includes(filename)) {
     return filename;
   }
@@ -102,15 +95,11 @@ export function ensureUniqueFilename(
   const nameWithoutExt = filename.substring(0, filename.length - ext.length);
 
   let counter = 1;
-  let uniqueFilename = `${nameWithoutExt}_${counter
-    .toString()
-    .padStart(2, "0")}${ext}`;
+  let uniqueFilename = `${nameWithoutExt}_${counter.toString().padStart(2, "0")}${ext}`;
 
   while (existingFilenames.includes(uniqueFilename)) {
     counter++;
-    uniqueFilename = `${nameWithoutExt}_${counter
-      .toString()
-      .padStart(2, "0")}${ext}`;
+    uniqueFilename = `${nameWithoutExt}_${counter.toString().padStart(2, "0")}${ext}`;
   }
 
   return uniqueFilename;
@@ -135,11 +124,9 @@ export function getFileExtension(filename: string, mimeType?: string): string {
       "image/png": "png",
       "image/gif": "gif",
       "application/msword": "doc",
-      "application/vnd.openxmlformats-officedocument.wordprocessingml.document":
-        "docx",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document": "docx",
       "application/vnd.ms-excel": "xls",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet":
-        "xlsx",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": "xlsx",
     };
 
     return mimeToExt[mimeType] || "bin";
@@ -154,7 +141,7 @@ export function getFileExtension(filename: string, mimeType?: string): string {
 export function isValidFileType(
   filename: string,
   mimeType: string,
-  t?: TranslateFn,
+  t?: TranslateFn
 ): { valid: boolean; message?: string } {
   const allowedMimeTypes = [
     "application/pdf",
@@ -184,7 +171,7 @@ export function isValidFileType(
 export function isValidFileSize(
   fileSize: number,
   maxSizeMB: number = 10,
-  t?: TranslateFn,
+  t?: TranslateFn
 ): { valid: boolean; message?: string } {
   const maxSizeBytes = maxSizeMB * 1024 * 1024;
 
@@ -216,7 +203,7 @@ export function isValidFileSize(
 export function getRelativeStoragePath(
   userId: string,
   documentId: string,
-  filename: string,
+  filename: string
 ): string {
   return `document-vault/${userId}/${documentId}/${filename}`;
 }
@@ -226,9 +213,7 @@ export function getRelativeStoragePath(
  */
 export function formatFileSize(bytes: number, t?: TranslateFn): string {
   if (bytes === 0)
-    return t
-      ? `0 ${t("documentVaultPage.logic.fileSize.bytes") || "Bytes"}`
-      : "0 Bytes";
+    return t ? `0 ${t("documentVaultPage.logic.fileSize.bytes") || "Bytes"}` : "0 Bytes";
 
   const k = 1024;
   const sizes = ["Bytes", "KB", "MB", "GB"];
@@ -238,9 +223,7 @@ export function formatFileSize(bytes: number, t?: TranslateFn): string {
   // t
   //     ? t(`documentVaultPage.logic.fileSize.${sizes[i].toLowerCase()}`)
   //     :
-  return (
-    Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + (unit || sizes[i])
-  );
+  return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + (unit || sizes[i]);
 }
 
 /**
@@ -258,8 +241,7 @@ export function parseStandardizedFilename(filename: string): {
   try {
     const lastDot = filename.lastIndexOf(".");
     const ext = lastDot !== -1 ? filename.substring(lastDot) : "";
-    const nameWithoutExt =
-      lastDot !== -1 ? filename.substring(0, lastDot) : filename;
+    const nameWithoutExt = lastDot !== -1 ? filename.substring(0, lastDot) : filename;
     const parts = nameWithoutExt.split("_");
 
     if (parts.length < 5) {
@@ -313,10 +295,7 @@ export function getCategoryFolderName(category: string): string {
  * Example: CASE_PETITIONER_JOHNDOE_PASSPORT_2024-12-24_v1.pdf
  * Becomes: Passport - John Doe (Petitioner) - Dec 24, 2024
  */
-export function getHumanReadableFileName(
-  standardizedFilename: string,
-  t?: TranslateFn,
-): string {
+export function getHumanReadableFileName(standardizedFilename: string, t?: TranslateFn): string {
   const parsed = parseStandardizedFilename(standardizedFilename);
 
   if (!parsed || !parsed.docKey || !parsed.personName) {
@@ -338,9 +317,7 @@ export function getHumanReadableFileName(
 
   // Convert role to readable format
   const role = parsed.role
-    ? t &&
-      t(`documentVaultPage.roles.${parsed.role}`) !==
-        `documentVaultPage.roles.${parsed.role}`
+    ? t && t(`documentVaultPage.roles.${parsed.role}`) !== `documentVaultPage.roles.${parsed.role}`
       ? t(`documentVaultPage.roles.${parsed.role}`)
       : parsed.role
           .split("_")
@@ -353,23 +330,18 @@ export function getHumanReadableFileName(
   if (parsed.date) {
     try {
       const date = new Date(parsed.date);
-      dateStr = date.toLocaleDateString(
-        t ? t("@@locale") || "en-US" : "en-US",
-        {
-          month: "short",
-          day: "numeric",
-          year: "numeric",
-        },
-      );
+      dateStr = date.toLocaleDateString(t ? t("@@locale") || "en-US" : "en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      });
     } catch {
       dateStr = parsed.date;
     }
   }
 
   // Build display name
-  const parts = [docName, personName, role ? `(${role})` : "", dateStr].filter(
-    Boolean,
-  );
+  const parts = [docName, personName, role ? `(${role})` : "", dateStr].filter(Boolean);
 
   return parts.join(" - ");
 }
@@ -381,7 +353,7 @@ export function getHumanReadableFileName(
 export function getShortDisplayName(
   standardizedFilename: string,
   docName?: string,
-  t?: TranslateFn,
+  t?: TranslateFn
 ): string {
   const parsed = parseStandardizedFilename(standardizedFilename);
 

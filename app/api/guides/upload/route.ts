@@ -2,6 +2,10 @@
 import { NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server"; // For auth verification
+import { E, msg } from "@/lib/errors";
+import { assertRequestBodySize } from "@/lib/security/request-body";
+import { validateUploadedFile } from "@/lib/security/file-content";
+import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
 
 export async function POST(request: Request) {
   try {
@@ -13,8 +17,11 @@ export async function POST(request: Request) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
+
+    const tooLarge = assertRequestBodySize(request);
+    if (tooLarge) return tooLarge;
 
     const formData = await request.formData();
 
@@ -23,7 +30,15 @@ export async function POST(request: Request) {
     const stepKey = formData.get("stepKey") as string;
 
     if (!file || !slug || !stepKey) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json(
+        { error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, { fields: "[file, slug, stepKey]" }) },
+        { status: 400 }
+      );
+    }
+
+    const checked = await validateUploadedFile(file, UPLOAD_PROFILES.guide);
+    if (!checked.ok) {
+      return NextResponse.json({ error: checked.error }, { status: checked.status });
     }
 
     // 2️⃣ Get guide ID
@@ -34,7 +49,7 @@ export async function POST(request: Request) {
       .single();
 
     if (!guide) {
-      return NextResponse.json({ error: "Guide not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // 3️⃣ Get user guide session
@@ -46,7 +61,7 @@ export async function POST(request: Request) {
       .single();
 
     if (!session) {
-      return NextResponse.json({ error: "Guide session not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // 4️⃣ Construct storage path
@@ -55,11 +70,14 @@ export async function POST(request: Request) {
     // 5️⃣ Upload file to Supabase Storage
     const { error: uploadError } = await supabaseAdmin.storage
       .from("document-vault")
-      .upload(filePath, file, { upsert: true });
+      .upload(filePath, checked.buffer, {
+        upsert: true,
+        contentType: checked.detectedMime,
+      });
 
     if (uploadError) {
       console.error("Storage upload error:", uploadError);
-      return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
     }
 
     // 6️⃣ Get public URL
@@ -68,20 +86,18 @@ export async function POST(request: Request) {
       .getPublicUrl(filePath);
 
     // 7️⃣ Save metadata in DB
-    const { error: dbError } = await supabaseAdmin
-      .from("user_guide_files")
-      .insert({
-        user_guide_id: session.id,
-        user_id: user.id,
-        step_key: stepKey,
-        file_url: publicUrlData.publicUrl,
-        file_name: file.name,
-        mime_type: file.type,
-      });
+    const { error: dbError } = await supabaseAdmin.from("user_guide_files").insert({
+      user_guide_id: session.id,
+      user_id: user.id,
+      step_key: stepKey,
+      file_url: publicUrlData.publicUrl,
+      file_name: file.name,
+      mime_type: file.type,
+    });
 
     if (dbError) {
       console.error("DB insert error:", dbError);
-      return NextResponse.json({ error: "Database save failed" }, { status: 500 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_SAVE_FAILED) }, { status: 500 });
     }
 
     // 8️⃣ Return success
@@ -91,6 +107,6 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     console.error("Upload API error:", error);
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

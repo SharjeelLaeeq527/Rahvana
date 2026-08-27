@@ -1,7 +1,7 @@
 /**
  * POST /api/journeys/create-from-config
  * Create a complete journey from a configuration JSON file
- * 
+ *
  * This endpoint:
  * 1. Accepts a visa type (e.g., "ir-1")
  * 2. Loads the corresponding JSON config
@@ -55,7 +55,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("Error in POST /api/journeys/create-from-config:", error);
 
-    const errorMessage = (error instanceof Error ? error.message : String(error)) || "Unknown error";
+    const errorMessage =
+      (error instanceof Error ? error.message : String(error)) || "Unknown error";
 
     // Handle specific error cases
     if (errorMessage.includes("ENOENT") || errorMessage.includes("not found")) {

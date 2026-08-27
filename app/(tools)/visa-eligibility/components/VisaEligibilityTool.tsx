@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createBrowserClient } from "@supabase/ssr";
 import { useAuth } from "@/app/context/AuthContext";
-import { MasterProfile } from "@/types/profile"
+import { useUserProfile } from "@/app/context/UserProfileContext";
+import { MasterProfile } from "@/types/profile";
 import { motion, AnimatePresence } from "framer-motion";
 import { autoFillForm } from "@/lib/autoFill/mapper";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import {
   CheckCircle,
   // ChevronLeft,
@@ -67,190 +68,137 @@ export function VisaEligibilityTool() {
   const [saveMessage, setSaveMessage] = useState("");
 
   const { user } = useAuth();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
+  const { profile, isProfileLoading, updateProfile } = useUserProfile();
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
+    if (isProfileLoading || !profile) return;
 
-      const { data } = await supabase
-        .from("user_profiles")
-        .select("profile_details")
-        .eq("id", user.id)
-        .single();
-
-      if (data?.profile_details) {
-        const profile = data.profile_details as MasterProfile;
-
-        // Use the centralized auto-fill logic
-        const dummyForm: FutureAnswers = {
-          petitionerStatus: undefined,
-          statusOrigin: undefined,
-          petitionerAgeGroup: undefined,
-          relationship: undefined,
-          legalStatus: undefined,
-          applicantAgeGroup: undefined,
-          applicantMaritalStatus: undefined,
-          applicantLocation: undefined,
-          isLegallyMarried: undefined,
-          marriageDuration: undefined,
-          violationHistory: undefined,
-          intent: undefined,
-          sponsorBase: undefined,
-        };
-
-        // Initialize with null to ensure autoFillForm doesn't skip them
-        const formRecord = dummyForm as unknown as Record<string, unknown>;
-        Object.keys(dummyForm).forEach((k) => {
-          formRecord[k] = null;
-        });
-
-        const filledAnswers = autoFillForm(
-          profile,
-          formRecord,
-        ) as FutureAnswers;
-
-        // Derivation logic for fields that might not be explicitly set in visaEligibility
-        const newAnswers: Partial<FutureAnswers> = { ...filledAnswers };
-
-        // 1. Petitioner Status (if not explicitly in visaEligibility)
-        if (!newAnswers.petitionerStatus) {
-          // Check standard citizenshipStatus
-          if (profile.citizenshipStatus === "USCitizen")
-            newAnswers.petitionerStatus = "US_CITIZEN";
-          else if (profile.citizenshipStatus === "LPR")
-            newAnswers.petitionerStatus = "LPR";
-          // Fallback: Check for loose string matches in case of legacy data
-          else if (
-            String(profile.citizenshipStatus).toLowerCase().includes("citizen")
-          )
-            newAnswers.petitionerStatus = "US_CITIZEN";
-          else if (
-            String(profile.citizenshipStatus)
-              .toLowerCase()
-              .includes("permanent") ||
-            String(profile.citizenshipStatus).includes("LPR")
-          )
-            newAnswers.petitionerStatus = "LPR";
-        }
-
-        // 2. Petitioner Age (Derive from DOB)
-        if (!newAnswers.petitionerAgeGroup && profile.dateOfBirth) {
-          // Handle direct age if available (legacy?) or calc from DOB
-          if (profile.dateOfBirth) {
-            const birthDate = new Date(profile.dateOfBirth);
-            const ageDiffMs = Date.now() - birthDate.getTime();
-            const ageDate = new Date(ageDiffMs);
-            const age = Math.abs(ageDate.getUTCFullYear() - 1970);
-            newAnswers.petitionerAgeGroup = age >= 21 ? "OVER_21" : "UNDER_21";
-          }
-        }
-
-        // 3. Relationship
-        if (!newAnswers.relationship) {
-          // Check visaType first
-          if (profile.visaType) {
-            const vt = profile.visaType;
-            if (["IR-1", "CR-1", "K-3", "K3", "IR1", "CR1"].includes(vt))
-              newAnswers.relationship = "SPOUSE";
-            else if (["IR-5", "IR5"].includes(vt))
-              newAnswers.relationship = "PARENT";
-            else if (["IR-2", "F1", "F2A", "F2B", "F3", "IR2"].includes(vt))
-              newAnswers.relationship = "CHILD";
-            else if (["F4"].includes(vt)) newAnswers.relationship = "SIBLING";
-            else if (["K-1", "K1"].includes(vt))
-              newAnswers.relationship = "FIANCE";
-          }
-
-          // Check explicit relationship object
-          if (!newAnswers.relationship && profile.relationship?.type) {
-            const rel = profile.relationship.type.toUpperCase();
-            if (rel === "SPOUSE") newAnswers.relationship = "SPOUSE";
-            else if (rel === "FIANCE" || rel === "FIANCEE")
-              newAnswers.relationship = "FIANCE";
-            else if (rel === "CHILD") newAnswers.relationship = "CHILD";
-            else if (rel === "PARENT" || rel === "FATHER" || rel === "MOTHER")
-              newAnswers.relationship = "PARENT";
-            else if (rel === "SIBLING" || rel === "BROTHER" || rel === "SISTER")
-              newAnswers.relationship = "SIBLING";
-          }
-        }
-
-        // 4. Marriage Duration
-        if (
-          !newAnswers.marriageDuration &&
-          profile.relationship?.marriageDate
-        ) {
-          const marriageDate = new Date(profile.relationship.marriageDate);
-          const diffMs = Date.now() - marriageDate.getTime();
-          const diffYears = diffMs / (1000 * 60 * 60 * 24 * 365.25);
-          newAnswers.marriageDuration =
-            diffYears >= 2 ? "MORE_THAN_2" : "LESS_THAN_2";
-          newAnswers.isLegallyMarried = "YES";
-        }
-
-        // 5. Applicant Location
-        if (!newAnswers.applicantLocation) {
-          const beneficiaryCountry =
-            profile.beneficiary?.countryOfResidence ||
-            profile.currentAddress?.country;
-          if (beneficiaryCountry) {
-            const isUS =
-              beneficiaryCountry.toLowerCase().includes("united states") ||
-              beneficiaryCountry.toLowerCase() === "usa" ||
-              beneficiaryCountry.toLowerCase() === "us";
-            newAnswers.applicantLocation = isUS ? "INSIDE_US" : "OUTSIDE_US";
-          }
-        }
-
-        // 6. Applicant Age
-        if (!newAnswers.applicantAgeGroup) {
-          const benDob = profile.beneficiary?.dateOfBirth;
-          if (benDob) {
-            const birthDate = new Date(benDob);
-            const ageDiffMs = Date.now() - birthDate.getTime();
-            const ageDate = new Date(ageDiffMs);
-            const age = Math.abs(ageDate.getUTCFullYear() - 1970);
-            newAnswers.applicantAgeGroup = age >= 21 ? "OVER_21" : "UNDER_21";
-          }
-        }
-
-        if (Object.keys(newAnswers).length > 0) {
-          setAnswers((prev) => {
-            const finalAnswers = { ...prev, ...newAnswers };
-
-            // Check if we have enough info to show results directly
-            // Minimal set: petitionerStatus (or sponsorBase), intent, relationship (if family)
-            const hasFamilyBasics =
-              finalAnswers.petitionerStatus && finalAnswers.relationship;
-            const hasEmploymentBasics =
-              finalAnswers.sponsorBase &&
-              ["EMPLOYMENT", "INVESTMENT", "HUMANITARIAN"].includes(
-                finalAnswers.sponsorBase,
-              );
-
-            // If we have intent and either family or employment basics, likely enough for a result
-            if (
-              finalAnswers.intent &&
-              (hasFamilyBasics || hasEmploymentBasics)
-            ) {
-              // We add a small delay to let state settle or just setStep(5)
-              // However, doing it here might cause render issues if not careful.
-              // We'll use a timeout to push to step 5.
-              setTimeout(() => setStep(5), 100);
-            }
-
-            return finalAnswers;
-          });
-        }
-      }
+    // Use the centralized auto-fill logic
+    const dummyForm: FutureAnswers = {
+      petitionerStatus: undefined,
+      statusOrigin: undefined,
+      petitionerAgeGroup: undefined,
+      relationship: undefined,
+      legalStatus: undefined,
+      applicantAgeGroup: undefined,
+      applicantMaritalStatus: undefined,
+      applicantLocation: undefined,
+      isLegallyMarried: undefined,
+      marriageDuration: undefined,
+      violationHistory: undefined,
+      intent: undefined,
+      sponsorBase: undefined,
     };
 
-    fetchProfile();
-  }, [user, supabase]);
+    // Initialize with null to ensure autoFillForm doesn't skip them
+    const formRecord = dummyForm as unknown as Record<string, unknown>;
+    Object.keys(dummyForm).forEach((k) => {
+      formRecord[k] = null;
+    });
+
+    const filledAnswers = autoFillForm(profile, formRecord) as FutureAnswers;
+
+    // Derivation logic for fields that might not be explicitly set in visaEligibility
+    const newAnswers: Partial<FutureAnswers> = { ...filledAnswers };
+
+    // 1. Petitioner Status
+    if (!newAnswers.petitionerStatus) {
+      if (profile.citizenshipStatus === "USCitizen") newAnswers.petitionerStatus = "US_CITIZEN";
+      else if (profile.citizenshipStatus === "LPR") newAnswers.petitionerStatus = "LPR";
+      else if (String(profile.citizenshipStatus).toLowerCase().includes("citizen"))
+        newAnswers.petitionerStatus = "US_CITIZEN";
+      else if (
+        String(profile.citizenshipStatus).toLowerCase().includes("permanent") ||
+        String(profile.citizenshipStatus).includes("LPR")
+      )
+        newAnswers.petitionerStatus = "LPR";
+    }
+
+    // 2. Petitioner Age
+    if (!newAnswers.petitionerAgeGroup && profile.dateOfBirth) {
+      const birthDate = new Date(profile.dateOfBirth);
+      const ageDiffMs = Date.now() - birthDate.getTime();
+      const ageDate = new Date(ageDiffMs);
+      const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+      newAnswers.petitionerAgeGroup = age >= 21 ? "OVER_21" : "UNDER_21";
+    }
+
+    // 3. Relationship
+    if (!newAnswers.relationship) {
+      if (profile.visaType) {
+        const vt = profile.visaType;
+        if (["IR-1", "CR-1", "K-3", "K3", "IR1", "CR1"].includes(vt))
+          newAnswers.relationship = "SPOUSE";
+        else if (["IR-5", "IR5"].includes(vt)) newAnswers.relationship = "PARENT";
+        else if (["IR-2", "F1", "F2A", "F2B", "F3", "IR2"].includes(vt))
+          newAnswers.relationship = "CHILD";
+        else if (["F4"].includes(vt)) newAnswers.relationship = "SIBLING";
+        else if (["K-1", "K1"].includes(vt)) newAnswers.relationship = "FIANCE";
+      }
+
+      if (!newAnswers.relationship && profile.relationship?.type) {
+        const rel = profile.relationship.type.toUpperCase();
+        if (rel === "SPOUSE") newAnswers.relationship = "SPOUSE";
+        else if (rel === "FIANCE" || rel === "FIANCEE") newAnswers.relationship = "FIANCE";
+        else if (rel === "CHILD") newAnswers.relationship = "CHILD";
+        else if (rel === "PARENT" || rel === "FATHER" || rel === "MOTHER")
+          newAnswers.relationship = "PARENT";
+        else if (rel === "SIBLING" || rel === "BROTHER" || rel === "SISTER")
+          newAnswers.relationship = "SIBLING";
+      }
+    }
+
+    // 4. Marriage Duration
+    if (!newAnswers.marriageDuration && profile.relationship?.marriageDate) {
+      const marriageDate = new Date(profile.relationship.marriageDate);
+      const diffMs = Date.now() - marriageDate.getTime();
+      const diffYears = diffMs / (1000 * 60 * 60 * 24 * 365.25);
+      newAnswers.marriageDuration = diffYears >= 2 ? "MORE_THAN_2" : "LESS_THAN_2";
+      newAnswers.isLegallyMarried = "YES";
+    }
+
+    // 5. Applicant Location
+    if (!newAnswers.applicantLocation) {
+      const beneficiaryCountry =
+        profile.beneficiary?.countryOfResidence || profile.currentAddress?.country;
+      if (beneficiaryCountry) {
+        const isUS =
+          beneficiaryCountry.toLowerCase().includes("united states") ||
+          beneficiaryCountry.toLowerCase() === "usa" ||
+          beneficiaryCountry.toLowerCase() === "us";
+        newAnswers.applicantLocation = isUS ? "INSIDE_US" : "OUTSIDE_US";
+      }
+    }
+
+    // 6. Applicant Age
+    if (!newAnswers.applicantAgeGroup) {
+      const benDob = profile.beneficiary?.dateOfBirth;
+      if (benDob) {
+        const birthDate = new Date(benDob);
+        const ageDiffMs = Date.now() - birthDate.getTime();
+        const ageDate = new Date(ageDiffMs);
+        const age = Math.abs(ageDate.getUTCFullYear() - 1970);
+        newAnswers.applicantAgeGroup = age >= 21 ? "OVER_21" : "UNDER_21";
+      }
+    }
+
+    if (Object.keys(newAnswers).length > 0) {
+      setAnswers((prev) => {
+        const finalAnswers = { ...prev, ...newAnswers };
+
+        const hasFamilyBasics = finalAnswers.petitionerStatus && finalAnswers.relationship;
+        const hasEmploymentBasics =
+          finalAnswers.sponsorBase &&
+          ["EMPLOYMENT", "INVESTMENT", "HUMANITARIAN"].includes(finalAnswers.sponsorBase);
+
+        if (finalAnswers.intent && (hasFamilyBasics || hasEmploymentBasics)) {
+          setTimeout(() => setStep(5), 100);
+        }
+
+        return finalAnswers;
+      });
+    }
+  }, [profile, isProfileLoading]);
 
   const handleEdit = () => {
     setStep(1);
@@ -263,32 +211,17 @@ export function VisaEligibilityTool() {
       setSaving(true);
       setSaveMessage("");
 
-      // Get existing profile
-      const { data: profileData } = await supabase
-        .from("user_profiles")
-        .select("profile_details")
-        .eq("id", user.id)
-        .single();
+      // Use context's updateProfile instead of direct Supabase upsert
+      updateProfile(
+        {
+          visaEligibility: {
+            ...(profile?.visaEligibility || {}),
+            ...answers,
+          },
+        } as any,
+        { immediate: true, silent: true }
+      );
 
-      const existingProfile =
-        (profileData?.profile_details as MasterProfile) || {};
-
-      // Update visaEligibility section
-      const updatedProfile: MasterProfile = {
-        ...existingProfile,
-        visaEligibility: {
-          ...existingProfile.visaEligibility,
-          ...answers,
-        },
-      };
-
-      const { error } = await supabase.from("user_profiles").upsert({
-        id: user.id,
-        profile_details: updatedProfile,
-        updated_at: new Date().toISOString(),
-      });
-
-      if (error) throw error;
       setSaveMessage("Successfully saved to your profile!");
       setTimeout(() => setSaveMessage(""), 3000);
     } catch (err) {
@@ -305,10 +238,7 @@ export function VisaEligibilityTool() {
   const next = () => setStep(Math.min(step + 1, totalSteps));
   const back = () => setStep(Math.max(step - 1, 1));
 
-  const setAnswer = <K extends keyof FutureAnswers>(
-    key: K,
-    value: FutureAnswers[K],
-  ) => {
+  const setAnswer = <K extends keyof FutureAnswers>(key: K, value: FutureAnswers[K]) => {
     setAnswers({ ...answers, [key]: value });
   };
 
@@ -343,16 +273,11 @@ export function VisaEligibilityTool() {
         }`}
       >
         {Icon ? (
-          <Icon
-            size={20}
-            className={isSelected ? "opacity-100" : "opacity-70"}
-          />
+          <Icon size={20} className={isSelected ? "opacity-100" : "opacity-70"} />
         ) : (
           <CheckCircle
             size={20}
-            className={
-              isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-50"
-            }
+            className={isSelected ? "opacity-100" : "opacity-0 group-hover:opacity-50"}
           />
         )}
       </div>
@@ -390,32 +315,31 @@ export function VisaEligibilityTool() {
       if (marriageDuration === "MORE_THAN_2") {
         v.push({
           code: "IR-1",
-          title: "Immediate Relative – Spouse of US Citizen",
-          description:
-            "For spouses of US citizens married for 2 years or more.",
+          title: "Immediate Relative, Spouse of US Citizen",
+          description: "For spouses of US citizens married for 2 years or more.",
         });
       } else if (marriageDuration === "LESS_THAN_2") {
         v.push({
           code: "CR-1",
-          title: "Conditional Resident – Spouse of US Citizen",
-          description:
-            "For spouses of US citizens married for less than 2 years.",
+          title: "Conditional Resident, Spouse of US Citizen",
+          description: "For spouses of US citizens married for less than 2 years.",
         });
       }
     }
 
     // IR-5 (Parent of US Citizen)
+    // IR-5 is hidden on production (see lib/feature-flags) until it launches.
     if (
+      IR5_ENABLED &&
       petitionerStatus === "US_CITIZEN" &&
       petitionerAgeGroup === "OVER_21" &&
       relationship === "PARENT" &&
       relationship === "PARENT" &&
-      (answers.legalStatus === "BIOLOGICAL" ||
-        answers.legalStatus === "ADOPTIVE") // ask about the step relationship // Check legalStatus instead of isBiologicalParent
+      (answers.legalStatus === "BIOLOGICAL" || answers.legalStatus === "ADOPTIVE") // ask about the step relationship // Check legalStatus instead of isBiologicalParent
     ) {
       v.push({
         code: "IR-5",
-        title: "Immediate Relative – Parent of US Citizen",
+        title: "Immediate Relative, Parent of US Citizen",
         description: "For parents of US citizens who are 21 years or older.",
       });
     }
@@ -426,15 +350,11 @@ export function VisaEligibilityTool() {
 
     if (petitionerStatus === "US_CITIZEN" || petitionerStatus === "LPR") {
       if (relationship === "CHILD") {
-        if (
-          applicantAgeGroup === "UNDER_21" &&
-          applicantMaritalStatus === "SINGLE"
-        ) {
+        if (applicantAgeGroup === "UNDER_21" && applicantMaritalStatus === "SINGLE") {
           v.push({
             code: petitionerStatus === "US_CITIZEN" ? "IR-2" : "F2A",
             title: "Child of Sponsor",
-            description:
-              "For unmarried children under 21 of US citizens or Green Card holders.",
+            description: "For unmarried children under 21 of US citizens or Green Card holders.",
           });
         } else {
           v.push({
@@ -449,8 +369,7 @@ export function VisaEligibilityTool() {
         v.push({
           code: "F4",
           title: "Sibling of US Citizen",
-          description:
-            "For brothers and sisters of US citizens aged 21 or older.",
+          description: "For brothers and sisters of US citizens aged 21 or older.",
         });
       }
     }
@@ -459,16 +378,11 @@ export function VisaEligibilityTool() {
      K VISAS
      ========================= */
 
-    if (
-      petitionerStatus === "US_CITIZEN" &&
-      relationship === "FIANCE" &&
-      intent === "PERMANENT"
-    ) {
+    if (petitionerStatus === "US_CITIZEN" && relationship === "FIANCE" && intent === "PERMANENT") {
       v.push({
         code: "K-1",
         title: "Fiancé(e) Visa",
-        description:
-          "For fiancé(e)s of US citizens intending to marry in the US.",
+        description: "For fiancé(e)s of US citizens intending to marry in the US.",
       });
     }
 
@@ -481,20 +395,18 @@ export function VisaEligibilityTool() {
         {
           code: "EB-1",
           title: "Employment-Based First Preference",
-          description:
-            "For individuals with extraordinary ability or multinational executives.",
+          description: "For individuals with extraordinary ability or multinational executives.",
         },
         {
           code: "EB-2",
           title: "Employment-Based Second Preference",
-          description:
-            "For professionals with advanced degrees or exceptional ability.",
+          description: "For professionals with advanced degrees or exceptional ability.",
         },
         {
           code: "EB-3",
           title: "Employment-Based Third Preference",
           description: "For skilled workers, professionals, and other workers.",
-        },
+        }
       );
     }
 
@@ -506,8 +418,7 @@ export function VisaEligibilityTool() {
       v.push({
         code: "EB-5",
         title: "Immigrant Investor Visa",
-        description:
-          "For investors who invest in US businesses and create jobs.",
+        description: "For investors who invest in US businesses and create jobs.",
       });
     }
 
@@ -519,8 +430,7 @@ export function VisaEligibilityTool() {
       v.push({
         code: "Humanitarian",
         title: "Humanitarian-Based Immigration",
-        description:
-          "Includes asylum, refugee, VAWA, and special immigrant categories.",
+        description: "Includes asylum, refugee, VAWA, and special immigrant categories.",
       });
     }
 
@@ -549,7 +459,7 @@ export function VisaEligibilityTool() {
           code: "H-1B",
           title: "Specialty Occupation Work Visa",
           description: "For professionals in specialty occupations.",
-        },
+        }
       );
     }
 
@@ -560,8 +470,7 @@ export function VisaEligibilityTool() {
       v.push({
         code: "J-1",
         title: "Exchange Visitor Visa",
-        description:
-          "For participants in approved cultural or educational exchange programs.",
+        description: "For participants in approved cultural or educational exchange programs.",
       });
     }
 
@@ -569,8 +478,7 @@ export function VisaEligibilityTool() {
       v.push({
         code: "L-1",
         title: "Intra-Company Transfer Visa",
-        description:
-          "For employees transferring to a US branch of the same company.",
+        description: "For employees transferring to a US branch of the same company.",
       });
     }
 
@@ -596,8 +504,7 @@ export function VisaEligibilityTool() {
       v.push({
         code: "P",
         title: "Athlete or Artist Visa",
-        description:
-          "For internationally recognized athletes or entertainment groups.",
+        description: "For internationally recognized athletes or entertainment groups.",
       });
     }
 
@@ -605,8 +512,7 @@ export function VisaEligibilityTool() {
       v.push({
         code: "Q",
         title: "Cultural Exchange Visa",
-        description:
-          "For participants in international cultural exchange programs.",
+        description: "For participants in international cultural exchange programs.",
       });
     }
 
@@ -665,19 +571,13 @@ export function VisaEligibilityTool() {
                   <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
                     <Flag size={32} />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Petitioner Details
-                  </h2>
-                  <p className="text-gray-500 mt-2">
-                    Tell us about your status in the U.S.
-                  </p>
+                  <h2 className="text-2xl font-bold text-gray-800">Petitioner Details</h2>
+                  <p className="text-gray-500 mt-2">Tell us about your status in the U.S.</p>
                 </div>
 
                 {/* Q1: Status */}
                 <div className="space-y-4">
-                  <p className="font-semibold text-gray-700">
-                    Q. Are you currently a:
-                  </p>
+                  <p className="font-semibold text-gray-700">Q. Are you currently a:</p>
                   {[
                     { val: "US_CITIZEN", label: "US Citizen" },
                     {
@@ -691,48 +591,41 @@ export function VisaEligibilityTool() {
                       label={opt.label}
                       isSelected={answers.petitionerStatus === opt.val}
                       onClick={() =>
-                        setAnswer(
-                          "petitionerStatus",
-                          opt.val as FutureAnswers["petitionerStatus"],
-                        )
+                        setAnswer("petitionerStatus", opt.val as FutureAnswers["petitionerStatus"])
                       }
                     />
                   ))}
                 </div>
 
                 {/* Q2: Status Origin (Only if not NONE) */}
-                {answers.petitionerStatus &&
-                  answers.petitionerStatus !== "NONE" && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="space-y-4"
-                    >
-                      <p className="font-semibold text-gray-700">
-                        Q. How did you get your US status?
-                      </p>
-                      {[
-                        { val: "NATURALIZED", label: "Naturalized citizen" },
-                        { val: "BIRTH", label: "By birth" },
-                        {
-                          val: "GREEN_CARD",
-                          label: "Green Card (family / employment / asylum)",
-                        },
-                      ].map((opt) => (
-                        <OptionButton
-                          key={opt.val}
-                          label={opt.label}
-                          isSelected={answers.statusOrigin === opt.val}
-                          onClick={() =>
-                            setAnswer(
-                              "statusOrigin",
-                              opt.val as FutureAnswers["statusOrigin"],
-                            )
-                          }
-                        />
-                      ))}
-                    </motion.div>
-                  )}
+                {answers.petitionerStatus && answers.petitionerStatus !== "NONE" && (
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="space-y-4"
+                  >
+                    <p className="font-semibold text-gray-700">
+                      Q. How did you get your US status?
+                    </p>
+                    {[
+                      { val: "NATURALIZED", label: "Naturalized citizen" },
+                      { val: "BIRTH", label: "By birth" },
+                      {
+                        val: "GREEN_CARD",
+                        label: "Green Card (family / employment / asylum)",
+                      },
+                    ].map((opt) => (
+                      <OptionButton
+                        key={opt.val}
+                        label={opt.label}
+                        isSelected={answers.statusOrigin === opt.val}
+                        onClick={() =>
+                          setAnswer("statusOrigin", opt.val as FutureAnswers["statusOrigin"])
+                        }
+                      />
+                    ))}
+                  </motion.div>
+                )}
 
                 {/* Q3: Age */}
                 {answers.statusOrigin && (
@@ -741,14 +634,10 @@ export function VisaEligibilityTool() {
                     animate={{ opacity: 1 }}
                     className="space-y-4"
                   >
-                    <p className="font-semibold text-gray-700">
-                      Q. What is your current age?
-                    </p>
+                    <p className="font-semibold text-gray-700">Q. What is your current age?</p>
                     <div className="grid grid-cols-2 gap-3">
                       <button
-                        onClick={() =>
-                          setAnswer("petitionerAgeGroup", "UNDER_21")
-                        }
+                        onClick={() => setAnswer("petitionerAgeGroup", "UNDER_21")}
                         className={`p-4 rounded-xl border-2 font-semibold transition-all ${
                           answers.petitionerAgeGroup === "UNDER_21"
                             ? "border-primary bg-primary/5 text-primary"
@@ -758,9 +647,7 @@ export function VisaEligibilityTool() {
                         Under 21
                       </button>
                       <button
-                        onClick={() =>
-                          setAnswer("petitionerAgeGroup", "OVER_21")
-                        }
+                        onClick={() => setAnswer("petitionerAgeGroup", "OVER_21")}
                         className={`p-4 rounded-xl border-2 font-semibold transition-all ${
                           answers.petitionerAgeGroup === "OVER_21"
                             ? "border-primary bg-primary/5 text-primary"
@@ -780,10 +667,9 @@ export function VisaEligibilityTool() {
                       >
                         <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
                         <p className="text-sm text-blue-900">
-                          <span className="font-semibold">Note:</span> U.S.
-                          citizens under 21 cannot sponsor parents or siblings.
-                          They may petition for a spouse, provided they meet the
-                          minimum age and financial sponsorship requirements.
+                          <span className="font-semibold">Note:</span> U.S. citizens under 21 cannot
+                          sponsor parents or siblings. They may petition for a spouse, provided they
+                          meet the minimum age and financial sponsorship requirements.
                         </p>
                       </motion.div>
                     )}
@@ -794,8 +680,7 @@ export function VisaEligibilityTool() {
                   <button
                     onClick={next}
                     disabled={
-                      !answers.petitionerAgeGroup ||
-                      answers.petitionerAgeGroup === "UNDER_21"
+                      !answers.petitionerAgeGroup || answers.petitionerAgeGroup === "UNDER_21"
                     }
                     className="px-8 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all flex items-center gap-2"
                   >
@@ -812,34 +697,22 @@ export function VisaEligibilityTool() {
                   <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
                     <Heart size={32} />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Relationship
-                  </h2>
+                  <h2 className="text-2xl font-bold text-gray-800">Relationship</h2>
                   <p className="text-gray-500 mt-2">Who are you sponsoring?</p>
                 </div>
 
                 {/* Q4 */}
                 <div className="space-y-4">
                   <p className="font-semibold text-gray-700">
-                    Q. What is your relationship with the person you want to
-                    sponsor? (attempt if applicable)
+                    Q. What is your relationship with the person you want to sponsor? (attempt if
+                    applicable)
                   </p>
                   <div className="grid grid-cols-2 gap-3">
-                    {[
-                      "SPOUSE",
-                      "PARENT",
-                      "CHILD",
-                      "SIBLING",
-                      "FIANCE",
-                      "OTHER",
-                    ].map((rel) => (
+                    {["SPOUSE", "PARENT", "CHILD", "SIBLING", "FIANCE", "OTHER"].map((rel) => (
                       <button
                         key={rel}
                         onClick={() =>
-                          setAnswer(
-                            "relationship",
-                            rel as FutureAnswers["relationship"],
-                          )
+                          setAnswer("relationship", rel as FutureAnswers["relationship"])
                         }
                         className={`p-4 rounded-xl border-2 font-semibold text-sm transition-all ${
                           answers.relationship === rel
@@ -847,17 +720,14 @@ export function VisaEligibilityTool() {
                             : "border-gray-100 text-gray-600 hover:bg-gray-50"
                         }`}
                       >
-                        {rel.charAt(0) +
-                          rel.slice(1).toLowerCase().replace("_", " ")}
+                        {rel.charAt(0) + rel.slice(1).toLowerCase().replace("_", " ")}
                       </button>
                     ))}
                   </div>
                 </div>
 
                 {/* Q5 */}
-                {["PARENT", "CHILD", "SIBLING"].includes(
-                  answers.relationship || "",
-                ) && (
+                {["PARENT", "CHILD", "SIBLING"].includes(answers.relationship || "") && (
                   <motion.div
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
@@ -876,10 +746,7 @@ export function VisaEligibilityTool() {
                         label={opt.label}
                         isSelected={answers.legalStatus === opt.val}
                         onClick={() =>
-                          setAnswer(
-                            "legalStatus",
-                            opt.val as FutureAnswers["legalStatus"],
-                          )
+                          setAnswer("legalStatus", opt.val as FutureAnswers["legalStatus"])
                         }
                       />
                     ))}
@@ -923,21 +790,13 @@ export function VisaEligibilityTool() {
                       <div className="space-y-2">
                         <OptionButton
                           label="Less than 2 years"
-                          isSelected={
-                            answers.marriageDuration === "LESS_THAN_2"
-                          }
-                          onClick={() =>
-                            setAnswer("marriageDuration", "LESS_THAN_2")
-                          }
+                          isSelected={answers.marriageDuration === "LESS_THAN_2"}
+                          onClick={() => setAnswer("marriageDuration", "LESS_THAN_2")}
                         />
                         <OptionButton
                           label="2 years or more"
-                          isSelected={
-                            answers.marriageDuration === "MORE_THAN_2"
-                          }
-                          onClick={() =>
-                            setAnswer("marriageDuration", "MORE_THAN_2")
-                          }
+                          isSelected={answers.marriageDuration === "MORE_THAN_2"}
+                          onClick={() => setAnswer("marriageDuration", "MORE_THAN_2")}
                         />
                       </div>
                     </div>
@@ -945,10 +804,7 @@ export function VisaEligibilityTool() {
                 )}
 
                 <div className="flex justify-between pt-4">
-                  <button
-                    onClick={back}
-                    className="text-gray-400 hover:text-gray-600 font-medium"
-                  >
+                  <button onClick={back} className="text-gray-400 hover:text-gray-600 font-medium">
                     Back
                   </button>
                   <button
@@ -956,8 +812,7 @@ export function VisaEligibilityTool() {
                     disabled={
                       (!answers.legalStatus &&
                         answers.relationship === "SPOUSE" &&
-                        (!answers.isLegallyMarried ||
-                          !answers.marriageDuration)) ||
+                        (!answers.isLegallyMarried || !answers.marriageDuration)) ||
                       (!answers.legalStatus &&
                         (answers.relationship === "PARENT" ||
                           answers.relationship === "SIBLING" ||
@@ -979,19 +834,13 @@ export function VisaEligibilityTool() {
                   <div className="bg-primary/10 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-primary">
                     <User size={32} />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Applicant Details
-                  </h2>
-                  <p className="text-gray-500 mt-2">
-                    Information about the beneficiary.
-                  </p>
+                  <h2 className="text-2xl font-bold text-gray-800">Applicant Details</h2>
+                  <p className="text-gray-500 mt-2">Information about the beneficiary.</p>
                 </div>
 
                 {/* Q6 Age */}
                 <div className="space-y-4">
-                  <p className="font-semibold text-gray-700">
-                    Q. What is the applicant’s age?
-                  </p>
+                  <p className="font-semibold text-gray-700">Q. What is the applicant's age?</p>
                   <div className="flex gap-3">
                     <button
                       onClick={() => setAnswer("applicantAgeGroup", "UNDER_21")}
@@ -1019,7 +868,7 @@ export function VisaEligibilityTool() {
                 {/* Q7 Marital Status */}
                 <div className="space-y-4">
                   <p className="font-semibold text-gray-700">
-                    Q. What is the applicant’s marital status?
+                    Q. What is the applicant's marital status?
                   </p>
                   <div className="grid grid-cols-3 gap-3">
                     {["SINGLE", "MARRIED", "DIVORCED_WIDOWED"].map((status) => (
@@ -1028,7 +877,7 @@ export function VisaEligibilityTool() {
                         onClick={() =>
                           setAnswer(
                             "applicantMaritalStatus",
-                            status as FutureAnswers["applicantMaritalStatus"],
+                            status as FutureAnswers["applicantMaritalStatus"]
                           )
                         }
                         className={`p-3 rounded-xl border-2 font-semibold text-sm transition-all ${
@@ -1037,8 +886,7 @@ export function VisaEligibilityTool() {
                             : "border-gray-100 text-gray-600 hover:bg-gray-50"
                         }`}
                       >
-                        {status.charAt(0) +
-                          status.slice(1).toLowerCase().replace("_", " ")}
+                        {status.charAt(0) + status.slice(1).toLowerCase().replace("_", " ")}
                       </button>
                     ))}
                   </div>
@@ -1053,27 +901,20 @@ export function VisaEligibilityTool() {
                     <OptionButton
                       label="Outside the US"
                       isSelected={answers.applicantLocation === "OUTSIDE_US"}
-                      onClick={() =>
-                        setAnswer("applicantLocation", "OUTSIDE_US")
-                      }
+                      onClick={() => setAnswer("applicantLocation", "OUTSIDE_US")}
                       icon={Globe}
                     />
                     <OptionButton
                       label="Inside the US"
                       isSelected={answers.applicantLocation === "INSIDE_US"}
-                      onClick={() =>
-                        setAnswer("applicantLocation", "INSIDE_US")
-                      }
+                      onClick={() => setAnswer("applicantLocation", "INSIDE_US")}
                       icon={MapPin}
                     />
                   </div>
                 </div>
 
                 <div className="flex justify-between pt-4">
-                  <button
-                    onClick={back}
-                    className="text-gray-400 hover:text-gray-600 font-medium"
-                  >
+                  <button onClick={back} className="text-gray-400 hover:text-gray-600 font-medium">
                     Back
                   </button>
                   <button
@@ -1094,9 +935,7 @@ export function VisaEligibilityTool() {
                   <div className="bg-red-100 w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-4 text-red-600">
                     <AlertTriangle size={32} />
                   </div>
-                  <h2 className="text-2xl font-bold text-gray-800">
-                    Additional Information
-                  </h2>
+                  <h2 className="text-2xl font-bold text-gray-800">Additional Information</h2>
                   <p className="text-gray-500 mt-2">Final details.</p>
                 </div>
 
@@ -1110,10 +949,7 @@ export function VisaEligibilityTool() {
                       <button
                         key={opt}
                         onClick={() =>
-                          setAnswer(
-                            "violationHistory",
-                            opt as FutureAnswers["violationHistory"],
-                          )
+                          setAnswer("violationHistory", opt as FutureAnswers["violationHistory"])
                         }
                         className={`p-3 rounded-xl border-2 font-semibold text-sm transition-all ${
                           answers.violationHistory === opt
@@ -1130,8 +966,7 @@ export function VisaEligibilityTool() {
                 {/* Q13 Intent */}
                 <div className="space-y-4">
                   <p className="font-semibold text-gray-700">
-                    Q. Is the applicant seeking permanent residence or temporary
-                    stay?
+                    Q. Is the applicant seeking permanent residence or temporary stay?
                   </p>
                   <div className="space-y-2">
                     <OptionButton
@@ -1153,34 +988,26 @@ export function VisaEligibilityTool() {
                     Q. Are you planning to sponsor based on:
                   </p>
                   <div className="grid grid-cols-2 gap-3">
-                    {["FAMILY", "EMPLOYMENT", "INVESTMENT", "HUMANITARIAN"].map(
-                      (opt) => (
-                        <button
-                          key={opt}
-                          onClick={() =>
-                            setAnswer(
-                              "sponsorBase",
-                              opt as FutureAnswers["sponsorBase"],
-                            )
-                          }
-                          className={`p-3 rounded-xl border-2 font-semibold text-sm transition-all ${
-                            answers.sponsorBase === opt
-                              ? "border-primary bg-primary/5 text-primary"
-                              : "border-gray-100 text-gray-600 hover:bg-gray-50"
-                          }`}
-                        >
-                          {opt.charAt(0) + opt.slice(1).toLowerCase()}
-                        </button>
-                      ),
-                    )}
+                    {["FAMILY", "EMPLOYMENT", "INVESTMENT", "HUMANITARIAN"].map((opt) => (
+                      <button
+                        key={opt}
+                        onClick={() =>
+                          setAnswer("sponsorBase", opt as FutureAnswers["sponsorBase"])
+                        }
+                        className={`p-3 rounded-xl border-2 font-semibold text-sm transition-all ${
+                          answers.sponsorBase === opt
+                            ? "border-primary bg-primary/5 text-primary"
+                            : "border-gray-100 text-gray-600 hover:bg-gray-50"
+                        }`}
+                      >
+                        {opt.charAt(0) + opt.slice(1).toLowerCase()}
+                      </button>
+                    ))}
                   </div>
                 </div>
 
                 <div className="flex justify-between pt-4">
-                  <button
-                    onClick={back}
-                    className="text-gray-400 hover:text-gray-600 font-medium"
-                  >
+                  <button onClick={back} className="text-gray-400 hover:text-gray-600 font-medium">
                     Back
                   </button>
                   <button
@@ -1206,9 +1033,7 @@ export function VisaEligibilityTool() {
                       ? "Visa Categories You May Be Eligible For"
                       : "You are not eligible for any visa category"}
                   </h2>
-                  <p className="text-gray-500 mt-2">
-                    Based on the information you provided
-                  </p>
+                  <p className="text-gray-500 mt-2">Based on the information you provided</p>
                 </div>
 
                 <div className="space-y-4">
@@ -1219,11 +1044,9 @@ export function VisaEligibilityTool() {
                       className="p-5 border rounded-xl bg-gray-50 hover:border-primary transition cursor-pointer hover:shadow-md"
                     >
                       <h3 className="font-semibold text-primary">
-                        {visa.code} – {visa.title}
+                        {visa.code}, {visa.title}
                       </h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {visa.description}
-                      </p>
+                      <p className="text-sm text-gray-600 mt-1">{visa.description}</p>
                     </div>
                   ))}
                 </div>
@@ -1255,8 +1078,7 @@ export function VisaEligibilityTool() {
                 </div>
 
                 <p className="text-xs text-gray-400 text-center">
-                  ⚠️ This tool provides guidance only and does not guarantee
-                  visa approval.
+                  This tool provides guidance only and does not guarantee visa approval.
                 </p>
 
                 <div className="pt-4 border-t text-center">
@@ -1296,12 +1118,9 @@ export function VisaEligibilityTool() {
               <div className="p-6 border-b flex justify-between items-center bg-gray-50/50">
                 <div>
                   <h3 className="text-xl font-bold text-gray-900">
-                    {visaCriteria[selectedVisaCode]?.title ||
-                      selectedVisaCode + " Criteria"}
+                    {visaCriteria[selectedVisaCode]?.title || selectedVisaCode + " Criteria"}
                   </h3>
-                  <p className="text-sm text-gray-500 mt-1">
-                    Eligibility Requirements
-                  </p>
+                  <p className="text-sm text-gray-500 mt-1">Eligibility Requirements</p>
                 </div>
                 <button
                   onClick={() => setSelectedVisaCode(null)}
@@ -1314,33 +1133,20 @@ export function VisaEligibilityTool() {
               <div className="p-6 overflow-y-auto">
                 {visaCriteria[selectedVisaCode] ? (
                   <div className="space-y-4">
-                    <p className="text-gray-600">
-                      {visaCriteria[selectedVisaCode].description}
-                    </p>
+                    <p className="text-gray-600">{visaCriteria[selectedVisaCode].description}</p>
                     <ul className="space-y-3">
-                      {visaCriteria[selectedVisaCode].criteria.map(
-                        (item, idx) => (
-                          <li key={idx} className="flex gap-3 text-sm">
-                            <CheckCircle
-                              size={18}
-                              className="text-green-500 shrink-0 mt-0.5"
-                            />
-                            <span className="text-gray-700">{item}</span>
-                          </li>
-                        ),
-                      )}
+                      {visaCriteria[selectedVisaCode].criteria.map((item, idx) => (
+                        <li key={idx} className="flex gap-3 text-sm">
+                          <CheckCircle size={18} className="text-green-500 shrink-0 mt-0.5" />
+                          <span className="text-gray-700">{item}</span>
+                        </li>
+                      ))}
                     </ul>
                   </div>
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    <AlertTriangle
-                      size={48}
-                      className="mx-auto mb-4 text-gray-300"
-                    />
-                    <p>
-                      No specific criteria details available for this visa
-                      category yet.
-                    </p>
+                    <AlertTriangle size={48} className="mx-auto mb-4 text-gray-300" />
+                    <p>No specific criteria details available for this visa category yet.</p>
                   </div>
                 )}
               </div>

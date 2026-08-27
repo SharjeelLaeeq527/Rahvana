@@ -1,275 +1,233 @@
 {
   "categorySlug": "ir-5-parent",
-  "version": "1.0.0",
-  "lastUpdated": "2026-03-21",
+  "version": "1.1.0",
+  "lastUpdated": "2026-07-20",
   "sections": [
     {
-      "id": "basic_profile",
-      "title": "Basic Profile & Identity",
-      "description": "General personal details and identity information about you.",
+      "id": "parent_relationship_and_family",
+      "title": "Parent Relationship & Family History",
+      "description": "Core details about the parent-child relationship and the parent beneficiary's family history.",
       "order": 1,
+      "ui": {
+        "icon": "Users",
+        "theme": "rose"
+      },
       "questions": [
         {
-          "key": "full_name",
-          "label": "What is your full name?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 3, "maxLength": 200 },
-          "placeholder": "Enter your full legal name"
-        },
-        {
-          "key": "date_of_birth",
-          "label": "What is your date of birth?",
-          "type": "date",
-          "required": true
-        },
-        {
-          "key": "current_age",
-          "label": "What is your current age?",
-          "type": "number",
-          "required": true,
-          "validation": { "min": 21, "max": 120 },
-          "description": "IR-5 visa requires parent to be at least 21 years old"
-        },
-        {
-          "key": "current_country",
-          "label": "What country are you currently living in?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 2, "maxLength": 100 },
-          "placeholder": "e.g., Pakistan"
-        },
-        {
-          "key": "marital_status",
-          "label": "What is your marital status?",
+          "key": "parent_relationship_type",
+          "label": "What is the parent beneficiary's relationship to the petitioner?",
           "type": "select",
           "required": true,
-          "options": ["Married", "Widowed", "Divorced", "Single (Never married)", "Separated"]
-        }
-      ]
-    },
-    {
-      "id": "petitioner_details",
-      "title": "Sponsoring Child (Petitioner) Information",
-      "description": "Details about your child who is sponsoring you for the IR-5 visa.",
-      "order": 2,
-      "questions": [
+          "helpText": "Select the legal parent-child relationship used for the IR-5 petition",
+          "options": [
+            "Biological Mother",
+            "Biological Father",
+            "Stepparent",
+            "Adoptive Parent"
+          ]
+        },
         {
-          "key": "petitioner_relationship",
-          "label": "Who is sponsoring you?",
+          "key": "parent_marital_history",
+          "label": "What is the parent beneficiary's marital history?",
           "type": "select",
           "required": true,
-          "options": ["Son", "Daughter"]
+          "helpText": "Select the option that best describes the parent's current and prior marital history",
+          "options": [
+            "Never Married",
+            "Currently Married, No Prior Marriages",
+            "Currently Married, Has Prior Marriage(s)",
+            "Divorced or Annulled",
+            "Widowed",
+            "Separated"
+          ]
         },
         {
-          "key": "petitioner_name",
-          "label": "What is your child’s full name?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 3, "maxLength": 200 }
-        },
-        {
-          "key": "petitioner_citizenship",
-          "label": "Is your child a U.S. citizen?",
+          "key": "parent_has_other_children",
+          "label": "Does the parent beneficiary have children other than the petitioner?",
           "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "petitioner_location",
-          "label": "Where does your child live in the United States?",
-          "type": "text",
           "required": true,
-          "validation": { "minLength": 3, "maxLength": 200 },
-          "placeholder": "City and state"
-        },
-        {
-          "key": "petitioner_employment",
-          "label": "What does your child do for a living?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 3, "maxLength": 200 }
-        },
-        {
-          "key": "petitioner_us_duration",
-          "label": "How long has your child been living in the USA?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 2, "maxLength": 100 }
+          "helpText": "Include biological, adopted, and other legally recognized children"
         }
       ]
     },
     {
-      "id": "relationship_details",
-      "title": "Parent-Child Relationship Strength",
-      "description": "Information about your relationship with your sponsoring child.",
-      "order": 3,
+      "id": "relationship_and_contact",
+      "title": "Parent-Child Relationship & Contact",
+      "description": "How the parent beneficiary and petitioner have lived together and remained in contact.",
+      "order": 2,
+      "ui": {
+        "icon": "PhoneCall",
+        "theme": "amber"
+      },
       "questions": [
         {
-          "key": "last_seen_child",
-          "label": "When was the last time you saw your child?",
-          "type": "text",
+          "key": "co_residence_history",
+          "label": "Has the parent beneficiary lived with the petitioner?",
+          "type": "select",
           "required": true,
-          "validation": { "minLength": 3, "maxLength": 200 }
+          "helpText": "Select the option that best describes their living history",
+          "options": [
+            "Yes, Currently Living Together",
+            "Yes, Lived Together Previously",
+            "No, Never Lived Together"
+          ]
         },
         {
           "key": "communication_frequency",
-          "label": "How often do you communicate with your child?",
+          "label": "How often do the parent beneficiary and petitioner communicate?",
           "type": "select",
           "required": true,
-          "options": ["Daily", "Weekly", "Monthly", "Rarely"]
+          "helpText": "Select their usual communication frequency",
+          "options": [
+            "Daily",
+            "Several Times per Week",
+            "Weekly",
+            "Occasionally",
+            "Rarely"
+          ]
         },
         {
-          "key": "communication_method",
-          "label": "How do you usually communicate?",
+          "key": "last_in_person_contact",
+          "label": "When did the parent beneficiary last see the petitioner in person?",
           "type": "select",
           "required": true,
-          "options": ["Phone", "Video Call", "Text", "All of the above"]
-        },
-        {
-          "key": "relationship_proof",
-          "label": "Do you have photos or proof of your relationship?",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "recent_visit_by_child",
-          "label": "Has your child visited you recently?",
-          "type": "boolean",
-          "required": true
+          "helpText": "Select the closest timeframe",
+          "options": [
+            "Currently Together",
+            "Within the Last 6 Months",
+            "6 to 24 Months Ago",
+            "More Than 2 Years Ago",
+            "Never Met in Person"
+          ]
         }
       ]
     },
     {
-      "id": "financial_dependency",
-      "title": "Financial Support & Dependency Status",
-      "description": "Your financial situation and the level of support your child provides.",
+      "id": "sponsorship_employment_and_settlement",
+      "title": "Sponsorship, Employment & Settlement",
+      "description": "The financial sponsorship structure, current employment status, and planned living arrangement in the United States.",
+      "order": 3,
+      "ui": {
+        "icon": "DollarSign",
+        "theme": "teal"
+      },
+      "questions": [
+        {
+          "key": "sponsorship_structure",
+          "label": "Which financial sponsorship structure is being used?",
+          "type": "select",
+          "required": true,
+          "helpText": "Select the structure used in the Affidavit of Support package",
+          "options": [
+            "Petitioner Only",
+            "Petitioner + Household Member",
+            "Petitioner + Joint Sponsor",
+            "Petitioner + Household Member + Joint Sponsor"
+          ]
+        },
+        {
+          "key": "planned_us_living_arrangement",
+          "label": "Where does the parent beneficiary plan to live after arriving in the United States?",
+          "type": "select",
+          "required": true,
+          "helpText": "Select the planned initial living arrangement",
+          "options": [
+            "With the Petitioner",
+            "With Another Family Member",
+            "In a Separate Residence",
+            "Not Yet Decided",
+            "Family Friend / Another Person"
+          ]
+        },
+        {
+          "key": "parent_employment_status",
+          "label": "What is the parent beneficiary's current employment status?",
+          "type": "select",
+          "required": true,
+          "helpText": "Select the parent's current employment or retirement status",
+          "options": [
+            "Employed",
+            "Self-Employed or Business Owner",
+            "Retired",
+            "Not Currently Employed",
+            "Unable to work"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "civil_records_and_foreign_residence",
+      "title": "Civil Records & Foreign Residence",
+      "description": "Identify civil-document issues and foreign residence history that may lead to additional interview questions.",
       "order": 4,
+      "ui": {
+        "icon": "Globe",
+        "theme": "sage"
+      },
       "questions": [
         {
-          "key": "financial_support_from_child",
-          "label": "Does your child financially support you?",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "own_income",
-          "label": "Do you have your own source of income?",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "current_occupation",
-          "label": "What is your current occupation (if any)?",
-          "type": "text",
-          "required": false,
-          "validation": { "minLength": 2, "maxLength": 200 }
-        },
-        {
-          "key": "financial_dependency_plan",
-          "label": "Do you plan to depend on your child financially in the USA?",
-          "type": "boolean",
-          "required": true
-        }
-      ]
-    },
-    {
-      "id": "living_and_family_info",
-      "title": "Living Arrangements & Household Plans",
-      "description": "Details about where and how you will live in the United States.",
-      "order": 5,
-      "questions": [
-        {
-          "key": "us_living_location",
-          "label": "Where will you live in the United States?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 3, "maxLength": 200 }
-        },
-        {
-          "key": "living_with",
-          "label": "Who will you live with?",
-          "type": "text",
-          "required": true,
-          "validation": { "minLength": 2, "maxLength": 200 }
-        },
-        {
-          "key": "household_size",
-          "label": "How many people live in that house?",
+          "key": "civil_record_issue",
+          "label": "Are there any known issues with the parent-child civil records?",
           "type": "select",
           "required": true,
-          "options": ["1-2", "3-4", "5-6", "7+"]
+          "helpText": "Consider the petitioner's birth certificate, the parent's birth record, names, dates, and issuing authorities",
+          "options": [
+            "No Known Issue",
+            "Late-Registered Birth Record",
+            "Birth Record Missing or Unavailable",
+            "Name or Date Mismatch",
+            "Multiple Record Issues",
+            "Not Sure"
+          ]
         },
         {
-          "key": "knows_us_address",
-          "label": "Do you know your address in the USA?",
+          "key": "foreign_residence_history",
+          "label": "Has the parent beneficiary ever lived outside Pakistan?",
           "type": "boolean",
-          "required": true
+          "required": true,
+          "helpText": "Include residence outside Pakistan for employment, study, family reasons, or another long-term stay"
         }
       ]
     },
     {
-      "id": "background_future_plans",
-      "title": "Immigration Intent & Post-Arrival Plans",
-      "description": "Your reasons for immigrating and what you plan to do after arrival.",
-      "order": 6,
+      "id": "immigration_and_background",
+      "title": "Immigration & Background",
+      "description": "Prior U.S. immigration, criminal, military, police, and security history relevant to interview preparation.",
+      "order": 5,
+      "ui": {
+        "icon": "Shield",
+        "theme": "rose"
+      },
       "questions": [
         {
-          "key": "move_reason",
-          "label": "Why do you want to go to the United States?",
-          "type": "textarea",
+          "key": "us_immigration_history",
+          "label": "Which option best describes the parent beneficiary's prior U.S. immigration history?",
+          "type": "select",
           "required": true,
-          "validation": { "minLength": 20, "maxLength": 500 }
+          "helpText": "Select the most relevant option; choose the combined option if more than one applies",
+          "options": [
+            "No Prior U.S. Visa Application or Travel",
+            "Prior U.S. Visa Application but No Travel or Violation",
+            "Previously Visited the U.S. Without an Immigration Issue",
+            "Previous U.S. Visa Refusal or Withdrawn Application",
+            "Previous U.S. Immigration Petition or Immigrant Visa Application",
+            "Previous Overstay, Status Violation, Entry Denial, Removal, or Deportation",
+            "Multiple Prior U.S. Immigration Matters"
+          ]
         },
         {
-          "key": "travel_plan",
-          "label": "When do you plan to travel?",
-          "type": "text",
-          "required": true
-        },
-        {
-          "key": "permanent_intent",
-          "label": "Do you plan to stay permanently in the USA?",
+          "key": "criminal_history",
+          "label": "Has the parent beneficiary ever been arrested, charged, or convicted of a crime?",
           "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "post_arrival_plan",
-          "label": "What will you do after moving to the USA?",
-          "type": "textarea",
           "required": true,
-          "validation": { "minLength": 20, "maxLength": 500 }
-        }
-      ]
-    },
-    {
-      "id": "travel_background_history",
-      "title": "Travel & Immigration Background",
-      "description": "Your history of international travel and US immigration interactions.",
-      "order": 7,
-      "questions": [
-        {
-          "key": "previous_us_visit",
-          "label": "Have you ever been to the United States before?",
-          "type": "boolean",
-          "required": true
+          "helpText": "Answer yes even if the case was dismissed, expunged, or occurred many years ago"
         },
         {
-          "key": "visa_refusal",
-          "label": "Have you ever been denied a U.S. visa?",
+          "key": "military_service",
+          "label": "Has the parent beneficiary ever served or worked in the military, police, paramilitary, government security, intelligence, or another armed organization?",
           "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "long_stay_history",
-          "label": "Have you stayed in any country for more than 6 months?",
-          "type": "boolean",
-          "required": true
-        },
-        {
-          "key": "criminal_record",
-          "label": "Do you have any criminal record?",
-          "type": "boolean",
-          "required": true
+          "required": true,
+          "helpText": "Include mandatory, voluntary, reserve, police, paramilitary, intelligence, and other armed or security service"
         }
       ]
     }

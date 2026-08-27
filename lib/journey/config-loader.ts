@@ -1,14 +1,14 @@
 /**
  * CONFIG LOADER - Journey Configuration from JSON
- * 
+ *
  * Loads visa journey configurations from JSON files and transforms them into database-ready records.
- * 
+ *
  * FLOW:
  * 1. Load JSON file from disk (at startup or seed time)
  * 2. Parse and validate structure
  * 3. Transform into database schema
  * 4. Seed to Supabase (if needed)
- * 
+ *
  * All data stays IN-MEMORY during transformation, then persists to DB.
  * JSON file is the source of truth, database is the storage layer.
  */
@@ -104,12 +104,12 @@ interface RawStep {
 
 // CONFIG LOADER CLASS - Loads JSON configs and transforms them into database records
 export class ConfigLoader {
-    // Load journey config from JSON file
+  // Load journey config from JSON file
   static loadJourneyJSON(filePath: string): RawJourneyJSON {
     try {
       // Normalize filePath to ensure no leading slash
       const normalizedPath = filePath.startsWith("/") ? filePath.slice(1) : filePath;
-      
+
       // Get absolute path
       const absolutePath = path.resolve(process.cwd(), normalizedPath);
 
@@ -120,15 +120,13 @@ export class ConfigLoader {
         throw new Error(`Config file not found at ${absolutePath}`);
       }
 
-      // Read file from disk into memory 
+      // Read file from disk into memory
       const fileContent = fs.readFileSync(absolutePath, "utf-8");
 
       // Parse JSON string into JavaScript object (still in memory)
       const json = JSON.parse(fileContent);
 
-      console.log(
-        `[ConfigLoader] Successfully loaded journey config: ${json.journey_name}`
-      );
+      console.log(`[ConfigLoader] Successfully loaded journey config: ${json.journey_name}`);
       return json;
     } catch (error) {
       console.error(`[ConfigLoader] Error loading journey JSON:`, error);
@@ -136,8 +134,8 @@ export class ConfigLoader {
     }
   }
 
-    // Transform raw JSON into Journey database record
-   static transformJourneyInput(rawJSON: RawJourneyJSON): JourneyInput {
+  // Transform raw JSON into Journey database record
+  static transformJourneyInput(rawJSON: RawJourneyJSON): JourneyInput {
     return {
       journey_type: rawJSON.journey_type,
       journey_name: rawJSON.journey_name,
@@ -149,11 +147,11 @@ export class ConfigLoader {
     };
   }
 
-    // Transform chapters from JSON
-   static transformChaptersInput(rawChapters: RawChapter[]): ChapterInput[] {
+  // Transform chapters from JSON
+  static transformChaptersInput(rawChapters: RawChapter[]): ChapterInput[] {
     return rawChapters.map((ch, index) => ({
       chapter_key: ch.chapter_key || (ch.id ? `chapter_${ch.id}` : `chapter_${index + 1}`),
-      chapter_number: ch.chapter_number || (typeof ch.id === 'number' ? ch.id : index + 1),
+      chapter_number: ch.chapter_number || (typeof ch.id === "number" ? ch.id : index + 1),
       chapter_name: ch.chapter_name || ch.name || `Chapter ${index + 1}`,
       chapter_description: ch.chapter_description || ch.description || ch.timeline || "",
       estimated_duration_months: ch.estimated_duration_months || 0,
@@ -165,32 +163,24 @@ export class ConfigLoader {
     }));
   }
 
-    // Transform steps from JSON
-   static transformStepsInput(
-    rawSteps: RawStep[],
-    chapterKey: string
-  ): StepInput[] {
+  // Transform steps from JSON
+  static transformStepsInput(rawSteps: RawStep[], chapterKey: string): StepInput[] {
     return rawSteps.map((step, index) => {
       // Normalize step properties (handle different JSON formats)
       const stepKey = step.step_key || step.id || `${chapterKey}_step_${index + 1}`;
       const stepNumber = step.step_number || index + 1;
       const stepName = step.step_name || step.name || "";
-      const stepDescription =
-        step.step_description || step.timeline || "";
+      const stepDescription = step.step_description || step.timeline || "";
       const stepType = step.step_type || step.type || "manual";
       const dependencies = step.dependencies || [];
       const visibleWhen = step.visible_when || {};
       const estimatedDays = step.estimated_duration_days || 1;
-      const isRequired =
-        step.is_required !== undefined ? step.is_required : true;
+      const isRequired = step.is_required !== undefined ? step.is_required : true;
       const displayOrder = step.display_order || index + 1;
 
       // Extract tool integration if present
       const toolData = step.tool_data || step.toolData;
-      const toolIntegration = this.extractToolIntegration(
-        stepType,
-        toolData
-      );
+      const toolIntegration = this.extractToolIntegration(stepType, toolData);
       const toolKey = typeof toolData?.id === "string" ? toolData.id : undefined;
 
       // Combine all metadata into a single JSONB field
@@ -240,11 +230,11 @@ export class ConfigLoader {
 
   /**
    * Extract case data keys from journey structure
-   * 
+   *
    * Case data keys are detected from:
    * 1. visible_when conditions in steps
    * 2. Known visa-type-specific keys
-   * 
+   *
    * @param rawJSON - Raw journey JSON
    * @returns Array of case data keys to initialize
    */
@@ -253,12 +243,18 @@ export class ConfigLoader {
 
     // Add visa-type-specific keys
     const visaType = rawJSON.journey_type;
-    if (visaType === "IR1" || visaType === "IR-1") {
+    if (visaType === "IR1" || visaType === "IR-1" || visaType === "IR5" || visaType === "IR-5") {
       keys.add("filing_method");
       keys.add("visa_category");
       keys.add("beneficiary_age");
       keys.add("beneficiary_country_of_residence");
       keys.add("case_status");
+    }
+
+    if (visaType === "IR5" || visaType === "IR-5") {
+      keys.add("petitioner_age");
+      keys.add("petitioner_citizenship_status");
+      keys.add("parent_relationship_type");
     }
 
     // Extract from visible_when conditions
@@ -277,10 +273,10 @@ export class ConfigLoader {
 
   /**
    * Generate initial case data for journey
-   * 
+   *
    * Creates empty case data records for all identified keys.
    * User fills in values over time.
-   * 
+   *
    * @param caseDataKeys - Keys extracted from journey
    * @param journeyId - Parent journey ID (optional, set during insert)
    * @returns Array of CaseDataInput ready for database insert
@@ -297,7 +293,7 @@ export class ConfigLoader {
     }));
   }
 
-    // Extract tool integration name from step type or tool data
+  // Extract tool integration name from step type or tool data
   private static extractToolIntegration(
     stepType?: string,
     toolData?: Record<string, unknown>
@@ -320,10 +316,8 @@ export class ConfigLoader {
     return toolMap[stepType];
   }
 
-    // Generate human-readable visibility rules from conditions
-  private static generateVisibilityRules(
-    visibleWhen: Record<string, unknown>
-  ): string {
+  // Generate human-readable visibility rules from conditions
+  private static generateVisibilityRules(visibleWhen: Record<string, unknown>): string {
     if (Object.keys(visibleWhen).length === 0) {
       return "Always visible";
     }
@@ -343,11 +337,13 @@ export class ConfigLoader {
     return `Visible when: ${rules}`;
   }
 
-    // Extract visa category from journey type
+  // Extract visa category from journey type
   private static extractVisaCategoryFromType(journeyType: string): string {
     const mapping: Record<string, string> = {
       IR1: "IR-1",
       "IR-1": "IR-1",
+      IR5: "IR-5",
+      "IR-5": "IR-5",
     };
 
     return mapping[journeyType] || journeyType;
@@ -358,7 +354,7 @@ export class ConfigLoader {
  * ==============================================================
  * COMPLETE JOURNEY SEEDING ORCHESTRATOR
  * ==============================================================
- * 
+ *
  * Loads JSON, transforms, and seeds complete journey to database
  * (Including chapters, steps, and initial case data)
  */
@@ -373,7 +369,7 @@ export interface SeedResult {
 
 /**
  * Seed complete journey from JSON file to database
- * 
+ *
  * This is the main entry point for seeding. It:
  * 1. Loads JSON from disk
  * 2. Validates structure
@@ -381,17 +377,14 @@ export interface SeedResult {
  * 4. Creates all chapters
  * 5. Creates all steps
  * 6. Initializes case data
- * 
+ *
  * USAGE:
  * const result = await seedJourneyFromJSON(
  *   'data/visa-category/ir-1.json',
  *   userId
  * );
  */
-export async function seedJourneyFromJSON(
-  filePath: string,
-  userId: string
-): Promise<SeedResult> {
+export async function seedJourneyFromJSON(filePath: string, userId: string): Promise<SeedResult> {
   try {
     console.log(`\nStarting journey seed from ${filePath}...`);
 
@@ -401,14 +394,10 @@ export async function seedJourneyFromJSON(
 
     // Step 2: Transform to database schema
     console.log("Transforming to database schema...");
-    const journeyInput: JourneyInput = ConfigLoader.transformJourneyInput(
-      rawJSON
-    );
-    const chaptersInput: ChapterInput[] =
-      ConfigLoader.transformChaptersInput(rawJSON.chapters);
+    const journeyInput: JourneyInput = ConfigLoader.transformJourneyInput(rawJSON);
+    const chaptersInput: ChapterInput[] = ConfigLoader.transformChaptersInput(rawJSON.chapters);
     const caseDataKeys = ConfigLoader.extractCaseDataKeys(rawJSON);
-    const caseDataInput: CaseDataInput[] =
-      ConfigLoader.generateInitialCaseData(caseDataKeys);
+    const caseDataInput: CaseDataInput[] = ConfigLoader.generateInitialCaseData(caseDataKeys);
 
     console.log(`Journey: ${journeyInput.journey_name}`);
     console.log(`Chapters: ${chaptersInput.length}`);
@@ -420,10 +409,7 @@ export async function seedJourneyFromJSON(
 
     for (let i = 0; i < rawJSON.chapters.length; i++) {
       const chapter = rawJSON.chapters[i];
-      const stepsInput = ConfigLoader.transformStepsInput(
-        chapter.steps,
-        chapter.chapter_key
-      );
+      const stepsInput = ConfigLoader.transformStepsInput(chapter.steps, chapter.chapter_key);
       stepsMap.set(chapter.chapter_key, chapter.steps);
       totalSteps += stepsInput.length;
     }
@@ -458,10 +444,10 @@ export async function seedJourneyFromJSON(
  * ==============================================================
  * CLI SEEDING SCRIPT
  * ==============================================================
- * 
+ *
  * Usage:
  * npx ts-node lib/journey/config-loader.ts <visa-type> <user-id>
- * 
+ *
  * Example:
  * npx ts-node lib/journey/config-loader.ts ir-1 user-123
  */

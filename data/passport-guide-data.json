@@ -159,7 +159,7 @@
         { "heading": "Fast Track", "text": "2 working days (select offices)." },
         {
           "heading": "Online Delivery",
-          "text": "Delivery via courier typically adds 2–3 additional days."
+          "text": "Delivery via courier typically adds 2-3 additional days."
         }
       ]
     },
@@ -171,7 +171,7 @@
       "content": [
         {
           "heading": "Pro Tips",
-          "text": "Renew 7–12 months before expiry. Use official DGIP portals/apps only. Keep CNIC valid and complete all documents."
+          "text": "Renew 7-12 months before expiry. Use official DGIP portals/apps only. Keep CNIC valid and complete all documents."
         },
         {
           "heading": "Warnings",
@@ -434,12 +434,12 @@
 
     "roadmap": {
       "title": "Your Personalized Roadmap",
-      "estimated_timeline": "Normal 10–15 working days | Urgent 4-10 working days",
+      "estimated_timeline": "Normal 10-15 working days | Urgent 4-10 working days",
       "onsitePhases": [
         {
           "id": 1,
           "title": "Fee Payment & Document Preparation",
-          "duration": "1–2 Days",
+          "duration": "1-2 Days",
           "description": "Download or obtain the passport fee challan. Pay the required fee via bank challan or e-payment. Collect original CNIC with copy. For minors, bring B-Form and guardian's CNIC. Keep previous passport if applying for renewal."
         },
         {
@@ -451,7 +451,7 @@
         {
           "id": 3,
           "title": "Application Verification & Processing",
-          "duration": "4–10 Days",
+          "duration": "4-10 Days",
           "description": "Your application is reviewed by the Directorate General of Immigration & Passports (DGIP). Criminal record checks (ECL/BL) are performed. After successful verification, passport printing is initiated."
         },
         {
@@ -465,7 +465,7 @@
         {
           "id": 1,
           "title": "Setup Account & Application",
-          "duration": "1–2 Days",
+          "duration": "1-2 Days",
           "description": "Create an account on the official passport portal. Fill in personal, demographic, and address details. Upload required documents including CNIC copy and photograph. Review all entered information carefully before proceeding."
         },
         {
@@ -477,13 +477,13 @@
         {
           "id": 3,
           "title": "Verification & Processing",
-          "duration": "4–10 Days",
+          "duration": "4-10 Days",
           "description": "Authorities verify submitted documents and conduct necessary background checks. You will receive status updates via email or SMS. Once approved, passport printing begins."
         },
         {
           "id": 4,
           "title": "Passport Printing & Dispatch",
-          "duration": "1–3 Days After Approval",
+          "duration": "1-3 Days After Approval",
           "description": "Your passport is printed at the DGIP facility and dispatched via courier service. Track delivery using your tracking ID. Ensure someone is available at the provided address to receive it."
         }
       ],
@@ -2145,13 +2145,13 @@
         "tips": [
           "New passport applications require visiting an RPO/EPO in person for biometrics.",
           "Renewals can be done fully online if you meet the eligibility criteria.",
-          "For lost passports, file a police FIR immediately — you'll need it for re-issuance.",
+          "For lost passports, file a police FIR immediately, you'll need it for re-issuance.",
           "Check if ePassport is available at your chosen office for faster international clearance."
         ],
         "pitfalls": [
-          "Don't apply with an expired CNIC — renew your CNIC first.",
+          "Don't apply with an expired CNIC, renew your CNIC first.",
           "Government employees applying without NOC will have their application rejected.",
-          "Don't apply online for a new passport — in-person biometrics are mandatory for first-time applicants."
+          "Don't apply online for a new passport, in-person biometrics are mandatory for first-time applicants."
         ],
         "links": [
           {
@@ -2168,11 +2168,11 @@
       "location": {
         "tips": [
           "You can apply at any passport office regardless of your CNIC address per DGIP policy.",
-          "Many RPOs now operate 24/7 in three shifts — check before visiting.",
+          "Many RPOs now operate 24/7 in three shifts, check before visiting.",
           "Urban centers have Executive Passport Offices (EPOs) with premium, less-crowded service."
         ],
         "pitfalls": [
-          "Don't assume all offices offer ePassport — verify before visiting.",
+          "Don't assume all offices offer ePassport, verify before visiting.",
           "Avoid visiting on Fridays after 12:30 PM as most offices close early.",
           "24/7 offices may have limited services during night shifts."
         ],
@@ -2189,7 +2189,7 @@
       },
       "roadmap": {
         "tips": [
-          "Pay your fee online before visiting — it saves time at the office.",
+          "Pay your fee online before visiting, it saves time at the office.",
           "Bring original documents AND photocopies of everything.",
           "Photos captured digitally at most offices; some centers may require copies of physical photos.",
           "The app facilitates application initiation, tracking, and fee payment, but biometric verification may still requires an in-person visit.",
@@ -2197,10 +2197,10 @@
           "Morning visits (before 10 AM) typically have shorter wait times."
         ],
         "pitfalls": [
-          "Don't visit without fee payment proof — you cannot submit without it.",
+          "Don't visit without fee payment proof, you cannot submit without it.",
           "Incomplete documents will result in rejection and a wasted trip.",
           "Fast Track service is NOT available for ePassport delivery.",
-          "Don't use unofficial agents — only apply through official DGIP channels."
+          "Don't use unofficial agents, only apply through official DGIP channels."
         ],
         "fee_structure": {
           "title": "Passport Fee Structure",
@@ -2246,16 +2246,16 @@
       },
       "office_finder": {
         "tips": [
-          "Confirm office hours before visiting — 24/7 offices operate in shifts.",
+          "Confirm office hours before visiting, 24/7 offices operate in shifts.",
           "EPOs offer premium service with less crowding but same fees.",
           "Bring all documents in a clear folder for faster processing.",
-          "Some offices accept online token bookings — check DGIP website."
+          "Some offices accept online token bookings, check DGIP website."
         ],
         "pitfalls": [
-          "Don't rely on unofficial office listings — verify on DGIP website.",
+          "Don't rely on unofficial office listings, verify on DGIP website.",
           "Avoid peak hours (10 AM - 1 PM) for shorter wait times.",
           "Some remote area offices may have limited service days.",
-          "Don't bring expired documents — all IDs must be currently valid."
+          "Don't bring expired documents, all IDs must be currently valid."
         ],
         "links": [
           {
@@ -2271,14 +2271,14 @@
       },
       "validation": {
         "tips": [
-          "Double-check your name spelling matches your CNIC exactly — mismatches cause delays.",
+          "Double-check your name spelling matches your CNIC exactly, mismatches cause delays.",
           "Verify fee amount matches your selected passport type (MRP vs ePassport) and page count.",
-          "Keep your tracking ID safe — you'll need it to check application status.",
+          "Keep your tracking ID safe, you'll need it to check application status.",
           "For travel, ensure passport validity is at least 6 months beyond your travel date."
         ],
         "pitfalls": [
-          "Don't submit with name mismatches between CNIC and application — it will be rejected.",
-          "Avoid submitting blurry or non-compliant photos — they must meet DGIP specifications.",
+          "Don't submit with name mismatches between CNIC and application, it will be rejected.",
+          "Avoid submitting blurry or non-compliant photos, they must meet DGIP specifications.",
           "Don't forget to cancel old passport if applying for re-issuance due to loss.",
           "Incorrect fee payment (wrong amount or wrong category) will delay processing."
         ],

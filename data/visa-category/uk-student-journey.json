@@ -1,11 +1,10 @@
-
 {
   "title": "UK Student Visa Journey",
-  "description": "Step-by-step roadmap for Pakistani students applying for a UK Student visa (Student route) — from receiving a university offer and CAS through arriving in the UK and maintaining your visa conditions.",
-  "disclaimer": "This page is for informational guidance only. UK immigration rules and requirements can change. Always confirm current requirements at GOV.UK – Student visa and with your university's international student support team before taking any action.",
+  "description": "Step-by-step roadmap for Pakistani students applying for a UK Student visa (Student route), from receiving a university offer and CAS through arriving in the UK and maintaining your visa conditions.",
+  "disclaimer": "This page is for informational guidance only. UK immigration rules and requirements can change. Always confirm current requirements at GOV.UK, Student visa and with your university's international student support team before taking any action.",
   "disclaimerLinks": [
     {
-      "text": "GOV.UK – Student visa",
+      "text": "GOV.UK, Student visa",
       "url": "https://www.gov.uk/student-visa"
     }
   ],
@@ -25,11 +24,11 @@
       "time": "Before applying",
       "sources": [
         {
-          "label": "GOV.UK – Student visa overview",
+          "label": "GOV.UK, Student visa overview",
           "url": "https://www.gov.uk/student-visa"
         },
         {
-          "label": "GOV.UK – Licensed sponsors list",
+          "label": "GOV.UK, Licensed sponsors list",
           "url": "https://www.gov.uk/government/publications/register-of-licensed-sponsors-students"
         }
       ],
@@ -51,12 +50,12 @@
           "id": "I-02",
           "name": "Understand and Await Your CAS",
           "description": "A Confirmation of Acceptance for Studies (CAS) is a reference number assigned by your sponsor in the Home Office's Sponsorship Management System. You cannot submit a Student visa application without a CAS. Your sponsor issues the CAS when they are satisfied you meet their conditions.",
-          "info": "The CAS is not a physical document — it is a reference number. Your sponsor will send it to you directly. The CAS contains details of your course, fees, and sponsor that the Home Office will use to assess your application.",
+          "info": "The CAS is not a physical document, it is a reference number. Your sponsor will send it to you directly. The CAS contains details of your course, fees, and sponsor that the Home Office will use to assess your application.",
           "actions": [
             "Confirm with your institution when they plan to issue your CAS (timing varies by institution)",
             "Ensure all conditions of your offer (e.g., academic results, English proficiency) are met before the CAS can be assigned",
             "Provide your institution with any information they need to assign the CAS (passport details, personal information)",
-            "Once received, record the CAS reference number securely — you will enter it in your online visa application",
+            "Once received, record the CAS reference number securely, you will enter it in your online visa application",
             "Review what information the CAS contains on GOV.UK at gov.uk/student-visa"
           ],
           "output": "CAS reference number received from your sponsor institution"
@@ -65,7 +64,7 @@
           "id": "I-03",
           "name": "Check the Application Timing Rules",
           "description": "GOV.UK specifies how far in advance of your course start date you may apply for a Student visa from outside the UK. Review the current rules before booking any appointments or making payments.",
-          "warn": "Do not apply too early — GOV.UK states the earliest you can apply from outside the UK. Check the current timing at gov.uk/student-visa before taking any further steps.",
+          "warn": "Do not apply too early, GOV.UK states the earliest you can apply from outside the UK. Check the current timing at gov.uk/student-visa before taking any further steps.",
           "actions": [
             "Go to gov.uk/student-visa and check the 'When you can apply' section for current timing rules",
             "Note your CAS course start date",
@@ -84,15 +83,15 @@
       "time": "Before application",
       "sources": [
         {
-          "label": "GOV.UK – Student visa documents",
+          "label": "GOV.UK, Student visa documents",
           "url": "https://www.gov.uk/student-visa/documents-you-must-provide"
         },
         {
-          "label": "GOV.UK – TB test (Pakistan)",
+          "label": "GOV.UK, TB test (Pakistan)",
           "url": "https://www.gov.uk/tb-test-visa/pakistan"
         },
         {
-          "label": "GOV.UK – Finances for students",
+          "label": "GOV.UK, Finances for students",
           "url": "https://www.gov.uk/student-visa/money"
         }
       ],
@@ -112,14 +111,14 @@
         {
           "id": "II-02",
           "name": "Complete the TB (Tuberculosis) Test",
-          "description": "Pakistan is on the list of countries where applicants must provide a tuberculosis (TB) test certificate from a Home Office-approved clinic as part of the Student visa application. You must get tested at an approved clinic — results from other clinics are not accepted.",
+          "description": "Pakistan is on the list of countries where applicants must provide a tuberculosis (TB) test certificate from a Home Office-approved clinic as part of the Student visa application. You must get tested at an approved clinic, results from other clinics are not accepted.",
           "ukNote": "Pakistan is listed on GOV.UK as a country where a TB test is required. You must use a Home Office-approved clinic in Pakistan. Find the approved clinics and full requirements at gov.uk/tb-test-visa/pakistan.",
           "actions": [
             "Go to gov.uk/tb-test-visa/pakistan to confirm the current TB test requirement and find the list of approved clinics in Pakistan",
             "Book an appointment at an approved clinic",
-            "Attend the TB test appointment — bring your passport",
+            "Attend the TB test appointment, bring your passport",
             "Receive your TB test certificate from the clinic",
-            "Check the certificate validity period on GOV.UK — certificates are valid for a specified period; apply for your visa within that window",
+            "Check the certificate validity period on GOV.UK, certificates are valid for a specified period; apply for your visa within that window",
             "Keep the original TB test certificate to include with your application or bring to your biometrics appointment as instructed"
           ],
           "output": "TB test completed at an approved clinic; valid certificate obtained"
@@ -128,11 +127,11 @@
           "id": "II-03",
           "name": "Gather Evidence of Financial Requirements",
           "description": "You must show that you have enough money to pay for your course and support yourself in the UK. The amount required depends on your course location (London vs. outside London) and whether you have been studying in the UK for 12 months or more. GOV.UK specifies the exact amounts and how long you must have held the funds.",
-          "ukNote": "Do not rely on unofficial sources for the financial amounts required — they can change. Check the current maintenance funds requirement at gov.uk/student-visa/money. You must typically have held the funds for a consecutive period specified on GOV.UK before the date of your application.",
+          "ukNote": "Do not rely on unofficial sources for the financial amounts required, they can change. Check the current maintenance funds requirement at gov.uk/student-visa/money. You must typically have held the funds for a consecutive period specified on GOV.UK before the date of your application.",
           "actions": [
             "Go to gov.uk/student-visa/money and check the current required maintenance (living cost) funds for your situation",
             "Check the current required funds-holding period (the number of consecutive days you must have held the money before applying)",
-            "Obtain official bank statements covering the required period (typically from a bank account in your name or a parent/guardian's account with a letter of consent — check the current rules on GOV.UK)",
+            "Obtain official bank statements covering the required period (typically from a bank account in your name or a parent/guardian's account with a letter of consent, check the current rules on GOV.UK)",
             "Ensure the statements clearly show the institution name, your name, account number, dates, and balances",
             "If your sponsor institution is covering your course fees: obtain evidence of this (e.g., official letter)",
             "Confirm the total required: course fees (if not pre-paid by sponsor) + living costs, as specified on GOV.UK"
@@ -156,7 +155,7 @@
           "name": "Prepare Your Passport-Size Photographs",
           "description": "You will need one or more passport-size photographs meeting UK visa photo requirements. Check the current specification on GOV.UK before getting photos taken.",
           "actions": [
-            "Review UK visa photo requirements at gov.uk/photos-for-passports (specifications apply to visa photos as well — confirm on the Student visa pages)",
+            "Review UK visa photo requirements at gov.uk/photos-for-passports (specifications apply to visa photos as well, confirm on the Student visa pages)",
             "Have photographs taken that meet the current specification",
             "Keep both digital and physical copies",
             "Note: you will upload a photo during the online application and may need a physical copy at the biometrics appointment"
@@ -173,15 +172,15 @@
       "time": "Within application window",
       "sources": [
         {
-          "label": "GOV.UK – Apply for a Student visa",
+          "label": "GOV.UK, Apply for a Student visa",
           "url": "https://www.gov.uk/student-visa/apply"
         },
         {
-          "label": "GOV.UK – Visa fees",
+          "label": "GOV.UK, Visa fees",
           "url": "https://www.gov.uk/government/publications/visa-fees"
         },
         {
-          "label": "GOV.UK – Immigration Health Surcharge",
+          "label": "GOV.UK, Immigration Health Surcharge",
           "url": "https://www.gov.uk/immigration-health-surcharge"
         }
       ],
@@ -192,9 +191,9 @@
           "description": "The UK Student visa application is completed entirely online through GOV.UK. You will need to create or log in to a GOV.UK One Login account to access the application form.",
           "actions": [
             "Go to gov.uk/student-visa/apply and follow the link to start the online application",
-            "Create a GOV.UK One Login account (or log in if you have one) — you will need an email address",
+            "Create a GOV.UK One Login account (or log in if you have one), you will need an email address",
             "Select 'Student visa' as the visa type",
-            "Read all instructions carefully before starting — the form cannot always be edited once certain sections are submitted"
+            "Read all instructions carefully before starting, the form cannot always be edited once certain sections are submitted"
           ],
           "output": "GOV.UK account created and Student visa application started"
         },
@@ -215,14 +214,14 @@
         {
           "id": "III-03",
           "name": "Pay the Application Fee and Immigration Health Surcharge (IHS)",
-          "description": "You must pay the Student visa application fee and the Immigration Health Surcharge (IHS) as part of the online application. The IHS entitles you to use the National Health Service (NHS) during your stay. Both amounts can change — verify the current figures on GOV.UK before paying.",
-          "warn": "Do not rely on third-party sources for fee amounts — always check the current visa fee and IHS amount on GOV.UK before paying. Fees are non-refundable even if the application is refused.",
+          "description": "You must pay the Student visa application fee and the Immigration Health Surcharge (IHS) as part of the online application. The IHS entitles you to use the National Health Service (NHS) during your stay. Both amounts can change, verify the current figures on GOV.UK before paying.",
+          "warn": "Do not rely on third-party sources for fee amounts, always check the current visa fee and IHS amount on GOV.UK before paying. Fees are non-refundable even if the application is refused.",
           "actions": [
             "Check the current Student visa application fee at gov.uk/government/publications/visa-fees",
             "Check the current IHS amount and calculate what you will owe based on your intended length of stay at gov.uk/immigration-health-surcharge",
-            "Pay both fees online as part of the GOV.UK application — you will be directed to the payment pages within the application",
+            "Pay both fees online as part of the GOV.UK application, you will be directed to the payment pages within the application",
             "Save your payment confirmation receipts",
-            "Note: fees are generally non-refundable — confirm the current refund policy on GOV.UK"
+            "Note: fees are generally non-refundable, confirm the current refund policy on GOV.UK"
           ],
           "output": "Application fee and IHS paid; payment receipts saved"
         },
@@ -234,8 +233,8 @@
           "actions": [
             "Submit the completed application form on GOV.UK",
             "Note your application reference number from the submission confirmation",
-            "Follow the instructions to book a biometrics appointment at a UKVCAS service point in Pakistan — go to ukvcas.co.uk as directed",
-            "Select a UKVCAS service point in Pakistan (locations in Islamabad, Karachi, and Lahore — confirm current locations at ukvcas.co.uk)",
+            "Follow the instructions to book a biometrics appointment at a UKVCAS service point in Pakistan, go to ukvcas.co.uk as directed",
+            "Select a UKVCAS service point in Pakistan (locations in Islamabad, Karachi, and Lahore, confirm current locations at ukvcas.co.uk)",
             "Choose an available appointment date and time",
             "Save or print your biometrics appointment confirmation"
           ],
@@ -251,11 +250,11 @@
       "time": "At UKVCAS service point",
       "sources": [
         {
-          "label": "UKVCAS – Book appointment (Pakistan)",
+          "label": "UKVCAS, Book appointment (Pakistan)",
           "url": "https://www.ukvcas.co.uk"
         },
         {
-          "label": "GOV.UK – Biometrics for Student visa",
+          "label": "GOV.UK, Biometrics for Student visa",
           "url": "https://www.gov.uk/student-visa/apply"
         }
       ],
@@ -271,7 +270,7 @@
             "Bring your TB test certificate (original)",
             "Bring your biometrics appointment confirmation (printed or on your phone)",
             "Bring any other documents specified in your appointment confirmation or UKVCAS guidance",
-            "Arrive at the UKVCAS service point on time — follow any entry and security instructions"
+            "Arrive at the UKVCAS service point on time, follow any entry and security instructions"
           ],
           "output": "All documents prepared and ready for the UKVCAS appointment"
         },
@@ -279,12 +278,12 @@
           "id": "IV-02",
           "name": "Attend Your UKVCAS Biometrics Appointment",
           "description": "At the UKVCAS service point, a staff member will scan your fingerprints and take a digital photograph. You may also need to submit or present supporting documents at this appointment, depending on the service you have booked.",
-          "info": "UKVCAS offers different service levels (e.g., Core, Enhanced). Check what is included in your booked service at ukvcas.co.uk — some applicants upload all documents digitally before the appointment; others present documents at the service point.",
+          "info": "UKVCAS offers different service levels (e.g., Core, Enhanced). Check what is included in your booked service at ukvcas.co.uk, some applicants upload all documents digitally before the appointment; others present documents at the service point.",
           "actions": [
             "Attend the UKVCAS appointment at the booked time and location",
             "Provide fingerprints and photograph as directed by UKVCAS staff",
             "Submit or present supporting documents as required by the service level you have booked",
-            "If your passport is to be submitted as part of the process: follow UKVCAS instructions — check whether they retain it or return it to you",
+            "If your passport is to be submitted as part of the process: follow UKVCAS instructions, check whether they retain it or return it to you",
             "Obtain a receipt or confirmation of completion from UKVCAS"
           ],
           "output": "Biometrics enrolled at UKVCAS; supporting documents submitted as required"
@@ -292,14 +291,14 @@
         {
           "id": "IV-03",
           "name": "Await the Home Office Decision",
-          "description": "After your biometrics appointment, the Home Office will process your application. Processing times vary. Check current processing times on GOV.UK — do not make non-refundable travel arrangements until a decision is received.",
+          "description": "After your biometrics appointment, the Home Office will process your application. Processing times vary. Check current processing times on GOV.UK, do not make non-refundable travel arrangements until a decision is received.",
           "warn": "Do not book non-refundable flights or make final arrangements until you have received a decision on your visa application. Check current processing times at gov.uk/government/publications/visa-decision-waiting-times-applications-inside-the-uk.",
           "actions": [
             "Check current Student visa processing times at gov.uk/guidance/visa-decision-waiting-times-applications-outside-the-uk",
             "Track your application status through your GOV.UK account",
             "Do not book non-refundable travel until a decision is received",
             "If a decision has not been received within the published timeframe, follow the contact guidance on GOV.UK",
-            "Do not contact UKVCAS for a decision — UKVCAS handles biometrics only; the decision is made by the Home Office"
+            "Do not contact UKVCAS for a decision, UKVCAS handles biometrics only; the decision is made by the Home Office"
           ],
           "output": "Application processing underway; decision awaited"
         }
@@ -313,11 +312,11 @@
       "time": "On decision",
       "sources": [
         {
-          "label": "GOV.UK – After you get a decision",
+          "label": "GOV.UK, After you get a decision",
           "url": "https://www.gov.uk/student-visa/after-you-apply"
         },
         {
-          "label": "GOV.UK – eVisa",
+          "label": "GOV.UK, eVisa",
           "url": "https://www.gov.uk/evisa"
         }
       ],
@@ -330,7 +329,7 @@
             "Check your GOV.UK account and the email address you registered with for the decision notification",
             "Read the decision notice carefully",
             "If approved: note your visa validity dates and any conditions stated",
-            "If refused: read the refusal notice carefully — it will state the reasons for refusal and whether you have a right of appeal or administrative review; seek advice if needed",
+            "If refused: read the refusal notice carefully, it will state the reasons for refusal and whether you have a right of appeal or administrative review; seek advice if needed",
             "If additional documents are requested: respond promptly as directed"
           ],
           "output": "Visa decision received and reviewed"
@@ -338,7 +337,7 @@
         {
           "id": "V-02",
           "name": "Understand Your eVisa",
-          "description": "For most applicants outside the UK, the UK Student visa is now granted as an eVisa — a digital immigration status linked to your passport and UKVI account rather than a physical vignette sticker in your passport. Confirm the current format of your status document on GOV.UK.",
+          "description": "For most applicants outside the UK, the UK Student visa is now granted as an eVisa, a digital immigration status linked to your passport and UKVI account rather than a physical vignette sticker in your passport. Confirm the current format of your status document on GOV.UK.",
           "ukNote": "The UK has moved to a digital immigration status system (eVisa). Check gov.uk/evisa for current guidance on how to view and share your UK immigration status. You will need a UKVI account to access your eVisa.",
           "actions": [
             "Go to gov.uk/evisa and read the current guidance on eVisa and UK immigration status",
@@ -372,15 +371,15 @@
       "time": "Ongoing",
       "sources": [
         {
-          "label": "GOV.UK – Student visa conditions",
+          "label": "GOV.UK, Student visa conditions",
           "url": "https://www.gov.uk/student-visa/when-you-arrive"
         },
         {
-          "label": "GOV.UK – eVisa and status",
+          "label": "GOV.UK, eVisa and status",
           "url": "https://www.gov.uk/evisa"
         },
         {
-          "label": "UKCISA – Student support",
+          "label": "UKCISA, Student support",
           "url": "https://www.ukcisa.org.uk/"
         }
       ],
@@ -414,7 +413,7 @@
         {
           "id": "VI-03",
           "name": "Access Your UKVI Account and Verify Your eVisa",
-          "description": "After arriving in the UK, access your UKVI account to verify your immigration status is correctly recorded. Your eVisa records your conditions of leave — check it carefully.",
+          "description": "After arriving in the UK, access your UKVI account to verify your immigration status is correctly recorded. Your eVisa records your conditions of leave, check it carefully.",
           "actions": [
             "Log in to your UKVI account and view your current immigration status",
             "Verify your visa expiry date and conditions",
@@ -432,8 +431,8 @@
           "actions": [
             "Read your visa conditions carefully on your eVisa and at gov.uk/student-visa/when-you-arrive",
             "Understand conditions related to study (you must study with your licensed sponsor)",
-            "Understand conditions related to working — the Student visa may allow limited work alongside your studies; check the current rules on GOV.UK as they depend on your course level and sponsor",
-            "Understand the 'no recourse to public funds' condition — most Student visa holders may not access most public funds",
+            "Understand conditions related to working, the Student visa may allow limited work alongside your studies; check the current rules on GOV.UK as they depend on your course level and sponsor",
+            "Understand the 'no recourse to public funds' condition, most Student visa holders may not access most public funds",
             "If your circumstances change (e.g., change of course, change of sponsor, or need to extend): contact your university DSO and check GOV.UK for the correct process"
           ],
           "output": "Student visa conditions understood; studying and working within permitted limits"

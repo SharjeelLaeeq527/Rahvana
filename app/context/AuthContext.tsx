@@ -10,13 +10,9 @@ import {
   useMemo,
   useRef,
 } from "react";
+import { E, msg } from '@/lib/errors'
 import { createClient } from "@/lib/supabase/client";
-import {
-  AuthError,
-  User,
-  Session,
-  AuthChangeEvent,
-} from "@supabase/supabase-js";
+import { AuthError, User, Session, AuthChangeEvent } from "@supabase/supabase-js";
 
 // Define types for MFA error metadata
 interface MFAMetadata {
@@ -55,21 +51,17 @@ interface AuthContextType {
   mfaPending: boolean;
   signIn: (
     email: string,
-    password: string,
+    password: string
   ) => Promise<{
     error: AuthError | null;
     mfaRequired?: boolean;
     factorId?: string;
     challengeId?: string;
+    retryAfterSeconds?: number;
   }>;
-  signUp: (
-    email: string,
-    password: string,
-  ) => Promise<{ error: AuthError | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: AuthError | null }>;
   signOut: () => Promise<void>;
-  signInWithGoogle: (
-    redirectUrl?: string | null,
-  ) => Promise<{ error: AuthError | null }>;
+  signInWithGoogle: (redirectUrl?: string | null) => Promise<{ error: AuthError | null }>;
   enableMFA: () => Promise<{
     success: boolean;
     qrCode?: string;
@@ -79,7 +71,7 @@ interface AuthContextType {
   }>;
   verifyMFASetup: (
     factorId: string,
-    code: string,
+    code: string
   ) => Promise<{
     success: boolean;
     error?: string;
@@ -87,7 +79,7 @@ interface AuthContextType {
   verifyMFALogin: (
     factorId: string,
     challengeId: string,
-    code: string,
+    code: string
   ) => Promise<{
     success: boolean;
     user?: User;
@@ -113,7 +105,7 @@ interface AuthContextType {
   checkMFAStatus: (userId: string) => Promise<boolean>;
   disableMFASetup: (
     factorId: string,
-    code: string,
+    code: string
   ) => Promise<{
     success: boolean;
     message?: string;
@@ -129,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isAdmin, setIsAdmin] = useState(false);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  
+
   // useMemo ensures the same client instance is used across renders,
   // preventing stale closures in fetchProfile and onAuthStateChange.
   const supabase = useMemo(() => createClient(), []);
@@ -145,7 +137,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   // Helper function to safely extract MFA error details
   const extractMFAErrorDetails = (
-    error: MFAError | AuthError,
+    error: MFAError | AuthError
   ): { factorId?: string; challengeId?: string } => {
     const typedError = error as MFAError;
     return {
@@ -174,10 +166,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Fetch profile with retry and fallback.
   // Never throws — always sets a usable profile even on network failure.
   const fetchProfile = useCallback(
-    async (
-      userId: string,
-      userMeta?: { full_name?: string; name?: string; email?: string },
-    ) => {
+    async (userId: string, userMeta?: { full_name?: string; name?: string; email?: string }) => {
       // Try up to 3 attempts with increasing delays (1s, 2s)
       for (let attempt = 0; attempt < 3; attempt++) {
         try {
@@ -198,7 +187,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
           // PGRST116 = no row found — user has no profile yet, skip retry
           if ((error as any)?.code === "PGRST116") break;
-
         } catch {
           // Network error — try again silently
         }
@@ -206,10 +194,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       // All attempts failed — use metadata fallback so UI never shows blank
       const fallbackName =
-        userMeta?.full_name ||
-        userMeta?.name ||
-        userMeta?.email?.split("@")[0] ||
-        "User";
+        userMeta?.full_name || userMeta?.name || userMeta?.email?.split("@")[0] || "User";
 
       setProfile({
         full_name: fallbackName,
@@ -217,7 +202,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         role: "user",
       });
     },
-    [supabase],
+    [supabase]
   );
 
   useEffect(() => {
@@ -242,13 +227,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
       setUser(u);
       setSession(s);
-      
+
       // Preliminary profile
-      setProfile(prev => prev || {
-        full_name: u.user_metadata?.full_name || u.email?.split("@")[0] || "User",
-        email: u.email || "",
-        role: "user",
-      });
+      setProfile(
+        (prev) =>
+          prev || {
+            full_name: u.user_metadata?.full_name || u.email?.split("@")[0] || "User",
+            email: u.email || "",
+            role: "user",
+          }
+      );
 
       // Fetch full details in background
       fetchProfile(u.id, {
@@ -274,9 +262,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
-        const { data: { session: s } } = await supabase.auth.getSession();
-        const { data: { user: u } } = await supabase.auth.getUser();
-        
+        const {
+          data: { session: s },
+        } = await supabase.auth.getSession();
+        const {
+          data: { user: u },
+        } = await supabase.auth.getUser();
+
         await initializeUser(u, s);
       } catch (err) {
         console.error("Error getting initial session:", err);
@@ -288,17 +280,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     getInitialSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event: AuthChangeEvent, session: Session | null) => {
-        // Only trigger initialization for relevant events to avoid loops
-        if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
-          await initializeUser(session?.user ?? null, session);
-        } else if (event === 'SIGNED_OUT') {
-          await initializeUser(null, null);
-        }
-        setIsLoading(false);
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, session: Session | null) => {
+      // Only trigger initialization for relevant events to avoid loops
+      if (event === "SIGNED_IN" || event === "INITIAL_SESSION" || event === "USER_UPDATED") {
+        await initializeUser(session?.user ?? null, session);
+      } else if (event === "SIGNED_OUT") {
+        await initializeUser(null, null);
       }
-    );
+      setIsLoading(false);
+    });
 
     return () => subscription.unsubscribe();
   }, [supabase, fetchProfile, fetchUserProfile]);
@@ -325,7 +317,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return {
         success: false,
-        error: "Failed to initialize MFA setup",
+        error: msg(E.AUTH_MFA_ENABLE_FAILED),
       };
     }
   };
@@ -348,16 +340,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return {
         success: false,
-        error: "Failed to verify MFA setup",
+        error: msg(E.AUTH_MFA_VERIFY_FAILED),
       };
     }
   };
 
-  const verifyMFALogin = async (
-    factorId: string,
-    challengeId: string,
-    code: string,
-  ) => {
+  const verifyMFALogin = async (factorId: string, challengeId: string, code: string) => {
     try {
       const { error } = await supabase.auth.mfa.verify({
         factorId,
@@ -366,7 +354,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       if (error) {
-        return { success: false, error: error.message };
+        return { success: false, error: msg(E.AUTH_MFA_CODE_INVALID) };
       }
 
       // 🔥 Get updated session AFTER successful verification
@@ -390,15 +378,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return {
         success: false,
-        error: "Failed to verify MFA code",
+        error: msg(E.AUTH_MFA_CODE_INVALID),
       };
     }
   };
 
   const getAuthenticatorAssuranceLevel = async () => {
     try {
-      const { data, error } =
-        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+      const { data, error } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
 
       if (error) {
         return {
@@ -425,7 +412,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const { data, error } = await supabase.auth.mfa.listFactors();
 
-      if (error) {
+        if (error) {
         return { totp: [], error: error.message };
       }
 
@@ -486,119 +473,72 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return {
         success: false,
-        error: "Failed to verify MFA setup",
+        error: msg(E.AUTH_MFA_DISABLE_FAILED),
       };
     }
   };
 
   const signIn = async (email: string, password: string) => {
+    // Login now goes through our own server route (/api/auth/login) so every
+    // attempt passes through server-side rate limiting + audit logging before
+    // Supabase is called. A direct client-side signInWithPassword would talk to
+    // Supabase directly and could never be rate-limited at our edge.
     try {
-      // First, attempt to sign in with email and password
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
       });
 
-      // Check if there's an error
-      if (error) {
-        // Check if it's specifically an MFA required error
-        if (error.code === "mfa_required") {
-          // Extract factor information from the error (if available)
-          const { factorId, challengeId } = extractMFAErrorDetails(error);
+      const data = await response.json().catch(() => ({}));
 
-          if (!factorId || !challengeId) {
-            const { totp: fetchedTotp, error: factorsError } =
-              await listMFACheckFactors();
-
-            if (factorsError) {
-              return {
-                error: {
-                  message: "MFA setup error",
-                  code: "mfa_error",
-                } as unknown as AuthError,
-              };
-            }
-
-            if (!fetchedTotp || fetchedTotp.length === 0) {
-              return {
-                error: {
-                  message: "No MFA factors found",
-                  code: "mfa_no_factors",
-                } as unknown as AuthError,
-              };
-            }
-
-            // Create challenge for the first factor
-            const { data: challengeData, error: challengeError } =
-              await supabase.auth.mfa.challenge({
-                factorId: fetchedTotp[0].id,
-              });
-
-            if (challengeError) {
-              return { error: challengeError };
-            }
-
-            return {
-              error: null,
-              mfaRequired: true,
-              factorId: fetchedTotp[0].id,
-              challengeId: challengeData.id,
-            };
-          }
-
-          // Return the MFA challenge information
-          return {
-            error: null,
-            mfaRequired: true,
-            factorId,
-            challengeId,
-          };
-        }
-
-        // For other errors, return as-is
-        return { error };
-      }
-
-      // Check if user has MFA factors but is only at AAL1
-      if (data?.session) {
-        // Use factors from the session if available, otherwise fetch them
-        const userWithFactors = data.session.user as User & {
-          factors?: Array<{ id: string; factor_type: string; status: string }>;
+      // Too many attempts -> surface the friendly 429 message plus the
+      // Retry-After window (seconds) so the login page can run a countdown.
+      if (response.status === 429) {
+        const retryHeader = response.headers.get("Retry-After");
+        const retryAfterSeconds = retryHeader ? parseInt(retryHeader, 10) : NaN;
+        return {
+          error: {
+            message: data.message || msg(E.AUTH_RATE_LIMITED, { minutes: 15 }),
+            code: "AUTH_RATE_LIMITED",
+          } as unknown as AuthError,
+          retryAfterSeconds: Number.isFinite(retryAfterSeconds)
+            ? retryAfterSeconds
+            : undefined,
         };
-        const factors = userWithFactors?.factors || [];
-        const totpFactors = factors.filter(
-          (f) => f.factor_type === "totp" && f.status === "verified",
-        );
-
-        if (totpFactors.length > 0) {
-          const factorId = totpFactors[0].id;
-
-          // Only challenge if we have a valid factor
-          if (factorId) {
-            const { data: challengeData, error: challengeError } =
-              await supabase.auth.mfa.challenge({
-                factorId: factorId,
-              });
-
-            if (!challengeError && challengeData) {
-              return {
-                error: null,
-                mfaRequired: true,
-                factorId: factorId,
-                challengeId: challengeData.id,
-              };
-            }
-          }
-        }
       }
 
-      // Normal login success
+      if (!response.ok) {
+        return {
+          error: {
+            message: data.error || msg(E.AUTH_LOGIN_FAILED),
+            code: data.code || "AUTH_LOGIN_FAILED",
+          } as unknown as AuthError,
+        };
+      }
+
+      // MFA challenge required -> hand the ids back to the login page, which
+      // drives the existing /api/auth/mfa/verify-login flow (unchanged).
+      if (data.mfaRequired && data.factorId && data.challengeId) {
+        return {
+          error: null,
+          mfaRequired: true,
+          factorId: data.factorId,
+          challengeId: data.challengeId,
+        };
+      }
+
+      // Success: the server set the auth cookies on the response. Ask the
+      // browser client to read them so its in-memory session is in sync
+      // before the login page redirects.
+      await supabase.auth.getSession();
+
       return { error: null };
     } catch (err) {
       console.error("Sign in error:", err);
       return {
         error: {
-          message: "Sign in failed",
+          message: msg(E.AUTH_LOGIN_FAILED),
           code: "sign_in_error",
         } as unknown as AuthError,
       };
@@ -618,9 +558,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (!response.ok) {
         return {
           error: {
-            message: data.error,
+            message: data.message || data.error || msg(E.AUTH_UNEXPECTED_ERROR),
             status: response.status,
-            code: "SIGNUP_ERROR",
+            code: data.code || "SIGNUP_ERROR",
             name: "SignUpError",
           } as unknown as AuthError,
         };
@@ -630,7 +570,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch {
       return {
         error: {
-          message: "An unexpected error occurred",
+          message: msg(E.AUTH_UNEXPECTED_ERROR),
           status: 500,
           code: "UNEXPECTED_ERROR",
           name: "UnexpectedError",
@@ -666,9 +606,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signInWithGoogle = async (redirectUrl?: string | null) => {
     // Always use the current browser origin so localhost never jumps to production
-    const currentOrigin =
-      typeof window !== "undefined" ? window.location.origin : "";
-      
+    const currentOrigin = typeof window !== "undefined" ? window.location.origin : "";
+
     if (typeof document !== "undefined" && redirectUrl) {
       document.cookie = `oauth_redirect=${encodeURIComponent(redirectUrl)}; path=/; max-age=3600; SameSite=Lax`;
     }

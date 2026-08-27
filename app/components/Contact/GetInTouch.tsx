@@ -1,65 +1,44 @@
 "use client";
 
 import React, { useState, useRef } from "react";
-import {
-  Send,
-  MessageSquare,
-  Instagram,
-  Linkedin,
-  Youtube,
-  CheckCircle2,
-  AlertCircle,
-  Facebook,
-} from "lucide-react";
+import { Send, MessageSquare, Instagram, Linkedin, Facebook, Youtube } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
 import { submitContactForm } from "./contact-action";
 import { useLanguage } from "../../context/LanguageContext";
+import * as Errors from "@/lib/errors";
+import { useToast } from "@/app/components/shared/ToastProvider";
 const XIcon = ({ size = 20 }: { size?: number }) => (
-  <svg
-    width={size}
-    height={size}
-    viewBox="0 0 24 24"
-    fill="currentColor"
-    aria-hidden="true"
-  >
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
     <path d="M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932L18.901 1.153zM17.61 20.644h2.039L6.486 3.24H4.298l13.312 17.403z" />
   </svg>
 );
 
 export default function GetInTouch() {
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
-  const [errorMessage, setErrorMessage] = useState("");
   const formRef = useRef<HTMLFormElement>(null);
   const { t } = useLanguage();
+  const { showToast } = useToast();
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setIsSubmitting(true);
-    setStatus("idle");
-    setErrorMessage("");
 
     const formData = new FormData(event.currentTarget);
 
     try {
       const result = await submitContactForm(formData);
       if (result.success) {
-        setStatus("success");
+        showToast(
+          t("homePage.contactSection.success") ||
+            "Thank you! Your message has been sent successfully. We'll get back to you soon.",
+          "success"
+        );
         formRef.current?.reset();
       } else {
-        setStatus("error");
-        setErrorMessage(
-          result.error ||
-            t("homePage.contactSection.error") ||
-            "Something went wrong. Please try again.",
-        );
+        showToast(result.error || Errors.msg(Errors.E.CONTACT_SUBMIT_FAILED), "error");
       }
     } catch {
-      setStatus("error");
-      setErrorMessage(
-        t("homePage.contactSection.error") ||
-          "An unexpected error occurred. Please try again.",
-      );
+      showToast(Errors.msg(Errors.E.CONTACT_SUBMIT_FAILED), "error");
     } finally {
       setIsSubmitting(false);
     }
@@ -67,14 +46,14 @@ export default function GetInTouch() {
 
   return (
     <section
-      className="relative overflow-hidden py-8 md:py-16 font-sans"
+      className="relative overflow-hidden py-8 font-sans md:py-16"
       id="contact"
       suppressHydrationWarning
-      style={{ background: 'linear-gradient(180deg,#f7fffd 0%,#f3f8ff 30%,#fffafc 100%)' }}
+      style={{ background: "linear-gradient(180deg,#f7fffd 0%,#f3f8ff 30%,#fffafc 100%)" }}
     >
       {/* Texture overlay - matching opacity from original */}
       <div
-        className="absolute inset-0 opacity-[0.03] pointer-events-none"
+        className="pointer-events-none absolute inset-0 opacity-[0.03]"
         style={{
           backgroundImage: "url('assets/images/footer-texture.png')",
           backgroundSize: "cover",
@@ -83,60 +62,55 @@ export default function GetInTouch() {
         aria-hidden="true"
       ></div>
 
-      <div className="relative z-10 w-full mx-auto px-6 sm:px-8 md:px-12 2xl:px-30">
+      <div className="relative z-10 mx-auto w-full px-6 sm:px-8 md:px-12 2xl:px-30">
         {/* Section Header */}
-        <div className="text-center mb-12">
-          <span className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 text-primary text-sm font-medium rounded-full mb-5">
+        <div className="mb-6 text-center">
+          <span className="bg-primary/10 text-primary mb-5 inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium">
             <MessageSquare size={16} />
             {t("homePage.contactSection.badge") || "Let's Connect"}
           </span>
-          <h2 className="text-4xl font-bold text-foreground mb-4">
+          <h2 className="text-foreground mb-4 text-4xl font-bold">
             {t("homePage.contactSection.title") || "Get in Touch"}
           </h2>
-          <p className="text-lg text-muted-foreground">
+          <p className="text-muted-foreground text-lg">
             {t("homePage.contactSection.description") ||
               "Have questions or need support? We're here to help."}
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-2">
           {/* Social Column */}
-          <div>
-            <h3 className="text-xl font-semibold text-foreground mb-6">
+          <div className="flex flex-col items-center justify-center text-center">
+            <h3 className="text-foreground mb-6 text-xl font-semibold">
               {t("homePage.contactSection.followUs") || "Follow Us"}
             </h3>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="flex w-full items-center justify-center gap-2.5 sm:gap-3.5 flex-wrap sm:flex-nowrap">
               <SocialCard
-                icon={<Instagram size={20} />}
-                label="Instagram"
+                icon={<Instagram size={24} />}
                 href="https://www.instagram.com/rahvana.co?igsh=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr"
                 target="_blank"
                 ariaLabel="Follow us on Instagram"
               />
               <SocialCard
-                icon={<Linkedin size={20} />}
-                label="LinkedIn"
+                icon={<Youtube size={24} />}
+                href="https://youtube.com/@rahvana_co?si=Mb5-OwJmc5ThTxJs"
+                target="_blank"
+                ariaLabel="Subscribe on YouTube"
+              />
+              <SocialCard
+                icon={<Linkedin size={24} />}
                 href="https://www.linkedin.com/company/rahvana/posts/?feedView=all"
                 target="_blank"
                 ariaLabel="Connect on LinkedIn"
               />
-              {/* <SocialCard
-                icon={<Youtube size={20} />}
-                label="Youtube"
-                href="https://youtube.com/@rahvana_co?si=Mb5-OwJmc5ThTxJs"
-                target="_blank"
-                ariaLabel="Follow us on Youtube"
-              /> */}
               <SocialCard
-                icon={<XIcon size={20} />}
-                label="X"
+                icon={<XIcon size={24} />}
                 href="https://x.com/rahvanaco?s=21&t=a8CQwdRgHqBFZmUfsX8Gpg"
                 target="_blank"
                 ariaLabel="Follow us on X"
               />
               <SocialCard
-                icon={<Facebook size={20} />}
-                label="Facebook"
+                icon={<Facebook size={24} />}
                 href="https://www.facebook.com/profile.php?id=61587967827317&mibextid=wwXIfr"
                 target="_blank"
                 ariaLabel="Follow us on Facebook"
@@ -146,121 +120,84 @@ export default function GetInTouch() {
 
           {/* Contact Form Wrapper */}
           <div>
-            <h3 className="text-xl font-semibold text-foreground mb-6">
+            <h3 className="text-foreground mb-6 text-xl font-semibold">
               {t("homePage.contactSection.sendMessage") || "Send a Message"}
             </h3>
-
-            {status === "success" && (
-              <div className="mb-6 p-4 bg-green-500/10 border border-green-500/20 rounded-lg flex items-center gap-3 text-green-600 dark:text-green-400">
-                <CheckCircle2 size={20} className="shrink-0" />
-                <p className="text-sm font-medium">
-                  {t("homePage.contactSection.success") ||
-                    "Thank you! Your message has been sent successfully. We'll get back to you soon."}
-                </p>
-              </div>
-            )}
-
-            {status === "error" && (
-              <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-lg flex items-center gap-3 text-red-600 dark:text-red-400">
-                <AlertCircle size={20} className="shrink-0" />
-                <p className="text-sm font-medium">{errorMessage}</p>
-              </div>
-            )}
 
             <form
               className="flex flex-col gap-4"
               id="contactForm"
               onSubmit={handleSubmit}
               ref={formRef}
+              noValidate
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="firstName"
-                    className="text-sm font-medium text-foreground"
-                  >
+                  <label htmlFor="firstName" className="text-foreground text-sm font-medium">
                     {t("homePage.contactSection.firstName") || "First Name"}
                   </label>
                   <input
                     type="text"
                     id="firstName"
                     name="firstName"
-                    placeholder={
-                      t("homePage.contactSection.placeholderFirstName") ||
-                      "John"
-                    }
+                    placeholder={t("homePage.contactSection.placeholderFirstName") || "John"}
                     required
                     disabled={isSubmitting}
-                    className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
+                    className="border-border bg-muted/50 focus:bg-background focus:border-primary focus:ring-primary/10 rounded-lg border p-3 text-base transition-all focus:ring-4 focus:outline-none disabled:opacity-60"
                     suppressHydrationWarning
                   />
                 </div>
                 <div className="flex flex-col gap-2">
-                  <label
-                    htmlFor="lastName"
-                    className="text-sm font-medium text-foreground"
-                  >
+                  <label htmlFor="lastName" className="text-foreground text-sm font-medium">
                     {t("homePage.contactSection.lastName") || "Last Name"}
                   </label>
                   <input
                     type="text"
                     id="lastName"
                     name="lastName"
-                    placeholder={
-                      t("homePage.contactSection.placeholderLastName") || "Doe"
-                    }
+                    placeholder="Smith"
                     required
                     disabled={isSubmitting}
-                    className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
+                    className="border-border bg-muted/50 focus:bg-background focus:border-primary focus:ring-primary/10 rounded-lg border p-3 text-base transition-all focus:ring-4 focus:outline-none disabled:opacity-60"
                     suppressHydrationWarning
                   />
                 </div>
               </div>
               <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="email"
-                  className="text-sm font-medium text-foreground"
-                >
+                <label htmlFor="email" className="text-foreground text-sm font-medium">
                   {t("homePage.contactSection.email") || "Email Address"}
                 </label>
                 <input
                   type="email"
                   id="email"
                   name="email"
-                  placeholder={
-                    t("homePage.contactSection.placeholderEmail") ||
-                    "john@example.com"
-                  }
+                  placeholder={t("homePage.contactSection.placeholderEmail") || "john@example.com"}
                   required
                   disabled={isSubmitting}
-                  className="p-3 border border-border rounded-lg text-base bg-muted/50 focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
+                  className="border-border bg-muted/50 focus:bg-background focus:border-primary focus:ring-primary/10 rounded-lg border p-3 text-base transition-all focus:ring-4 focus:outline-none disabled:opacity-60"
                   suppressHydrationWarning
                 />
               </div>
               <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="message"
-                  className="text-sm font-medium text-foreground"
-                >
+                <label htmlFor="message" className="text-foreground text-sm font-medium">
                   {t("homePage.contactSection.message") || "Message"}
                 </label>
                 <textarea
                   id="message"
                   name="message"
                   placeholder={
-                    t("homePage.contactSection.placeholderMessage") ||
-                    "How can we help you?"
+                    t("homePage.contactSection.placeholderMessage") || "How can we help you?"
                   }
                   required
                   disabled={isSubmitting}
-                  className="p-3 border border-border rounded-lg text-base bg-muted/50 min-h-28 resize-y focus:bg-background focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all disabled:opacity-60"
+                  className="border-border bg-muted/50 focus:bg-background focus:border-primary focus:ring-primary/10 min-h-28 resize-y rounded-lg border p-3 text-base transition-all focus:ring-4 focus:outline-none disabled:opacity-60"
                   suppressHydrationWarning
                 ></textarea>
               </div>
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="self-start inline-flex items-center justify-center gap-2 px-6 py-3 bg-primary text-primary-foreground font-semibold rounded-lg hover:bg-primary/90 hover:-translate-y-0.5 hover:shadow-md transition-all active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:transform-none"
+                className="bg-primary text-primary-foreground hover:bg-primary/90 inline-flex items-center justify-center gap-2 self-start rounded-lg px-6 py-3 font-semibold transition-all hover:-translate-y-0.5 hover:shadow-md active:scale-95 disabled:cursor-not-allowed disabled:opacity-70 disabled:hover:transform-none"
                 suppressHydrationWarning
               >
                 {isSubmitting ? (
@@ -285,13 +222,11 @@ export default function GetInTouch() {
 
 function SocialCard({
   icon,
-  label,
   href,
   target,
   ariaLabel,
 }: {
   icon: React.ReactNode;
-  label: string;
   href: string;
   target?: string;
   ariaLabel: string;
@@ -300,13 +235,11 @@ function SocialCard({
     <a
       href={href}
       target={target}
-      className="flex items-center gap-3 p-4 bg-muted/30 border border-border rounded-xl text-foreground no-underline transition-all hover:border-primary hover:-translate-y-0.5 hover:shadow-md group"
+      rel={target === "_blank" ? "noopener noreferrer" : undefined}
+      className="bg-muted/30 border-border text-primary hover:bg-primary hover:text-primary-foreground hover:border-primary group flex h-14 w-14 sm:h-16 sm:w-16 items-center justify-center rounded-2xl border no-underline transition-all hover:-translate-y-1 hover:shadow-lg shrink-0"
       aria-label={ariaLabel}
     >
-      <div className="flex items-center justify-center w-10 h-10 bg-primary/10 text-primary rounded-lg shrink-0 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-        {icon}
-      </div>
-      <span className="text-sm font-medium">{label}</span>
+      <div className="transition-transform duration-300 group-hover:scale-110">{icon}</div>
     </a>
   );
 }

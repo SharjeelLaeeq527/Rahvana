@@ -1,39 +1,39 @@
-"use client"
+"use client";
 
-import { useRef, useState } from "react"
-import SignatureCanvas from "react-signature-canvas"
-import { useLanguage } from "@/app/context/LanguageContext"
+import { useRef, useState } from "react";
+import SignatureCanvas from "react-signature-canvas";
+import { useLanguage } from "@/app/context/LanguageContext";
 
 type Props = {
-  onSave: (dataURL: string) => void
-  closeModal: () => void
-}
+  onSave: (dataURL: string) => void;
+  closeModal: () => void;
+};
 
 export default function SignaturePad({ onSave, closeModal }: Props) {
-  const { t } = useLanguage()
-  const sigRef = useRef<SignatureCanvas | null>(null)
-  const [penColor, setPenColor] = useState("#000000")
+  const { t } = useLanguage();
+  const sigRef = useRef<SignatureCanvas | null>(null);
+  const [penColor, setPenColor] = useState("#000000");
 
   const colors = [
     { name: t("pdfProcessing.editor.signature.black"), value: "#000000" },
     { name: t("pdfProcessing.editor.signature.blue"), value: "#1E40AF" },
     { name: t("pdfProcessing.editor.signature.red"), value: "#DC2626" },
-  ]
+  ];
 
   const handleSave = () => {
     if (!sigRef.current?.isEmpty()) {
-      const canvas = sigRef.current?.getCanvas()
-      const dataURL = canvas?.toDataURL("image/png")
+      const canvas = sigRef.current?.getCanvas();
+      const dataURL = canvas?.toDataURL("image/png");
       if (dataURL) {
-        onSave(dataURL)
-        closeModal() // Modal band karne ke liye
+        onSave(dataURL);
+        closeModal(); // Modal band karne ke liye
       }
     }
-  }
+  };
 
   const handleClear = () => {
-    sigRef.current?.clear()
-  }
+    sigRef.current?.clear();
+  };
 
   return (
     <div className="space-y-4">
@@ -73,11 +73,11 @@ export default function SignaturePad({ onSave, closeModal }: Props) {
         </button>
         <button
           onClick={handleSave}
-          className="flex-1 px-3 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition font-medium"
+          className="flex-1 px-3 py-2 bg-rahvana-primary text-white rounded-lg hover:bg-rahvana-primary-dark transition font-medium"
         >
           {t("pdfProcessing.editor.signature.create")}
         </button>
       </div>
     </div>
-  )
+  );
 }

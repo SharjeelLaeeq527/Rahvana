@@ -2,11 +2,10 @@
 // User rejects translation and requests changes
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from "@/lib/errors";
+import { triggerTranslationChangesRequestedNotification } from "@/lib/notifications";
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
 
@@ -17,7 +16,7 @@ export async function POST(
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { id } = await params;
@@ -33,16 +32,13 @@ export async function POST(
 
     const { data: existing, error: checkError } = await supabase
       .from("translation_documents")
-      .select("status")
+      .select("status, document_type, user_name")
       .eq("id", id)
       .eq("user_id", user.id)
       .single();
 
     if (checkError || !existing) {
-      return NextResponse.json(
-        { error: "Document not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
     if (existing.status !== "TRANSLATED") {
@@ -67,23 +63,28 @@ export async function POST(
 
     if (updateError) {
       console.error("Update error:", updateError);
-      return NextResponse.json(
-        { error: "Failed to request changes" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to request changes" }, { status: 500 });
     }
+
+    // Trigger admin notification asynchronously
+    const docLabel = existing.document_type || "Document";
+    const userName = existing.user_name || "User";
+    triggerTranslationChangesRequestedNotification(
+      undefined,
+      userName,
+      docLabel,
+      reason
+    ).catch((err) => {
+      console.error("Error triggering change request notification:", err);
+    });
 
     return NextResponse.json({
       success: true,
       status: updated.status,
-      message:
-        "Change request submitted. Admin will review and re-upload.",
+      message: "Change request submitted. Admin will review and re-upload.",
     });
   } catch (error) {
     console.error("Request changes error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -1,12 +1,6 @@
 "use client";
 
-import React, {
-  createContext,
-  useContext,
-  useEffect,
-  useState,
-  useCallback,
-} from "react";
+import React, { createContext, useContext, useEffect, useState, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import { createClient } from "@/lib/supabase/client";
 import {
@@ -33,7 +27,7 @@ interface PlanContextValue {
   /** Dev-only: override the active tier for UI testing. null = use real tier. */
   devOverride: PlanTier | null;
   setDevOverride: (t: PlanTier | null) => void;
-  /** Add-on IDs purchased by this user (e.g. ["sponsor", "mock"]). */
+  /** Add-on IDs purchased by this user (e.g. ["sponsor", "interview-prep"]). */
   purchasedAddons: string[];
   /** Re-fetch the user's plan from DB (call after successful payment). */
   refresh: () => void;
@@ -56,23 +50,23 @@ interface PlanContextValue {
 const PlanContext = createContext<PlanContextValue | null>(null);
 
 const DB_TIER_MAP: Record<string, PlanTier> = {
-  core:      'basic',
-  plus:      'premium',
-  pro:       'executive',
-  basic:     'basic',
-  premium:   'premium',
-  executive: 'executive',
-  free:      'free',
+  core: "basic",
+  plus: "premium",
+  pro: "executive",
+  basic: "basic",
+  premium: "premium",
+  executive: "executive",
+  free: "free",
 };
 
 function normalizeTier(raw: string | null | undefined): PlanTier {
-  if (!raw) return 'free';
-  return DB_TIER_MAP[raw.toLowerCase()] ?? 'free';
+  if (!raw) return "free";
+  return DB_TIER_MAP[raw.toLowerCase()] ?? "free";
 }
 
 export function PlanProvider({ children }: { children: React.ReactNode }) {
-  const { user } = useAuth();
-  const [realTier, setRealTier] = useState<PlanTier>('free');
+  const { user, isLoading: authLoading } = useAuth();
+  const [realTier, setRealTier] = useState<PlanTier>("free");
   const [purchasedAddons, setPurchasedAddons] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [devOverride, setDevOverride] = useState<PlanTier | null>(null);
@@ -83,8 +77,15 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
   const refresh = useCallback(() => setRefreshCounter((n) => n + 1), []);
 
   useEffect(() => {
+    // If Auth is still loading, keep plan state loading to prevent intermediate
+    // mock 'free' tier evaluation and restricted screen flickering.
+    if (authLoading) {
+      setIsLoading(true);
+      return;
+    }
+
     if (!user?.id) {
-      setRealTier('free');
+      setRealTier("free");
       setPurchasedAddons([]);
       setIsLoading(false);
       return;
@@ -98,7 +99,7 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     // 1. Defensive reconciliation: if user has a successful payment that
     //    hasn't been applied to subscription_tier yet, apply it.
     //    Fails open — if the endpoint errors, we still load from DB normally.
-    const reconcile = fetch('/api/plan/reconcile', { method: 'POST' })
+    const reconcile = fetch("/api/plan/reconcile", { method: "POST" })
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null);
 
@@ -106,20 +107,29 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     reconcile
       .then(() =>
         supabase
-          .from('user_profiles')
-          .select('subscription_tier, profile_details')
-          .eq('id', user.id)
-          .single(),
+          .from("user_profiles")
+          .select("subscription_tier, profile_details")
+          .eq("id", user.id)
+          .single()
       )
-      .then(({ data }: { data: { subscription_tier?: string; profile_details?: any } | null }) => {
-        if (cancelled) return;
-        setRealTier(normalizeTier(data?.subscription_tier));
-        const addons = data?.profile_details?.purchased_addons;
-        setPurchasedAddons(Array.isArray(addons) ? addons : []);
-      })
+      .then(
+        ({
+          data,
+        }: {
+          data: {
+            subscription_tier?: string;
+            profile_details?: Record<string, unknown> | null;
+          } | null;
+        }) => {
+          if (cancelled) return;
+          setRealTier(normalizeTier(data?.subscription_tier));
+          const addons = data?.profile_details?.purchased_addons as string[] | undefined;
+          setPurchasedAddons(Array.isArray(addons) ? addons : []);
+        }
+      )
       .catch(() => {
         if (!cancelled) {
-          setRealTier('free');
+          setRealTier("free");
           setPurchasedAddons([]);
         }
       })
@@ -127,8 +137,10 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
         if (!cancelled) setIsLoading(false);
       });
 
-    return () => { cancelled = true; };
-  }, [user?.id, refreshCounter]);
+    return () => {
+      cancelled = true;
+    };
+  }, [user?.id, authLoading, refreshCounter]);
 
   const value: PlanContextValue = {
     realTier,
@@ -138,13 +150,16 @@ export function PlanProvider({ children }: { children: React.ReactNode }) {
     setDevOverride,
     purchasedAddons,
     refresh,
-    entitlement: useCallback((f) => getEffectiveEntitlement(f, tier, purchasedAddons), [tier, purchasedAddons]),
-    canUse:       useCallback((f) => canUse(f, tier, purchasedAddons), [tier, purchasedAddons]),
-    isHidden:     useCallback((f) => isHidden(f, tier), [tier]),
-    isLocked:     useCallback((f) => isLocked(f, tier, purchasedAddons), [tier, purchasedAddons]),
+    entitlement: useCallback(
+      (f) => getEffectiveEntitlement(f, tier, purchasedAddons),
+      [tier, purchasedAddons]
+    ),
+    canUse: useCallback((f) => canUse(f, tier, purchasedAddons), [tier, purchasedAddons]),
+    isHidden: useCallback((f) => isHidden(f, tier), [tier]),
+    isLocked: useCallback((f) => isLocked(f, tier, purchasedAddons), [tier, purchasedAddons]),
     isAccessible: useCallback((f) => isAccessible(f, tier), [tier]),
-    lockHint:     useCallback((f) => lockHint(f, tier, purchasedAddons), [tier, purchasedAddons]),
-    upgradeCTA:   useCallback((f) => upgradeCTA(f, tier, purchasedAddons), [tier, purchasedAddons]),
+    lockHint: useCallback((f) => lockHint(f, tier, purchasedAddons), [tier, purchasedAddons]),
+    upgradeCTA: useCallback((f) => upgradeCTA(f, tier, purchasedAddons), [tier, purchasedAddons]),
   };
 
   return <PlanContext.Provider value={value}>{children}</PlanContext.Provider>;

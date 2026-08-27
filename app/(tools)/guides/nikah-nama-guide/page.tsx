@@ -4,9 +4,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
-import WizardInfoPanel, {
-  InfoPanelData,
-} from "../../../components/guides/WizardInfoPanel";
+import WizardInfoPanel, { InfoPanelData } from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
@@ -15,13 +13,14 @@ import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/nikah-nama-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
+import { PageGate } from "@/app/components/entitlements/PageGate";
 
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
 import { useGuideUpload } from "@/lib/guides/useGuideUpload";
 import { useGuideSave } from "@/lib/guides/useGuideSave";
 import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
-import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
+import { NavigationGuard } from "@/lib/guides/useNavigationGuard";
 
 const STEP_IDS: WizardStepId[] = ["document_need", "roadmap", "validation"];
 
@@ -39,8 +38,12 @@ const INFO_PANEL_KEYS: Record<string, string> = {
 
 const NikahNamaGuidePage = () => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [highestReachedStep, setHighestReachedStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
-  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(
+    typeof window !== "undefined" &&
+      localStorage.getItem("dont_show_marriage_registration_welcome") === "true"
+  );
   const [isSaved, setIsSaved] = useState(false);
   const [navigationHandled, setNavigationHandled] = useState(false);
   const [state, setState] = useState<WizardState>({
@@ -67,11 +70,10 @@ const NikahNamaGuidePage = () => {
     (prev, stepsData) => ({
       ...prev,
       documentNeed: stepsData.document_need || prev.documentNeed,
-      checkedDocuments:
-        stepsData.roadmap?.checkedDocuments || prev.checkedDocuments,
+      checkedDocuments: stepsData.roadmap?.checkedDocuments || prev.checkedDocuments,
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
-    }),
+    })
   );
 
   const { uploadFile: uploadFileHook } = useGuideUpload();
@@ -92,14 +94,14 @@ const NikahNamaGuidePage = () => {
   const handleSubmitFeedback = async (
     feedbackType: string,
     description: string,
-    attachment?: File,
+    attachment?: File
   ) => {
     await submitFeedbackHook(
       "nikah-nama-guide",
       currentStepId,
       feedbackType,
       description,
-      attachment,
+      attachment
     );
   };
 
@@ -123,8 +125,7 @@ const NikahNamaGuidePage = () => {
 
     const localHide =
       typeof window !== "undefined" &&
-      localStorage.getItem("dont_show_marriage_registration_welcome") ===
-        "true";
+      localStorage.getItem("dont_show_marriage_registration_welcome") === "true";
 
     if (!session.hide_intro_modal && !localHide) {
       setShowWhatsThis(true);
@@ -141,20 +142,16 @@ const NikahNamaGuidePage = () => {
   };
 
   useEffect(() => {
+    setHighestReachedStep((prev) => Math.max(prev, currentStep));
+  }, [currentStep]);
+
+  useEffect(() => {
     if (session?.saved) {
       setIsSaved(true);
     }
   }, [session]);
 
-  useNavigationGuard(
-    hasProgress && !isSaved,
-    async () => {
-      await saveGuide("nikah-nama-guide"); // wait save complete
-      setIsSaved(true); // mark as saved
-    },
-    navigationHandled,
-    setNavigationHandled,
-  );
+  // Navigation guard handled by NavigationGuard component in render
 
   // Before unload confirmation
   useEffect(() => {
@@ -198,8 +195,7 @@ const NikahNamaGuidePage = () => {
   };
 
   const goNext = () => {
-    if (currentStep < STEP_IDS.length - 1 && canGoNext())
-      setCurrentStep(currentStep + 1);
+    if (currentStep < STEP_IDS.length - 1 && canGoNext()) setCurrentStep(currentStep + 1);
   };
 
   const goBack = () => {
@@ -211,16 +207,13 @@ const NikahNamaGuidePage = () => {
       setState((s) => ({
         ...s,
         documentNeed: {
-          ...(typeof s.documentNeed === "object" && s.documentNeed !== null
-            ? s.documentNeed
-            : {}),
+          ...(typeof s.documentNeed === "object" && s.documentNeed !== null ? s.documentNeed : {}),
           [questionId]: id,
         },
       }));
       // Save progress to backend
       saveWizardStep("document_need", {
-        ...(typeof state.documentNeed === "object" &&
-        state.documentNeed !== null
+        ...(typeof state.documentNeed === "object" && state.documentNeed !== null
           ? state.documentNeed
           : {}),
         [questionId]: id,
@@ -274,10 +267,7 @@ const NikahNamaGuidePage = () => {
           />
         );
       case "roadmap":
-        const docNeedRaw = state.documentNeed as
-          | string
-          | Record<string, string>
-          | null;
+        const docNeedRaw = state.documentNeed as string | Record<string, string> | null;
         let selectedCategory: string | undefined;
 
         if (typeof docNeedRaw === "string") {
@@ -290,14 +280,15 @@ const NikahNamaGuidePage = () => {
           selectedCategory = Object.values(docNeedRaw).join(","); // or match specific question
         }
 
-        const filteredChecklist =
-          guideData.wizard.roadmap.documents_checklist.filter((doc: any) => {
+        const filteredChecklist = guideData.wizard.roadmap.documents_checklist.filter(
+          (doc: any) => {
             if (!doc.category) return true;
             if (selectedCategory) {
               return selectedCategory.includes(doc.category);
             }
             return false;
-          });
+          }
+        );
 
         const roadmapWithFilteredDocs = {
           ...guideData.wizard.roadmap,
@@ -335,11 +326,13 @@ const NikahNamaGuidePage = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-26">
-      <WizardHeader
-        onWhatsThis={() => setShowWhatsThis(true)}
-        title={guideData.wizard.title}
-      />
+    <PageGate
+      feature="guide_nikah_nama"
+      title="Marriage Registration Guide Locked"
+      description="Upgrade your plan to unlock step-by-step guidance on registering your marriage and obtaining a Nikah Nama."
+    >
+      <div className="min-h-screen flex flex-col bg-[#f5f7fa] pt-26">
+      <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
 
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
         <WizardSidebar
@@ -352,6 +345,7 @@ const NikahNamaGuidePage = () => {
           onGuideSaved={() => setIsSaved(true)}
           saving={saving}
           session={session}
+          highestReachedStep={highestReachedStep}
         />
 
         <main className="min-w-0 xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
@@ -388,7 +382,10 @@ const NikahNamaGuidePage = () => {
                     onClick={goBack}
                     className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
                   >
-                    <ArrowLeft className="w-4 h-4" /> Back
+                    <ArrowLeft className="w-4 h-4" /> 
+                    <span className="hidden md:inline-block">
+                      Back
+                    </span>
                   </motion.button>
                 ) : (
                   <div className="hidden sm:block w-20" />
@@ -412,7 +409,10 @@ const NikahNamaGuidePage = () => {
                     }
                   `}
                   >
-                    Continue <ArrowRight className="w-4 h-4" />
+                    <span className="hidden md:inline-block">
+                      Continue
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
                   </motion.button>
                 )}
               </div>
@@ -436,12 +436,22 @@ const NikahNamaGuidePage = () => {
         onDontShowAgainChange={setDontShowAgain}
         variant="marriage-registration"
       />
+      <NavigationGuard
+        shouldBlock={hasProgress && !isSaved}
+        onSave={async () => {
+          await saveGuide("nikah-nama-guide");
+          setIsSaved(true);
+        }}
+        navigationHandled={navigationHandled}
+        setNavigationHandled={setNavigationHandled}
+      />
       <FeedbackButton
         steps={Object.values(STEP_LABELS)}
         currentStepName={STEP_LABELS[currentStepId] || ""}
         onSubmit={handleSubmitFeedback}
       />
-    </div>
+      </div>
+    </PageGate>
   );
 };
 

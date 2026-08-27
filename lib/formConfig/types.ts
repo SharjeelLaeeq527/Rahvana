@@ -27,17 +27,33 @@ export type Field = {
   tooltip?: string;
   originalLabel?: string;
   /** Nested sub-questions (e.g., 4a, 4b, 4c) rendered in same card */
-  subQuestions?: (Omit<Field, 'section'> & { condition?: (data: Record<string, string>) => boolean })[];
+  subQuestions?: (Omit<Field, "section"> & {
+    condition?: (data: Record<string, string>) => boolean;
+  })[];
   pattern?: string;
   inputMode?: "none" | "text" | "decimal" | "numeric" | "tel" | "search" | "email" | "url";
   keyboardType?: "urdu" | "arabic";
 };
 
 // ✅ Add this: FormConfig type
+export type OverflowFieldConfig = {
+  prefix: string;
+  countKey: string;
+  startIndex: number;
+  maxIndex?: number;
+  pageNumber: string;
+  partNumber: string;
+  itemNumber: string;
+  labelPrefix: string;
+  fields: { suffix: string; label: string }[];
+  formatInfo: (index: number, data: Record<string, string>) => string;
+};
+
 export type FormConfig = {
   formTitle?: string;
   formSubtitle?: string;
   formFields: Field[];
   getInitialFormData: () => Record<string, string>;
   sectionIntroMessages?: Record<string, { greeting: string; message: string }>;
+  overflowFields?: OverflowFieldConfig[];
 };

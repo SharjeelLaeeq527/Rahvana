@@ -5,10 +5,7 @@
  * effects, no I/O. Safe to import anywhere.
  */
 
-import type {
-  FileQualityCheckResult,
-  ReceiptFormatValidation,
-} from "./types";
+import type { FileQualityCheckResult, ReceiptFormatValidation } from "./types";
 
 const USCIS_SERVICE_CENTER_CODES: Record<string, string> = {
   EAC: "Vermont Service Center",
@@ -91,14 +88,11 @@ export function checkFileQuality(input: {
   }
 
   const lastDot = input.name.lastIndexOf(".");
-  const extension =
-    lastDot >= 0 ? input.name.slice(lastDot + 1).toLowerCase() : "";
+  const extension = lastDot >= 0 ? input.name.slice(lastDot + 1).toLowerCase() : "";
 
   if (
     !extension ||
-    !(USCIS_PORTAL_FILE_LIMITS.accepted_extensions as readonly string[]).includes(
-      extension
-    )
+    !(USCIS_PORTAL_FILE_LIMITS.accepted_extensions as readonly string[]).includes(extension)
   ) {
     issues.push(
       `File format ".${extension || "(none)"}" is not accepted by the USCIS ` +

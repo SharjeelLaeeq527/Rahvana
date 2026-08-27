@@ -1,4 +1,11 @@
-export type Operator = "equals" | "notEquals" | "greaterThan" | "lessThan" | "contains" | "exists" | "notExists";
+export type Operator =
+  | "equals"
+  | "notEquals"
+  | "greaterThan"
+  | "lessThan"
+  | "contains"
+  | "exists"
+  | "notExists";
 
 export interface Condition {
   fact: string;

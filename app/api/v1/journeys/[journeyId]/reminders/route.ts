@@ -2,31 +2,40 @@
 // GET  → Auto-generate + fetch all active reminders for a journey
 // PATCH is handled in [reminderId]/route.ts
 
-import { NextRequest, NextResponse } from 'next/server'
-import { verifyJourneyAccess, errorResponse } from '@/lib/api/journey-auth'
+import { NextRequest, NextResponse } from "next/server";
+import { verifyJourneyAccess, errorResponse } from "@/lib/api/journey-auth";
 
-export const dynamic = 'force-dynamic'
-import { ReminderEngine } from '@/lib/reminders/ReminderEngine'
-import { UnifiedReminderEngine } from '@/lib/notifications/UnifiedReminderEngine'
-import { REMINDER_PRIORITY_ORDER } from '@/lib/reminders/types'
-import { getReminderById, type ReminderKind } from '@/lib/notifications/reminderRegistry'
-import type { ReminderListResponse, ReminderType } from '@/lib/reminders/types'
-import { createClient } from '@supabase/supabase-js'
+export const dynamic = "force-dynamic";
+import { ReminderEngine } from "@/lib/reminders/ReminderEngine";
+import { UnifiedReminderEngine } from "@/lib/notifications/UnifiedReminderEngine";
+import { REMINDER_PRIORITY_ORDER } from "@/lib/reminders/types";
+import { getReminderById, type ReminderKind } from "@/lib/notifications/reminderRegistry";
+import type { ReminderListResponse, ReminderType } from "@/lib/reminders/types";
+import { getJourneyHrefByType } from "@/lib/constants/routes";
+import { createClient } from "@supabase/supabase-js";
+
+/** RFC-4122 UUID v4 pattern — all IDs from Supabase are UUIDs. */
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 // Maps registry kind → journey_reminders.reminder_type enum value
 // This is the ONLY place this mapping lives — change here to affect all registry notifications
 function kindToReminderType(kind: ReminderKind | undefined): ReminderType {
   switch (kind) {
-    case 'ACTION':    return 'step_pending_too_long'   // user needs to take action
-    case 'URGENT':    return 'step_pending_too_long'   // urgent action needed
-    case 'WAITING':   return 'ceac_status_update'      // waiting for external update
-    case 'FOLLOW-UP': return 'appointment_not_recorded' // follow up on something saved
-    default:          return 'step_pending_too_long'
+    case "ACTION":
+      return "step_pending_too_long"; // user needs to take action
+    case "URGENT":
+      return "step_pending_too_long"; // urgent action needed
+    case "WAITING":
+      return "ceac_status_update"; // waiting for external update
+    case "FOLLOW-UP":
+      return "appointment_not_recorded"; // follow up on something saved
+    default:
+      return "step_pending_too_long";
   }
 }
 
 interface RouteParams {
-  params: Promise<{ journeyId: string }>
+  params: Promise<{ journeyId: string }>;
 }
 
 function getAdminClient() {
@@ -34,7 +43,7 @@ function getAdminClient() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { persistSession: false } }
-  )
+  );
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -45,127 +54,150 @@ function getAdminClient() {
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    const { journeyId } = await params
+    const { journeyId } = await params;
+
+    // Security: validate journeyId is a well-formed UUID before any DB access.
+    // This rejects injection attempts, path traversal, and malformed inputs.
+    if (!UUID_RE.test(journeyId)) {
+      return NextResponse.json(
+        errorResponse("VALIDATION_ERROR", "Invalid journey ID format"),
+        { status: 400 }
+      );
+    }
 
     // Verify auth + journey ownership (uses user client)
-    const auth = await verifyJourneyAccess(journeyId)
-    if (auth.error) return auth.error
+    const auth = await verifyJourneyAccess(journeyId);
+    if (auth.error) return auth.error;
 
-    const { supabase } = auth
-    const cacheBust = request.headers.get('x-cache-bust') === '1' || 
-                     request.nextUrl.searchParams.get('force') === '1';
+    const { supabase } = auth;
+    const cacheBust =
+      request.headers.get("x-cache-bust") === "1" ||
+      request.nextUrl.searchParams.get("force") === "1";
 
     // Step 1: Check cooldown from DB to prevent heavy generation across all instances
     const { data: journey } = await supabase
-      .from('journeys')
-      .select('reminders_last_generated_at')
-      .eq('id', journeyId)
+      .from("journeys")
+      .select("reminders_last_generated_at, journey_type, journey_name")
+      .eq("id", journeyId)
       .single();
 
-    const lastRun = journey?.reminders_last_generated_at ? new Date(journey.reminders_last_generated_at).getTime() : 0;
+    const defaultActionUrl = getJourneyHrefByType(journey?.journey_type);
+
+    const lastRun = journey?.reminders_last_generated_at
+      ? new Date(journey.reminders_last_generated_at).getTime()
+      : 0;
     const nowTimestamp = Date.now();
     const GENERATION_COOLDOWN = 15 * 60 * 1000; // 15 minutes
-    const shouldRunEngine = cacheBust || (nowTimestamp - lastRun > GENERATION_COOLDOWN);
+    const shouldRunEngine = cacheBust || nowTimestamp - lastRun > GENERATION_COOLDOWN;
 
     // Create service role client for background inserts/updates
-    const adminSupabase = getAdminClient()
+    const adminSupabase = getAdminClient();
 
     if (shouldRunEngine) {
-      console.log(`[GET /reminders] Running heavy engine for journey ${journeyId} (Bust: ${cacheBust})`);
-      
+      console.log(
+        `[GET /reminders] Running heavy engine for journey ${journeyId} (Bust: ${cacheBust})`
+      );
+
       // Step 1a: Stateless condition-based reminders (documents, fees, etc.)
-      const engine = new ReminderEngine(adminSupabase)
-      await engine.generateReminders(journeyId)
+      const engine = new ReminderEngine(adminSupabase);
+      await engine.generateReminders(journeyId);
 
       // Step 1b: Unified registry — schedule + suppress
-      const unified = new UnifiedReminderEngine(adminSupabase)
-      await unified.checkAndScheduleAll(journeyId)
-      await unified.runSuppression(journeyId)
+      const unified = new UnifiedReminderEngine(adminSupabase);
+      await unified.checkAndScheduleAll(journeyId);
+      await unified.runSuppression(journeyId);
 
       // Update the timestamp in DB
       await adminSupabase
-        .from('journeys')
+        .from("journeys")
         .update({ reminders_last_generated_at: new Date().toISOString() })
-        .eq('id', journeyId);
+        .eq("id", journeyId);
     }
 
     // Step 1c: Immediately deliver any DUE scheduled notifications for this journey
     // so user sees them without waiting for the cron job (6-hour delay).
-    const nowIso = new Date().toISOString()
+    const nowIso = new Date().toISOString();
     const { data: dueNow } = await adminSupabase
-      .from('ceac_scheduled_notifications')
-      .select('*')
-      .eq('journey_id', journeyId)
-      .eq('reminder_origin', 'journey')
-      .eq('status', 'pending')
-      .lte('fire_at', nowIso)
-      .limit(20)
+      .from("ceac_scheduled_notifications")
+      .select("*")
+      .eq("journey_id", journeyId)
+      .eq("reminder_origin", "journey")
+      .eq("status", "pending")
+      .lte("fire_at", nowIso)
+      .limit(20);
 
     for (const notif of dueNow ?? []) {
-      const def = getReminderById(notif.reminder_id)
+      const def = getReminderById(notif.reminder_id);
       // Map the registry kind to a valid reminder_type DB enum value
-      const reminderType = kindToReminderType(def?.kind)
-      const priority = def?.priority ?? (notif.reminder_type === 'URGENT' ? 'high' : 'normal')
+      const reminderType = kindToReminderType(def?.kind);
+      const priority = def?.priority ?? (notif.reminder_type === "URGENT" ? "high" : "normal");
 
-      await adminSupabase.from('journey_reminders').upsert({
-        journey_id: journeyId,
-        reminder_type: reminderType,
-        priority,
-        title: notif.title,
-        body: notif.message,
-        step_key: notif.step_trigger_key ?? null,
-        action_url: def?.actionUrl ?? null,
-        action_label: def?.actionLabel ?? null,
-        is_dismissed: false,
-        dedup_key: `${journeyId}:journey:${notif.reminder_id}:${notif.recurrence_count}`,
-      }, { onConflict: 'dedup_key', ignoreDuplicates: true })
+      await adminSupabase.from("journey_reminders").upsert(
+        {
+          journey_id: journeyId,
+          reminder_type: reminderType,
+          priority,
+          title: notif.title,
+          body: notif.message,
+          step_key: notif.step_trigger_key ?? null,
+          action_url:
+            def?.actionUrl === undefined || def?.actionUrl === null
+              ? defaultActionUrl
+              : def?.actionUrl,
+          action_label: def?.actionLabel ?? null,
+          is_dismissed: false,
+          dedup_key: `${journeyId}:journey:${notif.reminder_id}:${notif.recurrence_count}`,
+        },
+        { onConflict: "dedup_key", ignoreDuplicates: true }
+      );
 
-      await adminSupabase.from('ceac_scheduled_notifications')
-        .update({ status: 'sent', sent_at: nowIso })
-        .eq('id', notif.id)
+      await adminSupabase
+        .from("ceac_scheduled_notifications")
+        .update({ status: "sent", sent_at: nowIso })
+        .eq("id", notif.id);
     }
 
     // Step 2: Fetch all active reminders (not dismissed, not snoozed)
-    const now = new Date().toISOString()
+    const now = new Date().toISOString();
 
     const { data: reminders, error } = await supabase
-      .from('journey_reminders')
-      .select('*')
-      .eq('journey_id', journeyId)
-      .eq('is_dismissed', false)
+      .from("journey_reminders")
+      .select("*")
+      .eq("journey_id", journeyId)
+      .eq("is_dismissed", false)
       .or(`snoozed_until.is.null,snoozed_until.lt.${now}`)
-      .order('created_at', { ascending: false })
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error('[GET /reminders] DB fetch error:', error)
-      return NextResponse.json(
-        errorResponse('SERVER_ERROR', 'Failed to fetch reminders'),
-        { status: 500 }
-      )
+      console.error("[GET /reminders] DB fetch error:", error);
+      return NextResponse.json(errorResponse("SERVER_ERROR", "Failed to fetch reminders"), {
+        status: 500,
+      });
     }
 
     // Step 3: Sort by priority (critical → high → normal → low)
     const sorted = (reminders ?? []).sort((a, b) => {
-      const pa = REMINDER_PRIORITY_ORDER[a.priority as keyof typeof REMINDER_PRIORITY_ORDER] ?? 99
-      const pb = REMINDER_PRIORITY_ORDER[b.priority as keyof typeof REMINDER_PRIORITY_ORDER] ?? 99
-      return pa - pb
-    })
+      const pa = REMINDER_PRIORITY_ORDER[a.priority as keyof typeof REMINDER_PRIORITY_ORDER] ?? 99;
+      const pb = REMINDER_PRIORITY_ORDER[b.priority as keyof typeof REMINDER_PRIORITY_ORDER] ?? 99;
+      return pa - pb;
+    });
 
     const response: ReminderListResponse = {
       success: true,
       reminders: sorted,
       total: sorted.length,
-      critical_count: sorted.filter(r => r.priority === 'critical').length,
-      high_count: sorted.filter(r => r.priority === 'high').length,
-    }
+      critical_count: sorted.filter((r) => r.priority === "critical").length,
+      high_count: sorted.filter((r) => r.priority === "high").length,
+      journey_type: journey?.journey_type ?? undefined,
+      journey_name: journey?.journey_name ?? undefined,
+    };
 
-    return NextResponse.json(response, { status: 200 })
-
+    return NextResponse.json(response, { status: 200 });
   } catch (err) {
-    console.error('[GET /reminders] Unexpected error:', err)
+    console.error("[GET /reminders] Unexpected error:", err);
     return NextResponse.json(
-      errorResponse('SERVER_ERROR', err instanceof Error ? err.message : 'Unexpected error'),
+      errorResponse("SERVER_ERROR", err instanceof Error ? err.message : "Unexpected error"),
       { status: 500 }
-    )
+    );
   }
 }

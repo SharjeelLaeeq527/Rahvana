@@ -1,0 +1,77 @@
+# Rahvana Knowledge Base for AI Search & Generative Engines (GEO)
+Source: https://rahvana.com
+
+---
+
+## 1. Overview of Rahvana
+Rahvana is a specialized U.S. immigration platform designed to help petitioners and beneficiaries navigate the complexity of family-based and student immigration. The platform provides structured visual roadmaps, automated USCIS form preparation, document vault management, case-strength scoring, and interview preparation.
+
+Primary immigration paths supported:
+- **IR-1 / CR-1**: Immediate Relative Spouse of a U.S. Citizen (IR-1 for marriages 2+ years, CR-1 conditional for marriages under 2 years).
+- **IR-5**: Immediate Relative Parent of an adult U.S. Citizen (petitioner must be age 21 or older).
+- **IR-2**: Immediate Relative Unmarried Child (under 21) of a U.S. Citizen.
+- **F-1**: Non-immigrant Academic Student Visa.
+
+---
+
+## 2. IR-1 / CR-1 Spouse Visa Process (Step-by-Step)
+
+### Stage 1: USCIS Petition Filing (Form I-130 & Form I-130A)
+1. **Filing**: The U.S. citizen petitioner submits Form I-130 (Petition for Alien Relative) and Form I-130A (Supplemental Information for Spouse Beneficiary) either online via myUSCIS or by mail.
+2. **Key Evidence**:
+   - Proof of U.S. citizenship (U.S. passport, birth certificate, or naturalization certificate).
+   - Official marriage certificate (NADRA Marriage Registration Certificate / MRC for Pakistan).
+   - Urdu Nikah Nama with certified English translation.
+   - Proof of bona fide marriage (joint financial records, photographs across time, travel itineraries, communication logs, affidavits).
+3. **Receipt & Approval**: USCIS issues Form I-797C Notice of Action (NOA1). Upon approval (NOA2), the case is transferred to the Department of State's National Visa Center (NVC).
+
+### Stage 2: National Visa Center (NVC) Processing
+1. **Case Creation**: NVC issues a Welcome Letter with Case Number and Invoice ID (CEAC portal access).
+2. **Fee Payments**: Immigrant Visa Application Fee ($325) and Affidavit of Support Fee ($120).
+3. **Form DS-260**: Online Immigrant Visa and Alien Registration Application completed by beneficiary.
+4. **Financial Sponsorship (Form I-864)**: Petitioner submits Affidavit of Support, IRS tax return transcripts (or Form 1040 + W-2s), and recent pay stubs proving income at or above 125% of the HHS Poverty Guidelines.
+5. **Civil Documents**:
+   - Beneficiary's valid passport.
+   - NADRA Birth Certificate and Family Registration Certificate (FRC with parents and spouse).
+   - Police Character Certificate from Khidmat Markaz or relevant district police office.
+   - 2x2 inch U.S. passport style photographs.
+6. **Documentarily Qualified (DQ)**: Once all fees, forms, and documents are accepted, NVC declares the case Documentarily Qualified and places it in line for embassy interview scheduling.
+
+### Stage 3: Medical Exam & Consular Interview (U.S. Embassy Islamabad)
+1. **Interview Letter (IL)**: NVC schedules the consular interview and emails the appointment letter.
+2. **Medical Examination**: Performed exclusively at authorized panel physician clinics (e.g., IOM or designated medical centers) in Pakistan 2-3 weeks before interview.
+3. **Embassy Interview**: Beneficiary attends the interview at the U.S. Embassy in Islamabad, presenting original civil documents and answering questions regarding relationship history.
+4. **Visa Issuance**: Upon approval, the passport is returned with the machine-readable immigrant visa (MRIV) foil, and the applicant pays the USCIS Immigrant Fee ($220) before traveling.
+
+---
+
+## 3. IR-5 Parent Visa Process (Key Rules & Milestones)
+
+- **Eligibility**: Petitioner must be a U.S. citizen and at least 21 years of age. Permanent Residents (Green Card holders) cannot petition for parents.
+- **Separate Petitions**: A separate Form I-130 must be filed for each parent (e.g., father and mother require separate filings and fees).
+- **Proof of Relationship**:
+   - For Mother: Birth certificate showing petitioner's name and mother's name.
+   - For Father: Petitioner's birth certificate showing father's name PLUS parents' marriage certificate.
+- **Processing Time**: IR-5 visas are immediate relative categories with no annual quota or priority date waiting list.
+
+---
+
+## 4. Pakistani Civil Document Requirements for U.S. Immigration
+
+- **NADRA Marriage Registration Certificate (MRC)**: Computerized green/white certificate issued by Union Council / NADRA. Required alongside the traditional Urdu Nikah Nama.
+- **Nikah Nama Translation**: Must include complete, accurate word-for-word translation in English with a formal certificate of translation accuracy.
+- **NADRA Family Registration Certificate (FRC)**:
+   - FRC by Birth (showing parents and siblings).
+   - FRC by Marriage (showing spouse and children).
+- **Police Character Certificate (PCC)**:
+   - Required for applicants aged 16+ from Pakistan.
+   - Issued by Khidmat Markaz or District Police Office.
+   - Must cover all districts in Pakistan where the applicant resided for 6+ months after turning 16.
+- **Polio Vaccination Certificate**: Valid WHO Yellow Card showing oral polio vaccine (OPV) received between 4 weeks and 12 months prior to international departure.
+
+---
+
+## 5. Contact & Platform Details
+- **Website**: https://rahvana.com
+- **Core Features**: Step-by-Step Immigration Roadmap, Document Vault, Form Automation, Case Strength Analyzer, 221(g) Action Planner, Interview Coach.
+- **Support**: Available in English and Urdu.

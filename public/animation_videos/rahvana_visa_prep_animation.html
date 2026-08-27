@@ -1,0 +1,530 @@
+
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap');
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  .wrap {
+    width: 100%;
+    min-height: 480px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Inter', var(--font-sans), sans-serif;
+    padding: 24px 16px;
+  }
+
+  .card {
+    background: var(--surface-2, #fff);
+    border-radius: 20px;
+    border: 0.5px solid var(--border, rgba(0,0,0,0.1));
+    width: 100%;
+    max-width: 520px;
+    min-height: 340px;
+    padding: 28px 28px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .scene { display: none; flex-direction: column; gap: 14px; animation: fadeIn 0.5s ease; }
+  .scene.active { display: flex; }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeOut { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-8px); } }
+  @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0; } }
+  @keyframes fillBar { from { width: 0%; } to { width: var(--w); } }
+  @keyframes countUp { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+  @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.03); } }
+  @keyframes typeText { from { width: 0; } to { width: 100%; } }
+  @keyframes circleGrow { from { stroke-dashoffset: 226; } to { stroke-dashoffset: var(--dash); } }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11px; font-weight: 500; letter-spacing: 0.04em;
+    padding: 4px 10px; border-radius: 20px;
+    background: linear-gradient(135deg, #e8f4f1, #ede8fd);
+    color: #0f6e56;
+  }
+  .chip .dot { width: 6px; height: 6px; border-radius: 50%; background: #1D9E75; animation: pulse 1.4s infinite; }
+
+  .scene-label {
+    font-size: 11px; font-weight: 500; color: var(--text-muted, #888);
+    text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px;
+  }
+
+  .question-box {
+    background: var(--surface-1, #f7f7f5);
+    border-radius: 12px;
+    border: 0.5px solid var(--border, rgba(0,0,0,0.08));
+    padding: 16px 18px;
+  }
+  .question-label { font-size: 11px; color: var(--text-muted,#999); margin-bottom: 6px; font-weight: 500; }
+  .question-text { font-size: 15px; font-weight: 500; color: var(--text-primary, #1a1a1a); line-height: 1.5; }
+
+  .answer-box {
+    background: var(--surface-2, #fff);
+    border-radius: 12px;
+    border: 0.5px solid #1D9E75;
+    padding: 14px 16px;
+    min-height: 72px;
+    position: relative;
+  }
+  .answer-text {
+    font-size: 13.5px; color: var(--text-secondary, #555); line-height: 1.6;
+    overflow: hidden; white-space: nowrap;
+  }
+  .cursor { display: inline-block; width: 2px; height: 15px; background: #1D9E75; margin-left: 2px; vertical-align: middle; animation: blink 1s infinite; }
+
+  .timer {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 500; color: #534AB7;
+    background: #EEEDFE; padding: 4px 10px; border-radius: 20px;
+    align-self: flex-end;
+  }
+
+  .feedback-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .fb-item {
+    display: flex; align-items: center; gap: 7px;
+    font-size: 12.5px; color: var(--text-secondary, #555);
+    background: var(--surface-1, #f7f7f5);
+    padding: 9px 12px; border-radius: 10px;
+    border: 0.5px solid var(--border, rgba(0,0,0,0.07));
+    animation: slideUp 0.4s ease both;
+  }
+  .fb-item:nth-child(1) { animation-delay: 0.1s; }
+  .fb-item:nth-child(2) { animation-delay: 0.25s; }
+  .fb-item:nth-child(3) { animation-delay: 0.4s; }
+  .fb-item.good .icon { color: #1D9E75; }
+  .fb-item.warn .icon { color: #BA7517; }
+  .icon { font-size: 15px; flex-shrink: 0; }
+
+  .progress-bar-wrap {
+    background: var(--surface-1, #f0f0ee);
+    border-radius: 20px; height: 6px; overflow: hidden;
+  }
+  .progress-bar {
+    height: 100%; border-radius: 20px;
+    background: linear-gradient(90deg, #1D9E75, #534AB7);
+    --w: 0%; width: 0%;
+    transition: width 1.2s cubic-bezier(0.4,0,0.2,1);
+  }
+  .progress-label { font-size: 11px; color: var(--text-muted,#999); font-weight: 500; margin-top: 4px; }
+
+  .modes-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+  .mode-card {
+    background: var(--surface-1, #f7f7f5);
+    border-radius: 14px; padding: 14px 12px;
+    border: 0.5px solid var(--border, rgba(0,0,0,0.08));
+    cursor: default; transition: all 0.3s ease;
+    text-align: center;
+  }
+  .mode-card.active-mode {
+    background: var(--surface-2, #fff);
+    border-color: #1D9E75;
+    transform: translateY(-2px);
+  }
+  .mode-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-muted, #8e8e93);
+    margin-bottom: 6px;
+    transition: color 0.3s ease;
+  }
+  .mode-icon svg {
+    width: 22px;
+    height: 22px;
+  }
+  .mode-card.active-mode .mode-icon {
+    color: #1D9E75;
+  }
+  .mode-title { font-size: 12px; font-weight: 600; color: var(--text-primary,#1a1a1a); margin-bottom: 3px; }
+  .mode-desc { font-size: 11px; color: var(--text-muted,#999); line-height: 1.4; }
+
+  .circle-wrap { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+  .circle-container { position: relative; width: 96px; height: 96px; }
+  .circle-bg { fill: none; stroke: var(--border, rgba(0,0,0,0.08)); stroke-width: 7; }
+  .circle-fill { fill: none; stroke-width: 7; stroke-linecap: round;
+    stroke-dasharray: 226; stroke-dashoffset: 226;
+    transform: rotate(-90deg); transform-origin: 50% 50%;
+    transition: stroke-dashoffset 1.4s cubic-bezier(0.4,0,0.2,1), stroke 0.6s ease;
+  }
+  .circle-pct { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-size: 20px; font-weight: 600; color: var(--text-primary,#1a1a1a); }
+
+  .ready-list { display: flex; flex-direction: column; gap: 10px; }
+  .ready-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 16px; border-radius: 12px;
+    background: var(--surface-1, #f7f7f5);
+    border: 0.5px solid var(--border, rgba(0,0,0,0.07));
+    font-size: 13.5px; font-weight: 500; color: var(--text-primary,#1a1a1a);
+    animation: slideUp 0.5s ease both;
+  }
+  .ready-item:nth-child(1) { animation-delay: 0.05s; }
+  .ready-item:nth-child(2) { animation-delay: 0.2s; }
+  .ready-item:nth-child(3) { animation-delay: 0.35s; }
+  .check-circle {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: linear-gradient(135deg, #1D9E75, #0F6E56);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .check-circle svg { width: 12px; height: 12px; stroke: #fff; stroke-width: 2.5; fill: none; }
+
+  .conf-badge {
+    align-self: center; margin-top: 4px;
+    padding: 6px 20px; border-radius: 20px;
+    background: linear-gradient(135deg, #E1F5EE, #EEEDFE);
+    font-size: 12px; font-weight: 600;
+    color: #534AB7;
+    border: 0.5px solid #AFA9EC;
+    animation: pulse 2s infinite;
+  }
+
+  .row { display: flex; align-items: center; justify-content: space-between; }
+  .scene-title { font-size: 14px; font-weight: 600; color: var(--text-primary,#1a1a1a); }
+  .scene-sub { font-size: 12px; color: var(--text-muted,#999); }
+</style>
+
+<div class="wrap" role="region" aria-label="Rahvana visa interview preparation animation">
+  <div class="card" id="mainCard">
+
+    <!-- Scene 1: Practice Begins -->
+    <div class="scene active" id="s1">
+      <div class="row">
+        <div>
+          <div class="scene-label">Practice session</div>
+          <div class="scene-title">Interview preparation</div>
+        </div>
+        <div class="chip"><span class="dot"></span>Live</div>
+      </div>
+      <div class="question-box">
+        <div class="question-label">Question 1 of 12</div>
+        <div class="question-text" id="q1text">When did you first meet your spouse?</div>
+        <!-- <div class="question-text" id="q1text">Take me through the timeline.</div> -->
+      </div>
+      <div class="answer-box">
+        <div class="answer-text" id="typedAnswer"><span class="cursor"></span></div>
+      </div>
+      <div class="row">
+        <div class="timer" id="timer1">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="#534AB7" stroke-width="1.5" aria-hidden="true"><circle cx="6" cy="6" r="5"/><path d="M6 3v3l2 1.5"/></svg>
+          <span id="timerVal">00:00</span>
+        </div>
+        <div style="font-size:11px;color:var(--text-muted,#999)">Type your answer…</div>
+      </div>
+    </div>
+
+    <!-- Scene 2: Feedback -->
+    <div class="scene" id="s2">
+      <div class="row">
+        <div>
+          <div class="scene-label">Answer review</div>
+          <div class="scene-title">Feedback</div>
+        </div>
+        <div style="font-size:11px;font-weight:500;color:#534AB7;background:#EEEDFE;padding:4px 10px;border-radius:20px;">AI analysis</div>
+      </div>
+      <div class="answer-box" style="border-color:var(--border,rgba(0,0,0,0.1));min-height:auto;">
+        <div style="font-size:11px;color:var(--text-muted,#999);margin-bottom:5px;font-weight:500;">Your answer</div>
+        <div style="font-size:13px;color:var(--text-secondary,#555);line-height:1.6;">We met in 2018 at a mutual friend's birthday party in Chicago. We exchanged numbers that evening.</div>
+        <!-- <div style="font-size:13px;color:var(--text-secondary,#555);line-height:1.6;">We submitted everything and then waited for the interview.</div> -->
+      </div>
+      <div class="feedback-grid">
+        <div class="fb-item good"><span class="icon" aria-hidden="true">✓</span> Clear answer</div>
+        <div class="fb-item good"><span class="icon" aria-hidden="true">✓</span> Complete details</div>
+        <div class="fb-item warn" style="grid-column:1/-1;"><span class="icon" aria-hidden="true">⚠</span> Add more context about how you stayed in touch.</div>
+        <!-- <div class="fb-item warn" style="grid-column:1/-1;"><span class="icon" aria-hidden="true">⚠</span> Add specific dates and key milestones.</div> -->
+      </div>
+      <div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="pb1" style="--w:62%;width:62%;"></div></div>
+        <div class="progress-label">Score: 62% · Good start, room to improve</div>
+      </div>
+    </div>
+
+    <!-- Scene 3: Improvement -->
+    <div class="scene" id="s3">
+      <div class="row">
+        <div>
+          <div class="scene-label">Improvement loop</div>
+          <div class="scene-title">Refining your answer</div>
+        </div>
+        <div style="font-size:11px;font-weight:500;color:#0F6E56;background:#E1F5EE;padding:4px 10px;border-radius:20px;">Round 2</div>
+      </div>
+      <div class="answer-box" style="border-color:#1D9E75;">
+        <div style="font-size:11px;color:var(--text-muted,#999);margin-bottom:5px;font-weight:500;">Improved answer</div>
+        <div style="font-size:13px;color:var(--text-secondary,#555);line-height:1.6;" id="improvedText">We met in June 2018 at a birthday party in Chicago through a mutual friend.<span class="cursor"></span></div>
+        <!-- <div style="font-size:13px;color:var(--text-secondary,#555);line-height:1.6;" id="improvedText">We filed our petition in March 2023, completed document submission in November, and received our interview appointment in June 2025.<span class="cursor"></span></div> -->
+      </div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;padding:8px 12px;border-radius:10px;background:#fdf6ec;border:0.5px solid #FAC775;">
+          <span style="color:#BA7517;font-size:14px;" aria-hidden="true">⚠</span>
+          <span style="color:#854F0B;">Before: Missing relationship timeline details</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:12.5px;padding:8px 12px;border-radius:10px;background:#e7f7f1;border:0.5px solid #9FE1CB;animation:slideUp 0.5s 0.3s ease both;opacity:0;animation-fill-mode:forwards;">
+          <span style="color:#0F6E56;font-size:14px;" aria-hidden="true">✓</span>
+          <span style="color:#085041;">After: Strong answer — clear, specific, confident</span>
+        </div>
+      </div>
+      <div>
+        <div class="progress-bar-wrap"><div class="progress-bar" id="pb2" style="--w:88%;width:88%;"></div></div>
+        <div class="progress-label">Score improved: 62% → 88%</div>
+      </div>
+    </div>
+
+    <!-- Scene 4: Three Modes -->
+    <div class="scene" id="s4">
+      <div>
+        <div class="scene-label">Preparation modes</div>
+        <div class="scene-title">Choose how you practice</div>
+      </div>
+      <div class="modes-grid">
+        <div class="mode-card" id="mc1">
+          <div class="mode-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 20h9"></path>
+              <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+            </svg>
+          </div>
+          <div class="mode-title">Practice</div>
+          <div class="mode-desc">Question-by-question training</div>
+        </div>
+        <div class="mode-card" id="mc2">
+          <div class="mode-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+          <div class="mode-title">Review</div>
+          <div class="mode-desc">Analyze and improve answers</div>
+        </div>
+        <div class="mode-card" id="mc3">
+          <div class="mode-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <circle cx="12" cy="12" r="6"></circle>
+              <circle cx="12" cy="12" r="2"></circle>
+            </svg>
+          </div>
+          <div class="mode-title">Simulation</div>
+          <div class="mode-desc">Full interview-style session</div>
+        </div>
+      </div>
+      <div style="background:var(--surface-1,#f7f7f5);border-radius:12px;padding:12px 16px;border:0.5px solid var(--border,rgba(0,0,0,0.08));">
+        <div style="font-size:11px;color:var(--text-muted,#999);margin-bottom:6px;font-weight:500;">Your progress across sessions</div>
+        <div class="progress-bar-wrap"><div class="progress-bar" style="--w:71%;width:71%;"></div></div>
+        <div class="progress-label">71% prepared · 34 questions answered</div>
+      </div>
+    </div>
+
+    <!-- Scene 5: Confidence -->
+    <div class="scene" id="s5" style="align-items:center;">
+      <div style="text-align:center;">
+        <div class="scene-label" style="text-align:center;">Confidence building</div>
+        <div class="scene-title">Your preparation score</div>
+      </div>
+      <div class="circle-wrap">
+        <div class="circle-container">
+          <svg width="96" height="96" viewBox="0 0 96 96" aria-hidden="true">
+            <circle class="circle-bg" cx="48" cy="48" r="36"/>
+            <circle class="circle-fill" cx="48" cy="48" r="36" id="circFill"
+              stroke="url(#cgrd)" style="stroke-dashoffset:226;"/>
+            <defs>
+              <linearGradient id="cgrd" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stop-color="#1D9E75"/>
+                <stop offset="100%" stop-color="#534AB7"/>
+              </linearGradient>
+            </defs>
+          </svg>
+          <div class="circle-pct" id="circPct">0%</div>
+        </div>
+        <div style="font-size:12px;color:var(--text-muted,#999);">Interview readiness</div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%;">
+        <div style="background:var(--surface-1,#f7f7f5);border-radius:10px;padding:10px 14px;border:0.5px solid var(--border,rgba(0,0,0,0.07));animation:slideUp 0.4s 0.1s ease both;opacity:0;animation-fill-mode:forwards;">
+          <div style="font-size:11px;color:var(--text-muted,#999);margin-bottom:3px;">Answers organized</div>
+          <div style="font-size:18px;font-weight:600;color:#1D9E75;" id="cntAns">0</div>
+        </div>
+        <div style="background:var(--surface-1,#f7f7f5);border-radius:10px;padding:10px 14px;border:0.5px solid var(--border,rgba(0,0,0,0.07));animation:slideUp 0.4s 0.25s ease both;opacity:0;animation-fill-mode:forwards;">
+          <div style="font-size:11px;color:var(--text-muted,#999);margin-bottom:3px;">Feedback positive</div>
+          <div style="font-size:18px;font-weight:600;color:#534AB7;" id="cntFb">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Scene 6: Ready -->
+    <div class="scene" id="s6">
+      <div class="row">
+        <div>
+          <div class="scene-label">Preparation complete</div>
+          <div class="scene-title">You're ready</div>
+        </div>
+        <div style="font-size:11px;font-weight:600;color:#0F6E56;background:#E1F5EE;padding:5px 12px;border-radius:20px;border:0.5px solid #9FE1CB;">100% ready</div>
+      </div>
+      <div class="ready-list">
+        <div class="ready-item">
+          <div class="check-circle"><svg viewBox="0 0 12 12" aria-hidden="true"><polyline points="2,6 5,9 10,3"/></svg></div>
+          <span>Prepared — all key topics covered</span>
+        </div>
+        <div class="ready-item">
+          <div class="check-circle"><svg viewBox="0 0 12 12" aria-hidden="true"><polyline points="2,6 5,9 10,3"/></svg></div>
+          <span>Answers reviewed and refined</span>
+        </div>
+        <div class="ready-item">
+          <div class="check-circle"><svg viewBox="0 0 12 12" aria-hidden="true"><polyline points="2,6 5,9 10,3"/></svg></div>
+          <span>Practice complete — 12 of 12 questions</span>
+        </div>
+      </div>
+      <div class="conf-badge">Interview confidence: high</div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const scenes = ['s1','s2','s3','s4','s5','s6'];
+let current = 0;
+let timers = [];
+let timerCount = 0;
+let timerInterval = null;
+let modeIdx = 0;
+
+function clearAll() {
+  timers.forEach(clearTimeout);
+  timers = [];
+  if (timerInterval) clearInterval(timerInterval);
+  timerInterval = null;
+}
+
+function t(fn, ms) {
+  const id = setTimeout(fn, ms);
+  timers.push(id);
+  return id;
+}
+
+function showScene(idx) {
+  clearAll();
+  scenes.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (i === idx) {
+      el.style.display = 'flex';
+      el.classList.add('active');
+    } else {
+      el.style.display = 'none';
+      el.classList.remove('active');
+    }
+  });
+  current = idx;
+  if (idx === 0) runScene1();
+  else if (idx === 1) runScene2();
+  else if (idx === 2) runScene3();
+  else if (idx === 3) runScene4();
+  else if (idx === 4) runScene5();
+  else if (idx === 5) runScene6();
+}
+
+// Scene 1: typing + timer
+function runScene1() {
+  timerCount = 0;
+  const timerEl = document.getElementById('timerVal');
+  const ansEl = document.getElementById('typedAnswer');
+  ansEl.innerHTML = '<span class="cursor"></span>';
+  
+  timerInterval = setInterval(() => {
+    timerCount++;
+    const s = timerCount % 60;
+    const m = Math.floor(timerCount / 60);
+    timerEl.textContent = String(m).padStart(2,'0') + ':' + String(s).padStart(2,'0');
+  }, 1000);
+
+  const txt = "We submitted everything and then waited for the interview.";
+  let i = 0;
+  function typeChar() {
+    if (i <= txt.length) {
+      ansEl.innerHTML = txt.slice(0, i) + '<span class="cursor"></span>';
+      i++;
+      t(typeChar, i < txt.length ? 38 : 500);
+    } else {
+      t(() => showScene(1), 1200);
+    }
+  }
+  t(typeChar, 1400);
+}
+
+// Scene 2: feedback
+function runScene2() {
+  t(() => showScene(2), 4000);
+}
+
+// Scene 3: improvement
+function runScene3() {
+  t(() => showScene(3), 4200);
+}
+
+// Scene 4: modes cycling
+function runScene4() {
+  const modes = ['mc1','mc2','mc3'];
+  modeIdx = 0;
+  function highlight() {
+    modes.forEach(id => document.getElementById(id).classList.remove('active-mode'));
+    document.getElementById(modes[modeIdx]).classList.add('active-mode');
+    modeIdx = (modeIdx + 1) % 3;
+    if (modeIdx > 0) t(highlight, 900);
+    else t(() => showScene(4), 900);
+  }
+  t(highlight, 600);
+}
+
+// Scene 5: circle + counters
+function runScene5() {
+  const circle = document.getElementById('circFill');
+  const pctEl = document.getElementById('circPct');
+  const cntAns = document.getElementById('cntAns');
+  const cntFb = document.getElementById('cntFb');
+  
+  const steps = [
+    { pct: 25, ans: 8, fb: 6, delay: 300 },
+    { pct: 50, ans: 17, fb: 14, delay: 900 },
+    { pct: 75, ans: 27, fb: 22, delay: 1600 },
+    { pct: 100, ans: 36, fb: 31, delay: 2400 },
+  ];
+
+  steps.forEach(step => {
+    t(() => {
+      const offset = 226 - (226 * step.pct / 100);
+      circle.style.strokeDashoffset = offset;
+      animCount(pctEl, step.pct, '%', 600);
+      animCount(cntAns, step.ans, '', 600);
+      animCount(cntFb, step.fb, '', 600);
+    }, step.delay);
+  });
+
+  t(() => showScene(5), 5000);
+}
+
+function animCount(el, target, suffix, dur) {
+  const start = parseInt(el.textContent) || 0;
+  const startTime = performance.now();
+  function step(now) {
+    const p = Math.min((now - startTime) / dur, 1);
+    el.textContent = Math.round(start + (target - start) * p) + suffix;
+    if (p < 1) requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// Scene 6: ready + loop
+function runScene6() {
+  t(() => {
+    // Reset circle for next loop
+    const c = document.getElementById('circFill');
+    if (c) c.style.strokeDashoffset = '226';
+    showScene(0);
+  }, 4500);
+}
+
+// Boot
+t(() => showScene(0), 300);
+</script>

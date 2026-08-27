@@ -14,11 +14,11 @@ import {
 export function getEffectiveEntitlement(
   feature: string,
   tier: PlanTier,
-  purchasedAddons: string[] = [],
+  purchasedAddons: string[] = []
 ): FeatureEntitlement {
   const e = getEntitlement(feature, tier);
-  if (e.state === 'locked_buy' && e.addon && purchasedAddons.includes(e.addon.id)) {
-    return { state: 'full' };
+  if (e.state === "locked_buy" && e.addon && purchasedAddons.includes(e.addon.id)) {
+    return { state: "full" };
   }
   return e;
 }
@@ -26,22 +26,18 @@ export function getEffectiveEntitlement(
 /** True when the user can take the primary action on a feature. */
 export function canUse(feature: string, tier: PlanTier, purchasedAddons: string[] = []): boolean {
   const { state } = getEffectiveEntitlement(feature, tier, purchasedAddons);
-  return state === 'full' || state === 'limited' || state === 'save_only' || state === 'list_only';
+  return state === "full" || state === "limited" || state === "save_only" || state === "list_only";
 }
 
 /** True when the feature is in preview mode (free tier teaser). */
 export function isPreview(feature: string, tier: PlanTier): boolean {
-  return getEntitlement(feature, tier).state === 'preview';
+  return getEntitlement(feature, tier).state === "preview";
 }
 
 /** True when the feature is locked (upgrade or buy required). */
 export function isLocked(feature: string, tier: PlanTier, purchasedAddons: string[] = []): boolean {
   const { state } = getEffectiveEntitlement(feature, tier, purchasedAddons);
-  return (
-    state === 'locked_upgrade' ||
-    state === 'locked_buy' ||
-    state === 'executive_only'
-  );
+  return state === "locked_upgrade" || state === "locked_buy" || state === "executive_only";
 }
 
 /** True when the feature is completely hidden (never used in this config). */
@@ -58,35 +54,35 @@ export function lockHint(feature: string, tier: PlanTier, purchasedAddons: strin
   if (e.hint) return e.hint;
 
   switch (e.state) {
-    case 'locked_buy':
+    case "locked_buy":
       if (e.addon) {
         const upgradeName = e.upgradeTarget ? TIER_NAMES[e.upgradeTarget] : null;
         const addonLabel = `Add ${e.addon.name} for $${e.addon.price}`;
         return upgradeName && e.upgradeTarget !== tier
-          ? `${addonLabel} — or upgrade to ${upgradeName}`
+          ? `${addonLabel} or upgrade to ${upgradeName}`
           : addonLabel;
       }
-      return 'Available as an add-on';
+      return "Available as an add-on";
 
-    case 'locked_upgrade':
+    case "locked_upgrade":
       return e.upgradeTarget
         ? `Included in the ${TIER_NAMES[e.upgradeTarget]} plan`
-        : 'Upgrade to unlock';
+        : "Upgrade to unlock";
 
-    case 'executive_only':
-      return 'Included in the Executive plan';
+    case "executive_only":
+      return "Included in the Executive plan";
 
-    case 'preview':
-      return 'Sign up to access your full roadmap';
+    case "preview":
+      return "Sign up to access your full roadmap";
 
-    case 'list_only':
-      return 'Upgrade to Premium for guides, upload, and vault';
+    case "list_only":
+      return "Upgrade to Premium for guides, upload, and vault";
 
-    case 'save_only':
-      return 'Tracking and reminders require Premium or higher';
+    case "save_only":
+      return "Tracking and reminders require Premium or higher";
 
     default:
-      return '';
+      return "";
   }
 }
 
@@ -94,19 +90,23 @@ export function lockHint(feature: string, tier: PlanTier, purchasedAddons: strin
  * Upgrade CTA label for locked features.
  * Returns null when the feature is not locked.
  */
-export function upgradeCTA(feature: string, tier: PlanTier, purchasedAddons: string[] = []): string | null {
+export function upgradeCTA(
+  feature: string,
+  tier: PlanTier,
+  purchasedAddons: string[] = []
+): string | null {
   const e = getEffectiveEntitlement(feature, tier, purchasedAddons);
   switch (e.state) {
-    case 'locked_buy':
-      return e.addon ? `Add ${e.addon.name}` : 'Unlock';
-    case 'locked_upgrade': {
-      const target = e.upgradeTarget ?? 'premium';
+    case "locked_buy":
+      return e.addon ? `Add ${e.addon.name}` : "Unlock";
+    case "locked_upgrade": {
+      const target = e.upgradeTarget ?? "premium";
       return `Upgrade to ${TIER_NAMES[target]}`;
     }
-    case 'executive_only':
-      return 'Upgrade to Executive';
-    case 'preview':
-      return 'View Plans';
+    case "executive_only":
+      return "Upgrade to Executive";
+    case "preview":
+      return "View Plans";
     default:
       return null;
   }
@@ -122,8 +122,8 @@ export function tierPrice(tier: PlanTier): { annual: number; monthly: number } |
 /**
  * Returns display price string, e.g. "$29/mo" or "$349/yr".
  */
-export function tierPriceLabel(tier: PlanTier, billing: 'monthly' | 'annual' = 'annual'): string {
+export function tierPriceLabel(tier: PlanTier, billing: "monthly" | "annual" = "annual"): string {
   const price = TIER_PRICES[tier];
-  if (!price) return 'Free';
-  return billing === 'annual' ? `$${price.annual}/yr` : `$${price.monthly}/mo`;
+  if (!price) return "Free";
+  return billing === "annual" ? `$${price.annual}/yr` : `$${price.monthly}/mo`;
 }

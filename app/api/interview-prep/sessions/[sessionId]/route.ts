@@ -4,20 +4,19 @@
  */
 
 import { NextResponse, NextRequest } from "next/server";
+import { E, msg } from "@/lib/errors";
 import {
   getInterviewSession,
   updateInterviewSessionAnswers,
   generateInterviewPrepOutput,
   completeInterviewSession,
 } from "@/lib/interview-prep/service";
-import {
-  getSessionAnswersDB,
-  getInterviewResultsDB,
-} from "@/lib/interview-prep/data-access";
+import type { InterviewAnswer } from "@/lib/interview-prep/types";
+import { getSessionAnswersDB, getInterviewResultsDB } from "@/lib/interview-prep/data-access";
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ sessionId: string }> },
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
     const { sessionId } = await params;
@@ -26,31 +25,22 @@ export async function POST(
 
     // Verify session exists
     if (!sessionId || sessionId === "undefined") {
-      return NextResponse.json(
-        { error: "Invalid session ID" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid session ID" }, { status: 400 });
     }
 
     const session = await getInterviewSession(sessionId);
     if (!session) {
-      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // Handle different actions
     switch (action) {
       case "update-answers": {
         if (!answers || typeof answers !== "object") {
-          return NextResponse.json(
-            { error: "Invalid answers data" },
-            { status: 400 },
-          );
+          return NextResponse.json({ error: "Invalid answers data" }, { status: 400 });
         }
 
-        const updatedSession = await updateInterviewSessionAnswers(
-          sessionId,
-          answers,
-        );
+        const updatedSession = await updateInterviewSessionAnswers(sessionId, answers);
         return NextResponse.json({ success: true, session: updatedSession });
       }
 
@@ -65,43 +55,34 @@ export async function POST(
       }
 
       default:
-        return NextResponse.json(
-          { error: `Unknown action: ${action}` },
-          { status: 400 },
-        );
+        return NextResponse.json({ error: `Unknown action: ${action}` }, { status: 400 });
     }
   } catch (error) {
     console.error("Error handling session action:", error);
-    return NextResponse.json(
-      { error: "Failed to process session action" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: Promise<{ sessionId: string }> },
+  { params }: { params: Promise<{ sessionId: string }> }
 ) {
   try {
     const { sessionId } = await params;
 
     if (!sessionId || sessionId === "undefined") {
-      return NextResponse.json(
-        { error: "Invalid session ID" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid session ID" }, { status: 400 });
     }
 
     const session = await getInterviewSession(sessionId);
 
     if (!session) {
-      return NextResponse.json({ error: "Session not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
 
     // Load answers and results for this session
-    let answers = [];
-    let results = null;
+    let answers: InterviewAnswer[] = [];
+    let results: any = null;
 
     try {
       answers = await getSessionAnswersDB(sessionId);
@@ -125,9 +106,6 @@ export async function GET(
     });
   } catch (error) {
     console.error("Error fetching session:", error);
-    return NextResponse.json(
-      { error: "Failed to fetch session" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

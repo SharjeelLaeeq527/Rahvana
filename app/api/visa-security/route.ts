@@ -1,8 +1,9 @@
-import { NextRequest } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { createServerClient } from '@supabase/ssr';
+import { NextRequest } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { createServerClient } from "@supabase/ssr";
+import { safeError } from "@/lib/api/safeError";
 
-export const dynamic = 'force-dynamic';
+export const dynamic = "force-dynamic";
 
 // ============================
 // GET — Fetch user's own security questions (session-based)
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
     } = await supabaseAuth.auth.getUser();
 
     if (authError || !user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Step 2: Use service role to query — but only for the authenticated user's ID
@@ -26,7 +27,9 @@ export async function GET(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
         cookies: {
-          getAll() { return []; },
+          getAll() {
+            return [];
+          },
           setAll() {},
         },
       }
@@ -34,20 +37,20 @@ export async function GET(req: NextRequest) {
 
     // Force use of authenticated user.id — ignore any userId param from URL
     const { data, error } = await supabase
-      .from('visa_security_questions')
-      .select('*')
-      .eq('user_id', user.id)
+      .from("visa_security_questions")
+      .select("*")
+      .eq("user_id", user.id)
       .single();
 
-    if (error && error.code !== 'PGRST116') {
-      console.error('Error fetching security questions:', error);
-      return Response.json({ error: error.message }, { status: 500 });
+    if (error && error.code !== "PGRST116") {
+      console.error("Error fetching security questions:", error);
+      return safeError(error);
     }
 
     return Response.json({ data: data || null });
   } catch (error) {
-    console.error('Unexpected error fetching security questions:', error);
-    return Response.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("Unexpected error fetching security questions:", error);
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -64,7 +67,7 @@ export async function POST(req: NextRequest) {
     } = await supabaseAuth.auth.getUser();
 
     if (authError || !user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
+      return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Step 2: Parse body
@@ -72,7 +75,7 @@ export async function POST(req: NextRequest) {
     const { questions, portalUsername } = body;
 
     if (!questions) {
-      return Response.json({ error: 'Missing questions' }, { status: 400 });
+      return Response.json({ error: "Missing questions" }, { status: 400 });
     }
 
     // Step 3: Use service role to upsert — always scoped to authenticated user
@@ -81,14 +84,16 @@ export async function POST(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
         cookies: {
-          getAll() { return []; },
+          getAll() {
+            return [];
+          },
           setAll() {},
         },
       }
     );
 
     const { data, error } = await supabase
-      .from('visa_security_questions')
+      .from("visa_security_questions")
       .upsert(
         {
           user_id: user.id, // ← Always use session user — NOT from body/URL
@@ -101,19 +106,19 @@ export async function POST(req: NextRequest) {
           answer_3: questions.a3,
           updated_at: new Date().toISOString(),
         },
-        { onConflict: 'user_id' }
+        { onConflict: "user_id" }
       )
       .select()
       .single();
 
     if (error) {
-      console.error('Error saving security questions:', error);
-      return Response.json({ error: error.message }, { status: 500 });
+      console.error("Error saving security questions:", error);
+      return safeError(error);
     }
 
     return Response.json({ data });
   } catch (error) {
-    console.error('Unexpected error saving security questions:', error);
-    return Response.json({ error: 'Internal server error' }, { status: 500 });
+    console.error("Unexpected error saving security questions:", error);
+    return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }

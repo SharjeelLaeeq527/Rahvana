@@ -127,8 +127,7 @@
   position: absolute;
   inset: 0;
   z-index: -1;
-  background: url("/assets/images/chapter-2-bg.png") center/cover no-repeat
-    fixed;
+  background: url("/assets/images/chapter-2-bg.png") center/cover no-repeat fixed;
   opacity: 0.6;
 }
 
@@ -171,7 +170,7 @@
 }
 
 .step-modal-spacing {
-  margin-top: 48px;
+  margin-top: 0px;
 }
 /* Chapter 1 Step Background Utility */
 @import "tailwindcss";
@@ -235,6 +234,7 @@
   --rv-ch1-feature-bg: #8284bf14;
   --rv-ch1-panel: #221126;
   --rv-ch1-text: #e6dced;
+  --rv-ch1-soft: #f6f7ff;
   --rv-ch2: #520a50;
   --rv-ch2-dark: #3a073a;
   --rv-ch2-module-bg: #1a0a18;
@@ -273,11 +273,7 @@
   --rv-rose-soft: #f0f1fb;
 
   /* Guide-specific tokens */
-  --guide-hero-gradient: linear-gradient(
-    135deg,
-    hsl(168 70% 42%),
-    hsl(168 60% 52%)
-  );
+  --guide-hero-gradient: linear-gradient(135deg, hsl(168 70% 42%), hsl(168 60% 52%));
   --guide-card-shadow: 0 4px 24px -4px hsl(168 70% 42% / 0.15);
   --guide-card-hover-shadow: 0 8px 32px -4px hsl(168 70% 42% / 0.25);
   --guide-grid-color: hsl(168 70% 42% / 0.025);
@@ -642,7 +638,7 @@
 
   .reveal.visible {
     opacity: 1;
-    transform: translateY(0);
+    transform: none;
   }
 
   .reveal-delay-1 {
@@ -662,6 +658,79 @@
   }
 }
 
+/* Homepage journey — animated teal bird background illustrations */
+.bird-bg-img {
+  mix-blend-mode: multiply;
+}
+
+.bird-glow {
+  position: absolute;
+  inset: -20%;
+  border-radius: 9999px;
+  background: radial-gradient(
+    circle at 50% 55%,
+    rgba(13, 115, 119, 0.18),
+    rgba(13, 115, 119, 0.07) 52%,
+    transparent 72%
+  );
+  animation: bird-glow-pulse 6s ease-in-out infinite;
+}
+
+@keyframes scale-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.12);
+  }
+}
+
+@keyframes bird-glow-pulse {
+  0%,
+  100% {
+    opacity: 0.85;
+    transform: scale(0.96);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.06);
+  }
+}
+
+.bird-sparkle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #14b8a6;
+  clip-path: polygon(50% 0%, 62% 38%, 100% 50%, 62% 62%, 50% 100%, 38% 62%, 0% 50%, 38% 38%);
+  opacity: 0;
+  animation: bird-sparkle-twinkle 4.5s ease-in-out infinite;
+}
+
+@keyframes bird-sparkle-twinkle {
+  0%,
+  100% {
+    opacity: 0;
+    transform: scale(0.3) rotate(0deg);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1) rotate(45deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bird-bg-img,
+  .bird-glow,
+  .bird-sparkle {
+    animation: none;
+  }
+  .bird-sparkle {
+    opacity: 0.5;
+  }
+}
+
 .text-gradient-primary {
   background: linear-gradient(135deg, hsl(168 80% 30%), hsl(168 70% 42%));
   -webkit-background-clip: text;
@@ -674,6 +743,59 @@
     linear-gradient(var(--guide-grid-color) 1px, transparent 1px),
     linear-gradient(90deg, var(--guide-grid-color) 1px, transparent 1px);
   background-size: 48px 48px;
+}
+
+.grid-bg {
+  background-image:
+    linear-gradient(
+      rgba(13, 115, 119, 0.045) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(13, 115, 119, 0.045) 1px,
+      transparent 1px
+    );
+
+  background-size: 48px 48px;
+  mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.85),
+    rgba(0, 0, 0, 0.35) 65%,
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    rgba(0, 0, 0, 0.85),
+    rgba(0, 0, 0, 0.35) 65%,
+    transparent 100%
+  );
+}
+
+.interview-dots-bg {
+  background-image:
+    radial-gradient(circle, rgba(13, 115, 119, 0.14) 1.5px, transparent 1.5px),
+    radial-gradient(circle, rgba(137, 164, 160, 0.08) 1px, transparent 1px);
+  background-size:
+    28px 28px,
+    14px 14px;
+  background-position:
+    0 0,
+    7px 7px;
+  animation: dots-drift 60s linear infinite;
+}
+
+@keyframes dots-drift {
+  0% {
+    background-position:
+      0 0,
+      7px 7px;
+  }
+  100% {
+    background-position:
+      28px 28px,
+      35px 35px;
+  }
 }
 
 .animated-border {
@@ -799,9 +921,37 @@
   background-clip: padding-box;
 }
 
+.scrollbar-premium::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 .scrollbar-premium {
   scrollbar-width: thin;
   scrollbar-color: #0d7377 transparent;
+}
+
+/* Subtle neutral scrollbar for the floating CSA side panel.
+   Visible thumb so users know there is more content to scroll to. */
+.panel-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.panel-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.panel-scrollbar::-webkit-scrollbar-thumb {
+  background: #cbd5e1; /* slate-300 */
+  border-radius: 9999px;
+}
+
+.panel-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8; /* slate-400 */
+}
+
+.panel-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
 }
 
 @keyframes rotate-line {
@@ -906,6 +1056,62 @@
   transition: all 0.2s ease;
   display: flex;
   flex-direction: column;
+}
+
+/* Choice card styles for tutorial branch buttons */
+.choice-card {
+  border-radius: 12px;
+  border: 1.5px solid var(--rv-line);
+  background: var(--choice-bg, transparent);
+  padding: 14px 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 6px;
+  min-height: 72px;
+  width: 100%;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition:
+    box-shadow 0.18s ease,
+    border-color 0.18s ease,
+    transform 0.12s ease;
+}
+.choice-card:hover {
+  box-shadow: 0 6px 18px rgba(12, 27, 51, 0.08);
+  transform: translateY(-2px);
+}
+.choice-card:focus {
+  outline: 3px solid rgba(47, 111, 212, 0.14);
+  outline-offset: 2px;
+}
+.choice-card .choice-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--rv-ink);
+}
+.choice-card .choice-desc {
+  font-size: 13px;
+  color: var(--rv-muted);
+  margin: 0;
+  line-height: 1.45;
+}
+
+.choice-card--household {
+  --choice-bg: #eefcf6;
+  border-color: #0f766e;
+}
+.choice-card--household:hover {
+  border-color: #115e59;
+}
+
+.choice-card--joint {
+  --choice-bg: #eff6ff;
+  border-color: #2563eb;
+}
+.choice-card--joint:hover {
+  border-color: #1d4ed8;
 }
 
 .resource-fcard.is-added {
@@ -1022,4 +1228,24 @@
 .resource-fbtn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Add-on card pill button — accent comes from inline --pill var */
+.addon-pill {
+  background: #fff;
+  border-color: var(--pill, var(--primary));
+  color: var(--pill, var(--primary));
+}
+.addon-pill:hover:not(:disabled):not(.is-added) {
+  background: var(--pill, var(--primary));
+  color: #fff;
+}
+.addon-pill.is-added {
+  background: var(--pill, var(--primary));
+  color: #fff;
+}
+
+/* Prevent CSS Grid items from expanding beyond viewport width on mobile */
+.grid > * {
+  min-width: 0;
 }

@@ -18,7 +18,7 @@ export const AuthRequiredModal = ({ open, onClose, redirectTo }: Props) => {
       router.push(`/login?redirect=${redirectTo}`);
     } else {
       router.push(
-        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
+        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`
       );
     }
   };
@@ -40,19 +40,14 @@ export const AuthRequiredModal = ({ open, onClose, redirectTo }: Props) => {
             exit={{ scale: 0.9, opacity: 0, y: 20 }}
             className="relative w-full max-w-md xl:max-w-lg bg-card rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-2xl border border-border mx-4"
           >
-            <button
-              onClick={onClose}
-              className="absolute top-4 right-4 text-muted-foreground"
-            >
+            <button onClick={onClose} className="absolute top-4 right-4 text-muted-foreground">
               <Icons.X />
             </button>
 
             <div className="text-center">
               <Icons.Rocket className="w-12 h-12 mx-auto text-rahvana-primary mb-4" />
               <h3 className="text-xl font-bold mb-2">Login Required</h3>
-              <p className="text-muted-foreground mb-6">
-                Please sign in to continue.
-              </p>
+              <p className="text-muted-foreground mb-6">Please sign in to continue.</p>
 
               <button
                 onClick={handleLogin}

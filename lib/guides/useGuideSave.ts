@@ -11,10 +11,10 @@ export function useGuideSave() {
     setSaveError(null);
 
     try {
-      const response = await fetch('/api/guides/save', {
-        method: 'POST',
+      const response = await fetch("/api/guides/save", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ slug }),
       });
@@ -25,14 +25,14 @@ export function useGuideSave() {
       }
 
       const result = await response.json();
-      console.log('Guide saved successfully:', result);
+      console.log("Guide saved successfully:", result);
       showToast("Guide saved to My Guides successfully!", "success");
-      
+
       return result;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to save guide';
+      const errorMessage = error instanceof Error ? error.message : "Failed to save guide";
       setSaveError(errorMessage);
-      console.error('Save error:', error);
+      console.error("Save error:", error);
       showToast("Failed to save guide. Please try again.", "error");
       throw error;
     } finally {
@@ -44,6 +44,6 @@ export function useGuideSave() {
     saveGuide,
     saving,
     saveError,
-    clearError: () => setSaveError(null)
+    clearError: () => setSaveError(null),
   };
 }

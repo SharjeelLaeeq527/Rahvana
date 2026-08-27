@@ -3,15 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { usePolioWizard } from "../../PolioContext";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Clock,
-  Download,
-  X,
-  Check,
-  ArrowRight,
-  ArrowLeft,
-  ChevronDown,
-} from "lucide-react";
+import { Clock, Download, X, Check, ArrowRight, ArrowLeft, ChevronDown } from "lucide-react";
 
 export default function RoadmapStep() {
   const { state, setCurrentStep, completeStep } = usePolioWizard();
@@ -33,7 +25,7 @@ export default function RoadmapStep() {
 
   const toggleDoc = (title: string) => {
     setCheckedDocs((prev) =>
-      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title],
+      prev.includes(title) ? prev.filter((t) => t !== title) : [...prev, title]
     );
   };
 
@@ -77,7 +69,7 @@ export default function RoadmapStep() {
               >
                 NIMS website
               </a>{" "}
-              and select &quot;Other Vaccination – Polio / Yellow Fever&quot;.
+              and select &quot;Other Vaccination, Polio / Yellow Fever&quot;.
             </li>
             <li>
               Enter your{" "}
@@ -90,14 +82,8 @@ export default function RoadmapStep() {
               </strong>{" "}
               and <strong>Issue Date</strong> to retrieve your specific records.
             </li>
-            <li>
-              Verify your information, pay the one-time processing fee online (≈
-              Rs. 100).
-            </li>
-            <li>
-              Hit Download and save the PDF securely on your phone for easy
-              access.
-            </li>
+            <li>Verify your information, pay the one-time processing fee online (≈ Rs. 100).</li>
+            <li>Hit Download and save the PDF securely on your phone for easy access.</li>
           </ul>
         </div>
       ),
@@ -139,8 +125,7 @@ export default function RoadmapStep() {
     documents_checklist = [
       {
         title: "Original Passport",
-        description:
-          "Primary identification document. The passport number is used for NIMS entry.",
+        description: "Primary identification document. The passport number is used for NIMS entry.",
         required: true,
       },
       {
@@ -186,10 +171,7 @@ export default function RoadmapStep() {
 
   return (
     <div className="max-w-4xl mx-auto animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
+      <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
         {/* Title */}
         <h2 className="text-[1.75rem] font-bold text-slate-900 mb-2 font-sans tracking-tight">
           Application Roadmap
@@ -207,9 +189,7 @@ export default function RoadmapStep() {
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() =>
-                  setActivePhase(activePhase === phase.id ? null : phase.id)
-                }
+                onClick={() => setActivePhase(activePhase === phase.id ? null : phase.id)}
                 className={`flex flex-col items-center gap-2 p-2 rounded-xl cursor-pointer focus:outline-none transition-all duration-300 ${
                   activePhase === phase.id
                     ? "opacity-100 scale-105"
@@ -236,9 +216,7 @@ export default function RoadmapStep() {
 
                 <span
                   className={`flex items-center gap-1 text-[0.72rem] ${
-                    activePhase === phase.id
-                      ? "text-primary/80 font-medium"
-                      : "text-slate-500"
+                    activePhase === phase.id ? "text-primary/80 font-medium" : "text-slate-500"
                   }`}
                 >
                   <Clock className="w-3 h-3" />
@@ -246,9 +224,7 @@ export default function RoadmapStep() {
                 </span>
               </motion.button>
 
-              {i < phases.length - 1 && (
-                <div className="w-10 h-0.5 bg-primary mt-6 opacity-30" />
-              )}
+              {i < phases.length - 1 && <div className="w-10 h-0.5 bg-primary mt-6 opacity-30" />}
             </div>
           ))}
         </div>
@@ -286,13 +262,9 @@ export default function RoadmapStep() {
 
         {/* Checklist Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-4 mt-10">
-          <div
-            className="cursor-pointer group flex-1"
-            onClick={() => setIsDocsOpen(!isDocsOpen)}
-          >
+          <div className="cursor-pointer group flex-1" onClick={() => setIsDocsOpen(!isDocsOpen)}>
             <h3 className="text-[1.15rem] font-bold text-slate-900 group-hover:text-primary transition-colors flex items-center gap-2">
-              Required Documents ({checkedDocs.length}/
-              {documents_checklist.length})
+              Required Documents ({checkedDocs.length}/{documents_checklist.length})
               <ChevronDown
                 className={`w-5 h-5 transition-transform duration-300 ${
                   isDocsOpen ? "rotate-180" : ""
@@ -347,9 +319,7 @@ export default function RoadmapStep() {
                               : "bg-white border-2 border-slate-300"
                           }`}
                         >
-                          {isChecked && (
-                            <Check className="w-3.5 h-3.5 text-white" />
-                          )}
+                          {isChecked && <Check className="w-3.5 h-3.5 text-white" />}
                         </div>
 
                         <div>

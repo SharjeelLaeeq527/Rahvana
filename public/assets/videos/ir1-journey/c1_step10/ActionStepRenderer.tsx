@@ -356,7 +356,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
       )} */}
 
       {/* Main Content */}
-      <div className={`max-w-3xl mx-auto px-4 sm:px-5 md:px-5.5 py-8 sm:py-10 md:py-12 ${isChapter1 || isChapter2 || isChapter3 ? "step-modal-spacing" : ""} relative z-10`}>
+      <div className={`max-w-[660px] mx-auto px-4 sm:px-5 md:px-5.5 py-8 sm:py-10 md:py-12 ${isChapter1 || isChapter2 || isChapter3 ? "step-modal-spacing" : ""} relative z-10`}>
 
         {/* Eyebrow for Paper Filing Path steps */}
         {(step.step_key === "step_1_11" ||

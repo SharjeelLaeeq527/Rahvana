@@ -1,12 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  X,
-  Info,
-  CheckCircle2,
-  ShieldCheck,
-  ClipboardCheck,
-  FolderCheck,
-} from "lucide-react";
+import { X, Info, CheckCircle2, ShieldCheck, ClipboardCheck, FolderCheck } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useHideIntroModal } from "@/lib/guides/useHideIntro";
 import { useAuth } from "@/app/context/AuthContext";
@@ -36,13 +29,7 @@ interface ExpandSectionProps {
   children: React.ReactNode;
 }
 
-function ExpandSection({
-  title,
-  subtitle,
-  isOpen,
-  onToggle,
-  children,
-}: ExpandSectionProps) {
+function ExpandSection({ title, subtitle, isOpen, onToggle, children }: ExpandSectionProps) {
   const { t } = useLanguage();
   return (
     <div className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-sm overflow-hidden">
@@ -108,12 +95,7 @@ interface FeatureCardProps {
   Icon: React.ElementType;
 }
 
-function FeatureCard({
-  title,
-  subtitle,
-  variant = "teal",
-  Icon,
-}: FeatureCardProps) {
+function FeatureCard({ title, subtitle, variant = "teal", Icon }: FeatureCardProps) {
   const { isUrdu } = useLanguage();
   const styles: Record<string, Record<string, string>> = {
     teal: {
@@ -167,11 +149,7 @@ function FeatureCard({
         >
           {title}
         </div>
-        <div
-          className={["mt-1 text-xs leading-relaxed text-left", style.sub].join(
-            " ",
-          )}
-        >
+        <div className={["mt-1 text-xs leading-relaxed text-left", style.sub].join(" ")}>
           {subtitle}
         </div>
       </div>
@@ -179,16 +157,9 @@ function FeatureCard({
   );
 }
 
-const WhatsThisModal = ({
-  open,
-  onClose,
-  data,
-  documentLabel,
-  guideSlug,
-}: WhatsThisModalProps) => {
+const WhatsThisModal = ({ open, onClose, data, documentLabel, guideSlug }: WhatsThisModalProps) => {
   const { t, isUrdu } = useLanguage();
-  const docLabel =
-    documentLabel || t("wizard.common.document", { defaultValue: "Document" });
+  const docLabel = documentLabel || t("wizard.common.document", { defaultValue: "Document" });
   const [dontShowAgain, setDontShowAgain] = useState(false);
 
   const [openDoc, setOpenDoc] = useState(false);
@@ -250,9 +221,7 @@ const WhatsThisModal = ({
             dir={isUrdu ? "rtl" : "ltr"}
             onClick={(e) => e.stopPropagation()}
           >
-            <div
-              className={`absolute top-5 ${isUrdu ? "left-5" : "right-5"} z-20`}
-            >
+            <div className={`absolute top-5 ${isUrdu ? "left-5" : "right-5"} z-20`}>
               <button
                 onClick={handleClose}
                 className="p-2 rounded-2xl bg-white/10 border border-white/10 hover:bg-white/15 transition-colors focus:outline-none focus:ring-2 focus:ring-white/50 backdrop-blur-md shadow-sm"
@@ -273,8 +242,7 @@ const WhatsThisModal = ({
                     {data.heading}
                   </h2>
                   <p className="mt-2 text-sm md:text-base text-white/75 max-w-3xl mx-auto leading-relaxed flex items-center justify-center gap-2">
-                    {data.sub}{" "}
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400" />
+                    {data.sub} <CheckCircle2 className="w-5 h-5 text-emerald-400" />
                   </p>
 
                   {/* Feature boxes universally applicable */}

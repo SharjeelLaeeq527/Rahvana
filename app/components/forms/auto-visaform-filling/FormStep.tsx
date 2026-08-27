@@ -6,10 +6,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import type { Field as FormField } from "@/lib/formConfig/types";
 import { Check } from "lucide-react";
 import { ExpandableTooltip } from "@/app/components/shared/ExpandableTooltip";
-import {
-  CustomDropdown,
-  type DropdownOption,
-} from "@/app/components/shared/CustomDropdown";
+import { CustomDropdown, type DropdownOption } from "@/app/components/shared/CustomDropdown";
 import { US_STATES } from "@/lib/formConfig/constants";
 import { UrduKeyboard } from "@/app/components/shared/UrduKeyboard";
 
@@ -134,20 +131,9 @@ interface CheckboxCardProps {
   onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
 }
 
-const CheckboxCard = ({
-  name,
-  label,
-  checked,
-  onChange,
-}: CheckboxCardProps) => (
+const CheckboxCard = ({ name, label, checked, onChange }: CheckboxCardProps) => (
   <label className="block cursor-pointer">
-    <input
-      type="checkbox"
-      name={name}
-      checked={checked}
-      onChange={onChange}
-      className="sr-only"
-    />
+    <input type="checkbox" name={name} checked={checked} onChange={onChange} className="sr-only" />
     <motion.div
       whileHover={{ borderColor: "#0d7377" }}
       whileTap={{ scale: 0.98 }}
@@ -155,9 +141,7 @@ const CheckboxCard = ({
       style={{
         borderColor: checked ? "#0d7377" : "#d0e8e9",
         backgroundColor: checked ? "#e8f6f6" : "#ffffff",
-        boxShadow: checked
-          ? "0 2px 8px rgba(13, 115, 119, 0.12)"
-          : "0 1px 2px rgba(0,0,0,0.04)",
+        boxShadow: checked ? "0 2px 8px rgba(13, 115, 119, 0.12)" : "0 1px 2px rgba(0,0,0,0.04)",
       }}
     >
       <div
@@ -169,10 +153,7 @@ const CheckboxCard = ({
       >
         {checked && <Check className="w-3 h-3 text-white" strokeWidth={3} />}
       </div>
-      <span
-        className="text-sm font-medium"
-        style={{ color: checked ? "#0a5a5d" : "#1f2937" }}
-      >
+      <span className="text-sm font-medium" style={{ color: checked ? "#0a5a5d" : "#1f2937" }}>
         {label}
       </span>
     </motion.div>
@@ -187,9 +168,7 @@ interface FormStepProps {
   fields: FormField[];
   allVisibleFields?: FormField[];
   formData: Record<string, string>;
-  onInputChange: (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => void;
+  onInputChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   currentQuestionIndex?: number;
   navigationDirection?: "next" | "prev";
   progressiveSubQuestionIndices?: Record<string, number>;
@@ -205,9 +184,7 @@ export function FormStep({
   progressiveSubQuestionIndices = {},
 }: FormStepProps) {
   const [isClient, setIsClient] = useState(false);
-  const [activeKeyboardField, setActiveKeyboardField] = useState<string | null>(
-    null,
-  );
+  const [activeKeyboardField, setActiveKeyboardField] = useState<string | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -223,11 +200,7 @@ export function FormStep({
   }
 
   if (!fields.length) {
-    return (
-      <div className="py-12 text-center text-gray-500">
-        No questions in this section.
-      </div>
-    );
+    return <div className="py-12 text-center text-gray-500">No questions in this section.</div>;
   }
 
   const activeIdx =
@@ -260,14 +233,11 @@ export function FormStep({
     }
 
     const applicableSubQuestions = (field.subQuestions || []).filter(
-      (subQ): subQ is FormField => !subQ.condition || subQ.condition(formData),
+      (subQ): subQ is FormField => !subQ.condition || subQ.condition(formData)
     );
 
     const progressiveIndex = progressiveSubQuestionIndices[field.key] ?? -1;
-    const visibleSubQuestions = applicableSubQuestions.slice(
-      0,
-      progressiveIndex + 1,
-    );
+    const visibleSubQuestions = applicableSubQuestions.slice(0, progressiveIndex + 1);
     const shouldRenderParent = field.type !== "hidden";
     // const shouldRenderParent = field.options && field.options.length > 0;
 
@@ -334,6 +304,32 @@ export function FormStep({
       );
     }
     if (field.type === "checkbox") {
+      if (field.options) {
+        const cols =
+          field.options.length >= 4
+            ? "grid-cols-1 md:grid-cols-2"
+            : field.options.length === 3
+              ? "grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+              : field.options.length === 2
+                ? "grid-cols-1 md:grid-cols-2"
+                : "grid-cols-1";
+        return (
+          <div className={`grid ${cols} gap-3`}>
+            {field.options.map((opt) => {
+              const name = opt.pdfKey || opt.value;
+              return (
+                <CheckboxCard
+                  key={opt.value}
+                  name={name}
+                  label={opt.label}
+                  checked={formData[name] === "Yes"}
+                  onChange={onInputChange}
+                />
+              );
+            })}
+          </div>
+        );
+      }
       return (
         <CheckboxCard
           name={field.key}
@@ -381,7 +377,7 @@ export function FormStep({
           }}
           options={options}
           placeholder={field.placeholder || `Select an option`}
-          className="border-[#d0e8e9] focus:border-[#0d7377]"
+          className="w-full [&_button]:border-[#d0e8e9] [&_button]:focus:border-[#0d7377]"
         />
       );
     }
@@ -434,15 +430,12 @@ export function FormStep({
         >
           {/* Question Heading */}
           <div>
-            {!(activeField.type === "hidden" && activeField.label) && (
-              <h2 className="text-[20px] md:text-[24px] font-semibold leading-[1.35] tracking-[-0.02em] text-gray-900 mb-2">
-                {mainQuestion}
-              </h2>
+            <h2 className="text-[20px] md:text-[24px] font-semibold leading-[1.35] tracking-[-0.02em] text-gray-900 mb-2">
+              {mainQuestion}
+            </h2>
+            {hintText && (
+              <p className="text-sm text-gray-600 mt-1">{hintText}</p>
             )}
-            {!(activeField.type === "hidden" && activeField.label) &&
-              hintText && (
-                <p className="text-sm text-gray-600 mt-1">{hintText}</p>
-              )}
           </div>
 
           {/* Input Section */}

@@ -1,4 +1,4 @@
-# 🌍 Rahvana Immigration Assistant
+# 🌍 Rahvana - AI-Powered Immigration Assistant
 
 > **A comprehensive, AI-powered immigration assistance platform** that simplifies visa processes, automates form filling, provides intelligent guidance, and empowers users to reunite with their loved ones.
 
@@ -26,7 +26,9 @@
 ## 🌟 Key Features
 
 ### 🔤 1. **WhatsApp AI Assistant (Future)**
+
 An intelligent, privacy-first AI assistant powered by Google Gemini and Retrieval-Augmented Generation (RAG):
+
 - **Knowledge Base:** Answers questions using only pre-approved WhatsApp group knowledge stored in Supabase
 - **Privacy Guaranteed:** Strict rules ensure personal details and message senders are never revealed
 - **RAG Pipeline:** Intelligent retrieval of ground-truth data before querying Gemini for accurate responses
@@ -34,14 +36,18 @@ An intelligent, privacy-first AI assistant powered by Google Gemini and Retrieva
 - **Framework:** Built with `openai-agent-sdk` and `gemini-1.5-flash` (or 2.0-flash)
 
 ### 📸 2. **Smart Passport Photo Generator**
+
 Professional passport photos generated and validated in seconds:
+
 - **Auto Background Removal:** AI-powered background removal for clean, professional photos
 - **US Compliance Cropping:** Automatic face detection and cropping to official U.S. passport standards (2x2 inches, 600x600 px)
 - **Image Enhancement:** Automatic lighting correction and quality improvement using OpenCV & Rembg
 - **Batch Processing:** Support for multiple photo processing with consistent formatting
 
 ### 📝 3. **USCIS Forms Auto-Fill Engine**
+
 Eliminate manual form filling with intelligent PDF automation:
+
 - **Smart Form Recognition:** Automatically identifies and parses USCIS forms
 - **Intelligent Populating:** Uses user-provided data to correctly fill all form fields
 - **Multi-Form Support:** Handles complex forms like I-485, I-765, I-131, and more
@@ -49,7 +55,9 @@ Eliminate manual form filling with intelligent PDF automation:
 - **Error Validation:** Pre-submission validation to catch missing or incorrectly formatted data
 
 ### 📅 4. **Visa Bulletin & IV Schedule Checker**
+
 Real-time visa processing tracking and timeline estimations:
+
 - **Live Visa Bulletin:** Tracks the latest U.S. Department of State visa bulletin data
 - **Priority Date Analysis:** Compares user's priority date against Final Action Dates for F1-F4 and EB1-EB5 categories
 - **Wait Time Estimation:** Provides historical analysis and intelligent wait-time predictions
@@ -57,14 +65,18 @@ Real-time visa processing tracking and timeline estimations:
 - **Multi-Category Support:** Tracks employment-based, family-based, and diversity visas
 
 ### 🗂️ 5. **Document Translation Module**
+
 AI-powered document translation with OCR support:
+
 - **Multi-Language Support:** Translate documents to/from multiple languages
 - **OCR Integration:** Automatic text extraction from scanned documents and images
 - **Format Preservation:** Maintains original document layout and formatting
 - **User Association:** All translations are securely linked to user accounts via Row-Level Security
 
 ### 🎯 6. **Interview Preparation Suite**
+
 Comprehensive mock interview training and guidance:
+
 - **Question Bank:** 1000+ real visa interview questions organized by category
 - **AI Feedback:** Instant feedback on responses using Gemini AI
 - **Video Recording:** Practice and record mock interviews for self-review
@@ -72,20 +84,25 @@ Comprehensive mock interview training and guidance:
 - **Performance Tracking:** Progress monitoring and improvement recommendations
 
 ### 💪 7. **Visa Case Strength Evaluator**
+
 Predict approval likelihood using AI analysis:
+
 - **Profile Analysis:** Comprehensive evaluation of visa profile and supporting documents
 - **Risk Assessment:** Identifies potential red flags and areas of concern
 - **Recommendation Engine:** Suggests document improvements and strengthening strategies
 - **Historical Benchmarking:** Compare profile against historical approval rates
 
 ### 📦 8. **Document Vault**
+
 Secure cloud storage for sensitive immigration documents:
+
 - **Encryption:** End-to-end encryption for all stored documents
 - **Access Control:** Fine-grained permissions and sharing capabilities
 - **Version History:** Track document revisions and amendments
 - **Supabase Integration:** Row-Level Security ensures user data isolation
 
 ### 🎨 9. **Additional Tools Suite**
+
 - **Affidavit Support Calculator:** Financial eligibility calculations for I-864 forms
 - **Appointment Booking:** Schedule embassy and medical appointments
 - **Case Status Tracker:** Real-time USCIS and NVC case tracking
@@ -137,6 +154,7 @@ Secure cloud storage for sensitive immigration documents:
 ## 💻 Tech Stack
 
 ### **Frontend**
+
 - **Framework:** Next.js 15 (App Router, Server Components)
 - **UI Library:** React 19 with Hooks & Context API
 - **Styling:** TailwindCSS 4 with custom extensions
@@ -150,12 +168,13 @@ Secure cloud storage for sensitive immigration documents:
 - **Internationalization:** next-intl
 
 ### **Backend**
+
 - **Runtime:** Python 3.10+ (Optimized for performance)
 - **Framework:** FastAPI (Async-first, high performance)
 - **ASGI Server:** Uvicorn with WebSocket support
 - **Image Processing:** Rembg, OpenCV, Pillow, PIL
 - **PDF Handling:** pypdf, reportlab, pdfplumber, PyMuPDF
-- **AI/ML:** 
+- **AI/ML:**
   - Google Gemini API (via openai-agent-sdk)
   - Sentence Transformers (embeddings)
   - Qdrant Client (vector search)
@@ -166,6 +185,7 @@ Secure cloud storage for sensitive immigration documents:
 - **HTTP:** httpx for async requests
 
 ### **Database & Authentication**
+
 - **Primary DB:** Supabase (PostgreSQL 15+)
 - **Authentication:** Supabase Auth (JWT-based)
 - **Authorization:** Row-Level Security (RLS) policies
@@ -174,12 +194,14 @@ Secure cloud storage for sensitive immigration documents:
 - **Vector Embeddings:** Qdrant (Rust-based vector DB)
 
 ### **AI & LLMs**
+
 - **Large Language Model:** Google Gemini (gemini-1.5-flash, gemini-2.0-flash)
 - **Agent Framework:** openai-agent-sdk (OpenAI-compatible interface)
 - **Embeddings:** sentence-transformers (huggingface models)
 - **RAG Pipeline:** Supabase + Qdrant
 
 ### **Infrastructure & Deployment**
+
 - **Frontend Hosting:** Vercel (optimized for Next.js)
 - **Backend Hosting:** Render.com, Railway, or custom servers
 - **Environment:** Docker containerization ready
@@ -342,18 +364,21 @@ Rahvana/
 ## ⚡ Core Modules
 
 ### **1. Authentication Module** (`lib/supabase/`)
+
 - JWT token management via Supabase Auth
 - Session persistence and recovery
 - Multi-factor authentication (MFA) support
 - Row-Level Security (RLS) policy enforcement
 
 ### **2. Image Processing Module** (`lib/imageProcessor.ts`, `backend/modnet/`)
+
 - Background removal using Rembg (ONNX models)
 - Face detection and compliance cropping
 - Image compression and optimization
 - Batch processing pipeline
 
 ### **3. PDF Processing Module** (`lib/pdf-operations.ts`, `backend/app/api/v1/pdf_routes.py`)
+
 - PDF parsing and extraction
 - Form field identification and mapping
 - Intelligent field-value population
@@ -361,6 +386,7 @@ Rahvana/
 - Compression and optimization
 
 ### **4. AI/RAG Module** (`backend/app/services/whatsapp_assistant.py`)
+
 - Vector embeddings with Sentence Transformers
 - Qdrant vector database integration
 - Retrieval-Augmented Generation (RAG) pipeline
@@ -368,12 +394,14 @@ Rahvana/
 - OpenAI-compatible agent framework
 
 ### **5. Document Translation Module** (`app/(tools)/document-translation/`)
+
 - Multi-language support (Urdu, Arabic, Spanish, etc.)
 - OCR integration for scanned documents
 - Document format preservation
 - User-specific translation history
 
 ### **6. Visa Tracking Module** (`lib/visa-checker/`)
+
 - Real-time visa bulletin parsing
 - Priority date analysis
 - Wait time estimation algorithms
@@ -384,6 +412,7 @@ Rahvana/
 ## 🚀 Quick Start
 
 ### Prerequisites
+
 - **Node.js:** v18 or higher
 - **Python:** v3.10 or higher
 - **Git:** Latest version
@@ -391,6 +420,7 @@ Rahvana/
 - **Google Gemini API Key:** [Get API key]
 
 ### Installation Overview
+
 ```bash
 # 1. Clone repository
 git clone https://github.com/SharjeelLaeeq527/Rahvana.git
@@ -425,6 +455,7 @@ cd backend && uvicorn main:app --reload
 ### Running the Application
 
 **Development Mode:**
+
 ```bash
 # Frontend (Next.js dev server with hot reload)
 npm run dev          # Runs on http://localhost:3000
@@ -434,6 +465,7 @@ cd backend && uvicorn main:app --reload --port 8000
 ```
 
 **Production Build:**
+
 ```bash
 # Frontend
 npm run build
@@ -444,6 +476,7 @@ cd backend && uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
 ### Database Migrations
+
 ```bash
 # Using Supabase CLI
 supabase migration new migration_name
@@ -452,6 +485,7 @@ supabase db pull  # Sync local schema
 ```
 
 ### Testing
+
 ```bash
 # Frontend tests
 npm run test
@@ -461,6 +495,7 @@ cd backend && pytest
 ```
 
 ### Code Quality
+
 ```bash
 # Linting
 npm run lint
@@ -483,6 +518,7 @@ FastAPI Base URL: http://localhost:8000 (dev)
 ```
 
 #### **Image Processing**
+
 ```
 POST /api/v1/remove-bg
 Purpose: Remove background from images
@@ -491,6 +527,7 @@ Response: Base64 encoded image or file URL
 ```
 
 #### **Visa Processing**
+
 ```
 GET /api/v1/visa-checker/bulletin
 Purpose: Fetch latest visa bulletin data
@@ -499,6 +536,7 @@ Response: JSON with priority dates and final action dates
 ```
 
 #### **PDF Operations**
+
 ```
 POST /api/v1/pdf-forms/fill
 Purpose: Auto-fill USCIS PDF forms
@@ -512,6 +550,7 @@ Response: Compressed PDF file
 ```
 
 #### **IV Schedule**
+
 ```
 GET /api/v1/iv-schedule/list
 Purpose: Get interview scheduling dates by embassy
@@ -532,12 +571,14 @@ All routes in `app/api/` follow RESTful conventions with proper HTTP methods (GE
 ## 🔐 Authentication & Security
 
 ### Authentication Flow
+
 1. **User Registration/Login** via Supabase Auth (Email, Phone, OAuth)
 2. **JWT Token Generation** and storage in secure cookies
 3. **Token Refresh** mechanism for session persistence
 4. **Row-Level Security** enforces user data isolation at database level
 
 ### Security Best Practices
+
 - ✅ **Environment Variables:** Sensitive keys stored in `.env.local`
 - ✅ **HTTPS:** Enforced in production
 - ✅ **CSRF Protection:** Token-based request validation
@@ -547,6 +588,7 @@ All routes in `app/api/` follow RESTful conventions with proper HTTP methods (GE
 - ✅ **RLS Policies:** Data access controlled at row level in Supabase
 
 ### Files & Secrets
+
 - Never commit `.env.local`
 - Rotate API keys regularly
 - Use Supabase's built-in secrets management
@@ -554,7 +596,9 @@ All routes in `app/api/` follow RESTful conventions with proper HTTP methods (GE
 ---
 
 ### Environment Configuration
+
 Create `.env.local` with production secrets:
+
 ```
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
@@ -580,6 +624,7 @@ GEMINI_API_KEY=your_gemini_key
 5. **Open** a Pull Request
 
 ### Code Guidelines
+
 - Follow existing code style and patterns
 - Write meaningful commit messages
 - Add tests for new features
@@ -606,4 +651,4 @@ Thank you to all contributors and supporters who make Rahvana possible. Together
 
 **Made with ❤️ by the Rahvana Team**
 
-*(This documentation is continuously updated as new features are rolled out.)*
+_(This documentation is continuously updated as new features are rolled out.)_

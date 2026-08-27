@@ -10,19 +10,11 @@ import DraggableShape from "./shapes/DraggableShape";
 import DraggableSignature from "./signature/DraggableSignature";
 import ShapeFormattingToolbar from "./shapes/ShapeFormattingToolbar";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
-import type { PDFDocumentProxy, RenderTask } from "pdfjs-dist";
+import type { PDFDocumentProxy, RenderTask } from "@/lib/pdfjs/client";
+import { loadPdfDocument, renderPdfPage } from "@/lib/pdfjs/client";
 import type { TextFormat } from "./text/TextFormattingToolbar";
-
-let pdfjsLib: typeof import("pdfjs-dist") | null = null;
-
-async function initPdfJs() {
-  if (pdfjsLib) return pdfjsLib;
-  const pdfjs = await import("pdfjs-dist");
-  pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
-  pdfjsLib = pdfjs;
-  return pdfjs;
-}
 
 export function PDFViewer({
   activeTool,
@@ -85,9 +77,10 @@ export function PDFViewer({
     setTotalPages,
   } = usePDFStore();
 
-  const actualTotalPages = pageModifications.length > 0
-    ? pageModifications.filter((mod) => !mod.deleted).length
-    : totalPages;
+  const actualTotalPages =
+    pageModifications.length > 0
+      ? pageModifications.filter((mod) => !mod.deleted).length
+      : totalPages;
 
   const getCurrentPageInfo = () => {
     if (pageModifications.length === 0) return { originalIndex: currentPage, rotation: 0 };
@@ -102,8 +95,7 @@ export function PDFViewer({
     if (!pdfFile) return;
     const loadPdf = async () => {
       try {
-        const pdfjs = await initPdfJs();
-        const loadedPdf = await pdfjs.getDocument(await pdfFile.arrayBuffer()).promise;
+        const loadedPdf = await loadPdfDocument(await pdfFile.arrayBuffer());
         setPdfDoc(loadedPdf);
         setTotalPages(loadedPdf.numPages);
       } catch (error: unknown) {
@@ -130,14 +122,13 @@ export function PDFViewer({
         if (cancelled) return;
 
         const viewport = page.getViewport({ scale, rotation: pageInfo.rotation });
-        
+
         // Store original page dimensions
         const originalViewport = page.getViewport({ scale: 1, rotation: pageInfo.rotation });
         setPageWidth(originalViewport.width);
         setPageHeight(originalViewport.height);
 
         const canvas = canvasRef.current!;
-        const context = canvas.getContext("2d")!;
         canvas.width = viewport.width;
         canvas.height = viewport.height;
 
@@ -148,8 +139,8 @@ export function PDFViewer({
             // Ignore cancellation errors
           }
         }
-        
-        renderTask = page.render({ canvasContext: context, viewport });
+
+        renderTask = renderPdfPage(page, canvas, viewport);
         await renderTask.promise;
 
         if (!cancelled) setIsLoading(false);
@@ -175,7 +166,7 @@ export function PDFViewer({
         }
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pdfDoc, currentPage, scale, pageModifications]);
 
   // Move floating signature/shape
@@ -249,7 +240,6 @@ export function PDFViewer({
       });
       onExitAddText?.();
       onSelectAnnotation(id);
-
     } else if (activeTool === "signature" && signature && isSignatureFloating) {
       addSignatureAnnotation({
         id: Date.now().toString(),
@@ -263,7 +253,6 @@ export function PDFViewer({
       });
       setIsSignatureFloating(false);
       onExitAddText?.();
-
     } else if (activeTool === "shapes" && selectedShape && isShapeFloating) {
       const id = Date.now().toString();
       addShapeAnnotation({
@@ -287,25 +276,41 @@ export function PDFViewer({
 
   return (
     <div className="flex flex-col h-full">
-
       {/* Top Toolbar */}
       <div className="flex items-center justify-between bg-white border-b px-4 py-2 shrink-0">
         <div className="flex items-center gap-2">
-          <Button onClick={() => setCurrentPage(Math.max(0, currentPage - 1))} disabled={currentPage === 0} variant="ghost" size="sm">
+          <Button
+            onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+            disabled={currentPage === 0}
+            variant="ghost"
+            size="sm"
+          >
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <span className="text-sm font-medium">{currentPage + 1} / {actualTotalPages}</span>
-          <Button onClick={() => setCurrentPage(Math.min(actualTotalPages - 1, currentPage + 1))} disabled={currentPage === actualTotalPages - 1} variant="ghost" size="sm">
+          <span className="text-sm font-medium">
+            {currentPage + 1} / {actualTotalPages}
+          </span>
+          <Button
+            onClick={() => setCurrentPage(Math.min(actualTotalPages - 1, currentPage + 1))}
+            disabled={currentPage === actualTotalPages - 1}
+            variant="ghost"
+            size="sm"
+          >
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
 
         <div className="flex items-center gap-2">
-          <Button onClick={() => setScale((p) => Math.max(0.08, p - 0.2))} variant="ghost" size="sm">
+          <Button
+            onClick={() => setScale((p) => Math.max(0.08, p - 0.2))}
+            variant="ghost"
+            size="sm"
+            className="hover:bg-rahvana-primary/10 hover:text-rahvana-primary"
+          >
             <ZoomOut className="h-4 w-4" />
           </Button>
 
-          <Button 
+          <Button
             onClick={() => {
               if (containerRef.current) {
                 if (fitMode === "width" && pageWidth) {
@@ -319,24 +324,33 @@ export function PDFViewer({
                 }
               }
             }}
-            variant="outline" 
+            variant="outline"
             size="sm"
-            title={fitMode === "width" ? t("pdfProcessing.editor.viewer.fitWidthOpt") : t("pdfProcessing.editor.viewer.fitHeightOpt")}
+            className="hover:bg-rahvana-primary/10 hover:text-rahvana-primary hover:border-rahvana-primary/30"
+            title={
+              fitMode === "width"
+                ? t("pdfProcessing.editor.viewer.fitWidthOpt")
+                : t("pdfProcessing.editor.viewer.fitHeightOpt")
+            }
           >
             <Maximize2 className="h-4 w-4" />
           </Button>
 
           <span className="text-sm font-medium">{Math.round(scale * 100)}%</span>
 
-          <Button onClick={() => setScale((p) => Math.min(6, p + 0.2))} variant="ghost" size="sm">
+          <Button
+            onClick={() => setScale((p) => Math.min(6, p + 0.2))}
+            variant="ghost"
+            size="sm"
+            className="hover:bg-rahvana-primary/10 hover:text-rahvana-primary"
+          >
             <ZoomIn className="h-4 w-4" />
           </Button>
 
           {/* Zoom Dropdown */}
-          <select
-            value={scale}
-            onChange={(e) => {
-              const val = e.target.value;
+          <CustomDropdown
+            value={String(scale)}
+            onChange={(val) => {
               if (val === "fitWidth" && containerRef.current && pageWidth) {
                 const containerWidth = containerRef.current.clientWidth - 32;
                 setScale(containerWidth / pageWidth);
@@ -347,24 +361,27 @@ export function PDFViewer({
                 setScale(Number(val));
               }
             }}
-            className="text-sm border rounded px-2 py-1 bg-white"
-          >
-            <option value={0.5}>50%</option>
-            <option value={0.75}>75%</option>
-            <option value={1}>{t("pdfProcessing.editor.viewer.actual")}</option>
-            <option value={1.25}>125%</option>
-            <option value={1.5}>150%</option>
-            <option value={2}>200%</option>
-            <option value={3}>300%</option>
-            <option value="fitWidth">{t("pdfProcessing.editor.viewer.fitWidth")}</option>
-            <option value="fitHeight">{t("pdfProcessing.editor.viewer.fitHeight")}</option>
-          </select>
+            options={[
+              { value: "0.5", label: "50%" },
+              { value: "0.75", label: "75%" },
+              { value: "1", label: t("pdfProcessing.editor.viewer.actual") },
+              { value: "1.25", label: "125%" },
+              { value: "1.5", label: "150%" },
+              { value: "2", label: "200%" },
+              { value: "3", label: "300%" },
+              { value: "fitWidth", label: t("pdfProcessing.editor.viewer.fitWidth") },
+              { value: "fitHeight", label: t("pdfProcessing.editor.viewer.fitHeight") },
+            ]}
+            className="w-[100px] [&_button]:h-8 [&_button]:w-full [&_button]:min-w-0 [&_button]:text-sm"
+          />
         </div>
       </div>
 
       {/* PDF Viewer */}
-      <div ref={containerRef} className="flex-1 flex justify-center items-start overflow-auto bg-gray-100 p-4">
-        
+      <div
+        ref={containerRef}
+        className="flex-1 flex justify-center items-start overflow-auto bg-gray-100 p-4"
+      >
         {isLoading && (
           <div className="absolute top-1/2 left-1/2 text-gray-500 -translate-x-1/2 -translate-y-1/2 z-50">
             {t("pdfProcessing.editor.viewer.loading")}
@@ -381,10 +398,10 @@ export function PDFViewer({
                 activeTool === "text"
                   ? "crosshair"
                   : activeTool === "signature" && isSignatureFloating
-                  ? "crosshair"
-                  : activeTool === "shapes" && isShapeFloating
-                  ? "crosshair"
-                  : "default",
+                    ? "crosshair"
+                    : activeTool === "shapes" && isShapeFloating
+                      ? "crosshair"
+                      : "default",
             }}
             onClick={handleOverlayClick}
           >
@@ -454,10 +471,7 @@ export function PDFViewer({
       {/* Shape Toolbar */}
       {selectedShapeObj && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-9999">
-          <ShapeFormattingToolbar
-            shape={selectedShapeObj}
-            onUpdate={updateShapeAnnotation}
-          />
+          <ShapeFormattingToolbar shape={selectedShapeObj} onUpdate={updateShapeAnnotation} />
         </div>
       )}
     </div>

@@ -11,11 +11,7 @@
  */
 
 export * from "./types";
-export {
-  validateReceiptNumber,
-  checkFileQuality,
-  USCIS_PORTAL_FILE_LIMITS,
-} from "./validators";
+export { validateReceiptNumber, checkFileQuality, USCIS_PORTAL_FILE_LIMITS } from "./validators";
 export { detectRiskFlags, filterFlagsBySeverity } from "./risk-detector";
 export { detectRiskFlagsFromEligibilityQuest } from "./eligibility-quest-detector";
 export {
@@ -23,3 +19,88 @@ export {
   missingTier1Documents,
   RECOMMENDED_TIER_1_FLOOR,
 } from "./evidence-classifier";
+export { analyzeCivilDocs } from "./civil-docs";
+export type { CivilDocItem, CivilDocGroup, CivilDocIssue, CivilDocsContext } from "./civil-docs";
+export { compareBaselines, compareFields, BASELINE_FIELDS } from "./consistency";
+export type {
+  BaselineDates,
+  BaselineField,
+  BaselineMismatch,
+  CrossFormField,
+  CrossFormMismatch,
+} from "./consistency";
+export {
+  runStepChecks,
+  IR1_STEP_CHECKERS,
+  COMMON_STEP_CHECKERS,
+  CATEGORY_SPECIFIC_STEP_KEYS,
+  type StepCheck,
+  type StepCheckContext,
+  type StepChecker,
+} from "./step-checkers";
+
+// ─── Per-visa-category profiles (Strategy pattern) ──────────────────────────
+// Resolve one of these from a journey's `journey_type` to make the whole engine
+// category-aware. Unknown types fall back to IR-1 (today's behavior).
+export {
+  resolveCaseStrengthProfile,
+  CASE_STRENGTH_PROFILES,
+  IR1_PROFILE,
+  IR5_PROFILE,
+  IR5_STEP_CHECKERS,
+  type CaseStrengthProfile,
+} from "./categories";
+export {
+  aggregateChapter1Issues,
+  aggregateChapter2Issues,
+  aggregateChapter3Issues,
+  aggregateConsistencyFindings,
+  getConsistencyFindings,
+  type AggregatedIssue,
+} from "./aggregate-issues";
+
+// Advanced Consistency Intelligence (Phase 1 + Phase 2)
+export {
+  runConsistencyIntelligence,
+  runPhase2Checks,
+  runSpousePhase2Checks,
+  runCommonPhase2Checks,
+  runFullConsistencyAnalysis,
+  groupFindingsBySeverity,
+  getConsistencySummary,
+  PHASE2_QUESTIONS,
+  SPOUSE_PHASE2_QUESTIONS,
+  COMMON_PHASE2_QUESTIONS,
+  type ConsistencyFinding,
+  type FindingSeverity,
+  type FindingCategory,
+  type ConsistencyIntelligenceInput,
+  type Phase2Question,
+  type Phase2QuestionId,
+  type Phase2Responses,
+  type Phase2Runner,
+} from "./consistency-intelligence";
+
+// Case Narrative Generation (presentation layer over CSA outputs)
+export {
+  generateCaseNarrative,
+  getCaseHealthStatus,
+  computeOverallCaseScore,
+  computeConsistencyScore,
+  computeWeightedCaseScore,
+  computeRiskPenalty,
+  getScoreBand,
+  classifyBandTransition,
+  SCORE_BAND_LABEL,
+  getWeightedCaseHealthStatus,
+  CASE_SCORE_WEIGHTS,
+  RISK_SEVERITY_PENALTY,
+  SCORE_BANDS,
+  type CaseNarrative,
+  type NarrativeBullet,
+  type NarrativeInput,
+  type WeightedCaseScoreInput,
+  type WeightedCaseScoreResult,
+  type ScoreBand,
+  type BandTransition,
+} from "./case-narrative";

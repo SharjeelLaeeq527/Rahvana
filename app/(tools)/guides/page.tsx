@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -13,6 +13,13 @@ import {
   ChevronDown,
   LayoutGrid,
   ArrowRight,
+  BookOpen,
+  Clock,
+  CheckCircle2,
+  PlayCircle,
+  Trash2,
+  ChevronRight,
+  Lock,
 } from "lucide-react";
 
 import {
@@ -23,6 +30,25 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
 import { usePlan } from "@/app/context/PlanContext";
+import AddResourceCard from "@/components/resources/AddResourceCard";
+import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader";
+import { useAuth } from "@/app/context/AuthContext";
+import { motion } from "framer-motion";
+import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { useQuickAccess } from "@/app/context/QuickAccessContext";
+
+interface UserGuideSession {
+  id: string;
+  status: string;
+  progress_percent: number;
+  last_updated_at: string;
+  guides: {
+    slug: string;
+    title: string;
+    description: string;
+  };
+}
 
 // --- Data & Types ---
 
@@ -79,8 +105,7 @@ const GUIDES: Guide[] = [
     id: "birth-certificate",
     title: "Birth Certificate",
     subtitle: "",
-    description:
-      "Union Council CBRC process for birth registration, correction, and replacement",
+    description: "Union Council CBRC process for birth registration, correction, and replacement",
     category: "Pakistan Document",
     href: "/guides/birth-certificate-guide",
     icon: FileText,
@@ -90,8 +115,7 @@ const GUIDES: Guide[] = [
     id: "frc",
     title: "FRC",
     subtitle: "NADRA Family Registration Certificate",
-    description:
-      "NADRA process to apply for an FRC and review registered family details.",
+    description: "NADRA process to apply for an FRC and review registered family details.",
     category: "Pakistan Document",
     href: "/guides/frc-guide",
     icon: Globe,
@@ -112,51 +136,73 @@ const GUIDES: Guide[] = [
     id: "vaccinations",
     title: "Polio Vaccination",
     subtitle: "",
-    description:
-      "Polio vaccination workflow with NIMS entry and travel certificate issuance.",
+    description: "Polio vaccination workflow with NIMS entry and travel certificate issuance.",
     category: "Medical & Exam",
     href: "/guides/polio-vaccination-guide",
     icon: Syringe,
     entitlementFeature: "polio_certificate",
   },
+  // {
+  //   id: "step-parent",
+  //   title: "Step-Parent",
+  //   subtitle: "USCIS Eligibility & Document Compilation",
+  //   description: "USCIS roadmap for sponsoring step-parents, marriage rules, and document requirements.",
+  //   category: "Pakistan Document",
+  //   href: "/guides/step-parent-guide",
+  //   icon: BookOpen,
+  // },
+  // {
+  //   id: "adoptive-parent",
+  //   title: "Adoptive Parent & Guardianship",
+  //   subtitle: "USCIS Eligibility & Document Requirements",
+  //   description: "USCIS adoption criteria, 2-year custody rule, and legal guardianship vs. U.S. adoption.",
+  //   category: "Pakistan Document",
+  //   href: "/guides/adoptive-parent-guide",
+  //   icon: BookOpen,
+  // },
 ];
 
-const CATEGORIES: ("All" | GuideCategory)[] = [
-  "All",
-  "Pakistan Document",
-  "Medical & Exam",
-];
+const CATEGORIES: ("All" | GuideCategory)[] = ["All", "Pakistan Document", "Medical & Exam"];
 
 // --- Tier-aware card styles ------------------------------------------------
 // Card border, shadow, and gradient border all follow the tier
-const TIER_CARD_STYLE: Record<string, {
-  cardBorder: string;
-  cardShadow: string;
-  cardHoverShadow: string;
-  gradientBorder: string;
-  badgeBg: string;
-  badgeBorder: string;
-}> = {
+const TIER_CARD_STYLE: Record<
+  string,
+  {
+    cardBorder: string;
+    cardShadow: string;
+    cardHoverShadow: string;
+    gradientBorder: string;
+    badgeBg: string;
+    badgeBorder: string;
+  }
+> = {
   basic: {
     cardBorder: "border-[#a8d4d4]",
-    cardShadow: "shadow-[0_18px_38px_-24px_rgba(13,148,136,0.6),0_0_0_1px_rgba(168,212,212,0.3)_inset]",
-    cardHoverShadow: "hover:shadow-[0_24px_48px_-24px_rgba(13,148,136,0.75),0_0_26px_rgba(13,148,136,0.15)]",
+    cardShadow:
+      "shadow-[0_18px_38px_-24px_rgba(13,148,136,0.6),0_0_0_1px_rgba(168,212,212,0.3)_inset]",
+    cardHoverShadow:
+      "hover:shadow-[0_24px_48px_-24px_rgba(13,148,136,0.75),0_0_26px_rgba(13,148,136,0.15)]",
     gradientBorder: "from-teal-300 to-teal-200",
     badgeBg: "bg-teal-50",
     badgeBorder: "border-teal-200",
   },
   premium: {
     cardBorder: "border-[#94a3b8]",
-    cardShadow: "shadow-[0_18px_38px_-24px_rgba(71,85,105,0.6),0_0_0_1px_rgba(148,163,184,0.3)_inset]",
-    cardHoverShadow: "hover:shadow-[0_24px_48px_-24px_rgba(71,85,105,0.75),0_0_26px_rgba(71,85,105,0.15)]",
+    cardShadow:
+      "shadow-[0_18px_38px_-24px_rgba(71,85,105,0.6),0_0_0_1px_rgba(148,163,184,0.3)_inset]",
+    cardHoverShadow:
+      "hover:shadow-[0_24px_48px_-24px_rgba(71,85,105,0.75),0_0_26px_rgba(71,85,105,0.15)]",
     gradientBorder: "from-slate-400 to-slate-300",
     badgeBg: "bg-slate-100",
     badgeBorder: "border-slate-300",
   },
   executive: {
     cardBorder: "border-[#e8c96a]",
-    cardShadow: "shadow-[0_18px_38px_-24px_rgba(202,138,4,0.7),0_0_0_1px_rgba(232,201,106,0.3)_inset]",
-    cardHoverShadow: "hover:shadow-[0_24px_48px_-24px_rgba(202,138,4,0.85),0_0_26px_rgba(202,138,4,0.2)]",
+    cardShadow:
+      "shadow-[0_18px_38px_-24px_rgba(202,138,4,0.7),0_0_0_1px_rgba(232,201,106,0.3)_inset]",
+    cardHoverShadow:
+      "hover:shadow-[0_24px_48px_-24px_rgba(202,138,4,0.85),0_0_26px_rgba(202,138,4,0.2)]",
     gradientBorder: "from-amber-300 to-amber-200",
     badgeBg: "bg-amber-50",
     badgeBorder: "border-amber-200",
@@ -167,7 +213,8 @@ const TIER_CARD_STYLE: Record<string, {
 const TIER_GRADIENT_BORDER_STYLE: Record<string, React.CSSProperties> = {
   basic: {
     padding: "2.5px",
-    background: "linear-gradient(135deg, #0f766e 0%, #5eead4 34%, #0d9488 50%, #99f6e4 66%, #0f766e 100%)",
+    background:
+      "linear-gradient(135deg, #0f766e 0%, #5eead4 34%, #0d9488 50%, #99f6e4 66%, #0f766e 100%)",
     WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
     WebkitMaskComposite: "xor",
     maskComposite: "exclude",
@@ -175,7 +222,8 @@ const TIER_GRADIENT_BORDER_STYLE: Record<string, React.CSSProperties> = {
   },
   premium: {
     padding: "2.5px",
-    background: "linear-gradient(135deg, #334155 0%, #94a3b8 25%, #e2e8f0 50%, #94a3b8 75%, #334155 100%)",
+    background:
+      "linear-gradient(135deg, #334155 0%, #94a3b8 25%, #e2e8f0 50%, #94a3b8 75%, #334155 100%)",
     WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
     WebkitMaskComposite: "xor",
     maskComposite: "exclude",
@@ -183,7 +231,8 @@ const TIER_GRADIENT_BORDER_STYLE: Record<string, React.CSSProperties> = {
   },
   executive: {
     padding: "2.5px",
-    background: "linear-gradient(135deg, #5f3a00 0%, #a66a04 18%, #f5d06f 34%, #7a4a00 50%, #fff1a8 66%, #b77905 82%, #5f3a00 100%)",
+    background:
+      "linear-gradient(135deg, #5f3a00 0%, #a66a04 18%, #f5d06f 34%, #7a4a00 50%, #fff1a8 66%, #b77905 82%, #5f3a00 100%)",
     WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
     WebkitMaskComposite: "xor",
     maskComposite: "exclude",
@@ -193,15 +242,62 @@ const TIER_GRADIENT_BORDER_STYLE: Record<string, React.CSSProperties> = {
 
 // --- Components ---
 
-export default function GuidesPage({
-  isEmbedded = false,
-}: {
-  isEmbedded?: boolean;
-}) {
+export default function GuidesPage({ isEmbedded = false }: { isEmbedded?: boolean }) {
+  const { user } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<"All" | GuideCategory>("All");
   const [visibleCount, setVisibleCount] = useState(7);
   const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
+  const plan = usePlan();
+
+  const [sessions, setSessions] = useState<UserGuideSession[]>([]);
+  const [sessionsLoading, setSessionsLoading] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [showConfirmDelete, setShowConfirmDelete] = useState(false);
+  const [selectedSessionId, setSelectedSessionId] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!user) {
+      setSessions([]);
+      return;
+    }
+    const fetchMyGuides = async () => {
+      try {
+        setSessionsLoading(true);
+        const res = await fetch("/api/guides/my-guides");
+        if (res.ok) {
+          const data = await res.json();
+          setSessions(data.sessions || []);
+        }
+      } catch (error) {
+        console.error("Failed to fetch my guides:", error);
+      } finally {
+        setSessionsLoading(false);
+      }
+    };
+    fetchMyGuides();
+  }, [user]);
+
+  const handleDelete = async () => {
+    if (!selectedSessionId) return;
+    try {
+      setDeleting(true);
+      const res = await fetch("/api/guides/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sessionId: selectedSessionId }),
+      });
+      if (res.ok) {
+        setSessions((prev) => prev.filter((s) => s.id !== selectedSessionId));
+        setShowConfirmDelete(false);
+        setSelectedSessionId(null);
+      }
+    } catch (error) {
+      console.error("Failed to delete guide:", error);
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
@@ -263,10 +359,153 @@ export default function GuidesPage({
     const matchesSearch =
       guide.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       guide.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "All" || guide.category === selectedCategory;
+    const matchesCategory = selectedCategory === "All" || guide.category === selectedCategory;
     return matchesSearch && matchesCategory;
   }).sort((a, b) => a.title.localeCompare(b.title));
+
+  // "My Resources" (embedded) view splits the catalog into two sections:
+  //  • "My Guides"     — guides the user owns (plan/add-ons) OR has already started
+  //  • "Browse Guides" — everything else, shown as locked/"Unlock" cards to explore
+  const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
+  const hasSession = (guide: Guide) => {
+    const slug = guide.href.split("/").pop();
+    return sessions.some((s) => s.guides.slug === slug);
+  };
+  // A started guide belongs in "My Guides" even if its entitlement is locked.
+  const isMine = (guide: Guide) => isOwned(guide.entitlementFeature) || hasSession(guide);
+  const ownedGuides = filteredGuides.filter(isMine);
+  const browseGuides = filteredGuides.filter((guide) => !isMine(guide));
+  // Embedded "My Resources" shows owned/started in the first grid; the standalone
+  // page shows the full filtered list.
+  const displayGuides = isEmbedded ? ownedGuides : filteredGuides;
+
+  // Renders a started-guide progress card when a session exists, otherwise a GuideCard.
+  const renderGuideCard = (guide: Guide, index: number) => {
+    const guideSlug = guide.href.split("/").pop();
+    const session = sessions.find((s) => s.guides.slug === guideSlug);
+
+    if (session) {
+      return (
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, delay: index * 0.1 }}
+          key={session.id}
+          className="group bg-white rounded-3xl border border-slate-200 p-6 shadow-sm hover:shadow-xl hover:border-teal-200 transition-all flex flex-col relative overflow-hidden mt-6"
+        >
+          <div className="flex justify-between items-start mb-4">
+            <div className="p-3 bg-teal-50 rounded-2xl text-teal-600 group-hover:bg-teal-600 group-hover:text-white transition-colors duration-300">
+              <BookOpen size={24} />
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              <div className="flex items-center gap-2">
+                <span
+                  className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full
+                  ${session.status === "completed" ? "bg-green-100 text-green-700" : "bg-orange-100 text-orange-700"}`}
+                >
+                  {session.status.replace("_", " ")}
+                </span>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setSelectedSessionId(session.id);
+                    setShowConfirmDelete(true);
+                  }}
+                  className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                  title="Delete this progress"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <span className="text-[10px] text-slate-400 flex items-center gap-1 font-medium">
+                <Clock size={10} />
+                {new Date(session.last_updated_at).toLocaleDateString()}
+              </span>
+            </div>
+          </div>
+
+          <div className="flex justify-between items-start gap-3 mb-2">
+            <h3 className="text-xl font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
+              {session.guides.title}
+            </h3>
+            <div className="relative z-50 shrink-0">
+              <QuickAccessButton
+                item={{
+                  id: `guide-${guide.id}`,
+                  title: `${guide.title} Guide`,
+                  href: guide.href,
+                  icon_name: (() => {
+                    const mapping: Record<string, string> = {
+                      passport: "Globe",
+                      "police-verification": "Shield",
+                      cnic: "FileText",
+                      "birth-certificate": "FileText",
+                      frc: "Globe",
+                      "marriage-certificate": "Heart",
+                      vaccinations: "Syringe",
+                    };
+                    return mapping[guide.id] || "BookOpen";
+                  })(),
+                }}
+                mode="icon"
+              />
+            </div>
+          </div>
+          <p className="text-slate-500 text-sm leading-relaxed mb-6 line-clamp-2">
+            {session.guides.description}
+          </p>
+
+          <div className="mt-auto">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-bold text-slate-400 uppercase tracking-tighter">
+                Progress
+              </span>
+              <span className="text-xs font-black text-teal-600">{session.progress_percent}%</span>
+            </div>
+            <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-6">
+              <div
+                className="h-full bg-teal-500 rounded-full transition-all duration-1000"
+                style={{ width: `${session.progress_percent}%` }}
+              />
+            </div>
+
+            <Link
+              href={`/guides/${session.guides.slug}`}
+              className="flex items-center justify-center gap-2 w-full py-3.5 bg-slate-900 text-white rounded-2xl text-sm font-bold hover:bg-teal-600 transition-all shadow-lg shadow-slate-200 hover:shadow-teal-100 group/btn"
+            >
+              {session.status === "completed" ? (
+                <>
+                  <CheckCircle2 size={18} />
+                  View Results
+                </>
+              ) : (
+                <>
+                  <PlayCircle
+                    size={18}
+                    className="group-hover/btn:scale-110 transition-transform"
+                  />
+                  Resume Guide
+                </>
+              )}
+              <ChevronRight
+                size={16}
+                className="ml-1 opacity-0 group-hover:opacity-100 -translate-x-2 group-hover:translate-x-0 transition-all"
+              />
+            </Link>
+          </div>
+        </motion.div>
+      );
+    }
+
+    return (
+      <GuideCard
+        key={guide.id}
+        guide={guide}
+        index={index}
+        onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+      />
+    );
+  };
 
   return (
     <div
@@ -275,10 +514,7 @@ export default function GuidesPage({
       }`}
     >
       {upgradeModalFeature && (
-        <UpgradeModal
-          feature={upgradeModalFeature}
-          onClose={() => setUpgradeModalFeature(null)}
-        />
+        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
       )}
 
       {/* Ambient Glow */}
@@ -288,142 +524,179 @@ export default function GuidesPage({
       </div>
 
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Hero Section */}
-        <section className="text-center mb-5 md:mb-10 pt-1 relative flex flex-col items-center">
-          <div className="w-full flex justify-end mb-6 md:absolute md:top-0 md:right-0 md:mb-0 md:w-auto md:block">
-            <Link
-              href="/guides/my-guides"
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-full text-sm font-bold text-slate-600 hover:text-teal-600 hover:border-teal-200 shadow-sm transition-all"
-            >
-              <LayoutGrid size={16} />
-              My Guides
-            </Link>
-          </div>
-          <h1 className="text-3xl md:text-5xl font-bold mb-4 mt-2 md:mt-0 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
-            Master the Paperwork.
-          </h1>
-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
-            Step-by-step guides for every document you need. Clear instructions,
-            timelines, and common pitfalls to avoid.
-          </p>
-        </section>
+        {/* Hero Section — hidden in the embedded "My Resources" view */}
+        {!isEmbedded && (
+          <section className="text-center mb-5 md:mb-10 pt-1 relative flex flex-col items-center">
+            <h1 className="text-3xl md:text-5xl font-bold mb-4 mt-2 md:mt-0 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
+              Master the Paperwork.
+            </h1>
+            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
+              Step-by-step guides for every document you need. Clear instructions, timelines, and
+              common pitfalls to avoid.
+            </p>
+          </section>
+        )}
 
         {/* Search Bar */}
-        <div className="relative max-w-lg mx-auto mb-10 animate-scale-in [animation-delay:200ms]">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
-          <input
-            type="text"
-            placeholder="Search guides... (e.g., 'passport', 'police')"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
-          />
-        </div>
-
-        {/* Categories */}
-        <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
-          <div
-            ref={measureRef}
-            aria-hidden="true"
-            className="absolute top-0 left-0 w-full flex flex-wrap gap-3 pointer-events-none opacity-0 z-[-1]"
-          >
-            {CATEGORIES.map((cat) => (
-              <div key={cat} className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border">
-                {cat}
-              </div>
-            ))}
-            <div className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1">
-              More <ChevronDown className="w-4 h-4 ml-1" />
-            </div>
+        {!isEmbedded && (
+          <div className="relative max-w-lg mx-auto mb-10 animate-scale-in [animation-delay:200ms]">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
+            <input
+              type="text"
+              placeholder="Search guides... (e.g., 'passport', 'police')"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
+            />
           </div>
+        )}
 
-          <div className="flex flex-wrap gap-3 animate-fade-in [animation-delay:300ms]">
-            {visibleCategories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${
-                  selectedCategory === cat
-                    ? "bg-primary text-primary-foreground border-primary shadow-md"
-                    : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
-                }`}
-              >
-                {cat}
-              </button>
-            ))}
+        {/* Categories — hidden in the embedded "My Resources" view */}
+        {!isEmbedded && (
+          <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
+            <div
+              ref={measureRef}
+              aria-hidden="true"
+              className="absolute top-0 left-0 w-full flex flex-wrap gap-3 pointer-events-none opacity-0 z-[-1]"
+            >
+              {CATEGORIES.map((cat) => (
+                <div key={cat} className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border">
+                  {cat}
+                </div>
+              ))}
+              <div className="px-5 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1">
+                More <ChevronDown className="w-4 h-4 ml-1" />
+              </div>
+            </div>
 
-            {hiddenCategories.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${
-                      isMoreSelected
-                        ? "bg-primary text-primary-foreground border-primary shadow-md"
-                        : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
-                    }`}
-                  >
-                    More <ChevronDown className="w-4 h-4 ml-1" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[200px]">
-                  {hiddenCategories.map((cat) => (
-                    <DropdownMenuItem
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`cursor-pointer ${
-                        selectedCategory === cat ? "bg-primary/10 text-primary font-semibold" : ""
+            <div className="flex flex-wrap gap-3 animate-fade-in [animation-delay:300ms]">
+              {visibleCategories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${
+                    selectedCategory === cat
+                      ? "bg-primary text-primary-foreground border-primary shadow-md"
+                      : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+
+              {hiddenCategories.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${
+                        isMoreSelected
+                          ? "bg-primary text-primary-foreground border-primary shadow-md"
+                          : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"
                       }`}
                     >
-                      {cat}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
+                      More <ChevronDown className="w-4 h-4 ml-1" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-[200px]">
+                    {hiddenCategories.map((cat) => (
+                      <DropdownMenuItem
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`cursor-pointer ${
+                          selectedCategory === cat ? "bg-primary/10 text-primary font-semibold" : ""
+                        }`}
+                      >
+                        {cat}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+            </div>
           </div>
-        </div>
+        )}
+
+        {/* My Guides — owned or already started (embedded view only) */}
+        {isEmbedded && (
+          <ResourceSectionHeader
+            title="My Guides"
+            subtitle="Guides you've unlocked or already started."
+            className="-mt-16"
+          />
+        )}
 
         {/* Guides Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 pt-6">
-          {filteredGuides.length > 0 ? (
-            filteredGuides.map((guide, index) => (
-              <GuideCard
-                key={guide.id}
-                guide={guide}
-                index={index}
-                onLockedClick={(feature) => setUpgradeModalFeature(feature)}
-              />
-            ))
-          ) : (
+          {displayGuides.map((guide, index) => renderGuideCard(guide, index))}
+          {isEmbedded && plan.tier !== "premium" && plan.tier !== "executive" && (
+            <AddResourceCard
+              href="/pricing?mode=guides"
+              label="Add guides"
+              index={displayGuides.length}
+            />
+          )}
+          {!isEmbedded && displayGuides.length === 0 && (
             <div className="col-span-full text-center py-12 text-muted-foreground">
               No guides found matching your search.
             </div>
           )}
         </div>
+
+        {/* Browse Guides — everything not yet owned (embedded view only) */}
+        {isEmbedded && browseGuides.length > 0 && (
+          <>
+            <ResourceSectionHeader
+              title="Browse Guides"
+              subtitle="Explore more guides, preview them or unlock the full version."
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-7 pt-6">
+              {browseGuides.map((guide, index) => renderGuideCard(guide, index))}
+            </div>
+          </>
+        )}
       </div>
+      <ConfirmationModal
+        open={showConfirmDelete}
+        onOpenChange={setShowConfirmDelete}
+        title="Delete Progress?"
+        description="This will permanently delete your progress for this guide. You cannot undo this action."
+        confirmText="Yes, Delete"
+        cancelText="No, Keep it"
+        onConfirm={handleDelete}
+        loading={deleting}
+      />
     </div>
   );
 }
 
 // --- Guide Card Component ---
 
-const CATEGORY_STYLES: Record<GuideCategory, {
-  iconBox: string;
-  innerBox: string;
-  link: string;
-  borderGradient: string;
-}> = {
+const CATEGORY_STYLES: Record<
+  GuideCategory,
+  {
+    iconBox: string;
+    innerBox: string;
+    link: string;
+    borderGradient: string;
+    hoverBg: string;
+    hoverBorder: string;
+  }
+> = {
   "Pakistan Document": {
     iconBox: "bg-green-600 text-white border-transparent dark:bg-green-500",
     innerBox: "bg-white/20",
     link: "text-green-600 dark:text-green-400",
     borderGradient: "from-green-400 to-green-300 dark:from-green-400 dark:to-green-300",
+    hoverBg: "group-hover:bg-green-100 dark:group-hover:bg-green-950/10",
+    hoverBorder: "group-hover:border-green-500/30 dark:group-hover:border-green-500/20",
   },
   "Medical & Exam": {
     iconBox: "bg-teal-600 text-white border-transparent dark:bg-teal-500",
     innerBox: "bg-white/20",
     link: "text-teal-600 dark:text-teal-400",
     borderGradient: "from-teal-400 to-teal-300 dark:from-teal-400 dark:to-teal-300",
+    hoverBg: "group-hover:bg-teal-100 dark:group-hover:bg-teal-950/10",
+    hoverBorder: "group-hover:border-teal-500/30 dark:group-hover:border-teal-500/20",
   },
 };
 
@@ -439,23 +712,24 @@ function GuideCard({
   const plan = usePlan();
   const Icon = guide.icon;
   const styles = CATEGORY_STYLES[guide.category];
+  const { isInQuickAccess } = useQuickAccess();
 
   const featureLocked =
-    !!guide.entitlementFeature &&
-    !plan.isLoading &&
-    plan.isLocked(guide.entitlementFeature);
+    !!guide.entitlementFeature && !plan.isLoading && plan.isLocked(guide.entitlementFeature);
 
   const upgradeTarget: string =
-    (guide.entitlementFeature
-      ? plan.entitlement(guide.entitlementFeature).upgradeTarget
-      : null) ?? "premium";
+    (guide.entitlementFeature ? plan.entitlement(guide.entitlementFeature).upgradeTarget : null) ??
+    "premium";
 
   // All tier-specific card styles derived from upgradeTarget
   const tierStyle = TIER_CARD_STYLE[upgradeTarget] ?? TIER_CARD_STYLE.premium;
-  const tierGradientBorderStyle = TIER_GRADIENT_BORDER_STYLE[upgradeTarget] ?? TIER_GRADIENT_BORDER_STYLE.premium;
+  const tierGradientBorderStyle =
+    TIER_GRADIENT_BORDER_STYLE[upgradeTarget] ?? TIER_GRADIENT_BORDER_STYLE.premium;
   const tierIconClass = `plan-icon--${upgradeTarget}`;
 
   const isNavigable = !guide.disabled;
+
+  const isPinned = isInQuickAccess(`guide-${guide.id}`);
 
   const handleClick = (e: React.MouseEvent) => {
     if (featureLocked && guide.entitlementFeature) {
@@ -470,47 +744,51 @@ function GuideCard({
     <CardWrapper
       href={isNavigable ? guide.href : "#"}
       onClick={handleClick}
-      className={`group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
+      className={`group relative flex flex-col bg-card rounded-2xl p-8 pt-8 mt-6 mx-2 md:mx-0
       transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
-      ${featureLocked
-        ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
-        : isNavigable
-          ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-          : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
+      ${
+        // isPinned
+        //   ? "border-[3px] border-[#0d7377] dark:border-[#32e0c4] shadow-md hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+        //   : 
+          featureLocked
+            ? "border border-border cursor-pointer shadow-md hover:-translate-y-1"
+            : isNavigable
+              ? "border border-border hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+              : "border border-border opacity-80 cursor-not-allowed grayscale-[0.5]"
       }
       animate-fade-up`}
       style={{ animationDelay: `${index * 100}ms` }}
     >
-          {/* Ribbon for locked cards */}
-          {featureLocked && (
-            <div className="absolute -top-21 -right-12 sm:-right-3 z-20 pointer-events-none">
-              <Image
-                src="/icons/ribbon.png"
-                alt="Premium ribbon"
-                width={240}
-                height={300}
-                priority={false}
-                className="w-40 h-56 object-contain drop-shadow-lg"
-              />
-            </div>
-          )}
+      {/* Ribbon for locked cards */}
+      {featureLocked && (
+        <div className="absolute -top-21 -right-12 sm:-right-3 z-20 pointer-events-none">
+          <Image
+            src="/icons/ribbon.png"
+            alt="Premium ribbon"
+            width={240}
+            height={300}
+            priority={false}
+            className="w-40 h-56 object-contain drop-shadow-lg"
+          />
+        </div>
+      )}
 
-      {/* Floating Icon Box */}
+{/* Floating icon box */}
       <div
-        className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-10
-        group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg
-        ${styles.iconBox}`}
+        className={`absolute -top-6 left-6 w-12 h-12 md:w-14 md:h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-40 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg ${styles.iconBox}`}
       >
-        <div className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`} />
-        <Icon className="w-6 h-6 stroke-2" />
+        <div
+          className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
+        />
+        <Icon className="w-5 h-5 md:w-6 md:h-6 stroke-2" />
       </div>
 
       {/* (Removed tier badge — ribbon now indicates locked state) */}
 
-      {/* Border gradient on hover (category color, non-locked only) */}
+      {/* Hover overlay with light category-specific background & border */}
       {!featureLocked && (
         <div
-          className={`absolute inset-0 rounded-[30px] p-[2px] bg-linear-to-br ${styles.borderGradient} opacity-0 group-hover:opacity-100 transition-opacity duration-400 pointer-events-none [mask:linear-gradient(#fff_0_0)_content-box,linear-gradient(#fff_0_0)] mask-exclude`}
+          className={`absolute inset-0 rounded-2xl border border-transparent transition-all duration-400 pointer-events-none z-0 ${styles.hoverBg} ${styles.hoverBorder}`}
         />
       )}
 
@@ -518,10 +796,38 @@ function GuideCard({
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col grow pt-2">
-        <h3 className="text-lg md:text-xl leading-tight font-bold text-foreground mb-0.5 transition-colors">
-          {guide.title}
-        </h3>
+      <div className="relative z-10 flex flex-col pt-1">
+        <div className="flex justify-between items-start gap-3">
+          <h3 className="text-lg md:text-xl leading-tight font-bold text-foreground mb-0.5 transition-colors">
+            {guide.title}
+          </h3>
+          {!featureLocked && (
+            <div className="relative z-50 shrink-0">
+              <QuickAccessButton
+                item={{
+                  id: `guide-${guide.id}`,
+                  title: `${guide.title} Guide`,
+                  href: guide.href,
+                  icon_name: (() => {
+                    const mapping: Record<string, string> = {
+                      passport: "Globe",
+                      "police-verification": "Shield",
+                      cnic: "FileText",
+                      "birth-certificate": "FileText",
+                      frc: "Globe",
+                      "marriage-certificate": "Heart",
+                      vaccinations: "Syringe",
+                      "step-parent": "BookOpen",
+                      "adoptive-parent": "BookOpen",
+                    };
+                    return mapping[guide.id] || "BookOpen";
+                  })(),
+                }}
+                mode="icon"
+              />
+            </div>
+          )}
+        </div>
         <p
           className={`text-[11px] leading-snug text-zinc-500 dark:text-zinc-400 mb-4 ${
             guide.subtitle ? "" : "invisible"
@@ -529,22 +835,33 @@ function GuideCard({
         >
           {guide.subtitle || " "}
         </p>
-        <div className="mb-3">
+        <div className="mb-2">
           <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-primary/85 bg-primary/10 border border-primary/20 px-2 py-1 rounded">
             {guide.category}
           </span>
         </div>
-        <p className="text-sm leading-6 font-medium text-slate-500 dark:text-slate-400 mb-5 grow [text-wrap:pretty]">
+        <p
+          className="text-sm font-medium text-slate-500 dark:text-slate-400 [text-wrap:pretty] mb-0 pb-0"
+          style={{ minHeight: 88, paddingBottom: 0, lineHeight: 1.3 }}
+        >
           {guide.description}
         </p>
+
+        <div className="grow" />
       </div>
 
       {/* Footer / Action */}
-      <div className="relative z-10 flex items-center justify-between pt-3.5 border-t border-border mt-auto">
+      <div className="relative z-10 flex items-center justify-between pt-2 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
 
         {featureLocked ? (
-          <span aria-hidden="true" className="h-5" />
+          <button
+            type="button"
+            onClick={() => guide.entitlementFeature && onLockedClick(guide.entitlementFeature)}
+            className="text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 text-[#0d7377] dark:text-[#32e0c4]"
+          >
+            <Lock size={14} className="mb-[1px]" /> Unlock
+          </button>
         ) : isNavigable ? (
           <span
             className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}

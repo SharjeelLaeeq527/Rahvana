@@ -5,27 +5,27 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Search,
-  Brain,
+  // Brain, // unused — Case Strength Analyzer tool commented out
   LifeBuoy,
-  Compass,
   MessageSquare,
   Calculator,
   Clock,
-  Calendar,
   Camera,
   Files,
   PenTool,
   Wand2,
-  FileSearch,
   ArrowRight,
   ChevronDown,
   Lock,
-  Crown,
 } from "lucide-react";
-
 import { useLanguage } from "@/app/context/LanguageContext";
 import { usePlan } from "../../context/PlanContext";
 import { UpgradeModal } from "../../components/entitlements/UpgradeModal";
+import { ROUTE_FEATURE_MAP } from "@/lib/entitlements/routeFeatureMap";
+import AddResourceCard from "@/components/resources/AddResourceCard";
+import ResourceSectionHeader from "@/components/resources/ResourceSectionHeader";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { useQuickAccess } from "@/app/context/QuickAccessContext";
 
 import {
   DropdownMenu,
@@ -59,48 +59,45 @@ interface Tool {
 
 const TOOLS: Tool[] = [
   // AI & Planning
-  {
-    id: "case-strength-analyzer",
-    title: "Case Strength Analyzer",
-    description:
-      "Instant AI case strength score + gaps to fix before NVC/Interview.",
-    category: "AI & Planning",
-    href: "/visa-case-strength-checker",
-    icon: Brain,
-    iconSrc: "/icons/case-strength-analyser.svg",
-    badge: "Live",
-    entitlementFeature: "case_strength",
-  },
+  // Temporarily hidden — Case Strength Analyzer tool commented out.
+  // {
+  //   id: "case-strength-analyzer",
+  //   title: "Case Strength Analyzer",
+  //   description: "Instant AI case strength score + gaps to fix before NVC/Interview.",
+  //   category: "AI & Planning",
+  //   href: "/visa-case-strength-checker",
+  //   icon: Brain,
+  //   iconSrc: "/icons/case-strength-analyser.svg",
+  //   badge: "Live",
+  //   entitlementFeature: "case_strength",
+  // },
   {
     id: "221g-planner",
     title: "221(g) Action Planner",
-    description:
-      "Step-by-step next moves after 221(g) or Administrative Processing.",
+    description: "Step-by-step next moves after 221(g) or Administrative Processing.",
     category: "AI & Planning",
     href: "/221g-action-planner",
     icon: LifeBuoy,
     iconSrc: "/icons/221g-action-plan.svg",
     badge: "Live",
     entitlementFeature: "action_221g",
-    
   },
-  {
-    id: "visa-path",
-    title: "Visa Path Finder",
-    description:
-      "Quick quiz that points you to the right visa path + next steps.",
-    category: "AI & Planning",
-    href: "/visa-eligibility",
-    icon: Compass,
-    iconSrc: "/icons/visa-path-finder.svg",
-    badge: "Live",
-    // Public — no entitlement required
-  },
+  // {
+  //   id: "visa-path",
+  //   title: "Visa Path Finder",
+  //   description:
+  //     "Quick quiz that points you to the right visa path + next steps.",
+  //   category: "AI & Planning",
+  //   href: "/visa-eligibility",
+  //   icon: Compass,
+  //   iconSrc: "/icons/visa-path-finder.svg",
+  //   badge: "Live",
+  //   // Public — no entitlement required
+  // },
   {
     id: "interview-prep",
     title: "Interview Prep",
-    description:
-      "Prepare smarter and deliver confident answers when it matters most.",
+    description: "Prepare smarter and deliver confident answers when it matters most.",
     category: "AI & Planning",
     href: "/interview-prep",
     icon: MessageSquare,
@@ -134,17 +131,17 @@ const TOOLS: Tool[] = [
     badge: "Live",
     entitlementFeature: "dq_status_check",
   },
-  {
-    id: "visa-bulletin-monitor",
-    title: "Visa Bulletin Monitor",
-    description: "Check your priority date progress against the Visa Bulletin.",
-    category: "Tracking",
-    href: "/visa-checker",
-    icon: Calendar,
-    iconSrc: "/icons/visa-bulletin-monitor.svg",
-    badge: "Live",
-    entitlementFeature: "visa_bulletin_monitor",
-  },
+  // {
+  //   id: "visa-bulletin-monitor",
+  //   title: "Visa Bulletin Monitor",
+  //   description: "Check your priority date progress against the Visa Bulletin.",
+  //   category: "Tracking",
+  //   href: "/visa-checker",
+  //   icon: Calendar,
+  //   iconSrc: "/icons/visa-bulletin-monitor.svg",
+  //   badge: "Live",
+  //   entitlementFeature: "visa_bulletin_monitor",
+  // },
   // {
   //   id: "uscis-case-status",
   //   title: "USCIS Case Status",
@@ -173,7 +170,7 @@ const TOOLS: Tool[] = [
   {
     id: "pdf-toolkit",
     title: "PDF Tool Kit",
-    description: "Merge • compress • convert • edit — all in one toolkit.",
+    description: "Merge • compress • convert • edit, all in one toolkit.",
     category: "Docs & PDFs",
     href: "/pdf-processing",
     icon: Files,
@@ -197,8 +194,7 @@ const TOOLS: Tool[] = [
   {
     id: "form-forge",
     title: "Smart Form Filler",
-    description:
-      "Auto-fills your official form and generates a ready-to-upload PDF.",
+    description: "Auto-fills your official form and generates a ready-to-upload PDF.",
     category: "Forms & Automation",
     href: "/visa-forms",
     icon: Wand2,
@@ -219,20 +215,13 @@ const CATEGORIES: ("All" | ToolCategory)[] = [
 
 // ─── Page component ───────────────────────────────────────────────────────────
 
-export default function ToolsPage({
-  isEmbedded = false,
-}: {
-  isEmbedded?: boolean;
-}) {
+export default function ToolsPage({ isEmbedded = false }: { isEmbedded?: boolean }) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<
-    "All" | ToolCategory
-  >("All");
+  const [selectedCategory, setSelectedCategory] = useState<"All" | ToolCategory>("All");
   const [visibleCount, setVisibleCount] = useState(7);
-  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(
-    null,
-  );
+  const [upgradeModalFeature, setUpgradeModalFeature] = useState<string | null>(null);
   const { t } = useLanguage();
+  const plan = usePlan();
 
   const containerRef = React.useRef<HTMLDivElement>(null);
   const measureRef = React.useRef<HTMLDivElement>(null);
@@ -241,9 +230,7 @@ export default function ToolsPage({
     const calculateVisible = () => {
       if (!containerRef.current || !measureRef.current) return;
       const containerWidth = containerRef.current.clientWidth;
-      const measureItems = Array.from(
-        measureRef.current.children,
-      ) as HTMLDivElement[];
+      const measureItems = Array.from(measureRef.current.children) as HTMLDivElement[];
       const moreButtonEl = measureItems[measureItems.length - 1];
       const categoryEls = measureItems.slice(0, measureItems.length - 1);
       const moreButtonWidth = moreButtonEl.offsetWidth;
@@ -264,11 +251,7 @@ export default function ToolsPage({
       for (let i = 0; i < categoryEls.length; i++) {
         const gapWidth = i > 0 ? gap : 0;
         if (
-          totalWidth +
-            gapWidth +
-            categoryEls[i].offsetWidth +
-            gap +
-            moreButtonWidth <=
+          totalWidth + gapWidth + categoryEls[i].offsetWidth + gap + moreButtonWidth <=
           containerWidth
         ) {
           visible++;
@@ -292,10 +275,25 @@ export default function ToolsPage({
     const matchesSearch =
       tool.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       tool.description.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesCategory =
-      selectedCategory === "All" || tool.category === selectedCategory;
+    const matchesCategory = selectedCategory === "All" || tool.category === selectedCategory;
     return matchesSearch && matchesCategory;
   }).sort((a, b) => a.title.localeCompare(b.title));
+
+  // "My Resources" (embedded) view splits the catalog into two sections:
+  //  • "My Tools"     — tools the user owns (free/public + unlocked by plan or add-ons)
+  //  • "Browse Tools" — everything else, shown as locked/"Unlock" cards to explore
+  const isOwned = (feature?: string) => !feature || (!plan.isLoading && !plan.isLocked(feature));
+  const ownedTools = filteredTools.filter((tool) => isOwned(tool.entitlementFeature));
+  const browseTools = filteredTools.filter((tool) => !isOwned(tool.entitlementFeature));
+
+  const renderToolCard = (tool: Tool, index: number) => (
+    <ToolCard
+      key={tool.id}
+      tool={tool}
+      index={index}
+      onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+    />
+  );
 
   return (
     <div
@@ -303,10 +301,7 @@ export default function ToolsPage({
     >
       {/* UpgradeModal */}
       {upgradeModalFeature && (
-        <UpgradeModal
-          feature={upgradeModalFeature}
-          onClose={() => setUpgradeModalFeature(null)}
-        />
+        <UpgradeModal feature={upgradeModalFeature} onClose={() => setUpgradeModalFeature(null)} />
       )}
 
       {/* Ambient Glow */}
@@ -316,110 +311,130 @@ export default function ToolsPage({
       </div>
 
       <div className="site-main-px site-main-py">
-        {/* Hero */}
-        <section className="text-center mb-5 md:mb-10 pt-1">
-          <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
-            {t("toolsPage.heroTitle") || "Create. Check. Comply."}
-          </h1>
-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
-            {t("toolsPage.heroDescription") ||
-              "A suite of powerful tools designed to simplify complex processes and boost your productivity."}
-          </p>
-        </section>
+        {/* Hero — hidden in the embedded "My Resources" view */}
+        {!isEmbedded && (
+          <section className="text-center mb-5 md:mb-10 pt-1">
+            <h1 className="text-3xl md:text-5xl font-bold mb-4 bg-clip-text text-transparent bg-linear-to-r from-foreground to-muted-foreground animate-fade-up">
+              {t("toolsPage.heroTitle") || "Create. Check. Comply."}
+            </h1>
+            <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto animate-fade-up [animation-delay:100ms]">
+              {t("toolsPage.heroDescription") ||
+                "A suite of powerful tools designed to simplify complex processes and boost your productivity."}
+            </p>
+          </section>
+        )}
 
         {/* Search */}
-        <div className="relative max-w-lg mx-auto mb-10 animate-scale-in [animation-delay:200ms]">
-          <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
-          <input
-            type="text"
-            placeholder={t("toolsPage.searchPlaceholder") || "Search tools..."}
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
-          />
-        </div>
-        
+        {!isEmbedded && (
+          <div className="relative max-w-lg mx-auto mb-10 animate-scale-in [animation-delay:200ms]">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground w-5 h-5 pointer-events-none" />
+            <input
+              type="text"
+              placeholder={t("toolsPage.searchPlaceholder") || "Search tools..."}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-card border-2 border-border pl-11 pr-4 py-3 rounded-full text-foreground focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all shadow-sm placeholder:text-muted-foreground"
+            />
+          </div>
+        )}
 
-        {/* Category tabs */}
-        <div
-          ref={containerRef}
-          className="relative w-full mb-8 flex justify-center"
-        >
-          <div
-            ref={measureRef}
-            aria-hidden="true"
-            className="absolute top-0 left-0 w-full flex flex-wrap gap-3 pointer-events-none opacity-0 z-[-1]"
-          >
-            {CATEGORIES.map((cat) => (
-              <div
-                key={cat}
-                className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border"
-              >
-                {t(`toolsPage.categories.${cat}`) || cat}
-              </div>
-            ))}
+        {/* Category tabs — hidden in the embedded "My Resources" view */}
+        {!isEmbedded && (
+          <div ref={containerRef} className="relative w-full mb-8 flex justify-center">
             <div
-              data-more-button="true"
-              className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1"
+              ref={measureRef}
+              aria-hidden="true"
+              className="absolute top-0 left-0 w-full flex flex-wrap gap-3 pointer-events-none opacity-0 z-[-1]"
             >
-              {t("toolsPage.more") || "More"}{" "}
-              <ChevronDown className="w-4 h-4 ml-1" />
+              {CATEGORIES.map((cat) => (
+                <div key={cat} className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border">
+                  {t(`toolsPage.categories.${cat}`) || cat}
+                </div>
+              ))}
+              <div
+                data-more-button="true"
+                className="px-4 py-2.5 text-sm font-medium whitespace-nowrap border flex items-center gap-1"
+              >
+                {t("toolsPage.more") || "More"} <ChevronDown className="w-4 h-4 ml-1" />
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-3 animate-fade-in [animation-delay:300ms]">
+              {visibleCategories.map((cat) => (
+                <button
+                  key={cat}
+                  onClick={() => setSelectedCategory(cat)}
+                  className={`px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${selectedCategory === cat ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
+                >
+                  {t(`toolsPage.categories.${cat}`) || cat}
+                </button>
+              ))}
+              {hiddenCategories.length > 0 && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button
+                      className={`px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${isMoreSelected ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
+                    >
+                      {t("toolsPage.more") || "More"} <ChevronDown className="w-4 h-4 ml-1" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-[200px]">
+                    {hiddenCategories.map((cat) => (
+                      <DropdownMenuItem
+                        key={cat}
+                        onClick={() => setSelectedCategory(cat)}
+                        className={`cursor-pointer ${selectedCategory === cat ? "bg-primary/10 text-primary font-semibold" : ""}`}
+                      >
+                        {t(`toolsPage.categories.${cat}`) || cat}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
             </div>
           </div>
-          <div className="flex flex-wrap gap-3 animate-fade-in [animation-delay:300ms]">
-            {visibleCategories.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 ${selectedCategory === cat ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
-              >
-                {t(`toolsPage.categories.${cat}`) || cat}
-              </button>
-            ))}
-            {hiddenCategories.length > 0 && (
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <button
-                    className={`px-4 py-2.5 rounded-full text-sm font-medium whitespace-nowrap border transition-all duration-200 flex items-center gap-1 ${isMoreSelected ? "bg-primary text-primary-foreground border-primary shadow-md" : "bg-card text-muted-foreground border-border hover:border-primary hover:bg-primary/5 hover:text-primary"}`}
-                  >
-                    {t("toolsPage.more") || "More"}{" "}
-                    <ChevronDown className="w-4 h-4 ml-1" />
-                  </button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="start" className="w-[200px]">
-                  {hiddenCategories.map((cat) => (
-                    <DropdownMenuItem
-                      key={cat}
-                      onClick={() => setSelectedCategory(cat)}
-                      className={`cursor-pointer ${selectedCategory === cat ? "bg-primary/10 text-primary font-semibold" : ""}`}
-                    >
-                      {t(`toolsPage.categories.${cat}`) || cat}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-            )}
-          </div>
-        </div>
+        )}
 
         {/* Tools grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
-          {filteredTools.length > 0 ? (
-            filteredTools.map((tool, index) => (
-              <ToolCard
-                key={tool.id}
-                tool={tool}
-                index={index}
-                onLockedClick={(feature) => setUpgradeModalFeature(feature)}
+        {isEmbedded ? (
+          <>
+            {/* My Tools — what the user owns */}
+            <ResourceSectionHeader
+              title="My Tools"
+              subtitle="Tools you've unlocked with your plan or add-ons."
+              className="-mt-16"
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+              {ownedTools.map((tool, index) => renderToolCard(tool, index))}
+              <AddResourceCard
+                href="/pricing?mode=tools"
+                label="Add tool"
+                index={ownedTools.length}
               />
-            ))
-          ) : (
-            <div className="col-span-full text-center py-12 text-muted-foreground">
-              {t("toolsPage.noToolsFound") ||
-                "No tools found matching your search."}
             </div>
-          )}
-        </div>
+
+            {/* Browse Tools — everything not yet owned */}
+            {browseTools.length > 0 && (
+              <>
+                <ResourceSectionHeader
+                  title="Browse Tools"
+                  subtitle="Explore more tools, try a demo or unlock the full version."
+                />
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+                  {browseTools.map((tool, index) => renderToolCard(tool, index))}
+                </div>
+              </>
+            )}
+          </>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-10 gap-x-6 pt-6">
+            {filteredTools.map((tool, index) => renderToolCard(tool, index))}
+            {filteredTools.length === 0 && (
+              <div className="col-span-full text-center py-12 text-muted-foreground">
+                {t("toolsPage.noToolsFound") || "No tools found matching your search."}
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -513,28 +528,36 @@ function ToolCard({
   const styles = CATEGORY_STYLES[tool.category];
   const { t } = useLanguage();
   const plan = usePlan();
+  const { isInQuickAccess } = useQuickAccess();
 
-  const featureLocked =
-    !!tool.entitlementFeature &&
-    !plan.isLoading &&
-    plan.isLocked(tool.entitlementFeature);
-  const isNavigable = !tool.disabled && !featureLocked;
+  const isLocked =
+    !!tool.entitlementFeature && !plan.isLoading && plan.isLocked(tool.entitlementFeature);
+
+  const isRouteLocked = isLocked && ROUTE_FEATURE_MAP[tool.href] !== undefined;
+  const isResultLocked = isLocked && ROUTE_FEATURE_MAP[tool.href] === undefined;
+
+  const isNavigable = !tool.disabled && !isRouteLocked;
+
+  const isPinned = isInQuickAccess(tool.id === "221g-planner" ? "221g-action-planner" : tool.id);
 
   const handleClick = (e: React.MouseEvent) => {
-    if (featureLocked && tool.entitlementFeature) {
+    if (isRouteLocked && tool.entitlementFeature) {
       e.preventDefault();
       onLockedClick(tool.entitlementFeature);
     }
   };
 
-  const cardClasses = `group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6
+  const cardClasses = `group relative flex flex-col bg-card rounded-[30px] p-6 pt-7 mt-6 mx-2 md:mx-0
     transition-all duration-400 ease-[cubic-bezier(0.175,0.885,0.32,1.275)]
     ${
-      featureLocked
-        ? "border-[1.5px] border-slate-200 bg-white cursor-pointer shadow-sm hover:shadow-[0_12px_40px_-12px_rgba(99,102,241,0.18)] hover:-translate-y-1"
-        : isNavigable
-          ? "border-[1.5px] border-slate-200 bg-white hover:-translate-y-2 hover:shadow-xl cursor-pointer"
-          : "border-[1.5px] border-slate-200 bg-white opacity-80 cursor-not-allowed grayscale-[0.5]"
+      // isPinned
+      //   ? "border-[3px] border-[#0d7377] dark:border-[#32e0c4] bg-white shadow-[0_8px_30px_rgba(13,115,119,0.08)] hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+      //   : 
+        isRouteLocked
+          ? "border-[1.5px] border-slate-200 bg-white cursor-pointer shadow-sm hover:shadow-[0_12px_40px_-12px_rgba(99,102,241,0.18)] hover:-translate-y-1"
+          : isNavigable
+            ? "border-[1.5px] border-slate-200 bg-white hover:-translate-y-2 hover:shadow-xl cursor-pointer"
+            : "border-[1.5px] border-slate-200 bg-white opacity-80 cursor-not-allowed grayscale-[0.5]"
     }
     animate-fade-up`;
 
@@ -546,7 +569,7 @@ function ToolCard({
       style={{ animationDelay: `${index * 100}ms` }}
     >
       {/* Ribbon bookmark for Locked/Premium cards */}
-      {featureLocked && (
+      {(isRouteLocked || isResultLocked) && (
         <div className="absolute -top-21 -right-12 sm:-right-3 z-20 pointer-events-none">
           <Image
             src="/icons/ribbon.png"
@@ -565,39 +588,71 @@ function ToolCard({
 
       {/* Floating icon box */}
       <div
-        className={`absolute -top-6 left-6 w-14 h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-40 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg ${styles.iconBox}`}
+        className={`absolute -top-6 left-6 w-12 h-12 md:w-14 md:h-14 rounded-2xl border flex items-center justify-center shadow-md transition-all duration-400 z-40 group-hover:-translate-y-1 group-hover:-rotate-3 group-hover:shadow-lg ${styles.iconBox}`}
       >
         <div
           className={`absolute inset-1 rounded-[10px] -z-10 transition-colors duration-300 ${styles.innerBox}`}
         />
-        <Icon className="w-6 h-6 stroke-2" />
+        <Icon className="w-5 h-5 md:w-6 md:h-6 stroke-2" />
       </div>
-
-      
 
       {/* Radial glow */}
       <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0 bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(13,115,119,0.04),transparent_40%)] dark:bg-[radial-gradient(400px_circle_at_var(--mouse-x,50%)_var(--mouse-y,50%),rgba(255,255,255,0.03),transparent_40%)]" />
 
       {/* Content */}
       <div className="relative z-30 flex flex-col grow pt-2">
-        <h3 className="text-xl font-bold mb-1 text-foreground transition-colors">
-          {t(`toolsPage.toolsItems.${tool.id}.title`) || tool.title}
-        </h3>
-        <div className="mb-3">
+        <div className="flex justify-between items-start gap-3">
+          <h3 className="text-xl font-bold mb-1 text-foreground transition-colors">
+            {t(`toolsPage.toolsItems.${tool.id}.title`) || tool.title}
+          </h3>
+          {!isLocked && (
+            <div className="relative z-50 shrink-0">
+              <QuickAccessButton
+                item={{
+                  id: tool.id === "221g-planner" ? "221g-action-planner" : tool.id,
+                  title: tool.title,
+                  href: tool.href,
+                  icon_name: (() => {
+                    const mapping: Record<string, string> = {
+                      "221g-planner": "LifeBuoy",
+                      "interview-prep": "MessageSquare",
+                      "sponsorship-calculator": "Calculator",
+                      "queue-watch": "Clock",
+                      "photo-booth": "Camera",
+                      "pdf-toolkit": "Files",
+                      "snap-sign": "PenTool",
+                      "form-forge": "Wand2",
+                    };
+                    return mapping[tool.id] || "Zap";
+                  })(),
+                }}
+                mode="icon"
+              />
+            </div>
+          )}
+        </div>
+        <div className="mb-3 flex gap-2 items-center">
           <span className="text-[11px] font-bold uppercase tracking-wide text-muted-foreground/80 bg-muted px-2 py-0.5 rounded">
             {t(`toolsPage.categories.${tool.category}`) || tool.category}
           </span>
+          {/* {isResultLocked && (
+            <span className="text-[11px] font-bold uppercase tracking-wide bg-amber-50 text-amber-700 px-2 py-0.5 rounded flex items-center gap-1 border border-amber-200/50">
+              <Crown size={10} className="text-amber-500 fill-amber-500 animate-pulse" /> Premium
+            </span>
+          )} */}
         </div>
-        <p className="text-sm leading-relaxed mb-6 grow text-slate-900 dark:text-white">
+        <p className={`text-sm leading-relaxed mb-1 grow text-slate-900 dark:text-white mb-0 grow`}>
           {t(`toolsPage.toolsItems.${tool.id}.desc`) || tool.description}
         </p>
       </div>
 
       {/* Footer */}
-      <div className="relative z-10 flex items-center justify-between pt-4 border-t border-border mt-auto">
+      <div className="relative z-10 flex items-center justify-between pt-3 border-t border-border mt-auto">
         <span className="text-xs font-medium text-muted-foreground flex items-center gap-1" />
-        {featureLocked ? (
-          <span className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}>
+        {isRouteLocked ? (
+          <span
+            className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
+          >
             <Lock size={14} className="mb-[1px]" />{" "}
             {t("toolsPage.unlockPro") !== "toolsPage.unlockPro"
               ? t("toolsPage.unlockPro")
@@ -607,8 +662,7 @@ function ToolCard({
           <span
             className={`text-sm font-semibold flex items-center gap-1.5 group-hover:underline decoration-2 underline-offset-2 ${styles.link}`}
           >
-            {t("toolsPage.openTool") || "Open Tool"}{" "}
-            <ArrowRight className="w-4 h-4" />
+            {t("toolsPage.openTool") || "Open Tool"} <ArrowRight className="w-4 h-4" />
           </span>
         ) : (
           <span className="text-sm font-semibold text-muted-foreground/50 flex items-center gap-1.5 cursor-not-allowed">

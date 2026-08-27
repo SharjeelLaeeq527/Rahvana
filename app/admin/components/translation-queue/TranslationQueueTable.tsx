@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
+import { msg, E, errorCode } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -15,13 +16,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import Pagination from "@/components/ui/pagination";
 import {
   Dialog,
@@ -33,6 +27,7 @@ import {
 import TranslationUploadModal from "@/app/components/document-translation/TranslationUploadModal";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 // Translation Queue Types
 type TranslationStatus =
@@ -63,17 +58,15 @@ interface TranslationRequest {
 // }
 
 export default function TranslationQueueTable() {
-  const [translationRequests, setTranslationRequests] = useState<
+  const { showToast } = useToast();
+  const [translationRequests, setTranslationRequests] = useState<TranslationRequest[]>([]);
+  const [filteredTranslationRequests, setFilteredTranslationRequests] = useState<
     TranslationRequest[]
   >([]);
-  const [filteredTranslationRequests, setFilteredTranslationRequests] =
-    useState<TranslationRequest[]>([]);
   const [selectedTranslationStatus, setSelectedTranslationStatus] = useState<
     TranslationStatus | "all"
   >("all");
-  const [selectedDocumentType, setSelectedDocumentType] = useState<
-    string | "all"
-  >("all");
+  const [selectedDocumentType, setSelectedDocumentType] = useState<string | "all">("all");
 
   const [uploadModalOpen, setUploadModalOpen] = useState(false);
   const [verifyModalOpen, setVerifyModalOpen] = useState(false);
@@ -89,18 +82,12 @@ export default function TranslationQueueTable() {
   const ITEMS_PER_PAGE = 5;
 
   // pagination calculations
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filteredTranslationRequests.length / ITEMS_PER_PAGE)
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredTranslationRequests.length / ITEMS_PER_PAGE));
 
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
 
-  const currentTranslationRequests = filteredTranslationRequests.slice(
-    startIndex,
-    endIndex
-  );
+  const currentTranslationRequests = filteredTranslationRequests.slice(startIndex, endIndex);
 
   // Fetch translation requests from API
   useEffect(() => {
@@ -131,16 +118,12 @@ export default function TranslationQueueTable() {
 
     // Apply status filter
     if (selectedTranslationStatus !== "all") {
-      filtered = filtered.filter(
-        (req) => req.status === selectedTranslationStatus
-      );
+      filtered = filtered.filter((req) => req.status === selectedTranslationStatus);
     }
 
     // Apply document type filter
     if (selectedDocumentType !== "all") {
-      filtered = filtered.filter(
-        (req) => req.document_type === selectedDocumentType
-      );
+      filtered = filtered.filter((req) => req.document_type === selectedDocumentType);
     }
 
     // Apply search filter (search in user_name and user_email)
@@ -161,13 +144,7 @@ export default function TranslationQueueTable() {
     });
 
     setFilteredTranslationRequests(filtered);
-  }, [
-    translationRequests,
-    selectedTranslationStatus,
-    selectedDocumentType,
-    searchTerm,
-    sortOrder,
-  ]);
+  }, [translationRequests, selectedTranslationStatus, selectedDocumentType, searchTerm, sortOrder]);
 
   const getTranslationStatusBadgeVariant = (status: TranslationStatus) => {
     switch (status) {
@@ -222,7 +199,7 @@ export default function TranslationQueueTable() {
 
   return (
     <>
-      <Card className="max-w-6xl mx-auto">
+      <Card className="max-w-6xl mx-auto mt-4">
         <CardHeader className="flex flex-row items-center justify-between">
           {/* Search Field - Left side */}
           <div className="relative border border-gray-300 rounded-lg p-2">
@@ -237,58 +214,46 @@ export default function TranslationQueueTable() {
 
           {/* Dropdowns - Right side */}
           <div className="flex space-x-3">
-            <Select
+            <CustomDropdown
               value={selectedDocumentType}
-              onValueChange={(value: string | "all") =>
-                setSelectedDocumentType(value)
-              }
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Filter by Document Type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="marriage">Marriage</SelectItem>
-                <SelectItem value="birth">Birth</SelectItem>
-                <SelectItem value="death">Death</SelectItem>
-                <SelectItem value="divorce">Divorce</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select
+              onChange={(value) => setSelectedDocumentType(value)}
+              options={[
+                { value: "all", label: "All Types" },
+                { value: "marriage", label: "Marriage" },
+                { value: "birth", label: "Birth" },
+                { value: "death", label: "Death" },
+                { value: "divorce", label: "Divorce" },
+              ]}
+              placeholder="Filter by Document Type"
+              className="w-40 [&_button]:w-full [&_button]:min-w-0"
+            />
+            <CustomDropdown
               value={selectedTranslationStatus}
-              onValueChange={(value: TranslationStatus | "all") =>
-                setSelectedTranslationStatus(value)
-              }
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Statuses</SelectItem>
-                <SelectItem value="PENDING">Pending</SelectItem>
-                <SelectItem value="IN_REVIEW">In Review</SelectItem>
-                <SelectItem value="TRANSLATED">Translated</SelectItem>
-                <SelectItem value="USER_CONFIRMED">User Confirmed</SelectItem>
-                <SelectItem value="CHANGES_REQUESTED">
-                  Changes Requested
-                </SelectItem>
-                <SelectItem value="VERIFIED">Verified</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(value) => setSelectedTranslationStatus(value as TranslationStatus | "all")}
+              options={[
+                { value: "all", label: "All Statuses" },
+                { value: "PENDING", label: "Pending" },
+                { value: "IN_REVIEW", label: "In Review" },
+                { value: "TRANSLATED", label: "Translated" },
+                { value: "USER_CONFIRMED", label: "User Confirmed" },
+                { value: "CHANGES_REQUESTED", label: "Changes Requested" },
+                { value: "VERIFIED", label: "Verified" },
+              ]}
+              placeholder="Filter by status"
+              className="w-40 [&_button]:w-full [&_button]:min-w-0"
+            />
 
             {/* Date Sorting */}
-            <Select
+            <CustomDropdown
               value={sortOrder}
-              onValueChange={(value: "asc" | "desc") => setSortOrder(value)}
-            >
-              <SelectTrigger className="w-40">
-                <SelectValue placeholder="Sort by date" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="desc">Latest First</SelectItem>
-                <SelectItem value="asc">Oldest First</SelectItem>
-              </SelectContent>
-            </Select>
+              onChange={(value) => setSortOrder(value as "asc" | "desc")}
+              options={[
+                { value: "desc", label: "Latest First" },
+                { value: "asc", label: "Oldest First" },
+              ]}
+              placeholder="Sort by date"
+              className="w-40 [&_button]:w-full [&_button]:min-w-0"
+            />
           </div>
         </CardHeader>
         <CardContent>
@@ -312,23 +277,17 @@ export default function TranslationQueueTable() {
                 <TableBody>
                   {currentTranslationRequests.map((request) => (
                     <TableRow key={request.id}>
-                      <TableCell className="font-medium">
-                        {request.user_name}
-                      </TableCell>
+                      <TableCell className="font-medium">{request.user_name}</TableCell>
                       <TableCell>{request.user_email}</TableCell>
                       <TableCell>
                         {request.document_type.charAt(0).toUpperCase() +
                           request.document_type.slice(1)}
                       </TableCell>
-                      <TableCell>
-                        {formatTranslationDate(request.created_at)}
-                      </TableCell>
+                      <TableCell>{formatTranslationDate(request.created_at)}</TableCell>
                       <TableCell>
                         <div className="relative inline-block">
                           <Badge
-                            variant={getTranslationStatusBadgeVariant(
-                              request.status
-                            )}
+                            variant={getTranslationStatusBadgeVariant(request.status)}
                             className={`${getStatusColor(
                               request.status
                             )} transition-all duration-200`}
@@ -346,10 +305,7 @@ export default function TranslationQueueTable() {
                             variant="outline"
                             size="sm"
                             onClick={() =>
-                              window.open(
-                                `/document-translation/request/${request.id}`,
-                                "_blank"
-                              )
+                              window.open(`/document-translation/request/${request.id}`, "_blank")
                             }
                           >
                             View
@@ -370,25 +326,14 @@ export default function TranslationQueueTable() {
                                   // Open the original file URL in a new tab
                                   window.open(data.originalFileUrl, "_blank");
                                 } else {
-                                  console.error(
-                                    "Error getting document URL:",
-                                    data.error
-                                  );
-                                  toast.error(
-                                    "Could not download the document",
-                                    {
-                                      position: "top-right",
-                                      duration: 3000,
-                                    }
-                                  );
+                                  console.error("Error getting document URL:", data.error);
+                                  showToast(`${msg(E.VAULT_DOWNLOAD_FAILED)}`, "error", {
+                                    duration: 3000,
+                                  });
                                 }
                               } catch (error) {
-                                console.error(
-                                  "Error downloading document:",
-                                  error
-                                );
-                                toast.error("Could not download the document", {
-                                  position: "top-right",
+                                console.error("Error downloading document:", error);
+                                showToast(`${msg(E.VAULT_DOWNLOAD_FAILED)}`, "error", {
                                   duration: 3000,
                                 });
                               }
@@ -405,10 +350,7 @@ export default function TranslationQueueTable() {
                             Upload
                           </Button>
                           {request.status === "USER_CONFIRMED" && (
-                            <Dialog
-                              open={verifyModalOpen}
-                              onOpenChange={setVerifyModalOpen}
-                            >
+                            <Dialog open={verifyModalOpen} onOpenChange={setVerifyModalOpen}>
                               <DialogTrigger asChild>
                                 <Button
                                   className="cursor-pointer"
@@ -431,9 +373,7 @@ export default function TranslationQueueTable() {
                                   </label>
                                   <textarea
                                     value={verifyNotes}
-                                    onChange={(e) =>
-                                      setVerifyNotes(e.target.value)
-                                    }
+                                    onChange={(e) => setVerifyNotes(e.target.value)}
                                     placeholder="Add any verification notes..."
                                     className="w-full border border-gray-300 rounded-lg p-3 min-h-20 focus:ring-2 focus:ring-primary focus:border-transparent"
                                     maxLength={500}
@@ -463,8 +403,7 @@ export default function TranslationQueueTable() {
                                           {
                                             method: "POST",
                                             headers: {
-                                              "Content-Type":
-                                                "application/json",
+                                              "Content-Type": "application/json",
                                             },
                                             body: JSON.stringify({
                                               verificationNotes: verifyNotes,
@@ -486,12 +425,8 @@ export default function TranslationQueueTable() {
                                             const data = await response.json();
 
                                             if (response.ok) {
-                                              setTranslationRequests(
-                                                data.documents
-                                              );
-                                              setFilteredTranslationRequests(
-                                                data.documents
-                                              );
+                                              setTranslationRequests(data.documents);
+                                              setFilteredTranslationRequests(data.documents);
                                             } else {
                                               console.error(
                                                 "Error fetching translation requests:",
@@ -505,37 +440,31 @@ export default function TranslationQueueTable() {
                                             );
                                           }
 
-                                          toast.success(
+                                          showToast(
                                             "Translation verified and certified successfully!",
+                                            "success",
                                             {
-                                              position: "top-right",
                                               duration: 3000,
                                             }
                                           );
                                         } else {
-                                          console.error(
-                                            "Error verifying translation:",
-                                            data.error
-                                          );
-                                          toast.error(
+                                          console.error("Error verifying translation:", data.error);
+                                          showToast(
                                             `Error verifying translation: ${
                                               data.error || "Unknown error"
                                             }`,
+                                            "error",
                                             {
-                                              position: "top-right",
                                               duration: 3000,
                                             }
                                           );
                                         }
                                       } catch (error) {
-                                        console.error(
-                                          "Error verifying translation:",
-                                          error
-                                        );
-                                        toast.error(
+                                        console.error("Error verifying translation:", error);
+                                        showToast(
                                           "Error verifying translation: Network error",
+                                          "error",
                                           {
-                                            position: "top-right",
                                             duration: 3000,
                                           }
                                         );
@@ -584,22 +513,16 @@ export default function TranslationQueueTable() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-6 mt-8 max-w-6xl mx-auto">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
-              Total Requests
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Total Requests</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {translationRequests.length}
-            </div>
+            <div className="text-2xl font-bold">{translationRequests.length}</div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
-              Pending
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Pending</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">
@@ -610,32 +533,22 @@ export default function TranslationQueueTable() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
-              In Review
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">In Review</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">
-              {
-                translationRequests.filter((r) => r.status === "IN_REVIEW")
-                  .length
-              }
+              {translationRequests.filter((r) => r.status === "IN_REVIEW").length}
             </div>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-gray-500">
-              Completed
-            </CardTitle>
+            <CardTitle className="text-sm font-medium text-gray-500">Completed</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {
-                translationRequests.filter((r) => r.status === "VERIFIED")
-                  .length
-              }
+              {translationRequests.filter((r) => r.status === "VERIFIED").length}
             </div>
           </CardContent>
         </Card>

@@ -1,20 +1,13 @@
 "use client";
 
 import { useState, useRef, useMemo, useEffect } from "react";
-import {
-  DocumentDefinition,
-  DocumentRole,
-} from "@/lib/document-vault/types";
+import { DocumentDefinition, DocumentRole } from "@/lib/document-vault/types";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import {
   Upload,
@@ -28,15 +21,40 @@ import {
   // ChevronUp,
   History,
   Lock,
+  ScanLine,
 } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
 import { DocumentPreviewModal } from "./DocumentPreviewModal";
 import { UploadedDocument } from "@/lib/document-vault/types";
 import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
-import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
+import {
+  mapDocumentNameToId,
+  getFriendlyJourneyName,
+  isDocumentApplicableToJourney,
+  getCachedUserJourneys,
+  setCachedUserJourneys,
+  fetchUserJourneysCached,
+  isSameJourneyType,
+} from "@/lib/document-vault/journey-mapping";
+import { msg, E, errorCode } from "@/lib/errors";
+import { getOcrConfig, type OcrTarget } from "@/lib/document-ocr/registry";
+import { resizeImageIfNeeded } from "@/lib/document-ocr/clientImage";
+import { crossCheckFields } from "@/lib/document-ocr/crossCheck";
+import type { PassportFields } from "@/lib/document-ocr/passportParser";
+import { useUserProfile } from "@/app/context/UserProfileContext";
+import type { MasterProfile } from "@/types/profile";
 
+/** Read a dot-path value off the in-memory profile, as a trimmed string ("" if absent). */
+function readProfilePath(obj: unknown, path: string): string {
+  let cur: unknown = obj;
+  for (const k of path.split(".")) {
+    if (cur && typeof cur === "object") cur = (cur as Record<string, unknown>)[k];
+    else return "";
+  }
+  return cur == null ? "" : String(cur).trim();
+}
 interface PendingUpload {
   id: string;
   file: File | null;
@@ -52,6 +70,8 @@ interface MultipleDocumentUploadModalProps {
   documentName: string; // e.g. Proof of U.S. Citizenship
   options: string[]; // e.g. ["U.S. passport", "U.S. birth certificate", ...]
   onUploadComplete: () => void;
+  userJourneys?: any[];
+  activeJourneyId?: string | null;
 }
 
 const OTHER_OPTION = "Other";
@@ -63,6 +83,8 @@ export function MultipleDocumentUploadModal({
   documentName,
   options,
   onUploadComplete,
+  userJourneys: userJourneysProp = [],
+  activeJourneyId: activeJourneyIdProp = null,
 }: MultipleDocumentUploadModalProps) {
   const [pendingUploads, setPendingUploads] = useState<PendingUpload[]>([]);
   const [uploading, setUploading] = useState(false);
@@ -71,17 +93,292 @@ export function MultipleDocumentUploadModal({
   const [selectedDeleteId, setSelectedDeleteId] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [dragActiveId, setDragActiveId] = useState<string | null>(null);
-  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(
-    {},
-  );
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const {
     config,
     uploadedDocuments: vaultDocuments,
     deleteDocument,
     isDeletingIds,
     addNamedDynamicSlot,
+    currentJourneyId,
   } = useDocumentVaultStore();
   const { t } = useLanguage();
+  const { showToast } = useToast();
+  const { profile, refreshProfile, updateProfile } = useUserProfile();
+
+  const [userJourneys, setUserJourneys] = useState<any[]>(() => {
+    if (userJourneysProp && userJourneysProp.length > 0) return userJourneysProp;
+    return getCachedUserJourneys() || [];
+  });
+  const [activeJourneyId, setActiveJourneyId] = useState<string | null>(
+    activeJourneyIdProp || currentJourneyId || null
+  );
+  const [sharedJourneyIds, setSharedJourneyIds] = useState<string[]>([]);
+
+  const otherJourneys = useMemo(() => {
+    return userJourneys.filter((j) => {
+      if (j.id === activeJourneyId) return false;
+      if (isSameJourneyType(j.journey_type, activeJourneyId)) return false;
+      return true;
+    });
+  }, [userJourneys, activeJourneyId]);
+
+  const [manuallyUncheckedIds, setManuallyUncheckedIds] = useState<string[]>([]);
+
+  const visibleOtherJourneys = useMemo(() => {
+    return otherJourneys.filter((j) => {
+      return pendingUploads.some((p) => {
+        if (!p.type) {
+          return isDocumentApplicableToJourney(categoryId, documentName, j.journey_type);
+        }
+        const targetId = p.type === OTHER_OPTION && p.customName
+          ? "dynamic-OTHER"
+          : mapDocumentNameToId(p.type);
+        return isDocumentApplicableToJourney(targetId, p.type, j.journey_type);
+      }) || isDocumentApplicableToJourney(categoryId, documentName, j.journey_type);
+    });
+  }, [otherJourneys, pendingUploads, categoryId, documentName]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const resolvedActiveId = activeJourneyIdProp || currentJourneyId;
+    if (resolvedActiveId) {
+      setActiveJourneyId(resolvedActiveId);
+    }
+
+    if (userJourneysProp && userJourneysProp.length > 0) {
+      setUserJourneys(userJourneysProp);
+      setCachedUserJourneys(userJourneysProp);
+      if (!resolvedActiveId && userJourneysProp.length > 0) {
+        setActiveJourneyId(userJourneysProp[0].id);
+      }
+      return;
+    }
+
+    // Check in-memory synchronous cache first
+    const cached = getCachedUserJourneys();
+    if (cached && cached.length > 0) {
+      setUserJourneys(cached);
+      if (!resolvedActiveId) {
+        const saved = typeof window !== "undefined" ? sessionStorage.getItem("doc_vault_active_journey") : null;
+        if (saved && cached.some((j) => j.id === saved)) {
+          setActiveJourneyId(saved);
+        } else {
+          const active = cached.find((j) => j.status === "in_progress") || cached[0];
+          setActiveJourneyId(active.id);
+        }
+      }
+    }
+
+    // Fetch / revalidate cached journeys
+    fetchUserJourneysCached()
+      .then((journeys) => {
+        if (journeys && journeys.length > 0) {
+          setUserJourneys(journeys);
+          if (!resolvedActiveId) {
+            const saved = typeof window !== "undefined" ? sessionStorage.getItem("doc_vault_active_journey") : null;
+            if (saved && journeys.some((j) => j.id === saved)) {
+              setActiveJourneyId(saved);
+            } else {
+              const active = journeys.find((j) => j.status === "in_progress") || journeys[0];
+              setActiveJourneyId(active.id);
+            }
+          }
+        }
+      })
+      .catch((err) => {
+        console.error("MultipleDocumentUploadModal failed to fetch journeys:", err);
+      });
+  }, [open, userJourneysProp, activeJourneyIdProp, currentJourneyId]);
+
+  const visibleOtherJourneysKey = useMemo(
+    () => visibleOtherJourneys.map((j) => j.id).join(","),
+    [visibleOtherJourneys]
+  );
+
+  useEffect(() => {
+    if (!open) {
+      setManuallyUncheckedIds([]);
+      return;
+    }
+    setSharedJourneyIds((prev) => {
+      const visibleIds = visibleOtherJourneys.map((j) => j.id);
+      // Keep only those that are currently visible
+      const currentFiltered = prev.filter((id) => visibleIds.includes(id));
+      // Add any visible journeys that are NOT manually unchecked and NOT already checked
+      const newToCheck = visibleIds.filter((id) => !currentFiltered.includes(id) && !manuallyUncheckedIds.includes(id));
+      return [...currentFiltered, ...newToCheck];
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, visibleOtherJourneysKey, manuallyUncheckedIds]);
+
+  // ── Inline OCR auto-fill (passport) ──
+  // When one of the uploaded items is a passport (e.g. the petitioner picks
+  // "U.S. passport" under "Proof of U.S. Citizenship"), we read that same file
+  // and offer to auto-fill the profile. Target ("self" / "beneficiary") comes
+  // from the selected type's OCR config — nothing is saved until the user confirms.
+  const [ocrPhase, setOcrPhase] = useState<"idle" | "reading" | "confirm">("idle");
+  // Hold the just-read file so the confirm screen can offer a "Re-read" retry
+  // (e.g. when the extracted values look wrong) without re-uploading.
+  const [ocrFile, setOcrFile] = useState<File | null>(null);
+  const [ocrFields, setOcrFields] = useState<PassportFields>({});
+  const [ocrConfidence, setOcrConfidence] = useState<
+    Partial<Record<keyof PassportFields, number>>
+  >({});
+  const [ocrWarnings, setOcrWarnings] = useState<string[]>([]);
+  const [ocrSaving, setOcrSaving] = useState(false);
+  const [ocrTarget, setOcrTarget] = useState<OcrTarget>("self");
+
+  // Both petitioner (self) and beneficiary passports carry the same biographic
+  // fields, and the profile now stores them for either person — so capture all of
+  // them regardless of target.
+  const OCR_FIELD_ORDER: { key: keyof PassportFields; label: string }[] = [
+    { key: "name.first", label: "Given name" },
+    { key: "name.last", label: "Surname" },
+    { key: "dateOfBirth", label: "Date of birth" },
+    { key: "sex", label: "Sex" },
+    { key: "nationality", label: "Nationality" },
+    { key: "passportNumber", label: "Passport number" },
+    { key: "passportExpiry", label: "Passport expiry" },
+    { key: "passportCountry", label: "Issuing country" },
+  ];
+
+  // Did OCR actually read anything? Drives whether the panel says "Confirm what we
+  // read" (auto-filled) or "Add your details" (blank → user types). A person's DOB
+  // is the same on every document, so even a doc we can't auto-read still lets the
+  // user capture it manually here and push it to the profile / journey steps.
+  const ocrAnyDetected = OCR_FIELD_ORDER.some(
+    ({ key }) => (ocrFields[key] ?? "").toString().trim() !== ""
+  );
+
+  // ── Mismatch detection ──
+  // Compare what we read against the values already on the profile so the user can
+  // reconcile conflicts (e.g. passport DOB ≠ saved DOB) before overwriting. Beneficiary
+  // passports store under beneficiary.* ; self under the top-level keys. Re-runs live
+  // as the user edits, so the banner clears the moment a value is reconciled.
+  const crossCheck = useMemo(() => {
+    if (ocrPhase !== "confirm" || !profile) return null;
+    const stored: Record<string, string> = {};
+    for (const { key } of OCR_FIELD_ORDER) {
+      const path = ocrTarget === "beneficiary" ? `beneficiary.${key}` : key;
+      const v = readProfilePath(profile, path);
+      if (v) stored[key] = v;
+    }
+    return crossCheckFields(
+      ocrFields as Record<string, string | undefined>,
+      stored,
+      OCR_FIELD_ORDER
+    );
+    // OCR_FIELD_ORDER is a stable literal; ocrFields/profile/target drive recompute.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [ocrPhase, profile, ocrFields, ocrTarget]);
+
+  const mismatchKeys = useMemo(
+    () => new Set((crossCheck?.mismatches ?? []).map((m) => m.key)),
+    [crossCheck]
+  );
+
+  // Reset OCR panel and leave a fresh blank upload row so the user can continue.
+  const dismissOcr = () => {
+    setOcrPhase("idle");
+    setOcrFile(null);
+    setOcrFields({});
+    setOcrConfidence({});
+    setOcrWarnings([]);
+    setPendingUploads([]);
+    addPendingUpload();
+  };
+
+  const runOcr = async (file: File, target: OcrTarget) => {
+    setOcrTarget(target);
+    setOcrFile(file);
+    setOcrPhase("reading");
+    try {
+      const prepared = await resizeImageIfNeeded(file);
+      const formData = new FormData();
+      formData.append("file", prepared, prepared.name);
+      const res = await fetch("/api/documents/extract-passport", {
+        method: "POST",
+        body: formData,
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json) {
+        showToast("Uploaded. We couldn't auto-read this document, you can fill details manually.", "info");
+        dismissOcr();
+        return;
+      }
+      setOcrFields(json.fields || {});
+      setOcrConfidence(json.confidence || {});
+      setOcrWarnings(json.warnings || []);
+      setOcrPhase("confirm");
+    } catch {
+      showToast("Uploaded. We couldn't auto-read this document, you can fill details manually.", "info");
+      dismissOcr();
+    }
+  };
+
+  const updateOcrField = (key: keyof PassportFields, value: string) => {
+    setOcrFields((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSaveOcr = async () => {
+    setOcrSaving(true);
+    try {
+      const res = await fetch("/api/profile/merge", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fields: ocrFields, target: ocrTarget }),
+      });
+      const json = await res.json().catch(() => null);
+      if (!res.ok || !json?.success) {
+        showToast(json?.error || "Could not save details to your profile.", "error");
+        return;
+      }
+
+      // The merge already persisted the values server-side (with the right
+      // encryption + deep-merge). Now reflect them in the in-memory profile so
+      // dependent steps (e.g. the Ch.1 Step 4 baseline) update immediately. When a
+      // profile is already loaded we optimistically deep-merge — safe, the rest of
+      // the object stays intact — so it works even if a refetch would fail under
+      // server load. If nothing is loaded yet, fall back to a refetch.
+      if (profile) {
+        const name: Record<string, string> = {};
+        if (ocrFields["name.first"]) name.first = ocrFields["name.first"]!;
+        if (ocrFields["name.last"]) name.last = ocrFields["name.last"]!;
+        const partial: Record<string, unknown> = {};
+        if (ocrTarget === "beneficiary") {
+          const ben: Record<string, unknown> = {};
+          if (Object.keys(name).length) ben.name = name;
+          if (ocrFields.dateOfBirth) ben.dateOfBirth = ocrFields.dateOfBirth;
+          if (ocrFields.sex) ben.sex = ocrFields.sex;
+          if (ocrFields.nationality) ben.nationality = ocrFields.nationality;
+          if (ocrFields.passportNumber) ben.passportNumber = ocrFields.passportNumber;
+          if (ocrFields.passportExpiry) ben.passportExpiry = ocrFields.passportExpiry;
+          if (ocrFields.passportCountry) ben.passportCountry = ocrFields.passportCountry;
+          partial.beneficiary = ben;
+        } else {
+          if (Object.keys(name).length) partial.name = name;
+          if (ocrFields.dateOfBirth) partial.dateOfBirth = ocrFields.dateOfBirth;
+          if (ocrFields.sex) partial.sex = ocrFields.sex;
+          if (ocrFields.nationality) partial.nationality = ocrFields.nationality;
+          if (ocrFields.passportNumber) partial.passportNumber = ocrFields.passportNumber;
+          if (ocrFields.passportExpiry) partial.passportExpiry = ocrFields.passportExpiry;
+          if (ocrFields.passportCountry) partial.passportCountry = ocrFields.passportCountry;
+        }
+        updateProfile(partial as Partial<MasterProfile>, { silent: true });
+      } else {
+        await refreshProfile();
+      }
+
+      showToast("Details saved to your profile.", "success");
+      dismissOcr();
+    } catch {
+      showToast("Something went wrong while saving.", "error");
+    } finally {
+      setOcrSaving(false);
+    }
+  };
 
   // Find the base document definition
   const documentDef = useMemo<DocumentDefinition>(() => {
@@ -103,31 +400,24 @@ export function MultipleDocumentUploadModal({
 
   // Derive already uploaded documents and their types for this category
   const uploadedDocuments = useMemo(() => {
-    const allowedIds = [
-      categoryId,
-      ...options.map((opt) => mapDocumentNameToId(opt)),
-    ];
-    const currentCategory = (documentDef as any).category || categoryId;
+    const allowedIds = [categoryId, ...options.map((opt) => mapDocumentNameToId(opt))];
 
-    return vaultDocuments.filter((d) => {
+    const filtered = vaultDocuments.filter((d) => {
       // Direct ID match
       if (allowedIds.includes(d.documentDefId)) return true;
 
-      // Dynamic slot match
-      if (d.documentDefId.startsWith("dynamic-")) {
-        const docCategory = d.documentDefId.split("-")[1];
-
-        // Match current category OR generic categories
-        return (
-          docCategory === currentCategory ||
-          docCategory === "OTHER" ||
-          docCategory === "MISC"
-        );
-      }
-
       return false;
     });
-  }, [vaultDocuments, categoryId, options, documentDef]);
+
+    // Deduplicate by storagePath
+    const seen = new Set<string>();
+    return filtered.filter((d) => {
+      const key = d.storagePath || d.id;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }, [vaultDocuments, categoryId, options]);
 
   const uploadedTypes = useMemo(() => {
     return uploadedDocuments
@@ -152,14 +442,12 @@ export function MultipleDocumentUploadModal({
 
       // Fallback for dynamic documents without explicit type in notes
       if (
-        (typeLabel === OTHER_OPTION ||
-          !typeLabel ||
-          typeLabel === "Document") &&
+        (typeLabel === OTHER_OPTION || !typeLabel || typeLabel === "Document") &&
         doc.documentDefId?.startsWith("dynamic-")
       ) {
         const category = doc.documentDefId.split("-")[1];
         const dynamicDoc = config?.dynamicDocuments?.[category]?.find(
-          (d) => d.id === doc.documentDefId,
+          (d) => d.id === doc.documentDefId
         );
         if (dynamicDoc) {
           typeLabel = dynamicDoc.name;
@@ -173,22 +461,22 @@ export function MultipleDocumentUploadModal({
     });
 
     // Apply Virtual Versioning to each group
-    Object.keys(groups).forEach(typeLabel => {
-       const rawDocs = groups[typeLabel].sort((a, b) => 
-         new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime()
-       );
-       
-       const hasDuplicateVersions = rawDocs.some((v, i) => 
-         rawDocs.some((v2, i2) => i !== i2 && v.version === v2.version)
-       );
+    Object.keys(groups).forEach((typeLabel) => {
+      const rawDocs = groups[typeLabel].sort(
+        (a, b) => new Date(a.uploadedAt).getTime() - new Date(b.uploadedAt).getTime()
+      );
 
-       groups[typeLabel] = rawDocs.map((v, idx) => ({
-          ...v,
-          displayVersion: hasDuplicateVersions ? idx + 1 : v.version
-       })) as any;
+      const hasDuplicateVersions = rawDocs.some((v, i) =>
+        rawDocs.some((v2, i2) => i !== i2 && v.version === v2.version)
+      );
 
-       // Sort by displayVersion descending for the UI
-       groups[typeLabel].sort((a: any, b: any) => (b.displayVersion || 0) - (a.displayVersion || 0));
+      groups[typeLabel] = rawDocs.map((v, idx) => ({
+        ...v,
+        displayVersion: hasDuplicateVersions ? idx + 1 : v.version,
+      })) as any;
+
+      // Sort by displayVersion descending for the UI
+      groups[typeLabel].sort((a: any, b: any) => (b.displayVersion || 0) - (a.displayVersion || 0));
     });
 
     return groups as Record<string, (UploadedDocument & { displayVersion: number })[]>;
@@ -241,34 +529,23 @@ export function MultipleDocumentUploadModal({
   };
 
   const updatePendingUpload = (id: string, updates: Partial<PendingUpload>) => {
-    setPendingUploads((prev) =>
-      prev.map((p) => (p.id === id ? { ...p, ...updates } : p)),
-    );
+    setPendingUploads((prev) => prev.map((p) => (p.id === id ? { ...p, ...updates } : p)));
   };
 
   const processFile = (id: string, file: File) => {
     if (file.size > 10 * 1024 * 1024) {
-      toast.error("File size must be less than 10MB");
+      showToast(msg(E.UPLOAD_FILE_TOO_LARGE, { maxSize: 10 }), "error");
       return;
     }
-    const allowedTypes = [
-      "application/pdf",
-      "image/jpeg",
-      "image/jpg",
-      "image/png",
-      "image/gif",
-    ];
+    const allowedTypes = ["application/pdf", "image/jpeg", "image/jpg", "image/png", "image/gif"];
     if (!allowedTypes.includes(file.type)) {
-      toast.error("Invalid file type. Please upload PDF or image.");
+      showToast(msg(E.TOOL_FILE_TYPE_UNSUPPORTED), "error");
       return;
     }
     updatePendingUpload(id, { file });
   };
 
-  const handleFileSelect = (
-    id: string,
-    e: React.ChangeEvent<HTMLInputElement>,
-  ) => {
+  const handleFileSelect = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       processFile(id, file);
@@ -304,9 +581,7 @@ export function MultipleDocumentUploadModal({
 
   const getAvailableOptions = (currentSlotId: string) => {
     const usedPendingTypes = pendingUploads
-      .filter(
-        (p) => p.id !== currentSlotId && p.type && p.type !== OTHER_OPTION,
-      )
+      .filter((p) => p.id !== currentSlotId && p.type && p.type !== OTHER_OPTION)
       .map((p) => p.type);
 
     // Per user request: don't filter out uploaded types, just filter out types used in other rows
@@ -317,85 +592,21 @@ export function MultipleDocumentUploadModal({
     const validUploads = pendingUploads.filter((p) => p.file && p.type);
     if (validUploads.length === 0) return;
     if (!config) {
-      toast.error("Document Vault is not configured. Please refresh.");
+      showToast(`${msg(E.VAULT_NOT_CONFIGURED)}`, "error");
       return;
     }
 
     setUploading(true);
-    toast.loading(`Uploading ${validUploads.length} document(s)...`, {
+    showToast(`Uploading ${validUploads.length} document(s)...`, "loading", {
       id: "multi-upload-progress",
     });
 
     try {
-      // Step 1: Create all necessary dynamic slots SEQUENTIALLY first
-      // This prevents race conditions where multiple uploads try to create slots at the same time
+      // Step 1: Map all uploads to the main category document ID
+      // This ensures they stay grouped inside this category's file list and do not leak as separate slots
       const uploadItemToDefId: Record<string, string> = {};
-      const batchSpecificDefIds: Record<string, string> = {};
-
       for (const uploadItem of validUploads) {
-        let specificDefId: string;
-        const currentCategory =
-          (documentDef as any).category || categoryId || "CIVIL";
-        const normalizedType =
-          (uploadItem.type === OTHER_OPTION
-            ? uploadItem.customName
-            : uploadItem.type
-          )
-            ?.trim()
-            .toLowerCase() || "";
-
-        // Check our local batch cache first to ensure consistency within this upload session
-        if (batchSpecificDefIds[normalizedType]) {
-          uploadItemToDefId[uploadItem.id] =
-            batchSpecificDefIds[normalizedType];
-          continue;
-        }
-
-        // Determine target category
-        let targetCategory = currentCategory;
-        if (
-          uploadItem.type === OTHER_OPTION &&
-          uploadItem.customName &&
-          targetCategory !== "TRANSLATIONS"
-        ) {
-          targetCategory = "OTHER";
-        }
-
-        // CRITICAL: Get FRESH config from store
-        const latestConfig = useDocumentVaultStore.getState().config;
-
-        // Check if we already have a slot for this name in the target category (Case-insensitive)
-        const existingSlot = latestConfig?.dynamicDocuments?.[
-          targetCategory
-        ]?.find((s: any) => s.name.trim().toLowerCase() === normalizedType);
-
-        const mappedId = mapDocumentNameToId(uploadItem.type);
-        const staticMatch = mappedId && mappedId !== "misc-document" && 
-                            ALL_DOCUMENTS.find(d => d.id === mappedId)?.category === targetCategory;
-
-        if (existingSlot) {
-          specificDefId = existingSlot.id;
-        } else if (staticMatch) {
-          specificDefId = mappedId;
-        } else {
-          // Create new slot
-          if (uploadItem.type === OTHER_OPTION && uploadItem.customName) {
-            specificDefId = await addNamedDynamicSlot(
-              targetCategory,
-              uploadItem.customName,
-            );
-          } else if ((documentDef as any).isDynamicCategory) {
-            specificDefId = await addNamedDynamicSlot(
-              targetCategory,
-              uploadItem.type,
-            );
-          } else {
-            specificDefId = mapDocumentNameToId(uploadItem.type);
-          }
-        }
-
-        uploadItemToDefId[uploadItem.id] = specificDefId;
-        batchSpecificDefIds[normalizedType] = specificDefId;
+        uploadItemToDefId[uploadItem.id] = categoryId;
       }
 
       // Need a role, if we can deduce from definition or default to BENEFICIARY
@@ -420,10 +631,7 @@ export function MultipleDocumentUploadModal({
 
         if (specificDefId.startsWith("dynamic-")) {
           const docCategory = specificDefId.split("-")[1];
-          formData.append(
-            "dynamicName",
-            uploadItem.customName || uploadItem.type,
-          );
+          formData.append("dynamicName", uploadItem.customName || uploadItem.type);
           formData.append("dynamicCategory", docCategory);
         }
         formData.append("role", parentRole);
@@ -441,39 +649,60 @@ export function MultipleDocumentUploadModal({
           notesPayload += `\nNotes: ${uploadItem.notes.trim()}`;
         }
         formData.append("notes", notesPayload);
+        if (activeJourneyId) {
+          formData.append("journeyId", activeJourneyId);
+        }
+        const applicableSharedIds = sharedJourneyIds.filter((targetId) => {
+          const targetJourney = userJourneys.find((j) => j.id === targetId);
+          if (!targetJourney) return false;
+          return isDocumentApplicableToJourney(specificDefId, uploadItem.type, targetJourney.journey_type);
+        });
+
+        if (applicableSharedIds.length > 0) {
+          formData.append("shareWithJourneyIds", JSON.stringify(applicableSharedIds));
+        }
 
         const response = await fetch("/api/documents/upload", {
           method: "POST",
           body: formData,
         });
 
-        const data = await response.json();
         if (!response.ok) {
-          throw new Error(data.error || "Upload failed");
+          showToast(`${msg(E.UPLOAD_FAILED)}`, "error", { id: "multi-upload-progress" });
+          return;
         }
       }
 
-      toast.success(
-        `Successfully uploaded ${validUploads.length} document(s)`,
-        {
-          id: "multi-upload-progress",
-        },
-      );
+      showToast(`Successfully uploaded ${validUploads.length} document(s)`, "success", {
+        id: "multi-upload-progress",
+      });
 
       // Provide completion callbacks
       await onUploadComplete();
 
-      // Keep modal open, but clear completed files and add a blank row
-      setPendingUploads([]);
-      addPendingUpload();
+      // If one of the just-uploaded items is a passport, read that file and offer
+      // to auto-fill the profile (petitioner U.S. passport → self, etc.). Otherwise
+      // just clear the rows and leave a blank one so the user can keep adding.
+      // Identity docs (passport, birth certificate, naturalization…) all carry the
+      // person's name + DOB. If the selected type OR the whole category is
+      // OCR-registered, show the capture panel: a passport auto-fills via MRZ, other
+      // docs come up blank for the user to type in. Either way the DOB lands in the
+      // profile and flows to steps like Ch.1 Step 4. Target ("self"/"beneficiary")
+      // comes from the type's config, otherwise the category's.
+      const ocrItem = validUploads.find(
+        (u) => u.file && (getOcrConfig(mapDocumentNameToId(u.type)) || getOcrConfig(categoryId))
+      );
+      if (ocrItem?.file) {
+        const cfg = getOcrConfig(mapDocumentNameToId(ocrItem.type)) || getOcrConfig(categoryId);
+        await runOcr(ocrItem.file, cfg?.target || "self");
+      } else {
+        // Keep modal open, but clear completed files and add a blank row
+        setPendingUploads([]);
+        addPendingUpload();
+      }
     } catch (error) {
       console.error("Multi-upload error:", error);
-      toast.error(
-        error instanceof Error
-          ? error.message
-          : "Failed to upload all documents",
-        { id: "multi-upload-progress" },
-      );
+      showToast(`${msg(E.UPLOAD_NETWORK_ERROR)}`, "error", { id: "multi-upload-progress" });
     } finally {
       setUploading(false);
     }
@@ -493,11 +722,11 @@ export function MultipleDocumentUploadModal({
     try {
       setDeleteLoading(true);
       await deleteDocument(selectedDeleteId);
-      toast.success("Document deleted successfully");
+      showToast("Document deleted successfully", "success");
       setDeleteModalOpen(false);
       setSelectedDeleteId(null);
     } catch (error) {
-      toast.error("Failed to delete document");
+      showToast(`${msg(E.VAULT_DELETE_FAILED)}`, "error");
     } finally {
       setDeleteLoading(false);
     }
@@ -531,6 +760,142 @@ export function MultipleDocumentUploadModal({
         </DialogHeader>
 
         <div className="flex-1 min-h-0 overflow-y-auto scrollbar-premium px-5 sm:px-7 pb-5 sm:pb-7">
+          {/* ── Inline OCR auto-fill panel (shown after a passport upload) ── */}
+          {ocrPhase !== "idle" && (
+            <div className="space-y-4 py-2">
+              <div className="flex items-center gap-2 text-[#0c1b33]">
+                <div className="w-9 h-9 rounded-xl bg-[#e8f1fb] text-brand flex items-center justify-center">
+                  <ScanLine className="w-5 h-5" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-bold text-sm">
+                    {ocrPhase === "reading"
+                      ? "Reading your document..."
+                      : ocrAnyDetected
+                        ? "Confirm the details we read"
+                        : "Add your details"}
+                  </p>
+                  <p className="text-xs text-[#6b8097]">
+                    {ocrPhase === "confirm" && !ocrAnyDetected
+                      ? ocrTarget === "beneficiary"
+                        ? "We couldn't auto-read this, please type them in. Saved to your spouse's (beneficiary) details."
+                        : "We couldn't auto-read this, please type them in. Saved to your profile."
+                      : ocrTarget === "beneficiary"
+                        ? "These will be saved to your spouse's (beneficiary) details."
+                        : "These will be saved to your profile."}
+                  </p>
+                </div>
+                {/* Re-read shortcut — retry the auto-read if the values look off. */}
+                {ocrPhase === "confirm" && ocrFile && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => runOcr(ocrFile, ocrTarget)}
+                    disabled={ocrSaving}
+                    className="rounded-xl border-[#d0e4f7] text-[#6b8097] hover:bg-slate-50 text-xs font-semibold gap-1.5"
+                  >
+                    <ScanLine className="w-3.5 h-3.5" />
+                    Re-read
+                  </Button>
+                )}
+              </div>
+
+              {ocrPhase === "reading" && (
+                <div className="flex items-center justify-center gap-3 py-10 text-[#6b8097]">
+                  <div className="w-5 h-5 border-2 border-brand/30 border-t-brand rounded-full animate-spin" />
+                  <span className="text-sm font-medium">Extracting fields...</span>
+                </div>
+              )}
+
+              {ocrPhase === "confirm" && (
+                <>
+                  {!ocrAnyDetected ? (
+                    <div className="bg-[#e8f1fb] border border-[#d0e4f7] rounded-xl p-4 text-sm text-[#3a4f63]">
+                      We couldn&apos;t automatically read this document. Please type the
+                      details below, they&apos;ll be saved just the same.
+                    </div>
+                  ) : (
+                    ocrWarnings.length > 0 && (
+                      <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+                        <p className="font-semibold mb-1">Please double-check these</p>
+                        <ul className="list-disc pl-4 space-y-1">
+                          {ocrWarnings.map((w, i) => (
+                            <li key={i}>{w}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )
+                  )}
+
+                  {crossCheck && crossCheck.mismatches.length > 0 && (
+                    <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-sm text-red-800">
+                      <p className="font-semibold mb-1">
+                        These don&apos;t match what&apos;s already saved
+                      </p>
+                      <ul className="list-disc pl-4 space-y-1">
+                        {crossCheck.mismatches.map((m) => (
+                          <li key={m.key}>
+                            <strong>{m.label}:</strong> this document says &ldquo;{m.newValue}
+                            &rdquo;, but your saved value is &ldquo;{m.oldValue}&rdquo;. Edit the
+                            field below to the correct one before saving.
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {OCR_FIELD_ORDER.map(({ key, label }) => {
+                      const conf = ocrConfidence[key];
+                      const isMismatch = mismatchKeys.has(key);
+                      return (
+                        <div key={key} className="space-y-1">
+                          <Label htmlFor={`ocr-${key}`} className="flex items-center gap-2">
+                            {label}
+                            {typeof conf === "number" && conf < 0.6 && (
+                              <span className="text-xs text-amber-600">(low confidence)</span>
+                            )}
+                            {isMismatch && (
+                              <span className="text-xs text-red-600">(doesn&apos;t match saved)</span>
+                            )}
+                          </Label>
+                          <Input
+                            id={`ocr-${key}`}
+                            value={ocrFields[key] ?? ""}
+                            onChange={(e) => updateOcrField(key, e.target.value)}
+                            placeholder={`Enter ${label.toLowerCase()}`}
+                            className={
+                              isMismatch ? "border-red-400 focus-visible:ring-red-400" : undefined
+                            }
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  <div className="flex gap-3 pt-2 pb-2">
+                    <Button
+                      variant="outline"
+                      onClick={dismissOcr}
+                      disabled={ocrSaving}
+                      className="flex-1 rounded-xl border-[#d0e4f7] text-[#6b8097] hover:bg-slate-50 font-semibold"
+                    >
+                      Skip
+                    </Button>
+                    <Button
+                      onClick={handleSaveOcr}
+                      disabled={ocrSaving}
+                      className="flex-1 rounded-xl bg-primary hover:bg-primary/90 text-white font-semibold"
+                    >
+                      {ocrSaving ? "Saving..." : "Confirm & Save"}
+                    </Button>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+
+          <div className={ocrPhase !== "idle" ? "hidden" : ""}>
           {/* Already Uploaded List */}
           {uploadedDocuments.length > 0 && (
             <div className="mb-8">
@@ -555,9 +920,7 @@ export function MultipleDocumentUploadModal({
                         </div>
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-0.5">
-                            <h4 className="font-bold text-[#0f1f38] text-[15px]">
-                              {typeLabel}
-                            </h4>
+                            <h4 className="font-bold text-[#0f1f38] text-[15px]">{typeLabel}</h4>
                             <Badge className="h-4 px-1.5 text-[9px] bg-primary text-white border-none hover:bg-primary/70 font-black tracking-wider">
                               Latest
                             </Badge>
@@ -636,11 +999,8 @@ export function MultipleDocumentUploadModal({
                                       {doc.originalFilename}
                                     </p>
                                     <p className="text-[10px] text-[#6b8097] font-medium">
-                                      {(doc.fileSize / 1024 / 1024).toFixed(2)}{" "}
-                                      MB •{" "}
-                                      {new Date(
-                                        doc.uploadedAt,
-                                      ).toLocaleDateString()}
+                                      {(doc.fileSize / 1024 / 1024).toFixed(2)} MB •{" "}
+                                      {new Date(doc.uploadedAt).toLocaleDateString()}
                                     </p>
                                   </div>
                                 </div>
@@ -686,6 +1046,7 @@ export function MultipleDocumentUploadModal({
               onClose={() => setPreviewDoc(null)}
               documentDef={documentDef}
               uploadedDoc={previewDoc}
+              allUploadedDocs={uploadedDocuments}
             />
           )}
 
@@ -746,19 +1107,15 @@ export function MultipleDocumentUploadModal({
                         new Set([
                           ...(uploadItem.type ? [uploadItem.type] : []),
                           ...availableOptions,
-                          ...(!options.includes(OTHER_OPTION)
-                            ? [OTHER_OPTION]
-                            : []),
-                        ]),
+                          ...(!options.includes(OTHER_OPTION) ? [OTHER_OPTION] : []),
+                        ])
                       ).map((opt) => ({
                         label: opt,
                         value: opt,
-                        status: uploadedTypes.includes(opt)
-                          ? "uploaded"
-                          : "none",
+                        status: uploadedTypes.includes(opt) ? "uploaded" : "none",
                       }))}
                       placeholder="Select type..."
-                      className="rounded-xl border-2 border-[#e8f1fb] focus:ring-4 focus:ring-primary/10 focus:border-primary bg-slate-50/50"
+                      className="w-full [&_button]:rounded-xl [&_button]:border-2 [&_button]:border-[#e8f1fb] [&_button]:bg-slate-50/50 [&_button]:focus:border-primary [&_button]:focus:ring-4 [&_button]:focus:ring-primary/10"
                       disabled={uploading}
                     />
                   </div>
@@ -801,10 +1158,7 @@ export function MultipleDocumentUploadModal({
                                 {uploadItem.file.name}
                               </span>
                               <span className="text-[11px] text-[#6b8097]">
-                                {(uploadItem.file.size / 1024 / 1024).toFixed(
-                                  2,
-                                )}{" "}
-                                MB
+                                {(uploadItem.file.size / 1024 / 1024).toFixed(2)} MB
                               </span>
                             </div>
                           </div>
@@ -921,17 +1275,82 @@ export function MultipleDocumentUploadModal({
             {/* )} */}
           </div>
 
+          {/* Sibling Journeys Cross-Sharing Checkboxes */}
+          {visibleOtherJourneys.length > 0 && (
+            <div className="space-y-3 p-4 bg-slate-50 dark:bg-slate-800/40 rounded-2xl border border-slate-100 dark:border-slate-800/80 shadow-inner mt-6">
+              <label className="text-xs font-bold text-slate-700 dark:text-slate-300 uppercase tracking-wider">
+                Cross-share these documents
+              </label>
+              <p className="text-[11px] text-slate-500 leading-normal mb-1">
+                Select which of your other active immigration journeys should also receive these uploaded files:
+              </p>
+              <div className="space-y-2.5">
+                {visibleOtherJourneys.map((j) => {
+                  const isChecked = sharedJourneyIds.includes(j.id);
+                  return (
+                    <div
+                      key={j.id}
+                      onClick={() => {
+                        if (isChecked) {
+                          setSharedJourneyIds(sharedJourneyIds.filter((id) => id !== j.id));
+                          if (!manuallyUncheckedIds.includes(j.id)) {
+                            setManuallyUncheckedIds([...manuallyUncheckedIds, j.id]);
+                          }
+                        } else {
+                          setSharedJourneyIds([...sharedJourneyIds, j.id]);
+                          setManuallyUncheckedIds(manuallyUncheckedIds.filter((id) => id !== j.id));
+                        }
+                      }}
+                      className={`flex items-center justify-between p-3.5 rounded-xl border cursor-pointer select-none transition-all duration-300 ${
+                        isChecked
+                          ? "bg-primary/5 border-primary shadow-xs"
+                          : "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-700"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-5 h-5 rounded-md flex items-center justify-center border transition-all duration-300 ${
+                          isChecked
+                            ? "bg-primary border-primary text-white scale-100"
+                            : "border-slate-300 dark:border-slate-700 bg-transparent"
+                        }`}>
+                          {isChecked && (
+                            <svg className="w-3.5 h-3.5 stroke-[3] stroke-white fill-none" viewBox="0 0 24 24">
+                              <polyline points="20 6 9 17 4 12" />
+                            </svg>
+                          )}
+                        </div>
+                        <span className={`text-xs font-bold transition-colors ${
+                          isChecked ? "text-slate-900 dark:text-white" : "text-slate-600 dark:text-slate-400"
+                        }`}>
+                          {getFriendlyJourneyName(j.journey_type, j.journey_name)}
+                        </span>
+                      </div>
+                      {isChecked && (
+                        <span className="text-[10px] font-black uppercase tracking-wider text-primary bg-primary/10 px-2 py-0.5 rounded-md animate-in fade-in zoom-in-95 duration-200">
+                          Shared
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+
           {/* Security Guarantee */}
           <div className="flex items-center justify-center gap-2 py-2.5 px-4 bg-slate-50 border border-[#d0e4f7]/40 rounded-xl text-[#3a4f63] text-xs font-semibold shadow-sm mt-4">
             <Lock className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-            <span>
-              {t("documentVaultPage.components.uploadModal.securityNotice")}
-            </span>
+            <span>{t("documentVaultPage.components.uploadModal.securityNotice")}</span>
+          </div>
           </div>
         </div>
 
         {/* Action Footer */}
-        <div className="flex gap-4 px-5 sm:px-7 pb-5 sm:pb-7 pt-4 border-t border-slate-100 shrink-0 bg-white">
+        <div
+          className={`flex gap-4 px-5 sm:px-7 pb-5 sm:pb-7 pt-4 border-t border-slate-100 shrink-0 bg-white ${
+            ocrPhase !== "idle" ? "hidden" : ""
+          }`}
+        >
           <Button
             variant="outline"
             onClick={handleClose}
@@ -942,10 +1361,7 @@ export function MultipleDocumentUploadModal({
           </Button>
           <Button
             onClick={handleUploadAll}
-            disabled={
-              uploading ||
-              pendingUploads.filter((p) => p.file && p.type).length === 0
-            }
+            disabled={uploading || pendingUploads.filter((p) => p.file && p.type).length === 0}
             className="flex-1 py-6 rounded-xl bg-primary hover:bg-primary/90 text-white shadow-lg shadow-primary/20 transition-all font-semibold disabled:bg-primary/60 text-base"
           >
             {uploading ? (

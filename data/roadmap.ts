@@ -5,8 +5,7 @@ export const roadmapData = {
       name: "Stage I: USCIS Petition",
       nameUr: "پہلا مرحلہ: USCIS پٹیشن",
       description: "U.S. Petitioner files I-130 → USCIS processes → Approval",
-      descriptionUr:
-        "امریکی پٹیشنر I-130 فائل کرتا ہے → USCIS پراسیس کرتا ہے → منظوری",
+      descriptionUr: "امریکی پٹیشنر I-130 فائل کرتا ہے → USCIS پراسیس کرتا ہے → منظوری",
       timeline: "17-65 months average",
       steps: [
         {
@@ -107,10 +106,8 @@ export const roadmapData = {
             "فائلنگ کا طریقہ منتخب کریں",
           ],
           fee: "Online: $625, Paper: $675",
-          notes:
-            "Online filing recommended - faster receipt, lower fee, electronic tracking",
-          notesUr:
-            "آن لائن فائلنگ کی سفارش کی جاتی ہے - تیزی سے وصولی، کم فیس، الیکٹرانک ٹریکنگ",
+          notes: "Online filing recommended - faster receipt, lower fee, electronic tracking",
+          notesUr: "آن لائن فائلنگ کی سفارش کی جاتی ہے - تیزی سے وصولی، کم فیس، الیکٹرانک ٹریکنگ",
         },
         {
           id: "I-04",
@@ -171,8 +168,7 @@ export const roadmapData = {
             "فارم سائن کریں",
           ],
           notes: "Always required for spouse petitions, no separate fee",
-          notesUr:
-            "شریک حیات کی درخواستوں کے لیے ہمیشہ ضروری ہے، کوئی الگ فیس نہیں",
+          notesUr: "شریک حیات کی درخواستوں کے لیے ہمیشہ ضروری ہے، کوئی الگ فیس نہیں",
         },
         {
           id: "I-06",
@@ -197,8 +193,7 @@ export const roadmapData = {
           ],
           notes:
             "As of Oct 28, 2025: Checks/money orders NO LONGER accepted. Electronic payment only.",
-          notesUr:
-            "28 اکتوبر 2025 تک: چیک/منی آرڈر اب قبول نہیں کیے جاتے۔ صرف الیکٹرانک ادائیگی۔",
+          notesUr: "28 اکتوبر 2025 تک: چیک/منی آرڈر اب قبول نہیں کیے جاتے۔ صرف الیکٹرانک ادائیگی۔",
           officialSource: "https://www.uscis.gov/g-1055",
         },
         {
@@ -270,8 +265,7 @@ export const roadmapData = {
             "ایڈریس اپ ڈیٹ رکھیں",
             "اس دوران NVC دستاویزات جمع کریں",
           ],
-          notes:
-            "RFE deadline usually 30-87 days. Respond promptly to avoid delays.",
+          notes: "RFE deadline usually 30-87 days. Respond promptly to avoid delays.",
           notesUr:
             "RFE کی آخری تاریخ عام طور پر 30-87 دن ہوتی ہے۔ تاخیر سے بچنے کے لیے فوری جواب دیں۔",
         },
@@ -305,8 +299,7 @@ export const roadmapData = {
       id: 2,
       name: "Stage II: NVC/CEAC Processing",
       nameUr: "دوسرا مرحلہ: NVC/CEAC پروسیسنگ",
-      description:
-        "Pay fees → Submit DS-260 → Upload documents → Documentarily Qualified",
+      description: "Pay fees → Submit DS-260 → Upload documents → Documentarily Qualified",
       descriptionUr:
         "فیسوں کی ادائیگی → DS-260 جمع کرانا → دستاویزات اپ لوڈ کرنا → دستاویزی طور پر اہل (DQ)",
       timeline: "4-9 months",
@@ -386,10 +379,8 @@ export const roadmapData = {
           ],
           output: "Both fees paid, forms unlocked",
           outputUr: "دونوں فیسیں ادا کر دی گئیں، فارم ان لاک ہو گئے",
-          notes:
-            "Fees are non-refundable. Payment reflects in 1-2 business days.",
-          notesUr:
-            "فیس ناقابل واپسی ہے۔ ادائیگی 1-2 کاروباری دنوں میں ظاہر ہوتی ہے۔",
+          notes: "Fees are non-refundable. Payment reflects in 1-2 business days.",
+          notesUr: "فیس ناقابل واپسی ہے۔ ادائیگی 1-2 کاروباری دنوں میں ظاہر ہوتی ہے۔",
         },
         {
           id: "II-04",
@@ -423,10 +414,8 @@ export const roadmapData = {
           ],
           output: "DS-260 submitted",
           outputUr: "DS-260 جمع کر دیا گیا",
-          notes:
-            "Cannot change after submission except via NVC email. Save frequently!",
-          notesUr:
-            "جمع کرانے کے بعد تبدیل نہیں کیا جا سکتا سوائے NVC ای میل کے۔ کثرت سے سیو کریں!",
+          notes: "Cannot change after submission except via NVC email. Save frequently!",
+          notesUr: "جمع کرانے کے بعد تبدیل نہیں کیا جا سکتا سوائے NVC ای میل کے۔ کثرت سے سیو کریں!",
           pakistanSpecific: "Select post: Islamabad, Pakistan",
         },
         {
@@ -497,8 +486,7 @@ export const roadmapData = {
             "W-2 forms",
             "Bank statements (if showing assets)",
           ],
-          notes:
-            "Minimum income: $25,550 for household of 2 (2025). Use joint sponsor if needed.",
+          notes: "Minimum income: $25,550 for household of 2 (2025). Use joint sponsor if needed.",
           notesUr:
             "کم از کم آمدنی: 2 افراد کے گھرانے کے لیے $25,550 (2025)۔ اگر ضرورت ہو تو جوائنٹ اسپانسر استعمال کریں۔",
           officialSource: "https://www.uscis.gov/i-864",
@@ -631,10 +619,8 @@ export const roadmapData = {
             "ابھی نیا پولیس سرٹیفکیٹ حاصل نہ کریں",
             "انٹرویو کے عمل پر تحقیق کریں",
           ],
-          notes:
-            "Cannot speed up this process. Interview scheduled by embassy.",
-          notesUr:
-            "اس عمل کو تیز نہیں کیا جا سکتا۔ انٹرویو سفارت خانے کے ذریعے طے کیا جاتا ہے۔",
+          notes: "Cannot speed up this process. Interview scheduled by embassy.",
+          notesUr: "اس عمل کو تیز نہیں کیا جا سکتا۔ انٹرویو سفارت خانے کے ذریعے طے کیا جاتا ہے۔",
         },
         {
           id: "II-12",
@@ -669,10 +655,8 @@ export const roadmapData = {
       id: 3,
       name: "Stage III: Medical + Interview",
       nameUr: "تیسرا مرحلہ: میڈیکل + انٹرویو",
-      description:
-        "Complete medical exam → Attend consular interview → Visa decision",
-      descriptionUr:
-        "میڈیکل امتحان مکمل کریں → قونصلر انٹرویو میں شرکت کریں → ویزا کا فیصلہ",
+      description: "Complete medical exam → Attend consular interview → Visa decision",
+      descriptionUr: "میڈیکل امتحان مکمل کریں → قونصلر انٹرویو میں شرکت کریں → ویزا کا فیصلہ",
       timeline: "Interview within 2-4 weeks of letter",
       steps: [
         {
@@ -698,8 +682,7 @@ export const roadmapData = {
           pakistanSpecific:
             "IOM Islamabad: +92-51-111-466-789. IOM Karachi: +92-21-111-466-789. IOM Lahore: +92-42-111-466-789",
           fee: "$200-300 USD equivalent",
-          notes:
-            "Medical results valid 6 months. Schedule 2-3 days before interview ideally.",
+          notes: "Medical results valid 6 months. Schedule 2-3 days before interview ideally.",
           notesUr:
             "میڈیکل کے نتائج 6 ماہ تک کارآمد ہیں۔ مثالی طور پر انٹرویو سے 2-3 دن پہلے شیڈول بنائیں۔",
         },
@@ -724,12 +707,10 @@ export const roadmapData = {
             "سرٹیفکیٹ حاصل کریں",
             "انٹرویو کے لیے اصل پاس رکھیں",
           ],
-          notes:
-            "Get new if previous one is 6+ months old. Need ORIGINAL for interview.",
+          notes: "Get new if previous one is 6+ months old. Need ORIGINAL for interview.",
           notesUr:
             "اگر پچھلا سرٹیفکیٹ 6 ماہ سے زیادہ پرانا ہے تو نیا حاصل کریں۔ انٹرویو کے لیے اصل (ORIGINAL) کی ضرورت ہے۔",
-          pakistanSpecific:
-            "Punjab Police Portal: pkm.punjab.gov.pk or islamabadpolice.gov.pk",
+          pakistanSpecific: "Punjab Police Portal: pkm.punjab.gov.pk or islamabadpolice.gov.pk",
         },
         {
           id: "III-03",
@@ -886,15 +867,10 @@ export const roadmapData = {
           ],
           pakistanSpecific:
             "Address: Diplomatic Enclave, Ramna 5, Islamabad. NO mobile phones allowed.",
-          possibleOutcomes: [
-            "Approved ✅",
-            "Administrative Processing 221(g) ⚠️",
-            "Denied ❌",
-          ],
+          possibleOutcomes: ["Approved", "Administrative Processing 221(g)", "Denied"],
           notes:
             "Common questions: How did you meet? Tell me about your wedding. Where will you live?",
-          notesUr:
-            "عام سوالات: آپ کیسے ملے؟ اپنی شادی کے بارے میں بتائیں۔ آپ کہاں رہیں گے؟",
+          notesUr: "عام سوالات: آپ کیسے ملے؟ اپنی شادی کے بارے میں بتائیں۔ آپ کہاں رہیں گے؟",
         },
         {
           id: "III-07",
@@ -918,8 +894,7 @@ export const roadmapData = {
           ],
           notes:
             "AP duration: 2 weeks to 12+ months (unpredictable). Common for security clearances.",
-          notesUr:
-            "AP کا دورانیہ: 2 ہفتے سے 12+ ماہ (غیر متوقع)۔ سیکورٹی کلیئرنس کے لیے عام ہے۔",
+          notesUr: "AP کا دورانیہ: 2 ہفتے سے 12+ ماہ (غیر متوقع)۔ سیکورٹی کلیئرنس کے لیے عام ہے۔",
         },
       ],
     },
@@ -927,10 +902,8 @@ export const roadmapData = {
       id: 4,
       name: "Stage IV: Post-Interview & Travel",
       nameUr: "چوتھا مرحلہ: انٹرویو کے بعد اور سفر",
-      description:
-        "Receive passport with visa → Pay USCIS fee → Travel to U.S.",
-      descriptionUr:
-        "ویزہ کے ساتھ پاسپورٹ وصول کرنا → USCIS فیس کی ادائیگی → امریکہ کا سفر",
+      description: "Receive passport with visa → Pay USCIS fee → Travel to U.S.",
+      descriptionUr: "ویزہ کے ساتھ پاسپورٹ وصول کرنا → USCIS فیس کی ادائیگی → امریکہ کا سفر",
       timeline: "1-2 weeks for passport",
       steps: [
         {
@@ -960,8 +933,7 @@ export const roadmapData = {
           ],
           output: "Passport with immigrant visa",
           outputUr: "امیگرنٹ ویزہ کے ساتھ پاسپورٹ",
-          notes:
-            "MUST enter U.S. before visa expiration (typically 6 months from medical exam)",
+          notes: "MUST enter U.S. before visa expiration (typically 6 months from medical exam)",
           notesUr:
             "ویزا کی میعاد ختم ہونے سے پہلے امریکہ میں داخل ہونا ضروری ہے (عام طور پر میڈیکل سے 6 ماہ)",
         },
@@ -990,8 +962,7 @@ export const roadmapData = {
           ],
           output: "Green card production authorized",
           outputUr: "گرین کارڈ کی تیاری کی اجازت مل گئی",
-          notes:
-            "Pay BEFORE travel recommended. Green card mailed to this address within 90 days.",
+          notes: "Pay BEFORE travel recommended. Green card mailed to this address within 90 days.",
           notesUr:
             "سفر سے پہلے ادائیگی کی سفارش کی جاتی ہے۔ 90 دنوں کے اندر گرین کارڈ اس پتے پر بھیج دیا جائے گا۔",
         },
@@ -1053,10 +1024,8 @@ export const roadmapData = {
       id: 5,
       name: "Stage V: U.S. Arrival",
       nameUr: "پانچواں مرحلہ: امریکہ آمد",
-      description:
-        "Enter U.S. → CBP inspection → I-551 stamp → Green card delivery",
-      descriptionUr:
-        "امریکہ میں داخلہ → CBP معائنہ → I-551 اسٹیمپ → گرین کارڈ کی ڈیلیوری",
+      description: "Enter U.S. → CBP inspection → I-551 stamp → Green card delivery",
+      descriptionUr: "امریکہ میں داخلہ → CBP معائنہ → I-551 اسٹیمپ → گرین کارڈ کی ڈیلیوری",
       timeline: "Green card within 90 days",
       steps: [
         {
@@ -1110,8 +1079,7 @@ export const roadmapData = {
             "صبر اور تعاون سے کام لیں",
           ],
           notes: "Common for immigrant visa holders. Don't worry - routine.",
-          notesUr:
-            "امیگرنٹ ویزہ ہولڈرز کے لیے عام ہے۔ پریشان نہ ہوں - یہ ایک روٹین ہے۔",
+          notesUr: "امیگرنٹ ویزہ ہولڈرز کے لیے عام ہے۔ پریشان نہ ہوں - یہ ایک روٹین ہے۔",
         },
         {
           id: "V-03",
@@ -1135,8 +1103,7 @@ export const roadmapData = {
           outputUr: "I-551 اسٹیمپ = عارضی گرین کارڈ (1 سال کے لیے کارآمد)",
           notes:
             "This stamp proves permanent residence and work authorization until physical card arrives",
-          notesUr:
-            "یہ اسٹیمپ جسمانی کارڈ آنے تک مستقل رہائش اور کام کرنے کی اجازت کا ثبوت ہے۔",
+          notesUr: "یہ اسٹیمپ جسمانی کارڈ آنے تک مستقل رہائش اور کام کرنے کی اجازت کا ثبوت ہے۔",
         },
         {
           id: "V-04",
@@ -1161,8 +1128,7 @@ export const roadmapData = {
             "ائیرپورٹ سے باہر نکلیں",
           ],
           notes: "Declare any food, plants, amounts over $10,000 cash",
-          notesUr:
-            "کسی بھی کھانے پینے کی اشیاء، پودوں، یا $10,000 سے زیادہ نقد رقم ظاہر کریں۔",
+          notesUr: "کسی بھی کھانے پینے کی اشیاء، پودوں، یا $10,000 سے زیادہ نقد رقم ظاہر کریں۔",
         },
         {
           id: "V-05",

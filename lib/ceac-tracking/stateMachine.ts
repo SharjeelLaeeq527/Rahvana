@@ -11,7 +11,7 @@
 // Engine only schedules reminders once status moves past at_nvc.
 // ============================================================
 
-import type { CeacStatus, TriggerGroup } from './types'
+import type { CeacStatus, TriggerGroup } from "./types";
 
 // ─────────────────────────────────────────────────────────────
 // VALID TRANSITIONS
@@ -22,19 +22,19 @@ import type { CeacStatus, TriggerGroup } from './types'
 
 export const VALID_TRANSITIONS: Record<CeacStatus, CeacStatus[]> = {
   // NVC stage — tracking not started yet
-  at_nvc:     ['in_transit', 'ready'],        // can jump straight to ready
+  at_nvc: ["in_transit", "ready"], // can jump straight to ready
 
   // Case heading to embassy
-  in_transit: ['ready'],
+  in_transit: ["ready"],
 
   // Embassy has file — interview upcoming
-  ready:      ['ap', 'issued', 'refused'],
+  ready: ["ap", "issued", "refused"],
 
   // Post-interview outcomes (3 parallel terminal-ish states)
-  ap:         ['issued', 'refused'],           // AP can resolve to issued or refused
-  issued:     [],                              // terminal (passport_received flag handles sub-state)
-  refused:    ['issued'],                      // 221(g) path can resolve to issued
-}
+  ap: ["issued", "refused"], // AP can resolve to issued or refused
+  issued: [], // terminal (passport_received flag handles sub-state)
+  refused: ["issued"], // 221(g) path can resolve to issued
+};
 
 // ─────────────────────────────────────────────────────────────
 // PROGRESSION ORDER
@@ -44,20 +44,20 @@ export const VALID_TRANSITIONS: Record<CeacStatus, CeacStatus[]> = {
 // ─────────────────────────────────────────────────────────────
 
 export const STATUS_ORDER: Record<CeacStatus, number> = {
-  at_nvc:     0,
+  at_nvc: 0,
   in_transit: 1,
-  ready:      2,
-  ap:         3,
-  issued:     4,
-  refused:    4,  // parallel with issued — both are post-interview
-}
+  ready: 2,
+  ap: 3,
+  issued: 4,
+  refused: 4, // parallel with issued — both are post-interview
+};
 
 // ─────────────────────────────────────────────────────────────
 // POST-INTERVIEW STATUSES
 // Used for suppression of 'ready' group reminders
 // ─────────────────────────────────────────────────────────────
 
-export const POST_INTERVIEW_STATUSES: CeacStatus[] = ['ap', 'issued', 'refused']
+export const POST_INTERVIEW_STATUSES: CeacStatus[] = ["ap", "issued", "refused"];
 
 // ─────────────────────────────────────────────────────────────
 // GROUP → STATUSES THAT SUPPRESS IT
@@ -67,20 +67,20 @@ export const POST_INTERVIEW_STATUSES: CeacStatus[] = ['ap', 'issued', 'refused']
 
 export const SUPPRESSION_MAP: Record<TriggerGroup, CeacStatus[]> = {
   // Any status after in_transit cancels in_transit reminders
-  in_transit: ['ready', 'ap', 'issued', 'refused'],
+  in_transit: ["ready", "ap", "issued", "refused"],
 
   // Any post-interview status cancels ready reminders
-  ready:      ['ap', 'issued', 'refused'],
+  ready: ["ap", "issued", "refused"],
 
   // Issued or refused cancels ap reminders
-  ap:         ['issued', 'refused'],
+  ap: ["issued", "refused"],
 
   // Nothing cancels issued reminders (except passport_received flag for reminder 9)
-  issued:     [],
+  issued: [],
 
   // Issued or case_closed cancels refused reminders (handled specially in engine)
-  refused:    ['issued'],
-}
+  refused: ["issued"],
+};
 
 // ─────────────────────────────────────────────────────────────
 // VALIDATION
@@ -94,12 +94,12 @@ export function isValidTransition(
   previousStatus: CeacStatus | null,
   newStatus: CeacStatus
 ): boolean {
-  if (previousStatus === null || previousStatus === 'at_nvc') {
+  if (previousStatus === null || previousStatus === "at_nvc") {
     // First real status entry — anything except at_nvc itself is valid
-    return newStatus !== 'at_nvc'
+    return newStatus !== "at_nvc";
   }
-  if (previousStatus === newStatus) return false  // no-op
-  return VALID_TRANSITIONS[previousStatus]?.includes(newStatus) ?? false
+  if (previousStatus === newStatus) return false; // no-op
+  return VALID_TRANSITIONS[previousStatus]?.includes(newStatus) ?? false;
 }
 
 /**
@@ -107,11 +107,8 @@ export function isValidTransition(
  * (i.e., user has advanced in the journey).
  * Used to determine which reminder groups to cancel.
  */
-export function isForwardProgress(
-  previousStatus: CeacStatus,
-  newStatus: CeacStatus
-): boolean {
-  return STATUS_ORDER[newStatus] > STATUS_ORDER[previousStatus]
+export function isForwardProgress(previousStatus: CeacStatus, newStatus: CeacStatus): boolean {
+  return STATUS_ORDER[newStatus] > STATUS_ORDER[previousStatus];
 }
 
 /**
@@ -119,14 +116,14 @@ export function isForwardProgress(
  * when user enters newStatus.
  */
 export function getGroupsToCancel(newStatus: CeacStatus): TriggerGroup[] {
-  const groupsToCancel: TriggerGroup[] = []
-  const entries = Object.entries(SUPPRESSION_MAP) as [TriggerGroup, CeacStatus[]][]
+  const groupsToCancel: TriggerGroup[] = [];
+  const entries = Object.entries(SUPPRESSION_MAP) as [TriggerGroup, CeacStatus[]][];
   for (const [group, suppressingStatuses] of entries) {
     if (suppressingStatuses.includes(newStatus)) {
-      groupsToCancel.push(group)
+      groupsToCancel.push(group);
     }
   }
-  return groupsToCancel
+  return groupsToCancel;
 }
 
 /**
@@ -134,5 +131,5 @@ export function getGroupsToCancel(newStatus: CeacStatus): TriggerGroup[] {
  * at_nvc = NVC internal sub-stages, we skip entirely.
  */
 export function isTrackingActive(status: CeacStatus): boolean {
-  return status !== 'at_nvc'
+  return status !== "at_nvc";
 }

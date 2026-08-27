@@ -16,9 +16,7 @@
     {
       "id": "income_high_risk",
       "description": "Income below 125% of poverty guideline",
-      "conditions": [
-        { "fact": "incomeRatio", "operator": "lessThan", "value": 1.25 }
-      ],
+      "conditions": [{ "fact": "incomeRatio", "operator": "lessThan", "value": 1.25 }],
       "action": {
         "type": "addFlag",
         "flagCode": "SPONSOR_INCOME_BELOW_GUIDELINE",
@@ -33,7 +31,7 @@
       "description": "Income below 150% of poverty guideline",
       "conditions": [
         { "fact": "incomeRatio", "operator": "greaterThan", "value": 1.25 },
-        { "fact": "incomeRatio", "operator": "lessThan", "value": 1.50 }
+        { "fact": "incomeRatio", "operator": "lessThan", "value": 1.5 }
       ],
       "action": {
         "type": "addFlag",
@@ -62,9 +60,7 @@
     {
       "id": "rel_history_bonus",
       "description": "Bonus for long-term relationship",
-      "conditions": [
-        { "fact": "relationshipMonths", "operator": "greaterThan", "value": 24 }
-      ],
+      "conditions": [{ "fact": "relationshipMonths", "operator": "greaterThan", "value": 24 }],
       "action": {
         "type": "addFlag",
         "flagCode": "LONG_RELATIONSHIP_HISTORY",
@@ -77,9 +73,7 @@
     {
       "id": "children_bonus",
       "description": "Bonus for children together",
-      "conditions": [
-        { "fact": "children_together", "operator": "equals", "value": true }
-      ],
+      "conditions": [{ "fact": "children_together", "operator": "equals", "value": true }],
       "action": {
         "type": "addFlag",
         "flagCode": "CHILDREN_BONUS",
@@ -124,9 +118,7 @@
     {
       "id": "age_gap_risk",
       "description": "High age gap risk",
-      "conditions": [
-        { "fact": "ageGap", "operator": "greaterThan", "value": 15 }
-      ],
+      "conditions": [{ "fact": "ageGap", "operator": "greaterThan", "value": 15 }],
       "action": {
         "type": "addFlag",
         "flagCode": "AGE_GAP_HIGH",
@@ -139,9 +131,7 @@
     {
       "id": "no_visits_risk",
       "description": "No in-person meetings",
-      "conditions": [
-        { "fact": "number_of_in_person_visits", "operator": "equals", "value": 0 }
-      ],
+      "conditions": [{ "fact": "number_of_in_person_visits", "operator": "equals", "value": 0 }],
       "action": {
         "type": "addFlag",
         "flagCode": "NO_IN_PERSON_MEETINGS",
@@ -232,9 +222,7 @@
     {
       "id": "immigration_denial",
       "description": "Previous visa denial",
-      "conditions": [
-        { "fact": "previous_visa_denial", "operator": "equals", "value": true }
-      ],
+      "conditions": [{ "fact": "previous_visa_denial", "operator": "equals", "value": true }],
       "action": {
         "type": "addFlag",
         "flagCode": "PREVIOUS_US_VISA_DENIAL",
@@ -247,9 +235,7 @@
     {
       "id": "i130_not_started",
       "description": "I-130 petition not filed",
-      "conditions": [
-        { "fact": "i130_status", "operator": "equals", "value": "Not filed yet" }
-      ],
+      "conditions": [{ "fact": "i130_status", "operator": "equals", "value": "Not filed yet" }],
       "action": {
         "type": "addFlag",
         "flagCode": "I130_PROCESS_NOT_STARTED",
@@ -290,19 +276,19 @@
       }
     },
     {
-       "id": "no_polio_cert",
-       "description": "Missing polio vaccination",
-       "conditions": [
-         { "fact": "polio_vaccination_certificate", "operator": "equals", "value": false }
-       ],
-       "action": {
-         "type": "addFlag",
-         "flagCode": "NO_POLIO_VACCINATION_PROOF",
-         "severity": "MEDIUM",
-         "pointsDeducted": 5,
-         "explanation": "Pakistan is a high-risk polio country; proof of vaccination is mandatory for visa issuance.",
-         "improvementSuggestions": "Ensure you receive an Oral Polio Vaccine (OPV) and obtain a yellow vaccination card."
-       }
+      "id": "no_polio_cert",
+      "description": "Missing polio vaccination",
+      "conditions": [
+        { "fact": "polio_vaccination_certificate", "operator": "equals", "value": false }
+      ],
+      "action": {
+        "type": "addFlag",
+        "flagCode": "NO_POLIO_VACCINATION_PROOF",
+        "severity": "MEDIUM",
+        "pointsDeducted": 5,
+        "explanation": "Pakistan is a high-risk polio country; proof of vaccination is mandatory for visa issuance.",
+        "improvementSuggestions": "Ensure you receive an Oral Polio Vaccine (OPV) and obtain a yellow vaccination card."
+      }
     }
   ]
 }

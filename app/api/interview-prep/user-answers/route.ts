@@ -1,7 +1,7 @@
 /**
  * POST/GET /api/interview-prep/user-answers
  * Handle user answer operations: save and retrieve answers
-*/
+ */
 
 import { NextResponse, NextRequest } from "next/server";
 import {
@@ -9,11 +9,12 @@ import {
   getUserAnswersForSessionDB,
   getUserAnswerDB,
 } from "@/lib/interview-prep/data-access";
+import { E, msg } from "@/lib/errors";
 
 /**
  * POST /api/interview-prep/user-answers
  * Save a user's answer to a question
- * 
+ *
  * Body:
  * - sessionId: string
  * - questionId: string
@@ -29,8 +30,9 @@ export async function POST(request: NextRequest) {
     if (!sessionId || !questionId || !userAnswerText) {
       return NextResponse.json(
         {
-          error:
-            "Missing required fields: sessionId, questionId, userAnswerText",
+          error: msg(E.CASE_DATA_JOURNEY_ID_REQUIRED, {
+            fields: "[sessionId, questionId, userAnswerText]",
+          }),
         },
         { status: 400 }
       );
@@ -38,10 +40,7 @@ export async function POST(request: NextRequest) {
 
     // Validate answer text length
     if (userAnswerText.trim().length < 10) {
-      return NextResponse.json(
-        { error: "Answer must be at least 10 characters long" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: msg(E.INTERVIEW_ANSWER_TOO_SHORT) }, { status: 400 });
     }
 
     // Save answer
@@ -55,18 +54,16 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ success: true, answer: savedAnswer }, { status: 201 });
   } catch (error) {
     console.error("Error saving user answer:", error);
-    const message =
-      error instanceof Error ? error.message : "Failed to save answer";
-    return NextResponse.json({ error: message }, { status: 500 });
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }
 
 /**
  * GET /api/interview-prep/user-answers?sessionId={id}
  * Get all saved answers for a session
- * 
+ *
  * OR
- * 
+ *
  * GET /api/interview-prep/user-answers?sessionId={id}&questionId={id}
  * Get a single answer for a specific question
  */
@@ -78,10 +75,7 @@ export async function GET(request: NextRequest) {
 
     // Validate required parameter
     if (!sessionId) {
-      return NextResponse.json(
-        { error: "sessionId query parameter is required" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "sessionId query parameter is required" }, { status: 400 });
     }
 
     // If questionId is provided, get single answer
@@ -95,8 +89,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ success: true, answers }, { status: 200 });
   } catch (error) {
     console.error("Error retrieving user answers:", error);
-    const message =
-      error instanceof Error ? error.message : "Failed to retrieve answers";
+    const message = error instanceof Error ? error.message : "Failed to retrieve answers";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

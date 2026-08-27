@@ -1,255 +1,13 @@
 "use client";
 
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import type { ReviewStepProps } from "./types";
-import {
-  User,
-  Heart,
-  Users,
-  Target,
-  Shield,
-  CheckCircle2,
-  Info,
-  PhoneCall,
-  Briefcase,
-  BookOpen,
-  DollarSign,
-  Home,
-  Globe,
-  Compass,
-} from "lucide-react";
-import ir1SpouseQuestionnaire from "@/data/interview-categories/ir-1-spouse/questionnaire.json";
-import ir2ChildQuestionnaire from "@/data/interview-categories/ir-2-child/questionnaire.json";
-import ir5ParentQuestionnaire from "@/data/interview-categories/ir-5-parent/questionnaire.json";
-import f1StudentQuestionnaire from "@/data/interview-categories/f1-student/questionnaire.json";
-import ukStudentQuestionnaire from "@/data/interview-categories/uk-student/questionnaire.json";
-import caStudentQuestionnaire from "@/data/interview-categories/ca-student/questionnaire.json";
-import auStudentQuestionnaire from "@/data/interview-categories/au-student/questionnaire.json";
-import itStudentQuestionnaire from "@/data/interview-categories/it-student/questionnaire.json";
-
-interface QuestionnaireSection {
-  id: string;
-  title: string;
-  order: number;
-  questions: Array<{ key: string; label: string }>;
-}
-
-// Icon mapping for different section IDs - comprehensive across all categories
-const getSectionIcon = (sectionId: string) => {
-  const iconMap: Record<
-    string,
-    { Icon: typeof User; bgColor: string; iconColor: string }
-  > = {
-    // Basic Profile & Identity Sections
-    basic_case_information: {
-      Icon: User,
-      bgColor: "bg-blue-100",
-      iconColor: "text-blue-600",
-    },
-    basic_profile: {
-      Icon: User,
-      bgColor: "bg-blue-100",
-      iconColor: "text-blue-600",
-    },
-    basic_case_info: {
-      Icon: User,
-      bgColor: "bg-blue-100",
-      iconColor: "text-blue-600",
-    },
-    petitioner_details: {
-      Icon: User,
-      bgColor: "bg-blue-100",
-      iconColor: "text-blue-600",
-    },
-
-    // Relationship & Marriage Sections (IR-1)
-    relationship_origin: {
-      Icon: Heart,
-      bgColor: "bg-red-100",
-      iconColor: "text-red-600",
-    },
-    relationship_details: {
-      Icon: Heart,
-      bgColor: "bg-red-100",
-      iconColor: "text-red-600",
-    },
-    married_life: {
-      Icon: PhoneCall,
-      bgColor: "bg-pink-100",
-      iconColor: "text-pink-600",
-    },
-    married_life_daily_interaction: {
-      Icon: PhoneCall,
-      bgColor: "bg-pink-100",
-      iconColor: "text-pink-600",
-    },
-    communication_and_relationship: {
-      Icon: PhoneCall,
-      bgColor: "bg-pink-100",
-      iconColor: "text-pink-600",
-    },
-
-    // Family & Household Sections
-    family_and_social: {
-      Icon: Users,
-      bgColor: "bg-green-100",
-      iconColor: "text-green-600",
-    },
-    family_social_knowledge: {
-      Icon: Users,
-      bgColor: "bg-green-100",
-      iconColor: "text-green-600",
-    },
-    living_and_family_info: {
-      Icon: Home,
-      bgColor: "bg-emerald-100",
-      iconColor: "text-emerald-600",
-    },
-    living_arrangements_household_plans: {
-      Icon: Home,
-      bgColor: "bg-emerald-100",
-      iconColor: "text-emerald-600",
-    },
-
-    // Study & Academic Sections
-    study_plans: {
-      Icon: BookOpen,
-      bgColor: "bg-purple-100",
-      iconColor: "text-purple-600",
-    },
-    university_details: {
-      Icon: BookOpen,
-      bgColor: "bg-purple-100",
-      iconColor: "text-purple-600",
-    },
-    academic_capability: {
-      Icon: Target,
-      bgColor: "bg-violet-100",
-      iconColor: "text-violet-600",
-    },
-    academic_capability_english_proficiency: {
-      Icon: Target,
-      bgColor: "bg-violet-100",
-      iconColor: "text-violet-600",
-    },
-
-    // Financial Sections
-    financial_capability: {
-      Icon: DollarSign,
-      bgColor: "bg-green-100",
-      iconColor: "text-green-600",
-    },
-    financial_support_proof_of_funds: {
-      Icon: DollarSign,
-      bgColor: "bg-green-100",
-      iconColor: "text-green-600",
-    },
-    finances_and_household: {
-      Icon: DollarSign,
-      bgColor: "bg-green-100",
-      iconColor: "text-green-600",
-    },
-    finances_household_management: {
-      Icon: DollarSign,
-      bgColor: "bg-green-100",
-      iconColor: "text-green-600",
-    },
-    financial_dependency: {
-      Icon: DollarSign,
-      bgColor: "bg-green-100",
-      iconColor: "text-green-600",
-    },
-    financial_support_dependency_status: {
-      Icon: DollarSign,
-      bgColor: "bg-green-100",
-      iconColor: "text-green-600",
-    },
-    petitioner_information: {
-      Icon: Briefcase,
-      bgColor: "bg-indigo-100",
-      iconColor: "text-indigo-600",
-    },
-
-    // Home Country & Return Intent Sections
-    home_country_ties: {
-      Icon: Compass,
-      bgColor: "bg-cyan-100",
-      iconColor: "text-cyan-600",
-    },
-    ties_to_home_country_intent_to_return: {
-      Icon: Compass,
-      bgColor: "bg-cyan-100",
-      iconColor: "text-cyan-600",
-    },
-
-    // Travel & Background Sections
-    travel_background_history: {
-      Icon: Globe,
-      bgColor: "bg-orange-100",
-      iconColor: "text-orange-600",
-    },
-    travel_and_background_history: {
-      Icon: Globe,
-      bgColor: "bg-orange-100",
-      iconColor: "text-orange-600",
-    },
-    travel_immigration_background: {
-      Icon: Globe,
-      bgColor: "bg-orange-100",
-      iconColor: "text-orange-600",
-    },
-    travel_history_visa_background: {
-      Icon: Globe,
-      bgColor: "bg-orange-100",
-      iconColor: "text-orange-600",
-    },
-    travel_and_intent: {
-      Icon: Globe,
-      bgColor: "bg-orange-100",
-      iconColor: "text-orange-600",
-    },
-    background_check: {
-      Icon: Shield,
-      bgColor: "bg-amber-100",
-      iconColor: "text-amber-600",
-    },
-    background_future_plans: {
-      Icon: Target,
-      bgColor: "bg-sky-100",
-      iconColor: "text-sky-600",
-    },
-    background_and_plans: {
-      Icon: Target,
-      bgColor: "bg-sky-100",
-      iconColor: "text-sky-600",
-    },
-    immigration_intent_post_arrival_plans: {
-      Icon: Target,
-      bgColor: "bg-sky-100",
-      iconColor: "text-sky-600",
-    },
-
-    // Fallback sections
-    intent: {
-      Icon: Target,
-      bgColor: "bg-cyan-100",
-      iconColor: "text-cyan-600",
-    },
-    security: {
-      Icon: Shield,
-      bgColor: "bg-orange-100",
-      iconColor: "text-orange-600",
-    },
-  };
-
-  return (
-    iconMap[sectionId] || {
-      Icon: Info,
-      bgColor: "bg-gray-100",
-      iconColor: "text-gray-600",
-    }
-  );
-};
+import { ChevronDown, ChevronUp, FileCheck } from "lucide-react";
+import { QUESTIONNAIRES } from "@/data/interview-categories";
+import { getSectionUI } from "@/lib/interview-prep/section-ui";
+import type { SectionUIConfig } from "@/types/review";
 
 export function ReviewStep({
   formData,
@@ -258,220 +16,276 @@ export function ReviewStep({
   onSubmit,
   onBack,
   categorySlug,
+  sections: liveSections,
 }: ReviewStepProps) {
-  // Helper function to format values
+  const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([0]));
+
+  const toggleSection = (idx: number) => {
+    setExpandedSections((prev) => {
+      const next = new Set(prev);
+
+      if (next.has(idx)) {
+        next.delete(idx);
+      } else {
+        next.add(idx);
+      }
+
+      return next;
+    });
+  };
+
   const formatValue = (value: unknown): string => {
     if (value === null || value === undefined) {
       return "Not provided";
     }
+
     if (typeof value === "boolean") {
       return value ? "Yes" : "No";
     }
+
     if (typeof value === "object") {
       return JSON.stringify(value);
     }
+
     if (typeof value === "string") {
-      // Try to format as date if it looks like a date
       try {
         const date = new Date(value);
-        if (!isNaN(date.getTime()) && value.includes("-")) {
+
+        if (!Number.isNaN(date.getTime()) && value.includes("-")) {
           return date.toLocaleDateString();
         }
       } catch {
-        // Not a date
+        // Ignore invalid date
       }
+
       return value;
     }
+
     return String(value);
   };
 
-  // Get questionnaire sections dynamically based on categorySlug
-  const questionnaire: { sections: QuestionnaireSection[] } | null = (() => {
-    if (categorySlug === "ir-1-spouse") {
-      return ir1SpouseQuestionnaire;
-    } else if (categorySlug === "ir-2-child") {
-      return ir2ChildQuestionnaire;
-    } else if (categorySlug === "ir-5-parent") {
-      return ir5ParentQuestionnaire;
-    } else if (categorySlug === "f1-student") {
-      return f1StudentQuestionnaire;
-    } else if (categorySlug === "uk-student") {
-      return ukStudentQuestionnaire;
-    } else if (categorySlug === "ca-student") {
-      return caStudentQuestionnaire;
-    } else if (categorySlug === "au-student") {
-      return auStudentQuestionnaire;
-    } else if (categorySlug === "it-student") {
-      return itStudentQuestionnaire;
-    }
-    return null;
-  })();
+  const questionnaire = categorySlug ? QUESTIONNAIRES[categorySlug] : undefined;
+  const questionnaireSections = liveSections?.length ? liveSections : questionnaire?.sections;
 
-  // Build sections with their fields
-  const sections = questionnaire?.sections
-    ?.map((section) => {
-      const sectionFields = section.questions
-        .map((q) => {
-          const value = formData[q.key as keyof typeof formData];
+  if (!questionnaireSections) {
+    return (
+      <div className="rounded-xl border border-red-200 bg-red-50 p-6">
+        Questionnaire not found for "{categorySlug}".
+      </div>
+    );
+  }
+
+  const sections = questionnaireSections
+    .map((section) => {
+      const fields = section.questions
+        .map((question) => {
+          const value = formData[question.key as keyof typeof formData];
+
           if (
             value === null ||
             value === undefined ||
             value === "" ||
-            value === false ||
             (typeof value === "string" && value.trim() === "")
           ) {
             return null;
           }
+
           return {
-            key: q.key,
-            label: q.label,
+            key: question.key,
+            label: question.label,
             value: formatValue(value),
           };
         })
-        .filter(Boolean) as Array<{
-        key: string;
-        label: string;
-        value: string;
-      }>;
+        .filter(
+          (
+            field
+          ): field is {
+            key: string;
+            label: string;
+            value: string;
+          } => field !== null
+        );
 
       return {
         id: section.id,
         title: section.title,
         order: section.order,
-        fields: sectionFields,
+        ui: (section as { ui?: SectionUIConfig }).ui,
+        fields,
       };
     })
     .filter((section) => section.fields.length > 0)
     .sort((a, b) => a.order - b.order);
 
-  const renderSection = (section: {
-    id: string;
-    title: string;
-    order: number;
-    fields: Array<{ key: string; label: string; value: string }>;
-  }) => {
-    const { Icon, bgColor, iconColor } = getSectionIcon(section.id);
-
-    return (
-      <div
-        key={section.id}
-        className="bg-muted/20 rounded-xl p-6 border border-border"
-      >
-        <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-3">
-          <div
-            className={`${bgColor} ${iconColor} w-10 h-10 rounded-full flex items-center justify-center`}
-          >
-            <Icon className="w-5 h-5" />
-          </div>
-          {section.title}
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {section.fields.map(
-            (field: { key: string; label: string; value: string }) => (
-              <div key={field.key}>
-                <p className="text-sm text-muted-foreground">{field.label}</p>
-                <p className="font-medium text-foreground break-normal">
-                  {field.value}
-                </p>
-              </div>
-            ),
-          )}
-        </div>
-      </div>
-    );
-  };
-
   return (
-    <div className="space-y-8">
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-foreground mb-3">
-          Review Your Information
-        </h2>
-        <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-          Please review all the information you&apos;ve entered before
-          submitting for interview preparation.
-        </p>
-      </div>
+    <div className="space-y-6">
+      {/* Header */}
+      <div
+        className="rounded-2xl border-2 p-6 md:p-8"
+        style={{
+          background: "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
+          borderColor: "rgba(13,115,119,0.2)",
+          boxShadow: "0 8px 30px -8px rgba(13,115,119,0.3)",
+        }}
+      >
+        <div className="flex items-start gap-4">
+          <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+            <FileCheck className="h-7 w-7 text-white" />
+          </div>
 
-      <div className="space-y-6">
-        {/* Case Type Section */}
-        <div className="bg-muted/20 rounded-xl p-6 border border-border">
-          <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-3">
-            <div className="bg-blue-100 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center">
-              <CheckCircle2 className="w-5 h-5" />
-            </div>
-            Case Type
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <p className="text-sm text-muted-foreground">Selected Type</p>
-              <p className="font-medium capitalize">
-                {categorySlug === "ir-1-spouse"
-                  ? "IR-1 Spouse"
-                  : categorySlug === "ir-2-child"
-                    ? "IR-2 Child"
-                    : categorySlug === "ir-5-parent"
-                      ? "IR-5 Parent"
-                      : categorySlug === "f1-student"
-                        ? "F1 Student"
-                        : categorySlug === "uk-student"
-                          ? "UK Student"
-                          : categorySlug === "ca-student"
-                            ? "CA Student" 
-                            : categorySlug === "au-student"
-                              ? "AU Student" 
-                              : categorySlug === "it-student"
-                                ? "IT Student"
-                                : categorySlug || formData.caseType}
-              </p>
-            </div>
+          <div>
+            <h2 className="mb-2 text-2xl font-bold text-white md:text-3xl">
+              Review Your Information
+            </h2>
+
+            <p className="text-sm text-white/90 md:text-base">
+              Please review your responses before generating your interview preparation.
+            </p>
           </div>
         </div>
+      </div>
 
-        {/* Render questionnaire sections dynamically */}
-        {sections && sections.length > 0 ? (
-          sections.map((section) => renderSection(section))
+      {/* Sections */}
+      <div className="space-y-3">
+        {sections.length > 0 ? (
+          sections.map((section, idx) => {
+            const { Icon, bgColor, iconColor, valueBg, valueColor } = getSectionUI(section.ui);
+
+            const isExpanded = expandedSections.has(idx);
+
+            return (
+              <motion.div
+                key={section.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: idx * 0.05 }}
+                className="overflow-hidden rounded-xl border-2 transition-all hover:shadow-lg"
+                style={{
+                  borderColor: isExpanded ? "rgba(13,115,119,0.3)" : "rgba(0,0,0,0.08)",
+                  backgroundColor: isExpanded ? "#ffffff" : "#fafafa",
+                }}
+              >
+                {/* Header */}
+                <div
+                  className="flex cursor-pointer items-center gap-4 px-5 py-4 transition-colors hover:bg-slate-50 md:px-6"
+                  onClick={() => toggleSection(idx)}
+                >
+                  <div
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-lg ${bgColor} ${iconColor}`}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </div>
+
+                  <div className="min-w-0 flex-1">
+                    <h3 className="truncate text-base font-bold text-gray-900 md:text-lg">
+                      {section.title}
+                    </h3>
+
+                    <p className="mt-0.5 text-xs text-gray-600 md:text-sm">
+                      {section.fields.length} {section.fields.length === 1 ? "field" : "fields"}{" "}
+                      answered
+                    </p>
+                  </div>
+
+                  {isExpanded ? (
+                    <ChevronUp className="h-5 w-5 shrink-0 text-gray-400" />
+                  ) : (
+                    <ChevronDown className="h-5 w-5 shrink-0 text-gray-400" />
+                  )}
+                </div>
+
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.div
+                      initial={{
+                        height: 0,
+                        opacity: 0,
+                      }}
+                      animate={{
+                        height: "auto",
+                        opacity: 1,
+                      }}
+                      exit={{
+                        height: 0,
+                        opacity: 0,
+                      }}
+                      transition={{
+                        duration: 0.3,
+                      }}
+                      className="overflow-hidden"
+                    >
+                      <div className="border-t border-gray-100 px-5 pb-5 md:px-6">
+                        <div className="space-y-3 pt-4">
+                          {section.fields.map((field) => (
+                            <div
+                              key={field.key}
+                              className="flex flex-col gap-2 border-b border-gray-50 pb-3 last:border-b-0 sm:flex-row sm:items-start sm:justify-between"
+                            >
+                              <span className="flex-1 text-sm font-semibold text-gray-700">
+                                {field.label}
+                              </span>
+
+                              <span
+                                className="max-w-xs rounded-lg px-3 py-1.5 text-right text-sm font-medium"
+                                style={{
+                                  backgroundColor: valueBg,
+                                  color: valueColor,
+                                }}
+                              >
+                                {field.value}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </motion.div>
+            );
+          })
         ) : (
-          <div className="bg-yellow-50 border border-yellow-300 rounded-lg p-4 text-yellow-800">
+          <div className="rounded-lg border border-[#f0d6dc] bg-[#fff7f8] p-4 text-[#9e4a5a]">
             <p>No information entered yet.</p>
           </div>
         )}
 
         {error && (
-          <div className="p-4 bg-red-50 border-l-4 border-red-500 rounded-lg text-red-700">
+          <div className="rounded-lg border-l-4 border-[#db8090] bg-[#fff7f8] p-4 text-[#9e4a5a]">
             <div className="flex items-start">
               <svg
-                className="h-5 w-5 text-red-500 mt-0.5 mr-3"
+                className="mr-3 mt-0.5 h-5 w-5 text-[#db8090]"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >
                 <path
                   fillRule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
                   clipRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
                 />
               </svg>
+
               <span>{error}</span>
             </div>
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row justify-between gap-4 pt-6">
+        {/* Buttons */}
+        <div className="flex flex-col justify-between gap-4 pt-6 sm:flex-row">
           <Button
             onClick={onBack}
             variant="outline"
-            className="bg-slate-100 hover:bg-slate-200 text-slate-700 border-slate-300 px-6 py-3 text-base"
+            className="border-[#f0d6dc] px-6 py-3 text-base text-slate-700 hover:bg-[#fff7f8]"
           >
             ← Back
           </Button>
+
           <Button
             onClick={onSubmit}
             disabled={loading}
-            className="bg-teal-600 hover:bg-teal-700 px-6 py-3 text-base disabled:opacity-50"
+            className="bg-[#0d7377] px-6 py-3 text-base shadow-lg shadow-[#0d7377]/20 hover:bg-[#0a5a5d] disabled:opacity-50"
           >
-            {loading
-              ? "Generating Interview Prep..."
-              : "Generate Interview Prep"}
+            {loading ? "Generating Interview Prep..." : "Generate Interview Prep"}
           </Button>
         </div>
       </div>

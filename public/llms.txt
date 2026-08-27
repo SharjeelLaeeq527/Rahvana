@@ -1,0 +1,25 @@
+# Rahvana (https://rahvana.com) — U.S. Immigration Journey Platform
+> An intelligent digital platform guiding couples and families through U.S. immigration journeys including IR-1/CR-1 spouse visas, IR-5 parent visas, IR-2 child visas, and F-1 student visas.
+
+## Canonical Reference Links
+
+- [Home](https://rahvana.com): Overview of Rahvana's U.S. immigration journey platform, roadmap structure, and smart tools.
+- [IR-1 Spouse Visa Journey](https://rahvana.com/visa-category/ir-1): Step-by-step guidance for U.S. citizens sponsoring a foreign spouse (I-130, NVC processing, DS-260, consular interview).
+- [IR-5 Parent Visa Journey](https://rahvana.com/visa-category/ir-5): Complete roadmap for U.S. citizens (21+) sponsoring foreign parents for permanent residency (Green Cards).
+- [IR-2 Child Visa Journey](https://rahvana.com/visa-category/ir-2): Roadmap for U.S. citizens petitioning unmarried children under 21.
+- [F-1 Student Visa Journey](https://rahvana.com/visa-category/f-1): Guide to university admission, SEVIS, DS-160, and embassy interviews for international students.
+- [Visa Eligibility Checker](https://rahvana.com/visa-eligibility): Interactive assessment tool to determine qualification for family and student visa categories.
+- [Pricing](https://rahvana.com/pricing): Comparison of Free, Basic, Premium, and Executive assistance tiers.
+- [Services](https://rahvana.com/services): Certified translation, Police Character Certificate (PCC) assistance, and mock interviews.
+- [Resources & Guides](https://rahvana.com/resources): Official document checklists, civil document guidance, and USCIS form preparation tips.
+
+## Public Guide Library
+
+- [Pakistani Passport Guide](https://rahvana.com/guides/passport-guide): Requirements and renewal instructions for Pakistani passports during immigration processing.
+- [Nikah Nama & Marriage Registration Guide](https://rahvana.com/guides/nikah-nama-guide): Official requirements for Urdu Nikah Nama registration and NADRA Marriage Registration Certificates (MRC) for USCIS/NVC.
+- [Birth Certificate & FRC Guide](https://rahvana.com/guides/birth-certificate-guide): NADRA Family Registration Certificate (FRC) and Union Council birth certificate rules.
+- [Police Character Certificate Guide](https://rahvana.com/guides/police-certificate): How to obtain Khidmat Markaz police clearance in Pakistan for U.S. visa interviews.
+- [Polio Vaccination Guide](https://rahvana.com/guides/polio-vaccination-guide): WHO polio certificate guidelines for travelers departing Pakistan for U.S. immigration.
+
+## Full AI Reference Document
+- [Full Text Knowledge Base](https://rahvana.com/llms-full.txt): Comprehensive factual documentation for AI synthesis and citation.

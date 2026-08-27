@@ -11,12 +11,11 @@ export const formFields: Field[] = [
   {
     key: "g28_attached",
     pdfKey: "g28_attached",
-    label: "Is a Form G-28 (Notice of Entry of Appearance as Attorney or Accredited Representative) attached to this supplemental form?",
+    label:
+      "Is a Form G-28 (Notice of Entry of Appearance as Attorney or Accredited Representative) attached to this supplemental form?",
     type: "checkbox",
     section: "Attorney or Accredited Representative",
-    options: [
-      { label: "Yes", value: "Yes", pdfKey: "g28_attached" },
-    ],
+    options: [{ label: "Yes", value: "Yes", pdfKey: "g28_attached" }],
   },
   {
     key: "has_attorney_uscis_account",
@@ -27,15 +26,16 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes" },
       { label: "No", value: "No" },
     ],
-    subQuestions:[
+    subQuestions: [
       {
         key: "g28_uscis_account",
         pdfKey: "attorney_uscis_acct",
-        label: "Please provide your attorney's USCIS Online Account Number. This is a unique 12-digit number they use for online filings.",
+        label:
+          "Please provide your attorney's USCIS Online Account Number. This is a unique 12-digit number they use for online filings.",
         type: "text",
         condition: (d) => d.has_attorney_uscis_account === "Yes",
       },
-    ]
+    ],
   },
   {
     key: "has_attorney_bar_number",
@@ -46,48 +46,51 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes" },
       { label: "No", value: "No" },
     ],
-    subQuestions:[
+    subQuestions: [
       {
         key: "attorney_bar_number",
         pdfKey: "attorney_bar_number",
         label: "What is your attorney's State Bar Number?",
-    type: "text",
-    condition: (d) => d.has_attorney_bar_number === "Yes",
-  },]},
+        type: "text",
+        condition: (d) => d.has_attorney_bar_number === "Yes",
+      },
+    ],
+  },
   {
     key: "has_volag_number",
-    label: "Do you have a Volag Number? (This is usually for representatives of voluntary agencies).",
+    label:
+      "Do you have a Volag Number? (This is usually for representatives of voluntary agencies).",
     type: "radio",
     section: "Attorney or Accredited Representative",
     options: [
       { label: "Yes", value: "Yes" },
       { label: "No", value: "No" },
     ],
-    subQuestions:[
+    subQuestions: [
       {
-    key: "p1_volag_number",
-    pdfKey: "p1_volag_number",
-    label: "What is your Volag Number?",
-    type: "text",
-    condition: (d) => d.has_volag_number === "Yes",
-  },
+        key: "p1_volag_number",
+        pdfKey: "p1_volag_number",
+        label: "What is your Volag Number?",
+        type: "text",
+        condition: (d) => d.has_volag_number === "Yes",
+      },
     ],
   },
-  
 
   // ========================
   // Part 1. Information About You (Spouse Beneficiary)
   // ========================
   {
     key: "p1_has_alien_number",
-    label: "Do you have an Alien Registration Number (A-Number)? This is a 7 to 9-digit number often found on immigration documents like a Green Card.",
+    label:
+      "Do you have an Alien Registration Number (A-Number)? This is a 7 to 9-digit number often found on immigration documents like a Green Card.",
     type: "radio",
     section: "Part 1. Information About You (Spouse Beneficiary)",
     options: [
       { label: "Yes", value: "Yes" },
       { label: "No", value: "No" },
     ],
-    subQuestions:[
+    subQuestions: [
       {
         key: "p1_alien_number",
         pdfKey: "p1_alien_number",
@@ -96,7 +99,7 @@ export const formFields: Field[] = [
         condition: (d) => d.p1_has_alien_number === "Yes",
         maxLength: 9,
       },
-    ]
+    ],
   },
   {
     key: "p1_has_uscis_account",
@@ -107,7 +110,7 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes" },
       { label: "No", value: "No" },
     ],
-    subQuestions:[
+    subQuestions: [
       {
         key: "p1_uscis_account",
         pdfKey: "p1_uscis_account",
@@ -116,7 +119,7 @@ export const formFields: Field[] = [
         condition: (d) => d.p1_has_uscis_account === "Yes",
         maxLength: 12,
       },
-    ]
+    ],
   },
   {
     key: "p1_family_name",
@@ -124,8 +127,7 @@ export const formFields: Field[] = [
     label: "What is your current legal family name (last name)?",
     type: "text",
     section: "Part 1. Information About You (Spouse Beneficiary)",
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p1_given_name",
         pdfKey: "p1_given_name",
@@ -138,30 +140,31 @@ export const formFields: Field[] = [
         label: "What is your middle name? (If you don't have one, you can leave this blank).",
         type: "text",
       },
-    ]
+    ],
   },
 
   // Address History 1 (Current)
   {
     key: "p1_addr1_street",
     pdfKey: "p1_addr1_street",
-    label: "What is your current street address? Please include the house number and street name (e.g., 123 Main St).",
+    label:
+      "What is your current street address? Please include the house number and street name (e.g., 123 Main St).",
     type: "text",
     section: "Address History 1 (Current)",
-    subQuestions:[
+    subQuestions: [
       {
         key: "p1_addr1_unit_type",
-        pdfKey: "p1_addr1_unit_apt", // Logic will need to handle multiple checkboxes based on value? 
-        // For simplicity in text config, we map to one, or use a dropdown. 
+        pdfKey: "p1_addr1_unit_apt", // Logic will need to handle multiple checkboxes based on value?
+        // For simplicity in text config, we map to one, or use a dropdown.
         // Mapping "pdfKey" here is for display. The actual filler handles mapping logic if complex.
-        // But here we are 1:1. 
+        // But here we are 1:1.
         // We will just expose the value fields.
         label: "Is this an apartment, suite, or floor?",
         type: "radio",
         options: [
           { label: "Apt", value: "apt", pdfKey: "p1_addr1_unit_apt" },
           { label: "Ste", value: "ste", pdfKey: "p1_addr1_unit_ste" },
-          { label: "Flr", value: "flr", pdfKey: "p1_addr1_unit_flr" }
+          { label: "Flr", value: "flr", pdfKey: "p1_addr1_unit_flr" },
         ],
       },
       {
@@ -180,7 +183,9 @@ export const formFields: Field[] = [
         key: "p1_addr1_state",
         pdfKey: "p1_addr1_state",
         label: "In which state do you currently live?",
-        type: "text", // Or select list of states
+        type: "dropdown",
+        isState: true, // Or select list of states
+    placeholder:"Select a state",
       },
       {
         key: "p1_addr1_zip",
@@ -215,10 +220,11 @@ export const formFields: Field[] = [
       {
         key: "p1_addr1_date_to",
         pdfKey: "p1_addr1_date_to",
-        label: "When did you stop living at this address? (If you still live here, you can enter today's date or 'Present').",
+        label:
+          "When did you stop living at this address? (If you still live here, you can enter today's date or 'Present').",
         type: "date",
       },
-    ]
+    ],
   },
 
   // Parents Information
@@ -234,8 +240,7 @@ export const formFields: Field[] = [
     label: "What is your father's family name (last name)?",
     type: "text",
     section: "Information About Your Parents",
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p1_parent1_given_name",
         pdfKey: "p1_parent1_given_name",
@@ -245,7 +250,8 @@ export const formFields: Field[] = [
       {
         key: "p1_parent1_middle_name",
         pdfKey: "p1_parent1_middle_name",
-        label: "What is your father's middle name? (If he doesn't have one, you can leave this blank).",
+        label:
+          "What is your father's middle name? (If he doesn't have one, you can leave this blank).",
         type: "text",
       },
       {
@@ -282,7 +288,7 @@ export const formFields: Field[] = [
         type: "text",
         section: "Information About Your Parents",
       },
-    ]
+    ],
   },
 
   // {
@@ -297,8 +303,7 @@ export const formFields: Field[] = [
     label: "What is your mother's family name (last name)?",
     type: "text",
     section: "Information About Your Parents",
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p1_parent2_given_name",
         pdfKey: "p1_parent2_given_name",
@@ -309,7 +314,8 @@ export const formFields: Field[] = [
       {
         key: "p1_parent2_middle_name",
         pdfKey: "p1_parent2_middle_name",
-        label: "What is your mother's middle name? (If she doesn't have one, you can leave this blank).",
+        label:
+          "What is your mother's middle name? (If she doesn't have one, you can leave this blank).",
         type: "text",
         section: "Information About Your Parents",
       },
@@ -355,7 +361,7 @@ export const formFields: Field[] = [
         type: "text",
         section: "Information About Your Parents",
       },
-    ]
+    ],
   },
 
   // Employment
@@ -368,7 +374,8 @@ export const formFields: Field[] = [
   {
     key: "p2_emp1_name",
     pdfKey: "p2_emp1_name",
-    label: "What is the name of your current or most recent employer? (If you are currently unemployed, please type 'Unemployed').",
+    label:
+      "What is the name of your current or most recent employer? (If you are currently unemployed, please type 'Unemployed').",
     type: "text",
     section: "Part 2. Information About Your Employment",
   },
@@ -378,8 +385,7 @@ export const formFields: Field[] = [
     label: "What is your employer's street address? (e.g., 123 Business Way).",
     type: "text",
     section: "Part 2. Information About Your Employment",
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p2_emp1_unit_type",
         pdfKey: "p2_emp1_unit_apt",
@@ -388,7 +394,7 @@ export const formFields: Field[] = [
         options: [
           { label: "Apt", value: "apt", pdfKey: "p2_emp1_unit_apt" },
           { label: "Ste", value: "ste", pdfKey: "p2_emp1_unit_ste" },
-          { label: "Flr", value: "flr", pdfKey: "p2_emp1_unit_flr" }
+          { label: "Flr", value: "flr", pdfKey: "p2_emp1_unit_flr" },
         ],
       },
       {
@@ -407,7 +413,9 @@ export const formFields: Field[] = [
         key: "p2_emp1_state",
         pdfKey: "p2_emp1_state",
         label: "In which state?",
-        type: "text",
+        type: "dropdown",
+    isState: true,
+    placeholder:"Select a state",
       },
       {
         key: "p2_emp1_zip",
@@ -433,7 +441,7 @@ export const formFields: Field[] = [
         label: "In which country is your employer located?",
         type: "text",
       },
-    ]
+    ],
   },
   {
     key: "p2_emp1_occupation",
@@ -448,14 +456,15 @@ export const formFields: Field[] = [
     label: "When did you start working at this job?",
     type: "date",
     section: "Part 2. Information About Your Employment",
-    subQuestions:[
+    subQuestions: [
       {
         key: "p2_emp1_date_to",
         pdfKey: "p2_emp1_date_to",
-        label: "When did you stop working at this job? (If you still work here, you can enter today's date or 'Present').",
+        label:
+          "When did you stop working at this job? (If you still work here, you can enter today's date or 'Present').",
         type: "date",
-      },  
-    ]
+      },
+    ],
   },
   // Employment 2
   {
@@ -464,7 +473,6 @@ export const formFields: Field[] = [
     label: "What was the name of your previous employer?",
     type: "text",
     section: "Part 2. Information About Your Employment",
-    
   },
   {
     key: "p2_emp2_street",
@@ -472,8 +480,7 @@ export const formFields: Field[] = [
     label: "What was your previous employer's street address?",
     type: "text",
     section: "Part 2. Information About Your Employment",
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p2_emp2_unit_type",
         pdfKey: "p2_emp2_unit_apt",
@@ -482,7 +489,7 @@ export const formFields: Field[] = [
         options: [
           { label: "Apt", value: "apt", pdfKey: "p2_emp2_unit_apt" },
           { label: "Ste", value: "ste", pdfKey: "p2_emp2_unit_ste" },
-          { label: "Flr", value: "flr", pdfKey: "p2_emp2_unit_flr" }
+          { label: "Flr", value: "flr", pdfKey: "p2_emp2_unit_flr" },
         ],
         section: "Part 2. Information About Your Employment",
       },
@@ -504,7 +511,9 @@ export const formFields: Field[] = [
         key: "p2_emp2_state",
         pdfKey: "p2_emp2_state",
         label: "In which state?",
-        type: "text",
+        type: "dropdown",
+    isState: true,
+    placeholder:"Select a state",
         section: "Part 2. Information About Your Employment",
       },
       {
@@ -535,7 +544,7 @@ export const formFields: Field[] = [
         type: "text",
         section: "Part 2. Information About Your Employment",
       },
-    ]
+    ],
   },
   {
     key: "p2_emp2_occupation",
@@ -550,8 +559,7 @@ export const formFields: Field[] = [
     label: "When did you start working at this job?",
     type: "date",
     section: "Part 2. Information About Your Employment",
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p2_emp2_date_to",
         pdfKey: "p2_emp2_date_to",
@@ -559,21 +567,23 @@ export const formFields: Field[] = [
         type: "date",
         section: "Part 2. Information About Your Employment",
       },
-    ]
+    ],
   },
 
   // Employment 3 (Part 3)
   {
     key: "",
     pdfKey: "",
-    label: "Provide your last occupation outside the United States if not shown above.  If you never worked outside the United States, provide this information in the space provided in Part 7. ",
+    label:
+      "Provide your last occupation outside the United States if not shown above.  If you never worked outside the United States, provide this information in the space provided in Part 7. ",
     type: "hidden",
     section: "Part 3. Employment Outside the United States",
   },
   {
     key: "p3_emp3_name",
     pdfKey: "p3_emp3_name",
-    label: "What was the name of your last employer outside the United States? (If you haven't mentioned them already).",
+    label:
+      "What was the name of your last employer outside the United States? (If you haven't mentioned them already).",
     type: "text",
     section: "Part 3. Employment Outside the United States",
   },
@@ -583,8 +593,7 @@ export const formFields: Field[] = [
     label: "What was the street address of this employer?",
     type: "text",
     section: "Part 3. Employment Outside the United States",
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p2_emp1_unit_type",
         pdfKey: "p2_emp1_unit_apt",
@@ -593,7 +602,7 @@ export const formFields: Field[] = [
         options: [
           { label: "Apt", value: "apt", pdfKey: "p3_emp3_unit_apt" },
           { label: "Ste", value: "ste", pdfKey: "p3_emp3_unit_ste" },
-          { label: "Flr", value: "flr", pdfKey: "p3_emp3_unit_flr" }
+          { label: "Flr", value: "flr", pdfKey: "p3_emp3_unit_flr" },
         ],
       },
       {
@@ -612,7 +621,9 @@ export const formFields: Field[] = [
         key: "p3_emp3_state",
         pdfKey: "p3_emp3_state",
         label: "In which state or region?",
-        type: "text",
+      type: "dropdown",
+    isState: true,
+    placeholder:"Select a state",
       },
       {
         key: "p3_emp3_zip",
@@ -626,7 +637,7 @@ export const formFields: Field[] = [
         label: "In which country was this employer located?",
         type: "text",
       },
-    ]
+    ],
   },
   {
     key: "p3_emp3_occupation",
@@ -641,45 +652,43 @@ export const formFields: Field[] = [
     label: "When did you start working there?",
     type: "text",
     section: "Part 3. Employment Outside the United States",
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p3_emp3_date_to",
         pdfKey: "p3_emp3_date_to",
         label: "When did you stop working there?",
         type: "text",
       },
-    ]
+    ],
   },
 
   // Part 4
   {
     key: "p4_language_english_chk",
     pdfKey: "p4_language_english_chk",
-    label: "Can you read and understand English? (This helps us know if you needed an interpreter for this form).",
+    label:
+      "Can you read and understand English? (This helps us know if you needed an interpreter for this form).",
     type: "checkbox",
     section: "Part 4.  Spouse Information",
-    options: [
-      { label: "Yes", value: "Yes", pdfKey: "p4_language_english_chk" },
-    ]
+    options: [{ label: "Yes", value: "Yes", pdfKey: "p4_language_english_chk" }],
   },
 
   {
     key: "p4_language_interp_lang",
     pdfKey: "p4_language_interp_lang",
-    label: "If you used an interpreter, what language did they use to explain the questions to you?",
+    label:
+      "If you used an interpreter, what language did they use to explain the questions to you?",
     type: "text",
     section: "Part 4.  Spouse Information",
   },
   {
     key: "p4_interpreter_chk",
     pdfKey: "p4_interpreter_chk",
-    label: "Did the interpreter named in Part 5 read every question and instruction on this form to you in your native language?",
+    label:
+      "Did the interpreter named in Part 5 read every question and instruction on this form to you in your native language?",
     type: "checkbox",
     section: "Part 4.  Spouse Information",
-    options: [
-      { label: "Yes", value: "Yes", pdfKey: "p4_interpreter_chk" },
-    ]
+    options: [{ label: "Yes", value: "Yes", pdfKey: "p4_interpreter_chk" }],
   },
   {
     key: "p4_interpreter_name",
@@ -731,15 +740,14 @@ export const formFields: Field[] = [
     label: "What is the interpreter's family name (last name)?",
     type: "text",
     section: "Part 5. Interpreter Information",
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p5_interp_given_name",
         pdfKey: "p5_interp_given_name",
         label: "What is the interpreter's given name (first name)?",
         type: "text",
       },
-    ]
+    ],
   },
   {
     key: "p5_has_interp_business",
@@ -750,8 +758,7 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes" },
       { label: "No", value: "No" },
     ],
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p5_interp_business",
         pdfKey: "p5_interp_business",
@@ -759,7 +766,7 @@ export const formFields: Field[] = [
         type: "text",
         condition: (d) => d.p5_has_interp_business === "Yes",
       },
-    ]
+    ],
   },
   {
     key: "p5_interp_street",
@@ -767,8 +774,7 @@ export const formFields: Field[] = [
     label: "What is the interpreter's street address?",
     type: "text",
     section: "Part 5. Interpreter Information",
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p5_interp_unit_type",
         pdfKey: "p5_interp_unit_apt",
@@ -777,7 +783,7 @@ export const formFields: Field[] = [
         options: [
           { label: "Apt", value: "apt", pdfKey: "p5_interp_unit_apt" },
           { label: "Ste", value: "ste", pdfKey: "p5_interp_unit_ste" },
-          { label: "Flr", value: "flr", pdfKey: "p5_interp_unit_flr" }
+          { label: "Flr", value: "flr", pdfKey: "p5_interp_unit_flr" },
         ],
       },
       {
@@ -796,7 +802,9 @@ export const formFields: Field[] = [
         key: "p5_interp_state",
         pdfKey: "p5_interp_state",
         label: "In which state?",
-        type: "text",
+        type: "dropdown",
+    isState: true,
+    placeholder:"Select a state",
       },
       {
         key: "p5_interp_zip",
@@ -822,7 +830,7 @@ export const formFields: Field[] = [
         label: "In which country is the interpreter located?",
         type: "text",
       },
-    ]
+    ],
   },
   {
     key: "p5_interp_phone",
@@ -851,15 +859,14 @@ export const formFields: Field[] = [
     label: "Please type the interpreter's full legal name as their electronic signature.",
     type: "text",
     section: "Part 5. Interpreter Information",
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p5_interp_date_signed",
         pdfKey: "p5_interp_date_signed",
         label: "On what date is the interpreter signing this form? (mm/dd/yyyy)",
         type: "date",
       },
-    ]
+    ],
   },
   // Part 6 - Preparer
   {
@@ -868,15 +875,14 @@ export const formFields: Field[] = [
     label: "What is the preparer's given name (first name)?",
     type: "text",
     section: "Part 6. Preparer Information",
-    subQuestions:[
+    subQuestions: [
       {
         key: "p6_prep_family_name",
         pdfKey: "p6_prep_family_name",
         label: "What is the preparer's family name (last name)?",
         type: "text",
       },
-      
-    ]
+    ],
   },
   {
     key: "p6_has_prep_business",
@@ -887,8 +893,7 @@ export const formFields: Field[] = [
       { label: "Yes", value: "Yes" },
       { label: "No", value: "No" },
     ],
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p6_prep_business",
         pdfKey: "p6_prep_business",
@@ -896,7 +901,7 @@ export const formFields: Field[] = [
         type: "text",
         condition: (d) => d.p6_has_prep_business === "Yes",
       },
-    ]
+    ],
   },
   {
     key: "p6_prep_street",
@@ -904,8 +909,7 @@ export const formFields: Field[] = [
     label: "What is the preparer's street address?",
     type: "text",
     section: "Part 6. Preparer Information",
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p6_prep_unit_type",
         pdfKey: "p6_prep_unit_apt",
@@ -914,7 +918,7 @@ export const formFields: Field[] = [
         options: [
           { label: "Apt", value: "apt", pdfKey: "p6_prep_unit_apt" },
           { label: "Ste", value: "ste", pdfKey: "p6_prep_unit_ste" },
-          { label: "Flr", value: "flr", pdfKey: "p6_prep_unit_flr" }
+          { label: "Flr", value: "flr", pdfKey: "p6_prep_unit_flr" },
         ],
       },
       {
@@ -933,7 +937,9 @@ export const formFields: Field[] = [
         key: "p6_prep_state",
         pdfKey: "p6_prep_state",
         label: "In which state?",
-        type: "text",
+        type: "dropdown",
+    isState: true,
+    placeholder:"Select a state",
       },
       {
         key: "p6_prep_zip",
@@ -959,7 +965,7 @@ export const formFields: Field[] = [
         label: "In which country is the preparer located?",
         type: "text",
       },
-    ]
+    ],
   },
   {
     key: "p6_prep_phone",
@@ -988,8 +994,16 @@ export const formFields: Field[] = [
     label: "Is the preparer an attorney or an accredited representative?",
     type: "radio",
     options: [
-      { label: "I am not an attorney or accredited representative.", value: "not_attorney", pdfKey: "p6_prep_statement_chk1" },
-      { label: "I am an attorney or accredited representative.", value: "attorney", pdfKey: "p6_prep_statement_chk2" }
+      {
+        label: "I am not an attorney or accredited representative.",
+        value: "not_attorney",
+        pdfKey: "p6_prep_statement_chk1",
+      },
+      {
+        label: "I am an attorney or accredited representative.",
+        value: "attorney",
+        pdfKey: "p6_prep_statement_chk2",
+      },
     ],
     section: "Part 6. Preparer Information",
   },
@@ -999,8 +1013,16 @@ export const formFields: Field[] = [
     label: "Does the attorney's representation extend to this entire form?",
     type: "radio",
     options: [
-      { label: "My representation extends to this form.", value: "extends", pdfKey: "p6_prep_attorney_chk1" },
-      { label: "My representation does not extend to this form.", value: "does_not_extend", pdfKey: "p6_prep_attorney_chk2" }
+      {
+        label: "My representation extends to this form.",
+        value: "extends",
+        pdfKey: "p6_prep_attorney_chk1",
+      },
+      {
+        label: "My representation does not extend to this form.",
+        value: "does_not_extend",
+        pdfKey: "p6_prep_attorney_chk2",
+      },
     ],
     section: "Part 6. Preparer Information",
     condition: (d) => d.p6_prep_statement_chk === "attorney",
@@ -1011,15 +1033,14 @@ export const formFields: Field[] = [
     label: "Please type the preparer's full legal name as their electronic signature.",
     type: "text",
     section: "Part 6. Preparer Information",
-    subQuestions:[
-      
+    subQuestions: [
       {
         key: "p6_prep_date_signed",
         pdfKey: "p6_prep_date_signed",
         label: "On what date is the preparer signing this form? (mm/dd/yyyy)",
         type: "date",
       },
-    ]
+    ],
   },
 
   // Part 7 - Additional Information
@@ -1167,7 +1188,7 @@ export const formFields: Field[] = [
     type: "textarea",
     section: "Part 7. Additional Information",
   },
-]
+];
 
 export const getInitialFormData = () => {
   const data: Record<string, string> = {};
@@ -1178,43 +1199,53 @@ export const getInitialFormData = () => {
 export const sectionIntroMessages = {
   "Attorney or Accredited Representative": {
     greeting: "Let's start with your representative",
-    message: "If you have an attorney or an accredited representative helping you with this form, we'll collect their information first. If not, don't worry—you can skip this part.",
+    message:
+      "If you have an attorney or an accredited representative helping you with this form, we'll collect their information first. If not, don't worry-you can skip this part.",
   },
   "Part 1. Information About You (Spouse Beneficiary)": {
     greeting: "Now, let's talk about you",
-    message: "In this section, we'll gather some basic details about you, the spouse beneficiary. This helps USCIS identify who is receiving the benefits of this petition.",
+    message:
+      "In this section, we'll gather some basic details about you, the spouse beneficiary. This helps USCIS identify who is receiving the benefits of this petition.",
   },
   "Address History 1 (Current)": {
     greeting: "Tell us where you live",
-    message: "We need to know your current address and where you've lived in the past. This is a standard part of the process to ensure USCIS has your complete history.",
+    message:
+      "We need to know your current address and where you've lived in the past. This is a standard part of the process to ensure USCIS has your complete history.",
   },
   "Information About Your Parents": {
     greeting: "A bit about your family",
-    message: "Now we'll ask for some information about your parents. This helps verify your family background and history.",
+    message:
+      "Now we'll ask for some information about your parents. This helps verify your family background and history.",
   },
   "Part 2. Information About Your Employment": {
     greeting: "Now let's cover your work history",
-    message: "USCIS requires a record of your employment over the last 5 years. This helps them understand your professional background.",
+    message:
+      "USCIS requires a record of your employment over the last 5 years. This helps them understand your professional background.",
   },
   "Part 3. Employment Outside the United States": {
     greeting: "Your work outside the U.S.",
-    message: "If you've worked outside the United States, please provide those details here. This completes your professional history record.",
+    message:
+      "If you've worked outside the United States, please provide those details here. This completes your professional history record.",
   },
   "Part 4. Spouse Information": {
-    greeting: "Almost done—some final details",
-    message: "This section includes your contact information and declarations. Please review everything carefully before moving forward.",
+    greeting: "Almost done-some final details",
+    message:
+      "This section includes your contact information and declarations. Please review everything carefully before moving forward.",
   },
   "Part 5. Interpreter Information": {
     greeting: "Interpreter details",
-    message: "If you used an interpreter to help you understand or complete this form, we'll need their information here.",
+    message:
+      "If you used an interpreter to help you understand or complete this form, we'll need their information here.",
   },
   "Part 6. Preparer Information": {
     greeting: "Preparer details",
-    message: "If someone else helped you prepare this form, we'll need their details in this section.",
+    message:
+      "If someone else helped you prepare this form, we'll need their details in this section.",
   },
   "Part 7. Additional Information": {
-    greeting: "Final section—anything else?",
-    message: "This is the last section. You can use this space for any extra information that didn't fit in the previous parts. You're almost there!",
+    greeting: "Final section-anything else?",
+    message:
+      "This is the last section. You can use this space for any extra information that didn't fit in the previous parts. You're almost there!",
   },
 };
 

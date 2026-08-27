@@ -13,6 +13,8 @@ import {
   Sparkles,
   Folder,
   Layers,
+  Zap,
+  Mic,
 } from "lucide-react";
 
 interface Scene {
@@ -32,6 +34,73 @@ const colors = {
   sageGrey: "#89a4a0",
   white: "#ffffff",
   lightBg: "#f8fbfc",
+};
+
+const badgeConfig = {
+  Basic: {
+    bg: "bg-[#e4f4f2]",
+    border: "border-[#98d0ca]",
+    text: "text-[#0f4040]",
+  },
+  Premium: {
+    bg: "bg-[#f2f4ff]",
+    border: "border-[#d8ddff]",
+    text: "text-[#24327f]",
+  },
+  Executive: {
+    bg: "bg-[#fdf4d8]",
+    border: "border-[#e4cc88]",
+    text: "text-[#5a3808]",
+  },
+};
+
+const interviewModes = {
+  prep: {
+    label: "Prep Mode",
+    icon: BookOpen,
+    color: "#0d7377",
+    plans: ["Basic"],
+    features: [
+      "Full Interview Question Bank",
+      "Prep Mode (full access)",
+      "AI Answer Builder (core feature)",
+      "Improve clarity & structure",
+      "Make answers interview-ready",
+      "Save & edit answers anytime",
+    ],
+  },
+
+  rapid: {
+    label: "Rapid Fire",
+    icon: Zap,
+    color: "#6b5b7b",
+    plans: ["Premium", "Executive"],
+    features: [
+      "Rapid Fire Mode",
+      "Timed questions (pressure simulation)",
+      "Fast recall training",
+      "Adaptive practice flow",
+      "Smart summaries after sessions",
+      "Performance review insights",
+      "Confidence-building repetition",
+    ],
+  },
+
+  mock: {
+    label: "Mock Interview",
+    icon: Mic,
+    color: "#9e4a5a",
+    plans: ["Executive"],
+    features: [
+      "Mock Interview Mode (full simulation)",
+      "Voice-based interview experience",
+      "Speech-to-Text (STT)",
+      "Text-to-Speech (TTS)",
+      "Real-time interview flow (no UI hints)",
+      "Performance analytics",
+      "Interview behavior feedback",
+    ],
+  },
 };
 
 const scenes221g: Scene[] = [
@@ -101,7 +170,10 @@ const scenes221g: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -129,8 +201,14 @@ const scenes221g: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -150,9 +228,8 @@ const scenes221g: Scene[] = [
             Important Note
           </h4>
           <p className="text-[14px] font-medium leading-6" style={{ color: colors.sageGrey }}>
-            This tool provides general guidance for Pakistan-based cases
-            (Islamabad/Karachi) and is not legal advice. Always prioritize your
-            official letter&apos;s instructions.
+            This tool provides general guidance for Pakistan-based cases (Islamabad/Karachi) and is
+            not legal advice. Always prioritize your official letter&apos;s instructions.
           </p>
         </motion.div>
       </div>
@@ -228,7 +305,10 @@ const scenesPassport: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -256,8 +336,14 @@ const scenesPassport: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -277,9 +363,9 @@ const scenesPassport: Scene[] = [
             Important Note
           </h4>
           <p className="text-[14px] font-medium leading-6" style={{ color: colors.sageGrey }}>
-            This guide provides general information based on publicly available
-            DGIP sources. Requirements may vary by case and can change; verify
-            with your RPO/EPO before submission.
+            This guide provides general information based on publicly available DGIP sources.
+            Requirements may vary by case and can change; verify with your RPO/EPO before
+            submission.
           </p>
         </motion.div>
       </div>
@@ -355,7 +441,10 @@ const scenesCnic: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -383,8 +472,14 @@ const scenesCnic: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -463,7 +558,10 @@ const scenesFrc: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -491,8 +589,14 @@ const scenesFrc: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug whitespace-pre-wrap" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug whitespace-pre-wrap"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -566,7 +670,10 @@ const scenesPoliceVerification: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -594,8 +701,14 @@ const scenesPoliceVerification: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -669,7 +782,10 @@ const scenesMarriageRegistration: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -697,8 +813,14 @@ const scenesMarriageRegistration: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -714,8 +836,7 @@ const scenesBirthCertificate: Scene[] = [
   {
     id: "welcome",
     title: "Welcome to Birth Certificate Guide",
-    description:
-      "Use this wizard to prepare a complete birth certificate application workflow.",
+    description: "Use this wizard to prepare a complete birth certificate application workflow.",
     illustration: "welcome",
   },
   {
@@ -772,7 +893,10 @@ const scenesBirthCertificate: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -800,8 +924,14 @@ const scenesBirthCertificate: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -817,8 +947,7 @@ const scenesPolioVaccination: Scene[] = [
   {
     id: "welcome",
     title: "Welcome to Polio Vaccination Guide",
-    description:
-      "Prepare your vaccination and certificate process with a clear, guided checklist.",
+    description: "Prepare your vaccination and certificate process with a clear, guided checklist.",
     illustration: "welcome",
   },
   {
@@ -875,7 +1004,10 @@ const scenesPolioVaccination: Scene[] = [
             >
               {i + 1}
             </div>
-            <p className="text-base font-semibold leading-snug md:text-[17px]" style={{ color: colors.deepTeal }}>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
               {text}
             </p>
           </motion.div>
@@ -903,8 +1035,381 @@ const scenesPolioVaccination: Scene[] = [
               key={i}
               className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
             >
-              <div className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
-              <span className="text-[15px] font-semibold leading-snug" style={{ color: colors.deepTeal }}>
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
+                {item}
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    ),
+    illustration: "preparation",
+  },
+];
+
+const scenesInterviewPrep: Scene[] = [
+  {
+    id: "what-is",
+    title: "What Is Interview Prep?",
+    titleLines: ["What Is", "Interview Prep?"],
+    description:
+      "An AI-powered visa interview simulator designed to help applicants practice, improve answers, and build confidence before their embassy interview.",
+    illustration: "document",
+
+    extraContent: (
+      <div className="mx-auto mt-6 max-w-lg space-y-4 text-left">
+        {[
+          "Realistic embassy-style interview questions",
+          "Personalized feedback after every session",
+          "Practice tailored to your visa category",
+          "Confidence-building interview simulations",
+        ].map((item, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              delay: 0.3 + i * 0.1,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
+          >
+            <div
+              className="h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: colors.deepTeal }}
+            />
+
+            <span
+              className="text-[15px] font-semibold leading-snug"
+              style={{ color: colors.deepTeal }}
+            >
+              {item}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+    ),
+  },
+
+  {
+    id: "pitfalls",
+    title: "Avoid Common Mistakes",
+    titleLines: ["Avoid Common", "Mistakes"],
+    description:
+      "Many applicants know their case well but struggle to communicate it effectively during the interview.",
+    illustration: "warning",
+
+    extraContent: (
+      <div className="mx-auto mt-6 max-w-lg space-y-4 text-left">
+        {[
+          "Giving incomplete or vague answers",
+          "Appearing nervous or unprepared",
+          "Missing key supporting details",
+          "Providing overly long or confusing responses",
+        ].map((item, i) => (
+          <motion.div
+            key={i}
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{
+              delay: 0.3 + i * 0.12,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            className="flex items-center gap-3 rounded-xl border border-[#db8090]/20 bg-white p-4 shadow-sm"
+          >
+            <div
+              className="h-2.5 w-2.5 rounded-full"
+              style={{ backgroundColor: colors.dustyRose }}
+            />
+
+            <span
+              className="text-[15px] font-semibold leading-snug"
+              style={{ color: colors.deepTeal }}
+            >
+              {item}
+            </span>
+          </motion.div>
+        ))}
+      </div>
+    ),
+  },
+
+  {
+    id: "workflow",
+    title: "Practice Modes & Plans",
+    titleLines: ["Practice Modes", "& Plans"],
+    description: "Choose the interview preparation experience that best fits your needs.",
+    illustration: "checklist",
+
+    extraContent: (
+      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
+        <ModeCarousel />
+      </div>
+    ),
+  },
+
+  {
+    id: "wizard",
+    title: "How This Works",
+    titleLines: ["Ready To", "Practice?"],
+    description:
+      "Start preparing today and walk into your embassy interview with greater confidence, clearer answers, and fewer surprises.",
+    illustration: "wizard",
+
+    extraContent: (
+      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
+        {[
+          "Answer realistic embassy interview questions.",
+          "Review feedback and scores.",
+          "Improve weak areas and practice again.",
+        ].map((text, i) => (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{
+              delay: 0.3 + i * 0.15,
+              ease: [0.22, 1, 0.36, 1],
+            }}
+            key={i}
+            className="flex items-start gap-4 rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+          >
+            <div
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-bold text-white shadow-md"
+              style={{
+                background: `linear-gradient(135deg, ${colors.deepTeal}, ${colors.softAqua})`,
+              }}
+            >
+              {i + 1}
+            </div>
+
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
+              {text}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    ),
+  },
+];
+
+const scenesStepParent: Scene[] = [
+  {
+    id: "welcome",
+    title: "Welcome to Step-Parent Guide",
+    description: "Learn how to qualify and compile documents for your step-parent petition case under U.S. immigration laws.",
+    illustration: "welcome",
+  },
+  {
+    id: "what-is",
+    title: "What is Step-Parent Qualification?",
+    description: "USCIS generally recognizes a step-relationship if the marriage occurred before the child turned 18 and is legally valid.",
+    illustration: "document",
+  },
+  {
+    id: "pitfalls",
+    title: "Avoid Denial Pitfalls",
+    titleLines: ["Avoid", "Denial", "Pitfalls"],
+    description: "Prevent common errors like missing prior marriage termination decrees, self-translation, or timeline issues.",
+    illustration: "warning",
+  },
+  {
+    id: "workflow",
+    title: "Guided Step-Parent Workflow",
+    titleLines: ["Guided", "Step-Parent", "Workflow"],
+    description: "Check eligibility timing, checklist required certificates, review translations, and complete final review.",
+    illustration: "checklist",
+  },
+  {
+    id: "output",
+    title: "USCIS Checklist Ready",
+    titleLines: ["USCIS", "Checklist", "Ready"],
+    description: "Get a clear list of actions, documents, and rules for your petition packet.",
+    illustration: "output",
+  },
+  {
+    id: "wizard",
+    title: "How This Works",
+    extraContent: (
+      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
+        {[
+          "Answer eligibility questions to verify step-parent status.",
+          "Checklist birth, marriage, and termination certificates.",
+          "Verify third-party certified English translations.",
+          "Perform final review and name matching checks.",
+        ].map((text, i) => (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+            key={i}
+            className="flex items-start gap-4 rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+          >
+            <div
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-bold text-white shadow-md"
+              style={{
+                background: `linear-gradient(135deg, ${colors.deepTeal}, ${colors.softAqua})`,
+              }}
+            >
+              {i + 1}
+            </div>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
+              {text}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    ),
+    illustration: "wizard",
+  },
+  {
+    id: "needs",
+    title: "What You'll Need",
+    extraContent: (
+      <div className="mx-auto mt-6 max-w-lg space-y-6 text-left">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {[
+            "Child's long-form birth certificate",
+            "Parents' marriage certificate",
+            "Proof of previous marriage endings",
+            "Certified English translations",
+          ].map((item, i) => (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              key={i}
+              className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
+            >
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
+                {item}
+              </span>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    ),
+  },
+];
+
+const scenesAdoption: Scene[] = [
+  {
+    id: "welcome",
+    title: "Welcome to Adoptive Parent Guide",
+    description: "USCIS requires additional documents to confirm that the adoptive parent-child relationship meets U.S. immigration law.",
+    illustration: "welcome",
+  },
+  {
+    id: "what-is",
+    title: "Pakistan Guardianship Nuance",
+    description: "In Pakistan, guardianship orders do not automatically qualify as an adoption. USCIS applies U.S. law to determine eligibility.",
+    illustration: "document",
+  },
+  {
+    id: "pitfalls",
+    title: "Avoid Timeline Failures",
+    titleLines: ["Avoid", "Timeline", "Failures"],
+    description: "The adoption must generally be completed before the child turns 16, and the parent must prove 2 years of legal custody and co-residence.",
+    illustration: "warning",
+  },
+  {
+    id: "workflow",
+    title: "Guided Adoption Workflow",
+    titleLines: ["Guided", "Adoption", "Workflow"],
+    description: "Complete eligibility checks, compile guardianship decrees, verify residence documents, and check translations.",
+    illustration: "checklist",
+  },
+  {
+    id: "output",
+    title: "Checklist File Ready",
+    titleLines: ["Checklist", "File", "Ready"],
+    description: "Get a practical list of required documents and actions for your petition packet.",
+    illustration: "output",
+  },
+  {
+    id: "wizard",
+    title: "How This Works",
+    extraContent: (
+      <div className="mt-6 mx-auto flex max-w-lg flex-col gap-4 text-left">
+        {[
+          "Verify legal relationship timing (under 16).",
+          "Check the 2-year custody and co-residence periods.",
+          "Collect court guardianship orders and secondary records.",
+          "Final check of names, scan margins, and translations.",
+        ].map((text, i) => (
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ delay: 0.3 + i * 0.15, ease: [0.22, 1, 0.36, 1] }}
+            key={i}
+            className="flex items-start gap-4 rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+          >
+            <div
+              className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full font-bold text-white shadow-md"
+              style={{
+                background: `linear-gradient(135deg, ${colors.deepTeal}, ${colors.softAqua})`,
+              }}
+            >
+              {i + 1}
+            </div>
+            <p
+              className="text-base font-semibold leading-snug md:text-[17px]"
+              style={{ color: colors.deepTeal }}
+            >
+              {text}
+            </p>
+          </motion.div>
+        ))}
+      </div>
+    ),
+    illustration: "wizard",
+  },
+  {
+    id: "needs",
+    title: "What You'll Need",
+    extraContent: (
+      <div className="mx-auto mt-6 max-w-lg space-y-6 text-left">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {[
+            "Court-issued adoption/guardianship order",
+            "Legal custody records",
+            "Evidence of 2-year co-residence",
+            "Child's original birth certificate",
+          ].map((item, i) => (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 + i * 0.1, ease: [0.22, 1, 0.36, 1] }}
+              key={i}
+              className="flex items-center gap-3 rounded-xl border border-[#cdadcc]/30 bg-white p-4 shadow-sm"
+            >
+              <div
+                className="h-2.5 w-2.5 rounded-full"
+                style={{ backgroundColor: colors.dustyRose }}
+              />
+              <span
+                className="text-[15px] font-semibold leading-snug"
+                style={{ color: colors.deepTeal }}
+              >
                 {item}
               </span>
             </motion.div>
@@ -930,7 +1435,10 @@ interface NarrativeModalProps {
     | "police-verification"
     | "marriage-registration"
     | "birth-certificate"
-    | "polio-vaccination";
+    | "polio-vaccination"
+    | "interview-prep"
+    | "step-parent"
+    | "adoption";
 }
 
 const SCENE_DURATION = 9000;
@@ -952,6 +1460,9 @@ export function NarrativeModal({
     "marriage-registration": scenesMarriageRegistration,
     "birth-certificate": scenesBirthCertificate,
     "polio-vaccination": scenesPolioVaccination,
+    "interview-prep": scenesInterviewPrep,
+    "step-parent": scenesStepParent,
+    adoption: scenesAdoption,
   } as const;
 
   const scenes = scenesByVariant[variant];
@@ -972,6 +1483,8 @@ export function NarrativeModal({
   const isCompactPagesTwoToFive = isCompactView && isPagesTwoToFiveScene;
   const isCompactPagesThreeToSix = isCompactView && isPagesThreeToSixScene;
   const isCompactPagesFourToFive = isCompactView && isPagesFourToFiveScene;
+  const [showDontShowAgain, setShowDontShowAgain] = useState(true);
+
   const docBadgeTextByVariant: Record<NonNullable<NarrativeModalProps["variant"]>, string> = {
     "221g": "221(g)",
     passport: "Passport",
@@ -981,6 +1494,9 @@ export function NarrativeModal({
     "marriage-registration": "Marriage",
     "birth-certificate": "Birth",
     "polio-vaccination": "Polio",
+    "interview-prep": "Interview",
+    "step-parent": "Step-Parent",
+    adoption: "Adoption",
   };
   const docBadgeText = docBadgeTextByVariant[variant];
   const isGuideVariant = variant !== "221g";
@@ -1024,8 +1540,14 @@ export function NarrativeModal({
           scale: Math.random() * 0.8 + 0.2,
         };
       }),
-    [],
+    []
   );
+
+  useEffect(() => {
+    if (isOpen) {
+      setShowDontShowAgain(!dontShowAgain);
+    }
+  }, [isOpen]);
 
   const handleNext = () => {
     if (currentScene < scenes.length - 1) {
@@ -1117,8 +1639,12 @@ export function NarrativeModal({
       {isOpen && (
         <motion.div
           ref={modalScrollRef}
-          initial={reduceHeavyEffects ? { opacity: 0 } : { opacity: 0, backdropFilter: "blur(0px)" }}
-          animate={reduceHeavyEffects ? { opacity: 1 } : { opacity: 1, backdropFilter: "blur(12px)" }}
+          initial={
+            reduceHeavyEffects ? { opacity: 0 } : { opacity: 0, backdropFilter: "blur(0px)" }
+          }
+          animate={
+            reduceHeavyEffects ? { opacity: 1 } : { opacity: 1, backdropFilter: "blur(12px)" }
+          }
           exit={reduceHeavyEffects ? { opacity: 0 } : { opacity: 0, backdropFilter: "blur(0px)" }}
           transition={{ duration: compactModalMotion.duration, ease: [0.16, 1, 0.3, 1] }}
           className={[
@@ -1133,44 +1659,63 @@ export function NarrativeModal({
         >
           {!reduceHeavyEffects && (
             <div className="pointer-events-none absolute inset-0 hidden overflow-hidden sm:block">
-            {particles.map((particle) => (
-              <motion.div
-                key={particle.id}
-                className="absolute h-1.5 w-1.5 rounded-full blur-[1px]"
-                style={{
-                  backgroundColor: particle.color,
-                  left: particle.left,
-                  top: particle.top,
-                  scale: particle.scale,
-                }}
-                animate={{
-                  x: [0, particle.dx, 0],
-                  y: [0, particle.dy, 0],
-                  opacity: [0, 0.08, 0],
-                }}
-                transition={{
-                  duration: particle.duration,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                  delay: particle.delay,
-                }}
-              />
-            ))}
+              {particles.map((particle) => (
+                <motion.div
+                  key={particle.id}
+                  className="absolute h-1.5 w-1.5 rounded-full blur-[1px]"
+                  style={{
+                    backgroundColor: particle.color,
+                    left: particle.left,
+                    top: particle.top,
+                    scale: particle.scale,
+                  }}
+                  animate={{
+                    x: [0, particle.dx, 0],
+                    y: [0, particle.dy, 0],
+                    opacity: [0, 0.08, 0],
+                  }}
+                  transition={{
+                    duration: particle.duration,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                    delay: particle.delay,
+                  }}
+                />
+              ))}
             </div>
           )}
 
           <motion.div
-            initial={{ scale: reduceHeavyEffects ? 0.992 : 0.98, opacity: 0, y: compactModalMotion.initialY }}
+            initial={{
+              scale: reduceHeavyEffects ? 0.992 : 0.98,
+              opacity: 0,
+              y: compactModalMotion.initialY,
+            }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: reduceHeavyEffects ? 0.992 : 0.98, opacity: 0, y: compactModalMotion.exitY }}
+            exit={{
+              scale: reduceHeavyEffects ? 0.992 : 0.98,
+              opacity: 0,
+              y: compactModalMotion.exitY,
+            }}
             transition={{ duration: compactModalMotion.duration, ease: [0.16, 1, 0.3, 1] }}
             className={[
               "relative flex w-full max-w-5xl max-h-[calc(100svh-0.75rem)] min-h-0 flex-col overflow-hidden border border-[#cfe3e3] bg-[linear-gradient(180deg,#ffffff_0%,#fcffff_100%)] shadow-[0_32px_80px_-34px_rgba(13,115,119,0.35)] ring-1 ring-white/90 antialiased sm:max-h-[calc(100svh-1.5rem)] sm:rounded-[2.5rem] sm:ring-2 md:max-h-[calc(100svh-4rem)]",
-              isCompactView ? "!w-[98vw] !h-[98vh] !max-w-full !max-h-[98vh] rounded-[1.2rem] overflow-y-auto welcome-thick-scrollbar" : "rounded-[1.65rem]",
+              isCompactView
+                ? "!w-[98vw] !h-[98svh] !max-w-full !max-h-[98svh] rounded-[1.2rem] overflow-y-auto welcome-thick-scrollbar"
+                : "rounded-[1.65rem]",
             ].join(" ")}
             style={
               isCompactView
-                ? { scrollbarWidth: "none", width: '98vw', height: '98vh', maxWidth: '100vw', maxHeight: '98vh' }
+                ? {
+                    scrollbarWidth: "none",
+                    width: "98vw",
+                    // Use svh (small viewport height) so the card always fits the
+                    // VISIBLE area on mobile. With vh, mobile browser chrome made
+                    // the card taller than the screen and cropped the footer.
+                    height: "98svh",
+                    maxWidth: "100vw",
+                    maxHeight: "98svh",
+                  }
                 : undefined
             }
           >
@@ -1201,15 +1746,17 @@ export function NarrativeModal({
               </button>
             </div>
 
-            <label className="absolute left-6 top-6 z-20 hidden items-center gap-2 rounded-full border border-[#dbe8e8] bg-white/95 px-3.5 py-1.5 text-[11px] font-semibold tracking-[0.01em] text-slate-600 shadow-sm sm:flex">
-              <input
-                type="checkbox"
-                checked={dontShowAgain}
-                onChange={(e) => onDontShowAgainChange(e.target.checked)}
-                className="h-3.5 w-3.5 rounded border-slate-300 text-[#0d7377]"
-              />
-              Don&apos;t show again
-            </label>
+            {showDontShowAgain && (
+              <label className="absolute left-6 top-6 z-20 hidden items-center gap-2 rounded-full border border-[#dbe8e8] bg-white/95 px-3.5 py-1.5 text-[11px] font-semibold tracking-[0.01em] text-slate-600 shadow-sm sm:flex">
+                <input
+                  type="checkbox"
+                  checked={dontShowAgain}
+                  onChange={(e) => onDontShowAgainChange(e.target.checked)}
+                  className="h-3.5 w-3.5 rounded border-slate-300 text-[#0d7377]"
+                />
+                Don&apos;t show again
+              </label>
+            )}
 
             <div
               ref={sceneScrollRef}
@@ -1218,7 +1765,7 @@ export function NarrativeModal({
                 "relative flex flex-col min-h-0 flex-1 overflow-x-hidden overscroll-contain bg-gradient-to-b from-white via-[#fbfefe] to-[#f3faf9] w-full h-full",
                 isCompactView
                   ? "overflow-y-auto px-3 pt-4 pb-4"
-                  : "items-start justify-center overflow-y-auto px-3 pb-4 pt-16 sm:px-8 sm:pb-8 sm:pt-20 md:items-center md:p-12"
+                  : "items-start justify-center overflow-y-auto px-3 pb-4 pt-16 sm:px-8 sm:pb-8 sm:pt-20 md:items-center md:p-12",
               ].join(" ")}
               style={{ scrollbarWidth: "none" }}
             >
@@ -1235,8 +1782,13 @@ export function NarrativeModal({
                     isCompactView
                       ? { opacity: 1, filter: "blur(0px)" }
                       : reduceHeavyEffects
-                      ? { opacity: 0, y: compactModalMotion.sceneInitialY }
-                      : { opacity: 0, filter: "blur(12px)", x: compactModalMotion.sceneInitialX, scale: 0.98 }
+                        ? { opacity: 0, y: compactModalMotion.sceneInitialY }
+                        : {
+                            opacity: 0,
+                            filter: "blur(12px)",
+                            x: compactModalMotion.sceneInitialX,
+                            scale: 0.98,
+                          }
                   }
                   animate={
                     reduceHeavyEffects
@@ -1246,20 +1798,32 @@ export function NarrativeModal({
                   exit={
                     reduceHeavyEffects
                       ? { opacity: 0, y: compactModalMotion.sceneExitY }
-                      : { opacity: 0, filter: "blur(12px)", x: compactModalMotion.sceneExitX, scale: 0.98 }
+                      : {
+                          opacity: 0,
+                          filter: "blur(12px)",
+                          x: compactModalMotion.sceneExitX,
+                          scale: 0.98,
+                        }
                   }
-                  transition={{ duration: compactModalMotion.sceneDuration, ease: [0.16, 1, 0.3, 1] }}
+                  transition={{
+                    duration: compactModalMotion.sceneDuration,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
                   className={[
                     "flex w-full flex-col gap-3 pb-1 md:flex-row md:justify-center md:gap-12 md:items-center",
                     isCompactView ? "gap-8 px-3" : "",
-                    isCompactView && isCompactFirstScene ? "justify-center items-center text-center mt-4" : "items-center"
+                    isCompactView && isCompactFirstScene
+                      ? "justify-center items-center text-center mt-4"
+                      : "items-center",
                   ].join(" ")}
                 >
                   <div
                     className={[
                       "w-full flex-none sm:max-w-md sm:flex-1 overflow-visible max-w-[200px]",
                       isCompactView ? "flex justify-center mb-2" : "",
-                      isCompactView && isCompactFirstScene ? "justify-center items-center text-center mb-2" : ""
+                      isCompactView && isCompactFirstScene
+                        ? "justify-center items-center text-center mb-2"
+                        : "",
                     ].join(" ")}
                   >
                     <SceneIllustration
@@ -1268,7 +1832,7 @@ export function NarrativeModal({
                       compactMode={isCompactView}
                       documentBadgeText={docBadgeText}
                       outputMode={isGuideVariant ? "guide" : "221g"}
-                      {...((isCompactView && isPagesFourToFiveScene) ? { size: 70 } : {})}
+                      {...(isCompactView && isPagesFourToFiveScene ? { size: 70 } : {})}
                     />
                   </div>
 
@@ -1276,7 +1840,7 @@ export function NarrativeModal({
                     className={[
                       "relative z-20 w-full max-w-lg flex-1",
                       isCompactView ? "text-center mt-6 px-2" : "text-center md:text-left",
-                      isCompactView && isCompactFirstScene ? "text-center mt-2" : ""
+                      isCompactView && isCompactFirstScene ? "text-center mt-2" : "",
                     ].join(" ")}
                   >
                     <motion.h2
@@ -1308,7 +1872,6 @@ export function NarrativeModal({
                           "mx-auto max-w-[60ch] text-[14px] font-medium leading-6 tracking-[0.002em] sm:text-[16px] sm:leading-7 md:mx-0 md:text-[1.12rem] md:leading-[1.65]",
                           isCompactPagesThreeToSix ? "text-[13px] leading-[1.5]" : "",
                         ].join(" ")}
-
                         style={{ color: colors.sageGrey }}
                       >
                         {scene.description}
@@ -1329,9 +1892,7 @@ export function NarrativeModal({
               </AnimatePresence>
             </div>
 
-            <div
-              className="relative z-20 border-t border-[#d5e7e7] bg-white/97 px-2.5 py-2.5 shadow-[0_-8px_24px_-18px_rgba(13,115,119,0.32)] sm:px-6 sm:py-4"
-            >
+            <div className="relative z-20 shrink-0 border-t border-[#d5e7e7] bg-white/97 px-2.5 py-2.5 shadow-[0_-8px_24px_-18px_rgba(13,115,119,0.32)] sm:px-6 sm:py-4">
               <img
                 src="/assets/images/mascot.png"
                 alt="Rahvana bird mascot"
@@ -1432,7 +1993,13 @@ function SceneIllustration({
   const isNeedsScene = scene.illustration === "preparation";
 
   if (reduceMotion) {
-    return <SimpleSceneIllustration scene={scene} isNeedsScene={isNeedsScene} compactMode={compactMode} />;
+    return (
+      <SimpleSceneIllustration
+        scene={scene}
+        isNeedsScene={isNeedsScene}
+        compactMode={compactMode}
+      />
+    );
   }
 
   return (
@@ -1443,26 +2010,24 @@ function SceneIllustration({
       ].join(" ")}
     >
       <div className={compactMode ? "h-full w-full scale-[0.82]" : "h-full w-full"}>
-      {!compactMode && (
-        <motion.div
-          animate={{ scale: [1, 1.05, 1], opacity: [0.4, 0.6, 0.4] }}
-          transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute inset-0 rounded-full blur-[70px]"
-          style={{
-            background: `radial-gradient(circle, ${colors.softAqua}40 0%, ${colors.mutedLavender}20 50%, transparent 100%)`,
-          }}
-        />
-      )}
+        {!compactMode && (
+          <motion.div
+            animate={{ scale: [1, 1.05, 1], opacity: [0.4, 0.6, 0.4] }}
+            transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute inset-0 rounded-full blur-[70px]"
+            style={{
+              background: `radial-gradient(circle, ${colors.softAqua}40 0%, ${colors.mutedLavender}20 50%, transparent 100%)`,
+            }}
+          />
+        )}
 
-      {scene.illustration === "welcome" ? (
-        <WelcomeScene compactMode={compactMode} />
-      ) : null}
-      {scene.illustration === "document" && <DocumentScene badgeText={documentBadgeText} />}
-      {scene.illustration === "warning" && <WarningScene />}
-      {scene.illustration === "checklist" && <ChecklistScene />}
-      {scene.illustration === "output" && <OutputScene mode={outputMode} />}
-      {scene.illustration === "wizard" && <WizardScene />}
-      {scene.illustration === "preparation" && <PreparationScene />}
+        {scene.illustration === "welcome" ? <WelcomeScene compactMode={compactMode} /> : null}
+        {scene.illustration === "document" && <DocumentScene badgeText={documentBadgeText} />}
+        {scene.illustration === "warning" && <WarningScene />}
+        {scene.illustration === "checklist" && <ChecklistScene />}
+        {scene.illustration === "output" && <OutputScene mode={outputMode} />}
+        {scene.illustration === "wizard" && <WizardScene />}
+        {scene.illustration === "preparation" && <PreparationScene />}
       </div>
     </div>
   );
@@ -1498,10 +2063,84 @@ function SimpleSceneIllustration({
       ].join(" ")}
     >
       <div className="absolute inset-0 rounded-full bg-[#eaf6f5]" />
-      <div className={compactMode ? "relative z-10 flex h-20 w-20 items-center justify-center rounded-3xl border border-[#d4eaea] bg-white shadow-sm" : "relative z-10 flex h-28 w-28 items-center justify-center rounded-3xl border border-[#d4eaea] bg-white shadow-sm md:h-36 md:w-36"}>
-        <Icon className={compactMode ? "h-9 w-9 text-[#0d7377]" : "h-12 w-12 text-[#0d7377] md:h-16 md:w-16"} />
+      <div
+        className={
+          compactMode
+            ? "relative z-10 flex h-20 w-20 items-center justify-center rounded-3xl border border-[#d4eaea] bg-white shadow-sm"
+            : "relative z-10 flex h-28 w-28 items-center justify-center rounded-3xl border border-[#d4eaea] bg-white shadow-sm md:h-36 md:w-36"
+        }
+      >
+        <Icon
+          className={
+            compactMode ? "h-9 w-9 text-[#0d7377]" : "h-12 w-12 text-[#0d7377] md:h-16 md:w-16"
+          }
+        />
       </div>
     </div>
+  );
+}
+
+function ModeCarousel() {
+  const [index, setIndex] = useState(0);
+
+  const modes = Object.values(interviewModes);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prev) => (prev + 1) % modes.length);
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const mode = modes[index];
+
+  const Icon = mode.icon;
+
+  return (
+    <motion.div
+      key={mode.label}
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: -20 }}
+      transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+      className="rounded-2xl border border-[#afdbdb]/30 bg-white p-4 shadow-[0_10px_30px_-10px_rgba(13,115,119,0.08)]"
+    >
+      {/* header */}
+      <div className="mb-3 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Icon className="h-4 w-4" style={{ color: mode.color }} />
+          <h4 className="font-bold" style={{ color: colors.deepTeal }}>
+            {mode.label}
+          </h4>
+        </div>
+
+        <div className="flex gap-2">
+          {mode.plans.map((plan) => {
+            const style = badgeConfig[plan as keyof typeof badgeConfig];
+
+            return (
+              <span
+                key={plan}
+                className={`rounded-full border px-3 py-1 text-xs font-semibold ${style.bg} ${style.border} ${style.text}`}
+              >
+                {plan}
+              </span>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* features */}
+      <div className="space-y-2">
+        {mode.features.map((f) => (
+          <div key={f} className="flex items-center gap-3 text-sm">
+            <CheckCircle className="h-4 w-4" style={{ color: mode.color }} />
+            <span>{f}</span>
+          </div>
+        ))}
+      </div>
+    </motion.div>
   );
 }
 
@@ -1512,10 +2151,20 @@ function WelcomeScene({ compactMode = false }: { compactMode?: boolean }) {
         initial={{ scale: compactMode ? 0.9 : 0.8, y: compactMode ? 8 : 20, opacity: 0 }}
         animate={{ scale: 1, y: 0, opacity: 1 }}
         transition={{ type: "spring", damping: 20 }}
-        className={compactMode ? "relative z-10 flex h-28 w-28 items-center justify-center rounded-3xl border border-[#afdbdb]/40 bg-white shadow-[0_20px_50px_-15px_rgba(13,115,119,0.2)]" : "relative z-10 flex h-52 w-52 items-center justify-center rounded-3xl border border-[#afdbdb]/40 bg-white shadow-[0_20px_50px_-15px_rgba(13,115,119,0.2)]"}
+        className={
+          compactMode
+            ? "relative z-10 flex h-28 w-28 items-center justify-center rounded-3xl border border-[#afdbdb]/40 bg-white shadow-[0_20px_50px_-15px_rgba(13,115,119,0.2)]"
+            : "relative z-10 flex h-52 w-52 items-center justify-center rounded-3xl border border-[#afdbdb]/40 bg-white shadow-[0_20px_50px_-15px_rgba(13,115,119,0.2)]"
+        }
       >
-        <motion.div animate={{ y: [0, -8, 0] }} transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}>
-          <BookOpen className={compactMode ? "h-12 w-12" : "h-24 w-24"} style={{ color: colors.deepTeal }} />
+        <motion.div
+          animate={{ y: [0, -8, 0] }}
+          transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <BookOpen
+            className={compactMode ? "h-12 w-12" : "h-24 w-24"}
+            style={{ color: colors.deepTeal }}
+          />
         </motion.div>
       </motion.div>
 
@@ -1531,8 +2180,14 @@ function WelcomeScene({ compactMode = false }: { compactMode?: boolean }) {
             animate={{ rotate: -360 }}
             transition={{ duration: 18 + i * 4, repeat: Infinity, ease: "linear", delay: i * 2 }}
           >
-            <div className="mb-3 h-1.5 w-8 rounded-full" style={{ backgroundColor: colors.softAqua }} />
-            <div className="mb-3 h-1.5 w-10 rounded-full" style={{ backgroundColor: colors.mutedLavender }} />
+            <div
+              className="mb-3 h-1.5 w-8 rounded-full"
+              style={{ backgroundColor: colors.softAqua }}
+            />
+            <div
+              className="mb-3 h-1.5 w-10 rounded-full"
+              style={{ backgroundColor: colors.mutedLavender }}
+            />
             <div className="h-1.5 w-6 rounded-full" style={{ backgroundColor: colors.dustyRose }} />
           </motion.div>
         </motion.div>
@@ -1574,10 +2229,22 @@ function DocumentScene({ badgeText }: { badgeText: string }) {
         </motion.div>
 
         <div className="w-full space-y-5">
-          <div className="h-2.5 w-full rounded-full" style={{ backgroundColor: `${colors.sageGrey}50` }} />
-          <div className="h-2.5 w-5/6 rounded-full" style={{ backgroundColor: `${colors.sageGrey}50` }} />
-          <div className="h-2.5 w-4/6 rounded-full" style={{ backgroundColor: `${colors.sageGrey}50` }} />
-          <div className="h-2.5 w-full rounded-full" style={{ backgroundColor: `${colors.sageGrey}50` }} />
+          <div
+            className="h-2.5 w-full rounded-full"
+            style={{ backgroundColor: `${colors.sageGrey}50` }}
+          />
+          <div
+            className="h-2.5 w-5/6 rounded-full"
+            style={{ backgroundColor: `${colors.sageGrey}50` }}
+          />
+          <div
+            className="h-2.5 w-4/6 rounded-full"
+            style={{ backgroundColor: `${colors.sageGrey}50` }}
+          />
+          <div
+            className="h-2.5 w-full rounded-full"
+            style={{ backgroundColor: `${colors.sageGrey}50` }}
+          />
         </div>
       </motion.div>
     </div>
@@ -1661,13 +2328,25 @@ function ChecklistScene() {
                 className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg"
                 style={{ backgroundColor: colors.deepTeal }}
               >
-                <svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <svg
+                  className="h-4 w-4 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={3}
+                >
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </motion.div>
               <div className="flex-1 space-y-2.5">
-                <div className="h-2.5 w-full rounded-full" style={{ backgroundColor: `${colors.mutedLavender}80` }} />
-                <div className="h-2.5 w-2/3 rounded-full" style={{ backgroundColor: `${colors.mutedLavender}40` }} />
+                <div
+                  className="h-2.5 w-full rounded-full"
+                  style={{ backgroundColor: `${colors.mutedLavender}80` }}
+                />
+                <div
+                  className="h-2.5 w-2/3 rounded-full"
+                  style={{ backgroundColor: `${colors.mutedLavender}40` }}
+                />
               </div>
             </motion.div>
           ))}
@@ -1712,8 +2391,14 @@ function OutputScene({ mode }: { mode: "221g" | "guide" }) {
         <div className="w-full flex-1 space-y-5">
           {[...Array(3)].map((_, i) => (
             <div key={i} className="flex items-center gap-4">
-              <div className="h-5 w-5 rounded-full" style={{ backgroundColor: colors.mutedLavender }} />
-              <div className="h-2.5 flex-1 rounded-full" style={{ backgroundColor: `${colors.mutedLavender}30` }} />
+              <div
+                className="h-5 w-5 rounded-full"
+                style={{ backgroundColor: colors.mutedLavender }}
+              />
+              <div
+                className="h-2.5 flex-1 rounded-full"
+                style={{ backgroundColor: `${colors.mutedLavender}30` }}
+              />
             </div>
           ))}
         </div>
@@ -1748,7 +2433,11 @@ function WizardScene() {
           <defs>
             <linearGradient id={`wizardGrad${index}`} x1="0%" y1="0%" x2="100%" y2="100%">
               <stop offset="0%" stopColor={colors.softAqua} stopOpacity={0.8 - index * 0.2} />
-              <stop offset="100%" stopColor={colors.mutedLavender} stopOpacity={0.8 - index * 0.2} />
+              <stop
+                offset="100%"
+                stopColor={colors.mutedLavender}
+                stopOpacity={0.8 - index * 0.2}
+              />
             </linearGradient>
           </defs>
           <motion.circle
@@ -1830,7 +2519,10 @@ function PreparationScene() {
               {item.icon}
             </motion.div>
 
-            <svg className="absolute inset-0 -z-10 h-full w-full" style={{ overflow: "visible", top: "50%", left: "50%" }}>
+            <svg
+              className="absolute inset-0 -z-10 h-full w-full"
+              style={{ overflow: "visible", top: "50%", left: "50%" }}
+            >
               <motion.line
                 x1="0"
                 y1="0"

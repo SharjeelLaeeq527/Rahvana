@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { mapProfileToGenericForm } from "@/lib/autoFill/mapper";
-import { MasterProfile } from "@/types/profile";
+import { mapProfileToGenericForm, mapFormToProfile } from "@/lib/autoFill/mapper";
 import { useAuth } from "@/app/context/AuthContext";
-import { createBrowserClient } from "@supabase/ssr";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { CustomDropdown, DropdownOption } from "@/app/components/shared/CustomDropdown";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 
 export default function Form() {
   const { t } = useLanguage();
@@ -22,13 +22,12 @@ export default function Form() {
   const router = useRouter();
   const [profileLoaded, setProfileLoaded] = useState(false);
   const { user } = useAuth();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
+  const { profile, isProfileLoading, updateProfile } = useUserProfile();
 
+  // IR-5 is hidden on production (see lib/feature-flags) until it launches.
   const visaCategoryOptions: DropdownOption[] = [
     { value: "IR-1", label: "IR-1 (Spouse)" },
+    ...(IR5_ENABLED ? [{ value: "IR-5", label: "IR-5 (Parent)" }] : []),
   ];
 
   const countryOptions: DropdownOption[] = [
@@ -44,42 +43,24 @@ export default function Form() {
     { value: "Adjustment of Status", label: t("visaChecker.form.appTypes.aos") },
   ];
 
-  // Auto-fill profile data
+  // Auto-fill profile data (from central context)
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
+    if (isProfileLoading || profileLoaded || !profile) return;
 
-      try {
-        const { data } = await supabase
-          .from("user_profiles")
-          .select("profile_details")
-          .eq("id", user.id)
-          .single();
+    // Map profile data to form structure
+    const mappedData = mapProfileToGenericForm(profile, {
+      category: form.category,
+      priorityDate: form.priorityDate,
+      country: form.country,
+      applicationType: form.applicationType,
+    });
 
-        if (data?.profile_details && !profileLoaded) {
-          const profile = data.profile_details as MasterProfile;
-
-          // Map profile data to form structure
-          const mappedData = mapProfileToGenericForm(profile, {
-            category: form.category,
-            priorityDate: form.priorityDate,
-            country: form.country,
-            applicationType: form.applicationType,
-          });
-
-          setForm((prev) => ({
-            ...prev,
-            ...mappedData,
-          }));
-          setProfileLoaded(true);
-        }
-      } catch (err) {
-        console.error("Error auto-filling profile:", err);
-      }
-    };
-
-    fetchProfile();
-  }, [user, profileLoaded, supabase, form]);
+    setForm((prev) => ({
+      ...prev,
+      ...mappedData,
+    }));
+    setProfileLoaded(true);
+  }, [profile, isProfileLoading, profileLoaded, form]);
 
   const handleSubmit = async () => {
     if (!form.priorityDate) {
@@ -90,6 +71,10 @@ export default function Form() {
     setLoading(true);
 
     try {
+      if (user) {
+        const profileUpdate = mapFormToProfile(form);
+        updateProfile(profileUpdate, { silent: true });
+      }
       let baseUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
       baseUrl = baseUrl.replace(/\/$/, "");
       const endpoint = baseUrl.includes("/api/v1")
@@ -113,11 +98,7 @@ export default function Form() {
       router.push("/visa-checker/result");
     } catch (err) {
       console.error(err);
-      setError(
-        err instanceof Error
-          ? err.message
-          : t("visaChecker.form.errors.general"),
-      );
+      setError(err instanceof Error ? err.message : t("visaChecker.form.errors.general"));
     } finally {
       setLoading(false);
     }
@@ -128,9 +109,7 @@ export default function Form() {
       <div className="space-y-5 sm:space-y-6">
         {/* Error Display */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg">
-            {error}
-          </div>
+          <div className="bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg">{error}</div>
         )}
 
         {/* Visa Category */}
@@ -143,6 +122,7 @@ export default function Form() {
             onChange={(value) => setForm({ ...form, category: value })}
             options={visaCategoryOptions}
             placeholder="Select category"
+            collapseWhenSingle
           />
         </div>
 
@@ -159,9 +139,7 @@ export default function Form() {
             onChange={(e) => setForm({ ...form, priorityDate: e.target.value })}
             required
           />
-          <p className="text-sm text-gray-500 mt-1">
-            {t("visaChecker.form.priorityDateHint")}
-          </p>
+          <p className="text-sm text-gray-500 mt-1">{t("visaChecker.form.priorityDateHint")}</p>
         </div>
 
         {/* Country */}
@@ -184,9 +162,7 @@ export default function Form() {
           </label>
           <CustomDropdown
             value={form.applicationType}
-            onChange={(value) =>
-              setForm({ ...form, applicationType: value })
-            }
+            onChange={(value) => setForm({ ...form, applicationType: value })}
             options={applicationTypeOptions}
             placeholder={t("visaChecker.form.appTypeLabel")}
           />

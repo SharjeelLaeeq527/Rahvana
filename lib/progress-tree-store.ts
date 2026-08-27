@@ -57,9 +57,7 @@ const updateParentStatus = (steps: TreeStep[]): TreeStep[] => {
       const allChildrenCompleted = updatedChildren.every((child) =>
         checkAllChildrenCompleted(child)
       );
-      const anyChildInProgress = updatedChildren.some(
-        (child) => child.status === "in-progress"
-      );
+      const anyChildInProgress = updatedChildren.some((child) => child.status === "in-progress");
 
       return {
         ...step,
@@ -67,8 +65,8 @@ const updateParentStatus = (steps: TreeStep[]): TreeStep[] => {
         status: allChildrenCompleted
           ? "completed"
           : anyChildInProgress
-          ? "in-progress"
-          : step.status,
+            ? "in-progress"
+            : step.status,
       };
     }
     return step;

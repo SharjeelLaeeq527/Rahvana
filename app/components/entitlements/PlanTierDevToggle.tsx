@@ -5,18 +5,32 @@ import { usePlan } from "@/app/context/PlanContext";
 import { PlanTier, TIER_ORDER, TIER_NAMES } from "@/lib/entitlements/config";
 
 const TIER_COLORS: Record<PlanTier, { bg: string; text: string; ring: string; dot: string }> = {
-  free:      { bg: "bg-neutral-800",   text: "text-neutral-200", ring: "ring-neutral-600",  dot: "bg-neutral-400"  },
-  basic:     { bg: "bg-sky-900",       text: "text-sky-200",     ring: "ring-sky-600",      dot: "bg-sky-400"      },
-  premium:   { bg: "bg-violet-900",    text: "text-violet-200",  ring: "ring-violet-500",   dot: "bg-violet-400"   },
-  executive: { bg: "bg-amber-900",     text: "text-amber-200",   ring: "ring-amber-500",    dot: "bg-amber-400"    },
+  free: {
+    bg: "bg-neutral-800",
+    text: "text-neutral-200",
+    ring: "ring-neutral-600",
+    dot: "bg-neutral-400",
+  },
+  basic: { bg: "bg-sky-900", text: "text-sky-200", ring: "ring-sky-600", dot: "bg-sky-400" },
+  premium: {
+    bg: "bg-violet-900",
+    text: "text-violet-200",
+    ring: "ring-violet-500",
+    dot: "bg-violet-400",
+  },
+  executive: {
+    bg: "bg-amber-900",
+    text: "text-amber-200",
+    ring: "ring-amber-500",
+    dot: "bg-amber-400",
+  },
 };
 
 export function PlanTierDevToggle() {
   const { tier, realTier, devOverride, setDevOverride } = usePlan();
   const [expanded, setExpanded] = useState(false);
 
-  const showToggle =
-  process.env.NEXT_PUBLIC_SHOW_TIER_TOGGLE === "true";
+  const showToggle = process.env.NEXT_PUBLIC_ENVIRONMENT === "development";
 
   if (!showToggle) return null;
 
@@ -40,7 +54,7 @@ export function PlanTierDevToggle() {
       {expanded && (
         <div className="flex flex-col gap-1 bg-[#181c25] border border-white/10 rounded-2xl p-2 shadow-2xl animate-in slide-in-from-bottom-2 fade-in duration-150">
           <div className="text-[9.5px] font-black uppercase tracking-widest text-white/30 px-2 pb-1">
-            Dev — preview as tier
+            Dev, preview as tier
           </div>
           {TIER_ORDER.map((t) => {
             const c = TIER_COLORS[t];
@@ -50,9 +64,10 @@ export function PlanTierDevToggle() {
                 key={t}
                 onClick={() => selectTier(t)}
                 className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-[12px] font-bold transition-all
-                  ${active
-                    ? `${c.bg} ${c.text} ring-1 ${c.ring}`
-                    : "text-white/60 hover:bg-white/10 hover:text-white"
+                  ${
+                    active
+                      ? `${c.bg} ${c.text} ring-1 ${c.ring}`
+                      : "text-white/60 hover:bg-white/10 hover:text-white"
                   }`}
               >
                 <span className={`w-2 h-2 rounded-full ${active ? c.dot : "bg-white/20"}`} />
@@ -73,7 +88,9 @@ export function PlanTierDevToggle() {
           ${colors.bg} ${colors.text} ${colors.ring}
           hover:brightness-110 active:scale-95`}
       >
-        <span className={`w-2 h-2 rounded-full shrink-0 ${colors.dot} ${isOverriding ? "animate-pulse" : ""}`} />
+        <span
+          className={`w-2 h-2 rounded-full shrink-0 ${colors.dot} ${isOverriding ? "animate-pulse" : ""}`}
+        />
         {TIER_NAMES[tier]}
         {isOverriding && (
           <>

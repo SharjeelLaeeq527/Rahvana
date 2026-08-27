@@ -20,6 +20,7 @@ from app.core.form_configs import i912_config
 from app.core.form_configs import i864a_config
 from app.core.form_configs import i864ez_config
 from app.core.form_configs import i693_config
+from app.core.form_configs import i485_config
 # from app.core.form_configs import ds260_config
 
 # Master mapping: formId → FIELD_MAPPING
@@ -32,6 +33,7 @@ FORM_CONFIGS = {
     "i864a": i864a_config.FIELD_MAPPING,
     "i864ez": i864ez_config.FIELD_MAPPING,
     "i693": i693_config.FIELD_MAPPING,
+    "i485": i485_config.FIELD_MAPPING,
     # "ds260": ds260_config.FIELD_MAPPING,
     # "i485": i485_config.FIELD_MAPPING,
     # "i765": i765_config.FIELD_MAPPING,
@@ -78,12 +80,57 @@ class PDFFillerService:
         self.pdf_path = find_pdf_template(self.form_id)
 
     def fill_pdf(self, form_data: Dict[str, any]) -> io.BytesIO:
+        # Extract petitioner details for autofilling page 12 (Additional Info)
+        petitioner_family = str(form_data.get("family_name", "")).strip()
+        petitioner_given = str(form_data.get("given_name", "")).strip()
+        petitioner_middle = str(form_data.get("middle_name", "")).strip()
+        petitioner_alien = str(form_data.get("a_number", "")).strip()
+
+        # Auto-propagate primary Alien Number to all header Alien Number fields i485
+        primary_alien = form_data.get("p1_alien_number") or form_data.get("p1_item4_alien_number")
+        if primary_alien is not None:
+            primary_alien_str = str(primary_alien).strip()
+            if primary_alien_str:
+                for key in self.field_mapping.keys():
+                    if key.endswith("_header_alien_number") or key in ("p1_alien_number", "p1_item4_alien_number"):
+                        form_data[key] = primary_alien_str
+
+        # Auto-propagate primary Names to header/last-page repeating name fields
+        if self.form_id == "i485":
+            family = form_data.get("p1_legal_family_name")
+            given = form_data.get("p1_legal_given_name")
+            middle = form_data.get("p1_legal_middle_name")
+            if family:
+                form_data["p14_applicant_last_name"] = family
+            if given:
+                form_data["p14_applicant_first_name"] = given
+            if middle:
+                form_data["p14_applicant_middle_name"] = middle
+        elif self.form_id == "i130a":
+            family = form_data.get("p1_family_name")
+            given = form_data.get("p1_given_name")
+            middle = form_data.get("p1_middle_name")
+            if family:
+                form_data["p7_header_family_name"] = family
+            if given:
+                form_data["p7_header_given_name"] = given
+            if middle:
+                form_data["p7_header_middle_name"] = middle
+
         doc = fitz.open(self.pdf_path)
         filled_count = 0
         unfilled = []
         
         # Extract additional info blocks if present
         additional_blocks = form_data.pop("additional_info_blocks", [])
+        if isinstance(additional_blocks, str):
+            import json
+            try:
+                additional_blocks = json.loads(additional_blocks)
+            except Exception as e:
+                logger.error(f"Error parsing additional_info_blocks JSON: {e}")
+                additional_blocks = []
+
 
         for frontend_key, value in form_data.items():
             pdf_field_name = self.field_mapping.get(frontend_key)
@@ -101,10 +148,17 @@ class PDFFillerService:
                     if widget.field_name == pdf_field_name or \
                        widget.field_name.split('.')[-1] == pdf_field_name.split('.')[-1]:
                         try:
-                            if widget.field_type in (fitz.PDF_WIDGET_TYPE_CHECKBOX, fitz.PDF_WIDGET_TYPE_RADIOBUTTON):
-                                is_checked = str(value).lower() in ["yes", "true", "1", "on"]
+                             if widget.field_type in (fitz.PDF_WIDGET_TYPE_CHECKBOX, fitz.PDF_WIDGET_TYPE_RADIOBUTTON):
+                                val_lower = str(value).lower().strip()
+                                is_checked = val_lower in ["yes", "true", "1", "on"]
+                                if not is_checked:
+                                    field_lower = (widget.field_name or "").lower()
+                                    if val_lower == "male" and "male" in field_lower and "female" not in field_lower:
+                                        is_checked = True
+                                    elif val_lower == "female" and "female" in field_lower:
+                                        is_checked = True
                                 widget.field_value = "Yes" if is_checked else "Off"
-                            else:
+                             else:
                                 widget.field_value = str_value
                                 
                                 # Fix for Urdu/Arabic alignment and cutting
@@ -117,9 +171,9 @@ class PDFFillerService:
                                     # Set multi-line flag (1 << 12) which sometimes changes vertical alignment behavior
                                     widget.field_flags |= 4096 
                                     
-                                widget.update()
-                            filled_count += 1
-                            field_found = True
+                             widget.update()
+                             filled_count += 1
+                             field_found = True
                         except Exception as e:
                             logger.error(f"Error filling {pdf_field_name}: {e}")
             
@@ -133,6 +187,49 @@ class PDFFillerService:
         # Fill additional blocks (this will duplicate Part 9 page if necessary)
         if additional_blocks:
             self._fill_additional_blocks(doc, additional_blocks)
+
+        # Autofill petitioner name and A-number on Page 12 + duplicated pages for I-130
+        if self.form_id == "i130":
+            for page_idx in range(11, len(doc)):
+                page = doc[page_idx]
+                for widget in page.widgets():
+                    w_name = widget.field_name or ""
+                    if "Pt2Line4a_FamilyName" in w_name:
+                        widget.field_value = petitioner_family
+                        widget.update()
+                    elif "Pt2Line4b_GivenName" in w_name:
+                        widget.field_value = petitioner_given
+                        widget.update()
+                    elif "Pt2Line4c_MiddleName" in w_name:
+                        widget.field_value = petitioner_middle
+                        widget.update()
+                    elif "Pt2Line1_AlienNumber" in w_name:
+                        widget.field_value = petitioner_alien
+                        widget.update()
+
+        # Autofill applicant name and A-number on the last page + duplicated pages for I-485
+        if self.form_id == "i485":
+            applicant_family = str(form_data.get("p1_legal_family_name") or "").strip()
+            applicant_given = str(form_data.get("p1_legal_given_name") or "").strip()
+            applicant_middle = str(form_data.get("p1_legal_middle_name") or "").strip()
+            applicant_alien = str(form_data.get("p1_alien_number") or form_data.get("p1_item4_alien_number") or "").strip()
+            
+            for page_idx in range(23, len(doc)):
+                page = doc[page_idx]
+                for widget in page.widgets():
+                    w_name = widget.field_name or ""
+                    if "Pt1Line1_FamilyName" in w_name:
+                        widget.field_value = applicant_family
+                        widget.update()
+                    elif "Pt1Line1_GivenName" in w_name:
+                        widget.field_value = applicant_given
+                        widget.update()
+                    elif "Pt1Line1_MiddleName" in w_name:
+                        widget.field_value = applicant_middle
+                        widget.update()
+                    elif "AlienNumber" in w_name:
+                        widget.field_value = applicant_alien
+                        widget.update()
 
         output = io.BytesIO()
         doc.save(output, garbage=4, deflate=True, clean=True)

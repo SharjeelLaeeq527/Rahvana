@@ -1,9 +1,9 @@
 /**
  * Question Variation Generator Script
- * 
+ *
  * Reads all question-bank.json files and generates variations using Gemini AI
  * Only generates for questions that don't already have variations
- * 
+ *
  */
 
 import * as fs from "fs";
@@ -16,7 +16,7 @@ dotenv.config({ path: ".env.local" });
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 // Configuration
-const CATEGORIES = ["-student"];
+const CATEGORIES = ["ir-5-parent"];
 const QUESTION_BANK_BASE = path.join(__dirname, "../data/interview-categories");
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 
@@ -65,10 +65,7 @@ async function generateVariationsBatch(
 
   // Build prompt for batch of questions
   const questionsList = questions
-    .map(
-      (q, idx) =>
-        `${idx + 1}. [ID: ${q.id}] ${q.question}`
-    )
+    .map((q, idx) => `${idx + 1}. [ID: ${q.id}] ${q.question}`)
     .join("\n");
 
   const prompt = `Generate exactly 4 alternative phrasings for EACH of these ${questions.length} visa interview questions. 
@@ -123,7 +120,7 @@ IMPORTANT: Include the [ID: ...] markers exactly as shown above.`;
     // Handle rate limiting (429) and quota exceeded (403)
     if (response.status === 429 || response.status === 403) {
       const error = await response.json();
-      
+
       if (retryCount < MAX_RETRIES) {
         const delayMs = INITIAL_RETRY_DELAY_MS * Math.pow(2, retryCount);
         console.log(
@@ -157,7 +154,7 @@ IMPORTANT: Include the [ID: ...] markers exactly as shown above.`;
 
     // Parse the response - extract variations for each question by ID
     const result = new Map<string, string[]>();
-    
+
     // Split by question ID markers
     const idPattern = /\[ID:\s*([^\]]+)\]/g;
     let match;
@@ -173,8 +170,7 @@ IMPORTANT: Include the [ID: ...] markers exactly as shown above.`;
 
     // Set end index for each section
     for (let i = 0; i < sections.length; i++) {
-      sections[i].endIdx =
-        i < sections.length - 1 ? sections[i + 1].startIdx : text.length;
+      sections[i].endIdx = i < sections.length - 1 ? sections[i + 1].startIdx : text.length;
     }
 
     // Extract variations for each question
@@ -204,11 +200,7 @@ IMPORTANT: Include the [ID: ...] markers exactly as shown above.`;
 
 // Load question bank JSON file
 function loadQuestionBank(categorySlug: string): QuestionBank {
-  const filePath = path.join(
-    QUESTION_BANK_BASE,
-    categorySlug,
-    "question-bank.json"
-  );
+  const filePath = path.join(QUESTION_BANK_BASE, categorySlug, "question-bank.json");
 
   if (!fs.existsSync(filePath)) {
     throw new Error(`Question bank not found: ${filePath}`);
@@ -220,11 +212,7 @@ function loadQuestionBank(categorySlug: string): QuestionBank {
 
 // Save updated question bank
 function saveQuestionBank(categorySlug: string, bank: QuestionBank): void {
-  const filePath = path.join(
-    QUESTION_BANK_BASE,
-    categorySlug,
-    "question-bank.json"
-  );
+  const filePath = path.join(QUESTION_BANK_BASE, categorySlug, "question-bank.json");
 
   // Update metadata
   bank.lastUpdated = new Date().toISOString().split("T")[0];
@@ -239,7 +227,7 @@ async function processCategory(categorySlug: string): Promise<void> {
   log(colors.blue, `╚════════════════════════════════════════╝`);
 
   const bank = loadQuestionBank(categorySlug);
-  
+
   // Find questions that need variations
   const questionsNeedingVariations = bank.questions.filter(
     (q) => !q.variations || q.variations.length < 3
@@ -303,9 +291,7 @@ async function processCategory(categorySlug: string): Promise<void> {
 
       // Rate limiting between batches - be nice to free tier
       if (i + BATCH_SIZE < questionsNeedingVariations.length) {
-        await new Promise((resolve) =>
-          setTimeout(resolve, DELAY_BETWEEN_BATCHES_MS)
-        );
+        await new Promise((resolve) => setTimeout(resolve, DELAY_BETWEEN_BATCHES_MS));
       }
     } catch (error) {
       log(colors.red, `  ✗ Batch ${batchNumber} failed: ${error}\n`);
@@ -342,10 +328,7 @@ async function processCategory(categorySlug: string): Promise<void> {
 // Main execution
 async function main(): Promise<void> {
   console.log(
-    "\n" +
-      colors.cyan +
-      "🚀 Question Variation Generator using Gemini AI" +
-      colors.reset
+    "\n" + colors.cyan + "🚀 Question Variation Generator using Gemini AI" + colors.reset
   );
   console.log(colors.cyan + "═".repeat(45) + colors.reset);
 
@@ -360,8 +343,8 @@ async function main(): Promise<void> {
 
   log(colors.green, "\n✓ API Key detected");
   log(colors.cyan, `\nProcessing ${CATEGORIES.length} categories...\n`);
-  
-  log(colors.yellow, "⚠️  Optimized Batching Strategy for Free Tier:");
+
+  log(colors.yellow, "Optimized Batching Strategy for Free Tier:");
   log(colors.yellow, `   • Groups ${BATCH_SIZE} questions per API call (instead of 1)`);
   log(colors.yellow, `   • Reduces API calls from ~80 to ~10 (80x more efficient!)`);
   log(colors.yellow, `   • Per category: 1 API call per ~${BATCH_SIZE} questions`);
@@ -381,10 +364,16 @@ async function main(): Promise<void> {
     log(colors.cyan, "  1. Review the questions in your code");
     log(colors.cyan, "  2. Restart your development server");
     log(colors.cyan, "  3. Test the interview - each time should show different variations\n");
-    
+
     log(colors.yellow, "Daily Quota Management:");
-    log(colors.yellow, `  • Batching ${BATCH_SIZE} questions per call = ~${Math.ceil(80 / BATCH_SIZE)} API calls for all questions`);
-    log(colors.yellow, `  • Free tier limit: ~15 API calls/day, so you can do 1-2 full categories/day`);
+    log(
+      colors.yellow,
+      `  • Batching ${BATCH_SIZE} questions per call = ~${Math.ceil(80 / BATCH_SIZE)} API calls for all questions`
+    );
+    log(
+      colors.yellow,
+      `  • Free tier limit: ~15 API calls/day, so you can do 1-2 full categories/day`
+    );
     log(colors.yellow, `  • Spread across days: f1-student (day 1), ir-1-spouse (day 2), etc.`);
     log(colors.yellow, `  • If quota hit: script uses fallback variations and continues`);
     log(colors.yellow, `  • Re-run script later to complete remaining questions\n`);

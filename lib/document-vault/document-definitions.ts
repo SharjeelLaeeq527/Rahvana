@@ -15,9 +15,7 @@ const FAMILY_VISAS: VisaCategory[] = [
   // "F4",
 ];
 const USA_STUDENT_VISAS: VisaCategory[] = ["F-1 Student Visa"];
-const AUSTRALIA_STUDENT_VISAS: VisaCategory[] = [
-  "Australia Student Visa (Subclass 500)",
-];
+const AUSTRALIA_STUDENT_VISAS: VisaCategory[] = ["Australia Student Visa (Subclass 500)"];
 const CHINA_STUDENT_VISAS: VisaCategory[] = ["China Student Visa (X1 & X2)"];
 
 const ALL_STUDENT_VISAS: VisaCategory[] = [
@@ -68,8 +66,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 2,
         title: "Get English Translation",
-        description:
-          "If certificate is in Urdu, get it translated by a certified translator.",
+        description: "If certificate is in Urdu, get it translated by a certified translator.",
         tips: [
           "Translator must certify that translation is accurate",
           "Include translator credentials and stamp",
@@ -99,8 +96,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Locate Original Nikah Nama",
-        description:
-          "Find your original Nikah Nama document issued at the time of marriage.",
+        description: "Find your original Nikah Nama document issued at the time of marriage.",
         tips: [
           "Must be signed by Nikah Registrar",
           "Should have serial number and registration details",
@@ -151,8 +147,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 2,
         title: "Scan Biographical Page",
-        description:
-          "Scan or take a clear photo of the biographical page of your passport.",
+        description: "Scan or take a clear photo of the biographical page of your passport.",
         tips: [
           "Ensure all text is readable",
           "No shadows or reflections",
@@ -165,8 +160,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
     id: "nadra-mrc",
     key: "NADRA_MRC",
     name: "Marriage Certificate / Marriage Registration Record",
-    description:
-      "Official civil proof of the marriage — Nikah Nama and NADRA MRC",
+    description: "Official civil proof of the marriage, Nikah Nama and NADRA MRC",
     category: "CIVIL",
     applicableVisas: FAMILY_VISAS,
     roles: ["BENEFICIARY"],
@@ -196,8 +190,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Scan Both Sides of CNIC",
-        description:
-          "Make clear scans or photos of both front and back of your CNIC.",
+        description: "Make clear scans or photos of both front and back of your CNIC.",
         tips: [
           "Ensure CNIC is not expired",
           "If expired, renew at NADRA office",
@@ -210,8 +203,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
     id: "divorce-decree-beneficiary",
     key: "DIVORCE_DECREE",
     name: "Prior Marriage Termination Documents",
-    description:
-      "Official divorce decree or death certificate with translation",
+    description: "Official divorce decree or death certificate with translation",
     category: "CIVIL",
     applicableVisas: FAMILY_VISAS,
 
@@ -227,8 +219,7 @@ const CIVIL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Obtain Divorce Certificate",
-        description:
-          "Get certified copy of divorce decree from Family Court or Union Council.",
+        description: "Get certified copy of divorce decree from Family Court or Union Council.",
         resources: [
           {
             name: "Union Council Divorce Certificate Guide",
@@ -255,13 +246,15 @@ const CIVIL_DOCS: DocumentDefinition[] = [
     required: false,
     multipleFilesAllowed: true,
     validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { name_change_any_party: true },
+    },
   },
   {
     id: "death-cert-prior-spouse",
     key: "DEATH_CERT_SPOUSE",
     name: "Death Certificate of Former Spouse",
-    description:
-      "Required if a prior marriage ended because of the death of a spouse.",
+    description: "Required if a prior marriage ended because of the death of a spouse.",
     category: "CIVIL",
     applicableVisas: FAMILY_VISAS,
     roles: ["BENEFICIARY", "PETITIONER"],
@@ -270,22 +263,54 @@ const CIVIL_DOCS: DocumentDefinition[] = [
     multipleFilesAllowed: true,
     validityType: "none",
     requiredWhen: {
-      scenarioFlags: { prior_marriage_beneficiary: true },
+      scenarioFlags: { prior_spouse_death: true },
     },
   },
   {
-  id: "receipt-notice-uscis",
-  key: "RECEIPT_NOTICE",
-  name: "USCIS Receipt Notice (I-797C)",
-  description: "Receipt notice issued by USCIS confirming a petition was received",
-  category: "MISC",
-  applicableVisas: FAMILY_VISAS,
-  roles: ["PETITIONER", "BENEFICIARY"],
-  stages: ["USCIS", "NVC"],
-  required: true,
-  multipleFilesAllowed: false,
-  validityType: "none",
-},
+    id: "children-birth-certs",
+    key: "CHILDREN_BIRTH_CERTS",
+    name: "Children's Birth Certificates",
+    description: "Birth certificates for all children under 21 with English translations",
+    category: "CIVIL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { has_children: true },
+    },
+  },
+  {
+    id: "children-passports",
+    key: "CHILDREN_PASSPORTS",
+    name: "Children's Passport Copies",
+    description: "Passport biographic pages for all children under 21",
+    category: "CIVIL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["BENEFICIARY"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { has_children: true },
+    },
+  },
+  {
+    id: "receipt-notice-uscis",
+    key: "RECEIPT_NOTICE",
+    name: "USCIS Receipt Notice (I-797C)",
+    description: "Receipt notice issued by USCIS confirming a petition was received",
+    category: "MISC",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER", "BENEFICIARY"],
+    stages: ["USCIS", "NVC"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+  },
 ];
 
 // ============================================================================
@@ -303,7 +328,7 @@ const FINANCIAL_DOCS: DocumentDefinition[] = [
 
     roles: ["PETITIONER"],
     stages: ["NVC"],
-    required: false,
+    required: true,
     multipleFilesAllowed: false,
     validityType: "policy_variable",
     defaultWarnDays: 90,
@@ -311,8 +336,7 @@ const FINANCIAL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Download Form I-864",
-        description:
-          "Download the latest version of Form I-864 from USCIS website.",
+        description: "Download the latest version of Form I-864 from USCIS website.",
         resources: [
           {
             name: "USCIS Form I-864",
@@ -391,8 +415,7 @@ const FINANCIAL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Request Letter from Employer",
-        description:
-          "Contact your HR department to request an employment verification letter.",
+        description: "Contact your HR department to request an employment verification letter.",
         tips: [
           "Letter must be on company letterhead",
           "Include: job title, salary, start date, employment type (full-time/part-time)",
@@ -428,6 +451,286 @@ const FINANCIAL_DOCS: DocumentDefinition[] = [
 
     roles: ["PETITIONER"],
     stages: ["NVC"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+  },
+  {
+    id: "joint-i864",
+    key: "JOINT_I864",
+    name: "Joint Sponsor's Form I-864",
+    description: "Completed Affidavit of Support (Form I-864) from the joint sponsor",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["JOINT_SPONSOR"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { joint_sponsor_used: true },
+    },
+  },
+  {
+    id: "joint-tax-returns",
+    key: "JOINT_TAX_RETURNS",
+    name: "Joint Sponsor's Tax Returns (3 years)",
+    description: "Federal tax transcripts or 1040 returns for the last 3 years from joint sponsor",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["JOINT_SPONSOR"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { joint_sponsor_used: true },
+    },
+  },
+  {
+    id: "joint-employment-letter",
+    key: "JOINT_EMPLOYMENT_LETTER",
+    name: "Joint Sponsor's Employment Letter",
+    description: "Current employment verification letter from joint sponsor's employer",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["JOINT_SPONSOR"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "fixed_days",
+    validityDays: 180,
+    requiredWhen: {
+      scenarioFlags: { joint_sponsor_used: true },
+    },
+  },
+  {
+    id: "joint-pay-stubs",
+    key: "JOINT_PAY_STUBS",
+    name: "Joint Sponsor's Pay Stubs",
+    description: "Most recent 6 pay stubs from joint sponsor",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["JOINT_SPONSOR"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "fixed_days",
+    validityDays: 180,
+    requiredWhen: {
+      scenarioFlags: { joint_sponsor_used: true },
+    },
+  },
+  // {
+  //   id: "i-864a-contract",
+  //   key: "I864A_CONTRACT",
+  //   name: "Form I-864A (Household Member Contract)",
+  //   description: "Completed and signed Form I-864A by the household member and petitioner",
+  //   category: "FINANCIAL",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["HOUSEHOLD_MEMBER", "PETITIONER"],
+  //   stages: ["NVC", "INTERVIEW"],
+  //   required: false,
+  //   multipleFilesAllowed: true,
+  //   validityType: "none",
+  //   requiredWhen: {
+  //     scenarioFlags: { household_member_used: true },
+  //   },
+  // },
+  {
+    id: "household-member-income",
+    key: "HOUSEHOLD_MEMBER_INCOME",
+    name: "Proof of Household Member Income",
+    description: "Tax returns, W-2s, and pay stubs for the household member",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["HOUSEHOLD_MEMBER"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { household_member_used: true },
+    },
+  },
+  {
+    id: "household-member-residence",
+    key: "HOUSEHOLD_MEMBER_RESIDENCE",
+    name: "Proof of Shared Residence",
+    description:
+      "Lease, bills, or ID documents showing household member shares petitioner's residence",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["HOUSEHOLD_MEMBER", "PETITIONER"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { household_member_used: true },
+    },
+  },
+  {
+    id: "hh-marriage",
+    key: "HH_MARRIAGE",
+    name: "Marriage Certificate, Household Member",
+    description: "Marriage certificate proving spousal relationship between household member and petitioner",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["HOUSEHOLD_MEMBER", "PETITIONER"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { household_member_used: true },
+    },
+  },
+  {
+    id: "hh-id",
+    key: "HH_ID",
+    name: "Identity Document, Household Member",
+    description: "Government-issued identification card or document for the household member",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["HOUSEHOLD_MEMBER"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { household_member_used: true },
+    },
+  },
+  {
+    id: "hh-birth",
+    key: "HH_BIRTH",
+    name: "Birth Certificate, Household Member",
+    description: "Birth certificate proving parent-child or sibling relationship",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["HOUSEHOLD_MEMBER", "PETITIONER"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { household_member_used: true },
+    },
+  },
+  {
+    id: "hh-family-link",
+    key: "HH_FAMILY_LINK",
+    name: "Supporting Family-Link Evidence, Household Member",
+    description: "Civil records or affidavit establishing the household connection",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["HOUSEHOLD_MEMBER", "PETITIONER"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { household_member_used: true },
+    },
+  },
+  {
+    id: "asset-evidence",
+    key: "ASSET_EVIDENCE",
+    name: "Asset Evidence",
+    description:
+      "Evidence of assets (bank statements, investments, property) used to supplement income",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER", "JOINT_SPONSOR"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+  },
+  {
+    id: "joint-w2",
+    key: "JOINT_W2",
+    name: "Joint Sponsor's W-2 Forms",
+    description: "W-2 forms for the joint sponsor supporting filed tax returns",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["JOINT_SPONSOR"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { joint_sponsor_used: true },
+    },
+  },
+  {
+    id: "joint-assets",
+    key: "JOINT_ASSETS",
+    name: "Joint Sponsor's Asset Evidence",
+    description: "Evidence of assets (bank statements, investments, property) for the joint sponsor",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["JOINT_SPONSOR"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    requiredWhen: {
+      scenarioFlags: { joint_sponsor_used: true },
+    },
+    validityType: "none",
+  },
+  {
+    id: "joint-citizenship-proof",
+    key: "JOINT_CITIZENSHIP_PROOF",
+    name: "Joint Sponsor's Proof of U.S. Citizenship",
+    description: "Proof of U.S. citizenship or lawful permanent resident status (Passport, birth certificate, or green card)",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["JOINT_SPONSOR"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { joint_sponsor_used: true },
+    },
+  },
+  {
+    id: "prior-year-backup",
+    key: "PRIOR_YEAR_BACKUP",
+    name: "Backup Prior-Year Tax Evidence",
+    description: "Additional years of tax returns or transcripts for extra reassurance",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER", "JOINT_SPONSOR"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+  },
+  {
+    id: "upload-packet",
+    key: "UPLOAD_PACKET",
+    name: "Upload-Ready Financial Packet",
+    description: "Clean, compressed, properly named files ready for CEAC upload",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER", "JOINT_SPONSOR"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+  },
+  {
+    id: "organized-income-packet",
+    key: "ORGANIZED_INCOME_PACKET",
+    name: "Organized Income Packet",
+    description: "All income documents grouped cleanly by sponsor for upload readiness",
+    category: "FINANCIAL",
+    applicableVisas: FAMILY_VISAS,
+    roles: ["PETITIONER", "JOINT_SPONSOR"],
+    stages: ["NVC", "INTERVIEW"],
     required: false,
     multipleFilesAllowed: true,
     validityType: "none",
@@ -657,8 +960,7 @@ const POLICE_DOCS: DocumentDefinition[] = [
     id: "police-certificate-pakistan",
     key: "POLICE_CERT_PK",
     name: "Police Certificate",
-    description:
-      "Pakistan Police Character Certificate (PCC) for the beneficiary",
+    description: "Pakistan Police Character Certificate (PCC) for the beneficiary",
     category: "POLICE",
     applicableVisas: UNIVERSAL_VISAS,
 
@@ -702,8 +1004,25 @@ const POLICE_DOCS: DocumentDefinition[] = [
   {
     id: "court-records",
     key: "COURT_RECORDS",
-    name: "Court Records",
+    name: "Court / Disposition Records",
     description: "Records of any arrests, convictions, or court proceedings",
+    category: "POLICE",
+    applicableVisas: FAMILY_VISAS,
+
+    roles: ["BENEFICIARY"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { criminal_history: true },
+    },
+  },
+  {
+    id: "police-disposition",
+    key: "POLICE_DISPOSITION",
+    name: "Police Disposition Letters",
+    description: "Official letters from police showing final disposition of each incident",
     category: "POLICE",
     applicableVisas: FAMILY_VISAS,
 
@@ -750,7 +1069,7 @@ const MEDICAL_DOCS: DocumentDefinition[] = [
 
     roles: ["BENEFICIARY"],
     stages: ["INTERVIEW"],
-    required: false,
+    required: true,
     multipleFilesAllowed: false,
     validityType: "fixed_days",
     validityDays: 180, // 6 months validity
@@ -759,8 +1078,7 @@ const MEDICAL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Schedule Medical Exam",
-        description:
-          "Book appointment with panel physician approved by U.S. Embassy Islamabad.",
+        description: "Book appointment with panel physician approved by U.S. Embassy Islamabad.",
         resources: [
           {
             name: "Panel Physicians in Pakistan",
@@ -806,8 +1124,7 @@ const MEDICAL_DOCS: DocumentDefinition[] = [
     id: "polio-vaccine-cert",
     key: "POLIO_CERT",
     name: "Polio Vaccination Certificate",
-    description:
-      "Official International Certificate of Vaccination (issued within last 12 months)",
+    description: "Official International Certificate of Vaccination (issued within last 12 months)",
     category: "MEDICAL",
     applicableVisas: FAMILY_VISAS,
 
@@ -891,8 +1208,7 @@ const PHOTO_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Get Compliant Photos",
-        description:
-          "Get 2x2 inch photos that meet U.S. visa photo requirements.",
+        description: "Get 2x2 inch photos that meet U.S. visa photo requirements.",
         resources: [
           {
             name: "U.S. Visa Photo Requirements",
@@ -936,8 +1252,7 @@ const TRANSLATION_DOCS: DocumentDefinition[] = [
     id: "translator-certification",
     key: "TRANSLATOR_CERT",
     name: "Translator Certification",
-    description:
-      "Certification statement from translator for all translated documents",
+    description: "Certification statement from translator for all translated documents",
     category: "TRANSLATIONS",
     applicableVisas: FAMILY_VISAS,
 
@@ -1078,7 +1393,8 @@ const MISC_DOCS: DocumentDefinition[] = [
     id: "citizenship-proof-petitioner",
     key: "CITIZENSHIP_PROOF",
     name: "Proof of U.S. Citizenship",
-    description: "Proof of U.S. citizenship (Birth Certificate, Naturalization Certificate, or Citizenship Certificate)",
+    description:
+      "Proof of U.S. citizenship (Birth Certificate, Naturalization Certificate, or Citizenship Certificate)",
     category: "CITIZENSHIP_PROOF",
     applicableVisas: FAMILY_VISAS,
     roles: ["PETITIONER"],
@@ -1157,6 +1473,32 @@ const MISC_DOCS: DocumentDefinition[] = [
     applicableVisas: UNIVERSAL_VISAS,
     roles: ["BENEFICIARY", "PETITIONER"],
     stages: ["NVC"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+  },
+  {
+    id: "relationship-evidence-backup",
+    key: "RELATIONSHIP_EVIDENCE_BACKUP",
+    name: "IR-5 Relationship Evidence Backup Set",
+    description: "Originals and supporting evidence proving the qualifying parent-child relationship",
+    category: "MISC",
+    applicableVisas: UNIVERSAL_VISAS,
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+  },
+  {
+    id: "interview-originals",
+    key: "INTERVIEW_ORIGINALS",
+    name: "Interview Originals and Certified Copies Set",
+    description: "Original or certified civil records corresponding to the CEAC uploads",
+    category: "MISC",
+    applicableVisas: UNIVERSAL_VISAS,
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["INTERVIEW"],
     required: false,
     multipleFilesAllowed: true,
     validityType: "none",
@@ -1712,11 +2054,7 @@ const TRAVEL_DOCS: DocumentDefinition[] = [
         stepNumber: 1,
         title: "Collect Old Passports",
         description: "Gather all previous passports showing travel history.",
-        tips: [
-          "Scan biographical pages",
-          "Scan all visa stamps",
-          "Scan entry/exit stamps",
-        ],
+        tips: ["Scan biographical pages", "Scan all visa stamps", "Scan entry/exit stamps"],
       },
     ],
   },
@@ -1798,8 +2136,7 @@ const IDENTITY_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Obtain Domicile Certificate",
-        description:
-          "Get your domicile certificate from the district administration.",
+        description: "Get your domicile certificate from the district administration.",
         resources: [
           {
             name: "Punjab Domicile Guide",
@@ -2138,8 +2475,7 @@ const LEGAL_DOCS: DocumentDefinition[] = [
       {
         stepNumber: 1,
         title: "Get Affidavits from Witnesses",
-        description:
-          "Request affidavits from friends/family who can attest to your marriage.",
+        description: "Request affidavits from friends/family who can attest to your marriage.",
         tips: [
           "Notarized by oath commissioner",
           "Include witness contact details",
@@ -2252,8 +2588,7 @@ const HEALTH_INSURANCE_DOCS: DocumentDefinition[] = [
     id: "oshc-australia",
     key: "OSHC_AUSTRALIA",
     name: "Overseas Student Health Cover (OSHC)",
-    description:
-      "Proof of health insurance for the entire duration of stay in Australia",
+    description: "Proof of health insurance for the entire duration of stay in Australia",
     category: "HEALTH_INSURANCE",
     applicableVisas: AUSTRALIA_STUDENT_VISAS,
     roles: ["BENEFICIARY"],
@@ -2465,8 +2800,7 @@ const OTHER_DOCS: DocumentDefinition[] = [
     id: "proof-home-country-ties",
     key: "PROOF_HOME_COUNTRY_TIES",
     name: "Proof of Home Country Ties",
-    description:
-      "Evidence of intent to return to home country (property, family, job offers)",
+    description: "Evidence of intent to return to home country (property, family, job offers)",
     category: "OTHER",
     applicableVisas: USA_STUDENT_VISAS,
 
@@ -2546,8 +2880,7 @@ const OTHER_DOCS: DocumentDefinition[] = [
     id: "i-130a-supplemental",
     key: "I130A_FORM",
     name: "Form I-130A: Supplemental Information for Spouse Beneficiary",
-    description:
-      "Personal information about the spouse beneficiary of a marriage-based petition.",
+    description: "Personal information about the spouse beneficiary of a marriage-based petition.",
     category: "OTHER",
     applicableVisas: ["IR-1", "CR-1"],
     roles: ["BENEFICIARY"],
@@ -2556,20 +2889,20 @@ const OTHER_DOCS: DocumentDefinition[] = [
     multipleFilesAllowed: false,
     validityType: "none",
   },
-  {
-    id: "i-129f-petition",
-    key: "I129F_FORM",
-    name: "Form I-129F: Petition for Alien Fiancé(e)",
-    description: "Petition to bring a fiancé(e) to the United States.",
-    category: "OTHER",
-    applicableVisas: FAMILY_VISAS,
-    roles: ["PETITIONER"],
-    stages: ["USCIS"],
-    required: false,
-    multipleFilesAllowed: false,
-    validityType: "none",
-    hideUntilUploaded: true,
-  },
+  // {
+  //   id: "i-129f-petition",
+  //   key: "I129F_FORM",
+  //   name: "Form I-129F: Petition for Alien Fiancé(e)",
+  //   description: "Petition to bring a fiancé(e) to the United States.",
+  //   category: "OTHER",
+  //   applicableVisas: FAMILY_VISAS,
+  //   roles: ["PETITIONER"],
+  //   stages: ["USCIS"],
+  //   required: false,
+  //   multipleFilesAllowed: false,
+  //   validityType: "none",
+  //   hideUntilUploaded: true,
+  // },
   {
     id: "i-912-waiver",
     key: "I912_FORM",
@@ -2588,8 +2921,7 @@ const OTHER_DOCS: DocumentDefinition[] = [
     id: "i-864a-contract",
     key: "I864A_FORM",
     name: "Form I-864A: Contract Between Sponsor and Household Member",
-    description:
-      "Contract to combine income and/or assets to meet sponsorship requirements.",
+    description: "Contract to combine income and/or assets to meet sponsorship requirements.",
     category: "OTHER",
     applicableVisas: FAMILY_VISAS,
     roles: ["HOUSEHOLD_MEMBER"],
@@ -2598,7 +2930,11 @@ const OTHER_DOCS: DocumentDefinition[] = [
     multipleFilesAllowed: true,
     validityType: "none",
     hideUntilUploaded: true,
+    requiredWhen: {
+      scenarioFlags: { household_member_used: true },
+    },
   },
+
   {
     id: "i-864ez-affidavit",
     key: "I864EZ_FORM",
@@ -2625,7 +2961,226 @@ const OTHER_DOCS: DocumentDefinition[] = [
     required: false,
     multipleFilesAllowed: false,
     validityType: "none",
-    hideUntilUploaded: true,
+  },
+];
+
+// ============================================================================
+// PARENT-SPECIFIC CIVIL & RELATIONSHIP DOCUMENTS (IR-5)
+// ============================================================================
+const PARENT_DOCS: DocumentDefinition[] = [
+  {
+    id: "birth-cert-petitioner",
+    key: "PETITIONER_BIRTH_CERT",
+    name: "Petitioner's Birth Certificate",
+    description:
+      "Original birth certificate of the U.S. citizen petitioner, showing both parents' names.",
+    category: "CIVIL",
+    applicableVisas: ["IR-5"],
+    roles: ["PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: true,
+    multipleFilesAllowed: false,
+    validityType: "none",
+  },
+  {
+    id: "parent-mrc",
+    key: "PARENT_MRC",
+    name: "Parent Beneficiary Marriage Certificate",
+    description: "Official civil proof of the parent beneficiary's marriage (Nikah Nama / NADRA MRC).",
+    category: "CIVIL",
+    applicableVisas: ["IR-5"],
+    roles: ["BENEFICIARY"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+  },
+  {
+    id: "parent-mrc-translation",
+    key: "PARENT_MRC_TRANSLATION",
+    name: "Translated Parent Beneficiary Marriage Certificate",
+    description: "Certified English translation of the parent beneficiary's marriage certificate",
+    category: "CIVIL",
+    applicableVisas: ["IR-5"],
+    roles: ["BENEFICIARY"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    translationOf: "parent-mrc",
+  },
+  {
+    id: "parent-identity-match",
+    key: "PARENT_IDENTITY_MATCH",
+    name: "Parent Identity and Name-Match Evidence",
+    description:
+      "Evidence linking the parent named on the petitioner's birth record to the current beneficiary.",
+    category: "CIVIL",
+    applicableVisas: ["IR-5"],
+    roles: ["BENEFICIARY"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    suggestions: [
+      "Petitioner's Birth Certificate",
+      "CNIC showing parent's name (supporting evidence)",
+      "Passport showing parent's name (if available)",
+      "Family Registration Certificate (FRC)",
+      "School Leaving Certificate showing parent's name (if available)",
+    ],
+  },
+  {
+    id: "parents-marriage-cert",
+    key: "PARENTS_MARRIAGE_CERT",
+    name: "Parents' Marriage Certificate",
+    description:
+      "Marriage certificate of the petitioner's biological parents, generally required to establish relationship with biological father.",
+    category: "CIVIL",
+    applicableVisas: ["IR-5"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { relationship_type: "father_married" },
+    },
+  },
+  {
+    id: "father-child-bona-fide",
+    key: "FATHER_CHILD_BONA_FIDE",
+    name: "Evidence of a Bona Fide Father-Child Relationship",
+    description:
+      "Evidence showing a bona fide father-child relationship (financial support, shared residence) when parents were unmarried.",
+    category: "RELATIONSHIP",
+    applicableVisas: ["IR-5"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { relationship_type: "father_unmarried" },
+    },
+  },
+  {
+    id: "stepparent-marriage-cert",
+    key: "STEPPARENT_MARRIAGE_CERT",
+    name: "Marriage Certificate Creating the Step-Relationship",
+    description:
+      "Marriage certificate showing the stepparent married the biological/legal parent before petitioner turned 18.",
+    category: "CIVIL",
+    applicableVisas: ["IR-5"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { relationship_type: "stepparent" },
+    },
+  },
+  {
+    id: "stepparent-prior-marriages",
+    key: "STEPPARENT_PRIOR_MARRIAGES",
+    name: "Termination of Prior Marriages for Step-Relationship",
+    description:
+      "Proof that prior marriages of the biological parent or stepparent ended before the step-relationship creating marriage.",
+    category: "CIVIL",
+    applicableVisas: ["IR-5"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { stepparent_bio_parent_prior_marriages: true },
+    },
+  },
+  {
+    id: "adoption-decree",
+    key: "ADOPTION_DECREE",
+    name: "Final Adoption Decree",
+    description: "Official decree establishing the legal adoption of the petitioner.",
+    category: "CIVIL",
+    applicableVisas: ["IR-5"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: false,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { relationship_type: "adoptive" },
+    },
+  },
+  {
+    id: "adoption-custody-residence",
+    key: "ADOPTION_CUSTODY_RESIDENCE",
+    name: "Legal Custody and Joint Residence Evidence",
+    description:
+      "Evidence showing 2 years of legal custody and joint residence before the petition.",
+    category: "RELATIONSHIP",
+    applicableVisas: ["IR-5"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { relationship_type: "adoptive" },
+    },
+  },
+  {
+    id: "secondary-relationship-evidence",
+    key: "SECONDARY_RELATIONSHIP_EVIDENCE",
+    name: "Secondary Parent-Child Relationship Evidence",
+    description:
+      "Secondary evidence (school records, census records, affidavits) when primary birth certificate is unavailable.",
+    category: "RELATIONSHIP",
+    applicableVisas: ["IR-5"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { primary_record_available: false },
+    },
+  },
+  {
+    id: "record-unavailability-evidence",
+    key: "RECORD_UNAVAILABILITY_EVIDENCE",
+    name: "Record Unavailability Evidence",
+    description:
+      "Official explanation when a required primary civil record genuinely cannot be obtained.",
+    category: "CIVIL",
+    applicableVisas: ["IR-5"],
+    roles: ["BENEFICIARY", "PETITIONER"],
+    stages: ["USCIS", "NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { primary_record_available: false },
+    },
+  },
+  {
+    id: "parent-marriage-history",
+    key: "PARENT_MARRIAGE_HISTORY",
+    name: "Parent's Marriage and Prior-Marriage Records",
+    description:
+      "Marriage, divorce, annulment, or former-spouse death records for the parent beneficiary's marriage history.",
+    category: "CIVIL",
+    applicableVisas: ["IR-5"],
+    roles: ["BENEFICIARY"],
+    stages: ["NVC", "INTERVIEW"],
+    required: false,
+    multipleFilesAllowed: true,
+    validityType: "none",
+    requiredWhen: {
+      scenarioFlags: { parent_prior_marriages: true },
+    },
   },
 ];
 
@@ -2657,6 +3212,7 @@ export const ALL_DOCUMENTS: DocumentDefinition[] = [
   ...SOCIAL_MEDIA_DOCS,
   ...ADDRESS_PROOF_DOCS,
   ...OTHER_DOCS,
+  ...PARENT_DOCS,
 ];
 
 // Index by key for quick lookup
@@ -2665,7 +3221,16 @@ export const DOCUMENTS_BY_KEY = ALL_DOCUMENTS.reduce(
     acc[doc.key] = doc;
     return acc;
   },
-  {} as Record<string, DocumentDefinition>,
+  {} as Record<string, DocumentDefinition>
+);
+
+// Index by id for quick lookup
+export const DOCUMENTS_BY_ID = ALL_DOCUMENTS.reduce(
+  (acc, doc) => {
+    acc[doc.id] = doc;
+    return acc;
+  },
+  {} as Record<string, DocumentDefinition>
 );
 
 // Index by category
@@ -2677,5 +3242,5 @@ export const DOCUMENTS_BY_CATEGORY = ALL_DOCUMENTS.reduce(
     acc[doc.category].push(doc);
     return acc;
   },
-  {} as Record<DocumentCategory, DocumentDefinition[]>,
+  {} as Record<DocumentCategory, DocumentDefinition[]>
 );

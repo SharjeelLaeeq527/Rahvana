@@ -6,11 +6,11 @@ import uvicorn
 
 # Routers
 from app.api.v1.remove_bg import router as remove_bg_router
-from app.api.v1.iv_schedule import router as iv_schedule_router
 from app.api.v1.visa_checker import router as visa_checker_router
 from app.api.v1.pdf_routes import router as pdf_router
 # from app.api.v1.whatsapp import router as whatsapp_router
 from app.api.v1.compress import router as compress_router  # NEW IMPORT
+from app.api.v1.document_vision import router as document_vision_router  # Vision OCR fallback
 app = FastAPI(
     title=settings.PROJECT_NAME,
     description="Immigration Assistant with Visa Bulletin Checker",
@@ -46,11 +46,11 @@ def health():
 
 # Register All Routes
 app.include_router(remove_bg_router, prefix="/api/v1", tags=["remove-bg"])
-app.include_router(iv_schedule_router, prefix="/api/v1", tags=["iv-schedule"])
 app.include_router(pdf_router, prefix="/api/v1", tags=["pdf-forms"])
 app.include_router(visa_checker_router, prefix="/api/v1/visa-checker", tags=["visa-checker"])
 # app.include_router(whatsapp_router, prefix="/api/v1", tags=["whatsapp-ai"])
-app.include_router(compress_router, prefix="/api/v1", tags=["pdf-compress"]) 
+app.include_router(compress_router, prefix="/api/v1", tags=["pdf-compress"])
+app.include_router(document_vision_router, prefix="/api/v1", tags=["document-vision"])
 
 if __name__ == "__main__":
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

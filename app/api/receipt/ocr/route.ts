@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from "@/lib/errors";
 import { isValidReceiptNumber, normalizeReceipt } from "@/lib/register-receipt";
+import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
+import { validateUploadedFile } from "@/lib/security/file-content";
 
 const OCR_SPACE_ENDPOINT = "https://api.ocr.space/parse/image";
 const OCR_FREE_FILE_LIMIT_BYTES = 1 * 1024 * 1024;
@@ -79,7 +82,7 @@ function extractDateFromText(text: string): string | null {
   }
 
   const monthName = text.match(
-    /\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})(?:,)?\s+(\d{2,4})\b/i,
+    /\b(Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|Jun(?:e)?|Jul(?:y)?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)\s+(\d{1,2})(?:,)?\s+(\d{2,4})\b/i
   );
   if (monthName) {
     const month = MONTHS[monthName[1].toLowerCase()];
@@ -206,13 +209,13 @@ function parseReceiptOcrText(text: string): ReceiptOcrResponse {
 export async function POST(request: NextRequest) {
   try {
     console.log("[receipt/ocr] POST request received");
-    
+
     const supabase = await createClient();
     const { data: authData, error: authError } = await supabase.auth.getUser();
 
     if (authError || !authData.user) {
-      console.log("[receipt/ocr] Authentication failed:", authError?.message);
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("[receipt/ocr] Authentication failed:", authError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     console.log("[receipt/ocr] User authenticated:", authData.user.id);
@@ -220,39 +223,45 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData();
     const file = formData.get("file");
 
-    console.log("[receipt/ocr] FormData received, file:", file instanceof File ? { name: file.name, size: file.size, type: file.type } : "not a file");
+    console.log(
+      "[receipt/ocr] FormData received, file:",
+      file instanceof File ? { name: file.name, size: file.size, type: file.type } : "not a file"
+    );
 
     if (!(file instanceof File)) {
-      console.log("[receipt/ocr] File validation failed: not a File instance");
-      return NextResponse.json({ error: "Missing file" }, { status: 400 });
+      console.warn("[receipt/ocr] File validation failed: not a File instance");
+      return NextResponse.json({ error: msg(E.UPLOAD_NO_FILE) }, { status: 400 });
     }
 
-    console.log(`[receipt/ocr] Received upload from user=${authData.user?.id ?? 'unknown'} file=${file.name} size=${file.size}`);
+    console.log(
+      `[receipt/ocr] Received upload from user=${authData.user?.id ?? "unknown"} file=${file.name} size=${file.size}`
+    );
 
-    if (file.size > OCR_FREE_FILE_LIMIT_BYTES) {
-      console.log("[receipt/ocr] File too large:", file.size, "bytes (limit:", OCR_FREE_FILE_LIMIT_BYTES, ")");
-      return NextResponse.json(
-        {
-          error:
-            "OCR.space free API supports files up to 1 MB. This file is too large for automatic receipt extraction, but you can still save it manually after entering the fields.",
-        },
-        { status: 413 },
-      );
+    const checked = await validateUploadedFile(file, UPLOAD_PROFILES.ocrReceipt);
+
+    if (!checked.ok) {
+      return NextResponse.json({ error: checked.error }, { status: checked.status });
     }
+
+    const safeArrayBuffer = new ArrayBuffer(checked.buffer.byteLength);
+
+    new Uint8Array(safeArrayBuffer).set(checked.buffer);
+
+    const safeFile = new File([safeArrayBuffer], file.name, { type: checked.detectedMime });
 
     const ocrApiKey = process.env.OCR_SPACE_API_KEY;
+
     if (!ocrApiKey) {
       console.log("[receipt/ocr] OCR_SPACE_API_KEY not configured in environment");
-      return NextResponse.json(
-        { error: "OCR_SPACE_API_KEY is not configured." },
-        { status: 500 },
-      );
+
+      return NextResponse.json({ error: "OCR_SPACE_API_KEY is not configured." }, { status: 500 });
     }
 
     console.log("[receipt/ocr] Calling OCR.space API...");
 
     const ocrFormData = new FormData();
-    ocrFormData.append("file", file, file.name);
+
+    ocrFormData.append("file", safeFile, file.name);
     ocrFormData.append("language", "eng");
     ocrFormData.append("isOverlayRequired", "false");
     ocrFormData.append("detectOrientation", "true");
@@ -272,11 +281,11 @@ export async function POST(request: NextRequest) {
 
     const responseJson = (await ocrResponse.json().catch(() => null)) as OcrSpaceResponse | null;
     if (!ocrResponse.ok || !responseJson) {
-      console.log("[receipt/ocr] OCR service request failed");
-      return NextResponse.json(
-        { error: "OCR service request failed." },
-        { status: 502 },
-      );
+      console.error("[receipt/ocr] OCR service request failed", {
+        status: ocrResponse.status,
+        statusText: ocrResponse.statusText,
+      });
+      return NextResponse.json({ error: msg(E.UPLOAD_PROCESSING_FAILED) }, { status: 502 });
     }
 
     const parsedResults = Array.isArray(responseJson.ParsedResults)
@@ -291,13 +300,18 @@ export async function POST(request: NextRequest) {
     console.log("[receipt/ocr] Extracted text length:", rawText.length);
 
     if (!rawText && responseJson.IsErroredOnProcessing) {
-      console.log("[receipt/ocr] OCR processing error:", responseJson.ErrorMessage || responseJson.ErrorDetails);
+      console.log(
+        "[receipt/ocr] OCR processing error:",
+        responseJson.ErrorMessage || responseJson.ErrorDetails
+      );
       return NextResponse.json(
         {
           error:
-            responseJson.ErrorMessage || responseJson.ErrorDetails || "OCR could not read this receipt notice.",
+            responseJson.ErrorMessage ||
+            responseJson.ErrorDetails ||
+            "OCR could not read this receipt notice.",
         },
-        { status: 422 },
+        { status: 422 }
       );
     }
 
@@ -314,7 +328,9 @@ export async function POST(request: NextRequest) {
 
     if (responseJson.IsErroredOnProcessing) {
       warnings.push(
-        responseJson.ErrorMessage || responseJson.ErrorDetails || "OCR.space returned a partial-processing warning.",
+        responseJson.ErrorMessage ||
+          responseJson.ErrorDetails ||
+          "OCR.space returned a partial-processing warning."
       );
     }
 
@@ -330,9 +346,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("[receipt/ocr] Unhandled error:", error);
-    return NextResponse.json(
-      { error: "Failed to run OCR on the uploaded receipt notice." },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: msg(E.UPLOAD_PROCESSING_FAILED) }, { status: 500 });
   }
 }

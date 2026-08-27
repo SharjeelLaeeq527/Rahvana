@@ -1,7 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from "@/lib/errors";
+import { checkRateLimit, rateLimitResponse } from "@/lib/security/rate-limit";
+import { auditLog, auditBlocked } from "@/lib/security/audit-log";
 
 export async function POST(request: NextRequest) {
+  // ── Rate Limit ──
+  const rl = checkRateLimit(request, "auth-mfa-enroll", { maxAttempts: 5 });
+  if (!rl.allowed) {
+    auditBlocked(request, "auth.mfa_enroll", { reason: "rate_limited" });
+    return rateLimitResponse(rl);
+  }
+
   try {
     const supabase = await createClient();
 
@@ -11,27 +21,31 @@ export async function POST(request: NextRequest) {
       error: authError,
     } = await supabase.auth.getUser();
     if (authError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("MFA enroll unauthorized:", authError);
+      return NextResponse.json(
+        { success: false, code: E.AUTH_UNAUTHORIZED, message: msg(E.AUTH_UNAUTHORIZED) },
+        { status: 401 }
+      );
     }
 
     // Check for existing unverified factors and remove them
     try {
       const { data: factorsData, error: factorsError } = await supabase.auth.mfa.listFactors();
-      
+
       if (!factorsError && factorsData?.totp) {
         console.log(`Found ${factorsData.totp.length} existing TOTP factors`);
-        
+
         // Only unenroll unverified factors
         for (const factor of factorsData.totp) {
           console.log(`Found factor: ${factor.id}, status: ${factor.status}`);
-          
-          if (factor.status.toLowerCase() === 'unverified') {
+
+          if (factor.status.toLowerCase() === "unverified") {
             console.log(`Attempting to unenroll unverified factor: ${factor.id}`);
-            
+
             const { error: unenrollError } = await supabase.auth.mfa.unenroll({
-              factorId: factor.id
+              factorId: factor.id,
             });
-            
+
             if (unenrollError) {
               console.error(`Error unenrolling unverified factor ${factor.id}:`, unenrollError);
             } else {
@@ -39,16 +53,25 @@ export async function POST(request: NextRequest) {
             }
           }
         }
-        
+
         // Check if there are any verified factors already
-        const verifiedFactors = factorsData.totp.filter(f => f.status.toLowerCase() === 'verified');
+        const verifiedFactors = factorsData.totp.filter(
+          (f) => f.status.toLowerCase() === "verified"
+        );
         if (verifiedFactors.length > 0) {
           console.log(`User already has ${verifiedFactors.length} verified TOTP factor(s)`);
-          return NextResponse.json({ error: "User already has a verified TOTP factor enrolled" }, { status: 400 });
+          return NextResponse.json(
+            {
+              success: false,
+              code: E.AUTH_MFA_ALREADY_ENROLLED,
+              message: msg(E.AUTH_MFA_ALREADY_ENROLLED),
+            },
+            { status: 400 }
+          );
         }
       }
     } catch (listError) {
-      console.error('Error listing factors:', listError);
+      console.error("Error listing factors:", listError);
     }
 
     // Enroll MFA factor with a friendly name
@@ -59,8 +82,20 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       console.error("MFA enroll error:", error);
-      return NextResponse.json({ error: error.message }, { status: 500 });
+      return NextResponse.json(
+        { success: false, code: E.AUTH_MFA_ENABLE_FAILED, message: msg(E.AUTH_MFA_ENABLE_FAILED) },
+        { status: 500 }
+      );
     }
+
+    auditLog({
+      userId: user.id,
+      action: "auth.mfa_enroll",
+      resource: "auth",
+      request,
+      metadata: { factorId: data.id },
+      status: "success",
+    });
 
     return NextResponse.json({
       success: true,
@@ -74,8 +109,8 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error("MFA enroll error:", error);
     return NextResponse.json(
-      { error: "Failed to initiate MFA setup" },
-      { status: 500 },
+      { success: false, code: E.AUTH_UNEXPECTED_ERROR, message: msg(E.AUTH_UNEXPECTED_ERROR) },
+      { status: 500 }
     );
   }
 }

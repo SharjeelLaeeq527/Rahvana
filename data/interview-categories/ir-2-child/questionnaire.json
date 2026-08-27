@@ -55,7 +55,7 @@
         },
         {
           "key": "parent_full_name",
-          "label": "What is your parent’s full name?",
+          "label": "What is your parent's full name?",
           "type": "text",
           "required": true,
           "validation": { "minLength": 3, "maxLength": 200 },
@@ -153,12 +153,7 @@
           "label": "How do you communicate with them?",
           "type": "select",
           "required": true,
-          "options": [
-            "Phone calls",
-            "Video calls",
-            "Text messages",
-            "All of the above"
-          ]
+          "options": ["Phone calls", "Video calls", "Text messages", "All of the above"]
         },
         {
           "key": "has_photos_with_parent",

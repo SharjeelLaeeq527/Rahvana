@@ -1,7 +1,9 @@
 // POST/GET /api/receipt/journey?journeyId=...  (store/fetch receipt in case_data)
 import { NextRequest, NextResponse } from "next/server";
+import { E, msg } from "@/lib/errors";
 import { upsertCaseDataDB, getCaseDataByKeyDB } from "@/lib/journey/data-access";
 import { isValidReceiptNumber, normalizeReceipt } from "@/lib/register-receipt";
+import { safeError } from "@/lib/api/safeError";
 
 const RECEIPT_KEY = "uscis_receipt_number";
 
@@ -14,7 +16,7 @@ export async function GET(req: NextRequest) {
   try {
     const caseData = await getCaseDataByKeyDB(journeyId, RECEIPT_KEY);
     if (!caseData) {
-      return NextResponse.json({ error: "Receipt not found" }, { status: 404 });
+      return NextResponse.json({ error: msg(E.CASE_DATA_NOT_FOUND) }, { status: 404 });
     }
     return NextResponse.json({
       receipt_number: caseData.data_value?.receiptNumber,
@@ -28,7 +30,7 @@ export async function GET(req: NextRequest) {
       saved_at: caseData.updated_at,
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return safeError(error);
   }
 }
 
@@ -42,11 +44,11 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Invalid JSON" }, { status: 400 });
+    return NextResponse.json({ error: msg(E.CASE_DATA_VALIDATION_FAILED) }, { status: 400 });
   }
   const { receiptNumber, noticeDate, priorityDate, caseLabel, source } = body;
   if (!receiptNumber || !isValidReceiptNumber(normalizeReceipt(receiptNumber))) {
-    return NextResponse.json({ error: "Invalid receipt number" }, { status: 400 });
+    return NextResponse.json({ error: msg(E.USCIS_INVALID_RECEIPT) }, { status: 400 });
   }
   if (!source || !["manual", "upload"].includes(source)) {
     return NextResponse.json({ error: "Invalid source" }, { status: 400 });
@@ -65,6 +67,7 @@ export async function POST(req: NextRequest) {
   };
   try {
     const caseData = await upsertCaseDataDB(journeyId, RECEIPT_KEY, {
+      data_key: RECEIPT_KEY,
       data_value: receiptData,
       data_type: "object",
       label: "USCIS Receipt Number",
@@ -84,6 +87,7 @@ export async function POST(req: NextRequest) {
       saved_at: caseData.updated_at,
     });
   } catch (error: any) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error("/api/receipt/journey POST error:", error);
+    return NextResponse.json({ error: msg(E.AUTH_UNEXPECTED_ERROR) }, { status: 500 });
   }
 }

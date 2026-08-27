@@ -7,6 +7,7 @@ import type {
   DynamicQuestionnaire,
   QuestionBank,
 } from "@/data/interview-categories/schema";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 
 interface CategoryData {
   config: InterviewCategoryConfig;
@@ -21,12 +22,7 @@ class CategoryLoaderService {
 
   // Base path resolver
   private getCategoryPath(slug: string) {
-    return path.join(
-      process.cwd(),
-      "data",
-      "interview-categories",
-      slug
-    );
+    return path.join(process.cwd(), "data", "interview-categories", slug);
   }
 
   // Generic JSON reader
@@ -55,15 +51,9 @@ class CategoryLoaderService {
 
       // Parallel load via FS
       const [config, questionnaire, questionBank] = await Promise.all([
-        this.readJsonFile<InterviewCategoryConfig>(
-          path.join(basePath, "config.json")
-        ),
-        this.readJsonFile<DynamicQuestionnaire>(
-          path.join(basePath, "questionnaire.json")
-        ),
-        this.readJsonFile<QuestionBank>(
-          path.join(basePath, "question-bank.json")
-        ),
+        this.readJsonFile<InterviewCategoryConfig>(path.join(basePath, "config.json")),
+        this.readJsonFile<DynamicQuestionnaire>(path.join(basePath, "questionnaire.json")),
+        this.readJsonFile<QuestionBank>(path.join(basePath, "question-bank.json")),
       ]);
 
       const categoryData = { config, questionnaire, questionBank };
@@ -83,20 +73,13 @@ class CategoryLoaderService {
 
   // Get all active categories
   async getActiveCategories(country?: string): Promise<InterviewCategoryConfig[]> {
+    // IR-5 is hidden on production (see lib/feature-flags) until it launches.
     const slugs = [
       "ir-1-spouse",
-      // "ir-2-child",
-      // "ir-5-parent",
-      // "f1-student",
-      // "uk-student",
-      // "ca-student",
-      // "au-student",
-      // "it-student",
+      ...(IR5_ENABLED ? ["ir-5-parent"] : []),
     ];
 
-    const results = await Promise.allSettled(
-      slugs.map((slug) => this.loadCategory(slug))
-    );
+    const results = await Promise.allSettled(slugs.map((slug) => this.loadCategory(slug)));
 
     let categories = results
       .filter((r): r is PromiseFulfilledResult<CategoryData> => r.status === "fulfilled")

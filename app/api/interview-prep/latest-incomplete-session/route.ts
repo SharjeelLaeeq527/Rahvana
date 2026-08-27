@@ -5,8 +5,12 @@
  */
 
 import { NextResponse } from "next/server";
-import { getLatestIncompleteSessionDB, getSessionAnswersDB, getInterviewResultsDB } from "@/lib/interview-prep/data-access";
-
+import {
+  getLatestIncompleteSessionDB,
+  getSessionAnswersDB,
+  getInterviewResultsDB,
+} from "@/lib/interview-prep/data-access";
+import { E, msg } from "@/lib/errors";
 export async function GET() {
   try {
     // Get the latest incomplete session for the current user
@@ -16,7 +20,7 @@ export async function GET() {
       return NextResponse.json({
         success: false,
         session: null,
-        message: "No incomplete session found"
+        message: "No incomplete session found",
       });
     }
 
@@ -47,14 +51,11 @@ export async function GET() {
       session: {
         ...session,
         answers,
-        results: formattedResults
-      }
+        results: formattedResults,
+      },
     });
   } catch (error) {
     console.error("Error fetching latest incomplete session:", error);
-    return NextResponse.json(
-      { success: false, error: "Failed to fetch session" },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }

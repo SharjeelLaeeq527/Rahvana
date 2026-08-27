@@ -1,13 +1,7 @@
 "use client";
 
 import React, { useEffect, useState, useMemo } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   Users,
   Eye,
@@ -15,22 +9,19 @@ import {
   Activity,
   ArrowLeft,
   TrendingUp,
+  Bell,
   Clock,
   Globe,
   Calendar,
-  UserPlus,
+  UserPlus, // Bell is not used directly here, AdminNotificationBell uses BellIcon internally
 } from "lucide-react";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
+import { useAuth } from "@/app/context/AuthContext";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Loader } from "@/components/ui/spinner";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { E, msg } from "@/lib/errors";
 import {
   AreaChart,
   Area,
@@ -43,7 +34,8 @@ import {
   // Bar,
   // Legend,
 } from "recharts";
-
+import { AdminNotificationBell } from "@/lib/AdminNotificationBell";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 interface AnalyticsData {
   realtime: {
     activeUsers: string;
@@ -62,6 +54,7 @@ export default function AnalyticsDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [period, setPeriod] = useState("this-week");
 
+  const { user, isAdmin } = useAuth();
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -82,22 +75,20 @@ export default function AnalyticsDashboard() {
         setIsRefreshing(true);
 
         // Use cache-busting timestamp to ensure fresh data
-        const res = await fetch(
-          `/api/analytics?period=${period}&t=${Date.now()}`,
-        );
+        const res = await fetch(`/api/analytics?period=${period}&t=${Date.now()}`);
         if (!res.ok) throw new Error("Failed to fetch analytics");
 
         const json = await res.json();
         setData(json);
         setLastUpdated(new Date());
       } catch (err: any) {
-        setError(err.message);
+        setError(msg(E.ANALYTICS_FETCH_FAILED));
       } finally {
         setLoading(false);
         setIsRefreshing(false);
       }
     },
-    [period],
+    [period]
   );
 
   useEffect(() => {
@@ -119,9 +110,7 @@ export default function AnalyticsDashboard() {
     return [...data.rows]
       .sort((a, b) => a.date.localeCompare(b.date))
       .map((row) => ({
-        date: row.date
-          ? `${row.date.substring(4, 6)}/${row.date.substring(6, 8)}`
-          : "",
+        date: row.date ? `${row.date.substring(4, 6)}/${row.date.substring(6, 8)}` : "",
         fullDate: row.date
           ? `${row.date.substring(0, 4)}-${row.date.substring(4, 6)}-${row.date.substring(6, 8)}`
           : "N/A",
@@ -134,30 +123,29 @@ export default function AnalyticsDashboard() {
   }, [data]);
 
   // Map metric names to icons and friendly labels
-  const metricMap: Record<string, { label: string; icon: any; color: string }> =
-    {
-      activeUsers: {
-        label: "Active Users",
-        icon: Users,
-        color: "text-blue-600",
-      },
-      newUsers: {
-        label: "New Users",
-        icon: UserPlus,
-        color: "text-indigo-600",
-      },
-      sessions: { label: "Sessions", icon: Activity, color: "text-green-600" },
-      screenPageViews: {
-        label: "Page Views",
-        icon: Eye,
-        color: "text-purple-600",
-      },
-      eventCount: {
-        label: "Events",
-        icon: MousePointerClick,
-        color: "text-orange-600",
-      },
-    };
+  const metricMap: Record<string, { label: string; icon: any; color: string }> = {
+    activeUsers: {
+      label: "Active Users",
+      icon: Users,
+      color: "text-blue-600",
+    },
+    newUsers: {
+      label: "New Users",
+      icon: UserPlus,
+      color: "text-indigo-600",
+    },
+    sessions: { label: "Sessions", icon: Activity, color: "text-green-600" },
+    screenPageViews: {
+      label: "Page Views",
+      icon: Eye,
+      color: "text-purple-600",
+    },
+    eventCount: {
+      label: "Events",
+      icon: MousePointerClick,
+      color: "text-orange-600",
+    },
+  };
 
   return (
     <div className="min-h-screen bg-background site-main-px site-main-py">
@@ -195,18 +183,13 @@ export default function AnalyticsDashboard() {
               {/* Period Selector */}
               <div className="flex items-center gap-2 bg-card border border-border rounded-xl px-3 py-1 shadow-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <Select value={period} onValueChange={setPeriod}>
-                  <SelectTrigger className="w-[140px] border-none shadow-none focus:ring-0">
-                    <SelectValue placeholder="Select period" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {periods.map((p) => (
-                      <SelectItem key={p.value} value={p.value}>
-                        {p.label}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <CustomDropdown
+                  value={period}
+                  onChange={setPeriod}
+                  options={periods}
+                  placeholder="Select period"
+                  className="w-[140px] [&_button]:w-full [&_button]:min-w-0 [&_button]:border-none [&_button]:shadow-none [&_button]:focus:ring-0"
+                />
               </div>
 
               {/* Refresh Button */}
@@ -217,10 +200,11 @@ export default function AnalyticsDashboard() {
                 onClick={() => fetchAnalytics(true)}
                 disabled={isRefreshing}
               >
-                <Clock
-                  className={`h-4 w-4 text-teal-600 ${isRefreshing ? "animate-spin" : ""}`}
-                />
+                <Clock className={`h-4 w-4 text-teal-600 ${isRefreshing ? "animate-spin" : ""}`} />
               </Button>
+
+              {/* Admin Notification Bell */}
+              {user?.id && isAdmin && <AdminNotificationBell adminUserId={user.id} />}
             </div>
 
             {/* Live Indicator */}
@@ -229,14 +213,14 @@ export default function AnalyticsDashboard() {
                 "flex items-center gap-3 border px-4 py-3 rounded-2xl transition-all duration-500",
                 isRefreshing
                   ? "bg-teal-100/50 border-teal-200 scale-[1.02]"
-                  : "bg-teal-50 border-teal-100",
+                  : "bg-teal-50 border-teal-100"
               )}
             >
               <div className="relative flex h-3 w-3">
                 <span
                   className={cn(
                     "animate-ping absolute inline-flex h-full w-full rounded-full bg-teal-400 opacity-75",
-                    isRefreshing && "animate-none",
+                    isRefreshing && "animate-none"
                   )}
                 ></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-teal-500"></span>
@@ -245,7 +229,7 @@ export default function AnalyticsDashboard() {
                 <span
                   className={cn(
                     "text-2xl font-bold text-teal-900 leading-none transition-all",
-                    isRefreshing ? "opacity-50 blur-[1px]" : "opacity-100",
+                    isRefreshing ? "opacity-50 blur-[1px]" : "opacity-100"
                   )}
                 >
                   {data?.realtime.activeUsers || "0"}
@@ -272,10 +256,7 @@ export default function AnalyticsDashboard() {
               </CardHeader>
               <CardContent>
                 <p className="text-red-600 mb-6">{error}</p>
-                <Button
-                  variant="outline"
-                  onClick={() => window.location.reload()}
-                >
+                <Button variant="outline" onClick={() => window.location.reload()}>
                   Retry
                 </Button>
               </CardContent>
@@ -327,38 +308,18 @@ export default function AnalyticsDashboard() {
                     <UserPlus className="h-5 w-5 text-indigo-500" />
                     User Growth & Sign-ups
                   </CardTitle>
-                  <CardDescription>
-                    Tracking new users over the selected period
-                  </CardDescription>
+                  <CardDescription>Tracking new users over the selected period</CardDescription>
                 </CardHeader>
                 <CardContent className="h-[300px] pt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData}>
                       <defs>
-                        <linearGradient
-                          id="colorNew"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="5%"
-                            stopColor="#6366f1"
-                            stopOpacity={0.1}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor="#6366f1"
-                            stopOpacity={0}
-                          />
+                        <linearGradient id="colorNew" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#6366f1" stopOpacity={0.1} />
+                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        vertical={false}
-                        stroke="#e2e8f0"
-                      />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                       <XAxis
                         dataKey="date"
                         axisLine={false}
@@ -400,38 +361,18 @@ export default function AnalyticsDashboard() {
                     <Activity className="h-5 w-5 text-teal-500" />
                     Active Users & Engagement
                   </CardTitle>
-                  <CardDescription>
-                    Daily active users and session volume
-                  </CardDescription>
+                  <CardDescription>Daily active users and session volume</CardDescription>
                 </CardHeader>
                 <CardContent className="h-[300px] pt-4">
                   <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={chartData}>
                       <defs>
-                        <linearGradient
-                          id="colorActive"
-                          x1="0"
-                          y1="0"
-                          x2="0"
-                          y2="1"
-                        >
-                          <stop
-                            offset="5%"
-                            stopColor="#0d9488"
-                            stopOpacity={0.1}
-                          />
-                          <stop
-                            offset="95%"
-                            stopColor="#0d9488"
-                            stopOpacity={0}
-                          />
+                        <linearGradient id="colorActive" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#0d9488" stopOpacity={0.1} />
+                          <stop offset="95%" stopColor="#0d9488" stopOpacity={0} />
                         </linearGradient>
                       </defs>
-                      <CartesianGrid
-                        strokeDasharray="3 3"
-                        vertical={false}
-                        stroke="#e2e8f0"
-                      />
+                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                       <XAxis
                         dataKey="date"
                         axisLine={false}
@@ -505,20 +446,14 @@ export default function AnalyticsDashboard() {
                       </thead>
                       <tbody className="divide-y divide-border">
                         {[...(data.rows || [])].reverse().map((row, i) => (
-                          <tr
-                            key={i}
-                            className="hover:bg-muted/30 transition-colors"
-                          >
+                          <tr key={i} className="hover:bg-muted/30 transition-colors">
                             <td className="px-6 py-4 font-medium text-foreground text-sm">
                               {row.date
                                 ? `${row.date.substring(0, 4)}-${row.date.substring(4, 6)}-${row.date.substring(6, 8)}`
                                 : "N/A"}
                             </td>
                             {row.metrics?.map((m, j) => (
-                              <td
-                                key={j}
-                                className="px-6 py-4 text-sm text-foreground"
-                              >
+                              <td key={j} className="px-6 py-4 text-sm text-foreground">
                                 {Number(m || 0).toLocaleString()}
                               </td>
                             ))}

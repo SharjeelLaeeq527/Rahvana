@@ -3,6 +3,7 @@
 import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
+import { ResultGate } from "@/app/components/entitlements/ResultGate";
 
 import {
   ShieldCheck,
@@ -35,10 +36,12 @@ import {
   Download,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { E, msg } from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
 import { createBrowserClient } from "@supabase/ssr";
 import { Loader } from "@/components/ui/spinner";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 import { PKMCenter, pkmCenters } from "./(data)/punjab-pkm-centers";
 import { balochistanCenters } from "./(data)/balochistan-pkm-centers";
 import { kpkCenters } from "./(data)/kpk-centers";
@@ -48,6 +51,18 @@ import {
   AuthorityLetterPreviewModal,
 } from "./components/AuthorityLetterComponents";
 
+const relationOptions = [
+  { value: "S/O", label: "S/O" },
+  { value: "D/O", label: "D/O" },
+  { value: "W/O", label: "W/O" },
+];
+
+const purposeOptions = [
+  { value: "Study", label: "Study" },
+  { value: "Immigration", label: "Immigration" },
+  { value: "Foreign Employment", label: "Foreign Employment" },
+];
+
 export default function PoliceVerificationPage() {
   const router = useRouter();
   const [province, setProvince] = useState<string>("");
@@ -55,8 +70,7 @@ export default function PoliceVerificationPage() {
   const [isLetterModalOpen, setIsLetterModalOpen] = useState(false);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [isAuthorityModalOpen, setIsAuthorityModalOpen] = useState(false);
-  const [isAuthorityPreviewModalOpen, setIsAuthorityPreviewModalOpen] =
-    useState(false);
+  const [isAuthorityPreviewModalOpen, setIsAuthorityPreviewModalOpen] = useState(false);
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -120,8 +134,7 @@ export default function PoliceVerificationPage() {
             Police Verification Guide
           </h1>
           <p className="text-muted-foreground mt-2 ml-14">
-            Follow our step-by-step guide to complete your police verification
-            process.
+            Follow our step-by-step guide to complete your police verification process.
           </p>
         </div>
 
@@ -131,12 +144,9 @@ export default function PoliceVerificationPage() {
             {step === 1 && (
               <motion.div key="step1" {...fadeIn} className="space-y-6">
                 <div className="space-y-2">
-                  <h2 className="text-xl font-semibold text-foreground">
-                    Select Your Province
-                  </h2>
+                  <h2 className="text-xl font-semibold text-foreground">Select Your Province</h2>
                   <p className="text-muted-foreground">
-                    Please choose the province where you are applying for
-                    verification.
+                    Please choose the province where you are applying for verification.
                   </p>
                 </div>
 
@@ -163,10 +173,7 @@ export default function PoliceVerificationPage() {
                         </div>
                         {province === p.id && (
                           <div className="text-primary">
-                            <CheckCircle
-                              size={24}
-                              className="fill-primary text-white"
-                            />
+                            <CheckCircle size={24} className="fill-primary text-white" />
                           </div>
                         )}
                       </div>
@@ -194,75 +201,59 @@ export default function PoliceVerificationPage() {
             )}
 
             {step === 2 && (
-              <motion.div key="step2" {...fadeIn} className="h-full">
-                {province === "Sindh" ? (
-                  <SindhInstructions
-                    onGenerateLetter={() => setIsLetterModalOpen(true)}
-                    onApply={() =>
-                      router.push(
-                        `/police-verification/apply?province=${province}`,
-                      )
-                    }
-                  />
-                ) : province === "Punjab" ? (
-                  <PunjabInstructions
-                    onGenerateLetter={() => setIsLetterModalOpen(true)}
-                    onGenerateAuthorityLetter={() =>
-                      setIsAuthorityModalOpen(true)
-                    }
-                    onApply={() =>
-                      router.push(
-                        `/police-verification/apply?province=${province}`,
-                      )
-                    }
-                  />
-                ) : province === "Balochistan" ? (
-                  <BalochistanInstructions
-                    onGenerateLetter={() => setIsLetterModalOpen(true)}
-                    onGenerateAuthorityLetter={() =>
-                      setIsAuthorityModalOpen(true)
-                    }
-                    onApply={() =>
-                      router.push(
-                        `/police-verification/apply?province=${province}`,
-                      )
-                    }
-                  />
-                ) : province === "KPK" ? (
-                  <KPKInstructions
-                    onGenerateLetter={() => setIsLetterModalOpen(true)}
-                    onGenerateAuthorityLetter={() =>
-                      setIsAuthorityModalOpen(true)
-                    }
-                    onApply={() =>
-                      router.push(
-                        `/police-verification/apply?province=${province}`,
-                      )
-                    }
-                  />
-                ) : (
-                  <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
-                    <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center">
-                      <AlertCircle className="text-orange-500" size={48} />
+              <ResultGate
+                feature="pcc_filing"
+                title="Police Verification Guide"
+                description="Upgrade your plan to access step-by-step instructions and letter generation."
+              >
+                <motion.div key="step2" {...fadeIn} className="h-full">
+                  {province === "Sindh" ? (
+                    <SindhInstructions
+                      onGenerateLetter={() => setIsLetterModalOpen(true)}
+                      onApply={() => router.push(`/police-verification/apply?province=${province}`)}
+                    />
+                  ) : province === "Punjab" ? (
+                    <PunjabInstructions
+                      onGenerateLetter={() => setIsLetterModalOpen(true)}
+                      onGenerateAuthorityLetter={() => setIsAuthorityModalOpen(true)}
+                      onApply={() => router.push(`/police-verification/apply?province=${province}`)}
+                    />
+                  ) : province === "Balochistan" ? (
+                    <BalochistanInstructions
+                      onGenerateLetter={() => setIsLetterModalOpen(true)}
+                      onGenerateAuthorityLetter={() => setIsAuthorityModalOpen(true)}
+                      onApply={() => router.push(`/police-verification/apply?province=${province}`)}
+                    />
+                  ) : province === "KPK" ? (
+                    <KPKInstructions
+                      onGenerateLetter={() => setIsLetterModalOpen(true)}
+                      onGenerateAuthorityLetter={() => setIsAuthorityModalOpen(true)}
+                      onApply={() => router.push(`/police-verification/apply?province=${province}`)}
+                    />
+                  ) : (
+                    <div className="flex flex-col items-center justify-center h-full text-center space-y-6">
+                      <div className="w-24 h-24 bg-orange-50 rounded-full flex items-center justify-center">
+                        <AlertCircle className="text-orange-500" size={48} />
+                      </div>
+                      <div className="space-y-2 max-w-md">
+                        <h2 className="text-2xl font-bold text-foreground">
+                          Instructions Not Available
+                        </h2>
+                        <p className="text-muted-foreground">
+                          We are currently updating our database for {province}. Detailed
+                          instructions will be available soon.
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => setStep(1)}
+                        className="text-primary font-medium hover:underline flex items-center gap-2"
+                      >
+                        <ChevronLeft size={18} /> Go Back to Province Selection
+                      </button>
                     </div>
-                    <div className="space-y-2 max-w-md">
-                      <h2 className="text-2xl font-bold text-foreground">
-                        Instructions Not Available
-                      </h2>
-                      <p className="text-muted-foreground">
-                        We are currently updating our database for {province}.
-                        Detailed instructions will be available soon.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => setStep(1)}
-                      className="text-primary font-medium hover:underline flex items-center gap-2"
-                    >
-                      <ChevronLeft size={18} /> Go Back to Province Selection
-                    </button>
-                  </div>
-                )}
-              </motion.div>
+                  )}
+                </motion.div>
+              </ResultGate>
             )}
           </AnimatePresence>
         </div>
@@ -335,7 +326,7 @@ function SindhInstructions({
         {
           title: "Submit and Confirm",
           description:
-            "Click 'Continue'. A confirmation popup will appear—click 'OK' to be redirected to the detailed Step 1 form.",
+            "Click 'Continue'. A confirmation popup will appear-click 'OK' to be redirected to the detailed Step 1 form.",
           icon: ChevronRight,
         },
       ],
@@ -370,8 +361,7 @@ function SindhInstructions({
         },
         {
           title: "Address & Stay",
-          description:
-            "Enter Current Address and specify the 'Stay From' and 'Stay To' dates.",
+          description: "Enter Current Address and specify the 'Stay From' and 'Stay To' dates.",
           icon: Home,
         },
         {
@@ -388,8 +378,7 @@ function SindhInstructions({
         },
         {
           title: "Certificate Purpose",
-          description:
-            "Select the Name of Country for which the certificate is required.",
+          description: "Select the Name of Country for which the certificate is required.",
           icon: Globe,
         },
         {
@@ -431,8 +420,7 @@ function SindhInstructions({
         },
         {
           title: "Witness 2 Contact & Address",
-          description:
-            "Enter the contact number and full address for Witness 2.",
+          description: "Enter the contact number and full address for Witness 2.",
           icon: Home,
         },
         {
@@ -450,14 +438,12 @@ function SindhInstructions({
       steps: [
         {
           title: "Passport Size Photograph",
-          description:
-            "Upload your recent photograph. (Allowed formats: .JPG, .PNG)",
+          description: "Upload your recent photograph. (Allowed formats: .JPG, .PNG)",
           icon: Image,
         },
         {
           title: "Passport Copy",
-          description:
-            "Upload a copy of your current Passport. (Allowed formats: .JPG, .PNG)",
+          description: "Upload a copy of your current Passport. (Allowed formats: .JPG, .PNG)",
           icon: CreditCard,
         },
         {
@@ -474,14 +460,12 @@ function SindhInstructions({
         },
         {
           title: "Accept Terms",
-          description:
-            "Tick the 'I accept the Terms and Conditions' checkbox after reading.",
+          description: "Tick the 'I accept the Terms and Conditions' checkbox after reading.",
           icon: CheckSquare,
         },
         {
           title: "Submit Application",
-          description:
-            "Click the 'Submit' button to complete your application process.",
+          description: "Click the 'Submit' button to complete your application process.",
           icon: Send,
         },
       ],
@@ -504,9 +488,7 @@ function SindhInstructions({
     <div className="flex flex-col h-full relative pb-24">
       <div className="space-y-2 mb-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-foreground">
-            {currentSet.title}
-          </h2>
+          <h2 className="text-2xl font-bold text-foreground">{currentSet.title}</h2>
           <span className="text-sm font-semibold text-muted-foreground bg-muted px-3 py-1 rounded-full border border-border">
             Part {currentStepIndex + 1} of {instructionSets.length}
           </span>
@@ -530,9 +512,7 @@ function SindhInstructions({
                 {step.title}
                 <step.icon size={18} className="text-primary" />
               </h3>
-              <p className="text-muted-foreground text-sm leading-relaxed">
-                {step.description}
-              </p>
+              <p className="text-muted-foreground text-sm leading-relaxed">{step.description}</p>
             </div>
           </div>
         ))}
@@ -616,8 +596,7 @@ function PunjabInstructions({
     },
     {
       title: "Required Documents",
-      description:
-        "Ensure you have all these documents before visiting the PKM center.",
+      description: "Ensure you have all these documents before visiting the PKM center.",
       steps: [
         {
           title: "Identity Proof",
@@ -638,8 +617,7 @@ function PunjabInstructions({
         },
         {
           title: "Photograph",
-          description:
-            "Required only if you are applying on behalf of a blood relative.",
+          description: "Required only if you are applying on behalf of a blood relative.",
           icon: Image,
         },
       ],
@@ -661,8 +639,7 @@ function PunjabInstructions({
         },
         {
           title: "Delivery Method",
-          description:
-            "Your certificate will be delivered to your address via Courier service.",
+          description: "Your certificate will be delivered to your address via Courier service.",
           icon: Truck,
         },
       ],
@@ -709,9 +686,7 @@ function PunjabInstructions({
     <div className="flex flex-col h-full relative pb-24">
       <div className="space-y-2 mb-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-foreground">
-            {currentSet.title}
-          </h2>
+          <h2 className="text-2xl font-bold text-foreground">{currentSet.title}</h2>
           <span className="text-sm font-semibold text-muted-foreground bg-muted px-3 py-1 rounded-full border border-border">
             Part {currentStepIndex + 1} of {instructionSets.length}
           </span>
@@ -733,9 +708,7 @@ function PunjabInstructions({
                   {step.title}
                   <step.icon size={18} className="text-primary" />
                 </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {step.description}
-                </p>
+                <p className="text-muted-foreground text-sm leading-relaxed">{step.description}</p>
               </div>
             </div>
             {step.title === "PKM Center Locator" && (
@@ -810,9 +783,7 @@ function PunjabInstructions({
 function PKMLocator({ province }: { province: string }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [nearestCenters, setNearestCenters] = useState<
-    (PKMCenter & { distance: number })[]
-  >([]);
+  const [nearestCenters, setNearestCenters] = useState<(PKMCenter & { distance: number })[]>([]);
   const [error, setError] = useState<string | null>(null);
 
   const centersData =
@@ -826,7 +797,7 @@ function PKMLocator({ province }: { province: string }) {
     setLoading(true);
     setError(null);
     if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser");
+      setError(msg(E.TOOL_GEO_NOT_SUPPORTED));
       setLoading(false);
       return;
     }
@@ -839,11 +810,9 @@ function PKMLocator({ province }: { province: string }) {
         setLoading(false);
       },
       () => {
-        setError(
-          "Unable to retrieve your location. Please check permissions or enter manually.",
-        );
+        setError(msg(E.TOOL_GEO_NOT_SUPPORTED));
         setLoading(false);
-      },
+      }
     );
   };
 
@@ -856,25 +825,17 @@ function PKMLocator({ province }: { province: string }) {
     const location = await geocodeAddress(searchQuery, province);
 
     if (location) {
-      const centers = findNearestCenters(
-        location.lat,
-        location.lng,
-        centersData,
-      );
+      const centers = findNearestCenters(location.lat, location.lng, centersData);
       setNearestCenters(centers);
     } else {
       // Fallback: try geocoding without province constraint if it failed
       const fallbackLocation = await geocodeAddress(searchQuery, "");
       if (fallbackLocation) {
-        const centers = findNearestCenters(
-          fallbackLocation.lat,
-          fallbackLocation.lng,
-          centersData,
-        );
+        const centers = findNearestCenters(fallbackLocation.lat, fallbackLocation.lng, centersData);
         setNearestCenters(centers);
       } else {
         setError(
-          `Could not find "${searchQuery}" in ${province}. Please try entering a city name like "Peshawar" or "Multan".`,
+          `Could not find "${searchQuery}" in ${province}. Please try entering a city name like "Peshawar" or "Multan".`
         );
       }
     }
@@ -948,16 +909,12 @@ function PKMLocator({ province }: { province: string }) {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <h5 className="font-semibold text-gray-800">
-                        {center.name}
-                      </h5>
+                      <h5 className="font-semibold text-gray-800">{center.name}</h5>
                       <span className="text-xs font-bold text-primary bg-primary/5 px-2 py-1 rounded-full border border-primary/10">
                         ~{center.distance.toFixed(1)} km
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500 mt-1">
-                      {center.address}
-                    </p>
+                    <p className="text-sm text-gray-500 mt-1">{center.address}</p>
                   </div>
                 </div>
               ))}
@@ -1008,8 +965,7 @@ function BalochistanInstructions({
     },
     {
       title: "Required Documents",
-      description:
-        "Prepare these documents before visiting the Mobile PKM center.",
+      description: "Prepare these documents before visiting the Mobile PKM center.",
       steps: [
         {
           title: "Identity Proof",
@@ -1030,8 +986,7 @@ function BalochistanInstructions({
         },
         {
           title: "Photograph",
-          description:
-            "Needed only if applying for a blood relative's certificate.",
+          description: "Needed only if applying for a blood relative's certificate.",
           icon: Image,
         },
       ],
@@ -1042,8 +997,7 @@ function BalochistanInstructions({
       steps: [
         {
           title: "Processing Fee",
-          description:
-            "Rs. 350, payable at the Police Mobile Khidmat Markaz counters.",
+          description: "Rs. 350, payable at the Police Mobile Khidmat Markaz counters.",
           icon: Banknote,
         },
         {
@@ -1054,8 +1008,7 @@ function BalochistanInstructions({
         },
         {
           title: "Delivery",
-          description:
-            "The certificate is delivered to your residential address via Courier.",
+          description: "The certificate is delivered to your residential address via Courier.",
           icon: Truck,
         },
       ],
@@ -1096,9 +1049,7 @@ function BalochistanInstructions({
     <div className="flex flex-col h-full relative pb-24">
       <div className="space-y-2 mb-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-foreground">
-            {currentSet.title}
-          </h2>
+          <h2 className="text-2xl font-bold text-foreground">{currentSet.title}</h2>
           <span className="text-sm font-semibold text-muted-foreground bg-muted px-3 py-1 rounded-full border border-border">
             Part {currentStepIndex + 1} of {instructionSets.length}
           </span>
@@ -1120,9 +1071,7 @@ function BalochistanInstructions({
                   {step.title}
                   <step.icon size={18} className="text-primary" />
                 </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {step.description}
-                </p>
+                <p className="text-muted-foreground text-sm leading-relaxed">{step.description}</p>
               </div>
             </div>
             {step.title === "PKM Center Locator" && (
@@ -1208,8 +1157,7 @@ function KPKInstructions({
   const instructionSets = [
     {
       title: "Initial Documents",
-      description:
-        "Gather these essential documents to start your application process.",
+      description: "Gather these essential documents to start your application process.",
       steps: [
         {
           title: "Attested Affidavit",
@@ -1225,16 +1173,14 @@ function KPKInstructions({
         },
         {
           title: "Photographs",
-          description:
-            "Attach two recent passport-size photographs to your application.",
+          description: "Attach two recent passport-size photographs to your application.",
           icon: Image,
         },
       ],
     },
     {
       title: "Local Verification",
-      description:
-        "You must verify your record at the local level before final submission.",
+      description: "You must verify your record at the local level before final submission.",
       steps: [
         {
           title: "Police Station Check",
@@ -1281,8 +1227,7 @@ function KPKInstructions({
       steps: [
         {
           title: "PKM Center Locator",
-          description:
-            "Find the nearest PAL or PKM center in KPK using our locator tool.",
+          description: "Find the nearest PAL or PKM center in KPK using our locator tool.",
           icon: Navigation,
         },
         {
@@ -1317,9 +1262,7 @@ function KPKInstructions({
     <div className="flex flex-col h-full relative pb-24">
       <div className="space-y-2 mb-6">
         <div className="flex items-center justify-between">
-          <h2 className="text-2xl font-bold text-foreground">
-            {currentSet.title}
-          </h2>
+          <h2 className="text-2xl font-bold text-foreground">{currentSet.title}</h2>
           <span className="text-sm font-semibold text-muted-foreground bg-muted px-3 py-1 rounded-full border border-border">
             Part {currentStepIndex + 1} of {instructionSets.length}
           </span>
@@ -1341,9 +1284,7 @@ function KPKInstructions({
                   {step.title}
                   <step.icon size={18} className="text-primary" />
                 </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">
-                  {step.description}
-                </p>
+                <p className="text-muted-foreground text-sm leading-relaxed">{step.description}</p>
               </div>
             </div>
             {step.title === "PKM Center Locator" && (
@@ -1453,10 +1394,7 @@ function LetterModal({
     if (cleaned.length > 5 && cleaned.length <= 12) {
       formatted = `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`;
     } else if (cleaned.length > 12) {
-      formatted = `${cleaned.slice(0, 5)}-${cleaned.slice(
-        5,
-        12,
-      )}-${cleaned.slice(12, 13)}`;
+      formatted = `${cleaned.slice(0, 5)}-${cleaned.slice(5, 12)}-${cleaned.slice(12, 13)}`;
     }
     return formatted;
   };
@@ -1471,9 +1409,7 @@ function LetterModal({
   };
 
   const handleChange = (
-    e: React.ChangeEvent<
-      HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement
-    >,
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     let newValue = value;
@@ -1498,8 +1434,7 @@ function LetterModal({
   };
 
   const downloadPDF = async () => {
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
     try {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
@@ -1539,9 +1474,7 @@ function LetterModal({
       >
         <div className="p-6 md:p-8 overflow-y-auto bg-card">
           <div className="flex items-center justify-between mb-8">
-            <h2 className="text-2xl font-bold text-foreground">
-              Generate Letter
-            </h2>
+            <h2 className="text-2xl font-bold text-foreground">Generate Letter</h2>
             <button
               onClick={onClose}
               className="p-2 hover:bg-primary/30 rounded-full transition-colors bg-primary/10"
@@ -1553,9 +1486,7 @@ function LetterModal({
           <form className="space-y-4 text-left">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-muted-foreground">
-                  Full Name
-                </label>
+                <label className="text-sm font-semibold text-muted-foreground">Full Name</label>
                 <input
                   type="text"
                   name="fullName"
@@ -1566,19 +1497,14 @@ function LetterModal({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-muted-foreground">
-                  Relation
-                </label>
-                <select
-                  name="relation"
+                <label className="text-sm font-semibold text-muted-foreground">Relation</label>
+                <CustomDropdown
                   value={formData.relation}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-xl border border-input bg-background/50 focus:border-primary outline-none transition-all"
-                >
-                  <option value="S/O">S/O</option>
-                  <option value="D/O">D/O</option>
-                  <option value="W/O">W/O</option>
-                </select>
+                  onChange={(value) => setFormData((prev) => ({ ...prev, relation: value }))}
+                  options={relationOptions}
+                  placeholder="Select relation"
+                  className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-xl [&_button]:bg-background/50 [&_button]:p-3"
+                />
               </div>
             </div>
 
@@ -1599,11 +1525,7 @@ function LetterModal({
             <div className="space-y-2">
               <label className="text-sm font-semibold text-muted-foreground">
                 CNIC Number
-                {errors.cnic && (
-                  <span className="text-red-500 text-xs ml-2">
-                    ({errors.cnic})
-                  </span>
-                )}
+                {errors.cnic && <span className="text-red-500 text-xs ml-2">({errors.cnic})</span>}
               </label>
               <input
                 type="text"
@@ -1635,19 +1557,14 @@ function LetterModal({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-muted-foreground">
-                  Purpose
-                </label>
-                <select
-                  name="purpose"
+                <label className="text-sm font-semibold text-muted-foreground">Purpose</label>
+                <CustomDropdown
                   value={formData.purpose}
-                  onChange={handleChange}
-                  className="w-full p-3 rounded-xl border border-input bg-background/50 focus:border-primary outline-none transition-all"
-                >
-                  <option value="Study">Study</option>
-                  <option value="Immigration">Immigration</option>
-                  <option value="Foreign Employment">Foreign Employment</option>
-                </select>
+                  onChange={(value) => setFormData((prev) => ({ ...prev, purpose: value }))}
+                  options={purposeOptions}
+                  placeholder="Select purpose"
+                  className="w-full [&_button]:w-full [&_button]:min-w-0 [&_button]:rounded-xl [&_button]:bg-background/50 [&_button]:p-3"
+                />
               </div>
               <div className="space-y-2">
                 <label className="text-sm font-semibold text-muted-foreground">
@@ -1669,9 +1586,7 @@ function LetterModal({
                 <label className="text-sm font-semibold text-muted-foreground">
                   Email Address
                   {errors.email && (
-                    <span className="text-red-500 text-xs ml-2">
-                      (Invalid format)
-                    </span>
+                    <span className="text-red-500 text-xs ml-2">(Invalid format)</span>
                   )}
                 </label>
                 <input
@@ -1688,9 +1603,7 @@ function LetterModal({
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-sm font-semibold text-muted-foreground">
-                  Phone Number
-                </label>
+                <label className="text-sm font-semibold text-muted-foreground">Phone Number</label>
                 <input
                   type="text"
                   name="phone"
@@ -1742,18 +1655,12 @@ interface PreviewModalProps {
   formData: FormData;
 }
 
-function PreviewModal({
-  isOpen,
-  onClose,
-  province,
-  formData,
-}: PreviewModalProps) {
+function PreviewModal({ isOpen, onClose, province, formData }: PreviewModalProps) {
   const previewRef = useRef<HTMLDivElement>(null);
   const { showToast } = useToast();
 
   const downloadPDF = async () => {
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
 
     try {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
@@ -1793,9 +1700,7 @@ function PreviewModal({
       >
         <div className="p-6 border-b border-border flex items-center justify-between bg-card sticky top-0 z-10">
           <div className="flex items-center gap-4">
-            <h2 className="text-xl font-bold text-foreground">
-              Letter Preview
-            </h2>
+            <h2 className="text-xl font-bold text-foreground">Letter Preview</h2>
             <button
               onClick={downloadPDF}
               className="px-4 py-2 bg-primary text-white text-sm font-semibold rounded-lg hover:bg-primary/90 transition-all flex items-center gap-2 shadow-sm"
@@ -1825,13 +1730,7 @@ function PreviewModal({
   );
 }
 
-function LetterContent({
-  formData,
-  province,
-}: {
-  formData: FormData;
-  province: string;
-}) {
+function LetterContent({ formData, province }: { formData: FormData; province: string }) {
   return (
     <div
       style={{
@@ -1861,9 +1760,7 @@ function LetterContent({
       </div>
 
       <div style={{ fontWeight: "bold", marginBottom: "0.25rem" }}>To,</div>
-      <div style={{ fontWeight: "bold" }}>
-        The Senior Superintendent of Police (SSP)
-      </div>
+      <div style={{ fontWeight: "bold" }}>The Senior Superintendent of Police (SSP)</div>
       <div style={{ marginBottom: "2rem" }}>
         {formData.district || "[District/Region]"}, {province}, Pakistan
       </div>
@@ -1883,9 +1780,7 @@ function LetterContent({
           {formData.fullName || "[Full Name]"}
         </span>
         ,{" "}
-        <span style={{ fontWeight: "bold", textDecoration: "underline" }}>
-          {formData.relation}
-        </span>{" "}
+        <span style={{ fontWeight: "bold", textDecoration: "underline" }}>{formData.relation}</span>{" "}
         <span style={{ fontWeight: "bold", textDecoration: "underline" }}>
           {formData.guardianName || "[Guardian Name]"}
         </span>
@@ -1897,42 +1792,33 @@ function LetterContent({
         <span style={{ fontWeight: "bold", textDecoration: "underline" }}>
           {formData.address || "[Full Residential Address]"}
         </span>
-        , respectfully request the issuance of a Police Character Certificate in
-        my favor.
+        , respectfully request the issuance of a Police Character Certificate in my favor.
       </div>
 
       <div style={{ marginBottom: "1.5rem", textAlign: "justify" }}>
         The certificate is required for{" "}
-        <span style={{ fontWeight: "bold", textDecoration: "underline" }}>
-          {formData.purpose}
-        </span>{" "}
-        purposes. I affirm that I have no criminal record, and the certificate
-        is necessary for my overseas plans.
+        <span style={{ fontWeight: "bold", textDecoration: "underline" }}>{formData.purpose}</span>{" "}
+        purposes. I affirm that I have no criminal record, and the certificate is necessary for my
+        overseas plans.
       </div>
 
       <div style={{ marginBottom: "2rem" }}>
-        Kindly process my request at your earliest convenience. For any further
-        information, you may contact me at:
+        Kindly process my request at your earliest convenience. For any further information, you may
+        contact me at:
       </div>
 
       <div style={{ marginBottom: "0.25rem" }}>
-        <span style={{ fontWeight: "bold" }}>Email:</span>{" "}
-        {formData.email || "[Email Address]"}
+        <span style={{ fontWeight: "bold" }}>Email:</span> {formData.email || "[Email Address]"}
       </div>
       <div style={{ marginBottom: "2.5rem" }}>
-        <span style={{ fontWeight: "bold" }}>Phone:</span>{" "}
-        {formData.phone || "[Phone Number]"}
+        <span style={{ fontWeight: "bold" }}>Phone:</span> {formData.phone || "[Phone Number]"}
       </div>
 
-      <div style={{ marginBottom: "2rem" }}>
-        I shall remain grateful for your cooperation.
-      </div>
+      <div style={{ marginBottom: "2rem" }}>I shall remain grateful for your cooperation.</div>
 
       <div style={{ marginTop: "3rem" }}>
         <div style={{ fontWeight: "bold" }}>Sincerely,</div>
-        <div style={{ marginTop: "1rem" }}>
-          {formData.fullName || "[Full Name]"}
-        </div>
+        <div style={{ marginTop: "1rem" }}>{formData.fullName || "[Full Name]"}</div>
         <div>CNIC: {formData.cnic || "[CNIC Number]"}</div>
         <div>Date: {new Date().toLocaleDateString()}</div>
       </div>

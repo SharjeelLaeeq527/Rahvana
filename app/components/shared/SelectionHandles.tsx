@@ -10,7 +10,16 @@ interface SelectionHandlesProps {
   onDelete: () => void;
 }
 
-const DIRECTIONS = ["top-left", "top", "top-right", "right", "bottom-right", "bottom", "bottom-left", "left"] as const;
+const DIRECTIONS = [
+  "top-left",
+  "top",
+  "top-right",
+  "right",
+  "bottom-right",
+  "bottom",
+  "bottom-left",
+  "left",
+] as const;
 
 function getCursor(dir: string): string {
   if (dir === "top-left" || dir === "bottom-right") return "nwse-resize";
@@ -21,15 +30,24 @@ function getCursor(dir: string): string {
 
 function getPosition(dir: string): React.CSSProperties {
   switch (dir) {
-    case "top-left": return { top: "-6px", left: "-6px" };
-    case "top": return { top: "-6px", left: "50%", transform: "translateX(-50%)" };
-    case "top-right": return { top: "-6px", right: "-6px" };
-    case "right": return { top: "50%", right: "-6px", transform: "translateY(-50%)" };
-    case "bottom-right": return { bottom: "-6px", right: "-6px" };
-    case "bottom": return { bottom: "-6px", left: "50%", transform: "translateX(-50%)" };
-    case "bottom-left": return { bottom: "-6px", left: "-6px" };
-    case "left": return { top: "50%", left: "-6px", transform: "translateY(-50%)" };
-    default: return {};
+    case "top-left":
+      return { top: "-6px", left: "-6px" };
+    case "top":
+      return { top: "-6px", left: "50%", transform: "translateX(-50%)" };
+    case "top-right":
+      return { top: "-6px", right: "-6px" };
+    case "right":
+      return { top: "50%", right: "-6px", transform: "translateY(-50%)" };
+    case "bottom-right":
+      return { bottom: "-6px", right: "-6px" };
+    case "bottom":
+      return { bottom: "-6px", left: "50%", transform: "translateX(-50%)" };
+    case "bottom-left":
+      return { bottom: "-6px", left: "-6px" };
+    case "left":
+      return { top: "50%", left: "-6px", transform: "translateY(-50%)" };
+    default:
+      return {};
   }
 }
 

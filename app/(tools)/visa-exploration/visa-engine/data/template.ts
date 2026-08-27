@@ -33,31 +33,37 @@ export const TEMPLATE_DATA: CountryData = {
 
   purposes: [
     { label: "Study", value: "STUDY", sub: "Pursue education" },
-    { label: "Work",  value: "WORK",  sub: "Professional opportunities" },
+    { label: "Work", value: "WORK", sub: "Professional opportunities" },
     // ... add more purposes
   ],
 
   visas: {
-    "STUDENT_VISA_1": {
-      code: "S1", label: "Student Visa", badge: "Non-Immigrant", color: T.primary,
+    STUDENT_VISA_1: {
+      code: "S1",
+      label: "Student Visa",
+      badge: "Non-Immigrant",
+      color: T.primary,
       description: "Description of the student visa.",
       criteria: ["Criterion 1", "Criterion 2"],
-      processing: "2–4 weeks",
+      processing: "2-4 weeks",
       forms: ["Form A", "Form B"],
     },
     // ... add more visas
   },
 
   gateQuestions: {
-    "STUDENT_VISA_1": [
-      { 
-        id: "enrolled", 
-        question: "Are you enrolled in a university?", 
-        source: "Official Immigration Website", 
-        sourceUrl: "https://example.gov", 
-        passWith: ["YES"], 
-        failMsg: "You must be enrolled to qualify.", 
-        options: [{ label: "Yes", value: "YES" }, { label: "No", value: "NO" }] 
+    STUDENT_VISA_1: [
+      {
+        id: "enrolled",
+        question: "Are you enrolled in a university?",
+        source: "Official Immigration Website",
+        sourceUrl: "https://example.gov",
+        passWith: ["YES"],
+        failMsg: "You must be enrolled to qualify.",
+        options: [
+          { label: "Yes", value: "YES" },
+          { label: "No", value: "NO" },
+        ],
       },
       // ... add more questions
     ],

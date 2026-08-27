@@ -1,14 +1,35 @@
 import { HelpCircle, FileText } from "lucide-react";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { usePathname } from "next/navigation";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { useQuickAccess } from "@/app/context/QuickAccessContext";
 
 interface WizardHeaderProps {
   onWhatsThis: () => void;
   title?: string;
 }
 
+const GUIDE_ROUTE_MAP: Record<string, { id: string; title: string; icon: string }> = {
+  "passport-guide": { id: "guide-passport", title: "Passport Guide", icon: "Globe" },
+  "police-verification-guide": { id: "guide-police-verification", title: "Character Certificate Guide", icon: "Shield" },
+  "cnic-guide": { id: "guide-cnic", title: "CNIC Guide", icon: "FileText" },
+  "birth-certificate-guide": { id: "guide-birth-certificate", title: "Birth Certificate Guide", icon: "FileText" },
+  "frc-guide": { id: "guide-frc", title: "FRC Guide", icon: "Globe" },
+  "nikah-nama-guide": { id: "guide-marriage-certificate", title: "Marriage Registration Guide", icon: "Heart" },
+  "polio-vaccination-guide": { id: "guide-vaccinations", title: "Polio Vaccination Guide", icon: "Syringe" },
+  "step-parent-guide": { id: "guide-step-parent", title: "Step-Parent Relationship Guide", icon: "Users" },
+  "adoption-guide": { id: "guide-adoption", title: "Adoptive Parent & Guardianship Guide", icon: "Heart" },
+};
+
 const WizardHeader = ({ onWhatsThis, title = "Guide" }: WizardHeaderProps) => {
   const { t } = useLanguage();
+  const pathname = usePathname();
+  const { items } = useQuickAccess();
+
+  const slug = pathname?.split("/").pop() || "";
+  const guideInfo = GUIDE_ROUTE_MAP[slug];
+  const pinned = guideInfo ? items.some((i) => i.id === guideInfo.id) : false;
 
   return (
     <header
@@ -16,8 +37,24 @@ const WizardHeader = ({ onWhatsThis, title = "Guide" }: WizardHeaderProps) => {
                  flex items-center
                  bg-[linear-gradient(135deg,#0d7377,#14a0a6)] shadow-sm mt-16"
     >
-      {/* Empty spacer (keeps balance) */}
-      <div className="hidden md:block w-[140px]" />
+      {/* Pinned Items button for large screens (keeps balance on the left) */}
+      <div className="hidden md:flex w-[180px] shrink-0 items-center justify-start">
+        {guideInfo && (
+          <QuickAccessButton
+            item={{
+              id: guideInfo.id,
+              title: guideInfo.title,
+              href: pathname,
+              icon_name: guideInfo.icon,
+            }}
+            className={
+              pinned
+                ? "!bg-white/20 !text-white !border-white/30 hover:!bg-red-500/20 hover:!border-red-400/50"
+                : "!bg-white/10 !text-white/80 hover:!text-white !border-white/15 hover:!bg-white/20"
+            }
+          />
+        )}
+      </div>
 
       {/* Centered Icon + Title */}
       <div className="flex-1 md:flex-none flex items-center justify-start md:absolute md:left-1/2 md:-translate-x-1/2 gap-2 sm:gap-3 min-w-0 pr-3 md:pr-0">
@@ -32,6 +69,26 @@ const WizardHeader = ({ onWhatsThis, title = "Guide" }: WizardHeaderProps) => {
           {title}
         </h1>
       </div>
+
+      {/* Mobile Pin Button (icon only, visible only on small devices before the what's this button) */}
+      {guideInfo && (
+        <div className="md:hidden mr-2 shrink-0">
+          <QuickAccessButton
+            item={{
+              id: guideInfo.id,
+              title: guideInfo.title,
+              href: pathname,
+              icon_name: guideInfo.icon,
+            }}
+            mode="icon"
+            className={
+              pinned
+                ? "!bg-white/30 !text-white hover:!bg-red-500/20"
+                : "!bg-white/10 !text-white/80 hover:!text-white"
+            }
+          />
+        </div>
+      )}
 
       {/* Right Button */}
       <motion.button

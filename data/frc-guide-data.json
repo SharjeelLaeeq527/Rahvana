@@ -143,10 +143,7 @@
 
   "help_and_support": {
     "description": "If you face any issues during the application or need further assistance, the following official support channels are available.",
-    "support_channels": [
-      "NADRA Registration Centers (NRCs)",
-      "Pak Identity Mobile App support"
-    ],
+    "support_channels": ["NADRA Registration Centers (NRCs)", "Pak Identity Mobile App support"],
     "assistance_scope": [
       "Guidance on FRC application steps",
       "Correction of family records",
@@ -178,7 +175,7 @@
   ],
 
   "wizard": {
-    "title": "Family Registration Certificate (FRC)",
+    "title": "Family Registration Certificate",
     "subtitle": "NADRA • Immigration & Official Purpose",
     "last_verified": "February 19, 2026",
 
@@ -453,7 +450,7 @@
         {
           "id": 3,
           "title": "Biometric Verification & Processing",
-          "duration": "30–60 Minutes",
+          "duration": "30-60 Minutes",
           "description": "Your CNIC will be verified through biometric authentication if required. The officer will cross-check your family details in NADRA database. After confirmation and fee payment, your FRC will be generated."
         },
         {
@@ -479,7 +476,7 @@
         {
           "id": 3,
           "title": "Verification & Approval",
-          "duration": "1–2 Days",
+          "duration": "1-2 Days",
           "description": "NADRA verifies your submitted information and family linkage in the backend system. If no discrepancies are found, the application is approved. You may receive notification if any correction is required."
         },
         {
@@ -517,7 +514,7 @@
         {
           "id": "death_cert",
           "label": "Death Certificate (if applicable)",
-          "description": "For deceased family members — issued by Union Council or Municipal Corporation",
+          "description": "For deceased family members, issued by Union Council or Municipal Corporation",
           "required": false
         },
         {
@@ -1673,7 +1670,7 @@
         ],
         "pitfalls": [
           "Don't apply without ensuring all family members are registered with NADRA first.",
-          "Avoid applying for the wrong FRC category — verify your need beforehand.",
+          "Avoid applying for the wrong FRC category, verify your need beforehand.",
           "Don't submit correction requests without official supporting documents."
         ],
         "links": [
@@ -1695,7 +1692,7 @@
           "Some districts in AJK and Gilgit-Baltistan may have limited center availability."
         ],
         "pitfalls": [
-          "Don't assume any NADRA center can process your request — check availability.",
+          "Don't assume any NADRA center can process your request, check availability.",
           "Avoid visiting on Fridays after 12 PM as most centers close early.",
           "Remote areas may require travel to the nearest district headquarters."
         ],
@@ -1714,10 +1711,10 @@
         "tips": [
           "Gather all required documents before visiting the NADRA center.",
           "Visit during weekday mornings for shorter wait times.",
-          "FRC is printed and handed over immediately at NRC — no need to revisit."
+          "FRC is printed and handed over immediately at NRC, no need to revisit."
         ],
         "pitfalls": [
-          "Don't visit without original CNIC — photocopies alone are not accepted for biometric verification.",
+          "Don't visit without original CNIC, photocopies alone are not accepted for biometric verification.",
           "Missing family member documents will delay your application.",
           "Unregistered family members must be added to NADRA records before FRC issuance."
         ],
@@ -1739,7 +1736,7 @@
           "Fee amounts: PKR 1,000 for single category, PKR 2,000 for By All."
         ],
         "pitfalls": [
-          "Don't rely on unofficial centers — only visit authorized NADRA Registration Centers.",
+          "Don't rely on unofficial centers, only visit authorized NADRA Registration Centers.",
           "Office listings and contact information may change; always confirm before visiting.",
           "Avoid peak hours (10 AM - 1 PM) for faster service."
         ],
@@ -1758,7 +1755,7 @@
           "Ensure the FRC category matches what the embassy or visa office requires."
         ],
         "pitfalls": [
-          "Don't submit an FRC with spelling mismatches — it will be rejected by embassies.",
+          "Don't submit an FRC with spelling mismatches, it will be rejected by embassies.",
           "Avoid using an expired or outdated FRC; some embassies require recent issuance.",
           "Don't assume the FRC is correct without verifying every listed family member."
         ],

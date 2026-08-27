@@ -6,9 +6,7 @@ import { User, Users, Globe, ChevronRight, FileText } from "lucide-react";
 
 export default function Step1() {
   const { state, setPersonType, setCurrentStep } = usePolioWizard();
-  const [selectedType, setSelectedType] = useState<string | null>(
-    state.personType,
-  );
+  const [selectedType, setSelectedType] = useState<string | null>(state.personType);
 
   const OPTIONS = [
     {
@@ -50,8 +48,8 @@ export default function Step1() {
           Who is getting the certificate?
         </h2>
         <p className="text-slate-600 text-lg">
-          Select the applicant&apos;s profile to determine the exact documents
-          required at the vaccination center.
+          Select the applicant&apos;s profile to determine the exact documents required at the
+          vaccination center.
         </p>
       </div>
 
@@ -126,8 +124,7 @@ export default function Step1() {
                 ))}
               </ul>
               <div className="mt-5 p-3 bg-white/60 rounded-lg text-sm text-emerald-800 font-medium">
-                Make sure health workers record this document number in NIMS
-                accurately!
+                Make sure health workers record this document number in NIMS accurately!
               </div>
             </div>
           </div>

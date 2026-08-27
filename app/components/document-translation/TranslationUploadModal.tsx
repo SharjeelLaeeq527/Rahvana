@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
+import { useToast } from "@/app/components/shared/ToastProvider";
+import { msg, E, errorCode } from "@/lib/errors";
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -17,6 +18,7 @@ export default function TranslationUploadModal({
   requestId,
   onSuccess,
 }: UploadModalProps) {
+  const { showToast } = useToast();
   const [file, setFile] = useState<File | null>(null);
   const [notes, setNotes] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -42,7 +44,7 @@ export default function TranslationUploadModal({
     if (!selected) return;
 
     if (selected.type !== "application/pdf") {
-      toast.error("Only PDF files are allowed");
+      showToast(msg(E.UPLOAD_INVALID_PDF), "error");
       return;
     }
 
@@ -70,7 +72,7 @@ export default function TranslationUploadModal({
     if (!droppedFile) return;
 
     if (droppedFile.type !== "application/pdf") {
-      toast.error("Only PDF files are allowed");
+      showToast(msg(E.UPLOAD_INVALID_PDF), "error");
       return;
     }
 
@@ -87,18 +89,14 @@ export default function TranslationUploadModal({
       formData.append("file", file);
       if (notes) formData.append("adminNotes", notes);
 
-      const response = await fetch(
-        `/api/document-translation/${requestId}/upload-translation`,
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
-
-      const data = await response.json();
+      const response = await fetch(`/api/document-translation/${requestId}/upload-translation`, {
+        method: "POST",
+        body: formData,
+      });
 
       if (!response.ok) {
-        throw new Error(data.error || "Upload failed");
+        showToast(`${msg(E.UPLOAD_FAILED)}`, "error");
+        return;
       }
 
       setFile(null);
@@ -106,9 +104,10 @@ export default function TranslationUploadModal({
       onClose();
       onSuccess();
 
-      toast.success("Translated document uploaded successfully!");
+      showToast("Translated document uploaded successfully!", "success");
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Network error");
+      console.error("Translation upload failed:", error);
+      showToast(`${msg(E.UPLOAD_NETWORK_ERROR)}`, "error");
     } finally {
       setUploading(false);
     }
@@ -123,9 +122,7 @@ export default function TranslationUploadModal({
       onDrop={(e) => e.preventDefault()}
     >
       <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4 shadow-xl">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Upload Translated Document
-        </h3>
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Upload Translated Document</h3>
 
         {/* Upload Area */}
         <div className="mb-4">
@@ -139,9 +136,7 @@ export default function TranslationUploadModal({
             onDragLeave={handleDragLeave}
             onDrop={handleDrop}
             className={`border-2 border-dashed rounded-lg p-6 text-center cursor-pointer transition-all ${
-              isDragging
-                ? "border-primary bg-primary/10"
-                : "border-gray-300 hover:border-gray-400"
+              isDragging ? "border-primary bg-primary/10" : "border-gray-300 hover:border-gray-400"
             }`}
           >
             <input
@@ -153,15 +148,10 @@ export default function TranslationUploadModal({
             />
 
             {file ? (
-              <div className="text-sm font-medium text-gray-900 break-all">
-                {file.name}
-              </div>
+              <div className="text-sm font-medium text-gray-900 break-all">{file.name}</div>
             ) : (
               <div className="text-gray-600">
-                <span className="text-primary font-medium">
-                  Click to upload
-                </span>{" "}
-                or drag and drop
+                <span className="text-primary font-medium">Click to upload</span> or drag and drop
               </div>
             )}
           </div>

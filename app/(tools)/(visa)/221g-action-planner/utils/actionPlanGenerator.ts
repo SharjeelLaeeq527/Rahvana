@@ -1,25 +1,28 @@
-import type { ClassificationResult } from "./classifier"
+import type { ClassificationResult } from "./classifier";
 
 export interface ActionPlan {
-  title: string
-  description: string
-  stages: ActionStage[]
-  selected221gItems?: string[]
+  title: string;
+  description: string;
+  stages: ActionStage[];
+  selected221gItems?: string[];
 }
 
 export interface ActionStage {
-  title: string
-  timeframe: string
-  actions: string[]
-  tips: string[]
-  documents?: string[]
+  title: string;
+  timeframe: string;
+  actions: string[];
+  tips: string[];
+  documents?: string[];
 }
 
 /**
  * Generates a personalized action plan based on the classified scenario
  */
-export function generateActionPlan(classification: ClassificationResult, selected221gItems: string[] = []): ActionPlan {
-  const scenario = classification.scenarioCode
+export function generateActionPlan(
+  classification: ClassificationResult,
+  selected221gItems: string[] = []
+): ActionPlan {
+  const scenario = classification.scenarioCode;
 
   const hasCivilDocs = selected221gItems.some(
     (item) =>
@@ -28,17 +31,17 @@ export function generateActionPlan(classification: ClassificationResult, selecte
       item === "nadra_birth_cert_beneficiary" ||
       item === "nadra_marriage_cert" ||
       item === "nikah_nama"
-  )
+  );
 
   const hasLegalDocs = selected221gItems.some(
-    (item) => 
-      item === "nadra_divorce_cert" || 
-      item === "us_divorce_decree" || 
-      item === "death_certificate" || 
+    (item) =>
+      item === "nadra_divorce_cert" ||
+      item === "us_divorce_decree" ||
+      item === "death_certificate" ||
       item === "police_certificate"
-  )
+  );
 
-  const hasTranslation = selected221gItems.includes("english_translation")
+  const hasTranslation = selected221gItems.includes("english_translation");
 
   switch (scenario) {
     case "221G_DOCS_REQUESTED_FINANCIAL":
@@ -115,7 +118,7 @@ export function generateActionPlan(classification: ClassificationResult, selecte
             ],
           },
         ],
-      }
+      };
 
     case "221G_DOCS_REQUESTED_CIVIL":
       return {
@@ -193,12 +196,13 @@ export function generateActionPlan(classification: ClassificationResult, selecte
             ],
           },
         ],
-      }
+      };
 
     case "221G_DOCS_REQUESTED_SECURITY":
       return {
         title: "Security Review - Action Plan",
-        description: "Your case is undergoing security review. This typically requires no additional action from you.",
+        description:
+          "Your case is undergoing security review. This typically requires no additional action from you.",
         selected221gItems,
         stages: [
           {
@@ -244,7 +248,7 @@ export function generateActionPlan(classification: ClassificationResult, selecte
             ],
           },
         ],
-      }
+      };
 
     case "221G_DOCS_REQUESTED_LEGAL":
       return {
@@ -290,7 +294,7 @@ export function generateActionPlan(classification: ClassificationResult, selecte
             ],
           },
         ],
-      }
+      };
 
     case "221G_DOCS_REQUESTED_MEDICAL":
       return {
@@ -318,9 +322,7 @@ export function generateActionPlan(classification: ClassificationResult, selecte
               "Attend your medical exam with your passport, 221(g) letter, and past medical records.",
               "If specialized TB testing is required, understand that results can take approximately 8 weeks.",
             ],
-            tips: [
-              "Medical holds can severely delay a visa. Start the process without delay.",
-            ],
+            tips: ["Medical holds can severely delay a visa. Start the process without delay."],
           },
           {
             title: "Submitting the Results",
@@ -334,7 +336,7 @@ export function generateActionPlan(classification: ClassificationResult, selecte
             ],
           },
         ],
-      }
+      };
 
     case "221G_DOCS_REQUESTED_TRANSLATION":
       return {
@@ -378,8 +380,7 @@ export function generateActionPlan(classification: ClassificationResult, selecte
             ],
           },
         ],
-      }
-
+      };
 
     case "221G_DOCS_REQUESTED_OTHER":
       return {
@@ -424,7 +425,7 @@ export function generateActionPlan(classification: ClassificationResult, selecte
             ],
           },
         ],
-      }
+      };
 
     case "AP_ONLY_NO_DOCS":
       return {
@@ -477,12 +478,13 @@ export function generateActionPlan(classification: ClassificationResult, selecte
             ],
           },
         ],
-      }
+      };
 
     case "DOCS_SUBMITTED_WAITING_UPDATE":
       return {
         title: "Documents Submitted - Waiting for Update",
-        description: "Your documents have been submitted. Now you're waiting for an update on your case status.",
+        description:
+          "Your documents have been submitted. Now you're waiting for an update on your case status.",
         selected221gItems,
         stages: [
           {
@@ -528,12 +530,13 @@ export function generateActionPlan(classification: ClassificationResult, selecte
             ],
           },
         ],
-      }
+      };
 
     default:
       return {
         title: "General Action Plan",
-        description: "Based on your situation, here's a general plan to help you navigate the process.",
+        description:
+          "Based on your situation, here's a general plan to help you navigate the process.",
         selected221gItems,
         stages: [
           {
@@ -565,6 +568,6 @@ export function generateActionPlan(classification: ClassificationResult, selecte
             ],
           },
         ],
-      }
+      };
   }
 }

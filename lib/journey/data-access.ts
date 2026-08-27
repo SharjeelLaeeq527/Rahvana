@@ -23,7 +23,7 @@ import {
 // Helper: Get authenticated Supabase client - Throws "Unauthorized" if no user session
 async function getSupabaseWithUser(injectedClient?: { supabase: any; user: any }) {
   if (injectedClient) return injectedClient;
-  
+
   const supabase = await createClient();
   const {
     data: { user },
@@ -121,10 +121,7 @@ export async function getAllJourneysDB(
     query = query.limit(filters.limit);
   }
   if (filters?.offset) {
-    query = query.range(
-      filters.offset,
-      filters.offset + (filters.limit || 10) - 1,
-    );
+    query = query.range(filters.offset, filters.offset + (filters.limit || 10) - 1);
   }
 
   const { data, error } = await query;
@@ -135,9 +132,10 @@ export async function getAllJourneysDB(
 }
 
 // Fetch latest in-progress journey
-export async function getLatestInProgressJourneyDB(
-  client?: { supabase: any; user: any }
-): Promise<Journey | null> {
+export async function getLatestInProgressJourneyDB(client?: {
+  supabase: any;
+  user: any;
+}): Promise<Journey | null> {
   const { supabase, user } = await getSupabaseWithUser(client);
 
   const { data, error } = await supabase
@@ -210,6 +208,15 @@ export async function deleteJourneyDB(
   const existing = await getJourneyDB(journeyId, { supabase, user });
   if (!existing) throw new Error("Journey not found or not owned");
 
+  // Delete associated interview sessions BEFORE deleting journey
+  // (FK ON DELETE SET NULL would nullify journey_id, making cleanup impossible)
+  try {
+    const { deleteJourneySessions } = await import("@/lib/interview-prep/data-access");
+    await deleteJourneySessions(journeyId);
+  } catch (e) {
+    console.warn("[deleteJourneyDB] Could not delete interview sessions:", e);
+  }
+
   const { error } = await supabase
     .from("journeys")
     .delete()
@@ -222,9 +229,7 @@ export async function deleteJourneyDB(
 }
 
 // Delete all journeys for a user
-export async function deleteAllJourneysDB(
-  client?: { supabase: any; user: any }
-): Promise<number> {
+export async function deleteAllJourneysDB(client?: { supabase: any; user: any }): Promise<number> {
   const { supabase, user } = await getSupabaseWithUser(client);
 
   // Fetch all user journeys
@@ -237,6 +242,16 @@ export async function deleteAllJourneysDB(
 
   if (!journeys || journeys.length === 0) {
     return 0; // No journeys to delete
+  }
+
+  // Delete associated interview sessions BEFORE deleting journeys
+  try {
+    const { deleteJourneySessions } = await import("@/lib/interview-prep/data-access");
+    for (const journey of journeys) {
+      await deleteJourneySessions(journey.id);
+    }
+  } catch (e) {
+    console.warn("[deleteAllJourneysDB] Could not delete interview sessions:", e);
   }
 
   const { error: deleteError, count } = await supabase
@@ -274,7 +289,7 @@ export async function updateJourneyProgressDB(
 // Create a new chapter for a journey
 export async function createChapterDB(
   journeyId: string,
-  chapterData: ChapterInput,
+  chapterData: ChapterInput
 ): Promise<Chapter> {
   const { supabase, user } = await getSupabaseWithUser();
 
@@ -318,7 +333,7 @@ export async function getChapterDB(chapterId: string): Promise<Chapter | null> {
       `
         *,
         journeys!inner(user_id)
-      `,
+      `
     )
     .eq("id", chapterId)
     .eq("journeys.user_id", user.id)
@@ -380,10 +395,7 @@ export async function getChaptersForJourneyDB(
 }
 
 //   Update chapter details
-export async function updateChapterDB(
-  chapterId: string,
-  updates: ChapterUpdate,
-): Promise<Chapter> {
+export async function updateChapterDB(chapterId: string, updates: ChapterUpdate): Promise<Chapter> {
   const { supabase, user } = await getSupabaseWithUser();
 
   // Check if chapter exists
@@ -428,7 +440,7 @@ export async function updateChapterDB(
 //   Update chapter progress
 export async function updateChapterProgressDB(
   chapterId: string,
-  progressData: ProgressData,
+  progressData: ProgressData
 ): Promise<void> {
   const { supabase, user } = await getSupabaseWithUser();
 
@@ -452,10 +464,7 @@ export async function deleteChapterDB(chapterId: string): Promise<boolean> {
   const existing = await getChapterDB(chapterId);
   if (!existing) throw new Error("Chapter not found or not owned");
 
-  const { error } = await supabase
-    .from("chapters")
-    .delete()
-    .eq("id", chapterId);
+  const { error } = await supabase.from("chapters").delete().eq("id", chapterId);
 
   if (error) throw new Error(error.message);
 
@@ -464,10 +473,7 @@ export async function deleteChapterDB(chapterId: string): Promise<boolean> {
 
 // Step Operations
 // Create a new step for a chapter
-export async function createStepDB(
-  chapterId: string,
-  stepData: StepInput,
-): Promise<Step> {
+export async function createStepDB(chapterId: string, stepData: StepInput): Promise<Step> {
   const { supabase, user } = await getSupabaseWithUser();
 
   // Check if chapter exists
@@ -499,6 +505,7 @@ export async function createStepDB(
         started_at: null,
         completed_at: null,
         due_date: stepData.due_date || null,
+        metadata: stepData.metadata || {},
       },
     ])
     .select()
@@ -522,7 +529,7 @@ export async function getStepDB(stepId: string): Promise<Step | null> {
       id,
       journey_id,
       journeys!inner(user_id)
-    )`,
+    )`
     )
     .eq(isUuid ? "id" : "step_key", stepId)
     .eq("chapters.journeys.user_id", user.id)
@@ -547,7 +554,7 @@ export async function getStepsForChapterDB(
     step_type?: string;
     limit?: number;
     offset?: number;
-  },
+  }
 ): Promise<Step[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
@@ -564,7 +571,7 @@ export async function getStepsForChapterDB(
         journey_id,
         journeys!inner(user_id)
       )
-    `,
+    `
     )
     .eq("chapter_id", chapterId)
     .eq("chapters.journeys.user_id", user.id)
@@ -614,7 +621,7 @@ export async function getStepsForJourneyDB(
       chapters!inner(
         journey_id
       )
-    `,
+    `
     )
     .eq("chapters.journey_id", journeyId)
     .order("display_order", { ascending: true });
@@ -642,9 +649,7 @@ export async function getStepsForJourneyDB(
 }
 
 // Get current step for a journey (first incomplete step)
-export async function getCurrentStepForJourneyDB(
-  journeyId: string,
-): Promise<Step | null> {
+export async function getCurrentStepForJourneyDB(journeyId: string): Promise<Step | null> {
   const { supabase, user } = await getSupabaseWithUser();
 
   const { data, error } = await supabase
@@ -667,10 +672,7 @@ export async function getCurrentStepForJourneyDB(
 }
 
 // Update Step
-export async function updateStepDB(
-  stepId: string,
-  updates: StepUpdate,
-): Promise<Step> {
+export async function updateStepDB(stepId: string, updates: StepUpdate): Promise<Step> {
   const { supabase, user } = await getSupabaseWithUser();
 
   // Check if step exists
@@ -711,6 +713,7 @@ export async function updateStepDB(
       ...(updates.started_at && { started_at: updates.started_at }),
       ...(updates.completed_at && { completed_at: updates.completed_at }),
       ...(updates.due_date && { due_date: updates.due_date }),
+      ...(updates.metadata !== undefined && { metadata: updates.metadata }),
       updated_at: new Date().toISOString(),
     })
     .eq("id", stepId)
@@ -776,8 +779,7 @@ export async function upsertCaseDataDB(
 
   // Prepare data with defaults
   const now = new Date().toISOString();
-  const dataType =
-    caseDataInput.data_type || detectDataType(caseDataInput.data_value);
+  const dataType = caseDataInput.data_type || detectDataType(caseDataInput.data_value);
 
   // Upsert case data
   const { data, error } = await supabase
@@ -796,7 +798,7 @@ export async function upsertCaseDataDB(
         captured_at: now,
         updated_at: now,
       },
-      { onConflict: "journey_id,data_key" },
+      { onConflict: "journey_id,data_key" }
     )
     .select()
     .single();
@@ -908,7 +910,7 @@ export async function getCaseDataByKeysDB(
 export async function updateCaseDataDB(
   journeyId: string,
   dataKey: string,
-  updates: CaseDataUpdate,
+  updates: CaseDataUpdate
 ): Promise<CaseData> {
   const { supabase, user } = await getSupabaseWithUser();
 
@@ -935,7 +937,7 @@ export async function updateCaseDataDB(
 // Batch update case data for a journey
 export async function batchUpdateCaseDataDB(
   journeyId: string,
-  operations: CaseDataBatchOperation[],
+  operations: CaseDataBatchOperation[]
 ): Promise<CaseData[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
@@ -962,10 +964,7 @@ export async function batchUpdateCaseDataDB(
 }
 
 // Delete case data
-export async function deleteCaseDataDB(
-  journeyId: string,
-  dataKey: string,
-): Promise<boolean> {
+export async function deleteCaseDataDB(journeyId: string, dataKey: string): Promise<boolean> {
   const { supabase, user } = await getSupabaseWithUser();
 
   // Check if journey exists and belongs to user
@@ -984,9 +983,7 @@ export async function deleteCaseDataDB(
 }
 
 // Get all case data with validation status
-export async function getCaseDataValidationStatusDB(
-  journeyId: string,
-): Promise<CaseData[]> {
+export async function getCaseDataValidationStatusDB(journeyId: string): Promise<CaseData[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
   // Check if journey exists and belongs to user
@@ -1022,7 +1019,7 @@ export function detectDataType(value: any): string {
 // Get steps for a journey filtered by step_key (e.g. "II.2")
 export async function getStepsForJourneyByStepKeyDB(
   journeyId: string,
-  stepKey: string,
+  stepKey: string
 ): Promise<Step[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
@@ -1044,10 +1041,10 @@ export async function getStepsForJourneyByStepKeyDB(
 // Get multiple steps for a journey by their step_keys
 export async function getStepsForJourneyByStepKeysDB(
   journeyId: string,
-  stepKeys: string[],
+  stepKeys: string[]
 ): Promise<Step[]> {
   if (!stepKeys || stepKeys.length === 0) return [];
-  
+
   const { supabase, user } = await getSupabaseWithUser();
 
   const { data, error } = await supabase
@@ -1066,9 +1063,7 @@ export async function getStepsForJourneyByStepKeysDB(
 }
 
 // Get all documents for a journey
-export async function getJourneyDocumentsDB(
-  journeyId: string,
-): Promise<JourneyDocument[]> {
+export async function getJourneyDocumentsDB(journeyId: string): Promise<JourneyDocument[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
   const { data, error } = await supabase
@@ -1097,7 +1092,9 @@ export async function getAllCasesWithTrackers(): Promise<string[]> {
     if (error) throw error;
 
     // Get unique case IDs
-    const caseIds: string[] = Array.from(new Set((data || []).map((row: any) => row.case_id as string)));
+    const caseIds: string[] = Array.from(
+      new Set((data || []).map((row: any) => row.case_id as string))
+    );
     return caseIds;
   } catch (error) {
     console.error("[Data Access] Error getting cases with trackers:", error);

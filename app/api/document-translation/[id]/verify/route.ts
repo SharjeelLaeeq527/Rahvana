@@ -2,6 +2,8 @@
 // Admin verifies and certifies the translation (final step)
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { triggerTranslationNotification } from "@/lib/notifications";
+import { requireAdmin } from "@/lib/api/authGuards";
 
 function getStorageSupabase() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -12,11 +14,14 @@ function getStorageSupabase() {
   return createSupabaseClient(supabaseUrl, serviceRoleKey);
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    // AUTHZ: admin only (this route uses the service role → bypasses RLS)
+    const { isAdmin, error: authError } = await requireAdmin();
+    if (!isAdmin) {
+      return NextResponse.json({ error: authError || "Admin access required" }, { status: 403 });
+    }
+
     const { id } = await params;
     const body = await request.json();
     const { verificationNotes } = body;
@@ -31,10 +36,7 @@ export async function POST(
       .single();
 
     if (checkError || !existing) {
-      return NextResponse.json(
-        { error: "Document not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "Document not found" }, { status: 404 });
     }
 
     if (existing.status !== "USER_CONFIRMED") {
@@ -47,10 +49,7 @@ export async function POST(
     }
 
     if (!existing.translated_file_path) {
-      return NextResponse.json(
-        { error: "No translated file available" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No translated file available" }, { status: 400 });
     }
 
     // Update status to VERIFIED (final state)
@@ -67,11 +66,11 @@ export async function POST(
 
     if (updateError) {
       console.error("Update error:", updateError);
-      return NextResponse.json(
-        { error: "Failed to verify translation" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to verify translation" }, { status: 500 });
     }
+
+    // Trigger user notification (email and in-app)
+    await triggerTranslationNotification(id);
 
     return NextResponse.json({
       success: true,
@@ -80,9 +79,6 @@ export async function POST(
     });
   } catch (error) {
     console.error("Verify error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -1,16 +1,10 @@
 import React, { useRef } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { ToggleSwitch } from "@/app/components/interview-prep/ToggleSwitch";
-import CountryAutocomplete from "@/app/components/shared/CountryAutoComplete";
+import CountryAutocomplete from "@/app/components/shared/LocationAutoComplete";
 import { QuestionStepProps } from "../types";
 import { Question } from "@/lib/visa-checker/engine-types";
+import { CustomDropdown } from "@/app/components/shared/CustomDropdown";
 
 const QuestionStep = ({
   questionnaire,
@@ -85,9 +79,7 @@ const QuestionStep = ({
       return (
         <CountryAutocomplete
           formData={formData}
-          setFormData={(data) =>
-            setFormData((prev) => ({ ...prev, ...data }))
-          }
+          setFormData={(data) => setFormData((prev) => ({ ...prev, ...data }))}
           hideLabel
           inputClassName="w-full p-3 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-ring transition-colors bg-background"
           placeholder="Start typing country..."
@@ -103,14 +95,14 @@ const QuestionStep = ({
           <input
             type={question.type}
             suppressHydrationWarning
-            value={
-              question.type === "number"
-                ? (value ?? "").toString()
-                : String(value ?? "")
-            }
+            value={question.type === "number" ? (value ?? "").toString() : String(value ?? "")}
             onClick={(e) => {
               if (question.type === "date") {
-                (e.currentTarget as HTMLInputElement).showPicker?.();
+                try {
+                  (e.currentTarget as HTMLInputElement).showPicker?.();
+                } catch {
+                  // showPicker requires a direct user gesture; native click already opens the picker
+                }
               }
             }}
             onChange={(e) =>
@@ -136,9 +128,7 @@ const QuestionStep = ({
       case "boolean":
         return (
           <div className="flex items-center justify-between">
-            <span className="text-lg font-semibold text-foreground">
-              {question.label}
-            </span>
+            <span className="text-lg font-semibold text-foreground">{question.label}</span>
             <ToggleSwitch
               checked={!!value}
               onChange={(checked) => handleChange(question.id, checked)}
@@ -148,21 +138,16 @@ const QuestionStep = ({
       case "select":
         if (Array.isArray(question.options)) {
           return (
-            <Select
+            <CustomDropdown
               value={String(value ?? "")}
-              onValueChange={(newValue) => handleChange(question.id, newValue)}
-            >
-              <SelectTrigger className="w-full h-14">
-                <SelectValue placeholder={`Select ${question.label.toLowerCase()}`} />
-              </SelectTrigger>
-              <SelectContent>
-                {question.options.map((option: string) => (
-                  <SelectItem key={option} value={option}>
-                    {option}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              onChange={(newValue) => handleChange(question.id, newValue)}
+              options={question.options.map((option: string) => ({
+                value: option,
+                label: option,
+              }))}
+              placeholder={`Select ${question.label.toLowerCase()}`}
+              className="w-full [&_button]:h-14 [&_button]:w-full [&_button]:min-w-0"
+            />
           );
         }
         return null;
@@ -172,9 +157,11 @@ const QuestionStep = ({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 mt-14">
       <div className="text-center mb-8">
-        <div className="text-sm font-bold text-teal-600 mb-2 uppercase tracking-wider">{questionnaire.title} Assessment</div>
+        <div className="text-sm font-bold text-teal-600 mb-2 uppercase tracking-wider">
+          {questionnaire.title} Assessment
+        </div>
         <h2 className="text-3xl font-bold text-foreground mb-3">{section.title}</h2>
         <p className="text-lg text-muted-foreground max-w-2xl mx-auto leading-relaxed">
           Step {questionnaire.sections.indexOf(section) + 1} of {questionnaire.sections.length}
@@ -206,8 +193,16 @@ const QuestionStep = ({
         {error && (
           <div className="p-4 bg-destructive/10 border-l-4 border-destructive rounded-lg text-destructive">
             <div className="flex items-start">
-              <svg className="h-5 w-5 text-destructive mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+              <svg
+                className="h-5 w-5 text-destructive mt-0.5 mr-3"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                  clipRule="evenodd"
+                />
               </svg>
               <span>{error}</span>
             </div>

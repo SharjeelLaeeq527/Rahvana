@@ -2,9 +2,9 @@ import { Questionnaire, Section } from "./engine-types";
 
 export type CaseType = string; // e.g., 'ir-1', 'k-1'
 
-export type RiskLevel = 'PENDING' | 'WEAK' | 'MODERATE' | 'STRONG';
+export type RiskLevel = "PENDING" | "WEAK" | "MODERATE" | "STRONG";
 
-export type RiskSeverity = 'LOW' | 'MEDIUM' | 'HIGH';
+export type RiskSeverity = "LOW" | "MEDIUM" | "HIGH";
 
 export type QuestionKey = string;
 

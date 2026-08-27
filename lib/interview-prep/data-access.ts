@@ -5,9 +5,12 @@ import {
   InterviewAnswer,
   InterviewResult,
   InterviewSessionInput,
+  InterviewSessionSource,
+  InterviewPrepSessionProgress,
+  InterviewPrepSessionProgressInput,
 } from "./types";
 
-async function getSupabaseWithUser() {
+export async function getSupabaseWithUser() {
   const supabase = await createClient();
   const {
     data: { user },
@@ -18,7 +21,7 @@ async function getSupabaseWithUser() {
   return { supabase, user };
 }
 
-// Create new session
+// Create new session - now supports source and journey_id
 export async function createInterviewSessionDB(
   sessionData: Omit<InterviewSessionInput, "user_id">
 ): Promise<InterviewSession> {
@@ -33,6 +36,9 @@ export async function createInterviewSessionDB(
         user_name: user.user_metadata?.full_name || null,
         category_slug: sessionData.category_slug,
         completed: false,
+        source: sessionData.source || "tool",
+        journey_id: sessionData.journey_id || null,
+        status: sessionData.status || "ready",
       },
     ])
     .select()
@@ -44,9 +50,7 @@ export async function createInterviewSessionDB(
 }
 
 // Get session (enforce ownership)
-export async function getInterviewSessionDB(
-  sessionId: string
-): Promise<InterviewSession | null> {
+export async function getInterviewSessionDB(sessionId: string): Promise<InterviewSession | null> {
   const { supabase, user } = await getSupabaseWithUser();
 
   const { data, error } = await supabase
@@ -64,7 +68,165 @@ export async function getInterviewSessionDB(
   return data as InterviewSession;
 }
 
-// Get latest incomplete session for current user
+export async function getInterviewSessionByCategory(
+  category_slug: string
+): Promise<InterviewSession | null> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // Only return unfinished tool-based sessions for category lookup.
+  // Completed paid sessions are historical records and should not block repurchase.
+  // Journey sessions should be accessed via journey_id
+  const { data, error } = await supabase
+    .from("interview_prep_sessions")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("category_slug", category_slug)
+    .eq("source", "tool")
+    .eq("completed", false)
+    .order("updated_at", { ascending: false })
+    .limit(1);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return (data?.[0] as InterviewSession | undefined) || null;
+}
+
+// Get session by journey_id - for journey-based sessions
+export async function getInterviewSessionByJourneyId(
+  journey_id: string
+): Promise<InterviewSession | null> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  const { data, error } = await supabase
+    .from("interview_prep_sessions")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("journey_id", journey_id)
+    .eq("source", "journey")
+    .maybeSingle();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data as InterviewSession | null;
+}
+
+// Create journey-based session - auto-created when journey starts
+export async function createJourneyInterviewSessionDB(
+  journey_id: string,
+  category_slug: string
+): Promise<InterviewSession> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // First check if a journey session already exists
+  const { data: existing } = await supabase
+    .from("interview_prep_sessions")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("journey_id", journey_id)
+    .eq("source", "journey")
+    .maybeSingle();
+
+  if (existing) {
+    return existing as InterviewSession;
+  }
+
+  // Create new journey session with status 'ready'
+  const { data, error } = await supabase
+    .from("interview_prep_sessions")
+    .insert([
+      {
+        user_id: user.id,
+        user_email: user.email,
+        user_name: user.user_metadata?.full_name || null,
+        category_slug,
+        completed: false,
+        source: "journey",
+        journey_id,
+        status: "ready",
+      },
+    ])
+    .select()
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data as InterviewSession;
+}
+
+// Check if journey is active (for access control)
+export async function isJourneyActive(journey_id: string): Promise<boolean> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  const { data, error } = await supabase
+    .from("journeys")
+    .select("status")
+    .eq("id", journey_id)
+    .eq("user_id", user.id)
+    .single();
+
+  if (error || !data) return false;
+
+  // Journey is active if status is 'in_progress' or 'not_started'
+  return data.status === "in_progress" || data.status === "not_started";
+}
+
+// Get active journey session for user (if any)
+export async function getActiveJourneySession(
+  journey_type: string = "IR1"
+): Promise<{ session: InterviewSession; journey_status: string } | null> {
+  const { supabase, user } = await getSupabaseWithUser();
+
+  // First get the active journey
+  const { data: journey, error: journeyError } = await supabase
+    .from("journeys")
+    .select("id, status")
+    .eq("user_id", user.id)
+    .eq("journey_type", journey_type)
+    .in("status", ["in_progress", "not_started"])
+    .maybeSingle();
+
+  if (journeyError || !journey) return null;
+
+  // Then get the associated interview session
+  const { data: session, error: sessionError } = await supabase
+    .from("interview_prep_sessions")
+    .select("*")
+    .eq("user_id", user.id)
+    .eq("journey_id", journey.id)
+    .eq("source", "journey")
+    .maybeSingle();
+
+  if (sessionError || !session) return null;
+
+  return {
+    session: session as InterviewSession,
+    journey_status: journey.status,
+  };
+}
+
+// Delete all interview sessions linked to a journey
+// Called when journey completes or is deleted to free the uniqueness slot
+// so a new journey can create a fresh session for the same category
+export async function deleteJourneySessions(journey_id: string): Promise<void> {
+  const { supabase } = await getSupabaseWithUser();
+
+  const { error } = await supabase
+    .from("interview_prep_sessions")
+    .delete()
+    .eq("journey_id", journey_id)
+    .eq("source", "journey");
+
+  if (error) {
+    console.error("[deleteJourneySessions] Failed:", error.message);
+  }
+}
+
+// Get latest incomplete session for current user (tool-based sessions only)
+// Journey sessions are handled separately via getActiveJourneySession
 export async function getLatestIncompleteSessionDB(): Promise<InterviewSession | null> {
   const { supabase, user } = await getSupabaseWithUser();
 
@@ -73,6 +235,7 @@ export async function getLatestIncompleteSessionDB(): Promise<InterviewSession |
     .select("*")
     .eq("user_id", user.id)
     .eq("completed", false)
+    .eq("source", "tool") // Only return tool-based sessions
     .order("updated_at", { ascending: false })
     .limit(1)
     .single();
@@ -92,18 +255,17 @@ export async function getAllUserSessionsDB(
 ): Promise<InterviewSession[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
-  let query = supabase
-    .from("interview_prep_sessions")
-    .select("*")
-    .eq("user_id", user.id);
+  let query = supabase.from("interview_prep_sessions").select("*").eq("user_id", user.id);
 
   // Optional filter by completion status
   if (completed !== undefined) {
     query = query.eq("completed", completed);
   }
 
-  // Order by most recent first
-  query = query.order("updated_at", { ascending: false });
+  // Order by journey / tool sessions first
+  query = query
+  .order("source", { ascending: false })
+  .order("updated_at", { ascending: false });
 
   // Apply limit if specified
   if (limit) {
@@ -162,9 +324,7 @@ export async function saveInterviewAnswersDB(
 }
 
 // Get answers
-export async function getSessionAnswersDB(
-  sessionId: string
-): Promise<InterviewAnswer[]> {
+export async function getSessionAnswersDB(sessionId: string): Promise<InterviewAnswer[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
   // Enforce ownership
@@ -194,7 +354,10 @@ export async function saveInterviewResultsDB(
 
   const { data, error } = await supabase
     .from("interview_prep_results")
-    .upsert({ session_id: sessionId, generated_questions: generatedQuestions }, { onConflict: "session_id" })
+    .upsert(
+      { session_id: sessionId, generated_questions: generatedQuestions },
+      { onConflict: "session_id" }
+    )
     .select()
     .single();
 
@@ -204,9 +367,7 @@ export async function saveInterviewResultsDB(
 }
 
 // Get results
-export async function getInterviewResultsDB(
-  sessionId: string
-): Promise<InterviewResult | null> {
+export async function getInterviewResultsDB(sessionId: string): Promise<InterviewResult | null> {
   const { supabase, user } = await getSupabaseWithUser();
 
   const session = await getInterviewSessionDB(sessionId);
@@ -224,6 +385,65 @@ export async function getInterviewResultsDB(
   }
 
   return data as InterviewResult;
+}
+
+export async function getInterviewSessionProgressDB(
+  sessionId: string
+): Promise<InterviewPrepSessionProgress | null> {
+  const { supabase } = await getSupabaseWithUser();
+
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) return null;
+
+  const { data, error } = await supabase
+    .from("interview_prep_session_progress")
+    .select("*")
+    .eq("session_id", sessionId)
+    .maybeSingle();
+
+  if (error) throw new Error(error.message);
+
+  return (data as InterviewPrepSessionProgress) || null;
+}
+
+export async function upsertInterviewSessionProgressDB(
+  sessionId: string,
+  payload: InterviewPrepSessionProgressInput
+): Promise<InterviewPrepSessionProgress> {
+  const { supabase } = await getSupabaseWithUser();
+
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) throw new Error("Session not found");
+
+  const { data, error } = await supabase
+    .from("interview_prep_session_progress")
+    .upsert(
+      {
+        session_id: sessionId,
+        ...payload,
+      },
+      { onConflict: "session_id" }
+    )
+    .select("*")
+    .single();
+
+  if (error) throw new Error(error.message);
+
+  return data as InterviewPrepSessionProgress;
+}
+
+export async function deleteInterviewSessionProgressDB(sessionId: string): Promise<void> {
+  const { supabase } = await getSupabaseWithUser();
+
+  const session = await getInterviewSessionDB(sessionId);
+  if (!session) throw new Error("Session not found");
+
+  const { error } = await supabase
+    .from("interview_prep_session_progress")
+    .delete()
+    .eq("session_id", sessionId);
+
+  if (error) throw new Error(error.message);
 }
 
 // STEP 5: Save user answer text for interview question
@@ -266,9 +486,7 @@ export async function saveUserAnswerDB(
 }
 
 // STEP 5: Get user's saved answers for a session
-export async function getUserAnswersForSessionDB(
-  sessionId: string
-): Promise<any[]> {
+export async function getUserAnswersForSessionDB(sessionId: string): Promise<any[]> {
   const { supabase, user } = await getSupabaseWithUser();
 
   // Verify session ownership
@@ -287,10 +505,7 @@ export async function getUserAnswersForSessionDB(
 }
 
 // STEP 5: Get single user answer for a question
-export async function getUserAnswerDB(
-  sessionId: string,
-  questionId: string
-): Promise<any | null> {
+export async function getUserAnswerDB(sessionId: string, questionId: string): Promise<any | null> {
   const { supabase, user } = await getSupabaseWithUser();
 
   // Verify session ownership

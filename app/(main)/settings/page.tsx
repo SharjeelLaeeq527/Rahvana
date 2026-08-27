@@ -1,490 +1,624 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { createBrowserClient } from "@supabase/ssr";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useRouter } from "next/navigation";
+import {
+  KeyRound,
+  LogOut,
+  Trash2,
+  Loader2,
+  User,
+  Eye,
+  EyeOff,
+  ChevronRight,
+} from "lucide-react";
+import { useAuth } from "@/app/context/AuthContext";
+import { useLanguage } from "@/app/context/LanguageContext";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { useAuth } from "@/app/context/AuthContext";
-import { useRouter } from "next/navigation";
-import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
-import { useLanguage } from "@/app/context/LanguageContext";
 import { Loader } from "@/components/ui/spinner";
+import { ConfirmationModal } from "@/app/components/shared/ConfirmationModal";
+import { MFACodeModal } from "@/app/components/shared/MFACodeModal";
+import { useToast } from "@/app/components/shared/ToastProvider";
+import { validateStrongPassword } from "@/lib/security/password";
 
 export default function SettingsPage() {
   const { t } = useLanguage();
-  const { user, isLoading, signOut } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
+  const { showToast } = useToast();
   const router = useRouter();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+
+  const canChangePassword = user?.app_metadata?.provider === "email";
+
+  const supabase = useMemo(
+    () =>
+      createBrowserClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      ),
+    []
   );
 
-  const [notifications, setNotifications] = useState({
-    email: true,
-    sms: false,
-    push: true,
-  });
-
-  const [accountSettings, setAccountSettings] = useState({
-    twoFactorEnabled: false,
-    autoBackup: true,
-  });
-
-  const [loading, setLoading] = useState(true);
-  const [message, setMessage] = useState("");
+  const [openSection, setOpenSection] = useState<string | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
   const [profile, setProfile] = useState<{ mfa_enabled: boolean } | null>(null);
+  const [isPasswordSaving, setIsPasswordSaving] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
+  const [isDeletingAccount, setIsDeletingAccount] = useState(false);
   const [deleteAccountModalOpen, setDeleteAccountModalOpen] = useState(false);
   const [confirmSignOutOpen, setConfirmSignOutOpen] = useState(false);
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [passwordChangedModalOpen, setPasswordChangedModalOpen] = useState(false);
+  const [mfaCodeModalOpen, setMfaCodeModalOpen] = useState(false);
+  const [mfaCode, setMfaCode] = useState("");
+  const [mfaCodeError, setMfaCodeError] = useState("");
+  const [isVerifyingMfaCode, setIsVerifyingMfaCode] = useState(false);
 
-  // Track if we've already fetched for this user
-  const hasFetchedRef = useRef<string | null>(null);
+  const [passwordForm, setPasswordForm] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
+  });
 
-  // Memoize user ID to prevent unnecessary re-renders
-  const userId = useMemo(() => user?.id, [user?.id]);
+  const userId = user?.id;
 
-  const fetchProfile = useCallback(async () => {
-    if (!userId) return;
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.replace(
+        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`
+      );
+    }
+  }, [authLoading, router, user]);
 
-    try {
+  useEffect(() => {
+    let active = true;
+
+    const fetchProfile = async () => {
+      if (!userId) {
+        return;
+      }
+
+      setPageLoading(true);
+
       const { data, error } = await supabase
         .from("profiles")
         .select("mfa_enabled")
         .eq("id", userId)
         .maybeSingle();
 
+      if (!active) return;
+
       if (error) {
         console.error("Error fetching profile:", error.message);
+        setProfile({ mfa_enabled: false });
+      } else {
+        setProfile({ mfa_enabled: !!data?.mfa_enabled });
+      }
+
+      setPageLoading(false);
+    };
+
+    if (userId) {
+      fetchProfile();
+    } else if (!authLoading) {
+      setPageLoading(false);
+    }
+
+    return () => {
+      active = false;
+    };
+  }, [authLoading, supabase, userId]);
+
+  const submitPasswordChange = async (
+    submittedMfaCode?: string
+  ): Promise<"success" | "mfa-required" | "error"> => {
+    setMfaCodeError("");
+    const { currentPassword, newPassword, confirmPassword } = passwordForm;
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      showToast("All password fields are required.", "error");
+      return "error";
+    }
+
+    if (!validateStrongPassword(newPassword)) {
+      showToast(
+        "Your new password must be at least 8 characters long and include uppercase, lowercase, number, and symbol characters.",
+        "error"
+      );
+      return "error";
+    }
+
+    if (newPassword !== confirmPassword) {
+      showToast("New password and confirmation do not match.", "error");
+      return "error";
+    }
+
+    if (currentPassword === newPassword) {
+      showToast("Your new password must be different from the current one.", "error");
+      return "error";
+    }
+
+    try {
+      setIsPasswordSaving(true);
+
+      const response = await fetch("/api/auth/change-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          currentPassword,
+          newPassword,
+          ...(submittedMfaCode ? { mfaCode: submittedMfaCode } : {}),
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data?.mfaRequired) {
+        setMfaCode("");
+        setMfaCodeError("");
+        setMfaCodeModalOpen(true);
+        return "mfa-required";
+      }
+
+      if (!response.ok) {
+        const errorMessage = data.error || "Password update failed. Please try again.";
+        if (submittedMfaCode) {
+          setMfaCodeError(errorMessage);
+        } else {
+          showToast(errorMessage, "error");
+        }
+        return "error";
+      }
+
+      setPasswordForm({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      showToast("Password updated successfully.", "success");
+      setPasswordChangedModalOpen(true);
+      return "success";
+    } catch (error) {
+      console.error("Error updating password:", error);
+      showToast("Password update failed. Please try again.", "error");
+      return "error";
+    } finally {
+      setIsPasswordSaving(false);
+    }
+  };
+
+  const handlePasswordChange = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    await submitPasswordChange();
+  };
+
+  const handleMfaCodeSubmit = async () => {
+    const code = mfaCode.trim();
+
+    if (!/^\d{6}$/.test(code)) {
+      setMfaCodeError("Enter the 6-digit code from your authenticator app.");
+      return;
+    }
+
+    try {
+      setIsVerifyingMfaCode(true);
+      const result = await submitPasswordChange(code);
+      if (result === "success") {
+        setMfaCodeModalOpen(false);
+      }
+    } catch (error) {
+      console.error("Error verifying MFA code:", error);
+      setMfaCodeError("We couldn't verify that code. Please try again.");
+    } finally {
+      setIsVerifyingMfaCode(false);
+    }
+  };
+
+  const handleGlobalSignOut = async () => {
+    try {
+      setIsSigningOut(true);
+      await fetch("/api/auth/signout", { method: "POST" });
+      await supabase.auth.signOut({ scope: "local" });
+      router.replace(
+        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`
+      );
+    } catch (error) {
+      console.error("Error signing out:", error);
+      router.replace("/login");
+    } finally {
+      setIsSigningOut(false);
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    try {
+      setIsDeletingAccount(true);
+      setDeleteAccountModalOpen(false);
+
+      const response = await fetch("/api/auth/delete-account", {
+        method: "POST",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        showToast(data.error || "Unable to delete your account right now.", "error");
         return;
       }
 
-      if (data) {
-        setProfile(data);
-        setAccountSettings((prev) => ({
-          ...prev,
-          twoFactorEnabled: data.mfa_enabled,
-        }));
-      }
-    } catch (err) {
-      console.error("Unexpected fetchProfile error:", err);
-    }
-  }, [supabase, userId]);
-
-  const fetchSettings = useCallback(async () => {
-    // Skip if we've already fetched for this user
-    if (!userId || hasFetchedRef.current === userId) {
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoading(true);
-
-      // Fetch user settings from database
-      const { data, error } = await supabase
-        .from("user_settings")
-        .select("*")
-        .eq("user_id", userId)
-        .single();
-
-      if (error) {
-        // If no settings exist yet, use defaults
-        // Check if it's a "Row not found" error (which is normal for new users)
-        if (
-          error.message &&
-          !error.message.toLowerCase().includes("not found")
-        ) {
-          console.warn("Error fetching settings:", error);
-        }
-      } else if (data) {
-        setNotifications({
-          email: data.email_notifications || true,
-          sms: data.sms_notifications || false,
-          push: data.push_notifications || true,
-        });
-
-        setAccountSettings((prev) => ({
-          ...prev,
-          autoBackup: data.auto_backup || true,
-        }));
-      }
-
-      // Mark as fetched for this user
-      hasFetchedRef.current = userId;
-    } catch (error) {
-      console.error("Error in fetchSettings:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [supabase, userId]);
-
-  useEffect(() => {
-    if (!isLoading && !user) {
-      router.push(
-        `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
-      );
-      return;
-    }
-
-    if (userId && hasFetchedRef.current !== userId) {
-      fetchSettings();
-      fetchProfile();
-    } else if (userId) {
-      setLoading(false);
-    }
-  }, [userId, isLoading, router, fetchSettings, fetchProfile, user]);
-
-  const handleNotificationChange = (type: string) => {
-    setNotifications((prev) => ({
-      ...prev,
-      [type]: !prev[type as keyof typeof prev],
-    }));
-  };
-
-  const handleAccountSettingChange = (type: string) => {
-    setAccountSettings((prev) => ({
-      ...prev,
-      [type]: !prev[type as keyof typeof prev],
-    }));
-  };
-
-  const handleSaveSettings = async () => {
-    try {
-      setLoading(true);
-      setMessage("");
-
-      // Save settings to database
-      const { error } = await supabase.from("user_settings").upsert(
-        [
-          {
-            user_id: user?.id,
-            email_notifications: notifications.email,
-            sms_notifications: notifications.sms,
-            push_notifications: notifications.push,
-            two_factor_enabled: accountSettings.twoFactorEnabled,
-            auto_backup: accountSettings.autoBackup,
-            updated_at: new Date().toISOString(),
-          },
-        ],
-        { onConflict: "user_id" },
-      );
-
-      if (error) {
-        throw error;
-      }
-
-      setMessage(t("pages.settings.messages.success"));
-    } catch (error) {
-      console.error("Error saving settings:", error);
-      setMessage(t("pages.settings.messages.saveError"));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleSignOut = async () => {
-    await signOut();
-    router.push(
-      `/login?redirectTo=${encodeURIComponent(window.location.pathname + window.location.search)}`,
-    );
-  };
-
-  const handleDeleteAccount = () => {
-    setDeleteAccountModalOpen(true);
-  };
-
-  const confirmDeleteAccount = async () => {
-    try {
-      setLoading(true);
-      setDeleteAccountModalOpen(false);
-
-      // Delete user data from database
-      await supabase.from("user_profiles").delete().eq("id", user?.id);
-
-      await supabase.from("user_settings").delete().eq("user_id", user?.id);
-
-      // Delete user from Supabase auth
-      const { error } = await supabase.auth.admin.deleteUser(user?.id || "");
-
-      if (error) {
-        throw error;
-      }
-
-      // Sign out and redirect to home
-      await signOut();
-      router.push("/");
+      window.location.href = "/";
     } catch (error) {
       console.error("Error deleting account:", error);
-      setMessage(t("pages.settings.messages.deleteError"));
-      setLoading(false);
+      showToast("Unable to delete your account right now.", "error");
+    } finally {
+      setIsDeletingAccount(false);
     }
   };
 
-  if (isLoading || loading) {
+  if (authLoading || pageLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-50 to-slate-100 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-background p-4">
         <Loader size="lg" text={t("pages.settings.loading")} />
       </div>
     );
   }
 
   if (!user) {
-    return null; // Auth guard will redirect
+    return null;
   }
 
+  const accountOpen = openSection === "account";
+  const passwordOpen = openSection === "password";
+  const toggleSection = (id: string) => setOpenSection((prev) => (prev === id ? null : id));
+
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-50 to-slate-100 pb-2">
-      <div className="pb-2">
-        <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl font-bold text-slate-900">
-            {t("pages.settings.title")}
-          </h1>
-          <p className="text-sm sm:text-base text-slate-600 mt-1 sm:mt-2">
-            {t("pages.settings.subtitle")}
-          </p>
-        </div>
+    <div className="mx-auto w-full max-w-2xl space-y-6 px-4 pb-16 pt-8 sm:px-6 sm:pt-10">
+      <div className="space-y-2">
+        <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+          {t("pages.settings.title")}
+        </h1>
+        <p className="text-sm leading-6 text-muted-foreground sm:text-base">
+          {t("pages.settings.subtitle")}
+        </p>
+      </div>
 
-        {message && (
-          <div
-            className={`mb-6 p-4 rounded-lg border ${
-              message === t("pages.settings.messages.success")
-                ? "bg-green-50 border-green-200 text-green-700"
-                : "bg-red-50 border-red-200 text-red-700"
-            }`}
-          >
-            {message}
+      {/* Account summary cards */}
+      <div className="grid gap-3 sm:grid-cols-2">
+        <div className="flex items-start gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-sm">
+          <User className="mt-0.5 h-5 w-5 shrink-0 text-[#0d7377]" />
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Signed in as
+            </p>
+            <p className="mt-0.5 truncate text-sm font-medium text-foreground">{user.email}</p>
           </div>
-        )}
-
-        <div className="space-y-8">
-          {/* Notification Settings */}
-          <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">
-            <CardHeader className="border-b border-slate-200 pb-4">
-              <CardTitle className="text-lg sm:text-xl text-slate-900">
-                {t("pages.settings.notifications.title")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-2 sm:pt-6 space-y-6">
-              <div className="flex items-center justify-between gap-4">
-                <div className="space-y-0.5">
-                  <Label
-                    htmlFor="email-notifications"
-                    className="text-base font-medium"
-                  >
-                    {t("pages.settings.notifications.emailLabel")}
-                  </Label>
-                  <p className="text-sm text-slate-500">
-                    {t("pages.settings.notifications.emailDesc")}
-                  </p>
-                </div>
-                <Switch
-                  id="email-notifications"
-                  checked={notifications.email}
-                  onCheckedChange={() => handleNotificationChange("email")}
-                />
-              </div>
-
-              <div className="flex items-center justify-between gap-4">
-                <div className="space-y-0.5">
-                  <Label
-                    htmlFor="sms-notifications"
-                    className="text-base font-medium"
-                  >
-                    {t("pages.settings.notifications.smsLabel")}
-                  </Label>
-                  <p className="text-sm text-slate-500">
-                    {t("pages.settings.notifications.smsDesc")}
-                  </p>
-                </div>
-                <Switch
-                  id="sms-notifications"
-                  checked={notifications.sms}
-                  onCheckedChange={() => handleNotificationChange("sms")}
-                />
-              </div>
-
-              <div className="flex items-center justify-between gap-4">
-                <div className="space-y-0.5">
-                  <Label
-                    htmlFor="push-notifications"
-                    className="text-base font-medium"
-                  >
-                    {t("pages.settings.notifications.pushLabel")}
-                  </Label>
-                  <p className="text-sm text-slate-500">
-                    {t("pages.settings.notifications.pushDesc")}
-                  </p>
-                </div>
-                <Switch
-                  id="push-notifications"
-                  checked={notifications.push}
-                  onCheckedChange={() => handleNotificationChange("push")}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Account Settings */}
-          <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">
-            <CardHeader className="border-b border-slate-200 pb-4">
-              <CardTitle className="text-lg sm:text-xl text-slate-900">
-                {t("pages.settings.account.title")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-2 sm:pt-6 space-y-6">
-              <div className="flex flex-col gap-4 sm:gap-2">
-                <div className="flex items-center justify-between gap-4">
-                  <div className="space-y-0.5">
-                    <Label
-                      htmlFor="two-factor"
-                      className="text-base font-medium"
-                    >
-                      {t("pages.settings.account.mfaLabel")}
-                    </Label>
-                    <p className="text-sm text-slate-500">
-                      {t("pages.settings.account.mfaDesc")}
-                    </p>
-                  </div>
-                  <Switch
-                    className="cursor-not-allowed"
-                    id="two-factor"
-                    checked={profile?.mfa_enabled}
-                    disabled={profile?.mfa_enabled} // disable if already enabled
-                  />
-                </div>
-
-                <Button
-                  onClick={() => router.push("/mfa-setup")}
-                  className="w-full sm:w-fit mt-2 sm:mt-0"
-                >
-                  <span className="hidden sm:inline">
-                    {profile?.mfa_enabled
-                      ? t("pages.settings.account.mfaManage")
-                      : t("pages.settings.account.mfaSetup")}
-                  </span>
-                  <span className="sm:hidden">
-                    {profile?.mfa_enabled
-                      ? t("pages.settings.account.mfaManageMobile")
-                      : t("pages.settings.account.mfaSetupMobile")}
-                  </span>
-                </Button>
-              </div>
-
-              <div className="flex items-center justify-between gap-4">
-                <div className="space-y-0.5">
-                  <Label
-                    htmlFor="auto-backup"
-                    className="text-base font-medium"
-                  >
-                    {t("pages.settings.account.autoBackupLabel")}
-                  </Label>
-                  <p className="text-sm text-slate-500">
-                    {t("pages.settings.account.autoBackupDesc")}
-                  </p>
-                </div>
-                <Switch
-                  id="auto-backup"
-                  checked={accountSettings.autoBackup}
-                  onCheckedChange={() =>
-                    handleAccountSettingChange("autoBackup")
-                  }
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Security Settings */}
-          <Card className="px-2 sm:px-4 py-4 sm:p-6 bg-white shadow-lg border-0">
-            <CardHeader className="border-b border-slate-200 pb-4">
-              <CardTitle className="text-lg sm:text-xl text-slate-900">
-                {t("pages.settings.security.title")}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-2 sm:pt-6 space-y-6">
-              <div className="space-y-4">
-                <div>
-                  <Label className="text-base font-medium">
-                    {t("pages.settings.security.changePasswordLabel")}
-                  </Label>
-                  <p className="text-sm text-slate-500 mb-3 sm:mb-4">
-                    {t("pages.settings.security.changePasswordDesc")}
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="w-full sm:w-auto border-slate-300"
-                  >
-                    {t("pages.settings.security.changePasswordLabel")}
-                  </Button>
-                </div>
-
-                <div className="pt-4 border-t border-slate-200">
-                  <Label className="text-base font-medium">
-                    {t("pages.settings.security.signOutLabel")}
-                  </Label>
-                  <p className="text-sm text-slate-500 mb-3 sm:mb-4">
-                    {t("pages.settings.security.signOutDesc")}
-                  </p>
-                  <Button
-                    variant="outline"
-                    className="w-full sm:w-auto border-red-300 text-red-700 hover:bg-red-50 cursor-pointer"
-                    onClick={() => setConfirmSignOutOpen(true)}
-                  >
-                    {t("pages.settings.security.signOutLabel")}
-                  </Button>
-                </div>
-
-                <div className="pt-4 border-t border-slate-200">
-                  <Label className="text-base font-medium text-red-700">
-                    {t("pages.settings.security.deleteAccountLabel")}
-                  </Label>
-                  <p className="text-sm text-slate-500 mb-3 sm:mb-4">
-                    {t("pages.settings.security.deleteAccountDesc")}
-                  </p>
-                  <Button
-                    variant="destructive"
-                    className="w-full sm:w-auto"
-                    onClick={handleDeleteAccount}
-                  >
-                    {t("pages.settings.security.deleteAccountLabel")}
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          <div className="flex justify-end pt-2">
-            <Button
-              onClick={handleSaveSettings}
-              className="w-full sm:w-auto bg-slate-900 hover:bg-slate-800 text-white px-8"
-              disabled={loading}
-            >
-              {t("pages.settings.saveBtn")}
-            </Button>
+        </div>
+        <div className="flex items-start gap-3 rounded-2xl border border-border bg-card px-4 py-3.5 shadow-sm">
+          <KeyRound className="mt-0.5 h-5 w-5 shrink-0 text-[#0d7377]" />
+          <div className="min-w-0">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              Security status
+            </p>
+            <p className="mt-0.5 text-sm font-medium text-foreground">
+              {profile?.mfa_enabled
+                ? "Two-factor authentication enabled"
+                : "Two-factor authentication off"}
+            </p>
           </div>
         </div>
       </div>
 
-      <ConfirmationModal
-        open={deleteAccountModalOpen}
-        onOpenChange={setDeleteAccountModalOpen}
-        title={t("pages.settings.deleteModal.title")}
-        description={t("pages.settings.deleteModal.description")}
-        confirmText={t("pages.settings.deleteModal.confirm")}
-        onConfirm={confirmDeleteAccount}
-      />
+      {/* Security & Access */}
+      <section className="space-y-2.5">
+        <h2 className="px-1 text-base font-semibold text-foreground">Security &amp; Access</h2>
+        <div className="divide-y divide-border/60 overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          {/* Account Settings row */}
+          <button
+            type="button"
+            onClick={() => toggleSection("account")}
+            aria-expanded={accountOpen}
+            className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition hover:bg-muted/40"
+          >
+            <User className="h-5 w-5 shrink-0 text-[#0d7377]" />
+            <span className="flex-1 text-sm font-medium text-foreground">Account Settings</span>
+            <ChevronRight
+              className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+                accountOpen ? "rotate-90" : ""
+              }`}
+            />
+          </button>
+          {accountOpen && (
+            <div className="space-y-4 bg-muted/20 px-4 py-4">
+              <div className="flex items-center justify-between gap-4 rounded-xl border border-border bg-background p-4">
+                <div className="min-w-0 space-y-1">
+                  <Label htmlFor="two-factor" className="text-sm font-medium text-foreground">
+                    Two-Factor Authentication
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    {profile?.mfa_enabled ? "Enabled on this account" : "Not enabled yet"}
+                  </p>
+                </div>
+                <Switch id="two-factor" checked={!!profile?.mfa_enabled} disabled />
+              </div>
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="space-y-1">
+                  <p className="text-sm font-medium text-foreground">Manage authentication</p>
+                  <p className="text-sm text-muted-foreground">Open the 2FA setup flow.</p>
+                </div>
+                <Button
+                  onClick={() => router.push("/mfa-setup")}
+                  variant="outline"
+                  className="w-full cursor-pointer sm:w-auto"
+                >
+                  {profile?.mfa_enabled ? "Manage 2FA" : "Set Up 2FA"}
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* Change Password row */}
+          {canChangePassword && (
+            <>
+              <button
+                type="button"
+                onClick={() => toggleSection("password")}
+                aria-expanded={passwordOpen}
+                className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition hover:bg-muted/40"
+              >
+                <KeyRound className="h-5 w-5 shrink-0 text-[#0d7377]" />
+                <span className="flex-1 text-sm font-medium text-foreground">Change Password</span>
+                <ChevronRight
+                  className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${
+                    passwordOpen ? "rotate-90" : ""
+                  }`}
+                />
+              </button>
+              {passwordOpen && (
+                <div className="bg-muted/20 px-4 py-4">
+                  <form onSubmit={handlePasswordChange} className="space-y-5">
+                    <div className="flex flex-col gap-4 lg:flex-row">
+                      <div className="flex-1 space-y-2">
+                        <Label htmlFor="current-password">Current Password</Label>
+                        <div className="relative">
+                          <Input
+                            id="current-password"
+                            type={showCurrentPassword ? "text" : "password"}
+                            value={passwordForm.currentPassword}
+                            onChange={(event) =>
+                              setPasswordForm((prev) => ({
+                                ...prev,
+                                currentPassword: event.target.value,
+                              }))
+                            }
+                            placeholder="Current password"
+                            autoComplete="current-password"
+                            disabled={isPasswordSaving}
+                            className="pr-11"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowCurrentPassword((prev) => !prev)}
+                            className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground transition hover:text-foreground"
+                            aria-label={
+                              showCurrentPassword
+                                ? "Hide current password"
+                                : "Show current password"
+                            }
+                          >
+                            {showCurrentPassword ? (
+                              <Eye className="h-4 w-4" />
+                            ) : (
+                              <EyeOff className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <Label htmlFor="new-password">New Password</Label>
+                        <div className="relative">
+                          <Input
+                            id="new-password"
+                            type={showNewPassword ? "text" : "password"}
+                            value={passwordForm.newPassword}
+                            onChange={(event) =>
+                              setPasswordForm((prev) => ({
+                                ...prev,
+                                newPassword: event.target.value,
+                              }))
+                            }
+                            placeholder="New password"
+                            autoComplete="new-password"
+                            disabled={isPasswordSaving}
+                            className="pr-11"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowNewPassword((prev) => !prev)}
+                            className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground transition hover:text-foreground"
+                            aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+                          >
+                            {showNewPassword ? (
+                              <Eye className="h-4 w-4" />
+                            ) : (
+                              <EyeOff className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="flex-1 space-y-2">
+                        <Label htmlFor="confirm-password">Confirm Password</Label>
+                        <div className="relative">
+                          <Input
+                            id="confirm-password"
+                            type={showConfirmPassword ? "text" : "password"}
+                            value={passwordForm.confirmPassword}
+                            onChange={(event) =>
+                              setPasswordForm((prev) => ({
+                                ...prev,
+                                confirmPassword: event.target.value,
+                              }))
+                            }
+                            placeholder="Confirm password"
+                            autoComplete="new-password"
+                            disabled={isPasswordSaving}
+                            className="pr-11"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowConfirmPassword((prev) => !prev)}
+                            className="absolute inset-y-0 right-0 flex items-center px-3 text-muted-foreground transition hover:text-foreground"
+                            aria-label={
+                              showConfirmPassword
+                                ? "Hide confirmation password"
+                                : "Show confirmation password"
+                            }
+                          >
+                            {showConfirmPassword ? (
+                              <Eye className="h-4 w-4" />
+                            ) : (
+                              <EyeOff className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end">
+                      <Button
+                        type="submit"
+                        disabled={isPasswordSaving}
+                        className="w-full cursor-pointer sm:w-auto"
+                      >
+                        {isPasswordSaving ? (
+                          <>
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                            Updating...
+                          </>
+                        ) : (
+                          "Update Password"
+                        )}
+                      </Button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </>
+          )}
+        </div>
+      </section>
+
+      {/* Device & Sessions */}
+      <section className="space-y-2.5">
+        <h2 className="px-1 text-base font-semibold text-foreground">Device &amp; Sessions</h2>
+        <div className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm">
+          <button
+            type="button"
+            onClick={() => setConfirmSignOutOpen(true)}
+            className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition hover:bg-muted/40"
+          >
+            <LogOut className="h-5 w-5 shrink-0 text-[#0d7377]" />
+            <span className="flex-1">
+              <span className="block text-sm font-medium text-foreground">Sign Out</span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                Sign out of all devices connected to your account.
+              </span>
+            </span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+          </button>
+        </div>
+      </section>
+
+      {/* Danger Zone */}
+      <section className="space-y-2.5">
+        <h2 className="px-1 text-base font-semibold text-[#c0596a]">Danger Zone</h2>
+        <div className="overflow-hidden rounded-2xl border border-[#c0596a]/30 bg-card shadow-sm">
+          <button
+            type="button"
+            onClick={() => setDeleteAccountModalOpen(true)}
+            disabled={isDeletingAccount}
+            className="flex w-full cursor-pointer items-center gap-3 px-4 py-4 text-left transition hover:bg-[#c0596a]/5 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isDeletingAccount ? (
+              <Loader2 className="h-5 w-5 shrink-0 animate-spin text-[#c0596a]" />
+            ) : (
+              <Trash2 className="h-5 w-5 shrink-0 text-[#c0596a]" />
+            )}
+            <span className="flex-1">
+              <span className="block text-sm font-medium text-[#c0596a]">
+                {isDeletingAccount ? "Deleting..." : "Delete Account"}
+              </span>
+              <span className="mt-0.5 block text-xs text-muted-foreground">
+                Permanently delete your account and related settings data.
+              </span>
+            </span>
+            <ChevronRight className="h-4 w-4 shrink-0 text-[#c0596a]/70" />
+          </button>
+        </div>
+      </section>
 
       <ConfirmationModal
         open={confirmSignOutOpen}
         onOpenChange={setConfirmSignOutOpen}
-        title="Sign Out?"
-        description="Are you sure you want to sign out? You will need to log in again to access your account."
+        title="Sign out of all devices?"
+        description="This will end every active session for your account, including the one on this browser."
         cancelText="Cancel"
         confirmText="Sign Out"
-        onConfirm={() => {
-          handleSignOut(); // Sign out
-          setConfirmSignOutOpen(false);
+        onConfirm={handleGlobalSignOut}
+        loading={isSigningOut}
+        confirmVariant="danger"
+      />
+
+      <ConfirmationModal
+        open={passwordChangedModalOpen}
+        onOpenChange={setPasswordChangedModalOpen}
+        title="Password Updated"
+        description="Your password has been changed successfully. Would you like to sign out of all active devices? This is recommended if you believe your account may have been accessed by someone else."
+        cancelText="Stay Signed In"
+        confirmText="Sign Out All Devices"
+        confirmVariant="primary"
+        loading={isSigningOut}
+        onConfirm={async () => {
+          setPasswordChangedModalOpen(false);
+          await handleGlobalSignOut();
         }}
+      />
+
+      <MFACodeModal
+        open={mfaCodeModalOpen}
+        onOpenChange={(open) => {
+          setMfaCodeModalOpen(open);
+          if (!open) {
+            setMfaCode("");
+            setMfaCodeError("");
+          }
+        }}
+        value={mfaCode}
+        onValueChange={setMfaCode}
+        onSubmit={handleMfaCodeSubmit}
+        loading={isVerifyingMfaCode}
+        error={mfaCodeError}
+        title="Verify Your Identity"
+        description="For security, enter the 6-digit code from your authenticator app before changing your password."
+        confirmText="Verify Code"
+        loadingText="Verifying..."
+        variant="primary"
+      />
+
+      <ConfirmationModal
+        open={deleteAccountModalOpen}
+        onOpenChange={setDeleteAccountModalOpen}
+        title="Delete account?"
+        description="This permanently removes your account and the data currently linked to it."
+        cancelText="Cancel"
+        confirmText="Delete Account"
+        onConfirm={handleDeleteAccount}
+        loading={isDeletingAccount}
+        confirmVariant="danger"
       />
     </div>
   );

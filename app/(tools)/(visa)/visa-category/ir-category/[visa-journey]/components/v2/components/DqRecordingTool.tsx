@@ -11,8 +11,6 @@ interface DqRecordingToolProps {
     setDqDate: (v: string) => void;
     dqCategory: string;
     setDqCategory: (v: string) => void;
-    dqPost: string;
-    setDqPost: (v: string) => void;
     dqCountry: string;
     setDqCountry: (v: string) => void;
   };
@@ -22,11 +20,7 @@ interface DqRecordingToolProps {
   guard?: () => boolean;
 }
 
-export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({
-  dqState,
-  actions,
-  guard,
-}) => {
+export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({ dqState, actions, guard }) => {
   const {
     dqSaved,
     setDqSaved,
@@ -34,8 +28,6 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({
     setDqDate,
     dqCategory,
     setDqCategory,
-    dqPost,
-    setDqPost,
     dqCountry,
     setDqCountry,
   } = dqState;
@@ -58,7 +50,7 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({
       <div className="relative bg-[#1a0a18] rounded-[16px] p-[22px_26px] mb-[18px] overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-[#b38600] via-[#f0d98a] to-transparent opacity-90" />
         <div className="text-[10px] font-bold tracking-widest uppercase text-white/40 mb-[5px]">
-          NVC — Documentary Qualification Received
+          NVC, Documentary Qualification Received
         </div>
         <div className="text-[22px] text-white/92 mb-[6px]">
           Your documents have been accepted by NVC
@@ -78,24 +70,9 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({
               onChange={(e) => setDqDate(e.target.value)}
               className="p-2.5 border rounded-lg"
             />
-            <select
-              value={dqCategory}
-              onChange={(e) => setDqCategory(e.target.value)}
-              className="p-2.5 border rounded-lg"
-            >
-              <option value="">Select Category</option>
-              <option value="IR-1">IR-1</option>
-              <option value="F2A">F2A</option>
-            </select>
-            <select
-              value={dqPost}
-              onChange={(e) => setDqPost(e.target.value)}
-              className="p-2.5 border rounded-lg"
-            >
-              <option value="">Select Post</option>
-              <option value="Islamabad">Islamabad</option>
-              <option value="Karachi">Karachi</option>
-            </select>
+            <div className="p-2.5 border rounded-lg bg-slate-50 text-slate-700 font-medium">
+              IR-1
+            </div>
           </div>
           <button
             onClick={async () => {
@@ -105,10 +82,8 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({
                 await actions.updateMetadata({
                   dqSaved: true,
                   dqDate,
-                  dqCategory,
-                  dqPost,
+                  dqCategory: "IR-1",
                   dqCountry,
-                  post: dqPost,
                 });
                 setDqSaved(true);
               } finally {
@@ -123,9 +98,7 @@ export const DqRecordingTool: React.FC<DqRecordingToolProps> = ({
         </div>
       ) : (
         <div className="bg-emerald-50 border border-emerald-200 p-4 rounded-xl mb-4 flex justify-between items-center">
-          <div className="font-bold text-emerald-800 text-xs">
-            ✓ DQ Recorded ({dqDate})
-          </div>
+          <div className="font-bold text-emerald-800 text-xs">✓ DQ Recorded ({dqDate})</div>
           <button
             onClick={() => {
               setIsSaving(false);

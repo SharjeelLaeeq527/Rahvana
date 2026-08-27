@@ -4,9 +4,7 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
-import WizardInfoPanel, {
-  InfoPanelData,
-} from "../../../components/guides/WizardInfoPanel";
+import WizardInfoPanel, { InfoPanelData } from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
 // import LocationStep from "../../../components/guides/steps/LocationStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
@@ -17,13 +15,14 @@ import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import guideData from "@/data/polio-guide-data.json";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
+import { PageGate } from "@/app/components/entitlements/PageGate";
 
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
 import { useGuideSave } from "@/lib/guides/useGuideSave";
 import { useGuideUpload } from "@/lib/guides/useGuideUpload";
 import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
-import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
+import { NavigationGuard } from "@/lib/guides/useNavigationGuard";
 
 const STEP_IDS: WizardStepId[] = [
   "document_need",
@@ -41,10 +40,7 @@ const STEP_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-const INFO_PANEL_KEYS: Record<
-  string,
-  keyof typeof guideData.wizard.info_panel
-> = {
+const INFO_PANEL_KEYS: Record<string, keyof typeof guideData.wizard.info_panel> = {
   document_need: "document_need",
   age_category: "document_need",
   birth_setting: "document_need",
@@ -56,8 +52,12 @@ const INFO_PANEL_KEYS: Record<
 
 const PolioVaccinationGuide = () => {
   const [currentStep, setCurrentStep] = useState(0);
+  const [highestReachedStep, setHighestReachedStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
-  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(
+    typeof window !== "undefined" &&
+      localStorage.getItem("dont_show_polio_vaccination_welcome") === "true"
+  );
   const [isSaved, setIsSaved] = useState(false);
   const [navigationHandled, setNavigationHandled] = useState(false);
   const [state, setState] = useState<WizardState>({
@@ -90,7 +90,7 @@ const PolioVaccinationGuide = () => {
       checkedDocuments: stepsData.roadmap || prev.checkedDocuments,
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
-    }),
+    })
   );
 
   const { uploadFile: uploadFileHook } = useGuideUpload();
@@ -111,14 +111,14 @@ const PolioVaccinationGuide = () => {
   const handleSubmitFeedback = async (
     feedbackType: string,
     description: string,
-    attachment?: File,
+    attachment?: File
   ) => {
     await submitFeedbackHook(
       "polio-vaccination-guide",
       currentStepId,
       feedbackType,
       description,
-      attachment,
+      attachment
     );
   };
 
@@ -159,29 +159,22 @@ const PolioVaccinationGuide = () => {
   };
 
   useEffect(() => {
+    setHighestReachedStep((prev) => Math.max(prev, currentStep));
+  }, [currentStep]);
+
+  useEffect(() => {
     if (session?.saved) {
       setIsSaved(true);
     }
   }, [session]);
 
-  useNavigationGuard(
-    hasProgress && !isSaved,
-    async () => {
-      await saveGuide("polio-vaccination-guide"); // wait save complete
-      setIsSaved(true); // mark as saved
-    },
-    navigationHandled,
-    setNavigationHandled,
-  );
+  // Navigation guard handled by NavigationGuard component in render
 
   // Before unload confirmation
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       // Show confirmation if user has made progress beyond the first step
-      if (
-        currentStep > 0 ||
-        (state.documentNeed && state.documentNeed !== "")
-      ) {
+      if (currentStep > 0 || (state.documentNeed && state.documentNeed !== "")) {
         e.preventDefault();
         e.returnValue = "";
         return "";
@@ -196,9 +189,7 @@ const PolioVaccinationGuide = () => {
 
   const currentStepId = STEP_IDS[currentStep];
   const infoPanelKey = INFO_PANEL_KEYS[currentStepId];
-  const infoPanelData = guideData.wizard.info_panel[
-    infoPanelKey
-  ] as unknown as InfoPanelData;
+  const infoPanelData = guideData.wizard.info_panel[infoPanelKey] as unknown as InfoPanelData;
 
   const canGoNext = (): boolean => {
     switch (currentStepId) {
@@ -226,8 +217,7 @@ const PolioVaccinationGuide = () => {
   };
 
   const goNext = () => {
-    if (currentStep < STEP_IDS.length - 1 && canGoNext())
-      setCurrentStep(currentStep + 1);
+    if (currentStep < STEP_IDS.length - 1 && canGoNext()) setCurrentStep(currentStep + 1);
   };
 
   const goBack = () => {
@@ -237,8 +227,7 @@ const PolioVaccinationGuide = () => {
   const handleDocumentNeedSelect = (id: string, questionId?: string) => {
     if (questionId) {
       const newDocumentNeed = {
-        ...(typeof state.documentNeed === "object" &&
-        state.documentNeed !== null
+        ...(typeof state.documentNeed === "object" && state.documentNeed !== null
           ? state.documentNeed
           : {}),
         [questionId]: id,
@@ -315,9 +304,7 @@ const PolioVaccinationGuide = () => {
         const docNeed = state.documentNeed as Record<string, string> | null;
         if (docNeed && docNeed.personType) {
           const person = docNeed.personType as "adult" | "child" | "foreigner";
-          roadmapData =
-            guideData.wizard.roadmaps[person] ||
-            guideData.wizard.roadmaps.adult;
+          roadmapData = guideData.wizard.roadmaps[person] || guideData.wizard.roadmaps.adult;
         }
 
         return (
@@ -361,11 +348,13 @@ const PolioVaccinationGuide = () => {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 pt-26">
-      <WizardHeader
-        onWhatsThis={() => setShowWhatsThis(true)}
-        title={guideData.wizard.title}
-      />
+    <PageGate
+      feature="polio_certificate"
+      title="Polio Vaccination Guide Locked"
+      description="Upgrade your plan to unlock step-by-step guidance on obtaining your Polio Vaccination Certificate."
+    >
+      <div className="min-h-screen flex flex-col bg-gray-50 pt-26">
+      <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
 
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
         <WizardSidebar
@@ -378,6 +367,7 @@ const PolioVaccinationGuide = () => {
           onGuideSaved={() => setIsSaved(true)}
           saving={saving}
           session={session}
+          highestReachedStep={highestReachedStep}
         />
 
         <main className="min-w-0 xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
@@ -414,7 +404,10 @@ const PolioVaccinationGuide = () => {
                     onClick={goBack}
                     className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
                   >
-                    <ArrowLeft className="w-4 h-4" /> Back
+                    <ArrowLeft className="w-4 h-4" /> 
+                    <span className="hidden md:inline-block">
+                      Back
+                    </span>
                   </motion.button>
                 ) : (
                   <div />
@@ -443,7 +436,10 @@ const PolioVaccinationGuide = () => {
                     }
                   `}
                     >
-                      Continue <ArrowRight className="w-4 h-4" />
+                      <span className="hidden md:inline-block">
+                        Continue
+                      </span>
+                      <ArrowRight className="w-4 h-4" />
                     </motion.button>
                   )}
               </div>
@@ -467,12 +463,22 @@ const PolioVaccinationGuide = () => {
         onDontShowAgainChange={setDontShowAgain}
         variant="polio-vaccination"
       />
+      <NavigationGuard
+        shouldBlock={hasProgress && !isSaved}
+        onSave={async () => {
+          await saveGuide("polio-vaccination-guide");
+          setIsSaved(true);
+        }}
+        navigationHandled={navigationHandled}
+        setNavigationHandled={setNavigationHandled}
+      />
       <FeedbackButton
         steps={Object.values(STEP_LABELS)}
         currentStepName={STEP_LABELS[currentStepId] || ""}
         onSubmit={handleSubmitFeedback}
       />
-    </div>
+      </div>
+    </PageGate>
   );
 };
 

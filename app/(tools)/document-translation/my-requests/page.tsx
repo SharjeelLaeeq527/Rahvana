@@ -19,6 +19,7 @@ import { Loader } from "@/components/ui/spinner";
 import { DataTable, Column } from "@/app/components/shared/table/DataTable";
 import { FilterPanel, FilterField } from "@/app/components/shared/FilterPanel";
 import ActionMenu from "@/app/components/shared/ActionMenu";
+import { PageGate } from "@/app/components/entitlements/PageGate";
 
 type TranslationStatus =
   | "PENDING"
@@ -36,13 +37,7 @@ interface Requests {
   version: number;
 }
 
-const StatusBadge = ({
-  status,
-  version,
-}: {
-  status: TranslationStatus;
-  version: number;
-}) => {
+const StatusBadge = ({ status, version }: { status: TranslationStatus; version: number }) => {
   const { t } = useLanguage();
 
   const statusConfig: Record<
@@ -84,8 +79,7 @@ const StatusBadge = ({
   const config = statusConfig[status];
   const Icon = config.icon;
 
-  const displayLabel =
-    status === "TRANSLATED" ? `Proof_V${version}` : config.label;
+  const displayLabel = status === "TRANSLATED" ? `Proof_V${version}` : config.label;
 
   return (
     <span
@@ -139,7 +133,7 @@ export default function MyTranslationRequests() {
   const getDateRange = (filterValue: string): { start: Date; end: Date } | null => {
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
+
     switch (filterValue) {
       case "today":
         return { start: today, end: new Date(today.getTime() + 24 * 60 * 60 * 1000) };
@@ -164,10 +158,7 @@ export default function MyTranslationRequests() {
 
   // Filter requests based on active filters
   const filteredRequests = requests.filter((request) => {
-    if (
-      filters.document_type !== "all" &&
-      request.document_type !== filters.document_type
-    ) {
+    if (filters.document_type !== "all" && request.document_type !== filters.document_type) {
       return false;
     }
     if (filters.status !== "all" && request.status !== filters.status) {
@@ -288,114 +279,118 @@ export default function MyTranslationRequests() {
       className: "text-right",
       render: (request: Requests) => (
         <ActionMenu
-          onView={() =>
-            (window.location.href = `/document-translation/request/${request.id}`)
-          }
+          onView={() => (window.location.href = `/document-translation/request/${request.id}`)}
         />
       ),
     },
   ];
 
   return (
-    <div className="min-h-[50vh] bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-px site-main-py">
-      <div className="">
-        <header className="mb-8 md:mb-10">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary/90">
-            {t("documentTranslation.myRequestsPage.title")}
-          </h1>
-          <p className="mt-2 text-sm sm:text-base text-gray-600">
-            {t("documentTranslation.myRequestsPage.subtitle")}
-          </p>
-        </header>
+    <PageGate
+      feature="document_translation"
+      title="My Requests Locked"
+      description="Upgrade your plan to view your submitted translation requests, track review statuses, and download your translated/certified PDF documents."
+    >
+      <div className="min-h-[50vh] bg-linear-to-br from-slate-50 to-slate-100 text-gray-800 site-main-px site-main-py mt-[55px]">
+        <div className="">
+          <header className="mb-8 md:mb-10">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-primary/90">
+              {t("documentTranslation.myRequestsPage.title")}
+            </h1>
+            <p className="mt-2 text-sm sm:text-base text-gray-600">
+              {t("documentTranslation.myRequestsPage.subtitle")}
+            </p>
+          </header>
 
-        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
-          <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
-            {t("documentTranslation.myRequestsPage.allRequests")}
-          </h2>
-          <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
-            {requests.length > 0 && (
-              <FilterPanel
-                fields={filterFields}
-                onFilterChange={(newFilters: Record<string, string>) => {
-                  setFilters(newFilters);
-                  setCurrentPage(1);
-                }}
-                itemCount={currentRequests.length}
-                totalCount={filteredRequests.length}
-              />
-            )}
-            <Button
-              onClick={() => (window.location.href = "/document-translation")}
-              className="bg-primary hover:bg-primary/90 cursor-pointer w-full sm:w-auto"
-            >
-              <Upload className="w-4 h-4 mr-2" />
-              {t("documentTranslation.myRequestsPage.uploadNewBtn")}
-            </Button>
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-8">
+            <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+              {t("documentTranslation.myRequestsPage.allRequests")}
+            </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full sm:w-auto">
+              {requests.length > 0 && (
+                <FilterPanel
+                  fields={filterFields}
+                  onFilterChange={(newFilters: Record<string, string>) => {
+                    setFilters(newFilters);
+                    setCurrentPage(1);
+                  }}
+                  itemCount={currentRequests.length}
+                  totalCount={filteredRequests.length}
+                />
+              )}
+              <Button
+                onClick={() => (window.location.href = "/document-translation")}
+                className="bg-primary hover:bg-primary/90 cursor-pointer w-full sm:w-auto"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                {t("documentTranslation.myRequestsPage.uploadNewBtn")}
+              </Button>
+            </div>
           </div>
-        </div>
 
-        {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <Loader size="md" text="Loading translation requests..." />
-          </div>
-        ) : (
-          <>
-            {requests.length === 0 ? (
-              <div className="bg-white rounded-xl shadow-md overflow-hidden text-center py-10 px-4 sm:py-12">
-                <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1">
-                  {t("documentTranslation.myRequestsPage.noRequestsTitle")}
-                </h3>
-                <p className="text-sm text-gray-500">
-                  {t("documentTranslation.myRequestsPage.noRequestsDesc")}
-                </p>
-                <div className="mt-6">
-                  <Button
-                    onClick={() =>
-                      (window.location.href = "/document-translation")
-                    }
-                    className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
-                  >
-                    <Upload className="w-4 h-4 mr-2" />
-                    {t("documentTranslation.myRequestsPage.uploadFirstBtn")}
-                  </Button>
+          {loading ? (
+            <div className="flex justify-center items-center h-64">
+              <Loader size="md" text="Loading translation requests..." />
+            </div>
+          ) : (
+            <>
+              {requests.length === 0 ? (
+                <div className="bg-white rounded-xl shadow-md overflow-hidden text-center py-10 px-4 sm:py-12">
+                  <FileText className="w-10 h-10 sm:w-12 sm:h-12 text-gray-300 mx-auto mb-4" />
+                  <h3 className="text-base sm:text-lg font-medium text-gray-900 mb-1">
+                    {t("documentTranslation.myRequestsPage.noRequestsTitle")}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {t("documentTranslation.myRequestsPage.noRequestsDesc")}
+                  </p>
+                  <div className="mt-6">
+                    <Button
+                      onClick={() =>
+                        (window.location.href = "/document-translation")
+                      }
+                      className="bg-primary hover:bg-primary/90 w-full sm:w-auto"
+                    >
+                      <Upload className="w-4 h-4 mr-2" />
+                      {t("documentTranslation.myRequestsPage.uploadFirstBtn")}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="bg-white rounded-xl shadow-md overflow-visible border border-slate-100">
-                  <DataTable<Requests>
-                    columns={columns}
-                    data={currentRequests}
-                    rowKey={(item: Requests) => item.id}
-                    loading={false}
-                    emptyState={
-                      <div className="text-center py-10 px-4">
-                        <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
-                        <p className="text-sm text-gray-500">
-                          {t("documentTranslation.myRequestsPage.noResults")}
-                        </p>
+              ) : (
+                <div className="space-y-4">
+                  <div className="bg-white rounded-xl shadow-md overflow-visible border border-slate-100">
+                    <DataTable<Requests>
+                      columns={columns}
+                      data={currentRequests}
+                      rowKey={(item: Requests) => item.id}
+                      loading={false}
+                      emptyState={
+                        <div className="text-center py-10 px-4">
+                          <FileText className="w-10 h-10 text-gray-300 mx-auto mb-3" />
+                          <p className="text-sm text-gray-500">
+                            {t("documentTranslation.myRequestsPage.noResults")}
+                          </p>
+                        </div>
+                      }
+                    />
+
+                    {/* Pagination - only show if there are filtered requests and multiple pages */}
+                    {filteredRequests.length > 0 && totalPages > 1 && (
+                      <div className="w-full flex justify-center py-4 overflow-x-auto border-t border-slate-100">
+                        <Pagination
+                          currentPage={currentPage}
+                          totalItems={filteredRequests.length}
+                          itemsPerPage={ITEMS_PER_PAGE}
+                          onPageChange={setCurrentPage}
+                        />
                       </div>
-                    }
-                  />
-
-                  {/* Pagination - only show if there are filtered requests and multiple pages */}
-                  {filteredRequests.length > 0 && totalPages > 1 && (
-                    <div className="w-full flex justify-center py-4 overflow-x-auto border-t border-slate-100">
-                      <Pagination
-                        currentPage={currentPage}
-                        totalItems={filteredRequests.length}
-                        itemsPerPage={ITEMS_PER_PAGE}
-                        onPageChange={setCurrentPage}
-                      />
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              </div>
-            )}
-          </>
-        )}
+              )}
+            </>
+          )}
+        </div>
       </div>
-    </div>
+    </PageGate>
   );
 }

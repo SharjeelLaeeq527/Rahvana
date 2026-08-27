@@ -74,7 +74,7 @@ function formatDocList(items: string[], filterFn: (key: string) => boolean): str
  */
 export function classifySituation(
   formData: FormData,
-  parsedItems: string[] = [],
+  parsedItems: string[] = []
 ): ClassificationResult[] {
   const ceac = formData.ceacStatus?.toLowerCase() ?? "";
   const results: ClassificationResult[] = [];
@@ -84,7 +84,7 @@ export function classifySituation(
     results.push({
       scenarioCode: "DOCS_SUBMITTED_WAITING_UPDATE",
       confidence: "high",
-      description: "Documents Submitted – Waiting for Update",
+      description: "Documents Submitted, Waiting for Update",
       nextSteps: [
         "Wait for CEAC status update",
         "Monitor status regularly but avoid excessive checking",
@@ -99,15 +99,11 @@ export function classifySituation(
     parsedItems.length === 0 ||
     (parsedItems.length === 1 && parsedItems[0] === "admin_processing")
   ) {
-    if (
-      ceac.includes("administrative") ||
-      parsedItems.includes("admin_processing")
-    ) {
+    if (ceac.includes("administrative") || parsedItems.includes("admin_processing")) {
       results.push({
         scenarioCode: "AP_ONLY_NO_DOCS",
         confidence: "high",
-        description:
-          "Administrative Processing Only – No Additional Documents Requested",
+        description: "Administrative Processing Only, No Additional Documents Requested",
         nextSteps: [
           "Wait for processing to complete",
           "Monitor CEAC status regularly",
@@ -126,7 +122,7 @@ export function classifySituation(
       r.includes("w2") ||
       r.includes("irs") ||
       r.includes("proof_citizenship") ||
-      r.includes("domicile"),
+      r.includes("domicile")
   );
   if (financialDocs.length > 0) {
     const isCourier = parsedItems.includes("i864_courier");
@@ -142,13 +138,23 @@ export function classifySituation(
     }
 
     const docString = formatDocList(parsedItems, (r) =>
-      ["i864_affidavit", "tax_1040", "w2", "irs_transcript", "proof_citizenship", "domicile", "i864a", "i134", "i864w"].includes(r)
+      [
+        "i864_affidavit",
+        "tax_1040",
+        "w2",
+        "irs_transcript",
+        "proof_citizenship",
+        "domicile",
+        "i864a",
+        "i134",
+        "i864w",
+      ].includes(r)
     );
 
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_FINANCIAL",
       confidence: "high",
-      description: "221(g) – Financial Documents Requested",
+      description: "221(g), Financial Documents Requested",
       nextSteps: [
         `Gather requested financial documents: ${docString || "I-864"}`,
         `Submit complete packet ${methodText}`,
@@ -160,20 +166,19 @@ export function classifySituation(
   // Civil documents (NADRA, birth, marriage, nikah)
   const civilDocs = parsedItems.filter(
     (r) =>
-      r.includes("nadra") ||
-      r.includes("birth") ||
-      r.includes("marriage") ||
-      r.includes("nikah"),
+      r.includes("nadra") || r.includes("birth") || r.includes("marriage") || r.includes("nikah")
   );
   if (civilDocs.length > 0) {
-    const docString = formatDocList(parsedItems, (r) =>
-      r.includes("nadra") || r.includes("birth") || r.includes("marriage") || r.includes("nikah")
+    const docString = formatDocList(
+      parsedItems,
+      (r) =>
+        r.includes("nadra") || r.includes("birth") || r.includes("marriage") || r.includes("nikah")
     );
 
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_CIVIL",
       confidence: "high",
-      description: "221(g) – Civil Documents Requested",
+      description: "221(g), Civil Documents Requested",
       nextSteps: [
         `Gather requested civil documents: ${docString}`,
         "Submit complete packet via courier as instructed",
@@ -184,18 +189,18 @@ export function classifySituation(
 
   // Legal & Court documents (divorce, police, death)
   const legalDocs = parsedItems.filter(
-    (r) =>
-      r.includes("divorce") || r.includes("police") || r.includes("death"),
+    (r) => r.includes("divorce") || r.includes("police") || r.includes("death")
   );
   if (legalDocs.length > 0) {
-    const docString = formatDocList(parsedItems, (r) =>
-      r.includes("divorce") || r.includes("police") || r.includes("death")
+    const docString = formatDocList(
+      parsedItems,
+      (r) => r.includes("divorce") || r.includes("police") || r.includes("death")
     );
 
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_LEGAL",
       confidence: "high",
-      description: "221(g) – Legal/Court Documents Requested",
+      description: "221(g), Legal/Court Documents Requested",
       nextSteps: [
         `Secure requested legal documents: ${docString}`,
         "Review reciprocity schedules to ensure correct issuing authority",
@@ -209,7 +214,7 @@ export function classifySituation(
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_MEDICAL",
       confidence: "high",
-      description: "221(g) – Medical Examination Required",
+      description: "221(g), Medical Examination Required",
       nextSteps: [
         "Contact the designated panel physician to complete the medical examination",
         "Follow their instructions for any corrections or re-examinations",
@@ -224,7 +229,7 @@ export function classifySituation(
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_TRANSLATION",
       confidence: "high",
-      description: "221(g) – Document Translations Required",
+      description: "221(g), Document Translations Required",
       nextSteps: [
         "Obtain certified English translations for the requested documents",
         "Ensure translations are by qualified translators",
@@ -239,7 +244,7 @@ export function classifySituation(
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_OTHER",
       confidence: "high",
-      description: "221(g) – DNA Test Recommended",
+      description: "221(g), DNA Test Recommended",
       nextSteps: [
         "Contact the embassy for a list of approved DNA testing facilities",
         "Schedule and complete the DNA test as instructed",
@@ -254,7 +259,7 @@ export function classifySituation(
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_OTHER",
       confidence: "high",
-      description: "221(g) – Passport Required",
+      description: "221(g), Passport Required",
       nextSteps: [
         "Submit your passport via courier to the address on your 221(g) letter",
         "Keep the tracking number for your submission",
@@ -265,14 +270,11 @@ export function classifySituation(
   }
 
   // Other / generic
-  if (
-    parsedItems.includes("other") ||
-    (parsedItems.length > 0 && results.length === 0)
-  ) {
+  if (parsedItems.includes("other") || (parsedItems.length > 0 && results.length === 0)) {
     results.push({
       scenarioCode: "221G_DOCS_REQUESTED_OTHER",
       confidence: "medium",
-      description: "221(g) – Documents Requested",
+      description: "221(g), Documents Requested",
       nextSteps: [
         "Carefully review your 221(g) letter for exact requirements",
         "Gather all requested documents",
@@ -299,9 +301,7 @@ export function classifySituation(
 
   // Filter out duplicates (specifically DOCS_REQUESTED_OTHER can overlap with itself if user ticked multiple custom things)
   const uniqueResults = Array.from(
-    new Map(
-      results.map((item) => [item.scenarioCode + "|" + item.description, item]),
-    ).values(),
+    new Map(results.map((item) => [item.scenarioCode + "|" + item.description, item])).values()
   );
   return uniqueResults;
 }

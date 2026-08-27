@@ -1,4 +1,3 @@
-
 "use client";
 
 import React from "react";
@@ -16,17 +15,20 @@ import {
   Languages,
   ShieldCheck,
   Clock,
+  Star,
 } from "lucide-react";
 import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
 
 import TranslationQueueTable from "./components/translation-queue/TranslationQueueTable";
+import { AdminNotificationBell } from "@/lib/AdminNotificationBell";
 import PoliceVerificationTable from "./components/police-verifications/PoliceVerificationTable";
 import BookAppointmentTable from "./components/book-appointment/BookAppointmentTable";
 import ConsultationRequestsTable from "./components/consultation-requests/ConsultationRequestsTable";
 import AvailabilityGrid from "./components/consultation-requests/AvailabilityGrid";
 import VisaCasesTable from "./components/visa-cases/VisaCasesTable";
 import CollapsibleSection from "./components/CollapsibleSection";
+import ReviewsTable from "./components/reviews/ReviewsTable";
 import { FeatureAnnouncementModal } from "./components/feature-announcement/FeatureAnnouncementModal";
 
 export default function AdminPanel() {
@@ -74,9 +76,7 @@ export default function AdminPanel() {
             <p className="text-muted-foreground mb-4">
               You do not have permission to access the admin panel.
             </p>
-            <Button onClick={() => router.push("/admin-login")}>
-              Go to Admin Login
-            </Button>
+            <Button onClick={() => router.push("/admin-login")}>Go to Admin Login</Button>
           </CardContent>
         </Card>
       </div>
@@ -90,9 +90,7 @@ export default function AdminPanel() {
         <div className="site-main-px site-main-py">
           <div className="flex justify-between h-16">
             <div className="flex items-center">
-              <h1 className="text-xl font-bold text-foreground">
-                Admin Dashboard
-              </h1>
+              <h1 className="text-xl font-bold text-foreground">Admin Dashboard</h1>
             </div>
             <div className="flex items-center space-x-4">
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-100 text-blue-800 rounded-full text-xs font-medium">
@@ -104,9 +102,7 @@ export default function AdminPanel() {
                   timeZoneName: "short",
                 })}
               </span>
-              <span className="text-sm text-muted-foreground">
-                Admin: {user?.email}
-              </span>
+              <span className="text-sm text-muted-foreground">Admin: {user?.email}</span>
               <Link
                 href="/admin/dashboard"
                 className="text-white bg-teal-600 hover:bg-teal-700 rounded-lg px-3 py-1.5 text-sm font-medium transition-colors flex items-center gap-1.5"
@@ -128,6 +124,7 @@ export default function AdminPanel() {
               >
                 Logout
               </Button>
+              <AdminNotificationBell adminUserId={user.id} />
             </div>
           </div>
         </div>
@@ -161,15 +158,15 @@ export default function AdminPanel() {
             description="Manage consultation bookings and appointment availability"
           >
             <div className="space-y-6">
-              <div>
+              {/* <div>
                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
                   <Clock className="h-4 w-4 text-muted-foreground" />
                   Availability Schedule
                 </h3>
                 <AvailabilityGrid />
-              </div>
+              </div> */}
               <div>
-                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 pt-4">
                   <Calendar className="h-4 w-4 text-muted-foreground" />
                   Booked Appointments
                 </h3>
@@ -184,7 +181,16 @@ export default function AdminPanel() {
             icon={<MessageSquare className="h-5 w-5" />}
             description="Review and manage user consultation requests"
           >
-            <ConsultationRequestsTable />
+            <div className="space-y-6">
+              <div className="mt-4">
+                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  Availability Schedule
+                </h3>
+                <AvailabilityGrid />
+              </div>
+              <ConsultationRequestsTable />
+            </div>
           </CollapsibleSection>
 
           {/* Section 4: Translation Queue */}
@@ -205,10 +211,18 @@ export default function AdminPanel() {
             <PoliceVerificationTable />
           </CollapsibleSection>
 
-          <FeatureAnnouncementModal
-            open={openFeatureModal}
-            onOpenChange={setOpenFeatureModal}
-          />
+          {/* Section 6: Tool Reviews */}
+          <CollapsibleSection
+            title="Tool Reviews"
+            icon={<Star className="h-5 w-5" />}
+            description="Approve, reject, or remove user-submitted reviews for individual tools"
+            badge="MODERATION"
+            badgeColor="bg-amber-100 text-amber-800"
+          >
+            <ReviewsTable />
+          </CollapsibleSection>
+
+          <FeatureAnnouncementModal open={openFeatureModal} onOpenChange={setOpenFeatureModal} />
         </div>
       </main>
     </div>

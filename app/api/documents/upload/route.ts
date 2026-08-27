@@ -8,29 +8,23 @@ import { createClient } from "@/lib/supabase/server";
 import {
   generateStandardizedFilename,
   isValidFileType,
-  isValidFileSize,
   getFileExtension,
 } from "@/lib/document-vault/file-utils";
-import {
-  generateDocumentId,
-  getNextVersionNumber,
-} from "@/lib/document-vault/storage-client";
+import { generateDocumentId, getNextVersionNumber } from "@/lib/document-vault/storage-client";
 import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
 import { calculateExpirationDate } from "@/lib/document-vault/expiration-tracker";
 import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
-import {
-  UploadedDocument,
-  DocumentRole,
-  DocumentCategory,
-} from "@/lib/document-vault/types";
+import { UploadedDocument, DocumentRole, DocumentCategory } from "@/lib/document-vault/types";
 import { createClient as createClientJs } from "@supabase/supabase-js";
 import { encryptFile } from "@/lib/document-vault/file-encryption";
+import { assertRequestBodySize } from "@/lib/security/request-body";
+import { validateUploadedFile } from "@/lib/security/file-content";
+import { UPLOAD_PROFILES } from "@/lib/security/upload-limits";
 
 // NVC/USCIS file size limit (4MB)
 const NVC_FILE_SIZE_LIMIT = 4 * 1024 * 1024;
 // Python backend URL for PDF compression
-const COMPRESSION_API_URL =
-  process.env.COMPRESSION_API_URL ?? "http://localhost:8000/api/v1";
+const COMPRESSION_API_URL = process.env.COMPRESSION_API_URL ?? "http://localhost:8000/api/v1";
 
 /**
  * Get Supabase client with SERVICE ROLE key (bypasses RLS)
@@ -53,19 +47,17 @@ async function uploadToStorage(
   fileName: string,
   mimeType: string,
   userId: string,
-  documentId: string,
+  documentId: string
 ): Promise<{ success: boolean; storagePath?: string; error?: string }> {
   try {
     const supabase = getStorageSupabase();
     const bucketName = "document-vault";
     const storagePath = `${userId}/${documentId}/${fileName}`;
 
-    const { error } = await supabase.storage
-      .from(bucketName)
-      .upload(storagePath, buffer, {
-        contentType: mimeType,
-        upsert: false,
-      });
+    const { error } = await supabase.storage.from(bucketName).upload(storagePath, buffer, {
+      contentType: mimeType,
+      upsert: false,
+    });
 
     if (error) {
       return { success: false, error: error.message };
@@ -85,7 +77,7 @@ async function uploadToStorage(
  */
 async function compressPdf(
   buffer: Buffer,
-  filename: string,
+  filename: string
 ): Promise<{ success: boolean; buffer?: Buffer; error?: string }> {
   try {
     const formData = new FormData();
@@ -100,9 +92,7 @@ async function compressPdf(
     });
 
     if (!response.ok) {
-      const errorData = await response
-        .json()
-        .catch(() => ({ detail: "Compression failed" }));
+      const errorData = await response.json().catch(() => ({ detail: "Compression failed" }));
       return {
         success: false,
         error: errorData.detail || "Compression failed",
@@ -142,45 +132,90 @@ export async function POST(request: NextRequest) {
     const role = formData.get("role") as DocumentRole;
     const personName = formData.get("personName") as string;
     const caseId = formData.get("caseId") as string | undefined;
-    const expirationDateStr = formData.get("expirationDate") as
-      | string
-      | undefined;
+    const expirationDateStr = formData.get("expirationDate") as string | undefined;
     const notes = formData.get("notes") as string | undefined;
+    const journeyId = formData.get("journeyId") as string | undefined;
+    const shareWithJourneyIdsStr = formData.get("shareWithJourneyIds") as string | undefined;
+
+    let shareWithJourneyIds: string[] = [];
+    if (shareWithJourneyIdsStr) {
+      try {
+        const tooLarge = assertRequestBodySize(request);
+        if (tooLarge) return tooLarge;
+
+        shareWithJourneyIds = JSON.parse(shareWithJourneyIdsStr);
+      } catch (e) {
+        console.error("Failed to parse shareWithJourneyIds:", e);
+      }
+    }
 
     // Validate required fields
     if (!file || !documentDefId || !role || !personName) {
-      return NextResponse.json(
-        { error: "Missing required fields" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Validate file type
+    // Fast reject on declared MIME/extension (keep — cheap first pass)
     const fileTypeValidation = isValidFileType(file.name, file.type);
     if (!fileTypeValidation.valid) {
-      return NextResponse.json(
-        { error: fileTypeValidation.message },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: fileTypeValidation.message }, { status: 400 });
     }
 
-    // Validate file size (10MB limit)
-    const fileSizeValidation = isValidFileSize(file.size, 10);
-    if (!fileSizeValidation.valid) {
-      return NextResponse.json(
-        { error: fileSizeValidation.message },
-        { status: 400 },
-      );
+    // Magic-byte validation (authoritative)
+    const checked = await validateUploadedFile(file, UPLOAD_PROFILES.vault);
+    if (!checked.ok) {
+      return NextResponse.json({ error: checked.error }, { status: checked.status });
     }
 
     // Find document definition
     let documentDef = ALL_DOCUMENTS.find((d) => d.id === documentDefId);
 
+    // If not found in static list, check if it's a dynamic sponsor/household member definition
+    if (!documentDef) {
+      const baseIds = [
+        "joint-i864",
+        "joint-tax-returns",
+        "joint-w2",
+        "joint-employment-letter",
+        "joint-pay-stubs",
+        "joint-assets",
+        "joint-citizenship-proof",
+        "i-864a-contract",
+        "household-member-income",
+        "household-member-residence",
+        "hh-marriage",
+        "hh-id",
+        "hh-birth",
+        "hh-family-link",
+      ];
+      for (const baseId of baseIds) {
+        if (documentDefId.startsWith(baseId)) {
+          const baseDoc = ALL_DOCUMENTS.find((d) => d.id === baseId);
+          if (baseDoc) {
+            let customName = baseDoc.name;
+            if (documentDefId.includes("-joint-sponsor-")) {
+              const match = documentDefId.match(/-joint-sponsor-(\d+)/);
+              const index = match ? match[1] : "1";
+              customName = `${baseDoc.name} Joint Sponsor ${index}`;
+            } else if (documentDefId.includes("-household-member-")) {
+              const match = documentDefId.match(/-household-member-(\d+)/);
+              const index = match ? match[1] : "1";
+              customName = `${baseDoc.name} Household Member ${index}`;
+            }
+            documentDef = {
+              ...baseDoc,
+              id: documentDefId,
+              name: customName,
+            };
+            break;
+          }
+        }
+      }
+    }
+
     // If not found in static list, check if it's a dynamic definition
     if (!documentDef && documentDefId.startsWith("dynamic-")) {
       const dynamicName = formData.get("dynamicName") as string;
-      const dynamicCategory =
-        (formData.get("dynamicCategory") as DocumentCategory) || "MISC";
+      const dynamicCategory = (formData.get("dynamicCategory") as DocumentCategory) || "MISC";
 
       if (dynamicName) {
         // Create a synthetic definition for dynamic slots
@@ -200,27 +235,24 @@ export async function POST(request: NextRequest) {
     }
 
     if (!documentDef) {
-      return NextResponse.json(
-        { error: "Invalid document definition" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid document definition" }, { status: 400 });
     }
 
-    // Get existing documents for this definition
+    // Get existing documents for this definition in this journey
     const dbStorage = new DocumentDatabaseStorage(supabase);
     let existingDocs = await dbStorage.getDocumentsByDefId(
       documentDefId,
       user.id,
+      journeyId || undefined
     );
 
     // Safety check for rapid sequential uploads
     // If the specific query missed a very recent upload, fallback to global list
     if (existingDocs.length === 0) {
-      const allDocs = await dbStorage.getAllDocuments(user.id);
+      const allDocs = await dbStorage.getAllDocuments(user.id, journeyId || undefined);
       const recentDocs = allDocs.filter(
         (d) =>
-          d.documentDefId === documentDefId &&
-          Date.now() - new Date(d.uploadedAt).getTime() < 10000,
+          d.documentDefId === documentDefId && Date.now() - new Date(d.uploadedAt).getTime() < 10000
       );
       if (recentDocs.length > 0) {
         existingDocs = recentDocs;
@@ -236,14 +268,10 @@ export async function POST(request: NextRequest) {
       : null;
 
     if (documentDefId.startsWith("dynamic-") && currentTypeMatch) {
-      const allDocs = await dbStorage.getAllDocuments(user.id);
+      const allDocs = await dbStorage.getAllDocuments(user.id, journeyId || undefined);
       const docsWithSameType = allDocs.filter((d) => {
         if (!d.notes || !d.notes.startsWith("Type: ")) return false;
-        const typeLabel = d.notes
-          .split("\n")[0]
-          .replace("Type: ", "")
-          .trim()
-          .toLowerCase();
+        const typeLabel = d.notes.split("\n")[0].replace("Type: ", "").trim().toLowerCase();
         return typeLabel === currentTypeMatch;
       });
 
@@ -271,7 +299,7 @@ export async function POST(request: NextRequest) {
 
     // Generate document ID
     const documentId = generateDocumentId();
-    const rawBuffer = Buffer.from(await file.arrayBuffer());
+    const rawBuffer = checked.buffer;
 
     // ─── ENCRYPT FILE BEFORE UPLOAD ───────────────────────────────────────────
     // File is encrypted with AES-256-GCM using a per-user key derived from
@@ -296,13 +324,13 @@ export async function POST(request: NextRequest) {
       originalFilename,
       "application/octet-stream", // always store as binary blob
       user.id,
-      documentId,
+      documentId
     );
 
     if (!uploadResult.success) {
       return NextResponse.json(
         { error: uploadResult.error || "Failed to upload file" },
-        { status: 500 },
+        { status: 500 }
       );
     }
 
@@ -315,7 +343,7 @@ export async function POST(request: NextRequest) {
 
     if (needsCompression) {
       console.log(
-        `File ${file.name} is ${(rawBuffer.length / 1024 / 1024).toFixed(2)}MB - auto-compressing...`,
+        `File ${file.name} is ${(rawBuffer.length / 1024 / 1024).toFixed(2)}MB - auto-compressing...`
       );
 
       const compressionResult = await compressPdf(rawBuffer, file.name);
@@ -327,10 +355,7 @@ export async function POST(request: NextRequest) {
           compressedFilename = standardizedFilename;
 
           // Encrypt the compressed buffer before uploading
-          const encryptedCompressedBuffer = encryptFile(
-            compressionResult.buffer,
-            user.id,
-          );
+          const encryptedCompressedBuffer = encryptFile(compressionResult.buffer, user.id);
 
           // Upload encrypted-compressed file to Supabase Storage
           const compressedUploadResult = await uploadToStorage(
@@ -338,7 +363,7 @@ export async function POST(request: NextRequest) {
             compressedFilename,
             "application/octet-stream", // store as binary blob
             user.id,
-            documentId,
+            documentId
           );
 
           if (compressedUploadResult.success) {
@@ -347,7 +372,7 @@ export async function POST(request: NextRequest) {
             compressedStoragePath = compressedUploadResult.storagePath;
 
             console.log(
-              `Compression + Encryption successful: ${(rawBuffer.length / 1024 / 1024).toFixed(2)}MB -> ${(rawCompressedSize / 1024 / 1024).toFixed(2)}MB (then encrypted)`,
+              `Compression + Encryption successful: ${(rawBuffer.length / 1024 / 1024).toFixed(2)}MB -> ${(rawCompressedSize / 1024 / 1024).toFixed(2)}MB (then encrypted)`
             );
           }
         }
@@ -384,10 +409,40 @@ export async function POST(request: NextRequest) {
       isRead: false,
       status: "UPLOADED",
       notes,
+      journeyId: journeyId || null,
     };
 
     // Save document metadata to database
     const savedDocument = await dbStorage.saveDocument(uploadedDocument);
+
+    // Save duplicates for each shared journey (cross-sharing without files duplication)
+    if (shareWithJourneyIds && shareWithJourneyIds.length > 0) {
+      for (const sharedJourneyId of shareWithJourneyIds) {
+        try {
+          // Calculate version for this definition in the target shared journey
+          const sharedExisting = await dbStorage.getDocumentsByDefId(
+            documentDefId,
+            user.id,
+            sharedJourneyId
+          );
+          const sharedVersion = getNextVersionNumber(sharedExisting);
+
+          const sharedDocId = generateDocumentId();
+          const sharedDocument: UploadedDocument = {
+            ...uploadedDocument,
+            id: sharedDocId,
+            version: sharedVersion,
+            journeyId: sharedJourneyId,
+            isRead: false,
+            status: "UPLOADED", // shared doc starts as fresh upload
+          };
+          await dbStorage.saveDocument(sharedDocument);
+          console.log(`Document cross-shared to journey ${sharedJourneyId} successfully.`);
+        } catch (shareErr) {
+          console.error(`Failed to cross-share document to journey ${sharedJourneyId}:`, shareErr);
+        }
+      }
+    }
 
     return NextResponse.json({
       success: true,
@@ -396,9 +451,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Upload error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

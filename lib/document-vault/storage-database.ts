@@ -1,8 +1,8 @@
 // Server-side Database Storage Manager for Document Vault
 // Handles document metadata storage in Supabase (SERVER-SIDE ONLY)
 
-import { SupabaseClient } from '@supabase/supabase-js';
-import { UploadedDocument, DocumentVaultConfig, DocumentRole, VisaCategory } from './types';
+import { SupabaseClient } from "@supabase/supabase-js";
+import { UploadedDocument, DocumentVaultConfig, DocumentRole, VisaCategory } from "./types";
 
 /**
  * Server-side database storage manager
@@ -13,21 +13,26 @@ export class DocumentDatabaseStorage {
   constructor(private supabase: SupabaseClient) {}
 
   /**
-   * Gets all documents for a user
+   * Gets all documents for a user, optionally filtered by journey ID
    */
-  async getAllDocuments(userId: string): Promise<UploadedDocument[]> {
-    const { data, error } = await this.supabase
-      .from('documents')
-      .select('*')
-      .eq('user_id', userId)
-      .order('uploaded_at', { ascending: false });
+  async getAllDocuments(userId: string, journeyId?: string): Promise<UploadedDocument[]> {
+    let query = this.supabase
+      .from("documents")
+      .select("*")
+      .eq("user_id", userId);
+
+    if (journeyId) {
+      query = query.eq("journey_id", journeyId);
+    }
+
+    const { data, error } = await query.order("uploaded_at", { ascending: false });
 
     if (error) {
-      console.error('Error fetching documents:', error);
+      console.error("Error fetching documents:", error);
       throw error;
     }
 
-    return (data || []).map(this.mapDatabaseToDocument);
+    return (data || []).map((row) => this.mapDatabaseToDocument(row));
   }
 
   /**
@@ -39,14 +44,14 @@ export class DocumentDatabaseStorage {
 
     // First try with all columns
     let { data, error } = await this.supabase
-      .from('documents')
+      .from("documents")
       .upsert(dbDocument)
       .select()
       .single();
 
     // If error mentions unknown column, retry without compressed columns
-    if (error && error.message && error.message.includes('compressed')) {
-      console.warn('Compressed columns not in database, saving without them...');
+    if (error && error.message && error.message.includes("compressed")) {
+      console.warn("Compressed columns not in database, saving without them...");
       const {
         has_compressed_version: _hasCompressed,
         compressed_filename: _compressedFilename,
@@ -60,18 +65,14 @@ export class DocumentDatabaseStorage {
       void _compressedFileSize;
       void _compressedStoragePath;
 
-      const retryResult = await this.supabase
-        .from('documents')
-        .upsert(basicDoc)
-        .select()
-        .single();
+      const retryResult = await this.supabase.from("documents").upsert(basicDoc).select().single();
 
       data = retryResult.data;
       error = retryResult.error;
     }
 
     if (error) {
-      console.error('Error saving document:', error);
+      console.error("Error saving document:", error);
       throw error;
     }
 
@@ -83,13 +84,13 @@ export class DocumentDatabaseStorage {
    */
   async deleteDocument(documentId: string, userId: string): Promise<boolean> {
     const { error } = await this.supabase
-      .from('documents')
+      .from("documents")
       .delete()
-      .eq('id', documentId)
-      .eq('user_id', userId);
+      .eq("id", documentId)
+      .eq("user_id", userId);
 
     if (error) {
-      console.error('Error deleting document:', error);
+      console.error("Error deleting document:", error);
       throw error;
     }
 
@@ -99,23 +100,20 @@ export class DocumentDatabaseStorage {
   /**
    * Gets document by ID
    */
-  async getDocument(
-    documentId: string,
-    userId: string
-  ): Promise<UploadedDocument | null> {
+  async getDocument(documentId: string, userId: string): Promise<UploadedDocument | null> {
     const { data, error } = await this.supabase
-      .from('documents')
-      .select('*')
-      .eq('id', documentId)
-      .eq('user_id', userId)
+      .from("documents")
+      .select("*")
+      .eq("id", documentId)
+      .eq("user_id", userId)
       .single();
 
     if (error) {
-      if (error.code === 'PGRST116') {
+      if (error.code === "PGRST116") {
         // Not found
         return null;
       }
-      console.error('Error fetching document:', error);
+      console.error("Error fetching document:", error);
       throw error;
     }
 
@@ -125,23 +123,32 @@ export class DocumentDatabaseStorage {
   /**
    * Gets documents by definition ID
    */
+  /**
+   * Gets documents by definition ID, optionally filtered by journey ID
+   */
   async getDocumentsByDefId(
     documentDefId: string,
-    userId: string
+    userId: string,
+    journeyId?: string
   ): Promise<UploadedDocument[]> {
-    const { data, error } = await this.supabase
-      .from('documents')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('document_def_id', documentDefId)
-      .order('version', { ascending: true });
+    let query = this.supabase
+      .from("documents")
+      .select("*")
+      .eq("user_id", userId)
+      .eq("document_def_id", documentDefId);
+
+    if (journeyId) {
+      query = query.eq("journey_id", journeyId);
+    }
+
+    const { data, error } = await query.order("version", { ascending: true });
 
     if (error) {
-      console.error('Error fetching documents by def ID:', error);
+      console.error("Error fetching documents by def ID:", error);
       throw error;
     }
 
-    return (data || []).map(this.mapDatabaseToDocument);
+    return (data || []).map((row) => this.mapDatabaseToDocument(row));
   }
 
   /**
@@ -150,18 +157,18 @@ export class DocumentDatabaseStorage {
   async updateDocumentStatus(
     documentId: string,
     userId: string,
-    status: UploadedDocument['status']
+    status: UploadedDocument["status"]
   ): Promise<UploadedDocument> {
     const { data, error } = await this.supabase
-      .from('documents')
+      .from("documents")
       .update({ status, updated_at: new Date().toISOString() })
-      .eq('id', documentId)
-      .eq('user_id', userId)
+      .eq("id", documentId)
+      .eq("user_id", userId)
       .select()
       .single();
 
     if (error) {
-      console.error('Error updating document status:', error);
+      console.error("Error updating document status:", error);
       throw error;
     }
 
@@ -194,15 +201,15 @@ export class DocumentDatabaseStorage {
     }
 
     const { data, error } = await this.supabase
-      .from('documents')
+      .from("documents")
       .update(dbUpdates)
-      .eq('id', documentId)
-      .eq('user_id', userId)
+      .eq("id", documentId)
+      .eq("user_id", userId)
       .select()
       .single();
 
     if (error) {
-      console.error('Error updating document:', error);
+      console.error("Error updating document:", error);
       throw error;
     }
 
@@ -222,19 +229,20 @@ export class DocumentDatabaseStorage {
       beneficiary_name: config.beneficiaryName,
       joint_sponsor_name: config.jointSponsorName,
       dynamic_documents: config.dynamicDocuments || {},
+      journey_id: config.journeyId || null,
       updated_at: new Date().toISOString(),
     };
 
     const { data, error } = await this.supabase
-      .from('document_vault_config')
+      .from("document_vault_config")
       .upsert(dbConfig, {
-        onConflict: 'user_id', // Specify the unique constraint column
+        onConflict: "user_id,journey_id", // Specify the unique constraint columns
       })
       .select()
       .single();
 
     if (error) {
-      console.error('Error saving vault config:', error);
+      console.error("Error saving vault config:", error);
       throw error;
     }
 
@@ -244,19 +252,26 @@ export class DocumentDatabaseStorage {
   /**
    * Gets vault configuration
    */
-  async getVaultConfig(userId: string): Promise<DocumentVaultConfig | null> {
-    const { data, error } = await this.supabase
-      .from('document_vault_config')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
+  async getVaultConfig(userId: string, journeyId?: string): Promise<DocumentVaultConfig | null> {
+    let query = this.supabase
+      .from("document_vault_config")
+      .select("*")
+      .eq("user_id", userId);
+
+    if (journeyId) {
+      query = query.eq("journey_id", journeyId);
+    } else {
+      query = query.is("journey_id", null);
+    }
+
+    const { data, error } = await query.single();
 
     if (error) {
-      if (error.code === 'PGRST116') {
+      if (error.code === "PGRST116") {
         // Not found
         return null;
       }
-      console.error('Error fetching vault config:', error);
+      console.error("Error fetching vault config:", error);
       throw error;
     }
 
@@ -269,23 +284,23 @@ export class DocumentDatabaseStorage {
   async clearAllData(userId: string): Promise<boolean> {
     // Delete all documents
     const { error: docsError } = await this.supabase
-      .from('documents')
+      .from("documents")
       .delete()
-      .eq('user_id', userId);
+      .eq("user_id", userId);
 
     if (docsError) {
-      console.error('Error deleting documents:', docsError);
+      console.error("Error deleting documents:", docsError);
       throw docsError;
     }
 
     // Delete config
     const { error: configError } = await this.supabase
-      .from('document_vault_config')
+      .from("document_vault_config")
       .delete()
-      .eq('user_id', userId);
+      .eq("user_id", userId);
 
     if (configError) {
-      console.error('Error deleting config:', configError);
+      console.error("Error deleting config:", configError);
       throw configError;
     }
 
@@ -295,15 +310,15 @@ export class DocumentDatabaseStorage {
   // Mark as Read
   async markDocumentAsRead(documentId: string, userId: string): Promise<UploadedDocument> {
     const { data, error } = await this.supabase
-      .from('documents')
+      .from("documents")
       .update({ is_read: true, updated_at: new Date().toISOString() })
-      .eq('id', documentId)
-      .eq('user_id', userId)
+      .eq("id", documentId)
+      .eq("user_id", userId)
       .select()
       .single();
 
     if (error) {
-      console.error('Error marking document as read:', error);
+      console.error("Error marking document as read:", error);
       throw error;
     }
 
@@ -313,14 +328,14 @@ export class DocumentDatabaseStorage {
   // Mark all documents as Read
   async markAllDocumentsAsRead(userId: string): Promise<UploadedDocument[]> {
     const { data, error } = await this.supabase
-      .from('documents')
+      .from("documents")
       .update({ is_read: true, updated_at: new Date().toISOString() })
-      .eq('user_id', userId)
-      .eq('is_read', false) // Only update unread documents
+      .eq("user_id", userId)
+      .eq("is_read", false) // Only update unread documents
       .select();
 
     if (error) {
-      console.error('Error marking documents as read:', error);
+      console.error("Error marking documents as read:", error);
       throw error;
     }
 
@@ -349,13 +364,12 @@ export class DocumentDatabaseStorage {
       uploadedAt: new Date(data.uploaded_at as string),
       uploadedBy: data.uploaded_by as DocumentRole,
       version: data.version as number,
-      expirationDate: data.expiration_date
-        ? new Date(data.expiration_date as string)
-        : undefined,
+      expirationDate: data.expiration_date ? new Date(data.expiration_date as string) : undefined,
       isExpired: data.is_expired as boolean,
       isRead: data.is_read as boolean,
-      status: data.status as UploadedDocument['status'],
+      status: data.status as UploadedDocument["status"],
       notes: data.notes as string | undefined,
+      journeyId: data.journey_id as string | null | undefined,
     };
   }
 
@@ -363,9 +377,7 @@ export class DocumentDatabaseStorage {
    * Maps UploadedDocument to database row
    * Note: Compressed file columns are optional - will be ignored if not in DB
    */
-  private mapDocumentToDatabase(
-    document: UploadedDocument
-  ): Record<string, unknown> {
+  private mapDocumentToDatabase(document: UploadedDocument): Record<string, unknown> {
     const dbDoc: Record<string, unknown> = {
       id: document.id,
       user_id: document.userId,
@@ -384,6 +396,7 @@ export class DocumentDatabaseStorage {
       is_read: document.isRead,
       status: document.status,
       notes: document.notes,
+      journey_id: document.journeyId,
     };
 
     // Add compressed file info if available (columns may not exist in DB yet)
@@ -406,10 +419,12 @@ export class DocumentDatabaseStorage {
       visaCategory: data.visa_category as VisaCategory,
       scenarioFlags: (data.scenario_flags as Record<string, unknown>) || {},
       caseId: data.case_id as string | undefined,
+      journeyId: data.journey_id as string | null | undefined,
       petitionerName: data.petitioner_name as string | undefined,
       beneficiaryName: data.beneficiary_name as string | undefined,
       jointSponsorName: data.joint_sponsor_name as string | undefined,
-      dynamicDocuments: (data.dynamic_documents as Record<string, { id: string; name: string }[]>) || {},
+      dynamicDocuments:
+        (data.dynamic_documents as Record<string, { id: string; name: string }[]>) || {},
     };
   }
 }

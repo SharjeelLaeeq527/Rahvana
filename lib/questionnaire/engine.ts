@@ -15,7 +15,7 @@ import type {
  */
 function isConditionMet(
   condition: { questionId: string; requiredValue: string | string[] },
-  answers: QuestionnaireAnswers,
+  answers: QuestionnaireAnswers
 ): boolean {
   const answer = answers[condition.questionId];
   if (!answer) return false;
@@ -31,7 +31,7 @@ function isConditionMet(
  */
 export function isQuestionVisible(
   question: QuestionnaireQuestion,
-  answers: QuestionnaireAnswers,
+  answers: QuestionnaireAnswers
 ): boolean {
   if (!question.visibleWhen || question.visibleWhen.length === 0) {
     return true;
@@ -45,7 +45,7 @@ export function isQuestionVisible(
  */
 export function getVisibleQuestions(
   config: QuestionnaireConfig,
-  answers: QuestionnaireAnswers,
+  answers: QuestionnaireAnswers
 ): QuestionnaireQuestion[] {
   return config.questions.filter((q) => isQuestionVisible(q, answers));
 }
@@ -56,7 +56,7 @@ export function getVisibleQuestions(
  */
 export function getNextUnansweredIndex(
   config: QuestionnaireConfig,
-  answers: QuestionnaireAnswers,
+  answers: QuestionnaireAnswers
 ): number {
   const visible = getVisibleQuestions(config, answers);
   const idx = visible.findIndex((q) => !answers[q.id]);
@@ -68,7 +68,7 @@ export function getNextUnansweredIndex(
  */
 export function isQuestionnaireComplete(
   config: QuestionnaireConfig,
-  answers: QuestionnaireAnswers,
+  answers: QuestionnaireAnswers
 ): boolean {
   const visible = getVisibleQuestions(config, answers);
   return visible.length > 0 && visible.every((q) => !!answers[q.id]);
@@ -80,7 +80,7 @@ export function isQuestionnaireComplete(
  */
 export function computeDocumentList(
   config: QuestionnaireConfig,
-  answers: QuestionnaireAnswers,
+  answers: QuestionnaireAnswers
 ): ConditionalDocument[] {
   // Start with base documents
   const documentMap = new Map<string, ConditionalDocument>();
@@ -117,11 +117,7 @@ export function computeDocumentList(
   }
 
   // Convert to array and sort by group priority
-  const groupOrder = [
-    "Required Now",
-    "Required if Applicable",
-    "Gather Now for Later",
-  ];
+  const groupOrder = ["Required Now", "Required if Applicable", "Gather Now for Later"];
 
   return Array.from(documentMap.values()).sort((a, b) => {
     const idxA = groupOrder.indexOf(a.group);
@@ -135,7 +131,7 @@ export function computeDocumentList(
  */
 export function buildQuestionnaireResult(
   config: QuestionnaireConfig,
-  answers: QuestionnaireAnswers,
+  answers: QuestionnaireAnswers
 ): QuestionnaireResult {
   return {
     answers: { ...answers },
@@ -147,10 +143,7 @@ export function buildQuestionnaireResult(
 /**
  * Compute the progress percentage (answered visible questions / total visible questions).
  */
-export function getProgress(
-  config: QuestionnaireConfig,
-  answers: QuestionnaireAnswers,
-): number {
+export function getProgress(config: QuestionnaireConfig, answers: QuestionnaireAnswers): number {
   const visible = getVisibleQuestions(config, answers);
   if (visible.length === 0) return 0;
   const answered = visible.filter((q) => !!answers[q.id]).length;
@@ -158,23 +151,52 @@ export function getProgress(
 }
 
 // ============================================================================
-// Step 1 → Step 2 Answer Derivation
-// Maps eligibility quest answers to document questionnaire answer keys
-// so duplicate questions can be skipped.
+// Eligibility Answer Derivation — Generic, category-driven
 // ============================================================================
 
-/**
- * Eligibility answers shape from QuestRenderer:
- * state.answers["eligibility-suite"] → { [questId]: { [screenId]: value } }
- *
- * Relevant screens:
- *   q3 → q3s1 (prior marriage history): "none" | "petitioner" | "beneficiary" | "both" | "unsure"
- *   q5 → q5s2 (criminal history):       "no" | "yes" | "unsure"
- */
 type EligibilityAnswers = Record<string, Record<string, string | string[]>>;
 
-export function deriveDocAnswersFromEligibility(
+/**
+ * Generic derivation: reads `config.eligibilityDerivationMap` and converts
+ * Step 1 eligibility answers into pre-filled document-questionnaire answers.
+ *
+ * @param eligibilityAnswers - Raw answers from the eligibility suite.
+ * @param config             - The questionnaire config for the current category.
+ *                             Its `eligibilityDerivationMap` drives the mapping.
+ * @returns Pre-filled answers keyed by document-questionnaire question IDs.
+ */
+export function deriveDocAnswers(
   eligibilityAnswers: EligibilityAnswers | undefined,
+  config: QuestionnaireConfig
+): QuestionnaireAnswers {
+  const derived: QuestionnaireAnswers = {};
+  if (!eligibilityAnswers || !config.eligibilityDerivationMap) return derived;
+
+  for (const entry of config.eligibilityDerivationMap) {
+    const screenValue = eligibilityAnswers[entry.eligibilityQuestId]?.[
+      entry.eligibilityScreenId
+    ] as string | undefined;
+
+    // Skip if no answer or user said "unsure" (not actionable)
+    if (!screenValue || screenValue === "unsure") continue;
+
+    const mapped = entry.derive(screenValue);
+    Object.assign(derived, mapped);
+  }
+
+  return derived;
+}
+
+/**
+ * @deprecated Use `deriveDocAnswers(eligibilityAnswers, config)` instead.
+ * Kept for backwards compatibility with any call-sites that haven't been
+ * migrated to the config-driven approach yet.
+ *
+ * Maps the IR-1-specific eligibility answers (q3→q3s1, q5→q5s2) to
+ * document-questionnaire pre-filled answers.
+ */
+export function deriveDocAnswersFromEligibility(
+  eligibilityAnswers: EligibilityAnswers | undefined
 ): QuestionnaireAnswers {
   const derived: QuestionnaireAnswers = {};
   if (!eligibilityAnswers) return derived;
@@ -185,8 +207,7 @@ export function deriveDocAnswersFromEligibility(
 
   if (q3s1 && q3s1 !== "unsure") {
     // Petitioner had a prior marriage?
-    derived["prior_marriage_petitioner"] =
-      q3s1 === "petitioner" || q3s1 === "both" ? "yes" : "no";
+    derived["prior_marriage_petitioner"] = q3s1 === "petitioner" || q3s1 === "both" ? "yes" : "no";
 
     // Beneficiary had a prior marriage?
     derived["prior_marriage_beneficiary"] =

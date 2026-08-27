@@ -4,12 +4,11 @@ import { useEffect, useState, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
-import WizardInfoPanel, {
-  InfoPanelData,
-} from "../../../components/guides/WizardInfoPanel";
+import WizardInfoPanel, { InfoPanelData } from "../../../components/guides/WizardInfoPanel";
 import { NarrativeModal } from "../../(visa)/221g-action-planner/components/NarrativeModal";
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { Loader } from "@/components/ui/spinner";
+import { PageGate } from "@/app/components/entitlements/PageGate";
 
 import ProvinceSelectionStep from "./components/ProvinceSelectionStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
@@ -19,17 +18,10 @@ import { useWizardSession } from "@/lib/guides/useWizardSession";
 import { useGuideUpload } from "@/lib/guides/useGuideUpload";
 import { useGuideSave } from "@/lib/guides/useGuideSave";
 import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
-import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
+import { NavigationGuard } from "@/lib/guides/useNavigationGuard";
 
 import guideDataRaw from "@/data/police-verification-guide-data.json";
-import {
-  ArrowLeft,
-  ArrowRight,
-  FileText,
-  MapPin,
-  Building2,
-  UserCheck,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, FileText, MapPin, Building2, UserCheck } from "lucide-react";
 import { WizardStepId, WizardState } from "@/types/guide-wizard";
 
 // Modals
@@ -59,10 +51,7 @@ const STEP_LABELS: Record<string, string> = {
   validation: "Validation",
 };
 
-const INFO_PANEL_KEYS: Record<
-  string,
-  keyof typeof guideData.wizard.info_panel
-> = {
+const INFO_PANEL_KEYS: Record<string, keyof typeof guideData.wizard.info_panel> = {
   province_selection: "province_selection",
   roadmap: "roadmap",
   validation: "validation",
@@ -70,8 +59,12 @@ const INFO_PANEL_KEYS: Record<
 
 export default function PoliceVerificationGuide() {
   const [currentStep, setCurrentStep] = useState(0);
+  const [highestReachedStep, setHighestReachedStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
-  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(
+    typeof window !== "undefined" &&
+      localStorage.getItem("dont_show_police_character_welcome") === "true"
+  );
   const [isSaved, setIsSaved] = useState(false);
   const [navigationHandled, setNavigationHandled] = useState(false);
 
@@ -102,7 +95,7 @@ export default function PoliceVerificationGuide() {
       checkedDocuments: stepsData.roadmap?.checked || prev.checkedDocuments,
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
-    }),
+    })
   );
 
   const { uploadFile: uploadFileHook } = useGuideUpload();
@@ -166,26 +159,13 @@ export default function PoliceVerificationGuide() {
     });
   };
 
-  const handleSubmitFeedback = async (
-    type: string,
-    desc: string,
-    attachment?: File,
-  ) => {
-    await submitFeedbackHook(
-      "police-verification-guide",
-      currentStepId,
-      type,
-      desc,
-      attachment,
-    );
+  const handleSubmitFeedback = async (type: string, desc: string, attachment?: File) => {
+    await submitFeedbackHook("police-verification-guide", currentStepId, type, desc, attachment);
   };
 
   const hasProgress = useMemo(() => {
     return (
-      currentStep > 0 ||
-      !!state.province ||
-      state.validationChecks.length > 0 ||
-      state.uploadedFile
+      currentStep > 0 || !!state.province || state.validationChecks.length > 0 || state.uploadedFile
     );
   }, [currentStep, state]);
 
@@ -216,20 +196,16 @@ export default function PoliceVerificationGuide() {
   };
 
   useEffect(() => {
+    setHighestReachedStep((prev) => Math.max(prev, currentStep));
+  }, [currentStep]);
+
+  useEffect(() => {
     if (session?.saved) {
       setIsSaved(true);
     }
   }, [session]);
 
-  useNavigationGuard(
-    hasProgress && !isSaved,
-    async () => {
-      await saveGuide("police-verification-guide");
-      setIsSaved(true);
-    },
-    navigationHandled,
-    setNavigationHandled,
-  );
+  // Navigation guard handled by NavigationGuard component in render
 
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
@@ -245,9 +221,7 @@ export default function PoliceVerificationGuide() {
 
   const currentStepId = STEP_IDS[currentStep];
   const infoPanelKey = INFO_PANEL_KEYS[currentStepId as string];
-  let infoPanelData = guideData.wizard.info_panel[
-    infoPanelKey
-  ] as InfoPanelData;
+  let infoPanelData = guideData.wizard.info_panel[infoPanelKey] as InfoPanelData;
 
   // Conditionally hide links and Sindh-specific pitfalls for non-Sindh provinces
   if (state.province !== "Sindh") {
@@ -269,7 +243,7 @@ export default function PoliceVerificationGuide() {
     const feeStructure = guideData.wizard.fee_structure;
     // Type definition for tier
     const filteredTiers = feeStructure.tiers.filter(
-      (tier: { type: string }) => tier.type === state.province,
+      (tier: { type: string }) => tier.type === state.province
     );
 
     if (filteredTiers.length > 0) {
@@ -297,8 +271,7 @@ export default function PoliceVerificationGuide() {
   };
 
   const goNext = () => {
-    if (currentStep < STEP_IDS.length - 1 && canGoNext())
-      setCurrentStep(currentStep + 1);
+    if (currentStep < STEP_IDS.length - 1 && canGoNext()) setCurrentStep(currentStep + 1);
   };
 
   const goBack = () => {
@@ -377,13 +350,15 @@ export default function PoliceVerificationGuide() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 pt-26">
-      <WizardHeader
-        onWhatsThis={() => setShowWhatsThis(true)}
-        title={guideData.wizard.title}
-      />
+    <PageGate
+      feature="guide_police"
+      title="Police Character Certificate Guide Locked"
+      description="Upgrade your plan to unlock step-by-step guidance on obtaining your Police Character Certificate."
+    >
+      <div className="min-h-screen flex flex-col bg-gray-50 pt-26">
+      <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={guideData.wizard.title} />
 
-      <div className="flex flex-1 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto flex-col xl:flex-row">
+      <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
         <WizardSidebar
           currentStep={STEP_IDS.indexOf(currentStepId)}
           steps={STEP_IDS}
@@ -394,9 +369,10 @@ export default function PoliceVerificationGuide() {
           onGuideSaved={() => setIsSaved(true)}
           saving={saving}
           session={session}
+          highestReachedStep={highestReachedStep}
         />
 
-        <main className="flex-1 xl:flex-initial xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
+        <main className="min-w-0 xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
           <div
             className="fixed inset-0 pointer-events-none z-0"
             style={{
@@ -429,7 +405,10 @@ export default function PoliceVerificationGuide() {
                     onClick={goBack}
                     className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer"
                   >
-                    <ArrowLeft className="w-4 h-4" /> Back
+                    <ArrowLeft className="w-4 h-4" /> 
+                    <span className="hidden md:inline-block">
+                      Back
+                    </span>
                   </motion.button>
                 ) : (
                   <div />
@@ -451,7 +430,10 @@ export default function PoliceVerificationGuide() {
                         : "bg-gray-200 text-gray-400 cursor-not-allowed"
                     }`}
                   >
-                    Continue <ArrowRight className="w-4 h-4" />
+                    <span className="hidden md:inline-block">
+                      Continue
+                    </span>
+                    <ArrowRight className="w-4 h-4" />
                   </motion.button>
                 )}
               </div>
@@ -459,68 +441,67 @@ export default function PoliceVerificationGuide() {
           </div>
         </main>
 
-        <WizardInfoPanel
-          data={infoPanelData}
-          lastVerified={guideData.wizard.last_verified}
-          guideData={guideData as Record<string, unknown>}
-          guideType="police-verification"
-        >
-          {/* Custom Action Buttons for Police Verification */}
-          <div className="flex flex-col gap-3">
-            <button
-              onClick={() => setIsPKMModalOpen(true)}
-              className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
-            >
-              <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
-                <MapPin size={18} /> PKM Locator
-              </span>
-              <ArrowRight
-                size={18}
-                className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all"
-              />
-            </button>
-            {state.province === "Sindh" && (
+        <div className="xl:sticky xl:top-4 xl:self-start">
+          <WizardInfoPanel
+            data={infoPanelData}
+            lastVerified={guideData.wizard.last_verified}
+            guideData={guideData as Record<string, unknown>}
+            guideType="police-verification"
+          >
+            {/* Custom Action Buttons for Police Verification */}
+            <div className="flex flex-col gap-3">
               <button
-                onClick={() => setIsLetterModalOpen(true)}
+                onClick={() => setIsPKMModalOpen(true)}
                 className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
               >
                 <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
-                  <FileText size={18} /> Create Purpose Letter
+                  <MapPin size={18} /> PKM Locator
                 </span>
                 <ArrowRight
                   size={18}
                   className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all"
                 />
               </button>
-            )}
-            <button
-              onClick={() => setIsAuthModalOpen(true)}
-              className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
-            >
-              <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
-                <UserCheck size={18} /> Create Authority Letter
-              </span>
-              <ArrowRight
-                size={18}
-                className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all"
-              />
-            </button>
-            {state.province === "Sindh" && (
+              {state.province === "Sindh" && (
+                <button
+                  onClick={() => setIsLetterModalOpen(true)}
+                  className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
+                >
+                  <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
+                    <FileText size={18} /> Create Purpose Letter
+                  </span>
+                  <ArrowRight
+                    size={18}
+                    className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all"
+                  />
+                </button>
+              )}
               <button
-                onClick={() => setIsSindhApplyModalOpen(true)}
-                className="w-full flex items-center justify-between p-4 bg-primary text-white hover:bg-primary/90 rounded-xl transition-all shadow-md group"
+                onClick={() => setIsAuthModalOpen(true)}
+                className="w-full flex items-center justify-between p-4 bg-white hover:bg-slate-50 border border-slate-200 hover:border-primary/40 rounded-xl transition-all shadow-sm group"
               >
-                <span className="font-bold flex items-center gap-2">
-                  <Building2 size={18} /> Apply Now (Sindh)
+                <span className="font-bold text-slate-700 group-hover:text-primary transition-colors flex items-center gap-2">
+                  <UserCheck size={18} /> Create Authority Letter
                 </span>
                 <ArrowRight
                   size={18}
-                  className="group-hover:translate-x-1 transition-all"
+                  className="text-slate-400 group-hover:text-primary group-hover:translate-x-1 transition-all"
                 />
               </button>
-            )}
-          </div>
-        </WizardInfoPanel>
+              {state.province === "Sindh" && (
+                <button
+                  onClick={() => setIsSindhApplyModalOpen(true)}
+                  className="w-full flex items-center justify-between p-4 bg-primary text-white hover:bg-primary/90 rounded-xl transition-all shadow-md group"
+                >
+                  <span className="font-bold flex items-center gap-2">
+                    <Building2 size={18} /> Apply Now (Sindh)
+                  </span>
+                  <ArrowRight size={18} className="group-hover:translate-x-1 transition-all" />
+                </button>
+              )}
+            </div>
+          </WizardInfoPanel>
+        </div>
       </div>
 
       <NarrativeModal
@@ -530,6 +511,16 @@ export default function PoliceVerificationGuide() {
         dontShowAgain={dontShowAgain}
         onDontShowAgainChange={setDontShowAgain}
         variant="police-verification"
+      />
+
+      <NavigationGuard
+        shouldBlock={hasProgress && !isSaved}
+        onSave={async () => {
+          await saveGuide("police-verification-guide");
+          setIsSaved(true);
+        }}
+        navigationHandled={navigationHandled}
+        setNavigationHandled={setNavigationHandled}
       />
 
       <FeedbackButton
@@ -583,6 +574,7 @@ export default function PoliceVerificationGuide() {
         onClose={() => setIsPKMModalOpen(false)}
         province={state.province || "Punjab"}
       />
-    </div>
+      </div>
+    </PageGate>
   );
 }

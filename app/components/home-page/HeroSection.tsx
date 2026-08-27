@@ -3,12 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "motion/react";
-import {
-  ArrowUpRight,
-  ArrowRight,
-} from "lucide-react";
+import { ArrowUpRight, ArrowRight } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
+import { ir1journeyHref } from "@/lib/constants/routes";
 
 const heroImage = "/assets/images/herobg.png";
 
@@ -64,7 +62,7 @@ export function CinematicHero() {
         setHasTransitioned(true);
       }
 
-          if (hasTransitioned && event.deltaY < -6 && window.scrollY <= 80) {
+      if (hasTransitioned && event.deltaY < -6 && window.scrollY <= 80) {
         setHasTransitioned(false);
       }
     };
@@ -89,7 +87,7 @@ export function CinematicHero() {
         setHasTransitioned(true);
       }
 
-          if (hasTransitioned && deltaY < -18 && window.scrollY <= 80) {
+      if (hasTransitioned && deltaY < -18 && window.scrollY <= 80) {
         setHasTransitioned(false);
       }
     };
@@ -126,14 +124,14 @@ export function CinematicHero() {
       window.dispatchEvent(
         new CustomEvent("home-hero-visibility", {
           detail: { inHero: inHeroSection },
-        }),
+        })
       );
     };
 
     window.dispatchEvent(
       new CustomEvent("home-hero-transition", {
         detail: { transitioned: hasTransitioned },
-      }),
+      })
     );
 
     emitHeroVisibility();
@@ -147,13 +145,13 @@ export function CinematicHero() {
       window.dispatchEvent(
         new CustomEvent("home-hero-transition", {
           detail: { transitioned: false },
-        }),
+        })
       );
 
       window.dispatchEvent(
         new CustomEvent("home-hero-visibility", {
           detail: { inHero: false },
-        }),
+        })
       );
     };
   }, [hasTransitioned]);
@@ -246,44 +244,65 @@ export function CinematicHero() {
                   </h2>
 
                   <p className="max-w-[58ch] text-balance text-center text-[11.5px] leading-[1.78] font-medium text-gray-500 sm:max-w-[66ch] sm:text-[12.5px] sm:leading-relaxed md:mb-4 md:max-w-[48ch] md:text-left md:text-[14px]">
-                    Rahvana turns the visa process into a clear, confident
-                    journey, with tools and support designed around you.
+                    Rahvana turns the visa process into a clear, confident journey, with tools and
+                    support designed around you.
                   </p>
 
                   <div className="flex w-full flex-row flex-wrap items-center justify-center gap-3 pt-0 sm:justify-start sm:pt-0 md:pt-1">
                     {/* CTA Button Logic */}
                     {(!user || journeysLoading) && (
                       <Link
-                        href="/visa-category/ir-category/ir1-journey"
+                        href={ir1journeyHref}
                         className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 bg-transparent px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-200 ease-out hover:-translate-y-0.5 sm:px-6 sm:py-3 sm:text-[13px]"
-                        style={{ borderColor: "#cfa3b9", color: "#a96583", boxShadow: "0 8px 14px -18px rgba(169, 101, 131, 0.22)" }}
+                        style={{
+                          borderColor: "#cfa3b9",
+                          color: "#a96583",
+                          boxShadow: "0 8px 14px -18px rgba(169, 101, 131, 0.22)",
+                        }}
                       >
                         {"Start your journey"}
-                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6" style={{ color: "#a96583" }}>
+                        <span
+                          className="flex h-5 w-5 flex-none items-center justify-center rounded-full transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6"
+                          style={{ color: "#a96583" }}
+                        >
                           <ArrowRight className="h-3.5 w-3.5 stroke-[3]" />
                         </span>
                       </Link>
                     )}
                     {user && journeys && journeys.length > 0 && (
                       <Link
-                        href="/visa-category/ir-category/ir1-journey"
+                        href={ir1journeyHref}
                         className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 bg-transparent px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-200 ease-out hover:-translate-y-0.5 sm:px-6 sm:py-3 sm:text-[13px]"
-                        style={{ borderColor: "#cfa3b9", color: "#a96583", boxShadow: "0 8px 14px -18px rgba(169, 101, 131, 0.22)" }}
+                        style={{
+                          borderColor: "#cfa3b9",
+                          color: "#a96583",
+                          boxShadow: "0 8px 14px -18px rgba(169, 101, 131, 0.22)",
+                        }}
                       >
                         {t("homePage.resumeJourney") || "Resume my journey"}
-                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6" style={{ color: "#a96583" }}>
+                        <span
+                          className="flex h-5 w-5 flex-none items-center justify-center rounded-full transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6"
+                          style={{ color: "#a96583" }}
+                        >
                           <ArrowRight className="h-3.5 w-3.5 stroke-[3]" />
                         </span>
                       </Link>
                     )}
                     {user && journeys && journeys.length === 0 && !journeysLoading && (
                       <Link
-                        href="/visa-category/ir-category/ir1-journey"
+                        href={ir1journeyHref}
                         className="group inline-flex w-fit whitespace-nowrap items-center justify-center gap-2 rounded-full border-2 bg-transparent px-5 py-2.5 text-[12px] font-bold uppercase tracking-wider transition-all duration-200 ease-out hover:-translate-y-0.5 sm:px-6 sm:py-3 sm:text-[13px]"
-                        style={{ borderColor: "#cfa3b9", color: "#a96583", boxShadow: "0 8px 14px -18px rgba(169, 101, 131, 0.22)" }}
+                        style={{
+                          borderColor: "#cfa3b9",
+                          color: "#a96583",
+                          boxShadow: "0 8px 14px -18px rgba(169, 101, 131, 0.22)",
+                        }}
                       >
                         {"Start my journey"}
-                        <span className="flex h-5 w-5 flex-none items-center justify-center rounded-full transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6" style={{ color: "#a96583" }}>
+                        <span
+                          className="flex h-5 w-5 flex-none items-center justify-center rounded-full transition-transform duration-200 ease-out group-hover:translate-x-0.5 sm:h-6 sm:w-6"
+                          style={{ color: "#a96583" }}
+                        >
                           <ArrowRight className="h-3.5 w-3.5 stroke-[3]" />
                         </span>
                       </Link>
@@ -313,23 +332,22 @@ export function CinematicHero() {
                 <h1 className="text-4xl font-light leading-[1.06] tracking-[-0.03em] text-white drop-shadow-lg sm:text-5xl md:text-[3.6rem] lg:text-[4.6rem]">
                   Your immigration
                   <br />
-                  journey, <span className="font-serif font-normal italic text-[#fdf0f4]">simplified.</span>
+                  journey,{" "}
+                  <span className="font-serif font-normal italic text-[#fdf0f4]">simplified.</span>
                 </h1>
 
                 <div className="mt-8 flex items-start gap-4 md:mt-10 md:gap-5">
                   <div className="mt-1.5 h-10 w-[2px] rounded-t-full bg-gradient-to-b from-[#f4a8c4] to-transparent" />
                   <p className="max-w-[22rem] text-[14px] font-light leading-[1.7] tracking-wide text-white/90 drop-shadow-md sm:max-w-[26rem] sm:text-[15px] sm:leading-[1.78] md:max-w-[28rem] md:text-base">
-                    Bespoke residency and citizenship advisory. We handle the
-                    intricacies of your international relocation with absolute
-                    discretion and precision.
+                    Bespoke residency and citizenship advisory. We handle the intricacies of your
+                    international relocation with absolute discretion and precision.
                   </p>
                 </div>
               </motion.div>
             </motion.div>
           )}
         </AnimatePresence>
-
       </div>
-      </section>
-    );
+    </section>
+  );
 }

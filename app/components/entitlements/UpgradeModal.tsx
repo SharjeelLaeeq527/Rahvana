@@ -1,10 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import { createPortal } from "react-dom";
-import { X, Check, Zap, ShoppingCart, Loader2 } from "lucide-react";
+import { X, Check, Zap, ShoppingCart, Loader2, BookOpen, Mic } from "lucide-react";
 import { usePlan } from "@/app/context/PlanContext";
 import { useAuth } from "@/app/context/AuthContext";
+import { getDetailsHref } from "@/lib/entitlements/resourceLinks";
 import {
   getEntitlement,
   TIER_NAMES,
@@ -18,22 +20,71 @@ interface UpgradeModalProps {
   feature: string;
   onClose: () => void;
   onConfirm?: (action: "upgrade" | "addon", target?: PlanTier | string) => void;
+  /** When set, shows interview-prep-specific feature breakdown before the general tier list */
+  interviewMode?: "prep" | "rapid" | "mock";
 }
+
+const INTERVIEW_MODE_FEATURES: Record<
+  "prep" | "rapid" | "mock",
+  { label: string; icon: typeof BookOpen; color: string; features: string[] }
+> = {
+  prep: {
+    label: "Prep Mode",
+    icon: BookOpen,
+    color: "#0d7377",
+    features: [
+      "Full Interview Question Bank",
+      "Prep Mode (full access)",
+      "AI Answer Builder (core feature)",
+      "Improve clarity & structure",
+      "Make answers interview-ready",
+      "Save & edit answers anytime",
+    ],
+  },
+  rapid: {
+    label: "Rapid Fire",
+    icon: Zap,
+    color: "#6b5b7b",
+    features: [
+      "Rapid Fire Mode",
+      "Timed questions (pressure simulation)",
+      "Fast recall training",
+      "Adaptive practice flow",
+      "Smart summaries after sessions",
+      "Performance review insights",
+      "Confidence-building repetition",
+    ],
+  },
+  mock: {
+    label: "Mock Interview",
+    icon: Mic,
+    color: "#9e4a5a",
+    features: [
+      "Mock Interview Mode (full simulation)",
+      "Voice-based interview experience",
+      "Speech-to-Text (STT)",
+      "Text-to-Speech (TTS)",
+      "Real-time interview flow (no UI hints)",
+      "Performance analytics",
+      "Interview behavior feedback",
+    ],
+  },
+};
 
 const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
   free: [],
   basic: [
-    "Full roadmap — all steps & chapters visible",
+    "Full roadmap, all steps & chapters visible",
     "Checklist engine for your case",
     "Portal wallet (save credentials securely)",
-    "Visa bulletin monitor",
+    // "Visa bulletin monitor",
     "PDF toolkit, Snap & Sign, DQ status check",
     "Basic interview prep",
   ],
   premium: [
     "Everything in Basic",
     "Step-by-step guides in every step",
-    "Document vault — upload & auto-extract",
+    "Document vault, upload & auto-extract",
     "Tracker & reminders (DQ, interview, case status)",
     "Smart Form Filler (I-130 / I-130A)",
     "Case Strength Analyzer",
@@ -46,10 +97,10 @@ const TIER_HIGHLIGHTS: Record<PlanTier, string[]> = {
     "Everything in Premium",
     "221(g) Action Planner",
     "Mock interview sessions",
-    "Expert case review — 2 sessions included",
-    "Expert consultation calls — 2 sessions included",
+    "Expert case review, 2 sessions included",
+    "Expert consultation calls, 2 sessions included",
     "PCC filing assistance (Sindh only)",
-    "Document translation — 2 documents included",
+    "Document translation, 2 documents included",
   ],
 };
 
@@ -173,17 +224,13 @@ const scrollbarHideStyle: React.CSSProperties = {
   msOverflowStyle: "none",
 };
 
-export function UpgradeModal({
-  feature,
-  onClose,
-  onConfirm,
-}: UpgradeModalProps) {
+export function UpgradeModal({ feature, onClose, onConfirm, interviewMode }: UpgradeModalProps) {
   const { tier: currentTier } = usePlan();
   const e = getEntitlement(feature, currentTier);
+  const detailsHref = getDetailsHref(feature);
 
   const upgradeTiers = TIER_ORDER.filter(
-    (t) =>
-      t !== "free" && TIER_ORDER.indexOf(t) > TIER_ORDER.indexOf(currentTier),
+    (t) => t !== "free" && TIER_ORDER.indexOf(t) > TIER_ORDER.indexOf(currentTier)
   ) as PlanTier[];
 
   const fullUpgradeTiers = upgradeTiers.filter((t) => {
@@ -196,6 +243,9 @@ export function UpgradeModal({
       ? "premium"
       : (fullUpgradeTiers[0] ?? upgradeTiers[0] ?? "basic");
   const [selectedTier, setSelectedTier] = useState<PlanTier>(defaultTier);
+  const [interviewTab, setInterviewTab] = useState<"prep" | "rapid" | "mock">(
+    interviewMode ?? "prep"
+  );
   // ── Separate loading states for each button ──
   const [isAddonProcessing, setIsAddonProcessing] = useState(false);
   const [isUpgradeProcessing, setIsUpgradeProcessing] = useState(false);
@@ -204,7 +254,7 @@ export function UpgradeModal({
   const handleCheckout = async (
     action: "upgrade" | "addon",
     target: string,
-    setProcessing: (v: boolean) => void,
+    setProcessing: (v: boolean) => void
   ) => {
     if (onConfirm) {
       onConfirm(action, target as PlanTier);
@@ -222,7 +272,6 @@ export function UpgradeModal({
       const isUpgrade = action === "upgrade" && currentTier !== "free";
 
       const payload = {
-        userId: user.id,
         isUpgrade,
         currentTier: currentTier !== "free" ? currentTier : undefined,
         productTier: action === "upgrade" ? target : undefined,
@@ -252,8 +301,13 @@ export function UpgradeModal({
     }
   };
 
+  React.useEffect(() => {
+    if (upgradeTiers.length === 0) {
+      onClose();
+    }
+  }, [upgradeTiers.length, onClose]);
+
   if (upgradeTiers.length === 0) {
-    onClose();
     return null;
   }
 
@@ -366,7 +420,7 @@ export function UpgradeModal({
               </div>
             </div>
             <p className="text-[12px] font-medium text-primary/80">
-              Buy once, or get it included with a plan upgrade
+              Get it included with a plan upgrade, or buy once
             </p>
           </div>
 
@@ -375,61 +429,50 @@ export function UpgradeModal({
             className="overflow-y-auto overscroll-contain flex-1 px-4 py-4 flex flex-col gap-3"
             style={scrollbarHideStyle}
           >
-            {/* Buy individually */}
-            <div
-              className={`rounded-2xl ${addonStyle.featureBg} border ${addonStyle.badgeBorder} p-4`}
-            >
-              <p
-                className={`text-[10px] font-bold uppercase tracking-widest ${addonStyle.badgeText} mb-2`}
-              >
-                Buy Once
-              </p>
-              <div className="flex items-baseline gap-1.5 mb-1">
-                <span
-                  className={`text-[28px] font-black ${addonStyle.priceText} leading-none`}
-                >
-                  ${addon.price}
-                </span>
-                {addon.unit && (
-                  <span
-                    className={`text-[12px] ${addonStyle.badgeText} opacity-60 font-medium`}
-                  >
-                    · {addon.unit}
-                  </span>
-                )}
-              </div>
-              <p
-                className={`text-[11px] ${addonStyle.badgeText} opacity-50 mb-3`}
-              >
-                One-time purchase · No subscription required
-              </p>
-
-              <button
-                disabled={isAddonProcessing || isUpgradeProcessing}
-                onClick={() =>
-                  handleCheckout("addon", addon.id, setIsAddonProcessing)
-                }
-                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 disabled:opacity-60 text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm"
-              >
-                {isAddonProcessing ? (
-                  <Loader2 size={14} className="animate-spin" />
-                ) : (
-                  <ShoppingCart size={14} strokeWidth={2.5} />
-                )}
-                {isAddonProcessing
-                  ? "Redirecting to payment..."
-                  : `Buy ${addon.name} · $${addon.price}`}
-              </button>
-            </div>
-
-            {/* Divider */}
-            {showInclusionSection && (
-              <div className="flex items-center gap-3">
-                <div className="flex-1 border-t border-neutral-200" />
-                <span className="text-[11px] text-neutral-400 font-semibold">
-                  or get it included
-                </span>
-                <div className="flex-1 border-t border-neutral-200" />
+            {/* ── Interview-prep-specific mode breakdown ── */}
+            {interviewMode && (
+              <div className="rounded-2xl bg-slate-50 border border-slate-200/60 p-4">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2.5">
+                  Interview Prep Features
+                </p>
+                <div className="flex gap-1 bg-white rounded-xl p-1 mb-3 ring-1 ring-slate-200/60">
+                  {(["prep", "rapid", "mock"] as const).map((mode) => {
+                    const cfg = INTERVIEW_MODE_FEATURES[mode];
+                    const Icon = cfg.icon;
+                    const isActive = interviewTab === mode;
+                    return (
+                      <button
+                        key={mode}
+                        onClick={() => setInterviewTab(mode)}
+                        className={`flex-1 py-2 rounded-lg text-[10.5px] font-bold transition-all flex items-center justify-center gap-1.5 ${
+                          isActive
+                            ? "shadow-sm text-white"
+                            : "text-slate-500 hover:text-slate-700 bg-transparent"
+                        }`}
+                        style={isActive ? { backgroundColor: cfg.color } : {}}
+                      >
+                        <Icon size={12} strokeWidth={2.5} />
+                        {cfg.label}
+                      </button>
+                    );
+                  })}
+                </div>
+                <ul className="flex flex-col gap-1.5">
+                  {INTERVIEW_MODE_FEATURES[interviewTab].features.map((item) => (
+                    <li
+                      key={item}
+                      className="flex items-start gap-2 text-[11.5px] text-slate-600 leading-snug"
+                    >
+                      <Check
+                        size={12}
+                        strokeWidth={2.5}
+                        className="shrink-0 mt-0.5"
+                        style={{ color: INTERVIEW_MODE_FEATURES[interviewTab].color }}
+                      />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
               </div>
             )}
 
@@ -465,58 +508,58 @@ export function UpgradeModal({
                   </div>
                 )}
 
-               <div className="flex flex-col mb-3">
-                <div className="flex items-center gap-1 mb-2">
-                  <TierIcon tier={selectedTier} size={54} />
+                <div className="flex flex-col mb-3">
+                  <div className="flex items-center gap-1 mb-2">
+                    <TierIcon tier={selectedTier} size={54} />
 
-                  <div className="min-w-0 flex-1">
-                    <p className={`text-[10px] font-bold uppercase tracking-widest ${planStyle.featureText} mb-1`}>
-                      {TIER_NAMES[selectedTier]} Plan
-                    </p>
+                    <div className="min-w-0 flex-1">
+                      <p
+                        className={`text-[10px] font-bold uppercase tracking-widest ${planStyle.featureText} mb-1`}
+                      >
+                        {TIER_NAMES[selectedTier]} Plan
+                      </p>
 
-                    {planPrice && (
-                      <div className="flex items-baseline gap-1 flex-wrap">
-                        <span className={`text-[26px] font-black ${planStyle.priceText} leading-none`}>
-                          ${planPrice.monthly}
-                        </span>
-                        <span className="text-[12px] text-neutral-500 font-medium">/mo</span>
-                        <span className="text-[11px] text-neutral-400">· ${planPrice.annual} total</span>
-                      </div>
-                    )}
+                      {planPrice && (
+                        <div className="flex items-baseline gap-1 flex-wrap">
+                          <span
+                            className={`text-[26px] font-black ${planStyle.priceText} leading-none`}
+                          >
+                            ${planPrice.monthly}
+                          </span>
+                          <span className="text-[12px] text-neutral-500 font-medium">/mo</span>
+                          <span className="text-[11px] text-neutral-400">
+                            · ${planPrice.annual} total
+                          </span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
 
-                <ul className="flex flex-col gap-1.5 mt-1 pl-3">
-                  {TIER_HIGHLIGHTS[selectedTier].slice(0, 4).map((item) => (
-                    <li
-                      key={item}
-                      className="flex items-start gap-1.5 text-[11.5px] text-[#3a4f63] leading-snug"
-                    >
-                      <Check
-                        size={12}
-                        strokeWidth={2.5}
-                        className={`${planStyle.check} shrink-0 mt-0.5`}
-                      />
-                      {item}
-                    </li>
-                  ))}
-                  {TIER_HIGHLIGHTS[selectedTier].length > 4 && (
-                    <li className="text-[11px] text-neutral-400 pl-[18px]">
-                      + {TIER_HIGHLIGHTS[selectedTier].length - 4} more features
-                    </li>
-                  )}
-                </ul>
-              </div>
+                  <ul className="flex flex-col gap-1.5 mt-1 pl-3">
+                    {TIER_HIGHLIGHTS[selectedTier].slice(0, 4).map((item) => (
+                      <li
+                        key={item}
+                        className="flex items-start gap-1.5 text-[11.5px] text-[#3a4f63] leading-snug"
+                      >
+                        <Check
+                          size={12}
+                          strokeWidth={2.5}
+                          className={`${planStyle.check} shrink-0 mt-0.5`}
+                        />
+                        {item}
+                      </li>
+                    ))}
+                    {TIER_HIGHLIGHTS[selectedTier].length > 4 && (
+                      <li className="text-[11px] text-neutral-400 pl-[18px]">
+                        + {TIER_HIGHLIGHTS[selectedTier].length - 4} more features
+                      </li>
+                    )}
+                  </ul>
+                </div>
 
                 <button
                   disabled={isAddonProcessing || isUpgradeProcessing}
-                  onClick={() =>
-                    handleCheckout(
-                      "upgrade",
-                      selectedTier,
-                      setIsUpgradeProcessing,
-                    )
-                  }
+                  onClick={() => handleCheckout("upgrade", selectedTier, setIsUpgradeProcessing)}
                   className={`w-full py-2.5 rounded-xl bg-gradient-to-r ${planStyle.button} ${planStyle.buttonHover} text-white text-[13px] disabled:opacity-60 font-bold transition-colors flex items-center justify-center gap-2 shadow-sm`}
                 >
                   {isUpgradeProcessing ? (
@@ -528,12 +571,70 @@ export function UpgradeModal({
                     ? "Redirecting to payment..."
                     : `Upgrade to ${TIER_NAMES[selectedTier]}`}
                   {!isUpgradeProcessing && planPrice && (
-                    <span className="font-normal text-white/80">
-                      · ${planPrice.monthly}/mo
-                    </span>
+                    <span className="font-normal text-white/80">· ${planPrice.monthly}/mo</span>
                   )}
                 </button>
               </div>
+            )}
+
+            {/* Divider */}
+            {showInclusionSection && (
+              <div className="flex items-center gap-3">
+                <div className="flex-1 border-t border-neutral-200" />
+                <span className="text-[11px] text-neutral-400 font-semibold">
+                  or buy once
+                </span>
+                <div className="flex-1 border-t border-neutral-200" />
+              </div>
+            )}
+
+            {/* Buy individually */}
+            <div
+              className={`rounded-2xl ${addonStyle.featureBg} border ${addonStyle.badgeBorder} p-4`}
+            >
+              <p
+                className={`text-[10px] font-bold uppercase tracking-widest ${addonStyle.badgeText} mb-2`}
+              >
+                Buy Once
+              </p>
+              <div className="flex items-baseline gap-1.5 mb-1">
+                <span className={`text-[28px] font-black ${addonStyle.priceText} leading-none`}>
+                  ${addon.price}
+                </span>
+                {addon.unit && (
+                  <span className={`text-[12px] ${addonStyle.badgeText} opacity-60 font-medium`}>
+                    · {addon.unit}
+                  </span>
+                )}
+              </div>
+              <p className={`text-[11px] ${addonStyle.badgeText} opacity-50 mb-3`}>
+                One-time purchase · No subscription required
+              </p>
+
+              <button
+                disabled={isAddonProcessing || isUpgradeProcessing}
+                onClick={() => handleCheckout("addon", addon.id, setIsAddonProcessing)}
+                className="w-full py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 active:bg-amber-700 disabled:opacity-60 text-white text-[13px] font-bold transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                {isAddonProcessing ? (
+                  <Loader2 size={14} className="animate-spin" />
+                ) : (
+                  <ShoppingCart size={14} strokeWidth={2.5} />
+                )}
+                {isAddonProcessing
+                  ? "Redirecting to payment..."
+                  : `Buy ${addon.name} · $${addon.price}`}
+              </button>
+            </div>
+
+            {detailsHref && (
+              <Link
+                href={detailsHref}
+                onClick={onClose}
+                className="text-center text-[12px] font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
+              >
+                See details & reviews
+              </Link>
             )}
 
             <p
@@ -554,8 +655,7 @@ export function UpgradeModal({
   }
 
   // ─── Upgrade-only layout ──────────────────────────────────────────────────
-  const tabTiers =
-    fullUpgradeTiers.length > 0 ? fullUpgradeTiers : upgradeTiers;
+  const tabTiers = fullUpgradeTiers.length > 0 ? fullUpgradeTiers : upgradeTiers;
   const price = TIER_PRICES[selectedTier];
   const style = TIER_STYLE[selectedTier];
 
@@ -599,19 +699,11 @@ export function UpgradeModal({
               </h2>
               {price && (
                 <div className="flex items-baseline gap-1 mt-0.5 flex-wrap">
-                  <span
-                    className={`text-[22px] font-black leading-none ${style.headerPrice}`}
-                  >
+                  <span className={`text-[22px] font-black leading-none ${style.headerPrice}`}>
                     ${price.monthly}
                   </span>
-                  <span
-                    className={`text-[11px] font-medium ${style.headerSub}`}
-                  >
-                    /mo
-                  </span>
-                  <span
-                    className={`text-[11px] font-medium ${style.headerSub}`}
-                  >
+                  <span className={`text-[11px] font-medium ${style.headerSub}`}>/mo</span>
+                  <span className={`text-[11px] font-medium ${style.headerSub}`}>
                     · ${price.annual} total
                   </span>
                 </div>
@@ -642,9 +734,7 @@ export function UpgradeModal({
                       : {}
                   }
                   className={`flex-1 py-2 rounded-xl text-[11.5px] font-bold transition-all flex items-center justify-center gap-1.5 ${
-                    selectedTier === t
-                      ? "shadow-sm"
-                      : "text-neutral-500 hover:text-neutral-700"
+                    selectedTier === t ? "shadow-sm" : "text-neutral-500 hover:text-neutral-700"
                   }`}
                 >
                   {/* Icon flush in tab — zero extra padding/wrapper */}
@@ -656,17 +746,72 @@ export function UpgradeModal({
           )}
 
           {/* Feature highlights */}
+          {/* ── Interview-prep-specific mode breakdown ── */}
+          {interviewMode && (
+            <div className="rounded-2xl bg-slate-50 border border-slate-200/60 p-4">
+              <p className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2.5">
+                Interview Prep Features
+              </p>
+              <div className="flex gap-1 bg-white rounded-xl p-1 mb-3 ring-1 ring-slate-200/60">
+                {(["prep", "rapid", "mock"] as const).map((mode) => {
+                  const cfg = INTERVIEW_MODE_FEATURES[mode];
+                  const Icon = cfg.icon;
+                  const isActive = interviewTab === mode;
+                  return (
+                    <button
+                      key={mode}
+                      onClick={() => setInterviewTab(mode)}
+                      className={`flex-1 py-2 rounded-lg text-[10.5px] font-bold transition-all flex items-center justify-center gap-1.5 ${
+                        isActive
+                          ? "shadow-sm text-white"
+                          : "text-slate-500 hover:text-slate-700 bg-transparent"
+                      }`}
+                      style={isActive ? { backgroundColor: cfg.color } : {}}
+                    >
+                      <Icon size={12} strokeWidth={2.5} />
+                      {cfg.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <ul className="flex flex-col gap-1.5">
+                {INTERVIEW_MODE_FEATURES[interviewTab].features.map((item) => (
+                  <li
+                    key={item}
+                    className="flex items-start gap-2 text-[11.5px] text-slate-600 leading-snug"
+                  >
+                    <Check
+                      size={12}
+                      strokeWidth={2.5}
+                      className="shrink-0 mt-0.5"
+                      style={{ color: INTERVIEW_MODE_FEATURES[interviewTab].color }}
+                    />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {/* ── Divider ── */}
+          {interviewMode && (
+            <div className="flex items-center gap-3">
+              <div className="flex-1 border-t border-neutral-200" />
+              <span className="text-[11px] text-neutral-400 font-semibold">
+                What you get with your plan
+              </span>
+              <div className="flex-1 border-t border-neutral-200" />
+            </div>
+          )}
+
+          {/* ── General plan highlights ── */}
           <ul className="flex flex-col gap-1.5">
             {TIER_HIGHLIGHTS[selectedTier].map((item) => (
               <li
                 key={item}
                 className="flex items-start gap-2 text-[12px] text-[#3a4f63] leading-snug"
               >
-                <Check
-                  size={13}
-                  strokeWidth={2.5}
-                  className={`${style.check} shrink-0 mt-0.5`}
-                />
+                <Check size={13} strokeWidth={2.5} className={`${style.check} shrink-0 mt-0.5`} />
                 {item}
               </li>
             ))}
@@ -675,18 +820,24 @@ export function UpgradeModal({
           {/* Upgrade CTA */}
           <button
             disabled={isUpgradeProcessing}
-            onClick={() =>
-              handleCheckout("upgrade", selectedTier, setIsUpgradeProcessing)
-            }
+            onClick={() => handleCheckout("upgrade", selectedTier, setIsUpgradeProcessing)}
             className={`w-full py-3 rounded-2xl bg-gradient-to-r ${style.button} ${style.buttonHover} text-white text-[13.5px] font-bold disabled:opacity-60 transition-colors flex items-center justify-center gap-2 shadow-md active:opacity-90`}
           >
-            {isUpgradeProcessing && (
-              <Loader2 size={14} className="animate-spin" />
-            )}
+            {isUpgradeProcessing && <Loader2 size={14} className="animate-spin" />}
             {isUpgradeProcessing
               ? "Redirecting to payment..."
               : `Upgrade to ${TIER_NAMES[selectedTier]}`}
           </button>
+
+          {detailsHref && (
+            <Link
+              href={detailsHref}
+              onClick={onClose}
+              className="text-center text-[12px] font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
+            >
+              See details & reviews
+            </Link>
+          )}
 
           {/* FIX: replaced pb-safe (non-existent utility) with inline env() style */}
           <p

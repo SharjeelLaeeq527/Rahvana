@@ -12,6 +12,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
 import { encrypt } from "@/lib/encryption";
+import { validateProfile } from "@/lib/profile/schema";
+import type { MasterProfile } from "@/types/profile";
 
 // Sensitive top-level string fields inside the MasterProfile object
 const SENSITIVE_TOP_LEVEL = [
@@ -25,15 +27,30 @@ const SENSITIVE_TOP_LEVEL = [
   "uscisAccountNumber",
   "annualIncome",
   "phone",
+  "caseNumber",
+  "nvcInvoice",
+  "surname",
 ] as const;
 
 // Sensitive nested fields: { parentKey: [subKey, ...] }
 const SENSITIVE_NESTED: Record<string, string[]> = {
-  currentAddress:     ["street", "city", "state", "zipCode"],
-  mailingAddress:     ["street", "city", "state", "zipCode"],
-  father:             ["dateOfBirth"],
-  mother:             ["dateOfBirth"],
-  sponsor:            ["phone", "email"],
+  currentAddress: ["street", "city", "state", "zipCode"],
+  mailingAddress: ["street", "city", "state", "zipCode"],
+  father: ["dateOfBirth"],
+  mother: ["dateOfBirth"],
+  // Keep in sync with app/api/profile/route.ts (GET decrypts the same keys).
+  sponsor: [
+    "phone",
+    "email",
+    "passportNumber",
+    "passportIssueDate",
+    "passportExpiry",
+    "passportCountry",
+    "ssn",
+    "alienNumber",
+    "uscisAccountNumber",
+  ],
+  beneficiary: ["passportNumber", "passportIssueDate", "passportExpiry", "passportCountry", "cnic"],
   naturalizationInfo: ["certificateNumber", "placeOfIssuance", "dateOfIssuance"],
 };
 
@@ -68,7 +85,10 @@ export async function POST(request: Request) {
   try {
     // ── 1. Authenticate user ──────────────────────────────────────────────────
     const supabase = await createClient();
-    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
 
     if (authError || !user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -82,20 +102,29 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid profile data" }, { status: 400 });
     }
 
-    // ── 3. Encrypt sensitive fields ───────────────────────────────────────────
+    // ── 3. Validate (same Zod rules the client uses) ──────────────────────────
+    // The client already blocks bad saves, but the server must not trust the
+    // client — enforce the identical rules here before anything is written.
+    const fieldErrors = validateProfile(profileDetails as MasterProfile);
+    if (Object.keys(fieldErrors).length > 0) {
+      return NextResponse.json(
+        { error: "Validation failed", fieldErrors },
+        { status: 400 },
+      );
+    }
+
+    // ── 4. Encrypt sensitive fields ───────────────────────────────────────────
     const encryptedDetails = encryptProfileDetails(profileDetails);
 
-    // ── 4. Upsert into user_profiles ──────────────────────────────────────────
-    const { error: upsertError } = await supabase
-      .from("user_profiles")
-      .upsert(
-        {
-          id: user.id,
-          profile_details: encryptedDetails,  // encrypted blob
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "id" }
-      );
+    // ── 5. Upsert into user_profiles ──────────────────────────────────────────
+    const { error: upsertError } = await supabase.from("user_profiles").upsert(
+      {
+        id: user.id,
+        profile_details: encryptedDetails, // encrypted blob
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "id" }
+    );
 
     if (upsertError) {
       console.error("[profile/complete] Upsert error:", upsertError);

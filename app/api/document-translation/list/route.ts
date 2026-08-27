@@ -2,6 +2,7 @@
 // User lists their own documents
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { E, msg } from "@/lib/errors";
 
 export async function GET(request: NextRequest) {
   try {
@@ -14,26 +15,31 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("[document-translation/list] Unauthorized:", userError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
 
-    const { data: documents, error, count } = await supabase
+    const {
+      data: documents,
+      error,
+      count,
+    } = await supabase
       .from("translation_documents")
       .select("*", { count: "exact" })
       .eq("user_id", user.id)
+      // Only show documents that have been paid for (payment_status='paid')
+      // or documents without a payment requirement (payment_id IS NULL means free/no payment)
+      .or("payment_status.eq.paid,payment_id.is.null")
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
     if (error) {
       console.error("Query error:", error);
-      return NextResponse.json(
-        { error: "Failed to fetch documents" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
     }
 
     // Generate signed URLs
@@ -74,9 +80,6 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("List documents error:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: msg(E.ADMIN_FETCH_FAILED) }, { status: 500 });
   }
 }

@@ -47,12 +47,12 @@ export const FilterPanel = ({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement;
-      
+
       // Check if click is from a select dropdown trigger/content
       const isSelectDropdown = target.closest(
         '[role="combobox"], [role="listbox"], [role="option"]'
       );
-      
+
       if (
         !isSelectDropdown &&
         popoverRef.current &&
@@ -79,54 +79,52 @@ export const FilterPanel = ({
   };
 
   const handleReset = () => {
-    const resetFilters = fields.reduce(
-      (acc, field) => ({ ...acc, [field.key]: "all" }),
-      {}
-    );
+    const resetFilters = fields.reduce((acc, field) => ({ ...acc, [field.key]: "all" }), {});
     setLocalFilters(resetFilters);
     onFilterChange(resetFilters);
   };
 
-  const activeFiltersCount = Object.values(localFilters).filter(
-    (v) => v !== "all"
-  ).length;
+  const activeFiltersCount = Object.values(localFilters).filter((v) => v !== "all").length;
 
   return (
     <div className="relative inline-block">
       <Button
-        ref={buttonRef}
-        onClick={() => setShowPopover(!showPopover)}
-        variant="outline"
-        className={`gap-2 ${activeFiltersCount > 0 ? "bg-teal-50 border-teal-300" : ""}`}
-      >
-        <Filter className="w-4 h-4" />
-        Filters
-        {activeFiltersCount > 0 && (
-          <span className="ml-1 px-2 py-0.5 bg-teal-600 text-white text-xs rounded-full">
-            {activeFiltersCount}
-          </span>
-        )}
-      </Button>
+  ref={buttonRef}
+  onClick={() => setShowPopover(!showPopover)}
+  variant="outline"
+  className={`gap-3 !px-6 !py-5 ${
+    activeFiltersCount > 0 ? "bg-teal-50 border-teal-300" : ""
+  }`}
+>
+  <Filter className="h-4 w-4" />
+  Filters
+
+  {activeFiltersCount > 0 && (
+    <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-teal-600 px-1 text-xs font-semibold text-white">
+      {activeFiltersCount}
+    </span>
+  )}
+</Button>
 
       {showPopover && (
         <div
           ref={popoverRef}
-          className="absolute top-full left-0 mt-2 bg-white rounded-xl shadow-xl border border-slate-200 z-50 w-80 max-h-125 overflow-y-auto"
+          className="absolute top-full left-0 z-50 mt-2 max-h-125 w-80 overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl"
         >
-          <div className="p-4 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white">
+          <div className="sticky top-0 flex items-center justify-between border-b border-slate-100 bg-white p-4">
             <h3 className="font-semibold text-slate-900">Filter Sessions</h3>
             <button
               onClick={() => setShowPopover(false)}
-              className="text-slate-600 hover:text-slate-900 transition-colors"
+              className="text-slate-600 transition-colors hover:text-slate-900"
             >
-              <X className="w-4 h-4" />
+              <X className="h-4 w-4" />
             </button>
           </div>
 
-          <div className="p-4 space-y-4" onClick={(e) => e.stopPropagation()}>
+          <div className="space-y-4 p-4" onClick={(e) => e.stopPropagation()}>
             {fields.map((field) => (
               <div key={field.key} onClick={(e) => e.stopPropagation()}>
-                <label className="block text-xs font-semibold text-slate-900 mb-2 uppercase tracking-wide">
+                <label className="mb-2 block text-xs font-semibold tracking-wide text-slate-900 uppercase">
                   {field.label}
                 </label>
                 <CustomDropdown
@@ -141,7 +139,7 @@ export const FilterPanel = ({
             ))}
           </div>
 
-          <div className="px-4 py-3 border-t border-slate-100 space-y-3 sticky bottom-0 bg-slate-50">
+          <div className="sticky bottom-0 space-y-3 border-t border-slate-100 bg-slate-50 px-4 py-3">
             <div className="flex gap-2">
               {activeFiltersCount > 0 && (
                 <button
@@ -149,22 +147,20 @@ export const FilterPanel = ({
                     e.stopPropagation();
                     handleReset();
                   }}
-                  className="flex-1 text-sm text-white bg-teal-600 hover:bg-teal-700 font-medium transition-colors py-2 px-3 rounded-lg"
+                  className="flex-1 rounded-lg bg-teal-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-teal-700"
                 >
                   Reset
                 </button>
               )}
               <button
                 onClick={() => setShowPopover(false)}
-                className="flex-1 text-sm text-slate-700 bg-slate-200 hover:bg-slate-300 font-medium transition-colors py-2 px-3 rounded-lg"
+                className="flex-1 rounded-lg bg-slate-200 px-3 py-2 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-300"
               >
                 Done
               </button>
             </div>
-            <div className="text-xs text-slate-600 text-center">
-              Showing{" "}
-              <span className="font-semibold text-slate-900">{itemCount}</span>{" "}
-              of{" "}
+            <div className="text-center text-xs text-slate-600">
+              Showing <span className="font-semibold text-slate-900">{itemCount}</span> of{" "}
               <span className="font-semibold text-slate-900">{totalCount}</span>
             </div>
           </div>

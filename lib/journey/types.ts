@@ -75,8 +75,8 @@ export interface Step {
 }
 
 export interface CaseData {
-  id: string; 
-  journey_id: string; 
+  id: string;
+  journey_id: string;
   data_key: string; // e.g., 'filing_method', 'visa_category', 'beneficiary_age', etc.
   data_value: any; // JSONB - flexible value storage (string, number, boolean, array, object, null)
   data_type: "string" | "number" | "boolean" | "array" | "object" | "date"; // Data type hint
@@ -195,6 +195,7 @@ export interface StepUpdate {
   started_at?: string;
   completed_at?: string;
   due_date?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface CaseDataUpdate {
@@ -375,13 +376,13 @@ export interface CaseDataFilters {
 // ────────────────────────────────────────────────
 
 export type JourneyDocumentStatus =
-  | 'not_started'
-  | 'requested'
-  | 'pending'
-  | 'received'
-  | 'uploaded'
-  | 'expired'
-  | 'rejected';
+  | "not_started"
+  | "requested"
+  | "pending"
+  | "received"
+  | "uploaded"
+  | "expired"
+  | "rejected";
 
 export interface JourneyDocument {
   id: string;

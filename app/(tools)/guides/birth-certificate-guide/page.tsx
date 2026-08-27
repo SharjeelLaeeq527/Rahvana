@@ -4,9 +4,7 @@ import { useState, useEffect, useMemo, useRef } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import WizardHeader from "../../../components/guides/WizardHeader";
 import WizardSidebar from "../../../components/guides/WizardSidebar";
-import WizardInfoPanel, {
-  InfoPanelData,
-} from "../../../components/guides/WizardInfoPanel";
+import WizardInfoPanel, { InfoPanelData } from "../../../components/guides/WizardInfoPanel";
 import DocumentNeedStep from "../../../components/guides/steps/DocumentNeedStep";
 import RoadmapStep from "../../../components/guides/steps/RoadmapStep";
 import ValidationStep from "../../../components/guides/steps/ValidationStep";
@@ -14,13 +12,14 @@ import { NarrativeModal } from "../../(visa)/221g-action-planner/components/Narr
 import { type WizardState, WizardStepId } from "@/types/guide-wizard";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Loader } from "@/components/ui/spinner";
+import { PageGate } from "@/app/components/entitlements/PageGate";
 
 import FeedbackButton from "@/app/components/FeedbackButton";
 import { useWizardSession } from "@/lib/guides/useWizardSession";
 import { useGuideUpload } from "@/lib/guides/useGuideUpload";
 import { useGuideSave } from "@/lib/guides/useGuideSave";
 import { useGuideFeedback } from "@/lib/guides/useGuideFeedback";
-import { useNavigationGuard } from "@/lib/guides/useNavigationGuard";
+import { NavigationGuard } from "@/lib/guides/useNavigationGuard";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 const STEP_IDS: WizardStepId[] = ["document_need", "roadmap", "validation"];
@@ -28,8 +27,12 @@ const STEP_IDS: WizardStepId[] = ["document_need", "roadmap", "validation"];
 const BirthCertificateGuidePage = () => {
   const { t, tRaw, isUrdu } = useLanguage();
   const [currentStep, setCurrentStep] = useState(0);
+  const [highestReachedStep, setHighestReachedStep] = useState(0);
   const [showWhatsThis, setShowWhatsThis] = useState(true);
-  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(
+    typeof window !== "undefined" &&
+      localStorage.getItem("dont_show_birth_certificate_welcome") === "true"
+  );
   const [isSaved, setIsSaved] = useState(false);
   const [navigationHandled, setNavigationHandled] = useState(false);
   const [state, setState] = useState<WizardState>({
@@ -56,11 +59,10 @@ const BirthCertificateGuidePage = () => {
     (prev, stepsData) => ({
       ...prev,
       documentNeed: stepsData.document_need || prev.documentNeed,
-      checkedDocuments:
-        stepsData.roadmap?.checkedDocuments || prev.checkedDocuments,
+      checkedDocuments: stepsData.roadmap?.checkedDocuments || prev.checkedDocuments,
       validationChecks: stepsData.validation?.checks || prev.validationChecks,
       uploadedFile: stepsData.validation?.uploaded || prev.uploadedFile,
-    }),
+    })
   );
 
   const { uploadFile: uploadFileHook } = useGuideUpload();
@@ -81,14 +83,14 @@ const BirthCertificateGuidePage = () => {
   const handleSubmitFeedback = async (
     feedbackType: string,
     description: string,
-    attachment?: File,
+    attachment?: File
   ) => {
     await submitFeedbackHook(
       "birth-certificate-guide",
       currentStepId,
       feedbackType,
       description,
-      attachment,
+      attachment
     );
   };
 
@@ -129,20 +131,16 @@ const BirthCertificateGuidePage = () => {
   };
 
   useEffect(() => {
+    setHighestReachedStep((prev) => Math.max(prev, currentStep));
+  }, [currentStep]);
+
+  useEffect(() => {
     if (session?.saved) {
       setIsSaved(true);
     }
   }, [session]);
 
-  useNavigationGuard(
-    hasProgress && !isSaved,
-    async () => {
-      await saveGuide("birth-certificate-guide"); // wait save complete
-      setIsSaved(true); // mark as saved
-    },
-    navigationHandled,
-    setNavigationHandled,
-  );
+  // Navigation guard handled by NavigationGuard component in render
 
   // Before unload confirmation
   useEffect(() => {
@@ -170,17 +168,13 @@ const BirthCertificateGuidePage = () => {
   const localizedBirthCertData = tRaw("birthCertificate");
   const wizardData = localizedBirthCertData.wizard;
 
-  const infoPanelData = (wizardData.infoPanel as any)?.[
-    currentStepId
-  ] as unknown as InfoPanelData;
+  const infoPanelData = (wizardData.infoPanel as any)?.[currentStepId] as unknown as InfoPanelData;
 
   const canGoNext = (): boolean => {
     switch (currentStepId) {
       case "document_need":
         if (wizardData.documentNeed?.questions) {
-          const numQuestions = Object.keys(
-            wizardData.documentNeed.questions,
-          ).length;
+          const numQuestions = Object.keys(wizardData.documentNeed.questions).length;
           const answers = state.documentNeed;
           if (typeof answers === "object" && answers !== null) {
             return Object.keys(answers).length === numQuestions;
@@ -198,8 +192,7 @@ const BirthCertificateGuidePage = () => {
   };
 
   const goNext = () => {
-    if (currentStep < STEP_IDS.length - 1 && canGoNext())
-      setCurrentStep(currentStep + 1);
+    if (currentStep < STEP_IDS.length - 1 && canGoNext()) setCurrentStep(currentStep + 1);
   };
 
   const goBack = () => {
@@ -211,16 +204,13 @@ const BirthCertificateGuidePage = () => {
       setState((s) => ({
         ...s,
         documentNeed: {
-          ...(typeof s.documentNeed === "object" && s.documentNeed !== null
-            ? s.documentNeed
-            : {}),
+          ...(typeof s.documentNeed === "object" && s.documentNeed !== null ? s.documentNeed : {}),
           [questionId]: id,
         },
       }));
       // Save progress to backend
       saveWizardStep("document_need", {
-        ...(typeof state.documentNeed === "object" &&
-        state.documentNeed !== null
+        ...(typeof state.documentNeed === "object" && state.documentNeed !== null
           ? state.documentNeed
           : {}),
         [questionId]: id,
@@ -305,14 +295,16 @@ const BirthCertificateGuidePage = () => {
   }
 
   return (
-    <div
-      className={`min-h-screen flex flex-col bg-[#f5f7fa] pt-26 ${isUrdu ? "font-urdu-body" : ""}`}
-      dir={isUrdu ? "rtl" : "ltr"}
+    <PageGate
+      feature="guide_birth_cert"
+      title="Birth Certificate Guide Locked"
+      description="Upgrade your plan to unlock step-by-step guidance on obtaining your birth certificate."
     >
-      <WizardHeader
-        onWhatsThis={() => setShowWhatsThis(true)}
-        title={wizardData.title}
-      />
+      <div
+        className={`min-h-screen flex flex-col bg-[#f5f7fa] pt-26 ${isUrdu ? "font-urdu-body" : ""}`}
+        dir={isUrdu ? "rtl" : "ltr"}
+      >
+      <WizardHeader onWhatsThis={() => setShowWhatsThis(true)} title={wizardData.title} />
 
       <div className="grid flex-1 grid-cols-1 gap-4 overflow-y-auto xl:overflow-hidden h-[calc(100vh-56px)] xl:h-auto xl:grid-cols-[320px_minmax(0,1fr)_350px] xl:gap-6 xl:items-start">
         <WizardSidebar
@@ -329,6 +321,7 @@ const BirthCertificateGuidePage = () => {
           onGuideSaved={() => setIsSaved(true)}
           saving={saving}
           session={session}
+          highestReachedStep={highestReachedStep}
         />
 
         <main className="min-w-0 xl:overflow-y-auto p-4 sm:p-8 relative flex flex-col xl:items-start items-center xl:justify-start justify-center">
@@ -357,7 +350,7 @@ const BirthCertificateGuidePage = () => {
                 </AnimatePresence>
               </div>
 
-              <div className="flex flex-col justify-between items-center gap-4 mt-5 pb-6 w-full sm:flex-row">
+              <div className="flex justify-between items-center gap-4 mt-5 pb-6 w-full sm:flex-row">
                 {currentStep > 0 ? (
                   <motion.button
                     whileHover={{ scale: 1.03 }}
@@ -365,10 +358,10 @@ const BirthCertificateGuidePage = () => {
                     onClick={goBack}
                     className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl border border-gray-300 bg-white text-gray-700 font-semibold text-sm cursor-pointer ${isUrdu ? "font-urdu-body" : ""}`}
                   >
-                    <ArrowLeft
-                      className={`w-4 h-4 ${isUrdu ? "rotate-180" : ""}`}
-                    />{" "}
-                    {t("wizard.common.back")}
+                    <ArrowLeft className={`w-4 h-4 ${isUrdu ? "rotate-180" : ""}`} />{" "}
+                    <span className="hidden md:inline-block">
+                      {t("wizard.common.back")}
+                    </span>
                   </motion.button>
                 ) : (
                   <div className="hidden sm:block w-20" />
@@ -403,10 +396,10 @@ const BirthCertificateGuidePage = () => {
                     ${isUrdu ? "font-urdu-body" : ""}
                   `}
                     >
-                      {t("wizard.common.continue")}{" "}
-                      <ArrowRight
-                        className={`w-4 h-4 ${isUrdu ? "rotate-180" : ""}`}
-                      />
+                      <span className="hidden md:inline-block">
+                        {t("wizard.common.continue")}
+                      </span>
+                      <ArrowRight className={`w-4 h-4 ${isUrdu ? "rotate-180" : ""}`} />
                     </motion.button>
                   )}
               </div>
@@ -430,6 +423,15 @@ const BirthCertificateGuidePage = () => {
         onDontShowAgainChange={setDontShowAgain}
         variant="birth-certificate"
       />
+      <NavigationGuard
+        shouldBlock={hasProgress && !isSaved}
+        onSave={async () => {
+          await saveGuide("birth-certificate-guide");
+          setIsSaved(true);
+        }}
+        navigationHandled={navigationHandled}
+        setNavigationHandled={setNavigationHandled}
+      />
       <FeedbackButton
         steps={[
           t("wizard.common.applicationType"),
@@ -439,7 +441,8 @@ const BirthCertificateGuidePage = () => {
         currentStepName={t(`wizard.common.${currentStepId}`)}
         onSubmit={handleSubmitFeedback}
       />
-    </div>
+      </div>
+    </PageGate>
   );
 };
 

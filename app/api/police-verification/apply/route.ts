@@ -1,5 +1,7 @@
-import { NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
+import { NextRequest } from "next/server";
+import { createServerClient } from "@supabase/ssr";
+import { triggerPCCNotification } from "@/lib/notifications";
+import { safeError } from "@/lib/api/safeError";
 
 interface PoliceVerificationData {
   user_id?: string;
@@ -8,7 +10,7 @@ interface PoliceVerificationData {
   email: string;
   phone_number: string;
   dob?: string;
-  
+
   cnic: string;
   cnic_issue_date?: string;
   cnic_expiry_date?: string;
@@ -20,7 +22,7 @@ interface PoliceVerificationData {
   district: string;
   purpose: string;
   delivery_type: string;
-  
+
   current_address: string;
   stay_from?: string;
   stay_to?: string;
@@ -47,12 +49,12 @@ interface PoliceVerificationData {
   witness2_address: string;
 
   request_id: string;
-  status: 'pending';
+  status: "pending";
 }
 
 function generateRequestId() {
   const date = new Date();
-  const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
+  const dateStr = date.toISOString().slice(0, 10).replace(/-/g, "");
   const randomStr = Math.floor(1000 + Math.random() * 9000).toString();
   return `PV-${dateStr}-${randomStr}`;
 }
@@ -64,9 +66,11 @@ export async function POST(req: NextRequest) {
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
       {
         cookies: {
-          getAll() { return []; },
-          setAll() {}
-        }
+          getAll() {
+            return [];
+          },
+          setAll() {},
+        },
       }
     );
 
@@ -80,7 +84,7 @@ export async function POST(req: NextRequest) {
       email: body.email,
       phone_number: body.mobile,
       dob: body.dob || null,
-      
+
       cnic: body.cnic,
       cnic_issue_date: body.cnicIssue || null,
       cnic_expiry_date: body.cnicExpiry || null,
@@ -88,11 +92,11 @@ export async function POST(req: NextRequest) {
       passport_issue_date: body.passportIssue || null,
       passport_expiry_date: body.passportExpiry || null,
 
-      province: body.province || 'Unknown',
+      province: body.province || "Unknown",
       district: body.district,
       purpose: body.purpose,
       delivery_type: body.deliveryType,
-      
+
       current_address: body.address,
       stay_from: body.stayFrom || null,
       stay_to: body.stayTo || null,
@@ -100,7 +104,7 @@ export async function POST(req: NextRequest) {
       residing_country: body.residingCountry || null,
       target_country: body.targetCountry,
 
-      was_arrested: body.arrested === 'Yes',
+      was_arrested: body.arrested === "Yes",
       fir_no: body.firNo || null,
       fir_year: body.firYear || null,
       police_station: body.policeStation || null,
@@ -119,24 +123,38 @@ export async function POST(req: NextRequest) {
       witness2_address: body.witness2Address,
 
       request_id: requestId,
-      status: 'pending'
+      status: "pending",
     };
 
     const { data, error } = await supabase
-      .from('police_verification_requests')
+      .from("police_verification_requests")
       .insert([verificationData])
       .select()
       .single();
 
     if (error) {
-      console.error('Error creating police verification request:', error);
-      return Response.json({ error: error.message }, { status: 500 });
+      console.error("Error creating police verification request:", error);
+      return safeError(error);
     }
+    // Notify admins of the new PCC request (non-blocking)
+    const locationParts = [verificationData.district, verificationData.province].filter(Boolean);
+    const locationText = locationParts.length > 0 ? ` for ${locationParts.join(", ")}` : "";
+    const refText = verificationData.request_id ? ` (${verificationData.request_id})` : "";
+
+    const pccNotificationBody = `${verificationData.full_name} has submitted a new Police Verification request${refText}${locationText}.`;
+
+    triggerPCCNotification(
+      data.id,
+      body.journeyId || undefined,
+      verificationData.full_name,
+      pccNotificationBody
+    ).catch((err) => {
+      console.error("[PCCNotif] Error triggering admin notification:", err);
+    });
 
     return Response.json({ success: true, id: data.id, requestId: data.request_id });
-
   } catch (error) {
-    console.error('Unexpected error:', error);
-    return Response.json({ error: 'Internal Server Error' }, { status: 500 });
+    console.error("Unexpected error:", error);
+    return Response.json({ error: "Internal Server Error" }, { status: 500 });
   }
 }

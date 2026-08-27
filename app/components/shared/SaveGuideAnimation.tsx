@@ -31,15 +31,9 @@ export function SaveGuideAnimation() {
       }, 2500);
     };
 
-    window.addEventListener(
-      "animate-save-guide",
-      handleSaveAnimation as EventListener,
-    );
+    window.addEventListener("animate-save-guide", handleSaveAnimation as EventListener);
     return () => {
-      window.removeEventListener(
-        "animate-save-guide",
-        handleSaveAnimation as EventListener,
-      );
+      window.removeEventListener("animate-save-guide", handleSaveAnimation as EventListener);
     };
   }, []);
 
@@ -52,17 +46,14 @@ export function SaveGuideAnimation() {
   if (!isMounted || typeof document === "undefined") return null;
 
   return createPortal(
-    <div
-      className="fixed inset-0 pointer-events-none"
-      style={{ zIndex: 99999 }}
-    >
+    <div className="fixed inset-0 pointer-events-none" style={{ zIndex: 99999 }}>
       <AnimatePresence>
         {animations.map((anim) => (
           <PlaneParticle key={anim.id} anim={anim} />
         ))}
       </AnimatePresence>
     </div>,
-    document.body,
+    document.body
   );
 }
 

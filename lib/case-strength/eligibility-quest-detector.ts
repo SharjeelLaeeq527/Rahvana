@@ -18,10 +18,29 @@
 
 import type { RiskFlag } from "./types";
 
-type EligibilityAnswers = Record<
-  string,
-  Record<string, string | string[]> | undefined
->;
+type EligibilityAnswers = Record<string, Record<string, string | string[]> | undefined>;
+
+/**
+ * Step reference config — maps logical step roles to category-specific step labels.
+ * To support a new visa category (IR-2, F-2A, K-1, etc.):
+ *   1. Pass a custom StepRefs object when calling detectRiskFlagsFromEligibilityQuest
+ *   2. Or add a new config under `lib/case-strength/categories/<category>-step-refs.ts`
+ *
+ * The detector logic itself stays the same — only the labels change per category.
+ */
+export interface StepRefs {
+  documents: string; // doc gathering step
+  mainForm: string; // primary form (e.g., I-130, I-129F)
+  beneForm?: string; // secondary beneficiary form (e.g., I-130A)
+  reviewSubmit: string; // final review/submit step
+}
+
+export const IR1_STEP_REFS: StepRefs = {
+  documents: "Chapter 1 Step 2, Gather Documents",
+  mainForm: "Chapter 1 Step 4, Fill I-130",
+  beneForm: "Chapter 1 Step 5, Fill I-130A",
+  reviewSubmit: "Chapter 1 Step 10, Review & Submit",
+};
 
 function get(answers: EligibilityAnswers, quest: string, screen: string): string | undefined {
   const val = answers?.[quest]?.[screen];
@@ -29,97 +48,102 @@ function get(answers: EligibilityAnswers, quest: string, screen: string): string
 }
 
 /**
- * Evaluates the eligibility-quest answers and returns advisory risk flags.
+ * Category-agnostic eligibility risks.
+ *
+ * These four patterns — past visa refusal/fraud, criminal history, unlawful
+ * presence, and income concern — apply to EVERY family-based category (spouse,
+ * parent, child, sibling). They are keyed to the shared q5 screens of the
+ * eligibility quest. Pulling them out of the IR-1 function lets IR-5 (and any
+ * future category) reuse them without copy-pasting, and layer its own
+ * category-specific patterns on top.
+ *
  * Patterns whose required answers are not present are silently skipped.
  */
-export function detectRiskFlagsFromEligibilityQuest(
-  answers: EligibilityAnswers | null | undefined
+export function detectCommonEligibilityRisks(
+  answers: EligibilityAnswers | null | undefined,
+  stepRefs: StepRefs = IR1_STEP_REFS
 ): RiskFlag[] {
   const flags: RiskFlag[] = [];
   if (!answers) return flags;
 
-  // ── Missing prior-marriage termination evidence (q3s1 + q3s3) ──────────────
-  const q3s1 = get(answers, "q3", "q3s1");
-  const q3s3 = get(answers, "q3", "q3s3");
-  const hadPriorMarriage =
-    q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both";
-  if (hadPriorMarriage && (q3s3 === "no" || q3s3 === "partial")) {
-    flags.push({
-      id: "missing_prior_marriage_termination",
-      title: "Prior marriage termination evidence missing",
-      severity: "critical",
-      advisory:
-        "If either party had a prior marriage, proof of legal termination is required " +
-        "(divorce decree, annulment order, or death certificate). Without complete " +
-        "documentation, USCIS will issue an RFE.",
-      source_basis: "8 CFR Section 204.2(a)(2) — I-130 documentation requirements",
-    });
-  }
-
-  // ── Prior visa refusal / fraud / misrepresentation (q5s1) ──────────────────
+  // ── Prior visa refusal / fraud ──────────────────────────────────────────────
   if (get(answers, "q5", "q5s1") === "yes") {
     flags.push({
       id: "prior_visa_refusal_or_fraud",
-      title: "Prior U.S. visa refusal, deportation, or fraud allegation",
+      title: "Past visa issue, disclose it",
       severity: "critical",
-      advisory:
-        "Any prior visa refusal, deportation, removal order, or fraud/misrepresentation " +
-        "allegation must be disclosed and documented. Misrepresentation under INA 212(a)(6)(C) " +
-        "creates a permanent inadmissibility bar unless waived. Consult an immigration " +
-        "attorney before filing — this is not a DIY scenario.",
-      source_basis:
-        "INA Section 212(a)(6)(C) — 8 USC Section 1182(a)(6)(C) — misrepresentation bar",
+      advisory: `Disclose every past visa refusal or issue in ${stepRefs.mainForm} and add supporting documents in ${stepRefs.documents}. Hiding it will hurt your case.`,
+      source_basis: "INA 212(a)(6)(C)",
     });
   }
 
-  // ── Beneficiary criminal history (q5s2) ────────────────────────────────────
+  // ── Criminal history ───────────────────────────────────────────────────────
   if (get(answers, "q5", "q5s2") === "yes") {
     flags.push({
       id: "beneficiary_criminal_history",
-      title: "Beneficiary has arrest, charge, or conviction",
+      title: "Court / police record, disclose it",
       severity: "critical",
-      advisory:
-        "Any arrest, charge, or conviction — anywhere in the world — must be disclosed " +
-        "and may trigger an inadmissibility bar under INA 212(a)(2). Certified court " +
-        "dispositions and police records will be required. Some convictions are waivable; " +
-        "others are permanent bars. Consult an immigration attorney to evaluate impact " +
-        "before filing.",
-      source_basis:
-        "INA Section 212(a)(2) — 8 USC Section 1182(a)(2) — criminal-related grounds of inadmissibility",
+      advisory: `Upload certified court documents and police records in ${stepRefs.documents}. Also mention them in ${stepRefs.mainForm}.`,
+      source_basis: "INA 212(a)(2)",
     });
   }
 
-  // ── Unlawful presence in the U.S. (q5s4) ───────────────────────────────────
+  // ── Unlawful presence ──────────────────────────────────────────────────────
   if (get(answers, "q5", "q5s4") === "yes") {
     flags.push({
       id: "unlawful_presence_history",
-      title: "Beneficiary has accumulated unlawful presence in the U.S.",
+      title: "U.S. overstay, waiver needed",
       severity: "critical",
-      advisory:
-        "Unlawful presence triggers the 3-year or 10-year bar under INA 212(a)(9)(B) once " +
-        "the beneficiary departs the U.S. for consular processing. A provisional unlawful " +
-        "presence waiver (Form I-601A) may be required before the visa interview. Consult " +
-        "an immigration attorney to determine the correct path before filing.",
-      source_basis:
-        "INA Section 212(a)(9)(B) — 8 USC Section 1182(a)(9)(B) — unlawful presence bars",
+      advisory: `A provisional waiver (Form I-601A) will be needed before the interview. Disclose the overstay in ${stepRefs.mainForm} and Rahvana will guide you through the waiver later.`,
+      source_basis: "INA 212(a)(9)(B)",
     });
   }
 
-  // ── Financial sponsorship concern (q5s5) ───────────────────────────────────
+  // ── Financial sponsorship ──────────────────────────────────────────────────
   if (get(answers, "q5", "q5s5") === "yes") {
     flags.push({
       id: "financial_sponsorship_concern",
-      title: "Petitioner income may not meet the 125% poverty guideline",
+      title: "Income may be too low",
       severity: "warning",
       advisory:
-        "The Affidavit of Support (Form I-864) requires the petitioner to demonstrate " +
-        "income at or above 125% of the federal poverty guideline for the household size. " +
-        "If the petitioner cannot meet this on their own, a joint sponsor or qualifying " +
-        "assets will be needed. Plan for this now to avoid an RFE at the NVC stage.",
-      source_basis:
-        "INA Section 213A — 8 USC Section 1183a — Affidavit of Support requirement",
+        "The petitioner's income may not meet the required level. Rahvana will handle the Affidavit of Support (I-864) at NVC stage, start arranging a joint sponsor now if needed.",
+      source_basis: "INA 213A, Form I-864",
     });
   }
+
+  return flags;
+}
+
+/**
+ * IR-1 (spouse) eligibility detector = spouse-only patterns + the common ones.
+ *
+ * The one spouse-specific pattern is missing prior-marriage termination
+ * evidence (q3). Everything else is shared, so we just append the common flags.
+ * The signature is unchanged, so every existing caller keeps working.
+ */
+export function detectRiskFlagsFromEligibilityQuest(
+  answers: EligibilityAnswers | null | undefined,
+  stepRefs: StepRefs = IR1_STEP_REFS
+): RiskFlag[] {
+  const flags: RiskFlag[] = [];
+  if (!answers) return flags;
+
+  // ── Missing prior-marriage termination evidence (SPOUSE-ONLY) ───────────────
+  const q3s1 = get(answers, "q3", "q3s1");
+  const q3s3 = get(answers, "q3", "q3s3");
+  const hadPriorMarriage = q3s1 === "petitioner" || q3s1 === "beneficiary" || q3s1 === "both";
+  if (hadPriorMarriage && (q3s3 === "no" || q3s3 === "partial")) {
+    flags.push({
+      id: "missing_prior_marriage_termination",
+      title: "Old marriage proof missing",
+      severity: "critical",
+      advisory: `You said there was a previous marriage. Add the divorce papers or death certificate in ${stepRefs.documents}.`,
+      source_basis: "8 CFR 204.2(a)(2)",
+    });
+  }
+
+  // ── Shared, category-agnostic patterns ──────────────────────────────────────
+  flags.push(...detectCommonEligibilityRisks(answers, stepRefs));
 
   return flags;
 }

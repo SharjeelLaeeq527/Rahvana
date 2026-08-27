@@ -9,6 +9,12 @@ import {
   type ShapeType,
 } from "@/lib/store";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+} from "@/components/ui/dropdown-menu";
 import { Download, LayoutGrid, Type, Stamp, Check } from "lucide-react";
 import ShapeFormattingToolbar from "./shapes/ShapeFormattingToolbar";
 import SignatureTool from "./signature/SignatureTool";
@@ -17,27 +23,18 @@ import { useToast } from "@/app/components/shared/ToastProvider";
 import { OrganizePagesModal } from "./pages/OrganizePagesModal";
 import { EditTextModal } from "./text/EditTextModal";
 import { createEditedPDF, downloadPDF } from "@/lib/pdf-utils";
-import {
-  TextFormattingToolbar,
-  TextFormat,
-} from "./text/TextFormattingToolbar";
+import { TextFormattingToolbar, TextFormat } from "./text/TextFormattingToolbar";
 import { Square, X } from "lucide-react";
 // Dynamic Components
-const PDFViewer = dynamic(
-  () => import("./PdfViewer").then((m) => m.PDFViewer),
-  { ssr: false },
-);
-const PDFThumbnails = dynamic(
-  () => import("./PdfThumbnails").then((m) => m.PDFThumbnails),
-  { ssr: false },
-);
+const PDFViewer = dynamic(() => import("./PdfViewer").then((m) => m.PDFViewer), { ssr: false });
+const PDFThumbnails = dynamic(() => import("./PdfThumbnails").then((m) => m.PDFThumbnails), {
+  ssr: false,
+});
 
 export function PDFEditor() {
   const { t } = useLanguage();
   const { showToast } = useToast();
-  const [activeTool, setActiveTool] = useState<
-    "text" | "signature" | "shapes" | null
-  >(null);
+  const [activeTool, setActiveTool] = useState<"text" | "signature" | "shapes" | null>(null);
   const [inputText, setInputText] = useState("");
   const [signature, setSignature] = useState<string | null>(null);
 
@@ -53,9 +50,7 @@ export function PDFEditor() {
   const [isShapeFloating, setIsShapeFloating] = useState(false);
 
   // === SELECTION STATE ===
-  const [selectedAnnotationId, setSelectedAnnotationId] = useState<
-    string | null
-  >(null);
+  const [selectedAnnotationId, setSelectedAnnotationId] = useState<string | null>(null);
 
   // === UI STATE ===
   const [showSidebar, setShowSidebar] = useState(true);
@@ -143,8 +138,7 @@ export function PDFEditor() {
       if (newFormat.opacity !== undefined) updates.opacity = newFormat.opacity;
       if (newFormat.bold !== undefined) updates.bold = newFormat.bold;
       if (newFormat.italic !== undefined) updates.italic = newFormat.italic;
-      if (newFormat.underline !== undefined)
-        updates.underline = newFormat.underline;
+      if (newFormat.underline !== undefined) updates.underline = newFormat.underline;
       if (newFormat.align !== undefined) updates.align = newFormat.align;
 
       updateAnnotation(selectedAnnotationId, updates);
@@ -178,7 +172,7 @@ export function PDFEditor() {
         pdfFile,
         pageModifications,
         annotations,
-        signatureAnnotations,
+        signatureAnnotations
       );
       await downloadPDF(editedPdf, "edited-document.pdf");
       showToast(t("pdfProcessing.editor.downloadSuccess"), "success");
@@ -230,75 +224,74 @@ export function PDFEditor() {
                 setActiveTool(activeTool === "text" ? null : "text");
                 setShowShapesDropdown(false);
               }}
-              className={`p-2 rounded transition-colors ${activeTool === "text" ? "bg-blue-100" : "hover:bg-gray-100"}`}
+              className={`p-2 rounded transition-colors ${activeTool === "text" ? "bg-rahvana-primary/10" : "hover:bg-gray-100"}`}
               title={t("pdfProcessing.editor.addText")}
             >
               <Type
-                className={`w-5 h-5 ${activeTool === "text" ? "text-blue-600" : "text-gray-700"}`}
+                className={`w-5 h-5 ${activeTool === "text" ? "text-rahvana-primary" : "text-gray-700"}`}
               />
             </button>
 
             {/* SHAPES DROPDOWN */}
-            <div className="relative">
-              {/* Signature Icon — NOT MODIFIED */}
-              <button
-                onClick={() => {
-                  const nextShow = !showShapesDropdown;
-                  setShowShapesDropdown(nextShow);
-                  if (nextShow && activeTool === "text") {
-                    setActiveTool(null);
-                  }
-                }}
-                className={`p-2 rounded transition-colors ${
-                  activeTool === "shapes" ? "bg-blue-100" : "hover:bg-gray-100"
-                }`}
-                title={t("pdfProcessing.editor.shapes.title")}
-              >
-                <Stamp
-                  className={`w-5 h-5 ${
-                    activeTool === "shapes" ? "text-blue-600" : "text-gray-700"
+            <DropdownMenu
+              open={showShapesDropdown}
+              onOpenChange={(nextShow) => {
+                setShowShapesDropdown(nextShow);
+                if (nextShow && activeTool === "text") {
+                  setActiveTool(null);
+                }
+              }}
+            >
+              <DropdownMenuTrigger asChild>
+                <button
+                  className={`p-2 rounded transition-colors ${
+                    activeTool === "shapes" ? "bg-rahvana-primary/10" : "hover:bg-gray-100"
                   }`}
-                />
-              </button>
+                  title={t("pdfProcessing.editor.shapes.title")}
+                >
+                  <Stamp
+                    className={`w-5 h-5 ${
+                      activeTool === "shapes" ? "text-rahvana-primary" : "text-gray-700"
+                    }`}
+                  />
+                </button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="w-44 bg-white z-50">
+                <DropdownMenuItem
+                  onClick={() => handleShapeSelect("check")}
+                  className="px-4 py-2 flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                >
+                  <Check className="h-4 w-4" />
+                  <span>{t("pdfProcessing.editor.shapes.check")}</span>
+                </DropdownMenuItem>
 
-              {showShapesDropdown && (
-                <div className="absolute top-full mt-1 left-0 bg-white border rounded shadow-lg z-50 w-44">
-                  <button
-                    onClick={() => handleShapeSelect("check")}
-                    className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b flex items-center gap-2"
-                  >
-                    <Check size={18} />
-                    <span>{t("pdfProcessing.editor.shapes.check")}</span>
-                  </button>
+                <DropdownMenuItem
+                  onClick={() => handleShapeSelect("cross")}
+                  className="px-4 py-2 flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                >
+                  <X className="h-4 w-4" />
+                  <span>{t("pdfProcessing.editor.shapes.cross")}</span>
+                </DropdownMenuItem>
 
-                  <button
-                    onClick={() => handleShapeSelect("cross")}
-                    className="w-full px-4 py-2 text-left hover:bg-gray-50 border-b flex items-center gap-2"
-                  >
-                    <X size={18} />
-                    <span>{t("pdfProcessing.editor.shapes.cross")}</span>
-                  </button>
+                <DropdownMenuItem
+                  onClick={() => handleShapeSelect("rectangle")}
+                  className="px-4 py-2 flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                >
+                  <Square className="h-4 w-4" />
+                  <span>{t("pdfProcessing.editor.shapes.rectangle")}</span>
+                </DropdownMenuItem>
 
-                  {/* Rectangle instead of Arrow */}
-                  <button
-                    onClick={() => handleShapeSelect("rectangle")}
-                    className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
-                  >
-                    <Square size={18} />
-                    <span>{t("pdfProcessing.editor.shapes.rectangle")}</span>
-                  </button>
-
-                  {/* Arrow */}
-                  <button
-                    onClick={() => handleShapeSelect("arrow")}
-                    className="w-full px-4 py-2 text-left hover:bg-gray-50 flex items-center gap-2"
-                  >
-                    <span className="text-lg">↗</span>
-                    <span>{t("pdfProcessing.editor.shapes.arrow")}</span>
-                  </button>
-                </div>
-              )}
-            </div>
+                <DropdownMenuItem
+                  onClick={() => handleShapeSelect("arrow")}
+                  className="px-4 py-2 flex items-center gap-2 cursor-pointer hover:bg-gray-50 transition-colors"
+                >
+                  <span className="text-lg leading-none h-4 w-4 flex items-center justify-center">
+                    ↗
+                  </span>
+                  <span>{t("pdfProcessing.editor.shapes.arrow")}</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
 
             {/* SIGNATURE TOOL */}
             <div className="relative">
@@ -319,7 +312,7 @@ export function PDFEditor() {
             <Button
               onClick={handleDownload}
               disabled={isDownloading}
-              className="bg-primary hover:bg-primary/90 text-white text-xs md:text-sm px-3 md:px-4"
+              className="bg-rahvana-primary hover:bg-rahvana-primary-dark text-white text-xs md:text-sm px-3 md:px-4"
             >
               <Download className="h-4 w-4 mr-1 md:mr-2" />
               {isDownloading ? (
@@ -344,8 +337,7 @@ export function PDFEditor() {
       {/* ===== TEXT FORMATTING TOOLBAR ===== */}
       {/* SHOW IF: activeTool is "text" OR any text annotation is currently selected */}
       {(activeTool === "text" ||
-        (selectedAnnotationId &&
-          annotations.find((a) => a.id === selectedAnnotationId))) && (
+        (selectedAnnotationId && annotations.find((a) => a.id === selectedAnnotationId))) && (
         <div className="absolute top-[70px] left-1/2 -translate-x-1/2 z-50">
           <TextFormattingToolbar
             format={currentToolbarFormat}
@@ -407,14 +399,8 @@ export function PDFEditor() {
         </div>
       </div>
 
-      <OrganizePagesModal
-        isOpen={showOrganizeModal}
-        onClose={() => setShowOrganizeModal(false)}
-      />
-      <EditTextModal
-        isOpen={showEditTextModal}
-        onClose={() => setShowEditTextModal(false)}
-      />
+      <OrganizePagesModal isOpen={showOrganizeModal} onClose={() => setShowOrganizeModal(false)} />
+      <EditTextModal isOpen={showEditTextModal} onClose={() => setShowEditTextModal(false)} />
     </div>
   );
 }

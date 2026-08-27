@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { NextResponse } from "next/server";
+import { E, msg } from "@/lib/errors";
 
 // export const dynamic = "force-dynamic";
 
@@ -13,12 +14,13 @@ export async function GET() {
     } = await supabase.auth.getUser();
 
     if (userError || !user) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      console.error("[user-dashboard/analytics] Unauthorized:", userError);
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     const userId = user.id;
 
-    // GUIDES 
+    // GUIDES
     const { count: totalGuides } = await supabase
       .from("user_guides")
       .select("*", { count: "exact", head: true })
@@ -31,28 +33,28 @@ export async function GET() {
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId);
 
-    // DOCUMENT TRANSLATIONS 
+    // DOCUMENT TRANSLATIONS
     const { count: translationCount } = await supabase
       .from("translation_documents")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId);
 
-    // CASE STRENGTH 
+    // CASE STRENGTH
     const { count: caseStrengthCount } = await supabase
       .from("user_case_sessions")
       .select("*", { count: "exact", head: true })
       .eq("user_id", userId);
 
-      // INTERVIEW PREP SESSIONS 
-      const { count: interviewPrepCount } = await supabase
-        .from("interview_prep_sessions")
-        .select("*", { count: "exact", head: true })
-        .eq("user_id", userId);
+    // INTERVIEW PREP SESSIONS
+    const { count: interviewPrepCount } = await supabase
+      .from("interview_prep_sessions")
+      .select("*", { count: "exact", head: true })
+      .eq("user_id", userId);
 
     return NextResponse.json({
       guides: {
         total: totalGuides || 0,
-    },
+      },
       journeys: {
         total: journeysCount || 0,
       },
@@ -69,9 +71,6 @@ export async function GET() {
   } catch (error) {
     console.error("Dashboard analytics error:", error);
 
-    return NextResponse.json(
-      { error: "Failed to fetch dashboard analytics" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: msg(E.ANALYTICS_FETCH_FAILED) }, { status: 500 });
   }
 }

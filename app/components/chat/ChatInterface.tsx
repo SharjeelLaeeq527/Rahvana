@@ -1,25 +1,25 @@
 // C:\Users\HP\Desktop\arachnie\Arachnie\app\components\chat\chat-interface.tsx
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card } from "@/components/ui/card"
-import { Loader } from "@/components/ui/spinner"
-import { Send, MessageCircle } from "lucide-react"
+import { useState, useRef, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card } from "@/components/ui/card";
+import { Loader } from "@/components/ui/spinner";
+import { Send, MessageCircle } from "lucide-react";
 
 interface Message {
-  id: string
-  type: "user" | "assistant"
-  content: string
-  timestamp: Date
+  id: string;
+  type: "user" | "assistant";
+  content: string;
+  timestamp: Date;
 }
 
 export function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>([]) // ← Empty initially
-  const [input, setInput] = useState("")
-  const [loading, setLoading] = useState(false)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const [messages, setMessages] = useState<Message[]>([]); // ← Empty initially
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Welcome message sirf client pe add karo
   useEffect(() => {
@@ -27,51 +27,52 @@ export function ChatInterface() {
       {
         id: "welcome-1",
         type: "assistant",
-        content: "Welcome! I can help you search through your WhatsApp conversations. Ask me anything about your chat history.",
+        content:
+          "Welcome! I can help you search through your WhatsApp conversations. Ask me anything about your chat history.",
         timestamp: new Date(),
       },
-    ])
-  }, []) // Empty dependency → sirf ek baar client mount pe
+    ]);
+  }, []); // Empty dependency → sirf ek baar client mount pe
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-  }
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
 
   useEffect(() => {
-    scrollToBottom()
-  }, [messages])
+    scrollToBottom();
+  }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim()) return
+    if (!input.trim()) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
       type: "user",
       content: input,
       timestamp: new Date(),
-    }
+    };
 
-    setMessages((prev) => [...prev, userMessage])
-    setInput("")
-    setLoading(true)
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setLoading(true);
 
     try {
       const response = await fetch("/api/chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: input }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       const assistantMessage: Message = {
         id: (Date.now() + 1).toString(),
         type: "assistant",
         content: data.response || "No relevant data found in chat history.",
         timestamp: new Date(),
-      }
+      };
 
-      setMessages((prev) => [...prev, assistantMessage])
+      setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Chat API error:", error);
       const errorMessage: Message = {
@@ -79,12 +80,12 @@ export function ChatInterface() {
         type: "assistant",
         content: "Error connecting to the AI. Please try again.",
         timestamp: new Date(),
-      }
-      setMessages((prev) => [...prev, errorMessage])
+      };
+      setMessages((prev) => [...prev, errorMessage]);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   // Baaki UI same rahega...
   return (
@@ -143,15 +144,11 @@ export function ChatInterface() {
             disabled={loading}
             className="flex-1"
           />
-          <Button
-            onClick={handleSend}
-            disabled={loading || !input.trim()}
-            size="icon"
-          >
+          <Button onClick={handleSend} disabled={loading || !input.trim()} size="icon">
             <Send className="w-4 h-4" />
           </Button>
         </div>
       </div>
     </Card>
-  )
+  );
 }

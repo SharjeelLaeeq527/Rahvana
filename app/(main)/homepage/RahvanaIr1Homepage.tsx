@@ -36,9 +36,7 @@ import { AuthRequiredModal } from "@/app/components/shared/AuthRequiredModal";
 import { useAuth } from "@/app/context/AuthContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { FAQS } from "@/data/home-page-data";
-
-const journeyHref = "/visa-category/ir-category/ir1-journey";
-const toolsHref = "/tools";
+import { ir1journeyHref, toolsHref } from "@/lib/constants/routes";
 const heroI130PreviewDisplay = {
   width: 520,
   height: 673,
@@ -106,7 +104,12 @@ const chapters = [
       ["step_2_3", "Complete Form DS-260", "Immigrant visa application", "todo"],
       ["step_2_4", "Prepare Civil Documents", "Gather required records", "todo"],
       ["step_2_5", "Affidavit of Support", "Determine and prepare sponsorship", "locked"],
-      ["step_2_10", "Record Documentary Qualification", "Record DQ date & activate tracking", "locked"],
+      [
+        "step_2_10",
+        "Record Documentary Qualification",
+        "Record DQ date & activate tracking",
+        "locked",
+      ],
     ],
   },
   {
@@ -121,7 +124,12 @@ const chapters = [
     text: "text-[#051738]",
     steps: [
       ["step_3_1", "Schedule Medical Examination", "Official medical clearance", "current"],
-      ["step_3_2", "Obtain Polio Vaccination Certificate", "Required for Pakistan applicants", "todo"],
+      [
+        "step_3_2",
+        "Obtain Polio Vaccination Certificate",
+        "Required for Pakistan applicants",
+        "todo",
+      ],
       ["step_3_3", "Obtain Fresh Police Clearance Certificate", "Required for interview", "todo"],
       ["step_3_6", "Gather Original Documents", "Official document compilation", "todo"],
       ["step_3_7", "Prepare for Interview", "Practice questions and build confidence", "locked"],
@@ -213,13 +221,7 @@ function ProductFrame({
   );
 }
 
-function StepStatusIcon({
-  status,
-  index,
-}: {
-  status: string;
-  index: number;
-}) {
+function StepStatusIcon({ status, index }: { status: string; index: number }) {
   if (status === "done") {
     return (
       <div className="flex size-7 items-center justify-center rounded-full border-2 border-white/45 bg-white/20 text-[11px] font-bold text-white">
@@ -296,9 +298,7 @@ function StepRow({
       )}
       <StepStatusIcon status={status} index={index} />
       <div className="min-w-0 flex-1">
-        <div className="truncate text-[14px] font-bold leading-[1.3]">
-          {name}
-        </div>
+        <div className="truncate text-[14px] font-bold leading-[1.3]">{name}</div>
         <div
           className={`mt-0.5 truncate text-[11.5px] font-semibold ${
             isDone ? "text-white/90" : isLocked ? "opacity-60" : "text-[#2C3A3E]"
@@ -350,7 +350,7 @@ function RealDashboardScene({
     const run = () => {
       timers.forEach(window.clearTimeout);
       timers = schedule.map(([delay, nextPhase]) =>
-        window.setTimeout(() => setPhase(nextPhase), delay),
+        window.setTimeout(() => setPhase(nextPhase), delay)
       );
     };
 
@@ -404,11 +404,7 @@ function RealDashboardScene({
       transition={{ duration: 44, repeat: Infinity, ease: "easeInOut" }}
     >
       <ProductFrame
-        className={
-          compact
-            ? "h-full w-full min-w-0 backdrop-blur-2xl"
-            : ""
-        }
+        className={compact ? "h-full w-full min-w-0 backdrop-blur-2xl" : ""}
         style={
           compact
             ? {
@@ -417,8 +413,7 @@ function RealDashboardScene({
                 WebkitBackdropFilter: "blur(24px)",
                 border: "1px solid rgba(255,255,255,0.55)",
                 borderRadius: 28,
-                boxShadow:
-                  "0 30px 90px rgba(15,23,42,0.30), inset 0 1px 0 rgba(255,255,255,0.38)",
+                boxShadow: "0 30px 90px rgba(15,23,42,0.30), inset 0 1px 0 rgba(255,255,255,0.38)",
               }
             : undefined
         }
@@ -430,7 +425,16 @@ function RealDashboardScene({
               reduceMotion
                 ? undefined
                 : {
-                    scale: phase === 1 || phase === 2 || phase === 4 || phase === 5 || phase === 7 || phase === 8 || phase === 10 ? 1.012 : 1,
+                    scale:
+                      phase === 1 ||
+                      phase === 2 ||
+                      phase === 4 ||
+                      phase === 5 ||
+                      phase === 7 ||
+                      phase === 8 ||
+                      phase === 10
+                        ? 1.012
+                        : 1,
                   }
             }
             transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
@@ -445,7 +449,10 @@ function RealDashboardScene({
                   exit={{ opacity: 0, scale: 1.01, y: -8 }}
                   transition={{ duration: 0.75, ease: [0.22, 1, 0.36, 1] }}
                 >
-                  <HeroDashboardPanel completedI130={false} chapterTargeted={phase === 1 || phase === 2} />
+                  <HeroDashboardPanel
+                    completedI130={false}
+                    chapterTargeted={phase === 1 || phase === 2}
+                  />
                 </motion.div>
               )}
               {view === "chapter" && (
@@ -528,7 +535,10 @@ function RealDashboardScene({
               viewBox="0 0 24 24"
               fill="none"
               xmlns="http://www.w3.org/2000/svg"
-              style={{ filter: "drop-shadow(0 2px 0 rgba(255,255,255,0.9)) drop-shadow(0 8px 14px rgba(5,23,56,0.30))" }}
+              style={{
+                filter:
+                  "drop-shadow(0 2px 0 rgba(255,255,255,0.9)) drop-shadow(0 8px 14px rgba(5,23,56,0.30))",
+              }}
             >
               <path
                 d="M4.7 3.4V20.7L9.6 15.9L13.2 22L16.1 20.3L12.6 14.4H19.4L4.7 3.4Z"
@@ -578,9 +588,7 @@ function HeroDashboardPanel({
             <div className="mb-2 text-[10.5px] font-black uppercase tracking-[0.12em] text-white/60">
               Next roadmap step
             </div>
-            <h3 className="text-[27px] font-black leading-tight tracking-tight">
-              {nextStepTitle}
-            </h3>
+            <h3 className="text-[27px] font-black leading-tight tracking-tight">{nextStepTitle}</h3>
             <p className="mt-2 max-w-xl text-[14px] leading-relaxed text-white/75">
               {nextStepBody}
             </p>
@@ -601,9 +609,7 @@ function HeroDashboardPanel({
                   : "border-[#d0e4f7]"
               }`}
               animate={
-                index === 0 && chapterTargeted
-                  ? { y: -4, scale: 1.018 }
-                  : { y: 0, scale: 1 }
+                index === 0 && chapterTargeted ? { y: -4, scale: 1.018 } : { y: 0, scale: 1 }
               }
               transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
             >
@@ -615,7 +621,9 @@ function HeroDashboardPanel({
                   transition={{ duration: 0.9, repeat: 1 }}
                 />
               )}
-              <div className={`mb-3 inline-flex rounded-full border px-3 py-1 text-[10.5px] font-black uppercase tracking-[0.08em] ${chapter.tint} ${chapter.border} ${chapter.text}`}>
+              <div
+                className={`mb-3 inline-flex rounded-full border px-3 py-1 text-[10.5px] font-black uppercase tracking-[0.08em] ${chapter.tint} ${chapter.border} ${chapter.text}`}
+              >
                 Chapter {chapter.number}
               </div>
               <p className="text-[13.5px] font-black leading-tight text-[#162126]">
@@ -649,9 +657,7 @@ function HeroDashboardPanel({
                 <div className="text-[10.5px] font-black uppercase tracking-[0.1em] text-[#6b8097]">
                   {label}
                 </div>
-                <div className="mt-1 text-[12.5px] font-bold text-[#162126]">
-                  {value}
-                </div>
+                <div className="mt-1 text-[12.5px] font-bold text-[#162126]">{value}</div>
               </div>
             ))}
           </div>
@@ -687,9 +693,7 @@ function HeroDashboardPanel({
                   >
                     {isDone ? <Check size={11} strokeWidth={3} /> : index + 1}
                   </div>
-                  <span className="text-[12.5px] font-bold text-[#2C3A3E]">
-                    {label}
-                  </span>
+                  <span className="text-[12.5px] font-bold text-[#2C3A3E]">{label}</span>
                 </div>
               );
             })}
@@ -717,11 +721,15 @@ function HeroChapterOnePanel({ stepTargeted = false }: { stepTargeted?: boolean 
           USCIS Petition Filing
         </h1>
         <p className="mb-4 text-[14.5px] leading-[1.7] text-[#2C3A3E]">
-          File Form I-130 with USCIS to begin the IR-1 spouse visa process for your Pakistani spouse.
+          File Form I-130 with USCIS to begin the IR-1 spouse visa process for your Pakistani
+          spouse.
         </p>
         <div className="flex items-center gap-2.5">
           <div className="h-[7px] flex-1 overflow-hidden rounded-[13px] bg-[#F0F1FB]">
-            <div className="h-full rounded-[13px] bg-[#8284BF] shadow-[0_2.5px_12px_rgba(36,42,66,0.18)]" style={{ width: "41%" }} />
+            <div
+              className="h-full rounded-[13px] bg-[#8284BF] shadow-[0_2.5px_12px_rgba(36,42,66,0.18)]"
+              style={{ width: "41%" }}
+            />
           </div>
           <div className="text-[12px] font-bold text-[#4E518C]">41%</div>
         </div>
@@ -737,11 +745,7 @@ function HeroChapterOnePanel({ stepTargeted = false }: { stepTargeted?: boolean 
           return (
             <motion.div
               key={chapterStep[0]}
-              animate={
-                index === 3 && stepTargeted
-                  ? { scale: 1.015, x: 3 }
-                  : { scale: 1, x: 0 }
-              }
+              animate={index === 3 && stepTargeted ? { scale: 1.015, x: 3 } : { scale: 1, x: 0 }}
               transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
             >
               <StepRow
@@ -770,7 +774,7 @@ function HeroI130StepPanel({ launchTargeted = false }: { launchTargeted?: boolea
         "Pakistan-context defaults where relevant",
       ],
       button_label: "Launch I-130 Autoform Filler",
-      note: "Opens in a new browser tab — you can return to the roadmap anytime",
+      note: "Opens in a new browser tab, you can return to the roadmap anytime",
     },
   };
 
@@ -786,7 +790,9 @@ function HeroI130StepPanel({ launchTargeted = false }: { launchTargeted?: boolea
             Fill Form I-130
           </h1>
           <p className="mb-[28px] max-w-[620px] text-[15px] leading-[1.65] text-[#3a4f63]">
-            Use Rahvana&apos;s guided Autoform Filler to complete the I-130 Petition for Alien Relative — with structured step-by-step support, clear prompts, and a built-in review flow.
+            Use Rahvana&apos;s guided Autoform Filler to complete the I-130 Petition for Alien
+            Relative, with structured step-by-step support, clear prompts, and a built-in review
+            flow.
           </p>
 
           <div className="mb-[22px] flex flex-wrap gap-[8px]">
@@ -799,7 +805,10 @@ function HeroI130StepPanel({ launchTargeted = false }: { launchTargeted?: boolea
           </div>
 
           <div className="relative mb-[20px] overflow-hidden rounded-[16px] border border-[#c0596a] bg-[#28151c]">
-            <div className="absolute left-0 right-0 top-0 h-[2px] opacity-70" style={{ background: "linear-gradient(90deg, #c0596a 0%, #28151c 100%)" }} />
+            <div
+              className="absolute left-0 right-0 top-0 h-[2px] opacity-70"
+              style={{ background: "linear-gradient(90deg, #c0596a 0%, #28151c 100%)" }}
+            />
             <div className="p-[36px_36px_32px]">
               <div className="mb-[26px] flex items-start gap-[16px]">
                 <div className="flex h-[48px] w-[48px] shrink-0 items-center justify-center rounded-[12px] border border-[#c0596a] bg-[#c0596a]">
@@ -817,11 +826,12 @@ function HeroI130StepPanel({ launchTargeted = false }: { launchTargeted?: boolea
               <div className="mb-[22px] h-px bg-[#c0596a]/30" />
               <div className="mb-[26px] grid grid-cols-1 gap-[10px] sm:grid-cols-2">
                 {tool.launch_module.features.map((feat) => (
-                  <div key={feat} className="flex items-start gap-[10px] rounded-[10px] border border-[#c0596a]/30 bg-[#3a232a] p-[12px_14px]">
+                  <div
+                    key={feat}
+                    className="flex items-start gap-[10px] rounded-[10px] border border-[#c0596a]/30 bg-[#3a232a] p-[12px_14px]"
+                  >
                     <div className="mt-[6px] h-[5px] w-[5px] shrink-0 rounded-full bg-[#c0596a]" />
-                    <div className="text-[13px] leading-[1.4] text-[#fbeaec]">
-                      {feat}
-                    </div>
+                    <div className="text-[13px] leading-[1.4] text-[#fbeaec]">{feat}</div>
                   </div>
                 ))}
               </div>
@@ -862,7 +872,7 @@ function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
         .filter((field) => ["family_name", "given_name", "middle_name"].includes(field.key))
         .filter((field) => !field.condition || field.condition(formData))
         .slice(0, 4) ?? [],
-    [config, formData],
+    [config, formData]
   );
 
   useEffect(() => {
@@ -894,12 +904,8 @@ function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
       <div className="bg-linear-to-r from-primary to-primary p-4 text-white shadow-lg md:p-6">
         <div className="flex items-center gap-4">
           <div className="flex-1">
-            <h1 className="text-2xl font-bold md:text-3xl">
-              Form I-130
-            </h1>
-            <p className="mt-1 text-sm text-white/90 md:text-base">
-              Petition for Alien Relative
-            </p>
+            <h1 className="text-2xl font-bold md:text-3xl">Form I-130</h1>
+            <p className="mt-1 text-sm text-white/90 md:text-base">Petition for Alien Relative</p>
           </div>
         </div>
       </div>
@@ -911,7 +917,11 @@ function HeroAutoformPanel({ playPhase }: { playPhase: number }) {
         <div className="hidden w-64 shrink-0 lg:block">
           <div className="rounded-xl bg-white p-6 shadow-lg">
             <h3 className="mb-4 font-semibold text-gray-900">Progress</h3>
-            <ProgressBar current={fillStage >= 3 ? 3 : fillStage >= 2 ? 2 : 1} total={18} progress={fillStage >= 3 ? 17 : fillStage >= 2 ? 11 : 6} />
+            <ProgressBar
+              current={fillStage >= 3 ? 3 : fillStage >= 2 ? 2 : 1}
+              total={18}
+              progress={fillStage >= 3 ? 17 : fillStage >= 2 ? 11 : 6}
+            />
           </div>
         </div>
         <div className="min-w-0 flex-1">
@@ -974,7 +984,10 @@ function HeroPdfPreviewPanel() {
         >
           <div
             className="relative overflow-hidden border border-[#c8d1dc] bg-white shadow-[0_18px_46px_rgba(15,23,42,0.20)]"
-            style={{ width: heroI130PreviewDisplay.width, minHeight: heroI130PreviewDisplay.height }}
+            style={{
+              width: heroI130PreviewDisplay.width,
+              minHeight: heroI130PreviewDisplay.height,
+            }}
           >
             <Image
               src="/homepage/hero-i130-filled-preview.png"
@@ -1015,7 +1028,7 @@ const twoWaysPaths = [
       "Move step by step through the IR-1 process with clear milestones, built-in guidance, and the right next action always surfaced. It is designed to reduce uncertainty and keep your case moving with confidence.",
     bestFor: "Best for people who want end-to-end guidance.",
     cta: "Explore the Roadmap",
-    href: journeyHref,
+    href: ir1journeyHref,
   },
   {
     title: "Tools & Resources",
@@ -1028,8 +1041,7 @@ const twoWaysPaths = [
     supportLead: "Get focused help exactly where you need it.",
     supportText:
       "Jump directly into calculators, checklists, and support tools when you have a specific task to complete. Use them independently or alongside the roadmap whenever you need targeted help.",
-    bestFor:
-      "Best for people who want targeted help without using the full roadmap.",
+    bestFor: "Best for people who want targeted help without using the full roadmap.",
     cta: "Browse Tools",
     href: toolsHref,
   },
@@ -1144,9 +1156,8 @@ function TwoWaysSection() {
                   maxWidth: 420,
                 }}
               >
-                Follow the guided IR-1 roadmap, use focused tools and resources
-                independently, and choose the support style that fits what you
-                need right now.
+                Follow the guided IR-1 roadmap, use focused tools and resources independently, and
+                choose the support style that fits what you need right now.
               </p>
 
               {/* Active scene label — fixed-height container prevents layout shift */}
@@ -1211,17 +1222,12 @@ function TwoWaysSection() {
                         gap: 12,
                         padding: "12px 14px",
                         borderRadius: 14,
-                        border: isActive
-                          ? "1.5px solid #0d7377"
-                          : "1px solid #e2ebe8",
+                        border: isActive ? "1.5px solid #0d7377" : "1px solid #e2ebe8",
                         background: isActive ? "#f4fbfa" : "transparent",
-                        boxShadow: isActive
-                          ? "0 5px 18px rgba(13,115,119,0.10)"
-                          : "none",
+                        boxShadow: isActive ? "0 5px 18px rgba(13,115,119,0.10)" : "none",
                         cursor: "pointer",
                         textAlign: "left",
-                        transition:
-                          "background 0.22s, border-color 0.22s, box-shadow 0.22s",
+                        transition: "background 0.22s, border-color 0.22s, box-shadow 0.22s",
                         WebkitTapHighlightColor: "transparent",
                       }}
                     >
@@ -1240,8 +1246,7 @@ function TwoWaysSection() {
                           background: isActive ? "#0d7377" : "transparent",
                           color: isActive ? "white" : "#9aaeac",
                           border: isActive ? "none" : "1.5px solid #c8d5d3",
-                          transition:
-                            "background 0.22s, color 0.22s, border-color 0.22s",
+                          transition: "background 0.22s, color 0.22s, border-color 0.22s",
                         }}
                       >
                         {String(i + 1).padStart(2, "0")}
@@ -1286,7 +1291,7 @@ function TwoWaysSection() {
                 }}
               >
                 <Link
-                  href={journeyHref}
+                  href={ir1journeyHref}
                   style={{
                     display: "inline-flex",
                     alignItems: "center",
@@ -1394,11 +1399,7 @@ function TwoWaysSection() {
   );
 }
 
-function TwoWaysSupportText({
-  path,
-}: {
-  path: (typeof twoWaysPaths)[number];
-}) {
+function TwoWaysSupportText({ path }: { path: (typeof twoWaysPaths)[number] }) {
   return (
     <div
       style={{
@@ -1451,11 +1452,7 @@ function TwoWaysSupportText({
 function TwoWaysVisual({ index }: { index: TwoWaysIndex }) {
   return (
     <div style={{ position: "relative", width: 680, height: 560 }}>
-      {index === 0 ? (
-        <GuidedRoadmapScene />
-      ) : (
-        <IndividualToolsScene />
-      )}
+      {index === 0 ? <GuidedRoadmapScene /> : <IndividualToolsScene />}
     </div>
   );
 }
@@ -1502,8 +1499,8 @@ function TwoWaysMobile({
           margin: "0 0 32px 0",
         }}
       >
-        Use the full IR-1 roadmap, or jump into focused tools and resources
-        when you need targeted help.
+        Use the full IR-1 roadmap, or jump into focused tools and resources when you need targeted
+        help.
       </p>
 
       <div className="space-y-3">
@@ -1536,9 +1533,7 @@ function TwoWaysMobile({
               >
                 {path.title}
               </h3>
-              <p className="mt-1 text-sm leading-6 text-[#4a5c62]">
-                {path.teaser}
-              </p>
+              <p className="mt-1 text-sm leading-6 text-[#4a5c62]">{path.teaser}</p>
             </div>
           </button>
         ))}
@@ -1579,7 +1574,7 @@ function TwoWaysMobile({
 
       <div className="mt-6 flex flex-wrap gap-3">
         <Link
-          href={journeyHref}
+          href={ir1journeyHref}
           className="inline-flex min-h-11 items-center gap-2 rounded-xl bg-[#0d7377] px-5 text-sm font-bold text-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[#0d7377]/25"
         >
           Start the Roadmap
@@ -1606,8 +1601,7 @@ function GuidedRoadmapScene() {
         borderRadius: 32,
         background: "white",
         border: "1px solid #dde8e6",
-        boxShadow:
-          "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
+        boxShadow: "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
         position: "absolute",
         left: 40,
         top: 30,
@@ -1757,8 +1751,8 @@ function GuidedRoadmapScene() {
             marginBottom: 0,
           }}
         >
-          File Form I-130 with USCIS to begin the IR-1 spouse visa process with
-          the next task already surfaced.
+          File Form I-130 with USCIS to begin the IR-1 spouse visa process with the next task
+          already surfaced.
         </p>
 
         {/* progress bar */}
@@ -1776,9 +1770,7 @@ function GuidedRoadmapScene() {
             style={{ height: "100%", borderRadius: 999, background: "#0d7377" }}
             initial={reduceMotion ? false : { width: 0 }}
             animate={{ width: "41%" }}
-            transition={
-              reduceMotion ? { duration: 0 } : { duration: 0.9, ease: "easeOut" }
-            }
+            transition={reduceMotion ? { duration: 0 } : { duration: 0.9, ease: "easeOut" }}
           />
         </div>
 
@@ -1825,11 +1817,7 @@ function GuidedRoadmapScene() {
                     fontWeight: 800,
                   }}
                 >
-                  {isDone ? (
-                    <Check style={{ width: 11, height: 11 }} strokeWidth={3} />
-                  ) : (
-                    idx + 1
-                  )}
+                  {isDone ? <Check style={{ width: 11, height: 11 }} strokeWidth={3} /> : idx + 1}
                 </span>
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div
@@ -1844,9 +1832,7 @@ function GuidedRoadmapScene() {
                   >
                     {name}
                   </div>
-                  <div style={{ fontSize: 11, color: "#4a5c62", marginTop: 1 }}>
-                    {desc}
-                  </div>
+                  <div style={{ fontSize: 11, color: "#4a5c62", marginTop: 1 }}>{desc}</div>
                 </div>
                 {isCurrent && (
                   <span
@@ -1939,8 +1925,7 @@ function IndividualToolsScene() {
         borderRadius: 32,
         background: "white",
         border: "1px solid #dde8e6",
-        boxShadow:
-          "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
+        boxShadow: "0 24px 80px rgba(15,23,42,0.12), 0 8px 24px rgba(15,23,42,0.06)",
         position: "absolute",
         left: 40,
         top: 30,
@@ -2029,12 +2014,8 @@ function IndividualToolsScene() {
                   padding: "7px 12px",
                 }}
               >
-                <span style={{ fontSize: 12, color: "#4a5c62", fontWeight: 600 }}>
-                  {label}
-                </span>
-                <span style={{ fontSize: 13, fontWeight: 800, color: "#162126" }}>
-                  {value}
-                </span>
+                <span style={{ fontSize: 12, color: "#4a5c62", fontWeight: 600 }}>{label}</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: "#162126" }}>{value}</span>
               </div>
             ))}
             <div
@@ -2054,9 +2035,7 @@ function IndividualToolsScene() {
                 }}
               >
                 <Check style={{ width: 12, height: 12 }} strokeWidth={3} />
-                <span style={{ fontSize: 12, fontWeight: 800 }}>
-                  Income appears sufficient
-                </span>
+                <span style={{ fontSize: 12, fontWeight: 800 }}>Income appears sufficient</span>
               </div>
               <p
                 style={{
@@ -2067,8 +2046,8 @@ function IndividualToolsScene() {
                   marginBottom: 0,
                 }}
               >
-                The calculator recommends the likely form path and supporting
-                evidence to prepare next.
+                The calculator recommends the likely form path and supporting evidence to prepare
+                next.
               </p>
             </div>
           </div>
@@ -2181,8 +2160,8 @@ function IndividualToolsScene() {
                 marginBottom: 0,
               }}
             >
-              Suggested when the petitioner is the only sponsor and income is
-              enough from qualifying employment.
+              Suggested when the petitioner is the only sponsor and income is enough from qualifying
+              employment.
             </p>
           </div>
           <div
@@ -2263,7 +2242,8 @@ function ConsultationBanner({ onConsultationClick }: { onConsultationClick: () =
             You don't have to do it alone.
           </h2>
           <p className="mt-5 max-w-[430px] text-[17px] leading-[1.58] text-[#2f3f4c] sm:text-lg">
-            If the roadmap feels like too much or a tool isn't enough, book a consultation for one-on-one help with your case.
+            If the roadmap feels like too much or a tool isn't enough, book a consultation for
+            one-on-one help with your case.
           </p>
 
           <div className="mt-9 flex max-w-[430px] items-center gap-3">
@@ -2282,9 +2262,7 @@ function ConsultationBanner({ onConsultationClick }: { onConsultationClick: () =
                 <span className="flex size-[22px] items-center justify-center rounded-full bg-[#bff3d7] text-[#1d7352]">
                   <Check className="size-3" strokeWidth={3} />
                 </span>
-                <span className="text-[15px] font-medium leading-snug text-[#1f2f3b]">
-                  {item}
-                </span>
+                <span className="text-[15px] font-medium leading-snug text-[#1f2f3b]">{item}</span>
               </div>
             ))}
           </div>
@@ -2346,9 +2324,7 @@ function ConsultationPreviewVisual() {
               <span className="flex size-[42px] items-center justify-center text-[#154f50]">
                 <Icon className="size-8" strokeWidth={1.8} />
               </span>
-              <span className="text-lg font-medium leading-tight text-[#111c29]">
-                {label}
-              </span>
+              <span className="text-lg font-medium leading-tight text-[#111c29]">{label}</span>
               <span className="flex size-6 items-center justify-center rounded-full bg-[#4f9a71] text-white">
                 <Check className="size-3.5" strokeWidth={3} />
               </span>
@@ -2386,16 +2362,11 @@ function ConsultationPreviewVisual() {
           </div>
           <div className="flex flex-col gap-4">
             {outcomes.map(({ label, icon: Icon }) => (
-              <div
-                key={label}
-                className="grid grid-cols-[30px_1fr] items-start gap-3"
-              >
+              <div key={label} className="grid grid-cols-[30px_1fr] items-start gap-3">
                 <span className="flex size-[30px] items-center justify-center text-[#154f50]">
                   <Icon className="size-7" strokeWidth={1.8} />
                 </span>
-                <span className="text-[15px] font-medium leading-snug text-[#111827]">
-                  {label}
-                </span>
+                <span className="text-[15px] font-medium leading-snug text-[#111827]">{label}</span>
               </div>
             ))}
           </div>
@@ -2415,7 +2386,11 @@ function OriginalHomepageFaq({
   const { t } = useLanguage();
 
   return (
-    <section className="py-8 md:py-12" id="faq" style={{background: 'linear-gradient(180deg,#f7fffd 0%,#f3f8ff 30%,#fffafc 100%)'}}>
+    <section
+      className="py-8 md:py-12"
+      id="faq"
+      style={{ background: "linear-gradient(180deg,#f7fffd 0%,#f3f8ff 30%,#fffafc 100%)" }}
+    >
       <div className="mx-auto w-full px-6 sm:px-8 md:px-12 2xl:px-30">
         <div className="mx-auto mb-5 w-full text-center md:w-3/4">
           <motion.span
@@ -2451,7 +2426,7 @@ function OriginalHomepageFaq({
                 onClick={() => setOpenFAQ(openFAQ === i ? null : i)}
                 className="flex w-full items-center justify-between px-5 py-6 text-left md:px-8"
               >
-                <span className="pr-4 text-lg font-bold text-foreground md:pr-8">
+                <span className="pr-4 text-md font-bold text-foreground md:pr-8">
                   {t(`homePage.faqs.q${i + 1}.q`) || faq.q}
                 </span>
                 <div
@@ -2520,9 +2495,7 @@ export default function RahvanaIr1Homepage() {
 
         <div className="hidden lg:block">
           <h1 className="absolute left-1/2 top-[104px] z-10 w-full -translate-x-1/2 whitespace-nowrap text-center text-[clamp(48px,5vw,76px)] font-extrabold leading-[1.08] tracking-[-0.045em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)] xl:top-[108px]">
-            <span className="inline-block pb-2">
-              Navigate your IR-1 journey with clarity.
-            </span>
+            <span className="inline-block pb-2">Navigate your IR-1 journey with clarity.</span>
           </h1>
 
           <div className="absolute left-[5vw] top-[40vh] z-20 w-[300px] rounded-[22px] border border-white/40 bg-white/[0.18] px-6 py-6 shadow-[0_24px_70px_rgba(15,23,42,0.25),inset_0_1px_0_rgba(255,255,255,0.35)] backdrop-blur-[18px] xl:left-[10vw] xl:top-[38vh] xl:w-[350px] xl:px-8 xl:py-[30px] 2xl:left-[13vw] 2xl:w-[390px]">
@@ -2562,7 +2535,13 @@ export default function RahvanaIr1Homepage() {
               strokeDasharray="4 8"
               strokeLinecap="round"
             />
-            <circle cx="216" cy="40" r="4.5" fill="rgba(255,255,255,0.96)" filter="url(#heroConnectorGlow)" />
+            <circle
+              cx="216"
+              cy="40"
+              r="4.5"
+              fill="rgba(255,255,255,0.96)"
+              filter="url(#heroConnectorGlow)"
+            />
             <circle cx="216" cy="40" r="12" fill="rgba(255,255,255,0.15)" />
           </svg>
 
@@ -2571,22 +2550,19 @@ export default function RahvanaIr1Homepage() {
           </div>
 
           <div className="absolute bottom-[34px] left-[6vw] right-[6vw] z-20 flex items-center justify-between gap-8 xl:left-[15vw] xl:right-[15vw] xl:gap-8">
-            <h1 className="sr-only">
-              Navigate your IR-1 journey with clarity.
-            </h1>
+            <h1 className="sr-only">Navigate your IR-1 journey with clarity.</h1>
             <p className="max-w-[820px] text-[16px] leading-[1.65] text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] xl:text-[17px]">
               <span className="block xl:whitespace-nowrap">
-                Rahvana gives you a structured step-by-step IR-1 roadmap —
-                from petition filing to interview readiness —
-              </span>
+                Rahvana gives you a structured step-by-step IR-1 roadmap, from petition filing to
+                interview readiness, </span>
               <span className="block xl:whitespace-nowrap">
-                with guided steps, document organization, progress tracking,
-                and focused tools when you need them.
+                with guided steps, document organization, progress tracking, and focused tools when
+                you need them.
               </span>
             </p>
             <div className="flex shrink-0 items-center gap-3.5">
               <Link
-                href={journeyHref}
+                href={ir1journeyHref}
                 className="inline-flex min-h-[57px] items-center justify-center gap-2 rounded-[18px] bg-[linear-gradient(135deg,#0d7377,#18a6a2)] px-8 text-base font-black text-white shadow-[0_18px_44px_rgba(13,115,119,0.38)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_54px_rgba(13,115,119,0.46)]"
               >
                 Start IR-1 Journey
@@ -2604,9 +2580,7 @@ export default function RahvanaIr1Homepage() {
 
         <div className="relative z-10 flex min-h-screen flex-col gap-7 px-5 pb-10 pt-24 sm:px-7 lg:hidden">
           <h1 className="text-center text-[clamp(2.4rem,8.6vw,4.6rem)] font-extrabold leading-[1.06] tracking-[-0.04em] text-white [text-shadow:0_8px_28px_rgba(5,12,22,0.42)]">
-            <span className="inline-block pb-2">
-              Navigate your IR-1 journey with clarity.
-            </span>
+            <span className="inline-block pb-2">Navigate your IR-1 journey with clarity.</span>
           </h1>
 
           <div className="mx-auto h-[460px] w-full max-w-[760px] sm:h-[520px]">
@@ -2631,17 +2605,16 @@ export default function RahvanaIr1Homepage() {
           <div className="mx-auto flex w-full max-w-[760px] flex-col gap-5">
             <p className="text-base leading-7 text-white/88 [text-shadow:0_2px_14px_rgba(0,0,0,0.35)] sm:text-lg">
               <span className="block">
-                Rahvana gives you a structured step-by-step IR-1 roadmap —
-                from petition filing to interview readiness —
-              </span>
+                Rahvana gives you a structured step-by-step IR-1 roadmap, from petition filing to
+                interview readiness, </span>
               <span className="block">
-                with guided steps, document organization, progress tracking,
-                and focused tools when you need them.
+                with guided steps, document organization, progress tracking, and focused tools when
+                you need them.
               </span>
             </p>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Link
-                href={journeyHref}
+                href={ir1journeyHref}
                 className="inline-flex min-h-[56px] items-center justify-center gap-2 rounded-[18px] bg-[linear-gradient(135deg,#0d7377,#18a6a2)] px-8 text-base font-black text-white shadow-[0_18px_44px_rgba(13,115,119,0.34)] transition hover:-translate-y-0.5"
               >
                 Start IR-1 Journey
@@ -2686,11 +2659,11 @@ export default function RahvanaIr1Homepage() {
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              'radial-gradient(circle at 14% 18%, rgba(13,115,119,0.18), transparent 26%),' +
-              'radial-gradient(circle at 86% 22%, rgba(11,102,106,0.10), transparent 22%),' +
-              'radial-gradient(circle at 68% 78%, rgba(176,125,91,0.13), transparent 24%),' +
-              'radial-gradient(circle at 38% 62%, rgba(255,255,255,0.42), transparent 34%)',
-            mixBlendMode: 'normal',
+              "radial-gradient(circle at 14% 18%, rgba(13,115,119,0.18), transparent 26%)," +
+              "radial-gradient(circle at 86% 22%, rgba(11,102,106,0.10), transparent 22%)," +
+              "radial-gradient(circle at 68% 78%, rgba(176,125,91,0.13), transparent 24%)," +
+              "radial-gradient(circle at 38% 62%, rgba(255,255,255,0.42), transparent 34%)",
+            mixBlendMode: "normal",
           }}
         />
 

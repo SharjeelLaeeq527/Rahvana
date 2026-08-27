@@ -94,13 +94,11 @@ export function buildTimelineItems(record: ReceiptRecord) {
 
 // ─── Core registration logic (used by the API route) ──────────────────────────
 
-export function buildReceiptRecord(
-  payload: RegisterReceiptPayload
-): any {
+export function buildReceiptRecord(payload: RegisterReceiptPayload): any {
   const now = new Date().toISOString();
 
   return {
-    receipt_number: normalizeReceipt(payload.receiptNumber), 
+    receipt_number: normalizeReceipt(payload.receiptNumber),
     notice_date: payload.noticeDate ?? null,
     priority_date: payload.priorityDate ?? null,
     case_label: payload.caseLabel ?? null,

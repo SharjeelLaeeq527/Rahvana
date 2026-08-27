@@ -16,11 +16,7 @@ export type VisaCategory =
 
 export type ProcessStage = "USCIS" | "NVC" | "INTERVIEW" | "DS260_SUBMISSION";
 
-export type DocumentRole =
-  | "PETITIONER"
-  | "BENEFICIARY"
-  | "JOINT_SPONSOR"
-  | "HOUSEHOLD_MEMBER";
+export type DocumentRole = "PETITIONER" | "BENEFICIARY" | "JOINT_SPONSOR" | "HOUSEHOLD_MEMBER";
 
 export type DocumentCategory =
   // Original categories
@@ -60,12 +56,15 @@ export type DocumentStatus =
   | "EXPIRED"; // Past expiration date
 
 export interface ScenarioFlags {
+  [key: string]: any;
   // Marriage/Relationship
   prior_marriage_petitioner?: boolean;
   prior_marriage_beneficiary?: boolean;
+  prior_spouse_death?: boolean;
   name_change_any_party?: boolean;
 
   // Children
+  has_children?: boolean;
   child_adopted?: boolean;
   child_stepchild?: boolean;
   child_legitimation_or_custody_complexity?: boolean;
@@ -80,6 +79,13 @@ export interface ScenarioFlags {
   military_service?: boolean;
   previous_immigration_violations?: boolean;
   criminal_history?: boolean;
+
+  // Parent / IR-5 Specific
+  relationship_type?: "biological_mother" | "father_married" | "father_unmarried" | "stepparent" | "adoptive";
+  stepparent_bio_parent_prior_marriages?: boolean;
+  name_discrepancy?: boolean;
+  primary_record_available?: boolean;
+  parent_prior_marriages?: boolean;
 }
 
 export interface DocumentDefinition {
@@ -162,6 +168,7 @@ export interface UploadedDocument {
   // Status
   status: DocumentStatus;
   notes?: string;
+  journeyId?: string | null;
 }
 
 export interface DocumentVaultConfig {
@@ -169,6 +176,7 @@ export interface DocumentVaultConfig {
   visaCategory: VisaCategory;
   scenarioFlags: ScenarioFlags;
   caseId?: string; // USCIS receipt or NVC case number
+  journeyId?: string | null;
 
   // User info for naming
   petitionerName?: string;

@@ -54,8 +54,7 @@ export const formFields: Field[] = [
         keyboardType: "urdu",
         inputMode: "none",
         tooltip: `- Only required if your native language uses non-Roman characters (Arabic, Chinese, Russian, etc.) - Type your name in the native script`,
-        condition: (data: Record<string, string>) =>
-          data["S01-has_native_name"] === "Yes",
+        condition: (data: Record<string, string>) => data["S01-has_native_name"] === "Yes",
       },
       {
         key: "S01-Q002_GivenName",
@@ -92,8 +91,7 @@ export const formFields: Field[] = [
   {
     key: "S01-Q004",
     pdfKey: "S01-Q004",
-    label:
-      "What is your Sex? (Please select the sex shown on your official passport.)",
+    label: "What is your Sex? (Please select the sex shown on your official passport.)",
     originalLabel: "Sex",
     type: "radio",
     section: "SECTION 1: Birth Information",
@@ -106,8 +104,7 @@ export const formFields: Field[] = [
   {
     key: "S01-Q005",
     pdfKey: "S01-Q005",
-    label:
-      "What is your current marital status? (Are you single, married, divorced, or widowed?)",
+    label: "What is your current marital status? (Are you single, married, divorced, or widowed?)",
     originalLabel: "Current Marital Status",
     type: "text",
     section: "SECTION 1: Birth Information",
@@ -208,8 +205,7 @@ export const formFields: Field[] = [
   {
     key: "S01-Q016",
     pdfKey: "S01-Q016",
-    label:
-      "Do you currently hold, or have you ever held, citizenship in any other country?",
+    label: "Do you currently hold, or have you ever held, citizenship in any other country?",
     originalLabel:
       "Do you hold or have you held any nationality other than the one you have indicated above?",
     type: "radio",
@@ -223,8 +219,7 @@ export const formFields: Field[] = [
       {
         key: "S01-Q016A",
         pdfKey: "S01-Q016A",
-        label:
-          "Please list the other countries where you hold or have held citizenship.",
+        label: "Please list the other countries where you hold or have held citizenship.",
         originalLabel: "Other Citizenship Country",
         type: "text",
         tooltip: `- List all other citizenships (current or previous) - Include country name and whether current or renounced - Example: 'Pakistan (current), India (renounced 2010)'`,
@@ -235,8 +230,7 @@ export const formFields: Field[] = [
   {
     key: "S01-Q017",
     pdfKey: "S01-Q017",
-    label:
-      "Where do you live right now, and when did you move to this address?",
+    label: "Where do you live right now, and when did you move to this address?",
     originalLabel:
       "Present Address (Street Address, City, State/Province, Postal Code, Country, From Date)",
     type: "date",
@@ -247,8 +241,7 @@ export const formFields: Field[] = [
     key: "S01-Q018",
     pdfKey: "S01-Q018",
     label: "Have you lived anywhere else since you turned 16 years old?",
-    originalLabel:
-      "Have you lived anywhere other than this address since the age of sixteen?",
+    originalLabel: "Have you lived anywhere other than this address since the age of sixteen?",
     type: "radio",
     section: "SECTION 1: Address and Phone Information",
     tooltip: `- Answer YES if you have lived anywhere else since age 16 - You must list ALL addresses for the years since age 16 - Include addresses in all countries - Prepare list in advance: address, city, country, from/to dates - List in reverse chronological order (most recent first)`,
@@ -297,8 +290,7 @@ export const formFields: Field[] = [
         originalLabel: "Secondary Phone Number",
         type: "text",
         tooltip: `- Provide if available (alternate mobile, family member's number) - Can enter 'DOES NOT APPLY' if you do not have one - Useful to provide backup contact number`,
-        condition: (data: Record<string, string>) =>
-          data["S01-has_secondary_phone"] === "Yes",
+        condition: (data: Record<string, string>) => data["S01-has_secondary_phone"] === "Yes",
       },
     ],
   },
@@ -319,8 +311,7 @@ export const formFields: Field[] = [
         originalLabel: "Work Phone Number",
         type: "text",
         tooltip: `- Provide if you are employed and have work phone - Can enter 'DOES NOT APPLY' if not employed or no work phone`,
-        condition: (data: Record<string, string>) =>
-          data["S01-has_work_phone"] === "Yes",
+        condition: (data: Record<string, string>) => data["S01-has_work_phone"] === "Yes",
       },
     ],
   },
@@ -341,8 +332,7 @@ export const formFields: Field[] = [
         originalLabel: "Other Telephone Numbers Used",
         type: "text",
         tooltip: `- Answer YES if you had different phone numbers recently - Include old mobile numbers, landlines you used - Embassy may verify contact history`,
-        condition: (data: Record<string, string>) =>
-          data["S01-has_other_phones"] === "Yes",
+        condition: (data: Record<string, string>) => data["S01-has_other_phones"] === "Yes",
       },
     ],
   },
@@ -373,8 +363,7 @@ export const formFields: Field[] = [
         type: "text",
         section: "SECTION 1: Email and Social Media",
         tooltip: `- Answer YES if you used other emails for official purposes - Include old work emails, school emails - List each with dates used if possible`,
-        condition: (data: Record<string, string>) =>
-          data["S01-has_other_emails"] === "Yes",
+        condition: (data: Record<string, string>) => data["S01-has_other_emails"] === "Yes",
       },
     ],
   },
@@ -390,8 +379,7 @@ export const formFields: Field[] = [
   },
   {
     key: "S01-has_other_social",
-    label:
-      "Are there any other social media platforms you've used that aren't listed above?",
+    label: "Are there any other social media platforms you've used that aren't listed above?",
     type: "radio",
     section: "SECTION 1: Email and Social Media",
     options: [
@@ -407,16 +395,14 @@ export const formFields: Field[] = [
         type: "text",
         section: "SECTION 1: Email and Social Media",
         tooltip: `- Include any platforms not covered above - Examples: Reddit, Telegram, Discord, dating apps, forums - Be comprehensive - failure to disclose can result in visa denial`,
-        condition: (data: Record<string, string>) =>
-          data["S01-has_other_social"] === "Yes",
+        condition: (data: Record<string, string>) => data["S01-has_other_social"] === "Yes",
       },
     ],
   },
   {
     key: "S01-Q027",
     pdfKey: "S01-Q027",
-    label:
-      "Is your mailing address the same as the home address you just provided?",
+    label: "Is your mailing address the same as the home address you just provided?",
     originalLabel: "Is your Mailing Address the same as your Present Address?",
     type: "radio",
     section: "SECTION 1: Email and Social Media",
@@ -431,8 +417,7 @@ export const formFields: Field[] = [
     pdfKey: "S01-Q028",
     label:
       "Do you know where you'll be living once you arrive in the United States? (This is usually your petitioner or sponsor's address)",
-    originalLabel:
-      "Do you have an address in the United States where you intend to live?",
+    originalLabel: "Do you have an address in the United States where you intend to live?",
     type: "date",
     section: "SECTION 1: U.S. Address Information",
     tooltip: `- Usually you enter your petitioner's address or sponsor's address - Must be a physical address, not P.O. Box - You can change this later if needed`,
@@ -554,7 +539,7 @@ export const formFields: Field[] = [
     pdfKey: "S02-Q008",
     label: "What was your mother's last name at birth? (her maiden name)",
     originalLabel: "Mother's Surnames at Birth",
-    type: "date",
+    type: "text",
     section: "SECTION 2: Mother's Information",
     tooltip: `- Use her surname before marriage - Check birth certificate if available - If unknown, enter 'DO NOT KNOW'`,
   },
@@ -696,8 +681,7 @@ export const formFields: Field[] = [
   {
     key: "S02-Q021",
     pdfKey: "S02-Q021",
-    label:
-      "How did this marriage end? (For example: Divorce, Death, or Annulment)",
+    label: "How did this marriage end? (For example: Divorce, Death, or Annulment)",
     originalLabel: "How was your marriage terminated?",
     type: "text",
     section: "SECTION 2: Previous Marriages",
@@ -831,8 +815,7 @@ export const formFields: Field[] = [
         pdfKey: "S02-Q033",
         label:
           "Will this child be joining you in the U.S. at a later date? (This is known as 'follow-to-join')",
-        originalLabel:
-          "Is this child immigrating to the U.S. at a later date to join you?",
+        originalLabel: "Is this child immigrating to the U.S. at a later date to join you?",
         type: "date",
         section: "SECTION 2: Children - Immigration Plans",
         tooltip: `- Answer YES if child will immigrate later through follow-to-join petition - Answer NO if child is U.S. citizen, permanent resident, or not immigrating`,
@@ -856,8 +839,7 @@ export const formFields: Field[] = [
   },
   {
     key: "S03-has_a_number",
-    label:
-      "Have you ever been issued an Alien Registration Number (A-Number) by U.S. immigration?",
+    label: "Have you ever been issued an Alien Registration Number (A-Number) by U.S. immigration?",
     type: "radio",
     section: "SECTION 3: Previous U.S. Travel",
     options: [
@@ -873,16 +855,14 @@ export const formFields: Field[] = [
         type: "text",
         section: "SECTION 3: Previous U.S. Travel",
         tooltip: `- A-Number is an 8-9 digit number (e.g., A012345678) - You have one if you previously applied for green card, asylum, or certain work permits - Check old immigration documents, work permits (EAD), or notices - Answer NO if you only had tourist visas`,
-        condition: (data: Record<string, string>) =>
-          data["S03-has_a_number"] === "Yes",
+        condition: (data: Record<string, string>) => data["S03-has_a_number"] === "Yes",
       },
     ],
   },
   {
     key: "S03-Q003",
     pdfKey: "S03-Q003",
-    label:
-      "Please provide the dates and length of stay for your last five visits to the U.S.",
+    label: "Please provide the dates and length of stay for your last five visits to the U.S.",
     originalLabel:
       "Provide information on your last five U.S. visits (Date Arrived, Length of Stay)",
     type: "date",
@@ -916,8 +896,7 @@ export const formFields: Field[] = [
   {
     key: "S03-Q006",
     pdfKey: "S03-Q006",
-    label:
-      "What was the classification of that visa? (For example: B1/B2, F1, H1B)",
+    label: "What was the classification of that visa? (For example: B1/B2, F1, H1B)",
     originalLabel: "Visa Classification",
     type: "text",
     section: "SECTION 3: U.S. Visa History",
@@ -927,8 +906,7 @@ export const formFields: Field[] = [
   {
     key: "S03-Q007",
     pdfKey: "S03-Q007",
-    label:
-      "What was the visa number? (This is the 8-digit red number on your visa sticker)",
+    label: "What was the visa number? (This is the 8-digit red number on your visa sticker)",
     originalLabel: "Visa Number",
     type: "text",
     section: "SECTION 3: U.S. Visa History",
@@ -952,8 +930,7 @@ export const formFields: Field[] = [
     key: "S03-Q009",
     pdfKey: "S03-Q009",
     label: "Has the U.S. government ever canceled or revoked a visa you held?",
-    originalLabel:
-      "Have any of your U.S. visas ever been cancelled or revoked?",
+    originalLabel: "Have any of your U.S. visas ever been cancelled or revoked?",
     type: "radio",
     section: "SECTION 3: U.S. Visa History",
     tooltip: `- Answer YES if embassy ever cancelled your visa - Includes visas marked 'cancelled without prejudice' - Provide full explanation if YES`,
@@ -1002,8 +979,7 @@ export const formFields: Field[] = [
   {
     key: "S04-Q003",
     pdfKey: "S04-Q003",
-    label:
-      "What type of work do you intend to do once you are in the United States?",
+    label: "What type of work do you intend to do once you are in the United States?",
     originalLabel: "In which occupation do you intend to work in the U.S.?",
     type: "text",
     section: "SECTION 4: Employment Information",
@@ -1027,8 +1003,7 @@ export const formFields: Field[] = [
     pdfKey: "S04-Q005",
     label:
       "Please list your previous employers, including addresses and the dates you worked there.",
-    originalLabel:
-      "Employer Name, Address, Job Title, Supervisor, Employment Dates",
+    originalLabel: "Employer Name, Address, Job Title, Supervisor, Employment Dates",
     type: "date",
     section: "SECTION 4: Employment Information",
     tooltip: `- Provide for last 5-10 years of employment (or all if less) - Include: company name, full address, your job title, supervisor name, dates (from-to) - Use format: Month YYYY to Month YYYY - Gather old employment letters, contracts, or pay stubs - Common issue: not remembering exact dates - estimate month/year`,
@@ -1039,8 +1014,7 @@ export const formFields: Field[] = [
     pdfKey: "S04-Q006",
     label:
       "Have you attended any schools (high school, college, or university) at a secondary level or higher?",
-    originalLabel:
-      "Have you attended any educational institutions at a secondary level or above?",
+    originalLabel: "Have you attended any educational institutions at a secondary level or above?",
     type: "radio",
     section: "SECTION 4: Education and Travel",
     tooltip: `- Answer YES if you completed secondary school (high school) or higher - Secondary = high school; above = college, university, vocational school - List all institutions attended after primary school - Answer NO only if you completed only elementary/primary school`,
@@ -1076,10 +1050,8 @@ export const formFields: Field[] = [
   {
     key: "S04-Q009",
     pdfKey: "S04-Q009",
-    label:
-      "Have you traveled to any countries outside of your home country in the last 5 years?",
-    originalLabel:
-      "Have you traveled to any countries/regions within the last five years?",
+    label: "Have you traveled to any countries outside of your home country in the last 5 years?",
+    originalLabel: "Have you traveled to any countries/regions within the last five years?",
     type: "radio",
     section: "SECTION 4: Education and Travel",
     tooltip: `- List ALL countries visited in last 5 years - Include even brief visits or transit - Check passport stamps to ensure nothing is missed - Common mistake: forgetting short trips or transit stops`,
@@ -1091,8 +1063,7 @@ export const formFields: Field[] = [
   {
     key: "S04-Q010",
     pdfKey: "S04-Q010",
-    label:
-      "Have you ever served in the military or armed forces of any country?",
+    label: "Have you ever served in the military or armed forces of any country?",
     originalLabel: "Have you ever served in the military?",
     type: "radio",
     section: "SECTION 4: Military, Organizations, and Skills",
@@ -1105,8 +1076,7 @@ export const formFields: Field[] = [
   {
     key: "S04-Q011",
     pdfKey: "S04-Q011",
-    label:
-      "Have you ever been a member of any professional, social, or charitable organizations?",
+    label: "Have you ever been a member of any professional, social, or charitable organizations?",
     originalLabel:
       "Have you belonged to, contributed to, or worked for any professional, social, or charitable organization?",
     type: "radio",
@@ -1150,10 +1120,8 @@ export const formFields: Field[] = [
   {
     key: "S04-Q014",
     pdfKey: "S04-Q014",
-    label:
-      "Can you speak or read any languages other than your native language?",
-    originalLabel:
-      "Can you speak and/or read languages other than your native language?",
+    label: "Can you speak or read any languages other than your native language?",
+    originalLabel: "Can you speak and/or read languages other than your native language?",
     type: "radio",
     section: "SECTION 4: Military, Organizations, and Skills",
     tooltip: `- List all languages you can speak or read - Include level of proficiency if asked (fluent, conversational, basic) - Common mistake: not listing English if native language is different`,
@@ -1165,8 +1133,7 @@ export const formFields: Field[] = [
   {
     key: "S05-Q001",
     pdfKey: "S05-Q001",
-    label:
-      "What is your relationship to the person (petitioner) who is sponsoring your visa?",
+    label: "What is your relationship to the person (petitioner) who is sponsoring your visa?",
     originalLabel: "Petitioner is my:",
     type: "text",
     section: "SECTION 5: Petitioner Information",
@@ -1185,8 +1152,7 @@ export const formFields: Field[] = [
     key: "S05-Q003",
     pdfKey: "S05-Q003",
     label: "What is your petitioner's current residential address?",
-    originalLabel:
-      "Petitioner Address (Street, City, State, ZIP Code, Country)",
+    originalLabel: "Petitioner Address (Street, City, State, ZIP Code, Country)",
     type: "text",
     section: "SECTION 5: Petitioner Information",
     tooltip: `- Provide petitioner's current residential address in the U.S. - Must be U.S. address if petitioner lives in the U.S. - Include apartment/unit number - Verify correct ZIP code`,
@@ -1217,8 +1183,7 @@ export const formFields: Field[] = [
         originalLabel: "Petitioner Mobile/Cell Telephone",
         type: "text",
         tooltip: `- Provide if different from primary phone - Embassy may call petitioner for verification`,
-        condition: (data: Record<string, string>) =>
-          data["S05-has_petitioner_mobile"] === "Yes",
+        condition: (data: Record<string, string>) => data["S05-has_petitioner_mobile"] === "Yes",
       },
     ],
   },
@@ -1323,8 +1288,7 @@ export const formFields: Field[] = [
   {
     key: "S06-Q005",
     pdfKey: "S06-Q005",
-    label:
-      "Have you ever been arrested or convicted of any crime, even if pardoned?",
+    label: "Have you ever been arrested or convicted of any crime, even if pardoned?",
     originalLabel:
       "Have you ever been arrested or convicted for any offense or crime, even though subject of a pardon, amnesty, or other similar action?",
     type: "radio",
@@ -1413,8 +1377,7 @@ export const formFields: Field[] = [
     pdfKey: "S06-Q009",
     label:
       "Have you ever been involved in money laundering (hiding the source of illegally obtained money)?",
-    originalLabel:
-      "Have you ever been involved in, or do you seek to engage in, money laundering?",
+    originalLabel: "Have you ever been involved in, or do you seek to engage in, money laundering?",
     type: "radio",
     section: "SECTION 6: Human Trafficking",
     tooltip: `- Answer truthfully - Money laundering is a serious crime - If YES, consult attorney immediately`,
@@ -1566,8 +1529,7 @@ export const formFields: Field[] = [
     key: "S06-Q016",
     pdfKey: "S06-Q016",
     label: "Are you a member or a representative of a terrorist organization?",
-    originalLabel:
-      "Are you a member or representative of a terrorist organization?",
+    originalLabel: "Are you a member or representative of a terrorist organization?",
     type: "radio",
     section: "SECTION 6: Terrorism and Security",
     tooltip: `- Answer NO unless you are a member - If YES, consult attorney - likely permanently inadmissible`,
@@ -1655,8 +1617,7 @@ export const formFields: Field[] = [
     pdfKey: "S06-Q021",
     label:
       "Have you ever recruited children (under age 15) to serve in an armed group, or used them to participate in fighting?",
-    originalLabel:
-      "Have you ever engaged in the recruitment of or the use of child soldiers?",
+    originalLabel: "Have you ever engaged in the recruitment of or the use of child soldiers?",
     type: "radio",
     section: "SECTION 6: Genocide, Torture, and Violence",
     tooltip: `- Answer NO unless applicable - If YES, consult attorney - permanently inadmissible`,
@@ -1698,8 +1659,7 @@ export const formFields: Field[] = [
   {
     key: "S06-Q024",
     pdfKey: "S06-Q024",
-    label:
-      "Have you ever assisted or supported any Colombian groups known as FARC, ELN, or AUC?",
+    label: "Have you ever assisted or supported any Colombian groups known as FARC, ELN, or AUC?",
     originalLabel:
       "Have you ever directly or indirectly assisted or supported any of the groups in Columbia known as the Revolutionary Armed Forces of Columbia (FARC), National Liberation Army (ELN), or United Self-Defense Forces of Columbia (AUC)?",
     type: "radio",
@@ -1874,10 +1834,8 @@ export const formFields: Field[] = [
   {
     key: "S06-Q043",
     pdfKey: "S06-Q043",
-    label:
-      "Have you ever voted in a U.S. election in a way that broke the law?",
-    originalLabel:
-      "Have you voted in the United States in violation of any law or regulation?",
+    label: "Have you ever voted in a U.S. election in a way that broke the law?",
+    originalLabel: "Have you voted in the United States in violation of any law or regulation?",
     type: "radio",
     section: "SECTION 6: Custody and Voting Violations",
     tooltip: `- Answer NO unless you voted in U.S. elections without being eligible - Only U.S. citizens can vote in federal elections - If YES, consult attorney`,
@@ -1889,8 +1847,7 @@ export const formFields: Field[] = [
   {
     key: "S06-Q044",
     pdfKey: "S06-Q044",
-    label:
-      "Have you ever given up your U.S. citizenship specifically to avoid paying taxes?",
+    label: "Have you ever given up your U.S. citizenship specifically to avoid paying taxes?",
     originalLabel:
       "Have you ever renounced United States citizenship for the purpose of avoiding taxation?",
     type: "radio",
@@ -2079,8 +2036,7 @@ export const formFields: Field[] = [
   {
     key: "S07-Q001",
     pdfKey: "S07-Q001",
-    label:
-      "Have you ever applied for a U.S. Social Security Number (SSN) before?",
+    label: "Have you ever applied for a U.S. Social Security Number (SSN) before?",
     originalLabel: "Have you ever applied for a Social Security number?",
     type: "radio",
     section: "SECTION 7: Social Security Number",
@@ -2154,8 +2110,7 @@ export const formFields: Field[] = [
     type: "text",
     section: "SECTION 8: Preparer Information",
     tooltip: `- Enter law firm name if attorney helped - Enter 'DOES NOT APPLY' if family member/friend helped`,
-    condition: (data: Record<string, string>) =>
-      data["S08-has_organization"] === "Yes",
+    condition: (data: Record<string, string>) => data["S08-has_organization"] === "Yes",
   },
   {
     key: "S08-Q004",
@@ -2170,8 +2125,7 @@ export const formFields: Field[] = [
   {
     key: "S08-Q005",
     pdfKey: "S08-Q005",
-    label:
-      "How is this person related to you? (For example: Son, Friend, or Attorney)",
+    label: "How is this person related to you? (For example: Son, Friend, or Attorney)",
     originalLabel: "Relationship to You",
     type: "text",
     section: "SECTION 8: Preparer Information",
@@ -2182,8 +2136,7 @@ export const formFields: Field[] = [
 
 export const pdfSectionTitles: Record<string, string> = {
   // SECTION 1
-  "SECTION 1: Personal Information - Name and Identity":
-    "SECTION 1: PERSONAL INFORMATION",
+  "SECTION 1: Personal Information - Name and Identity": "SECTION 1: PERSONAL INFORMATION",
   "SECTION 1: Birth Information": "SECTION 1: PERSONAL INFORMATION",
   "SECTION 1: Passport and Citizenship": "SECTION 1: PERSONAL INFORMATION",
   "SECTION 1: Address and Phone Information": "SECTION 1: PERSONAL INFORMATION",
@@ -2199,15 +2152,12 @@ export const pdfSectionTitles: Record<string, string> = {
   "SECTION 2: Children - Immigration Plans": "SECTION 2: FAMILY INFORMATION",
 
   // SECTION 3
-  "SECTION 3: Previous U.S. Travel":
-    "SECTION 3: PREVIOUS U.S. TRAVEL INFORMATION",
+  "SECTION 3: Previous U.S. Travel": "SECTION 3: PREVIOUS U.S. TRAVEL INFORMATION",
   "SECTION 3: U.S. Visa History": "SECTION 3: PREVIOUS U.S. TRAVEL INFORMATION",
 
   // SECTION 4
-  "SECTION 4: Employment Information":
-    "SECTION 4: WORK/EDUCATION/TRAINING INFORMATION",
-  "SECTION 4: Education and Travel":
-    "SECTION 4: WORK/EDUCATION/TRAINING INFORMATION",
+  "SECTION 4: Employment Information": "SECTION 4: WORK/EDUCATION/TRAINING INFORMATION",
+  "SECTION 4: Education and Travel": "SECTION 4: WORK/EDUCATION/TRAINING INFORMATION",
   "SECTION 4: Military, Organizations, and Skills":
     "SECTION 4: WORK/EDUCATION/TRAINING INFORMATION",
 
@@ -2215,32 +2165,23 @@ export const pdfSectionTitles: Record<string, string> = {
   "SECTION 5: Petitioner Information": "SECTION 5: PETITIONER INFORMATION",
 
   // SECTION 6
-  "SECTION 6: Health and Medical":
-    "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
+  "SECTION 6: Health and Medical": "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
   "SECTION 6: Criminal History and Drug Violations":
     "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
-  "SECTION 6: Human Trafficking":
-    "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
-  "SECTION 6: Terrorism and Security":
-    "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
-  "SECTION 6: Genocide, Torture, and Violence":
-    "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
+  "SECTION 6: Human Trafficking": "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
+  "SECTION 6: Terrorism and Security": "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
+  "SECTION 6: Genocide, Torture, and Violence": "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
   "SECTION 6: Political Affiliations and Property":
     "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
-  "SECTION 6: Fraud and Deportation":
-    "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
-  "SECTION 6: Custody and Voting Violations":
-    "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
+  "SECTION 6: Fraud and Deportation": "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
+  "SECTION 6: Custody and Voting Violations": "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
   "SECTION 6: Professional and Military Requirements":
     "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
-  "SECTION 60: Other Inadmissibility Grounds":
-    "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
+  "SECTION 60: Other Inadmissibility Grounds": "SECTION 6: SECURITY AND BACKGROUND INFORMATION",
 
   // SECTION 7
-  "SECTION 7: Social Security Number":
-    "SECTION 7: SOCIAL SECURITY NUMBER INFORMATION",
-  "SECTION 7: SOCIAL SECURITY NUMBER INFORMATION":
-    "SECTION 7: SOCIAL SECURITY NUMBER INFORMATION",
+  "SECTION 7: Social Security Number": "SECTION 7: SOCIAL SECURITY NUMBER INFORMATION",
+  "SECTION 7: SOCIAL SECURITY NUMBER INFORMATION": "SECTION 7: SOCIAL SECURITY NUMBER INFORMATION",
 
   // SECTION 8
   "SECTION 8: Preparer Information": "SECTION 8: PREPARER OF APPLICATION",
@@ -2375,8 +2316,7 @@ export const sectionIntroMessages = {
   },
   "SECTION 6: Custody and Voting Violations": {
     greeting: "Additional legal questions",
-    message:
-      "These questions cover specific legal issues like child custody and U.S. voting laws.",
+    message: "These questions cover specific legal issues like child custody and U.S. voting laws.",
   },
   "SECTION 6: Professional and Military Requirements": {
     greeting: "Work and military status",

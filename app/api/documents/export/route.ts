@@ -2,13 +2,15 @@
 // GET /api/documents/export
 // Supports: Export All, Export Single Document (original + compressed)
 
-import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@/lib/supabase/server';
-import { DocumentFileManager } from '@/lib/document-vault/storage-server';
-import { DocumentDatabaseStorage } from '@/lib/document-vault/storage-database';
-import { getCategoryFolderName } from '@/lib/document-vault/file-utils';
-import { ALL_DOCUMENTS } from '@/lib/document-vault/document-definitions';
-import JSZip from 'jszip';
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/lib/supabase/server";
+import { E, msg } from "@/lib/errors";
+import { DocumentFileManager } from "@/lib/document-vault/storage-server";
+import { DocumentDatabaseStorage } from "@/lib/document-vault/storage-database";
+import { getCategoryFolderName } from "@/lib/document-vault/file-utils";
+import { ALL_DOCUMENTS } from "@/lib/document-vault/document-definitions";
+import JSZip from "jszip";
+import crypto from "crypto";
 
 export async function GET(request: NextRequest) {
   try {
@@ -20,12 +22,12 @@ export async function GET(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     if (authError || !user) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json({ error: msg(E.AUTH_UNAUTHORIZED) }, { status: 401 });
     }
 
     // Get query parameters
     const { searchParams } = new URL(request.url);
-    const structureByCategory = searchParams.get('structureByCategory') === 'true';
+    const structureByCategory = searchParams.get("structureByCategory") === "true";
     // Metadata is disabled by default now
     const includeMetadata = false;
 
@@ -34,10 +36,7 @@ export async function GET(request: NextRequest) {
     const documents = await dbStorage.getAllDocuments(user.id);
 
     if (documents.length === 0) {
-      return NextResponse.json(
-        { error: 'No documents to export' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: msg(E.VAULT_NO_DOCUMENTS_TO_EXPORT) }, { status: 400 });
     }
 
     // Create ZIP
@@ -50,14 +49,14 @@ export async function GET(request: NextRequest) {
     // Add files to ZIP
     for (const doc of documents) {
       // Skip if status is not UPLOADED or NEEDS_ATTENTION
-      if (doc.status === 'MISSING') continue;
+      if (doc.status === "MISSING") continue;
 
       // Determine folder path based on category
-      let categoryFolder = '';
+      let categoryFolder = "";
       if (structureByCategory) {
         const docDef = defsMap.get(doc.documentDefId);
         if (docDef) {
-          categoryFolder = getCategoryFolderName(docDef.category) + '/';
+          categoryFolder = getCategoryFolderName(docDef.category) + "/";
         }
       }
 
@@ -68,11 +67,11 @@ export async function GET(request: NextRequest) {
         // Create subfolder using document key
         const docDef = defsMap.get(doc.documentDefId);
         const docName = docDef?.key || doc.documentDefId;
-        docFolder = categoryFolder + docName.replace(/_/g, ' ') + '/';
+        docFolder = categoryFolder + docName.replace(/_/g, " ") + "/";
       }
 
       // Read and add original file
-      const readResult = await fileManager.readFile(doc.storagePath);
+      const readResult = await fileManager.readFile(doc.storagePath, user.id);
       if (!readResult.success || !readResult.buffer) {
         console.warn(`Failed to read file: ${doc.storagePath}`);
         continue;
@@ -83,7 +82,7 @@ export async function GET(request: NextRequest) {
 
       // Add compressed file if exists
       if (doc.hasCompressedVersion && doc.compressedStoragePath && doc.compressedFilename) {
-        const compressedResult = await fileManager.readFile(doc.compressedStoragePath);
+        const compressedResult = await fileManager.readFile(doc.compressedStoragePath, user.id);
         if (compressedResult.success && compressedResult.buffer) {
           zip.file(docFolder + doc.compressedFilename, compressedResult.buffer);
         } else {
@@ -113,34 +112,31 @@ export async function GET(request: NextRequest) {
         })),
       };
 
-      zip.file('metadata.json', JSON.stringify(metadata, null, 2));
+      zip.file("metadata.json", JSON.stringify(metadata, null, 2));
     }
 
     // Generate ZIP buffer
     const zipBuffer = await zip.generateAsync({
-      type: 'nodebuffer',
-      compression: 'DEFLATE',
+      type: "nodebuffer",
+      compression: "DEFLATE",
       compressionOptions: { level: 6 },
     });
 
     // Generate filename
-    const timestamp = new Date().toISOString().split('T')[0];
+    const timestamp = new Date().toISOString().split("T")[0];
     const filename = `document-vault-export-${timestamp}.zip`;
 
     // Return ZIP file
     return new NextResponse(new Uint8Array(zipBuffer), {
       status: 200,
       headers: {
-        'Content-Type': 'application/zip',
-        'Content-Disposition': `attachment; filename="${filename}"`,
-        'Content-Length': zipBuffer.length.toString(),
+        "Content-Type": "application/zip",
+        "Content-Disposition": `attachment; filename="${filename}"`,
+        "Content-Length": zipBuffer.length.toString(),
       },
     });
   } catch (error) {
-    console.error('Export error:', error);
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
+    console.error("Export error:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

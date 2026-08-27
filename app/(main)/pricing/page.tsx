@@ -1,17 +1,11 @@
 "use client";
 
-import React, {
-  useEffect,
-  useState,
-  useMemo,
-  useCallback,
-  Suspense,
-} from "react";
+import React, { useEffect, useRef, useState, useMemo, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import CheckoutButton from "@/app/components/payment/CheckoutButton";
 import Link from "next/link";
 import {
-  Brain,
+  // Brain, // unused — Case Strength Analyzer commented out
   LifeBuoy,
   MessageSquare,
   Zap,
@@ -23,25 +17,27 @@ import {
   FileUp,
   UserCheck,
   Globe,
+  Stethoscope,
+  ShieldCheck,
   ArrowLeft,
   ArrowRight,
+  ArrowUpRight,
+  ChevronDown,
+  ShoppingCart,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import {
-  VISA_CATEGORIES,
-  HELPER_DATA,
-  COMPARISON_GROUPS,
-  ADDONS,
-  FAQS,
-} from "./data/pricing";
+import { E, msg, errorCode } from "@/lib/errors";
+import { VISA_CATEGORIES, HELPER_DATA, COMPARISON_GROUPS, ADDONS, FAQS } from "./data/pricing";
 import type { PlanData } from "./data/pricing";
+import ResourceToolCard from "@/components/pricing/ResourceToolCard";
+import ResourceCarousel from "@/components/pricing/ResourceCarousel";
 
 /* ===========================================================================
    TIER VISUAL CONFIG
    =========================================================================== */
 const TIER = {
   basic: {
-       cardBg: "bg-gradient-to-br from-[#e8f5f1] to-[#cce9df]",
+    cardBg: "bg-gradient-to-br from-[#e8f5f1] to-[#cce9df]",
     border: "border-[#92ccbc]",
     selBorder: "border-[#0d7a5c]",
     textAccent: "text-[#0d7a5c]",
@@ -49,13 +45,12 @@ const TIER = {
     badgeText: "text-[#065e42]",
     checkCol: "text-[#0d7a5c]",
     btn: "bg-[#0d7a5c] hover:bg-[#0a6048] text-white",
-    btnOut:
-      "border border-[#92ccbc] text-[#0d7a5c] hover:bg-[#aed9ca]/50 bg-transparent",
+    btnOut: "border border-[#92ccbc] text-[#0d7a5c] hover:bg-[#aed9ca]/50 bg-transparent",
     ring: "ring-2 ring-[#0d7a5c]/20",
     glow: "[box-shadow:0_16px_52px_rgba(13,122,92,0.15)]",
   },
   premium: {
-  cardBg: "bg-gradient-to-br from-[#ede8f8] to-[#d9d0f2]",
+    cardBg: "bg-gradient-to-br from-[#ede8f8] to-[#d9d0f2]",
     border: "border-[#b5a5e3]",
     selBorder: "border-[#5c2db8]",
     textAccent: "text-[#5c2db8]",
@@ -63,13 +58,12 @@ const TIER = {
     badgeText: "text-[#471e9c]",
     checkCol: "text-[#5c2db8]",
     btn: "bg-[#5c2db8] hover:bg-[#4b22a3] text-white",
-    btnOut:
-      "border border-[#b5a5e3] text-[#5c2db8] hover:bg-[#c4b6ed]/50 bg-transparent",
+    btnOut: "border border-[#b5a5e3] text-[#5c2db8] hover:bg-[#c4b6ed]/50 bg-transparent",
     ring: "ring-2 ring-[#5c2db8]/20",
     glow: "[box-shadow:0_16px_52px_rgba(92,45,184,0.15)]",
   },
   executive: {
-      cardBg: "bg-gradient-to-br from-[#fdf4e2] to-[#f1dea8]",
+    cardBg: "bg-gradient-to-br from-[#fdf4e2] to-[#f1dea8]",
     border: "border-[#d9ba6e]",
     selBorder: "border-[#b45309]",
     textAccent: "text-[#b45309]",
@@ -77,8 +71,7 @@ const TIER = {
     badgeText: "text-[#8a3f07]",
     checkCol: "text-[#b45309]",
     btn: "bg-[#b45309] hover:bg-[#9c4808] text-white",
-    btnOut:
-      "border border-[#d9ba6e] text-[#b45309] hover:bg-[#e8c96c]/50 bg-transparent",
+    btnOut: "border border-[#d9ba6e] text-[#b45309] hover:bg-[#e8c96c]/50 bg-transparent",
     ring: "ring-2 ring-[#b45309]/20",
     glow: "[box-shadow:0_16px_52px_rgba(180,83,9,0.15)]",
   },
@@ -86,25 +79,34 @@ const TIER = {
 type TierKey = keyof typeof TIER;
 
 /* ===========================================================================
+   VISA CATEGORY AVAILABILITY
+   ===========================================================================
+   Only categories listed here are selectable in the UI, even though more
+   exist in VISA_CATEGORIES (data/pricing.ts). Add an id here once that
+   journey's content/roadmap is actually ready for users to pick. */
+const AVAILABLE_VISA_IDS: string[] = ["IR-1 / CR-1", "IR-5"];
+
+/* ===========================================================================
    ADDON CONFIG — icons + colors matching resources page system
    =========================================================================== */
-const ADDON_CONFIG: Record<
-  string,
-  {
-    icon: React.ComponentType<{ className?: string }>;
-    iconBg: string;
-  }
-> = {
+type AddonConfigEntry = {
+  icon: React.ComponentType<{ className?: string }>;
+  iconBg: string;
+};
+
+const ADDON_CONFIG: Record<string, AddonConfigEntry> = {
   "221g": { icon: LifeBuoy, iconBg: "bg-violet-600 dark:bg-violet-500" },
-  "case-strength": { icon: Brain, iconBg: "bg-violet-600 dark:bg-violet-500" },
-  mock: { icon: MessageSquare, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
-  rapid: { icon: Zap, iconBg: "bg-violet-600 dark:bg-violet-500" },
+  // Temporarily hidden — Case Strength Analyzer commented out.
+  // "case-strength": { icon: Brain, iconBg: "bg-violet-600 dark:bg-violet-500" },
+  "interview-prep": { icon: MessageSquare, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
   photo: { icon: Camera, iconBg: "bg-rose-600 dark:bg-rose-500" },
   smart: { icon: Wand2, iconBg: "bg-cyan-600 dark:bg-cyan-500" },
   sponsor: { icon: Calculator, iconBg: "bg-emerald-600 dark:bg-emerald-500" },
   "doc-review": { icon: FileSearch, iconBg: "bg-amber-600 dark:bg-amber-500" },
   consultation: { icon: Users, iconBg: "bg-indigo-600 dark:bg-indigo-500" },
   translate: { icon: FileUp, iconBg: "bg-amber-600 dark:bg-amber-500" },
+  medical: { icon: Stethoscope, iconBg: "bg-rose-600 dark:bg-rose-500" },
+  pcc: { icon: ShieldCheck, iconBg: "bg-emerald-600 dark:bg-emerald-500" },
   "case-manager": {
     icon: UserCheck,
     iconBg: "bg-indigo-600 dark:bg-indigo-500",
@@ -113,53 +115,100 @@ const ADDON_CONFIG: Record<
 };
 
 /* ===========================================================================
-   RESOURCE CATEGORIES + PLAN RECOMMENDATIONS
-   =========================================================================== */
-const RESOURCE_CATS = [
-  { id: "all", label: "All", ids: [] },
-  {
-    id: "popular",
-    label: "Most Popular",
-    ids: ["case-strength", "smart", "consultation", "mock"],
+   RESOURCE TABS + PLAN RECOMMENDATIONS
+   ===========================================================================
+   The à la carte resources are split into three top-level tabs by add-on
+   `kind` (tools | services | guides), mirroring the /resources page. */
+type ResourceMode = "tools" | "services" | "guides";
+
+// sessionStorage key for the persisted add-on cart — survives navigation to a
+// tool/service/guide detail page and back. Cleared after a successful checkout.
+const CART_STORAGE_KEY = "rahvana_pricing_cart_addons";
+
+type ResourceTabInfo = { label: string; sub: string; heading: string; blurb: string };
+
+const RESOURCE_TABS: Record<ResourceMode, ResourceTabInfo> = {
+  tools: {
+    label: "Tools",
+    sub: "Self-serve tools",
+    heading: "Buy individual tools",
+    blurb: "Self-serve tools you can use right away, no full journey plan required.",
   },
-  {
-    id: "forms",
-    label: "Forms & Case",
-    ids: ["smart", "sponsor", "case-strength", "221g"],
+  services: {
+    label: "Services",
+    sub: "Expert help",
+    heading: "Expert services",
+    blurb: "Human-delivered help when you want a specialist on your case.",
   },
-  {
-    id: "interview",
-    label: "Interview & Embassy",
-    ids: ["mock", "rapid", "photo"],
+  guides: {
+    label: "Guides",
+    sub: "Step-by-step guides",
+    heading: "Document guides",
+    blurb: "Country-specific, step-by-step guides for obtaining each required document.",
   },
-  {
-    id: "docs",
-    label: "Document Help",
-    ids: ["doc-review", "translate", "civil-guid"],
-  },
-  {
-    id: "support",
-    label: "Premium Support",
-    ids: ["consultation", "case-manager"],
-  },
-];
+};
 
 const PLAN_RECS: Record<string, string[]> = {
-  basic: ["smart", "case-strength", "sponsor", "rapid", "civil-guid"],
-  premium: ["mock", "doc-review", "consultation", "221g"],
+  // "case-strength" temporarily hidden — Case Strength Analyzer commented out.
+  basic: ["smart", "sponsor", "interview-prep", "civil-guid"],
+  premium: ["interview-prep", "doc-review", "consultation", "221g"],
   executive: ["case-manager", "consultation", "translate"],
+};
+
+const INTERVIEW_PREP_ADDON_PREFIX = "interview-prep:";
+
+const VISA_TO_INTERVIEW_CATEGORY: Record<string, string> = {
+  "IR-1 / CR-1": "ir-1-spouse",
+  "IR-5": "ir-5-parent",
+};
+
+const getCatalogAddonId = (addonId: string): string => {
+  const normalized = addonId.toLowerCase();
+
+  if (normalized.startsWith(INTERVIEW_PREP_ADDON_PREFIX)) {
+    return "interview-prep";
+  }
+
+  return normalized;
+};
+
+const resolveCheckoutAddonId = (addonId: string, interviewCategory: string | null): string => {
+  const normalized = addonId.toLowerCase();
+
+  if (normalized.startsWith(INTERVIEW_PREP_ADDON_PREFIX)) {
+    return normalized;
+  }
+
+  if (normalized === "interview-prep" && interviewCategory) {
+    return `${INTERVIEW_PREP_ADDON_PREFIX}${interviewCategory}`;
+  }
+
+  return normalized;
+};
+
+const mergeAddonSelections = (current: Set<string>, incoming: string[]): Set<string> => {
+  const next = new Set(current);
+
+  for (const incomingId of incoming) {
+    const catalogId = getCatalogAddonId(incomingId);
+
+    // Remove an existing generic/category-specific variant of the same catalog product.
+    for (const existingId of Array.from(next)) {
+      if (getCatalogAddonId(existingId) === catalogId) {
+        next.delete(existingId);
+      }
+    }
+
+    next.add(incomingId);
+  }
+
+  return next;
 };
 
 /* ===========================================================================
    SVG HELPERS
    =========================================================================== */
-function IconCheck({
-  className,
-  style,
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-}) {
+function IconCheck({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <svg
       viewBox="0 0 20 20"
@@ -176,13 +225,7 @@ function IconCheck({
   );
 }
 
-function IconX({
-  className,
-  style,
-}: {
-  className?: string;
-  style?: React.CSSProperties;
-}) {
+function IconX({ className, style }: { className?: string; style?: React.CSSProperties }) {
   return (
     <svg
       viewBox="0 0 20 20"
@@ -247,39 +290,124 @@ function IcoInfo({ className }: { className?: string }) {
 }
 
 /* ===========================================================================
+   VISA SELECTOR — a compact dropdown-style picker that scales cleanly as the
+   list of visa categories grows. It is used in the journey-plan flow and stays
+   out of the add-on/resource views so those tabs remain focused on add-ons.
+   =========================================================================== */
+function VisaSelector({
+  categories,
+  value,
+  onChange,
+  size = "md",
+}: {
+  categories: { id: string; label: string }[];
+  value: string | null;
+  onChange: (id: string) => void;
+  size?: "md" | "sm";
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const triggerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  const activeLabel = categories.find((cat) => cat.id === value)?.label ?? "I'm applying for";
+  const baseClass =
+    size === "sm"
+      ? "w-fit max-w-[280px] text-[12px] py-2 px-3"
+      : "w-fit max-w-[3000px] text-[13.5px] py-2 px-3";
+
+  return (
+    <div ref={triggerRef} className={`relative ${baseClass}`}>
+      <button
+        type="button"
+        aria-label="Visa category"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className={`flex w-full max-w-full items-center justify-between rounded-lg border-[1.5px] border-[#4A7772] bg-[#ffff] px-3 py-2 text-left font-semibold text-[#2E5450] shadow-sm ${baseClass}`}
+      >
+        <span className="min-w-0 flex-1 truncate">{activeLabel}</span>
+        <ChevronDown
+          className={`ml-2 shrink-0 transition-transform ${isOpen ? "rotate-180" : ""}`}
+        />
+      </button>
+
+      {isOpen && (
+        <div className="absolute top-[calc(100%+6px)] left-0 z-[60] ml-3 w-max max-w-[240px] min-w-[180px] overflow-hidden rounded-lg border border-[#4A7772]/25 bg-white shadow-xl">
+          {categories.map((cat) => {
+            const isSelected = cat.id === value;
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => {
+                  onChange(cat.id);
+                  setIsOpen(false);
+                }}
+                className={`flex w-full items-center px-4 py-3 text-left text-sm font-medium transition-colors ${
+                  isSelected ? "bg-[#EAF5F0] text-[#2E5450]" : "text-slate-700 hover:bg-slate-50"
+                }`}
+              >
+                {cat.label}
+              </button>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+/* ===========================================================================
    COMPARISON CELL
    =========================================================================== */
-function ComparisonCell({ value }: { value: string }) {
+function ComparisonCell({ value, planId }: { value: string; planId?: string }) {
   const v = value.trim();
+  const tc = planId && planId in TIER ? TIER[planId as TierKey] : null;
+  const checkColor = tc ? tc.checkCol : "text-primary";
+
   if (v === "Included" || v === "Unlimited") {
-    return <IconCheck className="w-5 h-5 mx-auto text-primary" />;
+    return <IconCheck className={`${checkColor} mx-auto h-4 w-4 shrink-0 sm:h-5 sm:w-5`} />;
   }
   if (v === "Not Included") {
-    return <IconX className="w-5 h-5 mx-auto text-red-500" />;
+    return <IconX className="mx-auto h-4 w-4 shrink-0 text-red-500 sm:h-5 sm:w-5" />;
   }
-  if (v === "—") {
+  if (v === "") {
     return (
-      <span className="block text-center text-muted-foreground/40 font-bold text-xl leading-none">
+      <span className="text-muted-foreground/30 block text-center text-base leading-none font-bold select-none sm:text-xl">
         —
       </span>
     );
   }
   if (/included/i.test(v) && v !== "Included") {
     return (
-      <span className="inline-flex items-center gap-1 mx-auto px-2.5 py-1 rounded-full text-[11px] font-bold border bg-primary/10 text-primary border-primary/20">
-        <IconCheck className="w-3 h-3" /> {v}
+      <span
+        className={`mx-auto inline-flex items-center justify-center gap-0.5 rounded-full border px-1.5 py-0.5 text-[9.5px] leading-tight font-bold sm:gap-1 sm:px-2.5 sm:py-1 sm:text-[11px] ${
+          tc
+            ? `${tc.badgeBg} ${tc.badgeText} border-transparent`
+            : "bg-primary/10 text-primary border-primary/20"
+        }`}
+      >
+        <IconCheck className={`h-2.5 w-2.5 shrink-0 sm:h-3 sm:w-3 ${tc ? tc.checkCol : ""}`} /> {v}
       </span>
     );
   }
   if (/add on/i.test(v)) {
     return (
-      <span className="inline-flex items-center mx-auto px-2.5 py-1 rounded-full text-[10.5px] font-bold border bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">
+      <span className="mx-auto inline-flex items-center justify-center rounded-full border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[9.5px] leading-tight font-bold text-amber-700 sm:px-2.5 sm:py-1 sm:text-[10.5px] dark:border-amber-800 dark:bg-amber-900/20 dark:text-amber-400">
         {v}
       </span>
     );
   }
   return (
-    <span className="inline-block px-2.5 py-1 rounded-full text-[11px] font-bold border bg-muted text-muted-foreground border-border">
+    <span className="bg-muted text-muted-foreground border-border inline-block rounded-full border px-1.5 py-0.5 text-[9.5px] leading-tight font-bold sm:px-2.5 sm:py-1 sm:text-[11px]">
       {v}
     </span>
   );
@@ -316,119 +444,165 @@ function CompareModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 backdrop-blur-[2px] z-[1000] overflow-y-auto animate-in fade-in duration-150"
+      className="animate-in fade-in fixed inset-0 z-[1000] flex items-center justify-center bg-black/60 px-3 py-5 backdrop-blur-sm duration-150 sm:p-6 md:p-10"
       onClick={onClose}
     >
-      <div className="flex min-h-full items-center justify-center p-4 sm:p-6 md:p-10">
-        <div
-          className="w-full max-w-[960px] max-h-[calc(100vh-40px)] md:max-h-[calc(100vh-80px)] bg-card border border-border rounded-[28px] shadow-2xl flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
-          onClick={(e) => e.stopPropagation()}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="cmp-title"
-        >
-          {/* Header */}
-          <div className="px-6 py-5 border-b border-border flex justify-between items-start gap-4 shrink-0 bg-gradient-to-b from-muted/30 to-transparent">
-            <div>
-              <h2
-                id="cmp-title"
-                className="text-[20px] font-bold m-0 leading-tight text-foreground"
-              >
-                Compare Rahvana plans
-              </h2>
-              <p className="text-muted-foreground text-[13px] mt-1 m-0">
-                See exactly what&apos;s included in Basic, Premium, and
-                Executive.
-              </p>
-            </div>
-            <button
-              onClick={onClose}
-              className="p-[7px] rounded-full border border-border bg-card hover:bg-muted/60 transition-colors cursor-pointer shrink-0"
-              aria-label="Close"
+      <div
+        className="bg-card border-border animate-in zoom-in-95 flex h-auto max-h-[86vh] w-full max-w-[960px] flex-col overflow-hidden rounded-[20px] border shadow-2xl duration-200 sm:max-h-[calc(100vh-48px)] sm:rounded-[28px] md:max-h-[calc(100vh-80px)]"
+        onClick={(e) => e.stopPropagation()}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="cmp-title"
+      >
+        {/* Header */}
+        <div className="border-border from-muted/30 flex shrink-0 items-start justify-between gap-3 border-b bg-gradient-to-b to-transparent px-4 py-3.5 sm:items-center sm:px-6 sm:py-5">
+          <div>
+            <h2
+              id="cmp-title"
+              className="text-foreground m-0 text-[16px] leading-tight font-bold sm:text-[20px]"
             >
-              <IconX className="w-[15px] h-[15px]" />
-            </button>
+              Compare Rahvana plans
+            </h2>
+            <p className="text-muted-foreground m-0 mt-0.5 text-[11.5px] sm:text-[13px]">
+              See exactly what&apos;s included in Basic, Premium, and Executive.
+            </p>
           </div>
+          <button
+            onClick={onClose}
+            className="border-border bg-card hover:bg-muted/60 mt-0.5 shrink-0 cursor-pointer rounded-full border p-1.5 transition-colors sm:mt-0 sm:p-[7px]"
+            aria-label="Close"
+          >
+            <IconX className="h-4 w-4 sm:h-[15px] sm:w-[15px]" />
+          </button>
+        </div>
 
-          {/* Plan headers + toggle */}
-          <div className="px-6 py-4 border-b border-border bg-card/50 shrink-0">
-            <div className="grid grid-cols-[minmax(0,180px)_repeat(3,minmax(0,1fr))] gap-3 items-center">
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  role="switch"
-                  aria-checked={differencesOnly}
-                  onClick={() => setDifferencesOnly(!differencesOnly)}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 ${differencesOnly ? "bg-primary" : "bg-muted"}`}
-                >
-                  <span className="sr-only">Differences only</span>
-                  <span
-                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ${differencesOnly ? "translate-x-4" : "translate-x-0"}`}
-                  />
-                </button>
-                <span className="text-[12px] font-medium text-muted-foreground leading-tight">
-                  Differences
-                  <br />
-                  only
-                </span>
-              </div>
-              {paidPlans.map((plan) => {
-                const tc = TIER[plan.id as TierKey];
-                return (
-                  <div
-                    key={plan.id}
-                    className={`rounded-[16px] px-3 py-2.5 text-center border ${tc.border} ${tc.cardBg} ${tc.glow} shadow-sm`}
+        {/* Scrollable area — unified container for headers, table rows, and CTAs */}
+        <div className="scrollbar-premium bg-card flex-1 overflow-x-hidden overflow-y-auto">
+          <div className="flex min-h-full w-full flex-col">
+            {/* Sticky plan headers bar */}
+            <div className="bg-card/95 border-border sticky top-0 z-20 shrink-0 border-b px-3 py-2.5 shadow-xs backdrop-blur-md sm:px-6 sm:py-3">
+              {/* Mobile controls bar (Differences switch) */}
+              <div className="border-border/40 mb-2 flex items-center justify-between gap-2 border-b pb-2 sm:hidden">
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={differencesOnly}
+                    onClick={() => setDifferencesOnly(!differencesOnly)}
+                    className={`ring-offset-background relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:outline-none ${
+                      differencesOnly ? "bg-primary" : "bg-muted"
+                    }`}
                   >
-                    <div
-                      className={`text-[10px] font-extrabold tracking-widest uppercase mb-0.5 ${tc.textAccent}`}
-                    >
-                      {plan.name}
-                    </div>
-                    <div className="text-[15px] font-bold leading-tight">
-                      ${planDisplayPrice(plan)}
-                      <span className="text-[11px] font-normal text-muted-foreground ml-0.5">
-                        /mo
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+                    <span className="sr-only">Differences only</span>
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ${
+                        differencesOnly ? "translate-x-4" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                  <span className="text-muted-foreground text-[11.5px] leading-tight font-medium select-none">
+                    Show differences only
+                  </span>
+                </div>
+              </div>
 
-          {/* Table — always expanded, alternating rows */}
-          <div className="overflow-y-auto overflow-x-auto flex-1 scrollbar-premium bg-card">
-            <div className="min-w-[540px]">
+              {/* Plan headers grid */}
+              <div className="grid grid-cols-3 items-center gap-1.5 sm:grid-cols-[minmax(140px,180px)_repeat(3,minmax(0,1fr))] sm:gap-3">
+                {/* Desktop switch column */}
+                <div className="hidden items-center gap-2 sm:flex sm:gap-3">
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={differencesOnly}
+                    onClick={() => setDifferencesOnly(!differencesOnly)}
+                    className={`ring-offset-background focus-visible:ring-ring relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center rounded-full border-2 border-transparent transition-colors focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none ${
+                      differencesOnly ? "bg-primary" : "bg-muted"
+                    }`}
+                  >
+                    <span className="sr-only">Differences only</span>
+                    <span
+                      className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ${
+                        differencesOnly ? "translate-x-4" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                  <span className="text-muted-foreground text-[11px] leading-tight font-medium select-none sm:text-[12px]">
+                    Differences
+                    <br />
+                    only
+                  </span>
+                </div>
+
+                {paidPlans.map((plan) => {
+                  const tc = TIER[plan.id as TierKey];
+                  return (
+                    <div
+                      key={plan.id}
+                      className={`rounded-[12px] border px-1.5 py-1.5 text-center sm:rounded-[16px] sm:px-3 sm:py-2.5 ${tc.border} ${tc.cardBg} ${tc.glow} shadow-sm`}
+                    >
+                      <div
+                        className={`mb-0.5 text-[9px] font-extrabold tracking-wider uppercase sm:text-[10px] sm:tracking-widest ${tc.textAccent}`}
+                      >
+                        {plan.name}
+                      </div>
+                      <div className="text-[12px] leading-tight font-bold sm:text-[15px]">
+                        ${planDisplayPrice(plan)}
+                        <span className="text-muted-foreground ml-0.5 text-[9.5px] font-normal sm:text-[11px]">
+                          /mo
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Comparison table groups */}
+            <div className="flex-1 pb-2">
               {COMPARISON_GROUPS.map((group, gi) => {
                 const rows = differencesOnly
                   ? group.rows.filter((r) => new Set(r.slice(1)).size > 1)
                   : group.rows;
                 if (!rows.length) return null;
                 return (
-                  <div
-                    key={gi}
-                    className="border-b border-border/50 last:border-0"
-                  >
-                    <div className="px-6 py-2.5 bg-muted/30">
-                      <span className="text-[10.5px] font-extrabold tracking-[0.12em] uppercase text-primary">
+                  <div key={gi} className="border-border/50 border-b last:border-0">
+                    <div className="bg-muted/30 border-border/30 border-y px-3 py-1.5 sm:px-6 sm:py-2">
+                      <span className="text-primary text-[9.5px] font-extrabold tracking-[0.12em] uppercase sm:text-[10.5px]">
                         {group.label}
                       </span>
                     </div>
                     {rows.map((row, ri) => (
                       <div
                         key={ri}
-                        className={`grid grid-cols-[minmax(0,1fr)_repeat(3,minmax(0,1fr))] gap-3 px-6 py-[11px] border-t border-border/20 items-center ${
+                        className={`border-border/20 border-t ${
                           ri % 2 === 0 ? "bg-card" : "bg-muted/[0.04]"
                         }`}
                       >
-                        <span className="text-[13px] font-medium text-foreground">
-                          {row[0]}
-                        </span>
-                        {row.slice(1).map((val, vi) => (
-                          <div key={vi} className="flex justify-center">
-                            <ComparisonCell value={val} />
+                        {/* Mobile view (< sm): label on top, 3 plan values below in 3 columns */}
+                        <div className="block px-3 py-2 sm:hidden">
+                          <div className="text-foreground mb-1.5 text-[11.5px] leading-snug font-medium">
+                            {row[0]}
                           </div>
-                        ))}
+                          <div className="grid grid-cols-3 items-center gap-1.5">
+                            {row.slice(1).map((val, vi) => (
+                              <div key={vi} className="flex justify-center text-center">
+                                <ComparisonCell value={val} planId={paidPlans[vi]?.id} />
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+
+                        {/* Desktop view (>= sm): 4-column layout side-by-side */}
+                        <div className="hidden grid-cols-[minmax(140px,180px)_repeat(3,minmax(0,1fr))] items-center gap-3 px-6 py-[11px] sm:grid">
+                          <span className="text-foreground text-[13px] leading-snug font-medium">
+                            {row[0]}
+                          </span>
+                          {row.slice(1).map((val, vi) => (
+                            <div key={vi} className="flex justify-center text-center">
+                              <ComparisonCell value={val} planId={paidPlans[vi]?.id} />
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -436,29 +610,35 @@ function CompareModal({
               })}
             </div>
           </div>
+        </div>
 
-          {/* CTA footer */}
-          <div className="px-6 py-5 border-t border-border shrink-0 rounded-b-[28px] bg-gradient-to-t from-muted/15 to-transparent">
-            <p className="text-[11px] font-bold tracking-[0.1em] uppercase text-muted-foreground text-center mb-3">
-              Select a plan to get started
-            </p>
-            <div className="grid grid-cols-3 gap-3">
-              {paidPlans.map((plan) => {
-                const tc = TIER[plan.id as TierKey];
-                return (
-                  <button
-                    key={plan.id}
-                    className={`py-[11px] px-4 rounded-full text-[13.5px] font-bold tracking-tight transition-all duration-150 cursor-pointer shadow-sm hover:shadow-md hover:-translate-y-px ${tc.btn}`}
-                    onClick={() => {
-                      onSelectPlan(plan.id);
-                      onClose();
-                    }}
-                  >
-                    {plan.cta} →
-                  </button>
-                );
-              })}
-            </div>
+        {/* Fixed CTA Footer */}
+        <div className="border-border bg-card/95 shrink-0 rounded-b-[20px] border-t px-3 py-3.5 backdrop-blur-md sm:rounded-b-[28px] sm:px-8 sm:py-5">
+          <p className="text-muted-foreground mb-2.5 text-center text-[10px] font-extrabold tracking-[0.12em] uppercase sm:mb-4 sm:text-[11.5px]">
+            Select a plan to get started
+          </p>
+          <div className="mx-auto grid max-w-[720px] grid-cols-3 gap-1.5 sm:gap-4">
+            {paidPlans.map((plan) => {
+              const tc = TIER[plan.id as TierKey];
+              return (
+                <button
+                  key={plan.id}
+                  className={`group inline-flex w-full cursor-pointer items-center justify-center gap-1 rounded-full px-1.5 py-2 text-center text-[11px] leading-none font-bold shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md active:translate-y-0 min-[380px]:text-[12.5px] sm:gap-2 sm:px-4 sm:py-3 sm:text-[14px] ${tc.btn}`}
+                  onClick={() => {
+                    onSelectPlan(plan.id);
+                    onClose();
+                  }}
+                >
+                  <span>
+                    <span className="hidden sm:inline">Choose </span>
+                    {plan.name}
+                  </span>
+                  <span className="shrink-0 text-[12px] leading-none transition-transform duration-150 group-hover:translate-x-0.5 sm:text-[15px]">
+                    →
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -475,124 +655,254 @@ function PricingContent() {
   const [userId, setUserId] = useState<string | null>(null);
   const [userActiveTier, setUserActiveTier] = useState<string | null>(null);
   const [isLoadingUser, setIsLoadingUser] = useState(true);
-  const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] =
-    useState(false);
+  const [isProcessingAutoCheckout, setIsProcessingAutoCheckout] = useState(false);
   const [isManualCheckoutLoading, setIsManualCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
-  const isAnyCheckoutLoading =
-    isProcessingAutoCheckout || isManualCheckoutLoading;
+  const isAnyCheckoutLoading = isProcessingAutoCheckout || isManualCheckoutLoading;
 
-  const [mode, setMode] = useState<"plans" | "resources">("plans");
-  const [purchaseStep, setPurchaseStep] = useState<"browse" | "review">(
-    "browse",
-  );
+  const [mode, setMode] = useState<"plans" | ResourceMode>("plans");
+  const [purchaseStep, setPurchaseStep] = useState<"browse" | "review">("browse");
 
-  const [visa, setVisa] = useState("IR-1 / CR-1");
+  const [visa, setVisa] = useState<string | null>(null);
   const billing = "monthly";
 
   const [selectedPlan, setSelectedPlan] = useState("premium");
   const [selectedAddons, setSelectedAddons] = useState<Set<string>>(new Set());
 
+  const requestedInterviewCategory =
+    searchParams.get("interview_category") || VISA_TO_INTERVIEW_CATEGORY[visa] || null;
+
+  const checkoutAddonIds = useMemo(
+    () =>
+      Array.from(selectedAddons).map((addonId) =>
+        resolveCheckoutAddonId(addonId, requestedInterviewCategory)
+      ),
+    [selectedAddons, requestedInterviewCategory]
+  );
+
+  const isAddonSelected = (catalogAddonId: string) =>
+    Array.from(selectedAddons).some(
+      (selectedId) => getCatalogAddonId(selectedId) === catalogAddonId
+    );
+
   const [comparePlansOpen, setComparePlansOpen] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState<number>(-1);
-  const [resourceCat, setResourceCat] = useState("popular");
   const [allAddonsOpen, setAllAddonsOpen] = useState(false);
+  const [checkoutCanceled, setCheckoutCanceled] = useState(false);
 
   // Derived
   const activeVisaCategory = useMemo(
     () => VISA_CATEGORIES.find((v) => v.id === visa) || VISA_CATEGORIES[0],
-    [visa],
+    [visa]
+  );
+  // Only the categories flagged as ready in AVAILABLE_VISA_IDS are selectable —
+  // VISA_CATEGORIES itself may contain more (F-2A, K-1/K-2, F-1, CR-2, etc.)
+  // that aren't switched on for users yet.
+  const availableVisaCategories = useMemo(
+    () => VISA_CATEGORIES.filter((v) => AVAILABLE_VISA_IDS.includes(v.id)),
+    []
   );
   const activePlans = activeVisaCategory.plans;
   const paidPlans = activePlans.filter((p) => p.id !== "free");
-  const currentPlanData =
-    activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
-  const activeAddons = ADDONS.filter((a) => selectedAddons.has(a.id));
+  const currentPlanData = activePlans.find((p) => p.id === selectedPlan) || activePlans[2];
+  const activeAddons = ADDONS.filter((addon) => isAddonSelected(addon.id));
   const planDisplayPrice = (plan: PlanData) => plan.monthlyPrice;
   const summaryBase =
-    mode === "plans" && currentPlanData.id !== "free"
-      ? currentPlanData.annualPrice
-      : 0;
+    mode === "plans" && currentPlanData.id !== "free" ? currentPlanData.annualPrice : 0;
   const summaryAddonsTotal = activeAddons.reduce((s, a) => s + a.price, 0);
   const summaryTotal = summaryBase + summaryAddonsTotal;
 
   const reviewAddons = useMemo(
     () => ADDONS.filter((a) => (PLAN_RECS[selectedPlan] || []).includes(a.id)),
-    [selectedPlan],
+    [selectedPlan]
   );
 
-  const resourcesForCat = useMemo(() => {
-    if (resourceCat === "all") {
-      const titledAddons = ADDONS.filter(
-        (addon): addon is (typeof ADDONS)[number] & { title: string } =>
-          typeof addon.title === "string",
-      );
-      return [...titledAddons].sort((a, b) => a.title.localeCompare(b.title));
-    }
-    const cat = RESOURCE_CATS.find((c) => c.id === resourceCat);
-    if (!cat) return ADDONS;
-    return ADDONS.filter((a) => cat.ids.includes(a.id));
-  }, [resourceCat]);
+  const resourcesForMode = useMemo(() => {
+    if (mode === "plans") return [];
+    return ADDONS.filter((a) => a.kind === mode).sort((a, b) => a.title.localeCompare(b.title));
+  }, [mode]);
 
   // Handlers
   const handleCheckout = useCallback(
     async (uid: string, planOverride?: string, addonsOverride?: string[]) => {
       if (isProcessingAutoCheckout) return;
       setIsProcessingAutoCheckout(true);
+      setCheckoutError(null);
       try {
         const res = await fetch("/api/stripe/checkout", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
-            productTier:
-              planOverride || (mode === "plans" ? selectedPlan : undefined),
-            addons: addonsOverride || Array.from(selectedAddons),
+            productTier: planOverride || (mode === "plans" ? selectedPlan : undefined),
+            addons: addonsOverride
+              ? addonsOverride.map((addonId) =>
+                  resolveCheckoutAddonId(addonId, requestedInterviewCategory)
+                )
+              : checkoutAddonIds,
             visaCategory: visa,
             billing,
             userId: uid,
           }),
         });
         const data = await res.json();
-        if (!res.ok) throw new Error(data.error || "Checkout failed");
+        if (!res.ok) {
+          setCheckoutError(`${msg(E.DASH_CHECKOUT_NO_URL)}`);
+          setIsProcessingAutoCheckout(false);
+          return;
+        }
         if (data.url) window.location.href = data.url;
       } catch (err) {
         console.error("Checkout error:", err);
+        setCheckoutError(`${msg(E.DASH_CHECKOUT_NO_URL)}`);
         setIsProcessingAutoCheckout(false);
       }
     },
-    [selectedPlan, selectedAddons, visa, billing, isProcessingAutoCheckout],
+    [
+      selectedPlan,
+      checkoutAddonIds,
+      requestedInterviewCategory,
+      visa,
+      billing,
+      isProcessingAutoCheckout,
+    ]
   );
 
-  const toggleAddon = (id: string) =>
+  const toggleAddon = (catalogAddonId: string) => {
     setSelectedAddons((prev) => {
       const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
+
+      const matchingSelections = Array.from(next).filter(
+        (selectedId) => getCatalogAddonId(selectedId) === catalogAddonId
+      );
+
+      if (matchingSelections.length > 0) {
+        matchingSelections.forEach((selectedId) => {
+          next.delete(selectedId);
+        });
+
+        return next;
+      }
+
+      next.add(resolveCheckoutAddonId(catalogAddonId, requestedInterviewCategory));
+
       return next;
     });
+  };
 
+  // Apply deep-link params (mode / plan / addons / visa) into state. This must
+  // run ONLY when the URL actually changes — never when other state (e.g. the
+  // recreated handleCheckout callback) changes, otherwise every user edit to the
+  // selection would be instantly reverted back to the URL value. We key the
+  // effect off the stringified params so it is stable across unrelated renders.
+  const searchParamsString = searchParams.toString();
   useEffect(() => {
     const plan = searchParams.get("plan");
     const addons = searchParams.get("addons");
     const visaCat = searchParams.get("visa");
-    const autoCheckout = searchParams.get("auto_checkout") === "true";
-    if (plan) setSelectedPlan(plan);
-    if (addons) setSelectedAddons(new Set(addons.split(",").filter(Boolean)));
-    if (visaCat) setVisa(visaCat);
-    if (autoCheckout && userId && !isLoadingUser && !isProcessingAutoCheckout) {
-      window.history.replaceState({}, "", window.location.pathname);
-      handleCheckout(
-        userId,
-        plan || undefined,
-        addons ? addons.split(",") : undefined,
-      );
+    const modeParam = searchParams.get("mode");
+    if (
+      modeParam === "plans" ||
+      modeParam === "tools" ||
+      modeParam === "services" ||
+      modeParam === "guides"
+    ) {
+      setMode(modeParam);
+    } else if (modeParam === "resources") {
+      // Legacy alias — route to the tab that owns the first deep-linked add-on.
+      const firstAddon = addons?.split(",").filter(Boolean)[0];
+      const found = firstAddon ? ADDONS.find((a) => a.id === firstAddon) : undefined;
+      setMode((found?.kind as ResourceMode) ?? "tools");
     }
-  }, [
-    searchParams,
-    userId,
-    isLoadingUser,
-    handleCheckout,
-    isProcessingAutoCheckout,
-  ]);
+    if (plan) setSelectedPlan(plan);
+    // MERGE deep-linked add-ons into the existing cart (don't replace) — opening
+    // a tool's detail page and adding it should keep items already in the order.
+    const urlInterviewCategory =
+      searchParams.get("interview_category") || VISA_TO_INTERVIEW_CATEGORY[visaCat || visa] || null;
+
+    const urlAddons = (addons || "")
+      .split(",")
+      .filter(Boolean)
+      .map((addonId) => resolveCheckoutAddonId(addonId, urlInterviewCategory));
+
+    if (urlAddons.length) {
+      setSelectedAddons((prev) => mergeAddonSelections(prev, urlAddons));
+    }
+    if (visaCat && AVAILABLE_VISA_IDS.includes(visaCat)) setVisa(visaCat);
+    // Restore the order-summary (review) step when deep-linked back to it.
+    if (searchParams.get("step") === "review") setPurchaseStep("review");
+    // Returning from a canceled Stripe checkout — show a non-blocking notice and
+    // strip the flag from the URL so a refresh doesn't keep re-showing it.
+    if (searchParams.get("checkout_canceled") === "1") {
+      setCheckoutCanceled(true);
+      const cleaned = new URLSearchParams(searchParamsString);
+      cleaned.delete("checkout_canceled");
+      const qs = cleaned.toString();
+      window.history.replaceState({}, "", qs ? `?${qs}` : window.location.pathname);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsString]);
+
+  // Auto-checkout — fire once the user is known. Kept separate from the param
+  // parsing above so a recreated handleCheckout never re-applies URL state.
+  useEffect(() => {
+    const autoCheckout = searchParams.get("auto_checkout") === "true";
+    if (autoCheckout && userId && !isLoadingUser && !isProcessingAutoCheckout) {
+      const plan = searchParams.get("plan");
+      const addons = searchParams.get("addons");
+      window.history.replaceState({}, "", window.location.pathname);
+      handleCheckout(userId, plan || undefined, addons ? addons.split(",") : undefined);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsString, userId, isLoadingUser, handleCheckout, isProcessingAutoCheckout]);
+
+  // ── Cart persistence ─────────────────────────────────────────────────────
+  // The selected add-ons (the "cart") live in component state, so navigating to
+  // a tool/service/guide detail page (a separate route) would normally wipe
+  // them. Persist the cart in sessionStorage so it survives navigation, and
+  // restore it on mount. Hydrate via effect (not a lazy initializer) to avoid an
+  // SSR/client hydration mismatch.
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(CART_STORAGE_KEY);
+      if (raw) {
+        const stored: string[] = JSON.parse(raw);
+        if (Array.isArray(stored) && stored.length) {
+          setSelectedAddons((prev) => new Set([...prev, ...stored]));
+        }
+      }
+    } catch {
+      /* sessionStorage unavailable — non-fatal */
+    }
+  }, []);
+
+  // Persist on every change. Skip the very first run so the initial empty state
+  // doesn't clobber the cart before the hydration effect above has restored it.
+  const cartPersistInitialized = useRef(false);
+  useEffect(() => {
+    if (!cartPersistInitialized.current) {
+      cartPersistInitialized.current = true;
+      return;
+    }
+    try {
+      sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(Array.from(selectedAddons)));
+    } catch {
+      /* sessionStorage unavailable — non-fatal */
+    }
+  }, [selectedAddons]);
+
+  // If the user redirects to Stripe and then hits Back, the page is restored
+  // from the bfcache with these loading flags still true — leaving the order
+  // summary stuck on "Processing". Clear them whenever the page is re-shown.
+  useEffect(() => {
+    const onPageShow = (e: PageTransitionEvent) => {
+      if (!e.persisted) return;
+      setIsProcessingAutoCheckout(false);
+      setIsManualCheckoutLoading(false);
+    };
+    window.addEventListener("pageshow", onPageShow);
+    return () => window.removeEventListener("pageshow", onPageShow);
+  }, []);
 
   useEffect(() => {
     const supabase = createClient();
@@ -601,11 +911,11 @@ function PricingContent() {
       setUserId(uid);
       if (uid) {
         const { data: profile } = await supabase
-          .from('user_profiles')
-          .select('subscription_tier, subscription_status')
-          .eq('id', uid)
+          .from("user_profiles")
+          .select("subscription_tier, subscription_status")
+          .eq("id", uid)
           .single();
-        if (profile?.subscription_status === 'active' && profile?.subscription_tier) {
+        if (profile?.subscription_status === "active" && profile?.subscription_tier) {
           setUserActiveTier(profile.subscription_tier);
         }
       }
@@ -615,18 +925,19 @@ function PricingContent() {
 
   // Layout tokens
   const W = "px-4 sm:px-6 lg:px-10 max-w-[1440px] mx-auto";
-  const eyebrow =
-    "text-[11px] tracking-[0.15em] uppercase font-bold text-primary mb-2";
+  const eyebrow = "text-[11px] tracking-[0.15em] uppercase font-bold text-primary mb-2";
   const secBtn =
     "px-4 py-[8px] rounded-full text-[13px] font-medium cursor-pointer transition-colors border border-border bg-card hover:bg-muted/40 text-foreground inline-flex items-center gap-2";
 
-  // Visa pill — static display (only IR-1/CR-1 journey available)
-  const visaPill = (
-    <div className="inline-flex items-center gap-1.5 px-3 py-[5px] rounded-full bg-muted/70 border border-border/60 text-[12px]">
-      <span className="font-medium text-foreground/80">Pakistan → US</span>
-      <span className="text-border/80 mx-0.5">|</span>
-      <span className="text-muted-foreground">{visa}</span>
-    </div>
+  // Visa selectors — a visible segmented toggle (see VisaSelector above),
+  // sized down for the review/resources headers where it's secondary to the
+  // main content, and full-size in the plans hero where the choice needs to
+  // be made first, before anything else on the page is trustworthy.
+  const visaSelectorLg = (
+    <VisaSelector categories={availableVisaCategories} value={visa} onChange={setVisa} size="md" />
+  );
+  const visaSelectorSm = (
+    <VisaSelector categories={availableVisaCategories} value={visa} onChange={setVisa} size="sm" />
   );
 
   // Checkout button (shared)
@@ -635,45 +946,121 @@ function PricingContent() {
       {isLoadingUser ? (
         <button
           disabled
-          className="w-full py-[11px] px-5 rounded-full text-[14px] font-semibold bg-primary/50 text-white/70 cursor-not-allowed text-center"
+          className="bg-primary/50 w-full cursor-not-allowed rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white/70"
         >
-          Loading…
+          Loading...
         </button>
       ) : userId ? (
         <CheckoutButton
-          productTier={
-            mode === "plans" && selectedPlan !== "free"
-              ? selectedPlan
-              : undefined
-          }
-          addons={Array.from(selectedAddons)}
+          productTier={mode === "plans" && selectedPlan !== "free" ? selectedPlan : undefined}
+          addons={checkoutAddonIds}
           visaCategory={visa}
           userId={userId}
           onLoadingChange={setIsManualCheckoutLoading}
-          className="w-full py-[11px] px-5 rounded-full text-[14px] font-semibold bg-primary hover:bg-primary/90 text-white text-center"
+          className="bg-primary hover:bg-primary/90 w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
         >
           Continue to Secure Checkout →
         </CheckoutButton>
       ) : (
         <Link
-          href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${Array.from(selectedAddons).join(",")}&visa=${encodeURIComponent(visa)}`)}`}
-          className="w-full py-[11px] px-5 rounded-full text-[14px] font-semibold bg-primary hover:bg-primary/90 text-white text-center block"
+          href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${checkoutAddonIds.join(",")}&visa=${encodeURIComponent(visa)}`)}`}
+          className="bg-primary hover:bg-primary/90 block w-full rounded-full px-5 py-[11px] text-center text-[14px] font-semibold text-white"
         >
           Sign in to Checkout →
         </Link>
       )}
-      <p className="text-center text-[11px] text-muted-foreground">
-        Secure checkout via Stripe
-      </p>
+      <p className="text-muted-foreground text-center text-[11px]">Secure checkout via Stripe</p>
     </div>
   );
 
+  // Order-summary header — a cart glyph with a live item-count badge, matching
+  // the pattern shoppers expect from any standard cart. Reused by both the
+  // journey-review and resources summaries so the two never drift apart.
+  const summaryHeader = (count: number) => (
+    <div className="border-border mb-4 flex items-center gap-2.5 border-b pb-3">
+      <span className="relative inline-flex shrink-0">
+        <ShoppingCart className="text-primary h-[18px] w-[18px]" strokeWidth={2} />
+        {count > 0 && (
+          <span className="bg-primary absolute -top-1.5 -right-1.5 inline-flex h-[15px] min-w-[15px] items-center justify-center rounded-full px-1 text-[9px] leading-none font-bold text-white tabular-nums">
+            {count}
+          </span>
+        )}
+      </span>
+      <span className="text-muted-foreground text-[11px] font-bold tracking-widest uppercase">
+        Order Summary
+      </span>
+      {count > 0 && (
+        <span className="text-muted-foreground ml-auto text-[11px] font-medium">
+          {count} {count === 1 ? "item" : "items"}
+        </span>
+      )}
+    </div>
+  );
+
+  // Compact checkout control for the mobile sticky bar — same auth/loading
+  // branches as checkoutBtn, minus the caption so it fits on one line.
+  const mobileCheckoutButton = isLoadingUser ? (
+    <button
+      disabled
+      className="bg-primary/50 w-full cursor-not-allowed rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white/70"
+    >
+      Loading...
+    </button>
+  ) : userId ? (
+    <CheckoutButton
+      productTier={mode === "plans" && selectedPlan !== "free" ? selectedPlan : undefined}
+      addons={checkoutAddonIds}
+      visaCategory={visa}
+      userId={userId}
+      onLoadingChange={setIsManualCheckoutLoading}
+      className="bg-primary hover:bg-primary/90 w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"
+    >
+      Checkout →
+    </CheckoutButton>
+  ) : (
+    <Link
+      href={`/login?redirect=${encodeURIComponent(`/pricing?auto_checkout=true&plan=${selectedPlan}&addons=${checkoutAddonIds.join(",")}&visa=${encodeURIComponent(visa)}`)}`}
+      className="bg-primary hover:bg-primary/90 block w-full rounded-full px-4 py-2.5 text-center text-[13px] font-semibold text-white"
+    >
+      Sign in →
+    </Link>
+  );
+
+  // Mobile-only sticky checkout bar. On phones the summary aside stacks well
+  // below the content, so the running total + checkout would otherwise be out
+  // of reach — this keeps them pinned to the viewport (standard cart behavior).
+  const mobileSummaryBar = (count: number, total: number) => (
+    <div className="border-border bg-card/95 fixed inset-x-0 bottom-0 z-40 border-t pb-[env(safe-area-inset-bottom)] shadow-[0_-6px_24px_rgba(0,0,0,0.10)] backdrop-blur-md lg:hidden">
+      <div className="mx-auto flex max-w-[1440px] items-center gap-3 px-4 py-3">
+        <span className="relative inline-flex shrink-0">
+          <ShoppingCart className="text-primary h-6 w-6" strokeWidth={2} />
+          {count > 0 && (
+            <span className="bg-primary absolute -top-1.5 -right-1.5 inline-flex h-[16px] min-w-[16px] items-center justify-center rounded-full px-1 text-[9.5px] leading-none font-bold text-white tabular-nums">
+              {count}
+            </span>
+          )}
+        </span>
+        <div className="min-w-0 leading-tight">
+          <div className="text-muted-foreground text-[10px] tracking-wide uppercase">Total</div>
+          <div className="text-primary mt-0.5 text-[19px] leading-none font-bold tracking-tight">
+            ${total}
+          </div>
+        </div>
+        <div className="ml-auto w-[150px] shrink-0 min-[420px]:w-[190px]">
+          {mobileCheckoutButton}
+        </div>
+      </div>
+    </div>
+  );
+
+  const reviewItemCount = (currentPlanData.id !== "free" ? 1 : 0) + activeAddons.length;
+
   return (
-    <div className="min-h-screen text-foreground font-sans selection:bg-primary/20 pb-20">
+    <div className="text-foreground selection:bg-primary/20 min-h-[100dvh] overflow-x-hidden pb-12 font-sans sm:pb-20">
       {/* ── Mode Toggle ──────────────────────────────────────────────────────── */}
       <div className={`${W} pt-[88px] pb-0`}>
         <nav
-          className="flex items-end gap-1 border-b-2 border-border/40"
+          className="border-border/40 flex scrollbar-none items-center justify-between gap-4 overflow-x-auto border-b px-1 sm:justify-start sm:gap-8 md:grid md:grid-cols-4 md:gap-1 md:px-0"
           aria-label="Pricing mode"
         >
           {(
@@ -684,9 +1071,19 @@ function PricingContent() {
                 sub: "Full roadmap guidance",
               },
               {
-                id: "resources" as const,
-                label: "Individual Resources",
-                sub: "Buy à la carte",
+                id: "tools" as const,
+                label: RESOURCE_TABS.tools.label,
+                sub: RESOURCE_TABS.tools.sub,
+              },
+              {
+                id: "guides" as const,
+                label: RESOURCE_TABS.guides.label,
+                sub: RESOURCE_TABS.guides.sub,
+              },
+              {
+                id: "services" as const,
+                label: RESOURCE_TABS.services.label,
+                sub: RESOURCE_TABS.services.sub,
               },
             ] as const
           ).map(({ id, label, sub }) => (
@@ -696,12 +1093,12 @@ function PricingContent() {
                 setMode(id);
                 setPurchaseStep("browse");
               }}
-              className={`relative px-6 pb-3 pt-2 text-left cursor-pointer transition-all rounded-t-[10px] group ${
-                mode === id ? "bg-primary/[0.07]" : "hover:bg-muted/40"
+              className={`group relative shrink-0 cursor-pointer px-1 py-3 text-left text-sm transition-all md:rounded-t-[10px] md:px-6 md:pt-2 md:pb-3 ${
+                mode === id ? "md:bg-primary/[0.07]" : "hover:bg-muted/40"
               }`}
             >
               <span
-                className={`block text-[15px] font-bold tracking-tight transition-colors ${
+                className={`block text-[13px] font-bold tracking-tight transition-colors sm:text-[15px] ${
                   mode === id
                     ? "text-primary"
                     : "text-muted-foreground/60 group-hover:text-foreground"
@@ -710,19 +1107,40 @@ function PricingContent() {
                 {label}
               </span>
               <span
-                className={`block text-[11px] mt-0.5 font-medium transition-colors ${
+                className={`mt-0.5 hidden text-[11px] font-medium transition-colors md:block ${
                   mode === id ? "text-primary/60" : "text-muted-foreground/35"
                 }`}
               >
                 {sub}
               </span>
               {mode === id && (
-                <span className="absolute bottom-[-2px] left-0 right-0 h-[3px] bg-primary rounded-t-full" />
+                <span className="bg-primary absolute right-0 bottom-0 left-0 h-[2.5px] rounded-full md:bottom-[-2px] md:h-[3px] md:rounded-t-full" />
               )}
             </button>
           ))}
         </nav>
       </div>
+
+      {/* ── Checkout-canceled notice — shown when the user returns from Stripe
+          without paying. Non-blocking; their selection is preserved. ───────── */}
+      {checkoutCanceled && (
+        <div className={`${W} pt-4`}>
+          <div className="flex items-start gap-3 rounded-[14px] border border-amber-200 bg-amber-50 px-4 py-3 dark:border-amber-800 dark:bg-amber-900/20">
+            <IcoInfo className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div className="flex-1 text-[13px] leading-relaxed text-amber-800 dark:text-amber-300">
+              <strong className="font-semibold">Checkout canceled, no charge was made.</strong> Your
+              selection is saved below. Continue whenever you&apos;re ready.
+            </div>
+            <button
+              onClick={() => setCheckoutCanceled(false)}
+              className="shrink-0 rounded-full p-1 text-amber-600 transition-colors hover:bg-amber-100 dark:text-amber-400 dark:hover:bg-amber-900/40"
+              aria-label="Dismiss"
+            >
+              <IconX className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ═══════════════════════════════════════════════════════════════════════
           JOURNEY PLANS — BROWSE
@@ -731,172 +1149,196 @@ function PricingContent() {
         <div className="animate-in fade-in duration-300">
           {/* Hero */}
           <section className={`${W} pt-7 pb-6`}>
-            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-              <div>
-                <div className={eyebrow}>Journey Plans</div>
-                <h1 className="page-heading m-0 whitespace-nowrap">
-                  Choose your Rahvana journey plan
-                </h1>
-                <p className="page-description mt-2 text-muted-foreground">
-                  Pick the level of guidance, tools, and support that fits your
-                  case.
-                </p>
-              </div>
-              {/* Visa pill — top right */}
-              <div className="sm:mt-1 shrink-0 self-start sm:self-auto">
-                {visaPill}
+            <div className={eyebrow}>Journey Plans</div>
+            <h1 className="page-heading m-0">Choose your Rahvana journey plan</h1>
+            <p className="page-description text-muted-foreground mt-2">
+              Pick the level of guidance, tools, and support that fits your case.
+            </p>
+
+            {/* Visa category + Compare plans */}
+            <div className="mt-4 -ml-3">
+              <div className="flex flex-wrap items-center justify-between gap-2 md:flex-row md:flex-nowrap">
+                {visaSelectorLg}
+
+                <button className={`${secBtn} shrink-0`} onClick={() => setComparePlansOpen(true)}>
+                  <IcoTableCompare className="h-4 w-4 opacity-60" />
+                  Compare plans
+                </button>
               </div>
             </div>
 
-            <div className="mt-5 flex items-center gap-3 flex-wrap">
-              <button
-                className={secBtn}
-                onClick={() => setComparePlansOpen(true)}
-              >
-                <IcoTableCompare className="w-4 h-4 opacity-60" />
-                Compare plans
-              </button>
-              <span className="text-[12px] text-muted-foreground/50 hidden md:inline">
-                ·
-              </span>
-              <span className="text-[12px] text-muted-foreground hidden md:inline">
-                Government fees are not included in any plan
-              </span>
+            {/* Checkout error + Government fees */}
+            <div className="mt-4 -ml-3">
+              {checkoutError && (
+                <div className="mb-3 flex w-full items-start gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
+                  <svg
+                    className="mt-0.5 h-5 w-5 shrink-0 text-red-500"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                    />
+                  </svg>
+
+                  <p className="text-sm text-red-700">{checkoutError}</p>
+                </div>
+              )}
+
+              <div className="flex items-center gap-3">
+                <span className="text-muted-foreground/50 text-[12px]">·</span>
+
+                <span className="text-muted-foreground text-[12px]">
+                  Government fees are not included in any plan
+                </span>
+              </div>
             </div>
           </section>
 
           {/* Plan cards — full width, no sidebar */}
           <div className={`${W}`}>
             {(() => {
-              const TIER_RANK: Record<string, number> = { free: 0, basic: 1, premium: 2, executive: 3 };
-              const activeTierRank = TIER_RANK[userActiveTier ?? 'free'] ?? 0;
+              const TIER_RANK: Record<string, number> = {
+                free: 0,
+                basic: 1,
+                premium: 2,
+                executive: 3,
+              };
+              const activeTierRank = TIER_RANK[userActiveTier ?? "free"] ?? 0;
               return (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-              {paidPlans.map((plan) => {
-                const tc = TIER[plan.id as TierKey];
-                const isSelected = selectedPlan === plan.id;
-                const planRank = TIER_RANK[plan.id] ?? 0;
-                const isCurrentPlan = userActiveTier && plan.id === userActiveTier;
-                const isDowngrade = !!userActiveTier && planRank < activeTierRank;
-                return (
-                  <article
-                    key={plan.id}
-                    className={`${tc.cardBg} border rounded-[24px] p-6 flex flex-col relative transition-all duration-200 ${
-                      isDowngrade
-                        ? 'opacity-50 cursor-not-allowed'
-                        : `cursor-pointer ${isSelected ? `${tc.selBorder} ${tc.ring} ${tc.glow}` : `${tc.border} hover:shadow-lg hover:-translate-y-0.5`}`
-                    }`}
-                    onClick={() => { if (!isDowngrade) setSelectedPlan(plan.id); }}
-                  >
-                    {isCurrentPlan && (
-                      <div className="absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.06em] uppercase bg-green-100 text-green-700 border border-green-300">
-                        Current Plan
-                      </div>
-                    )}
-                    {!isCurrentPlan && plan.recommended && !isDowngrade && (
-                      <div
-                        className={`absolute top-4 right-4 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-[0.06em] uppercase ${tc.badgeBg} ${tc.badgeText}`}
-                      >
-                        Most Popular
-                      </div>
-                    )}
-                    {isSelected && !plan.recommended && !isCurrentPlan && !isDowngrade && (
-                      <div
-                        className={`absolute top-4 right-4 w-6 h-6 rounded-full ${tc.btn} flex items-center justify-center`}
-                      >
-                        <IconCheck className="w-3.5 h-3.5" />
-                      </div>
-                    )}
-
-
-                      {/* Icon + Name/Price row */}
-                      <div className="flex items-center gap-0 mb-4 -ml-3">
-  <span
-    aria-hidden="true"
-    className={`plan-icon plan-icon--${plan.id}`}
-    style={{ width: 72, height: 72, flexShrink: 0 }}
-  />
-  <div className="flex flex-col gap-0.5">
-    <div className={`text-[10px] font-extrabold tracking-[0.16em] uppercase ${tc.textAccent}`}>
-      {plan.name}
-    </div>
-    <div className="flex items-baseline gap-1">
-      <span className="text-[34px] font-bold tracking-tight leading-none">
-        ${planDisplayPrice(plan)}
-      </span>
-      <span className="text-[12px] text-muted-foreground">/mo</span>
-    </div>
-    <div className="text-[11px] text-muted-foreground">
-      ${plan.annualPrice} total
-    </div>
-  </div>
-</div>
-                      <p className="text-muted-foreground text-[13px] leading-[1.5] mb-4">
-                        {plan.tagline}
-                      </p>
-
-                    {/* Key features — single line each */}
-                    <ul className="list-none p-0 m-0 space-y-2 flex-1">
-                      {plan.bullets.slice(0, 5).map((item, idx) => (
-                        <li
-                          key={idx}
-                          className="flex gap-2 items-center text-[13px]"
-                        >
-                          <IconCheck
-                            className={`w-4 h-4 flex-shrink-0 ${tc.checkCol}`}
-                          />
-                          <span className="truncate">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-
-                    {/* "See what else is included" → opens compare modal */}
-                    {plan.bullets.length > 5 && (
-                      <button
-                        className={`mt-3 flex items-center gap-1 text-[12px] font-semibold ${tc.textAccent} cursor-pointer bg-transparent border-0 p-0 text-left`}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setComparePlansOpen(true);
+                <div className="grid grid-cols-1 gap-5 md:grid-cols-3">
+                  {paidPlans.map((plan) => {
+                    const tc = TIER[plan.id as TierKey];
+                    const isSelected = selectedPlan === plan.id;
+                    const planRank = TIER_RANK[plan.id] ?? 0;
+                    const isCurrentPlan = userActiveTier && plan.id === userActiveTier;
+                    const isDowngrade = !!userActiveTier && planRank < activeTierRank;
+                    return (
+                      <article
+                        key={plan.id}
+                        className={`${tc.cardBg} relative flex flex-col rounded-[24px] border p-6 transition-all duration-200 ${
+                          isDowngrade
+                            ? "cursor-not-allowed opacity-50"
+                            : `cursor-pointer ${isSelected ? `${tc.selBorder} ${tc.ring} ${tc.glow}` : `${tc.border} hover:-translate-y-0.5 hover:shadow-lg`}`
+                        }`}
+                        onClick={() => {
+                          if (!isDowngrade) setSelectedPlan(plan.id);
                         }}
                       >
-                        Click here to see what else is included
-                        <IcoChevron className="w-3.5 h-3.5 -rotate-90" />
-                      </button>
-                    )}
+                        {isCurrentPlan && (
+                          <div className="absolute top-4 right-4 rounded-full border border-green-300 bg-green-100 px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] text-green-700 uppercase">
+                            Current Plan
+                          </div>
+                        )}
+                        {!isCurrentPlan && plan.recommended && !isDowngrade && (
+                          <div
+                            className={`absolute top-4 right-4 rounded-full px-2.5 py-1 text-[10px] font-bold tracking-[0.06em] uppercase ${tc.badgeBg} ${tc.badgeText}`}
+                          >
+                            Most Popular
+                          </div>
+                        )}
+                        {isSelected && !plan.recommended && !isCurrentPlan && !isDowngrade && (
+                          <div
+                            className={`absolute top-4 right-4 h-6 w-6 rounded-full ${tc.btn} flex items-center justify-center`}
+                          >
+                            <IconCheck className="h-3.5 w-3.5" />
+                          </div>
+                        )}
 
-                    <button
-                      disabled={isDowngrade || !!isCurrentPlan}
-                      className={`mt-4 w-full py-[10px] px-4 rounded-full text-[13.5px] font-semibold transition-all duration-150 ${
-                        isDowngrade || isCurrentPlan
-                          ? 'cursor-not-allowed opacity-60 bg-muted text-muted-foreground border border-border'
-                          : `cursor-pointer ${isSelected ? tc.btn : `${tc.btnOut} border`}`
-                      }`}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        if (isDowngrade || isCurrentPlan) return;
-                        setSelectedPlan(plan.id);
-                        setPurchaseStep("review");
-                        window.scrollTo({ top: 0, behavior: "smooth" });
-                      }}
-                    >
-                      {isCurrentPlan ? "Your Current Plan" : isDowngrade ? "Not Available" : isSelected ? "Continue to Checkout →" : plan.cta}
-                    </button>
-                  </article>
-                );
-              })}
-            </div>
+                        {/* Icon + Name/Price row */}
+                        <div className="mb-4 -ml-3 flex items-center gap-0">
+                          <span
+                            aria-hidden="true"
+                            className={`plan-icon plan-icon--${plan.id}`}
+                            style={{ width: 72, height: 72, flexShrink: 0 }}
+                          />
+                          <div className="flex flex-col gap-0.5">
+                            <div
+                              className={`text-[10px] font-extrabold tracking-[0.16em] uppercase ${tc.textAccent}`}
+                            >
+                              {plan.name}
+                            </div>
+                            <div className="flex items-baseline gap-1">
+                              <span className="text-[34px] leading-none font-bold tracking-tight">
+                                ${planDisplayPrice(plan)}
+                              </span>
+                              <span className="text-muted-foreground text-[12px]">/mo</span>
+                            </div>
+                            <div className="text-muted-foreground text-[11px]">
+                              ${plan.annualPrice} total
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-muted-foreground mb-4 text-[13px] leading-[1.5]">
+                          {plan.tagline}
+                        </p>
+
+                        {/* Key features — single line each */}
+                        <ul className="m-0 flex-1 list-none space-y-2 p-0">
+                          {plan.bullets.slice(0, 5).map((item, idx) => (
+                            <li key={idx} className="flex items-center gap-2 text-[13px]">
+                              <IconCheck className={`h-4 w-4 flex-shrink-0 ${tc.checkCol}`} />
+                              <span className="truncate">{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+
+                        {/* "See what else is included" → opens compare modal */}
+                        {plan.bullets.length > 5 && (
+                          <button
+                            className={`mt-3 flex items-center gap-1 text-[12px] font-semibold ${tc.textAccent} cursor-pointer border-0 bg-transparent p-0 text-left`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setComparePlansOpen(true);
+                            }}
+                          >
+                            Click here to see what else is included
+                            <IcoChevron className="h-3.5 w-3.5 -rotate-90" />
+                          </button>
+                        )}
+
+                        <button
+                          disabled={isDowngrade || !!isCurrentPlan}
+                          className={`mt-4 w-full rounded-full px-4 py-[10px] text-[13.5px] font-semibold transition-all duration-150 ${
+                            isDowngrade || isCurrentPlan
+                              ? "bg-muted text-muted-foreground border-border cursor-not-allowed border opacity-60"
+                              : `cursor-pointer ${isSelected ? tc.btn : `${tc.btnOut} border`}`
+                          }`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (isDowngrade || isCurrentPlan) return;
+                            setSelectedPlan(plan.id);
+                            setPurchaseStep("review");
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }}
+                        >
+                          {isCurrentPlan
+                            ? "Your Current Plan"
+                            : isDowngrade
+                              ? "Not Available"
+                              : isSelected
+                                ? "Continue to Checkout →"
+                                : plan.cta}
+                        </button>
+                      </article>
+                    );
+                  })}
+                </div>
               );
             })()}
 
             {/* Free plan strip */}
-            <div className="mt-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 bg-muted/30 border border-border rounded-[18px] px-5 py-4">
+            <div className="bg-muted/30 border-border mt-4 flex flex-col items-start justify-between gap-3 rounded-[18px] border px-5 py-4 sm:flex-row sm:items-center">
               <div>
-                <p className="font-semibold text-[14px] m-0">
+                <p className="m-0 text-[14px] font-semibold">
                   Not ready to commit? Start with a free preview.
                 </p>
-                <p className="text-muted-foreground text-[13px] m-0 mt-0.5">
-                  Preview the roadmap structure, access public tools — no
-                  payment required.
+                <p className="text-muted-foreground m-0 mt-0.5 text-[13px]">
+                  Preview the roadmap structure, access public tools, no payment required.
                 </p>
               </div>
               <Link href={userId ? "/" : "/signup"} className="shrink-0">
@@ -906,35 +1348,30 @@ function PricingContent() {
 
             {/* Help me choose — full width */}
             <div className="mt-10">
-              <h3 className="text-[17px] font-bold m-0 mb-1">Help me choose</h3>
-              <p className="text-[13.5px] text-muted-foreground mb-4">
+              <h3 className="m-0 mb-1 text-[17px] font-bold">Help me choose</h3>
+              <p className="text-muted-foreground mb-4 text-[13.5px]">
                 Pick the description that matches you.
               </p>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                 {HELPER_DATA.map((card, idx) => {
                   const tc = TIER[card.plan as TierKey];
                   const isActive = selectedPlan === card.plan;
                   return (
                     <button
                       key={idx}
-                      className={`border rounded-[18px] p-5 text-left cursor-pointer transition-all ${
+                      className={`cursor-pointer rounded-[18px] border p-5 text-left transition-all ${
                         isActive
                           ? `${tc.cardBg} ${tc.selBorder} ${tc.ring}`
                           : "bg-card border-border hover:bg-muted/20"
                       }`}
                       onClick={() => setSelectedPlan(card.plan)}
                     >
-                      <strong className="block text-[14.5px] mb-2">
-                        {card.title}
-                      </strong>
-                      <p className="m-0 text-muted-foreground text-[13px] leading-[1.55] mb-3">
+                      <strong className="mb-2 block text-[14.5px]">{card.title}</strong>
+                      <p className="text-muted-foreground m-0 mb-3 text-[13px] leading-[1.55]">
                         {card.copy}
                       </p>
-                      <span
-                        className={`text-[12px] font-bold ${tc.textAccent}`}
-                      >
-                        → Use{" "}
-                        {activePlans.find((p) => p.id === card.plan)?.name}
+                      <span className={`text-[12px] font-bold ${tc.textAccent}`}>
+                        → Use {activePlans.find((p) => p.id === card.plan)?.name}
                       </span>
                     </button>
                   );
@@ -944,31 +1381,27 @@ function PricingContent() {
 
             {/* FAQs — full width */}
             <div className="mt-10">
-              <h2 className="text-[22px] font-bold m-0 mb-1">
-                Common questions
-              </h2>
-              <p className="text-muted-foreground text-[13.5px] mb-4">
+              <h2 className="m-0 mb-1 text-[22px] font-bold">Common questions</h2>
+              <p className="text-muted-foreground mb-4 text-[13.5px]">
                 Everything you need to know before purchasing.
               </p>
-              <div className="bg-card border border-border rounded-[20px] overflow-hidden">
+              <div className="bg-card border-border overflow-hidden rounded-[20px] border">
                 {FAQS.map(([q, a], idx) => (
                   <div
                     key={idx}
-                    className={`border-t border-border first:border-0 ${openFaqIndex === idx ? "bg-muted/20" : ""}`}
+                    className={`border-border border-t first:border-0 ${openFaqIndex === idx ? "bg-muted/20" : ""}`}
                   >
                     <button
-                      className="w-full bg-transparent border-0 p-[16px_22px] flex justify-between items-center gap-4 text-left cursor-pointer hover:bg-muted/25 transition-colors"
-                      onClick={() =>
-                        setOpenFaqIndex(openFaqIndex === idx ? -1 : idx)
-                      }
+                      className="hover:bg-muted/25 flex w-full cursor-pointer items-center justify-between gap-4 border-0 bg-transparent p-[16px_22px] text-left transition-colors"
+                      onClick={() => setOpenFaqIndex(openFaqIndex === idx ? -1 : idx)}
                     >
-                      <span className="font-semibold text-[14px]">{q}</span>
-                      <span className="text-xl text-muted-foreground font-normal leading-none shrink-0">
+                      <span className="text-[14px] font-semibold">{q}</span>
+                      <span className="text-muted-foreground shrink-0 text-xl leading-none font-normal">
                         {openFaqIndex === idx ? "−" : "+"}
                       </span>
                     </button>
                     {openFaqIndex === idx && (
-                      <div className="px-[22px] pb-4 text-muted-foreground leading-[1.65] text-[13.5px]">
+                      <div className="text-muted-foreground px-[22px] pb-4 text-[13.5px] leading-[1.65]">
                         {a}
                       </div>
                     )}
@@ -978,26 +1411,24 @@ function PricingContent() {
             </div>
 
             {/* CTA Banner — full width */}
-            <div className="mt-8 bg-primary rounded-[22px] p-7 text-white flex flex-col md:flex-row justify-between gap-4 md:items-center">
+            <div className="bg-primary mt-8 flex flex-col justify-between gap-4 rounded-[22px] p-7 text-white md:flex-row md:items-center">
               <div>
                 <h2 className="m-[0_0_6px] text-[22px] font-bold tracking-tight">
                   Start with the level that fits you.
                 </h2>
-                <p className="m-0 text-white/80 text-[14px]">
+                <p className="m-0 text-[14px] text-white/80">
                   Pick a plan, then add only the extras that apply to your case.
                 </p>
               </div>
-              <div className="flex gap-3 flex-wrap shrink-0">
+              <div className="flex shrink-0 flex-wrap gap-3">
                 <button
-                  className="px-5 py-[9px] bg-white text-primary rounded-full text-[13.5px] font-semibold hover:bg-white/90 transition-colors cursor-pointer"
-                  onClick={() =>
-                    window.scrollTo({ top: 0, behavior: "smooth" })
-                  }
+                  className="text-primary cursor-pointer rounded-full bg-white px-5 py-[9px] text-[13.5px] font-semibold transition-colors hover:bg-white/90"
+                  onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                 >
                   Review Plans
                 </button>
                 <Link href="/#contact">
-                  <button className="px-5 py-[9px] border border-white/30 text-white rounded-full text-[13.5px] font-semibold hover:bg-white/10 transition-colors cursor-pointer">
+                  <button className="cursor-pointer rounded-full border border-white/30 px-5 py-[9px] text-[13.5px] font-semibold text-white transition-colors hover:bg-white/10">
                     Talk to Support
                   </button>
                 </Link>
@@ -1013,19 +1444,22 @@ function PricingContent() {
       {mode === "plans" && purchaseStep === "review" && (
         <div className="animate-in fade-in duration-300">
           <div className={`${W} pt-6`}>
-            {/* Back button */}
-            <button
-              className="inline-flex items-center gap-1.5 text-[13.5px] text-muted-foreground hover:text-foreground font-medium cursor-pointer bg-transparent border-0 p-0 mb-6 transition-colors"
-              onClick={() => {
-                setPurchaseStep("browse");
-                window.scrollTo({ top: 0 });
-              }}
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Back to plans
-            </button>
+            {/* Back button + visa selector */}
+            <div className="mb-6 flex items-center justify-between gap-3">
+              <button
+                className="text-muted-foreground hover:text-foreground inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[13.5px] font-medium transition-colors"
+                onClick={() => {
+                  setPurchaseStep("browse");
+                  window.scrollTo({ top: 0 });
+                }}
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Back to plans
+              </button>
+              {visaSelectorSm}
+            </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-8 items-start">
+            <div className="grid grid-cols-1 items-start gap-8 lg:grid-cols-[1fr_320px]">
               {/* Left: add-ons */}
               <div>
                 {/* Selected plan summary */}
@@ -1033,34 +1467,30 @@ function PricingContent() {
                   const tc = TIER[currentPlanData.id as TierKey];
                   if (!tc) return null;
                   return (
-                    <div
-                      className={`${tc.cardBg} border ${tc.selBorder} rounded-[22px] p-5 mb-8`}
-                    >
-                      <div className="flex justify-between items-start">
+                    <div className={`${tc.cardBg} border ${tc.selBorder} mb-8 rounded-[22px] p-5`}>
+                      <div className="flex items-start justify-between">
                         <div>
                           <div
-                            className={`text-[11px] font-extrabold tracking-widest uppercase mb-1 ${tc.textAccent}`}
+                            className={`mb-1 text-[11px] font-extrabold tracking-widest uppercase ${tc.textAccent}`}
                           >
                             Selected Plan
                           </div>
-                          <div className="text-[20px] font-bold">
-                            {currentPlanData.name}
-                          </div>
-                          <p className="text-muted-foreground text-[13px] mt-0.5 m-0">
+                          <div className="text-[20px] font-bold">{currentPlanData.name}</div>
+                          <p className="text-muted-foreground m-0 mt-0.5 text-[13px]">
                             {currentPlanData.tagline}
                           </p>
                         </div>
                         <div className="text-right">
-                          <div className="text-[32px] font-bold tracking-tight leading-none">
+                          <div className="text-[32px] leading-none font-bold tracking-tight">
                             ${planDisplayPrice(currentPlanData)}
                           </div>
-                          <div className="text-[12px] text-muted-foreground">
+                          <div className="text-muted-foreground text-[12px]">
                             /mo · ${currentPlanData.annualPrice} total
                           </div>
                         </div>
                       </div>
                       <button
-                        className={`mt-3 text-[12.5px] font-medium ${tc.textAccent} cursor-pointer bg-transparent border-0 p-0`}
+                        className={`mt-3 text-[12.5px] font-medium ${tc.textAccent} cursor-pointer border-0 bg-transparent p-0`}
                         onClick={() => setPurchaseStep("browse")}
                       >
                         Change plan →
@@ -1072,23 +1502,21 @@ function PricingContent() {
                 {/* Want to add extra help? */}
                 <div>
                   <div className={eyebrow}>Optional add-ons</div>
-                  <h2 className="text-[21px] font-bold m-0 mb-1">
-                    Want to add extra help?
-                  </h2>
-                  <p className="text-[13.5px] text-muted-foreground mb-5">
-                    Add only what you need. Recommended for the{" "}
-                    {currentPlanData.name} plan — or browse all below.
+                  <h2 className="m-0 mb-1 text-[21px] font-bold">Want to add extra help?</h2>
+                  <p className="text-muted-foreground mb-5 text-[13.5px]">
+                    Add only what you need. Recommended for the {currentPlanData.name} plan, or
+                    browse all below.
                   </p>
 
                   {/* Recommended add-ons */}
                   {reviewAddons.length > 0 && (
                     <div className="mb-7">
-                      <div className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground mb-3">
+                      <div className="text-muted-foreground mb-3 text-[11px] font-bold tracking-widest uppercase">
                         Recommended for {currentPlanData.name}
                       </div>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                         {reviewAddons.map((addon) => {
-                          const isAdded = selectedAddons.has(addon.id);
+                          const isAdded = isAddonSelected(addon.id);
                           const cfg = ADDON_CONFIG[addon.id];
                           const Icon = cfg?.icon ?? Wand2;
                           return (
@@ -1098,11 +1526,9 @@ function PricingContent() {
                             >
                               <div
                                 className={`resource-fcard-frame ${
-                                  cfg?.iconBg.includes("emerald") ||
-                                  cfg?.iconBg.includes("cyan")
+                                  cfg?.iconBg.includes("emerald") || cfg?.iconBg.includes("cyan")
                                     ? "bg-[#EEF6F0] text-[#3A6E4A]"
-                                    : cfg?.iconBg.includes("indigo") ||
-                                        cfg?.iconBg.includes("blue")
+                                    : cfg?.iconBg.includes("indigo") || cfg?.iconBg.includes("blue")
                                       ? "bg-[#EAF1FB] text-[#1A5FA3]"
                                       : cfg?.iconBg.includes("amber") ||
                                           cfg?.iconBg.includes("yellow")
@@ -1113,35 +1539,25 @@ function PricingContent() {
                                           : "bg-[#FEF0F0] text-[#903030]"
                                 }`}
                               >
-                                <Icon className="w-7 h-7 opacity-70" />
+                                <Icon className="h-7 w-7 opacity-70" />
                               </div>
 
                               <div className="resource-fcard-body">
-                                <h3 className="resource-fcard-name">
-                                  {addon.title}
-                                </h3>
-                                <p className="resource-fcard-desc">
-                                  {addon.copy}
-                                </p>
+                                <h3 className="resource-fcard-name">{addon.title}</h3>
+                                <p className="resource-fcard-desc">{addon.copy}</p>
 
                                 <div className="resource-fcard-foot">
                                   <div>
-                                    <div className="resource-fcard-price">
-                                      ${addon.price}
-                                    </div>
-                                    <div className="resource-fcard-unit">
-                                      {addon.unit}
-                                    </div>
+                                    <div className="resource-fcard-price">${addon.price}</div>
+                                    <div className="resource-fcard-unit">{addon.unit}</div>
                                   </div>
-
                                   <button
+                                    title={isAdded ? "Added to order" : "Add to order"}
                                     disabled={isAnyCheckoutLoading}
                                     className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
                                     onClick={() => toggleAddon(addon.id)}
                                   >
-                                    {isAdded
-                                      ? "✓ Added to order"
-                                      : "+ Add to order"}
+                                    {isAdded ? "✓ Added to order" : "+ Add"}
                                   </button>
                                 </div>
                               </div>
@@ -1153,89 +1569,78 @@ function PricingContent() {
                   )}
 
                   {/* All other add-ons — collapsed by default */}
-                  <div className="mt-4 border-t border-border pt-4">
+                  <div className="border-border mt-4 border-t pt-4">
                     <button
-                      className="w-full flex justify-between items-center cursor-pointer bg-transparent border-0 p-0 group mb-0"
+                      className="group mb-0 flex w-full cursor-pointer items-center justify-between border-0 bg-transparent p-0"
                       onClick={() => setAllAddonsOpen(!allAddonsOpen)}
                     >
-                      <span className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground group-hover:text-foreground transition-colors">
+                      <span className="text-muted-foreground group-hover:text-foreground text-[11px] font-bold tracking-widest uppercase transition-colors">
                         All available add-ons
                       </span>
-                      <span className="flex items-center gap-1.5 text-[12px] text-muted-foreground group-hover:text-foreground transition-colors">
+                      <span className="text-muted-foreground group-hover:text-foreground flex items-center gap-1.5 text-[12px] transition-colors">
                         <span className="font-medium">
                           {allAddonsOpen ? "Collapse" : "Show all"}
                         </span>
                         <IcoChevron
-                          className={`w-3.5 h-3.5 transition-transform duration-200 ${allAddonsOpen ? "rotate-180" : ""}`}
+                          className={`h-3.5 w-3.5 transition-transform duration-200 ${allAddonsOpen ? "rotate-180" : ""}`}
                         />
                       </span>
                     </button>
                     {allAddonsOpen && (
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-3">
-                        {ADDONS.filter(
-                          (a) =>
-                            !(PLAN_RECS[selectedPlan] || []).includes(a.id),
-                        ).map((addon) => {
-                          const isAdded = selectedAddons.has(addon.id);
-                          const cfg = ADDON_CONFIG[addon.id];
-                          const Icon = cfg?.icon ?? Wand2;
-                          return (
-                            <article
-                              key={addon.id}
-                              className={`resource-fcard transition-all ${isAdded ? "is-added shadow-md" : "hover:shadow-sm"}`}
-                            >
-                              <div
-                                className={`resource-fcard-frame ${
-                                  cfg?.iconBg.includes("emerald") ||
-                                  cfg?.iconBg.includes("cyan")
-                                    ? "bg-[#EEF6F0] text-[#3A6E4A]"
-                                    : cfg?.iconBg.includes("indigo") ||
-                                        cfg?.iconBg.includes("blue")
-                                      ? "bg-[#EAF1FB] text-[#1A5FA3]"
-                                      : cfg?.iconBg.includes("amber") ||
-                                          cfg?.iconBg.includes("yellow")
-                                        ? "bg-[#FBF2E3] text-[#9B6220]"
-                                        : cfg?.iconBg.includes("violet") ||
-                                            cfg?.iconBg.includes("purple")
-                                          ? "bg-[#F3EFFE] text-[#5C3DAA]"
-                                          : "bg-[#FEF0F0] text-[#903030]"
-                                }`}
+                      <div className="mt-3 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                        {ADDONS.filter((a) => !(PLAN_RECS[selectedPlan] || []).includes(a.id)).map(
+                          (addon) => {
+                            const isAdded = isAddonSelected(addon.id);
+                            const cfg = ADDON_CONFIG[addon.id];
+                            const Icon = cfg?.icon ?? Wand2;
+                            return (
+                              <article
+                                key={addon.id}
+                                className={`resource-fcard transition-all ${isAdded ? "is-added shadow-md" : "hover:shadow-sm"}`}
                               >
-                                <Icon className="w-7 h-7 opacity-70" />
-                              </div>
-
-                              <div className="resource-fcard-body">
-                                <h3 className="resource-fcard-name">
-                                  {addon.title}
-                                </h3>
-                                <p className="resource-fcard-desc">
-                                  {addon.copy}
-                                </p>
-
-                                <div className="resource-fcard-foot">
-                                  <div>
-                                    <div className="resource-fcard-price">
-                                      ${addon.price}
-                                    </div>
-                                    <div className="resource-fcard-unit">
-                                      {addon.unit}
-                                    </div>
-                                  </div>
-
-                                  <button
-                                    disabled={isAnyCheckoutLoading}
-                                    className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
-                                    onClick={() => toggleAddon(addon.id)}
-                                  >
-                                    {isAdded
-                                      ? "✓ Added to order"
-                                      : "+ Add to order"}
-                                  </button>
+                                <div
+                                  className={`resource-fcard-frame ${
+                                    cfg?.iconBg.includes("emerald") || cfg?.iconBg.includes("cyan")
+                                      ? "bg-[#EEF6F0] text-[#3A6E4A]"
+                                      : cfg?.iconBg.includes("indigo") ||
+                                          cfg?.iconBg.includes("blue")
+                                        ? "bg-[#EAF1FB] text-[#1A5FA3]"
+                                        : cfg?.iconBg.includes("amber") ||
+                                            cfg?.iconBg.includes("yellow")
+                                          ? "bg-[#FBF2E3] text-[#9B6220]"
+                                          : cfg?.iconBg.includes("violet") ||
+                                              cfg?.iconBg.includes("purple")
+                                            ? "bg-[#F3EFFE] text-[#5C3DAA]"
+                                            : "bg-[#FEF0F0] text-[#903030]"
+                                  }`}
+                                >
+                                  <Icon className="h-7 w-7 opacity-70" />
                                 </div>
-                              </div>
-                            </article>
-                          );
-                        })}
+
+                                <div className="resource-fcard-body">
+                                  <h3 className="resource-fcard-name">{addon.title}</h3>
+                                  <p className="resource-fcard-desc">{addon.copy}</p>
+
+                                  <div className="resource-fcard-foot">
+                                    <div>
+                                      <div className="resource-fcard-price">${addon.price}</div>
+                                      <div className="resource-fcard-unit">{addon.unit}</div>
+                                    </div>
+
+                                    <button
+                                      title={isAdded ? "Added to order" : "Add to order"}
+                                      disabled={isAnyCheckoutLoading}
+                                      className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
+                                      onClick={() => toggleAddon(addon.id)}
+                                    >
+                                      {isAdded ? "✓ Added to order" : "+ Add"}
+                                    </button>
+                                  </div>
+                                </div>
+                              </article>
+                            );
+                          }
+                        )}
                       </div>
                     )}
                   </div>
@@ -1243,18 +1648,16 @@ function PricingContent() {
               </div>
 
               {/* Right: sticky order summary */}
-              <aside className="lg:sticky lg:top-[88px] bg-card border border-border rounded-[22px] p-5 shadow-md">
-                <div className="text-[11px] uppercase tracking-widest text-muted-foreground font-bold mb-4">
-                  Order Summary
-                </div>
+              <aside className="bg-card border-border rounded-[22px] border p-5 shadow-md lg:sticky lg:top-[88px]">
+                {summaryHeader(reviewItemCount)}
 
-                <div className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[13px]">
+                <div className="border-border flex justify-between gap-3 border-b border-dashed py-2.5 text-[13px]">
                   <span className="text-muted-foreground">Visa</span>
-                  <strong className="text-[12.5px]">{visa}</strong>
+                  <strong className="text-[12.5px]">{activeVisaCategory.label}</strong>
                 </div>
 
                 {currentPlanData.id !== "free" && (
-                  <div className="flex justify-between gap-3 py-2.5 border-b border-dashed border-border text-[13px]">
+                  <div className="border-border flex justify-between gap-3 border-b border-dashed py-2.5 text-[13px]">
                     <span className="text-muted-foreground">Plan</span>
                     <div className="text-right">
                       <strong
@@ -1262,9 +1665,8 @@ function PricingContent() {
                       >
                         {currentPlanData.name}
                       </strong>
-                      <span className="text-[11px] text-muted-foreground">
-                        ${currentPlanData.monthlyPrice}/mo · $
-                        {currentPlanData.annualPrice} total
+                      <span className="text-muted-foreground text-[11px]">
+                        ${currentPlanData.monthlyPrice}/mo · ${currentPlanData.annualPrice} total
                       </span>
                     </div>
                   </div>
@@ -1273,16 +1675,14 @@ function PricingContent() {
                 {activeAddons.map((a) => (
                   <div
                     key={a.id}
-                    className="flex justify-between gap-3 py-2 border-b border-dashed border-border text-[13px]"
+                    className="border-border flex justify-between gap-3 border-b border-dashed py-2 text-[13px]"
                   >
-                    <span className="text-[12.5px] truncate pr-2">
-                      {a.title}
-                    </span>
-                    <div className="text-right shrink-0">
+                    <span className="truncate pr-2 text-[12.5px]">{a.title}</span>
+                    <div className="shrink-0 text-right">
                       <strong>${a.price}</strong>
                       <button
                         disabled={isAnyCheckoutLoading}
-                        className={`ml-2 text-muted-foreground transition-colors ${isAnyCheckoutLoading ? "opacity-30 cursor-not-allowed" : "hover:text-red-500 cursor-pointer"} text-[11px]`}
+                        className={`text-muted-foreground ml-2 transition-colors ${isAnyCheckoutLoading ? "cursor-not-allowed opacity-30" : "cursor-pointer hover:text-red-500"} text-[11px]`}
                         onClick={() => toggleAddon(a.id)}
                       >
                         ✕
@@ -1291,173 +1691,96 @@ function PricingContent() {
                   </div>
                 ))}
 
-                <div className="flex justify-between items-end mt-4 pt-4 border-t border-border">
-                  <span className="text-[12px] text-muted-foreground">
-                    Total commitment
-                  </span>
-                  <span className="font-bold text-[28px] tracking-tight text-primary leading-none">
+                <div className="border-border mt-4 flex items-end justify-between border-t pt-4">
+                  <span className="text-muted-foreground text-[12px]">Total commitment</span>
+                  <span className="text-primary text-[28px] leading-none font-bold tracking-tight">
                     ${summaryTotal}
                   </span>
                 </div>
 
-                <p className="text-[11px] text-muted-foreground leading-relaxed mt-3 mb-4 p-3 bg-muted/40 rounded-[12px] border border-dashed border-border">
+                <p className="text-muted-foreground bg-muted/40 border-border mt-3 mb-4 rounded-[12px] border border-dashed p-3 text-[11px] leading-relaxed">
                   Billed monthly at $
-                  {currentPlanData.id !== "free"
-                    ? currentPlanData.monthlyPrice
-                    : 0}
+                  {currentPlanData.id !== "free" ? currentPlanData.monthlyPrice : 0}
                   /mo. Add-ons are one-time. Government fees excluded.
                 </p>
 
                 {checkoutBtn}
               </aside>
             </div>
+
+            {/* Spacer so the last content clears the mobile sticky bar */}
+            <div className="h-24 lg:hidden" aria-hidden="true" />
           </div>
+
+          {reviewItemCount > 0 && mobileSummaryBar(reviewItemCount, summaryTotal)}
         </div>
       )}
 
       {/* ═══════════════════════════════════════════════════════════════════════
-          INDIVIDUAL RESOURCES MODE
+          INDIVIDUAL RESOURCES MODE — Tools / Services / Guides tabs
           ═══════════════════════════════════════════════════════════════════════ */}
-      {mode === "resources" && (
+      {mode !== "plans" && (
         <div className="animate-in fade-in duration-300">
           <section className={`${W} pt-7 pb-5`}>
-            <div className={eyebrow}>Individual Resources</div>
-            <h1 className="text-[clamp(24px,3.5vw,42px)] font-bold leading-[1.1] tracking-tight m-0">
-              Buy individual tools and services
-            </h1>
-            <p className="mt-2 text-muted-foreground text-[14.5px] max-w-[520px]">
-              Choose only the help you need — no full journey plan required.
-            </p>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <div className={eyebrow}>{RESOURCE_TABS[mode].label}</div>
+                <h1 className="m-0 text-[clamp(24px,3.5vw,42px)] leading-[1.1] font-bold tracking-tight">
+                  {RESOURCE_TABS[mode].heading}
+                </h1>
+                <p className="text-muted-foreground mt-2 max-w-[520px] text-[14.5px]">
+                  {RESOURCE_TABS[mode].blurb}
+                </p>
+              </div>
+            </div>
           </section>
 
           <div className={`${W}`}>
-            <div className="grid grid-cols-1 lg:grid-cols-[1fr_284px] gap-6 items-start">
+            <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_284px]">
               <div>
-                {/* Category tabs */}
-                <div className="flex gap-2 overflow-x-auto pb-1 mb-5">
-                  {RESOURCE_CATS.map((cat) => (
-                    <button
-                      key={cat.id}
-                      onClick={() => setResourceCat(cat.id)}
-                      className={`px-4 py-[7px] rounded-full text-[13px] font-medium whitespace-nowrap shrink-0 cursor-pointer transition-all ${
-                        resourceCat === cat.id
-                          ? "bg-primary text-white shadow-sm"
-                          : "bg-muted border border-border text-muted-foreground hover:text-foreground"
-                      }`}
-                    >
-                      {cat.label}
-                    </button>
+                <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+                  {resourcesForMode.map((addon) => (
+                    <ResourceToolCard
+                      key={addon.id}
+                      addon={addon}
+                      isAdded={isAddonSelected(addon.id)}
+                      disabled={isAnyCheckoutLoading}
+                      onToggle={toggleAddon}
+                    />
                   ))}
-                </div>
-
-                {/* Resource cards — matching resources page style */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {resourcesForCat.map((addon) => {
-                    const isAdded = selectedAddons.has(addon.id);
-                    const cfg = ADDON_CONFIG[addon.id];
-                    const Icon = cfg?.icon ?? Wand2;
-                    return (
-                      <article
-                        key={addon.id}
-                        className={`resource-fcard transition-all ${isAdded ? "is-added shadow-md" : "hover:shadow-sm"}`}
-                      >
-                        <div
-                          className={`resource-fcard-frame ${
-                            cfg?.iconBg.includes("emerald") ||
-                            cfg?.iconBg.includes("cyan")
-                              ? "bg-[#EEF6F0] text-[#3A6E4A]"
-                              : cfg?.iconBg.includes("indigo") ||
-                                  cfg?.iconBg.includes("blue")
-                                ? "bg-[#EAF1FB] text-[#1A5FA3]"
-                                : cfg?.iconBg.includes("amber") ||
-                                    cfg?.iconBg.includes("yellow")
-                                  ? "bg-[#FBF2E3] text-[#9B6220]"
-                                  : cfg?.iconBg.includes("violet") ||
-                                      cfg?.iconBg.includes("purple")
-                                    ? "bg-[#F3EFFE] text-[#5C3DAA]"
-                                    : "bg-[#FEF0F0] text-[#903030]"
-                          }`}
-                        >
-                          {/* Film holes top */}
-                          {/* <div className="resource-fhole-row top">
-                            {[1, 2, 3, 4].map((i) => (
-                              <div key={i} className="resource-fhole" />
-                            ))}
-                          </div> */}
-
-                          <Icon className="w-7 h-7 opacity-70" />
-
-                          {/* Film holes bottom */}
-                          {/* <div className="resource-fhole-row bot">
-                            {[1, 2, 3, 4].map((i) => (
-                              <div key={i} className="resource-fhole" />
-                            ))}
-                          </div> */}
-                        </div>
-
-                        <div className="resource-fcard-body">
-                          <h3 className="resource-fcard-name">{addon.title}</h3>
-                          <p className="resource-fcard-desc">{addon.copy}</p>
-
-                          <div className="resource-fcard-foot">
-                            <div>
-                              <div className="resource-fcard-price">
-                                ${addon.price}
-                              </div>
-                              <div className="resource-fcard-unit">
-                                {addon.unit}
-                              </div>
-                            </div>
-
-                            <button
-                              disabled={isAnyCheckoutLoading}
-                              className={`resource-fbtn ${isAdded ? "is-added" : ""}`}
-                              onClick={() => toggleAddon(addon.id)}
-                            >
-                              {isAdded ? "✓ Added to order" : "+ Add to order"}
-                            </button>
-                          </div>
-                        </div>
-                      </article>
-                    );
-                  })}
                 </div>
 
                 <div className="mt-6 text-center">
                   <button
-                    className="text-[13.5px] text-primary font-semibold inline-flex items-center gap-1.5 cursor-pointer bg-transparent border-0 p-0"
+                    className="text-primary inline-flex cursor-pointer items-center gap-1.5 border-0 bg-transparent p-0 text-[13.5px] font-semibold"
                     onClick={() => setMode("plans")}
                   >
-                    <ArrowLeft className="w-4 h-4" />
+                    <ArrowLeft className="h-4 w-4" />
                     View full journey plans
                   </button>
                 </div>
               </div>
 
               {/* Order summary sidebar */}
-              <aside className="lg:sticky lg:top-[88px] bg-card border border-border rounded-[22px] p-5 shadow-md">
-                <div className="text-[11px] uppercase tracking-widest text-muted-foreground font-bold mb-4">
-                  Order Summary
-                </div>
+              <aside className="bg-card border-border rounded-[22px] border p-5 shadow-md lg:sticky lg:top-[88px]">
+                {summaryHeader(activeAddons.length)}
 
                 {activeAddons.length === 0 ? (
-                  <div className="py-5 text-center text-muted-foreground text-[13px]">
+                  <div className="text-muted-foreground py-5 text-center text-[13px]">
                     No items selected yet.
                   </div>
                 ) : (
                   activeAddons.map((a) => (
                     <div
                       key={a.id}
-                      className="flex justify-between gap-3 py-2 border-b border-dashed border-border text-[13px]"
+                      className="border-border flex justify-between gap-3 border-b border-dashed py-2 text-[13px]"
                     >
-                      <span className="text-[12.5px] truncate pr-2">
-                        {a.title}
-                      </span>
-                      <div className="text-right shrink-0">
+                      <span className="truncate pr-2 text-[12.5px]">{a.title}</span>
+                      <div className="shrink-0 text-right">
                         <strong>${a.price}</strong>
                         <button
                           disabled={isAnyCheckoutLoading}
-                          className={`ml-2 text-muted-foreground transition-colors ${isAnyCheckoutLoading ? "opacity-30 cursor-not-allowed" : "hover:text-red-500 cursor-pointer"} text-[11px]`}
+                          className={`text-muted-foreground ml-2 transition-colors ${isAnyCheckoutLoading ? "cursor-not-allowed opacity-30" : "cursor-pointer hover:text-red-500"} text-[11px]`}
                           onClick={() => toggleAddon(a.id)}
                         >
                           ✕
@@ -1469,24 +1792,26 @@ function PricingContent() {
 
                 {activeAddons.length > 0 && (
                   <>
-                    <div className="flex justify-between items-end mt-4 pt-4 border-t border-border">
-                      <span className="text-[12px] text-muted-foreground">
-                        Total
-                      </span>
-                      <span className="font-bold text-[28px] tracking-tight text-primary leading-none">
+                    <div className="border-border mt-4 flex items-end justify-between border-t pt-4">
+                      <span className="text-muted-foreground text-[12px]">Total</span>
+                      <span className="text-primary text-[28px] leading-none font-bold tracking-tight">
                         ${summaryAddonsTotal}
                       </span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground leading-relaxed mt-3 mb-4 p-3 bg-muted/40 rounded-[12px] border border-dashed border-border">
-                      Add-ons are one-time charges. Government fees are not
-                      included.
+                    <p className="text-muted-foreground bg-muted/40 border-border mt-3 mb-4 rounded-[12px] border border-dashed p-3 text-[11px] leading-relaxed">
+                      Add-ons are one-time charges. Government fees are not included.
                     </p>
                     {checkoutBtn}
                   </>
                 )}
               </aside>
             </div>
+
+            {/* Spacer so the last content clears the mobile sticky bar */}
+            {activeAddons.length > 0 && <div className="h-24 lg:hidden" aria-hidden="true" />}
           </div>
+
+          {activeAddons.length > 0 && mobileSummaryBar(activeAddons.length, summaryAddonsTotal)}
         </div>
       )}
 
@@ -1513,9 +1838,9 @@ export default function PricingSection() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
-          <div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4 mx-auto" />
-          <h2 className="text-xl font-bold mb-2">Loading Pricing…</h2>
+        <div className="bg-background flex min-h-screen flex-col items-center justify-center p-6 text-center">
+          <div className="border-primary mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-4 border-t-transparent" />
+          <h2 className="mb-2 text-xl font-bold">Loading Pricing...</h2>
           <p className="text-muted-foreground">Preparing your plan options.</p>
         </div>
       }

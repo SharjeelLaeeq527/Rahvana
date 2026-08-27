@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sendEmail, getFeatureAnnouncementEmailHtml } from "@/lib/email/resend";
 import { createServerClient } from "@supabase/ssr";
+import { E, msg } from "@/lib/errors";
 
 // Specific admin emails - ONLY these emails can access admin panel
 const ADMIN_EMAILS = (process.env.ADMIN_EMAILS || "hammadnooralam@gmail.com")
@@ -25,7 +26,7 @@ async function checkAdminRole(request: NextRequest) {
         },
         setAll() {},
       },
-    },
+    }
   );
 
   const {
@@ -33,15 +34,14 @@ async function checkAdminRole(request: NextRequest) {
     error: userError,
   } = await supabase.auth.getUser();
 
-  if (userError || !user)
-    return { isAdmin: false, error: "Authentication required" };
+  if (userError || !user) return { isAdmin: false, error: msg(E.AUTH_UNAUTHORIZED) };
   if (!user.email || !ADMIN_EMAILS.includes(user.email))
-    return { isAdmin: false, error: "Admin access required" };
+    return { isAdmin: false, error: msg(E.AUTH_UNAUTHORIZED_ADMIN) };
 
   const supabaseAdmin = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
-    { cookies: { getAll: () => [], setAll: () => {} } },
+    { cookies: { getAll: () => [], setAll: () => {} } }
   );
 
   const { data: profile, error: profileError } = await supabaseAdmin
@@ -56,7 +56,7 @@ async function checkAdminRole(request: NextRequest) {
   }
 
   if (!profile || profile.role !== "admin")
-    return { isAdmin: false, error: "Admin role required" };
+    return { isAdmin: false, error: msg(E.AUTH_UNAUTHORIZED_ADMIN) };
 
   return { isAdmin: true, error: null };
 }
@@ -65,43 +65,39 @@ export async function POST(request: NextRequest) {
   try {
     const { isAdmin, error: authError } = await checkAdminRole(request);
     if (!isAdmin)
-      return NextResponse.json(
-        { error: authError || "Admin access required" },
-        { status: 403 },
-      );
+      return NextResponse.json({ error: authError || "Admin access required" }, { status: 403 });
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      { cookies: { getAll: () => [], setAll: () => {} } },
+      { cookies: { getAll: () => [], setAll: () => {} } }
     );
 
-    const { title, description, featureUrl }: FeatureAnnouncementRequest =
-      await request.json();
+    const { title, description, featureUrl }: FeatureAnnouncementRequest = await request.json();
 
     if (!title || !description || !featureUrl)
       return NextResponse.json(
         { error: "Title, description, and feature URL are required" },
-        { status: 400 },
+        { status: 400 }
       );
 
     if (title.length < 3)
       return NextResponse.json(
         { error: "Title length should be greater than 3 characters" },
-        { status: 400 },
+        { status: 400 }
       );
 
     if (description.length < 10)
       return NextResponse.json(
         { error: "Description length should be greater than 10 characters" },
-        { status: 400 },
+        { status: 400 }
       );
 
     const urlRegex = /^https:\/\/www\.rahvana\.com(\/[^\s]*)?$/;
     if (!urlRegex.test(featureUrl))
       return NextResponse.json(
         { error: "Invalid feature URL. Must start with https://rahvana.com" },
-        { status: 400 },
+        { status: 400 }
       );
 
     // 1. Create feature announcement
@@ -113,10 +109,7 @@ export async function POST(request: NextRequest) {
 
     if (announcementError) {
       console.error("Error creating announcement:", announcementError);
-      return NextResponse.json(
-        { error: "Failed to create announcement" },
-        { status: 500 },
-      );
+      return NextResponse.json({ error: "Failed to create announcement" }, { status: 500 });
     }
 
     // 2. Fetch already notified user IDs
@@ -134,9 +127,7 @@ export async function POST(request: NextRequest) {
 
     if (usersError) console.error("Error fetching users:", usersError);
 
-    const usersToNotify = (allUsers || []).filter(
-      (u) => !notifiedIds.includes(u.id),
-    );
+    const usersToNotify = (allUsers || []).filter((u) => !notifiedIds.includes(u.id));
 
     console.log(`Users to notify: ${usersToNotify.length}`);
 
@@ -153,7 +144,7 @@ export async function POST(request: NextRequest) {
           html: getFeatureAnnouncementEmailHtml(
             announcement.title,
             announcement.description,
-            announcement.feature_url,
+            announcement.feature_url
           ),
         });
 
@@ -182,9 +173,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("API error:", error);
-    return NextResponse.json(
-      { error: "An unexpected error occurred" },
-      { status: 500 },
-    );
+    return NextResponse.json({ error: "An unexpected error occurred" }, { status: 500 });
   }
 }

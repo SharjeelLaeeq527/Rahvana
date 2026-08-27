@@ -9,17 +9,22 @@ import { ProgressFooter } from "./ProgressFooter";
 import { FormStep } from "./FormStep";
 import { ReviewPage } from "./ReviewPage";
 import type { Field as ConfigField } from "@/lib/formConfig/types";
-import { X, ChevronLeft, ChevronRight, Check } from "lucide-react";
-import { createBrowserClient } from "@supabase/ssr";
+import { ChevronLeft, ChevronRight, Check, Sparkles, FileText, Lock } from "lucide-react";
 import { useAuth } from "@/app/context/AuthContext";
-import { autoFillForm } from "@/lib/autoFill/mapper";
-import type { MasterProfile } from "@/types/profile";
+import { useUserProfile } from "@/app/context/UserProfileContext";
+import { autoFillForm, mapFormToProfile } from "@/lib/autoFill/mapper";
+import { getFormFieldOverrides, firstProfileValue } from "@/lib/autoFill/formOverrides";
 import { useDocumentVaultStore } from "@/lib/document-vault/store";
 import { DocumentRole } from "@/lib/document-vault/types";
 import { useToast } from "@/app/components/shared/ToastProvider";
+import { E, msg } from "@/lib/errors";
 import { Loader } from "@/components/ui/spinner";
 import { ExpandableTooltip } from "../../shared/ExpandableTooltip";
 import { AlertCircle } from "lucide-react";
+import { usePlan } from "@/app/context/PlanContext";
+import { UpgradeModal } from "@/app/components/entitlements/UpgradeModal";
+import { useFreePreview } from "./useFreePreview";
+import { MobileBottomSheet } from "@/app/components/shared/table/MobileBottomSheet";
 
 // ============ TYPE DEFINITIONS ============
 interface FormProgressDraft {
@@ -55,9 +60,7 @@ const readDraftBackup = (formCode: string, journeyKey = "global") => {
   if (typeof window === "undefined") return null;
 
   try {
-    const raw = window.localStorage.getItem(
-      buildDraftStorageKey(formCode, journeyKey),
-    );
+    const raw = window.localStorage.getItem(buildDraftStorageKey(formCode, journeyKey));
     if (!raw) return null;
 
     const parsed = JSON.parse(raw) as { draft?: FormProgressDraft };
@@ -67,17 +70,13 @@ const readDraftBackup = (formCode: string, journeyKey = "global") => {
   }
 };
 
-const writeDraftBackup = (
-  formCode: string,
-  draft: FormProgressDraft,
-  journeyKey = "global",
-) => {
+const writeDraftBackup = (formCode: string, draft: FormProgressDraft, journeyKey = "global") => {
   if (typeof window === "undefined") return;
 
   try {
     window.localStorage.setItem(
       buildDraftStorageKey(formCode, journeyKey),
-      JSON.stringify({ draft }),
+      JSON.stringify({ draft })
     );
   } catch {
     // Ignore storage quota/private mode failures.
@@ -112,10 +111,7 @@ type MultiStepFormProps = {
   formCode: string;
 };
 
-const getLastAnsweredIndex = (
-  fields: ConfigField[],
-  data: Record<string, string>,
-) => {
+const getLastAnsweredIndex = (fields: ConfigField[], data: Record<string, string>) => {
   let lastIndex = 0;
   for (let i = 0; i < fields.length; i++) {
     const field = fields[i];
@@ -131,20 +127,27 @@ const getLastAnsweredIndex = (
 };
 
 export function MultiStepForm({ formCode }: MultiStepFormProps) {
+  const plan = usePlan();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [formData, setFormData] = useState<Record<string, string>>({});
+
+  const config = useMemo(() => getFormConfig(formCode), [formCode]);
+
+  const { isFreePreview, filledFieldsCount } = useFreePreview({
+    canUseSmartFormFiller: plan.canUse("smart_form_filler"),
+    formFields: config?.formFields || [],
+    formData,
+  });
   const [view, setView] = useState<ViewType>("form");
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(true);
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(
-    new Set(),
-  );
-  const [navigationDirection, setNavigationDirection] = useState<
-    "next" | "prev"
-  >("next");
-  const [progressiveSubQuestionIndices, setProgressiveSubQuestionIndices] =
-    useState<Record<string, number>>({});
+  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
+  const [navigationDirection, setNavigationDirection] = useState<"next" | "prev">("next");
+  const [progressiveSubQuestionIndices, setProgressiveSubQuestionIndices] = useState<
+    Record<string, number>
+  >({});
   const [isClient, setIsClient] = useState(false);
   const [showSectionIntro, setShowSectionIntro] = useState(false);
   const [introVisible, setIntroVisible] = useState(false);
@@ -152,7 +155,12 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const savedScrollPosition = useRef<number>(0);
   const hasShownInitialIntro = useRef(false);
   const draftJourneyKey = "global";
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
+  const {
+    profile: userProfile,
+    isProfileLoading: isContextProfileLoading,
+    updateProfile,
+  } = useUserProfile();
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [isPreviewing, setIsPreviewing] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -163,21 +171,27 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [isSessionValid, setIsSessionValid] = useState(true);
   const [isNavigating, setIsNavigating] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
-  const [draftStatus, setDraftStatus] = useState<"draft" | "completed">(
-    "draft",
-  );
+  const [draftStatus, setDraftStatus] = useState<"draft" | "completed">("draft");
+  // Mirror of draftStatus for reads inside dependency-free callbacks (handleChange).
+  const draftStatusRef = useRef(draftStatus);
+  useEffect(() => {
+    draftStatusRef.current = draftStatus;
+  }, [draftStatus]);
   const { showToast } = useToast();
   const {
     config: vaultConfig,
     reloadDocuments,
     initialize: initializeVault,
   } = useDocumentVaultStore();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
   const prevStepRef = useRef(currentStep);
   const saveTimerRef = useRef<number | null>(null);
+  // Records the `${formCode}:${userId}` we've already hydrated for. The
+  // initialization effect below reads/writes this so it hydrates form state
+  // EXACTLY ONCE per (form, user). Auth contexts re-emit a fresh `user` object
+  // on token refresh / tab refocus / profile save-back; without this guard
+  // every such re-emit would re-run the initializer and overwrite live edits
+  // with a staler server draft (or blank the form on a fetch timeout).
+  const hydratedKeyRef = useRef<string | null>(null);
   const draftDataRef = useRef({
     formData: formData,
     currentStep: currentStep,
@@ -190,17 +204,26 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     setIsClient(true);
   }, []);
 
-  const config = useMemo(() => getFormConfig(formCode), [formCode]);
-
   const [isReady, setIsReady] = useState(false);
 
   // ============ CONSOLIDATED INITIALIZATION EFFECT ============
+  // Hydrate form state ONCE per (formCode, user). We wait for auth to settle
+  // (isAuthLoading === false) so we hydrate with the correct identity, then
+  // mark the key as hydrated so later `user` re-emits can never re-run this and
+  // clobber the user's in-progress edits.
   useEffect(() => {
+    if (!isClient || !config || isAuthLoading) return;
+
+    const userId = user?.id ?? null;
+    const hydrationKey = `${formCode}:${userId ?? "anon"}`;
+    if (hydratedKeyRef.current === hydrationKey) return;
+    // Claim the key synchronously (before any await) so a concurrent re-render
+    // or React StrictMode double-invoke can't kick off a second hydration.
+    hydratedKeyRef.current = hydrationKey;
+
     let isMounted = true;
 
     const initializeForm = async () => {
-      if (!isClient || !config) return;
-
       try {
         let draftData: FormProgressDraft | null = null;
 
@@ -211,17 +234,14 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
               `/api/visa-forms/${formCode}/progress?journey_key=${draftJourneyKey}`,
               {
                 signal: AbortSignal.timeout(5000), // 5s timeout for draft fetch
-              },
+              }
             );
             if (res.ok) {
               const data = (await res.json()) as FormProgressResponse;
               draftData = data.draft;
             }
           } catch (draftErr) {
-            console.warn(
-              "Failed to load draft, proceeding with fresh form:",
-              draftErr,
-            );
+            console.warn("Failed to load draft, proceeding with fresh form:", draftErr);
           }
         }
 
@@ -245,21 +265,16 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         // Validate and restore draft or initialize fresh
         if (draftData && sections.length > 0) {
           // Validate step is within bounds
-          const validStep = Math.min(
-            Math.max(1, draftData.current_step || 1),
-            sections.length,
-          );
+          const validStep = Math.min(Math.max(1, draftData.current_step || 1), sections.length);
 
           // Validate question index against visible fields
           const draftFormData = draftData.payload || {};
           const section = sections[validStep - 1];
           const validFields =
-            section?.fields.filter(
-              (f) => !f.condition || f.condition(draftFormData),
-            ) || [];
+            section?.fields.filter((f) => !f.condition || f.condition(draftFormData)) || [];
           const validQuestionIndex = Math.min(
             Math.max(0, draftData.current_question_index || 0),
-            Math.max(0, validFields.length - 1),
+            Math.max(0, validFields.length - 1)
           );
 
           // Restore fields that exist in config, including nested conditional sub-questions
@@ -268,6 +283,12 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             const walk = (items: ConfigField[]) => {
               items.forEach((f) => {
                 keys.add(f.key);
+                if (f.options) {
+                  f.options.forEach((opt) => {
+                    const name = opt.pdfKey || opt.value;
+                    keys.add(name);
+                  });
+                }
                 if (f.subQuestions && f.subQuestions.length > 0) {
                   walk(f.subQuestions as ConfigField[]);
                 }
@@ -291,9 +312,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             setCurrentQuestionIndex(validQuestionIndex);
             setView((draftData.view_mode || "form") as ViewType);
             setDraftStatus(draftData.completed ? "completed" : "draft");
-            setProgressiveSubQuestionIndices(
-              draftData.progressive_sub_question_indices || {},
-            );
+            setProgressiveSubQuestionIndices(draftData.progressive_sub_question_indices || {});
             setLastSavedAt(draftData.last_saved_at || null);
           }
         } else {
@@ -328,7 +347,11 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     return () => {
       isMounted = false;
     };
-  }, [isClient, config, user, formCode]);
+    // Depend on the stable user ID, not the `user` object — the object gets a
+    // new reference on every auth re-emit, which used to re-run this whole
+    // initializer and wipe the form. The ref guard above enforces once-per-key.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isClient, config, user?.id, formCode, isAuthLoading]);
 
   // ============ SESSION VALIDATION ============
   useEffect(() => {
@@ -348,49 +371,46 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   // Detect scroll direction for mobile menu visibility - REMOVED (unused)
   // This was previously used but is no longer needed
 
+  // Auto-fill from central UserProfileContext (no direct Supabase call)
+  // IMPORTANT: wait for `draftLoaded` first. The draft/initial form data is set by
+  // the async initialization effect; if auto-fill ran before that, the later
+  // setFormData(draft) would overwrite (wipe) the auto-filled values. Gating on
+  // draftLoaded guarantees we merge INTO the loaded form data instead of racing it.
   useEffect(() => {
-    let isMounted = true;
+    if (isContextProfileLoading || profileLoaded || !userProfile || !draftLoaded) return;
 
-    const loadProfile = async () => {
-      if (!user || profileLoaded) return;
-      try {
-        const { data } = await supabase
-          .from("user_profiles")
-          .select("profile_details")
-          .eq("id", user.id)
-          .single();
+    setFormData((prev) => {
+      // Use current form structure as template for auto-fill
+      const autoData = autoFillForm(userProfile, prev) as Record<string, string>;
 
-        if (!isMounted) return;
+      const merged = { ...prev };
+      const overrides = getFormFieldOverrides(formCode);
 
-        if (data?.profile_details) {
-          setFormData((prev) => {
-            // Use current form structure as template for auto-fill
-            const autoData = autoFillForm(
-              data.profile_details as MasterProfile,
-              prev,
-            ) as Record<string, string>;
-            const merged = { ...prev };
-
-            Object.entries(autoData).forEach(([key, value]) => {
-              if (!merged[key]) {
-                merged[key] = value;
-              }
-            });
-
-            return merged;
-          });
-          if (isMounted) setProfileLoaded(true);
+      // Global mapper: only fill fields that are still empty (don't touch drafts).
+      // Fields with a per-form override are NEVER filled from the global map —
+      // the global path may be the WRONG PERSON for this form (e.g. I-130 Part 1
+      // asks the SPONSOR's name; the top-level profile is the beneficiary's).
+      Object.entries(autoData).forEach(([key, value]) => {
+        if (!merged[key] && !(key in overrides)) {
+          merged[key] = value;
         }
-      } catch (err) {
-        console.error("Auto-fill error:", err);
-      }
-    };
-    loadProfile();
+      });
 
-    return () => {
-      isMounted = false;
-    };
-  }, [user, profileLoaded, supabase]);
+      // Per-form overrides: for these fields the central profile (e.g. passport-derived
+      // beneficiary data) is the SOURCE OF TRUTH, so OVERWRITE any stale value already
+      // in the form — a previously-saved draft, or a wrong-person value the global
+      // mapper filled (I-130A / DS-260 "you" = beneficiary, not petitioner). We only
+      // overwrite when the profile actually has a value, so we never blank a field.
+      const profileForOverride = userProfile as unknown as Record<string, unknown>;
+      for (const [formKey, paths] of Object.entries(overrides)) {
+        const val = firstProfileValue(profileForOverride, paths);
+        if (val) merged[formKey] = val;
+      }
+
+      return merged;
+    });
+    setProfileLoaded(true);
+  }, [userProfile, isContextProfileLoading, profileLoaded, draftLoaded]);
 
   const sections = useMemo(() => {
     if (!config) return [];
@@ -428,12 +448,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     if (currentField?.subQuestions && currentField.subQuestions.length > 0) {
       // Check if any subQuestions are non-conditional (should show immediately)
       const hasNonConditionalSubQ = currentField.subQuestions.some(
-        (subQ) => !subQ.condition || subQ.condition(formData),
+        (subQ) => !subQ.condition || subQ.condition(formData)
       );
-      if (
-        hasNonConditionalSubQ &&
-        !progressiveSubQuestionIndices[currentField.key]
-      ) {
+      if (hasNonConditionalSubQ && !progressiveSubQuestionIndices[currentField.key]) {
         // Initialize to 0 to show first subQuestion immediately
         setProgressiveSubQuestionIndices((prev) => ({
           ...prev,
@@ -443,6 +460,30 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentStep]);
+
+  // Automatically initialize/reset progressive sub-question index when formData changes
+  useEffect(() => {
+    const currentField = visibleFields[currentQuestionIndex];
+    if (currentField?.subQuestions && currentField.subQuestions.length > 0) {
+      const currentSubCount = progressiveSubQuestionIndices[currentField.key];
+      const hasVisibleSubQ = currentField.subQuestions.some(
+        (subQ) => !subQ.condition || subQ.condition(formData)
+      );
+
+      if (currentSubCount === undefined && hasVisibleSubQ) {
+        setProgressiveSubQuestionIndices((prev) => ({
+          ...prev,
+          [currentField.key]: 0,
+        }));
+      } else if (currentSubCount !== undefined && !hasVisibleSubQ) {
+        setProgressiveSubQuestionIndices((prev) => {
+          const copy = { ...prev };
+          delete copy[currentField.key];
+          return copy;
+        });
+      }
+    }
+  }, [formData, visibleFields, currentQuestionIndex, progressiveSubQuestionIndices]);
 
   // Auto-expand first section on mount, and auto-expand/collapse on step change
   useEffect(() => {
@@ -473,11 +514,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     if (showSectionIntro && introVisible) {
       // Save scroll position before intro appears
       savedScrollPosition.current = window.scrollY;
-    } else if (
-      !showSectionIntro &&
-      !introVisible &&
-      savedScrollPosition.current > 0
-    ) {
+    } else if (!showSectionIntro && !introVisible && savedScrollPosition.current > 0) {
       // Restore scroll position after intro disappears (both auto and manual)
       const position = savedScrollPosition.current;
       requestAnimationFrame(() => {
@@ -506,8 +543,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     // Only calculate within-section progress if fields exist
     let withinProgress = 0;
     if (visibleFields.length > 0 && currentQuestionIndex >= 0) {
-      withinProgress =
-        ((currentQuestionIndex + 1) / visibleFields.length) * sectionWeight;
+      withinProgress = ((currentQuestionIndex + 1) / visibleFields.length) * sectionWeight;
     } else if (visibleFields.length > 0) {
       withinProgress = 0; // Haven't answered any questions yet
     } else {
@@ -518,13 +554,18 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   }, [currentStep, totalSteps, currentQuestionIndex, visibleFields.length]);
 
   const handleChange = useCallback(
-    (
-      e: React.ChangeEvent<
-        HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement
-      >,
-    ) => {
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       const { name, value, type } = e.target;
       const checked = (e.target as HTMLInputElement).checked;
+
+      // The user is editing a form they'd already finalized (Download / Save to
+      // Vault marked it "completed", which switches off autosave AND the local
+      // backup). Re-open it as a draft so this edit — and every edit after —
+      // starts persisting again. Guarded by the ref so it fires only on the
+      // first post-completion edit, not on every keystroke.
+      if (draftStatusRef.current === "completed") {
+        setDraftStatus("draft");
+      }
 
       setFormData((prev) => {
         const newData = {
@@ -540,7 +581,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         return newData;
       });
     },
-    [],
+    []
   );
 
   // Update ref whenever data changes (no effect dependency)
@@ -552,13 +593,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       view,
       progressiveSubQuestionIndices,
     };
-  }, [
-    formData,
-    currentStep,
-    currentQuestionIndex,
-    view,
-    progressiveSubQuestionIndices,
-  ]);
+  }, [formData, currentStep, currentQuestionIndex, view, progressiveSubQuestionIndices]);
 
   useEffect(() => {
     if (!draftLoaded || draftStatus === "completed") return;
@@ -592,12 +627,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const lastSaveTimeRef = useRef<number>(0);
 
   useEffect(() => {
-    if (
-      !draftLoaded ||
-      !user ||
-      !isSessionValid ||
-      draftStatus === "completed"
-    ) {
+    if (!draftLoaded || !user || !isSessionValid || draftStatus === "completed") {
       return;
     }
 
@@ -654,8 +684,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
         setSaveError(null);
       } catch (error) {
-        const message =
-          error instanceof Error ? error.message : "Failed to save progress";
+        const message = error instanceof Error ? error.message : "Failed to save progress";
 
         if (error instanceof Error && error.name === "AbortError") {
           setSaveError(null);
@@ -727,6 +756,22 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       }
     } finally {
       clearDraftBackup(formCode, draftJourneyKey);
+
+      // Save completed form data back to central profile (auto-fill for other tools)
+      if (userProfile) {
+        try {
+          const profileDelta = mapFormToProfile(
+            formData,
+            userProfile,
+            getFormFieldOverrides(formCode)
+          );
+          if (Object.keys(profileDelta).length > 0) {
+            updateProfile(profileDelta, { silent: true });
+          }
+        } catch (e) {
+          console.warn("[MultiStepForm] Profile save-back failed:", e);
+        }
+      }
     }
   }, [
     user,
@@ -736,21 +781,54 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     currentStep,
     currentQuestionIndex,
     progressiveSubQuestionIndices,
+    userProfile,
+    updateProfile,
   ]);
 
   const handleNext = () => {
     if (isNavigating) return; // ← Rate limiting
     setNavigationDirection("next");
 
-    if (currentQuestionIndex < visibleFields.length - 1) {
-      const currentField = visibleFields[currentQuestionIndex];
-      const currentSubCount =
-        progressiveSubQuestionIndices[currentField.key] ?? -1;
+    // If user is locked out, check if warning needs to be displayed after every 10 questions
+    if (isFreePreview) {
+      let nextField = null;
+      if (currentQuestionIndex < visibleFields.length - 1) {
+        nextField = visibleFields[currentQuestionIndex + 1];
+      } else if (currentStep < totalSteps) {
+        const nextSection = sections[currentStep];
+        if (nextSection) {
+          const nextVisible = nextSection.fields.filter(
+            (f) => !f.condition || f.condition(formData)
+          );
+          nextField = nextVisible[0];
+        }
+      }
+
+      const isNextFieldEmpty =
+        !nextField || !formData[nextField.key] || formData[nextField.key].trim() === "";
+
+      if (filledFieldsCount >= 15 && isNextFieldEmpty) {
+        showToast(
+          "Free Preview: You've reached the 15-question limit. Redirecting to review page...",
+          "info",
+          6000
+        );
+        setView("review");
+        return;
+      }
+    }
+
+    const currentField = visibleFields[currentQuestionIndex];
+    if (currentField) {
+      const currentSubCount = progressiveSubQuestionIndices[currentField.key] ?? -1;
+      const applicableSubQuestions = (currentField.subQuestions || []).filter(
+        (subQ) => !subQ.condition || subQ.condition(formData)
+      );
 
       // Handle sub-questions (including conditional ones)
       if (
-        currentField.subQuestions &&
-        currentSubCount < currentField.subQuestions.length - 1
+        applicableSubQuestions.length > 0 &&
+        currentSubCount < applicableSubQuestions.length - 1
       ) {
         setProgressiveSubQuestionIndices((prev) => ({
           ...prev,
@@ -758,7 +836,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         }));
         return;
       }
+    }
 
+    if (currentQuestionIndex < visibleFields.length - 1) {
       // Move to next field
       const nextIndex = currentQuestionIndex + 1;
       setCurrentQuestionIndex(nextIndex);
@@ -767,7 +847,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       const nextField = visibleFields[nextIndex];
       if (nextField?.subQuestions && nextField.subQuestions.length > 0) {
         const hasNonConditionalSubQ = nextField.subQuestions.some(
-          (subQ) => !subQ.condition || subQ.condition(formData),
+          (subQ) => !subQ.condition || subQ.condition(formData)
         );
         if (hasNonConditionalSubQ) {
           setProgressiveSubQuestionIndices((prev) => ({
@@ -785,6 +865,22 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       }
     }
 
+    // Save current step data back to central profile (real-time sync for other tools)
+    if (userProfile) {
+      try {
+        const profileDelta = mapFormToProfile(
+          formData,
+          userProfile,
+          getFormFieldOverrides(formCode)
+        );
+        if (Object.keys(profileDelta).length > 0) {
+          updateProfile(profileDelta, { silent: true });
+        }
+      } catch (e) {
+        console.warn("[MultiStepForm] Profile save-back failed:", e);
+      }
+    }
+
     // Debounce navigation
     setIsNavigating(true);
     setTimeout(() => setIsNavigating(false), 100);
@@ -792,10 +888,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   const handlePrevious = () => {
     setNavigationDirection("prev");
-    if (currentQuestionIndex > 0) {
-      const currentField = visibleFields[currentQuestionIndex];
-      const currentSubCount =
-        progressiveSubQuestionIndices[currentField.key] ?? -1;
+    const currentField = visibleFields[currentQuestionIndex];
+    if (currentField) {
+      const currentSubCount = progressiveSubQuestionIndices[currentField.key] ?? -1;
       if (currentSubCount > -1) {
         // Hide last shown sub-question
         setProgressiveSubQuestionIndices((prev) => ({
@@ -804,7 +899,21 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         }));
         return;
       }
-      setCurrentQuestionIndex((prev) => prev - 1);
+    }
+
+    if (currentQuestionIndex > 0) {
+      const prevIndex = currentQuestionIndex - 1;
+      const prevField = visibleFields[prevIndex];
+      if (prevField?.subQuestions && prevField.subQuestions.length > 0) {
+        const applicablePrev = prevField.subQuestions.filter(
+          (subQ) => !subQ.condition || subQ.condition(formData)
+        );
+        setProgressiveSubQuestionIndices((prev) => ({
+          ...prev,
+          [prevField.key]: Math.max(0, applicablePrev.length - 1),
+        }));
+      }
+      setCurrentQuestionIndex(prevIndex);
     } else if (currentStep > 1) {
       if (currentQuestionIndex === 0 && cameFromIntro) {
         // User just entered section → go back to intro of SAME section
@@ -821,10 +930,22 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
       const prevSection = sections[prevStep - 1];
       const prevVisible = prevSection.fields.filter(
-        (field) => !field.condition || field.condition(formData),
+        (field) => !field.condition || field.condition(formData)
       );
 
-      setCurrentQuestionIndex(Math.max(0, prevVisible.length - 1));
+      const targetIdx = Math.max(0, prevVisible.length - 1);
+      const prevField = prevVisible[targetIdx];
+      if (prevField?.subQuestions && prevField.subQuestions.length > 0) {
+        const applicablePrev = prevField.subQuestions.filter(
+          (subQ) => !subQ.condition || subQ.condition(formData)
+        );
+        setProgressiveSubQuestionIndices((prev) => ({
+          ...prev,
+          [prevField.key]: Math.max(0, applicablePrev.length - 1),
+        }));
+      }
+
+      setCurrentQuestionIndex(targetIdx);
     }
   };
 
@@ -839,17 +960,55 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   const handleJumpToQuestion = useCallback(
     (stepIdx: number, questionIdx: number) => {
+      if (isFreePreview && filledFieldsCount >= 15) {
+        const targetSection = sections[stepIdx];
+        const targetField = targetSection?.fields.filter(
+          (f) => !f.condition || f.condition(formData)
+        )[questionIdx];
+
+        const isTargetEmpty =
+          !targetField || !formData[targetField.key] || formData[targetField.key].trim() === "";
+
+        if (isTargetEmpty) {
+          showToast(
+            "Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new questions.",
+            "info",
+            5000
+          );
+          setView("review");
+          return;
+        }
+      }
       setCurrentStep(stepIdx + 1);
       setCurrentQuestionIndex(questionIdx);
       setIsDrawerOpen(false);
     },
-    [],
+    [isFreePreview, filledFieldsCount, sections, formData]
   );
 
-  const handleGoToStep = useCallback((step: number) => {
-    setCurrentStep(step);
-    setView("form");
-  }, []);
+  const handleGoToStep = useCallback(
+    (step: number) => {
+      if (isFreePreview && filledFieldsCount >= 15) {
+        const targetSection = sections[step - 1];
+        const hasAnyAnswered = targetSection?.fields.some(
+          (f) => formData[f.key] && formData[f.key].trim() !== ""
+        );
+
+        if (!hasAnyAnswered) {
+          showToast(
+            "Free Preview: You've reached the 15-question limit. Please unlock the tool or upgrade to access new sections.",
+            "info",
+            5000
+          );
+          setView("review");
+          return;
+        }
+      }
+      setCurrentStep(step);
+      setView("form");
+    },
+    [isFreePreview, filledFieldsCount, sections, formData]
+  );
 
   const handleEditStep = useCallback((step: number) => {
     setCurrentStep(step);
@@ -869,54 +1028,72 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         message: "Please answer the following questions carefully.",
       };
     },
-    [config],
+    [config]
   );
 
-  const buildPdfPayload = useCallback((): Record<
-    string,
-    string | undefined
-  > => {
+  const buildPdfPayload = useCallback((): Record<string, string | undefined> => {
     if (!config) return {};
 
     const payload: Record<string, string | undefined> = {};
 
-    config.formFields.forEach((field: ConfigField) => {
-      const value = formData[field.key];
-      if (!value || (field.condition && !field.condition(formData))) return;
+    const processField = (field: ConfigField) => {
+      if (field.condition && !field.condition(formData)) {
+        return;
+      }
 
-      if (field.type === "radio" && field.options) {
-        const selected = field.options.find(
-          (opt: { value: string; pdfKey?: string }) => opt.value === value,
-        );
-        if (selected && selected.pdfKey) {
-          payload[selected.pdfKey] = "Yes";
-          field.options
-            .filter(
-              (opt: { value: string; pdfKey?: string }) => opt.value !== value,
-            )
-            .forEach((opt: { value: string; pdfKey?: string }) => {
+      const value = formData[field.key];
+      if (value || (field.type === "checkbox" && field.options)) {
+        if (field.type === "radio" && field.options) {
+          const selected = field.options.find(
+            (opt: { value: string; pdfKey?: string }) => opt.value === value
+          );
+          if (selected && selected.pdfKey) {
+            payload[selected.pdfKey] = "Yes";
+            field.options
+              .filter((opt: { value: string; pdfKey?: string }) => opt.value !== value)
+              .forEach((opt: { value: string; pdfKey?: string }) => {
+                if (opt.pdfKey) {
+                  payload[opt.pdfKey] = "Off";
+                }
+              });
+          }
+        } else if (field.type === "checkbox") {
+          if (field.options) {
+            field.options.forEach((opt: { value: string; pdfKey?: string }) => {
+              const name = opt.pdfKey || opt.value;
+              const optVal = formData[name];
+              const isChecked = optVal === "Yes" || String(optVal) === "true" || optVal === "on";
               if (opt.pdfKey) {
-                payload[opt.pdfKey] = "Off";
+                payload[opt.pdfKey] = isChecked ? "Yes" : "Off";
               }
             });
-        }
-      } else if (field.type === "checkbox") {
-        const isChecked =
-          value === "Yes" || String(value) === "true" || value === "on";
-        const pdfKey = field.pdfKey as string | undefined;
-        if (pdfKey) {
-          payload[pdfKey] = isChecked ? "Yes" : "Off";
-        }
-      } else {
-        const pdfKey = field.pdfKey as string | undefined;
-        if (pdfKey) {
-          payload[pdfKey] = value;
+          } else {
+            const isChecked = value === "Yes" || String(value) === "true" || value === "on";
+            const pdfKey = field.pdfKey as string | undefined;
+            if (pdfKey) {
+              payload[pdfKey] = isChecked ? "Yes" : "Off";
+            }
+          }
+        } else {
+          const pdfKey = field.pdfKey as string | undefined;
+          if (pdfKey) {
+            payload[pdfKey] = value;
+          }
         }
       }
+
+      if (field.subQuestions) {
+        field.subQuestions.forEach((subQ) => {
+          processField(subQ as unknown as ConfigField);
+        });
+      }
+    };
+
+    config.formFields.forEach((field: ConfigField) => {
+      processField(field);
     });
 
-    // Add dynamic overflow handling for additional addresses
-    const count = Number(formData.address_count) || 0;
+    // Add dynamic overflow handling for additional entries (e.g. addresses, spouses)
     const additionalBlocks: Array<{
       page_number: string;
       part_number: string;
@@ -924,28 +1101,29 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       info: string;
     }> = [];
 
-    for (let i = 3; i <= count + 1; i++) {
-      if (i > 9) break; // Limit to Address 9 (which is 8 previous addresses) for now
+    if (config.overflowFields) {
+      config.overflowFields.forEach((overConfig) => {
+        const count = Number(formData[overConfig.countKey]) || 0;
+        const maxIdx = overConfig.maxIndex ?? count + 1;
+        for (let i = overConfig.startIndex; i <= count + 1; i++) {
+          if (i > maxIdx) break;
 
-      const street = formData[`address_${i}_street`] || "";
-      const city = formData[`address_${i}_city`] || "";
-      const state = formData[`address_${i}_state`] || "";
-      const zip = formData[`address_${i}_zip`] || "";
-      const from = formData[`address_${i}_from`] || "";
-      const to = formData[`address_${i}_to`] || "";
-      const country = formData[`address_${i}_country`] || "";
+          const keyPrefix = `${overConfig.prefix}_${i}_`;
+          const isAnyFieldFilled = overConfig.fields.some((f) => {
+            const val = formData[`${keyPrefix}${f.suffix}`];
+            return val && val.trim() !== "";
+          });
 
-      const parts = [street, city, state, zip, country].filter(Boolean);
-      let infoString = `Address ${i}: ${parts.join("\n ")}.`;
-      if (from || to) {
-        infoString += ` From: ${from} To: ${to}`;
-      }
-
-      additionalBlocks.push({
-        page_number: "2", // I-130 Address History is on Page 2
-        part_number: "2", // Part 2
-        item_number: "14", // Item 14 (Physical Address 2)
-        info: infoString,
+          if (isAnyFieldFilled) {
+            const infoString = overConfig.formatInfo(i, formData);
+            additionalBlocks.push({
+              page_number: overConfig.pageNumber,
+              part_number: overConfig.partNumber,
+              item_number: overConfig.itemNumber,
+              info: infoString,
+            });
+          }
+        }
       });
     }
 
@@ -958,8 +1136,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   const handlePreviewPDF = async () => {
     const payload = buildPdfPayload();
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
     const { controller, timeoutId } = createAbortController(60000); // 60s timeout for preview
 
     setIsPreviewing(true);
@@ -967,13 +1144,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formId: formCode, data: payload }),
+        body: JSON.stringify({ formId: formCode, data: payload, onlyFirstPage: isFreePreview }),
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) throw new Error(`${await res.text()} (Endpoint: ${apiUrl})`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       window.open(url, "_blank", "noopener,noreferrer");
@@ -985,10 +1162,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         showToast("Preview timed out. Server may be slow.", "error");
       } else {
         showToast(
-          err instanceof Error
-            ? err.message
-            : "Preview failed. Please check console.",
-          "error",
+          err instanceof Error ? err.message : "Preview failed. Please check console.",
+          "error"
         );
       }
     } finally {
@@ -999,8 +1174,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   const handleDownloadPDF = async () => {
     const payload = buildPdfPayload();
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
     const { controller, timeoutId } = createAbortController(60000); // 60s timeout for download
 
     setIsDownloading(true);
@@ -1008,13 +1182,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ formId: formCode, data: payload }),
+        body: JSON.stringify({ formId: formCode, data: payload, onlyFirstPage: isFreePreview }),
         signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) throw new Error(`${await res.text()} (Endpoint: ${apiUrl})`);
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
@@ -1031,10 +1205,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
         showToast("Download timed out. Server may be slow.", "error");
       } else {
         showToast(
-          err instanceof Error
-            ? err.message
-            : "Download failed. Please check console.",
-          "error",
+          err instanceof Error ? err.message : "Download failed. Please check console.",
+          "error"
         );
       }
     } finally {
@@ -1054,15 +1226,11 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     }
     const docDefId = FORM_ID_MAPPING[formCode.toLowerCase()];
     if (!docDefId) {
-      showToast(
-        `This form (${formCode}) cannot be saved to the vault automatically yet.`,
-        "error",
-      );
+      showToast(`This form (${formCode}) cannot be saved to the vault automatically yet.`, "error");
       return;
     }
     const payload = buildPdfPayload();
-    const apiUrl =
-      process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
     const { controller, timeoutId } = createAbortController(90000); // 90s timeout for full vault save
 
     setIsSavingToVault(true);
@@ -1076,14 +1244,12 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
       clearTimeout(timeoutId);
 
-      if (!res.ok) throw new Error(await res.text());
+      if (!res.ok) throw new Error(`${await res.text()} (Endpoint: ${apiUrl})`);
       const blob = await res.blob();
 
-      const file = new File(
-        [blob],
-        `${formCode.toUpperCase()}-auto-filled.pdf`,
-        { type: "application/pdf" },
-      );
+      const file = new File([blob], `${formCode.toUpperCase()}-auto-filled.pdf`, {
+        type: "application/pdf",
+      });
 
       const formDataUpload = new FormData();
       formDataUpload.append("file", file);
@@ -1115,7 +1281,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       const isCompleted = currentStep === totalSteps;
       formDataUpload.append(
         "notes",
-        `Automatically generated via ${config?.formTitle || formCode} tool (${isCompleted ? "Completed" : `Progress: ${currentStep}/${totalSteps}`}).`,
+        `Automatically generated via ${config?.formTitle || formCode} tool (${isCompleted ? "Completed" : `Progress: ${currentStep}/${totalSteps}`}).`
       );
 
       const uploadRes = await fetch("/api/documents/upload", {
@@ -1138,12 +1304,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       clearTimeout(timeoutId);
       console.error("Save to vault error:", err);
       if (err instanceof Error && err.name === "AbortError") {
-        showToast("Vault save timed out. Please try again.", "error");
+        showToast(msg(E.DASH_VAULT_SAVE_FAILED), "error");
       } else {
-        showToast(
-          err instanceof Error ? err.message : "Failed to save to vault",
-          "error",
-        );
+        showToast(err instanceof Error ? err.message : msg(E.DASH_VAULT_SAVE_FAILED), "error");
       }
     } finally {
       setIsSavingToVault(false);
@@ -1161,7 +1324,35 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   ]);
 
   /* Sidebar (desktop) */
-  const SectionList = useCallback(
+  // Memoize section status calculations to avoid heavy computation during renders
+  const sectionStats = useMemo(() => {
+    return sections.map((section) => {
+      const visibleSectionFields = section.fields.filter(
+        (field) => !field.condition || field.condition(formData)
+      );
+
+      const answeredCount = visibleSectionFields.filter((field) => {
+        if (field.type === "checkbox" && field.options) {
+          return field.options.some((opt) => formData[opt.pdfKey || opt.value] === "Yes");
+        }
+        const value = formData[field.key];
+        return value && value.trim() !== "";
+      }).length;
+
+      const totalCount = visibleSectionFields.length;
+      const isCompleted = totalCount > 0 && answeredCount === totalCount;
+
+      return {
+        visibleSectionFields,
+        answeredCount,
+        totalCount,
+        isCompleted,
+      };
+    });
+  }, [sections, formData]);
+
+  /* Sidebar (desktop) */
+  const renderSectionList = useCallback(
     ({
       onPick,
       showLabels = !isSidebarCollapsed,
@@ -1174,26 +1365,19 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           const stepNum = idx + 1;
           const label = section.title.replace(/^\d+\.\s*/, "");
           const isActive = currentStep === stepNum;
-          const visibleSectionFields = section.fields.filter(
-            (field) => !field.condition || field.condition(formData),
-          );
 
-          const answeredCount = visibleSectionFields.filter((field) => {
-            const value = formData[field.key];
-            return value && value.trim() !== "";
-          }).length;
-
-          const totalCount = visibleSectionFields.length;
-
-          const isCompleted = totalCount > 0 && answeredCount === totalCount;
+          const stats = sectionStats[idx] || {
+            visibleSectionFields: [],
+            answeredCount: 0,
+            totalCount: 0,
+            isCompleted: false,
+          };
+          const { visibleSectionFields, answeredCount, totalCount, isCompleted } = stats;
 
           const isSkipped =
-            stepNum < currentStep &&
-            answeredCount > 0 &&
-            answeredCount < totalCount;
+            stepNum < currentStep && answeredCount > 0 && answeredCount < totalCount;
 
-          const isUnansweredSkipped =
-            stepNum < currentStep && answeredCount === 0;
+          const isUnansweredSkipped = stepNum < currentStep && answeredCount === 0;
 
           const isDone = isCompleted;
           const isExpanded = expandedSections.has(section.title);
@@ -1202,10 +1386,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             <motion.div
               key={section.title}
               whileHover={{ x: isSidebarCollapsed ? 0 : 2 }}
-              className="group w-full text-left rounded-xl transition-all overflow-visible overflow-y-auto relative cursor-pointer"
+              className="group relative w-full cursor-pointer rounded-xl text-left transition-colors"
               style={{
-                backgroundColor:
-                  isActive && !isSidebarCollapsed ? "#e8f6f6" : "transparent",
+                backgroundColor: isActive && !isSidebarCollapsed ? "#e8f6f6" : "transparent",
                 boxShadow:
                   isActive && !isSidebarCollapsed
                     ? "inset 0 0 0 1px rgba(13, 115, 119, 0.1)"
@@ -1218,7 +1401,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             >
               <div className="flex items-center gap-3 px-3 py-2.5">
                 <div
-                  className="flex items-center justify-center rounded-lg shrink-0 text-xs font-bold transition-all"
+                  className="flex shrink-0 items-center justify-center rounded-lg text-xs font-bold transition-all"
                   style={{
                     width: 32,
                     height: 32,
@@ -1229,41 +1412,29 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                         : "#e8f6f6",
                     color: isDone || isActive ? "#fff" : "#0a5a5d",
                     boxShadow:
-                      isActive || isDone
-                        ? "0 4px 10px -2px rgba(13, 115, 119, 0.4)"
-                        : "none",
+                      isActive || isDone ? "0 4px 10px -2px rgba(13, 115, 119, 0.4)" : "none",
                   }}
                 >
-                  {isDone ? (
-                    <Check className="w-4 h-4" strokeWidth={3} />
-                  ) : (
-                    stepNum
-                  )}
+                  {isDone ? <Check className="h-4 w-4" strokeWidth={3} /> : stepNum}
                 </div>
 
                 {showLabels && (
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <p
-                      className="text-sm font-semibold truncate"
+                      className="truncate text-sm font-semibold"
                       style={{
                         color: isActive ? "#0a5a5d" : "#374151",
                       }}
                     >
                       {label}
                     </p>
-                    <p className="text-[11px] truncate">
+                    <p className="truncate text-[11px]">
                       {isCompleted ? (
-                        <span className="text-emerald-600 font-medium">
-                          ✓ Completed
-                        </span>
+                        <span className="font-medium text-emerald-600">✓ Completed</span>
                       ) : isSkipped || isUnansweredSkipped ? (
-                        <span className="text-amber-600 font-medium">
-                          Skipped
-                        </span>
+                        <span className="font-medium text-amber-600">Skipped</span>
                       ) : isActive ? (
-                        <span className="text-sky-600 font-medium">
-                          In Progress
-                        </span>
+                        <span className="font-medium text-sky-600">In Progress</span>
                       ) : (
                         ""
                       )}
@@ -1280,10 +1451,10 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                       e.stopPropagation();
                       toggleSectionExpanded(section.title);
                     }}
-                    className="shrink-0 p-1 hover:bg-[#d4edee] rounded transition-colors"
+                    className="shrink-0 rounded p-1 transition-colors hover:bg-[#d4edee]"
                     style={{ color: "#0a5a5d" }}
                   >
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="h-4 w-4" />
                   </motion.button>
                 )}
               </div>
@@ -1298,19 +1469,21 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                     transition={{ duration: 0.2 }}
                     className="overflow-hidden"
                   >
-                    <div className="px-3 py-2 space-y-1 bg-[#f9fdfb] border-t border-[#e8f6f6]">
+                    <div className="space-y-1 border-t border-[#e8f6f6] bg-[#f9fdfb] px-3 py-2">
                       {section.fields.map((field) => {
                         // Skip conditional fields that don't match
-                        if (field.condition && !field.condition(formData))
-                          return null;
+                        if (field.condition && !field.condition(formData)) return null;
 
                         // Remove numbering from label
-                        const cleanLabel = field.label.replace(
-                          /^\d+[a-z]?\.\s*/,
-                          "",
-                        );
+                        const cleanLabel = field.label.replace(/^\d+[a-z]?\.\s*/, "");
                         const fieldAnswered =
-                          formData[field.key] && formData[field.key] !== "";
+                          field.type === "checkbox" && field.options
+                            ? field.options.some(
+                                (opt) => formData[opt.pdfKey || opt.value] === "Yes"
+                              )
+                            : formData[field.key] && formData[field.key] !== "";
+                        const isActiveQuestion =
+                          isActive && visibleFields[currentQuestionIndex]?.key === field.key;
 
                         return (
                           <motion.button
@@ -1321,22 +1494,27 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                             onClick={(e) => {
                               e.stopPropagation();
                               const actualIndex = section.fields.findIndex(
-                                (f) => f.key === field.key,
+                                (f) => f.key === field.key
                               );
                               handleJumpToQuestion(idx, actualIndex);
                             }}
-                            className="w-full text-left text-xs p-2 rounded hover:bg-[#e8f6f6] transition-colors flex items-center gap-2 group"
+                            className={`group flex w-full items-center gap-2 rounded p-2 text-left text-xs transition-colors ${
+                              isActiveQuestion
+                                ? "bg-[#0d7377]/10 pl-1.5 font-semibold"
+                                : "hover:bg-[#e8f6f6]"
+                            }`}
                             style={{
-                              color: fieldAnswered ? "#0a5a5d" : "#6b7280",
+                              color: isActiveQuestion
+                                ? "#0d7377"
+                                : fieldAnswered
+                                  ? "#0a5a5d"
+                                  : "#6b7280",
                             }}
                           >
                             {fieldAnswered && (
-                              <Check
-                                className="w-3 h-3"
-                                style={{ color: "#0d7377" }}
-                              />
+                              <Check className="h-3 w-3" style={{ color: "#0d7377" }} />
                             )}
-                            <span className="truncate line-clamp-1">
+                            <span className="line-clamp-1 truncate">
                               {cleanLabel.substring(0, 35)}
                               {cleanLabel.length > 35 ? "..." : ""}
                             </span>
@@ -1361,15 +1539,18 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       handleGoToStep,
       toggleSectionExpanded,
       handleJumpToQuestion,
-    ],
+      sectionStats,
+      visibleFields,
+      currentQuestionIndex,
+    ]
   );
 
   // Show loading state until ready
   if (!isReady || (user && !draftLoaded)) {
     return (
-      <div className="flex flex-col items-center justify-center h-screen gap-4">
+      <div className="flex h-screen flex-col items-center justify-center gap-4">
         <Loader size="lg" />
-        <p className="text-[#0d7377] text-sm font-medium mt-2">
+        <p className="mt-2 text-sm font-medium text-[#0d7377]">
           {user && !draftLoaded
             ? `Restoring your draft for ${formCode.toUpperCase()}...`
             : `Loading ${formCode.toUpperCase()} Form...`}
@@ -1380,36 +1561,25 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
   if (!config) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#f7fbfb]">
-        <div className="bg-red-50 border border-red-200 rounded-2xl p-10 text-center max-w-md shadow-sm">
-          <h2 className="text-2xl font-bold text-red-800 mb-3">
-            Form Not Found
-          </h2>
+      <div className="flex min-h-screen items-center justify-center bg-[#f7fbfb]">
+        <div className="max-w-md rounded-2xl border border-red-200 bg-red-50 p-10 text-center shadow-sm">
+          <h2 className="mb-3 text-2xl font-bold text-red-800">Form Not Found</h2>
           <p className="text-red-700">
             Sorry, the form &quot;<strong>{formCode.toUpperCase()}</strong>
             &quot; is not available yet.
           </p>
-          <p className="text-sm text-gray-600 mt-4">
-            Available: I-130, I-130A, I-864, DS-260
-          </p>
+          <p className="mt-4 text-sm text-gray-600">Available: I-130, I-130A, I-864, DS-260</p>
         </div>
       </div>
     );
   }
 
   if (totalSteps === 0) {
-    return (
-      <div className="text-center py-20 text-gray-500">
-        No questions in this form.
-      </div>
-    );
+    return <div className="py-20 text-center text-gray-500">No questions in this form.</div>;
   }
 
   return (
-    <div
-      className="w-full min-h-screen flex flex-col"
-      style={{ backgroundColor: "#f7fbfb" }}
-    >
+    <div className="flex min-h-screen w-full flex-col" style={{ backgroundColor: "#f7fbfb" }}>
       {/* Sticky Header */}
       <Header
         formTitle={config.formTitle}
@@ -1421,84 +1591,40 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       />
 
       {/* Mobile Bottom Tray */}
-      <AnimatePresence>
-        {isDrawerOpen && (
-          <>
-            {/* Overlay */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              onClick={() => setIsDrawerOpen(false)}
-              className="fixed inset-0 bg-black/40 z-40"
-            />
-
-            {/* Bottom Sheet */}
-            <motion.div
-              initial={{ y: "100%" }}
-              animate={{ y: 0 }}
-              exit={{ y: "100%" }}
-              transition={{ type: "spring", damping: 30, stiffness: 260 }}
-              drag="y"
-              dragConstraints={{ top: 0 }}
-              dragElastic={0.2}
-              onDragEnd={(e, info) => {
-                if (info.offset.y > 120) {
-                  setIsDrawerOpen(false);
-                }
-              }}
-              className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-3xl shadow-2xl h-[80vh] flex flex-col"
-            >
-              {/* Drag Handle */}
-              <div className="flex flex-col items-center py-3 border-b bg-gray-50 rounded-t-3xl">
-                <div className="w-12 h-1.5 bg-gray-400 rounded-full mb-1" />
-              </div>
-
-              {/* Header */}
-              <div className="flex items-center justify-between px-5 py-3 border-b">
-                <h2 className="text-lg font-bold text-gray-900">Navigation</h2>
-                <button
-                  onClick={() => setIsDrawerOpen(false)}
-                  className="p-2 rounded-lg hover:bg-gray-100"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-              </div>
-
-              {/* Content (Scrollable) */}
-              <div className="flex-1 overflow-y-auto px-5 py-4">
-                <SectionList onPick={() => setIsDrawerOpen(false)} showLabels />
-              </div>
-            </motion.div>
-          </>
-        )}
-      </AnimatePresence>
+      <MobileBottomSheet
+        isOpen={isDrawerOpen}
+        onClose={() => setIsDrawerOpen(false)}
+        title="Navigation"
+      >
+        {renderSectionList({
+          onPick: () => setIsDrawerOpen(false),
+          showLabels: true,
+        })}
+      </MobileBottomSheet>
 
       {/* Main Layout - Centered Content */}
-      <div className="flex gap-6 px-4 md:px-8 py-0 guide-grid-bg justify-center items-stretch flex-1 min-h-0">
+      <div className="guide-grid-bg flex min-h-0 flex-1 items-stretch justify-center gap-6 px-4 py-0 md:px-8">
         {/* Desktop Sidebar (stays within header/footer zone) */}
-        {view === "form" && !(showSectionIntro && introVisible) && (
-          <div className="hidden lg:block shrink-0 -ml-4 md:-ml-8">
-            <motion.aside
-              initial={false}
-              animate={{
-                width: isSidebarCollapsed ? 24 : 325,
-              }}
-              transition={{ type: "spring", damping: 28, stiffness: 240 }}
-              className="sticky top-16 mt-12 h-[calc(100vh-280px)] overflow-hidden"
+        {view === "form" && (
+          <motion.div
+            initial={false}
+            animate={{
+              width: isSidebarCollapsed ? 24 : 325,
+            }}
+            transition={{ type: "spring", damping: 28, stiffness: 240 }}
+            className="-ml-4 hidden shrink-0 md:-ml-8 lg:block"
+          >
+            <aside
+              className="sticky top-16 mt-12 h-[calc(100vh-280px)] w-full overflow-hidden"
               aria-hidden={false}
             >
               <div
                 className={[
-                  "relative h-full overflow-hidden custom-scrollbar flex flex-col",
-                  isSidebarCollapsed
-                    ? ""
-                    : "rounded-r-2xl border border-l-0 p-4",
+                  "custom-scrollbar relative flex h-full flex-col overflow-hidden",
+                  isSidebarCollapsed ? "" : "rounded-r-2xl border border-l-0 p-4",
                 ].join(" ")}
                 style={{
-                  backgroundColor: isSidebarCollapsed
-                    ? "transparent"
-                    : "rgba(255, 255, 255, 0.97)",
+                  backgroundColor: isSidebarCollapsed ? "transparent" : "rgba(255, 255, 255, 0.97)",
                   borderColor: isSidebarCollapsed ? "transparent" : "#e8f6f6",
                   backdropFilter: isSidebarCollapsed ? "none" : "blur(10px)",
                   boxShadow: isSidebarCollapsed
@@ -1509,9 +1635,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                 {!isSidebarCollapsed && (
                   <>
                     {/* Header Row */}
-                    <div className="flex items-center justify-between mb-4 px-1">
+                    <div className="mb-4 flex items-center justify-between px-1">
                       <h3
-                        className="text-[11px] font-bold uppercase tracking-[0.14em]"
+                        className="text-[11px] font-bold tracking-[0.14em] uppercase"
                         style={{ color: "#0a5a5d" }}
                       >
                         Sections
@@ -1519,15 +1645,15 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 overflow-y-auto pr-1 custom-scrollbar">
-                      <SectionList />
+                    <div className="custom-scrollbar flex-1 overflow-y-auto pr-1">
+                      {renderSectionList({})}
                     </div>
                   </>
                 )}
 
                 <motion.button
                   onClick={() => setIsSidebarCollapsed((prev) => !prev)}
-                  className="absolute top-1/2 -translate-y-1/2 -right-2 z-50"
+                  className="absolute top-1/2 -right-2 z-50 -translate-y-1/2"
                   style={{
                     width: 28,
                     height: 64,
@@ -1541,13 +1667,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                   {isSidebarCollapsed ? <ChevronRight /> : <ChevronLeft />}
                 </motion.button>
               </div>
-            </motion.aside>
-          </div>
+            </aside>
+          </motion.div>
         )}
 
         {/* Right Content Area */}
-        <div className="flex-1 min-w-0 flex flex-col">
-          <div className="flex-1 flex items-start justify-center py-6 w-full">
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex w-full flex-1 items-start justify-center py-6">
             <div className="w-full max-w-2xl px-4 md:px-0">
               {view === "form" && currentSection && (
                 <>
@@ -1560,14 +1686,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: -20 }}
                         transition={{ duration: 0.4, ease: "easeOut" }}
-                        className="flex items-center justify-center min-h-[60vh] px-4"
+                        className="flex min-h-[60vh] items-center justify-center px-4"
                       >
                         <div className="w-full max-w-2xl">
-                          <div className="bg-white border-2 border-[#14a0a6] rounded-2xl shadow-xl p-8 md:p-10">
+                          <div className="rounded-2xl border-2 border-[#14a0a6] bg-white p-8 shadow-xl md:p-10">
                             {/* Top Label */}
-                            <p className="text-sm uppercase tracking-[0.2em] text-[#14a0a6] font-semibold text-center rounded-full bg-white/10 border border-white/20">
-                              Moving on to{" "}
-                              {currentSection?.title || "Next Section"}
+                            <p className="rounded-full border border-white/20 bg-white/10 text-center text-xs font-semibold tracking-[0.2em] text-[#14a0a6] uppercase sm:text-sm">
+                              Moving on to {currentSection?.title || "Next Section"}
                             </p>
 
                             {/* Greeting */}
@@ -1576,11 +1701,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
           </h3> */}
 
                             {/* Message */}
-                            <p className="mt-2 text-sm text-gray-600 leading-relaxed text-center font-semibold">
-                              {
-                                getSectionIntroMessage(currentSection.title)
-                                  .message
-                              }
+                            <p className="mt-2 text-center text-xs leading-relaxed font-semibold text-gray-600 sm:text-sm">
+                              {getSectionIntroMessage(currentSection.title).message}
                             </p>
 
                             {/* Expandable Tooltip */}
@@ -1589,19 +1711,19 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                                 icon={"i"}
                                 defaultOpen={false}
                                 title="Before you continue"
-                                message={`Provide accurate details to ensure faster processing. This information will be used in official forms, so make sure everything is correct. Don’t worry—you’ll still be able to review and edit everything later.`}
+                                message={`Provide accurate details to ensure faster processing. This information will be used in official forms, so make sure everything is correct. Don't worry-you'll still be able to review and edit everything later.`}
                               />
                             </div>
 
                             {/* Progress */}
                             <div className="mt-6">
-                              <div className="flex justify-between text-xs text-gray-500 mb-2">
+                              <div className="mb-2 flex justify-between text-xs text-gray-500">
                                 <span>Section Progress</span>
                                 <span>
                                   {currentStep}/{totalSteps}
                                 </span>
                               </div>
-                              <div className="h-2 rounded-full bg-gray-100 overflow-hidden">
+                              <div className="h-2 overflow-hidden rounded-full bg-gray-100">
                                 <motion.div
                                   initial={{ width: 0 }}
                                   animate={{
@@ -1617,17 +1739,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                               onClick={() => {
                                 setIntroVisible(false);
                                 setCameFromIntro(true);
-                                setTimeout(
-                                  () => setShowSectionIntro(false),
-                                  400,
-                                );
+                                setTimeout(() => setShowSectionIntro(false), 400);
                               }}
                               whileHover={{ scale: 1.02 }}
                               whileTap={{ scale: 0.98 }}
-                              className="mt-8 w-full py-3 rounded-xl font-semibold text-white shadow-md"
+                              className="mt-8 w-full rounded-xl py-3 font-semibold text-white shadow-md"
                               style={{
-                                background:
-                                  "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
+                                background: "linear-gradient(135deg, #0d7377 0%, #14a0a6 100%)",
                               }}
                             >
                               Continue →
@@ -1655,19 +1773,15 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                           onInputChange={handleChange}
                           currentQuestionIndex={currentQuestionIndex}
                           navigationDirection={navigationDirection}
-                          progressiveSubQuestionIndices={
-                            progressiveSubQuestionIndices
-                          }
+                          progressiveSubQuestionIndices={progressiveSubQuestionIndices}
                         />
 
                         {/* Navigation Buttons */}
-                        <div className="flex flex-row justify-between items-center gap-3 mt-10 pt-6 border-t border-[#e8f6f6]">
+                        <div className="mt-10 flex flex-row items-center justify-between gap-3 border-t border-[#e8f6f6] pt-6">
                           <button
                             onClick={handlePrevious}
-                            disabled={
-                              currentStep === 1 && currentQuestionIndex === 0
-                            }
-                            className="px-6 py-3 rounded-lg font-medium text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed hover:border-[#0d7377] hover:text-[#0d7377] whitespace-nowrap inline-flex items-center gap-2"
+                            disabled={currentStep === 1 && currentQuestionIndex === 0}
+                            className="inline-flex items-center gap-2 rounded-lg px-6 py-3 text-sm font-medium whitespace-nowrap transition-all hover:border-[#0d7377] hover:text-[#0d7377] disabled:cursor-not-allowed disabled:opacity-40"
                             style={{
                               background: "transparent",
                               color: "#8C8C85",
@@ -1681,7 +1795,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                           <motion.button
                             whileTap={{ scale: 0.97 }}
                             onClick={handleNext}
-                            className="w-full px-6 md:px-8 py-3 rounded-lg text-white font-semibold transition-all text-sm"
+                            className="w-full rounded-lg px-6 py-3 text-sm font-semibold text-white transition-all md:px-8"
                             style={{
                               background: "#0d7377",
                               letterSpacing: "0.02em",
@@ -1694,9 +1808,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                             }}
                           >
                             {(() => {
-                              const isLastField =
-                                currentQuestionIndex ===
-                                visibleFields.length - 1;
+                              const isLastField = currentQuestionIndex === visibleFields.length - 1;
                               const isLastStep = currentStep === totalSteps;
 
                               if (isLastStep && isLastField) {
@@ -1714,7 +1826,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
               {view === "review" && (
                 <div
-                  className="rounded-2xl bg-white p-4 md:p-8 border-2 animated-border"
+                  className="animated-border rounded-2xl border-2 bg-white p-4 md:p-8"
                   style={{
                     boxShadow:
                       "0 1px 3px rgba(0,0,0,0.03), 0 12px 40px -16px rgba(13,115,119,0.12)",
@@ -1731,6 +1843,8 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
                     isPreviewing={isPreviewing}
                     isDownloading={isDownloading}
                     isSavingToVault={isSavingToVault}
+                    isFreePreview={isFreePreview}
+                    onUpgradeClick={() => setShowUpgradeModal(true)}
                   />
                 </div>
               )}
@@ -1740,9 +1854,9 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
       </div>
 
       {saveError && (
-        <div className="px-4 md:px-8 pt-1 pb-4">
-          <div className="flex items-center gap-2 rounded-lg px-3 py-2 bg-red-50 border border-red-200">
-            <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+        <div className="px-4 pt-1 pb-4 md:px-8">
+          <div className="flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2">
+            <AlertCircle className="h-4 w-4 shrink-0 text-red-600" />
             <p className="text-xs text-red-600">{saveError}</p>
           </div>
         </div>
@@ -1758,6 +1872,11 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
             sections={sections}
           />
         </div>
+      )}
+
+      {/* Upgrade Modal Hook */}
+      {showUpgradeModal && (
+        <UpgradeModal feature="smart_form_filler" onClose={() => setShowUpgradeModal(false)} />
       )}
     </div>
   );

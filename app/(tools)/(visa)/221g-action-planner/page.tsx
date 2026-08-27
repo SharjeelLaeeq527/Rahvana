@@ -3,9 +3,8 @@
 import { useState, useEffect } from "react";
 import CombinedIntakeFormWrapper from "./components/CombinedIntakeFormWrapper";
 import { FormData, FormSelections } from "./types/221g";
-import { useAuth } from "@/app/context/AuthContext";
-import { createBrowserClient } from "@supabase/ssr";
-import { MasterProfile } from "@/types/profile";
+import { useUserProfile } from "@/app/context/UserProfileContext";
+import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
 
 export default function TwentyTwoOneGActionPlanner() {
   const [formData, setFormData] = useState<FormData | null>(null);
@@ -14,82 +13,107 @@ export default function TwentyTwoOneGActionPlanner() {
   const [initialSelections, setInitialSelections] = useState<FormSelections | null>(null);
   const [smartModeEnabled, setSmartModeEnabled] = useState(true);
 
-  const { user } = useAuth();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
+  const { profile, isProfileLoading, updateProfile } = useUserProfile();
 
-  // Restore session from profile
+  // Restore session from profile (now reads from context instead of direct Supabase)
   useEffect(() => {
-    const fetchProfile = async () => {
-      if (!user) return;
+    if (isProfileLoading || !profile) return;
 
-      try {
-        const { data } = await supabase
-          .from("user_profiles")
-          .select("profile_details")
-          .eq("id", user.id)
-          .single();
+    let savedData: Record<string, unknown> = {};
+    let savedSelections = null;
 
-        if (data?.profile_details) {
-          const profile = data.profile_details as MasterProfile;
-          if (profile.actionPlanner?.questionnaire) {
-            const savedData = profile.actionPlanner.questionnaire.formData as unknown as FormData;
-            const savedSelections = profile.actionPlanner.questionnaire.selectedItems as unknown as FormSelections;
+    if (profile.actionPlanner?.questionnaire) {
+      savedData = { ...(profile.actionPlanner.questionnaire.formData as unknown as FormData) };
+      savedSelections = profile.actionPlanner.questionnaire
+        .selectedItems as unknown as FormSelections;
+    }
 
-            if (savedData) setInitialData(savedData);
-            if (savedSelections) setInitialSelections(savedSelections);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching profile", err);
-      }
-    };
-    fetchProfile();
-  }, [user, supabase]);
+    // Prioritize standard fields from central profile if present
+    if (profile.interviewDate) {
+      savedData.interviewDate = profile.interviewDate;
+    }
+    if (profile.interviewLocation) {
+      savedData.consularPost = profile.interviewLocation;
+    }
+    if (profile.caseStatus) {
+      savedData.ceacStatus = profile.caseStatus;
+    }
+    if (profile.caseNumber) {
+      savedData.caseNumber = profile.caseNumber;
+    }
+    if (profile.fullName) {
+      savedData.beneficiaryName = profile.fullName;
+    } else if (profile.name?.first) {
+      savedData.beneficiaryName = `${profile.name.first} ${profile.name.last || ""}`.trim();
+    }
+    if (profile.passportNumber) {
+      savedData.passportNumber = profile.passportNumber;
+    }
+    if (profile.dateOfBirth) {
+      savedData.dateOfBirth = profile.dateOfBirth;
+    }
+    if (!savedData.visaCategory && profile.visaCategory) {
+      savedData.visaCategory = profile.visaCategory;
+    } else if (!savedData.visaCategory && profile.visaType) {
+      savedData.visaCategory = profile.visaType;
+    }
+    // New cross-chapter autofill fields
+    if (profile.interviewOutcome) {
+      savedData.interviewOutcome = profile.interviewOutcome;
+    }
+    if (profile.outcome221gSubtype) {
+      savedData.outcome221gSubtype = profile.outcome221gSubtype;
+    }
+    if (profile.receiptNumber && !savedData.receiptNumber) {
+      savedData.receiptNumber = profile.receiptNumber;
+    }
+    if (profile.dqDate && !savedData.dqDate) {
+      savedData.dqDate = profile.dqDate;
+    }
+    if (profile.dqPost && !savedData.consularPost) {
+      savedData.consularPost = profile.dqPost;
+    }
+
+    if (Object.keys(savedData).length > 0) {
+      setInitialData(savedData as unknown as FormData);
+    }
+    if (savedSelections) {
+      setInitialSelections(savedSelections);
+    }
+  }, [profile, isProfileLoading]);
 
   const handleSubmit = (data: FormData, selectedItems: FormSelections = {}) => {
     setFormData(data);
     setSelectedItems(selectedItems);
-    // Saving to profile is now possible from the wizard results step via onSaveToProfile prop
   };
 
   const handleSaveToProfile = async () => {
-    if (!user || !formData) return;
+    if (!formData) return;
 
-    try {
-      const actionPlannerData = {
-        questionnaire: {
-          formData,
-          selectedItems,
-        },
-        caseStatus: formData.ceacStatus,
-        interviewDate: formData.interviewDate,
-      };
+    const actionPlannerData = {
+      questionnaire: {
+        formData,
+        selectedItems,
+      },
+      caseStatus: formData.ceacStatus,
+      interviewDate: formData.interviewDate,
+    };
 
-      const { data: currentData } = await supabase
-        .from("user_profiles")
-        .select("profile_details")
-        .eq("id", user.id)
-        .single();
-
-      const currentProfile = currentData?.profile_details || {};
-
-      const { error } = await supabase.from("user_profiles").upsert({
-        id: user.id,
-        profile_details: {
-          ...currentProfile,
-          actionPlanner: actionPlannerData,
-        },
-        updated_at: new Date().toISOString(),
-      });
-
-      if (error) throw error;
-    } catch (err) {
-      console.error("Error saving to profile", err);
-      throw err;
-    }
+    // Use context's updateProfile to save both specific namespace and standard fields
+    updateProfile(
+      {
+        actionPlanner: actionPlannerData,
+        interviewDate: formData.interviewDate || undefined,
+        interviewLocation: formData.consularPost || undefined,
+        caseStatus: formData.ceacStatus || undefined,
+        caseNumber: formData.caseNumber || undefined,
+        fullName: formData.beneficiaryName || undefined,
+        passportNumber: formData.passportNumber || undefined,
+        dateOfBirth: formData.dateOfBirth || undefined,
+        visaCategory: formData.visaCategory || undefined,
+      } as any,
+      { immediate: true }
+    );
   };
 
   return (
@@ -98,16 +122,31 @@ export default function TwentyTwoOneGActionPlanner() {
         <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-teal-700">
           Visa Response Toolkit
         </p>
-        <h1 className="mt-1 text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
-          221(g) Action Planner
-        </h1>
-        <p className="mt-1 text-sm text-slate-600">
-          Build and export a structured 221(g) response packet step by step.
+        <div className="mt-1 flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-extrabold tracking-tight text-slate-900 md:text-3xl">
+              221(g) Action Planner
+            </h1>
+            <p className="mt-1 text-sm text-slate-600">
+              Build and export a structured 221(g) response packet step by step.
+            </p>
+          </div>
+          <QuickAccessButton
+            item={{
+              id: "221g-action-planner",
+              title: "221(g) Action Planner",
+              href: "/221g-action-planner",
+              icon_name: "LifeBuoy",
+            }}
+          />
+        </div>
+        <p className="mt-3 text-xs text-slate-500 italic leading-relaxed border-t border-slate-100 pt-2">
+          Note: 221(g) notices may differ by embassy/consulate; always follow the specific instructions provided with your case notice.
         </p>
       </div>
 
       <CombinedIntakeFormWrapper
-        key={smartModeEnabled ? "smart-mode" : "basic-mode"}
+        key={`${smartModeEnabled ? "smart-mode" : "basic-mode"}-${initialData ? JSON.stringify(initialData) : "empty"}`}
         onSubmit={handleSubmit}
         onSaveToProfile={handleSaveToProfile}
         initialData={initialData}

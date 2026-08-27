@@ -1,9 +1,18 @@
 // Server-side File Storage Manager for Document Vault
 // Handles actual file I/O operations (SERVER-SIDE ONLY)
 
-import { getRelativeStoragePath } from './file-utils';
-import fs from 'fs/promises';
-import path from 'path';
+import { getRelativeStoragePath } from "./file-utils";
+import fs from "fs/promises";
+import path from "path";
+import { createClient as createClientJs } from "@supabase/supabase-js";
+import { decryptFile } from "./file-encryption";
+
+function getStorageSupabase() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+
+  return createClientJs(supabaseUrl, serviceRoleKey);
+}
 
 /**
  * Server-side file storage manager
@@ -14,7 +23,7 @@ export class DocumentFileManager {
   private uploadsDir: string;
 
   constructor() {
-    this.uploadsDir = path.join(process.cwd(), 'uploads', 'document-vault');
+    this.uploadsDir = path.join(process.cwd(), "uploads", "document-vault");
   }
 
   /**
@@ -44,18 +53,14 @@ export class DocumentFileManager {
       }
 
       // Return relative path for database storage
-      const relativePath = getRelativeStoragePath(
-        userId,
-        documentId,
-        standardizedFilename
-      );
+      const relativePath = getRelativeStoragePath(userId, documentId, standardizedFilename);
 
       return { success: true, storagePath: relativePath };
     } catch (error) {
-      console.error('Error saving file:', error);
+      console.error("Error saving file:", error);
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -64,17 +69,37 @@ export class DocumentFileManager {
    * Reads file from filesystem
    */
   async readFile(
-    storagePath: string
+    storagePath: string,
+    userId: string
   ): Promise<{ success: boolean; buffer?: Buffer; error?: string }> {
     try {
-      const fullPath = path.join(process.cwd(), 'uploads', storagePath);
-      const buffer = await fs.readFile(fullPath);
-      return { success: true, buffer };
+      const supabase = getStorageSupabase();
+  
+      const { data, error } = await supabase.storage
+        .from("document-vault")
+        .download(storagePath);
+  
+      if (error || !data) {
+        return {
+          success: false,
+          error: error?.message ?? "File not found",
+        };
+      }
+  
+      const encryptedBuffer = Buffer.from(await data.arrayBuffer());
+  
+      const decryptedBuffer = decryptFile(encryptedBuffer, userId);
+  
+      return {
+        success: true,
+        buffer: decryptedBuffer,
+      };
     } catch (error) {
-      console.error('Error reading file:', error);
+      console.error("Error reading file:", error);
+  
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'File not found',
+        error: error instanceof Error ? error.message : "Unknown error",
       };
     }
   }
@@ -84,11 +109,11 @@ export class DocumentFileManager {
    */
   async deleteFile(storagePath: string): Promise<boolean> {
     try {
-      const fullPath = path.join(process.cwd(), 'uploads', storagePath);
+      const fullPath = path.join(process.cwd(), "uploads", storagePath);
       await fs.unlink(fullPath);
       return true;
     } catch (error) {
-      console.error('Error deleting file:', error);
+      console.error("Error deleting file:", error);
       return false;
     }
   }
@@ -118,7 +143,7 @@ export class DocumentFileManager {
       await walk(userDir);
       return files;
     } catch (error) {
-      console.error('Error listing user files:', error);
+      console.error("Error listing user files:", error);
       return [];
     }
   }
@@ -128,7 +153,7 @@ export class DocumentFileManager {
    */
   async getFileSize(storagePath: string): Promise<number> {
     try {
-      const fullPath = path.join(process.cwd(), 'uploads', storagePath);
+      const fullPath = path.join(process.cwd(), "uploads", storagePath);
       const stats = await fs.stat(fullPath);
       return stats.size;
     } catch {
@@ -141,7 +166,7 @@ export class DocumentFileManager {
    */
   async fileExists(storagePath: string): Promise<boolean> {
     try {
-      const fullPath = path.join(process.cwd(), 'uploads', storagePath);
+      const fullPath = path.join(process.cwd(), "uploads", storagePath);
       await fs.access(fullPath);
       return true;
     } catch {
@@ -152,13 +177,10 @@ export class DocumentFileManager {
   /**
    * Copies file to new location
    */
-  async copyFile(
-    sourceStoragePath: string,
-    targetStoragePath: string
-  ): Promise<boolean> {
+  async copyFile(sourceStoragePath: string, targetStoragePath: string): Promise<boolean> {
     try {
-      const sourcePath = path.join(process.cwd(), 'uploads', sourceStoragePath);
-      const targetPath = path.join(process.cwd(), 'uploads', targetStoragePath);
+      const sourcePath = path.join(process.cwd(), "uploads", sourceStoragePath);
+      const targetPath = path.join(process.cwd(), "uploads", targetStoragePath);
 
       // Ensure target directory exists
       await fs.mkdir(path.dirname(targetPath), { recursive: true });
@@ -166,7 +188,7 @@ export class DocumentFileManager {
       await fs.copyFile(sourcePath, targetPath);
       return true;
     } catch (error) {
-      console.error('Error copying file:', error);
+      console.error("Error copying file:", error);
       return false;
     }
   }
@@ -186,7 +208,7 @@ export class DocumentFileManager {
 
       return totalSize;
     } catch (error) {
-      console.error('Error calculating storage size:', error);
+      console.error("Error calculating storage size:", error);
       return 0;
     }
   }
@@ -194,10 +216,7 @@ export class DocumentFileManager {
   /**
    * Cleans up orphaned files (files without metadata)
    */
-  async cleanupOrphanedFiles(
-    userId: string,
-    validStoragePaths: string[]
-  ): Promise<number> {
+  async cleanupOrphanedFiles(userId: string, validStoragePaths: string[]): Promise<number> {
     try {
       const allFiles = await this.listUserFiles(userId);
       let deletedCount = 0;
@@ -211,7 +230,7 @@ export class DocumentFileManager {
 
       return deletedCount;
     } catch (error) {
-      console.error('Error cleaning up orphaned files:', error);
+      console.error("Error cleaning up orphaned files:", error);
       return 0;
     }
   }

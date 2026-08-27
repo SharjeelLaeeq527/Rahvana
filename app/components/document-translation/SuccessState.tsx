@@ -20,22 +20,16 @@ export default function SuccessState({ onGoToRequests }: SuccessStateProps) {
       <h2 className="text-2xl font-bold text-gray-800 mb-2">
         {t("documentTranslation.successState.title")}
       </h2>
-      <p className="text-gray-600 mb-6">
-        {t("documentTranslation.successState.description")}
-      </p>
+      <p className="text-gray-600 mb-6">{t("documentTranslation.successState.description")}</p>
 
       <div className="inline-block bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full text-sm font-medium mb-6">
         {t("documentTranslation.successState.statusLabel")}{" "}
-        <span className="font-semibold">
-          {t("documentTranslation.successState.pendingStatus")}
-        </span>
+        <span className="font-semibold">{t("documentTranslation.successState.pendingStatus")}</span>
       </div>
 
       <p className="text-gray-700 mb-8">
         {t("documentTranslation.successState.infoPart1")}
-        <span className="font-semibold">
-          {t("documentTranslation.successState.infoPart2")}
-        </span>
+        <span className="font-semibold">{t("documentTranslation.successState.infoPart2")}</span>
         {t("documentTranslation.successState.infoPart3")}
       </p>
 

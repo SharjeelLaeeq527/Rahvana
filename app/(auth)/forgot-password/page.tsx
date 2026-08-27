@@ -2,10 +2,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { msg, E, errorCode } from "@/lib/errors";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
 import { Loader } from "@/components/ui/spinner";
+import { validateEmail } from "@/lib/validation/email";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -35,6 +37,15 @@ export default function ForgotPasswordPage() {
     setError("");
     setIsSubmitting(true);
 
+    // Validate email
+    const emailError = validateEmail(email);
+
+    if (emailError) {
+      setError(emailError);
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
@@ -47,12 +58,12 @@ export default function ForgotPasswordPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Failed to send reset email");
+        setError(data.error || `${msg(E.AUTH_RESET_EMAIL_FAILED)}`);
       } else {
         setSuccess(true);
       }
     } catch {
-      setError("An unexpected error occurred. Please try again.");
+      setError(`${msg(E.AUTH_UNEXPECTED_ERROR)}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -76,12 +87,12 @@ export default function ForgotPasswordPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.error || "Failed to resend email");
+        setError(data.error || `${msg(E.AUTH_RESET_EMAIL_RESEND_FAILED)}`);
       } else {
         setTimer(60);
       }
     } catch {
-      setError("Failed to resend. Please try again.");
+      setError(`${msg(E.AUTH_RESET_EMAIL_RESEND_FAILED)}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -90,16 +101,16 @@ export default function ForgotPasswordPage() {
   // Success State - Email Sent
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6 py-8 lg:py-12">
+      <div className="bg-background flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:py-12">
         <div className="w-full max-w-md">
           {/* Card */}
-          <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
+          <div className="bg-card border-border overflow-hidden rounded-2xl border shadow-xl">
             {/* Header */}
-            <div className="px-6 sm:px-8 pt-8 sm:pt-10 pb-6 text-center">
+            <div className="px-6 pt-8 pb-6 text-center sm:px-8 sm:pt-10">
               {/* Email Icon */}
-              <div className="mx-auto w-20 h-20 bg-linear-to-br from-emerald-400 to-emerald-600 rounded-full flex items-center justify-center mb-6 shadow-lg shadow-emerald-200">
+              <div className="mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br from-emerald-400 to-emerald-600 shadow-lg shadow-emerald-200">
                 <svg
-                  className="w-10 h-10 text-white"
+                  className="h-10 w-10 text-white"
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -113,63 +124,57 @@ export default function ForgotPasswordPage() {
                 </svg>
               </div>
 
-              <h1 className="text-2xl font-semibold text-foreground mb-2">
-                Check your email
-              </h1>
+              <h1 className="text-foreground mb-2 text-2xl font-semibold">Check your email</h1>
               <p className="text-muted-foreground text-[15px] leading-relaxed">
                 We sent a password reset link to
               </p>
-              <p className="text-foreground font-medium mt-1">{email}</p>
+              <p className="text-foreground mt-1 font-medium">{email}</p>
             </div>
 
             {/* Divider */}
-            <div className="border-t border-border" />
+            <div className="border-border border-t" />
 
             {/* Instructions */}
-            <div className="px-6 sm:px-8 py-6 bg-muted/20">
+            <div className="bg-muted/20 px-6 py-6 sm:px-8">
               <div className="space-y-4">
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium shrink-0 mt-0.5">
+                  <div className="bg-primary mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white">
                     1
                   </div>
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-muted-foreground text-sm">
                     Open your email inbox and look for our message
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium shrink-0 mt-0.5">
+                  <div className="bg-primary mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white">
                     2
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Click the reset link in the email
-                  </p>
+                  <p className="text-muted-foreground text-sm">Click the reset link in the email</p>
                 </div>
                 <div className="flex items-start gap-3">
-                  <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-medium shrink-0 mt-0.5">
+                  <div className="bg-primary mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-medium text-white">
                     3
                   </div>
-                  <p className="text-sm text-muted-foreground">
-                    Create your new password
-                  </p>
+                  <p className="text-muted-foreground text-sm">Create your new password</p>
                 </div>
               </div>
             </div>
 
             {/* Divider */}
-            <div className="border-t border-border" />
+            <div className="border-border border-t" />
 
             {/* Footer */}
-            <div className="px-6 sm:px-8 py-6">
-              <p className="text-center text-sm text-muted-foreground mb-4">
+            <div className="px-6 py-6 sm:px-8">
+              <p className="text-muted-foreground mb-4 text-center text-sm">
                 Didn&apos;t receive the email? Check your spam folder
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col gap-3 sm:flex-row">
                 <Button
                   onClick={handleResend}
                   disabled={isSubmitting || timer > 0}
                   variant="outline"
-                  className="flex-1 h-11 rounded-xl border-border hover:bg-muted text-foreground font-medium"
+                  className="border-border hover:bg-muted text-foreground h-11 flex-1 rounded-xl font-medium"
                 >
                   {isSubmitting ? (
                     <Loader size="sm" />
@@ -180,7 +185,7 @@ export default function ForgotPasswordPage() {
                   )}
                 </Button>
                 <Link href="/login" className="flex-1">
-                  <Button className="w-full h-11 rounded-xl bg-primary hover:bg-primary/90 text-white font-medium">
+                  <Button className="bg-primary hover:bg-primary/90 h-11 w-full rounded-xl font-medium text-white">
                     Back to login
                   </Button>
                 </Link>
@@ -189,7 +194,7 @@ export default function ForgotPasswordPage() {
           </div>
 
           {/* Help Link */}
-          <p className="text-center text-sm text-slate-400 mt-6">
+          <p className="mt-6 text-center text-sm text-slate-400">
             Having trouble?{" "}
             <a
               href="mailto:support@rahvana.com"
@@ -205,14 +210,14 @@ export default function ForgotPasswordPage() {
 
   // Default State - Enter Email
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background px-4 sm:px-6 py-8 lg:py-12">
+    <div className="bg-background flex min-h-screen items-center justify-center px-4 py-8 sm:px-6 lg:py-12">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="flex justify-center mb-6">
+        <div className="mb-6 flex justify-center">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="152 220 710 215"
-            className="h-12 w-auto text-primary fill-current"
+            className="text-primary h-12 w-auto fill-current"
           >
             <path d="M194.478302,411.482117C188.648972,398.666321 181.184067,387.211884 174.078979,375.556946C161.946335,355.654999 154.218430,334.429535 152.466766,310.927032C150.965759,290.787415 151.490814,271.069061 158.657028,251.953415C161.906097,243.286591 167.372574,236.333282 175.068100,231.098938C187.972153,222.321823 212.377777,222.515015 222.031631,242.165817C226.003326,250.250381 232.154404,254.994858 241.386230,255.103607C240.874603,257.700470 239.210571,257.303253 238.057617,257.539734C214.604111,262.350281 200.098267,276.975067 192.363480,299.065857C184.921768,320.319672 187.555267,352.132874 198.628662,372.172211C195.346085,360.736084 194.548477,349.072571 194.585556,337.231354C194.686203,305.091156 209.071442,282.030487 237.587112,267.388245C252.463837,259.749298 268.363953,254.738281 283.791870,248.515182C300.024750,241.967392 315.867065,234.607849 330.889893,225.571030C331.848022,224.994675 332.727417,224.133804 334.330139,224.642090C334.086884,229.016586 332.356110,232.995224 331.110291,237.029678C325.877838,253.974487 319.356995,270.258270 307.731262,284.109070C295.584656,298.580475 279.797791,306.307983 261.751282,310.259583C255.743668,311.575104 249.729248,312.898682 243.795959,314.506500C229.390137,318.410126 220.388382,329.212219 218.286926,343.947327C216.575470,355.947906 217.905655,367.798737 218.737152,379.737518C219.623474,392.463135 221.756760,405.206818 219.303925,418.003387C217.963852,424.994537 214.710114,430.344635 207.688766,433.006439C204.303909,434.289673 202.544754,433.679260 201.368622,430.074707C199.358749,423.914886 196.908096,417.898895 194.478302,411.482117z"></path>
             <path d="M347.022308,320.000671C347.016052,314.839264 347.105347,310.174835 346.965759,305.517273C346.865234,302.162506 348.128204,300.629364 351.628418,300.734467C356.786560,300.889313 361.960175,300.922363 367.113922,300.699646C370.973633,300.532806 372.427643,301.928192 372.368347,305.879303C372.186157,318.023376 372.301971,330.171936 372.301971,342.083649C373.283447,342.867767 373.819183,342.426117 374.318726,342.006836C383.782745,334.063324 394.575775,332.615875 406.196838,335.633057C415.899536,338.152130 422.744904,346.587646 423.310516,356.622040C424.267090,373.593201 423.737030,390.584991 423.953217,407.566589C423.995270,410.868988 423.022247,412.495087 419.405853,412.347473C414.084778,412.130249 408.740967,412.096069 403.421997,412.329346C399.633331,412.495514 398.561127,410.970825 398.606415,407.354187C398.766998,394.531891 398.675171,381.706299 398.663269,368.881958C398.653717,358.575378 395.399567,354.366302 387.286011,354.116821C377.843262,353.826508 372.628845,358.719452 372.391693,368.828339C372.122253,380.313904 372.349670,391.810638 372.318054,403.302399C372.289795,413.578827 373.113983,412.175079 363.109467,412.274994C359.445770,412.311584 355.772827,412.113037 352.119568,412.309662C348.129639,412.524414 346.894379,410.660309 346.908722,406.924530C346.998840,383.444702 346.970551,359.964386 346.985443,336.484253C346.988831,331.156372 347.007996,325.828522 347.022308,320.000671z"></path>
@@ -225,13 +230,13 @@ export default function ForgotPasswordPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-card rounded-2xl shadow-xl border border-border overflow-hidden">
+        <div className="bg-card border-border overflow-hidden rounded-2xl border shadow-xl">
           {/* Header */}
-          <div className="px-6 sm:px-8 pt-6 sm:pt-8 pb-2 text-center">
+          <div className="px-6 pt-6 pb-2 text-center sm:px-8 sm:pt-8">
             {/* Lock Icon */}
-            <div className="mx-auto w-20 h-20 bg-linear-to-br from-primary/80 to-primary rounded-full flex items-center justify-center mb-6 shadow-lg shadow-primary/30">
+            <div className="from-primary/80 to-primary shadow-primary/30 mx-auto mb-6 flex h-20 w-20 items-center justify-center rounded-full bg-linear-to-br shadow-lg">
               <svg
-                className="w-10 h-10 text-white"
+                className="h-10 w-10 text-white"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -245,22 +250,18 @@ export default function ForgotPasswordPage() {
               </svg>
             </div>
 
-            <h1 className="text-2xl font-semibold text-foreground mb-2">
-              Forgot your password?
-            </h1>
+            <h1 className="text-foreground mb-2 text-2xl font-semibold">Forgot your password?</h1>
             <p className="text-muted-foreground text-[15px] leading-relaxed">
-              No worries! Enter your email address and we&apos;ll send you a
-              link to reset your password.
+              No worries! Enter your email address and we&apos;ll send you a link to reset your
+              password.
             </p>
           </div>
 
           {/* Form */}
-          <div className="px-6 sm:px-8 py-6 sm:py-8">
-            <form onSubmit={handleSubmit} className="space-y-5">
+          <div className="px-6 py-6 sm:px-8 sm:py-8">
+            <form onSubmit={handleSubmit} noValidate className="space-y-5">
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-foreground">
-                  Email address
-                </label>
+                <label className="text-foreground block text-sm font-medium">Email address</label>
                 <Input
                   type="email"
                   value={email}
@@ -270,16 +271,16 @@ export default function ForgotPasswordPage() {
                   disabled={isSubmitting}
                   autoFocus
                   suppressHydrationWarning
-                  className="w-full h-12 px-4 rounded-xl border border-border bg-muted/20 focus:bg-card focus:border-border focus:ring-2 focus:ring-primary transition-all placeholder:text-muted-foreground"
+                  className="border-border bg-muted/20 focus:bg-card focus:border-border focus:ring-primary placeholder:text-muted-foreground h-12 w-full rounded-xl border px-4 transition-all focus:ring-2"
                 />
               </div>
 
               {/* Error Message */}
               {error && (
-                <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-100 rounded-xl">
-                  <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+                <div className="flex items-center gap-3 rounded-xl border border-red-100 bg-red-50 p-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100">
                     <svg
-                      className="w-5 h-5 text-red-600"
+                      className="h-5 w-5 text-red-600"
                       fill="none"
                       stroke="currentColor"
                       viewBox="0 0 24 24"
@@ -293,10 +294,8 @@ export default function ForgotPasswordPage() {
                     </svg>
                   </div>
                   <div>
-                    <p className="text-sm font-medium text-red-800">
-                      Unable to send reset email
-                    </p>
-                    <p className="text-sm text-red-600 mt-0.5">{error}</p>
+                    <p className="text-sm font-medium text-red-800">Unable to send reset email</p>
+                    <p className="mt-0.5 text-sm text-red-600">{error}</p>
                   </div>
                 </div>
               )}
@@ -306,7 +305,7 @@ export default function ForgotPasswordPage() {
                 type="submit"
                 disabled={isSubmitting}
                 suppressHydrationWarning
-                className="w-full h-12 bg-primary hover:bg-primary/90 text-white font-medium rounded-xl transition-all disabled:opacity-50 shadow-lg shadow-primary/10"
+                className="bg-primary hover:bg-primary/90 shadow-primary/10 h-12 w-full rounded-xl font-medium text-white shadow-lg transition-all disabled:opacity-50"
               >
                 {isSubmitting ? "Sending reset link..." : "Send reset link"}
               </Button>
@@ -314,20 +313,15 @@ export default function ForgotPasswordPage() {
           </div>
 
           {/* Divider */}
-          <div className="border-t border-border" />
+          <div className="border-border border-t" />
 
           {/* Footer */}
-          <div className="px-6 sm:px-8 py-5 bg-muted/20">
+          <div className="bg-muted/20 px-6 py-5 sm:px-8">
             <Link
               href="/login"
-              className="flex items-center justify-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+              className="text-muted-foreground hover:text-foreground flex items-center justify-center gap-2 text-sm font-medium transition-colors"
             >
-              <svg
-                className="w-4 h-4"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
+              <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
@@ -341,13 +335,8 @@ export default function ForgotPasswordPage() {
         </div>
 
         {/* Security Note */}
-        <div className="flex items-center justify-center gap-2 mt-6 text-sm text-muted-foreground">
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
+        <div className="text-muted-foreground mt-6 flex items-center justify-center gap-2 text-sm">
+          <svg className="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path
               strokeLinecap="round"
               strokeLinejoin="round"

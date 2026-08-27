@@ -1,6 +1,58 @@
 // C:\Users\HP\Desktop\arachnie\Arachnie\lib\formConfig\i130.ts
 import type { Field } from "./types";
 
+const getSpouseCondition = (i: number) => {
+  return (d: Record<string, string>) => {
+    return Number(d.number_of_marriages) >= i - 1;
+  };
+};
+
+const generatePriorSpousesFields = (startIndex: number, endIndex: number): Field[] => {
+  const fields: Field[] = [];
+  for (let i = startIndex; i <= endIndex; i++) {
+    fields.push({
+      key: `spouse_${i}_history_note`,
+      pdfKey: "N/A",
+      label: `Previous Spouse ${i - 1}`,
+      type: "hidden",
+      section: "Your Marital Information",
+      condition: getSpouseCondition(i),
+      subQuestions: [
+        {
+          key: `spouse_${i}_given_name`,
+          pdfKey: "N/A",
+          label: "What was their first name?",
+          type: "text",
+          section: "Your Marital Information",
+        },
+        {
+          key: `spouse_${i}_family_name`,
+          pdfKey: "N/A",
+          label: "What was their last name?",
+          type: "text",
+          section: "Your Marital Information",
+        },
+        {
+          key: `spouse_${i}_middle_name`,
+          pdfKey: "N/A",
+          label: "What was their middle name? (If any)",
+          type: "text",
+          section: "Your Marital Information",
+        },
+        {
+          key: `spouse_${i}_marriage_end_date`,
+          pdfKey: "N/A",
+          label: "When did this marriage end? (MM/DD/YYYY)",
+          type: "date",
+          section: "Your Marital Information",
+          placeholder: "MM/DD/YYYY",
+        },
+      ],
+    });
+  }
+  return fields;
+};
+
 export const formId = "i130";
 export const formTitle = "Form I-130";
 export const formSubtitle = "Petition for Alien Relative";
@@ -68,8 +120,7 @@ export const formFields: Field[] = [
       {
         key: "sibling_adoption",
         pdfKey: "sibling_adoption",
-        label:
-          "1.a Are you and your brother or sister related because one of you was adopted?",
+        label: "1.a Are you and your brother or sister related because one of you was adopted?",
         type: "radio",
         section: "Part 1. Relationship",
         condition: (d) => d.relationship === "BrotherSister",
@@ -77,19 +128,21 @@ export const formFields: Field[] = [
           { label: "Yes", value: "Yes", pdfKey: "sibling_adoption_Yes" },
           { label: "No", value: "No", pdfKey: "sibling_adoption_No" },
         ],
+        subQuestions: [
+          {
+            key: "citizen_adoption",
+            pdfKey: "citizen_adoption",
+            label: "Did you become a U.S. citizen or get a Green Card because you were adopted?",
+            type: "radio",
+            section: "Relationship",
+            condition: (d) => d.sibling_adoption === "Yes",
+            options: [
+              { label: "Yes", value: "Yes", pdfKey: "citizen_adoption_Yes" },
+              { label: "No", value: "No", pdfKey: "citizen_adoption_No" },
+            ],
+          },
+        ],
       },
-    ],
-  },
-  {
-    key: "citizen_adoption",
-    pdfKey: "citizen_adoption",
-    label:
-      "Did you become a U.S. citizen or get a Green Card because you were adopted?",
-    type: "radio",
-    section: "Relationship",
-    options: [
-      { label: "Yes", value: "Yes", pdfKey: "citizen_adoption_Yes" },
-      { label: "No", value: "No", pdfKey: "citizen_adoption_No" },
     ],
   },
 
@@ -168,7 +221,7 @@ export const formFields: Field[] = [
   {
     key: "full_name_group",
     pdfKey: "N/A",
-    label: "",
+    label: "Provide your name details",
     type: "hidden",
     section: "Information About You (Petitioner)",
     subQuestions: [
@@ -276,11 +329,25 @@ export const formFields: Field[] = [
 
   // Mailing Address
   {
-    key: "current_in_care_of",
-    pdfKey: "current_in_care_of",
-    label: "Is there someone else's name on your mail? (Optional)",
-    type: "text",
+    key: "has_another_mail",
+    label: "Is there someone else's name on your mail?",
+    type: "radio",
+    pdfKey: "different_mail_name",
     section: "Mailing Address",
+    options: [
+      { label: "Yes", value: "Yes" },
+      { label: "No", value: "No" },
+    ],
+    subQuestions: [
+      {
+        key: "current_in_care_of",
+        label: "Whose name is on your mail? (Please provide their full name)",
+        type: "text",
+        pdfKey: "current_in_care_of",
+        placeholder: "Full Name",
+        condition: (d) => d.has_another_mail === "Yes",
+      },
+    ],
   },
   {
     key: "current_street",
@@ -360,23 +427,22 @@ export const formFields: Field[] = [
   // ============================================
   // ADDRESS HISTORY
   // ============================================
-  {
-    key: "address_history_note",
-    pdfKey: "N/A",
-    label:
-      "Please tell us all the places you have lived in the last 5 years. Start with where you live right now, only if it's different from the mailing address you just gave us.",
-    type: "hidden",
-    section: "Address History",
-    options: [{ label: "I understand", value: "ok", pdfKey: "N/A" }],
-  },
+  // {
+  //   key: "address_history_note",
+  //   pdfKey: "N/A",
+  //   label:
+  //     "Please tell us all the places you have lived in the last 5 years. Start with where you live right now, only if it's different from the mailing address you just gave us.",
+  //   type: "hidden",
+  //   section: "Address History",
+  //   options: [{ label: "I understand", value: "ok", pdfKey: "N/A" }],
+  // },
 
   // Address History
 
   {
     key: "same_mailing_address",
     pdfKey: "same_mailing_address",
-    label:
-      "Is the address where you live the same as the address where you get your mail?",
+    label: "Is the address where you live the same as the address where you get your mail?",
     type: "radio",
     section: "Address History",
     options: [
@@ -387,7 +453,7 @@ export const formFields: Field[] = [
       {
         key: "address_history_note",
         pdfKey: "N/A",
-        label: "Current Address",
+        label: "Let's add the address where you physically live (this is different from your mailing address).",
         type: "hidden",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No",
@@ -395,7 +461,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_street",
         pdfKey: "mailing_street",
-        label: "Street Address",
+        label: "What is the physical House Number and Street Name?",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No",
@@ -416,7 +482,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_unit_number",
         pdfKey: "mailing_unit_number",
-        label: "Room, Apt, or Suite Number",
+        label: "What is the Room or Apartment Number?",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No",
@@ -424,7 +490,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_city",
         pdfKey: "mailing_city",
-        label: "City or Town",
+        label: "In what city or town is this address located?",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No",
@@ -432,26 +498,24 @@ export const formFields: Field[] = [
       {
         key: "mailing_state",
         pdfKey: "mailing_state",
-        label: "State (if in US)",
+        label: "In what U.S. state is this address?",
         type: "dropdown",
         isState: true,
         section: "Address History",
-        condition: (d) =>
-          d.same_mailing_address === "No" && !d.mailing_province,
+        condition: (d) => d.same_mailing_address === "No" && !d.mailing_province,
       },
       {
         key: "mailing_zip",
         pdfKey: "mailing_zip",
-        label: "ZIP Code (if in US)",
+        label: "What is the ZIP Code? (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          d.same_mailing_address === "No" && !d.mailing_postal_code,
+        condition: (d) => d.same_mailing_address === "No" && !d.mailing_postal_code,
       },
       {
         key: "mailing_province",
         pdfKey: "mailing_province",
-        label: "Province (if outside US)",
+        label: "What is the Province? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No" && !d.mailing_state,
@@ -459,7 +523,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_postal_code",
         pdfKey: "mailing_postal_code",
-        label: "Postal Code (if outside US)",
+        label: "What is the Postal Code? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No" && !d.mailing_zip,
@@ -467,7 +531,7 @@ export const formFields: Field[] = [
       {
         key: "mailing_country",
         pdfKey: "mailing_country",
-        label: "Country",
+        label: "In what country is this address located?",
         type: "text",
         section: "Address History",
         condition: (d) => d.same_mailing_address === "No",
@@ -515,7 +579,7 @@ export const formFields: Field[] = [
   {
     key: "address_history_note",
     pdfKey: "N/A",
-    label: "Previous Address 1",
+    label: "Let's add your first previous address (a place you lived before your current home).",
     type: "hidden",
     section: "Address History",
     condition: (d) => Number(d.address_count) >= 1,
@@ -523,7 +587,7 @@ export const formFields: Field[] = [
       {
         key: "previous_street",
         pdfKey: "previous_street",
-        label: "House Number and Street Name",
+        label: "What was the House Number and Street Name?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 1,
@@ -544,7 +608,7 @@ export const formFields: Field[] = [
       {
         key: "previous_unit_number",
         pdfKey: "previous_unit_number",
-        label: "Room or Apartment Number",
+        label: "What was the Room or Apartment Number? (Leave blank if none)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 1,
@@ -552,7 +616,7 @@ export const formFields: Field[] = [
       {
         key: "previous_city",
         pdfKey: "previous_city",
-        label: "City or Town",
+        label: "What city or town was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 1,
@@ -560,7 +624,7 @@ export const formFields: Field[] = [
       {
         key: "previous_state",
         pdfKey: "previous_state",
-        label: "State (if in the U.S.)",
+        label: "What U.S. state was it in? (if in the U.S.)",
         type: "dropdown",
         isState: true,
         section: "Address History",
@@ -569,16 +633,15 @@ export const formFields: Field[] = [
       {
         key: "previous_zip",
         pdfKey: "previous_zip",
-        label: "ZIP Code (if in the U.S.)",
+        label: "What was the ZIP Code? (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 1 && !d.previous_postal_code,
+        condition: (d) => Number(d.address_count) >= 1 && !d.previous_postal_code,
       },
       {
         key: "previous_province",
         pdfKey: "previous_province",
-        label: "Province (if outside the U.S.)",
+        label: "What province was it in? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 1 && !d.previous_state,
@@ -586,7 +649,7 @@ export const formFields: Field[] = [
       {
         key: "previous_postal_code",
         pdfKey: "previous_postal_code",
-        label: "Postal Code (if outside the U.S.)",
+        label: "What was the Postal Code? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 1 && !d.previous_zip,
@@ -594,7 +657,7 @@ export const formFields: Field[] = [
       {
         key: "previous_country",
         pdfKey: "previous_country",
-        label: "Country",
+        label: "What country was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 1,
@@ -630,7 +693,7 @@ export const formFields: Field[] = [
   {
     key: "address_3_history_note",
     pdfKey: "N/A",
-    label: "Previous Address 2",
+    label: "Let's add your second previous address.",
     type: "hidden",
     section: "Address History",
     condition: (d) => Number(d.address_count) >= 2,
@@ -638,7 +701,7 @@ export const formFields: Field[] = [
       {
         key: "address_3_street",
         pdfKey: "N/A",
-        label: "House Number and Street Name",
+        label: "What was the House Number and Street Name?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 2,
@@ -659,7 +722,7 @@ export const formFields: Field[] = [
       {
         key: "address_3_unit_number",
         pdfKey: "N/A",
-        label: "Room or Apartment Number",
+        label: "What was the Room or Apartment Number? (Leave blank if none)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 2,
@@ -667,7 +730,7 @@ export const formFields: Field[] = [
       {
         key: "address_3_city",
         pdfKey: "N/A",
-        label: "City or Town",
+        label: "What city or town was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 2,
@@ -675,7 +738,7 @@ export const formFields: Field[] = [
       {
         key: "address_3_state",
         pdfKey: "N/A",
-        label: "State (if in the U.S.)",
+        label: "What U.S. state was it in? (if in the U.S.)",
         type: "dropdown",
         isState: true,
         section: "Address History",
@@ -684,16 +747,15 @@ export const formFields: Field[] = [
       {
         key: "address_3_zip",
         pdfKey: "N/A",
-        label: "ZIP Code (if in the U.S.)",
+        label: "What was the ZIP Code? (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 2 && !d.address_3_postal_code,
+        condition: (d) => Number(d.address_count) >= 2 && !d.address_3_postal_code,
       },
       {
         key: "address_3_province",
         pdfKey: "N/A",
-        label: "Province (if outside the U.S.)",
+        label: "What province was it in? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 2 && !d.address_3_state,
@@ -701,7 +763,7 @@ export const formFields: Field[] = [
       {
         key: "address_3_postal_code",
         pdfKey: "N/A",
-        label: "Postal Code (if outside the U.S.)",
+        label: "What was the Postal Code? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 2 && !d.address_3_zip,
@@ -709,7 +771,7 @@ export const formFields: Field[] = [
       {
         key: "address_3_country",
         pdfKey: "N/A",
-        label: "Country",
+        label: "What country was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 2,
@@ -741,7 +803,7 @@ export const formFields: Field[] = [
   {
     key: "address_4_history_note",
     pdfKey: "N/A",
-    label: "Previous Address 3",
+    label: "Let's add your third previous address.",
     type: "hidden",
     section: "Address History",
     condition: (d) => Number(d.address_count) >= 3,
@@ -749,7 +811,7 @@ export const formFields: Field[] = [
       {
         key: "address_4_street",
         pdfKey: "N/A",
-        label: "House Number and Street Name",
+        label: "What was the House Number and Street Name?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 3,
@@ -770,7 +832,7 @@ export const formFields: Field[] = [
       {
         key: "address_4_unit_number",
         pdfKey: "N/A",
-        label: "Room or Apartment Number",
+        label: "What was the Room or Apartment Number? (Leave blank if none)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 3,
@@ -778,7 +840,7 @@ export const formFields: Field[] = [
       {
         key: "address_4_city",
         pdfKey: "N/A",
-        label: "City or Town",
+        label: "What city or town was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 3,
@@ -786,7 +848,7 @@ export const formFields: Field[] = [
       {
         key: "address_4_state",
         pdfKey: "N/A",
-        label: "State (if in the U.S.)",
+        label: "What U.S. state was it in? (if in the U.S.)",
         type: "dropdown",
         isState: true,
         section: "Address History",
@@ -795,16 +857,15 @@ export const formFields: Field[] = [
       {
         key: "address_4_zip",
         pdfKey: "N/A",
-        label: "ZIP Code (if in the U.S.)",
+        label: "What was the ZIP Code? (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 3 && !d.address_4_postal_code,
+        condition: (d) => Number(d.address_count) >= 3 && !d.address_4_postal_code,
       },
       {
         key: "address_4_province",
         pdfKey: "N/A",
-        label: "Province (if outside the U.S.)",
+        label: "What province was it in? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 3 && !d.address_4_state,
@@ -812,7 +873,7 @@ export const formFields: Field[] = [
       {
         key: "address_4_postal_code",
         pdfKey: "N/A",
-        label: "Postal Code (if outside the U.S.)",
+        label: "What was the Postal Code? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 3 && !d.address_4_zip,
@@ -820,7 +881,7 @@ export const formFields: Field[] = [
       {
         key: "address_4_country",
         pdfKey: "N/A",
-        label: "Country",
+        label: "What country was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 3,
@@ -852,7 +913,7 @@ export const formFields: Field[] = [
   {
     key: "address_5_history_note",
     pdfKey: "N/A",
-    label: "Previous Address 4",
+    label: "Let's add your fourth previous address.",
     type: "hidden",
     section: "Address History",
     condition: (d) => Number(d.address_count) >= 4,
@@ -860,7 +921,7 @@ export const formFields: Field[] = [
       {
         key: "address_5_street",
         pdfKey: "N/A",
-        label: "House Number and Street Name",
+        label: "What was the House Number and Street Name?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 4,
@@ -881,7 +942,7 @@ export const formFields: Field[] = [
       {
         key: "address_5_unit_number",
         pdfKey: "N/A",
-        label: "Room or Apartment Number",
+        label: "What was the Room or Apartment Number? (Leave blank if none)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 4,
@@ -889,7 +950,7 @@ export const formFields: Field[] = [
       {
         key: "address_5_city",
         pdfKey: "N/A",
-        label: "City or Town",
+        label: "What city or town was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 4,
@@ -897,25 +958,24 @@ export const formFields: Field[] = [
       {
         key: "address_5_state",
         pdfKey: "N/A",
-        label: "State (if in the U.S.)",
+        label: "What U.S. state was it in? (if in the U.S.)",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 4 && !d.address_5_province,
       },
       {
         key: "address_5_zip",
         pdfKey: "N/A",
-        label: "ZIP Code (if in the U.S.)",
+        label: "What was the ZIP Code? (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 4 && !d.address_5_postal_code,
+        condition: (d) => Number(d.address_count) >= 4 && !d.address_5_postal_code,
       },
       {
         key: "address_5_province",
         pdfKey: "N/A",
-        label: "Province (if outside the U.S.)",
+        label: "What province was it in? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 4 && !d.address_5_state,
@@ -923,7 +983,7 @@ export const formFields: Field[] = [
       {
         key: "address_5_postal_code",
         pdfKey: "N/A",
-        label: "Postal Code (if outside the U.S.)",
+        label: "What was the Postal Code? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 4 && !d.address_5_zip,
@@ -931,7 +991,7 @@ export const formFields: Field[] = [
       {
         key: "address_5_country",
         pdfKey: "N/A",
-        label: "Country",
+        label: "What country was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 4,
@@ -963,7 +1023,7 @@ export const formFields: Field[] = [
   {
     key: "address_6_history_note",
     pdfKey: "N/A",
-    label: "Previous Address 5",
+    label: "Let's add your fifth previous address.",
     type: "hidden",
     section: "Address History",
     condition: (d) => Number(d.address_count) >= 5,
@@ -971,7 +1031,7 @@ export const formFields: Field[] = [
       {
         key: "address_6_street",
         pdfKey: "N/A",
-        label: "House Number and Street Name",
+        label: "What was the House Number and Street Name?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 5,
@@ -992,7 +1052,7 @@ export const formFields: Field[] = [
       {
         key: "address_6_unit_number",
         pdfKey: "N/A",
-        label: "Room or Apartment Number",
+        label: "What was the Room or Apartment Number? (Leave blank if none)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 5,
@@ -1000,7 +1060,7 @@ export const formFields: Field[] = [
       {
         key: "address_6_city",
         pdfKey: "N/A",
-        label: "City or Town",
+        label: "What city or town was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 5,
@@ -1008,25 +1068,24 @@ export const formFields: Field[] = [
       {
         key: "address_6_state",
         pdfKey: "N/A",
-        label: "State (if in the U.S.)",
+        label: "What U.S. state was it in? (if in the U.S.)",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 5 && !d.address_6_province,
       },
       {
         key: "address_6_zip",
         pdfKey: "N/A",
-        label: "ZIP Code (if in the U.S.)",
+        label: "What was the ZIP Code? (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 5 && !d.address_6_postal_code,
+        condition: (d) => Number(d.address_count) >= 5 && !d.address_6_postal_code,
       },
       {
         key: "address_6_province",
         pdfKey: "N/A",
-        label: "Province (if outside the U.S.)",
+        label: "What province was it in? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 5 && !d.address_6_state,
@@ -1034,7 +1093,7 @@ export const formFields: Field[] = [
       {
         key: "address_6_postal_code",
         pdfKey: "N/A",
-        label: "Postal Code (if outside the U.S.)",
+        label: "What was the Postal Code? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 5 && !d.address_6_zip,
@@ -1042,7 +1101,7 @@ export const formFields: Field[] = [
       {
         key: "address_6_country",
         pdfKey: "N/A",
-        label: "Country",
+        label: "What country was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 5,
@@ -1074,7 +1133,7 @@ export const formFields: Field[] = [
   {
     key: "address_7_history_note",
     pdfKey: "N/A",
-    label: "Previous Address 6",
+    label: "Let's add your sixth previous address.",
     type: "hidden",
     section: "Address History",
     condition: (d) => Number(d.address_count) >= 6,
@@ -1082,7 +1141,7 @@ export const formFields: Field[] = [
       {
         key: "address_7_street",
         pdfKey: "N/A",
-        label: "House Number and Street Name",
+        label: "What was the House Number and Street Name?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 6,
@@ -1103,7 +1162,7 @@ export const formFields: Field[] = [
       {
         key: "address_7_unit_number",
         pdfKey: "N/A",
-        label: "Room or Apartment Number",
+        label: "What was the Room or Apartment Number? (Leave blank if none)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 6,
@@ -1111,7 +1170,7 @@ export const formFields: Field[] = [
       {
         key: "address_7_city",
         pdfKey: "N/A",
-        label: "City or Town",
+        label: "What city or town was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 6,
@@ -1119,25 +1178,24 @@ export const formFields: Field[] = [
       {
         key: "address_7_state",
         pdfKey: "N/A",
-        label: "State (if in the U.S.)",
+        label: "What U.S. state was it in? (if in the U.S.)",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 6 && !d.address_7_province,
       },
       {
         key: "address_7_zip",
         pdfKey: "N/A",
-        label: "ZIP Code (if in the U.S.)",
+        label: "What was the ZIP Code? (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 6 && !d.address_7_postal_code,
+        condition: (d) => Number(d.address_count) >= 6 && !d.address_7_postal_code,
       },
       {
         key: "address_7_province",
         pdfKey: "N/A",
-        label: "Province (if outside the U.S.)",
+        label: "What province was it in? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 6 && !d.address_7_state,
@@ -1145,7 +1203,7 @@ export const formFields: Field[] = [
       {
         key: "address_7_postal_code",
         pdfKey: "N/A",
-        label: "Postal Code (if outside the U.S.)",
+        label: "What was the Postal Code? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 6 && !d.address_7_zip,
@@ -1153,7 +1211,7 @@ export const formFields: Field[] = [
       {
         key: "address_7_country",
         pdfKey: "N/A",
-        label: "Country",
+        label: "What country was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 6,
@@ -1185,7 +1243,7 @@ export const formFields: Field[] = [
   {
     key: "address_8_history_note",
     pdfKey: "N/A",
-    label: "Previous Address 7",
+    label: "Let's add your seventh previous address.",
     type: "hidden",
     section: "Address History",
     condition: (d) => Number(d.address_count) >= 7,
@@ -1193,7 +1251,7 @@ export const formFields: Field[] = [
       {
         key: "address_8_street",
         pdfKey: "N/A",
-        label: "House Number and Street Name",
+        label: "What was the House Number and Street Name?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 7,
@@ -1214,7 +1272,7 @@ export const formFields: Field[] = [
       {
         key: "address_8_unit_number",
         pdfKey: "N/A",
-        label: "Room or Apartment Number",
+        label: "What was the Room or Apartment Number? (Leave blank if none)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 7,
@@ -1222,7 +1280,7 @@ export const formFields: Field[] = [
       {
         key: "address_8_city",
         pdfKey: "N/A",
-        label: "City or Town",
+        label: "What city or town was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 7,
@@ -1230,25 +1288,24 @@ export const formFields: Field[] = [
       {
         key: "address_8_state",
         pdfKey: "N/A",
-        label: "State (if in the U.S.)",
+        label: "What U.S. state was it in? (if in the U.S.)",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 7 && !d.address_8_province,
       },
       {
         key: "address_8_zip",
         pdfKey: "N/A",
-        label: "ZIP Code (if in the U.S.)",
+        label: "What was the ZIP Code? (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 7 && !d.address_8_postal_code,
+        condition: (d) => Number(d.address_count) >= 7 && !d.address_8_postal_code,
       },
       {
         key: "address_8_province",
         pdfKey: "N/A",
-        label: "Province (if outside the U.S.)",
+        label: "What province was it in? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 7 && !d.address_8_state,
@@ -1256,7 +1313,7 @@ export const formFields: Field[] = [
       {
         key: "address_8_postal_code",
         pdfKey: "N/A",
-        label: "Postal Code (if outside the U.S.)",
+        label: "What was the Postal Code? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 7 && !d.address_8_zip,
@@ -1264,7 +1321,7 @@ export const formFields: Field[] = [
       {
         key: "address_8_country",
         pdfKey: "N/A",
-        label: "Country",
+        label: "What country was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 7,
@@ -1296,7 +1353,7 @@ export const formFields: Field[] = [
   {
     key: "address_9_history_note",
     pdfKey: "N/A",
-    label: "Previous Address 8",
+    label: "Let's add your eighth previous address.",
     type: "hidden",
     section: "Address History",
     condition: (d) => Number(d.address_count) >= 8,
@@ -1304,7 +1361,7 @@ export const formFields: Field[] = [
       {
         key: "address_9_street",
         pdfKey: "N/A",
-        label: "House Number and Street Name",
+        label: "What was the House Number and Street Name?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 8,
@@ -1325,7 +1382,7 @@ export const formFields: Field[] = [
       {
         key: "address_9_unit_number",
         pdfKey: "N/A",
-        label: "Room or Apartment Number",
+        label: "What was the Room or Apartment Number? (Leave blank if none)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 8,
@@ -1333,7 +1390,7 @@ export const formFields: Field[] = [
       {
         key: "address_9_city",
         pdfKey: "N/A",
-        label: "City or Town",
+        label: "What city or town was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 8,
@@ -1341,25 +1398,24 @@ export const formFields: Field[] = [
       {
         key: "address_9_state",
         pdfKey: "N/A",
-        label: "State (if in the U.S.)",
+        label: "What U.S. state was it in? (if in the U.S.)",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 8 && !d.address_9_province,
       },
       {
         key: "address_9_zip",
         pdfKey: "N/A",
-        label: "ZIP Code (if in the U.S.)",
+        label: "What was the ZIP Code? (if in the U.S.)",
         type: "text",
         section: "Address History",
-        condition: (d) =>
-          Number(d.address_count) >= 8 && !d.address_9_postal_code,
+        condition: (d) => Number(d.address_count) >= 8 && !d.address_9_postal_code,
       },
       {
         key: "address_9_province",
         pdfKey: "N/A",
-        label: "Province (if outside the U.S.)",
+        label: "What province was it in? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 8 && !d.address_9_state,
@@ -1367,7 +1423,7 @@ export const formFields: Field[] = [
       {
         key: "address_9_postal_code",
         pdfKey: "N/A",
-        label: "Postal Code (if outside the U.S.)",
+        label: "What was the Postal Code? (if outside the U.S.)",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 8 && !d.address_9_zip,
@@ -1375,7 +1431,7 @@ export const formFields: Field[] = [
       {
         key: "address_9_country",
         pdfKey: "N/A",
-        label: "Country",
+        label: "What country was it in?",
         type: "text",
         section: "Address History",
         condition: (d) => Number(d.address_count) >= 8,
@@ -1403,14 +1459,6 @@ export const formFields: Field[] = [
   // ============================================
   // MARRIAGE INFORMATION
   // ============================================
-  {
-    key: "number_of_marriages",
-    pdfKey: "number_of_marriages",
-    label: "How many times have you been married in your whole life?",
-    type: "text",
-    section: "Your Marital Information",
-    maxLength: 2,
-  },
   {
     key: "marital_status",
     pdfKey: "marital_status",
@@ -1449,103 +1497,125 @@ export const formFields: Field[] = [
         pdfKey: "marital_status_Annulled",
       },
     ],
-  },
-
-  // ============================================
-  // PAGE 3: SPOUSE & MARRIAGE DETAILS
-  // ============================================
-  {
-    key: "spouse1_date_marriage",
-    pdfKey: "Pt2Line18_DateOfMarriage",
-    label: "When did you get married to your current husband or wife?",
-    type: "date",
-    section: "Your Marital Information",
-    placeholder: "MM/DD/YYYY",
-  },
-  {
-    key: "spouse1_place_city",
-    pdfKey: "Pt2Line19a_CityTown",
-    label: "What city or town did you get married in?",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse1_place_state",
-    pdfKey: "Pt2Line19b_State",
-    label: "State (if in US)",
-    type: "dropdown",
-    isState: true,
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse1_place_province",
-    pdfKey: "Pt2Line19c_Province",
-    label: "Province (if outside US)",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse1_place_country",
-    pdfKey: "Pt2Line19d_Country",
-    label: "Country",
-    type: "text",
-    section: "Your Marital Information",
-  },
-
-  // Spouse 1 Full Name
-  {
-    key: "spouse1_given_name",
-    pdfKey: "Pt2Line20b_GivenName",
-    label: "Spouse 1: First Name",
-    type: "text",
-    section: "Your Marital Information",
     subQuestions: [
+      // ============================================
+      // PAGE 3: SPOUSE & MARRIAGE DETAILS
+      // ============================================
       {
-        key: "spouse1_family_name",
-        pdfKey: "Pt2Line20a_FamilyName",
-        label: "Spouse 1: Last Name",
+        key: "number_of_marriages",
+        pdfKey: "number_of_marriages",
+        label: "How many times have you been married in your whole life?",
         type: "text",
         section: "Your Marital Information",
+        maxLength: 2,
+        pattern: "[0-9]*",
+        inputMode: "numeric",
+        condition: (d) => d.marital_status !== "Single",
       },
       {
-        key: "spouse1_middle_name",
-        pdfKey: "Pt2Line20c_MiddleName",
-        label: "Spouse 1: Middle Name",
+        key: "spouse1_date_marriage",
+        pdfKey: "Pt2Line18_DateOfMarriage",
+        label: "When did you get married to your current husband or wife?",
+        type: "date",
+        section: "Your Marital Information",
+        placeholder: "MM/DD/YYYY",
+        condition: (d) => d.marital_status !== "Single",
+      },
+      {
+        key: "spouse1_place_city",
+        pdfKey: "Pt2Line19a_CityTown",
+        label: "What city or town did you get married in?",
         type: "text",
         section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+      },
+      {
+        key: "spouse1_place_state",
+        pdfKey: "Pt2Line19b_State",
+        label: "What U.S. state did you get married in? (if in the U.S.)",
+        type: "dropdown",
+        isState: true,
+        section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+      },
+      {
+        key: "spouse1_place_province",
+        pdfKey: "Pt2Line19c_Province",
+        label: "What province did you get married in? (if outside the U.S.)",
+        type: "text",
+        section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+      },
+      {
+        key: "spouse1_place_country",
+        pdfKey: "Pt2Line19d_Country",
+        label: "What country did you get married in?",
+        type: "text",
+        section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+      },
+
+      // Spouse 1 Full Name
+      {
+        key: "spouse1_given_name",
+        pdfKey: "Pt2Line20b_GivenName",
+        label: "What is your current spouse's first name? (Spouse 1)",
+        type: "text",
+        section: "Your Marital Information",
+        condition: (d) => d.marital_status !== "Single",
+        subQuestions: [
+          {
+            key: "spouse1_family_name",
+            pdfKey: "Pt2Line20a_FamilyName",
+            label: "What is their last name?",
+            type: "text",
+            section: "Your Marital Information",
+          },
+          {
+            key: "spouse1_middle_name",
+            pdfKey: "Pt2Line20c_MiddleName",
+            label: "What is their middle name? (If any)",
+            type: "text",
+            section: "Your Marital Information",
+          },
+        ],
+      },
+      {
+        key: "spouse1_marriage_end_date",
+        pdfKey: "Pt2Line21_DateMarriageEnded",
+        label: "When did this marriage end? (Leave blank if you are still married)",
+        type: "text",
+        section: "Your Marital Information",
+        placeholder: "MM/DD/YYYY",
+        condition: (d) => d.marital_status !== "Single",
       },
     ],
-  },
-  {
-    key: "spouse1_marriage_end_date",
-    pdfKey: "Pt2Line21_DateMarriageEnded",
-    label: "When did this marriage end? (Leave blank if you are still married)",
-    type: "text",
-    section: "Your Marital Information",
-    placeholder: "MM/DD/YYYY",
   },
 
   // Spouse 2 (Previous Spouse)
   {
     key: "spouse2_given_name",
     pdfKey: "Pt2Line22b_GivenName",
-    label: "Spouse 2: First Name",
+    label: "What was your previous husband or wife's first name? (Spouse 2)",
     type: "text",
     section: "Your Marital Information",
+    condition: getSpouseCondition(2),
   },
   {
     key: "spouse2_family_name",
     pdfKey: "Pt2Line22a_FamilyName",
-    label: "Spouse 2: Last Name",
+    label: "What was their last name?",
     type: "text",
     section: "Your Marital Information",
+    condition: getSpouseCondition(2),
   },
   {
     key: "spouse2_middle_name",
     pdfKey: "Pt2Line22c_MiddleName",
-    label: "Spouse 2: Middle Name",
+    label: "What was their middle name? (If any)",
     type: "text",
     section: "Your Marital Information",
+    condition: getSpouseCondition(2),
   },
   {
     key: "spouse2_marriage_end_date",
@@ -1554,107 +1624,45 @@ export const formFields: Field[] = [
     type: "date",
     section: "Your Marital Information",
     placeholder: "MM/DD/YYYY",
+    condition: getSpouseCondition(2),
   },
 
-  // Spouse 3
-  {
-    key: "spouse3_given_name",
-    pdfKey: "Pt2Line24_GivenName",
-    label: "Spouse 3: First Name",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse3_family_name",
-    pdfKey: "Pt2Line24_FamilyName",
-    label: "Spouse 3: Last Name",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse3_middle_name",
-    pdfKey: "Pt2Line24_MiddleName",
-    label: "Spouse 3: Middle Name",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse3_date_of_birth",
-    pdfKey: "Pt2Line25_DateofBirth",
-    label: "Spouse 3: Date of Birth",
-    type: "date",
-    section: "Your Marital Information",
-    placeholder: "MM/DD/YYYY",
-  },
-  {
-    key: "spouse3_sex",
-    pdfKey: "Pt2Line26",
-    label: "Spouse 3: Sex",
-    type: "radio",
-    section: "Your Marital Information",
-    options: [
-      { label: "Male", value: "Male", pdfKey: "Pt2Line26_Male" },
-      { label: "Female", value: "Female", pdfKey: "Pt2Line26_Female" },
-    ],
-  },
-
-  // Spouse 3 Residence
-  {
-    key: "spouse3_country_birth",
-    pdfKey: "Pt2Line27_CountryofBirth",
-    label: "Spouse 3: Country of Birth",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse3_city_residence",
-    pdfKey: "Pt2Line28_CityTownOrVillageOfResidence",
-    label: "Spouse 3: City or Town where they live",
-    type: "text",
-    section: "Your Marital Information",
-  },
-  {
-    key: "spouse3_country_residence",
-    pdfKey: "Pt2Line29_CountryOfResidence",
-    label: "Spouse 3: Country where they live",
-    type: "text",
-    section: "Your Marital Information",
-  },
+  ...generatePriorSpousesFields(3, 8),
 
   // Parent 1
   {
     key: "parent1_family_name",
     pdfKey: "Pt2Line24_FamilyName",
-    label: "Parent 1: Last Name",
+    label: "What is your first parent's last name? (Parent 1)",
     type: "text",
     section: "Your Marital Information",
   },
   {
     key: "parent1_given_name",
     pdfKey: "Pt2Line24_GivenName",
-    label: "Parent 1: First Name",
+    label: "What is your first parent's first name?",
     type: "text",
     section: "Your Marital Information",
   },
   {
     key: "parent1_middle_name",
     pdfKey: "Pt2Line24_MiddleName",
-    label: "Parent 1: Middle Name",
+    label: "What is their middle name? (If any)",
     type: "text",
     section: "Your Marital Information",
   },
   {
     key: "parent1_date_of_birth",
     pdfKey: "Pt2Line25_DateofBirth",
-    label: "Parent 1: Date of Birth",
+    label: "When was your first parent born?",
     type: "date",
     section: "Your Marital Information",
     placeholder: "MM/DD/YYYY",
   },
   {
     key: "parent1_sex",
-    pdfKey: "Pt2Line32",
-    label: "Parent 1: Sex",
+    pdfKey: "Pt2Line26",
+    label: "What is your first parent's gender?",
     type: "radio",
     section: "Your Marital Information",
     options: [
@@ -1667,21 +1675,21 @@ export const formFields: Field[] = [
   {
     key: "parent1_country_birth",
     pdfKey: "Pt2Line27_CountryofBirth",
-    label: "Parent 1: Country of Birth",
+    label: "What country was your first parent born in?",
     type: "text",
     section: "Your Marital Information",
   },
   {
     key: "parent1_city_residence",
     pdfKey: "Pt2Line28_CityTownOrVillageOfResidence",
-    label: "Parent 1: City or Town where they live",
+    label: "What city or town do they live in now?",
     type: "text",
     section: "Your Marital Information",
   },
   {
     key: "parent1_country_residence",
     pdfKey: "Pt2Line29_CountryOfResidence",
-    label: "Parent 1: Country where they live",
+    label: "What country do they live in now?",
     type: "text",
     section: "Your Marital Information",
   },
@@ -1689,36 +1697,36 @@ export const formFields: Field[] = [
   {
     key: "parent2_family_name",
     pdfKey: "Pt2Line30a_FamilyName",
-    label: "Parent 2: Last Name",
+    label: "What is your second parent's last name? (Parent 2)",
     type: "text",
     section: "Your Marital Information",
   },
   {
     key: "parent2_given_name",
     pdfKey: "Pt2Line30b_GivenName",
-    label: "Parent 2: First Name",
+    label: "What is your second parent's first name?",
     type: "text",
     section: "Your Marital Information",
   },
   {
-    key: "parent1_middle_name",
+    key: "parent2_middle_name",
     pdfKey: "Pt2Line30c_MiddleName",
-    label: "Parent 2: Middle Name",
+    label: "What is their middle name? (If any)",
     type: "text",
     section: "Your Marital Information",
   },
   {
-    key: "parent1_date_of_birth",
+    key: "parent2_date_of_birth",
     pdfKey: "Pt2Line31_DateofBirth",
-    label: "Parent 2: Date of Birth",
+    label: "When was your second parent born?",
     type: "date",
     section: "Your Marital Information",
     placeholder: "MM/DD/YYYY",
   },
   {
-    key: "parent1_sex",
+    key: "parent2_sex",
     pdfKey: "Pt2Line32",
-    label: "Parent 2: Sex",
+    label: "What is your second parent's gender?",
     type: "radio",
     section: "Your Marital Information",
     options: [
@@ -1727,25 +1735,25 @@ export const formFields: Field[] = [
     ],
   },
 
-  // Parent 1 Residence
+  // Parent 2 Residence
   {
-    key: "parent1_country_birth",
+    key: "parent2_country_birth",
     pdfKey: "Pt2Line33_CountryofBirth",
-    label: "Parent 2: Country of Birth",
+    label: "What country was your second parent born in?",
     type: "text",
     section: "Your Marital Information",
   },
   {
-    key: "parent1_city_residence",
+    key: "parent2_city_residence",
     pdfKey: "Pt2Line34_CityTownOrVillageOfResidence",
-    label: "Parent 2: City or Town where they live",
+    label: "What city or town do they live in now?",
     type: "text",
     section: "Your Marital Information",
   },
   {
-    key: "parent1_country_residence",
+    key: "parent2_country_residence",
     pdfKey: "Pt2Line35_CountryOfResidence",
-    label: "Parent 2: Country where they live",
+    label: "What country do they live in now?",
     type: "text",
     section: "Your Marital Information",
   },
@@ -1777,13 +1785,16 @@ export const formFields: Field[] = [
       "Do you have a Certificate of Naturalization or Citizenship? (A paper proving you are a citizen)",
     type: "radio",
     section: "Your Marital Information",
+    // Only U.S. citizens can have a Certificate of Naturalization/Citizenship.
+    // Green Card holders (LPR) skip this and the certificate detail questions below.
+    condition: (d) => d.citizenship_status === "USCitizen",
     options: [
       { label: "Yes", value: "Yes", pdfKey: "Pt2Line36_Yes" },
       { label: "No", value: "No", pdfKey: "Pt2Line36_No" },
     ],
   },
 
-  // Certificate Details
+  // Certificate Details (only if the petitioner actually has a certificate)
   {
     key: "certificate_number",
     pdfKey: "Pt2Line37a_CertificateNumber",
@@ -1791,14 +1802,17 @@ export const formFields: Field[] = [
       "What is your Certificate Number? (This is usually printed in red on your Certificate of Naturalization or Citizenship)",
     type: "text",
     section: "Your Marital Information",
+    condition: (d) =>
+      d.citizenship_status === "USCitizen" && d.naturalization_certificate === "Yes",
   },
   {
     key: "certificate_place",
     pdfKey: "Pt2Line37b_PlaceOfIssuance",
-    label:
-      "Where was this certificate given to you? (For example: Los Angeles, CA)",
+    label: "Where was this certificate given to you? (For example: Los Angeles, CA)",
     type: "text",
     section: "Your Marital Information",
+    condition: (d) =>
+      d.citizenship_status === "USCitizen" && d.naturalization_certificate === "Yes",
   },
   {
     key: "certificate_date",
@@ -1807,6 +1821,8 @@ export const formFields: Field[] = [
     type: "date",
     section: "Your Marital Information",
     placeholder: "MM/DD/YYYY",
+    condition: (d) =>
+      d.citizenship_status === "USCitizen" && d.naturalization_certificate === "Yes",
   },
   // ============================================
   // PAGE 4: ADDITIONAL INFORMATION (Petitioner)
@@ -1843,34 +1859,56 @@ export const formFields: Field[] = [
   {
     key: "state_of_admission",
     pdfKey: "Pt2Line40e_State",
-    label:
-      "What U.S. state did you arrive in when you last entered the country?",
+    label: "What U.S. state did you arrive in when you last entered the country?",
     type: "dropdown",
-    isState: true,// ComboBox in PDF → use text or dropdown
+    isState: true, // ComboBox in PDF → use text or dropdown
     section: "Your U.S. Entry Information",
   },
 
-  // ============================================
-  // ITEM 41: CURRENT EMPLOYMENT ADDRESS (If different)
-  // ============================================
+  // ITEM 41: Green Card through marriage (only asked of Green Card holders)
   {
-    key: "employment_different_address",
-    pdfKey: "employment_different_address",
+    key: "lpr_through_marriage",
+    pdfKey: "Pt2Line41",
     label:
-      "Is the address where you work different from the address where you live?",
+      "Did you get your Green Card (lawful permanent resident status) through marriage to a U.S. citizen or Green Card holder?",
     type: "radio",
-    section: "Employment Information",
+    section: "Your U.S. Entry Information",
+    condition: (d) => d.citizenship_status === "LPR",
     options: [
       { label: "Yes", value: "Yes", pdfKey: "Pt2Line41_Yes" },
       { label: "No", value: "No", pdfKey: "Pt2Line41_No" },
+    ],
+  },
+
+  // ============================================
+  // ITEM 40-41: CURRENT EMPLOYER (name + address)
+  // ============================================
+  {
+    key: "current_employer_name",
+    pdfKey: "Pt2Line40_EmployerOrCompName",
+    label: "What is the name of your current employer or company?",
+    type: "text",
+    section: "Employment Information",
+    placeholder: "Company name",
+  },
+  {
+    key: "employment_different_address",
+    // UI-only gate. Do NOT map to a PDF key — Pt2Line41_Yes/No belongs to the
+    // "Green Card through marriage" question above, so mapping here would clobber it.
+    pdfKey: "N/A",
+    label: "Is the address where you work different from the address where you live?",
+    type: "radio",
+    section: "Employment Information",
+    options: [
+      { label: "Yes", value: "Yes" },
+      { label: "No", value: "No" },
     ],
     subQuestions: [
       // Employment Address (Conditional)
       {
         key: "employment_street",
         pdfKey: "Pt2Line41_StreetNumberName",
-        label:
-          "What is the street address of your workplace? (For example: 123 Main St)",
+        label: "What is the street address of your workplace? (For example: 123 Main St)",
         type: "text",
         section: "Employment Information",
         condition: (d) => d.employment_different_address === "Yes",
@@ -1910,7 +1948,7 @@ export const formFields: Field[] = [
         pdfKey: "Pt2Line41_State",
         label: "What U.S. state do you work in?",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Employment Information",
         condition: (d) => d.employment_different_address === "Yes",
       },
@@ -1926,8 +1964,7 @@ export const formFields: Field[] = [
       {
         key: "employment_province",
         pdfKey: "Pt2Line41_Province",
-        label:
-          "What province do you work in? (If outside the U.S., for example: Ontario)",
+        label: "What province do you work in? (If outside the U.S., for example: Ontario)",
         type: "text",
         section: "Employment Information",
         condition: (d) => d.employment_different_address === "Yes",
@@ -1958,8 +1995,7 @@ export const formFields: Field[] = [
   {
     key: "current_occupation",
     pdfKey: "Pt2Line42_Occupation",
-    label:
-      "What is your current job title? (For example: Teacher, Software Engineer, Manager)",
+    label: "What is your current job title? (For example: Teacher, Software Engineer, Manager)",
     type: "text",
     section: "Employment Information",
   },
@@ -1974,8 +2010,7 @@ export const formFields: Field[] = [
   {
     key: "employment_end_date",
     pdfKey: "Pt2Line43b_DateTo",
-    label:
-      "When did you stop working here? (If you still work here, type 'PRESENT')",
+    label: "When did you stop working here? (If you still work here, type 'PRESENT')",
     type: "text",
     section: "Employment Information",
     placeholder: "MM/DD/YYYY or PRESENT",
@@ -1994,8 +2029,7 @@ export const formFields: Field[] = [
   {
     key: "previous_employer_street",
     pdfKey: "Pt2Line45_StreetNumberName",
-    label:
-      "What was the street address of this previous job? (For example: 456 Broadway St)",
+    label: "What was the street address of this previous job? (For example: 456 Broadway St)",
     type: "text",
     section: "Previous Employment",
   },
@@ -2014,8 +2048,7 @@ export const formFields: Field[] = [
   {
     key: "previous_unit_number",
     pdfKey: "Pt2Line45_AptSteFlrNumber",
-    label:
-      "What was the Apartment, Suite, or Floor number? (For example: Floor 2)",
+    label: "What was the Apartment, Suite, or Floor number? (For example: Floor 2)",
     type: "text",
     section: "Previous Employment",
   },
@@ -2202,376 +2235,6 @@ export const formFields: Field[] = [
     ],
   },
 
-  // ============================================
-  // PAGE 4: ADDITIONAL INFORMATION
-  // ============================================
-  {
-    key: "Pt2Line40a_ClassOfAdmission",
-    label:
-      "What visa or status did you use to enter the U.S. last time? (For example: B2, F1, H1B)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line40a_ClassOfAdmission",
-    placeholder: "e.g., B-2, F-1, etc.",
-  },
-  {
-    key: "Pt2Line40b_DateOfAdmission",
-    label: "When did you last enter the U.S.?",
-    section: "Immigration & Employment Information",
-    type: "date",
-    pdfKey: "Pt2Line40b_DateOfAdmission",
-    placeholder: "MM/DD/YYYY",
-  },
-  {
-    key: "Pt2Line40d_CityOrTown",
-    label: "What U.S. city or town did you arrive in when you last entered?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line40d_CityOrTown",
-    placeholder: "City or Town",
-  },
-  {
-    key: "Pt2Line40e_State",
-    label: "What U.S. state did you arrive in when you last entered?",
-    section: "Immigration & Employment Information",
-    type: "dropdown",
-    isState: true,
-    pdfKey: "Pt2Line40e_State",
-    placeholder: "State",
-    maxLength: 2,
-  },
-  {
-    key: "Pt2Line41_LPR",
-    label:
-      "Did you get your Green Card (lawful permanent resident status) through marriage to a U.S. citizen or Green Card holder?",
-    section: "Immigration & Employment Information",
-    type: "radio",
-    pdfKey: "Pt2Line41",
-    options: [
-      { label: "Yes", value: "Yes", pdfKey: "Pt2Line41_Yes" },
-      { label: "No", value: "No", pdfKey: "Pt2Line41_No" },
-    ],
-  },
-  {
-    key: "Pt2Line40_EmployerOrCompName",
-    label: "What is the name of your company? (Employer 1)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line40_EmployerOrCompName",
-    placeholder: "Company name",
-  },
-  {
-    key: "Pt2Line41_StreetNumberName",
-    label: "What is the street address of Employer 1?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line41_StreetNumberName",
-    placeholder: "Street address",
-  },
-  {
-    key: "Pt2Line41_UnitType",
-    label: "Is Employer 1 located in an Apartment, Suite, or Floor?",
-    section: "Immigration & Employment Information",
-    type: "radio",
-    pdfKey: "Pt2Line41_UnitType",
-    options: [
-      { label: "Ste.", value: "ste", pdfKey: "Pt2Line41_Unit[1]" },
-      { label: "Apt.", value: "apt", pdfKey: "Pt2Line41_Unit[0]" },
-      { label: "Flr.", value: "flr", pdfKey: "Pt2Line41_Unit[2]" },
-    ],
-  },
-  {
-    key: "Pt2Line41_AptSteFlrNumber",
-    label: "What is the Apartment, Suite, or Floor number? (Employer 1)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line41_AptSteFlrNumber",
-    placeholder: "Number",
-  },
-  {
-    key: "Pt2Line41_CityOrTown",
-    label: "What city or town is Employer 1 in?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line41_CityOrTown",
-    placeholder: "City",
-  },
-  {
-    key: "Pt2Line41_State",
-    label: "What state is Employer 1 in? (If in U.S.)",
-    section: "Immigration & Employment Information",
-    type: "dropdown",
-    isState: true,
-    pdfKey: "Pt2Line41_State",
-    placeholder: "State",
-    maxLength: 2,
-  },
-  {
-    key: "Pt2Line41_ZipCode",
-    label: "What is the ZIP code for Employer 1? (If in U.S.)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line41_ZipCode",
-    placeholder: "ZIP",
-    maxLength: 10,
-  },
-  {
-    key: "Pt2Line41_Province",
-    label: "What province is Employer 1 in? (If outside U.S.)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line41_Province",
-    placeholder: "Province",
-  },
-  {
-    key: "Pt2Line41_PostalCode",
-    label: "What is the postal code for Employer 1? (If outside U.S.)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line41_PostalCode",
-    placeholder: "Postal Code",
-  },
-  {
-    key: "Pt2Line41_Country",
-    label: "What country is Employer 1 in?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line41_Country",
-    placeholder: "Country",
-  },
-  {
-    key: "Pt2Line42_Occupation",
-    label: "What is your current job title? (Employer 1)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line42_Occupation",
-    placeholder: "Your occupation",
-  },
-  {
-    key: "Pt2Line43a_DateFrom",
-    label: "When did you start working at Employer 1?",
-    section: "Immigration & Employment Information",
-    type: "date",
-    pdfKey: "Pt2Line43a_DateFrom",
-    placeholder: "MM/DD/YYYY",
-  },
-  {
-    key: "Pt2Line43b_DateTo",
-    label:
-      "When did you stop working at Employer 1? (Or type 'PRESENT' if you still work there)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line43b_DateTo",
-    placeholder: "MM/DD/YYYY or PRESENT",
-  },
-  {
-    key: "Pt2Line44_EmployerOrOrgName",
-    label: "What is the name of your company? (Employer 2)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line44_EmployerOrOrgName",
-    placeholder: "Company name",
-  },
-  {
-    key: "Pt2Line45_StreetNumberName",
-    label: "What is the street address of Employer 2?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line45_StreetNumberName",
-    placeholder: "Street address",
-  },
-  {
-    key: "Pt2Line45_UnitType",
-    label: "Is Employer 2 located in an Apartment, Suite, or Floor?",
-    section: "Immigration & Employment Information",
-    type: "radio",
-    pdfKey: "Pt2Line45_UnitType",
-    options: [
-      { label: "Ste.", value: "ste", pdfKey: "Pt2Line45_Unit[1]" },
-      { label: "Apt.", value: "apt", pdfKey: "Pt2Line45_Unit[0]" },
-      { label: "Flr.", value: "flr", pdfKey: "Pt2Line45_Unit[2]" },
-    ],
-  },
-  {
-    key: "Pt2Line45_AptSteFlrNumber",
-    label: "What is the Apartment, Suite, or Floor number? (Employer 2)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line45_AptSteFlrNumber",
-    placeholder: "Number",
-  },
-  {
-    key: "Pt2Line45_CityOrTown",
-    label: "What city or town is Employer 2 in?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line45_CityOrTown",
-    placeholder: "City",
-  },
-  {
-    key: "Pt2Line45_State",
-    label: "What state is Employer 2 in? (If in U.S.)",
-    section: "Immigration & Employment Information",
-    type: "dropdown",
-    isState: true,
-    pdfKey: "Pt2Line45_State",
-    placeholder: "State",
-    maxLength: 2,
-  },
-  {
-    key: "Pt2Line45_ZipCode",
-    label: "What is the ZIP code for Employer 2? (If in U.S.)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line45_ZipCode",
-    placeholder: "ZIP",
-    maxLength: 10,
-  },
-  {
-    key: "Pt2Line45_Province",
-    label: "What province is Employer 2 in? (If outside U.S.)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line45_Province",
-    placeholder: "Province",
-  },
-  {
-    key: "Pt2Line45_PostalCode",
-    label: "What is the postal code for Employer 2? (If outside U.S.)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line45_PostalCode",
-    placeholder: "Postal Code",
-  },
-  {
-    key: "Pt2Line45_Country",
-    label: "What country is Employer 2 in?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line45_Country",
-    placeholder: "Country",
-  },
-  {
-    key: "Pt2Line46_Occupation",
-    label: "What was your job title? (Employer 2)",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line46_Occupation",
-    placeholder: "Your occupation",
-  },
-  {
-    key: "Pt2Line47a_DateFrom",
-    label: "When did you start working at Employer 2?",
-    section: "Immigration & Employment Information",
-    type: "date",
-    pdfKey: "Pt2Line47a_DateFrom",
-    placeholder: "MM/DD/YYYY",
-  },
-  {
-    key: "Pt2Line47b_DateTo",
-    label: "When did you stop working at Employer 2?",
-    section: "Immigration & Employment Information",
-    type: "text",
-    pdfKey: "Pt2Line47b_DateTo",
-    placeholder: "MM/DD/YYYY or PRESENT",
-  },
-  // ============================================
-  // PART 3: BIOGRAPHIC INFORMATION
-  // ============================================
-  {
-    key: "Pt3Line1_Ethnicity",
-    label: "Are you Hispanic or Latino?",
-    section: "Biographic Information",
-    type: "radio",
-    pdfKey: "Pt3Line1_Ethnicity",
-    options: [
-      {
-        label: "I am Hispanic or Latino",
-        value: "Hispanic",
-        pdfKey: "Pt3Line1_Ethnicity[0]",
-      },
-      {
-        label: "I am not Hispanic or Latino",
-        value: "NotHispanic",
-        pdfKey: "Pt3Line1_Ethnicity[1]",
-      },
-    ],
-  },
-  {
-    key: "Pt3Line2_Race_White",
-    label: "Is your race White?",
-    section: "Biographic Information",
-    type: "checkbox",
-    pdfKey: "Pt3Line2_Race_White",
-  },
-  {
-    key: "Pt3Line2_Race_Asian",
-    label: "Is your race Asian?",
-    section: "Biographic Information",
-    type: "checkbox",
-    pdfKey: "Pt3Line2_Race_Asian",
-  },
-  {
-    key: "Pt3Line2_Race_Black",
-    label: "Is your race Black or African American?",
-    section: "Biographic Information",
-    type: "checkbox",
-    pdfKey: "Pt3Line2_Race_Black",
-  },
-  {
-    key: "Pt3Line2_Race_AmericanIndianAlaskaNative",
-    label: "Is your race American Indian or Alaska Native?",
-    section: "Biographic Information",
-    type: "checkbox",
-    pdfKey: "Pt3Line2_Race_AmericanIndianAlaskaNative",
-  },
-  {
-    key: "Pt3Line2_Race_NativeHawaiianOtherPacificIslander",
-    label: "Is your race Native Hawaiian or Other Pacific Islander?",
-    section: "Biographic Information",
-    type: "checkbox",
-    pdfKey: "Pt3Line2_Race_NativeHawaiianOtherPacificIslander",
-  },
-  {
-    key: "Pt3Line3_HeightFeet",
-    label: "What is your height in Feet?",
-    section: "Biographic Information",
-    type: "text",
-    pdfKey: "Pt3Line3_HeightFeet",
-    placeholder: "Feet",
-    maxLength: 1,
-  },
-  {
-    key: "Pt3Line3_HeightInches",
-    label: "What is your height in Inches?",
-    section: "Biographic Information",
-    type: "text",
-    pdfKey: "Pt3Line3_HeightInches",
-    placeholder: "Inches",
-    maxLength: 2,
-  },
-  {
-    key: "Pt3Line5_EyeColor",
-    label: "What is your eye color?",
-    section: "Biographic Information",
-    type: "radio",
-    pdfKey: "Pt3Line5_EyeColor",
-    options: [
-      { label: "Black", value: "Black", pdfKey: "Pt3Line5_EyeColor[0]" },
-      { label: "Blue", value: "Blue", pdfKey: "Pt3Line5_EyeColor[1]" },
-      { label: "Brown", value: "Brown", pdfKey: "Pt3Line5_EyeColor[2]" },
-      { label: "Gray", value: "Gray", pdfKey: "Pt3Line5_EyeColor[3]" },
-      { label: "Green", value: "Green", pdfKey: "Pt3Line5_EyeColor[4]" },
-      { label: "Hazel", value: "Hazel", pdfKey: "Pt3Line5_EyeColor[5]" },
-      { label: "Maroon", value: "Maroon", pdfKey: "Pt3Line5_EyeColor[6]" },
-      { label: "Pink", value: "Pink", pdfKey: "Pt3Line5_EyeColor[7]" },
-      {
-        label: "Unknown/Other",
-        value: "Unknown",
-        pdfKey: "Pt3Line5_EyeColor[8]",
-      },
-    ],
-  },
   // =============================================
   // PAGE 5 - PART 3: Biographic Information
   // =============================================
@@ -2579,7 +2242,7 @@ export const formFields: Field[] = [
     key: "hairColor",
     label: "What is your hair color?",
     type: "radio",
-    section: "Biographic Information",
+    section: "Physical Characteristics",
     pdfKey: "Pt3Line6_HairColor_Black", // ← Dummy (backend ignore karega)
     options: [
       { label: "Black", value: "black", pdfKey: "Pt3Line6_HairColor_Black" },
@@ -2621,8 +2284,7 @@ export const formFields: Field[] = [
     subQuestions: [
       {
         key: "alienNumber",
-        label:
-          "What is the Alien Registration Number (A-Number)? (If the beneficiary has one)",
+        label: "What is the Alien Registration Number (A-Number)? (If the beneficiary has one)",
         type: "text",
         section: "Information About Beneficiary",
         pdfKey: "Pt4Line1_AlienNumber", // ← SHORT KEY
@@ -2800,8 +2462,7 @@ export const formFields: Field[] = [
   },
   {
     key: "currentAptNumber",
-    label:
-      "What is the Apartment, Suite, or Floor number? (For example: Apt 4B)",
+    label: "What is the Apartment, Suite, or Floor number? (For example: Apt 4B)",
     type: "text",
     section: "Current Physical Address",
     pdfKey: "Pt4Line11_AptSteFlrNumber",
@@ -2874,8 +2535,7 @@ export const formFields: Field[] = [
   },
   {
     key: "futureAptNumber",
-    label:
-      "What is the Apartment, Suite, or Floor number of this intended address?",
+    label: "What is the Apartment, Suite, or Floor number of this intended address?",
     type: "text",
     section: "Address Where Your Relative Intends to Live",
     pdfKey: "Pt4Line12b_AptSteFlrNumber",
@@ -2991,7 +2651,7 @@ export const formFields: Field[] = [
     key: "numberOfMarriages",
     label: "How many times has the beneficiary been married?",
     type: "text",
-    section: "Marital Information",
+    section: "Beneficiary's Marital Information",
     pdfKey: "Pt4Line17_NumberofMarriages",
     maxLength: 2,
   },
@@ -3000,7 +2660,7 @@ export const formFields: Field[] = [
     pdfKey: "maritalStatus",
     label: "What is the current marital status?",
     type: "radio",
-    section: "Marital Information",
+    section: "Beneficiary's Marital Information",
     options: [
       { label: "Married", value: "married", pdfKey: "Pt4Line18_Married" },
       { label: "Divorced", value: "divorced", pdfKey: "Pt4Line18_Divorced" },
@@ -3028,7 +2688,7 @@ export const formFields: Field[] = [
     key: "spouseFamilyName",
     label: "What is the husband's or wife's Last Name (Family Name)?",
     type: "text",
-    section: "Current Spouse Information",
+    section: "Beneficiary's Marital Information",
     pdfKey: "Pt4Line18a_FamilyName",
     condition: (d) => d.maritalStatus === "married",
     subQuestions: [
@@ -3036,16 +2696,15 @@ export const formFields: Field[] = [
         key: "spouseGivenName",
         label: "What is the husband's or wife's First Name (Given Name)?",
         type: "text",
-        section: "Current Spouse Information",
+        section: "Beneficiary's Marital Information",
         pdfKey: "Pt4Line18b_GivenName",
         condition: (d) => d.maritalStatus === "married",
       },
       {
         key: "spouseMiddleName",
-        label:
-          "What is the husband's or wife's Middle Name? (Leave blank if none)",
+        label: "What is the husband's or wife's Middle Name? (Leave blank if none)",
         type: "text",
-        section: "Current Spouse Information",
+        section: "Beneficiary's Marital Information",
         pdfKey: "Pt4Line18c_MiddleName",
         condition: (d) => d.maritalStatus === "married",
       },
@@ -3053,9 +2712,10 @@ export const formFields: Field[] = [
   },
   {
     key: "dateOfMarriage",
-    label: "When did the beneficiary get married?",
+    label: "When did the beneficiary get married? (mm/dd/yyyy)",
     type: "text",
-    section: "Current Marriage Information",
+    placeholder: "MM/DD/YYYY",
+    section: "Beneficiary's Marital Information",
     pdfKey: "Pt4Line19_DateOfMarriage",
     condition: (d) => d.maritalStatus === "married",
   },
@@ -3063,7 +2723,7 @@ export const formFields: Field[] = [
     key: "marriageCity",
     label: "In what city or town did the beneficiary get married?",
     type: "text",
-    section: "Current Marriage Information",
+    section: "Beneficiary's Marital Information",
     pdfKey: "Pt4Line20a_CityTown",
     condition: (d) => d.maritalStatus === "married",
   },
@@ -3072,7 +2732,7 @@ export const formFields: Field[] = [
     label: "In what U.S. state did the beneficiary get married? (If applicable)",
     type: "dropdown",
     isState: true,
-    section: "Current Marriage Information",
+    section: "Beneficiary's Marital Information",
     pdfKey: "Pt4Line20b_State",
     condition: (d) => d.maritalStatus === "married",
   },
@@ -3080,7 +2740,7 @@ export const formFields: Field[] = [
     key: "marriageProvince",
     label: "In what province did the beneficiary get married? (If outside the U.S.)",
     type: "text",
-    section: "Current Marriage Information",
+    section: "Beneficiary's Marital Information",
     pdfKey: "Pt4Line20c_Province",
     condition: (d) => d.maritalStatus === "married",
   },
@@ -3088,30 +2748,17 @@ export const formFields: Field[] = [
     key: "marriageCountry",
     label: "In what country did the beneficiary get married?",
     type: "text",
-    section: "Current Marriage Information",
+    section: "Beneficiary's Marital Information",
     pdfKey: "Pt4Line20d_Country",
     condition: (d) => d.maritalStatus === "married",
   },
 
-  // Prior Spouse
-  {
-    key: "note",
-    label:
-      "Provide information on the beneficiary's current husband or wife (if the beneficiary is married) first, and then list all previous ones.",
-    type: "hidden",
-    section: "Names of Prior Spouses",
-  },
-  {
-    key: "note",
-    label: "Spouse 1",
-    type: "hidden",
-    section: "Names of Prior Spouses",
-  },
+  // Prior Spouse (only shown when beneficiary has been married more than once)
   {
     key: "priorSpouseFamilyName",
-    label: "What was the Last Name of the previous husband or wife?",
+    label: "What was the Last Name of the beneficiary's previous husband or wife?",
     type: "text",
-    section: "Names of Prior Spouses",
+    section: "Beneficiary's Marital Information",
     pdfKey: "Pt4Line16a_FamilyName",
     condition: (d) => parseInt(d.numberOfMarriages || "0") > 1,
     subQuestions: [
@@ -3119,16 +2766,15 @@ export const formFields: Field[] = [
         key: "priorSpouseGivenName",
         label: "What was the First Name of the previous husband or wife?",
         type: "text",
-        section: "Names of Prior Spouses",
+        section: "Beneficiary's Marital Information",
         pdfKey: "Pt4Line16b_GivenName",
         condition: (d) => parseInt(d.numberOfMarriages || "0") > 1,
       },
       {
         key: "priorSpouseMiddleName",
-        label:
-          "What was the Middle Name of the previous husband or wife? (Leave blank if none)",
+        label: "What was the Middle Name of the previous husband or wife? (Leave blank if none)",
         type: "text",
-        section: "Names of Prior Spouses",
+        section: "Beneficiary's Marital Information",
         pdfKey: "Pt4Line16c_MiddleName",
         condition: (d) => parseInt(d.numberOfMarriages || "0") > 1,
       },
@@ -3136,9 +2782,10 @@ export const formFields: Field[] = [
   },
   {
     key: "priorMarriageEndDate",
-    label: "When did this previous marriage end?",
+    label: "When did this previous marriage end? (mm/dd/yyyy)",
     type: "text",
-    section: "Names of Prior Spouses",
+    placeholder: "MM/DD/YYYY",
+    section: "Beneficiary's Marital Information",
     pdfKey: "Pt4Line17_DateMarriageEnded",
     condition: (d) => parseInt(d.numberOfMarriages || "0") > 1,
   },
@@ -3204,23 +2851,9 @@ export const formFields: Field[] = [
   // 41-44: Another Family Member (Spouse/Child)
 
   {
-    key: "note",
-    label:
-      "Now, let's list the husband, wife, and children of the family member you are helping.",
-    type: "hidden",
-    section: "Information About Beneficiary (Continued)",
-    pdfKey: "",
-  },
-  {
-    key: "note",
-    label: "First Person",
-    type: "hidden",
-    section: "Information About Beneficiary (Continued)",
-    pdfKey: "",
-  },
-  {
     key: "beneficiary_p1_familyName",
-    label: "What is their Last Name (Family Name)?",
+    label:
+      "Now let's list the beneficiary's spouse and children (if any). What is the first family member's Last Name (Family Name)? (Leave blank if there are none to add)",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line30a_FamilyName",
@@ -3270,19 +2903,13 @@ export const formFields: Field[] = [
     placeholder: "Country Name",
   },
   {
-    key: "note",
-    label: "Second Person",
-    type: "hidden",
-    section: "Information About Beneficiary (Continued)",
-    pdfKey: "",
-  },
-  {
     key: "beneficiary_p2_familyName",
-    label: "What is their Last Name (Family Name)?",
+    label: "What is the next family member's Last Name (Family Name)? (Leave blank if there are no more)",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line34a_FamilyName",
     placeholder: "Last Name",
+    condition: (d) => !!d.beneficiary_p1_familyName,
     subQuestions: [
       {
         key: "beneficiary_p2_givenName",
@@ -3310,6 +2937,7 @@ export const formFields: Field[] = [
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line35_Relationship",
     placeholder: "e.g., Spouse, Child",
+    condition: (d) => !!d.beneficiary_p1_familyName,
   },
   {
     key: "beneficiary_p2_dateOfBirth",
@@ -3318,6 +2946,7 @@ export const formFields: Field[] = [
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line48_DateOfBirth",
     placeholder: "MM/DD/YYYY",
+    condition: (d) => !!d.beneficiary_p1_familyName,
   },
   {
     key: "beneficiary_p2_countryOfBirth",
@@ -3326,21 +2955,16 @@ export const formFields: Field[] = [
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line37_CountryOfBirth",
     placeholder: "Country Name",
-  },
-  {
-    key: "note",
-    label: "Third Person",
-    type: "hidden",
-    section: "Information About Beneficiary (Continued)",
-    pdfKey: "",
+    condition: (d) => !!d.beneficiary_p1_familyName,
   },
   {
     key: "beneficiary_p3_familyName",
-    label: "What is their Last Name (Family Name)?",
+    label: "What is the next family member's Last Name (Family Name)? (Leave blank if there are no more)",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line38a_FamilyName",
     placeholder: "Last Name",
+    condition: (d) => !!d.beneficiary_p2_familyName,
     subQuestions: [
       {
         key: "beneficiary_p3_givenName",
@@ -3368,6 +2992,7 @@ export const formFields: Field[] = [
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line39_Relationship",
     placeholder: "e.g., Spouse, Child",
+    condition: (d) => !!d.beneficiary_p2_familyName,
   },
   {
     key: "beneficiary_p3_dateOfBirth",
@@ -3376,6 +3001,7 @@ export const formFields: Field[] = [
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line40_DateOfBirth",
     placeholder: "MM/DD/YYYY",
+    condition: (d) => !!d.beneficiary_p2_familyName,
   },
   {
     key: "beneficiary_p3_countryOfBirth",
@@ -3384,21 +3010,16 @@ export const formFields: Field[] = [
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line41_CountryOfBirth",
     placeholder: "Country Name",
-  },
-  {
-    key: "note",
-    label: "Fourth Person",
-    type: "hidden",
-    section: "Information About Beneficiary (Continued)",
-    pdfKey: "",
+    condition: (d) => !!d.beneficiary_p2_familyName,
   },
   {
     key: "beneficiary_p4_familyName",
-    label: "What is their Last Name (Family Name)?",
+    label: "What is the next family member's Last Name (Family Name)? (Leave blank if there are no more)",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line42a_FamilyName",
     placeholder: "Last Name",
+    condition: (d) => !!d.beneficiary_p3_familyName,
     subQuestions: [
       {
         key: "beneficiary_p4_givenName",
@@ -3426,6 +3047,7 @@ export const formFields: Field[] = [
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line43_Relationship",
     placeholder: "e.g., Spouse, Child",
+    condition: (d) => !!d.beneficiary_p3_familyName,
   },
   {
     key: "beneficiary_p4_dateOfBirth",
@@ -3434,6 +3056,7 @@ export const formFields: Field[] = [
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line44_DateOfBirth",
     placeholder: "MM/DD/YYYY",
+    condition: (d) => !!d.beneficiary_p3_familyName,
   },
   {
     key: "beneficiary_p4_countryOfBirth",
@@ -3442,21 +3065,16 @@ export const formFields: Field[] = [
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line45_CountryOfBirth",
     placeholder: "Country Name",
-  },
-  {
-    key: "note",
-    label: "Fifth Person",
-    type: "hidden",
-    section: "Information About Beneficiary (Continued)",
-    pdfKey: "",
+    condition: (d) => !!d.beneficiary_p3_familyName,
   },
   {
     key: "beneficiary_p5_familyName",
-    label: "What is their Last Name (Family Name)?",
+    label: "What is the next family member's Last Name (Family Name)? (Leave blank if there are no more)",
     type: "text",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line46a_FamilyName",
     placeholder: "Last Name",
+    condition: (d) => !!d.beneficiary_p4_familyName,
     subQuestions: [
       {
         key: "beneficiary_p5_givenName",
@@ -3484,6 +3102,7 @@ export const formFields: Field[] = [
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line47_Relationship",
     placeholder: "e.g., Spouse, Child",
+    condition: (d) => !!d.beneficiary_p4_familyName,
   },
   {
     key: "beneficiary_p5_dateOfBirth",
@@ -3492,6 +3111,7 @@ export const formFields: Field[] = [
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line48_DateOfBirth",
     placeholder: "MM/DD/YYYY",
+    condition: (d) => !!d.beneficiary_p4_familyName,
   },
   {
     key: "beneficiary_p5_countryOfBirth",
@@ -3500,13 +3120,13 @@ export const formFields: Field[] = [
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line49_CountryOfBirth",
     placeholder: "Country Name",
+    condition: (d) => !!d.beneficiary_p4_familyName,
   },
 
   // 45. Ever in US?
   {
     key: "beneficiary_everInUS",
-    label:
-      "Has the family member you are helping EVER been inside the United States?",
+    label: "Has the family member you are helping EVER been inside the United States?",
     type: "radio",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "beneficiary_everInUS",
@@ -3525,68 +3145,155 @@ export const formFields: Field[] = [
         placeholder: "Select Class of Admission",
         options: [
           // Existing options
-          { label: "1B1 - H1B1 – Specialty Occupation", value: "1B1 - H1B1 – Specialty Occupation" },
-          { label: "1B2 - H1B2 – DOD Worker", value: "1B2 - H1B2 – DOD Worker" },
-          { label: "1B3 - H1B3 – 55Fashion Model", value: "1B3 - H1B3 – 55Fashion Model" },
-          { label: "1B4 - H1B4 – Unique PGM ARTIST-ENT", value: "1B4 - H1B4 – Unique PGM ARTIST-ENT" },
-          { label: "1B3 - H1B3 – Alien Athlethe", value: "1B3 - H1B3 – Alien Athlethe" },
+          {
+            label: "1B1 - H1B1, Specialty Occupation",
+            value: "1B1 - H1B1, Specialty Occupation",
+          },
+          { label: "1B2 - H1B2, DOD Worker", value: "1B2 - H1B2, DOD Worker" },
+          { label: "1B3 - H1B3-55Fashion Model", value: "1B3 - H1B3-55Fashion Model" },
+          {
+            label: "1B4 - H1B4, Unique PGM ARTIST-ENT",
+            value: "1B4 - H1B4, Unique PGM ARTIST-ENT",
+          },
+          { label: "1B3 - H1B3, Alien Athlethe", value: "1B3 - H1B3, Alien Athlethe" },
           { label: "1BS - Support Person of H1", value: "1BS - Support Person of H1" },
-          { label: "A1 – AMBASSADOR, DIPLOMAT", value: "A1 – AMBASSADOR, DIPLOMAT" },
-          { label: "A2 –Other diplomatic officials", value: "A2 –Other diplomatic officials" },
-          { label: "A3 – ATTENDANT OF A1, A2", value: "A3 – ATTENDANT OF A1, A2" },
+          { label: "A1, AMBASSADOR, DIPLOMAT", value: "A1, AMBASSADOR, DIPLOMAT" },
+          { label: "A2, Other diplomatic officials", value: "A2, Other diplomatic officials" },
+          { label: "A3, ATTENDANT OF A1, A2", value: "A3, ATTENDANT OF A1, A2" },
           { label: "AS _ Asylum", value: "AS _ Asylum" },
           { label: "ASD - Asylum Status Denied", value: "ASD - Asylum Status Denied" },
           { label: "AW - Raw Applied for at a port", value: "AW - Raw Applied for at a port" },
-          { label: "B1 - TEMPORARY VISITOR FOR BUSINESS", value: "B1 - TEMPORARY VISITOR FOR BUSINESS" },
-          { label: "B1A - NI PERSNL-DOM SRVANT OF NI EMP", value: "B1A - NI PERSNL-DOM SRVANT OF NI EMP" },
+          {
+            label: "B1 - TEMPORARY VISITOR FOR BUSINESS",
+            value: "B1 - TEMPORARY VISITOR FOR BUSINESS",
+          },
+          {
+            label: "B1A - NI PERSNL-DOM SRVANT OF NI EMP",
+            value: "B1A - NI PERSNL-DOM SRVANT OF NI EMP",
+          },
           { label: "B1B - NI DOMESTIC SERVANT OF USC", value: "B1B - NI DOMESTIC SERVANT OF USC" },
-          { label: "B1C - NI EMPLOYED BY FOREIGN AIRLINE", value: "B1C - NI EMPLOYED BY FOREIGN AIRLINE" },
+          {
+            label: "B1C - NI EMPLOYED BY FOREIGN AIRLINE",
+            value: "B1C - NI EMPLOYED BY FOREIGN AIRLINE",
+          },
           { label: "B1D - NI - MISSIONARIES", value: "B1D - NI - MISSIONARIES" },
-          { label: "B2 - TEMPORARY VISITOR FOR PLEASURE", value: "B2 - TEMPORARY VISITOR FOR PLEASURE" },
+          {
+            label: "B2 - TEMPORARY VISITOR FOR PLEASURE",
+            value: "B2 - TEMPORARY VISITOR FOR PLEASURE",
+          },
           { label: "BE - BERING STRAIT ENTRIES", value: "BE - BERING STRAIT ENTRIES" },
-          { label: "C1 - ALIEN IN TRANSIT THROUGH U.S.", value: "C1 - ALIEN IN TRANSIT THROUGH U.S." },
+          {
+            label: "C1 - ALIEN IN TRANSIT THROUGH U.S.",
+            value: "C1 - ALIEN IN TRANSIT THROUGH U.S.",
+          },
           { label: "C2 - ALIEN IN TRANSIT TO UN HQ", value: "C2 - ALIEN IN TRANSIT TO UN HQ" },
-          { label: "C3 - FRN GOV OFF IN TRANSIT THRU US", value: "C3 - FRN GOV OFF IN TRANSIT THRU US" },
+          {
+            label: "C3 - FRN GOV OFF IN TRANSIT THRU US",
+            value: "C3 - FRN GOV OFF IN TRANSIT THRU US",
+          },
           { label: "C4 - TRANSIT WITHOUT A VISA", value: "C4 - TRANSIT WITHOUT A VISA" },
-          { label: "CC - CUBAN MASS MIGRATION PROJECT", value: "CC - CUBAN MASS MIGRATION PROJECT" },
-          { label: "CH - PAROLEE (HUMANITARIAN-HQ AUTH)", value: "CH - PAROLEE (HUMANITARIAN-HQ AUTH)" },
-          { label: "CW1 - PRINCIPAL TRANSITIONAL WORKERS", value: "CW1 - PRINCIPAL TRANSITIONAL WORKERS" },
+          {
+            label: "CC - CUBAN MASS MIGRATION PROJECT",
+            value: "CC - CUBAN MASS MIGRATION PROJECT",
+          },
+          {
+            label: "CH - PAROLEE (HUMANITARIAN-HQ AUTH)",
+            value: "CH - PAROLEE (HUMANITARIAN-HQ AUTH)",
+          },
+          {
+            label: "CW1 - PRINCIPAL TRANSITIONAL WORKERS",
+            value: "CW1 - PRINCIPAL TRANSITIONAL WORKERS",
+          },
           { label: "CW2 - DEPENDENT OF CW1", value: "CW2 - DEPENDENT OF CW1" },
-          { label: "D1 - ALIEN CREW DEPART SAME VESSEL", value: "D1 - ALIEN CREW DEPART SAME VESSEL" },
-          { label: "D2 - ALIEN CREW DEPART OTHER VESSEL", value: "D2 - ALIEN CREW DEPART OTHER VESSEL" },
-          { label: "DA - ADVANCE PAROLE (DISTRICT AUTH)", value: "DA - ADVANCE PAROLE (DISTRICT AUTH)" },
-          { label: "DE - PAROLEE (DEFERRED INSPECTION)", value: "DE - PAROLEE (DEFERRED INSPECTION)" },
+          {
+            label: "D1 - ALIEN CREW DEPART SAME VESSEL",
+            value: "D1 - ALIEN CREW DEPART SAME VESSEL",
+          },
+          {
+            label: "D2 - ALIEN CREW DEPART OTHER VESSEL",
+            value: "D2 - ALIEN CREW DEPART OTHER VESSEL",
+          },
+          {
+            label: "DA - ADVANCE PAROLE (DISTRICT AUTH)",
+            value: "DA - ADVANCE PAROLE (DISTRICT AUTH)",
+          },
+          {
+            label: "DE - PAROLEE (DEFERRED INSPECTION)",
+            value: "DE - PAROLEE (DEFERRED INSPECTION)",
+          },
           { label: "DT - PAROLEE (DISTRICT-POE AUTH)", value: "DT - PAROLEE (DISTRICT-POE AUTH)" },
-          { label: "DX - CREW ARRIVING DETAINED ON SHIP", value: "DX - CREW ARRIVING DETAINED ON SHIP" },
-          { label: "E1 - TREATY TRADER-SPOUSE-CHILDREN", value: "E1 - TREATY TRADER-SPOUSE-CHILDREN" },
-          { label: "E2 - TREATY INVESTOR-SPOUSE-CHILD", value: "E2 - TREATY INVESTOR-SPOUSE-CHILD" },
+          {
+            label: "DX - CREW ARRIVING DETAINED ON SHIP",
+            value: "DX - CREW ARRIVING DETAINED ON SHIP",
+          },
+          {
+            label: "E1 - TREATY TRADER-SPOUSE-CHILDREN",
+            value: "E1 - TREATY TRADER-SPOUSE-CHILDREN",
+          },
+          {
+            label: "E2 - TREATY INVESTOR-SPOUSE-CHILD",
+            value: "E2 - TREATY INVESTOR-SPOUSE-CHILD",
+          },
           { label: "E2C - CNMI INVESTOR", value: "E2C - CNMI INVESTOR" },
-          { label: "E3 - AUSTRALIA FREE TRADE AGREEMENT", value: "E3 - AUSTRALIA FREE TRADE AGREEMENT" },
+          {
+            label: "E3 - AUSTRALIA FREE TRADE AGREEMENT",
+            value: "E3 - AUSTRALIA FREE TRADE AGREEMENT",
+          },
           { label: "EAO - EMPLOYMENT ADVISORY OPTION", value: "EAO - EMPLOYMENT ADVISORY OPTION" },
           { label: "EWI - ENTRY WITHOUT INSPECTION", value: "EWI - ENTRY WITHOUT INSPECTION" },
           { label: "F1 - STUDENT - ACADEMIC", value: "F1 - STUDENT - ACADEMIC" },
           { label: "F2 - SPOUSE-CHILD OF F-1", value: "F2 - SPOUSE-CHILD OF F-1" },
-          { label: "FSM - CFA ADM FED STATES MICRONESIA", value: "FSM - CFA ADM FED STATES MICRONESIA" },
+          {
+            label: "FSM - CFA ADM FED STATES MICRONESIA",
+            value: "FSM - CFA ADM FED STATES MICRONESIA",
+          },
           { label: "FUG - FAMILY UNITY GRANTED", value: "FUG - FAMILY UNITY GRANTED" },
           { label: "G1 - PRINCIPAL REP. FOREIGN GOVT", value: "G1 - PRINCIPAL REP. FOREIGN GOVT" },
           { label: "G2 - OTHER REP FOREIGN GOVT", value: "G2 - OTHER REP FOREIGN GOVT" },
-          { label: "G3 - REP NON-RECOGNIZED FOREIGN GOV", value: "G3 - REP NON-RECOGNIZED FOREIGN GOV" },
+          {
+            label: "G3 - REP NON-RECOGNIZED FOREIGN GOV",
+            value: "G3 - REP NON-RECOGNIZED FOREIGN GOV",
+          },
           { label: "G4 - OFFICER-EMPLOYEE INTL. ORG.", value: "G4 - OFFICER-EMPLOYEE INTL. ORG." },
-          { label: "G5 - ATTENDANTS OF G1, G2, G3, G4", value: "G5 - ATTENDANTS OF G1, G2, G3, G4" },
-          { label: "GB - VISITOR WITHOUT A VISA 15 DAYS", value: "GB - VISITOR WITHOUT A VISA 15 DAYS" },
-          { label: "GT - VISITOR WITHOUT A VISA 15 DAYS", value: "GT - VISITOR WITHOUT A VISA 15 DAYS" },
-          { label: "H1 - ALIEN OF DIST MERIT & ABILITY", value: "H1 - ALIEN OF DIST MERIT & ABILITY" },
+          {
+            label: "G5 - ATTENDANTS OF G1, G2, G3, G4",
+            value: "G5 - ATTENDANTS OF G1, G2, G3, G4",
+          },
+          {
+            label: "GB - VISITOR WITHOUT A VISA 15 DAYS",
+            value: "GB - VISITOR WITHOUT A VISA 15 DAYS",
+          },
+          {
+            label: "GT - VISITOR WITHOUT A VISA 15 DAYS",
+            value: "GT - VISITOR WITHOUT A VISA 15 DAYS",
+          },
+          {
+            label: "H1 - ALIEN OF DIST MERIT & ABILITY",
+            value: "H1 - ALIEN OF DIST MERIT & ABILITY",
+          },
           { label: "H1A - REGISTERED NURSE", value: "H1A - REGISTERED NURSE" },
           { label: "H1B - SPECIALITY OCCUPATION", value: "H1B - SPECIALITY OCCUPATION" },
           { label: "H1C - NURSE RELIEF", value: "H1C - NURSE RELIEF" },
-          { label: "H2 - TEMPORARY LABOR CERTIFICATION", value: "H2 - TEMPORARY LABOR CERTIFICATION" },
-          { label: "H2A - TEMPORARY AGRICULTURAL WORKER", value: "H2A - TEMPORARY AGRICULTURAL WORKER" },
+          {
+            label: "H2 - TEMPORARY LABOR CERTIFICATION",
+            value: "H2 - TEMPORARY LABOR CERTIFICATION",
+          },
+          {
+            label: "H2A - TEMPORARY AGRICULTURAL WORKER",
+            value: "H2A - TEMPORARY AGRICULTURAL WORKER",
+          },
           { label: "H2B - TEMPORARY NON-AG WORKER", value: "H2B - TEMPORARY NON-AG WORKER" },
-          { label: "H2R - RET(H2B)WRKR NOT SUBJCT TO CAP", value: "H2R - RET(H2B)WRKR NOT SUBJCT TO CAP" },
+          {
+            label: "H2R - RET(H2B)WRKR NOT SUBJCT TO CAP",
+            value: "H2R - RET(H2B)WRKR NOT SUBJCT TO CAP",
+          },
           { label: "H3 - ALIEN TRAINEE", value: "H3 - ALIEN TRAINEE" },
           { label: "H3A - TRAINEE", value: "H3A - TRAINEE" },
           { label: "H3B - SPECIAL EDUCATION TRAINING", value: "H3B - SPECIAL EDUCATION TRAINING" },
-          { label: "H4 - SPS OR CHLD OF H1,H2,H3 OR H2R", value: "H4 - SPS OR CHLD OF H1,H2,H3 OR H2R" },
+          {
+            label: "H4 - SPS OR CHLD OF H1,H2,H3 OR H2R",
+            value: "H4 - SPS OR CHLD OF H1,H2,H3 OR H2R",
+          },
           { label: "HSC - FREE TRADE H1B1", value: "HSC - FREE TRADE H1B1" },
           { label: "I - FOREIGN PRESS", value: "I - FOREIGN PRESS" },
           { label: "IMM - IMMIGRANT", value: "IMM - IMMIGRANT" },
@@ -3601,60 +3308,117 @@ export const formFields: Field[] = [
           { label: "K4 - CHILD OF USC", value: "K4 - CHILD OF USC" },
           { label: "L1 - INTRA-COMPANY TRANSFEREE", value: "L1 - INTRA-COMPANY TRANSFEREE" },
           { label: "L1A - MANAGER OR EXECUTIVE", value: "L1A - MANAGER OR EXECUTIVE" },
-          { label: "L1B - SPECIALIZED KNOWLEDGE ALIEN", value: "L1B - SPECIALIZED KNOWLEDGE ALIEN" },
+          {
+            label: "L1B - SPECIALIZED KNOWLEDGE ALIEN",
+            value: "L1B - SPECIALIZED KNOWLEDGE ALIEN",
+          },
           { label: "L2 - SPOUSE-CHILD OF L-1", value: "L2 - SPOUSE-CHILD OF L-1" },
           { label: "LZ - BLANKET L PETITION", value: "LZ - BLANKET L PETITION" },
-          { label: "M1 - STUDENT - VOCATIONAL-NON-ACAD.", value: "M1 - STUDENT - VOCATIONAL-NON-ACAD." },
+          {
+            label: "M1 - STUDENT - VOCATIONAL-NON-ACAD.",
+            value: "M1 - STUDENT - VOCATIONAL-NON-ACAD.",
+          },
           { label: "M2 - SPOUSE-CHILD OF M-1", value: "M2 - SPOUSE-CHILD OF M-1" },
-          { label: "MIS - CFA ADM REP MARSHALL ISLANDS", value: "MIS - CFA ADM REP MARSHALL ISLANDS" },
-          { label: "ML - PAROLEE-MEDICAL, LEGAL, HUMAN", value: "ML - PAROLEE-MEDICAL, LEGAL, HUMAN" },
-          { label: "N1 - PRINCIPAL REP. OF NATO MEMBER", value: "N1 - PRINCIPAL REP. OF NATO MEMBER" },
+          {
+            label: "MIS - CFA ADM REP MARSHALL ISLANDS",
+            value: "MIS - CFA ADM REP MARSHALL ISLANDS",
+          },
+          {
+            label: "ML - PAROLEE-MEDICAL, LEGAL, HUMAN",
+            value: "ML - PAROLEE-MEDICAL, LEGAL, HUMAN",
+          },
+          {
+            label: "N1 - PRINCIPAL REP. OF NATO MEMBER",
+            value: "N1 - PRINCIPAL REP. OF NATO MEMBER",
+          },
           { label: "N2 - OTHER REP. OF NATO MEMBER", value: "N2 - OTHER REP. OF NATO MEMBER" },
           { label: "N3 - CLERICAL STAFF FOR N-1, N-2", value: "N3 - CLERICAL STAFF FOR N-1, N-2" },
           { label: "N4 - OFFICIALS OF NATO", value: "N4 - OFFICIALS OF NATO" },
           { label: "N5 - EXPERTS EMPLOYED BY NATO", value: "N5 - EXPERTS EMPLOYED BY NATO" },
           { label: "N6 - CIVILIAN COMPONENT OF NATO", value: "N6 - CIVILIAN COMPONENT OF NATO" },
-          { label: "N7 - ATTENDANTS OF N-1 THROUGH N-6", value: "N7 - ATTENDANTS OF N-1 THROUGH N-6" },
-          { label: "N8 - PARENT OF SPEC IMMIGRANT CHILD", value: "N8 - PARENT OF SPEC IMMIGRANT CHILD" },
+          {
+            label: "N7 - ATTENDANTS OF N-1 THROUGH N-6",
+            value: "N7 - ATTENDANTS OF N-1 THROUGH N-6",
+          },
+          {
+            label: "N8 - PARENT OF SPEC IMMIGRANT CHILD",
+            value: "N8 - PARENT OF SPEC IMMIGRANT CHILD",
+          },
           { label: "N9 - SPOUSE-CHILD OF N8", value: "N9 - SPOUSE-CHILD OF N8" },
-          { label: "O1 - ALIEN W-EXTRAORDINARY ABILITY", value: "O1 - ALIEN W-EXTRAORDINARY ABILITY" },
-          { label: "O1A - EXTRAORDINARY ALIEN - NON-ARTS", value: "O1A - EXTRAORDINARY ALIEN - NON-ARTS" },
-          { label: "O1B - EXTRAORDINARY ALIEN IN ARTS", value: "O1B - EXTRAORDINARY ALIEN IN ARTS" },
+          {
+            label: "O1 - ALIEN W-EXTRAORDINARY ABILITY",
+            value: "O1 - ALIEN W-EXTRAORDINARY ABILITY",
+          },
+          {
+            label: "O1A - EXTRAORDINARY ALIEN - NON-ARTS",
+            value: "O1A - EXTRAORDINARY ALIEN - NON-ARTS",
+          },
+          {
+            label: "O1B - EXTRAORDINARY ALIEN IN ARTS",
+            value: "O1B - EXTRAORDINARY ALIEN IN ARTS",
+          },
           { label: "O2 - ACCOMPANYING ALIEN TO O1", value: "O2 - ACCOMPANYING ALIEN TO O1" },
           { label: "O3 - SPOUSE-CHILD OF O-1, O-2", value: "O3 - SPOUSE-CHILD OF O-1, O-2" },
-          { label: "OP - PAROLEE (OVERSEAS AUTHORIZED)", value: "OP - PAROLEE (OVERSEAS AUTHORIZED)" },
+          {
+            label: "OP - PAROLEE (OVERSEAS AUTHORIZED)",
+            value: "OP - PAROLEE (OVERSEAS AUTHORIZED)",
+          },
           { label: "P1 - ATHLETE OR ENTERTAINER", value: "P1 - ATHLETE OR ENTERTAINER" },
           { label: "P1A - ALIEN WITH ATHLETIC EVENT", value: "P1A - ALIEN WITH ATHLETIC EVENT" },
-          { label: "P1B - ALIEN WITH ENTERTAINMENT GROUP", value: "P1B - ALIEN WITH ENTERTAINMENT GROUP" },
+          {
+            label: "P1B - ALIEN WITH ENTERTAINMENT GROUP",
+            value: "P1B - ALIEN WITH ENTERTAINMENT GROUP",
+          },
           { label: "P1S - SUPPORT PERSON OF P-1", value: "P1S - SUPPORT PERSON OF P-1" },
           { label: "P2 - EXHANGE ARTIST-ENTERTAINER", value: "P2 - EXHANGE ARTIST-ENTERTAINER" },
           { label: "P2S - SUPPORT PERSON OF P-2", value: "P2S - SUPPORT PERSON OF P-2" },
-          { label: "P3 - UNIQUE PGM ARTIST-ENTERTAINER", value: "P3 - UNIQUE PGM ARTIST-ENTERTAINER" },
+          {
+            label: "P3 - UNIQUE PGM ARTIST-ENTERTAINER",
+            value: "P3 - UNIQUE PGM ARTIST-ENTERTAINER",
+          },
           { label: "P3S - SUPPORT PERSON OF P-3", value: "P3S - SUPPORT PERSON OF P-3" },
-          { label: "P4 - SPOUSE-CHILD OF P-1, P-2, P-3", value: "P4 - SPOUSE-CHILD OF P-1, P-2, P-3" },
+          {
+            label: "P4 - SPOUSE-CHILD OF P-1, P-2, P-3",
+            value: "P4 - SPOUSE-CHILD OF P-1, P-2, P-3",
+          },
           { label: "PAL - CFA ADMISSION PALAU", value: "PAL - CFA ADMISSION PALAU" },
           { label: "PAR - PAROLEE", value: "PAR - PAROLEE" },
           { label: "PI - PACIFIC ISLANDER", value: "PI - PACIFIC ISLANDER" },
           { label: "Q1 - INTL CULTURAL XCHG VISITORS", value: "Q1 - INTL CULTURAL XCHG VISITORS" },
-          { label: "Q2 - IRISH PEACE PROCESS PARTICPNTS", value: "Q2 - IRISH PEACE PROCESS PARTICPNTS" },
+          {
+            label: "Q2 - IRISH PEACE PROCESS PARTICPNTS",
+            value: "Q2 - IRISH PEACE PROCESS PARTICPNTS",
+          },
           { label: "Q3 - SPOUSE-CHILD OF Q2", value: "Q3 - SPOUSE-CHILD OF Q2" },
           { label: "R1 - RELIGIOUS OCCUPATION", value: "R1 - RELIGIOUS OCCUPATION" },
           { label: "R2 - SPOUSE-CHILD OF R-1", value: "R2 - SPOUSE-CHILD OF R-1" },
           { label: "RE - REFUGEE", value: "RE - REFUGEE" },
-          { label: "RE5 - HAITIAN W-GRANTED REFUGEE STAT", value: "RE5 - HAITIAN W-GRANTED REFUGEE STAT" },
+          {
+            label: "RE5 - HAITIAN W-GRANTED REFUGEE STAT",
+            value: "RE5 - HAITIAN W-GRANTED REFUGEE STAT",
+          },
           { label: "RW - RAW APPLIED FOR AT A US CO", value: "RW - RAW APPLIED FOR AT A US CO" },
           { label: "S1 - SPECIAL AGRICULTURAL WORKER", value: "S1 - SPECIAL AGRICULTURAL WORKER" },
           { label: "S2 - SPECIAL AGRICULTURAL WORKER", value: "S2 - SPECIAL AGRICULTURAL WORKER" },
           { label: "S9 - EMERGENCY FARM WORKER", value: "S9 - EMERGENCY FARM WORKER" },
           { label: "SDF - SUSPECTED DOCUMENT FRAUD", value: "SDF - SUSPECTED DOCUMENT FRAUD" },
           { label: "ST - STOWAWAY", value: "ST - STOWAWAY" },
-          { label: "T1 - VICTIM OF SEVERE FORM OF TRAFK", value: "T1 - VICTIM OF SEVERE FORM OF TRAFK" },
+          {
+            label: "T1 - VICTIM OF SEVERE FORM OF TRAFK",
+            value: "T1 - VICTIM OF SEVERE FORM OF TRAFK",
+          },
           { label: "T2 - SPOUSE OF T1", value: "T2 - SPOUSE OF T1" },
           { label: "T3 - CHILD OF T1", value: "T3 - CHILD OF T1" },
           { label: "T4 - PARENT OF T1", value: "T4 - PARENT OF T1" },
-          { label: "T5 - UNMARRIED UNDER 18 SIBLG T1 NI", value: "T5 - UNMARRIED UNDER 18 SIBLG T1 NI" },
+          {
+            label: "T5 - UNMARRIED UNDER 18 SIBLG T1 NI",
+            value: "T5 - UNMARRIED UNDER 18 SIBLG T1 NI",
+          },
           { label: "TB - SPOUSE OR CHILD OF CAN. FR", value: "TB - SPOUSE OR CHILD OF CAN. FR" },
-          { label: "TC - CANADIAN FREE TRADE AGREEMENT", value: "TC - CANADIAN FREE TRADE AGREEMENT" },
+          {
+            label: "TC - CANADIAN FREE TRADE AGREEMENT",
+            value: "TC - CANADIAN FREE TRADE AGREEMENT",
+          },
           { label: "TD - NAFTA DEPENDENT", value: "TD - NAFTA DEPENDENT" },
           { label: "TN1 - NAFTA PRINCIPAL (CANADA)", value: "TN1 - NAFTA PRINCIPAL (CANADA)" },
           { label: "TN2 - NAFTA PRINCIPAL (MEXICO)", value: "TN2 - NAFTA PRINCIPAL (MEXICO)" },
@@ -3663,13 +3427,19 @@ export const formFields: Field[] = [
           { label: "U2 - SPOUSE OF U1", value: "U2 - SPOUSE OF U1" },
           { label: "U3 - CHILD OF U1", value: "U3 - CHILD OF U1" },
           { label: "U4 - PARENT OF U1", value: "U4 - PARENT OF U1" },
-          { label: "U5 - UNMARRIED UNDER 18 SIBLG U1 NI", value: "U5 - UNMARRIED UNDER 18 SIBLG U1 NI" },
+          {
+            label: "U5 - UNMARRIED UNDER 18 SIBLG U1 NI",
+            value: "U5 - UNMARRIED UNDER 18 SIBLG U1 NI",
+          },
           { label: "UN - UNKNOWN", value: "UN - UNKNOWN" },
           { label: "UU - UNKNOWN", value: "UU - UNKNOWN" },
           { label: "V1 - SPOUSE OF LPR", value: "V1 - SPOUSE OF LPR" },
           { label: "V2 - CHILD OF LPR", value: "V2 - CHILD OF LPR" },
           { label: "V3 - CHILD OF V2", value: "V3 - CHILD OF V2" },
-          { label: "WB - VISITOR FOR BUSINESS - VWPP/VWP", value: "WB - VISITOR FOR BUSINESS - VWPP/VWP" },
+          {
+            label: "WB - VISITOR FOR BUSINESS - VWPP/VWP",
+            value: "WB - VISITOR FOR BUSINESS - VWPP/VWP",
+          },
           { label: "WD - WITHDRAWL (I-275)", value: "WD - WITHDRAWL (I-275)" },
           { label: "WI - WITHOUT INSPECTION", value: "WI - WITHOUT INSPECTION" },
           { label: "WT - VISITOR FOR PLEASURE - VWPP", value: "WT - VISITOR FOR PLEASURE - VWPP" },
@@ -3795,8 +3565,7 @@ export const formFields: Field[] = [
       },
       {
         key: "beneficiary_employerUnitNumber",
-        label:
-          "What is the Apartment, Suite, or Floor number? (For example: Suite 101)",
+        label: "What is the Apartment, Suite, or Floor number? (For example: Suite 101)",
         type: "text",
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line26_AptSteFlrNumber",
@@ -3819,7 +3588,7 @@ export const formFields: Field[] = [
         key: "beneficiary_employerState",
         label: "In what U.S. state is the employer located? (If applicable)",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line26_State",
         placeholder: "NY",
@@ -3837,8 +3606,7 @@ export const formFields: Field[] = [
       },
       {
         key: "beneficiary_employerProvince",
-        label:
-          "In what province is the employer located? (If outside the U.S.)",
+        label: "In what province is the employer located? (If outside the U.S.)",
         type: "text",
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line26_Province",
@@ -3895,8 +3663,7 @@ export const formFields: Field[] = [
         label: "Select all the types of court cases that apply to the beneficiary:",
         type: "radio",
         section: "Information About Beneficiary (Continued)",
-        condition: (data) =>
-          data.beneficiary_inImmigrationProceedings === "Yes",
+        condition: (data) => data.beneficiary_inImmigrationProceedings === "Yes",
         options: [
           {
             label: "Removal (The government ordered the beneficiary to leave the U.S.)",
@@ -3930,19 +3697,17 @@ export const formFields: Field[] = [
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line55a_CityOrTown",
         placeholder: "City Name",
-        condition: (data) =>
-          data.beneficiary_inImmigrationProceedings === "Yes",
+        condition: (data) => data.beneficiary_inImmigrationProceedings === "Yes",
       },
       {
         key: "beneficiary_proceedingState",
         label: "In what U.S. state was the court case located?",
         type: "dropdown",
-    isState: true,
+        isState: true,
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line55b_State",
         placeholder: "NY",
-        condition: (data) =>
-          data.beneficiary_inImmigrationProceedings === "Yes",
+        condition: (data) => data.beneficiary_inImmigrationProceedings === "Yes",
       },
       {
         key: "beneficiary_proceedingDate",
@@ -3951,8 +3716,7 @@ export const formFields: Field[] = [
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line56_Date",
         placeholder: "MM/DD/YYYY",
-        condition: (data) =>
-          data.beneficiary_inImmigrationProceedings === "Yes",
+        condition: (data) => data.beneficiary_inImmigrationProceedings === "Yes",
       },
     ],
   },
@@ -4039,8 +3803,7 @@ export const formFields: Field[] = [
     inputMode: "none",
     pdfKey: "Pt4Line56_AptSteFlrNumber",
     placeholder: "101",
-    condition: (data) =>
-      ["Ste", "Apt", "Flr"].includes(data.beneficiary_nativeLanguageUnitType),
+    condition: (data) => ["Ste", "Apt", "Flr"].includes(data.beneficiary_nativeLanguageUnitType),
   },
   {
     key: "beneficiary_nativeLanguageCity",
@@ -4111,8 +3874,7 @@ export const formFields: Field[] = [
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line57_AptSteFlrNumber",
     placeholder: "202",
-    condition: (data) =>
-      ["Ste", "Apt", "Flr"].includes(data.beneficiary_currentUSUnitType),
+    condition: (data) => ["Ste", "Apt", "Flr"].includes(data.beneficiary_currentUSUnitType),
   },
   {
     key: "beneficiary_currentUSCity",
@@ -4182,8 +3944,7 @@ export const formFields: Field[] = [
   },
   {
     key: "beneficiary_marriageDateTo",
-    label:
-      "On what date did that marriage end? (Leave blank if the beneficiary is still married)",
+    label: "On what date did that marriage end? (Leave blank if the beneficiary is still married)",
     type: "date",
     section: "Information About Beneficiary (Continued)",
     pdfKey: "Pt4Line58b_DateTo",
@@ -4244,8 +4005,7 @@ export const formFields: Field[] = [
   // Part 5: Previous Petitions
   {
     key: "hasPreviousPetition",
-    label:
-      "Have you EVER helped this family member or any other person before?",
+    label: "Have you EVER helped this family member or any other person before?",
     type: "radio",
     section: "Other Information",
     pdfKey: "hasPreviousPetition",
@@ -4257,8 +4017,7 @@ export const formFields: Field[] = [
       // 2.a-c: Name of Previous Beneficiary
       {
         key: "previousPetitionerFamilyName",
-        label:
-          "What was the family name (last name) of the person you helped previously?",
+        label: "What was the family name (last name) of the person you helped previously?",
         type: "text",
         section: "Other Information",
         pdfKey: "Pt5Line2a_FamilyName",
@@ -4276,8 +4035,7 @@ export const formFields: Field[] = [
       },
       {
         key: "previousPetitionerMiddleName",
-        label:
-          "What was their middle name? (Leave blank if they don't have one)",
+        label: "What was their middle name? (Leave blank if they don't have one)",
         type: "text",
         section: "Other Information",
         pdfKey: "Pt5Line2c_MiddleName",
@@ -4326,8 +4084,7 @@ export const formFields: Field[] = [
   // 5. Result
   {
     key: "previousFilingResult",
-    label:
-      "What was the result of that application? (For example: Approved, Denied, or Withdrawn)",
+    label: "What was the result of that application? (For example: Approved, Denied, or Withdrawn)",
     type: "text",
     section: "Other Information",
     pdfKey: "Pt5Line5_Result",
@@ -4340,35 +4097,21 @@ export const formFields: Field[] = [
     pdfKey: "submitting_others",
     type: "radio",
     label: "Are you also helping any other family members at the same time?",
+    section: "Other Information",
     options: [
       { label: "Yes", value: "Yes" },
       { label: "No", value: "No" },
     ],
     subQuestions: [],
   },
-  {
-    key: "note_relative_intro",
-    pdfKey: "relativeInfo",
-    type: "hidden",
-    label:
-      "Please provide the names and how you are related to each family member.",
-    condition: (data) => data.submitting_others === "Yes",
-  },
 
   // 6.a-c: Relative 1
   {
-    key: "note_relative_1",
-    pdfKey: "note",
-    type: "hidden",
-    label: "First Additional Relative",
-    condition: (data) => data.submitting_others === "Yes",
-  },
-  {
     key: "beneficiary_childFamilyName",
     label:
-      "What is the family name (last name) of the first additional family member you are helping?",
+      "Great. Let's list the other family members you are helping. What is the first additional family member's family name (last name)?",
     type: "text",
-    section: "Information About Beneficiary (Continued)",
+    section: "Other Information",
     pdfKey: "Pt4Line6a_FamilyName",
     condition: (data) => data.submitting_others === "Yes",
     placeholder: "Last Name",
@@ -4384,8 +4127,7 @@ export const formFields: Field[] = [
       },
       {
         key: "beneficiary_childMiddleName",
-        label:
-          "What is their middle name? (Leave blank if they don't have one)",
+        label: "What is their middle name? (Leave blank if they don't have one)",
         type: "text",
         section: "Information About Beneficiary (Continued)",
         pdfKey: "Pt4Line6c_MiddleName",
@@ -4408,18 +4150,11 @@ export const formFields: Field[] = [
   },
   // 6.a-c: Relative 2
   {
-    key: "note_relative_2",
-    pdfKey: "note",
-    type: "hidden",
-    label: "Second Additional Relative",
-    condition: (data) => data.submitting_others === "Yes",
-  },
-  {
     key: "beneficiary_childFamilyName2",
     label:
       "What is the family name (last name) of the second additional family member you are helping?",
     type: "text",
-    section: "Information About Beneficiary (Continued)",
+    section: "Other Information",
     pdfKey: "Pt4Line8a_FamilyName",
     condition: (data) => data.submitting_others === "Yes",
     placeholder: "Last Name",
@@ -4435,11 +4170,10 @@ export const formFields: Field[] = [
       },
       {
         key: "beneficiary_childMiddleName2",
-        label:
-          "What is their middle name? (Leave blank if they don't have one)",
+        label: "What is their middle name? (Leave blank if they don't have one)",
         type: "text",
         section: "Information About Beneficiary (Continued)",
-        pdfKey: "Pt4Line8c_MiddleName", 
+        pdfKey: "Pt4Line8c_MiddleName",
         condition: (data) => data.submitting_others === "Yes",
         placeholder: "Middle Name",
       },
@@ -4471,18 +4205,10 @@ export const formFields: Field[] = [
   // Petitioner’s Contact Information, Declaration, and Signature
 
   {
-    key: "note_petitioner_info",
-    pdfKey: "note",
-    type: "hidden",
-    // we are getting petitioner info in this section
-    label: "Now moving towards petitioner information.",
-  },
-  {
     key: "petitioner_daytimePhone",
-    label:
-      "What is your daytime telephone number? (Where can we reach you during the day?)",
+    label: "What is your daytime telephone number? (Where can we reach you during the day?)",
     type: "text",
-    section: "Petitioner’s Contact Information, Declaration, and Signature",
+    section: "Petitioner's Contact Information, Declaration, and Signature",
     pdfKey: "Pt6Line3_DaytimePhoneNumber",
     placeholder: "(123) 456-7890",
   },
@@ -4490,7 +4216,7 @@ export const formFields: Field[] = [
     key: "petitioner_mobile",
     label: "What is your mobile (cell phone) number? (If you have one)",
     type: "text",
-    section: "Petitioner’s Contact Information, Declaration, and Signature",
+    section: "Petitioner's Contact Information, Declaration, and Signature",
     pdfKey: "Pt6Line4_MobileNumber",
     placeholder: "(123) 456-7890",
   },
@@ -4498,7 +4224,7 @@ export const formFields: Field[] = [
     key: "petitioner_email",
     label: "What is your email address? (If you have one)",
     type: "text",
-    section: "Petitioner’s Contact Information, Declaration, and Signature",
+    section: "Petitioner's Contact Information, Declaration, and Signature",
     pdfKey: "Pt6Line5_Email",
     placeholder: "you@example.com",
   },
@@ -4506,10 +4232,9 @@ export const formFields: Field[] = [
   // Signature
   {
     key: "petitioner_signature",
-    label:
-      "Please type your(petitioner) full legal name here to act as your electronic signature.",
+    label: "Please type your(petitioner) full legal name here to act as your electronic signature.",
     type: "text",
-    section: "Petitioner’s Contact Information, Declaration, and Signature",
+    section: "Petitioner's Contact Information, Declaration, and Signature",
     pdfKey: "P5_Line6a_SignatureofApplicant",
     placeholder: "Type your full name",
   },
@@ -4517,7 +4242,7 @@ export const formFields: Field[] = [
     key: "petitioner_signature_date",
     label: "On what date are you(petitioner) signing this form?",
     type: "date",
-    section: "Petitioner’s Contact Information, Declaration, and Signature",
+    section: "Petitioner's Contact Information, Declaration, and Signature",
     pdfKey: "Pt6Line6b_DateofSignature",
     placeholder: "MM/DD/YYYY",
   },
@@ -4541,8 +4266,7 @@ export const formFields: Field[] = [
   // Interpreter Help
   {
     key: "interpreter_help_english",
-    label:
-      "Can you read and understand English? (This helps us know if you needed an interpreter)",
+    label: "Can you read and understand English? (This helps us know if you needed an interpreter)",
     type: "radio",
     section: "Interpreter's Information",
     pdfKey: "interpreter_help_english",
@@ -4604,8 +4328,7 @@ export const formFields: Field[] = [
   },
   {
     key: "interpreter_business",
-    label:
-      "What is the name of the interpreter's business or organization? (If they have one)",
+    label: "What is the name of the interpreter's business or organization? (If they have one)",
     type: "text",
     section: "Interpreter's Information",
     pdfKey: "Pt7Line2_InterpreterBusinessorOrg",
@@ -4732,8 +4455,7 @@ export const formFields: Field[] = [
   // Interpreter Signature
   {
     key: "interpreter_signature",
-    label:
-      "Please type the interpreter's full legal name to act as their signature.",
+    label: "Please type the interpreter's full legal name to act as their signature.",
     type: "text",
     section: "Interpreter's Information",
     pdfKey: "Pt7Line7a_Signature",
@@ -4753,8 +4475,7 @@ export const formFields: Field[] = [
   // Language Name (Top of Page 10)
   {
     key: "interpreter_language_name",
-    label:
-      "What language did the interpreter use to translate this form for you?",
+    label: "What language did the interpreter use to translate this form for you?",
     type: "text",
     section: "Interpreter's Information",
     pdfKey: "Pt7_NameofLanguage",
@@ -4774,19 +4495,17 @@ export const formFields: Field[] = [
   // Representative Help
   {
     key: "representative_help",
-    label:
-      "Did someone else (like a lawyer or professional preparer) help you fill out this form?",
+    label: "Did someone else (like a lawyer or professional preparer) help you fill out this form?",
     type: "radio",
-    section: "Petitioner’s Contact Information, Declaration, and Signature",
+    section: "Petitioner's Contact Information, Declaration, and Signature",
     pdfKey: "Pt6Line2_Checkbox",
     options: [{ label: "Yes", value: "Yes", pdfKey: "Pt6Line2_Checkbox" }],
     subQuestions: [
       {
         key: "representative_name",
-        label:
-          "What is the name of the person who helped you fill out this form?",
+        label: "What is the name of the person who helped you fill out this form?",
         type: "text",
-        section: "Petitioner’s Contact Information, Declaration, and Signature",
+        section: "Petitioner's Contact Information, Declaration, and Signature",
         pdfKey: "Pt6Line2_RepresentativeName",
         placeholder: "Preparer's Name",
         condition: (data) => data.representative_help === "Yes",
@@ -4798,8 +4517,7 @@ export const formFields: Field[] = [
     key: "preparer_familyName",
     label: "What is the preparer's family name (last name)?",
     type: "text",
-    section:
-      "Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line1a_PreparerFamilyName",
     placeholder: "Last Name",
     condition: (data) => data.representative_help === "Yes",
@@ -4808,8 +4526,7 @@ export const formFields: Field[] = [
         key: "preparer_givenName",
         label: "What is their given name (first name)?",
         type: "text",
-        section:
-          "Preparer's Contact Information, Certification, and Signature",
+        section: "Preparer's Contact Information, Certification, and Signature",
         pdfKey: "Pt8Line1b_PreparerGivenName",
         placeholder: "First Name",
         condition: (data) => data.representative_help === "Yes",
@@ -4818,11 +4535,9 @@ export const formFields: Field[] = [
   },
   {
     key: "preparer_business",
-    label:
-      "What is the name of the preparer's business or organization? (If available)",
+    label: "What is the name of the preparer's business or organization? (If available)",
     type: "text",
-    section:
-      "Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line2_BusinessName",
     placeholder: "Business Name",
     condition: (data) => data.representative_help === "Yes",
@@ -4833,8 +4548,7 @@ export const formFields: Field[] = [
     key: "preparer_street",
     label: "What is the preparer's street address?",
     type: "text",
-    section:
-      "Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_StreetNumberName",
     placeholder: "Street Number and Name",
     condition: (data) => data.representative_help === "Yes",
@@ -4843,8 +4557,7 @@ export const formFields: Field[] = [
     key: "preparer_unitType",
     label: "Is their address an Apartment, Suite, or Floor?",
     type: "radio",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "preparer_unitType",
     options: [
       { label: "Ste", value: "Ste", pdfKey: "Pt8Line3_Unit[0]" },
@@ -4857,20 +4570,17 @@ export const formFields: Field[] = [
     key: "preparer_unitNumber",
     label: "What is the Apartment, Suite, or Floor number?",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_AptSteFlrNumber",
     placeholder: "Number",
     condition: (data) =>
-      data.representative_help === "Yes" &&
-      ["Ste", "Apt", "Flr"].includes(data.preparer_unitType),
+      data.representative_help === "Yes" && ["Ste", "Apt", "Flr"].includes(data.preparer_unitType),
   },
   {
     key: "preparer_city",
     label: "In what city or town is the preparer located?",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_CityOrTown",
     placeholder: "City Name",
     condition: (data) => data.representative_help === "Yes",
@@ -4880,8 +4590,7 @@ export const formFields: Field[] = [
     label: "In what state?",
     type: "dropdown",
     isState: true,
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_State",
     // options: [{ label: "NY", value: "NY", pdfKey: "state_NY" }],
     placeholder: "Select State",
@@ -4891,8 +4600,7 @@ export const formFields: Field[] = [
     key: "preparer_zip",
     label: "What is the ZIP code?",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_ZipCode",
     placeholder: "ZIP Code",
     maxLength: 5,
@@ -4902,8 +4610,7 @@ export const formFields: Field[] = [
     key: "preparer_province",
     label: "In what province is the preparer located? (If applicable)",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_Province",
     placeholder: "Province",
     condition: (data) => data.representative_help === "Yes",
@@ -4912,8 +4619,7 @@ export const formFields: Field[] = [
     key: "preparer_postalCode",
     label: "What is their postal code? (If applicable)",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_PostalCode",
     placeholder: "Postal Code",
     condition: (data) => data.representative_help === "Yes",
@@ -4922,8 +4628,7 @@ export const formFields: Field[] = [
     key: "preparer_country",
     label: "In what country is the preparer located?",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line3_Country",
     placeholder: "Country Name",
     condition: (data) => data.representative_help === "Yes",
@@ -4948,8 +4653,7 @@ export const formFields: Field[] = [
     key: "preparer_daytimePhone",
     label: "What is the preparer's daytime telephone number?",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line4_DaytimePhoneNumber",
     placeholder: "(000) 000-0000",
     condition: (data) => data.representative_help === "Yes",
@@ -4958,8 +4662,7 @@ export const formFields: Field[] = [
     key: "preparer_has_a_number",
     label: "Do you have a fax number?",
     type: "radio",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     options: [
       { label: "Yes", value: "Yes" },
       { label: "No", value: "No" },
@@ -4970,13 +4673,11 @@ export const formFields: Field[] = [
         key: "preparer_fax",
         label: "What is the preparer's fax number? (If they have one)",
         type: "text",
-        section:
-          " Preparer's Contact Information, Certification, and Signature",
+        section: "Preparer's Contact Information, Certification, and Signature",
         pdfKey: "Pt8Line5_PreparerFaxNumber",
         placeholder: "Fax Number",
         condition: (data) =>
-          data.representative_help === "Yes" &&
-          data.preparer_has_a_number === "Yes",
+          data.representative_help === "Yes" && data.preparer_has_a_number === "Yes",
         tooltip:
           "A fax number is a telephone number used to send and receive scanned documents over a phone line. Many lawyers and professional offices still use them to share paperwork quickly.",
       },
@@ -4986,8 +4687,7 @@ export const formFields: Field[] = [
     key: "preparer_email",
     label: "What is the preparer's email address? (If they have one)",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line6_Email",
     placeholder: "e.g. preparer@example.com",
     condition: (data) => data.representative_help === "Yes",
@@ -4999,8 +4699,7 @@ export const formFields: Field[] = [
     label:
       "Does the preparer certify that they prepared this form at your request and that the information is accurate?",
     type: "radio",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "preparer_certify",
     options: [
       {
@@ -5016,8 +4715,7 @@ export const formFields: Field[] = [
     key: "preparer_interpreter_used",
     label: "Did the preparer use an interpreter to assist you with this form?",
     type: "radio",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "preparer_interpreter_used",
     options: [
       {
@@ -5037,11 +4735,9 @@ export const formFields: Field[] = [
   // Signature
   {
     key: "preparer_signature",
-    label:
-      "Please type the preparer's full legal name to act as their signature.",
+    label: "Please type the preparer's full legal name to act as their signature.",
     type: "text",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line8a_Signature",
     placeholder: "Type full name",
     condition: (data) => data.representative_help === "Yes",
@@ -5050,8 +4746,7 @@ export const formFields: Field[] = [
     key: "preparer_signature_date",
     label: "On what date is the preparer signing this form?",
     type: "date",
-    section:
-      " Preparer's Contact Information, Certification, and Signature",
+    section: "Preparer's Contact Information, Certification, and Signature",
     pdfKey: "Pt8Line8b_DateofSignature",
     placeholder: "MM/DD/YYYY",
     condition: (data) => data.representative_help === "Yes",
@@ -5267,7 +4962,16 @@ export const formFields: Field[] = [
 
 export const getInitialFormData = () => {
   const data: Record<string, string> = {};
-  formFields.forEach((f) => (data[f.key] = ""));
+  formFields.forEach((f) => {
+    data[f.key] = "";
+    if (f.options) {
+      f.options.forEach((opt) => {
+        if (opt.pdfKey) {
+          data[opt.pdfKey] = "";
+        }
+      });
+    }
+  });
   return data;
 };
 
@@ -5285,7 +4989,7 @@ export const sectionIntroMessages = {
   "Address History": {
     greeting: "Let's cover your address history",
     message:
-      "USCIS requires a complete record of where you've lived. We'll collect your current and previous addresses to ensure all records are accurate and up to date.",
+      "USCIS requires a complete record of where you've lived in the last 5 years. We'll collect your current and previous addresses to ensure all records are accurate and up to date.",
   },
   "Biographic Information": {
     greeting: "Moving on to biographic details",
@@ -5329,12 +5033,80 @@ export const sectionIntroMessages = {
   },
 };
 
+export const overflowFields = [
+  {
+    prefix: "address",
+    countKey: "address_count",
+    startIndex: 3,
+    maxIndex: 9,
+    pageNumber: "2",
+    partNumber: "2",
+    itemNumber: "14",
+    labelPrefix: "Address",
+    fields: [
+      { suffix: "street", label: "Street" },
+      { suffix: "city", label: "City" },
+      { suffix: "state", label: "State" },
+      { suffix: "zip", label: "Zip" },
+      { suffix: "from", label: "From" },
+      { suffix: "to", label: "To" },
+      { suffix: "country", label: "Country" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const street = data[`address_${index}_street`] || "";
+      const city = data[`address_${index}_city`] || "";
+      const state = data[`address_${index}_state`] || "";
+      const zip = data[`address_${index}_zip`] || "";
+      const from = data[`address_${index}_from`] || "";
+      const to = data[`address_${index}_to`] || "";
+      const country = data[`address_${index}_country`] || "";
+
+      const parts = [street, city, state, zip, country].filter(Boolean);
+      let info = `Address ${index}: ${parts.join("\n ")}.`;
+      if (from || to) {
+        info += ` From: ${from} To: ${to}`;
+      }
+      return info;
+    },
+  },
+  {
+    prefix: "spouse",
+    countKey: "number_of_marriages",
+    startIndex: 3,
+    maxIndex: 8,
+    pageNumber: "3",
+    partNumber: "2",
+    itemNumber: "22",
+    labelPrefix: "Spouse",
+    fields: [
+      { suffix: "given_name", label: "First Name" },
+      { suffix: "family_name", label: "Last Name" },
+      { suffix: "middle_name", label: "Middle Name" },
+      { suffix: "marriage_end_date", label: "Marriage End Date" },
+    ],
+    formatInfo: (index: number, data: Record<string, string>) => {
+      const givenName = data[`spouse_${index}_given_name`] || "";
+      const familyName = data[`spouse_${index}_family_name`] || "";
+      const middleName = data[`spouse_${index}_middle_name`] || "";
+      const endDate = data[`spouse_${index}_marriage_end_date`] || "";
+
+      const nameParts = [givenName, middleName, familyName].filter(Boolean);
+      let info = `Prior Spouse ${index - 1}: ${nameParts.join(" ")}.`;
+      if (endDate) {
+        info += ` Marriage Ended: ${endDate}`;
+      }
+      return info;
+    },
+  },
+];
+
 export const i130Config = {
   formId,
   formTitle,
   formSubtitle,
   formFields,
   sectionIntroMessages,
+  overflowFields,
 };
 
 export default i130Config;

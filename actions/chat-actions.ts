@@ -63,7 +63,7 @@
 
 // export async function getChatMessages(chatId: string) {
 //   const supabase = await createClient();
-  
+
 //   const { data, error } = await supabase
 //     .from("support_messages")
 //     .select("*")
@@ -90,7 +90,7 @@
 //         .select('*')
 //         .eq('user_id', user.id)
 //         .order('created_at', { ascending: false });
-    
+
 //     if (error) return [];
 //     return data;
 // }
@@ -98,7 +98,7 @@
 // export async function getAllChats() {
 //     // ADMIN ONLY - Fetch all chats
 //     const supabase = await createClient();
-    
+
 //     // 1. Fetch Chats
 //     const { data: chats, error } = await supabase
 //         .from('support_chats')
@@ -122,7 +122,7 @@
 //         .from('profiles')
 //         .select('id, full_name, email')
 //         .in('id', userIds);
-    
+
 //     if (profilesError) {
 //         console.error("Error fetching profiles:", profilesError);
 //     }

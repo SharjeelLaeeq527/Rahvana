@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Script from "next/script";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import "./globals.css";
 import { ClientHeader } from "./components/layout/ClientHeader";
 import { AuthProvider } from "./context/AuthContext";
@@ -7,38 +8,142 @@ import { AuthProvider } from "./context/AuthContext";
 import { ClientWidgets } from "./components/layout/ClientWidgets";
 import Footer from "./components/layout/Footer";
 import { ToastProvider } from "./components/shared/ToastProvider";
-import { Toaster } from "sonner";
 import { LanguageProvider } from "./context/LanguageContext";
 import { PlanProvider } from "./context/PlanContext";
+import { UserProfileProvider } from "./context/UserProfileContext";
 import { PlanTierDevToggle } from "./components/entitlements/PlanTierDevToggle"; // DEV ONLY — uncomment for local testing
 import { ToolsGuard } from "./(tools)/ToolsGuard";
+import { QuickAccessProvider } from "./context/QuickAccessContext";
+import { Analytics } from "@vercel/analytics/react";
+import { JsonLd } from "./components/seo/JsonLd";
+
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL ?? "https://rahvana.com";
+
+// IR-5 is hidden on production (see lib/feature-flags): drop IR-5 from the
+// site-wide SEO copy so the category is not advertised while it is gated off.
+const VISA_LIST_FULL = IR5_ENABLED ? "IR-1, IR-5, CR-1, and F-1" : "IR-1, CR-1, and F-1";
+const VISA_LIST_SHORT = IR5_ENABLED ? "IR-1, IR-5, and family" : "IR-1 and family";
+
+const ROOT_STRUCTURED_DATA = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: "Rahvana",
+    url: SITE_URL,
+    logo: `${SITE_URL}/favicon-512.png`,
+    description: `Rahvana provides step-by-step guidance, smart tools, and expert support for U.S. immigration journeys including ${VISA_LIST_FULL} visas.`,
+    sameAs: [
+      "https://twitter.com/rahvana",
+      "https://www.linkedin.com/company/rahvana",
+    ],
+    contactPoint: {
+      "@type": "ContactPoint",
+      contactType: "Customer Support",
+      availableLanguage: ["English", "Urdu"],
+    },
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Rahvana",
+    url: SITE_URL,
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${SITE_URL}/resources?q={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
+  },
+];
 
 export const metadata: Metadata = {
-  title: "Rahvana",
-  description:
-    "Rahvana provides step-by-step guidance, smart tools, and expert support to help you reunite with loved ones.",
- icons: {
-  icon: [
-    { url: "/favicon4.ico", sizes: "any" },
-    { url: "/favicon-512.png", type: "image/png", sizes: "32x32" },
-    { url: "/favicon-512.png", type: "image/png", sizes: "192x192" }, 
+  // ── Canonical base URL (required for all absolute OG image URLs) ───────────
+  metadataBase: new URL(SITE_URL),
+
+  // ── Default title / description (per-page exports override these) ──────────
+  title: {
+    default: "Rahvana — U.S. Immigration Made Simple",
+    template: "%s · Rahvana",
+  },
+  description: `Rahvana guides couples and families through the ${VISA_LIST_FULL} visa process with step-by-step roadmaps, smart document tools, and expert support.`,
+
+  // ── Keywords (GEO signal — helps AI models understand the site topic) ───────
+  keywords: [
+    "IR-1 visa",
+    ...(IR5_ENABLED ? ["IR-5 visa"] : []),
+    "CR-1 visa",
+    "spouse visa",
+    ...(IR5_ENABLED ? ["parent visa"] : []),
+    "U.S. immigration",
+    "immigration platform",
+    "visa roadmap",
+    "USCIS forms",
+    "Pakistan to USA visa",
+    "immigration tools",
+    "NVC processing",
+    "K-1 visa",
   ],
-  apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
-},
+
+  // ── Authors / brand entity (improves AI citation attribution) ─────────────
+  authors: [{ name: "Rahvana", url: SITE_URL }],
+  creator: "Rahvana",
+  publisher: "Rahvana",
+
+  // ── Open Graph defaults ────────────────────────────────────────────────────
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    siteName: "Rahvana",
+    title: "Rahvana — U.S. Immigration Made Simple",
+    description: `Guided ${VISA_LIST_SHORT} visa journeys with smart tools, document vaults, and expert support.`,
+    url: SITE_URL,
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Rahvana — U.S. Immigration Platform",
+      },
+    ],
+  },
+
+  // ── Twitter / X card ───────────────────────────────────────────────────────
+  twitter: {
+    card: "summary_large_image",
+    title: "Rahvana — U.S. Immigration Made Simple",
+    description: `Guided ${VISA_LIST_SHORT} visa journeys with smart tools, document vaults, and expert support.`,
+    images: ["/opengraph-image.png"],
+  },
+
+  // ── Favicon / app icons ────────────────────────────────────────────────────
+  icons: {
+    icon: [
+      { url: "/favicon4.ico", sizes: "any" },
+      { url: "/favicon-512.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon-512.png", type: "image/png", sizes: "192x192" },
+    ],
+    apple: [{ url: "/apple-icon.png", sizes: "180x180", type: "image/png" }],
+  },
+
+  // ── Robots default (public pages are indexable) ────────────────────────────
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>
       <body suppressHydrationWarning className="bg-background">
-        <Script
-          async
-          src="https://www.googletagmanager.com/gtag/js?id=G-TNW3YZDTCR"
-        />
+        <JsonLd schema={ROOT_STRUCTURED_DATA} />
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-TNW3YZDTCR" />
         <Script id="google-analytics">
           {`
             window.dataLayer = window.dataLayer || [];
@@ -74,28 +179,32 @@ export default function RootLayout({
             })();
           `}
         </Script>
-        <Toaster richColors position="top-right" />
         <ToastProvider>
           <AuthProvider>
             <PlanProvider>
-              <LanguageProvider>
-                {/* <ThemeProvider
-            attribute="class"
-            // un comment if you want bydefault device theme
-            // defaultTheme="system"
-            disableTransitionOnChange
-          > */}
-                <ClientHeader />
-                <ToolsGuard>{children}</ToolsGuard>
-                <ClientWidgets />
-                <Footer />
-                {/* </ThemeProvider> */}
-              </LanguageProvider>
-          <PlanTierDevToggle/>
-              {/* DEV ONLY — uncomment for local testing */}
+              <UserProfileProvider>
+                <QuickAccessProvider>
+                <LanguageProvider>
+                  {/* <ThemeProvider
+              attribute="class"
+              // un comment if you want bydefault device theme
+              // defaultTheme="system"
+              disableTransitionOnChange
+            > */}
+                  <ClientHeader />
+                  <ToolsGuard>{children}</ToolsGuard>
+                  <ClientWidgets />
+                  <Footer />
+                  {/* </ThemeProvider> */}
+                </LanguageProvider>
+                </QuickAccessProvider>
+                <PlanTierDevToggle />
+                {/* DEV ONLY — uncomment for local testing */}
+              </UserProfileProvider>
             </PlanProvider>
           </AuthProvider>
         </ToastProvider>
+        <Analytics />
       </body>
     </html>
   );

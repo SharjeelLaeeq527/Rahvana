@@ -45,7 +45,8 @@ async function main() {
   });
 
   const meta = await sheets.spreadsheets.get({ spreadsheetId: SPREADSHEET_ID });
-  const sheetId = meta.data.sheets?.find(s => s.properties?.title === SHEET_NAME)?.properties?.sheetId ?? 0;
+  const sheetId =
+    meta.data.sheets?.find((s) => s.properties?.title === SHEET_NAME)?.properties?.sheetId ?? 0;
 
   await sheets.spreadsheets.batchUpdate({
     spreadsheetId: SPREADSHEET_ID,
@@ -54,16 +55,27 @@ async function main() {
         // Header Formatting: Bold, centered, light gray background
         {
           repeatCell: {
-            range: { sheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: 9 },
+            range: {
+              sheetId,
+              startRowIndex: 0,
+              endRowIndex: 1,
+              startColumnIndex: 0,
+              endColumnIndex: 9,
+            },
             cell: {
               userEnteredFormat: {
-                textFormat: { bold: true, fontSize: 11, foregroundColor: { red: 0.2, green: 0.2, blue: 0.2 } },
+                textFormat: {
+                  bold: true,
+                  fontSize: 11,
+                  foregroundColor: { red: 0.2, green: 0.2, blue: 0.2 },
+                },
                 backgroundColor: { red: 0.95, green: 0.95, blue: 0.95 },
                 horizontalAlignment: "CENTER",
                 verticalAlignment: "MIDDLE",
               },
             },
-            fields: "userEnteredFormat(textFormat,backgroundColor,horizontalAlignment,verticalAlignment)",
+            fields:
+              "userEnteredFormat(textFormat,backgroundColor,horizontalAlignment,verticalAlignment)",
           },
         },
         // Freeze header
@@ -84,7 +96,13 @@ async function main() {
         // Status Dropdown: Not Started / In Progress / Completed
         {
           setDataValidation: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 5000, startColumnIndex: 6, endColumnIndex: 7 },
+            range: {
+              sheetId,
+              startRowIndex: 1,
+              endRowIndex: 5000,
+              startColumnIndex: 6,
+              endColumnIndex: 7,
+            },
             rule: {
               condition: {
                 type: "ONE_OF_LIST",
@@ -102,7 +120,13 @@ async function main() {
         // Priority Dropdown: Low / Medium / High / Critical
         {
           setDataValidation: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 5000, startColumnIndex: 7, endColumnIndex: 8 },
+            range: {
+              sheetId,
+              startRowIndex: 1,
+              endRowIndex: 5000,
+              startColumnIndex: 7,
+              endColumnIndex: 8,
+            },
             rule: {
               condition: {
                 type: "ONE_OF_LIST",
@@ -121,14 +145,26 @@ async function main() {
         // Vertical Alignment Top + Wrapping for Description & Attachments
         {
           repeatCell: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 5000, startColumnIndex: 0, endColumnIndex: 9 },
+            range: {
+              sheetId,
+              startRowIndex: 1,
+              endRowIndex: 5000,
+              startColumnIndex: 0,
+              endColumnIndex: 9,
+            },
             cell: { userEnteredFormat: { verticalAlignment: "TOP" } },
             fields: "userEnteredFormat(verticalAlignment)",
           },
         },
         {
           repeatCell: {
-            range: { sheetId, startRowIndex: 1, endRowIndex: 5000, startColumnIndex: 4, endColumnIndex: 6 },
+            range: {
+              sheetId,
+              startRowIndex: 1,
+              endRowIndex: 5000,
+              startColumnIndex: 4,
+              endColumnIndex: 6,
+            },
             cell: { userEnteredFormat: { wrapStrategy: "WRAP" } },
             fields: "userEnteredFormat(wrapStrategy)",
           },

@@ -13,7 +13,7 @@
  */
 
 import type { UploadedDocument } from "@/lib/document-vault/types";
-import { mapDocumentNameToId } from "@/lib/document-vault/journey-mapping";
+import { mapDocumentNameToId, isDocUploadedInVault } from "@/lib/document-vault/journey-mapping";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -45,22 +45,22 @@ export interface MissingDoc {
 
 export interface ScoringResult {
   completeness: {
-    score: number;          // 0-100
+    score: number; // 0-100
     done: number;
     required: number;
     missing: MissingDoc[];
   };
   evidenceQuality: {
-    score: number;          // 0-100
+    score: number; // 0-100
     fullCount: number;
     partialCount: number;
     weak: Array<{ id: string; name: string }>;
   };
   consistency: {
-    score: number;          // 0-100
+    score: number; // 0-100
     checks: ConsistencyCheck[];
   };
-  overall: number;          // 0-100 (weighted)
+  overall: number; // 0-100 (weighted)
   strengthLevel: "weak" | "fair" | "good" | "strong";
   strengthLabel: string;
   strengthColor: string;
@@ -80,14 +80,14 @@ function isDocDone(
   documentChecklist: Record<string, boolean> | undefined,
   docReviewStatus: Record<string, string> | undefined,
   docUploads: Record<string, unknown> | undefined,
-  notes: Record<string, string> | undefined,
+  notes: Record<string, string> | undefined
 ): boolean {
   if (docReviewStatus?.[doc.id] === "reviewed") return true;
   if (documentChecklist?.[doc.name] === true) return true;
   if (docUploads?.[doc.name] !== undefined && docUploads?.[doc.name] !== null) return true;
   if (notes?.[doc.name]) return true;
   const vaultId = mapDocumentNameToId(doc.name);
-  if (vaultId && uploadedDocuments.some((u) => u.documentDefId === vaultId)) return true;
+  if (vaultId && isDocUploadedInVault(doc.name, vaultId, uploadedDocuments)) return true;
   return false;
 }
 
@@ -96,10 +96,10 @@ function getEvidenceLevel(
   uploadedDocuments: UploadedDocument[],
   documentChecklist: Record<string, boolean> | undefined,
   docReviewStatus: Record<string, string> | undefined,
-  notes: Record<string, string> | undefined,
+  notes: Record<string, string> | undefined
 ): "none" | "partial" | "full" {
   const vaultId = mapDocumentNameToId(doc.name);
-  const hasUpload = !!(vaultId && uploadedDocuments.some((u) => u.documentDefId === vaultId));
+  const hasUpload = !!(vaultId && isDocUploadedInVault(doc.name, vaultId, uploadedDocuments));
   const hasReview = docReviewStatus?.[doc.id] === "reviewed";
   const hasNotes = !!notes?.[doc.name];
   const hasCheck = documentChecklist?.[doc.name] === true;
@@ -118,9 +118,8 @@ export function computeCaseStrength(
   docReviewStatus: Record<string, string> | undefined,
   docUploads: Record<string, unknown> | undefined,
   notes: Record<string, string> | undefined,
-  eligibilityAnswers?: Record<string, Record<string, string | string[]> | undefined> | null,
+  eligibilityAnswers?: Record<string, Record<string, string | string[]> | undefined> | null
 ): ScoringResult {
-
   // ── 1. Completeness ─────────────────────────────────────────────────────
   const required = documentItems.filter((d) => d.required === true);
   const missing: MissingDoc[] = [];
@@ -140,7 +139,7 @@ export function computeCaseStrength(
   let partialCount = 0;
   const weak: Array<{ id: string; name: string }> = [];
   const doneDocs = required.filter((d) =>
-    isDocDone(d, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes),
+    isDocDone(d, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes)
   );
   for (const d of doneDocs) {
     const level = getEvidenceLevel(d, uploadedDocuments, documentChecklist, docReviewStatus, notes);
@@ -164,35 +163,52 @@ export function computeCaseStrength(
     documentItems.find((d) => d.id.toLowerCase().includes(idFragment));
 
   // Check A: prior marriage disclosed in eligibility → termination doc needed
-  const q3s1 =
-    eligibilityAnswers?.q3?.q3s1 as string | undefined;
+  const q3s1 = eligibilityAnswers?.q3?.q3s1 as string | undefined;
   if (q3s1 && q3s1 !== "none") {
     const priorDoc = findDoc("prior_marriage") || findDoc("prior-marriage");
     if (priorDoc) {
-      const done = isDocDone(priorDoc, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes);
+      const done = isDocDone(
+        priorDoc,
+        uploadedDocuments,
+        documentChecklist,
+        docReviewStatus,
+        docUploads,
+        notes
+      );
       checks.push({
         id: "prior_marriage_consistency",
-        label: "Prior marriage termination evidence",
+        label: "Old marriage papers",
         passed: done,
-        hint: done ? undefined : `Disclosed in eligibility — upload ${priorDoc.name}`,
+        hint: done
+          ? undefined
+          : `You said there was a previous marriage, please add ${priorDoc.name}`,
         relatedDocId: priorDoc.id,
       });
     }
   }
 
   // Check B: non-English docs present → translations must be done
-  const hasNonEnglishDocs = documentItems.some((d) =>
-    d.tag === "beneficiary" && d.required === true
+  const hasNonEnglishDocs = documentItems.some(
+    (d) => d.tag === "beneficiary" && d.required === true
   );
   if (hasNonEnglishDocs) {
     const translationDoc = findDoc("translation");
     if (translationDoc) {
-      const done = isDocDone(translationDoc, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes);
+      const done = isDocDone(
+        translationDoc,
+        uploadedDocuments,
+        documentChecklist,
+        docReviewStatus,
+        docUploads,
+        notes
+      );
       checks.push({
         id: "translations_consistency",
-        label: "Certified translations for non-English docs",
+        label: "English translations",
         passed: done,
-        hint: done ? undefined : `Required when beneficiary-side documents are present`,
+        hint: done
+          ? undefined
+          : `Your documents are in Urdu/regional language, please add the ${translationDoc.name}`,
         relatedDocId: translationDoc.id,
       });
     }
@@ -203,12 +219,21 @@ export function computeCaseStrength(
   if (q5s2 === "yes") {
     const policeDoc = findDoc("police");
     if (policeDoc) {
-      const done = isDocDone(policeDoc, uploadedDocuments, documentChecklist, docReviewStatus, docUploads, notes);
+      const done = isDocDone(
+        policeDoc,
+        uploadedDocuments,
+        documentChecklist,
+        docReviewStatus,
+        docUploads,
+        notes
+      );
       checks.push({
         id: "criminal_history_consistency",
-        label: "Police character / criminal disclosure",
+        label: "Police clearance",
         passed: done,
-        hint: done ? undefined : `Disclosed in eligibility — obtain ${policeDoc.name}`,
+        hint: done
+          ? undefined
+          : `You mentioned an arrest/charge in eligibility, please add the ${policeDoc.name}`,
         relatedDocId: policeDoc.id,
       });
     }
@@ -219,21 +244,27 @@ export function computeCaseStrength(
     : 100; // No checks applicable = consistent by default
 
   // ── Overall weighted score ──────────────────────────────────────────────
-  const overall = Math.round(
-    completenessPct * 0.5 + evidencePct * 0.3 + consistencyPct * 0.2,
-  );
+  const overall = Math.round(completenessPct * 0.5 + evidencePct * 0.3 + consistencyPct * 0.2);
 
   let strengthLevel: ScoringResult["strengthLevel"];
   let strengthLabel: string;
   let strengthColor: string;
   if (overall < 35) {
-    strengthLevel = "weak"; strengthLabel = "Weak"; strengthColor = "#dc2626";
+    strengthLevel = "weak";
+    strengthLabel = "Weak";
+    strengthColor = "#dc2626";
   } else if (overall < 60) {
-    strengthLevel = "fair"; strengthLabel = "Fair"; strengthColor = "#d97706";
+    strengthLevel = "fair";
+    strengthLabel = "Fair";
+    strengthColor = "#d97706";
   } else if (overall < 85) {
-    strengthLevel = "good"; strengthLabel = "Good"; strengthColor = "#16a34a";
+    strengthLevel = "good";
+    strengthLabel = "Good";
+    strengthColor = "#16a34a";
   } else {
-    strengthLevel = "strong"; strengthLabel = "Strong"; strengthColor = "#059669";
+    strengthLevel = "strong";
+    strengthLabel = "Strong";
+    strengthColor = "#059669";
   }
 
   // ── Next Steps — derived purely from scoring gaps ───────────────────────
@@ -263,7 +294,7 @@ export function computeCaseStrength(
   for (const w of weak.slice(0, 2)) {
     nextSteps.push({
       priority: priority++,
-      action: `Strengthen evidence — upload + mark reviewed: ${w.name}`,
+      action: `Strengthen evidence, upload + mark reviewed: ${w.name}`,
       docId: w.id,
     });
   }

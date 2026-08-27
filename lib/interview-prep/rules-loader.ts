@@ -1,8 +1,15 @@
 // Rules Loader - Dynamically loads question selection rules based on category slug
+import {
+  evaluateConditionExpression,
+  type ConditionExpression,
+  type ConditionOperator,
+} from "./condition-evaluator";
+
 export interface RuleCondition {
   field: string;
-  operator: "equals" | "notEquals" | "contains" | "greaterThan" | "lessThan";
-  value: string | number | boolean;
+  operator: ConditionOperator;
+  value?: string | number | boolean | null;
+  values?: Array<string | number | boolean | null>;
 }
 
 export interface RuleConditionGroup {
@@ -32,9 +39,7 @@ export interface RulesConfig {
 // Load rules.json file for a specific category
 export async function loadRulesForCategory(categorySlug: string): Promise<RulesConfig | null> {
   try {
-    const response = await import(
-      `@/data/interview-categories/${categorySlug}/rules.json`
-    );
+    const response = await import(`@/data/interview-categories/${categorySlug}/rules.json`);
     return response.default as RulesConfig;
   } catch (error) {
     console.warn(`No rules found for category ${categorySlug}:`, error);
@@ -43,54 +48,41 @@ export async function loadRulesForCategory(categorySlug: string): Promise<RulesC
 }
 
 // Evaluate a condition against user answers
-function evaluateCondition(
-  condition: RuleCondition,
-  answers: Record<string, unknown>,
-): boolean {
-  const answerValue = answers[condition.field];
-
-  switch (condition.operator) {
-    case "equals":
-      return answerValue === condition.value;
-    case "notEquals":
-      return answerValue !== condition.value;
-    case "contains":
-      return String(answerValue).includes(String(condition.value));
-    case "greaterThan":
-      return Number(answerValue) > Number(condition.value);
-    case "lessThan":
-      return Number(answerValue) < Number(condition.value);
-    default:
-      return false;
-  }
+function evaluateCondition(condition: RuleCondition, answers: Record<string, unknown>): boolean {
+  return evaluateConditionExpression(
+    {
+      field: condition.field,
+      operator: condition.operator,
+      value: condition.value,
+      values: condition.values,
+    },
+    answers
+  );
 }
 
 // Evaluate a condition group (AND/OR) against user answers
 export function evaluateConditionGroup(
   group: RuleConditionGroup,
-  answers: Record<string, unknown>,
+  answers: Record<string, unknown>
 ): boolean {
-  if (group.type === "AND") {
-    return group.conditions.every((cond) =>
-      evaluateCondition(cond, answers),
-    );
-  } else {
-    // OR
-    return group.conditions.some((cond) => evaluateCondition(cond, answers));
-  }
+  const expression: ConditionExpression =
+    group.type === "AND"
+      ? { allOf: group.conditions.map((condition) => ({ field: condition.field, operator: condition.operator, value: condition.value, values: condition.values })) }
+      : { anyOf: group.conditions.map((condition) => ({ field: condition.field, operator: condition.operator, value: condition.value, values: condition.values })) };
+
+  return evaluateConditionExpression(expression, answers);
 }
 
 // Check if a question matches any applied rules
 export function getAppliedRules(
   questionCategory: string,
   answers: Record<string, unknown>,
-  rules: QuestionSelectionRule[],
+  rules: QuestionSelectionRule[]
 ): QuestionSelectionRule[] {
   return rules.filter((rule) => {
     const ruleMatches = evaluateConditionGroup(rule.condition, answers);
     // Safely check if includeCategories exists and contains the category
-    const categoryMatches =
-      rule.actions.includeCategories?.includes(questionCategory) ?? false;
+    const categoryMatches = rule.actions.includeCategories?.includes(questionCategory) ?? false;
     return ruleMatches && categoryMatches;
   });
 }

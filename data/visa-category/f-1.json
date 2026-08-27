@@ -1,7 +1,7 @@
 {
   "title": "F-1 Student Visa Journey",
   "titleUr": "ایف-۱ سٹوڈنٹ ویزا کا سفر",
-  "description": "Step-by-step roadmap for Pakistani students pursuing an F-1 nonimmigrant student visa — from school admission through maintaining status in the United States.",
+  "description": "Step-by-step roadmap for Pakistani students pursuing an F-1 nonimmigrant student visa, from school admission through maintaining status in the United States.",
   "descriptionUr": "ایف-۱ سٹوڈنٹ ویزا پر ریاستہائے متحدہ میں تعلیم حاصل کرنے کے لیے آپ کی مکمل رہنمائی۔",
   "disclaimer": "This page is for informational guidance only. Immigration requirements and procedures can change. Always confirm current requirements with your school's Designated School Official (DSO), the U.S. Embassy & Consulates in Pakistan, and travel.state.gov before taking any action.",
   "disclaimerLinks": [
@@ -23,11 +23,11 @@
       "time": "Variable",
       "sources": [
         {
-          "label": "Study in the States – I-20",
+          "label": "Study in the States, I-20",
           "url": "https://studyinthestates.dhs.gov/students/understanding-your-form-i-20"
         },
         {
-          "label": "SEVP – School Certification",
+          "label": "SEVP, School Certification",
           "url": "https://studyinthestates.dhs.gov/school-officials/working-with-students"
         }
       ],
@@ -112,7 +112,7 @@
       "time": "Variable",
       "sources": [
         {
-          "label": "Pay SEVIS Fee – FMJfee.com",
+          "label": "Pay SEVIS Fee, FMJfee.com",
           "url": "https://www.fmjfee.com/i901fee/index.html"
         },
         {
@@ -120,7 +120,7 @@
           "url": "https://ceac.state.gov/genniv/"
         },
         {
-          "label": "travel.state.gov – Student Visas",
+          "label": "travel.state.gov, Student Visas",
           "url": "https://travel.state.gov/content/travel/en/us-visas/study.html"
         }
       ],
@@ -139,10 +139,7 @@
             "Bring the payment receipt to your visa interview"
           ],
           "output": "SEVIS I-901 fee paid; payment receipt saved",
-          "documents": [
-            "Form I-20",
-            "SEVIS I-901 fee payment receipt"
-          ]
+          "documents": ["Form I-20", "SEVIS I-901 fee payment receipt"]
         },
         {
           "id": "II-02",
@@ -185,9 +182,7 @@
             "Save your DS-160 application ID in case you need to retrieve or update your application"
           ],
           "output": "DS-160 submitted; confirmation barcode page printed and saved",
-          "documents": [
-            "DS-160 confirmation page"
-          ]
+          "documents": ["DS-160 confirmation page"]
         }
       ]
     },
@@ -199,15 +194,15 @@
       "time": "Variable",
       "sources": [
         {
-          "label": "U.S. Embassy Pakistan – Student Visas",
+          "label": "U.S. Embassy Pakistan, Student Visas",
           "url": "https://pk.usembassy.gov/visas/nonimmigrant-visas/student-visas/"
         },
         {
-          "label": "Schedule Appointment – CGI Federal",
+          "label": "Schedule Appointment, CGI Federal",
           "url": "https://www.ustraveldocs.com/pk/"
         },
         {
-          "label": "travel.state.gov – Interview Tips",
+          "label": "travel.state.gov, Interview Tips",
           "url": "https://travel.state.gov/content/travel/en/us-visas/visa-information-resources/interview-tips.html"
         }
       ],
@@ -225,9 +220,7 @@
             "Note: MRV fees are generally non-refundable and non-transferable; confirm the policy on the payment portal"
           ],
           "output": "MRV visa application fee paid; payment receipt and transaction number saved",
-          "documents": [
-            "MRV fee payment receipt"
-          ]
+          "documents": ["MRV fee payment receipt"]
         },
         {
           "id": "III-02",
@@ -243,9 +236,7 @@
             "Note: you may apply for your F-1 visa up to 120 days before your I-20 program start date \u2014 do not schedule earlier than this window per SEVP guidance"
           ],
           "output": "Visa interview appointment scheduled; appointment confirmation saved",
-          "documents": [
-            "Visa appointment confirmation letter"
-          ]
+          "documents": ["Visa appointment confirmation letter"]
         },
         {
           "id": "III-03",
@@ -304,7 +295,7 @@
       "time": "Variable",
       "sources": [
         {
-          "label": "Study in the States – Before You Arrive",
+          "label": "Study in the States, Before You Arrive",
           "url": "https://studyinthestates.dhs.gov/students/before-you-arrive"
         },
         {
@@ -377,7 +368,7 @@
       "time": "Day of Travel",
       "sources": [
         {
-          "label": "CBP – Entering the U.S.",
+          "label": "CBP, Entering the U.S.",
           "url": "https://www.cbp.gov/travel/international-visitors"
         },
         {
@@ -385,7 +376,7 @@
           "url": "https://i94.cbp.dhs.gov"
         },
         {
-          "label": "Study in the States – After Arrival",
+          "label": "Study in the States, After Arrival",
           "url": "https://studyinthestates.dhs.gov/students/complete-your-arrival-steps"
         }
       ],
@@ -416,9 +407,7 @@
             "If there is any error on the I-94, contact CBP promptly to correct it"
           ],
           "output": "I-94 retrieved; confirms F-1 admission and D/S",
-          "documents": [
-            "electronic I-94 Form"
-          ]
+          "documents": ["electronic I-94 Form"]
         },
         {
           "id": "V-03",
@@ -444,15 +433,15 @@
       "time": "Throughout Program",
       "sources": [
         {
-          "label": "Study in the States – Maintaining Status",
+          "label": "Study in the States, Maintaining Status",
           "url": "https://studyinthestates.dhs.gov/students/maintaining-your-status"
         },
         {
-          "label": "USCIS – OPT Overview",
+          "label": "USCIS, OPT Overview",
           "url": "https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/optional-practical-training-opt-for-f-1-students"
         },
         {
-          "label": "USCIS – CPT Overview",
+          "label": "USCIS, CPT Overview",
           "url": "https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/curricular-practical-training-cpt"
         }
       ],
