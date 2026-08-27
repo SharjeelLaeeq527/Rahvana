@@ -11,18 +11,14 @@ import ToolCTA from "@/components/blog/ToolCTA";
 import {
   Clock,
   Calendar,
-  User,
   CheckCircle2,
   AlertTriangle,
   Info,
   Lightbulb,
-  ArrowLeft,
-  Share2,
-  Bookmark,
   ChevronRight,
+  HelpCircle,
   BookOpen,
   List,
-  HelpCircle,
 } from "lucide-react";
 
 export function generateStaticParams() {
@@ -60,11 +56,7 @@ export async function generateMetadata({
   };
 }
 
-export default async function ArticleDetailPage({
-  params,
-}: {
-  params: Promise<{ slug: string }>;
-}) {
+export default async function ArticleDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const article = getArticleBySlug(slug);
 
@@ -94,12 +86,12 @@ export default async function ArticleDetailPage({
       <FAQPageSchema faqs={article.faqs} />
       <BreadcrumbSchema items={breadcrumbs} />
 
-      <article className="min-h-screen bg-background text-foreground pt-24 pb-24">
+      <article className="bg-background text-foreground min-h-screen pt-24 pb-24">
         {/* ── Article Header & Hero ── */}
-        <header className="border-b border-border/60 bg-gradient-to-b from-teal-950/20 via-background to-background py-12 sm:py-16">
+        <header className="border-border/60 via-background to-background border-b bg-gradient-to-b from-teal-950/20 py-12 sm:py-16">
           <div className="mx-auto max-w-4xl px-5 sm:px-8">
             {/* Breadcrumb Navigation */}
-            <nav className="mb-6 flex items-center gap-2 text-xs text-muted-foreground">
+            <nav className="text-muted-foreground mb-6 flex items-center gap-2 text-xs">
               <Link href="/" className="hover:text-foreground transition-colors">
                 Home
               </Link>
@@ -108,52 +100,52 @@ export default async function ArticleDetailPage({
                 Blog
               </Link>
               <ChevronRight className="h-3 w-3" />
-              <span className="text-teal-400 font-medium truncate max-w-[200px] sm:max-w-xs">
+              <span className="max-w-[200px] truncate font-medium text-teal-400 sm:max-w-xs">
                 {article.category}
               </span>
             </nav>
 
             {/* Category Pill & Read Time */}
-            <div className="flex flex-wrap items-center gap-3 text-xs mb-4">
-              <span className="rounded-full bg-teal-500/10 px-3 py-1 font-semibold text-teal-400 border border-teal-500/20">
+            <div className="mb-4 flex flex-wrap items-center gap-3 text-xs">
+              <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1 font-semibold text-teal-400">
                 {article.category}
               </span>
-              <span className="flex items-center gap-1 text-muted-foreground">
+              <span className="text-muted-foreground flex items-center gap-1">
                 <Clock className="h-3.5 w-3.5" />
                 {article.readTime}
               </span>
-              <span className="flex items-center gap-1 text-muted-foreground">
+              <span className="text-muted-foreground flex items-center gap-1">
                 <Calendar className="h-3.5 w-3.5" />
                 Updated {article.updatedAt}
               </span>
             </div>
 
             {/* Article Main H1 Title */}
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground sm:text-4xl lg:text-5xl leading-tight">
+            <h1 className="text-foreground text-3xl leading-tight font-extrabold tracking-tight sm:text-4xl lg:text-5xl">
               {article.title}
             </h1>
 
             {/* Author Badge */}
-            <div className="mt-6 flex items-center gap-3 pt-4 border-t border-border/40">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-600 font-bold text-white text-sm shadow-md">
+            <div className="border-border/40 mt-6 flex items-center gap-3 border-t pt-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-teal-600 text-sm font-bold text-white shadow-md">
                 R
               </div>
               <div>
-                <p className="text-sm font-semibold text-foreground">{article.author.name}</p>
-                <p className="text-xs text-muted-foreground">{article.author.title}</p>
+                <p className="text-foreground text-sm font-semibold">{article.author.name}</p>
+                <p className="text-muted-foreground text-xs">{article.author.title}</p>
               </div>
             </div>
           </div>
         </header>
 
         {/* ── Main Body & Sidebar Layout ── */}
-        <div className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10 py-12">
+        <div className="mx-auto max-w-6xl px-5 py-12 sm:px-8 lg:px-10">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
             {/* Table of Contents Sticky Sidebar */}
-            <aside className="lg:col-span-4 order-2 lg:order-1">
-              <div className="sticky top-28 rounded-2xl border border-border bg-card/60 p-6 backdrop-blur-md shadow-sm">
-                <div className="flex items-center gap-2 mb-4 text-sm font-bold text-foreground">
-                  <List className="h-4 w-4 text-teal-500 dark:text-teal-400" />
+            <aside className="order-2 lg:order-1 lg:col-span-4">
+              <div className="border-border bg-card/60 sticky top-28 rounded-2xl border p-6 shadow-sm backdrop-blur-md">
+                <div className="text-foreground mb-4 flex items-center gap-2 text-sm font-bold">
+                  <List className="h-4 w-4 text-teal-400" />
                   <span>Table of Contents</span>
                 </div>
                 <nav className="space-y-2 text-xs">
@@ -161,21 +153,23 @@ export default async function ArticleDetailPage({
                     <a
                       key={toc.id}
                       href={`#${toc.id}`}
-                      className="block text-muted-foreground hover:text-teal-400 hover:translate-x-1 transition-all py-1 border-l-2 border-transparent hover:border-teal-400 pl-2"
+                      className="text-muted-foreground block border-l-2 border-transparent py-1 pl-2 transition-all hover:translate-x-1 hover:border-teal-400 hover:text-teal-400"
                     >
                       {toc.title}
                     </a>
                   ))}
                 </nav>
 
-                <div className="mt-8 border-t border-border pt-6">
-                  <p className="text-xs font-semibold text-foreground mb-2">Need Direct Assistance?</p>
-                  <p className="text-xs text-muted-foreground mb-4">
+                <div className="border-border mt-8 border-t pt-6">
+                  <p className="text-foreground mb-2 text-xs font-semibold">
+                    Need Direct Assistance?
+                  </p>
+                  <p className="text-muted-foreground mb-4 text-xs">
                     Book a strategy consultation with our U.S. visa case managers.
                   </p>
                   <Link
                     href="/book-consultation"
-                    className="block w-full text-center rounded-xl bg-teal-600 px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-teal-500 shadow-sm"
+                    className="block w-full rounded-xl bg-teal-600 px-4 py-2.5 text-center text-xs font-semibold text-white shadow-sm transition hover:bg-teal-500"
                   >
                     Book Consultation →
                   </Link>
@@ -184,14 +178,14 @@ export default async function ArticleDetailPage({
             </aside>
 
             {/* Main Article Content */}
-            <main className="lg:col-span-8 order-1 lg:order-2 space-y-10">
+            <main className="order-1 space-y-10 lg:order-2 lg:col-span-8">
               {/* ⚡ BLUF (Bottom Line Up Front) Answer Box - Vital for AEO/GEO AI engine extraction */}
-              <section className="rounded-3xl border border-teal-500/30 bg-slate-900/95 p-6 shadow-lg sm:p-8 text-slate-100">
-                <div className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-teal-400">
+              <section className="rounded-3xl border border-teal-500/30 bg-slate-900/95 p-6 text-slate-100 shadow-lg sm:p-8">
+                <div className="mb-2 flex items-center gap-2 text-xs font-bold tracking-wider text-teal-400 uppercase">
                   <BookOpen className="h-4 w-4" />
                   <span>Bottom Line Up Front (BLUF Summary)</span>
                 </div>
-                <p className="text-base font-medium leading-relaxed text-slate-200">
+                <p className="text-base leading-relaxed font-medium text-slate-200">
                   {article.bluf}
                 </p>
               </section>
@@ -199,12 +193,12 @@ export default async function ArticleDetailPage({
               {/* Dynamic Content Sections */}
               {article.sections.map((section, idx) => (
                 <section key={section.id} id={section.id} className="scroll-mt-28 space-y-4">
-                  <h2 className="text-2xl font-bold tracking-tight text-foreground border-b border-border/50 pb-2">
+                  <h2 className="text-foreground border-border/50 border-b pb-2 text-2xl font-bold tracking-tight">
                     {section.h2}
                   </h2>
 
                   {section.paragraphs.map((p, pIdx) => (
-                    <p key={pIdx} className="text-base leading-relaxed text-muted-foreground">
+                    <p key={pIdx} className="text-muted-foreground text-base leading-relaxed">
                       {p}
                     </p>
                   ))}
@@ -212,35 +206,35 @@ export default async function ArticleDetailPage({
                   {/* Optional Callout Box */}
                   {section.callout && (
                     <div
-                      className={`my-6 rounded-2xl p-5 border shadow-md bg-slate-900/95 text-slate-100 ${
+                      className={`my-6 rounded-2xl border bg-slate-900/95 p-5 text-slate-100 shadow-md ${
                         section.callout.type === "warning"
                           ? "border-amber-500/40"
                           : section.callout.type === "tip"
-                          ? "border-emerald-500/40"
-                          : "border-teal-500/40"
+                            ? "border-emerald-500/40"
+                            : "border-teal-500/40"
                       }`}
                     >
-                      <div className="flex items-center gap-2 font-bold text-sm mb-1.5">
+                      <div className="mb-1.5 flex items-center gap-2 text-sm font-bold">
                         {section.callout.type === "warning" ? (
-                          <AlertTriangle className="h-4 w-4 text-amber-400 shrink-0" />
+                          <AlertTriangle className="h-4 w-4 shrink-0 text-amber-400" />
                         ) : section.callout.type === "tip" ? (
-                          <Lightbulb className="h-4 w-4 text-emerald-400 shrink-0" />
+                          <Lightbulb className="h-4 w-4 shrink-0 text-emerald-400" />
                         ) : (
-                          <Info className="h-4 w-4 text-teal-400 shrink-0" />
+                          <Info className="h-4 w-4 shrink-0 text-teal-400" />
                         )}
                         <span
                           className={
                             section.callout.type === "warning"
                               ? "text-amber-400"
                               : section.callout.type === "tip"
-                              ? "text-emerald-400"
-                              : "text-teal-400"
+                                ? "text-emerald-400"
+                                : "text-teal-400"
                           }
                         >
                           {section.callout.title}
                         </span>
                       </div>
-                      <p className="text-xs sm:text-sm leading-relaxed text-slate-200">
+                      <p className="text-xs leading-relaxed text-slate-200 sm:text-sm">
                         {section.callout.text}
                       </p>
                     </div>
@@ -248,9 +242,9 @@ export default async function ArticleDetailPage({
 
                   {/* Optional Comparison Table */}
                   {section.table && (
-                    <div className="my-6 overflow-x-auto rounded-2xl border border-border shadow-sm">
+                    <div className="border-border my-6 overflow-x-auto rounded-2xl border shadow-sm">
                       <table className="w-full text-left text-xs sm:text-sm">
-                        <thead className="bg-muted text-foreground font-semibold border-b border-border">
+                        <thead className="bg-muted text-foreground border-border border-b font-semibold">
                           <tr>
                             {section.table.headers.map((h, hIdx) => (
                               <th key={hIdx} className="p-3.5 sm:p-4">
@@ -259,11 +253,14 @@ export default async function ArticleDetailPage({
                             ))}
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-border/60 bg-card/40">
+                        <tbody className="divide-border/60 bg-card/40 divide-y">
                           {section.table.rows.map((r, rIdx) => (
                             <tr key={rIdx} className="hover:bg-muted/30 transition-colors">
                               {r.map((c, cIdx) => (
-                                <td key={cIdx} className="p-3.5 sm:p-4 text-muted-foreground font-medium">
+                                <td
+                                  key={cIdx}
+                                  className="text-muted-foreground p-3.5 font-medium sm:p-4"
+                                >
                                   {c}
                                 </td>
                               ))}
@@ -276,10 +273,10 @@ export default async function ArticleDetailPage({
 
                   {/* Optional Bullet List */}
                   {section.bulletList && (
-                    <ul className="my-4 space-y-2 text-sm text-muted-foreground">
+                    <ul className="text-muted-foreground my-4 space-y-2 text-sm">
                       {section.bulletList.map((item, bIdx) => (
                         <li key={bIdx} className="flex items-start gap-2.5">
-                          <CheckCircle2 className="h-4 w-4 text-teal-400 shrink-0 mt-0.5" />
+                          <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-teal-400" />
                           <span>{item}</span>
                         </li>
                       ))}
@@ -301,25 +298,25 @@ export default async function ArticleDetailPage({
               ))}
 
               {/* ── FAQ Section (GEO & Schema Enabled) ── */}
-              <section id="faq-section" className="scroll-mt-28 mt-16 pt-8 border-t border-border">
-                <div className="flex items-center gap-2 mb-6">
+              <section id="faq-section" className="border-border mt-16 scroll-mt-28 border-t pt-8">
+                <div className="mb-6 flex items-center gap-2">
                   <HelpCircle className="h-6 w-6 text-teal-400" />
-                  <h2 className="text-2xl font-bold text-foreground">Frequently Asked Questions</h2>
+                  <h2 className="text-foreground text-2xl font-bold">Frequently Asked Questions</h2>
                 </div>
 
                 <div className="space-y-4">
                   {article.faqs.map((faq, fIdx) => (
                     <details
                       key={fIdx}
-                      className="group rounded-2xl border border-border bg-card/50 p-5 backdrop-blur-sm transition-all duration-200 open:border-teal-500/50 open:bg-card"
+                      className="group border-border bg-card/50 open:bg-card rounded-2xl border p-5 backdrop-blur-sm transition-all duration-200 open:border-teal-500/50"
                     >
-                      <summary className="flex cursor-pointer list-none items-center justify-between text-base font-semibold text-foreground group-open:text-teal-400">
+                      <summary className="text-foreground flex cursor-pointer list-none items-center justify-between text-base font-semibold group-open:text-teal-400">
                         <span>{faq.question}</span>
                         <span className="ml-4 text-xl font-light text-teal-400 transition-transform group-open:rotate-45">
                           +
                         </span>
                       </summary>
-                      <p className="mt-3 text-sm leading-relaxed text-muted-foreground border-t border-border/40 pt-3">
+                      <p className="text-muted-foreground border-border/40 mt-3 border-t pt-3 text-sm leading-relaxed">
                         {faq.answer}
                       </p>
                     </details>
