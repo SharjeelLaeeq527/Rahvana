@@ -141,8 +141,8 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
         {/* ── Main Body & Sidebar Layout ── */}
         <div className="relative mx-auto max-w-3xl px-5 py-10 sm:px-8 sm:py-12">
           {/* Table of Contents Sticky Left Sidebar (Positioned with clean top & left margin) */}
-          <aside className="z-20 mb-10 shrink-0 lg:absolute lg:top-6 lg:right-full lg:mr-6 lg:mb-0 lg:w-68.75 xl:mr-10">
-            <div className="border-border/70 bg-card/40 sticky top-28 ml-8 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:top-32 sm:p-5">
+          <aside className="z-20 mb-10 shrink-0 lg:absolute lg:top-6 lg:right-full lg:bottom-0 lg:mr-4 lg:mb-0 lg:w-64 xl:mr-7">
+            <div className="border-border/70 bg-card/40 sticky top-28 rounded-2xl border p-4 shadow-sm backdrop-blur-md sm:top-28 sm:p-5">
               <div className="text-muted-foreground mb-3 flex items-center gap-2 text-xs font-bold tracking-wider uppercase">
                 <List className="h-3.5 w-3.5 text-teal-500 dark:text-teal-400" />
                 <span>Table of Content</span>
