@@ -1,3 +1,7 @@
+html {
+  scroll-behavior: smooth;
+}
+
 :root {
   --icon-free: url("/icons/Free.png");
   --icon-basic: url("/icons/Basic.png");
