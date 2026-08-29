@@ -140,7 +140,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="scroll-smooth">
       <body suppressHydrationWarning className="bg-background">
         <JsonLd schema={ROOT_STRUCTURED_DATA} />
         <Script async src="https://www.googletagmanager.com/gtag/js?id=G-TNW3YZDTCR" />
