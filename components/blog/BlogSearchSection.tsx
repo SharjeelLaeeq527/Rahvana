@@ -531,145 +531,147 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
 
       {/* ── View Layout Settings Modal using @/components/ui/dialog ── */}
       <Dialog open={isLayoutModalOpen} onOpenChange={setIsLayoutModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto rounded-3xl border-border/80 bg-card p-5 sm:p-6 space-y-4 shadow-2xl">
-          {/* Modal Header */}
-          <DialogHeader className="flex flex-row items-start justify-between border-b border-border/50 pb-3 space-y-0 text-left">
-            <div className="flex items-center gap-3">
-              <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 shadow-sm shrink-0">
-                <SlidersHorizontal className="h-4 w-4" />
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden rounded-3xl border-border/80 bg-card p-0 shadow-2xl">
+          <div className="custom-scrollbar overflow-y-auto max-h-[85vh] p-5 sm:p-6 pr-3 sm:pr-4 space-y-4">
+            {/* Modal Header */}
+            <DialogHeader className="flex flex-row items-start justify-between border-b border-border/50 pb-3 space-y-0 text-left">
+              <div className="flex items-center gap-3">
+                <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 shadow-sm shrink-0">
+                  <SlidersHorizontal className="h-4 w-4" />
+                </div>
+                <div>
+                  <DialogTitle className="text-foreground text-base sm:text-lg font-bold tracking-tight">
+                    Article Display Layout
+                  </DialogTitle>
+                  <DialogDescription className="text-muted-foreground text-xs mt-0.5">
+                    Choose your preferred view style for browsing immigrant visa guides.
+                  </DialogDescription>
+                </div>
               </div>
-              <div>
-                <DialogTitle className="text-foreground text-base sm:text-lg font-bold tracking-tight">
-                  Article Display Layout
-                </DialogTitle>
-                <DialogDescription className="text-muted-foreground text-xs mt-0.5">
-                  Choose your preferred view style for browsing immigrant visa guides.
-                </DialogDescription>
-              </div>
-            </div>
-            <button
-              onClick={() => setIsLayoutModalOpen(false)}
-              className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
-              aria-label="Close layout modal"
-            >
-              <X className="h-4 w-4" />
-            </button>
-          </DialogHeader>
+              <button
+                onClick={() => setIsLayoutModalOpen(false)}
+                className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
+                aria-label="Close layout modal"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </DialogHeader>
 
-          {/* Layout Options Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {VIEW_OPTIONS.map((opt) => {
-              const IconComponent = opt.icon;
-              const isActive = viewMode === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  onClick={() => {
-                    setViewMode(opt.id);
-                    setIsLayoutModalOpen(false);
-                  }}
-                  className={`group relative flex flex-col justify-between rounded-2xl border p-3.5 text-left transition-all duration-200 ${
-                    isActive
-                      ? "border-teal-500 bg-teal-500/5 ring-2 ring-teal-500/20 shadow-sm"
-                      : "border-border/70 bg-background/50 hover:border-teal-500/50 hover:bg-card shadow-sm"
-                  }`}
-                >
-                  <div>
-                    {/* Header row with Icon, Label & Selection Badge */}
-                    <div className="flex items-center justify-between mb-1.5">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+            {/* Layout Options Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {VIEW_OPTIONS.map((opt) => {
+                const IconComponent = opt.icon;
+                const isActive = viewMode === opt.id;
+                return (
+                  <button
+                    key={opt.id}
+                    onClick={() => {
+                      setViewMode(opt.id);
+                      setIsLayoutModalOpen(false);
+                    }}
+                    className={`group relative flex flex-col justify-between rounded-2xl border p-3.5 text-left transition-all duration-200 ${
+                      isActive
+                        ? "border-teal-500 bg-teal-500/5 ring-2 ring-teal-500/20 shadow-sm"
+                        : "border-border/70 bg-background/50 hover:border-teal-500/50 hover:bg-card shadow-sm"
+                    }`}
+                  >
+                    <div>
+                      {/* Header row with Icon, Label & Selection Badge */}
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
+                              isActive
+                                ? "bg-teal-600 text-white"
+                                : "bg-muted text-muted-foreground group-hover:text-foreground"
+                            }`}
+                          >
+                            <IconComponent className="h-3.5 w-3.5" />
+                          </div>
+                          <span className="text-xs sm:text-sm font-bold text-foreground">{opt.label}</span>
+                        </div>
+                        {isActive ? (
+                          <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-teal-400 shrink-0" />
+                        ) : (
+                          <span className="h-3.5 w-3.5 rounded-full border border-muted-foreground/40 group-hover:border-teal-500/50 shrink-0" />
+                        )}
+                      </div>
+
+                      {/* Badge Tag */}
+                      <div className="mb-1.5">
+                        <span
+                          className={`inline-block rounded-md px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase ${
                             isActive
-                              ? "bg-teal-600 text-white"
-                              : "bg-muted text-muted-foreground group-hover:text-foreground"
+                              ? "bg-teal-500/20 text-teal-600 dark:text-teal-400"
+                              : "bg-muted text-muted-foreground"
                           }`}
                         >
-                          <IconComponent className="h-3.5 w-3.5" />
-                        </div>
-                        <span className="text-xs sm:text-sm font-bold text-foreground">{opt.label}</span>
+                          {opt.badge}
+                        </span>
                       </div>
-                      {isActive ? (
-                        <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-teal-400 shrink-0" />
-                      ) : (
-                        <span className="h-3.5 w-3.5 rounded-full border border-muted-foreground/40 group-hover:border-teal-500/50 shrink-0" />
-                      )}
+
+                      {/* Description */}
+                      <p className="text-[11px] leading-relaxed text-muted-foreground">
+                        {opt.description}
+                      </p>
                     </div>
 
-                    {/* Badge Tag */}
-                    <div className="mb-1.5">
-                      <span
-                        className={`inline-block rounded-md px-1.5 py-0.5 text-[9px] font-bold tracking-wider uppercase ${
-                          isActive
-                            ? "bg-teal-500/20 text-teal-600 dark:text-teal-400"
-                            : "bg-muted text-muted-foreground"
-                        }`}
-                      >
-                        {opt.badge}
-                      </span>
+                    {/* Mini CSS Graphical Mockup Representation of the Layout */}
+                    <div className="mt-3 pt-2 border-t border-border/40">
+                      <div className="h-8 rounded-lg border border-border/50 bg-muted/30 p-1 flex flex-col justify-center gap-0.5 overflow-hidden">
+                        {opt.id === "detailed" && (
+                          <div className="flex gap-1 h-full">
+                            <div className="w-1/2 rounded bg-teal-500/30 border border-teal-500/20" />
+                            <div className="w-1/2 flex flex-col gap-0.5">
+                              <div className="h-1/2 rounded bg-muted-foreground/20" />
+                              <div className="h-1/2 rounded bg-muted-foreground/20" />
+                            </div>
+                          </div>
+                        )}
+                        {opt.id === "grid" && (
+                          <div className="flex gap-1 h-full">
+                            <div className="w-1/3 rounded bg-muted-foreground/25" />
+                            <div className="w-1/3 rounded bg-muted-foreground/25" />
+                            <div className="w-1/3 rounded bg-muted-foreground/25" />
+                          </div>
+                        )}
+                        {opt.id === "list" && (
+                          <div className="flex flex-col justify-between h-full gap-0.5">
+                            <div className="h-1.5 rounded bg-muted-foreground/30 flex items-center px-0.5">
+                              <div className="h-1 w-1.5 bg-teal-500/50 rounded" />
+                            </div>
+                            <div className="h-1.5 rounded bg-muted-foreground/30 flex items-center px-0.5">
+                              <div className="h-1 w-1.5 bg-teal-500/50 rounded" />
+                            </div>
+                            <div className="h-1.5 rounded bg-muted-foreground/30 flex items-center px-0.5">
+                              <div className="h-1 w-1.5 bg-teal-500/50 rounded" />
+                            </div>
+                          </div>
+                        )}
+                        {opt.id === "minimal" && (
+                          <div className="flex flex-col justify-between h-full py-0.5">
+                            <div className="h-1 w-3/4 rounded bg-muted-foreground/35" />
+                            <div className="h-1 w-full rounded bg-muted-foreground/25" />
+                            <div className="h-1 w-1/2 rounded bg-muted-foreground/25" />
+                          </div>
+                        )}
+                      </div>
                     </div>
+                  </button>
+                );
+              })}
+            </div>
 
-                    {/* Description */}
-                    <p className="text-[11px] leading-relaxed text-muted-foreground">
-                      {opt.description}
-                    </p>
-                  </div>
-
-                  {/* Mini CSS Graphical Mockup Representation of the Layout */}
-                  <div className="mt-3 pt-2 border-t border-border/40">
-                    <div className="h-8 rounded-lg border border-border/50 bg-muted/30 p-1 flex flex-col justify-center gap-0.5 overflow-hidden">
-                      {opt.id === "detailed" && (
-                        <div className="flex gap-1 h-full">
-                          <div className="w-1/2 rounded bg-teal-500/30 border border-teal-500/20" />
-                          <div className="w-1/2 flex flex-col gap-0.5">
-                            <div className="h-1/2 rounded bg-muted-foreground/20" />
-                            <div className="h-1/2 rounded bg-muted-foreground/20" />
-                          </div>
-                        </div>
-                      )}
-                      {opt.id === "grid" && (
-                        <div className="flex gap-1 h-full">
-                          <div className="w-1/3 rounded bg-muted-foreground/25" />
-                          <div className="w-1/3 rounded bg-muted-foreground/25" />
-                          <div className="w-1/3 rounded bg-muted-foreground/25" />
-                        </div>
-                      )}
-                      {opt.id === "list" && (
-                        <div className="flex flex-col justify-between h-full gap-0.5">
-                          <div className="h-1.5 rounded bg-muted-foreground/30 flex items-center px-0.5">
-                            <div className="h-1 w-1.5 bg-teal-500/50 rounded" />
-                          </div>
-                          <div className="h-1.5 rounded bg-muted-foreground/30 flex items-center px-0.5">
-                            <div className="h-1 w-1.5 bg-teal-500/50 rounded" />
-                          </div>
-                          <div className="h-1.5 rounded bg-muted-foreground/30 flex items-center px-0.5">
-                            <div className="h-1 w-1.5 bg-teal-500/50 rounded" />
-                          </div>
-                        </div>
-                      )}
-                      {opt.id === "minimal" && (
-                        <div className="flex flex-col justify-between h-full py-0.5">
-                          <div className="h-1 w-3/4 rounded bg-muted-foreground/35" />
-                          <div className="h-1 w-full rounded bg-muted-foreground/25" />
-                          <div className="h-1 w-1/2 rounded bg-muted-foreground/25" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
+            {/* Dialog Footer */}
+            <DialogFooter className="border-t border-border/50 pt-3">
+              <button
+                onClick={() => setIsLayoutModalOpen(false)}
+                className="rounded-xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-500"
+              >
+                Apply & Close
+              </button>
+            </DialogFooter>
           </div>
-
-          {/* Dialog Footer */}
-          <DialogFooter className="border-t border-border/50 pt-3">
-            <button
-              onClick={() => setIsLayoutModalOpen(false)}
-              className="rounded-xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-500"
-            >
-              Apply & Close
-            </button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>
