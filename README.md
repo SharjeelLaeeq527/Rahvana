@@ -2,7 +2,7 @@
 
 > **A comprehensive, AI-powered immigration assistance platform** that simplifies visa processes, automates form filling, provides intelligent guidance, and empowers users to reunite with their loved ones.
 
-**Rahvana** is a full-stack web application combining a **Next.js 15 frontend**, **Python FastAPI backend**, **Supabase database**, and **Google Gemini AI** to deliver powerful immigration tools, real-time visa tracking, document processing, interview preparation, and much more.
+**Rahvana** is a full-stack SaaS application combining a **Next.js 15 frontend**, **Python FastAPI backend**, **Supabase database**, and **Google Gemini AI** to deliver powerful immigration tools, real-time visa tracking, document processing, interview preparation, and much more.
 
 ---
 
