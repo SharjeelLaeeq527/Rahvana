@@ -21,7 +21,7 @@ export default function BlogIndexPage() {
   return (
     <div className="bg-background text-foreground min-h-screen pt-[55px] pb-20">
       {/* ── Split Two-Column Hero Banner ── */}
-      <section className="border-border/50 via-background to-background relative overflow-hidden border-b bg-gradient-to-b from-teal-950/20 py-12 sm:py-16 lg:py-20">
+      <section className="border-border/50 via-background to-background relative overflow-hidden border-b py-12 sm:py-16 lg:py-20">
         <div className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10">
           <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-12">
             {/* Left Column: Text Content */}

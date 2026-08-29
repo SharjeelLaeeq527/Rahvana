@@ -88,7 +88,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
 
       <article className="bg-background text-foreground min-h-screen pt-[55px] pb-24">
         {/* ── Article Header & Hero ── */}
-        <header className="border-border/60 via-background to-background border-b bg-gradient-to-b from-teal-950/20 py-12 sm:py-16">
+        <header className="border-border/60 via-background to-background border-b py-12 sm:py-16">
           <div className="mx-auto max-w-4xl px-5 sm:px-8">
             {/* Breadcrumb Navigation */}
             <nav className="text-muted-foreground mb-6 flex items-center gap-2 text-xs">
