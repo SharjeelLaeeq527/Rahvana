@@ -85,7 +85,13 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All Articles");
   const [viewMode, setViewMode] = useState<ViewMode>("detailed");
+  const [pendingViewMode, setPendingViewMode] = useState<ViewMode>("detailed");
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
+
+  const handleOpenLayoutModal = () => {
+    setPendingViewMode(viewMode);
+    setIsLayoutModalOpen(true);
+  };
 
   const currentViewOption = VIEW_OPTIONS.find((opt) => opt.id === viewMode) || VIEW_OPTIONS[0];
   const CurrentIcon = currentViewOption.icon;
@@ -221,7 +227,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
 
           {/* View Settings Modal Trigger Button */}
           <button
-            onClick={() => setIsLayoutModalOpen(true)}
+            onClick={handleOpenLayoutModal}
             className="flex items-center gap-2 rounded-2xl border border-border/80 bg-card/80 px-3.5 py-2 text-xs font-semibold text-foreground shadow-sm transition hover:border-teal-500/50 hover:bg-card hover:text-teal-600 dark:hover:text-teal-400 shrink-0"
             title="Change article display layout"
           >
@@ -530,7 +536,13 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
       </section>
 
       {/* ── View Layout Settings Modal using @/components/ui/dialog ── */}
-      <Dialog open={isLayoutModalOpen} onOpenChange={setIsLayoutModalOpen}>
+      <Dialog
+        open={isLayoutModalOpen}
+        onOpenChange={(open) => {
+          setIsLayoutModalOpen(open);
+          if (open) setPendingViewMode(viewMode);
+        }}
+      >
         <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden rounded-3xl border-border/80 bg-card p-0 shadow-2xl">
           <div className="custom-scrollbar overflow-y-auto max-h-[85vh] p-5 sm:p-6 pr-3 sm:pr-4 space-y-4">
             {/* Modal Header */}
@@ -561,13 +573,12 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               {VIEW_OPTIONS.map((opt) => {
                 const IconComponent = opt.icon;
-                const isActive = viewMode === opt.id;
+                const isActive = pendingViewMode === opt.id;
                 return (
                   <button
                     key={opt.id}
                     onClick={() => {
-                      setViewMode(opt.id);
-                      setIsLayoutModalOpen(false);
+                      setPendingViewMode(opt.id);
                     }}
                     className={`group relative flex flex-col justify-between rounded-2xl border p-3.5 text-left transition-all duration-200 ${
                       isActive
@@ -663,9 +674,20 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
             </div>
 
             {/* Dialog Footer */}
-            <DialogFooter className="border-t border-border/50 pt-3">
+            <DialogFooter className="border-t border-border/50 pt-3 flex items-center justify-end gap-2">
               <button
+                type="button"
                 onClick={() => setIsLayoutModalOpen(false)}
+                className="rounded-xl border border-border bg-background px-4 py-2 text-xs font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setViewMode(pendingViewMode);
+                  setIsLayoutModalOpen(false);
+                }}
                 className="rounded-xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-500"
               >
                 Apply & Close
