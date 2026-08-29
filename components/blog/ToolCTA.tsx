@@ -39,10 +39,10 @@ export default function ToolCTA({
           >
             <span>{buttonText}</span>
           </Link>
-          <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
+          {/* <span className="flex items-center gap-1.5 text-xs text-muted-foreground">
             <ShieldCheck className="h-4 w-4 text-teal-400" />
             No credit card required
-          </span>
+          </span> */}
         </div>
       </div>
     );

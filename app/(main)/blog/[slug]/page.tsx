@@ -286,7 +286,7 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                     badge="Free Rahvana Automation"
                     headline="Generate Your Custom NVC Document Vault Checklist"
                     description="Auto-check your scanned Nikah Nama, NADRA MRC, and Police Certificates for exact NVC formatting rules before uploading to CEAC."
-                    buttonText="Access Free Document Vault →"
+                    buttonText="Access Document Vault →"
                     buttonHref="/pricing?mode=tools"
                     variant="card"
                   />
