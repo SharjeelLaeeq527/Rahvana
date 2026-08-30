@@ -1,10 +1,12 @@
-<!-- # Arachnie (Rahvana) — IR-1 Visa Journey Tool
+# Rahvana (Arachnie) — IR-1/CR-1 Visa Journey Platform
 
-## Stack
-- **Frontend**: Next.js 15 App Router, React 19, TypeScript, TailwindCSS 4, shadcn-ui, Zustand
-- **Backend**: Python FastAPI (`backend/`), Google Gemini, Supabase (PostgreSQL + RLS)
-- **Forms**: React Hook Form + Zod
-- **AI features**: Rembg, Tesseract OCR, Qdrant vector DB
+Full architecture, stack, folder map, DB schema, request/data flows, and file-importance
+ranking live in **@docs/PROJECT_KNOWLEDGE.md**. Read that first for any non-trivial task;
+open individual source files only when you need line-level detail.
+
+> **Keep the docs alive.** When you make a change that alters architecture, a source of
+> truth, a core data flow, the DB schema, or a critical rule, update
+> `docs/PROJECT_KNOWLEDGE.md` in the same change so it never drifts from the code.
 
 ## Commands
 ```bash
@@ -12,45 +14,26 @@ npm run dev                              # Frontend at :3000
 npm run build                            # Production build (Turbopack)
 npm run lint                             # ESLint
 cd backend && uvicorn main:app --reload  # FastAPI at :8000
-NODE_OPTIONS="--max-old-space-size=8192" npx tsc --noEmit  # Type check
+NODE_OPTIONS="--max-old-space-size=8192" npx tsc --noEmit  # Type check (builds DON'T)
 ```
 
-## Key folders
-- `app/` — Next.js routes: `(auth)/`, `(main)/`, `(tools)/`
-- `components/` — Reusable UI (shadcn, layout, chat, tools)
-- `data/visa-category/*.json` — Live per-category journeys (IR-1/IR-5/…), source of truth for the V2/V3 dashboards
-- `data/roadmap.ts` — Legacy static IR-1 config (stages → steps); home/marketing pages only, not the live tool
-- `lib/` — Supabase client, entitlements, journey helpers, autoFill
-- `types/` — Shared TypeScript types
-- `backend/` — Python FastAPI, AI services, PDF processing
-- `supabase/` — Migrations, edge functions, RLS policies
-
 ## Critical rules
+These cause real bugs and cannot be inferred from the code. Everything else is in PROJECT_KNOWLEDGE.md.
 
-**visible_when must be fully evaluated — never short-circuit**
-Steps have `visible_when: Record<string, unknown>`. Use `getActiveStepsForStage()` in `lib/journeyHelpers.ts` to filter steps. Never manually filter steps inline — this has caused bugs where steps disappear incorrectly. If adding new conditions to `visible_when`, update `journeyHelpers.ts` first, not just the data file.
-
-**Plan tiers gate everything**
-Free / basic / premium / executive tiers. Hard-lock rules live in `lib/entitlements/hardLockRules.ts`. Do not add feature access logic anywhere else. Never show premium features to free users without checking entitlements first.
-
-**State sync is bidirectional**
-`useWizard` (at `app/(main)/dashboard/hooks/useWizard.ts`) syncs to Supabase. Profile data flows both ways via `syncCaseDataToProfile()` / `syncProfileToCaseData()`. If you change journey state shape, check both sync functions.
-
-**The live journey source of truth is `data/visa-category/*.json` — NOT `data/roadmap.ts`**
-Step visibility (`visible_when`), who (petitioner/beneficiary/both), filingType (online/paper/both), and stage order for the real V2/V3 dashboards all come from the per-category JSON journeys in `data/visa-category/` (keyed by `chapter_key`/`step_key`), read via `getActiveStepsForStage`. Do not hardcode stage IDs or step IDs anywhere else.
-`data/roadmap.ts` is **legacy** — it uses a `stages`/`id` shape, has no `visible_when`, and is imported only by the home/marketing components (`home-page/Wizard.tsx`, `Dashboard.tsx`, `ExploreJourneys.tsx`). Do not treat it as the journey source of truth for the live tool.
-
-**Never edit Supabase RLS policies without a migration**
-All policy changes go through `supabase/migrations/`. Direct edits to the dashboard will drift.
-
-## Repeat mistakes log
-<!-- Only added when the same mistake happens more than once -->
-<!-- Format: **Galti** — Sahi tariqa -->
-
+- **Never short-circuit `visible_when`.** Filter steps only via `getActiveStepsForStage(...)` in `app/components/journey-engine/journeyHelpers.ts` (spouse UI has a parallel copy at `app/components/journey-spouse/journeyHelpers.ts`) — never inline. New `visible_when` conditions go into the helper first, then the JSON data file.
+- **Live journey source of truth is `data/visa-category/*.json`, NOT `data/roadmap.ts`.** The per-category JSON (keyed by `chapter_key`/`step_key`) drives step visibility, `who`, `filingType`, and stage order for the real V2/V3 dashboards. `data/roadmap.ts` is legacy (`stages`/`id` shape, no `visible_when`) and feeds only the home/marketing pages. Never hardcode stage or step IDs anywhere.
+- **Plan tiers gate everything.** Hard-lock rules live only in `lib/entitlements/hardLockRules.ts`. Never put feature-access logic elsewhere; never show premium features to free users without checking entitlements.
+- **State sync is bidirectional.** `useWizard` (`app/(main)/dashboard/hooks/useWizard.ts`) ⇄ Supabase, and profile ⇄ case_data via `syncCaseDataToProfile()` / `syncProfileToCaseData()`. Change the journey state shape → update both directions.
+- **RLS changes go through `supabase/migrations/` only.** Never edit policies in the Supabase dashboard — they drift.
+- **Builds hide TS/ESLint errors** (`ignoreBuildErrors`/`ignoreDuringBuilds`). A green build is not type-clean; run `tsc --noEmit` yourself.
+- **Keep domain logic in `lib/`**, route handlers thin, components presentational.
+- **User-facing copy is plain ASCII** — no em/en-dash, curly quotes, or ellipsis character.
 
 ## Patterns to know
-- `getActiveStepsForStage(stage, filingType, metadata)` — always use this for step filtering
+- `getActiveStepsForStage(stage, filingType, metadata)` — always use for step filtering
 - `toggleComplete(stepId)` — marks steps done, triggers Supabase update
 - `mapDocumentNameToId()` — scopes documents to the journey
-- Step `who` field: `"petitioner"` | `"beneficiary"` | `"both"` — affects ChapterView display -->
-    
+- Step `who` field: `"petitioner"` | `"beneficiary"` | `"both"` — affects ChapterView display
+
+## Repeat mistakes log
+<!-- Add a line only when the same mistake happens more than once. Format: **Galti** — Sahi tariqa -->
