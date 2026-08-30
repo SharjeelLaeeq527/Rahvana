@@ -8,6 +8,7 @@ import ArticleSchema from "@/components/seo/ArticleSchema";
 import FAQPageSchema from "@/components/seo/FAQPageSchema";
 import BreadcrumbSchema from "@/components/seo/BreadcrumbSchema";
 import ToolCTA from "@/components/blog/ToolCTA";
+import ArticleSocialShare from "@/components/blog/ArticleSocialShare";
 import {
   Clock,
   Calendar,
@@ -320,6 +321,13 @@ export default async function ArticleDetailPage({ params }: { params: Promise<{ 
                 ))}
               </div>
             </section>
+
+            {/* ── Social Share Section (Facebook, Instagram, X/Twitter, TikTok & Copy Link) ── */}
+            <ArticleSocialShare
+              title={article.title}
+              slug={article.slug}
+              description={article.description}
+            />
 
             {/* ── Bottom Strategic Conversion CTA Banner ── */}
             <ToolCTA
