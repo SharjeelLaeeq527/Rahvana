@@ -510,7 +510,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                 </svg>
                 Check processing-time context
               </Button>
-              <Button
+              {/* <Button
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2 rounded-lg bg-white px-4 py-2 text-[12px] font-semibold text-[#0c1b33]"
@@ -541,7 +541,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                   <polyline points="9 18 15 12 9 6" />
                 </svg>
                 See common next milestones
-              </Button>
+              </Button> */}
             </div>
             {/* Right: Interactive Checklist */}
             <div className="flex flex-col gap-3">
@@ -728,7 +728,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                 Education + Updates
               </span>
             </div>
-            <div className="mt-4 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3">
+            <div className="mt-4 grid grid-cols-1 gap-3.5 sm:grid-cols-2 md:grid-cols-3">
               {tool.useful_now.map((u: any, i: number) => {
                 const iconColor =
                   u.icon === "green"
@@ -749,27 +749,28 @@ const TrackCaseStatusStep: React.FC<any> = ({
                 return (
                   <div
                     key={i}
-                    className="flex h-full flex-col rounded-2xl bg-white p-4 md:p-6 shadow-[0_8px_24px_rgba(12,27,51,0.07)] transition hover:shadow-md"
+                    className="flex h-full flex-col rounded-2xl bg-white p-3.5 sm:p-4 shadow-[0_8px_24px_rgba(12,27,51,0.07)] transition hover:shadow-md"
                     style={{
                       borderWidth: "1px",
                       borderColor: launchAccentColor,
                     }}
                   >
                     <div
-                      className={`mb-4 flex h-[38px] w-[38px] items-center justify-center rounded-[10px] border ${iconColor}`}
+                      className={`mb-3 flex h-[34px] w-[34px] items-center justify-center rounded-[10px] border ${iconColor}`}
                     >
-                      <Icon className="h-[20px] w-[20px]" />
+                      <Icon className="h-[18px] w-[18px]" />
                     </div>
-                    <div className="mb-1 text-[16px] leading-tight font-semibold text-[#0c1b33]">
+                    <div className="mb-1 text-[15px] leading-tight font-semibold text-[#0c1b33]">
                       {u.title}
                     </div>
-                    <div className="mb-4 flex-1 text-[13.5px] leading-[1.6] text-[#3a4f63]">
+                    <div className="mb-4 flex-1 text-[13px] leading-[1.55] text-[#3a4f63]">
                       {u.copy}
                     </div>
                     <Button
                       variant="outline"
+                      title={u.action}
                       size="sm"
-                      className="mt-auto flex items-center gap-2 rounded-lg px-4 py-2 text-[12px] font-semibold text-[var(--rv-navy)]"
+                      className="mt-auto flex w-full items-center justify-center gap-1.5 rounded-lg px-2.5 py-1.5 text-[11.5px] font-semibold text-[var(--rv-navy)]"
                       style={{
                         borderWidth: "1px",
                         borderColor: launchAccentColor,
@@ -788,8 +789,8 @@ const TrackCaseStatusStep: React.FC<any> = ({
                           setShowAffidavitSupportModal(true);
                       }}
                     >
-                      {u.action}
-                      <ArrowRight className="ml-1 h-4 w-4" />
+                      <span className="truncate">{u.action}</span>
+                      <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                     </Button>
                     <AfterI130ApprovalModal
                       open={showAfterI130Modal}
