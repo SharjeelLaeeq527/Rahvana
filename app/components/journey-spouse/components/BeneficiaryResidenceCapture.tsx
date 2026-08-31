@@ -1,11 +1,13 @@
 // components/BeneficiaryResidenceCapture.tsx
 //
 // Captures the beneficiary's residence-country history on step_1_5 (Fill I-130A).
-// Per 9 FAM 504.4-4(B)(2), the beneficiary needs a police certificate from every
-// country where they lived for 6+ months since age 16. This component:
+// Per 9 FAM 504.4-4(B), the police-certificate rule uses two thresholds (age 16+):
+// the country of current residence and the country of nationality require a
+// certificate at 6+ months, while any OTHER country of past residence requires one
+// only at 12+ months (one year) since age 16. This component:
 //
 //   1. Captures current country of residence
-//   2. Captures additional countries lived in (6+ months in last 5 years)
+//   2. Captures additional countries lived in (12+ months / one year since age 16)
 //   3. Surfaces a derived list of police certificates that will be required at
 //      Chapter 3 (step_3_2)
 //   4. Flags long-distance marriage indicator if current country differs from
@@ -111,8 +113,10 @@ export function BeneficiaryResidenceCapture({
 
   const ruleSummary =
     config?.rule_summary ??
-    "A police certificate is required from every country where the beneficiary lived " +
-      "for 6 months or more since age 16.";
+    "A police certificate is required (age 16+) from the country of current residence and " +
+      "the country of nationality if the beneficiary lived there 6 months or more, and from " +
+      "any other country of past residence where the beneficiary lived 12 months (one year) " +
+      "or more since age 16.";
   const sourceBasis =
     config?.source_basis ?? "9 FAM 504.4-4(B)(2), Police Certificate Requirement";
 
@@ -182,7 +186,7 @@ export function BeneficiaryResidenceCapture({
         {/* Additional countries */}
         <div className="flex flex-col gap-1 mb-3">
           <label className="text-[10.5px] font-semibold uppercase tracking-wider text-[#57534e]">
-            Other countries lived in for 6+ months in last 5 years
+            Other countries lived in for 12+ months (one year) since age 16
           </label>
           <div className="flex gap-2">
             <input
