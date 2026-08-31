@@ -64,6 +64,8 @@ export const metadata: Metadata = {
 
   // ── Keywords (GEO signal — helps AI models understand the site topic) ───────
   keywords: [
+    "Rahvana",
+    "Rahvana immigration",
     "IR-1 visa",
     "IR-5 visa",
     "CR-1 visa",
