@@ -46,22 +46,6 @@ export default function ArticleSocialShare({
     }
   };
 
-  const handleNativeShare = async () => {
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title,
-          text: description || title,
-          url: articleUrl,
-        });
-      } catch (err) {
-        // User cancelled or share failed
-      }
-    } else {
-      handleCopyLink();
-    }
-  };
-
   const shareLinks = [
     {
       name: "X (Twitter)",
@@ -90,7 +74,7 @@ export default function ArticleSocialShare({
     {
       name: "LinkedIn",
       icon: (
-        <svg className="h-4.75 w-4.75 fill-current" viewBox="0 0 24 24" aria-hidden="true">
+        <svg className="h-4 w-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
           <path d="M19 3a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14m-.5 15.5v-5.3a3.26 3.26 0 0 0-3.26-3.26c-.85 0-1.84.52-2.28 1.3v-1.11h-2.79v8.37h2.79v-4.93c0-0.77.62-1.4 1.39-1.4a1.4 1.4 0 0 1 1.4 1.4v4.93h2.75M6.88 8.56a1.68 1.68 0 0 0 1.68-1.68c0-.93-.75-1.69-1.68-1.69a1.69 1.69 0 0 0-1.69 1.69c0 .93.76 1.68 1.69 1.68m1.39 9.94v-8.37H5.5v8.37h2.77z" />
         </svg>
       ),
@@ -131,7 +115,7 @@ export default function ArticleSocialShare({
   ];
 
   return (
-    <section className="border-border/80 bg-card/60 relative my-8 rounded-3xl border p-6 shadow-md backdrop-blur-md sm:p-8">
+    <section className="border-border/80 bg-card/60 relative my-8 rounded-3xl border p-6 text-center shadow-md backdrop-blur-md sm:p-8">
       {/* Toast Floating Notification */}
       {toastMessage && (
         <div className="animate-in fade-in slide-in-from-bottom-2 absolute -top-4 left-1/2 -translate-x-1/2 rounded-full bg-teal-600 px-4 py-1.5 text-xs font-semibold text-white shadow-lg duration-200">
@@ -139,13 +123,14 @@ export default function ArticleSocialShare({
         </div>
       )}
 
-      <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col items-center justify-center gap-3 text-center">
+        <div className="flex items-center justify-center gap-2 text-xs font-bold tracking-wider text-teal-600 uppercase dark:text-teal-400">
+          <Share2 className="h-4 w-4" />
+          <span>Pass It Forward</span>
+        </div>
+
         <div>
-          <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-teal-600 uppercase dark:text-teal-400">
-            <Share2 className="h-4 w-4" />
-            <span>Pass It Forward</span>
-          </div>
-          <h3 className="text-foreground mt-1 text-lg font-bold sm:text-xl">
+          <h3 className="text-foreground text-lg font-bold sm:text-xl">
             Found this guide helpful? Share with other applicants
           </h3>
           <p className="text-muted-foreground mt-0.5 text-xs sm:text-sm">
@@ -153,8 +138,8 @@ export default function ArticleSocialShare({
           </p>
         </div>
 
-        {/* Social Share Buttons Row (Icons Only) */}
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+        {/* Social Share Buttons Row (All Icons Aligned Centered in 1 Single Lane) */}
+        <div className="mt-2 flex max-w-full flex-nowrap items-center justify-center gap-2.5 overflow-x-auto py-1 sm:gap-3">
           {shareLinks.map((item) => {
             if (item.onClick) {
               return (
@@ -166,7 +151,7 @@ export default function ArticleSocialShare({
                       showToast(item.customActionNotice);
                     }
                   }}
-                  className={`group border-border/70 bg-background/80 text-muted-foreground flex h-10 w-10 items-center justify-center rounded-2xl border transition-all duration-200 ${item.hoverBg} ${item.accentBorder} shrink-0 shadow-sm`}
+                  className={`group border-border/70 bg-background/80 text-muted-foreground flex h-10 w-10 items-center justify-center rounded-2xl border transition-all duration-200 sm:h-11 sm:w-11 ${item.hoverBg} ${item.accentBorder} shrink-0 shadow-sm`}
                   title={`Share on ${item.name}`}
                   aria-label={`Share on ${item.name}`}
                 >
@@ -183,7 +168,7 @@ export default function ArticleSocialShare({
                 href={item.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`group border-border/70 bg-background/80 text-muted-foreground flex h-10 w-10 items-center justify-center rounded-2xl border transition-all duration-200 ${item.hoverBg} ${item.accentBorder} shrink-0 shadow-sm`}
+                className={`group border-border/70 bg-background/80 text-muted-foreground flex h-10 w-10 items-center justify-center rounded-2xl border transition-all duration-200 sm:h-11 sm:w-11 ${item.hoverBg} ${item.accentBorder} shrink-0 shadow-sm`}
                 title={`Share on ${item.name}`}
                 aria-label={`Share on ${item.name}`}
               >
@@ -197,7 +182,7 @@ export default function ArticleSocialShare({
           {/* Copy Direct Link Button */}
           <button
             onClick={handleCopyLink}
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border shadow-sm transition-all duration-200 ${
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border shadow-sm transition-all duration-200 sm:h-11 sm:w-11 ${
               copied
                 ? "border-teal-500 bg-teal-500/10 text-teal-600 dark:text-teal-400"
                 : "border-border/70 bg-background/80 text-muted-foreground hover:border-teal-500/50 hover:bg-teal-600 hover:text-white"
