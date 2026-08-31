@@ -792,22 +792,22 @@ const TrackCaseStatusStep: React.FC<any> = ({
                       <span className="truncate">{u.action}</span>
                       <ArrowRight className="h-3.5 w-3.5 shrink-0" />
                     </Button>
-                    <AfterI130ApprovalModal
-                      open={showAfterI130Modal}
-                      onClose={() => setShowAfterI130Modal(false)}
-                    />
-                    <RelationshipEvidenceModal
-                      open={showRelationshipEvidenceModal}
-                      onClose={() => setShowRelationshipEvidenceModal(false)}
-                    />
-                    <AffidavitSupportModal
-                      open={showAffidavitSupportModal}
-                      onClose={() => setShowAffidavitSupportModal(false)}
-                    />
                   </div>
                 );
               })}
             </div>
+            <AfterI130ApprovalModal
+              open={showAfterI130Modal}
+              onClose={() => setShowAfterI130Modal(false)}
+            />
+            <RelationshipEvidenceModal
+              open={showRelationshipEvidenceModal}
+              onClose={() => setShowRelationshipEvidenceModal(false)}
+            />
+            <AffidavitSupportModal
+              open={showAffidavitSupportModal}
+              onClose={() => setShowAffidavitSupportModal(false)}
+            />
           </div>
         )}
         {/* Relevant Updates Panel */}
@@ -962,15 +962,15 @@ const TrackCaseStatusStep: React.FC<any> = ({
                         {btn}
                       </button>
                     ))} */}
-                      <AddEvidenceNoteModal
-                        open={showAddEvidenceNoteModal}
-                        onClose={() => setShowAddEvidenceNoteModal(false)}
-                      />
                     </div>
                   </div>
                 );
               })}
             </div>
+            <AddEvidenceNoteModal
+              open={showAddEvidenceNoteModal}
+              onClose={() => setShowAddEvidenceNoteModal(false)}
+            />
           </div>
         )}
         {/* Community & Proof Layer Panel */}
