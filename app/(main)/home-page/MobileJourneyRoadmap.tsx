@@ -939,16 +939,16 @@ export default function MobileJourneyRoadmap() {
           <div className="relative z-10 flex flex-col items-center text-center">
             <div className="w-full flex justify-between items-start mb-6">
               <div className="w-[45%] text-left pr-1">
-                <h3 className="text-4xl font-semibold text-slate-800 tracking-tight leading-snug mb-1">
+                <h3 className="text-4xl font-semibold text-green-800 tracking-tight leading-snug mb-1">
                   Visa Approved
                 </h3>
-                <p className="text-sm text-slate-600 leading-relaxed font-normal">
+                <p className="text-m text-slate-600 leading-relaxed font-normal">
                   The final milestone in your journey. Your passport is stamped, and you are officially ready to begin your new life together.
                 </p>
               </div>
 
-              <div className="flex justify-end mt-17 ">
-                <MobileBirdImage n={16} className="w-38" />
+              <div className="flex justify-end mt-17 -rotate-3">
+                <MobileBirdImage n={16} className="w-42" />
               </div>
             </div>
 
