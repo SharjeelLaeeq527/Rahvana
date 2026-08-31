@@ -124,7 +124,15 @@ export function CategorySelectionStep({
   onPurchaseAgain,
   error,
 }: CategorySelectionStepProps) {
-  if (categories.length === 0) {
+  const environment = process.env.NEXT_PUBLIC_ENVIRONMENT === "development";
+
+  const visibleCategories = environment
+  ? categories
+  : categories.filter(
+      (category) => category.categorySlug !== "ir-5-parent"
+    );
+
+  if (visibleCategories.length === 0) {
     return (
       <div className="rounded-3xl border border-slate-200 bg-white px-6 py-14 text-center shadow-sm sm:px-10">
         <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
@@ -205,7 +213,7 @@ export function CategorySelectionStep({
 
       {/* Category Cards */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {categories.map((category) => {
+        {visibleCategories.map((category) => {
           const theme = getThemeColor(category.ui.themeColor);
           const isSelected = selectedCategory?.categorySlug === category.categorySlug;
           return (

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Instagram, Facebook, Linkedin, ArrowRight, Youtube } from "lucide-react";
 import { useLanguage } from "../../context/LanguageContext";
 import { ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 
 export default function Footer() {
   const pathname = usePathname();
@@ -16,7 +17,7 @@ export default function Footer() {
 
     const routes: Record<string, string> = {
       contact: "/#contact",
-      about: "/#about",
+      about: "/about",
     };
 
     const targetRoute = routes[id] || "/";
@@ -67,26 +68,28 @@ export default function Footer() {
           </div>
 
           {/* Journeys Column */}
-          <div>
-            <h4 className="mb-6 text-xs font-bold uppercase tracking-normal text-white sm:text-sm sm:tracking-wider">
+          <div className="">
+            <h4 className="mb-6 hidden text-xs font-bold tracking-normal text-white uppercase sm:block sm:text-sm sm:tracking-wider">
               {t("footer.journeys") || "Journeys"}
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
               <Link
                 href={ir1journeyHref}
-                className="text-slate-400 transition-colors hover:text-white"
+                className="font-medium text-white underline transition-colors hover:text-white sm:font-normal sm:text-slate-400 sm:no-underline"
               >
                 IR-1 Journey
+                <ArrowRight size={14} className="ml-1 inline-block sm:hidden" />
               </Link>
-              {showToggle && (
+              {/* IR-5 is hidden on production (see lib/feature-flags) until it launches. */}
+              {IR5_ENABLED && (
                 <Link
                   href={ir5journeyHref}
-                  className="text-slate-400 transition-colors hover:text-white"
+                  className="hidden text-slate-400 transition-colors hover:text-white sm:block"
                 >
                   IR-5 Journey
                 </Link>
               )}
-              {showToggle && (
+              {/* {showToggle && (
                 <Link
                   href="/visa-category"
                   className="font-medium text-white underline transition-colors hover:text-slate-200"
@@ -94,13 +97,13 @@ export default function Footer() {
                   Explore<span className="hidden sm:inline"> all</span> Journeys
                   <ArrowRight size={14} className="ml-1 inline-block" />
                 </Link>
-              )}
+              )} */}
             </nav>
           </div>
 
           {/* Tools Column */}
           <div>
-            <h4 className="mb-6 text-xs font-bold uppercase tracking-normal text-white sm:text-sm sm:tracking-wider">
+            <h4 className="mb-6 hidden text-xs font-bold tracking-normal text-white uppercase sm:block sm:text-sm sm:tracking-wider">
               {t("footer.tools") || "Tools"}
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
@@ -119,18 +122,18 @@ export default function Footer() {
               </Link> */}
               <Link
                 href="/affidavit-support-calculator"
-                className="text-slate-400 transition-colors hover:text-white"
+                className="hidden text-slate-400 transition-colors hover:text-white sm:block"
               >
                 {t("toolsPage.toolsItems.sponsorship-calculator.title")}
               </Link>
               <Link
                 href="/pdf-processing"
-                className="text-slate-400 transition-colors hover:text-white"
+                className="hidden text-slate-400 transition-colors hover:text-white sm:block"
               >
                 {t("toolsPage.toolsItems.pdf-toolkit.title")}
               </Link>
               <Link
-                href="/tools"
+                href="/resources?tab=toolbox"
                 className="font-medium text-white underline transition-colors hover:text-slate-200"
               >
                 Explore<span className="hidden sm:inline"> all</span> Tools
@@ -141,12 +144,12 @@ export default function Footer() {
 
           {/* Company Column */}
           <div>
-            <h4 className="mb-6 text-xs font-bold uppercase tracking-normal text-white sm:text-sm sm:tracking-wider">
+            <h4 className="mb-6 text-xs font-bold tracking-normal text-white uppercase sm:text-sm sm:tracking-wider">
               {t("footer.company") || "Company"}
             </h4>
             <nav className="flex flex-col gap-4 text-sm">
               <Link
-                href="/#about"
+                href="/about"
                 onClick={(e) => handleNav("about", e)}
                 className="text-slate-400 transition-colors hover:text-white"
               >
@@ -164,32 +167,38 @@ export default function Footer() {
 
           {/* Social Column */}
           <div>
-            <h4 className="mb-6 text-xs font-bold uppercase tracking-normal text-white sm:text-sm sm:tracking-wider">
+            <h4 className="mb-6 text-xs font-bold tracking-normal text-white uppercase sm:text-sm sm:tracking-wider">
               {t("footer.connectWithUs") || "Connect With Us"}
             </h4>
-            <nav className="flex flex-col gap-4 text-sm">
+            <nav className="grid max-w-[150px] grid-cols-3 gap-x-2 gap-y-3.5 text-sm sm:flex sm:max-w-none sm:flex-col sm:gap-4">
               <Link
                 href="https://www.instagram.com/rahvana.co?igsh=NTc4MTIwNjQ2YQ%3D%3D&utm_source=qr"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Instagram"
+                title="Instagram"
                 className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
               >
                 <Instagram size={18} className="transition-transform group-hover:scale-110" />
-                {t("footer.instagram") || "Instagram"}
+                <span className="hidden sm:inline">{t("footer.instagram") || "Instagram"}</span>
               </Link>
               <Link
                 href="https://www.facebook.com/profile.php?id=61587967827317&mibextid=wwXIfr"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Facebook"
+                title="Facebook"
                 className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
               >
                 <Facebook size={18} className="transition-transform group-hover:scale-110" />
-                {t("footer.facebook") || "Facebook"}
+                <span className="hidden sm:inline">{t("footer.facebook") || "Facebook"}</span>
               </Link>
               <Link
                 href="https://x.com/rahvanaco?s=21&t=a8CQwdRgHqBFZmUfsX8Gpg"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="X"
+                title="X"
                 className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
               >
                 <svg
@@ -199,25 +208,29 @@ export default function Footer() {
                 >
                   <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"></path>
                 </svg>
-                {t("footer.x") || "X"}
+                <span className="hidden sm:inline">{t("footer.x") || "X"}</span>
               </Link>
               <Link
                 href="https://youtube.com/@rahvana_co?si=Mb5-OwJmc5ThTxJs"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="Youtube"
+                title="Youtube"
                 className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
               >
-                <Youtube size={18} className="transition-transform group-hover:scale-110" />
-                {t("footer.youtube") || "Youtube"}
+                <Youtube size={22} className="transition-transform group-hover:scale-110" />
+                <span className="hidden sm:inline">{t("footer.youtube") || "Youtube"}</span>
               </Link>
               <Link
                 href="https://www.linkedin.com/company/rahvana/posts/?feedView=all"
                 target="_blank"
                 rel="noopener noreferrer"
+                aria-label="LinkedIn"
+                title="LinkedIn"
                 className="group flex items-center gap-2 text-slate-400 transition-colors hover:text-white"
               >
                 <Linkedin size={18} className="transition-transform group-hover:scale-110" />
-                LinkedIn
+                <span className="hidden sm:inline">LinkedIn</span>
               </Link>
             </nav>
           </div>

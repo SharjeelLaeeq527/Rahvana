@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useState, useEffect, useCallback, useMemo, useRef } from "react";
-import { createBrowserClient } from "@supabase/ssr";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/app/context/AuthContext";
 import { useRouter } from "next/navigation";
@@ -26,10 +26,12 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useForm } from "react-hook-form";
 import { Loader } from "@/components/ui/spinner";
 import { getProfileCompleteness } from "@/lib/profile/helpers";
 import { cn } from "@/lib/utils";
 import { FormField, FormSelect, FormCheckbox } from "./form-field";
+import { validateProfile } from "@/lib/profile/schema";
 import { useLanguage } from "@/app/context/LanguageContext";
 
 // ── Reusable premium collapsible section ───────────────────────────────────
@@ -196,12 +198,30 @@ export default function ProfilePage() {
   const { t } = useLanguage();
   const { user, isLoading } = useAuth();
   const router = useRouter();
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-  );
 
-  const [formData, setFormData] = useState<MasterProfile>({} as MasterProfile);
+  // ── Form state (React Hook Form) ─────────────────────────────────────────────
+  // RHF is the single source of truth for the form. We initialize it ONCE from the
+  // server via reset() (see fetchProfile) and never overwrite loaded fields — the
+  // pattern that structurally prevents the old "field wiped on load/save" bug.
+  const {
+    reset,
+    watch,
+    setValue,
+    getValues,
+    formState: { isDirty },
+  } = useForm<MasterProfile>({ defaultValues: {} as MasterProfile });
+
+  // Live view of the current values — every existing `formData.x` read below keeps
+  // working unchanged.
+  const formData = watch() as MasterProfile;
+
+  // Dot-path setter: all writes flow through RHF and mark the form dirty. The path
+  // is cast so deep paths ("sponsor.name.first") don't fight RHF's FieldPath types.
+  const setField = (path: string, value: unknown) =>
+    setValue(path as Parameters<typeof setValue>[0], value as never, {
+      shouldDirty: true,
+    });
+
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -249,14 +269,10 @@ export default function ProfilePage() {
 
       if (profile?.profile_details) {
         const profileDetails = profile.profile_details as MasterProfile;
-        setFormData({
-          ...profileDetails,
-          sex: "",
-          sponsor: {
-            ...(profileDetails.sponsor || {}),
-            sex: "",
-          },
-        } as MasterProfile);
+        // Seed RHF from the (decrypted) server data. reset() sets this as the new
+        // baseline (isDirty → false) and never overwrites individual fields, so
+        // stored values like `sex` load and persist correctly.
+        reset(profileDetails);
         // Mark as fetched for this user
         hasFetchedRef.current = userId;
       }
@@ -265,7 +281,7 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
-  }, [userId, supabase]);
+  }, [userId, reset]);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -282,53 +298,11 @@ export default function ProfilePage() {
     }
   }, [userId, isLoading, router, fetchProfile, user]);
 
-  // ── Validation ──────────────────────────────────────────────────────────────
-  // Format + cross-field checks on fields that HAVE a value (the profile is
-  // progressive, so we don't force empty fields — we only reject bad data).
-  const validate = useCallback(
-    (data: MasterProfile): Record<string, string> => {
-      const next: Record<string, string> = {};
-      const today = new Date().toISOString().slice(0, 10);
-
-      const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
-      const isFutureDate = (v: string) => v > today;
-
-      // Date of birth can't be in the future.
-      if (data.dateOfBirth && isFutureDate(data.dateOfBirth)) {
-        next["dateOfBirth"] = "Date of birth can't be in the future.";
-      }
-      // Passport expiry must be after the issue date.
-      if (
-        data.passportExpiry &&
-        data.passportIssueDate &&
-        data.passportExpiry <= data.passportIssueDate
-      ) {
-        next["passportExpiry"] = "Expiry must be after the issue date.";
-      }
-      // CNIC format: 00000-0000000-0 (13 digits).
-      if (data.cnic && !/^\d{5}-\d{7}-\d$/.test(data.cnic.trim())) {
-        next["cnic"] = "Format must be 00000-0000000-0.";
-      }
-      // SSN: 9 digits (with or without dashes).
-      if (data.ssn && !/^\d{3}-?\d{2}-?\d{4}$/.test(data.ssn.trim())) {
-        next["ssn"] = "SSN must be 9 digits (e.g. 123-45-6789).";
-      }
-
-      // Sponsor (US petitioner).
-      if (data.sponsor?.email && !isEmail(data.sponsor.email)) {
-        next["sponsor.email"] = "Enter a valid email address.";
-      }
-      if (data.sponsor?.dateOfBirth && isFutureDate(data.sponsor.dateOfBirth)) {
-        next["sponsor.dateOfBirth"] = "Date of birth can't be in the future.";
-      }
-      return next;
-    },
-    [],
-  );
-
   const handleSave = async () => {
     // Block the save on validation errors and surface them inline.
-    const found = validate(formData);
+    // Rules live in ./schema.ts (Zod) so client + server share one definition.
+    const values = getValues();
+    const found = validateProfile(values);
     setErrors(found);
     if (Object.keys(found).length > 0) {
       setMessage("Please fix the highlighted fields before saving.");
@@ -343,7 +317,7 @@ export default function ProfilePage() {
       const response = await fetch("/api/profile/complete", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ profile_details: formData }),
+        body: JSON.stringify({ profile_details: values }),
       });
 
       if (!response.ok) {
@@ -370,89 +344,54 @@ export default function ProfilePage() {
     setIsEditing(false);
     setErrors({});
     setMessage("");
-    // Reset fetch tracking and refetch to restore original data
-    hasFetchedRef.current = null;
-    fetchProfile();
+    // Restore the last-loaded baseline (no refetch needed — RHF holds it).
+    reset();
   };
 
   const toggleSection = (key: keyof typeof sections) => {
     setSections((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  // ── Field setters ─────────────────────────────────────────────────────────
+  // All write through RHF via setField(). Signatures are unchanged so the field
+  // bindings throughout the form stay exactly as they were; RHF handles the
+  // nested-object immutability that these used to do by hand.
   const updateField = <T extends keyof MasterProfile>(
     field: T,
     value: MasterProfile[T],
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+  ) => setField(field as string, value);
 
   const updateStrictField = <T extends keyof MasterProfile>(
     field: T,
     value: string,
-  ) => {
-    setFormData((prev) => ({ ...prev, [field]: value as MasterProfile[T] }));
-  };
+  ) => setField(field as string, value);
 
-  const updateNested = <T extends keyof MasterProfile>(
-    parent: T,
-    field: string,
-    value: unknown,
-  ) => {
-    setFormData((prev) => {
-      const parentValue = prev[parent];
-      const updatedParent =
-        typeof parentValue === "object" && parentValue !== null
-          ? { ...(parentValue as Record<string, unknown>), [field]: value }
-          : { [field]: value };
-
-      return {
-        ...prev,
-        [parent]: updatedParent as MasterProfile[T],
-      };
-    });
-  };
+  const updateNested = (parent: string, field: string, value: unknown) =>
+    setField(`${parent}.${field}`, value);
 
   const updateAddress = (
     field: keyof MasterProfile["currentAddress"],
     value: string,
-  ) => {
-    setFormData((prev) => ({
-      ...prev,
-      currentAddress: {
-        ...(prev.currentAddress || {}),
-        [field]: value,
-      },
-    }));
-  };
+  ) => setField(`currentAddress.${String(field)}`, value);
 
   // Sponsor section helpers — sponsor.* holds the US petitioner's own data
   // (the top-level fields are the account holder's / beneficiary's).
   const updateSponsor = (field: string, value: unknown) =>
-    updateNested("sponsor", field, value);
+    setField(`sponsor.${field}`, value);
 
   const updateSponsorSub = (
     sub: "name" | "placeOfBirth" | "address",
     field: string,
     value: string,
-  ) => {
-    setFormData((prev) => {
-      const sponsor = (prev.sponsor || {}) as Record<string, unknown>;
-      const current = sponsor[sub];
-      const subObj =
-        typeof current === "object" && current !== null
-          ? { ...(current as Record<string, unknown>) }
-          : {};
-      subObj[field] = value;
-      return {
-        ...prev,
-        sponsor: { ...sponsor, [sub]: subObj } as MasterProfile["sponsor"],
-      };
-    });
-  };
+  ) => setField(`sponsor.${sub}.${field}`, value);
 
-  <div className="min-h-screen flex items-center justify-center bg-slate-50">
-    <Loader size="md" />
-  </div>;
+  if (isLoading || loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50">
+        <Loader size="md" />
+      </div>
+    );
+  }
 
   if (!user) return null;
 
@@ -503,7 +442,7 @@ export default function ProfilePage() {
                   </Button>
                   <Button
                     onClick={handleSave}
-                    disabled={saving}
+                    disabled={saving || !isDirty}
                     className="w-full sm:w-auto h-9 text-sm px-4"
                   >
                     {saving ? (
@@ -2051,10 +1990,10 @@ export default function ProfilePage() {
                       value: "K-1",
                       label: t("profile.fields.visaType.options.k1"),
                     },
-                    {
-                      value: "IR-5",
-                      label: t("profile.fields.visaType.options.ir5"),
-                    },
+                    // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+                    ...(IR5_ENABLED
+                      ? [{ value: "IR-5", label: t("profile.fields.visaType.options.ir5") }]
+                      : []),
                     {
                       value: "F-1",
                       label: t("profile.fields.visaType.options.f1"),
@@ -2096,41 +2035,32 @@ export default function ProfilePage() {
             <h4 className="text-xs font-medium text-slate-600 mb-3 block">
               {t("profile.fields.sponsorHeader")}
             </h4>
+            {/* Read-only mirror of the Sponsor section (single source of truth).
+                Sponsor details are edited there; shown here only for case context
+                so the same field can't be edited in two places. */}
+            <p className="text-xs text-slate-400 mb-3">
+              Edit these in the Sponsor section above.
+            </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               <FormField
                 label={t("profile.fields.sponsorFirstName")}
                 value={formData.sponsor?.name?.first || ""}
-                onChange={(v: string) =>
-                  updateNested("sponsor", "name", {
-                    ...formData.sponsor?.name,
-                    first: v,
-                  })
-                }
-                readOnly={!isEditing}
+                onChange={() => {}}
+                readOnly
                 placeholder={t("profile.placeholders.firstName")}
               />
               <FormField
                 label={t("profile.fields.sponsorMiddleName")}
                 value={formData.sponsor?.name?.middle || ""}
-                onChange={(v: string) =>
-                  updateNested("sponsor", "name", {
-                    ...formData.sponsor?.name,
-                    middle: v,
-                  })
-                }
-                readOnly={!isEditing}
+                onChange={() => {}}
+                readOnly
                 placeholder={t("profile.placeholders.middleName")}
               />
               <FormField
                 label={t("profile.fields.sponsorLastName")}
                 value={formData.sponsor?.name?.last || ""}
-                onChange={(v: string) =>
-                  updateNested("sponsor", "name", {
-                    ...formData.sponsor?.name,
-                    last: v,
-                  })
-                }
-                readOnly={!isEditing}
+                onChange={() => {}}
+                readOnly
                 placeholder={t("profile.placeholders.lastName")}
               />
             </div>
@@ -2139,16 +2069,14 @@ export default function ProfilePage() {
                 label={t("profile.fields.dob")}
                 type="date"
                 value={formData.sponsor?.dateOfBirth || ""}
-                onChange={(v: string) =>
-                  updateNested("sponsor", "dateOfBirth", v)
-                }
-                readOnly={!isEditing}
+                onChange={() => {}}
+                readOnly
               />
               <FormField
                 label={t("profile.fields.sponsorPhone")}
                 value={formData.sponsor?.phone || ""}
-                onChange={(v: string) => updateNested("sponsor", "phone", v)}
-                readOnly={!isEditing}
+                onChange={() => {}}
+                readOnly
                 placeholder={t("profile.placeholders.phone")}
               />
             </div>

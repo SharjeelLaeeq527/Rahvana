@@ -54,11 +54,53 @@ function LoginContent() {
     }
   }, [isMfaActive]);
 
-  // Tick the rate-limit lock down once per second until it reaches zero.
+  // Key under which we persist the rate-limit lock expiry (epoch ms). Persisting
+  // it means a page refresh or new tab cannot re-enable the button before the
+  // server-side cooldown actually ends - the UI stays honest with the server.
+  const LOCK_KEY = "rahvana_login_lock_until";
+
+  // Begin (or extend) a lockout of `seconds` and remember when it ends.
+  const startLock = (seconds: number) => {
+    setLockSeconds(seconds);
+    try {
+      localStorage.setItem(LOCK_KEY, String(Date.now() + seconds * 1000));
+    } catch {
+      // localStorage may be unavailable (private mode) - the in-memory lock
+      // still holds for this page view, so degrade gracefully.
+    }
+  };
+
+  // On mount, restore any lock that is still in the future so a refresh keeps
+  // the button disabled for the remaining time.
+  useEffect(() => {
+    try {
+      const until = parseInt(localStorage.getItem(LOCK_KEY) || "", 10);
+      if (Number.isFinite(until)) {
+        const remaining = Math.ceil((until - Date.now()) / 1000);
+        if (remaining > 0) setLockSeconds(remaining);
+        else localStorage.removeItem(LOCK_KEY);
+      }
+    } catch {
+      // Ignore - no persisted lock available.
+    }
+  }, []);
+
+  // Tick the rate-limit lock down once per second until it reaches zero, then
+  // clear the persisted expiry so the button re-enables cleanly.
   useEffect(() => {
     if (lockSeconds <= 0) return;
     const id = setInterval(() => {
-      setLockSeconds((s) => (s <= 1 ? 0 : s - 1));
+      setLockSeconds((s) => {
+        if (s <= 1) {
+          try {
+            localStorage.removeItem(LOCK_KEY);
+          } catch {
+            /* ignore */
+          }
+          return 0;
+        }
+        return s - 1;
+      });
     }, 1000);
     return () => clearInterval(id);
   }, [lockSeconds]);
@@ -162,15 +204,18 @@ function LoginContent() {
       if (signInError) {
         const code = String((signInError as { code?: string }).code || "");
 
-        if (code === "AUTH_EMAIL_NOT_CONFIRMED") {
+        // Rate limited: lock the button for the cooldown window. Trigger on the
+        // explicit code OR the presence of a retry window, so a code/label change
+        // on the server can never silently leave the button clickable. Persist
+        // the lock so a page refresh cannot re-enable it before the window ends.
+        if (code === "AUTH_RATE_LIMITED" || (retryAfterSeconds && retryAfterSeconds > 0)) {
+          const seconds = retryAfterSeconds && retryAfterSeconds > 0 ? retryAfterSeconds : 15 * 60;
+          startLock(seconds);
+          setError(signInError.message || msg(E.AUTH_RATE_LIMITED, { minutes: 15 }));
+        } else if (code === "AUTH_EMAIL_NOT_CONFIRMED") {
           setError(msg(E.AUTH_EMAIL_NOT_CONFIRMED));
         } else if (code === "AUTH_LOGIN_SERVER_ERROR") {
           setError(msg(E.AUTH_LOGIN_SERVER_ERROR));
-        } else if (code === "AUTH_RATE_LIMITED") {
-          // Start the countdown so the button stays disabled until it expires.
-          // Fall back to 15 min if the server did not send Retry-After.
-          setLockSeconds(retryAfterSeconds && retryAfterSeconds > 0 ? retryAfterSeconds : 15 * 60);
-          setError(signInError.message || msg(E.AUTH_RATE_LIMITED, { minutes: 15 }));
         } else if (code === "AUTH_LOGIN_FAILED") {
           setError(msg(E.AUTH_LOGIN_FAILED));
         } else {
@@ -496,7 +541,11 @@ function LoginContent() {
               <Button
                 type="submit"
                 disabled={isSubmitting || lockSeconds > 0}
-                className="bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full rounded-xl font-medium transition-all disabled:opacity-50"
+                className={`bg-primary hover:bg-primary/90 text-primary-foreground h-12 w-full rounded-xl font-medium transition-all ${
+                  isSubmitting || lockSeconds > 0
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer"
+                }`}
               >
                 {lockSeconds > 0
                   ? `Try again in ${Math.floor(lockSeconds / 60)}:${String(lockSeconds % 60).padStart(2, "0")}`

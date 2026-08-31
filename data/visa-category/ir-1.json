@@ -111,7 +111,7 @@
                     "hint": {
                       "intro": "Commonly accepted proofs include:",
                       "items": [
-                        "Valid or recently expired U.S. passport",
+                        "Valid, unexpired U.S. passport",
                         "U.S. birth certificate issued by a state or county",
                         "USCIS Certificate of Naturalization (Form N-550)",
                         "USCIS Certificate of Citizenship (Form N-560)",
@@ -566,7 +566,7 @@
                     "id": "q5s3",
                     "label": "Health & Medical",
                     "question": "Is there any known health issue that might arise during the required immigration medical exam?",
-                    "helper": "The beneficiary must pass a medical exam by a USCIS-designated physician. This screen only asks whether there's a known concern to plan around.",
+                    "helper": "The beneficiary must pass a medical exam by a State Department-authorized panel physician at an embassy-approved clinic (consular processing abroad). This screen only asks whether there's a known concern to plan around.",
                     "type": "single",
                     "hint": {
                       "intro": "Medical grounds of inadmissibility can include:",
@@ -683,7 +683,7 @@
                 "title": "Petitioner previously filed I-130 for a different spouse",
                 "trigger_field": "eligibility_quest_answer",
                 "severity": "critical",
-                "advisory": "Under INA Section 204(c), if any prior marriage was found to be entered into for the purpose of evading immigration laws, all future I-130 petitions by the same petitioner are barred. Consult an immigration attorney before filing.",
+                "advisory": "Under INA Section 204(c), the marriage-fraud bar attaches to the beneficiary, not the petitioner. If the beneficiary was ever found to have entered into (or attempted or conspired to enter into) a marriage to evade the immigration laws, no future petition filed on the beneficiary's behalf may be approved. A petitioner who previously filed for a different spouse is not automatically barred. Consult an immigration attorney before filing.",
                 "source_basis": "INA Section 204(c), 8 USC Section 1154(c)"
               },
               {
@@ -723,7 +723,7 @@
                 "title": "Beneficiary has arrest, charge, or conviction",
                 "trigger_field": "eligibility_quest_q5s2",
                 "severity": "critical",
-                "advisory": "Any arrest, charge, or conviction, anywhere in the world, must be disclosed and may trigger an inadmissibility bar under INA 212(a)(2). Certified court dispositions and police records will be required. Some convictions are waivable; others are permanent bars. Consult an immigration attorney to evaluate impact before filing.",
+                "advisory": "Any arrest, charge, or conviction, anywhere in the world, must be disclosed. A conviction or an admission of a crime involving moral turpitude or a controlled-substance offense may trigger an inadmissibility bar under INA 212(a)(2); an arrest or charge alone generally does not, but must still be documented. Certified court dispositions and police records will be required. Some convictions are waivable; others are permanent bars. Consult an immigration attorney to evaluate impact before filing.",
                 "source_basis": "INA Section 212(a)(2), 8 USC Section 1182(a)(2), criminal-related grounds of inadmissibility"
               }
             ]
@@ -738,11 +738,11 @@
           "step_description": "Prepare the documents needed for your IR-1 spouse petition. Open each item to see exactly what is needed, where to get it, and what to watch out for.",
           "who": "Pakistan-specific full checklist",
           "where": "Various sources",
-          "timeline": "4-8 weeks",
+          "timeline": "approx 4-8 weeks (varies)",
           "actions": [
             "Collect proof of U.S. citizenship",
             "Obtain Pakistani passport",
-            "Get NADRA birth certificate",
+            "Get birth certificate (Union Council, or NADRA CRC/FRC as alternatives)",
             "Obtain Nikah Nama + translation",
             "Get Union Council marriage registration",
             "Apply for police certificate",
@@ -761,15 +761,26 @@
               "required": true
             },
             {
-              "id": "doc_passport_ben",
-              "name": "Beneficiary Passport",
-              "subtitle": "Pakistan passport of the immigrant spouse",
-              "tag": "beneficiary",
-              "guideUrl": "/guides/passport-guide",
-              "icon": "User",
+              "id": "doc_petitioner_photos",
+              "name": "Petitioner Passport Photos",
+              "subtitle": "Two passport-style photos of the petitioner, taken within 30 days, required with the I-130 filing",
+              "tag": "petitioner",
+              "guideUrl": "/guides",
+              "icon": "Camera",
               "group": "Required Now",
               "status": "not-started",
               "required": true
+            },
+            {
+              "id": "doc_passport_ben",
+              "name": "Beneficiary Passport",
+              "subtitle": "Pakistan passport of the immigrant spouse; needed at the NVC/consular stage, not to file the I-130",
+              "tag": "beneficiary",
+              "guideUrl": "/guides/passport-guide",
+              "icon": "User",
+              "group": "Gather Now for Later",
+              "status": "not-started",
+              "required": false
             },
             {
               "id": "doc_nikah_nama",
@@ -784,8 +795,8 @@
             },
             {
               "id": "doc_mrc",
-              "name": "NADRA Marriage Certificate",
-              "subtitle": "Government civil registration of the marriage (MRC)",
+              "name": "Marriage Registration Certificate (MRC)",
+              "subtitle": "Civil registration of the marriage, issued by the local Union Council / Municipal Corporation / CDA, registering the Nikah Nama",
               "tag": "beneficiary",
               "guideUrl": "/guides/nikah-nama-guide",
               "icon": "FileCheck",
@@ -840,7 +851,7 @@
             {
               "id": "doc_police_cert",
               "name": "Police Character Certificate",
-              "subtitle": "Pakistan PCC, required at consular stage",
+              "subtitle": "Pakistan PCC, required at consular stage; valid only 2 years, so obtain it closer to the interview",
               "tag": "beneficiary",
               "guideUrl": "/guides/police-verification-guide",
               "icon": "Lock",
@@ -860,7 +871,7 @@
               "required": false
             }
           ],
-          "pakistanSpecific": "Union Council registration increasingly required by Islamabad Embassy. Police certificate: 3-7 days processing for Punjab/Islamabad.",
+          "pakistanSpecific": "Practical note (not an official USCIS requirement): the marriage should be registered with the local Union Council to obtain an acceptable MRC. Police certificate processing times vary by location and are not officially published; local estimates for Punjab/Islamabad are often a few days.",
           "relevantTools": [
             {
               "label": "Marriage Cert Guide",
@@ -1267,12 +1278,10 @@
           "beneficiary_residence_capture": {
             "title": "Beneficiary residence history",
             "subtitle": "Capture the beneficiary's residence countries here so Rahvana can pre-prepare the police certificate requirements for Chapter 3 and cross-check against the I-130A and DS-260 later.",
-            "rule_summary": "A police certificate is required from every country where the beneficiary lived for 6 months or more since age 16. Some countries are exempt, refer to the travel.state.gov Reciprocity Schedule for each country.",
+            "rule_summary": "A police certificate is required (age 16+) from the country of current residence and the country of nationality if the beneficiary lived there 6 months or more, and from any other country of past residence where the beneficiary lived 12 months (one year) or more since age 16. Some countries are exempt, refer to the travel.state.gov Reciprocity Schedule for each country.",
             "source_basis": "9 FAM 504.4-4(B)(2), Police Certificate Requirement; travel.state.gov Reciprocity Schedule",
             "exempt_country_note": "A small list of countries does not produce reliable police certificates (see travel.state.gov Reciprocity Schedule). The consular officer at the interview will indicate whether a substitute is acceptable.",
-            "age_threshold": 16,
-            "duration_threshold_months": 6,
-            "lookback_years": 5
+            "age_threshold": 16
           },
           "citations": [
             {

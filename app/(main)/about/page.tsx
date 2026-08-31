@@ -22,7 +22,7 @@ import { Playfair_Display, DM_Sans } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { ir1journeyHref } from "@/lib/constants/routes";
-import { explorejourneyHref } from "@/lib/constants/routes";
+// import { explorejourneyHref } from "@/lib/constants/routes";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -252,13 +252,14 @@ export default function AboutPage() {
                 className="mt-2 flex flex-wrap items-center gap-6"
               >
                 <Link
-                  href={explorejourneyHref}
+                  href={ir1journeyHref}
                   className="inline-flex transform items-center gap-2.5 rounded-full bg-[#0d7a75] px-8 py-4 text-sm font-medium text-white shadow-lg shadow-[#0d7a75]/20 transition-all hover:-translate-y-0.5 hover:bg-[#0a5c58] 2xl:px-10 2xl:py-5 2xl:text-base"
                 >
-                  Choose your journey <ArrowRight size={16} />
+                  Start your journey <ArrowRight size={16} />
                 </Link>
                 <span className="text-xs font-medium tracking-wide text-gray-400 uppercase 2xl:text-sm">
-                  IR-1 · IR-5 · Family Visas
+                  {/* IR-1 · IR-5 · Family Visas */}
+                  IR-1 · Spouse Visa · Phase 1
                 </span>
               </motion.div>
             </motion.div>
@@ -284,7 +285,8 @@ export default function AboutPage() {
                   </div>
                   <div>
                     <strong className="block text-sm font-bold text-[#121e2e] 2xl:text-base">
-                      IR-1 & IR-5
+                      IR-1 Journey
+                      {/* & IR-5 */}
                     </strong>
                     <span className="text-xs font-medium text-gray-500 2xl:text-sm">
                       Guiding families home
@@ -379,8 +381,8 @@ export default function AboutPage() {
             </p>
             <p>That&apos;s Rahvana: the space between people who belong together.</p>
             <p>
-              We&apos;re focused on a select set of visa journeys, starting with IR-1 and IR-5, so
-              we can go deep before expanding further.
+              In Phase 1, we are focused exclusively on the IR-1 spouse visa journey — to go deep on
+              one path before expanding further.
             </p>
           </div>
           <div className="mt-10 rounded-r-xl border-l-4 border-[#0d7a75] bg-white p-5 text-lg leading-relaxed text-[#121e2e] italic shadow-sm md:p-7">
@@ -651,7 +653,7 @@ export default function AboutPage() {
               forward, toward clarity, toward submission, toward reunion.
             </p>
             <Link
-              href={explorejourneyHref}
+              href={ir1journeyHref}
               className="inline-flex transform items-center gap-2.5 rounded-full bg-[#0d7a75] px-7 py-3.5 text-sm font-medium text-white transition-all hover:-translate-y-0.5 hover:bg-[#0a5c58]"
             >
               Start your journey <ArrowRight size={16} />
@@ -783,20 +785,20 @@ export default function AboutPage() {
           >
             {[
               {
-                name: "Hams",
-                initials: "HL",
-                image: "/assets/images/Hams.PNG",
-                color: "bg-[#0d7a75]",
-                role: "Co-Founder",
-                desc: "Rahvana exists because people deserve clarity during one of the most important processes of their lives. I've personally helped multiple people navigate these procedures and seen how overwhelming it can be, from trying to understand complicated requirements, second-guessing every step, and feeling completely alone. As a Co-Founder, my focus is making sure Rahvana is truly supportive, giving people clarity, structure, and peace of mind at every stage.",
-              },
-              {
                 name: "Sharjeel",
                 initials: "SL",
                 image: "/assets/images/Sharjeel.PNG",
                 color: "bg-[#e8a020]",
                 role: "Co-Founder",
                 desc: "Rahvana came from a personal place. I watched someone close to me navigate the IR-1 process alone, confused, overwhelmed, and constantly unsure if they were doing things right. There was no real support, just paperwork and waiting. I built Rahvana so others wouldn't have to face that process without clarity and guidance.",
+              },
+              {
+                name: "Hams",
+                initials: "HL",
+                image: "/assets/images/Hams.PNG",
+                color: "bg-[#0d7a75]",
+                role: "Co-Founder",
+                desc: "Rahvana exists because people deserve clarity during one of the most important processes of their lives. I've personally helped multiple people navigate these procedures and seen how overwhelming it can be, from trying to understand complicated requirements, second-guessing every step, and feeling completely alone. As a Co-Founder, my focus is making sure Rahvana is truly supportive, giving people clarity, structure, and peace of mind at every stage.",
               },
               {
                 name: "Javeria",
@@ -868,12 +870,12 @@ export default function AboutPage() {
           your story too, <em className="font-normal text-[#a8e8e5] italic">we&apos;re here.</em>
         </h2>
         <p className="mx-auto mb-10 max-w-lg text-base leading-relaxed text-white/75 md:text-lg">
-          You don&apos;t have to figure it out alone. Rahvana walks with you through your visa
-          process, one step, one form, one checkpoint at a time.
+          You don&apos;t have to figure it out alone. Rahvana walks with you through the IR-1
+          process — one step, one form, one checkpoint at a time.
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Link
-            href={explorejourneyHref}
+            href={ir1journeyHref}
             className="transform rounded-full bg-white px-8 py-3.5 text-sm font-semibold text-[#0d7a75] transition-all hover:-translate-y-0.5 hover:shadow-xl"
           >
             Start your journey →
@@ -886,7 +888,7 @@ export default function AboutPage() {
           </Link>
         </div>
         <p className="mt-7 text-[14px] tracking-wider text-white/50">
-          Currently Supporting · IR-1 & IR-5 · U.S. Embassy Islamabad · Karachi · Lahore
+          Phase 1 · IR-1 Spouse Visa Journey · U.S. Embassy Islamabad · Karachi · Lahore
         </p>
       </section>
     </div>

@@ -12,6 +12,7 @@ import {
   Filter,
 } from "lucide-react";
 import { QuickAccessButton } from "@/app/components/shared/QuickAccessButton";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 
 interface VisaForm {
   id?: string;
@@ -822,7 +823,8 @@ export default function VisaFormSelector() {
                           <div className="flex flex-col gap-2">
                             {[
                               { id: "IR1-CR1", label: "IR-1 / CR-1 (Spouse)" },
-                              { id: "IR5", label: "IR-5 (Parent)" },
+                              // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+                              ...(IR5_ENABLED ? [{ id: "IR5", label: "IR-5 (Parent)" }] : []),
                               // { id: "K1", label: "K-1 (Fiancé)" },
                               // { id: "AOS", label: "Adjustment of Status" },
                               // { id: "Naturalization", label: "Naturalization" },

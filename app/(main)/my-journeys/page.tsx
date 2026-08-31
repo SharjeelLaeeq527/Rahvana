@@ -9,6 +9,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useToast } from "@/app/components/shared/ToastProvider";
 import { JourneyProgressRecord, listUserJourneys } from "@/lib/journey/journeyProgressService";
 import { getJourneyHrefByType, ir1journeyHref, ir5journeyHref } from "@/lib/constants/routes";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import { Loader } from "@/components/ui/spinner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -229,7 +230,13 @@ export default function MyJourneysPage() {
         return true;
       });
 
-      setJourneys(unique);
+      // IR-5 is hidden on production (see lib/feature-flags): drop any existing
+      // IR-5 journey so it cannot be re-opened while the category is gated.
+      const gated = IR5_ENABLED
+        ? unique
+        : unique.filter((journey) => normalizeJourneyId(journey.journey_id) !== "ir5");
+
+      setJourneys(gated);
     } catch (error) {
       console.error("Error fetching journeys:", error);
 

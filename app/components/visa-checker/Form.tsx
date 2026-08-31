@@ -7,6 +7,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import { useUserProfile } from "@/app/context/UserProfileContext";
 import { useLanguage } from "@/app/context/LanguageContext";
 import { CustomDropdown, DropdownOption } from "@/app/components/shared/CustomDropdown";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 
 export default function Form() {
   const { t } = useLanguage();
@@ -23,9 +24,10 @@ export default function Form() {
   const { user } = useAuth();
   const { profile, isProfileLoading, updateProfile } = useUserProfile();
 
+  // IR-5 is hidden on production (see lib/feature-flags) until it launches.
   const visaCategoryOptions: DropdownOption[] = [
     { value: "IR-1", label: "IR-1 (Spouse)" },
-    { value: "IR-5", label: "IR-5 (Parent)" },
+    ...(IR5_ENABLED ? [{ value: "IR-5", label: "IR-5 (Parent)" }] : []),
   ];
 
   const countryOptions: DropdownOption[] = [
@@ -120,6 +122,7 @@ export default function Form() {
             onChange={(value) => setForm({ ...form, category: value })}
             options={visaCategoryOptions}
             placeholder="Select category"
+            collapseWhenSingle
           />
         </div>
 

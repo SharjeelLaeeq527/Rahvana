@@ -54,6 +54,8 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
   const { showToast } = useToast();
   const { user } = useAuth();
 
+  const isDevelopment = process.env.NEXT_PUBLIC_ENVIRONMENT === "development";
+
   // Prefetch the document vault as soon as the journey opens (on the dashboard),
   // not when the lazy StepView mounts. Keeps IR-1/CR-1 pinned to the "IR-1" vault
   // category (matching the prior hardcoded behavior) while loading documents early
@@ -237,8 +239,9 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
               </span>
             </button>
           )}
-          {/* DEV ONLY — reset button, uncomment for local testing */}
-          <button
+          {/* DEV ONLY — reset button */}
+          {isDevelopment && (
+            <button
             onClick={async () => {
               if (confirm("Are you sure you want to reset your progress? This cannot be undone.")) {
                 await actions.resetProgress();
@@ -250,7 +253,7 @@ export default function RoadmapLayoutSpouse({ data, state, actions }: RoadmapLay
             aria-label="Reset progress"
           >
             <X size={14} />
-          </button>
+          </button>)}
         </div>
       </nav>
 

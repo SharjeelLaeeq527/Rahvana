@@ -155,7 +155,7 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const savedScrollPosition = useRef<number>(0);
   const hasShownInitialIntro = useRef(false);
   const draftJourneyKey = "global";
-  const { user } = useAuth();
+  const { user, isLoading: isAuthLoading } = useAuth();
   const {
     profile: userProfile,
     isProfileLoading: isContextProfileLoading,
@@ -172,6 +172,11 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [isNavigating, setIsNavigating] = useState(false);
   const [isAutoSaving, setIsAutoSaving] = useState(false);
   const [draftStatus, setDraftStatus] = useState<"draft" | "completed">("draft");
+  // Mirror of draftStatus for reads inside dependency-free callbacks (handleChange).
+  const draftStatusRef = useRef(draftStatus);
+  useEffect(() => {
+    draftStatusRef.current = draftStatus;
+  }, [draftStatus]);
   const { showToast } = useToast();
   const {
     config: vaultConfig,
@@ -180,6 +185,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   } = useDocumentVaultStore();
   const prevStepRef = useRef(currentStep);
   const saveTimerRef = useRef<number | null>(null);
+  // Records the `${formCode}:${userId}` we've already hydrated for. The
+  // initialization effect below reads/writes this so it hydrates form state
+  // EXACTLY ONCE per (form, user). Auth contexts re-emit a fresh `user` object
+  // on token refresh / tab refocus / profile save-back; without this guard
+  // every such re-emit would re-run the initializer and overwrite live edits
+  // with a staler server draft (or blank the form on a fetch timeout).
+  const hydratedKeyRef = useRef<string | null>(null);
   const draftDataRef = useRef({
     formData: formData,
     currentStep: currentStep,
@@ -195,12 +207,23 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
   const [isReady, setIsReady] = useState(false);
 
   // ============ CONSOLIDATED INITIALIZATION EFFECT ============
+  // Hydrate form state ONCE per (formCode, user). We wait for auth to settle
+  // (isAuthLoading === false) so we hydrate with the correct identity, then
+  // mark the key as hydrated so later `user` re-emits can never re-run this and
+  // clobber the user's in-progress edits.
   useEffect(() => {
+    if (!isClient || !config || isAuthLoading) return;
+
+    const userId = user?.id ?? null;
+    const hydrationKey = `${formCode}:${userId ?? "anon"}`;
+    if (hydratedKeyRef.current === hydrationKey) return;
+    // Claim the key synchronously (before any await) so a concurrent re-render
+    // or React StrictMode double-invoke can't kick off a second hydration.
+    hydratedKeyRef.current = hydrationKey;
+
     let isMounted = true;
 
     const initializeForm = async () => {
-      if (!isClient || !config) return;
-
       try {
         let draftData: FormProgressDraft | null = null;
 
@@ -324,7 +347,11 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     return () => {
       isMounted = false;
     };
-  }, [isClient, config, user, formCode]);
+    // Depend on the stable user ID, not the `user` object — the object gets a
+    // new reference on every auth re-emit, which used to re-run this whole
+    // initializer and wipe the form. The ref guard above enforces once-per-key.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isClient, config, user?.id, formCode, isAuthLoading]);
 
   // ============ SESSION VALIDATION ============
   useEffect(() => {
@@ -530,6 +557,15 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
       const { name, value, type } = e.target;
       const checked = (e.target as HTMLInputElement).checked;
+
+      // The user is editing a form they'd already finalized (Download / Save to
+      // Vault marked it "completed", which switches off autosave AND the local
+      // backup). Re-open it as a draft so this edit — and every edit after —
+      // starts persisting again. Guarded by the ref so it fires only on the
+      // first post-completion edit, not on every keystroke.
+      if (draftStatusRef.current === "completed") {
+        setDraftStatus("draft");
+      }
 
       setFormData((prev) => {
         const newData = {

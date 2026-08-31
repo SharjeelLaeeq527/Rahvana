@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { createBrowserClient } from "@supabase/ssr";
+import { IR5_ENABLED } from "@/lib/feature-flags";
 import { useRouter } from "next/navigation";
 import { E, msg } from "@/lib/errors";
 import { useAuth } from "@/app/context/AuthContext";
@@ -879,7 +880,8 @@ export default function CompleteProfileForm() {
                   label: "CR-1 - Conditional Resident (Spouse of US Citizen, married <2 years)",
                 },
                 { value: "K-1", label: "K-1 - Fiancé(e) Visa" },
-                { value: "IR-5", label: "IR-5 - Parent of US Citizen" },
+                // IR-5 is hidden on production (see lib/feature-flags) until it launches.
+                ...(IR5_ENABLED ? [{ value: "IR-5", label: "IR-5 - Parent of US Citizen" }] : []),
                 {
                   value: "IR-2",
                   label: "IR-2 - Unmarried Child of US Citizen",
