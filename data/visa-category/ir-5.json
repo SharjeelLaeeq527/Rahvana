@@ -2776,7 +2776,7 @@
                 "title": "Mail the packet and save the tracking details",
                 "text": "As soon as the packet is mailed, save the carrier and tracking number in Rahvana.",
                 "url": "rahvana.com/visa-category/ir1-journey",
-                "visual": "<video src=\"/step4chp1.mp4\" autoplay loop muted playsinline style=\"width:100%;border-radius:8px;\" />",
+                "visual": "<video src=\"/assets/videos/ir1-journey/c1_step9(mailing)/guide-step-4.mp4\" autoplay loop muted playsinline style=\"width:100%;border-radius:8px;\" />",
                 "note": "Do not wait until later to record the tracking number. Save it the same day you mail the packet."
               },
               {
