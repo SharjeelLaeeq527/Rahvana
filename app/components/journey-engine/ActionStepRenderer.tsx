@@ -1396,7 +1396,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                 fontSize: "13.5px",
                 lineHeight: 1.55,
                 color: actionData.id === "paper-forms-print" ? CHAPTER1.text : "rgba(255, 255, 255, 0.74)",
-                maxWidth: "470px",
+                width: "100%",
               }}
             >
               {actionData.hero_description}
