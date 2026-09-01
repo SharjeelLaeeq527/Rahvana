@@ -341,7 +341,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
               </div>
               {/* Tracking Action Buttons */}
               <div className="launch-actions mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
-                <Button
+                {/* <Button
                   className="flex items-center gap-2 rounded-xl px-5 py-3 font-semibold transition"
                   style={
                     {
@@ -372,9 +372,8 @@ const TrackCaseStatusStep: React.FC<any> = ({
                       e.currentTarget.style.backgroundColor = launchAccentColor;
                     }
                   }}
-                  onClick={() => {
-                    /* TODO: implement refresh logic */
-                  }}
+                  onClick={() => { */}
+                  {/* }}
                 >
                   <svg
                     className="h-4 w-4"
@@ -389,7 +388,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                     <polyline points="21 3 21 9 15 9" />
                   </svg>
                   Refresh tracking status
-                </Button>
+                </Button> */}
                 <Button
                   variant="outline"
                   className={`flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 font-semibold text-white transition hover:bg-white`}

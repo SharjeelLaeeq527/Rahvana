@@ -163,10 +163,10 @@ const TrackCaseStatusStep: React.FC<any> = ({
     // <div className="min-h-screen w-full ch1step-bg">
     <div className="min-h-screen w-full">
       {/* CHANGE 1: px-4 py-8 on mobile, md:px-6 md:py-12 on desktop */}
-      <div className="step mx-auto flex w-full max-w-[680px] flex-col px-4 sm:px-6 md:px-8 pt-5 pb-10 md:pt-8">
+      <div className="step mx-auto flex w-full max-w-[680px] flex-col px-4 pt-5 pb-10 sm:px-6 md:px-8 md:pt-8">
         {/* Title & Desc */}
-        
-        <h1 className="page-title text-[clamp(28px,4vw,36px)] font-bold text-[#0c1b33] leading-[1.15] tracking-tight mb-1">
+
+        <h1 className="page-title mb-1 text-[clamp(28px,4vw,36px)] leading-[1.15] font-bold tracking-tight text-[#0c1b33]">
           Monitor USCIS Case Status
         </h1>
         <p className="page-desc mb-2.5 max-w-[620px] text-[15px] leading-[1.72] text-[#3a4f63] sm:mb-4">
@@ -195,7 +195,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
             <div className="launch-inner p-5 md:p-8 lg:p-[32px_34px_28px]">
               {/* CHANGE 3: flex-wrap added so badge wraps on small screens */}
               <div className="launch-top mb-4 flex flex-wrap items-start gap-4 sm:mb-6">
-                <div className="launch-header flex flex-col gap-2 items-start">
+                <div className="launch-header flex flex-col items-start gap-2">
                   {/* Icon + eyebrow side by side */}
                   <div className="flex items-center gap-4">
                     <div
@@ -209,14 +209,16 @@ const TrackCaseStatusStep: React.FC<any> = ({
                       <Shield className="h-7 w-7 text-[#ffffff]" />
                     </div>
                     <div
-                      className="launch-eyebrow text-[10px] font-bold tracking-widest uppercase leading-[1.6]"
+                      className="launch-eyebrow text-[10px] leading-[1.6] font-bold tracking-widest uppercase"
                       style={{
                         color: launchAccentColor,
                         borderLeft: `5px solid ${launchAccentColor}`,
                         paddingLeft: 10,
                       }}
                     >
-                      Pending with USCIS<br />Active Monitoring
+                      Pending with USCIS
+                      <br />
+                      Active Monitoring
                     </div>
                   </div>
                   {/* Hero + copy below the icon */}
@@ -341,7 +343,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
               </div>
               {/* Tracking Action Buttons */}
               <div className="launch-actions mt-2 grid grid-cols-1 gap-3 md:grid-cols-2">
-                <Button
+                {/* <Button
                   className="flex items-center gap-2 rounded-xl px-5 py-3 font-semibold transition"
                   style={
                     {
@@ -371,25 +373,24 @@ const TrackCaseStatusStep: React.FC<any> = ({
                     } else {
                       e.currentTarget.style.backgroundColor = launchAccentColor;
                     }
-                  }}
-                  onClick={() => {
-                    /* TODO: implement refresh logic */
-                  }}
-                >
-                  <svg
-                    className="h-4 w-4"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="M21 12a9 9 0 1 1-2.64-6.36" />
-                    <polyline points="21 3 21 9 15 9" />
-                  </svg>
-                  Refresh tracking status
-                </Button>
+                  }} */}
+                {/*    onClick={() => {
+                   }}
+                 >
+                   <svg
+                     className="h-4 w-4"
+                     viewBox="0 0 24 24"
+                     fill="none"
+                     stroke="currentColor"
+                     strokeWidth="2"
+                     strokeLinecap="round"
+                     strokeLinejoin="round"
+                   >
+                     <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+                     <polyline points="21 3 21 9 15 9" />
+                   </svg>
+                   Refresh tracking status
+                 </Button> */}
                 <Button
                   variant="outline"
                   className={`flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 font-semibold text-white transition hover:bg-white`}
@@ -749,7 +750,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                 return (
                   <div
                     key={i}
-                    className="flex h-full flex-col rounded-2xl bg-white p-3.5 sm:p-4 shadow-[0_8px_24px_rgba(12,27,51,0.07)] transition hover:shadow-md"
+                    className="flex h-full flex-col rounded-2xl bg-white p-3.5 shadow-[0_8px_24px_rgba(12,27,51,0.07)] transition hover:shadow-md sm:p-4"
                     style={{
                       borderWidth: "1px",
                       borderColor: launchAccentColor,
@@ -936,7 +937,7 @@ const TrackCaseStatusStep: React.FC<any> = ({
                 return (
                   <div
                     key={i}
-                    className="flex h-full flex-col rounded-[14px] border border-[#d0e4f7] bg-white p-4 md:p-6 transition"
+                    className="flex h-full flex-col rounded-[14px] border border-[#d0e4f7] bg-white p-4 transition md:p-6"
                   >
                     <div
                       className={`mb-4 flex h-[38px] w-[38px] items-center justify-center rounded-[10px] border ${iconBg}`}
