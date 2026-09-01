@@ -4958,7 +4958,7 @@
           "step_description": "Pakistan-origin applicants must obtain a polio vaccination certificate before the consular interview. This is a required compliance step for all immigrant visa applicants.",
           "who": "Beneficiary",
           "where": "Government vaccination post / WHO site",
-          "timeline": "1-2 days",
+          "timeline": "Ideally 4 weeks–12 months before international travel",
           "step_type": "tool",
           "tool_data": {
             "type": "polio_certificate",
@@ -5004,7 +5004,7 @@
           "step_short_description": "Medical screening and vaccinations",
           "step_description": "Attend your scheduled medical examination with an embassy-approved panel physician. This is a mandatory health screening and vaccination review for all immigrants.",
           "who": "Beneficiary",
-          "where": "IOM clinic",
+          "where": "U.S. Embassy-approved Panel Physician",
           "timeline": "2-4 hours at clinic",
           "actions": [
             "Arrive on time with documents",
@@ -5017,7 +5017,7 @@
             "Physician interview"
           ],
           "output": "Sealed medical envelope",
-          "notes": "DO NOT OPEN envelope. Results ready in 2-5 days. Collect 1-2 days before interview.",
+          "notes": "DO NOT OPEN envelope. Medical examination results can take up to 96 hours. Collect 1-2 days before interview.",
           "relevantTools": [
             {
               "label": "Book Medical Appointment",
@@ -5615,7 +5615,7 @@
                   "Current passport (original)",
                   "All prior passports",
                   "Original civil documents (organized packet)",
-                  "Passport-style photos (2-4)",
+                  "2 recent color photographs (5 cm × 5 cm / 2 × 2 in)",
                   "Petitioner's original Affidavit of Support",
                   "Tax evidence and employment letter if applicable"
                 ]

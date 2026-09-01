@@ -6172,7 +6172,7 @@
           "step_description": "Pakistan-origin applicants must obtain a polio vaccination certificate before the consular interview. This is a required compliance step for all immigrant visa applicants.",
           "who": "Parent beneficiary",
           "where": "Government vaccination post / WHO site",
-          "timeline": "1-2 days",
+          "timeline": "Ideally 4 weeks–12 months before international travel",
           "step_type": "tool",
           "tool_data": {
             "eyebrow": {
@@ -6470,7 +6470,7 @@
           "step_short_description": "Medical screening and vaccinations",
           "step_description": "Attend your scheduled medical examination with an embassy-approved panel physician. This is a mandatory health screening and vaccination review for all immigrants.",
           "who": "Parent beneficiary",
-          "where": "IOM clinic",
+          "where": "U.S. Embassy-approved Panel Physician",
           "timeline": "2-4 hours at clinic",
           "actions": [
             "Arrive on time with documents",
