@@ -625,6 +625,15 @@ Components consume these via hooks/contexts; they should not re-implement domain
   `lib/policy-data.ts` (legal/policy page content; **no `lib/policies/` dir exists**),
   `lib/analytics.ts` (GA4 wrapper), `lib/googleSheets.ts` (feedback append),
   `lib/validation/*`.
+- `lib/tools/sponsorship/povertyGuidelines.ts` — **authoritative** I-864 poverty data +
+  threshold logic for the Sponsorship (Affidavit of Support) Calculator. State-aware across
+  the **three** I-864P jurisdictions (`contiguous` = 48 states + DC + territories, `AK`, `HI`;
+  only Alaska/Hawaii differ). `resolveJurisdiction(state)` maps a state code/name (fallback
+  `contiguous`); `getSponsorshipThreshold(size, level, jurisdiction)`. The three duplicated
+  `SponsorshipCalculatorTool.tsx` copies (`components/tools/`, `journey-engine/components/`,
+  `journey-spouse/components/`) import from here. Sponsor state comes from
+  `profile.sponsor.address.state`: the journey `StepView`s pass it in (`lockState` = shown
+  read-only), while the standalone `/affidavit-support-calculator` page requires a selector.
 - UI utils: `cn()` (clsx + tailwind-merge), shared modals/inputs in `app/components/shared/*`.
 
 ---

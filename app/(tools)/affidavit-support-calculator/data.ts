@@ -1,6 +1,12 @@
 // ============================================================================
 // POVERTY GUIDELINES DATA (2025 HHS Poverty Guidelines)
 // Source: https://aspe.hhs.gov/topics/poverty-economic-mobility/poverty-guidelines
+//
+// NOTE: This module is not wired into the live Sponsorship Calculator. The
+// authoritative, state/jurisdiction-aware poverty data + threshold logic now
+// live in `lib/tools/sponsorship/povertyGuidelines.ts`. If this file is ever
+// re-activated, source its numbers from that shared module instead of the
+// single-table copy below (which covers only the 48 contiguous states + DC).
 // ============================================================================
 
 export const POVERTY_GUIDELINES: Record<number, { level100: number; level125: number }> = {

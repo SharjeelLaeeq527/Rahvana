@@ -4069,7 +4069,16 @@ export const StepView: React.FC<StepViewProps> = ({
       <SponsorshipCalculatorTool
         isOpen={isSponsorshipCalcOpen}
         onClose={() => setIsSponsorshipCalcOpen(false)}
-        initialData={sponsorshipResult?.raw}
+        initialData={{
+          ...(sponsorshipResult?.raw || {}),
+          // Auto-supply the sponsor's state from the profile so the user is not
+          // asked to re-enter it. Prior saved input wins if present.
+          state:
+            sponsorshipResult?.raw?.state || profile?.sponsor?.address?.state || "",
+        }}
+        // Lock (show read-only) only when we actually have a sponsor state;
+        // otherwise fall back to asking the user.
+        lockState={Boolean(profile?.sponsor?.address?.state)}
         onSave={(result: any) => {
           actions.updateMetadata({ sponsorshipResult: result });
           setIsSponsorshipCalcOpen(false);
