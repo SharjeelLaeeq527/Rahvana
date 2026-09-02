@@ -1139,6 +1139,13 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
     const { controller, timeoutId } = createAbortController(60000); // 60s timeout for preview
 
+    // Open the tab synchronously inside the click gesture. Mobile browsers block
+    // a window.open() that runs after an await (the gesture has expired by then),
+    // which is why preview worked on desktop but was blocked on mobile. Note: we
+    // deliberately do NOT pass "noopener" here, otherwise open() returns null and
+    // we lose the handle we need to redirect once the PDF is ready.
+    const previewWindow = window.open("", "_blank");
+
     setIsPreviewing(true);
     try {
       const res = await fetch(`${apiUrl}/fill-pdf`, {
@@ -1150,13 +1157,24 @@ export function MultiStepForm({ formCode }: MultiStepFormProps) {
 
       clearTimeout(timeoutId);
 
-      if (!res.ok) throw new Error(`${await res.text()} (Endpoint: ${apiUrl})`);
+      if (!res.ok) {
+        if (previewWindow) previewWindow.close();
+        throw new Error(`${await res.text()} (Endpoint: ${apiUrl})`);
+      }
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-      window.open(url, "_blank", "noopener,noreferrer");
+
+      if (previewWindow) {
+        // Tab opened successfully in the gesture: point it at the PDF.
+        previewWindow.location.href = url;
+      } else {
+        // Popup was blocked even synchronously: fall back to same-tab open.
+        window.location.href = url;
+      }
       setTimeout(() => URL.revokeObjectURL(url), 10000);
     } catch (err: unknown) {
       clearTimeout(timeoutId);
+      if (previewWindow) previewWindow.close();
       console.error("Preview error:", err);
       if (err instanceof Error && err.name === "AbortError") {
         showToast("Preview timed out. Server may be slow.", "error");
