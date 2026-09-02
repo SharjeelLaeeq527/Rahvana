@@ -6014,7 +6014,7 @@
           "step_key": "step_3_1",
           "step_number": 1,
           "step_name": "Schedule Medical Examination",
-          "step_short_description": "Official medical clearance",
+          "step_short_description": "Required medical examination",
           "step_description": "Every immigrant visa applicant must complete a medical examination with an embassy-approved physician before their interview.",
           "step_type": "tool",
           "who": "Parent beneficiary",
@@ -6024,9 +6024,11 @@
           "display_order": 1,
           "actions": [
             "Select booking method",
-            "Find approved physician",
-            "Schedule appointment",
-            "Record appointment details"
+            "Review approved panel physicians",
+            "Select a panel physician",
+            "Schedule the medical examination",
+            "Record appointment details",
+            "Prepare required documents"
           ],
           "tool_data": {
             "eyebrow": {
@@ -6169,10 +6171,10 @@
           "step_number": 2,
           "step_name": "Obtain Polio Vaccination Certificate",
           "step_short_description": "Required for Pakistan applicants",
-          "step_description": "Pakistan-origin applicants must obtain a polio vaccination certificate before the consular interview. This is a required compliance step for all immigrant visa applicants.",
+          "step_description": "Pakistan-origin applicants must obtain a polio vaccination certificate. This is a required compliance step for all immigrant visa applicants.",
           "who": "Parent beneficiary",
           "where": "Government vaccination post / WHO site",
-          "timeline": "Ideally 4 weeks–12 months before international travel",
+          "timeline": "1-2 days",
           "step_type": "tool",
           "tool_data": {
             "eyebrow": {
@@ -6180,7 +6182,7 @@
               "step": "Step 2, Polio Vaccination Certificate"
             },
             "title": "Obtain Polio Vaccination Certificate",
-            "description": "Pakistan-origin applicants must obtain a polio vaccination certificate before the consular interview. This is a required compliance step for all immigrant visa applicants.",
+            "description": "Pakistan-origin applicants must obtain a polio vaccination certificate for medical examination. This is a required compliance step for all immigrant visa applicants.",
             "chips": [
               {
                 "label": "Medical Compliance",
@@ -6230,7 +6232,7 @@
               {
                 "label": "Step 1 of 5",
                 "heading": "What is the polio vaccination requirement?",
-                "instruction": "Pakistan is a polio-endemic country. All immigrant visa applicants from Pakistan must receive an oral polio vaccine dose and obtain a certificate before their consular medical exam.",
+                "instruction": "Typical cases from Pakistan will require a polio certificate for the medical examination. Therefore, it is highly recommended and advisable to obtain it beforehand to avoid any delays in your medical process.",
                 "vLabel": "Requirement Overview",
                 "visual": {
                   "title": "Why this is required",
@@ -6497,10 +6499,10 @@
             "bring": [
               "Passport (original)",
               "NVC interview appointment letter",
+              "DS-260 confirmation page",
               "Polio vaccination certificate (original)",
-              "Passport-style photos (2-4)",
+              "6 recent passport-sized color photographs",
               "Medical exam fee (confirm with physician)",
-              "Any prior vaccination records if available",
               "Current medication list and relevant medical records for chronic conditions, prior tuberculosis, major surgery, psychiatric treatment, or ongoing care"
             ],
             "pitfalls": [
