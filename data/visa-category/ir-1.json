@@ -2311,6 +2311,10 @@
               {
                 "title": "Keep payment at the front of the packet",
                 "description": "When your payment item is ready, keep it with the front of the filing packet so assembly is straightforward."
+              },
+              {
+                "title": "USCIS Form G-1651 exemption requirements",
+                "description": "To request an exemption, you must certify that electronic payment and collection methods are not possible and meet 1 or more of the following requirements: (1) You do not have access to banking services or electronic payment systems; (2) Electronic disbursement would cause you undue hardship, as discussed in 31 C.F.R. Part 208; (3) Non-electronic transactions are necessary or desirable for national security or law enforcement reasons; or (4) There are other circumstances as determined by the secretary of the treasury, as reflected in regulations or other guidance."
               }
             ],
             "second_card_title": "Save payment method",
@@ -2333,6 +2337,10 @@
                 {
                   "value": "ACH with Form G-1650",
                   "label": "ACH with Form G-1650"
+                },
+                {
+                  "value": "Fee Exemption with Form G-1651",
+                  "label": "Fee Exemption with Form G-1651"
                 },
                 {
                   "value": "Other verified method",
@@ -2360,17 +2368,17 @@
               {
                 "label": "Payment guide · Step 3",
                 "title": "Choose your paper-filing payment method",
-                "text": "USCIS no longer accepts personal/business checks, money orders, or cashier's checks. You must use one of two methods:<ul style=\"margin-top: 8px; margin-bottom: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;\"><li><strong>Option A:</strong> Pay by credit, debit, or prepaid card using <strong>Form G-1450</strong> (Authorization for Credit Card Transactions).</li><li><strong>Option B:</strong> Pay from a U.S. bank account (ACH) using <strong>Form G-1650</strong>.</li></ul>",
+                "text": "USCIS no longer accepts personal/business checks, money orders, or cashier's checks. You must use one of the approved payment or fee exemption options:<ul style=\"margin-top: 8px; margin-bottom: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px;\"><li><strong>Option A:</strong> Pay by credit, debit, or prepaid card using <strong>Form G-1450</strong> (Authorization for Credit Card Transactions).</li><li><strong>Option B:</strong> Pay from a U.S. bank account (ACH) using <strong>Form G-1650</strong>.</li><li><strong>Option C:</strong> If eligible for an exemption from the higher paper filing fee, submit <strong>Form G-1651</strong> (Exemption for Paper Fee Payment).</li></ul><div style=\"margin-top: 14px; padding: 12px 14px; background: #f0f7ff; border: 1px solid #bfdbfe; border-radius: 8px;\"><div style=\"font-weight: 700; font-size: 13px; color: #1e3a8a; margin-bottom: 4px;\">USCIS Form G-1651 Exemption Requirements</div><div style=\"font-size: 12.5px; line-height: 1.5; color: #1e293b; margin-bottom: 6px;\">To request an exemption, you must certify that electronic payment and collection methods are not possible and you meet 1 or more of the following requirements:</div><ul style=\"margin: 0; padding-left: 18px; font-size: 12px; line-height: 1.55; color: #334155; display: flex; flex-direction: column; gap: 4px;\"><li>You do not have access to banking services or electronic payment systems;</li><li>Electronic disbursement would cause you undue hardship, as discussed in 31 C.F.R. Part 208;</li><li>Non-electronic transactions are necessary or desirable for national security or law enforcement reasons; or</li><li>There are other circumstances as determined by the secretary of the treasury, as reflected in regulations or other guidance.</li></ul></div>",
                 "url": "uscis.gov/forms/all-forms",
                 "visual": "<img src=\"/assets/images/ir1-journey/c1-step7(mailing)/peyment method.png\" alt=\"Payment Methods\" style=\"width:100%; border-radius: 8px; border: 1px solid #e2e8f0;\" />",
-                "note": "Download and print Form G-1450 or Form G-1650 from uscis.gov and fill it out completely before placing it in the packet."
+                "note": "Download and print Form G-1450, Form G-1650, or Form G-1651 from uscis.gov and fill it out completely before placing it in the packet."
               },
               {
                 "label": "Payment guide · Step 4",
                 "title": "Place payment at the front of the packet",
-                "text": "Once the payment item is ready, whether it is a completed Form G-1450 (card) or Form G-1650 (ACH), place it at the very front of the mailing packet. The payment form should be the first thing USCIS sees when they open the envelope.",
+                "text": "Once the payment item is ready, whether it is a completed Form G-1450 (card), Form G-1650 (ACH), or Form G-1651 (Fee Exemption), place it at the very front of the mailing packet. The payment or fee exemption form should be the first thing USCIS sees when they open the envelope.",
                 "url": "paper packet",
-                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card) or Form G-1650 (ACH), placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Forms</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130 and I-130A forms</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
+                "visual": "<div style=\"padding:12px 0;\"><div style=\"font-weight:600;font-size:14px;margin-bottom:14px;\">Recommended Packet Order</div><div style=\"display:flex;flex-direction:column;gap:8px;\"><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#16a34a;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">1</div><div><div style=\"font-weight:600;font-size:13px;\">Payment / Fee Exemption</div><div style=\"font-size:12px;color:#64748b;\">Form G-1450 (card), Form G-1650 (ACH), or Form G-1651 (Exemption), placed first</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#3b82f6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">2</div><div><div style=\"font-weight:600;font-size:13px;\">Forms</div><div style=\"font-size:12px;color:#64748b;\">Completed I-130 and I-130A forms</div></div></div><div style=\"display:flex;align-items:center;gap:12px;border:1px solid #e2e8f0;border-radius:8px;padding:12px;\"><div style=\"background:#8b5cf6;color:white;border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;flex-shrink:0;\">3</div><div><div style=\"font-weight:600;font-size:13px;\">Supporting Evidence</div><div style=\"font-size:12px;color:#64748b;\">Citizenship proof, marriage docs, translations, relationship evidence</div></div></div></div></div>",
                 "note": "Keep the payment form separate and easy to reach so packet assembly in the next step stays quick and organized."
               },
               {
@@ -2391,6 +2399,10 @@
             {
               "text": "USCIS Form G-1055 Fee Schedule",
               "link": "https://www.uscis.gov/g-1055"
+            },
+            {
+              "text": "USCIS Form G-1651 Paper Fee Exemption",
+              "link": "https://www.uscis.gov/g-1651"
             }
           ]
         },
@@ -2501,7 +2513,7 @@
               "sections": [
                 {
                   "id": "payment",
-                  "label": "Payment form (G-1450 card or G-1650 ACH)",
+                  "label": "Payment form (G-1450 card, G-1650 ACH, or G-1651 fee exemption)",
                   "position": "front of packet",
                   "required": true
                 },

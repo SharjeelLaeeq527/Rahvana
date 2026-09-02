@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
   CheckCircle,
@@ -247,6 +247,7 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
   const [selectedGuideType, setSelectedGuideType] = useState<"print" | "download" | null>(null);
   const [statusSaved, setStatusSaved] = useState(false);
   const [selectedDropdown, setSelectedDropdown] = useState("");
+  const g1651RequirementsRef = useRef<HTMLElement | null>(null);
   const [mailingCarrier, setMailingCarrier] = useState("");
   const [mailingTracking, setMailingTracking] = useState("");
   const [isSavingPayment, setIsSavingPayment] = useState(false);
@@ -1749,9 +1750,46 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
                     if (!value) return;
                     setSelectedDropdown(value);
                     setStatusSaved(false);
+                    if (value.includes("G-1651")) {
+                      setTimeout(() => {
+                        g1651RequirementsRef.current?.scrollIntoView({
+                          behavior: "smooth",
+                          block: "start",
+                        });
+                      }, 120);
+                    }
                   }}
                   placeholder="Select option"
                 />
+
+                {selectedDropdown && selectedDropdown.includes("G-1651") && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      g1651RequirementsRef.current?.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start",
+                      });
+                    }}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      padding: 0,
+                      marginTop: "10px",
+                      fontSize: "12.5px",
+                      fontWeight: 600,
+                      color: "#2563eb",
+                      cursor: "pointer",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "4px",
+                      textAlign: "left",
+                    }}
+                  >
+                    <span>Read Form G-1651 requirements below</span>
+                    <span>&darr;</span>
+                  </button>
+                )}
 
                 <div style={{ marginTop: "16px", display: "flex", justifyContent: "flex-end" }}>
                   <button
@@ -2220,6 +2258,279 @@ export const ActionStepRenderer: React.FC<ActionStepRendererProps> = ({
 
           {/* Status Message Section End */}
         </section>
+
+        {/* Form G-1651 Requirements Section (Shown outside launch module and before "What to keep in mind") */}
+        {selectedDropdown && selectedDropdown.includes("G-1651") && (
+          <section
+            ref={g1651RequirementsRef}
+            id="g1651-requirements-section"
+            style={{
+              marginTop: "16px",
+              background: "#ffffff",
+              border: "1.5px solid #bfdbfe",
+              borderRadius: "22px",
+              padding: isMobile ? "16px" : "22px",
+              boxShadow: "0 8px 24px rgba(37, 99, 235, 0.08)",
+              scrollMarginTop: "100px",
+            }}
+          >
+            <div
+              style={{
+                display: "flex",
+                alignItems: "flex-start",
+                justifyContent: "space-between",
+                gap: "12px",
+                marginBottom: "14px",
+                flexWrap: "wrap",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div
+                  style={{
+                    width: "36px",
+                    height: "36px",
+                    borderRadius: "12px",
+                    background: "#eff6ff",
+                    border: "1px solid #bfdbfe",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#2563eb",
+                    flexShrink: 0,
+                  }}
+                >
+                  <AlertCircle size={20} strokeWidth={2.2} />
+                </div>
+                <div>
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 800,
+                      letterSpacing: ".1em",
+                      textTransform: "uppercase",
+                      color: "#2563eb",
+                      marginBottom: "2px",
+                    }}
+                  >
+                    USCIS Eligibility Requirements
+                  </div>
+                  <h3
+                    style={{
+                      fontSize: "17px",
+                      fontWeight: 700,
+                      color: COLORS.navy,
+                      margin: 0,
+                    }}
+                  >
+                    Form G-1651 Paper Fee Exemption
+                  </h3>
+                </div>
+              </div>
+
+              <a
+                href="https://www.uscis.gov/g-1651"
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  fontSize: "12.5px",
+                  fontWeight: 600,
+                  color: "#2563eb",
+                  background: "#eff6ff",
+                  padding: "7px 14px",
+                  borderRadius: "10px",
+                  border: "1px solid #dbeafe",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "6px",
+                  textDecoration: "none",
+                  transition: "background 0.2s",
+                }}
+              >
+                Official Form G-1651 on uscis.gov &rarr;
+              </a>
+            </div>
+
+            <div
+              style={{
+                background: "#f8fafc",
+                borderRadius: "14px",
+                border: "1px solid #e2e8f0",
+                padding: "12px 16px",
+                marginBottom: "14px",
+              }}
+            >
+              <p
+                style={{
+                  fontSize: "13.5px",
+                  lineHeight: 1.6,
+                  color: "#1e293b",
+                  margin: 0,
+                }}
+              >
+                To request an exemption, you must <strong>certify that electronic payment and collection methods are not possible</strong> and you meet <strong>1 or more</strong> of the following requirements:
+              </p>
+            </div>
+
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: isMobile ? "1fr" : "repeat(2, minmax(0, 1fr))",
+                gap: "10px",
+                marginBottom: "14px",
+              }}
+            >
+              <div
+                style={{
+                  background: "#fbfdff",
+                  border: "1px solid #e5edf6",
+                  borderRadius: "14px",
+                  padding: "12px 14px",
+                  display: "flex",
+                  gap: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "22px",
+                    height: "22px",
+                    borderRadius: "50%",
+                    background: "#eff6ff",
+                    color: "#2563eb",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    flexShrink: 0,
+                    marginTop: "1px",
+                  }}
+                >
+                  1
+                </span>
+                <span style={{ fontSize: "13px", lineHeight: 1.55, color: "#334155" }}>
+                  You do not have access to banking services or electronic payment systems.
+                </span>
+              </div>
+
+              <div
+                style={{
+                  background: "#fbfdff",
+                  border: "1px solid #e5edf6",
+                  borderRadius: "14px",
+                  padding: "12px 14px",
+                  display: "flex",
+                  gap: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "22px",
+                    height: "22px",
+                    borderRadius: "50%",
+                    background: "#eff6ff",
+                    color: "#2563eb",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    flexShrink: 0,
+                    marginTop: "1px",
+                  }}
+                >
+                  2
+                </span>
+                <span style={{ fontSize: "13px", lineHeight: 1.55, color: "#334155" }}>
+                  Electronic disbursement would cause you undue hardship, as discussed in <strong>31 C.F.R. Part 208</strong>.
+                </span>
+              </div>
+
+              <div
+                style={{
+                  background: "#fbfdff",
+                  border: "1px solid #e5edf6",
+                  borderRadius: "14px",
+                  padding: "12px 14px",
+                  display: "flex",
+                  gap: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "22px",
+                    height: "22px",
+                    borderRadius: "50%",
+                    background: "#eff6ff",
+                    color: "#2563eb",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    flexShrink: 0,
+                    marginTop: "1px",
+                  }}
+                >
+                  3
+                </span>
+                <span style={{ fontSize: "13px", lineHeight: 1.55, color: "#334155" }}>
+                  Non-electronic transactions are necessary or desirable for national security or law enforcement reasons.
+                </span>
+              </div>
+
+              <div
+                style={{
+                  background: "#fbfdff",
+                  border: "1px solid #e5edf6",
+                  borderRadius: "14px",
+                  padding: "12px 14px",
+                  display: "flex",
+                  gap: "10px",
+                }}
+              >
+                <span
+                  style={{
+                    width: "22px",
+                    height: "22px",
+                    borderRadius: "50%",
+                    background: "#eff6ff",
+                    color: "#2563eb",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    fontSize: "11px",
+                    fontWeight: 700,
+                    flexShrink: 0,
+                    marginTop: "1px",
+                  }}
+                >
+                  4
+                </span>
+                <span style={{ fontSize: "13px", lineHeight: 1.55, color: "#334155" }}>
+                  There are other circumstances as determined by the Secretary of the Treasury, as reflected in regulations or other guidance.
+                </span>
+              </div>
+            </div>
+
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "10px",
+                padding: "11px 15px",
+                borderRadius: "12px",
+                background: "#f0f7ff",
+                border: "1px solid #dbeafe",
+                fontSize: "12.5px",
+                color: "#1e40af",
+              }}
+            >
+              <span>
+                <strong>Packet Assembly Note:</strong> If eligible for fee exemption, place completed <strong>Form G-1651</strong> at the very front of the mailing packet (before Form I-130).
+              </span>
+            </div>
+          </section>
+        )}
 
         {/* Action Items Section - Enabled appearance */}
         {actionData.action_items && actionData.action_items.length > 0 && (
