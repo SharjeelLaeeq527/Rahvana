@@ -6,11 +6,9 @@ import Image from "next/image";
 import { Article } from "@/data/articles";
 import {
   Search,
-  BookOpen,
   Clock,
   Calendar,
   ArrowRight,
-  Filter,
   X,
   LayoutGrid,
   List,
@@ -32,14 +30,14 @@ interface BlogSearchSectionProps {
   articles: Article[];
 }
 
-const POPULAR_SEARCHES = ["I-130 Process", "NVC Documents", "Interview Tips", "Medical Exam"];
-
-const CATEGORIES = [
-  "All Articles",
-  "Spouse Visa (IR-1/CR-1)",
-  "Parent Visa (IR-5)",
-  "NVC & Documents",
-  "Consular Interview & 221(g)",
+const CATEGORY_TABS = [
+  { id: "All", label: "All" },
+  { id: "IR-1 / CR-1", label: "IR-1 / CR-1" },
+  // { id: "IR-5", label: "IR-5" },
+  { id: "NVC", label: "NVC" },
+  { id: "Documents", label: "Documents" },
+  { id: "Interview", label: "Interview" },
+  { id: "Forms & Fees", label: "Forms & Fees" },
 ] as const;
 
 type ViewMode = "detailed" | "grid" | "list" | "minimal";
@@ -87,10 +85,11 @@ const VIEW_OPTIONS: {
 
 export default function BlogSearchSection({ articles }: BlogSearchSectionProps) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("All Articles");
+  const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [viewMode, setViewMode] = useState<ViewMode>("list");
   const [pendingViewMode, setPendingViewMode] = useState<ViewMode>("list");
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(5);
 
   const handleOpenLayoutModal = () => {
     setPendingViewMode(viewMode);
@@ -103,8 +102,50 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
   const filteredArticles = useMemo(() => {
     return articles.filter((article) => {
       // Category filter
-      if (selectedCategory !== "All Articles" && article.category !== selectedCategory) {
-        return false;
+      if (selectedCategory !== "All") {
+        const catLower = article.category.toLowerCase();
+        const titleLower = article.title.toLowerCase();
+        const keywordsLower = article.keywords.map((k) => k.toLowerCase());
+
+        if (selectedCategory === "IR-1 / CR-1") {
+          const match =
+            catLower.includes("spouse") ||
+            titleLower.includes("cr-1") ||
+            titleLower.includes("ir-1");
+          if (!match) return false;
+        } else if (selectedCategory === "IR-5") {
+          const match = catLower.includes("parent") || titleLower.includes("ir-5");
+          if (!match) return false;
+        } else if (selectedCategory === "NVC") {
+          const match =
+            catLower.includes("nvc") ||
+            keywordsLower.some((k) => k.includes("nvc")) ||
+            titleLower.includes("nvc");
+          if (!match) return false;
+        } else if (selectedCategory === "Documents") {
+          const match =
+            catLower.includes("document") ||
+            keywordsLower.some((k) => k.includes("document")) ||
+            titleLower.includes("document");
+          if (!match) return false;
+        } else if (selectedCategory === "Interview") {
+          const match =
+            catLower.includes("interview") ||
+            keywordsLower.some((k) => k.includes("interview")) ||
+            titleLower.includes("interview");
+          if (!match) return false;
+        } else if (selectedCategory === "Forms & Fees") {
+          const match =
+            keywordsLower.some(
+              (k) =>
+                k.includes("form") ||
+                k.includes("fee") ||
+                k.includes("i-130") ||
+                k.includes("i-864") ||
+                k.includes("ds-260")
+            ) || titleLower.includes("fee");
+          if (!match) return false;
+        }
       }
 
       // Search query filter
@@ -121,422 +162,450 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
     });
   }, [articles, searchQuery, selectedCategory]);
 
-  const featuredArticle = filteredArticles.length > 0 ? filteredArticles[0] : null;
-  const otherArticles = filteredArticles.length > 1 ? filteredArticles.slice(1) : [];
-
-  const handlePopularClick = (tag: string) => {
-    if (searchQuery.toLowerCase() === tag.toLowerCase()) {
-      setSearchQuery("");
-    } else {
-      setSearchQuery(tag);
-    }
-  };
+  const featuredArticle = articles.length > 0 ? articles[0] : null;
+  const displayedArticles = filteredArticles.slice(0, visibleCount);
+  const otherArticles = displayedArticles.length > 1 ? displayedArticles.slice(1) : [];
+  const hasMoreArticles = filteredArticles.length > visibleCount;
 
   return (
-    <div className="space-y-8">
-      {/* ── 1. Search Bar & Popular Searches Box ── */}
-      <section className="relative z-10 mx-auto mt-6 max-w-6xl px-5 sm:mt-10 sm:px-8 lg:px-10">
-        <div className="border-border/80 bg-card rounded-3xl border p-6 shadow-xl backdrop-blur-md sm:p-8">
-          {/* Search Input */}
-          <div className="flex flex-col gap-3 sm:flex-row">
-            <div className="relative flex-1">
-              <Search className="text-muted-foreground absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2" />
-              <input
-                type="text"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search guides, documents, interview tips..."
-                className="border-border bg-background text-foreground placeholder:text-muted-foreground w-full rounded-2xl border py-3.5 pr-10 pl-12 text-sm shadow-inner transition-all focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none sm:text-base"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-1/2 right-4 -translate-y-1/2 rounded-full p-1"
-                  aria-label="Clear search"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
+    <div id="articles-section" className="space-y-12">
+      {/* Hidden input hook to synchronize with BlogHero search form */}
+      <input
+        id="blog-search-input"
+        type="text"
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        className="sr-only"
+        tabIndex={-1}
+        aria-hidden="true"
+      />
+
+      {/* ── 1. Most Helpful Guide Right Now (Featured Card) ── */}
+      {featuredArticle && (
+        <section className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10">
+          <h2 className="text-foreground mb-4 text-xl font-bold tracking-tight sm:text-2xl">
+            Most helpful guide right now
+          </h2>
+          <div className="group border-border/70 bg-card relative overflow-hidden rounded-3xl border p-5 shadow-sm transition-all duration-300 hover:border-teal-500/40 hover:shadow-md sm:p-6 lg:p-7">
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-12 md:items-center lg:gap-8">
+              <div className="md:col-span-5 lg:col-span-5">
+                <div className="bg-muted relative h-56 w-full overflow-hidden rounded-2xl sm:h-64">
+                  <Image
+                    src={featuredArticle.heroImage}
+                    alt={featuredArticle.title}
+                    fill
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    priority
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col justify-between md:col-span-7 lg:col-span-7">
+                <div>
+                  <div className="text-muted-foreground flex flex-wrap items-center gap-2.5 text-xs">
+                    <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-0.5 font-semibold text-teal-700 dark:text-teal-300">
+                      {featuredArticle.category}
+                    </span>
+                    <span>•</span>
+                    <span>{featuredArticle.readTime}</span>
+                    <span>•</span>
+                    <span>Updated {featuredArticle.updatedAt}</span>
+                  </div>
+
+                  <h3 className="text-foreground mt-3 text-xl font-bold tracking-tight transition-colors group-hover:text-teal-600 sm:text-2xl dark:group-hover:text-teal-400">
+                    <Link href={`/blog/${featuredArticle.slug}`}>{featuredArticle.title}</Link>
+                  </h3>
+
+                  <p className="text-muted-foreground mt-2.5 line-clamp-3 text-xs leading-relaxed sm:text-sm">
+                    {featuredArticle.description}
+                  </p>
+                </div>
+
+                <div className="mt-6">
+                  <Link
+                    href={`/blog/${featuredArticle.slug}`}
+                    className="inline-flex items-center gap-2 rounded-full bg-[#0d4f49] px-6 py-2.5 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-700 sm:text-sm"
+                  >
+                    <span>Read Guide</span>
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </div>
+              </div>
             </div>
-            <button
-              onClick={() => {}}
-              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-teal-600 px-7 py-3.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-teal-500"
-            >
-              <Search className="h-4 w-4" />
-              <span>Search</span>
-            </button>
           </div>
+        </section>
+      )}
 
-          {/* Popular Searches Pills */}
-          <div className="mt-5 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
-            <span className="text-muted-foreground shrink-0 font-semibold">Popular searches:</span>
-            {POPULAR_SEARCHES.map((tag) => {
-              const isActive = searchQuery.toLowerCase() === tag.toLowerCase();
-              return (
-                <button
-                  key={tag}
-                  onClick={() => handlePopularClick(tag)}
-                  className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ${
-                    isActive
-                      ? "border-teal-500 bg-teal-500/10 font-semibold text-teal-600 shadow-sm dark:text-teal-400"
-                      : "border-border bg-muted/40 text-muted-foreground hover:text-foreground hover:border-teal-500/50"
-                  }`}
-                >
-                  {tag}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ── 2. Full-Width Category Pill Filters ── */}
+      {/* ── 2. All Guides Section with Right-Aligned Layout Option ── */}
       <section className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10">
-        <div className="border-border/40 flex flex-wrap items-center gap-2 border-b pb-5">
-          <span className="text-muted-foreground mr-2 flex shrink-0 items-center gap-1.5 text-xs font-semibold tracking-wider uppercase">
-            <Filter className="h-3.5 w-3.5" /> Categories:
-          </span>
-          {CATEGORIES.map((cat) => {
-            const isActive = selectedCategory === cat;
-            return (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
-                  isActive
-                    ? "bg-teal-600 text-white shadow-sm"
-                    : "border-border bg-card text-muted-foreground hover:text-foreground border hover:border-teal-500"
-                }`}
-              >
-                {cat}
-              </button>
-            );
-          })}
-        </div>
-      </section>
+        {/* Heading & Layout Switcher Row */}
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-foreground text-xl font-bold tracking-tight sm:text-2xl">
+            All guides
+          </h2>
 
-      {/* ── 3. Main Articles Area (with Header & Layout Mode Toolbar) ── */}
-      <section className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10">
-        {/* Section Header & Layout View Selector */}
-        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 pt-2">
-          <div className="flex items-center gap-2">
-            <BookOpen className="h-5 w-5 text-teal-600 dark:text-teal-400" />
-            <h2 className="text-foreground text-xl font-bold tracking-tight">
-              {selectedCategory === "All Articles" ? "Immigrant Visa Guides" : selectedCategory}
-              <span className="text-muted-foreground ml-2 text-xs font-normal">
-                ({filteredArticles.length} {filteredArticles.length === 1 ? "article" : "articles"})
-              </span>
-            </h2>
-          </div>
-
-          {/* View Settings Modal Trigger Button */}
+          {/* Layout Option on the Right End Side */}
           <button
             onClick={handleOpenLayoutModal}
-            className="border-border/80 bg-card/80 text-foreground hover:bg-card flex shrink-0 items-center gap-2 rounded-2xl border px-3.5 py-2 text-xs font-semibold shadow-sm transition hover:border-teal-500/50 hover:text-teal-600 dark:hover:text-teal-400"
+            className="border-border/80 bg-card text-foreground hover:bg-muted/40 flex shrink-0 items-center gap-2 rounded-2xl border px-3.5 py-2 text-xs font-semibold shadow-sm transition hover:border-teal-500/50 hover:text-teal-600 dark:hover:text-teal-400"
             title="Change article display layout"
           >
             <SlidersHorizontal className="h-4 w-4 text-teal-600 dark:text-teal-400" />
             <span className="hidden sm:inline">Layout:</span>
-            <span className="flex items-center gap-1.5 rounded-lg border border-teal-500/20 bg-teal-500/10 px-2.5 py-1 text-xs font-bold text-teal-600 dark:text-teal-400">
+            <span className="flex items-center gap-1.5 rounded-lg border border-teal-500/20 bg-teal-500/10 px-2 py-0.5 text-xs font-bold text-teal-600 dark:text-teal-400">
               <CurrentIcon className="h-3.5 w-3.5" />
               <span>{currentViewOption.label}</span>
             </span>
           </button>
         </div>
 
-        {filteredArticles.length === 0 ? (
-          <div className="border-border rounded-3xl border border-dashed p-12 text-center">
-            <Search className="text-muted-foreground/50 mx-auto h-10 w-10" />
-            <h3 className="text-foreground mt-4 text-lg font-bold">No articles found</h3>
-            <p className="text-muted-foreground mt-1 text-sm">
-              Try adjusting your search term or selecting another category.
-            </p>
+        {/* Category Filter Pills Row */}
+        <div className="border-border/40 mt-4 flex flex-wrap items-center gap-2 border-b pb-5">
+          {CATEGORY_TABS.map((tab) => {
+            const isActive = selectedCategory === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setSelectedCategory(tab.id);
+                  setVisibleCount(5);
+                }}
+                className={`rounded-xl px-4 py-1.5 text-xs font-medium transition-all sm:text-sm ${
+                  isActive
+                    ? "bg-[#0d4f49] font-semibold text-white shadow-sm"
+                    : "border-border/80 bg-card text-muted-foreground hover:text-foreground border hover:border-teal-500/50"
+                }`}
+              >
+                {tab.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Active Search Filter Banner */}
+        {searchQuery && (
+          <div className="mt-4 flex items-center justify-between rounded-2xl border border-teal-500/20 bg-teal-500/10 px-4 py-2 text-xs text-teal-800 dark:text-teal-300">
+            <span>
+              Showing results for: <strong>&ldquo;{searchQuery}&rdquo;</strong>
+            </span>
             <button
-              onClick={() => {
-                setSearchQuery("");
-                setSelectedCategory("All Articles");
-              }}
-              className="mt-4 inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-teal-500"
+              onClick={() => setSearchQuery("")}
+              className="flex items-center gap-1 font-semibold hover:underline"
             >
-              Reset Filters
+              <X className="h-3.5 w-3.5" />
+              <span>Clear search</span>
             </button>
           </div>
-        ) : (
-          <div>
-            {/* ── OPTION 1: DETAILED VIEW (Featured Pillar + Grid) ── */}
-            {viewMode === "detailed" && (
-              <div className="space-y-12">
-                {/* Featured Pillar Guide Banner */}
-                {featuredArticle && (
-                  <div className="group border-border bg-card relative overflow-hidden rounded-3xl border p-6 shadow-xl transition-all duration-300 hover:border-teal-500/50 hover:shadow-2xl sm:p-8 lg:p-10">
-                    <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">
-                      <div className="lg:col-span-7">
-                        <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-xs">
-                          <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1 font-semibold text-teal-600 dark:text-teal-400">
-                            {featuredArticle.category}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5" />
-                            {featuredArticle.readTime}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3.5 w-3.5" />
-                            Updated {featuredArticle.updatedAt}
-                          </span>
-                        </div>
+        )}
 
-                        <h3 className="text-foreground mt-4 text-2xl font-bold tracking-tight transition-colors group-hover:text-teal-500 sm:text-3xl lg:text-4xl dark:group-hover:text-teal-400">
-                          <Link href={`/blog/${featuredArticle.slug}`}>
-                            {featuredArticle.title}
-                          </Link>
-                        </h3>
-
-                        {/* AEO / BLUF Summary Box */}
-                        <div className="mt-5 rounded-2xl border border-teal-500/30 bg-slate-900/95 p-4 text-slate-100 shadow-md sm:p-5">
-                          <span className="mb-1.5 block text-xs font-bold tracking-wider text-teal-400 uppercase">
-                            Quick Takeaway (BLUF)
-                          </span>
-                          <p className="line-clamp-3 text-sm leading-relaxed text-slate-200">
-                            {featuredArticle.bluf}
-                          </p>
-                        </div>
-
-                        <div className="mt-6 flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-600 text-xs font-bold text-white">
-                              R
-                            </div>
-                            <div>
-                              <p className="text-foreground text-xs font-semibold">
-                                {featuredArticle.author.name}
-                              </p>
-                              <p className="text-muted-foreground text-[11px]">
-                                {featuredArticle.author.title}
-                              </p>
-                            </div>
+        <div className="mt-6">
+          {filteredArticles.length === 0 ? (
+            <div className="border-border rounded-3xl border border-dashed p-12 text-center">
+              <Search className="text-muted-foreground/50 mx-auto h-10 w-10" />
+              <h3 className="text-foreground mt-4 text-lg font-bold">No articles found</h3>
+              <p className="text-muted-foreground mt-1 text-sm">
+                Try adjusting your search term or selecting another category.
+              </p>
+              <button
+                onClick={() => {
+                  setSearchQuery("");
+                  setSelectedCategory("All");
+                }}
+                className="mt-4 inline-flex items-center gap-2 rounded-xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-teal-500"
+              >
+                Reset Filters
+              </button>
+            </div>
+          ) : (
+            <div>
+              {/* ── OPTION 1: DETAILED VIEW (Featured Pillar + Grid) ── */}
+              {viewMode === "detailed" && (
+                <div className="space-y-12">
+                  {/* Featured Pillar Guide Banner */}
+                  {featuredArticle && (
+                    <div className="group border-border bg-card relative overflow-hidden rounded-3xl border p-6 shadow-xl transition-all duration-300 hover:border-teal-500/50 hover:shadow-2xl sm:p-8 lg:p-10">
+                      <div className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-center">
+                        <div className="lg:col-span-7">
+                          <div className="text-muted-foreground flex flex-wrap items-center gap-3 text-xs">
+                            <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-3 py-1 font-semibold text-teal-600 dark:text-teal-400">
+                              {featuredArticle.category}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3.5 w-3.5" />
+                              {featuredArticle.readTime}
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3.5 w-3.5" />
+                              Updated {featuredArticle.updatedAt}
+                            </span>
                           </div>
 
-                          <Link
-                            href={`/blog/${featuredArticle.slug}`}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-teal-500"
-                          >
-                            <span>Read Full Guide</span>
-                            <ArrowRight className="h-4 w-4" />
-                          </Link>
-                        </div>
-                      </div>
+                          <h3 className="text-foreground mt-4 text-2xl font-bold tracking-tight transition-colors group-hover:text-teal-500 sm:text-3xl lg:text-4xl dark:group-hover:text-teal-400">
+                            <Link href={`/blog/${featuredArticle.slug}`}>
+                              {featuredArticle.title}
+                            </Link>
+                          </h3>
 
-                      <div className="lg:col-span-5">
-                        <div className="border-border bg-muted relative h-64 w-full overflow-hidden rounded-2xl border sm:h-80">
-                          <Image
-                            src={featuredArticle.heroImage}
-                            alt={featuredArticle.title}
-                            fill
-                            className="object-cover transition-transform duration-500 group-hover:scale-105"
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Remaining Articles Grid */}
-                {otherArticles.length > 0 && (
-                  <div>
-                    <h3 className="text-foreground mb-6 text-lg font-bold tracking-tight">
-                      More Immigrant Visa Articles
-                    </h3>
-                    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-                      {otherArticles.map((art) => (
-                        <div
-                          key={art.id}
-                          className="group border-border bg-card flex flex-col justify-between rounded-2xl border p-6 shadow-sm transition hover:border-teal-500/40 hover:shadow-md"
-                        >
-                          <div>
-                            <div className="text-muted-foreground mb-3 flex items-center justify-between text-xs">
-                              <span className="bg-muted text-foreground rounded-md px-2.5 py-1 font-medium">
-                                {art.category}
-                              </span>
-                              <span>{art.readTime}</span>
-                            </div>
-
-                            <h4 className="text-foreground line-clamp-2 text-lg font-bold transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
-                              <Link href={`/blog/${art.slug}`}>{art.title}</Link>
-                            </h4>
-
-                            <p className="text-muted-foreground mt-2.5 line-clamp-3 text-xs leading-relaxed">
-                              {art.description}
+                          {/* AEO / BLUF Summary Box */}
+                          <div className="mt-5 rounded-2xl border border-teal-500/30 bg-slate-900/95 p-4 text-slate-100 shadow-md sm:p-5">
+                            <span className="mb-1.5 block text-xs font-bold tracking-wider text-teal-400 uppercase">
+                              Quick Takeaway (BLUF)
+                            </span>
+                            <p className="line-clamp-3 text-sm leading-relaxed text-slate-200">
+                              {featuredArticle.bluf}
                             </p>
                           </div>
 
-                          <div className="border-border mt-6 flex items-center justify-between border-t pt-4 text-xs">
-                            <span className="text-muted-foreground">{art.updatedAt}</span>
+                          <div className="mt-6 flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-teal-600 text-xs font-bold text-white">
+                                R
+                              </div>
+                              <div>
+                                <p className="text-foreground text-xs font-semibold">
+                                  {featuredArticle.author.name}
+                                </p>
+                                <p className="text-muted-foreground text-[11px]">
+                                  {featuredArticle.author.title}
+                                </p>
+                              </div>
+                            </div>
+
                             <Link
-                              href={`/blog/${art.slug}`}
-                              className="flex items-center gap-1 font-semibold text-teal-600 transition-transform group-hover:translate-x-0.5 dark:text-teal-400"
+                              href={`/blog/${featuredArticle.slug}`}
+                              className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-5 py-2.5 text-xs font-semibold text-white transition hover:bg-teal-500"
                             >
-                              Read Article →
+                              <span>Read Full Guide</span>
+                              <ArrowRight className="h-4 w-4" />
                             </Link>
                           </div>
                         </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
 
-            {/* ── OPTION 2: VISUAL CARDS GRID VIEW ── */}
-            {viewMode === "grid" && (
-              <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
-                {filteredArticles.map((art) => (
-                  <div
-                    key={art.id}
-                    className="group border-border bg-card flex flex-col overflow-hidden rounded-3xl border shadow-md transition-all duration-300 hover:border-teal-500/50 hover:shadow-xl"
-                  >
-                    <div className="bg-muted relative h-48 w-full overflow-hidden">
-                      <Image
-                        src={art.heroImage}
-                        alt={art.title}
-                        fill
-                        className="object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute top-3 left-3">
-                        <span className="rounded-full bg-slate-900/80 px-3 py-1 text-[11px] font-semibold text-teal-300 backdrop-blur-md">
-                          {art.category}
-                        </span>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-1 flex-col justify-between p-6">
-                      <div>
-                        <div className="text-muted-foreground mb-2 flex items-center gap-3 text-xs">
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-3.5 w-3.5" />
-                            {art.readTime}
-                          </span>
-                          <span>•</span>
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-3.5 w-3.5" />
-                            {art.updatedAt}
-                          </span>
+                        <div className="lg:col-span-5">
+                          <div className="border-border bg-muted relative h-64 w-full overflow-hidden rounded-2xl border sm:h-80">
+                            <Image
+                              src={featuredArticle.heroImage}
+                              alt={featuredArticle.title}
+                              fill
+                              className="object-cover transition-transform duration-500 group-hover:scale-105"
+                            />
+                          </div>
                         </div>
-
-                        <h3 className="text-foreground line-clamp-2 text-xl font-bold transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
-                          <Link href={`/blog/${art.slug}`}>{art.title}</Link>
-                        </h3>
-
-                        <p className="text-muted-foreground mt-3 line-clamp-3 text-xs leading-relaxed">
-                          {art.description}
-                        </p>
-                      </div>
-
-                      <div className="border-border/50 mt-6 flex items-center justify-between border-t pt-4">
-                        <span className="text-muted-foreground text-xs font-medium">
-                          {art.author.name}
-                        </span>
-                        <Link
-                          href={`/blog/${art.slug}`}
-                          className="inline-flex items-center gap-1 rounded-xl bg-teal-600/10 px-3.5 py-1.5 text-xs font-semibold text-teal-600 transition hover:bg-teal-600 hover:text-white dark:text-teal-400"
-                        >
-                          <span>Read</span>
-                          <ArrowRight className="h-3.5 w-3.5" />
-                        </Link>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
+                  )}
 
-            {/* ── OPTION 3: COMPACT LIST VIEW ── */}
-            {viewMode === "list" && (
-              <div className="space-y-4">
-                {filteredArticles.map((art) => (
-                  <div
-                    key={art.id}
-                    className="group border-border bg-card flex flex-col items-center justify-between gap-6 rounded-2xl border p-5 shadow-sm transition hover:border-teal-500/40 hover:shadow-md sm:flex-row"
-                  >
-                    <div className="flex flex-1 flex-col items-start gap-5 sm:flex-row sm:items-center">
-                      <div className="bg-muted relative h-24 w-full shrink-0 overflow-hidden rounded-xl sm:w-36">
+                  {/* Remaining Articles Grid */}
+                  {otherArticles.length > 0 && (
+                    <div>
+                      <h3 className="text-foreground mb-6 text-lg font-bold tracking-tight">
+                        More Immigrant Visa Articles
+                      </h3>
+                      <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+                        {otherArticles.map((art) => (
+                          <div
+                            key={art.id}
+                            className="group border-border bg-card flex flex-col justify-between rounded-2xl border p-6 shadow-sm transition hover:border-teal-500/40 hover:shadow-md"
+                          >
+                            <div>
+                              <div className="text-muted-foreground mb-3 flex items-center justify-between text-xs">
+                                <span className="bg-muted text-foreground rounded-md px-2.5 py-1 font-medium">
+                                  {art.category}
+                                </span>
+                                <span>{art.readTime}</span>
+                              </div>
+
+                              <h4 className="text-foreground line-clamp-2 text-lg font-bold transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
+                                <Link href={`/blog/${art.slug}`}>{art.title}</Link>
+                              </h4>
+
+                              <p className="text-muted-foreground mt-2.5 line-clamp-3 text-xs leading-relaxed">
+                                {art.description}
+                              </p>
+                            </div>
+
+                            <div className="border-border mt-6 flex items-center justify-between border-t pt-4 text-xs">
+                              <span className="text-muted-foreground">{art.updatedAt}</span>
+                              <Link
+                                href={`/blog/${art.slug}`}
+                                className="flex items-center gap-1 font-semibold text-teal-600 transition-transform group-hover:translate-x-0.5 dark:text-teal-400"
+                              >
+                                Read Article →
+                              </Link>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* ── OPTION 2: VISUAL CARDS GRID VIEW ── */}
+              {viewMode === "grid" && (
+                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3">
+                  {displayedArticles.map((art) => (
+                    <div
+                      key={art.id}
+                      className="group border-border bg-card flex flex-col overflow-hidden rounded-3xl border shadow-md transition-all duration-300 hover:border-teal-500/50 hover:shadow-xl"
+                    >
+                      <div className="bg-muted relative h-48 w-full overflow-hidden">
                         <Image
                           src={art.heroImage}
                           alt={art.title}
                           fill
-                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          className="object-cover transition-transform duration-500 group-hover:scale-105"
                         />
-                      </div>
-
-                      <div className="space-y-2">
-                        <div className="flex flex-wrap items-center gap-2 text-xs">
-                          <span className="rounded-md bg-teal-500/10 px-2.5 py-0.5 font-semibold text-teal-600 dark:text-teal-400">
+                        <div className="absolute top-3 left-3">
+                          <span className="rounded-full bg-slate-900/80 px-3 py-1 text-[11px] font-semibold text-teal-300 backdrop-blur-md">
                             {art.category}
                           </span>
-                          <span className="text-muted-foreground">•</span>
-                          <span className="text-muted-foreground">{art.readTime}</span>
-                          <span className="text-muted-foreground">•</span>
-                          <span className="text-muted-foreground">Updated {art.updatedAt}</span>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-1 flex-col justify-between p-6">
+                        <div>
+                          <div className="text-muted-foreground mb-2 flex items-center gap-3 text-xs">
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-3.5 w-3.5" />
+                              {art.readTime}
+                            </span>
+                            <span>•</span>
+                            <span className="flex items-center gap-1">
+                              <Calendar className="h-3.5 w-3.5" />
+                              {art.updatedAt}
+                            </span>
+                          </div>
+
+                          <h3 className="text-foreground line-clamp-2 text-xl font-bold transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
+                            <Link href={`/blog/${art.slug}`}>{art.title}</Link>
+                          </h3>
+
+                          <p className="text-muted-foreground mt-3 line-clamp-3 text-xs leading-relaxed">
+                            {art.description}
+                          </p>
                         </div>
 
-                        <h3 className="text-foreground text-lg font-bold transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
-                          <Link href={`/blog/${art.slug}`}>{art.title}</Link>
-                        </h3>
-
-                        <p className="text-muted-foreground line-clamp-1 text-xs">
-                          {art.description}
-                        </p>
+                        <div className="border-border/50 mt-6 flex items-center justify-between border-t pt-4">
+                          <span className="text-muted-foreground text-xs font-medium">
+                            {art.author.name}
+                          </span>
+                          <Link
+                            href={`/blog/${art.slug}`}
+                            className="inline-flex items-center gap-1 rounded-xl bg-teal-600/10 px-3.5 py-1.5 text-xs font-semibold text-teal-600 transition hover:bg-teal-600 hover:text-white dark:text-teal-400"
+                          >
+                            <span>Read</span>
+                            <ArrowRight className="h-3.5 w-3.5" />
+                          </Link>
+                        </div>
                       </div>
                     </div>
+                  ))}
+                </div>
+              )}
 
-                    <Link
-                      href={`/blog/${art.slug}`}
-                      className="inline-flex shrink-0 items-center gap-1.5 self-end rounded-xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-teal-500 sm:self-center"
+              {/* ── OPTION 3: COMPACT LIST VIEW ── */}
+              {viewMode === "list" && (
+                <div className="space-y-4">
+                  {displayedArticles.map((art) => (
+                    <div
+                      key={art.id}
+                      className="group border-border/70 bg-card flex flex-col items-start justify-between gap-5 rounded-2xl border p-4 shadow-sm transition hover:border-teal-500/40 hover:shadow-md sm:flex-row sm:items-center sm:p-5"
                     >
-                      <span>Read Guide</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            )}
+                      <div className="flex flex-1 flex-col items-start gap-4 sm:flex-row sm:items-center">
+                        <div className="bg-muted relative h-20 w-32 shrink-0 overflow-hidden rounded-xl sm:h-24 sm:w-36">
+                          <Image
+                            src={art.heroImage}
+                            alt={art.title}
+                            fill
+                            className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          />
+                        </div>
 
-            {/* ── OPTION 4: MINIMAL TEXT VIEW ── */}
-            {viewMode === "minimal" && (
-              <div className="divide-border/60 border-border bg-card divide-y rounded-2xl border">
-                {filteredArticles.map((art, idx) => (
-                  <div
-                    key={art.id}
-                    className="group hover:bg-muted/30 flex flex-col justify-between gap-4 p-5 transition sm:flex-row sm:items-center"
+                        <div className="min-w-0 flex-1 space-y-1.5">
+                          <div className="flex flex-wrap items-center gap-2 text-xs">
+                            <span className="rounded-full border border-teal-500/20 bg-teal-500/10 px-2.5 py-0.5 text-[11px] font-semibold text-teal-700 dark:text-teal-300">
+                              {art.category}
+                            </span>
+                            <span className="text-muted-foreground">•</span>
+                            <span className="text-muted-foreground">{art.readTime}</span>
+                            <span className="text-muted-foreground">•</span>
+                            <span className="text-muted-foreground">Updated {art.updatedAt}</span>
+                          </div>
+
+                          <h3 className="text-foreground line-clamp-1 text-base font-bold transition-colors group-hover:text-teal-600 sm:text-lg dark:group-hover:text-teal-400">
+                            <Link href={`/blog/${art.slug}`}>{art.title}</Link>
+                          </h3>
+
+                          <p className="text-muted-foreground line-clamp-1 text-xs">
+                            {art.description}
+                          </p>
+                        </div>
+                      </div>
+
+                      <Link
+                        href={`/blog/${art.slug}`}
+                        className="inline-flex shrink-0 items-center gap-1.5 self-end rounded-full bg-[#0d4f49] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:bg-teal-700 sm:self-center"
+                      >
+                        <span>Read Guide</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* ── OPTION 4: MINIMAL TEXT VIEW ── */}
+              {viewMode === "minimal" && (
+                <div className="divide-border/60 border-border bg-card divide-y rounded-2xl border">
+                  {displayedArticles.map((art, idx) => (
+                    <div
+                      key={art.id}
+                      className="group hover:bg-muted/30 flex flex-col justify-between gap-4 p-5 transition sm:flex-row sm:items-center"
+                    >
+                      <div className="flex items-start gap-4">
+                        <span className="mt-1 text-xs font-bold text-teal-500">0{idx + 1}.</span>
+                        <div>
+                          <h3 className="text-foreground text-base font-bold transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
+                            <Link href={`/blog/${art.slug}`}>{art.title}</Link>
+                          </h3>
+                          <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-3 text-xs">
+                            <span className="text-foreground font-medium">{art.category}</span>
+                            <span>•</span>
+                            <span>{art.readTime}</span>
+                            <span>•</span>
+                            <span>By {art.author.name}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <Link
+                        href={`/blog/${art.slug}`}
+                        className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-teal-600 hover:underline dark:text-teal-400"
+                      >
+                        <span>Read Article</span>
+                        <ArrowRight className="h-3.5 w-3.5" />
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Load More Guides Button */}
+              {hasMoreArticles && (
+                <div className="mt-8 flex justify-center">
+                  <button
+                    type="button"
+                    onClick={() => setVisibleCount((prev) => prev + 5)}
+                    className="bg-card inline-flex items-center justify-center rounded-full border border-teal-600/30 px-8 py-2.5 text-xs font-semibold text-teal-800 shadow-sm transition-all hover:border-teal-600 hover:bg-teal-50 sm:text-sm dark:text-teal-300 dark:hover:bg-teal-950/40"
                   >
-                    <div className="flex items-start gap-4">
-                      <span className="mt-1 text-xs font-bold text-teal-500">0{idx + 1}.</span>
-                      <div>
-                        <h3 className="text-foreground text-base font-bold transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
-                          <Link href={`/blog/${art.slug}`}>{art.title}</Link>
-                        </h3>
-                        <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-3 text-xs">
-                          <span className="text-foreground font-medium">{art.category}</span>
-                          <span>•</span>
-                          <span>{art.readTime}</span>
-                          <span>•</span>
-                          <span>By {art.author.name}</span>
-                        </div>
-                      </div>
-                    </div>
-
-                    <Link
-                      href={`/blog/${art.slug}`}
-                      className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-teal-600 hover:underline dark:text-teal-400"
-                    >
-                      <span>Read Article</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </Link>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
+                    Load more guides
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
       </section>
 
       {/* ── View Layout Settings Modal using @/components/ui/dialog ── */}
