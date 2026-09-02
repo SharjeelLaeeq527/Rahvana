@@ -52,31 +52,35 @@ const VIEW_OPTIONS: {
   icon: React.ElementType;
 }[] = [
   {
+    id: "list",
+    label: "Compact List",
+    badge: "High Density",
+    description:
+      "Horizontal layout rows with side thumbnail images for quick, streamlined article scanning.",
+    icon: List,
+  },
+  {
     id: "detailed",
     label: "Featured & Grid",
     badge: "Hero + Cards",
-    description: "Displays a prominent featured guide at the top followed by a responsive card grid below.",
+    description:
+      "Displays a prominent featured guide at the top followed by a responsive card grid below.",
     icon: LayoutList,
   },
   {
     id: "grid",
     label: "Visual Cards",
     badge: "Visual Grid",
-    description: "Equal-sized image cards with rich metadata tags, perfect for visual browsing of articles.",
+    description:
+      "Equal-sized image cards with rich metadata tags, perfect for visual browsing of articles.",
     icon: LayoutGrid,
-  },
-  {
-    id: "list",
-    label: "Compact List",
-    badge: "High Density",
-    description: "Horizontal layout rows with side thumbnail images for quick, streamlined article scanning.",
-    icon: List,
   },
   {
     id: "minimal",
     label: "Minimal Text",
     badge: "Fast Reading",
-    description: "Distraction-free text layout focusing purely on headlines, category badges, and read times.",
+    description:
+      "Distraction-free text layout focusing purely on headlines, category badges, and read times.",
     icon: AlignLeft,
   },
 ];
@@ -84,8 +88,8 @@ const VIEW_OPTIONS: {
 export default function BlogSearchSection({ articles }: BlogSearchSectionProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All Articles");
-  const [viewMode, setViewMode] = useState<ViewMode>("detailed");
-  const [pendingViewMode, setPendingViewMode] = useState<ViewMode>("detailed");
+  const [viewMode, setViewMode] = useState<ViewMode>("list");
+  const [pendingViewMode, setPendingViewMode] = useState<ViewMode>("list");
   const [isLayoutModalOpen, setIsLayoutModalOpen] = useState(false);
 
   const handleOpenLayoutModal = () => {
@@ -131,23 +135,23 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
   return (
     <div className="space-y-8">
       {/* ── 1. Search Bar & Popular Searches Box ── */}
-      <section className="relative mt-6 sm:mt-10 z-10 mx-auto max-w-6xl px-5 sm:px-8 lg:px-10">
-        <div className="rounded-3xl border border-border/80 bg-card p-6 sm:p-8 shadow-xl backdrop-blur-md">
+      <section className="relative z-10 mx-auto mt-6 max-w-6xl px-5 sm:mt-10 sm:px-8 lg:px-10">
+        <div className="border-border/80 bg-card rounded-3xl border p-6 shadow-xl backdrop-blur-md sm:p-8">
           {/* Search Input */}
-          <div className="flex flex-col sm:flex-row gap-3">
+          <div className="flex flex-col gap-3 sm:flex-row">
             <div className="relative flex-1">
-              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+              <Search className="text-muted-foreground absolute top-1/2 left-4 h-5 w-5 -translate-y-1/2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search guides, documents, interview tips..."
-                className="w-full rounded-2xl border border-border bg-background py-3.5 pl-12 pr-10 text-sm sm:text-base text-foreground placeholder:text-muted-foreground focus:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500/20 transition-all shadow-inner"
+                className="border-border bg-background text-foreground placeholder:text-muted-foreground w-full rounded-2xl border py-3.5 pr-10 pl-12 text-sm shadow-inner transition-all focus:border-teal-500 focus:ring-2 focus:ring-teal-500/20 focus:outline-none sm:text-base"
               />
               {searchQuery && (
                 <button
                   onClick={() => setSearchQuery("")}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 rounded-full p-1 text-muted-foreground hover:bg-muted hover:text-foreground"
+                  className="text-muted-foreground hover:bg-muted hover:text-foreground absolute top-1/2 right-4 -translate-y-1/2 rounded-full p-1"
                   aria-label="Clear search"
                 >
                   <X className="h-4 w-4" />
@@ -156,7 +160,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
             </div>
             <button
               onClick={() => {}}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl bg-teal-600 px-7 py-3.5 text-sm font-semibold text-white transition-all hover:bg-teal-500 shadow-md shrink-0"
+              className="inline-flex shrink-0 items-center justify-center gap-2 rounded-2xl bg-teal-600 px-7 py-3.5 text-sm font-semibold text-white shadow-md transition-all hover:bg-teal-500"
             >
               <Search className="h-4 w-4" />
               <span>Search</span>
@@ -165,7 +169,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
 
           {/* Popular Searches Pills */}
           <div className="mt-5 flex flex-wrap items-center gap-2 text-xs sm:text-sm">
-            <span className="font-semibold text-muted-foreground shrink-0">Popular searches:</span>
+            <span className="text-muted-foreground shrink-0 font-semibold">Popular searches:</span>
             {POPULAR_SEARCHES.map((tag) => {
               const isActive = searchQuery.toLowerCase() === tag.toLowerCase();
               return (
@@ -174,8 +178,8 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                   onClick={() => handlePopularClick(tag)}
                   className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition-all ${
                     isActive
-                      ? "border-teal-500 bg-teal-500/10 text-teal-600 dark:text-teal-400 font-semibold shadow-sm"
-                      : "border-border bg-muted/40 text-muted-foreground hover:border-teal-500/50 hover:text-foreground"
+                      ? "border-teal-500 bg-teal-500/10 font-semibold text-teal-600 shadow-sm dark:text-teal-400"
+                      : "border-border bg-muted/40 text-muted-foreground hover:text-foreground hover:border-teal-500/50"
                   }`}
                 >
                   {tag}
@@ -188,8 +192,8 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
 
       {/* ── 2. Full-Width Category Pill Filters ── */}
       <section className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10">
-        <div className="flex flex-wrap items-center gap-2 border-b border-border/40 pb-5">
-          <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mr-2 flex items-center gap-1.5 shrink-0">
+        <div className="border-border/40 flex flex-wrap items-center gap-2 border-b pb-5">
+          <span className="text-muted-foreground mr-2 flex shrink-0 items-center gap-1.5 text-xs font-semibold tracking-wider uppercase">
             <Filter className="h-3.5 w-3.5" /> Categories:
           </span>
           {CATEGORIES.map((cat) => {
@@ -201,7 +205,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                 className={`rounded-full px-4 py-2 text-xs font-semibold transition-all ${
                   isActive
                     ? "bg-teal-600 text-white shadow-sm"
-                    : "border border-border bg-card text-muted-foreground hover:border-teal-500 hover:text-foreground"
+                    : "border-border bg-card text-muted-foreground hover:text-foreground border hover:border-teal-500"
                 }`}
               >
                 {cat}
@@ -214,12 +218,12 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
       {/* ── 3. Main Articles Area (with Header & Layout Mode Toolbar) ── */}
       <section className="mx-auto max-w-6xl px-5 sm:px-8 lg:px-10">
         {/* Section Header & Layout View Selector */}
-        <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pt-2">
+        <div className="mb-6 flex flex-wrap items-center justify-between gap-4 pt-2">
           <div className="flex items-center gap-2">
             <BookOpen className="h-5 w-5 text-teal-600 dark:text-teal-400" />
             <h2 className="text-foreground text-xl font-bold tracking-tight">
               {selectedCategory === "All Articles" ? "Immigrant Visa Guides" : selectedCategory}
-              <span className="ml-2 text-xs font-normal text-muted-foreground">
+              <span className="text-muted-foreground ml-2 text-xs font-normal">
                 ({filteredArticles.length} {filteredArticles.length === 1 ? "article" : "articles"})
               </span>
             </h2>
@@ -228,12 +232,12 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
           {/* View Settings Modal Trigger Button */}
           <button
             onClick={handleOpenLayoutModal}
-            className="flex items-center gap-2 rounded-2xl border border-border/80 bg-card/80 px-3.5 py-2 text-xs font-semibold text-foreground shadow-sm transition hover:border-teal-500/50 hover:bg-card hover:text-teal-600 dark:hover:text-teal-400 shrink-0"
+            className="border-border/80 bg-card/80 text-foreground hover:bg-card flex shrink-0 items-center gap-2 rounded-2xl border px-3.5 py-2 text-xs font-semibold shadow-sm transition hover:border-teal-500/50 hover:text-teal-600 dark:hover:text-teal-400"
             title="Change article display layout"
           >
             <SlidersHorizontal className="h-4 w-4 text-teal-600 dark:text-teal-400" />
             <span className="hidden sm:inline">Layout:</span>
-            <span className="flex items-center gap-1.5 rounded-lg bg-teal-500/10 px-2.5 py-1 text-xs font-bold text-teal-600 dark:text-teal-400 border border-teal-500/20">
+            <span className="flex items-center gap-1.5 rounded-lg border border-teal-500/20 bg-teal-500/10 px-2.5 py-1 text-xs font-bold text-teal-600 dark:text-teal-400">
               <CurrentIcon className="h-3.5 w-3.5" />
               <span>{currentViewOption.label}</span>
             </span>
@@ -241,10 +245,10 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
         </div>
 
         {filteredArticles.length === 0 ? (
-          <div className="rounded-3xl border border-dashed border-border p-12 text-center">
-            <Search className="mx-auto h-10 w-10 text-muted-foreground/50" />
-            <h3 className="mt-4 text-lg font-bold text-foreground">No articles found</h3>
-            <p className="mt-1 text-sm text-muted-foreground">
+          <div className="border-border rounded-3xl border border-dashed p-12 text-center">
+            <Search className="text-muted-foreground/50 mx-auto h-10 w-10" />
+            <h3 className="text-foreground mt-4 text-lg font-bold">No articles found</h3>
+            <p className="text-muted-foreground mt-1 text-sm">
               Try adjusting your search term or selecting another category.
             </p>
             <button
@@ -281,8 +285,10 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                           </span>
                         </div>
 
-                        <h3 className="text-foreground mt-4 text-2xl font-bold tracking-tight transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400 sm:text-3xl lg:text-4xl">
-                          <Link href={`/blog/${featuredArticle.slug}`}>{featuredArticle.title}</Link>
+                        <h3 className="text-foreground mt-4 text-2xl font-bold tracking-tight transition-colors group-hover:text-teal-500 sm:text-3xl lg:text-4xl dark:group-hover:text-teal-400">
+                          <Link href={`/blog/${featuredArticle.slug}`}>
+                            {featuredArticle.title}
+                          </Link>
                         </h3>
 
                         {/* AEO / BLUF Summary Box */}
@@ -367,7 +373,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                             <span className="text-muted-foreground">{art.updatedAt}</span>
                             <Link
                               href={`/blog/${art.slug}`}
-                              className="flex items-center gap-1 font-semibold text-teal-600 dark:text-teal-400 transition-transform group-hover:translate-x-0.5"
+                              className="flex items-center gap-1 font-semibold text-teal-600 transition-transform group-hover:translate-x-0.5 dark:text-teal-400"
                             >
                               Read Article →
                             </Link>
@@ -388,7 +394,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                     key={art.id}
                     className="group border-border bg-card flex flex-col overflow-hidden rounded-3xl border shadow-md transition-all duration-300 hover:border-teal-500/50 hover:shadow-xl"
                   >
-                    <div className="relative h-48 w-full overflow-hidden bg-muted">
+                    <div className="bg-muted relative h-48 w-full overflow-hidden">
                       <Image
                         src={art.heroImage}
                         alt={art.title}
@@ -404,7 +410,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
 
                     <div className="flex flex-1 flex-col justify-between p-6">
                       <div>
-                        <div className="flex items-center gap-3 text-xs text-muted-foreground mb-2">
+                        <div className="text-muted-foreground mb-2 flex items-center gap-3 text-xs">
                           <span className="flex items-center gap-1">
                             <Clock className="h-3.5 w-3.5" />
                             {art.readTime}
@@ -425,13 +431,13 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                         </p>
                       </div>
 
-                      <div className="mt-6 border-t border-border/50 pt-4 flex items-center justify-between">
-                        <span className="text-xs font-medium text-muted-foreground">
+                      <div className="border-border/50 mt-6 flex items-center justify-between border-t pt-4">
+                        <span className="text-muted-foreground text-xs font-medium">
                           {art.author.name}
                         </span>
                         <Link
                           href={`/blog/${art.slug}`}
-                          className="inline-flex items-center gap-1 rounded-xl bg-teal-600/10 px-3.5 py-1.5 text-xs font-semibold text-teal-600 dark:text-teal-400 transition hover:bg-teal-600 hover:text-white"
+                          className="inline-flex items-center gap-1 rounded-xl bg-teal-600/10 px-3.5 py-1.5 text-xs font-semibold text-teal-600 transition hover:bg-teal-600 hover:text-white dark:text-teal-400"
                         >
                           <span>Read</span>
                           <ArrowRight className="h-3.5 w-3.5" />
@@ -449,10 +455,10 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                 {filteredArticles.map((art) => (
                   <div
                     key={art.id}
-                    className="group border-border bg-card flex flex-col sm:flex-row items-center justify-between gap-6 rounded-2xl border p-5 shadow-sm transition hover:border-teal-500/40 hover:shadow-md"
+                    className="group border-border bg-card flex flex-col items-center justify-between gap-6 rounded-2xl border p-5 shadow-sm transition hover:border-teal-500/40 hover:shadow-md sm:flex-row"
                   >
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 flex-1">
-                      <div className="relative h-24 w-full sm:w-36 shrink-0 overflow-hidden rounded-xl bg-muted">
+                    <div className="flex flex-1 flex-col items-start gap-5 sm:flex-row sm:items-center">
+                      <div className="bg-muted relative h-24 w-full shrink-0 overflow-hidden rounded-xl sm:w-36">
                         <Image
                           src={art.heroImage}
                           alt={art.title}
@@ -484,7 +490,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
 
                     <Link
                       href={`/blog/${art.slug}`}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-teal-500 shrink-0 self-end sm:self-center"
+                      className="inline-flex shrink-0 items-center gap-1.5 self-end rounded-xl bg-teal-600 px-4 py-2 text-xs font-semibold text-white transition hover:bg-teal-500 sm:self-center"
                     >
                       <span>Read Guide</span>
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -496,22 +502,20 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
 
             {/* ── OPTION 4: MINIMAL TEXT VIEW ── */}
             {viewMode === "minimal" && (
-              <div className="divide-y divide-border/60 rounded-2xl border border-border bg-card">
+              <div className="divide-border/60 border-border bg-card divide-y rounded-2xl border">
                 {filteredArticles.map((art, idx) => (
                   <div
                     key={art.id}
-                    className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 transition hover:bg-muted/30"
+                    className="group hover:bg-muted/30 flex flex-col justify-between gap-4 p-5 transition sm:flex-row sm:items-center"
                   >
                     <div className="flex items-start gap-4">
-                      <span className="text-xs font-bold text-teal-500 mt-1">
-                        0{idx + 1}.
-                      </span>
+                      <span className="mt-1 text-xs font-bold text-teal-500">0{idx + 1}.</span>
                       <div>
                         <h3 className="text-foreground text-base font-bold transition-colors group-hover:text-teal-500 dark:group-hover:text-teal-400">
                           <Link href={`/blog/${art.slug}`}>{art.title}</Link>
                         </h3>
-                        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted-foreground">
-                          <span className="font-medium text-foreground">{art.category}</span>
+                        <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-3 text-xs">
+                          <span className="text-foreground font-medium">{art.category}</span>
                           <span>•</span>
                           <span>{art.readTime}</span>
                           <span>•</span>
@@ -522,7 +526,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
 
                     <Link
                       href={`/blog/${art.slug}`}
-                      className="inline-flex items-center gap-1 text-xs font-semibold text-teal-600 dark:text-teal-400 hover:underline shrink-0"
+                      className="inline-flex shrink-0 items-center gap-1 text-xs font-semibold text-teal-600 hover:underline dark:text-teal-400"
                     >
                       <span>Read Article</span>
                       <ArrowRight className="h-3.5 w-3.5" />
@@ -543,26 +547,26 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
           if (open) setPendingViewMode(viewMode);
         }}
       >
-        <DialogContent className="max-w-2xl max-h-[85vh] overflow-hidden rounded-3xl border-border/80 bg-card p-0 shadow-2xl">
-          <div className="custom-scrollbar overflow-y-auto max-h-[85vh] p-5 sm:p-6 pr-3 sm:pr-4 space-y-4">
+        <DialogContent className="border-border/80 bg-card max-h-[85vh] max-w-2xl overflow-hidden rounded-3xl p-0 shadow-2xl">
+          <div className="custom-scrollbar max-h-[85vh] space-y-4 overflow-y-auto p-5 pr-3 sm:p-6 sm:pr-4">
             {/* Modal Header */}
-            <DialogHeader className="flex flex-row items-start justify-between border-b border-border/50 pb-3 space-y-0 text-left">
+            <DialogHeader className="border-border/50 flex flex-row items-start justify-between space-y-0 border-b pb-3 text-left">
               <div className="flex items-center gap-3">
-                <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-teal-500/10 text-teal-600 dark:text-teal-400 border border-teal-500/20 shadow-sm shrink-0">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl border border-teal-500/20 bg-teal-500/10 text-teal-600 shadow-sm dark:text-teal-400">
                   <SlidersHorizontal className="h-4 w-4" />
                 </div>
                 <div>
-                  <DialogTitle className="text-foreground text-base sm:text-lg font-bold tracking-tight">
+                  <DialogTitle className="text-foreground text-base font-bold tracking-tight sm:text-lg">
                     Article Display Layout
                   </DialogTitle>
-                  <DialogDescription className="text-muted-foreground text-xs mt-0.5">
+                  <DialogDescription className="text-muted-foreground mt-0.5 text-xs">
                     Choose your preferred view style for browsing immigrant visa guides.
                   </DialogDescription>
                 </div>
               </div>
               <button
                 onClick={() => setIsLayoutModalOpen(false)}
-                className="rounded-full p-1.5 text-muted-foreground hover:bg-muted hover:text-foreground transition-colors shrink-0"
+                className="text-muted-foreground hover:bg-muted hover:text-foreground shrink-0 rounded-full p-1.5 transition-colors"
                 aria-label="Close layout modal"
               >
                 <X className="h-4 w-4" />
@@ -570,7 +574,7 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
             </DialogHeader>
 
             {/* Layout Options Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
               {VIEW_OPTIONS.map((opt) => {
                 const IconComponent = opt.icon;
                 const isActive = pendingViewMode === opt.id;
@@ -582,13 +586,13 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                     }}
                     className={`group relative flex flex-col justify-between rounded-2xl border p-3.5 text-left transition-all duration-200 ${
                       isActive
-                        ? "border-teal-500 bg-teal-500/5 ring-2 ring-teal-500/20 shadow-sm"
-                        : "border-border/70 bg-background/50 hover:border-teal-500/50 hover:bg-card shadow-sm"
+                        ? "border-teal-500 bg-teal-500/5 shadow-sm ring-2 ring-teal-500/20"
+                        : "border-border/70 bg-background/50 hover:bg-card shadow-sm hover:border-teal-500/50"
                     }`}
                   >
                     <div>
                       {/* Header row with Icon, Label & Selection Badge */}
-                      <div className="flex items-center justify-between mb-1.5">
+                      <div className="mb-1.5 flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <div
                             className={`flex h-7 w-7 items-center justify-center rounded-lg transition-colors ${
@@ -599,12 +603,14 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                           >
                             <IconComponent className="h-3.5 w-3.5" />
                           </div>
-                          <span className="text-xs sm:text-sm font-bold text-foreground">{opt.label}</span>
+                          <span className="text-foreground text-xs font-bold sm:text-sm">
+                            {opt.label}
+                          </span>
                         </div>
                         {isActive ? (
-                          <CheckCircle2 className="h-4 w-4 text-teal-600 dark:text-teal-400 shrink-0" />
+                          <CheckCircle2 className="h-4 w-4 shrink-0 text-teal-600 dark:text-teal-400" />
                         ) : (
-                          <span className="h-3.5 w-3.5 rounded-full border border-muted-foreground/40 group-hover:border-teal-500/50 shrink-0" />
+                          <span className="border-muted-foreground/40 h-3.5 w-3.5 shrink-0 rounded-full border group-hover:border-teal-500/50" />
                         )}
                       </div>
 
@@ -622,48 +628,48 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
                       </div>
 
                       {/* Description */}
-                      <p className="text-[11px] leading-relaxed text-muted-foreground">
+                      <p className="text-muted-foreground text-[11px] leading-relaxed">
                         {opt.description}
                       </p>
                     </div>
 
                     {/* Mini CSS Graphical Mockup Representation of the Layout */}
-                    <div className="mt-3 pt-2 border-t border-border/40">
-                      <div className="h-8 rounded-lg border border-border/50 bg-muted/30 p-1 flex flex-col justify-center gap-0.5 overflow-hidden">
+                    <div className="border-border/40 mt-3 border-t pt-2">
+                      <div className="border-border/50 bg-muted/30 flex h-8 flex-col justify-center gap-0.5 overflow-hidden rounded-lg border p-1">
                         {opt.id === "detailed" && (
-                          <div className="flex gap-1 h-full">
-                            <div className="w-1/2 rounded bg-teal-500/30 border border-teal-500/20" />
-                            <div className="w-1/2 flex flex-col gap-0.5">
-                              <div className="h-1/2 rounded bg-muted-foreground/20" />
-                              <div className="h-1/2 rounded bg-muted-foreground/20" />
+                          <div className="flex h-full gap-1">
+                            <div className="w-1/2 rounded border border-teal-500/20 bg-teal-500/30" />
+                            <div className="flex w-1/2 flex-col gap-0.5">
+                              <div className="bg-muted-foreground/20 h-1/2 rounded" />
+                              <div className="bg-muted-foreground/20 h-1/2 rounded" />
                             </div>
                           </div>
                         )}
                         {opt.id === "grid" && (
-                          <div className="flex gap-1 h-full">
-                            <div className="w-1/3 rounded bg-muted-foreground/25" />
-                            <div className="w-1/3 rounded bg-muted-foreground/25" />
-                            <div className="w-1/3 rounded bg-muted-foreground/25" />
+                          <div className="flex h-full gap-1">
+                            <div className="bg-muted-foreground/25 w-1/3 rounded" />
+                            <div className="bg-muted-foreground/25 w-1/3 rounded" />
+                            <div className="bg-muted-foreground/25 w-1/3 rounded" />
                           </div>
                         )}
                         {opt.id === "list" && (
-                          <div className="flex flex-col justify-between h-full gap-0.5">
-                            <div className="h-1.5 rounded bg-muted-foreground/30 flex items-center px-0.5">
-                              <div className="h-1 w-1.5 bg-teal-500/50 rounded" />
+                          <div className="flex h-full flex-col justify-between gap-0.5">
+                            <div className="bg-muted-foreground/30 flex h-1.5 items-center rounded px-0.5">
+                              <div className="h-1 w-1.5 rounded bg-teal-500/50" />
                             </div>
-                            <div className="h-1.5 rounded bg-muted-foreground/30 flex items-center px-0.5">
-                              <div className="h-1 w-1.5 bg-teal-500/50 rounded" />
+                            <div className="bg-muted-foreground/30 flex h-1.5 items-center rounded px-0.5">
+                              <div className="h-1 w-1.5 rounded bg-teal-500/50" />
                             </div>
-                            <div className="h-1.5 rounded bg-muted-foreground/30 flex items-center px-0.5">
-                              <div className="h-1 w-1.5 bg-teal-500/50 rounded" />
+                            <div className="bg-muted-foreground/30 flex h-1.5 items-center rounded px-0.5">
+                              <div className="h-1 w-1.5 rounded bg-teal-500/50" />
                             </div>
                           </div>
                         )}
                         {opt.id === "minimal" && (
-                          <div className="flex flex-col justify-between h-full py-0.5">
-                            <div className="h-1 w-3/4 rounded bg-muted-foreground/35" />
-                            <div className="h-1 w-full rounded bg-muted-foreground/25" />
-                            <div className="h-1 w-1/2 rounded bg-muted-foreground/25" />
+                          <div className="flex h-full flex-col justify-between py-0.5">
+                            <div className="bg-muted-foreground/35 h-1 w-3/4 rounded" />
+                            <div className="bg-muted-foreground/25 h-1 w-full rounded" />
+                            <div className="bg-muted-foreground/25 h-1 w-1/2 rounded" />
                           </div>
                         )}
                       </div>
@@ -674,11 +680,11 @@ export default function BlogSearchSection({ articles }: BlogSearchSectionProps) 
             </div>
 
             {/* Dialog Footer */}
-            <DialogFooter className="border-t border-border/50 pt-3 flex items-center justify-end gap-2">
+            <DialogFooter className="border-border/50 flex items-center justify-end gap-2 border-t pt-3">
               <button
                 type="button"
                 onClick={() => setIsLayoutModalOpen(false)}
-                className="rounded-xl border border-border bg-background px-4 py-2 text-xs font-semibold text-muted-foreground transition hover:bg-muted hover:text-foreground"
+                className="border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground rounded-xl border px-4 py-2 text-xs font-semibold transition"
               >
                 Cancel
               </button>
