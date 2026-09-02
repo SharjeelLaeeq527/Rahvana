@@ -10,7 +10,7 @@ export const POLICE_CLEARANCE_DATA = {
   description:
     "A fresh police clearance certificate (PCC) is required for the consular interview. Apply now, this can take several weeks and must be tracked until received.",
   chips: [
-    { label: "PCC Required", type: "pcc" },
+    { label: "PCC Required — Age 16+", type: "pcc" },
     { label: "Tracking", type: "track" },
     { label: "Pending Until Received", type: "pending" },
   ],

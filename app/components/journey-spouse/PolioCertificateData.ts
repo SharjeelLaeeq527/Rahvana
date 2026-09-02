@@ -69,9 +69,9 @@ export const POLIO_CERTIFICATE_DATA = {
     },
     {
       label: "Step 3 of 5",
-      heading: "What the certificate looks like",
+      heading: "What to verify on the certificate",
       instruction:
-        "The official polio vaccination certificate is typically a printed card or letter issued at the vaccination site. It should include your name, vaccination date, and the type of vaccine received.",
+        "After vaccination, make sure your vaccination details are correctly recorded and obtain the official polio vaccination certificate. Pakistan's Polio Programme currently provides access to a digital certificate through NIMS/Pak Vaccination Pass.",
       vLabel: "Certificate Format",
       visual: {
         title: "Certificate Details to Verify",
