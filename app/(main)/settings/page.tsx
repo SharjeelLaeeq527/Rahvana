@@ -535,7 +535,7 @@ export default function SettingsPage() {
 
       {/* Danger Zone */}
       <section className="space-y-2.5">
-        <h2 className="px-1 text-base font-semibold text-[#c0596a]">Danger Zone</h2>
+      <h2 className="px-1 text-base font-semibold text-foreground">Leaving So Soon?</h2>
         <div className="overflow-hidden rounded-2xl border border-[#c0596a]/30 bg-card shadow-sm">
           <button
             type="button"
@@ -549,7 +549,7 @@ export default function SettingsPage() {
               <Trash2 className="h-5 w-5 shrink-0 text-[#c0596a]" />
             )}
             <span className="flex-1">
-              <span className="block text-sm font-medium text-[#c0596a]">
+              <span className="block text-sm font-medium text-foreground">
                 {isDeletingAccount ? "Deleting..." : "Delete Account"}
               </span>
               <span className="mt-0.5 block text-xs text-muted-foreground">
