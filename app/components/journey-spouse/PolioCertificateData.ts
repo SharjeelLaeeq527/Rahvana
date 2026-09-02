@@ -48,7 +48,7 @@ export const POLIO_CERTIFICATE_DATA = {
       label: "Step 1 of 5",
       heading: "What is the polio vaccination requirement?",
       instruction:
-        "Pakistan is a polio-endemic country. All immigrant visa applicants from Pakistan must receive an oral polio vaccine dose and obtain a certificate before their consular medical exam.",
+        "Typical cases from Pakistan will require a polio certificate for the medical examination. Therefore, it is highly recommended and advisable to obtain it beforehand to avoid any delays in your medical process.",
       vLabel: "Requirement Overview",
       visual: {
         title: "Why this is required",
