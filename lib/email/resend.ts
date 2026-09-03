@@ -618,3 +618,106 @@ export function getFeatureAnnouncementEmailHtml(
     </html>
   `;
 }
+
+export function getBlogWelcomeEmailHtml(unsubscribeUrl: string): string {
+  const exploreUrl = `${process.env.NEXT_PUBLIC_APP_URL || "https://rahvana.com"}/blog`;
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Welcome to Rahvana Knowledge Center</title>
+    </head>
+    <body style="margin:0; padding:0; background-color:#e8f6f6; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
+        <tr>
+          <td align="center">
+            <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; background:#ffffff; border-radius:18px; box-shadow:0 8px 24px rgba(13,115,119,0.08); overflow:hidden;">
+              <tr><td style="height:4px; background:linear-gradient(90deg,#0d7377,#14a0a6,#32e0c4);"></td></tr>
+              <tr>
+                <td style="padding:48px 40px;">
+                  <div style="text-align:center; margin-bottom:28px;">${LOGO_IMAGE}</div>
+                  <h1 style="margin:0 0 16px; font-size:24px; font-weight:700; color:#0d7377; text-align:center;">Welcome to Rahvana Knowledge Center!</h1>
+                  <p style="margin:0 0 20px; font-size:15px; line-height:1.7; color:#475569; text-align:center;">
+                    You are now subscribed to receive our latest U.S. immigration guides, NVC document checklists, and consular interview preparation insights written specifically for Pakistani applicants and U.S. sponsors.
+                  </p>
+                  <div style="background-color:#f0fdfa; border:1px solid #ccfbf1; border-radius:12px; padding:16px; margin:24px 0; text-align:center;">
+                    <p style="margin:0; font-size:14px; color:#0d9488; font-weight:600;">You'll only receive high-value guides when new immigration research or policy updates are published.</p>
+                  </div>
+                  <div style="text-align:center; margin:32px 0;">
+                    <a href="${exploreUrl}" style="display:inline-block; padding:14px 36px; background-color:#0d7377; color:#ffffff; text-decoration:none; font-size:15px; font-weight:600; border-radius:12px; box-shadow:0 6px 18px rgba(13,115,119,0.25);">Explore Current Guides</a>
+                  </div>
+                  <p style="margin:24px 0 0; font-size:12px; color:#94a3b8; text-align:center;">
+                    If you did not request this subscription, you can <a href="${unsubscribeUrl}" style="color:#0d7377; text-decoration:underline;">unsubscribe at any time</a>.
+                  </p>
+                </td>
+              </tr>
+            </table>
+            <p style="margin-top:24px; font-size:12px; color:#94a3b8; text-align:center;">© ${new Date().getFullYear()} Rahvana. All rights reserved.</p>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+}
+
+export function getBlogAnnouncementEmailHtml(params: {
+  title: string;
+  description: string;
+  articleUrl: string;
+  readTime?: string;
+  category?: string;
+  unsubscribeUrl: string;
+}): string {
+  const { title, description, articleUrl, readTime = "8 min read", category = "Immigration Guide", unsubscribeUrl } = params;
+  return `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>${title}</title>
+    </head>
+    <body style="margin:0; padding:0; background-color:#e8f6f6; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 20px;">
+        <tr>
+          <td align="center">
+            <table width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; background:#ffffff; border-radius:18px; box-shadow:0 8px 24px rgba(13,115,119,0.08); overflow:hidden;">
+              <tr><td style="height:4px; background:linear-gradient(90deg,#0d7377,#14a0a6,#32e0c4);"></td></tr>
+              <tr>
+                <td style="padding:44px 36px;">
+                  <div style="text-align:center; margin-bottom:24px;">${LOGO_IMAGE}</div>
+                  <div style="text-align:center; margin-bottom:12px;">
+                    <span style="display:inline-block; padding:4px 14px; background-color:#f0fdfa; border:1px solid #99f6e4; color:#0d9488; border-radius:999px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">
+                      ${category} • ${readTime}
+                    </span>
+                  </div>
+                  <h1 style="margin:0 0 16px; font-size:24px; font-weight:700; color:#0f2e2b; text-align:center; line-height:1.3;">
+                    ${title}
+                  </h1>
+                  <p style="margin:0 0 24px; font-size:15px; line-height:1.7; color:#475569; text-align:left;">
+                    ${description}
+                  </p>
+                  <div style="text-align:center; margin:32px 0 24px;">
+                    <a href="${articleUrl}" style="display:inline-block; padding:15px 38px; background-color:#0d7377; color:#ffffff; text-decoration:none; font-size:15px; font-weight:600; border-radius:12px; box-shadow:0 6px 18px rgba(13,115,119,0.25);">
+                      Read Complete Guide →
+                    </a>
+                  </div>
+                  <hr style="border:none; border-top:1px solid #e2e8f0; margin:32px 0 20px;" />
+                  <p style="margin:0; font-size:12px; color:#94a3b8; text-align:center; line-height:1.5;">
+                    You received this email because you subscribed to guides at Rahvana Knowledge Center.<br/>
+                    <a href="${unsubscribeUrl}" style="color:#0d7377; text-decoration:underline;">Click here to unsubscribe</a>.
+                  </p>
+                </td>
+              </tr>
+            </table>
+            <p style="margin-top:24px; font-size:12px; color:#94a3b8; text-align:center;">© ${new Date().getFullYear()} Rahvana. All rights reserved.</p>
+          </td>
+        </tr>
+      </table>
+    </body>
+    </html>
+  `;
+}

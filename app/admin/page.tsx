@@ -30,12 +30,14 @@ import VisaCasesTable from "./components/visa-cases/VisaCasesTable";
 import CollapsibleSection from "./components/CollapsibleSection";
 import ReviewsTable from "./components/reviews/ReviewsTable";
 import { FeatureAnnouncementModal } from "./components/feature-announcement/FeatureAnnouncementModal";
+import { BlogAnnouncementModal } from "./components/blog-announcement/BlogAnnouncementModal";
 
 export default function AdminPanel() {
   const { user, isAdmin, isLoading: authLoading, signOut } = useAuth();
   const router = useRouter();
 
   const [openFeatureModal, setOpenFeatureModal] = useState(false);
+  const [openBlogModal, setOpenBlogModal] = useState(false);
 
   const handleLogout = async () => {
     try {
@@ -115,6 +117,12 @@ export default function AdminPanel() {
                 className="text-teal-600 border-2 border-teal-600 hover:bg-teal-100 hover:text-teal-700 rounded-lg p-1"
               >
                 Feature Announcement
+              </button>
+              <button
+                onClick={() => setOpenBlogModal(true)}
+                className="text-white bg-teal-600 hover:bg-teal-700 rounded-lg px-2.5 py-1 text-sm font-medium transition-colors"
+              >
+                Blog Announcement
               </button>
               <Button
                 onClick={handleLogout}
@@ -223,6 +231,7 @@ export default function AdminPanel() {
           </CollapsibleSection>
 
           <FeatureAnnouncementModal open={openFeatureModal} onOpenChange={setOpenFeatureModal} />
+          <BlogAnnouncementModal open={openBlogModal} onOpenChange={setOpenBlogModal} />
         </div>
       </main>
     </div>
