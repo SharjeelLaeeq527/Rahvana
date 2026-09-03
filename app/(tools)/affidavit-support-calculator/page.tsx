@@ -3,9 +3,14 @@
 import React, { useState, useEffect } from "react";
 import SponsorshipCalculatorTool from "@/components/tools/SponsorshipCalculatorTool";
 import { useAuth } from "@/app/context/AuthContext";
+import { useUserProfile } from "@/app/context/UserProfileContext";
 export default function AffidavitSupportCalculatorPage() {
   const [isOpen, setIsOpen] = useState(false);
   const { user } = useAuth();
+  const { profile } = useUserProfile();
+  // Standalone entry: pre-fill the saved sponsor state when available, but keep
+  // the selector shown (lockState=false) so the user always confirms it.
+  const presetState = profile?.sponsor?.address?.state || "";
 
   useEffect(() => {
     setIsOpen(true);
@@ -43,7 +48,13 @@ export default function AffidavitSupportCalculatorPage() {
         </div>
       )}
 
-      <SponsorshipCalculatorTool isOpen={isOpen} onClose={handleClose} onSave={handleSave} />
+      <SponsorshipCalculatorTool
+        isOpen={isOpen}
+        onClose={handleClose}
+        onSave={handleSave}
+        initialData={{ state: presetState }}
+        lockState={false}
+      />
     </div>
   );
 }

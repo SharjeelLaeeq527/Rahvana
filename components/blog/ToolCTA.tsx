@@ -1,6 +1,7 @@
 import React from "react";
 import Link from "next/link";
 import { ArrowRight, CheckCircle2, ShieldCheck, Wrench } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface ToolCTAProps {
   badge?: string;
@@ -9,6 +10,7 @@ export interface ToolCTAProps {
   buttonText?: string;
   buttonHref?: string;
   variant?: "primary" | "secondary" | "card";
+  className?: string;
 }
 
 export default function ToolCTA({
@@ -18,10 +20,11 @@ export default function ToolCTA({
   buttonText = "Start Free Case Strength Check →",
   buttonHref = "/visa-eligibility",
   variant = "primary",
+  className = "",
 }: ToolCTAProps) {
   if (variant === "card") {
     return (
-      <div className="my-8 rounded-2xl border border-teal-500/30 bg-slate-900/95 p-6 text-slate-100 shadow-lg sm:p-8">
+      <div className={cn("my-8 rounded-2xl border border-teal-500/30 bg-slate-900/95 p-6 text-slate-100 shadow-lg sm:p-8", className)}>
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-teal-400">
           <Wrench className="h-4 w-4" />
           <span>{badge}</span>
@@ -49,7 +52,7 @@ export default function ToolCTA({
   }
 
   return (
-    <div className="my-10 overflow-hidden rounded-3xl border border-border bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 p-8 text-white shadow-xl sm:p-10">
+    <div className={cn("my-10 overflow-hidden rounded-3xl border border-border bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 p-8 text-white shadow-xl sm:p-10", className)}>
       <div className="max-w-3xl">
         <span className="inline-flex items-center gap-1.5 rounded-full bg-teal-500/20 px-3.5 py-1 text-xs font-semibold tracking-wide text-teal-300 backdrop-blur-md">
           <Wrench className="h-3.5 w-3.5" />
