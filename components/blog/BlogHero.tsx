@@ -82,7 +82,7 @@ export default function BlogHero() {
           <div className="flex justify-center lg:col-span-5">
             <div className="relative w-full max-w-lg">
               <Image
-                src="/assets/images/blog-hero-image.png"
+                src="/assets/images/blog/blog-hero-image.png"
                 alt="Guides for every step of your immigration journey"
                 width={680}
                 height={450}
